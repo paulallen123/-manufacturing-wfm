@@ -1,0 +1,12 @@
+{
+  "candidate": "0.6.31-hosted-staging-rc1",
+  "runtime_artifact": "runtime-hosted-staging.tgz",
+  "runtime_sha256": "b5344cbd866320c3e7afcb177f2cc1f6060118af6780fedf33c9764d25c1935f",
+  "runtime_size_bytes": 407117,
+  "parent_archive_sha256": "1d650fb7e077ad5c8a4e20e3246a2b330ecdeaa075e443bf9e726854fac9709c",
+  "server_sha256": "73cbc8e27fa004e28f9fecfb8591ea7e5a4c25468495114233913d64e8dc04e8",
+  "hosting_patch_sha256": "81ecdac23f4d0eea3a68bc707dc6343c4e3d92e0ef4b2107107630fd7b9c1f9b",
+  "node_image": "node:22.16.0-bookworm-slim",
+  "production_approved": false,
+  "fixture_only": true
+}
