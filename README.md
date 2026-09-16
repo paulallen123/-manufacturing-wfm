@@ -1,3 +1,9 @@
-# Manufacturing WFM browser-test transport
+# Manufacturing WFM — hosted staging proof
 
-This repository is being used to transport the verified WFM candidate into the existing Railway test environment for hosted browser verification. The application runtime is stored as a compressed exact-source bundle. The launch harness only changes the server listen address from loopback to 0.0.0.0 so the non-production Railway proxy can reach it. This is not a production release or a replacement application.
+This repository contains the immutable deployment wrapper for **0.6.31-hosted-staging-rc1**, derived from the verified 0.6.31 Provider Run Recovery Candidate.
+
+The application remains a **fictional-data staging candidate**. It deliberately refuses `NODE_ENV=production`. Hosted mode is opt-in and requires an explicit HTTPS `WFM_PUBLIC_ORIGIN` and a non-default 20+ character `WFM_DEMO_PASSWORD`. The old local demo credential is rejected in hosted mode.
+
+The runtime is stored as checksummed base64 chunks so the exact verified artifact can be reconstructed by the Docker build without mutating application business logic during deployment. `DEPLOYMENT_MANIFEST.json` records provenance and hashes.
+
+Open proof gates after deployment: external HTTPS acceptance, hosted Playwright journey/evidence, full-suite regression completion, and production-grade persistence/auth architecture. No production approval is implied by this staging deployment.
