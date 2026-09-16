@@ -1,0 +1,71 @@
+name: Last Line Defence Gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'security/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: last-line-defence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integrity-and-containment-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require private repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event.repository.private }}" != "true" ]; then
+            echo "Refusing to validate a public deployment-wrapper repository."
+            exit 1
+          fi
+
+      - name: Validate staging-only manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '.production_approved == false and .fixture_only == true' DEPLOYMENT_MANIFEST.json >/dev/null
+
+      - name: Require immutable runtime chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          chunks=(artifact/runtime.b64.*)
+          if [ ${#chunks[@]} -eq 0 ]; then
+            echo "Runtime artifact chunks are missing. Deployment must fail closed."
+            exit 1
+          fi
+
+      - name: Reconstruct and verify runtime artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$(jq -r '.runtime_sha256' DEPLOYMENT_MANIFEST.json)"
+          cat artifact/runtime.b64.* | base64 -d > /tmp/runtime.tgz
+          echo "${expected}  /tmp/runtime.tgz" | sha256sum -c -
+          dockerfile_expected="$(grep -oE '[a-f0-9]{64}[[:space:]]+/tmp/runtime.tgz' Dockerfile | awk '{print $1}')"
+          test "$dockerfile_expected" = "$expected"
+
+      - name: Enforce non-root runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -qx 'USER node' Dockerfile
+
+      - name: Build exact staging wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false --tag manufacturing-wfm:last-line-defence .
