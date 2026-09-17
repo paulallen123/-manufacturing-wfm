@@ -8,7 +8,14 @@
   "runtime_sha256": "ecb59f71218b0be62d815471259b916cfe595a97ebbc166a554e167d176cf37c",
   "runtime_size_bytes": 586173,
   "required_identity_files": ["BUILD_INFO.json", "PACKAGE_MANIFEST_SHA256.json"],
-  "node_image": "node:22.16.0-bookworm-slim",
+  "node_image": "node:22.23.2-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5",
+  "security_baseline": {
+    "checked_at": "2026-09-17T10:56:09Z",
+    "node_minimum_safe_version": "22.23.2",
+    "node_security_release_date": "2026-07-29",
+    "vex_file": "security/WFM_VEX.json",
+    "baseline_file": "security/WFM_SECURITY_BASELINE.json"
+  },
   "customer_security_gate": "65/65 passed",
   "customer_operations_gate": "61/61 passed",
   "hosted_local_acceptance": "passed",
