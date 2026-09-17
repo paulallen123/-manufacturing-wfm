@@ -7,20 +7,24 @@ const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
 let guard = null;
 
-if (enabled) {
-  if (hosted && !process.env.WFM_DB) {
-    throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
-  }
-  if (process.env.WFM_DB) guard = createIdentitySurvivalGuard({ dbPath: process.env.WFM_DB });
-}
-
-if (hosted && !guard) {
-  throw new Error('Hosted staging refuses to start without the identity survival guard.');
+if (hosted && !process.env.WFM_DB) {
+  throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
 }
 
 const originalCreateServer = http.createServer;
 http.createServer = function guardedCreateServer(listener) {
   if (typeof listener !== 'function') return originalCreateServer.call(http, listener);
+
+  // The sealed server creates its SQLite schema before calling http.createServer().
+  // Initialise synchronously here: the schema exists, but no socket can accept a
+  // request until this function returns, so there is no unguarded request window.
+  if (enabled && !guard && process.env.WFM_DB) {
+    guard = createIdentitySurvivalGuard({ dbPath: process.env.WFM_DB });
+  }
+  if (hosted && !guard) {
+    throw new Error('Hosted staging refuses to start without the identity survival guard.');
+  }
+
   return originalCreateServer.call(http, async (req, res) => {
     if (guard) {
       try {
