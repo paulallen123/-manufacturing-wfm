@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-17",
+  "status": "contained-as-prevention-contract-no-current-runtime-exposure",
+  "scope": "External security intelligence review for Manufacturing WFM sealed staging candidate",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "external_findings": [
+    {
+      "id": "GHSA-22h6-qm39-v87j",
+      "title": "web_fetch_tool blocked_domains bypass via resolver-normalized hostname",
+      "severity": "low",
+      "published": "2026-09-17",
+      "affected_upstream": [">=1.77.0 <1.107.6", ">=2.0.0b1 <2.44.0"],
+      "patched_upstream": ["1.107.6", "2.44.0"],
+      "cve": null,
+      "source": "https://github.com/pydantic/pydantic-ai/security/advisories/GHSA-22h6-qm39-v87j",
+      "wfm_affected": false,
+      "wfm_reason": "WFM sealed runtime is Node built-ins only and does not include Pydantic AI. Existing future-agent egress is default-deny; lesson is retained to require resolver-equivalent hostname canonicalization and positive allowlists.",
+      "customer_impact": "none verified on current candidate; future confidentiality boundary risk if a model-selected fetch feature relied on a denylist",
+      "exploitability": "conditional on an affected Pydantic AI version, blocked_domains being used as the boundary, and untrusted input influencing the model-selected URL"
+    },
+    {
+      "id": "GHSA-vmxc-h2x2-jmf3",
+      "title": "SSRF cloud-metadata blocklist bypass via IPv6 zone identifiers",
+      "severity": "moderate",
+      "published": "2026-09-17",
+      "affected_upstream": [">=1.56.0 <1.107.6", ">=2.0.0b1 <2.44.0"],
+      "patched_upstream": ["1.107.6", "2.44.0"],
+      "cve": null,
+      "source": "https://github.com/pydantic/pydantic-ai/security/advisories/GHSA-vmxc-h2x2-jmf3",
+      "wfm_affected": false,
+      "wfm_reason": "WFM has no Pydantic AI/Python agent runtime and no sealed networked agent executor. Existing policy forbids cloud metadata/local/private destinations unless separately deterministic and provider-bound.",
+      "customer_impact": "none verified on current candidate; future high-confidentiality risk if untrusted model-selected URLs were ever allowed local-network access without zone-normalized destination checks",
+      "exploitability": "conditional on affected upstream version, IPv6, local URL access explicitly enabled, and untrusted input influencing the URL"
+    },
+    {
+      "id": "GHSA-4x9p-g9wm-8q7f",
+      "title": "OpenTelemetry content exclusion did not cover exceptions/status/instructions/output template",
+      "severity": "low",
+      "published": "2026-09-17",
+      "affected_upstream": [">=0.3.4 <1.107.6", ">=2.0.0b1 <2.44.0"],
+      "patched_upstream": ["1.107.6", "2.44.0"],
+      "cve": null,
+      "source": "https://github.com/pydantic/pydantic-ai/security/advisories/GHSA-4x9p-g9wm-8q7f",
+      "wfm_affected": false,
+      "wfm_reason": "The sealed WFM candidate does not include Pydantic AI/OpenTelemetry agent instrumentation. Existing WFM policy requires secret redaction from logs/traces but did not enumerate every newly demonstrated telemetry side channel.",
+      "customer_impact": "none verified on current candidate; future confidentiality risk where observability audiences are broader than tenant/application data audiences",
+      "exploitability": "conditional on affected upstream instrumentation being enabled and sensitive content entering exception/status/instruction/template channels"
+    },
+    {
+      "id": "GHSA-fpf4-vwcp-v4hp",
+      "title": "Event loop blocked by quadratic web_fetch response processing",
+      "severity": "moderate",
+      "published": "2026-09-17",
+      "affected_upstream": [">=1.77.0 <1.107.6", ">=2.0.0b1 <2.44.0"],
+      "patched_upstream": ["1.107.6", "2.44.0"],
+      "cve": null,
+      "source": "https://github.com/pydantic/pydantic-ai/security/advisories/GHSA-fpf4-vwcp-v4hp",
+      "wfm_affected": false,
+      "wfm_reason": "WFM sealed candidate has no Pydantic AI local web-fetch tool or networked AI-agent executor.",
+      "customer_impact": "none verified on current candidate; future availability risk if attacker-controlled fetch responses can consume shared parsing/event-loop capacity",
+      "exploitability": "conditional on affected local web_fetch being registered and an untrusted prompt being able to steer the agent to attacker-controlled content"
+    }
+  ],
+  "nvd_ssvc": {
+    "direct_match": false,
+    "reason": "Each reviewed September 17 advisory currently states 'No known CVE'. Without a CVE identifier there is no direct NVD affected-product record or CISA SSVC enrichment for these disclosures. Recheck if identifiers are assigned."
+  },
+  "validated_current_boundary": {
+    "runtime": "Node 22.23.2 bookworm-slim, digest pinned",
+    "third_party_runtime_packages": 0,
+    "package_managers_present": false,
+    "python_or_pydantic_ai_present": false,
+    "networked_ai_agent_executor_present": false,
+    "production_approved": false,
+    "staging_only": true,
+    "fixture_only": true,
+    "agent_default_egress": "deny",
+    "model_visible_reusable_credentials": false,
+    "conclusion": "No current package/version exposure or verified customer impact. Treat all four findings as future agent/web-tool prevention lessons, not as a claim that WFM is vulnerable to Pydantic AI defects."
+  },
+  "containment_and_remediation": [
+    "Retain positive allowlist-only egress for model-selected destinations; canonicalize hostnames into resolver-equivalent form and deny normalization ambiguity.",
+    "Strip IPv6 zone identifiers for destination security classification and re-check resolved/redirected IPs against metadata/private/loopback policy before connecting.",
+    "Treat telemetry redaction as end-to-end: scrub exception messages/stacks, status descriptions, dynamic instructions, output templates, tool content and provider error bodies, with synthetic canary verification.",
+    "Require response byte, time, CPU, nesting and charset budgets plus isolated processing for any future untrusted agent fetch response.",
+    "Do not add Pydantic AI, Python agent runtime, local-network fetch or model network authority to the sealed candidate as part of this mitigation."
+  ],
+  "reproducible_tests": [
+    "hostname-normalization-equivalence",
+    "ipv6-zone-metadata-smuggling",
+    "telemetry-redaction-canary-exception-path",
+    "quadratic-fetch-response-budget"
+  ],
+  "implementation": {
+    "branch": "security/external-watch-20260917-2",
+    "pull_request": 41,
+    "machine_readable_contract": "resilience/agent-web-tool-security-baseline.json",
+    "ci_gate": ".github/workflows/wfm-agent-web-tool-security.yml",
+    "production_mutation": false,
+    "staging_runtime_mutation": false
+  }
+}
