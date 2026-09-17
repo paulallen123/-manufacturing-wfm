@@ -9,8 +9,12 @@
   "hosted_full_package_manifest_sha256": "267d9916d4bbdd19ac5c626f55928642f250e07cc84087bf117584641966e37e",
   "runtime_source_content_sha256": "456e8f6961525e0dd9d4449db94772c0902a4e6743b312cf09070ce611014781",
   "runtime_package_manifest_sha256": "d8a7c23dc9853c85792333c5f7c5de18a3a812349dde74323f7828fcb9ff30dc",
+  "runtime_artifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
   "runtime_sha256": "6444bf808ee0d666c77d5815dc36dcc41417252a5f77e4e3ba45f27f3c643f57",
   "runtime_size_bytes": 554639,
+  "node_image": "node:22.23.2-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5",
+  "runtime_user": "node",
+  "artifact_transport": "private-repository-immutable-tarball",
   "encrypted_artifact_sha256": "1ae963bbbfa32bffaa6e92a6e7aad099362319fefc0cec5a0a87974d14bd9d3e",
   "encrypted_artifact_size_bytes": 554667,
   "tests": {
@@ -26,5 +30,6 @@
   "production_approved": false,
   "pilot_ready": false,
   "fixture_only": true,
+  "staging_only": true,
   "claim_boundary": "Customer-proof staging only. Genuine provider Level A, independent external security/performance assurance and production acceptance remain separate gates."
 }
