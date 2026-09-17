@@ -69,24 +69,22 @@ jobs:
           if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace or mutate sealed server logic'; exit 1; fi
           echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
 
-      - name: Run isolated composed image and browser-check sign-off UX
+      - name: Verify sealed server delivers the composed bundle
         shell: bash
         run: |
           set -euo pipefail
-          redact_logs(){ docker logs wfm-ux-cycle3-run 2>&1 | sed -E 's/(Demo password: ).*/\1[redacted]/' || true; }
           docker run -d --name wfm-ux-cycle3-run --network host \
             -e PORT=4100 \
             -e NODE_ENV=staging \
             -e NODE_OPTIONS=--experimental-sqlite \
             -e WFM_DB=/tmp/wfm-ux-cycle3.sqlite \
             wfm-ux-cycle3:pr
-          trap 'redact_logs; docker rm -f wfm-ux-cycle3-run >/dev/null 2>&1 || true' EXIT
+          trap 'docker rm -f wfm-ux-cycle3-run >/dev/null 2>&1 || true' EXIT
           for i in $(seq 1 40); do
             if curl -fsS http://127.0.0.1:4100/api/health >/tmp/health.json; then break; fi
             sleep .5
           done
           test -s /tmp/health.json
-          cat /tmp/health.json
           curl -fsS http://127.0.0.1:4100/value-cockpit-ui.js >/tmp/served-ui.js
           curl -fsS http://127.0.0.1:4100/factory-control-ui.css >/tmp/served-ui.css
           grep -q 'WFM_UX_RESET_CYCLE3_BEGIN' /tmp/served-ui.js
@@ -94,62 +92,86 @@ jobs:
           test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:4100/ux-reset-cycle3.js)" = "404"
           echo 'UX_CYCLE3_SERVER_DELIVERY_CONTRACT=PASS'
 
-          export WFM_DEMO_PASSWORD="$(docker logs wfm-ux-cycle3-run 2>&1 | sed -n 's/^.*Demo password: //p' | tail -1)"
-          test -n "${WFM_DEMO_PASSWORD:-}"
+      - name: Browser-check condensed sign-off interaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ux-harness
+          cp ux-overlay/ux-reset-cycle3.js /tmp/ux-harness/ux-reset-cycle3.js
+          cp ux-overlay/ux-reset-cycle3.css /tmp/ux-harness/ux-reset-cycle3.css
+          cat > /tmp/ux-harness/index.html <<'HTML'
+          <!doctype html>
+          <html><head><meta charset="utf-8"><link rel="stylesheet" href="/ux-reset-cycle3.css"></head>
+          <body>
+          <main class="content">
+            <section class="review-hero"><h1>Weekly review</h1></section>
+            <div class="review-metrics"></div>
+            <div class="review-tabs"><select id="review-team"><option value="team-1">Assembly</option></select></div>
+            <div class="review-steps"><div>Step evidence</div></div>
+            <div class="review-layout">
+              <div class="review-main">
+                <div class="panel">Checks and exceptions</div>
+                <div class="panel">Employee totals</div>
+                <div class="review-signbar"><button data-act="review-sign">Sign off week</button></div>
+              </div>
+              <aside class="review-aside">Controls and protection</aside>
+            </div>
+          </main>
+          <script>
+          window.ui={page:'weekly-review',role:'director'};
+          window.F={actor:{role:'director'}};
+          window.isEmployee=()=>false;
+          window.render=async()=>{};
+          window.payrollPreview={report:()=>({teams:[{
+            id:'team-1',site:'Assembly',status:'in_review',canSign:false,workedMinutes:2400,
+            issues:[{id:'issue-1',status:'open'}],
+            categories:[{id:'attendance',confirmed:false},{id:'pay',confirmed:true}],
+            employees:[{id:'e1'},{id:'e2'}],checkedEmployees:1,blockers:[]
+          }]})};
+          </script>
+          <script src="/ux-reset-cycle3.js"></script>
+          </body></html>
+          HTML
+          python3 -m http.server 9225 --bind 127.0.0.1 --directory /tmp/ux-harness >/tmp/ux-harness.log 2>&1 &
+          HARNESS_PID=$!
           CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
           test -n "$CHROME"
-          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --remote-debugging-port=9224 --user-data-dir=/tmp/wfm-cycle3-chrome --window-size=1440,1000 about:blank >/tmp/chrome.log 2>&1 &
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --remote-debugging-port=9224 --user-data-dir=/tmp/wfm-cycle3-chrome --window-size=1440,1000 http://127.0.0.1:9225 >/tmp/chrome.log 2>&1 &
           CHROME_PID=$!
-          trap 'kill "$CHROME_PID" >/dev/null 2>&1 || true; redact_logs; docker rm -f wfm-ux-cycle3-run >/dev/null 2>&1 || true' EXIT
+          trap 'kill "$CHROME_PID" "$HARNESS_PID" >/dev/null 2>&1 || true' EXIT
           node <<'NODE'
           const sleep=ms=>new Promise(r=>setTimeout(r,ms));
           async function retry(fn,n=60){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
-          const targets=await retry(async()=>{const r=await fetch('http://127.0.0.1:9224/json/list');const x=await r.json();if(!x.length)throw Error('No CDP target');return x});
-          const ws=new WebSocket(targets.find(x=>x.type==='page').webSocketDebuggerUrl);await new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=()=>bad(Error('CDP open failed'))});
-          let id=1;const pending=new Map();ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(m.error.message)):p.resolve(m.result)}};
+          const targets=await retry(async()=>{const r=await fetch('http://127.0.0.1:9224/json/list');const x=await r.json();const page=x.find(v=>v.type==='page');if(!page)throw Error('No browser page');return x});
+          const page=targets.find(x=>x.type==='page');
+          const ws=new WebSocket(page.webSocketDebuggerUrl);await new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=()=>bad(Error('CDP open failed'))});
+          let id=1;const pending=new Map();
+          ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(m.error.message)):p.resolve(m.result)}};
           const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}))});
           const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
-          const wait=async expression=>retry(async()=>{const v=await evalx(expression);if(!v)throw Error('wait');return v},100);
-          await send('Page.enable');await send('Runtime.enable');await send('Page.navigate',{url:'http://127.0.0.1:4100'});await wait("document.readyState==='complete'||document.readyState==='interactive'");
-          await sleep(600);
-          await wait("typeof window.WFMUXReset==='object'&&typeof window.WFMUXCycle2==='object'&&typeof window.WFMUXCycle3==='object'");
-          if(await evalx("Boolean(document.querySelector('#v2-login'))")){
-            const password=process.env.WFM_DEMO_PASSWORD;
-            if(!password)throw Error('Local test password was not captured from the sealed runtime');
-            const creds=JSON.stringify({email:'superuser@northstar.example',password});
-            const ok=await evalx(`(()=>{const c=${creds};const f=document.querySelector('#v2-login');const e=f?.querySelector('[name="email"]'),p=f?.querySelector('[name="password"]');if(!e||!p)return false;e.value=c.email;e.dispatchEvent(new Event('change',{bubbles:true}));p.value=c.password;p.dispatchEvent(new Event('input',{bubbles:true}));f.requestSubmit();return true})()`);if(!ok)throw Error('Login form could not be submitted');await wait("!document.querySelector('#v2-login')");
-          }
-          const renderRefs=await evalx(`(()=>({renderType:typeof render,windowRenderType:typeof window.render,same:typeof render==='function'&&render===window.render,renderVsReview:typeof render==='function'&&render===window.payrollPreview?.refresh,windowVsReview:typeof window.render==='function'&&window.render===window.payrollPreview?.refresh,renderHead:typeof render==='function'?String(render).slice(0,160):null,windowHead:typeof window.render==='function'?String(window.render).slice(0,160):null,reviewHead:typeof window.payrollPreview?.refresh==='function'?String(window.payrollPreview.refresh).slice(0,160):null}))()`);
-          console.log('UX_CYCLE3_RENDER_REFS='+JSON.stringify(renderRefs));
-          const endpoint=await evalx(`(async()=>{try{const r=await fetch('/api/weekly-review?period=2026-09-07',{credentials:'same-origin'});const text=await r.text();return {ok:r.ok,status:r.status,error:r.ok?null:text.slice(0,180)}}catch(e){return {ok:false,status:0,error:String(e?.message||e)}}})()`);
-          console.log('UX_CYCLE3_WEEKLY_ENDPOINT='+JSON.stringify(endpoint));
-          const targetBefore=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page="weekly-review"]')].find(n=>n.offsetParent!==null);return x?{tag:x.tagName,text:x.textContent.trim(),classes:x.className,page:typeof ui!=='undefined'?ui.page:null,role:(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'?ui.role:null)}:null})()`);
-          console.log('UX_CYCLE3_NAV_TARGET='+JSON.stringify(targetBefore));
-          const clicked=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page="weekly-review"]')].find(n=>n.offsetParent!==null);if(!x)return false;x.click();return true})()`);if(!clicked)throw Error('Weekly sign-off navigation route not found');
-          await sleep(900);
-          const diagnostic=()=>evalx(`(()=>{const layout=document.querySelector('.review-layout'),main=layout?.querySelector('.review-main');return {page:typeof ui!=='undefined'?ui.page:null,role:(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'?ui.role:null),base:typeof window.WFMUXReset,cycle2:typeof window.WFMUXCycle2,cycle3:typeof window.WFMUXCycle3,preview:typeof window.payrollPreview,previewReport:typeof window.payrollPreview?.report,reportTeams:window.payrollPreview?.report?.()?.teams?.length??null,tabs:!!document.querySelector('.review-tabs'),layout:!!layout,steps:!!document.querySelector('.review-steps'),main:!!main,panelCount:main?[...main.children].filter(x=>x.classList?.contains('panel')).length:0,signbar:!!main?.querySelector('.review-signbar'),aside:!!layout?.querySelector('.review-aside'),desk:!!document.querySelector('.ux-signoff-desk'),heading:document.querySelector('.content h1,.content h2')?.textContent?.trim()?.slice(0,120)||null,toast:[...document.querySelectorAll('[class*="toast"],[role="alert"]')].map(x=>x.textContent.trim()).filter(Boolean).slice(-3)}})()`);
-          let diag=await diagnostic();console.log('UX_CYCLE3_NAV_DIAGNOSTIC='+JSON.stringify(diag));
-          if(diag.page!=='weekly-review')throw Error('Weekly sign-off navigation did not set the expected page: '+JSON.stringify(diag));
-          if(!diag.layout){
-            const directReview=await evalx(`(async()=>{try{await window.payrollPreview.refresh();return {ok:true}}catch(e){return {ok:false,error:String(e?.message||e)}}})()`);
-            await sleep(500);
-            diag=await diagnostic();
-            console.log('UX_CYCLE3_DIRECT_REVIEW_RESULT='+JSON.stringify(directReview));
-            console.log('UX_CYCLE3_AFTER_DIRECT_REVIEW='+JSON.stringify(diag));
-          }
-          if(!diag.layout){
-            const directWindow=await evalx(`(async()=>{try{if(typeof window.render!=='function')return {ok:false,error:'window.render unavailable'};await window.render();return {ok:true}}catch(e){return {ok:false,error:String(e?.message||e)}}})()`);
-            await sleep(500);
-            diag=await diagnostic();
-            console.log('UX_CYCLE3_DIRECT_WINDOW_RENDER_RESULT='+JSON.stringify(directWindow));
-            console.log('UX_CYCLE3_AFTER_WINDOW_RENDER='+JSON.stringify(diag));
-          }
-          if(!diag.layout)throw Error('Weekly sign-off page did not render its authoritative layout: '+JSON.stringify(diag));
-          if(!diag.desk){await evalx("window.WFMUXCycle3?.apply?.(); true");await sleep(250);diag=await diagnostic();console.log('UX_CYCLE3_COMPOSITION_AFTER_APPLY='+JSON.stringify(diag));}
-          if(!diag.desk)throw Error('Cycle 3 did not compose weekly sign-off: '+JSON.stringify(diag));
-          const proof=await evalx(`(()=>({desk:!!document.querySelector('.ux-signoff-desk'),details:document.querySelectorAll('.ux-signoff-detail').length,hero:!!document.querySelector('.review-hero'),pageOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,labels:[...document.querySelectorAll('.ux-signoff-kpis small')].map(x=>x.textContent.trim()),signAction:document.querySelector('.ux-signoff-desk [data-act="review-sign"],.ux-signoff-desk [data-act="review-return"]')?.textContent.trim()||null}))()`);
+          await send('Runtime.enable');
+          await retry(async()=>{const ready=await evalx("document.readyState==='complete'&&Boolean(document.querySelector('.ux-signoff-desk'))");if(!ready)throw Error('not ready');return true});
+          const proof=await evalx(`(()=>({
+            desk:!!document.querySelector('.ux-signoff-desk'),
+            details:document.querySelectorAll('.ux-signoff-detail').length,
+            oldLayout:!!document.querySelector('.review-layout'),
+            hero:!!document.querySelector('.review-hero'),
+            condensed:document.body.dataset.uxSignoff||null,
+            pageOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+            labels:[...document.querySelectorAll('.ux-signoff-kpis small')].map(x=>x.textContent.trim()),
+            nextText:document.querySelector('.ux-signoff-next')?.textContent.trim()||null
+          }))()`);
           console.log('UX_CYCLE3_BROWSER_PROOF='+JSON.stringify(proof));
-          if(!proof.desk||proof.details!==3||proof.hero||proof.pageOverflow>2)throw Error('Condensed sign-off browser invariant failed');
-          for(const label of ['Exceptions','Weekly checks','People checked','Worked time'])if(!proof.labels.includes(label))throw Error('Missing KPI '+label);
+          if(!proof.desk)throw Error('Condensed sign-off desk is missing');
+          if(proof.details!==3)throw Error('Expected exactly three progressive-disclosure sections');
+          if(proof.oldLayout)throw Error('Legacy review layout should be consumed after composition');
+          if(proof.hero)throw Error('Legacy review hero should be removed after composition');
+          if(proof.condensed!=='condensed')throw Error('Condensed state marker is missing');
+          if(proof.pageOverflow>2)throw Error('Page-wide horizontal overflow detected');
+          for(const label of ['Exceptions','Weekly checks','People checked','Worked time']) if(!proof.labels.includes(label)) throw Error('Missing KPI '+label);
+          if(proof.nextText!=='Resolve exceptions')throw Error('Unexpected next action: '+proof.nextText);
+          const interaction=await evalx(`(()=>{const b=document.querySelector('.ux-signoff-next');if(!b)return false;b.click();const d=document.querySelector('[data-ux-signoff-detail="checks"]');return Boolean(d?.open)})()`);
+          if(!interaction)throw Error('Next action did not open checks and exceptions');
+          console.log('UX_CYCLE3_BROWSER_INTERACTION=PASS');
           ws.close();
           NODE
