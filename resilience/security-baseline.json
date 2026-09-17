@@ -19,7 +19,9 @@
     "fixture_only": true,
     "staging_only": true,
     "require_runtime_sha256": true,
-    "require_manifest_image_match": true
+    "require_manifest_image_match": true,
+    "require_image_digest": true,
+    "require_non_root_user": true
   },
   "autonomy": {
     "language_model_direct_authority": false,
