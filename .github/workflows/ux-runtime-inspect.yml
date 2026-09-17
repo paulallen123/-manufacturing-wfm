@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build composed image
         run: docker build --pull=false -t wfm-ux-inspect:pr .
-      - name: Inspect weekly-review runtime structure
+      - name: Inspect manager performance runtime structure
         shell: bash
         run: |
           set -euo pipefail
@@ -30,14 +30,14 @@ jobs:
           {
             echo '=== APPROVED PAGE ASSET ORDER ==='
             grep -oE '<(script|link)[^>]+(src|href)="[^"]+"[^>]*>' /tmp/wfm-public/index.html || true
+            echo '=== PERFORMANCE / COST / SAVINGS HOOKS ==='
+            grep -RIn -E "savings-decisions|value-cockpit|labou?r cost|productivity|saving|opportunity|decision|efficiency|overtime|agency|variance" /tmp/wfm-public --include='*.js' | head -n 700 || true
+            echo '=== PERFORMANCE CSS HOOKS ==='
+            grep -RIn -E "savings|value-cockpit|performance|decision|opportunity|efficiency|cost" /tmp/wfm-public --include='*.css' | head -n 500 || true
             echo '=== CORE NAVIGATION / RENDER CONTRACT ==='
-            grep -RIn -E "dataset\.page|data-page|navbtn|ui\.page|function render|render\s*=|window\.render|render\(\)" /tmp/wfm-public --include='*.js' | head -n 420 || true
-            echo '=== WEEKLY REVIEW HOOKS ==='
-            grep -RIn -E "weekly-review|review-layout|payrollPreview|renderWeekly|review-tabs" /tmp/wfm-public --include='*.js' | head -n 420 || true
-            echo '=== REVIEW UI EXACT CORE ==='
-            sed -n '1,180p' /tmp/wfm-public/review-ui.js || true
-            echo '=== SERVER BIND/HOSTED CONTRACT ==='
-            grep -n -C 3 -E "HOSTED_STAGING|WFM_PUBLIC_ORIGIN|WFM_STAGING_PASSWORD|listen\(|127\.0\.0\.1|0\.0\.0\.0|process\.env\.PORT" /tmp/wfm-server.cjs | head -n 260 || true
+            grep -RIn -E "savings-decisions|dataset\.page|data-page|ui\.page|function render|render\s*=|window\.render" /tmp/wfm-public --include='*.js' | head -n 420 || true
+            echo '=== VALUE COCKPIT SERVED SOURCE ==='
+            sed -n '1,420p' /tmp/wfm-public/value-cockpit-ui.js || true
           } | tee /tmp/wfm-runtime-contract.txt
       - name: Preserve runtime contract evidence
         uses: actions/upload-artifact@v4
