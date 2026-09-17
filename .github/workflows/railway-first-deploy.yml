@@ -71,3 +71,12 @@ jobs:
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --service "$RAILWAY_SERVICE_ID"
+
+          # Reuse the same reviewed credential boundary to inject the service's staging
+          # variables only into this local proof process. The password is never printed,
+          # committed, copied to another secret, or passed as an explicit CLI argument.
+          "$RAILWAY_BIN" run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_SERVICE_ID" \
+            node scripts/live-auth-proof.mjs
