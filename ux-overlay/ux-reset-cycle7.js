@@ -15,10 +15,11 @@ function enhanceTimeReview(){
  const toolbar=document.querySelector('.tr-toolbar');
  const layout=document.querySelector('.tr-layout');
  if(!workspace||!toolbar||!layout)return;
+ if(workspace.dataset.uxTimeReview==='calm')return;
  const host=toolbar.parentElement;
- if(!host||host.dataset.uxTimeReview==='calm')return;
- host.dataset.uxTimeReview='calm';
+ if(!host)return;
  workspace.dataset.uxTimeReview='calm';
+ host.dataset.uxTimeReview='calm';
 
  const feedSource=toolbar.nextElementSibling?.matches('.tr-source')?toolbar.nextElementSibling:null;
  const kpis=host.querySelector(':scope > .tr-kpis')||host.querySelector('.tr-kpis');
