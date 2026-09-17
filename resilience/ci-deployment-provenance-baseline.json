@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "updated": "2026-09-17",
+  "classification": "security_and_deployment_provenance_prevention",
+  "ci_supply_chain": {
+    "external_github_actions_must_be_immutable_sha": true,
+    "reusable_external_workflows_must_be_immutable_sha": true,
+    "docker_actions_must_be_digest_pinned": true,
+    "forbidden_workflow_features": [
+      "pull_request_target",
+      "permissions: write-all"
+    ],
+    "local_actions_allowed": true
+  },
+  "customer_proof_deployment_inputs": {
+    "required_proof_trigger_paths": [
+      ".github/workflows/railway-first-deploy.yml",
+      "Dockerfile",
+      "DEPLOYMENT_MANIFEST.json",
+      "STAGING_FREEZE.json",
+      "security/runtime/**",
+      "ux-overlay/**"
+    ],
+    "railway_live_watch_patterns_observed": [
+      "Dockerfile",
+      "DEPLOYMENT_MANIFEST.json",
+      "STAGING_FREEZE.json",
+      "artifact/**"
+    ],
+    "railway_live_watch_pattern_gap": [
+      "security/runtime/**",
+      "ux-overlay/**"
+    ],
+    "rule": "Any source copied into the customer-proof image or capable of changing request, identity or presentation behaviour must be covered by both CI proof triggers and the Railway source watch set before claiming the canonical hosted service tracks main."
+  },
+  "secret_hygiene": {
+    "variable_names_must_be_case_insensitively_unique": true,
+    "observed_case_collision": [
+      "WFM_STAGING_PASSWORD",
+      "Wfm_staging_password"
+    ],
+    "values_recorded": false,
+    "rule": "Case-variant aliases for credential-bearing variables are prohibited because they create ambiguous source-of-truth and rotation behaviour."
+  },
+  "claim_boundary": "Repository prevention only. No Railway mutation, credential rotation, staged redeploy or production mutation is performed by this baseline."
+}
