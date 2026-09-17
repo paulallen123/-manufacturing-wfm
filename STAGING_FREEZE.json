@@ -1,11 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "channel": "isolated-customer-proof-staging",
   "frozenRelease": "0.6.76-hosted-staging-rc1",
   "parentRelease": "0.6.76-provider-payroll-handoff-status-reconciliation-candidate",
   "parentArchiveSha256": "9485df8eeeb59f36b160b8f0515100adbd8b854d8a86dca60708c46d51c40581",
-  "hostedSourceContentSha256": "7a60920a14d6441711af697d94759bb8fb096b6483c0943ef61148a3a46d039d",
-  "runtimeSha256": "e3febf25a33c6becbfe59a215a38bfd77bb3306337c5e66dfd372183f2f97382",
+  "hostedFullSourceContentSha256": "0eff86d3034c6493aba130ec052bce8ee98e2205c37baae7c89ac6bd01ea84d9",
+  "runtimeSourceContentSha256": "456e8f6961525e0dd9d4449db94772c0902a4e6743b312cf09070ce611014781",
+  "runtimeSha256": "6444bf808ee0d666c77d5815dc36dcc41417252a5f77e4e3ba45f27f3c643f57",
+  "encryptedArtifactSha256": "1ae963bbbfa32bffaa6e92a6e7aad099362319fefc0cec5a0a87974d14bd9d3e",
+  "regression": "1878/1878 resolved passing",
+  "hostedAcceptance": "PASS",
   "promotionPolicy": "Do not replace this staging release merely because development advances. Promote a later candidate only after equivalent completed regression, hosted security, customer journey and provenance gates pass.",
   "productionApproved": false,
   "pilotReady": false
