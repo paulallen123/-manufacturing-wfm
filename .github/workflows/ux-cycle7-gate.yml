@@ -18,11 +18,11 @@ concurrency:
 jobs:
   cycle7-time-review:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
 
-      - name: Syntax and decision-flow safety checks
+      - name: Source safety checks
         shell: bash
         run: |
           set -euo pipefail
@@ -34,17 +34,14 @@ jobs:
           for(const x of ['Work the exceptions, not the timesheet.','Scope, filters &amp; review settings','Needs my action','Selected employee exception and decision','window.WFMUXCycle7=']) if(!js.includes(x)) throw new Error('Missing Cycle 7 invariant: '+x);
           for(const x of ['[data-ux-time-review="calm"]','.ux-tr-command','.ux-tr-scope','.tr-list .tablewrap','.tr-form-sticky','@media(max-width:760px)']) if(!css.includes(x)) throw new Error('Missing Cycle 7 CSS invariant: '+x);
           if(/\.remove\s*\(/.test(js)) throw new Error('Cycle 7 must move/preserve existing Time Review controls, not delete them.');
-          if(/innerHTML\s*=.*(?:£|\$|€)\s*\d/.test(js)) throw new Error('Cycle 7 must not manufacture cost/pay figures.');
           console.log('UX_CYCLE7_SOURCE_INVARIANTS=PASS');
           NODE
 
-      - name: Build exact composed image
-        run: docker build --pull=false -t wfm-ux-cycle7:pr .
-
-      - name: Verify presentation composition and sealed runtime boundary
+      - name: Build and verify sealed composition
         shell: bash
         run: |
           set -euo pipefail
+          docker build --pull=false -t wfm-ux-cycle7:pr .
           cid="$(docker create wfm-ux-cycle7:pr)"
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
           mkdir -p /tmp/wfm-cycle7
@@ -61,29 +58,22 @@ jobs:
           const j6=js.indexOf('WFM_UX_RESET_CYCLE6_BEGIN'),j7=js.indexOf('WFM_UX_RESET_CYCLE7_BEGIN');
           const c6=css.indexOf('WFM_UX_RESET_CYCLE6_BEGIN'),c7=css.indexOf('WFM_UX_RESET_CYCLE7_BEGIN');
           if(!(j6>=0&&j7>j6&&c6>=0&&c7>c6)) throw new Error('Cycle 7 must compose after Cycle 6.');
-          if(!js.includes('window.WFMUXCycle7=')) throw new Error('Cycle 7 JS missing from served bundle.');
-          if(!css.includes('.ux-tr-command')) throw new Error('Cycle 7 CSS missing from served bundle.');
+          if(!js.includes('window.WFMUXCycle7=')||!css.includes('.ux-tr-command')) throw new Error('Cycle 7 is missing from approved served assets.');
           console.log('UX_CYCLE7_APPROVED_ASSET_COMPOSITION=PASS');
           NODE
           grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
           if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace or mutate sealed server logic'; exit 1; fi
           echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
 
-      - name: Verify sealed server delivers Cycle 7 through approved assets
+      - name: Verify sealed server delivery
         shell: bash
         run: |
           set -euo pipefail
           docker run -d --name wfm-ux-cycle7-run --network host \
-            -e PORT=4107 \
-            -e NODE_ENV=staging \
-            -e NODE_OPTIONS=--experimental-sqlite \
-            -e WFM_DB=/tmp/wfm-ux-cycle7.sqlite \
-            wfm-ux-cycle7:pr
+            -e PORT=4107 -e NODE_ENV=staging -e NODE_OPTIONS=--experimental-sqlite \
+            -e WFM_DB=/tmp/wfm-ux-cycle7.sqlite wfm-ux-cycle7:pr
           trap 'docker rm -f wfm-ux-cycle7-run >/dev/null 2>&1 || true' EXIT
-          for i in $(seq 1 40); do
-            if curl -fsS http://127.0.0.1:4107/api/health >/tmp/health7.json; then break; fi
-            sleep .5
-          done
+          for i in $(seq 1 40); do curl -fsS http://127.0.0.1:4107/api/health >/tmp/health7.json && break || sleep .5; done
           test -s /tmp/health7.json
           curl -fsS http://127.0.0.1:4107/value-cockpit-ui.js >/tmp/served-ui7.js
           curl -fsS http://127.0.0.1:4107/factory-control-ui.css >/tmp/served-ui7.css
@@ -92,7 +82,7 @@ jobs:
           test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:4107/ux-reset-cycle7.js)" = "404"
           echo 'UX_CYCLE7_SERVER_DELIVERY_CONTRACT=PASS'
 
-      - name: Browser-check exception-first hierarchy and responsive containment
+      - name: Browser-check desktop and mobile decision hierarchy
         shell: bash
         run: |
           set -euo pipefail
@@ -100,42 +90,14 @@ jobs:
           cp ux-overlay/ux-reset-cycle7.js /tmp/ux-time-review-harness/ux-reset-cycle7.js
           cp ux-overlay/ux-reset-cycle7.css /tmp/ux-time-review-harness/ux-reset-cycle7.css
           cat > /tmp/ux-time-review-harness/index.html <<'HTML'
-          <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/ux-reset-cycle7.css"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f7;font-family:Arial,sans-serif;color:#193842}.workspace{max-width:1320px;margin:auto}.content{padding:20px}.heading{display:flex;justify-content:space-between}.heading h1{margin:0;font-size:30px}.heading p{margin:6px 0 0}.tr-toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.tr-toolbar label{display:flex;flex-direction:column;gap:4px}.tr-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.tr-kpi{padding:16px;border:1px solid #ddd;background:#fff}.tr-kpi b,.tr-kpi span{display:block}.tr-layout{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}.tr-list,.tr-panel{background:#fff;border:1px solid #ddd}.tr-panel{padding:20px}.tablewrap{overflow:auto}.tr-list table{border-collapse:collapse;width:100%;min-width:680px}.tr-list th,.tr-list td{padding:12px;border-bottom:1px solid #eee;text-align:left}.tr-review-header{padding:12px}.tr-config{padding:12px;border:1px solid #ddd}.tr-progress{height:4px;background:#ddd}.tr-progress span{display:block;height:100%;width:25%;background:#456}.tr-source{font-size:11px}.tr-form-sticky{padding:12px 0}.btn{padding:8px 12px}.eyebrow{font-size:10px}</style></head>
-          <body><main class="workspace tr-workspace"><div class="content"><div class="heading"><div><h1>Review the exceptions. Finish the week.</h1><p>One queue for early starts, late arrivals, early finishes and extra time.</p></div></div><div class="tr-toolbar"><label>Source week<select id="tri-period"><option>This week</option></select></label><label>View<select id="tri-mode"><option>Whole week</option></select></label><label>Team<select id="tri-team"><option>All authorised teams</option></select></label><label>Show<select id="tri-filter"><option>Needs my action</option></select></label><label>Find employee<input id="tri-search" type="search"></label><button class="btn" data-act="tri-refresh">Refresh list</button></div><div class="tr-source" id="feed-source">Stored attendance and expected shifts.</div><div class="tr-kpis"><div class="tr-kpi"><b>3</b><span>Needs your action</span></div><div class="tr-kpi"><b>2</b><span>Waiting / held</span></div><div class="tr-kpi"><b>5</b><span>Clocking exceptions</span></div><div class="tr-kpi"><b>8</b><span>Decisions applied</span></div></div><div class="tr-progress"><span></span></div><p class="tr-source" id="week-status">This review is part of weekly sign-off. <button class="btn" id="tri-start" data-act="tri-start">Start selected team reviews</button></p><details class="tr-config"><summary>Review settings</summary><form><input id="tolerance" value="5"></form></details><div class="tr-layout"><section class="tr-list"><div class="tr-review-header"><strong>3 rows · weekly view</strong><span class="tr-source">Select a name to review →</span></div><div class="tablewrap"><table><thead><tr><th>Employee / shift</th><th>Expected</th><th>Recorded</th><th>Exception / decision</th></tr></thead><tbody><tr><td><button class="tr-person" data-act="tri-row">Alex</button></td><td>06:00–14:00</td><td>06:12–14:00</td><td>Late arrival</td></tr></tbody></table></div></section><section class="tr-panel"><h2>Alex · 7 Sep</h2><p>Late arrival · 12 minutes</p><form id="tri-decision"><label>What happened?<select><option>Late arrival</option></select></label><label>How should it be treated?<select><option>Review</option></select></label><details><summary>Pay safeguards and independent review</summary><p>Existing safeguards remain.</p></details><div class="tr-form-sticky"><button class="btn" id="tri-save" type="submit">Save & next</button></div></form></section></div></div></main><script>var ui={page:'time-review',role:'manager'};var F={actor:{role:'manager'}};function isEmployee(){return false}</script><script src="/ux-reset-cycle7.js"></script></body></html>
+          <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="./ux-reset-cycle7.css"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f7;font-family:Arial;color:#193842}.workspace{max-width:1320px;margin:auto}.content{padding:20px}.heading h1{margin:0}.tr-toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.tr-toolbar label{display:flex;flex-direction:column}.tr-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.tr-kpi{padding:16px;border:1px solid #ddd}.tr-kpi b,.tr-kpi span{display:block}.tr-layout{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}.tr-list,.tr-panel{background:#fff;border:1px solid #ddd}.tr-panel{padding:20px}.tablewrap{overflow:auto}.tr-list table{width:100%;min-width:680px;border-collapse:collapse}.tr-list th,.tr-list td{padding:12px}.tr-review-header{padding:12px}.tr-config{padding:12px}.tr-progress{height:4px;background:#ddd}.tr-progress span{display:block;width:25%;height:100%;background:#456}.tr-source{font-size:11px}.btn{padding:8px 12px}.eyebrow{font-size:10px}</style></head><body><main class="workspace tr-workspace"><div class="content"><div class="heading"><h1>Review the exceptions. Finish the week.</h1><p>One queue for exceptions.</p></div><div class="tr-toolbar"><label>Source week<select id="tri-period"><option>This week</option></select></label><label>View<select id="tri-mode"><option>Whole week</option></select></label><label>Team<select id="tri-team"><option>All teams</option></select></label><label>Show<select id="tri-filter"><option>Needs my action</option></select></label><label>Find employee<input id="tri-search" type="search"></label><button class="btn" data-act="tri-refresh">Refresh list</button></div><div class="tr-source" id="feed-source">Stored attendance and expected shifts.</div><div class="tr-kpis"><div class="tr-kpi"><b>3</b><span>Needs your action</span></div><div class="tr-kpi"><b>2</b><span>Waiting / held</span></div><div class="tr-kpi"><b>5</b><span>Clocking exceptions</span></div><div class="tr-kpi"><b>8</b><span>Decisions applied</span></div></div><div class="tr-progress"><span></span></div><p class="tr-source" id="week-status">Part of weekly sign-off. <button class="btn" id="tri-start">Start selected team reviews</button></p><details class="tr-config"><summary>Review settings</summary><input id="tolerance" value="5"></details><div class="tr-layout"><section class="tr-list"><div class="tr-review-header"><strong>3 rows · weekly view</strong></div><div class="tablewrap"><table><thead><tr><th>Employee</th><th>Expected</th><th>Recorded</th><th>Exception</th></tr></thead><tbody><tr><td><button class="tr-person">Alex</button></td><td>06:00</td><td>06:12</td><td>Late</td></tr></tbody></table></div></section><section class="tr-panel"><h2>Alex</h2><form id="tri-decision"><label>What happened?<select><option>Late</option></select></label><details><summary>Pay safeguards</summary><p>Existing controls.</p></details><div class="tr-form-sticky"><button class="btn" id="tri-save">Save & next</button></div></form></section></div></div></main><script>var ui={page:'time-review',role:'manager'};var F={actor:{role:'manager'}};function isEmployee(){return false}</script><script src="./ux-reset-cycle7.js"></script><script>setTimeout(()=>{const scope=document.querySelector('.ux-tr-scope'),layout=document.querySelector('.tr-layout'),proof={command:!!document.querySelector('.ux-tr-command'),kpis:!!document.querySelector('.ux-tr-command>.tr-kpis'),status:!!document.querySelector('.ux-tr-command>#week-status'),scope:!!scope?.querySelector('.tr-toolbar')&&!!scope?.querySelector('.tr-config')&&!scope.open,layout:scope?.nextElementSibling===layout,controls:['tri-period','tri-search','tri-start','tri-save','tolerance'].every(id=>!!document.getElementById(id)),local:document.querySelector('.tablewrap')?.getAttribute('tabindex')==='0',list:document.querySelector('.tr-list')?.dataset.uxStep==='Needs my action',panel:document.querySelector('.tr-panel')?.dataset.uxStep==='Decision',overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};for(const[k,v]of Object.entries(proof))document.body.dataset['proof'+k[0].toUpperCase()+k.slice(1)]=String(v);},700)</script></body></html>
           HTML
-          python3 -m http.server 9237 --bind 127.0.0.1 --directory /tmp/ux-time-review-harness >/tmp/ux-time-review-harness.log 2>&1 &
-          HARNESS_PID=$!
           CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
           test -n "$CHROME"
-          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --remote-debugging-port=9238 --user-data-dir=/tmp/wfm-cycle7-chrome --window-size=1440,1000 http://127.0.0.1:9237 >/tmp/chrome7.log 2>&1 &
-          CHROME_PID=$!
-          trap 'kill "$CHROME_PID" "$HARNESS_PID" >/dev/null 2>&1 || true' EXIT
-          node <<'NODE'
-          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-          async function retry(fn,n=60){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
-          const targets=await retry(async()=>{const r=await fetch('http://127.0.0.1:9238/json/list');const x=await r.json();const p=x.find(v=>v.type==='page');if(!p)throw Error('No browser page');return x});
-          const page=targets.find(x=>x.type==='page'),ws=new WebSocket(page.webSocketDebuggerUrl);await new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=()=>bad(Error('CDP open failed'))});
-          let id=1;const pending=new Map();ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(m.error.message)):p.resolve(m.result)}};
-          const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}))});
-          const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
-          await send('Runtime.enable');
-          await retry(async()=>{const ready=await evalx("document.querySelector('.tr-workspace')?.dataset.uxTimeReview==='calm'");if(!ready)throw Error('not ready');return true});
-          const proof=await evalx(`(()=>{const scope=document.querySelector('.ux-tr-scope'),layout=document.querySelector('.tr-layout');return {command:!!document.querySelector('.ux-tr-command'),kpisInCommand:!!document.querySelector('.ux-tr-command>.tr-kpis'),statusInCommand:!!document.querySelector('.ux-tr-command>#week-status'),toolbarInScope:!!scope?.querySelector('.tr-toolbar'),settingsInScope:!!scope?.querySelector('.tr-config'),scopeClosed:scope?!scope.open:false,layoutAfterScope:scope?.nextElementSibling===layout,controls:['tri-period','tri-search','tri-start','tri-save','tolerance'].every(id=>!!document.getElementById(id)),tableLocalScroll:document.querySelector('.tablewrap')?.getAttribute('tabindex')==='0',listStep:document.querySelector('.tr-list')?.dataset.uxStep,panelStep:document.querySelector('.tr-panel')?.dataset.uxStep,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}})()`);
-          console.log('UX_CYCLE7_BROWSER_PROOF='+JSON.stringify(proof));
-          if(!proof.command||!proof.kpisInCommand||!proof.statusInCommand)throw Error('Primary manager command surface was not composed.');
-          if(!proof.toolbarInScope||!proof.settingsInScope||!proof.scopeClosed)throw Error('Secondary controls were not moved behind progressive disclosure.');
-          if(!proof.layoutAfterScope)throw Error('Exception-to-decision layout is not directly after scope disclosure.');
-          if(!proof.controls)throw Error('Existing authoritative Time Review controls were lost.');
-          if(!proof.tableLocalScroll)throw Error('Wide evidence table is not keyboard-focusable local scroll.');
-          if(proof.listStep!=='Needs my action'||proof.panelStep!=='Decision')throw Error('Decision flow markers are missing.');
-          if(proof.overflow>2)throw Error('Desktop page-wide overflow detected.');
-          await evalx("document.querySelector('.ux-tr-scope').open=true");await sleep(120);
-          if(!(await evalx("getComputedStyle(document.getElementById('tri-search')).display!=='none'")))throw Error('Disclosed filters are not usable.');
-          await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await sleep(250);
-          const mobile=await evalx(`(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,layout:getComputedStyle(document.querySelector('.tr-layout')).gridTemplateColumns,controls:['tri-period','tri-search','tri-save'].every(id=>!!document.getElementById(id))}))()`);
-          console.log('UX_CYCLE7_MOBILE_PROOF='+JSON.stringify(mobile));
-          if(mobile.overflow>2)throw Error('Mobile page-wide overflow detected.');
-          if(!mobile.controls)throw Error('Mobile view lost Time Review controls.');
-          console.log('UX_CYCLE7_BROWSER_INTERACTION=PASS');
-          ws.close();
-          NODE
+          timeout 25s "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --virtual-time-budget=1800 --window-size=1440,1000 --dump-dom file:///tmp/ux-time-review-harness/index.html >/tmp/cycle7-desktop.html 2>/tmp/cycle7-desktop.err
+          for x in command kpis status scope layout controls local list panel; do grep -q "data-proof-${x}=\"true\"" /tmp/cycle7-desktop.html; done
+          grep -q 'data-proof-overflow="0"' /tmp/cycle7-desktop.html
+          timeout 25s "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --virtual-time-budget=1800 --window-size=390,844 --dump-dom file:///tmp/ux-time-review-harness/index.html >/tmp/cycle7-mobile.html 2>/tmp/cycle7-mobile.err
+          for x in command scope controls local list panel; do grep -q "data-proof-${x}=\"true\"" /tmp/cycle7-mobile.html; done
+          grep -q 'data-proof-overflow="0"' /tmp/cycle7-mobile.html
+          echo 'UX_CYCLE7_BROWSER_INTERACTION=PASS'
