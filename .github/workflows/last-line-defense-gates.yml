@@ -1,7 +1,9 @@
 name: Last Line Defence Gates
 
+# Private repositories do not receive GitHub's public-repository malicious-workflow
+# hold. Until protected-branch controls are independently enforced, do not execute
+# candidate code from pull_request events. Validate only owner-originated pushes.
 on:
-  pull_request:
   push:
     branches:
       - main
@@ -16,7 +18,8 @@ concurrency:
 
 jobs:
   integrity-and-containment-gates:
-    runs-on: ubuntu-latest
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -24,6 +27,13 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 1
+
+      - name: Require trusted execution context
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ github.event_name }}" = "push"
+          test "${{ github.actor }}" = "${{ github.repository_owner }}"
 
       - name: Require private repository
         shell: bash
