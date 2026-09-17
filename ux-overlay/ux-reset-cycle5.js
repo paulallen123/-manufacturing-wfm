@@ -3,9 +3,10 @@
 'use strict';
 const employee=()=>{try{return isEmployee();}catch{return false;}};
 const text=el=>String(el?.textContent||'').trim();
+const safe=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 function detail(title,caption,nodes,cls=''){
  const d=document.createElement('details');d.className=`ux-employee-detail ${cls}`.trim();
- const s=document.createElement('summary');s.innerHTML=`<span><b>${title}</b><small>${caption}</small></span><span class="ux-detail-state">Open</span>`;
+ const s=document.createElement('summary');s.innerHTML=`<span><b>${safe(title)}</b><small>${safe(caption)}</small></span><span class="ux-detail-state">Open</span>`;
  const body=document.createElement('div');body.className='ux-employee-detail-body';nodes.filter(Boolean).forEach(n=>body.appendChild(n));d.append(s,body);return d;
 }
 function promotePersonal(){
@@ -32,7 +33,7 @@ function simplifyHome(){
  const attendance=panels.find(x=>/^Attendance and corrections$/i.test(text(x.querySelector('h2'))));
  const updates=panels.find(x=>/^Your saved updates$/i.test(text(x.querySelector('h2'))));
  let anchor=panels.find(x=>x!==attendance&&x!==updates)||balance||heading;
- if(holidayGrid){const d=detail('Holiday breakdown','Used, booked and pending hours',''?[holidayGrid]:[holidayGrid],'holiday');anchor?.after(d);anchor=d;}
+ if(holidayGrid){const d=detail('Holiday breakdown','Used, booked and pending hours',[holidayGrid],'holiday');anchor?.after(d);anchor=d;}
  if(attendance){const d=detail('Attendance & corrections','Clock status, absence reporting and corrections',[attendance],'attendance');anchor?.after(d);anchor=d;}
  if(updates){const d=detail('Requests & updates','Saved requests and assignment notices',[updates],'updates');anchor?.after(d);anchor=d;}
  // Legacy home fallback: keep the shift hero, fold the week and lower panels instead of stacking them.
@@ -78,7 +79,7 @@ function simplifyShifts(){
  const table=content.querySelector('.ops-table');if(!table)return;
  const rows=[...table.querySelectorAll('tbody tr')];if(!rows.length)return;
  const list=document.createElement('div');list.className='ux-employee-shift-list';
- rows.forEach(row=>{const c=[...row.children].map(x=>text(x));const card=document.createElement('article');card.className='ux-employee-shift-card';card.innerHTML=`<div><small>SHIFT</small><strong>${c[2]||'Start'} → ${c[3]||'Finish'}</strong><span>${c[1]||''}</span></div><div class="ux-shift-meta"><span><small>Breaks</small>${c[4]||'—'}</span><span><small>Revision</small>${c[5]||'—'}</span></div>`;list.appendChild(card);});
+ rows.forEach(row=>{const c=[...row.children].map(x=>text(x));const card=document.createElement('article');card.className='ux-employee-shift-card';card.innerHTML=`<div><small>SHIFT</small><strong>${safe(c[2]||'Start')} → ${safe(c[3]||'Finish')}</strong><span>${safe(c[1]||'')}</span></div><div class="ux-shift-meta"><span><small>Breaks</small>${safe(c[4]||'—')}</span><span><small>Revision</small>${safe(c[5]||'—')}</span></div>`;list.appendChild(card);});
  const scroll=table.closest('.ops-scroll')||table;const panel=scroll.closest('.ops-panel');panel?.insertBefore(list,scroll);
  const d=detail('Full shift detail','Original assignment table and source fields',[scroll],'shift-evidence');list.after(d);
  content.dataset.uxEmployeeShifts='calm';
