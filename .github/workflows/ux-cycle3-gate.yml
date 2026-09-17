@@ -19,8 +19,6 @@ jobs:
   cycle3-signoff:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    env:
-      WFM_DEMO_PASSWORD: ${{ secrets.WFM_DEMO_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -66,8 +64,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${WFM_DEMO_PASSWORD:-}" || { echo '::error::Missing WFM_DEMO_PASSWORD repository secret'; exit 1; }
-          docker run -d --name wfm-ux-cycle3-run -p 4100:4100 wfm-ux-cycle3:pr
+          CI_PASSWORD="CI-$(openssl rand -hex 16)"
+          export WFM_DEMO_PASSWORD="$CI_PASSWORD"
+          docker run -d --name wfm-ux-cycle3-run -p 4100:3000 \
+            -e PORT=3000 \
+            -e NODE_ENV=staging \
+            -e NODE_OPTIONS=--experimental-sqlite \
+            -e WFM_DB=/tmp/wfm-ux-cycle3.sqlite \
+            -e WFM_STAGING_PASSWORD="$CI_PASSWORD" \
+            wfm-ux-cycle3:pr
           trap 'docker logs wfm-ux-cycle3-run || true; docker rm -f wfm-ux-cycle3-run >/dev/null 2>&1 || true' EXIT
           for i in $(seq 1 40); do
             if curl -fsS http://127.0.0.1:4100/api/health >/tmp/health.json; then break; fi
@@ -93,9 +98,9 @@ jobs:
           await sleep(600);
           if(await evalx("Boolean(document.querySelector('#v2-login'))")){
             const password=process.env.WFM_DEMO_PASSWORD;
-            if(!password)throw Error('WFM_DEMO_PASSWORD was not provided to browser proof');
+            if(!password)throw Error('Ephemeral WFM staging password was not provided to browser proof');
             const creds=JSON.stringify({email:'superuser@northstar.example',password});
-            const ok=await evalx(`(()=>{const c=${creds};const f=document.querySelector('#v2-login');const e=f?.querySelector('[name="email"]'),p=f?.querySelector('[name="password"]');if(!e||!p)return false;e.value=c.email;e.dispatchEvent(new Event('change',{bubbles:true}));p.value=c.password;p.dispatchEvent(new Event('input',{bubbles:true}));f.requestSubmit();return true})()`);if(!ok)throw Error('Login form could not be submitted');await wait("!document.querySelector('#v2-login')");
+            const ok=await evalx(`(()=>{const c=${creds};const f=document.querySelector('#v2-login');const e=f?.querySelector('[name="email"]'),p=f?.querySelector('[name="password"]');if(!e||!p)return false;if(e.tagName==='SELECT'){e.value=c.email}else{e.value=c.email}e.dispatchEvent(new Event('change',{bubbles:true}));p.value=c.password;p.dispatchEvent(new Event('input',{bubbles:true}));f.requestSubmit();return true})()`);if(!ok)throw Error('Login form could not be submitted');await wait("!document.querySelector('#v2-login')");
           }
           const clicked=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page="weekly-review"]')].find(n=>n.offsetParent!==null);if(!x)return false;x.click();return true})()`);if(!clicked)throw Error('Weekly sign-off navigation route not found');
           await wait("Boolean(document.querySelector('.ux-signoff-desk'))");await sleep(300);
