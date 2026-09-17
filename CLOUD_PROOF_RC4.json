@@ -1,0 +1,30 @@
+{
+  "release": "0.6.70-hosted-staging-rc4",
+  "purpose": "isolated fictional-data customer proof only",
+  "railway_project": "manufacturing-wfm-staging-proof",
+  "railway_project_id": "9a774359-37fa-47e8-bde0-932420c32923",
+  "railway_service": "wfm-staging-runtime-0670",
+  "railway_service_id": "7273a773-d59b-4636-a69b-e357efd92b80",
+  "railway_deployment_id": "6e96daff-09af-413e-b906-05eec50b6cb9",
+  "public_origin": "https://wfm-staging-runtime-0670-production.up.railway.app",
+  "artifact_bytes": 586772,
+  "artifact_sha256": "c99f0ffb724978cb758eb16237b293791fe1e9aeca9d395d8c4238283789f380",
+  "cloud_bootstrap_evidence": [
+    "artifact HTTP 200",
+    "artifact byte length matched",
+    "SHA-256 matched",
+    "runtime extracted",
+    "server listened on 0.0.0.0:3000"
+  ],
+  "external_health": {
+    "status": 200,
+    "hsts": "max-age=31536000",
+    "mode": "hosted-staging",
+    "productionApproved": false,
+    "pilotReady": false
+  },
+  "browser_proof": "pending independent GitHub Actions run 35214255572",
+  "persistence_boundary": "SQLite staging database is ephemeral across redeploys; production persistence/backup/PITR remains open",
+  "provider_boundary": "No genuine NetSuite or SAP SuccessFactors Level A acceptance is claimed",
+  "production_boundary": "not production approved; not pilot ready"
+}
