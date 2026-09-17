@@ -1,4 +1,4 @@
-name: Inspect sealed tenant and kiosk proof contracts
+name: Inspect sealed attendance correction contracts
 
 on:
   push:
@@ -22,29 +22,27 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Inspect tenant and kiosk contracts
+      - name: Inspect correction engine contract
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/sealed-runtime"
           tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C "$RUNNER_TEMP/sealed-runtime"
-          SERVER="$RUNNER_TEMP/sealed-runtime/server.cjs"
-          test -f "$SERVER"
-          node - "$SERVER" <<'NODE'
+          TARGET="$RUNNER_TEMP/sealed-runtime/public/attendance-corrections.js"
+          test -f "$TARGET"
+          node - "$TARGET" <<'NODE'
           const fs = require('node:fs');
           const source = fs.readFileSync(process.argv[2], 'utf8');
-          const routeMatches = [...source.matchAll(/['"](\/api\/[^'"]+)['"]/g)].map(m => m[1]);
-          const interesting = [...new Set(routeMatches.filter(r => /bootstrap|kiosk|attendance|correction|audit|time-review/i.test(r)))];
-          console.log('INTERESTING_ROUTES=' + JSON.stringify(interesting));
-          for (const needle of ['/api/bootstrap','/api/kiosk','attendance-corrections','kiosk_devices','kiosk_events']) {
+          console.log('MODULE_BYTES=' + Buffer.byteLength(source));
+          for (const needle of ['function dashboard','function authorise','function dispatch','correction-submit','correction-review','correction-respond','correction-propose','correction-decide','module.exports']) {
             let start = 0, count = 0;
             while (count < 4) {
               const at = source.indexOf(needle, start);
               if (at < 0) break;
-              console.log(`CONTRACT_NEEDLE=${needle}#${count+1}`);
-              console.log('CONTRACT_SNIPPET_START');
-              console.log(source.slice(Math.max(0, at - 1400), Math.min(source.length, at + 2800)));
-              console.log('CONTRACT_SNIPPET_END');
+              console.log(`CORRECTION_NEEDLE=${needle}#${count+1}`);
+              console.log('CORRECTION_SNIPPET_START');
+              console.log(source.slice(Math.max(0, at - 1200), Math.min(source.length, at + 3600)));
+              console.log('CORRECTION_SNIPPET_END');
               start = at + needle.length;
               count++;
             }
