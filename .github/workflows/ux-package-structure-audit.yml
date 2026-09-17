@@ -1,0 +1,36 @@
+name: UX package structure audit
+
+on:
+  push:
+    branches: ['ux/simplified-role-shell']
+    paths:
+      - '.github/workflows/ux-package-structure-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect packaged application structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          PKG='artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz'
+          test -f "$PKG"
+          echo 'PACKAGE_FILES_START'
+          tar -tzf "$PKG" | sed -n '1,240p'
+          echo 'PACKAGE_FILES_END'
+          mkdir -p /tmp/wfm-package
+          tar -xzf "$PKG" -C /tmp/wfm-package
+          echo 'HTML_FILES_START'
+          find /tmp/wfm-package -maxdepth 4 -type f \( -name '*.html' -o -name '*.css' -o -name 'server.js' \) -print | sort
+          echo 'HTML_FILES_END'
+          echo 'INDEX_HEAD_START'
+          INDEX="$(find /tmp/wfm-package -type f -name 'index.html' | head -n 1 || true)"
+          if [ -n "$INDEX" ]; then sed -n '1,260p' "$INDEX"; fi
+          echo 'INDEX_HEAD_END'
