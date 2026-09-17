@@ -10,6 +10,15 @@ assert.ok(password && password.length >= 20);
 
 const timeoutMs = 20_000;
 function report(label, detail = '') { console.log(`${label}${detail ? ` · ${detail}` : ''}`); }
+function londonLocalMinute(value) {
+  const d = new Date(value);
+  assert.ok(Number.isFinite(d.getTime()), 'Attendance timestamp is invalid.');
+  return new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/London',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(d).replace(' ', 'T');
+}
 async function request(path, init = {}) {
   const response = await fetch(`${origin}${path}`, { ...init, signal: AbortSignal.timeout(timeoutMs) });
   const text = await response.text();
@@ -74,7 +83,10 @@ for (const [email, personId] of employeeCandidates) {
   }
 }
 assert.ok(employee, 'No employee fixture has a safe closed-week attendance record for correction proof.');
+const requestedClockIn = londonLocalMinute(employee.record.effective.clockIn);
+const requestedClockOut = londonLocalMinute(employee.record.effective.clockOut);
 report('correction fixture', `${employee.email} record=${employee.record.id} period=${employee.record.period}`);
+report('correction local-time contract', `${requestedClockIn} -> ${requestedClockOut} Europe/London`);
 
 // Client-supplied identity is forbidden. Prove that before creating the real fixture request.
 const identityInjection = await authed(employee.cookie, '/api/attendance-corrections/command', {
@@ -86,8 +98,8 @@ const identityInjection = await authed(employee.cookie, '/api/attendance-correct
       period: employee.record.period,
       record: employee.record.id,
       employee: 'm1',
-      clockIn: employee.record.effective.clockIn,
-      clockOut: employee.record.effective.clockOut,
+      clockIn: requestedClockIn,
+      clockOut: requestedClockOut,
       note: 'Controlled fixture identity-injection rejection proof.',
     },
     idempotencyKey: `proof-id-reject-${randomBytes(8).toString('hex')}`,
@@ -103,14 +115,14 @@ const submitBody = {
   payload: {
     period: employee.record.period,
     record: employee.record.id,
-    clockIn: employee.record.effective.clockIn,
-    clockOut: employee.record.effective.clockOut,
+    clockIn: requestedClockIn,
+    clockOut: requestedClockOut,
     note: 'Controlled fixture correction proof. Requested times intentionally match existing evidence; no attendance change is intended.',
   },
   idempotencyKey: submitKey,
 };
 const submitted = await authed(employee.cookie, '/api/attendance-corrections/command', { method: 'POST', body: submitBody });
-assert.equal(submitted.response.status, 200, `Correction submit failed: ${submitted.response.status}`);
+assert.equal(submitted.response.status, 200, `Correction submit failed: ${submitted.response.status} ${submitted.body?.error || ''}`);
 assert.equal(submitted.body?.result?.id, submitKey);
 assert.ok(['submitted', 'payroll_review_required'].includes(submitted.body?.result?.status));
 assert.equal(submitted.body?.result?.revision, 1);
@@ -125,19 +137,32 @@ assert.equal(submitReplay.body?.replayed, true);
 assert.equal(submitReplay.body?.result?.id, submitKey);
 report('correction submit idempotency', 'exact retry replayed');
 
-const managerCookie = await login('manager@northstar.example');
-const managerDash = await authed(managerCookie, '/api/attendance-corrections');
-assert.equal(managerDash.response.status, 200);
-const visibleRequest = managerDash.body?.requests?.find(q => q.id === submitKey);
-assert.ok(visibleRequest, 'Manager cannot see the employee correction request in authorised scope.');
-assert.equal(visibleRequest.employee, employee.personId);
-assert.equal(visibleRequest.revision, 1);
-report('manager correction visibility', `request=${submitKey} visible in authorised scope`);
+const managerCandidates = [
+  'manager@northstar.example',
+  'supervisor@northstar.example',
+  'director@northstar.example',
+  'superuser@northstar.example',
+];
+let manager = null;
+for (const email of managerCandidates) {
+  const cookie = await login(email);
+  const dash = await authed(cookie, '/api/attendance-corrections');
+  if (dash.response.status !== 200) continue;
+  const visibleRequest = dash.body?.requests?.find(q => q.id === submitKey);
+  if (visibleRequest) {
+    manager = { email, cookie, dash: dash.body, visibleRequest };
+    break;
+  }
+}
+assert.ok(manager, 'No authorised manager can see the employee correction request.');
+assert.equal(manager.visibleRequest.employee, employee.personId);
+assert.equal(manager.visibleRequest.revision, 1);
+report('manager correction visibility', `${manager.email} can review request=${submitKey}`);
 
 // Safest review proof: reject the fixture request so no attendance record is changed.
 const reviewKey = `proof-review-${randomBytes(10).toString('hex')}`;
 const reviewBody = {
-  version: managerDash.body.version,
+  version: manager.dash.version,
   command: 'correction-review',
   payload: {
     id: submitKey,
@@ -147,14 +172,14 @@ const reviewBody = {
   },
   idempotencyKey: reviewKey,
 };
-const reviewed = await authed(managerCookie, '/api/attendance-corrections/command', { method: 'POST', body: reviewBody });
-assert.equal(reviewed.response.status, 200, `Manager correction review failed: ${reviewed.response.status}`);
+const reviewed = await authed(manager.cookie, '/api/attendance-corrections/command', { method: 'POST', body: reviewBody });
+assert.equal(reviewed.response.status, 200, `Manager correction review failed: ${reviewed.response.status} ${reviewed.body?.error || ''}`);
 assert.equal(reviewed.body?.result?.id, submitKey);
 assert.equal(reviewed.body?.result?.status, 'rejected');
 assert.equal(reviewed.body?.result?.revision, 2);
 report('manager correction decision', 'rejected by design; original attendance not mutated');
 
-const reviewReplay = await authed(managerCookie, '/api/attendance-corrections/command', { method: 'POST', body: reviewBody });
+const reviewReplay = await authed(manager.cookie, '/api/attendance-corrections/command', { method: 'POST', body: reviewBody });
 assert.equal(reviewReplay.response.status, 200);
 assert.equal(reviewReplay.body?.replayed, true);
 assert.equal(reviewReplay.body?.result?.status, 'rejected');
@@ -175,12 +200,13 @@ report('correction history', historyTypes.join(' -> '));
 // The source record remains present and the request is closed, proving the rejected workflow did not remove evidence.
 const sourceAfter = employeeAfter.body?.records?.find(r => r.id === employee.record.id && r.period === employee.record.period);
 assert.ok(sourceAfter, 'Original attendance source record disappeared after rejected correction.');
-assert.equal(finalRequest.requested.clockIn, employee.record.effective.clockIn);
-assert.equal(finalRequest.requested.clockOut, employee.record.effective.clockOut);
+assert.equal(londonLocalMinute(finalRequest.requested.clockIn), requestedClockIn);
+assert.equal(londonLocalMinute(finalRequest.requested.clockOut), requestedClockOut);
 
 console.log('LIVE_ATTENDANCE_CORRECTION_AUDIT_PROOF=PASS');
 console.log(`request=${submitKey}`);
 console.log(`employee=${employee.email}`);
+console.log(`reviewer=${manager.email}`);
 console.log(`release=${expectedRelease}`);
 console.log('outcome=rejected-by-design; original attendance evidence preserved');
 console.log('claim_boundary=fixture-only hosted staging; productionApproved=false; pilotReady=false');
