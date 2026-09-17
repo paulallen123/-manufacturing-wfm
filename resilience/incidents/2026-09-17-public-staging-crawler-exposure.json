@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "incident": "public-staging-crawler-exposure",
+  "status": "contained-by-authentication-pending-surface-hardening",
+  "classification": ["security", "configuration", "staging-exposure"],
+  "detected_by": "Railway outside-in HTTP evidence",
+  "affected_service": {
+    "project_id": "9a774359-37fa-47e8-bde0-932420c32923",
+    "environment_id": "6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6",
+    "service_id": "ddd54fb9-3564-4251-9959-28cf3308c272",
+    "service": "wfm-customer-proof-0676",
+    "deployment_id": "2d399257-e7ea-43e8-a728-d563e8cb366b",
+    "mode": "fixture-only customer-proof staging",
+    "production_approved": false
+  },
+  "evidence": {
+    "crawler_user_agent": "OAI-SearchBot/1.0",
+    "observed_requests": [
+      {"timestamp_utc": "2026-09-17T16:26:02Z", "path": "/robots.txt", "status": 404},
+      {"timestamp_utc": "2026-09-17T17:58:41Z", "path": "/robots.txt", "status": 404}
+    ],
+    "api_auth_boundary": "Unauthenticated /api/bootstrap returns 401 in repeated live proofs.",
+    "runtime_health": "Repeated /api/health checks returned 200; no 5xx condition was observed in the sampled proof window.",
+    "claim_boundary": "Crawler discovery is proven; search-engine indexing, credential exposure and protected-data disclosure are not claimed."
+  },
+  "root_cause": "The dedicated customer-proof host is intentionally public for outside-in proof, but the exposed staging surface has no verified crawler exclusion endpoint at /robots.txt. Authentication protects application data, yet public discovery of a staging host is broader exposure than required for proof and should be explicitly controlled.",
+  "containment": [
+    "Keep fixture_only=true, staging_only=true, pilot_ready=false and production_approved=false.",
+    "Do not weaken the existing authentication or tenant-isolation boundary to simplify crawler handling.",
+    "Do not mutate the sealed runtime artifact solely to add crawler controls.",
+    "Treat public staging discovery as exposure telemetry and preserve request evidence.",
+    "Do not place customer or production secrets/data on this public proof host."
+  ],
+  "detection_rules": [
+    {
+      "id": "public-staging-crawler-policy",
+      "when": "A customer-proof or staging host has a public internet domain.",
+      "require": [
+        "GET /robots.txt returns 200 with a deny-all policy unless explicit indexing has been approved.",
+        "Public HTML responses carry an independently verified noindex control such as X-Robots-Tag or equivalent where supported.",
+        "Unauthenticated protected APIs continue to fail closed.",
+        "Crawler-control changes do not alter the sealed business runtime or tenant boundary without full candidate revalidation."
+      ],
+      "fail_closed": true
+    }
+  ],
+  "safe_runbook": [
+    "First prefer a reversible staging-edge or deployment-wrapper control that does not modify the sealed business runtime.",
+    "Re-run public health, unauthenticated bootstrap, authenticated journey, tenant-isolation and crawler-policy probes on the exact candidate.",
+    "If the platform cannot provide an edge-level crawler control, design a bounded wrapper change and require the full security/integrity/customer-proof gates before staging promotion.",
+    "Never use robots policy as an access-control mechanism; authentication and authorization remain mandatory."
+  ],
+  "learning": "A public proof endpoint can be healthy and correctly authenticated while still creating unnecessary discovery exposure. Availability evidence and exposure minimisation are separate gates."
+}
