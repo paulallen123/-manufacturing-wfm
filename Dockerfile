@@ -1,3 +1,4 @@
+# Customer-proof staging build: sealed 0.6.76 runtime
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
 WORKDIR /app
 COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
