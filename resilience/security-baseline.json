@@ -52,5 +52,42 @@
       "compliance.override",
       "production.force-promote"
     ]
+  },
+  "external_intelligence": {
+    "authoritative_sources": {
+      "node_security_release": "https://nodejs.org/en/blog/release/v22.23.2",
+      "nist_agent_identity": "https://www.nist.gov/news-events/news/2026/02/new-concept-paper-identity-and-authority-software-agents",
+      "nist_multi_agent_security": "https://csrc.nist.gov/Presentations/2026/security-considerations-for-multi-agent-ai-systems",
+      "owasp_agent_control_standard": "https://genai.owasp.org/resource/agent-control-standard-acs/",
+      "owasp_memory_context_poisoning": "https://genai.owasp.org/2026/05/13/memory-is-a-feature-it-is-also-an-attack-surface/"
+    },
+    "runtime_dependency_expectation": {
+      "third_party_npm_packages": 0,
+      "server_imports": "node-builtins-only",
+      "reason": "The exact staged runtime is self-contained and currently imports only Node.js built-ins; introducing a third-party runtime package requires an explicit security-baseline change and candidate revalidation."
+    },
+    "agent_threat_rules": [
+      {
+        "id": "persistent-memory-context-poisoning",
+        "severity": "critical",
+        "source": "https://genai.owasp.org/2026/05/13/memory-is-a-feature-it-is-also-an-attack-surface/",
+        "signals": [
+          "untrusted content persists across support turns or sessions",
+          "stored memory contains instruction-like privileged content",
+          "retrieved context provenance conflicts with deterministic policy"
+        ],
+        "containment": [
+          "quarantine affected memory and context from authority decisions",
+          "rebuild trusted context from deterministic retained evidence",
+          "continue local or read-only analysis without privileged tool authority"
+        ],
+        "verification": [
+          "no action authority can be derived from quarantined memory",
+          "clean context cannot replay poisoned instructions",
+          "provenance and isolation evidence are retained"
+        ],
+        "direct_execution_authority": false
+      }
+    ]
   }
 }
