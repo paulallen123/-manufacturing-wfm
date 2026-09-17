@@ -10,3 +10,4 @@ Public origin: https://wfm-customer-proof-0676-production.up.railway.app
 Claim boundary: staging/customer-proof only; production systems disconnected.
 Evidence date: 2026-09-17
 Trigger sequence: first repo-backed deployment for the frozen customer-proof candidate.
+Bootstrap retrigger: 2026-09-17T15:36:56+01:00 after repo attachment and hardened staging variables were verified.
