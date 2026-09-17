@@ -25,7 +25,7 @@ jobs:
           npm init -y >/dev/null
           npm install --no-save playwright@1.63.0
           npx playwright install --with-deps chromium
-      - name: Run authenticated RC5 customer journey
+      - name: Run authenticated RC6 customer journey
         run: |
           cd "$RUNNER_TEMP/wfm-proof"
           cat > proof.mjs <<'NODE'
@@ -42,7 +42,7 @@ jobs:
           const page=await context.newPage();
           const pageErrors=[]; page.on('pageerror',e=>pageErrors.push(String(e)));
           const health=await context.request.get(`${base}/api/health`); assert.equal(health.status(),200); const healthBody=await health.json();
-          assert.equal(healthBody.mode,'hosted-staging'); assert.equal(healthBody.release,'0.6.70-hosted-staging-rc5'); assert.equal(healthBody.productionApproved,false); assert.equal(healthBody.pilotReady,false);
+          assert.equal(healthBody.mode,'hosted-staging'); assert.equal(healthBody.release,'0.6.70-hosted-staging-rc6'); assert.equal(healthBody.productionApproved,false); assert.equal(healthBody.pilotReady,false);
           await page.goto(base,{waitUntil:'networkidle'});
           const loginText=await page.locator('body').innerText(); assert.match(loginText,/Isolated hosted staging demo/); assert.doesNotMatch(loginText,/locked to your computer/i); assert.equal(await page.locator('input[name="password"]').inputValue(),'');
           await page.screenshot({path:`${out}/01-hosted-login.png`,fullPage:true});
@@ -51,7 +51,7 @@ jobs:
           await page.locator('#v2-login button[type="submit"]').click();
           await page.waitForFunction(()=>!document.querySelector('#v2-login'),null,{timeout:15000}); await page.waitForLoadState('networkidle');
           await page.waitForFunction(()=>document.body.innerText.includes('FACTORY CONTROL CENTRE'));
-          const overviewText=await page.locator('body').innerText(); assert.match(overviewText,/FACTORY CONTROL CENTRE/); assert.match(overviewText,/HOSTED STAGING DEMO/); assert.match(overviewText,/Hosted staging demo/); assert.doesNotMatch(overviewText,/LOCAL DEVELOPMENT/);
+          const overviewText=await page.locator('body').innerText(); assert.match(overviewText,/FACTORY CONTROL CENTRE/); assert.match(overviewText,/HOSTED STAGING DEMO/); assert.match(overviewText,/Hosted staging demo/); assert.match(overviewText,/Hosted staging evidence/); assert.doesNotMatch(overviewText,/LOCAL DEVELOPMENT|Development evidence/);
           await page.screenshot({path:`${out}/02-factory-control-centre.png`,fullPage:true});
           const boot=await page.evaluate(async()=>{const r=await fetch('/api/bootstrap');return {status:r.status,body:await r.json()}}); assert.equal(boot.status,200); assert.equal(boot.body.mode,'hosted-staging'); assert.equal(boot.body.actor?.email,'manager@northstar.example'); assert.equal(boot.body.actor?.tenant,'northstar-demo');
           const cookies=await context.cookies(base); const session=cookies.find(c=>c.name==='wfm_session'); assert.ok(session); assert.equal(session.httpOnly,true); assert.equal(session.secure,true); assert.equal(session.sameSite,'Strict');
@@ -59,7 +59,7 @@ jobs:
           await page.locator('.fcc-workspace[data-page="readiness"]').click(); await page.waitForFunction(()=>document.body.innerText.includes('MANUFACTURING DECISION DESK'),null,{timeout:15000}); await page.screenshot({path:`${out}/04-readiness.png`,fullPage:true});
           const payrollTab=page.locator('.fcc-workspace[data-page="payroll-run"]'); if(await payrollTab.count()){await payrollTab.click(); await page.waitForTimeout(500); const payrollText=await page.locator('body').innerText(); assert.match(payrollText,/Payroll authority required|Weekly readiness|Payroll readiness/); assert.match(payrollText,/HOSTED STAGING DEMO|Hosted staging demo/); await page.screenshot({path:`${out}/05-payroll-boundary.png`,fullPage:true});}
           const unauth=await browser.newContext(); const denied=await unauth.request.get(`${base}/api/bootstrap`); assert.equal(denied.status(),401); await unauth.close();
-          const kiosk=await browser.newContext({viewport:{width:1024,height:768}}); const kp=await kiosk.newPage(); await kp.goto(`${base}/kiosk.html`,{waitUntil:'networkidle'}); assert.match(await kp.locator('body').innerText(),/Register this tablet/); await kp.screenshot({path:`${out}/06-kiosk.png`,fullPage:true}); await kiosk.close();
+          const kiosk=await browser.newContext({viewport:{width:1024,height:768}}); const kp=await kiosk.newPage(); await kp.goto(`${base}/kiosk.html`,{waitUntil:'networkidle'}); const kioskText=await kp.locator('body').innerText(); assert.match(kioskText,/Register this tablet/); assert.match(kioskText,/Fictional demonstration environment/); assert.doesNotMatch(kioskText,/Fictional development build/); await kp.screenshot({path:`${out}/06-kiosk.png`,fullPage:true}); await kiosk.close();
           const result={passed:true,base,release:healthBody.release,actor:{email:boot.body.actor.email,tenant:boot.body.actor.tenant,role:boot.body.actor.role},staff:boot.body.state?.staff?.length??null,assignments:boot.body.state?.assignments?.length??null,secureCookie:{httpOnly:session.httpOnly,secure:session.secure,sameSite:session.sameSite},unauthenticatedBootstrap:denied.status(),pageErrors};
           fs.writeFileSync(`${out}/result.json`,JSON.stringify(result,null,2)); await context.tracing.stop({path:`${out}/trace.zip`}); await context.close(); await browser.close(); assert.equal(pageErrors.length,0); console.log(JSON.stringify(result));
           NODE
