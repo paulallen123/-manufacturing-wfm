@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-17T16:43:07Z",
+  "issue": {
+    "title": "GitHub-hosted WFM browser-proof runner below current Chrome security floor",
+    "upstream_release_date": "2026-09-15",
+    "authoritative_source": "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0541751186.html",
+    "fixed_linux_version": "153.0.8010.47",
+    "security_fixes": 42,
+    "representative_material_cves": [
+      "CVE-2026-91726",
+      "CVE-2026-91721",
+      "CVE-2026-91749",
+      "CVE-2026-91724",
+      "CVE-2026-91728"
+    ]
+  },
+  "wfm_evaluation": {
+    "surface": ".github/workflows/live-browser-readonly-proof.yml",
+    "runner": "ubuntu-24.04",
+    "runner_image": "20260907.300.1",
+    "observed_google_chrome": "152.0.7977.82",
+    "affected": true,
+    "customer_runtime_affected": false,
+    "customer_impact": "No customer production runtime exposure identified. The risk is confined to the GitHub-hosted authenticated staging browser-proof job, which would otherwise expose a scoped demo credential to an outdated browser process.",
+    "exploitability": "Requires malicious or compromised browser content capable of reaching one of the affected Chrome code paths. The WFM proof origin is controlled, but compromise of that origin or a browser-reachable dependency would make an outdated privileged CI browser an avoidable attack surface."
+  },
+  "containment": {
+    "status": "effective",
+    "workflow_run": "https://github.com/paulallen123/-manufacturing-wfm/actions/runs/35248294505",
+    "job_id": 105293981642,
+    "action": "Fail closed before WFM_DEMO_PASSWORD is injected into the browser step when Google Chrome is below 153.0.8010.47.",
+    "observed_result": "The security-floor assertion rejected Chrome 152.0.7977.82 and the authenticated browser journey was skipped.",
+    "production_mutation": false,
+    "staging_mutation": false,
+    "credential_exposed_to_browser_after_detection": false
+  },
+  "regression_test": {
+    "method": "Parse google-chrome --version on every protected browser-proof run and compare each numeric component with 153.0.8010.47 before the secret-bearing step.",
+    "expected_safe_result": "Browser proof proceeds only when Chrome is at or above the current fixed security floor; otherwise it terminates before secret injection."
+  },
+  "remediation": {
+    "current": "Keep authenticated browser proof blocked on stale GitHub-hosted runner images.",
+    "next": "Re-run the same gate when the hosted ubuntu-24.04 image carries a patched Chrome stable build, or adopt a separately integrity-verified patched browser artifact before re-enabling the secret-bearing browser step.",
+    "do_not": [
+      "disable the version gate",
+      "inject WFM_DEMO_PASSWORD before browser-version verification",
+      "switch to Playwright 1.63.0 bundled Chromium 153.0.8010.12 as a workaround because it is below the 153.0.8010.47 Chrome security floor"
+    ]
+  }
+}
