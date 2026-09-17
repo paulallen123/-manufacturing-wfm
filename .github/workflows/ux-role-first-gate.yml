@@ -58,31 +58,36 @@ jobs:
       - name: Build the exact Docker image
         run: docker build --pull=false -t wfm-role-first-ux:pr .
 
-      - name: Verify final image composition and load order
+      - name: Verify approved-asset composition and order
         shell: bash
         run: |
           set -euo pipefail
-          docker run --rm --entrypoint node wfm-role-first-ux:pr --check /app/public/ux-reset.js
           cid="$(docker create wfm-role-first-ux:pr)"
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
           mkdir -p /tmp/wfm-public
           docker cp "$cid:/app/public/index.html" /tmp/wfm-public/index.html
-          docker cp "$cid:/app/public/ux-reset.js" /tmp/wfm-public/ux-reset.js
-          docker cp "$cid:/app/public/ux-reset.css" /tmp/wfm-public/ux-reset.css
-          grep -q 'ux-reset.css?v=20260917-1' /tmp/wfm-public/index.html
-          grep -q 'ux-reset.js?v=20260917-1' /tmp/wfm-public/index.html
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-public/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-public/factory-control-ui.css
+          node --check /tmp/wfm-public/value-cockpit-ui.js
           node <<'NODE'
           const fs = require('node:fs');
           const html = fs.readFileSync('/tmp/wfm-public/index.html','utf8');
-          const previous = html.lastIndexOf('value-cockpit-ui.js');
-          const overlay = html.lastIndexOf('ux-reset.js?v=20260917-1');
-          if (previous < 0 || overlay < 0 || overlay <= previous) throw new Error('UX reset is not the final composition layer.');
-          console.log('ROLE_FIRST_IMAGE_COMPOSITION=PASS');
+          const js = fs.readFileSync('/tmp/wfm-public/value-cockpit-ui.js','utf8');
+          const css = fs.readFileSync('/tmp/wfm-public/factory-control-ui.css','utf8');
+          if (!html.includes('value-cockpit-ui.js') || !html.includes('factory-control-ui.css')) throw new Error('Approved presentation assets are not loaded by the base page.');
+          if (/ux-reset(?:-cycle[23])?\.(?:js|css)/.test(html)) throw new Error('Standalone UX paths must not be introduced outside the sealed static allow-list.');
+          const j1=js.indexOf('WFM_UX_RESET_BASE_BEGIN'),j2=js.indexOf('WFM_UX_RESET_CYCLE2_BEGIN'),j3=js.indexOf('WFM_UX_RESET_CYCLE3_BEGIN');
+          const c1=css.indexOf('WFM_UX_RESET_BASE_BEGIN'),c2=css.indexOf('WFM_UX_RESET_CYCLE2_BEGIN'),c3=css.indexOf('WFM_UX_RESET_CYCLE3_BEGIN');
+          if (!(j1>=0&&j2>j1&&j3>j2)) throw new Error('UX JS layers are not composed in deterministic order.');
+          if (!(c1>=0&&c2>c1&&c3>c2)) throw new Error('UX CSS layers are not composed in deterministic order.');
+          if (!js.includes('window.WFMUXReset=')) throw new Error('Role-first UX implementation is missing from the served JS bundle.');
+          console.log('ROLE_FIRST_APPROVED_ASSET_COMPOSITION=PASS');
           NODE
 
-      - name: Confirm sealed runtime remains intact
+      - name: Confirm base artifact and server contract remain intact
         shell: bash
         run: |
           set -euo pipefail
           grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
-          echo 'SEALED_RUNTIME_UNCHANGED=PASS'
+          ! grep -q 'server.cjs' <(git diff --name-only "${{ github.event.pull_request.base.sha }}"...HEAD) || { echo '::error::UX PR must not modify sealed server logic'; exit 1; }
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
