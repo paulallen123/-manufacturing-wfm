@@ -44,6 +44,60 @@ jobs:
             exit 1
           fi
 
+      - name: Enforce zero-trust workflow execution
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Until repository-level workflow execution policy and protected-branch
+          # controls are independently enforced, security workflows may not execute
+          # candidate PR code, request write-scoped GITHUB_TOKEN permissions, or
+          # consume repository secrets. This cuts common CI supply-chain paths from
+          # untrusted input -> privileged runner -> credential exfiltration.
+          pr_event='pull_request:'
+          pr_target_event='pull_request'"_target:"
+
+          unsafe_triggers="$(
+            grep -RInE "^[[:space:]]*(${pr_event}|${pr_target_event})[[:space:]]*$" .github/workflows \
+              --include='*.yml' --include='*.yaml' 2>/dev/null \
+            || true
+          )"
+          if [ -n "$unsafe_triggers" ]; then
+            echo "Refusing workflow execution from pull-request events:"
+            echo "$unsafe_triggers"
+            exit 1
+          fi
+
+          write_permission_re='^[[:space:]]*(actions|attestations|checks|contents|deployments|discussions|id-token|issues|models|packages|pages|pull-requests|repository-projects|security-events|statuses):[[:space:]]*write([[:space:]]*(#.*)?)$'
+          write_permissions="$(
+            grep -RInE "$write_permission_re" .github/workflows \
+              --include='*.yml' --include='*.yaml' 2>/dev/null \
+            || true
+          )"
+          if [ -n "$write_permissions" ]; then
+            echo "Refusing write-scoped GitHub Actions permissions in defence workflows:"
+            echo "$write_permissions"
+            exit 1
+          fi
+
+          secret_context_re='\$\{\{[[:space:]]*secrets[.]'
+          secret_refs="$(
+            grep -RInE "$secret_context_re" .github/workflows \
+              --include='*.yml' --include='*.yaml' 2>/dev/null \
+            || true
+          )"
+          inherited_secret_token='secrets:'" inherit"
+          inherited_secrets="$(
+            grep -RInF "$inherited_secret_token" .github/workflows \
+              --include='*.yml' --include='*.yaml' 2>/dev/null \
+            || true
+          )"
+          if [ -n "$secret_refs$inherited_secrets" ]; then
+            echo "Refusing repository-secret access from defence workflows:"
+            printf '%s\n%s\n' "$secret_refs" "$inherited_secrets"
+            exit 1
+          fi
+
       - name: Enforce immutable third-party actions and Trivy denylist
         shell: bash
         run: |
