@@ -1,0 +1,87 @@
+name: WFM repository governance audit
+
+on:
+  push:
+    branches:
+      - main
+      - 'autonomy/**'
+    paths:
+      - resilience/repository-governance-baseline.json
+      - 'resilience/incidents/**'
+      - .github/workflows/wfm-repository-governance-audit.yml
+  pull_request:
+    paths:
+      - resilience/repository-governance-baseline.json
+      - 'resilience/incidents/**'
+      - .github/workflows/wfm-repository-governance-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-repository-governance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-main-protection:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout bounded evidence
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Validate governance contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const baseline = require('./resilience/repository-governance-baseline.json');
+          assert.equal(baseline.repository, 'paulallen123/-manufacturing-wfm');
+          assert.equal(baseline.default_branch, 'main');
+          assert.equal(baseline.expected_controls.main_branch_protected, true);
+          assert.equal(baseline.expected_controls.required_status_checks_enforced_before_merge_or_direct_update, true);
+          assert.equal(baseline.expected_controls.direct_push_bypass_of_ci_preconditions, false);
+          assert.equal(baseline.containment.production_approved_must_remain_false, true);
+          assert.match(baseline.promotion_rule, /No production or pilot promotion/);
+          console.log(JSON.stringify({ok:true, classification:baseline.classification}, null, 2));
+          NODE
+
+      - name: Query main branch enforcement state
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/branches/main" > /tmp/main-branch.json
+          node <<'NODE'
+          const fs = require('node:fs');
+          const assert = require('node:assert/strict');
+          const branch = JSON.parse(fs.readFileSync('/tmp/main-branch.json', 'utf8'));
+          console.log(JSON.stringify({
+            name: branch.name,
+            sha: branch.commit?.sha,
+            protected: branch.protected,
+            enforcement: branch.protection?.required_status_checks?.enforcement_level ?? 'unknown'
+          }, null, 2));
+          assert.equal(branch.name, 'main');
+          assert.equal(branch.protected, true,
+            'SAFETY BLOCKER: main is not protected; CI/security/integrity workflows cannot be treated as enforceable pre-update gates.');
+          assert.notEqual(branch.protection?.required_status_checks?.enforcement_level, 'off',
+            'SAFETY BLOCKER: required status-check enforcement is off on main.');
+          NODE
+
+      - name: Record safe interpretation
+        if: always()
+        shell: bash
+        run: |
+          echo 'This audit changes no Railway service, runtime, tenant, payroll, credential, autonomy-kernel, rollback or production state.'
+          echo 'A failure is a repository-governance blocker, not evidence of a WFM product/runtime defect or customer compromise.'
