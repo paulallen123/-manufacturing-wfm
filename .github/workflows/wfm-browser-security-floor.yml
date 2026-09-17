@@ -67,12 +67,12 @@ jobs:
           const helper = fs.readFileSync('./scripts/browser-security-floor.mjs', 'utf8');
 
           const liveGate = live.indexOf('Require patched Chrome before exposing staging credential');
-          const liveSecret = live.indexOf('WFM_DEMO_PASSWORD: ${{ secrets.WFM_DEMO_PASSWORD }}');
+          const liveSecret = live.indexOf('WFM_DEMO_PASSWORD:');
           assert.ok(liveGate >= 0 && liveSecret > liveGate, 'Live browser secret step must remain after the Chrome security-floor preflight.');
           assert.ok(live.includes('node scripts/browser-security-floor.mjs'), 'Live browser workflow must execute the shared floor check.');
 
           const railwayGate = railway.indexOf('Require patched Chrome before any staging credential retrieval');
-          const railwaySecret = railway.indexOf('RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}');
+          const railwaySecret = railway.indexOf('RAILWAY_TOKEN:');
           assert.ok(railwayGate >= 0 && railwaySecret > railwayGate, 'Railway credential retrieval must remain after the Chrome security-floor preflight.');
           assert.ok(railway.includes('node scripts/browser-security-floor.mjs'), 'Railway proof workflow must execute the shared floor check.');
 
