@@ -55,6 +55,9 @@ jobs:
           IMAGE="wfm-ux-review:${GITHUB_SHA}"
           CID="$(docker create "$IMAGE")"
           trap 'docker rm -f "$CID" >/dev/null 2>&1 || true' EXIT
-          docker export "$CID" | tar -tf - | grep -q 'app/server.cjs'
-          docker export "$CID" | tar -tf - | grep -q 'app/public/app.js'
+          mkdir -p /tmp/runtime-proof
+          docker cp "$CID:/app/server.cjs" /tmp/runtime-proof/server.cjs
+          docker cp "$CID:/app/public/app.js" /tmp/runtime-proof/app.js
+          test -s /tmp/runtime-proof/server.cjs
+          test -s /tmp/runtime-proof/app.js
           echo 'SEALED_RUNTIME_PRESERVED=PASS'
