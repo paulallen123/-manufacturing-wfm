@@ -11,8 +11,10 @@ COPY --chown=node:node ux-overlay/ux-reset.css /app/public/ux-reset.css
 COPY --chown=node:node ux-overlay/ux-reset.js /app/public/ux-reset.js
 COPY --chown=node:node ux-overlay/ux-reset-cycle2.css /app/public/ux-reset-cycle2.css
 COPY --chown=node:node ux-overlay/ux-reset-cycle2.js /app/public/ux-reset-cycle2.js
-RUN sed -i 's#</head>#<link rel="stylesheet" href="ux-reset.css?v=20260917-1"><link rel="stylesheet" href="ux-reset-cycle2.css?v=20260917-2"></head>#' /app/public/index.html \
- && sed -i 's#</body>#<script src="ux-reset.js?v=20260917-1"></script><script src="ux-reset-cycle2.js?v=20260917-2"></script></body>#' /app/public/index.html
+COPY --chown=node:node ux-overlay/ux-reset-cycle3.css /app/public/ux-reset-cycle3.css
+COPY --chown=node:node ux-overlay/ux-reset-cycle3.js /app/public/ux-reset-cycle3.js
+RUN sed -i 's#</head>#<link rel="stylesheet" href="ux-reset.css?v=20260917-1"><link rel="stylesheet" href="ux-reset-cycle2.css?v=20260917-2"><link rel="stylesheet" href="ux-reset-cycle3.css?v=20260917-3"></head>#' /app/public/index.html \
+ && sed -i 's#</body>#<script src="ux-reset.js?v=20260917-1"></script><script src="ux-reset-cycle2.js?v=20260917-2"></script><script src="ux-reset-cycle3.js?v=20260917-3"></script></body>#' /app/public/index.html
 # The staged application is self-contained and uses Node built-ins only. Remove package
 # managers from the final runtime so npm-bundled libraries (including node-tar) are not
 # an exposed production attack surface.
