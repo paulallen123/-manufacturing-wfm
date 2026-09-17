@@ -2,11 +2,10 @@ name: Identity Runtime Guard
 
 on:
   push:
-    branches: [identity-runtime-guard]
-    paths:
-      - 'security/runtime/**'
-      - 'Dockerfile'
-      - '.github/workflows/identity-runtime-guard.yml'
+    branches:
+      - main
+      - identity-runtime-guard
+      - 'autonomy/**'
 
 permissions:
   contents: read
@@ -19,7 +18,7 @@ jobs:
   prove-resource-side-identity-survival:
     if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Checkout trusted owner push
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -33,19 +32,69 @@ jobs:
           node-version: '22.23.2'
           package-manager-cache: false
 
+      - name: Validate deployment and resilience metadata
+        run: |
+          set -euo pipefail
+          node scripts/validate-deployment.mjs
+          node scripts/validate-resilience-scenarios.mjs
+
+      - name: Prove guard source uses only reviewed local or Node built-in modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const Module = require('node:module');
+          const builtins = new Set(Module.builtinModules.flatMap(x => [x, `node:${x}`]));
+          const files = [
+            'security/runtime/identity-survival-guard.cjs',
+            'security/runtime/bootstrap.cjs'
+          ];
+          const external = [];
+          for (const file of files) {
+            const source = fs.readFileSync(file, 'utf8');
+            for (const re of [/require\(['"]([^'"]+)['"]\)/g, /from\s+['"]([^'"]+)['"]/g]) {
+              let match;
+              while ((match = re.exec(source))) {
+                const spec = match[1];
+                if (spec.startsWith('.') || spec.startsWith('/') || builtins.has(spec)) continue;
+                external.push({ file, spec });
+              }
+            }
+          }
+          assert.deepEqual(external, [], 'Identity guard introduced an unreviewed external runtime module.');
+          NODE
+
       - name: Run identity survival unit and isolation tests
         run: node --test security/runtime/identity-survival-guard.test.cjs
 
       - name: Build exact guarded staging image
         run: docker build --pull=false -t wfm-identity-guard:${{ github.sha }} .
 
-      - name: Prove non-root guarded entrypoint
+      - name: Prove non-root immutable guarded runtime
         shell: bash
         run: |
           set -euo pipefail
           image="wfm-identity-guard:${GITHUB_SHA}"
           test "$(docker inspect --format '{{.Config.User}}' "$image")" = 'node'
           test "$(docker inspect --format '{{json .Config.Cmd}}' "$image")" = '["node","security-runtime/bootstrap.cjs"]'
+          test "$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$image" | grep '^WFM_IDENTITY_SURVIVAL_GUARD=' )" = 'WFM_IDENTITY_SURVIVAL_GUARD=enforce'
+
+          docker run --rm --entrypoint sh "$image" -ec '
+            test ! -w /app/server.cjs
+            test ! -w /app/security-runtime/bootstrap.cjs
+            test ! -w /app/security-runtime/identity-survival-guard.cjs
+            test ! -e /usr/local/lib/node_modules/npm
+            test ! -e /usr/local/lib/node_modules/corepack
+            for p in npm npx corepack yarn yarnpkg pnpm pnpx; do
+              if command -v "$p" >/dev/null 2>&1; then
+                echo "Unexpected package manager in final runtime: $p" >&2
+                exit 1
+              fi
+            done
+          '
+
           docker run --rm --entrypoint node "$image" -e "require('/app/security-runtime/identity-survival-guard.cjs'); console.log('identity-guard-load=PASS')"
 
       - name: Exercise guard on the real staged HTTP request path
@@ -95,14 +144,12 @@ jobs:
           test -n "$cookie"
           echo 'login=PASS'
 
-          # First authenticated request creates a resource-side binding from server DB truth.
           bound_code="$(curl -sS -o /tmp/bound.body -w '%{http_code}' \
             -H 'Host: staging.identity.test' -H 'X-Forwarded-Proto: https' \
             -H "Cookie: $cookie" http://127.0.0.1:38117/api/health)"
           test "$bound_code" = '200'
           echo 'resource-binding=PASS'
 
-          # A client cannot invent tenant authority even with a valid bearer session.
           inject_code="$(curl -sS -o /tmp/inject.body -w '%{http_code}' \
             -H 'Host: staging.identity.test' -H 'X-Forwarded-Proto: https' \
             -H "Cookie: $cookie" -H 'X-WFM-Tenant: isolation-test' \
@@ -110,13 +157,9 @@ jobs:
           test "$inject_code" = '400'
           echo 'identity-header-injection-block=PASS'
 
-          # Derive the authoritative customer cell from the running server database rather
-          # than hard-coding a tenant identifier into the proof harness.
           tenant="$(docker exec "$cid" node -e "const {DatabaseSync}=require('node:sqlite');const d=new DatabaseSync('/tmp/wfm-ci.sqlite');const r=d.prepare('SELECT tenant FROM users WHERE email=?').get('manager@northstar.example');if(!r)process.exit(2);process.stdout.write(r.tenant);d.close();")"
           test -n "$tenant"
 
-          # Rotate only this tenant's security epoch out-of-band, then prove the old session
-          # is rejected by the resource boundary before the application handles it.
           docker exec -e TARGET_TENANT="$tenant" "$cid" node -e "const {createIdentitySurvivalGuard}=require('/app/security-runtime/identity-survival-guard.cjs');const g=createIdentitySurvivalGuard({dbPath:'/tmp/wfm-ci.sqlite'});const c=g.securityControlForTests();c.bumpEpoch(process.env.TARGET_TENANT);c.db.close();"
 
           stale_code="$(curl -sS -o /tmp/stale.body -w '%{http_code}' \
