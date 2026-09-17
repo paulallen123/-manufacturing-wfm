@@ -4,6 +4,8 @@ on:
   push:
     branches: ['ux/simplified-role-shell']
     paths:
+      - 'ux/**'
+      - 'Dockerfile'
       - '.github/workflows/ux-local-browser-proof.yml'
   workflow_dispatch:
 
@@ -26,13 +28,21 @@ jobs:
           cp ux/ux-role-shell.css /tmp/wfm-ux-runtime/public/ux-role-shell.css
           cp ux/ux-role-shell.js /tmp/wfm-ux-runtime/public/ux-role-shell.js
           node <<'NODE'
-          const fs=require('fs');const p='/tmp/wfm-ux-runtime/public/index.html';let s=fs.readFileSync(p,'utf8');
+          const fs=require('fs');
+          let p='/tmp/wfm-ux-runtime/public/index.html',s=fs.readFileSync(p,'utf8');
           if(!s.includes('ux-role-shell.css'))s=s.replace('</head>','<link rel="stylesheet" href="ux-role-shell.css">\n</head>');
           if(!s.includes('ux-role-shell.js'))s=s.replace('</body>','<script src="ux-role-shell.js"></script>\n</body>');
           fs.writeFileSync(p,s);
-          console.log(s.slice(Math.max(0,s.length-900)));
+          p='/tmp/wfm-ux-runtime/server.cjs';s=fs.readFileSync(p,'utf8');
+          const marker="'/styles.css':'styles.css'";
+          if(!s.includes("'/ux-role-shell.css':'ux-role-shell.css'")){
+            if(!s.includes(marker))throw new Error('Static file map marker not found');
+            s=s.replace(marker,"'/ux-role-shell.css':'ux-role-shell.css','/ux-role-shell.js':'ux-role-shell.js',"+marker);
+          }
+          fs.writeFileSync(p,s);
           NODE
           node --check /tmp/wfm-ux-runtime/public/ux-role-shell.js
+          grep -q "'/ux-role-shell.js':'ux-role-shell.js'" /tmp/wfm-ux-runtime/server.cjs
       - name: Start isolated local runtime
         shell: bash
         run: |
