@@ -35,20 +35,54 @@ jobs:
         run: node scripts/validate-deployment.mjs
       - name: Build the exact staging candidate
         run: docker build --pull -t wfm-staging-candidate:${{ github.sha }} .
-      - name: Verify container identity and patched runtime
+      - name: Verify authoritative container identity and patched runtime
         shell: bash
         run: |
           set -euo pipefail
           IMAGE="wfm-staging-candidate:${GITHUB_SHA}"
           EXPECTED_CANDIDATE="$(node -p "require('./DEPLOYMENT_MANIFEST.json').candidate")"
+          EXPECTED_RUNTIME_MANIFEST_SHA="$(node -p "require('./DEPLOYMENT_MANIFEST.json').runtime_manifest_sha256")"
+          EXPECTED_CANONICAL_SOURCE_SHA="$(node -p "require('./DEPLOYMENT_MANIFEST.json').canonical_source_sha256")"
+          EXPECTED_HOSTED_SOURCE_SHA="$(node -p "require('./DEPLOYMENT_MANIFEST.json').hosted_source_sha256")"
           EXPECTED_NODE="v$(node -p "require('./resilience/security-baseline.json').node.minimum")"
           ACTUAL_NODE="$(docker run --rm --entrypoint node "$IMAGE" --version)"
           test "$ACTUAL_NODE" = "$EXPECTED_NODE"
-          docker run --rm -e EXPECTED_CANDIDATE="$EXPECTED_CANDIDATE" --entrypoint node "$IMAGE" -e '
-            const assert=require("node:assert/strict");
-            const pkg=require("/app/package.json");
-            assert.equal(pkg.version,process.env.EXPECTED_CANDIDATE,"Runtime package identity differs from manifest candidate");
-          '
+          docker run --rm \
+            -e EXPECTED_CANDIDATE="$EXPECTED_CANDIDATE" \
+            -e EXPECTED_RUNTIME_MANIFEST_SHA="$EXPECTED_RUNTIME_MANIFEST_SHA" \
+            -e EXPECTED_CANONICAL_SOURCE_SHA="$EXPECTED_CANONICAL_SOURCE_SHA" \
+            -e EXPECTED_HOSTED_SOURCE_SHA="$EXPECTED_HOSTED_SOURCE_SHA" \
+            --entrypoint node "$IMAGE" -e '
+              const assert=require("node:assert/strict");
+              const fs=require("node:fs");
+              const {createHash}=require("node:crypto");
+              const sha=b=>createHash("sha256").update(b).digest("hex");
+              const hosted=JSON.parse(fs.readFileSync("/app/BUILD_INFO_HOSTED.json","utf8"));
+              assert.equal(hosted.release,process.env.EXPECTED_CANDIDATE,"Hosted build identity differs from deployment candidate");
+              assert.equal(hosted.canonicalSourceContentSha256,process.env.EXPECTED_CANONICAL_SOURCE_SHA,"Canonical source provenance differs from deployment manifest");
+              assert.equal(hosted.hostedSourceContentSha256,process.env.EXPECTED_HOSTED_SOURCE_SHA,"Hosted source provenance differs from deployment manifest");
+              assert.equal(hosted.productionApproved,false,"Staging build unexpectedly claims production approval");
+              assert.equal(hosted.pilotReady,false,"Staging build unexpectedly claims pilot readiness");
+              assert.equal(hosted.stagingOnly,true,"Hosted identity must remain staging-only");
+              const runtimeBytes=fs.readFileSync("/app/RUNTIME_MANIFEST.json");
+              assert.equal(sha(runtimeBytes),process.env.EXPECTED_RUNTIME_MANIFEST_SHA,"Runtime manifest SHA differs from deployment manifest");
+              const runtime=JSON.parse(runtimeBytes);
+              const critical=[
+                "lib/autonomy-safety-kernel.cjs",
+                "lib/autonomous-remediation.cjs",
+                "lib/support-operations.cjs",
+                "lib/support-bot.cjs",
+                "lib/agent-tool-authority.cjs",
+                "lib/agent-trust-boundary.cjs",
+                "lib/provider-recovery-authority.cjs",
+                "lib/protection-shield.cjs",
+                "lib/security-control-plane.cjs"
+              ];
+              for(const rel of critical){
+                assert.match(runtime[rel]||"",/^[a-f0-9]{64}$/,"Critical module missing from runtime manifest: "+rel);
+                assert.equal(sha(fs.readFileSync("/app/"+rel)),runtime[rel],"Critical module hash differs from runtime manifest: "+rel);
+              }
+            '
       - name: Prove autonomy safety invariants inside candidate
         shell: bash
         run: |
