@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "incident_id": "wfm-2026-09-17-0676-security-baseline-regression",
+  "detected_at": "2026-09-17T12:23:26Z",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "classification": [
+    "deployment-provenance",
+    "security-regression",
+    "ci-compatibility"
+  ],
+  "severity": "critical",
+  "production_impact": "none-verified",
+  "promotion_status": "blocked",
+  "evidence": {
+    "main_commit": "f64c88ce21060bbb11abaa96b56b08cbcb1b5967",
+    "runtime_integrity_run": 35220818336,
+    "runtime_integrity_result": "failure",
+    "every_push_security_run": 35220818224,
+    "every_push_security_result": "failure",
+    "deployment_findings": [
+      "Dockerfile regressed from the approved Node 22.23.2 immutable digest to mutable node:22.16.0-bookworm-slim",
+      "Dockerfile no longer declares USER node and therefore does not satisfy the non-root runtime invariant",
+      "DEPLOYMENT_MANIFEST.json no longer carries node_image, runtime_user or staging_only fields required by the approved security baseline",
+      "the deployment validator rejects the candidate before image build",
+      "the every-push security gate also detects an older OneDrive workflow using ubuntu-latest, mutable action tags and pull_request execution",
+      "browser proof is on SECURITY HOLD and there is no current browser proof for 0.6.76"
+    ]
+  },
+  "containment": [
+    "do not promote or treat 0.6.76-hosted-staging-rc1 as validated",
+    "preserve the encrypted bundle and parent provenance without mutating production",
+    "restore the Node 22.23.2 immutable image and non-root execution contract before candidate validation",
+    "require the deployment manifest and validator to describe the encrypted-bootstrap transport explicitly rather than bypassing the existing gates",
+    "keep browser proof fail-closed until non-public ephemeral staging authentication and immutable browser tooling exist"
+  ],
+  "regression_rules": [
+    {
+      "id": "deployment-node-security-floor",
+      "must_hold": "Docker FROM exactly matches manifest node_image, is digest pinned, and is >= 22.23.2"
+    },
+    {
+      "id": "deployment-non-root-runtime",
+      "must_hold": "manifest runtime_user is node and final Docker USER is node"
+    },
+    {
+      "id": "bootstrap-schema-compatibility",
+      "must_hold": "encrypted-bootstrap candidates must have an explicit transport schema validated without disabling existing safety invariants"
+    },
+    {
+      "id": "candidate-proof-coupling",
+      "must_hold": "browser/customer proof release identity must equal the candidate being considered for promotion"
+    },
+    {
+      "id": "owner-push-workflow-trust",
+      "must_hold": "private staging workflows execute only on owner-originated pushes with pinned runners/actions and no derivable credentials"
+    }
+  ],
+  "safe_next_action": "repair on a bounded branch, run integrity/security/provenance gates, and merge only if main has not moved and the exact candidate is green",
+  "llm_direct_execution_authority": false
+}
