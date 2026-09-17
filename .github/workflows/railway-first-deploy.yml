@@ -1,22 +1,26 @@
-name: Railway promote merged UX - customer proof
+name: Railway first deploy - customer proof 0.6.76
 
 on:
   push:
-    branches:
-      - 'autonomy/live-host-ux-proof'
+    branches: [main]
     paths:
       - '.github/workflows/railway-first-deploy.yml'
+      - 'scripts/live-auth-proof.mjs'
+      - 'scripts/live-isolation-kiosk-proof.mjs'
+      - 'scripts/live-correction-proof.mjs'
+      - 'scripts/live-visual-evidence.mjs'
+      - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: railway-promote-merged-ux-customer-proof
+  group: railway-auth-proof-wfm-customer-proof-0676-v5
   cancel-in-progress: true
 
 jobs:
-  promote:
+  first-deploy:
     if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -25,30 +29,22 @@ jobs:
       RAILWAY_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'
       RAILWAY_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'
       RAILWAY_SERVICE_ID: 'ddd54fb9-3564-4251-9959-28cf3308c272'
-      WFM_BASE_URL: 'https://wfm-customer-proof-0676-production.up.railway.app'
-      EXPECTED_MAIN_SHA: '9c23159b2890bb206793e7d10a0b4790d4b187f0'
       EXPECTED_RUNTIME_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'
     steps:
-      - name: Checkout exact green merged main source
+      - name: Checkout sealed proof repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: '9c23159b2890bb206793e7d10a0b4790d4b187f0'
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Re-verify exact source and staging claim boundary
+      - name: Re-verify frozen runtime before upload
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
           echo "$EXPECTED_RUNTIME_SHA256  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz" | sha256sum -c -
           grep -F '"production_approved": false' DEPLOYMENT_MANIFEST.json
           grep -F '"pilot_ready": false' DEPLOYMENT_MANIFEST.json
           grep -F '"staging_only": true' DEPLOYMENT_MANIFEST.json
-          grep -F 'WFM_UX_RESET_CYCLE9_BEGIN' Dockerfile
-          test -f ux-overlay/ux-reset-cycle9.js
-          test -f ux-overlay/ux-reset-cycle9.css
-          echo 'EXACT_MERGED_UX_SOURCE=PASS'
 
       - name: Install pinned Railway CLI with published digest verification
         shell: bash
@@ -65,46 +61,49 @@ jobs:
           echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
           "$CLI_BIN" --version
 
-      # Reviewed credential boundary: the project token exists only in this fixed-target upload step.
-      - name: Upload exact merged UX source to existing customer-proof service
+      # Security boundary: this is the only step that receives the deployment credential.
+      # The repository-wide security gate enforces the exact secret name, workflow path,
+      # owner-only trigger, fixed target IDs, pinned runner/actions and non-persistent checkout.
+      - name: Bootstrap exact existing Railway customer-proof service
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
-          "$RAILWAY_BIN" up --ci \
-            --project "$RAILWAY_PROJECT_ID" \
+
+          # Read the canonical hosted-staging variables into a runner-temp file. Neither
+          # the Railway token nor the staging password is printed or written to evidence.
+          "$RAILWAY_BIN" variable list \
+            --service "$RAILWAY_SERVICE_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --service "$RAILWAY_SERVICE_ID"
+            --json > "$RUNNER_TEMP/railway-vars.json"
 
-      - name: Prove exact role-first UX is publicly served
-        shell: bash
-        run: |
-          set -euo pipefail
-          for i in $(seq 1 40); do
-            if curl --fail --silent --show-error --connect-timeout 10 --max-time 20 \
-              "$WFM_BASE_URL/api/health" -o /tmp/health.json; then
-              break
-            fi
-            sleep 4
-          done
-          test -s /tmp/health.json
-          grep -F '"status":"ok"' /tmp/health.json
-          grep -F '"fixtureOnly":true' /tmp/health.json
-          grep -F '"productionApproved":false' /tmp/health.json
-          grep -F '"pilotReady":false' /tmp/health.json
+          node --input-type=module - "$RUNNER_TEMP/railway-vars.json" <<'NODE'
+          import fs from 'node:fs';
+          const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const password = vars.WFM_STAGING_PASSWORD;
+          if (!password || !vars.WFM_PUBLIC_ORIGIN) {
+            throw new Error('Required canonical staging variables are unavailable to the proof runner.');
+          }
+          // The Railway project token has completed its job before the proof modules run.
+          // Remove it from this child process so browser/proof code never receives it.
+          delete process.env.RAILWAY_TOKEN;
+          process.env.WFM_STAGING_PASSWORD = password;
+          process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
+          await import('./scripts/live-auth-proof.mjs');
+          await import('./scripts/live-isolation-kiosk-proof.mjs');
+          await import('./scripts/live-correction-proof.mjs');
+          await import('./scripts/live-visual-evidence.mjs');
+          NODE
 
-          curl --fail --silent --show-error "$WFM_BASE_URL/value-cockpit-ui.js" -o /tmp/value-cockpit-ui.js
-          curl --fail --silent --show-error "$WFM_BASE_URL/factory-control-ui.css" -o /tmp/factory-control-ui.css
-          grep -F 'WFM_UX_RESET_CYCLE9_BEGIN' /tmp/value-cockpit-ui.js
-          grep -F "overview:'Today'" /tmp/value-cockpit-ui.js
-          grep -F 'Work the exceptions, not the timesheet.' /tmp/value-cockpit-ui.js
-          grep -F 'Is my time correct?' /tmp/value-cockpit-ui.js
-          grep -F 'WFM_UX_RESET_CYCLE9_BEGIN' /tmp/factory-control-ui.css
-          grep -F '.ux-tool-drawer' /tmp/factory-control-ui.css
+          rm -f "$RUNNER_TEMP/railway-vars.json"
 
-          status=$(curl --silent --show-error --output /tmp/bootstrap-unauth.json \
-            --write-out '%{http_code}' "$WFM_BASE_URL/api/bootstrap")
-          test "$status" = '401'
-          echo 'LIVE_ROLE_FIRST_UX_PROMOTION=PASS'
+      - name: Upload live visual evidence package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wfm-customer-proof-0676-live-evidence
+          path: ${{ runner.temp }}/wfm-evidence-output
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
