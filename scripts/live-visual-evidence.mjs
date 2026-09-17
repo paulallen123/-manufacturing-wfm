@@ -20,18 +20,24 @@ assert.equal(health.pilotReady, false);
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 const profileDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-chrome-profile');
+const framesDir = path.join(outDir, '_screencast_frames');
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.rmSync(profileDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 fs.mkdirSync(profileDir, { recursive: true });
+fs.mkdirSync(framesDir, { recursive: true });
 
-const candidates = ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser'];
-let chrome = '';
-for (const candidate of candidates) {
-  const which = spawnSync('which', [candidate], { encoding: 'utf8' });
-  if (which.status === 0 && which.stdout.trim()) { chrome = which.stdout.trim(); break; }
+function executable(candidates) {
+  for (const candidate of candidates) {
+    const which = spawnSync('which', [candidate], { encoding: 'utf8' });
+    if (which.status === 0 && which.stdout.trim()) return which.stdout.trim();
+  }
+  return '';
 }
+const chrome = executable(['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']);
+const ffmpeg = executable(['ffmpeg']);
 assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runner.');
+assert.ok(ffmpeg, 'ffmpeg is unavailable on the pinned runner; cannot create the browser recording.');
 
 const chromeEnv = { ...process.env };
 delete chromeEnv.WFM_STAGING_PASSWORD;
@@ -83,6 +89,17 @@ try {
   const pending = new Map();
   const requests = new Map();
   const apiResponses = [];
+  let screencastActive = false;
+  let frameCount = 0;
+
+  function send(method, params = {}) {
+    const id = nextId++;
+    return new Promise((resolve, reject) => {
+      pending.set(id, { resolve, reject, method });
+      ws.send(JSON.stringify({ id, method, params }));
+    });
+  }
+
   ws.addEventListener('message', event => {
     const raw = typeof event.data === 'string' ? event.data : Buffer.from(event.data).toString('utf8');
     const msg = JSON.parse(raw);
@@ -106,15 +123,14 @@ try {
         }
       } catch {}
     }
+    if (msg.method === 'Page.screencastFrame' && screencastActive) {
+      frameCount += 1;
+      const file = path.join(framesDir, `frame-${String(frameCount).padStart(5, '0')}.jpg`);
+      fs.writeFileSync(file, Buffer.from(msg.params.data, 'base64'));
+      send('Page.screencastFrameAck', { sessionId: msg.params.sessionId }).catch(() => {});
+    }
   });
 
-  function send(method, params = {}) {
-    const id = nextId++;
-    return new Promise((resolve, reject) => {
-      pending.set(id, { resolve, reject, method });
-      ws.send(JSON.stringify({ id, method, params }));
-    });
-  }
   async function evaluate(expression, { awaitPromise = true, returnByValue = true } = {}) {
     const result = await send('Runtime.evaluate', { expression, awaitPromise, returnByValue });
     if (result.exceptionDetails) throw new Error(result.exceptionDetails.text || 'Browser evaluation failed.');
@@ -146,7 +162,7 @@ try {
         el.click();
         return true;
       })()`);
-      if (clicked) { await sleep(900); return label; }
+      if (clicked) { await sleep(1000); return label; }
     }
     return null;
   }
@@ -179,6 +195,11 @@ try {
   }
   await waitForExpression(`document.body && document.body.innerText.length > 100`);
 
+  // Start the recording only after authentication so no credential entry can appear in it.
+  screencastActive = true;
+  await send('Page.startScreencast', { format: 'jpeg', quality: 72, maxWidth: 1440, maxHeight: 1000, everyNthFrame: 2 });
+  await sleep(800);
+
   const captured = [];
   captured.push(await screenshot('00-control-centre.png'));
   const routes = [];
@@ -200,8 +221,28 @@ try {
 
   await send('Page.navigate', { url: `${origin}/kiosk.html` });
   await waitForExpression(`document.readyState === 'complete' || document.readyState === 'interactive'`);
-  await sleep(900);
+  await sleep(1100);
   captured.push(await screenshot('06-kiosk.png'));
+  await sleep(700);
+
+  await send('Page.stopScreencast');
+  screencastActive = false;
+  await sleep(300);
+  assert.ok(frameCount >= 4, `Browser screencast produced too few frames (${frameCount}).`);
+
+  const videoName = '07-live-browser-walkthrough.mp4';
+  const videoPath = path.join(outDir, videoName);
+  const encoded = spawnSync(ffmpeg, [
+    '-y', '-loglevel', 'error',
+    '-framerate', '6',
+    '-i', path.join(framesDir, 'frame-%05d.jpg'),
+    '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '24',
+    '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+    videoPath,
+  ], { encoding: 'utf8', timeout: 90_000, env: chromeEnv });
+  assert.equal(encoded.status, 0, `ffmpeg failed: ${encoded.stderr || encoded.stdout || 'unknown error'}`);
+  assert.ok(fs.existsSync(videoPath) && fs.statSync(videoPath).size > 20_000, 'Browser walkthrough video is missing or unexpectedly small.');
+  fs.rmSync(framesDir, { recursive: true, force: true });
 
   const uniqueApiResponses = [...new Map(apiResponses.map(x => [`${x.method} ${x.path} ${x.status}`, x])).values()];
   const metadata = {
@@ -213,6 +254,8 @@ try {
     claimBoundary: { fixtureOnly: true, productionApproved: false, pilotReady: false },
     authenticatedAs: 'superuser@northstar.example',
     screenshots: captured,
+    browserWalkthroughVideo: videoName,
+    screencastFrameCount: frameCount,
     navigationLabelsExercised: routes,
     observedApiResponses: uniqueApiResponses,
   };
@@ -228,12 +271,14 @@ try {
     'Pilot ready: false',
     '',
     `Screenshots: ${captured.join(', ')}`,
+    `Browser walkthrough: ${videoName}`,
     `Read-only navigation: ${routes.join(', ') || 'control centre only'}`,
     '',
-    'Authentication credential is not stored in this package.',
+    'Authentication begins before the recording starts; no credential is stored in this package.',
   ].join('\n'));
 
   console.log(`VISUAL_EVIDENCE_SCREENSHOTS=${captured.length}`);
+  console.log(`VISUAL_EVIDENCE_VIDEO=${videoName};frames=${frameCount}`);
   console.log(`VISUAL_EVIDENCE_NAV=${routes.join('|')}`);
   console.log('LIVE_VISUAL_EVIDENCE_CAPTURE=PASS');
 } finally {
