@@ -7,6 +7,7 @@ on:
       - '.github/workflows/railway-first-deploy.yml'
       - 'scripts/live-auth-proof.mjs'
       - 'scripts/live-isolation-kiosk-proof.mjs'
+      - 'scripts/live-correction-proof.mjs'
       - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
 
@@ -89,4 +90,5 @@ jobs:
           process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
           await import('./scripts/live-auth-proof.mjs');
           await import('./scripts/live-isolation-kiosk-proof.mjs');
+          await import('./scripts/live-correction-proof.mjs');
           NODE
