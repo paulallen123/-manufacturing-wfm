@@ -2,7 +2,9 @@ name: Live browser read-only proof
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'security/**'
     paths:
       - '.github/workflows/live-browser-readonly-proof.yml'
   workflow_dispatch:
@@ -26,6 +28,28 @@ jobs:
           cd "$RUNNER_TEMP/wfm-browser-proof"
           npm init -y >/dev/null 2>&1
           npm install --no-audit --no-fund --save-exact playwright@1.63.0 >/dev/null
+
+      - name: Require patched Chrome before exposing staging credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_VERSION="$(google-chrome --version | grep -oE '[0-9]+(\.[0-9]+){3}' | head -n1)"
+          test -n "$CHROME_VERSION" || { echo 'Unable to determine Google Chrome version.' >&2; exit 1; }
+          node - "$CHROME_VERSION" <<'NODE'
+          const assert = require('node:assert/strict');
+          const actual = process.argv[2].split('.').map(Number);
+          const minimum = '153.0.8010.47'.split('.').map(Number);
+          const gte = (a,b) => {
+            for (let i = 0; i < Math.max(a.length,b.length); i += 1) {
+              const av = a[i] || 0, bv = b[i] || 0;
+              if (av > bv) return true;
+              if (av < bv) return false;
+            }
+            return true;
+          };
+          assert.ok(gte(actual, minimum), `Google Chrome ${actual.join('.')} is below the WFM browser-proof security floor ${minimum.join('.')}. Refusing to expose WFM_DEMO_PASSWORD to a browser session until the hosted runner is patched.`);
+          console.log(`CHROME_SECURITY_FLOOR=PASS actual=${actual.join('.')} minimum=${minimum.join('.')}`);
+          NODE
 
       - name: Run authenticated read-only customer journey
         env:
