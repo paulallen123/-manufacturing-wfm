@@ -92,6 +92,17 @@ jobs:
           test "$(docker run --rm --entrypoint node "$IMAGE" --version)" = "$EXPECTED_NODE"
           test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "node"
 
+          docker run --rm --entrypoint sh "$IMAGE" -ec '
+            test ! -e /usr/local/lib/node_modules/npm
+            test ! -e /usr/local/lib/node_modules/corepack
+            for p in npm npx corepack yarn yarnpkg pnpm pnpx; do
+              if command -v "$p" >/dev/null 2>&1; then
+                echo "Unexpected package manager in final runtime: $p" >&2
+                exit 1
+              fi
+            done
+          '
+
           docker run --rm --entrypoint node "$IMAGE" - <<'NODE'
           const assert = require('node:assert/strict');
           const fs = require('node:fs');
