@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'autonomy/**'
+      - 'security/**'
     paths:
       - Dockerfile
       - DEPLOYMENT_MANIFEST.json
@@ -48,11 +49,19 @@ jobs:
           const expectedNodeCves = [
             'CVE-2026-56846','CVE-2026-56848','CVE-2026-58043',
             'CVE-2026-56850','CVE-2026-58040','CVE-2026-58042',
-            'CVE-2026-58045','CVE-2026-56847','CVE-2026-58039'
+            'CVE-2026-58045','CVE-2026-56847','CVE-2026-58039',
+            'CVE-2026-58044'
           ].sort();
           assert.equal(baseline.node.minimum, '22.23.2', 'Node security floor changed without external-intelligence review.');
           assert.equal(baseline.node.security_release_source, 'https://nodejs.org/en/blog/release/v22.23.2');
           assert.deepEqual([...new Set(baseline.node.tracked_cves)].sort(), expectedNodeCves, 'Node 22.23.2 advisory coverage is incomplete or inconsistent.');
+
+          const headerDesync = baseline.node.http_header_truncation_desync;
+          assert.ok(headerDesync && typeof headerDesync === 'object', 'Node HTTP header-truncation desync reconciliation rule is required.');
+          assert.equal(headerDesync.official_cve, 'CVE-2026-58044');
+          assert.equal(headerDesync.minimum_patched, '22.23.2', 'WFM Node 22 request-desync fixed-version floor changed without review.');
+          assert.equal(headerDesync.current_runtime_affected_by_version, false, 'Pinned Node 22.23.2 must remain classified outside the official affected runtime range.');
+          assert.equal(headerDesync.source, baseline.node.security_release_source, 'Request-desync version decision must remain tied to the canonical Node.js security release.');
 
           const bundled = baseline.node.bundled_undici;
           assert.ok(bundled && typeof bundled === 'object', 'Bundled undici advisory baseline is required.');
@@ -101,6 +110,8 @@ jobs:
           console.log(JSON.stringify({
             ok:true,
             nodeCves:expectedNodeCves.length,
+            nodeRequestDesyncCve:headerDesync.official_cve,
+            nodeRequestDesyncAffectedByVersion:headerDesync.current_runtime_affected_by_version,
             undiciCves:bundled.advisories.length,
             agentRules:intel.agent_threat_rules.map(x => x.id),
             egressDefault:egress.default_egress
