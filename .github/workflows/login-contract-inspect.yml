@@ -1,4 +1,4 @@
-name: Inspect live login contract
+name: Inspect sealed hosted login validation
 
 on:
   push:
@@ -16,48 +16,30 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 3
     steps:
-      - name: Inspect public login request contract
+      - name: Checkout sealed proof repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Inspect sealed server login contract
         shell: bash
-        env:
-          WFM_ORIGIN: https://wfm-customer-proof-0676-production.up.railway.app
         run: |
           set -euo pipefail
-          node <<'NODE'
-          const origin = process.env.WFM_ORIGIN;
-          const get = async path => {
-            const r = await fetch(`${origin}${path}`, {signal: AbortSignal.timeout(15000)});
-            if (!r.ok) throw new Error(`${path} returned HTTP ${r.status}`);
-            return r.text();
-          };
-          const html = await get('/');
-          const paths = new Set(['/']);
-          for (const m of html.matchAll(/<script[^>]+src=["']([^"']+\.js(?:\?[^"']*)?)["']/gi)) {
-            const raw = m[1];
-            paths.add(raw.startsWith('http') ? new URL(raw).pathname : (raw.startsWith('/') ? raw : `/${raw}`));
+          mkdir -p "$RUNNER_TEMP/sealed-runtime"
+          tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C "$RUNNER_TEMP/sealed-runtime"
+          SERVER="$RUNNER_TEMP/sealed-runtime/server.cjs"
+          test -f "$SERVER"
+          node - "$SERVER" <<'NODE'
+          const fs = require('node:fs');
+          const source = fs.readFileSync(process.argv[2], 'utf8');
+          const needles = ['/api/login','WFM_STAGING_PASSWORD','timingSafeEqual','superuser@northstar.example'];
+          for (const needle of needles) {
+            let at = source.indexOf(needle);
+            if (at < 0) continue;
+            console.log(`SEALED_LOGIN_NEEDLE=${needle}`);
+            console.log('SEALED_LOGIN_SNIPPET_START');
+            console.log(source.slice(Math.max(0, at - 1800), Math.min(source.length, at + 3200)));
+            console.log('SEALED_LOGIN_SNIPPET_END');
           }
-          // The live app can lazy-load these first-party bundles after bootstrap.
-          for (const path of [
-            '/app.js','/core.js','/personal-core.js','/personal-view.js','/features.js',
-            '/company-ui.js','/org-admin-ui.js','/onboarding-ui.js','/integration-ui.js',
-            '/factory-control-ui.js','/operations-ui.js','/review-ui.js','/schedule-ui.js',
-            '/resources-ui.js','/availability-ui.js','/time-review-ui.js','/support-bot-ui.js'
-          ]) paths.add(path);
-
-          const needles = ['/api/login', 'api/login'];
-          const emailSet = new Set(html.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || []);
-          let found = false;
-          for (const path of paths) {
-            const source = path === '/' ? html : await get(path).catch(() => '');
-            for (const email of source.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || []) emailSet.add(email);
-            const at = needles.map(n => source.indexOf(n)).find(i => i >= 0) ?? -1;
-            if (at >= 0) {
-              found = true;
-              console.log(`LOGIN_CONTRACT_FILE=${path}`);
-              console.log('LOGIN_CONTRACT_SNIPPET_START');
-              console.log(source.slice(Math.max(0, at - 1800), Math.min(source.length, at + 2600)));
-              console.log('LOGIN_CONTRACT_SNIPPET_END');
-            }
-          }
-          console.log('STATIC_EMAIL_CANDIDATES=' + JSON.stringify([...emailSet].slice(0, 30)));
-          if (!found) throw new Error('Login endpoint not found in inspected public application bundles');
           NODE

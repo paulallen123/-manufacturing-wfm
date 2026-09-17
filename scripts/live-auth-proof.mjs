@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 
 const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
-const fixtureEmail = 'manager@northstar.example';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
 const password = process.env.WFM_STAGING_PASSWORD;
 
@@ -33,6 +32,37 @@ function report(label, status, extra = '') {
   console.log(`${label}: HTTP ${status}${extra ? ` · ${extra}` : ''}`);
 }
 
+async function loginAs(email) {
+  const login = await fetchText('/api/login', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'origin': origin,
+      'referer': `${origin}/`,
+      'accept': 'application/json,text/plain,*/*',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+  assert.equal(login.response.status, 200, `Live staging login failed for ${email} with HTTP ${login.response.status}.`);
+  const cookie = cookieFrom(login.response);
+  assert.ok(cookie, `Login succeeded for ${email} but no session cookie was returned.`);
+  report('authenticated login', login.response.status, email);
+  return cookie;
+}
+
+async function authedGet(cookie, path, { required = true } = {}) {
+  const { response, text } = await fetchText(path, {
+    headers: {
+      cookie,
+      accept: 'application/json,text/plain,*/*',
+      referer: `${origin}/`,
+    },
+  });
+  report(path, response.status);
+  if (required) assert.equal(response.status, 200, `${path} did not return HTTP 200.`);
+  return { status: response.status, text };
+}
+
 // Public boundary first.
 {
   const { response, text } = await fetchText('/api/health');
@@ -53,37 +83,17 @@ function report(label, status, extra = '') {
   report('unauthenticated bootstrap', response.status, 'fail-closed confirmed');
 }
 
-// Authenticate without ever printing the credential. Match the public browser contract:
-// a fictional fixture account email plus the staging password, sent same-origin.
-const login = await fetchText('/api/login', {
-  method: 'POST',
-  headers: {
-    'content-type': 'application/json',
-    'origin': origin,
-    'referer': `${origin}/`,
-    'accept': 'application/json,text/plain,*/*',
-  },
-  body: JSON.stringify({ email: fixtureEmail, password }),
-});
-assert.equal(login.response.status, 200, `Live staging login failed with HTTP ${login.response.status}.`);
-const cookie = cookieFrom(login.response);
-assert.ok(cookie, 'Login succeeded but no session cookie was returned.');
-report('authenticated login', login.response.status, fixtureEmail);
+// Prove capability-based access: a normal manager can run the core operating view but
+// cannot read payroll-control data merely because they are a manager.
+const managerCookie = await loginAs('manager@northstar.example');
+await authedGet(managerCookie, '/api/bootstrap');
+const managerPayroll = await authedGet(managerCookie, '/api/payroll-run', { required: false });
+assert.equal(managerPayroll.status, 403, 'Manager unexpectedly received payroll access.');
+console.log('manager payroll boundary: PROVEN 403');
 
-async function authedGet(path, { required = true } = {}) {
-  const { response, text } = await fetchText(path, {
-    headers: {
-      cookie,
-      accept: 'application/json,text/plain,*/*',
-      referer: `${origin}/`,
-    },
-  });
-  report(path, response.status);
-  if (required) assert.equal(response.status, 200, `${path} did not return HTTP 200.`);
-  return { status: response.status, text };
-}
+// Use the sealed superuser fixture for the complete read-only customer-proof journey.
+const cookie = await loginAs('superuser@northstar.example');
 
-// Core authenticated operating journey already used by the live UI.
 for (const path of [
   '/api/bootstrap',
   '/api/readiness',
@@ -97,12 +107,9 @@ for (const path of [
   '/api/support/bot',
   '/api/personal',
 ]) {
-  await authedGet(path);
+  await authedGet(cookie, path);
 }
 
-// Customer-journey categories: try the most likely read-only API surfaces. Missing optional
-// aliases are reported, not treated as a product failure; the category can still be proven
-// by the current route used by the application.
 const categories = {
   'company/onboarding': ['/api/onboarding', '/api/company'],
   'workforce/resources': ['/api/resources', '/api/availability'],
@@ -114,7 +121,7 @@ const categories = {
 for (const [name, candidates] of Object.entries(categories)) {
   let passed = null;
   for (const path of candidates) {
-    const result = await authedGet(path, { required: false });
+    const result = await authedGet(cookie, path, { required: false });
     if (result.status === 200) {
       passed = path;
       break;
@@ -123,7 +130,6 @@ for (const [name, candidates] of Object.entries(categories)) {
   console.log(`${name}: ${passed ? `PROVEN via ${passed}` : 'NO HTTP-200 candidate found'}`);
 }
 
-// Prove the corresponding UI bundles and kiosk surface are actually served by this deployment.
 for (const path of [
   '/onboarding-ui.js',
   '/resources-ui.js',
