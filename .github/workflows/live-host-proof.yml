@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
-      WFM_BASE_URL: https://wfm-staging-runtime-0670-production.up.railway.app
+      WFM_BASE_URL: https://wfm-customer-proof-0676-production.up.railway.app
       EXPECTED_RELEASE: 0.6.76-hosted-staging-rc1
     steps:
       - name: Prove public health and release identity
