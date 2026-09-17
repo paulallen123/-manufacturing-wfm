@@ -10,6 +10,7 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
  && cp /tmp/ux-role-shell.css /app/public/ux-role-shell.css \
  && cp /tmp/ux-role-shell.js /app/public/ux-role-shell.js \
  && node -e "const fs=require('fs');const p='/app/public/index.html';let s=fs.readFileSync(p,'utf8');if(!s.includes('ux-role-shell.css'))s=s.replace('</head>','<link rel=\"stylesheet\" href=\"ux-role-shell.css\">\\n</head>');if(!s.includes('ux-role-shell.js'))s=s.replace('</body>','<script src=\"ux-role-shell.js\"></script>\\n</body>');fs.writeFileSync(p,s)" \
+ && node -e "const fs=require('fs');const p='/app/server.cjs';let s=fs.readFileSync(p,'utf8');const marker=\"'/styles.css':'styles.css'\";if(!s.includes(\"'/ux-role-shell.css':'ux-role-shell.css'\")){if(!s.includes(marker))throw new Error('Static file map marker not found');s=s.replace(marker,\"'/ux-role-shell.css':'ux-role-shell.css','/ux-role-shell.js':'ux-role-shell.js',\"+marker);}fs.writeFileSync(p,s)" \
  && rm -f /tmp/ux-role-shell.css /tmp/ux-role-shell.js \
  && chown -R node:node /app
 # The staged application is self-contained and uses Node built-ins only. Remove package
