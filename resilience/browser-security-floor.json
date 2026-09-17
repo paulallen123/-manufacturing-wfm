@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "updated": "2026-09-17",
+  "authoritative_source": "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0541751186.html",
+  "upstream_release_date": "2026-09-15",
+  "platform": "linux",
+  "browser": "Google Chrome Stable",
+  "minimum_version": "153.0.8010.47",
+  "reason": "Google's 15 September 2026 stable update sets the patched Linux Chrome floor at 153.0.8010.47 and fixes 42 security issues. Credential-bearing WFM browser proofs must fail closed before any staging or demo credential is made available to a browser session when the runner is below this floor.",
+  "protected_paths": [
+    {
+      "workflow": ".github/workflows/live-browser-readonly-proof.yml",
+      "credential": "WFM_DEMO_PASSWORD",
+      "require_preflight_before_secret_step": true
+    },
+    {
+      "workflow": ".github/workflows/railway-first-deploy.yml",
+      "credential": "RAILWAY_TOKEN and downstream WFM_STAGING_PASSWORD",
+      "require_preflight_before_secret_step": true
+    },
+    {
+      "script": "scripts/live-visual-evidence.mjs",
+      "credential": "WFM_STAGING_PASSWORD",
+      "require_runtime_recheck_before_browser_spawn": true
+    }
+  ],
+  "controls": {
+    "fail_closed_on_unknown_version": true,
+    "allow_credential_bearing_browser_below_floor": false,
+    "allow_version_gate_bypass_environment_variable": false,
+    "allow_unverified_chromium_fallback_for_credential_bearing_proof": false,
+    "check_before_secret_injection": true,
+    "preserve_failure_evidence_without_secret_material": true
+  },
+  "regression_tests": [
+    {
+      "id": "version-comparator-boundary",
+      "cases": [
+        {"actual": "153.0.8010.46", "allowed": false},
+        {"actual": "153.0.8010.47", "allowed": true},
+        {"actual": "153.0.8010.48", "allowed": true},
+        {"actual": "154.0.0.0", "allowed": true},
+        {"actual": "152.0.7977.82", "allowed": false}
+      ]
+    },
+    {
+      "id": "secret-step-ordering",
+      "expected": "The browser security-floor preflight appears before every workflow step that receives a browser-relevant repository/provider credential."
+    },
+    {
+      "id": "stale-runner-containment",
+      "expected": "On a runner below 153.0.8010.47, the credential-bearing browser workflow terminates before secret injection or browser authentication."
+    }
+  ]
+}
