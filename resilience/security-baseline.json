@@ -17,7 +17,45 @@
       "CVE-2026-58045",
       "CVE-2026-56847",
       "CVE-2026-58039"
-    ]
+    ],
+    "bundled_undici": {
+      "version": "6.28.0",
+      "source": "https://github.com/nodejs/node/blob/v22.23.2/deps/undici/src/package.json",
+      "minimum_patched_for_2026_09_04_advisories": "6.28.1",
+      "upstream_fixed_release": "https://github.com/nodejs/undici/releases/tag/v6.28.1",
+      "advisories": [
+        {
+          "cve": "CVE-2026-19534",
+          "ghsa": "GHSA-rfgv-xxqx-mfg5",
+          "severity": "high",
+          "affected": ">=6.7.0 <6.28.1",
+          "surface": "WebSocket client handshake",
+          "source": "https://github.com/nodejs/undici/security/advisories/GHSA-rfgv-xxqx-mfg5"
+        },
+        {
+          "cve": "CVE-2026-85024",
+          "ghsa": "GHSA-3wwx-pv8p-q78v",
+          "severity": "moderate",
+          "affected": ">=6.25.0 <6.28.1",
+          "surface": "WebSocket permessage-deflate",
+          "source": "https://github.com/nodejs/undici/security/advisories/GHSA-3wwx-pv8p-q78v"
+        },
+        {
+          "cve": "CVE-2026-18540",
+          "ghsa": "GHSA-r53p-7pc4-xj5r",
+          "severity": "low",
+          "affected": "<6.28.1",
+          "surface": "retry interceptor downstream response framing",
+          "source": "https://github.com/nodejs/undici/security/advisories/GHSA-r53p-7pc4-xj5r"
+        }
+      ],
+      "containment": {
+        "websocket_client_allowed": false,
+        "retry_interceptor_allowed": false,
+        "reason": "Node 22.23.2 bundles undici 6.28.0. Until the pinned Node 22 image contains undici >=6.28.1, WFM server code must not use the bundled WebSocket client or undici retry interceptor. Built-in fetch remains permitted because these three September 4 advisories require the affected WebSocket or retry-interceptor surfaces.",
+        "upgrade_trigger": "Move to an approved digest-pinned Node 22 image only after exact-candidate integrity and regression gates prove process.versions.undici >= 6.28.1."
+      }
+    }
   },
   "deployment": {
     "production_approved": false,
@@ -57,6 +95,8 @@
   "external_intelligence": {
     "authoritative_sources": {
       "node_security_release": "https://nodejs.org/en/blog/release/v22.23.2",
+      "node_22_bundled_undici": "https://github.com/nodejs/node/blob/v22.23.2/deps/undici/src/package.json",
+      "undici_6_28_1_security_release": "https://github.com/nodejs/undici/releases/tag/v6.28.1",
       "node_tar_decompression_dos": "https://github.com/advisories/ghsa-23hp-3jrh-7fpw",
       "node_tar_replace_infinite_loop": "https://github.com/advisories/GHSA-8x88-c5mf-7j5w",
       "nist_agent_identity": "https://www.nist.gov/news-events/news/2026/02/new-concept-paper-identity-and-authority-software-agents",
