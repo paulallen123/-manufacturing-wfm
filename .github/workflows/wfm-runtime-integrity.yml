@@ -6,7 +6,9 @@ on:
       - Dockerfile
       - DEPLOYMENT_MANIFEST.json
       - resilience/security-baseline.json
+      - resilience/failure-scenarios.json
       - scripts/validate-deployment.mjs
+      - scripts/validate-resilience-scenarios.mjs
       - .github/workflows/wfm-runtime-integrity.yml
   push:
     branches:
@@ -16,7 +18,9 @@ on:
       - Dockerfile
       - DEPLOYMENT_MANIFEST.json
       - resilience/security-baseline.json
+      - resilience/failure-scenarios.json
       - scripts/validate-deployment.mjs
+      - scripts/validate-resilience-scenarios.mjs
       - .github/workflows/wfm-runtime-integrity.yml
 
 permissions:
@@ -33,6 +37,8 @@ jobs:
           node-version: '22.23.2'
       - name: Validate immutable deployment metadata
         run: node scripts/validate-deployment.mjs
+      - name: Validate failure preparation catalogue
+        run: node scripts/validate-resilience-scenarios.mjs
       - name: Build the exact staging candidate
         run: docker build --pull -t wfm-staging-candidate:${{ github.sha }} .
       - name: Verify authoritative container identity and patched runtime
@@ -99,6 +105,24 @@ jobs:
             assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"deterministic-runbook",targetTenant:"tenant-b"}).allowed,false,"Cross-tenant action must remain prohibited");
             assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"deterministic-runbook",dryRunVerified:false}).allowed,false,"Unverified action must remain prohibited");
             assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"deterministic-runbook",independentChecks:[]}).allowed,false,"Action without independent evidence must remain prohibited");
+          '
+      - name: Prove prepared reflex actions are authorised by current safety kernel
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-staging-candidate:${GITHUB_SHA}"
+          ACTIONS_JSON="$(node -e "const c=require('./resilience/failure-scenarios.json'); console.log(JSON.stringify([...new Set(c.scenarios.map(x=>x.autonomous_action).filter(Boolean))]))")"
+          docker run --rm -e ACTIONS_JSON="$ACTIONS_JSON" --entrypoint node "$IMAGE" -e '
+            const assert=require("node:assert/strict");
+            const S=require("/app/lib/autonomy-safety-kernel.cjs");
+            const evidence="b".repeat(64);
+            const common={tenant:"tenant-a",targetTenant:"tenant-a",reversible:true,dryRunVerified:true,independentChecks:[evidence],confidence:1,actorType:"deterministic-runbook"};
+            const actions=JSON.parse(process.env.ACTIONS_JSON||"[]");
+            assert.ok(actions.length>=7,"Expected prepared reversible reflex actions");
+            for(const type of actions){
+              const decision=S.evaluate({...common,type});
+              assert.equal(decision.allowed,true,`Prepared reflex action is not authorised by current safety kernel: ${type} (${decision.reason})`);
+            }
           '
       - name: Prove staging candidate refuses production mode
         shell: bash
