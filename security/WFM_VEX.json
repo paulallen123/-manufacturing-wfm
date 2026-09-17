@@ -1,0 +1,71 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/paulallen123/-manufacturing-wfm/security/WFM_VEX.json",
+  "author": "Manufacturing WFM automated security watch",
+  "role": "Document Creator",
+  "timestamp": "2026-09-17T10:56:09Z",
+  "version": 1,
+  "tooling": "WFM external issue watch; Node.js advisory + NVD affected/SSVC + CISA KEV + runtime reachability analysis",
+  "product": {
+    "@id": "pkg:oci/node@22.23.2-bookworm-slim?repository_url=docker.io/library/node&digest=sha256%3A83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5",
+    "identifiers": {
+      "runtimeWrapper": "0.6.70-hosted-staging-rc2",
+      "runtimeSha256": "ecb59f71218b0be62d815471259b916cfe595a97ebbc166a554e167d176cf37c"
+    }
+  },
+  "statements": [
+    {
+      "vulnerability": {"name": "CVE-2026-21717"},
+      "products": ["pkg:oci/node@22.23.2-bookworm-slim?repository_url=docker.io/library/node&digest=sha256%3A83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5"],
+      "status": "fixed",
+      "action_statement": "Upgrade the hosted wrapper from Node 22.16.0 to Node 22.23.2 and keep the image digest pinned. The prior runtime was materially exposed because server.cjs parses attacker-controlled JSON request bodies, including endpoints with request bodies up to 1.2 MB.",
+      "impact_statement": "Remote availability degradation was a reachable path on the prior Node runtime. NVD affected data marks Node 22 through 22.22.1 affected. CISA-ADP SSVC at review time: exploitation none, automatable no, technical impact partial.",
+      "references": ["https://nodejs.org/en/blog/vulnerability/march-2026-security-releases", "https://nvd.nist.gov/vuln/detail/CVE-2026-21717", "https://github.com/advisories/GHSA-326m-34v3-gv5p"]
+    },
+    {
+      "vulnerability": {"name": "CVE-2026-21710"},
+      "products": ["pkg:oci/node@22.23.2-bookworm-slim?repository_url=docker.io/library/node&digest=sha256%3A83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5"],
+      "status": "fixed",
+      "action_statement": "Node 22.23.2 includes the fix. Keep the source-level non-use of req.headersDistinct as defense in depth and fail the security baseline if the Node image regresses.",
+      "impact_statement": "The prior Node version was within the affected range, but the exact hosted runtime contains no req.headersDistinct access, so the published trigger was not reachable in current application code. CISA-ADP SSVC: exploitation none, automatable yes, technical impact partial.",
+      "references": ["https://nodejs.org/en/blog/vulnerability/march-2026-security-releases", "https://nvd.nist.gov/vuln/detail/CVE-2026-21710", "https://github.com/advisories/GHSA-xv6w-gxj8-v943"]
+    },
+    {
+      "vulnerability": {"name": "CVE-2026-48618"},
+      "products": ["pkg:oci/node@22.23.2-bookworm-slim?repository_url=docker.io/library/node&digest=sha256%3A83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5"],
+      "status": "fixed",
+      "action_statement": "Upgrade to Node 22.23.2. Outbound HTTPS provider calls exist, so TLS hostname-validation defects are treated as relevant even though provider endpoints are server-configured rather than customer-controlled.",
+      "impact_statement": "The old Node 22.16.0 runtime is in an affected release line and the application performs outbound HTTPS fetches for integrations. CISA-ADP SSVC: exploitation none, automatable no, technical impact partial.",
+      "references": ["https://nodejs.org/en/blog/vulnerability/june-2026-security-releases", "https://nvd.nist.gov/vuln/detail/CVE-2026-48618"]
+    },
+    {
+      "vulnerability": {"name": "CVE-2026-56846"},
+      "products": ["pkg:oci/node@22.23.2-bookworm-slim?repository_url=docker.io/library/node&digest=sha256%3A83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5"],
+      "status": "fixed",
+      "action_statement": "Upgrade to Node 22.23.2. Preserve current non-use of node:http2 unless a future feature has an explicit HTTP/2 security test suite.",
+      "impact_statement": "The old Node version was affected, but the exact WFM runtime does not import node:http2, so the HTTP/2 memory-exhaustion trigger was not reachable in the current application. CISA-ADP SSVC: exploitation none, automatable yes, technical impact partial.",
+      "references": ["https://nodejs.org/en/blog/vulnerability/july-2026-security-releases", "https://nvd.nist.gov/vuln/detail/CVE-2026-56846"]
+    },
+    {
+      "vulnerability": {"name": "CVE-2026-56848"},
+      "products": ["pkg:oci/node@22.23.2-bookworm-slim?repository_url=docker.io/library/node&digest=sha256%3A83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5"],
+      "status": "fixed",
+      "action_statement": "Upgrade to Node 22.23.2. Preserve current non-use of node:http2 unless a future feature has an explicit HTTP/2 security test suite.",
+      "impact_statement": "The old Node version was affected, but current WFM source does not import node:http2, so the published heap-use-after-free path was not reachable. CISA-ADP SSVC: exploitation none, automatable yes, technical impact partial.",
+      "references": ["https://nodejs.org/en/blog/vulnerability/july-2026-security-releases", "https://nvd.nist.gov/vuln/detail/CVE-2026-56848"]
+    },
+    {
+      "vulnerability": {"name": "CVE-2026-58043"},
+      "products": ["pkg:oci/node@22.23.2-bookworm-slim?repository_url=docker.io/library/node&digest=sha256%3A83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5"],
+      "status": "fixed",
+      "action_statement": "Upgrade to Node 22.23.2. If the Node Permission Model is enabled in a future runtime, add path-boundary regression cases before relying on it as a security boundary.",
+      "impact_statement": "The exact WFM runtime does not use the Node Permission Model, so this path was not an active WFM control bypass. CISA-ADP SSVC: exploitation none, automatable no, technical impact total.",
+      "references": ["https://nodejs.org/en/blog/vulnerability/july-2026-security-releases", "https://nvd.nist.gov/vuln/detail/CVE-2026-58043"]
+    }
+  ],
+  "kev": {
+    "catalogVersionChecked": "2026.09.16",
+    "checkedAt": "2026-09-17T10:56:09Z",
+    "listedValidatedCves": []
+  }
+}

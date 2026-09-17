@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-17T10:56:09Z",
+  "scope": "hosted-staging deployment wrapper for 0.6.70-hosted-staging-rc2",
+  "runtimeArtifact": {
+    "sha256": "ecb59f71218b0be62d815471259b916cfe595a97ebbc166a554e167d176cf37c",
+    "declaredNodeEngine": ">=22.16.0 <23",
+    "candidate": "0.6.70-hosted-staging-rc2"
+  },
+  "node": {
+    "previousImage": "node:22.16.0-bookworm-slim",
+    "minimumSafeVersion": "22.23.2",
+    "requiredImage": "node:22.23.2-bookworm-slim",
+    "requiredDigest": "sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5",
+    "securityReleaseDate": "2026-07-29",
+    "validatedCves": [
+      "CVE-2026-21717",
+      "CVE-2026-21710",
+      "CVE-2026-48618",
+      "CVE-2026-56846",
+      "CVE-2026-56848",
+      "CVE-2026-58043"
+    ]
+  },
+  "evidence": {
+    "cisaKevCatalogVersion": "2026.09.16",
+    "cisaKevCheckedAt": "2026-09-17T10:56:09Z",
+    "validatedCvesPresentInKev": [],
+    "nvdAffectedDataChecked": true,
+    "nvdSsvcChecked": true,
+    "runtimeSourceChecks": {
+      "publicRequestJsonParse": true,
+      "http2ModuleUsed": false,
+      "headersDistinctUsed": false,
+      "permissionModelUsed": false,
+      "zlibModuleUsed": false,
+      "pfxMtlsUsed": false
+    },
+    "node2232CompatibilitySmokeTest": {
+      "exactRuntimeArtifact": true,
+      "hostedStagingHealthStatus": 200,
+      "result": "passed"
+    }
+  },
+  "preventionControls": {
+    "requireExactNodeVersion": true,
+    "requireImageDigestPin": true,
+    "requireManifestDockerfileImageMatch": true,
+    "requireRuntimeShaMatch": true,
+    "requireStagingOnlyBoundary": true,
+    "requireProductionApprovedFalse": true
+  },
+  "knownGaps": [
+    {
+      "id": "release-identity-health-mismatch",
+      "severity": "review",
+      "detail": "The RC2 hosted wrapper and BUILD_INFO_HOSTED identify 0.6.70-hosted-staging-rc2, while the packaged package.json and current /api/health release field report 0.6.70-hosted-staging-rc1. This does not change the runtime SHA, but the canonical source should align the externally reported release identity before pilot or production approval."
+    }
+  ]
+}
