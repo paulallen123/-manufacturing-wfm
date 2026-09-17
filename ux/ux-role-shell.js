@@ -109,7 +109,7 @@
     });
     const ids=new Set(ps.map(p=>p.id));
     const pending=(typeof data!=='undefined'&&Array.isArray(data.requests)?data.requests:[]).filter(r=>ids.has(r.employee)&&r.status==='pending');
-    const reviewPage=availablePage(['time-review','review','payroll','attendance']);
+    const reviewPage=availablePage(['weekly-review','time-review','review','payroll','attendance']);
     const detail=content.cloneNode(true);
     qa('.footer',detail).forEach(n=>n.remove());
     const filterHtml=typeof filters==='function'?filters():'';
