@@ -40,7 +40,7 @@ jobs:
       - name: Build exact composed image
         run: docker build --pull=false -t wfm-ux-cycle3:pr .
 
-      - name: Verify final composition and immutable runtime
+      - name: Verify approved presentation-bundle composition
         shell: bash
         run: |
           set -euo pipefail
@@ -48,17 +48,26 @@ jobs:
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
           mkdir -p /tmp/wfm-cycle3
           docker cp "$cid:/app/public/index.html" /tmp/wfm-cycle3/index.html
-          docker cp "$cid:/app/public/ux-reset-cycle3.js" /tmp/wfm-cycle3/ux-reset-cycle3.js
-          node --check /tmp/wfm-cycle3/ux-reset-cycle3.js
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-cycle3/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-cycle3/factory-control-ui.css
+          node --check /tmp/wfm-cycle3/value-cockpit-ui.js
           node <<'NODE'
-          const fs=require('node:fs');const h=fs.readFileSync('/tmp/wfm-cycle3/index.html','utf8');
-          const a=h.lastIndexOf('ux-reset.js?v=20260917-1'),b=h.lastIndexOf('ux-reset-cycle2.js?v=20260917-2'),c=h.lastIndexOf('ux-reset-cycle3.js?v=20260917-3');
-          const ac=h.lastIndexOf('ux-reset.css?v=20260917-1'),bc=h.lastIndexOf('ux-reset-cycle2.css?v=20260917-2'),cc=h.lastIndexOf('ux-reset-cycle3.css?v=20260917-3');
-          if(!(a>=0&&b>a&&c>b&&ac>=0&&bc>ac&&cc>bc))throw new Error('Cycle 3 must be the final presentation layer.');
-          console.log('UX_CYCLE3_LOAD_ORDER=PASS');
+          const fs=require('node:fs');
+          const html=fs.readFileSync('/tmp/wfm-cycle3/index.html','utf8');
+          const js=fs.readFileSync('/tmp/wfm-cycle3/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-cycle3/factory-control-ui.css','utf8');
+          if (!html.includes('value-cockpit-ui.js') || !html.includes('factory-control-ui.css')) throw new Error('Approved presentation assets are not loaded.');
+          if (/ux-reset(?:-cycle[23])?\.(?:js|css)/.test(html)) throw new Error('Standalone UX paths must not be introduced outside the sealed static allow-list.');
+          const j1=js.indexOf('WFM_UX_RESET_BASE_BEGIN'),j2=js.indexOf('WFM_UX_RESET_CYCLE2_BEGIN'),j3=js.indexOf('WFM_UX_RESET_CYCLE3_BEGIN');
+          const c1=css.indexOf('WFM_UX_RESET_BASE_BEGIN'),c2=css.indexOf('WFM_UX_RESET_CYCLE2_BEGIN'),c3=css.indexOf('WFM_UX_RESET_CYCLE3_BEGIN');
+          if (!(j1>=0&&j2>j1&&j3>j2&&c1>=0&&c2>c1&&c3>c2)) throw new Error('UX layers are not composed in deterministic order.');
+          for(const x of ['window.WFMUXReset=','window.WFMUXCycle2=','window.WFMUXCycle3=']) if(!js.includes(x)) throw new Error('Missing served UX implementation: '+x);
+          for(const x of ['.ux-signoff-desk','.ux-signoff-kpis','.ux-signoff-detail']) if(!css.includes(x)) throw new Error('Missing served Cycle 3 CSS: '+x);
+          console.log('UX_CYCLE3_APPROVED_ASSET_COMPOSITION=PASS');
           NODE
           grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
-          echo 'SEALED_RUNTIME_UNCHANGED=PASS'
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace or mutate sealed server logic'; exit 1; fi
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
 
       - name: Run isolated composed image and browser-check sign-off UX
         shell: bash
@@ -78,6 +87,16 @@ jobs:
           done
           test -s /tmp/health.json
           cat /tmp/health.json
+
+          # Prove the browser-addressable assets contain the overlay while the server allow-list
+          # still rejects the former standalone UX path.
+          curl -fsS http://127.0.0.1:4100/value-cockpit-ui.js >/tmp/served-ui.js
+          curl -fsS http://127.0.0.1:4100/factory-control-ui.css >/tmp/served-ui.css
+          grep -q 'WFM_UX_RESET_CYCLE3_BEGIN' /tmp/served-ui.js
+          grep -q 'WFM_UX_RESET_CYCLE3_BEGIN' /tmp/served-ui.css
+          test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:4100/ux-reset-cycle3.js)" = "404"
+          echo 'UX_CYCLE3_SERVER_DELIVERY_CONTRACT=PASS'
+
           export WFM_DEMO_PASSWORD="$(docker logs wfm-ux-cycle3-run 2>&1 | sed -n 's/^.*Demo password: //p' | tail -1)"
           test -n "${WFM_DEMO_PASSWORD:-}"
           CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
@@ -96,6 +115,7 @@ jobs:
           const wait=async expression=>retry(async()=>{const v=await evalx(expression);if(!v)throw Error('wait');return v},100);
           await send('Page.enable');await send('Runtime.enable');await send('Page.navigate',{url:'http://127.0.0.1:4100'});await wait("document.readyState==='complete'||document.readyState==='interactive'");
           await sleep(600);
+          await wait("typeof window.WFMUXReset==='object'&&typeof window.WFMUXCycle2==='object'&&typeof window.WFMUXCycle3==='object'");
           if(await evalx("Boolean(document.querySelector('#v2-login'))")){
             const password=process.env.WFM_DEMO_PASSWORD;
             if(!password)throw Error('Local test password was not captured from the sealed runtime');
@@ -103,11 +123,11 @@ jobs:
             const ok=await evalx(`(()=>{const c=${creds};const f=document.querySelector('#v2-login');const e=f?.querySelector('[name="email"]'),p=f?.querySelector('[name="password"]');if(!e||!p)return false;e.value=c.email;e.dispatchEvent(new Event('change',{bubbles:true}));p.value=c.password;p.dispatchEvent(new Event('input',{bubbles:true}));f.requestSubmit();return true})()`);if(!ok)throw Error('Login form could not be submitted');await wait("!document.querySelector('#v2-login')");
           }
           const clicked=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page="weekly-review"]')].find(n=>n.offsetParent!==null);if(!x)return false;x.click();return true})()`);if(!clicked)throw Error('Weekly sign-off navigation route not found');
-          await sleep(900);
-          const diagnostic=()=>evalx(`(()=>{const layout=document.querySelector('.review-layout'),main=layout?.querySelector('.review-main');return {page:globalThis.ui?.page||null,role:globalThis.F?.actor?.role||globalThis.ui?.role||null,cycle3:typeof window.WFMUXCycle3,preview:typeof window.payrollPreview,previewReport:typeof window.payrollPreview?.report,tabs:!!document.querySelector('.review-tabs'),layout:!!layout,steps:!!document.querySelector('.review-steps'),main:!!main,panelCount:main?[...main.children].filter(x=>x.classList?.contains('panel')).length:0,signbar:!!main?.querySelector('.review-signbar'),aside:!!layout?.querySelector('.review-aside'),desk:!!document.querySelector('.ux-signoff-desk')}})()`);
+          await wait("Boolean(document.querySelector('.review-layout'))");
+          await sleep(600);
+          const diagnostic=()=>evalx(`(()=>{const layout=document.querySelector('.review-layout'),main=layout?.querySelector('.review-main');return {page:typeof ui!=='undefined'?ui.page:null,role:(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'?ui.role:null),base:typeof window.WFMUXReset,cycle2:typeof window.WFMUXCycle2,cycle3:typeof window.WFMUXCycle3,preview:typeof window.payrollPreview,previewReport:typeof window.payrollPreview?.report,tabs:!!document.querySelector('.review-tabs'),layout:!!layout,steps:!!document.querySelector('.review-steps'),main:!!main,panelCount:main?[...main.children].filter(x=>x.classList?.contains('panel')).length:0,signbar:!!main?.querySelector('.review-signbar'),aside:!!layout?.querySelector('.review-aside'),desk:!!document.querySelector('.ux-signoff-desk')}})()`);
           let diag=await diagnostic();console.log('UX_CYCLE3_COMPOSITION_DIAGNOSTIC='+JSON.stringify(diag));
-          await evalx("window.WFMUXCycle3?.apply?.(); true");await sleep(250);
-          diag=await diagnostic();console.log('UX_CYCLE3_COMPOSITION_AFTER_APPLY='+JSON.stringify(diag));
+          if(!diag.desk){await evalx("window.WFMUXCycle3?.apply?.(); true");await sleep(250);diag=await diagnostic();console.log('UX_CYCLE3_COMPOSITION_AFTER_APPLY='+JSON.stringify(diag));}
           if(!diag.desk)throw Error('Cycle 3 did not compose weekly sign-off: '+JSON.stringify(diag));
           const proof=await evalx(`(()=>({desk:!!document.querySelector('.ux-signoff-desk'),details:document.querySelectorAll('.ux-signoff-detail').length,hero:!!document.querySelector('.review-hero'),pageOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,labels:[...document.querySelectorAll('.ux-signoff-kpis small')].map(x=>x.textContent.trim()),signAction:document.querySelector('.ux-signoff-desk [data-act="review-sign"],.ux-signoff-desk [data-act="review-return"]')?.textContent.trim()||null}))()`);
           console.log('UX_CYCLE3_BROWSER_PROOF='+JSON.stringify(proof));
