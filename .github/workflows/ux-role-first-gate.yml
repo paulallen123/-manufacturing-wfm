@@ -1,0 +1,88 @@
+name: WFM role-first UX gate
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/**'
+      - '.github/workflows/ux-role-first-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-role-first-ux-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ux-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax and product-intent checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset.js
+          node <<'NODE'
+          const fs = require('node:fs');
+          const js = fs.readFileSync('ux-overlay/ux-reset.js','utf8');
+          const css = fs.readFileSync('ux-overlay/ux-reset.css','utf8');
+          const requiredJs = [
+            "overview:'Today'",
+            "leave:'Absence'",
+            "'weekly-review':'Sign off'",
+            "'savings-decisions':'Performance'",
+            'Annual entitlement',
+            'Remaining now',
+            'Left if approved',
+            'Available after all pending',
+            'Who else is off',
+            '/api/leave-capacity',
+            'ux-more-button'
+          ];
+          for (const x of requiredJs) if (!js.includes(x)) throw new Error(`Missing UX invariant: ${x}`);
+          const requiredCss = [
+            'html,body{max-width:100%;overflow-x:hidden}',
+            '.ux-tool-drawer',
+            '.ux-leave-card',
+            '.ux-employee-balance'
+          ];
+          for (const x of requiredCss) if (!css.includes(x)) throw new Error(`Missing CSS invariant: ${x}`);
+          console.log('ROLE_FIRST_SOURCE_INVARIANTS=PASS');
+          NODE
+
+      - name: Build the exact Docker image
+        run: docker build --pull=false -t wfm-role-first-ux:pr .
+
+      - name: Verify final image composition and load order
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --entrypoint node wfm-role-first-ux:pr --check /app/public/ux-reset.js
+          cid="$(docker create wfm-role-first-ux:pr)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-public
+          docker cp "$cid:/app/public/index.html" /tmp/wfm-public/index.html
+          docker cp "$cid:/app/public/ux-reset.js" /tmp/wfm-public/ux-reset.js
+          docker cp "$cid:/app/public/ux-reset.css" /tmp/wfm-public/ux-reset.css
+          grep -q 'ux-reset.css?v=20260917-1' /tmp/wfm-public/index.html
+          grep -q 'ux-reset.js?v=20260917-1' /tmp/wfm-public/index.html
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('/tmp/wfm-public/index.html','utf8');
+          const previous = html.lastIndexOf('value-cockpit-ui.js');
+          const overlay = html.lastIndexOf('ux-reset.js?v=20260917-1');
+          if (previous < 0 || overlay < 0 || overlay <= previous) throw new Error('UX reset is not the final composition layer.');
+          console.log('ROLE_FIRST_IMAGE_COMPOSITION=PASS');
+          NODE
+
+      - name: Confirm sealed runtime remains intact
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          echo 'SEALED_RUNTIME_UNCHANGED=PASS'
