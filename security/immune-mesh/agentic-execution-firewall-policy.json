@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "status": "staged_contract",
+  "name": "WFM Agentic Execution Firewall",
+  "threat_intelligence": {
+    "references": [
+      "Microsoft Security Blog 2026-06-05: Securing CI/CD in an agentic world",
+      "Microsoft Security Blog 2026-05-07: When prompts become shells",
+      "Microsoft Security Blog 2026-06-30: Securing AI agents when tools move from reading to acting",
+      "Microsoft Security Blog 2026-09-04: Securing edge AI in customer-owned environments"
+    ],
+    "assumptions": [
+      "prompt_injection_will_occur",
+      "repository_content_can_be_attacker_controlled",
+      "tool_metadata_can_be_poisoned",
+      "model_output_is_untrusted_input",
+      "valid_agent_credentials_can_be_stolen"
+    ]
+  },
+  "trust_model": {
+    "ai_is_security_boundary": false,
+    "repository_text_is_authority": false,
+    "tool_descriptions_are_authority": false,
+    "screen_state_is_authorization": false,
+    "model_output_is_authorization": false,
+    "deterministic_policy_is_final_authority": true
+  },
+  "execution_broker": {
+    "required_for_all_tool_calls": true,
+    "default_deny": true,
+    "schema_validation_required": true,
+    "canonical_path_validation_required": true,
+    "customer_scope_required": true,
+    "purpose_binding_required": true,
+    "policy_hash_required": true,
+    "request_nonce_required": true,
+    "short_lived_capability_required": true,
+    "maximum_capability_ttl_seconds": 300,
+    "outbound_network_default": "deny",
+    "dynamic_model_selected_egress_forbidden": true,
+    "shell_execution_default": "deny",
+    "host_filesystem_write_default": "deny",
+    "secret_read_default": "deny",
+    "loopback_privileged_service_access_default": "deny"
+  },
+  "untrusted_context": {
+    "issue_body": true,
+    "pull_request_text": true,
+    "comments": true,
+    "web_content": true,
+    "documents": true,
+    "emails": true,
+    "retrieval_results": true,
+    "tool_metadata": true,
+    "agent_output": true,
+    "repository_instruction_files": true,
+    "may_grant_privilege": false,
+    "may_change_policy": false,
+    "may_write_persistent_memory": false,
+    "may_select_new_egress_destination": false,
+    "may_approve_own_action": false
+  },
+  "repository_guard": {
+    "agent_instruction_files_require_explicit_hash_allowlist": true,
+    "default_allowlisted_instruction_files": [],
+    "sensitive_patterns": [
+      "AGENTS.md",
+      ".github/copilot-instructions.md",
+      ".claude",
+      ".cursor",
+      ".windsurf",
+      "mcp.json",
+      "mcp-config.json",
+      ".mcp.json"
+    ],
+    "ci_agent_execution_mode": "disabled_until_brokered",
+    "untrusted_event_to_agent_execution_forbidden": true,
+    "workflow_secret_access_with_untrusted_ai_context_forbidden": true
+  },
+  "tool_supply_chain": {
+    "tool_definitions_require_content_hash": true,
+    "tool_metadata_changes_require_review": true,
+    "mcp_server_authentication_required": true,
+    "mcp_server_identity_pinning_required": true,
+    "new_tool_auto_discovery_forbidden": true,
+    "tool_privilege_expansion_requires_independent_approval": true,
+    "tool_endpoint_change_is_security_event": true
+  },
+  "runtime_isolation": {
+    "ephemeral_workspace_required": true,
+    "per_customer_agent_identity_required": true,
+    "shared_cross_customer_agent_credentials_forbidden": true,
+    "no_production_secrets_in_untrusted_analysis_sandbox": true,
+    "agent_cannot_disable_audit": true,
+    "agent_cannot_change_root_of_trust": true,
+    "agent_cannot_destroy_recovery_path": true
+  },
+  "safe_automatic_actions": {
+    "maximum_scope": "single_customer_cell",
+    "maximum_ttl_seconds": 300,
+    "actions": [
+      "revoke_agent_session",
+      "freeze_agent_tool_connector",
+      "isolate_agent_sandbox",
+      "block_agent_egress",
+      "quarantine_poisoned_instruction_or_tool_metadata",
+      "pause_agent_driven_deployment",
+      "preserve_agent_forensic_evidence"
+    ],
+    "require_evidence": true,
+    "require_rollback": true,
+    "require_immutable_audit": true
+  },
+  "forbidden_automatic_actions": [
+    "mass_disable_identities",
+    "delete_customer_data",
+    "delete_recovery_data",
+    "production_wide_credential_rotation",
+    "customer_wide_shutdown",
+    "organisation_wide_shutdown",
+    "bulk_restore",
+    "alter_payroll_or_workforce_records",
+    "hack_back",
+    "access_unauthorised_third_party_system"
+  ],
+  "survival_invariants": [
+    "A poisoned prompt cannot directly invoke a privileged tool.",
+    "A repository instruction file cannot become trusted authority merely by existing in the repository.",
+    "An agent cannot read production secrets while processing untrusted context.",
+    "An agent cannot choose an arbitrary egress destination from model output.",
+    "A poisoned MCP or tool description cannot silently expand authority.",
+    "One customer agent identity cannot administer another customer cell.",
+    "Agent memory cannot be persistently modified by external content without deterministic policy.",
+    "An AI agent cannot approve its own privilege or policy expansion.",
+    "Loss or alteration of agent audit telemetry is a security incident.",
+    "High-blast-radius actions remain outside autonomous authority."
+  ]
+}
