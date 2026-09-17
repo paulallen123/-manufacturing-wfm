@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "status": "staged",
+  "purpose": "Ensure compromise of the security management/control plane cannot become universal control over customer cells, recovery or evidence.",
+  "threat_model": {
+    "assume_defence_plane_compromise": true,
+    "assume_valid_admin_session_theft": true,
+    "assume_remote_code_execution_on_management_plane": true,
+    "central_management_plane_must_not_hold_unbounded_runtime_authority": true
+  },
+  "trust_split": {
+    "policy_root_separate_from_action_executor": true,
+    "evidence_witness_separate_from_action_executor": true,
+    "recovery_authority_separate_from_action_executor": true,
+    "issuer_and_executor_must_not_share_identity": true,
+    "single_identity_cannot_change_policy_and_execute_action": true
+  },
+  "capability_airlock": {
+    "standing_cross_tenant_root_credentials_forbidden": true,
+    "automatic_actions_require_explicit_customer_cell": true,
+    "wildcard_customer_scope_forbidden": true,
+    "single_use_nonce_required": true,
+    "policy_hash_binding_required": true,
+    "evidence_hash_binding_required": true,
+    "short_lived_capability_required": true,
+    "maximum_capability_ttl_seconds": 300,
+    "local_cell_governor_must_revalidate_scope_and_budget": true,
+    "local_cell_governor_may_reject_central_instruction": true
+  },
+  "policy_mutation": {
+    "runtime_agent_may_change_policy_root": false,
+    "ai_may_change_policy_root": false,
+    "automatic_policy_promotion": false,
+    "two_independent_authorities_required": true,
+    "new_policy_must_be_versioned_and_hash_pinned": true,
+    "last_known_good_policy_must_be_recoverable": true
+  },
+  "defence_plane_compromise_response": {
+    "freeze_policy_mutation": true,
+    "freeze_new_cross_cell_operations": true,
+    "revoke_affected_defence_plane_sessions": true,
+    "preserve_forensic_state": true,
+    "continue_existing_cell_local_safe_reflexes": true,
+    "switch_to_last_known_good_signed_policy": true,
+    "require_independent_verification_before_rejoin": true,
+    "global_shutdown": false,
+    "mass_disable_customer_identities": false,
+    "delete_customer_data": false,
+    "delete_security_evidence": false,
+    "delete_recovery_state": false
+  },
+  "cross_cell_and_catastrophic_actions": {
+    "automatic_cross_cell_action_forbidden": true,
+    "automatic_global_action_forbidden": true,
+    "two_independent_authorities_required": true,
+    "customer_business_critical_change_requires_escalation": true
+  },
+  "forbidden_automatic_actions": [
+    "hack_back",
+    "external_retaliation",
+    "global_shutdown",
+    "mass_disable_identities",
+    "delete_customer_data",
+    "delete_security_evidence",
+    "delete_recovery_state",
+    "production_wide_credential_rotation",
+    "alter_payroll_or_workforce_records",
+    "cross_tenant_wildcard_containment"
+  ]
+}
