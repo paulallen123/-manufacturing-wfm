@@ -27,7 +27,8 @@
     "require_runtime_sha256": true,
     "require_manifest_image_match": true,
     "require_image_digest": true,
-    "require_non_root_user": true
+    "require_non_root_user": true,
+    "require_package_managers_removed": true
   },
   "autonomy": {
     "language_model_direct_authority": false,
@@ -56,6 +57,8 @@
   "external_intelligence": {
     "authoritative_sources": {
       "node_security_release": "https://nodejs.org/en/blog/release/v22.23.2",
+      "node_tar_decompression_dos": "https://github.com/advisories/ghsa-23hp-3jrh-7fpw",
+      "node_tar_replace_infinite_loop": "https://github.com/advisories/GHSA-8x88-c5mf-7j5w",
       "nist_agent_identity": "https://www.nist.gov/news-events/news/2026/02/new-concept-paper-identity-and-authority-software-agents",
       "nist_multi_agent_security": "https://csrc.nist.gov/Presentations/2026/security-considerations-for-multi-agent-ai-systems",
       "owasp_agent_control_standard": "https://genai.owasp.org/resource/agent-control-standard-acs/",
@@ -64,8 +67,23 @@
     "runtime_dependency_expectation": {
       "third_party_npm_packages": 0,
       "server_imports": "node-builtins-only",
-      "reason": "The exact staged runtime is self-contained and currently imports only Node.js built-ins; introducing a third-party runtime package requires an explicit security-baseline change and candidate revalidation."
+      "package_managers_present": false,
+      "reason": "The exact staged runtime is self-contained and currently imports only Node.js built-ins; introducing a third-party runtime package or package manager requires an explicit security-baseline change and candidate revalidation."
     },
+    "removed_base_image_attack_surface": [
+      {
+        "component": "npm-bundled node-tar",
+        "cve": "CVE-2026-59873",
+        "severity": "critical",
+        "mitigation": "npm/npx/corepack and related package-manager entry points are removed from the final staging runtime because they are not required by the application."
+      },
+      {
+        "component": "npm-bundled node-tar",
+        "cve": "CVE-2026-59874",
+        "severity": "high",
+        "mitigation": "npm/npx/corepack and related package-manager entry points are removed from the final staging runtime because they are not required by the application."
+      }
+    ],
     "agent_threat_rules": [
       {
         "id": "persistent-memory-context-poisoning",
