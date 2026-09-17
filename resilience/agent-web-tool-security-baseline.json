@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "updated": "2026-09-17",
+  "purpose": "Convert newly disclosed agent web-tool vulnerabilities into fail-closed WFM prevention controls without asserting current runtime exposure.",
+  "sources": [
+    {
+      "id": "GHSA-22h6-qm39-v87j",
+      "published": "2026-09-17",
+      "severity": "low",
+      "cve": null,
+      "url": "https://github.com/pydantic/pydantic-ai/security/advisories/GHSA-22h6-qm39-v87j",
+      "lesson": "Hostname policy comparisons must use the same canonical form as the resolver; positive allowlists are safer than model-facing denylists."
+    },
+    {
+      "id": "GHSA-vmxc-h2x2-jmf3",
+      "published": "2026-09-17",
+      "severity": "moderate",
+      "cve": null,
+      "url": "https://github.com/pydantic/pydantic-ai/security/advisories/GHSA-vmxc-h2x2-jmf3",
+      "lesson": "Cloud-metadata and private-network classification must normalize IPv6 zone identifiers and revalidate the effective destination before connection."
+    },
+    {
+      "id": "GHSA-4x9p-g9wm-8q7f",
+      "published": "2026-09-17",
+      "severity": "low",
+      "cve": null,
+      "url": "https://github.com/pydantic/pydantic-ai/security/advisories/GHSA-4x9p-g9wm-8q7f",
+      "lesson": "Telemetry redaction must cover exceptions, stack traces, error status descriptions, dynamic instructions and output templates, not only nominal prompt/tool content fields."
+    },
+    {
+      "id": "GHSA-fpf4-vwcp-v4hp",
+      "published": "2026-09-17",
+      "severity": "moderate",
+      "cve": null,
+      "url": "https://github.com/pydantic/pydantic-ai/security/advisories/GHSA-fpf4-vwcp-v4hp",
+      "lesson": "Untrusted fetch response processing needs CPU/time/body/depth/charset budgets and isolation so attacker-controlled parsing cannot monopolize the agent or service event loop."
+    }
+  ],
+  "nvd_ssvc_status": {
+    "direct_records_available": false,
+    "reason": "The four newly published GitHub advisories currently state that no CVE is known, so there is no direct NVD CVE record or CISA SSVC enrichment to apply to these specific disclosures yet.",
+    "recheck_required_if_cve_assigned": true
+  },
+  "current_wfm_evaluation": {
+    "candidate": "0.6.76-hosted-staging-rc1",
+    "pydantic_ai_runtime_present": false,
+    "python_runtime_present": false,
+    "third_party_runtime_packages_expected": 0,
+    "networked_ai_agent_executor_present_in_sealed_candidate": false,
+    "customer_production_exposure_verified": false,
+    "production_approved": false,
+    "classification": "latent future agent/tool-plane risk; sealed WFM candidate is not affected by package or runtime exposure",
+    "basis": "The sealed candidate is a Node 22 built-ins-only staging runtime with package managers removed and no Pydantic AI or Python agent runtime. Existing WFM policy already defaults agent egress to deny. The disclosures are retained because the failure modes are directly relevant to any future model-selected web fetch, local-network access, telemetry export or untrusted response-processing capability."
+  },
+  "controls": {
+    "egress_policy": "positive-allowlist-only",
+    "denylist_is_sufficient_security_boundary": false,
+    "model_may_broaden_network_authority": false,
+    "canonicalize_hostname_before_policy": true,
+    "hostname_canonicalization_requires": [
+      "lowercase/case-fold equivalent DNS form",
+      "remove trailing FQDN root dot before comparison",
+      "IDNA-encode non-ASCII hostnames into resolver-equivalent ASCII form",
+      "treat alternate Unicode label separators as equivalent only after canonical normalization",
+      "reject malformed, ambiguous or normalization-failing hostnames before network access"
+    ],
+    "destination_revalidation_after_resolution": true,
+    "local_network_access_for_model_chosen_urls": false,
+    "cloud_metadata_access": false,
+    "private_or_loopback_access": false,
+    "strip_ipv6_zone_identifier_before_security_classification": true,
+    "effective_ip_must_be_checked_after_dns_resolution": true,
+    "redirect_destination_must_be_reauthorized": true,
+    "provider_private_endpoint_exception_requires": [
+      "explicit deterministic destination allowlist",
+      "same-tenant scope",
+      "provider-bound purpose",
+      "separate authorization from the language model",
+      "short-lived least-privilege credential",
+      "immutable audit evidence"
+    ],
+    "telemetry": {
+      "content_flag_alone_is_sufficient": false,
+      "redact_exception_message": true,
+      "redact_exception_stacktrace": true,
+      "redact_error_status_description": true,
+      "redact_dynamic_agent_instructions": true,
+      "redact_prompt_or_output_template": true,
+      "redact_tool_arguments_and_results": true,
+      "redact_provider_error_bodies": true,
+      "canary_leak_action": "fail-closed-quarantine-export-preserve-local-evidence",
+      "telemetry_audience_must_not_exceed_data_authorization": true
+    },
+    "untrusted_fetch_processing": {
+      "maximum_response_bytes_required": true,
+      "processing_deadline_required": true,
+      "cpu_budget_required": true,
+      "maximum_markup_or_json_nesting_required": true,
+      "unsupported_or_non_text_charset_fails_as_fetch_error": true,
+      "attacker_controlled_decoding_or_conversion_must_not_block_service_event_loop": true,
+      "cancellation_must_release_processing_capacity": true,
+      "resource_exhaustion_must_not_broaden_network_or_tool_authority": true
+    }
+  },
+  "prevention_rules": [
+    {
+      "id": "canonicalize-before-egress-policy",
+      "severity": "high",
+      "detect": [
+        "model-selected URL uses Unicode/fullwidth hostname, alternate label separator, mixed case or trailing dot",
+        "policy hostname differs from resolver-effective hostname"
+      ],
+      "containment": [
+        "canonicalize before allowlist comparison",
+        "deny on normalization ambiguity",
+        "authorize only the canonical allowlisted destination and recheck redirects"
+      ]
+    },
+    {
+      "id": "metadata-deny-after-url-and-ip-normalization",
+      "severity": "critical",
+      "detect": [
+        "URL resolves to loopback, private, link-local or cloud-metadata space",
+        "IPv6 destination contains a zone identifier that changes literal comparison behavior"
+      ],
+      "containment": [
+        "strip zone identifier for security classification",
+        "deny model-selected local or metadata access",
+        "revalidate every resolved and redirected destination before connection"
+      ]
+    },
+    {
+      "id": "telemetry-redaction-all-channels",
+      "severity": "high",
+      "detect": [
+        "synthetic canary appears in exception event, stack trace, error status, provider error body, instruction/template metadata, tool arguments or tool results",
+        "telemetry exporter audience is broader than source-data authorization"
+      ],
+      "containment": [
+        "block or quarantine the export before transmission",
+        "preserve sanitized local evidence",
+        "require end-to-end canary-free trace verification before enabling telemetry for sensitive agent paths"
+      ]
+    },
+    {
+      "id": "bounded-untrusted-fetch-processing",
+      "severity": "high",
+      "detect": [
+        "response processing exceeds byte, CPU or time budget",
+        "markup/JSON nesting exceeds configured depth",
+        "server-selected charset is unsupported or unsuitable for text decoding",
+        "other requests lose service progress during a synthetic hostile response"
+      ],
+      "containment": [
+        "cancel the fetch and return a bounded failure",
+        "keep parsing/decoding isolated from shared service progress",
+        "record resource-budget evidence without retrying through broader authority"
+      ]
+    }
+  ],
+  "chaos_tests": [
+    {
+      "id": "hostname-normalization-equivalence",
+      "setup": "Attempt a synthetic model-selected URL using fullwidth/non-ASCII spelling, alternate dot separator, mixed case and trailing-dot variants of an unauthorized host while an unrelated approved hostname exists in the allowlist.",
+      "expected": "All unauthorized resolver-equivalent spellings are denied before transmission; only the exact canonical approved destination can pass.",
+      "current_runtime_status": "specified-not-run-no-networked-agent-executor-in-sealed-0.6.76"
+    },
+    {
+      "id": "ipv6-zone-metadata-smuggling",
+      "setup": "Attempt synthetic IPv6 cloud-metadata destinations with percent-encoded and decoded zone identifiers from a model-selected URL path.",
+      "expected": "The zone identifier cannot evade classification; the effective metadata/private destination is denied before any socket is opened and no credential material is returned.",
+      "current_runtime_status": "specified-not-run-no-networked-agent-executor-in-sealed-0.6.76"
+    },
+    {
+      "id": "telemetry-redaction-canary-exception-path",
+      "setup": "Place distinct synthetic canaries in tool arguments/results, a retry/failure exception, provider-style error text, dynamic instructions and an output template, then force success and failure telemetry paths.",
+      "expected": "No canary appears in exported events, stack traces, status descriptions or request-parameter metadata; a detected canary blocks/quarantines export.",
+      "current_runtime_status": "specified-not-run-no-networked-agent-executor-in-sealed-0.6.76"
+    },
+    {
+      "id": "quadratic-fetch-response-budget",
+      "setup": "Serve bounded synthetic hostile responses containing repeated unterminated markup, very deep nesting and an unsuitable charset declaration while concurrent health/read-only work runs.",
+      "expected": "The hostile fetch terminates within configured CPU/time/body/depth budgets and concurrent work continues to make progress; no crash, event-loop starvation or authority escalation occurs.",
+      "current_runtime_status": "specified-not-run-no-networked-agent-executor-in-sealed-0.6.76"
+    }
+  ],
+  "promotion_rule": "No future WFM model-selected web fetch, local-network fetch, agent telemetry export or untrusted response-processing capability may be promoted until the applicable bounded chaos tests execute and pass in non-production while the deterministic executor, tenant isolation, verification, rollback and default-deny egress controls remain intact."
+}

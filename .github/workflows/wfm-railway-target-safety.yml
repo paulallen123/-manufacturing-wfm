@@ -1,0 +1,107 @@
+name: WFM Railway target safety gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'security/**'
+    paths:
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/railway-staging-target-baseline.json
+      - .github/workflows/railway-first-deploy.yml
+      - .github/workflows/wfm-railway-target-safety.yml
+  pull_request:
+    paths:
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/railway-staging-target-baseline.json
+      - .github/workflows/railway-first-deploy.yml
+      - .github/workflows/wfm-railway-target-safety.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-railway-target-safety-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  target-safety:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout bounded source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Prove target identity and pre-secret ordering
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const baseline = JSON.parse(fs.readFileSync('resilience/railway-staging-target-baseline.json','utf8'));
+          const manifest = JSON.parse(fs.readFileSync('DEPLOYMENT_MANIFEST.json','utf8'));
+          const workflow = fs.readFileSync('.github/workflows/railway-first-deploy.yml','utf8');
+
+          assert.equal(baseline.logical_classification, 'staging_customer_proof');
+          assert.equal(baseline.project.name, 'manufacturing-wfm-staging-proof');
+          assert.equal(baseline.environment.provider_name, 'production');
+          assert.equal(baseline.environment.provider_label_is_authorization_signal, false);
+          assert.equal(baseline.authorization.require_exact_project_environment_service_tuple, true);
+          assert.equal(baseline.authorization.deny_environment_name_only_authorization, true);
+          assert.equal(baseline.authorization.deny_target_drift_before_secret_access, true);
+          assert.equal(baseline.authorization.deny_production_promotion, true);
+          assert.equal(baseline.last_verified_live_state.verification_is_read_only, true);
+
+          assert.equal(manifest.candidate, baseline.manifest_requirements.candidate);
+          assert.equal(manifest.runtime_sha256, baseline.manifest_requirements.runtime_sha256);
+          assert.equal(manifest.production_approved, false);
+          assert.equal(manifest.pilot_ready, false);
+          assert.equal(manifest.fixture_only, true);
+          assert.equal(manifest.staging_only, true);
+
+          for (const [key, value] of [
+            ['RAILWAY_PROJECT_ID', baseline.project.id],
+            ['RAILWAY_ENVIRONMENT_ID', baseline.environment.id],
+            ['RAILWAY_SERVICE_ID', baseline.service.id],
+            ['EXPECTED_RUNTIME_SHA256', baseline.manifest_requirements.runtime_sha256]
+          ]) {
+            assert.ok(workflow.includes(`${key}: '${value}'`), `${key} drifted from the machine-readable staging target.`);
+          }
+
+          assert.ok(workflow.includes("CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.9/railway-v5.57.9-x86_64-unknown-linux-gnu.tar.gz'"));
+          assert.ok(workflow.includes("CLI_SHA256='02302dc0722497662527929b5c8f3ea9b7045434e77fc7a6a1e70349100838ec'"));
+          assert.ok(workflow.includes('actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'));
+
+          const identity = workflow.indexOf('Fail closed on Railway target or release-boundary drift');
+          const runtime = workflow.indexOf('Re-verify frozen runtime before any credential-bearing step');
+          const browser = workflow.indexOf('Require patched Chrome before any staging credential retrieval');
+          const cli = workflow.indexOf('Install pinned Railway CLI with release-asset digest verification');
+          // Construct the GitHub expression marker at runtime so this validation workflow
+          // does not itself evaluate or request the Railway secret.
+          const secretNeedle = 'RAILWAY_TOKEN: $' + '{{ secrets.RAILWAY_TOKEN }}';
+          const secret = workflow.indexOf(secretNeedle);
+          const variableRead = workflow.indexOf('variable list');
+          assert.ok(identity >= 0 && runtime > identity && browser > runtime && cli > browser && secret > cli && variableRead > secret,
+            'Railway target/runtime/browser/CLI checks must all occur before the token-bearing read-only provider step.');
+
+          for (const forbidden of [' railway up ', ' railway deploy ', ' railway delete ', ' railway environment delete ', ' railway service delete ']) {
+            assert.ok(!` ${workflow.toLowerCase()} `.includes(forbidden), `Forbidden provider mutation primitive found: ${forbidden.trim()}`);
+          }
+
+          console.log(JSON.stringify({
+            ok: true,
+            logicalClassification: baseline.logical_classification,
+            project: baseline.project.name,
+            providerEnvironmentLabel: baseline.environment.provider_name,
+            providerLabelAuthorizesProduction: false,
+            exactTargetTupleRequired: true,
+            productionApproved: manifest.production_approved,
+            stagingOnly: manifest.staging_only,
+            secretAccessOccursAfterAllTargetGates: true
+          }, null, 2));
+          NODE

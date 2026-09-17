@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "updated": "2026-09-17",
+  "publication": {
+    "name": "NIST IR 8587",
+    "title": "Protecting Tokens and Assertions from Forgery, Theft, and Misuse",
+    "status": "final",
+    "published": "2026-09-15",
+    "authoritative_sources": [
+      "https://csrc.nist.gov/pubs/ir/8587/final",
+      "https://csrc.nist.gov/news/2026/protecting-tokens-and-assertions-nist-ir-8587"
+    ],
+    "lesson": "Provider, workload, identity and API tokens are authority-bearing credentials. WFM must verify their trust and lifecycle properties before use, minimize their lifetime and exposure, and fail closed when verification evidence is missing or contradictory."
+  },
+  "current_wfm_evaluation": {
+    "candidate": "0.6.76-hosted-staging-rc1",
+    "customer_production_exposure_verified": false,
+    "production_approved": false,
+    "networked_ai_agent_executor_present_in_sealed_candidate": false,
+    "classification": "forward-looking prevention gap, not a verified customer-runtime vulnerability",
+    "basis": "The deployment manifest marks this candidate staging-only and not production-approved. The existing agent network boundary states that the sealed 0.6.76 candidate does not contain a proven model-network executor. Existing controls already keep reusable provider/session/AI credentials outside model-readable context and require short-lived least-privilege credentials at the deterministic executor boundary; this baseline adds explicit token trust, lifecycle, replay and revocation invariants before future networked integrations are accepted."
+  },
+  "controls": {
+    "language_model_can_read_reusable_token_material": false,
+    "untrusted_tool_output_can_supply_authority_bearing_token_material": false,
+    "token_injection_boundary": "deterministic-executor-only",
+    "short_lived_workload_tokens_preferred": true,
+    "static_workload_secret_default_allowed": false,
+    "static_secret_exception_requires": [
+      "documented provider constraint",
+      "least-privilege scope",
+      "secret-broker isolation from model and untrusted content",
+      "rotation and revocation plan",
+      "explicit security review"
+    ],
+    "trusted_issuer_or_authoritative_validation_required": true,
+    "recipient_resource_binding_required": true,
+    "tenant_and_purpose_binding_required": true,
+    "lifetime_and_activation_window_validation_required": true,
+    "cryptographic_validation_required_for_signed_tokens_or_assertions": true,
+    "unknown_or_retired_signing_key_rejected": true,
+    "automated_signing_key_rotation_supported_where_wfm_controls_keys": true,
+    "revocation_or_compromise_signal_consumed_when_provider_supports_it": true,
+    "replay_detection_or_sender_constraint_used_when_supported": true,
+    "token_material_in_logs_traces_or_audit_payloads": false,
+    "token_validation_failure_action": "deny-before-provider-mutation-and-preserve-redacted-evidence",
+    "cross_tenant_token_reuse_allowed": false,
+    "scope_broadening_during_recovery_allowed": false
+  },
+  "chaos_tests": [
+    {
+      "id": "wrong-recipient-or-cross-tenant-token",
+      "setup": "Use a synthetic otherwise well-formed token or assertion bound to tenant/provider/resource A and attempt to use it for tenant/provider/resource B.",
+      "expected": "The deterministic executor denies use before any provider mutation, no cross-tenant data is returned, raw token material is absent from logs, and redacted immutable evidence records the failed binding check.",
+      "current_runtime_status": "specified-not-run-no-networked-agent-token-executor-in-sealed-0.6.76"
+    },
+    {
+      "id": "expired-not-yet-valid-or-retired-key-token",
+      "setup": "Use synthetic tokens representing expired, not-yet-valid and unknown-or-retired signing-key states.",
+      "expected": "Each token is rejected before provider mutation; the executor does not silently refresh by broadening privilege; redacted failure evidence identifies the failed lifecycle or trust check.",
+      "current_runtime_status": "specified-not-run-no-networked-agent-token-executor-in-sealed-0.6.76"
+    },
+    {
+      "id": "revoked-or-replayed-token",
+      "setup": "Where the provider supports revocation/status signals or replay identifiers/sender constraints, revoke or replay a synthetic token after an initial accepted use.",
+      "expected": "The revoked or replayed token is denied before a second business mutation, and recovery requires a new independently validated least-privilege credential rather than reusing or widening the rejected token.",
+      "current_runtime_status": "specified-not-run-no-networked-agent-token-executor-in-sealed-0.6.76"
+    },
+    {
+      "id": "valid-short-lived-same-tenant-control",
+      "setup": "Use a synthetic short-lived least-privilege token with valid trust, lifetime, recipient, tenant and purpose binding through the deterministic executor.",
+      "expected": "The allowlisted request is permitted without exposing reusable credential material to the language model, logs, traces or untrusted tool content, and the action remains subject to the existing independent verification and rollback gates.",
+      "current_runtime_status": "specified-not-run-no-networked-agent-token-executor-in-sealed-0.6.76"
+    }
+  ],
+  "promotion_rule": "No future networked identity/provider/workload token path may be promoted until its applicable token-protection chaos tests are executable and pass against a bounded non-production environment. Unsupported provider capabilities must be recorded explicitly rather than silently treated as verified."
+}

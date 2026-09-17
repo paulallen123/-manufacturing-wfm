@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
+import { assertCurrentBrowserSecurityFloor } from './browser-security-floor.mjs';
 
 const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
@@ -34,10 +35,11 @@ function executable(candidates) {
   }
   return '';
 }
-const chrome = executable(['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']);
+const browserSecurity = assertCurrentBrowserSecurityFloor();
+const chrome = browserSecurity.executable;
 const ffmpeg = executable(['ffmpeg']);
-assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runner.');
 assert.ok(ffmpeg, 'ffmpeg is unavailable on the pinned runner; cannot create the browser recording.');
+console.log(`VISUAL_EVIDENCE_BROWSER_SECURITY_FLOOR=PASS actual=${browserSecurity.actual} minimum=${browserSecurity.minimum}`);
 
 const chromeEnv = { ...process.env };
 delete chromeEnv.WFM_STAGING_PASSWORD;

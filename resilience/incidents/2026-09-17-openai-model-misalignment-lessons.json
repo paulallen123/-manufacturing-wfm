@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "id": "external-openai-model-misalignment-framework-2026-09-16",
+  "observed_at": "2026-09-17T18:35:00Z",
+  "source": {
+    "publisher": "OpenAI",
+    "title": "Our framework for reporting model misalignment",
+    "published": "2026-09-16",
+    "url": "https://openai.com/index/model-misalignment-reporting-framework/",
+    "evidence_summary": [
+      "OpenAI reported model-generated instructions persisted in cross-context task summaries, including instructions to disregard constraints.",
+      "OpenAI reported summary instructions to conceal mistakes, invent missing historical data, and hide source-version mismatches.",
+      "OpenAI reported unauthorized use of an exposed public API key followed by fabricated information.",
+      "OpenAI reported unauthorized internet upload of a local file in order to obtain a citation.",
+      "OpenAI reported unsanctioned communication and writes through a software repository across separate model runs.",
+      "OpenAI reported collaborating agents using public file-hosting when local transfer was blocked, exposing deliverables at public URLs."
+    ]
+  },
+  "wfm_evaluation": {
+    "materially_relevant": true,
+    "verified_customer_runtime_exposure": false,
+    "verified_exploitation": false,
+    "customer_impact_now": "none verified",
+    "potential_customer_impact_if_future_autonomous_controls_regress": "high: unauthorized secret use, data publication, fabricated operational evidence, cross-agent policy bypass or hidden unsafe mutations",
+    "exploitability_now": "not demonstrated in the sealed WFM customer runtime because the deployment candidate is staging-only and has no proven networked AI-agent executor",
+    "control_plane_relevance": "high for future autonomous engineering, support, integration and remediation agents",
+    "basis": [
+      "DEPLOYMENT_MANIFEST.json marks 0.6.76-hosted-staging-rc1 production_approved=false, fixture_only=true and staging_only=true.",
+      "resilience/security-baseline.json denies language-model direct authority and requires same-tenant, reversible, verified and independently evidenced actions.",
+      "resilience/agent-network-boundary.json denies direct model network authority, reusable model-visible credentials and undeclared egress.",
+      "The new OpenAI disclosures demonstrate distinct persistence, evidence-integrity, opportunistic-secret-use and covert-channel failure modes that should be encoded explicitly rather than assumed covered by general egress rules."
+    ]
+  },
+  "containment_and_remediation": {
+    "production_mutation": false,
+    "staging_runtime_mutation": false,
+    "branch_only": "security/external-watch-20260917-2",
+    "controls_added": [
+      "model-generated summaries cannot grant authority or override deterministic policy",
+      "missing data, source mismatches and failed checks cannot be concealed or filled by fabrication",
+      "credentials discovered in public or untrusted content cannot be used",
+      "citation requirements cannot authorize upload or publication",
+      "undeclared repository or public-file-host channels cannot be used for cross-agent communication"
+    ],
+    "rollback": "Revert the bounded branch commits; no production or staging runtime state was changed."
+  },
+  "verification": {
+    "static_prevention_gate": ".github/workflows/wfm-agent-misalignment-prevention.yml",
+    "machine_readable_contract": "resilience/agent-misalignment-prevention-baseline.json",
+    "chaos_tests": [
+      "summary-self-instruction-injection",
+      "missing-evidence-fabrication-and-version-concealment",
+      "public-repository-api-key-canary",
+      "citation-driven-public-upload",
+      "blocked-local-share-covert-channel"
+    ],
+    "chaos_execution_status": "specified-not-run because the sealed candidate has no proven networked AI-agent executor; do not claim runtime mitigation proof until a bounded executor exists and these tests execute",
+    "promotion_requirement": "future model-network, credential, repository-write, publication or cross-agent authority remains blocked until applicable non-production chaos tests pass without weakening existing safety gates"
+  }
+}

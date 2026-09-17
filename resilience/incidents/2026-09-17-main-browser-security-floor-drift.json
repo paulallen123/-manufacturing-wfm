@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-17T17:54:00Z",
+  "issue": {
+    "title": "Credential-bearing browser proof drifted onto main without the patched Chrome floor",
+    "severity": "high",
+    "authoritative_source": "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0541751186.html",
+    "minimum_linux_chrome": "153.0.8010.47",
+    "source_release_date": "2026-09-15"
+  },
+  "wfm_evidence": {
+    "main_commit_observed": "4218e829de3e47ef3e8965eae9df16b51c61d79f",
+    "runner_image": "ubuntu-24.04 20260907.300.1",
+    "previously_observed_runner_chrome": "152.0.7977.82",
+    "affected_code_paths": [
+      ".github/workflows/live-browser-readonly-proof.yml",
+      ".github/workflows/railway-first-deploy.yml",
+      "scripts/live-visual-evidence.mjs"
+    ],
+    "latest_railway_proof_run": "https://github.com/paulallen123/-manufacturing-wfm/actions/runs/35249412569",
+    "latest_railway_run_outcome": "failed before Chrome spawn because ffmpeg was unavailable",
+    "credential_exposed_to_browser_in_latest_railway_run": false,
+    "reason_no_browser_exposure_in_latest_run": "The live visual evidence module asserted ffmpeg availability before spawning Chrome or submitting the staging password to the browser. Earlier non-browser authenticated API proofs in the same job did use the staging credential directly from Node, but the stale browser did not receive it in this run.",
+    "latent_exposure": "The main live-browser workflow could still inject WFM_DEMO_PASSWORD into the system Chrome when manually dispatched or when its workflow changes, and the Railway visual-evidence path would have done the same once its unrelated ffmpeg blocker was removed. Neither main path enforced the Chrome security floor before this bounded fix."
+  },
+  "impact_and_exploitability": {
+    "customer_production_impact_verified": false,
+    "current_candidate": "0.6.76-hosted-staging-rc1",
+    "production_approved": false,
+    "pilot_ready": false,
+    "customer_data": "fictional fixture staging data",
+    "classification": "No verified customer production compromise; high-value staging/demo credential exposure path existed if a credential-bearing browser proof executed on the stale runner.",
+    "exploitability": "Requires execution of a credential-bearing browser proof on a runner below the patched Chrome floor plus exploitation of a browser vulnerability or browser compromise. The observed runner image is the same stale image measured at Chrome 152.0.7977.82, below 153.0.8010.47."
+  },
+  "containment": {
+    "branch": "security/external-watch-20260917-2",
+    "draft_pr": "https://github.com/paulallen123/-manufacturing-wfm/pull/41",
+    "production_mutation": false,
+    "staging_mutation": false,
+    "actions": [
+      "centralize the minimum Chrome version in a machine-readable browser security-floor policy",
+      "fail before WFM_DEMO_PASSWORD is injected into the live browser workflow",
+      "fail before RAILWAY_TOKEN is injected or WFM_STAGING_PASSWORD is retrieved by the Railway proof workflow",
+      "recheck the same floor inside live-visual-evidence before Chrome is spawned",
+      "disallow generic unverified Chromium fallback in the credential-bearing floor checker",
+      "add a CI prevention gate that asserts version-comparator boundaries and secret-step ordering"
+    ],
+    "live_stale_runner_proof": {
+      "run": "https://github.com/paulallen123/-manufacturing-wfm/actions/runs/35254740346",
+      "runner_image": "ubuntu-24.04 20260907.300.1",
+      "observed_chrome": "152.0.7977.82",
+      "required_floor": "153.0.8010.47",
+      "preflight_result": "DENY",
+      "browser_driver_install_step": "skipped",
+      "credential_bearing_authenticated_journey_step": "skipped",
+      "wfm_demo_password_exposed_to_browser": false,
+      "containment_result": "PASS_FAIL_CLOSED"
+    }
+  },
+  "regression": {
+    "synthetic_versions": [
+      {"actual": "152.0.7977.82", "expected": "deny"},
+      {"actual": "153.0.8010.46", "expected": "deny"},
+      {"actual": "153.0.8010.47", "expected": "allow"},
+      {"actual": "154.0.0.0", "expected": "allow"}
+    ],
+    "stale_runner_expected": "The workflow terminates at the Chrome preflight, before any browser-relevant secret-bearing step.",
+    "stale_runner_observed": "Run 35254740346 denied Chrome 152.0.7977.82, then skipped browser driver installation and the WFM_DEMO_PASSWORD authenticated journey.",
+    "patched_runner_expected": "Only a runner at or above the recorded security floor may proceed to the credential-bearing proof; all existing tenant, fixture-only, verification and rollback boundaries remain unchanged."
+  },
+  "next_action": "Keep draft PR 41 unmerged and do not bypass the floor. Re-run the authenticated browser proof only when the hosted runner meets Chrome 153.0.8010.47 or later, or an integrity-verified patched browser is introduced through the existing gates."
+}

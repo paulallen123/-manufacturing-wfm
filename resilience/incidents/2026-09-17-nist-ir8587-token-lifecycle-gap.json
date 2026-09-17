@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-17T17:37:00Z",
+  "issue": {
+    "title": "NIST IR 8587 final token-protection guidance exposes a future WFM verification contract gap",
+    "published": "2026-09-15",
+    "authoritative_sources": [
+      "https://csrc.nist.gov/pubs/ir/8587/final",
+      "https://csrc.nist.gov/news/2026/protecting-tokens-and-assertions-nist-ir-8587"
+    ],
+    "external_lesson": "NIST IR 8587 finalizes implementation guidance for protecting identity, access and workload tokens and assertions from forgery, theft and misuse, including stronger key management, token verification and lifecycle controls and an emphasis on short-lived workload tokens rather than static credentials."
+  },
+  "wfm_evaluation": {
+    "candidate": "0.6.76-hosted-staging-rc1",
+    "production_approved": false,
+    "staging_only": true,
+    "verified_customer_production_exposure": false,
+    "current_controls_already_present": [
+      "language model has no direct network authority",
+      "reusable provider/session/AI credentials are not model-visible",
+      "approved egress requires same-tenant purpose-bound requests",
+      "short-lived least-privilege credentials are injected only at the deterministic executor boundary",
+      "verified credential disclosure triggers narrow revocation"
+    ],
+    "gap": "The existing machine-readable agent network boundary did not yet make token trust, recipient/resource binding, lifetime validation, retired-key rejection, replay handling and provider revocation/compromise-signal handling explicit promotion invariants for future token-bearing integrations.",
+    "affected_classification": "No verified customer-runtime vulnerability. Treat as a high-impact latent integration safety gap that must be closed before future networked token-bearing agent/provider paths are promoted.",
+    "customer_impact_if_left_uncontrolled": "A forged, stolen, expired, cross-tenant, wrong-recipient, revoked or replayed token could inherit the authority of a future integration and enable unauthorized provider access or business mutation.",
+    "exploitability": "Requires a future token-bearing integration plus possession, forgery, replay or misuse of authority-bearing token material, or a verification/lifecycle failure. The current sealed candidate is staging-only and the existing boundary states no networked AI-agent executor is present, so this is not classified as a currently exploitable customer production path."
+  },
+  "containment_and_prevention": {
+    "production_mutation": false,
+    "staging_runtime_mutation": false,
+    "runtime_dependency_change": false,
+    "action": "Add an explicit machine-readable token-protection baseline and CI gate for future token-bearing integrations without weakening existing autonomy, tenant, verification or rollback controls.",
+    "fail_closed": true,
+    "static_workload_credentials_default": "deny unless a documented provider constraint and explicit security exception satisfy isolation, least privilege, rotation and revocation requirements"
+  },
+  "regression_and_chaos_tests": [
+    "wrong-recipient-or-cross-tenant-token",
+    "expired-not-yet-valid-or-retired-key-token",
+    "revoked-or-replayed-token",
+    "valid-short-lived-same-tenant-control"
+  ],
+  "expected_safe_result": "Invalid or misbound authority-bearing token material is denied before provider mutation and never appears raw in model context, logs or traces; a valid short-lived same-tenant control remains usable only through the deterministic executor and existing verification gates.",
+  "next_proof": "When a real token-bearing provider or workload executor is introduced, make the applicable chaos tests executable in a bounded non-production environment and block promotion until they pass."
+}

@@ -1,0 +1,135 @@
+name: WFM agent misalignment prevention gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'security/**'
+    paths:
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/agent-network-boundary.json
+      - resilience/security-baseline.json
+      - resilience/agent-misalignment-prevention-baseline.json
+      - 'resilience/incidents/**'
+      - .github/workflows/wfm-agent-misalignment-prevention.yml
+  pull_request:
+    paths:
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/agent-network-boundary.json
+      - resilience/security-baseline.json
+      - resilience/agent-misalignment-prevention-baseline.json
+      - 'resilience/incidents/**'
+      - .github/workflows/wfm-agent-misalignment-prevention.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-agent-misalignment-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prevention:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout bounded security branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Validate autonomous-agent misalignment prevention contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const contract = require('./resilience/agent-misalignment-prevention-baseline.json');
+          const egress = require('./resilience/agent-network-boundary.json');
+          const security = require('./resilience/security-baseline.json');
+          const manifest = require('./DEPLOYMENT_MANIFEST.json');
+
+          assert.equal(contract.publication.name, 'OpenAI model-misalignment reporting framework');
+          assert.equal(contract.publication.published, '2026-09-16');
+          assert.equal(contract.publication.source, 'https://openai.com/index/model-misalignment-reporting-framework/');
+          assert.equal(contract.publication.reported_failure_modes.length, 6, 'All six disclosed behavior classes must remain represented.');
+
+          const current = contract.current_wfm_evaluation;
+          assert.equal(current.candidate, manifest.candidate, 'Agent-risk evaluation must be refreshed when the sealed deployment candidate changes.');
+          assert.equal(current.production_approved, manifest.production_approved, 'Agent-risk evaluation disagrees with deployment approval state.');
+          assert.equal(current.production_approved, false, 'Current no-production-exposure classification must be re-evaluated before production approval.');
+          assert.equal(manifest.staging_only, true, 'Current classification is valid only for the staging-only sealed candidate.');
+          assert.equal(current.networked_ai_agent_executor_present_in_sealed_candidate, false, 'A networked agent executor requires executable chaos tests before promotion.');
+          assert.equal(current.customer_production_exposure_verified, false);
+
+          assert.equal(security.autonomy.language_model_direct_authority, false, 'Language-model direct authority must remain disabled.');
+          assert.equal(security.autonomy.require_same_tenant, true);
+          assert.equal(security.autonomy.require_reversible_action, true);
+          assert.equal(security.autonomy.require_verified_dry_run, true);
+          assert.equal(security.autonomy.require_independent_evidence, true);
+          assert.equal(egress.root_of_trust, 'deterministic-executor');
+          assert.equal(egress.language_model_direct_network_authority, false);
+          assert.equal(egress.model_visible_reusable_credentials, false);
+          assert.equal(egress.default_egress, 'deny');
+          assert.equal(egress.credential_controls.inject_at_executor_boundary_only, true);
+          assert.equal(egress.credential_controls.redact_from_logs_and_traces, true);
+
+          const controls = contract.controls;
+          const mustBeFalse = [
+            'model_generated_summary_is_authority_source',
+            'model_generated_or_persisted_instruction_can_override_deterministic_policy',
+            'model_may_conceal_error_safety_event_or_failed_verification',
+            'model_may_fabricate_missing_evidence_or_historical_data',
+            'discovered_public_credential_use_allowed',
+            'model_may_publish_local_customer_or_evidence_file_for_citation',
+            'citation_requirement_implies_egress_authority',
+            'undeclared_repository_or_filehost_inter_agent_channel_allowed',
+            'model_generated_evidence_alone_can_promote_mutating_change'
+          ];
+          for (const key of mustBeFalse) assert.equal(controls[key], false, `Unsafe agent capability must remain disabled: ${key}`);
+
+          const mustBeTrue = [
+            'summary_must_preserve_missing_data_and_source_version_mismatch',
+            'cross_context_or_cross_agent_instruction_requires_declared_authenticated_channel',
+            'independent_deterministic_verification_required_before_mutating_promotion'
+          ];
+          for (const key of mustBeTrue) assert.equal(controls[key], true, `Agent safety control must remain enabled: ${key}`);
+
+          assert.equal(controls.discovered_credential_action, 'deny-use-redact-quarantine-and-route-to-authorized-secret-broker-or-owner');
+          assert.equal(controls.policy_or_evidence_conflict_action, 'fail-closed-quarantine-preserve-provenance-and-continue-read-only-where-safe');
+
+          const expectedRuleIds = [
+            'deny-self-generated-cross-context-authority',
+            'deny-evidence-concealment-or-fabrication',
+            'deny-opportunistic-discovered-credential-use',
+            'deny-unauthorized-publication-for-citation-or-transfer',
+            'deny-undeclared-cross-agent-covert-channel'
+          ].sort();
+          assert.deepEqual(contract.prevention_rules.map(x => x.id).sort(), expectedRuleIds, 'Agent prevention-rule coverage drifted without review.');
+
+          const expectedChaosIds = [
+            'summary-self-instruction-injection',
+            'missing-evidence-fabrication-and-version-concealment',
+            'public-repository-api-key-canary',
+            'citation-driven-public-upload',
+            'blocked-local-share-covert-channel'
+          ].sort();
+          const actualChaosIds = contract.chaos_tests.map(x => x.id).sort();
+          assert.deepEqual(actualChaosIds, expectedChaosIds, 'Agent chaos-test coverage drifted without review.');
+          assert.ok(contract.chaos_tests.every(x => x.current_runtime_status.startsWith('specified-not-run-')), 'Do not claim runtime chaos proof until a bounded networked agent executor exists and the tests actually execute.');
+          assert.match(contract.promotion_rule, /No future autonomous WFM workflow may gain model-network, credential, repository-write, publication or cross-agent authority until applicable tests above execute and pass/);
+
+          console.log(JSON.stringify({
+            ok: true,
+            source: contract.publication.source,
+            candidate: current.candidate,
+            currentCustomerProductionExposureVerified: current.customer_production_exposure_verified,
+            productionApproved: current.production_approved,
+            preventionRules: expectedRuleIds,
+            chaosTests: actualChaosIds,
+            rootOfTrust: egress.root_of_trust,
+            defaultEgress: egress.default_egress
+          }, null, 2));
+          NODE

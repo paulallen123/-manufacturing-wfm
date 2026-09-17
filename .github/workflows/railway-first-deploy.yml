@@ -9,6 +9,10 @@ on:
       - 'scripts/live-isolation-kiosk-proof.mjs'
       - 'scripts/live-correction-proof.mjs'
       - 'scripts/live-visual-evidence.mjs'
+      - 'scripts/browser-security-floor.mjs'
+      - 'resilience/browser-security-floor.json'
+      - 'resilience/railway-staging-target-baseline.json'
+      - 'DEPLOYMENT_MANIFEST.json'
       - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
 
@@ -16,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: railway-auth-proof-wfm-customer-proof-0676-v5
+  group: railway-auth-proof-wfm-customer-proof-0676-v6
   cancel-in-progress: true
 
 jobs:
@@ -37,7 +41,38 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Re-verify frozen runtime before upload
+      - name: Fail closed on Railway target or release-boundary drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const target = JSON.parse(fs.readFileSync('resilience/railway-staging-target-baseline.json','utf8'));
+          const manifest = JSON.parse(fs.readFileSync('DEPLOYMENT_MANIFEST.json','utf8'));
+
+          assert.equal(target.logical_classification, 'staging_customer_proof');
+          assert.equal(target.project.id, process.env.RAILWAY_PROJECT_ID);
+          assert.equal(target.environment.id, process.env.RAILWAY_ENVIRONMENT_ID);
+          assert.equal(target.service.id, process.env.RAILWAY_SERVICE_ID);
+          assert.equal(target.project.name, 'manufacturing-wfm-staging-proof');
+          assert.equal(target.environment.provider_name, 'production');
+          assert.equal(target.environment.provider_label_is_authorization_signal, false);
+          assert.equal(target.authorization.require_exact_project_environment_service_tuple, true);
+          assert.equal(target.authorization.deny_environment_name_only_authorization, true);
+          assert.equal(target.authorization.deny_target_drift_before_secret_access, true);
+          assert.equal(target.authorization.deny_production_promotion, true);
+
+          assert.equal(manifest.candidate, target.manifest_requirements.candidate);
+          assert.equal(manifest.runtime_sha256, target.manifest_requirements.runtime_sha256);
+          assert.equal(manifest.production_approved, false);
+          assert.equal(manifest.pilot_ready, false);
+          assert.equal(manifest.fixture_only, true);
+          assert.equal(manifest.staging_only, true);
+          assert.equal(process.env.EXPECTED_RUNTIME_SHA256, manifest.runtime_sha256);
+          NODE
+
+      - name: Re-verify frozen runtime before any credential-bearing step
         shell: bash
         run: |
           set -euo pipefail
@@ -46,12 +81,16 @@ jobs:
           grep -F '"pilot_ready": false' DEPLOYMENT_MANIFEST.json
           grep -F '"staging_only": true' DEPLOYMENT_MANIFEST.json
 
-      - name: Install pinned Railway CLI with published digest verification
+      - name: Require patched Chrome before any staging credential retrieval
+        shell: bash
+        run: node scripts/browser-security-floor.mjs
+
+      - name: Install pinned Railway CLI with release-asset digest verification
         shell: bash
         run: |
           set -euo pipefail
-          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
-          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
+          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.9/railway-v5.57.9-x86_64-unknown-linux-gnu.tar.gz'
+          CLI_SHA256='02302dc0722497662527929b5c8f3ea9b7045434e77fc7a6a1e70349100838ec'
           curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
           echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/railway-cli"
@@ -59,11 +98,11 @@ jobs:
           CLI_BIN=$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)
           test -n "$CLI_BIN"
           echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
-          "$CLI_BIN" --version
+          "$CLI_BIN" --version | grep -F 'railway 5.57.9'
 
-      # Security boundary: this is the only step that receives the deployment credential.
-      # The repository-wide security gate enforces the exact secret name, workflow path,
-      # owner-only trigger, fixed target IDs, pinned runner/actions and non-persistent checkout.
+      # Security boundary: this is the only step that receives the Railway credential.
+      # Target tuple, release boundary, browser floor, CLI digest and runtime integrity all
+      # fail before this step. Provider environment labels never authorize production.
       - name: Bootstrap exact existing Railway customer-proof service
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -72,8 +111,6 @@ jobs:
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
 
-          # Read the canonical hosted-staging variables into a runner-temp file. Neither
-          # the Railway token nor the staging password is printed or written to evidence.
           "$RAILWAY_BIN" variable list \
             --service "$RAILWAY_SERVICE_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
@@ -86,8 +123,6 @@ jobs:
           if (!password || !vars.WFM_PUBLIC_ORIGIN) {
             throw new Error('Required canonical staging variables are unavailable to the proof runner.');
           }
-          // The Railway project token has completed its job before the proof modules run.
-          // Remove it from this child process so browser/proof code never receives it.
           delete process.env.RAILWAY_TOKEN;
           process.env.WFM_STAGING_PASSWORD = password;
           process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
@@ -100,7 +135,7 @@ jobs:
           rm -f "$RUNNER_TEMP/railway-vars.json"
 
       - name: Upload live visual evidence package
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: wfm-customer-proof-0676-live-evidence
           path: ${{ runner.temp }}/wfm-evidence-output
