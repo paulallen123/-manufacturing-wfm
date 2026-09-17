@@ -1,0 +1,56 @@
+name: WFM autonomous recovery proof
+
+on:
+  push:
+    branches:
+      - main
+      - 'autonomy/**'
+    paths:
+      - 'DEPLOYMENT_MANIFEST.json'
+      - 'artifact/**'
+      - 'resilience/**'
+      - 'scripts/validate-deployment.mjs'
+      - 'scripts/validate-resilience-scenarios.mjs'
+      - 'scripts/validate-autonomous-recovery-proof.mjs'
+      - '.github/workflows/wfm-autonomous-recovery-proof.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-autonomous-recovery-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prove-known-worker-recovery:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Re-prove deployment provenance
+        run: node scripts/validate-deployment.mjs
+
+      - name: Re-prove resilience policy
+        run: node scripts/validate-resilience-scenarios.mjs
+
+      - name: Inject and recover a known worker failure with zero human interaction
+        run: node scripts/validate-autonomous-recovery-proof.mjs
+
+      - name: Assert proof receipt exists and is machine-readable
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s autonomous-recovery-proof.json
+          node -e "const p=require('./autonomous-recovery-proof.json'); if(p.status!=='PASS'||p.humanInteractionRequired!==false||p.productionMutation!==false||p.safetyKernelApproved!==true||p.negativeAuthorityTests?.payrollWriteDenied!==true||p.negativeAuthorityTests?.languageModelDirectExecutionDenied!==true||p.negativeAuthorityTests?.crossTenantExecutionDenied!==true) process.exit(1); console.log(JSON.stringify(p,null,2));"
