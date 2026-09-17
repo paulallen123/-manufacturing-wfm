@@ -7,6 +7,8 @@
     "image_suffix": "bookworm-slim",
     "security_release": "2026-07-29",
     "security_release_source": "https://nodejs.org/en/blog/release/v22.23.2",
+    "minimum_openssl": "3.5.2",
+    "openssl_eol_source": "https://openssl-library.org/post/2026-09-16-eol30/",
     "tracked_cves": [
       "CVE-2026-56846",
       "CVE-2026-56848",
@@ -56,6 +58,8 @@
   "external_intelligence": {
     "authoritative_sources": {
       "node_security_release": "https://nodejs.org/en/blog/release/v22.23.2",
+      "openssl_30_eol": "https://openssl-library.org/post/2026-09-16-eol30/",
+      "node_openssl_35_transition": "https://nodejs.org/en/blog/release/v22.20.0",
       "nist_agent_identity": "https://www.nist.gov/news-events/news/2026/02/new-concept-paper-identity-and-authority-software-agents",
       "nist_multi_agent_security": "https://csrc.nist.gov/Presentations/2026/security-considerations-for-multi-agent-ai-systems",
       "owasp_agent_control_standard": "https://genai.owasp.org/resource/agent-control-standard-acs/",
@@ -64,7 +68,9 @@
     "runtime_dependency_expectation": {
       "third_party_npm_packages": 0,
       "server_imports": "node-builtins-only",
-      "reason": "The exact staged runtime is self-contained and currently imports only Node.js built-ins; introducing a third-party runtime package requires an explicit security-baseline change and candidate revalidation."
+      "minimum_openssl": "3.5.2",
+      "forbid_eol_openssl_30": true,
+      "reason": "The exact staged runtime is self-contained and currently imports only Node.js built-ins. The Node base must also carry a publicly supported OpenSSL line; OpenSSL 3.0 reached public EOL on 2026-09-07. Introducing a third-party runtime package or an EOL cryptographic runtime requires explicit security-baseline review and candidate revalidation."
     },
     "agent_threat_rules": [
       {
