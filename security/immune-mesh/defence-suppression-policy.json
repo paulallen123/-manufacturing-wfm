@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "status": "staged",
+  "purpose": "Detect and contain attempts to blind, suppress or subvert the defence plane without causing a customer-wide outage.",
+  "independence": {
+    "monitoring_outside_application_trust_boundary": true,
+    "application_admin_cannot_rewrite_security_history": true,
+    "application_runtime_cannot_disable_watchers": true,
+    "minimum_independent_watchers": 2,
+    "watchers_must_not_share_runtime_identity": true
+  },
+  "heartbeat": {
+    "required": true,
+    "maximum_gap_seconds": 30,
+    "missing_heartbeat_is_security_event": true,
+    "audit_chain_gap_is_security_event": true,
+    "clock_regression_is_security_event": true,
+    "sequence_regression_is_security_event": true
+  },
+  "degraded_security_mode": {
+    "scope": "affected_customer_cell_only",
+    "freeze_new_privileged_sessions": true,
+    "freeze_new_deployments": true,
+    "preserve_forensic_state": true,
+    "keep_safe_existing_business_operations_running": true,
+    "mass_disable_identities": false,
+    "delete_customer_data": false,
+    "global_shutdown": false,
+    "automatic_expiry_seconds": 900,
+    "require_independent_verification_before_release": true
+  },
+  "tripwires": {
+    "decoy_credential_use": {
+      "confidence": "high",
+      "automatic_actions": ["revoke_session", "isolate_workload", "capture_forensic_snapshot"],
+      "customer_scope_required": true,
+      "ttl_required": true
+    },
+    "decoy_api_resource_access": {
+      "confidence": "high",
+      "automatic_actions": ["revoke_session", "temporary_rate_limit", "capture_forensic_snapshot"],
+      "customer_scope_required": true,
+      "ttl_required": true
+    },
+    "security_log_tamper_attempt": {
+      "confidence": "high",
+      "automatic_actions": ["revoke_session", "pause_deployment", "capture_forensic_snapshot"],
+      "customer_scope_required": true,
+      "ttl_required": true
+    }
+  },
+  "uncertain_signal_policy": {
+    "destructive_action_forbidden": true,
+    "confirmed_malicious_process_required_for_termination": true,
+    "high_blast_radius_requires_escalation": true,
+    "ai_may_not_raise_its_own_authority": true
+  },
+  "forbidden_automatic_actions": [
+    "hack_back",
+    "external_retaliation",
+    "global_shutdown",
+    "mass_disable_identities",
+    "delete_customer_data",
+    "delete_security_evidence",
+    "delete_recovery_state",
+    "production_wide_credential_rotation",
+    "alter_payroll_or_workforce_records"
+  ]
+}
