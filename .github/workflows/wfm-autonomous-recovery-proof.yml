@@ -16,6 +16,7 @@ on:
       - 'scripts/validate-support-incident-recovery-proof.mjs'
       - 'scripts/validate-provider-recovery-authority-proof.mjs'
       - 'scripts/validate-provider-adapter-reconciliation-proof.mjs'
+      - 'scripts/diagnose-provider-retry-checkpoint.mjs'
       - '.github/workflows/wfm-autonomous-recovery-proof.yml'
 
 permissions:
@@ -60,6 +61,9 @@ jobs:
 
       - name: Prove attested signed provider recovery authority
         run: node --experimental-sqlite scripts/validate-provider-recovery-authority-proof.mjs
+
+      - name: Diagnose retained provider retry checkpoint shape
+        run: node --experimental-sqlite scripts/diagnose-provider-retry-checkpoint.mjs
 
       - name: Prove recovered provider adapter continuation and reconciliation
         run: node --experimental-sqlite scripts/validate-provider-adapter-reconciliation-proof.mjs
