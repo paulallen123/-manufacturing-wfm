@@ -87,9 +87,6 @@ jobs:
           done
           test -s /tmp/health.json
           cat /tmp/health.json
-
-          # Prove the browser-addressable assets contain the overlay while the server allow-list
-          # still rejects the former standalone UX path.
           curl -fsS http://127.0.0.1:4100/value-cockpit-ui.js >/tmp/served-ui.js
           curl -fsS http://127.0.0.1:4100/factory-control-ui.css >/tmp/served-ui.css
           grep -q 'WFM_UX_RESET_CYCLE3_BEGIN' /tmp/served-ui.js
@@ -122,11 +119,14 @@ jobs:
             const creds=JSON.stringify({email:'superuser@northstar.example',password});
             const ok=await evalx(`(()=>{const c=${creds};const f=document.querySelector('#v2-login');const e=f?.querySelector('[name="email"]'),p=f?.querySelector('[name="password"]');if(!e||!p)return false;e.value=c.email;e.dispatchEvent(new Event('change',{bubbles:true}));p.value=c.password;p.dispatchEvent(new Event('input',{bubbles:true}));f.requestSubmit();return true})()`);if(!ok)throw Error('Login form could not be submitted');await wait("!document.querySelector('#v2-login')");
           }
+          const targetBefore=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page="weekly-review"]')].find(n=>n.offsetParent!==null);return x?{tag:x.tagName,text:x.textContent.trim(),classes:x.className,page:typeof ui!=='undefined'?ui.page:null,role:(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'?ui.role:null)}:null})()`);
+          console.log('UX_CYCLE3_NAV_TARGET='+JSON.stringify(targetBefore));
           const clicked=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page="weekly-review"]')].find(n=>n.offsetParent!==null);if(!x)return false;x.click();return true})()`);if(!clicked)throw Error('Weekly sign-off navigation route not found');
-          await wait("Boolean(document.querySelector('.review-layout'))");
-          await sleep(600);
-          const diagnostic=()=>evalx(`(()=>{const layout=document.querySelector('.review-layout'),main=layout?.querySelector('.review-main');return {page:typeof ui!=='undefined'?ui.page:null,role:(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'?ui.role:null),base:typeof window.WFMUXReset,cycle2:typeof window.WFMUXCycle2,cycle3:typeof window.WFMUXCycle3,preview:typeof window.payrollPreview,previewReport:typeof window.payrollPreview?.report,tabs:!!document.querySelector('.review-tabs'),layout:!!layout,steps:!!document.querySelector('.review-steps'),main:!!main,panelCount:main?[...main.children].filter(x=>x.classList?.contains('panel')).length:0,signbar:!!main?.querySelector('.review-signbar'),aside:!!layout?.querySelector('.review-aside'),desk:!!document.querySelector('.ux-signoff-desk')}})()`);
-          let diag=await diagnostic();console.log('UX_CYCLE3_COMPOSITION_DIAGNOSTIC='+JSON.stringify(diag));
+          await sleep(900);
+          const diagnostic=()=>evalx(`(()=>{const layout=document.querySelector('.review-layout'),main=layout?.querySelector('.review-main');return {page:typeof ui!=='undefined'?ui.page:null,role:(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'?ui.role:null),base:typeof window.WFMUXReset,cycle2:typeof window.WFMUXCycle2,cycle3:typeof window.WFMUXCycle3,preview:typeof window.payrollPreview,previewReport:typeof window.payrollPreview?.report,tabs:!!document.querySelector('.review-tabs'),layout:!!layout,steps:!!document.querySelector('.review-steps'),main:!!main,panelCount:main?[...main.children].filter(x=>x.classList?.contains('panel')).length:0,signbar:!!main?.querySelector('.review-signbar'),aside:!!layout?.querySelector('.review-aside'),desk:!!document.querySelector('.ux-signoff-desk'),heading:document.querySelector('.content h1,.content h2')?.textContent?.trim()?.slice(0,120)||null}})()`);
+          let diag=await diagnostic();console.log('UX_CYCLE3_NAV_DIAGNOSTIC='+JSON.stringify(diag));
+          if(diag.page!=='weekly-review')throw Error('Weekly sign-off navigation did not set the expected page: '+JSON.stringify(diag));
+          if(!diag.layout)throw Error('Weekly sign-off page did not render its authoritative layout: '+JSON.stringify(diag));
           if(!diag.desk){await evalx("window.WFMUXCycle3?.apply?.(); true");await sleep(250);diag=await diagnostic();console.log('UX_CYCLE3_COMPOSITION_AFTER_APPLY='+JSON.stringify(diag));}
           if(!diag.desk)throw Error('Cycle 3 did not compose weekly sign-off: '+JSON.stringify(diag));
           const proof=await evalx(`(()=>({desk:!!document.querySelector('.ux-signoff-desk'),details:document.querySelectorAll('.ux-signoff-detail').length,hero:!!document.querySelector('.review-hero'),pageOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,labels:[...document.querySelectorAll('.ux-signoff-kpis small')].map(x=>x.textContent.trim()),signAction:document.querySelector('.ux-signoff-desk [data-act="review-sign"],.ux-signoff-desk [data-act="review-return"]')?.textContent.trim()||null}))()`);
