@@ -26,9 +26,10 @@ jobs:
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
           rm -rf /tmp/wfm-public && mkdir -p /tmp/wfm-public
           docker cp "$cid:/app/public/." /tmp/wfm-public/
+          docker cp "$cid:/app/server.cjs" /tmp/wfm-server.cjs
           echo '=== REVIEW UI EXACT CORE ==='
           sed -n '24,36p' /tmp/wfm-public/review-ui.js || true
+          echo '=== SERVER BIND/HOSTED CONTRACT ==='
+          grep -n -C 3 -E "HOSTED_STAGING|WFM_PUBLIC_ORIGIN|WFM_STAGING_PASSWORD|listen\(|127\.0\.0\.1|0\.0\.0\.0|process\.env\.PORT" /tmp/wfm-server.cjs | head -n 260 || true
           echo '=== REVIEW CSS STRUCTURE ==='
           grep -n -E 'review-(hero|grid|main|aside|metrics|categories|issues|signbar|checklist|issue|filters)' /tmp/wfm-public/review-ui.css | head -n 220 || true
-          echo '=== WEEKLY REVIEW MATCHES ==='
-          grep -Rni -C 1 --include='*.js' -E "weekly-review|Weekly review|sign.?off" /tmp/wfm-public/review-ui.js /tmp/wfm-public/time-review-ui.js | head -n 260 || true
