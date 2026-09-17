@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/railway-first-deploy.yml'
+      - 'scripts/live-auth-proof.mjs'
       - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
 
