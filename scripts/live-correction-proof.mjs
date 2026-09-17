@@ -1,0 +1,186 @@
+import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
+
+const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
+const expectedRelease = '0.6.76-hosted-staging-rc1';
+const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
+const password = process.env.WFM_STAGING_PASSWORD;
+assert.equal(origin, expectedOrigin);
+assert.ok(password && password.length >= 20);
+
+const timeoutMs = 20_000;
+function report(label, detail = '') { console.log(`${label}${detail ? ` · ${detail}` : ''}`); }
+async function request(path, init = {}) {
+  const response = await fetch(`${origin}${path}`, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+  const text = await response.text();
+  let body = null;
+  try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+  return { response, body, text };
+}
+function cookieFrom(response) {
+  const values = typeof response.headers.getSetCookie === 'function'
+    ? response.headers.getSetCookie()
+    : [response.headers.get('set-cookie')].filter(Boolean);
+  return values[0] ? values[0].split(';', 1)[0] : '';
+}
+async function login(email) {
+  const { response } = await request('/api/login', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', origin, referer: `${origin}/`, accept: 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  assert.equal(response.status, 200, `${email} login failed: ${response.status}`);
+  const cookie = cookieFrom(response);
+  assert.ok(cookie);
+  return cookie;
+}
+async function authed(cookie, path, { method = 'GET', body } = {}) {
+  return request(path, {
+    method,
+    headers: {
+      cookie,
+      accept: 'application/json,text/plain,*/*',
+      referer: `${origin}/`,
+      ...(method === 'POST' ? { 'content-type': 'application/json', origin } : {}),
+    },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
+}
+
+const health = await request('/api/health');
+assert.equal(health.response.status, 200);
+assert.equal(health.body?.release, expectedRelease);
+assert.equal(health.body?.fixtureOnly, true);
+assert.equal(health.body?.productionApproved, false);
+assert.equal(health.body?.pilotReady, false);
+
+const employeeCandidates = [
+  ['maya@northstar.example', 'e0'],
+  ['leah@northstar.example', 'e32'],
+  ['quality@northstar.example', 'e16'],
+  ['leeds-employee@northstar.example', 'e24'],
+];
+let employee = null;
+for (const [email, personId] of employeeCandidates) {
+  const cookie = await login(email);
+  const dash = await authed(cookie, '/api/attendance-corrections');
+  assert.equal(dash.response.status, 200, `${email} correction dashboard failed.`);
+  const record = Array.isArray(dash.body?.records)
+    ? dash.body.records.find(r => r.employee === personId && r.effective?.clockIn && r.effective?.clockOut)
+    : null;
+  if (record) {
+    employee = { email, personId, cookie, dash: dash.body, record };
+    break;
+  }
+}
+assert.ok(employee, 'No employee fixture has a safe closed-week attendance record for correction proof.');
+report('correction fixture', `${employee.email} record=${employee.record.id} period=${employee.record.period}`);
+
+// Client-supplied identity is forbidden. Prove that before creating the real fixture request.
+const identityInjection = await authed(employee.cookie, '/api/attendance-corrections/command', {
+  method: 'POST',
+  body: {
+    version: employee.dash.version,
+    command: 'correction-submit',
+    payload: {
+      period: employee.record.period,
+      record: employee.record.id,
+      employee: 'm1',
+      clockIn: employee.record.effective.clockIn,
+      clockOut: employee.record.effective.clockOut,
+      note: 'Controlled fixture identity-injection rejection proof.',
+    },
+    idempotencyKey: `proof-id-reject-${randomBytes(8).toString('hex')}`,
+  },
+});
+assert.equal(identityInjection.response.status, 400, 'Correction accepted a client-supplied employee identity.');
+report('correction identity binding', 'client-supplied employee rejected 400');
+
+const submitKey = `proof-correction-${randomBytes(10).toString('hex')}`;
+const submitBody = {
+  version: employee.dash.version,
+  command: 'correction-submit',
+  payload: {
+    period: employee.record.period,
+    record: employee.record.id,
+    clockIn: employee.record.effective.clockIn,
+    clockOut: employee.record.effective.clockOut,
+    note: 'Controlled fixture correction proof. Requested times intentionally match existing evidence; no attendance change is intended.',
+  },
+  idempotencyKey: submitKey,
+};
+const submitted = await authed(employee.cookie, '/api/attendance-corrections/command', { method: 'POST', body: submitBody });
+assert.equal(submitted.response.status, 200, `Correction submit failed: ${submitted.response.status}`);
+assert.equal(submitted.body?.result?.id, submitKey);
+assert.ok(['submitted', 'payroll_review_required'].includes(submitted.body?.result?.status));
+assert.equal(submitted.body?.result?.revision, 1);
+const submittedVersion = submitted.body?.version;
+assert.ok(Number.isInteger(submittedVersion));
+report('correction submitted', `id=${submitKey} status=${submitted.body.result.status} revision=1`);
+
+// The same idempotency key and body must replay rather than duplicate the request.
+const submitReplay = await authed(employee.cookie, '/api/attendance-corrections/command', { method: 'POST', body: submitBody });
+assert.equal(submitReplay.response.status, 200);
+assert.equal(submitReplay.body?.replayed, true);
+assert.equal(submitReplay.body?.result?.id, submitKey);
+report('correction submit idempotency', 'exact retry replayed');
+
+const managerCookie = await login('manager@northstar.example');
+const managerDash = await authed(managerCookie, '/api/attendance-corrections');
+assert.equal(managerDash.response.status, 200);
+const visibleRequest = managerDash.body?.requests?.find(q => q.id === submitKey);
+assert.ok(visibleRequest, 'Manager cannot see the employee correction request in authorised scope.');
+assert.equal(visibleRequest.employee, employee.personId);
+assert.equal(visibleRequest.revision, 1);
+report('manager correction visibility', `request=${submitKey} visible in authorised scope`);
+
+// Safest review proof: reject the fixture request so no attendance record is changed.
+const reviewKey = `proof-review-${randomBytes(10).toString('hex')}`;
+const reviewBody = {
+  version: managerDash.body.version,
+  command: 'correction-review',
+  payload: {
+    id: submitKey,
+    revision: 1,
+    decision: 'reject',
+    note: 'Controlled fixture proof completed. Rejecting by design so the original attendance evidence remains unchanged.',
+  },
+  idempotencyKey: reviewKey,
+};
+const reviewed = await authed(managerCookie, '/api/attendance-corrections/command', { method: 'POST', body: reviewBody });
+assert.equal(reviewed.response.status, 200, `Manager correction review failed: ${reviewed.response.status}`);
+assert.equal(reviewed.body?.result?.id, submitKey);
+assert.equal(reviewed.body?.result?.status, 'rejected');
+assert.equal(reviewed.body?.result?.revision, 2);
+report('manager correction decision', 'rejected by design; original attendance not mutated');
+
+const reviewReplay = await authed(managerCookie, '/api/attendance-corrections/command', { method: 'POST', body: reviewBody });
+assert.equal(reviewReplay.response.status, 200);
+assert.equal(reviewReplay.body?.replayed, true);
+assert.equal(reviewReplay.body?.result?.status, 'rejected');
+report('correction review idempotency', 'exact retry replayed');
+
+const employeeAfter = await authed(employee.cookie, '/api/attendance-corrections');
+assert.equal(employeeAfter.response.status, 200);
+const finalRequest = employeeAfter.body?.requests?.find(q => q.id === submitKey);
+assert.ok(finalRequest);
+assert.equal(finalRequest.status, 'rejected');
+assert.equal(finalRequest.revision, 2);
+assert.equal(finalRequest.outcome?.applied, false);
+const historyTypes = Array.isArray(finalRequest.history) ? finalRequest.history.map(h => h.type) : [];
+assert.ok(historyTypes.includes('attendance-correction-submitted'));
+assert.ok(historyTypes.includes('attendance-correction-reject'));
+report('correction history', historyTypes.join(' -> '));
+
+// The source record remains present and the request is closed, proving the rejected workflow did not remove evidence.
+const sourceAfter = employeeAfter.body?.records?.find(r => r.id === employee.record.id && r.period === employee.record.period);
+assert.ok(sourceAfter, 'Original attendance source record disappeared after rejected correction.');
+assert.equal(finalRequest.requested.clockIn, employee.record.effective.clockIn);
+assert.equal(finalRequest.requested.clockOut, employee.record.effective.clockOut);
+
+console.log('LIVE_ATTENDANCE_CORRECTION_AUDIT_PROOF=PASS');
+console.log(`request=${submitKey}`);
+console.log(`employee=${employee.email}`);
+console.log(`release=${expectedRelease}`);
+console.log('outcome=rejected-by-design; original attendance evidence preserved');
+console.log('claim_boundary=fixture-only hosted staging; productionApproved=false; pilotReady=false');
