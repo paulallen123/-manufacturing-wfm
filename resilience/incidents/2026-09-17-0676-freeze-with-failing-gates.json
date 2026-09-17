@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "incident_id": "wfm-2026-09-17-0676-freeze-with-failing-gates",
+  "detected_at": "2026-09-17T12:52:00Z",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "classification": [
+    "deployment-provenance",
+    "change-control",
+    "security-control-gap"
+  ],
+  "severity": "critical",
+  "production_impact": "none-verified",
+  "promotion_status": "blocked",
+  "evidence": {
+    "main_commit": "831307a3d51cc4b5481ccf123db4612eb5c7ecd9",
+    "main_commit_message": "Freeze 0.6.76 customer-proof staging release",
+    "every_push_security_run": 35221919382,
+    "every_push_security_result": "failure",
+    "every_push_failure": "mutable ubuntu-latest reference in wfm-onedrive-resilience.yml",
+    "prior_runtime_integrity_run": 35220818336,
+    "prior_runtime_integrity_result": "failure",
+    "browser_proof_state": "SECURITY_HOLD",
+    "main_branch_protected": false,
+    "required_status_checks_enforced": false
+  },
+  "correlation": {
+    "finding": "The candidate was frozen on main while the repository's own candidate/security evidence was not green. The direct-push path is not blocked by branch protection, so CI can detect an unsafe state after it has already landed on main.",
+    "root_cause_class": "change-control",
+    "not_a_test_flake": true,
+    "not_a_runtime_product_defect": true
+  },
+  "containment": [
+    "do not interpret a freeze commit or manifest test summary as promotion approval",
+    "keep 0.6.76 staging-only, fixture-only, pilot-not-ready and production-not-approved",
+    "require exact-candidate runtime-integrity, every-push security and browser/customer proof before promotion",
+    "harden owner-push workflow trust without weakening deployment or autonomy gates"
+  ],
+  "regression_rules": [
+    {
+      "id": "freeze-requires-green-evidence",
+      "must_hold": "a candidate freeze or promotion record is evidence-only unless all required exact-candidate gates are green"
+    },
+    {
+      "id": "failed-main-gate-is-promotion-block",
+      "must_hold": "any required security, integrity, provenance or browser-proof failure on the candidate blocks pilot/production promotion"
+    },
+    {
+      "id": "workflow-trust-owner-push-only",
+      "must_hold": "private staging workflows execute only from owner-originated pushes, pinned runner versions and immutable action SHAs"
+    },
+    {
+      "id": "direct-push-control-gap",
+      "must_hold": "until branch protection is enforced, a successful push to main is never treated as proof that required checks passed before the change landed"
+    }
+  ],
+  "safe_runbook": {
+    "action": "release.promotion-block",
+    "reversible": true,
+    "authority": "staging-control-plane-only",
+    "steps": [
+      "preserve the candidate and failing evidence",
+      "repair independent workflow-security defects on a bounded branch",
+      "repair deployment/provenance defects without weakening validators",
+      "re-run all exact-candidate gates",
+      "promote only if main has not moved incompatibly and every required gate is green"
+    ]
+  },
+  "autonomy_constraints": {
+    "language_model_direct_authority": false,
+    "tenant_boundary_changes": false,
+    "production_mutation": false,
+    "payroll_authority_changes": false
+  }
+}
