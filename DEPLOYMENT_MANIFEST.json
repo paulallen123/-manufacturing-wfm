@@ -1,14 +1,30 @@
 {
+  "schema_version": 2,
   "candidate": "0.6.76-hosted-staging-rc1",
   "parent_release": "0.6.76-provider-payroll-handoff-status-reconciliation-candidate",
   "parent_archive_sha256": "9485df8eeeb59f36b160b8f0515100adbd8b854d8a86dca60708c46d51c40581",
   "parent_source_content_sha256": "52e6f77d39fd71bc3240f05a763e77c790f6937b2614638db4bda51d43328219",
   "parent_artifact_manifest_sha256": "630de51b6527df897277f11ec2b2d9ad4191d1fd84a6b70a6111f8e850cb635e",
-  "hosted_source_content_sha256": "7a60920a14d6441711af697d94759bb8fb096b6483c0943ef61148a3a46d039d",
-  "runtime_sha256": "e3febf25a33c6becbfe59a215a38bfd77bb3306337c5e66dfd372183f2f97382",
-  "encrypted_artifact_sha256": "0c0dc1fa97b65610a8a966e0df3540e6e4b08c149aed14b646e23b3a4a313244",
-  "tests": {"security_attendance":"65/65","onboarding_kiosk_manufacturing":"28/28","payroll_provider":"53/53","hosted_acceptance":"PASS"},
+  "hosted_full_source_content_sha256": "0eff86d3034c6493aba130ec052bce8ee98e2205c37baae7c89ac6bd01ea84d9",
+  "hosted_full_package_manifest_sha256": "267d9916d4bbdd19ac5c626f55928642f250e07cc84087bf117584641966e37e",
+  "runtime_source_content_sha256": "456e8f6961525e0dd9d4449db94772c0902a4e6743b312cf09070ce611014781",
+  "runtime_package_manifest_sha256": "d8a7c23dc9853c85792333c5f7c5de18a3a812349dde74323f7828fcb9ff30dc",
+  "runtime_sha256": "6444bf808ee0d666c77d5815dc36dcc41417252a5f77e4e3ba45f27f3c643f57",
+  "runtime_size_bytes": 554639,
+  "encrypted_artifact_sha256": "1ae963bbbfa32bffaa6e92a6e7aad099362319fefc0cec5a0a87974d14bd9d3e",
+  "encrypted_artifact_size_bytes": 554667,
+  "tests": {
+    "full_split_regression": "1878/1878",
+    "identity_source_rerun": "68/68",
+    "provider_live_acceptance": "19/19",
+    "ui_evolution": "3/3",
+    "security_attendance": "65/65",
+    "onboarding_kiosk_manufacturing": "28/28",
+    "payroll_provider": "53/53",
+    "hosted_acceptance": "PASS"
+  },
   "production_approved": false,
   "pilot_ready": false,
-  "fixture_only": true
+  "fixture_only": true,
+  "claim_boundary": "Customer-proof staging only. Genuine provider Level A, independent external security/performance assurance and production acceptance remain separate gates."
 }
