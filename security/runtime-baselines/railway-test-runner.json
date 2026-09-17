@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "service": "wfm-test-runner",
+  "environment_class": "private-test",
+  "minimum_playwright_image": "mcr.microsoft.com/playwright:v1.63.0-noble",
+  "minimum_browser_baseline": {
+    "chrome_for_testing_major": 153,
+    "reason": "Playwright 1.57 bundled Chrome for Testing 143, which predates multiple 2026 Chrome security fixes including actively exploited CVE-2026-2441. The runner was upgraded and successfully redeployed on 2026-09-17."
+  },
+  "network": {
+    "public_domains_allowed": false,
+    "ipv6_egress": false
+  },
+  "execution": {
+    "downloaded_hardening_script_must_match_sha256": true,
+    "fail_closed_on_hash_mismatch": true
+  },
+  "rollback": {
+    "allowed": true,
+    "must_not_restore_playwright_below_minimum": true
+  }
+}
