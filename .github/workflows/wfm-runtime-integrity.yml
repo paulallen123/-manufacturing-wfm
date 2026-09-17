@@ -1,15 +1,8 @@
 name: WFM runtime integrity and resilience gate
 
+# Private-repository candidate code must not execute automatically from pull requests.
+# Validate only owner-originated pushes until repository-level workflow policy is enforced.
 on:
-  pull_request:
-    paths:
-      - Dockerfile
-      - DEPLOYMENT_MANIFEST.json
-      - resilience/security-baseline.json
-      - resilience/failure-scenarios.json
-      - scripts/validate-deployment.mjs
-      - scripts/validate-resilience-scenarios.mjs
-      - .github/workflows/wfm-runtime-integrity.yml
   push:
     branches:
       - main
@@ -26,21 +19,32 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: wfm-runtime-integrity-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   integrity:
-    runs-on: ubuntu-latest
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout trusted owner push
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.2'
+          package-manager-cache: false
       - name: Validate immutable deployment metadata
         run: node scripts/validate-deployment.mjs
       - name: Validate failure preparation catalogue
         run: node scripts/validate-resilience-scenarios.mjs
       - name: Build the exact staging candidate
-        run: docker build --pull -t wfm-staging-candidate:${{ github.sha }} .
+        run: docker build --pull=false -t wfm-staging-candidate:${{ github.sha }} .
       - name: Verify authoritative container identity and patched runtime
         shell: bash
         run: |
@@ -53,6 +57,7 @@ jobs:
           EXPECTED_NODE="v$(node -p "require('./resilience/security-baseline.json').node.minimum")"
           ACTUAL_NODE="$(docker run --rm --entrypoint node "$IMAGE" --version)"
           test "$ACTUAL_NODE" = "$EXPECTED_NODE"
+          test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "node"
           docker run --rm \
             -e EXPECTED_CANDIDATE="$EXPECTED_CANDIDATE" \
             -e EXPECTED_RUNTIME_MANIFEST_SHA="$EXPECTED_RUNTIME_MANIFEST_SHA" \
