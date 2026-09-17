@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: railway-auth-proof-wfm-customer-proof-0676-v2
+  group: railway-auth-proof-wfm-customer-proof-0676-v3
   cancel-in-progress: true
 
 jobs:
@@ -67,13 +67,10 @@ jobs:
         run: |
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
-          "$RAILWAY_BIN" up --ci \
-            --project "$RAILWAY_PROJECT_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --service "$RAILWAY_SERVICE_ID"
 
-          # Link explicitly before local variable injection so CI never enters an
-          # interactive project/service selection prompt.
+          # The exact sealed candidate is already live and independently proven. Link to
+          # that existing service without triggering another build so this run is a pure
+          # read-only customer-proof exercise.
           "$RAILWAY_BIN" link \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
