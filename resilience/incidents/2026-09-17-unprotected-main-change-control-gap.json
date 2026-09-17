@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-17",
+  "id": "unprotected-main-change-control-gap",
+  "classification": [
+    "security_issue",
+    "deployment_provenance_issue"
+  ],
+  "severity": "high",
+  "verified": true,
+  "finding": "GitHub reports the default main branch as protected=false with required status checks enforcement off. Current WFM safety/security workflows therefore run as evidence after a direct main update rather than being enforceable preconditions on that update.",
+  "correlation": {
+    "repository": "paulallen123/-manufacturing-wfm",
+    "main_head": "4218e829de3e47ef3e8965eae9df16b51c61d79f",
+    "railway_service": "wfm-customer-proof-0676",
+    "railway_service_source": "paulallen123/-manufacturing-wfm",
+    "railway_watched_paths": [
+      "Dockerfile",
+      "DEPLOYMENT_MANIFEST.json",
+      "STAGING_FREEZE.json",
+      "artifact/**"
+    ],
+    "risk_statement": "If a direct main update modifies a deployment-sensitive watched path, the repository has no enforceable branch-level control proving required WFM gates passed before the new main state entered the staging deployment trigger surface."
+  },
+  "current_impact": {
+    "production_compromise_verified": false,
+    "staging_mutation_from_this_finding_verified": false,
+    "tenant_boundary_failure_verified": false,
+    "autonomy_kernel_bypass_verified": false,
+    "reason": "Current main is unchanged during this inspection and the customer-proof service remains on the previously successful staging deployment."
+  },
+  "containment": [
+    "keep production_approved=false and pilot_ready=false",
+    "do not merge this evidence branch as a substitute for actual branch protection",
+    "use bounded PRs and exact-head checks for all automation-authored work",
+    "do not change Railway or sealed runtime controls to compensate for repository governance weakness"
+  ],
+  "prevention": [
+    "enable enforceable protection on main",
+    "require relevant WFM security/integrity checks before main updates are accepted",
+    "disallow force-push and routine direct-push paths",
+    "rerun governance audit after any GitHub plan or repository-control change"
+  ],
+  "regression_detection": "The repository-governance audit must fail whenever GitHub reports main.protected != true."
+}
