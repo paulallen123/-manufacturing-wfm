@@ -1,4 +1,4 @@
-name: Inspect sealed hosted login validation
+name: Inspect sealed correction validation contracts
 
 on:
   push:
@@ -22,24 +22,29 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Inspect sealed server login contract
+      - name: Inspect correction validation contract
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/sealed-runtime"
           tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C "$RUNNER_TEMP/sealed-runtime"
-          SERVER="$RUNNER_TEMP/sealed-runtime/server.cjs"
-          test -f "$SERVER"
-          node - "$SERVER" <<'NODE'
+          CORR="$RUNNER_TEMP/sealed-runtime/public/attendance-corrections.js"
+          ENGINE="$RUNNER_TEMP/sealed-runtime/public/engine.js"
+          test -f "$CORR"
+          test -f "$ENGINE"
+          node - "$CORR" "$ENGINE" <<'NODE'
           const fs = require('node:fs');
-          const source = fs.readFileSync(process.argv[2], 'utf8');
-          const needles = ['/api/login','WFM_STAGING_PASSWORD','timingSafeEqual','superuser@northstar.example'];
-          for (const needle of needles) {
-            let at = source.indexOf(needle);
-            if (at < 0) continue;
-            console.log(`SEALED_LOGIN_NEEDLE=${needle}`);
-            console.log('SEALED_LOGIN_SNIPPET_START');
-            console.log(source.slice(Math.max(0, at - 1800), Math.min(source.length, at + 3200)));
-            console.log('SEALED_LOGIN_SNIPPET_END');
+          const corr = fs.readFileSync(process.argv[2], 'utf8');
+          const engine = fs.readFileSync(process.argv[3], 'utf8');
+          for (const [name, source, needles] of [
+            ['CORRECTION', corr, ['function note','function submit','resolveLondon(x.clockIn)']],
+            ['ENGINE', engine, ['function resolveLondon','resolveLondon=','resolveLondon:','resolveLondon,']]
+          ]) {
+            for (const needle of needles) {
+              const at = source.indexOf(needle);
+              if (at < 0) continue;
+              console.log(`${name}_NEEDLE=${needle}`);
+              console.log(source.slice(Math.max(0, at - 1400), Math.min(source.length, at + 4200)));
+            }
           }
           NODE

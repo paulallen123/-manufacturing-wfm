@@ -15,6 +15,9 @@ const originalCreateServer = http.createServer;
 http.createServer = function guardedCreateServer(listener) {
   if (typeof listener !== 'function') return originalCreateServer.call(http, listener);
 
+  // The sealed server creates its SQLite schema before calling http.createServer().
+  // Initialise synchronously here: the schema exists, but no socket can accept a
+  // request until this function returns, so there is no unguarded request window.
   if (enabled && !guard && process.env.WFM_DB) {
     guard = createIdentitySurvivalGuard({ dbPath: process.env.WFM_DB });
   }

@@ -140,7 +140,7 @@ function createIdentitySurvivalGuard(options = {}) {
   function beforeRequest(req, res) {
     if (rejectInjectedIdentity(req, res)) return true;
     const token = cookieSessionToken(req);
-    if (!token) return false;
+    if (!token) return false; // Public/integration routes remain governed by the sealed server.
 
     const tokenHash = sha256(token);
     const now = Date.now();
@@ -191,6 +191,9 @@ function createIdentitySurvivalGuard(options = {}) {
     return false;
   }
 
+  // Administrative methods are intentionally not exposed over HTTP by this module.
+  // Broad tenant epoch rotation or freeze changes belong behind an independently
+  // authorised security control plane, not inside the application request surface.
   function securityControlForTests() {
     return {
       db,
