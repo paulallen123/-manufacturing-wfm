@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "hosted-entry-consistency",
+  "source_incident": "WFM-2026-09-17-RC4-HOSTED-IDENTITY-DRIFT",
+  "scope": "hosted-staging-candidate",
+  "classification": "promotion-blocking-product-regression",
+  "signals": [
+    "health release identity and rendered UI mode disagree",
+    "effective showLogin renderer is local-development-only in hosted-staging mode",
+    "hosted login pre-fills the local demonstration password",
+    "hosted entry page contains local-only safety wording"
+  ],
+  "evaluation": {
+    "use_actual_index_script_order": true,
+    "evaluate_last_effective_show_login_definition": true,
+    "required_hosted_text": "Isolated hosted staging demo",
+    "forbidden_hosted_text_regex": "locked to your computer|LOCAL DEVELOPMENT",
+    "password_must_be_blank": true,
+    "health_mode": "hosted-staging",
+    "production_approved": false,
+    "pilot_ready": false
+  },
+  "response": {
+    "promotion_allowed_on_failure": false,
+    "production_mutation_allowed": false,
+    "preserve_browser_evidence": true,
+    "safe_state": "retain last independently verified staging wrapper and continue isolated diagnosis"
+  },
+  "learning": "Any future hosted/local mode shadowing becomes a deterministic pre-promotion failure before customer acceptance is claimed."
+}
