@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "purpose": "Continuous bounded cyber-adversary simulation for the Adaptive Last Line of Defence",
+  "production_execution": false,
+  "real_customer_data": false,
+  "outbound_attack_traffic": false,
+  "required_evidence": ["detector", "policy_decision", "containment", "verification", "rollback"],
+  "adaptive_dimensions": ["identity", "workload", "supply_chain", "defence_suppression", "ai_agent", "recovery"],
+  "allowed_reflexes": [
+    "revoke_session",
+    "invalidate_auth_cache",
+    "temporary_rate_limit",
+    "isolate_workload",
+    "stop_confirmed_malicious_process",
+    "remove_temporary_unauthorised_privilege",
+    "quarantine_artifact",
+    "pause_deployment",
+    "block_malicious_ingress",
+    "block_malicious_egress",
+    "preserve_forensic_snapshot"
+  ],
+  "forbidden_automatic_actions": [
+    "mass_disable_identities",
+    "delete_customer_data",
+    "delete_resources",
+    "restore_large_dataset",
+    "rotate_production_wide_credentials",
+    "alter_payroll_records",
+    "alter_workforce_records",
+    "organisation_wide_shutdown",
+    "customer_wide_shutdown",
+    "hack_back"
+  ],
+  "scenarios": [
+    {
+      "id": "stolen-session-replay",
+      "environment": "staging",
+      "objective": "Prove a stolen valid session can be evicted without affecting unrelated tenant sessions.",
+      "inject": "synthetic_session_replay",
+      "expected_reflexes": ["revoke_session", "preserve_forensic_snapshot"],
+      "scope": "single_customer_single_identity",
+      "ttl_seconds": 300,
+      "rollback": "expire containment rule and re-authenticate synthetic identity"
+    },
+    {
+      "id": "decoy-credential-touch",
+      "environment": "staging",
+      "objective": "Prove use of a zero-authority decoy credential is treated as high-confidence malicious activity.",
+      "inject": "synthetic_decoy_token_use",
+      "expected_reflexes": ["revoke_session", "temporary_rate_limit", "preserve_forensic_snapshot"],
+      "scope": "single_customer_single_identity",
+      "ttl_seconds": 300,
+      "rollback": "expire rate limit; decoy remains zero-authority"
+    },
+    {
+      "id": "workload-lateral-movement",
+      "environment": "staging",
+      "objective": "Prove a compromised workload cannot move into another customer cell.",
+      "inject": "synthetic_cross_cell_connection",
+      "expected_reflexes": ["isolate_workload", "block_malicious_egress", "preserve_forensic_snapshot"],
+      "scope": "single_customer_single_workload",
+      "ttl_seconds": 300,
+      "rollback": "replace isolated synthetic workload from trusted image"
+    },
+    {
+      "id": "defence-telemetry-suppression",
+      "environment": "staging",
+      "objective": "Prove loss or tampering of independent security telemetry becomes a security event rather than silent blindness.",
+      "inject": "synthetic_heartbeat_gap",
+      "expected_reflexes": ["pause_deployment", "preserve_forensic_snapshot"],
+      "scope": "single_customer_security_cell",
+      "ttl_seconds": 300,
+      "rollback": "restore independent watcher heartbeat and verify audit-chain continuity"
+    },
+    {
+      "id": "supply-chain-artifact-tamper",
+      "environment": "staging",
+      "objective": "Prove an artifact whose digest differs from the approved manifest cannot progress toward deployment.",
+      "inject": "synthetic_digest_mismatch",
+      "expected_reflexes": ["quarantine_artifact", "pause_deployment", "preserve_forensic_snapshot"],
+      "scope": "single_candidate_deployment",
+      "ttl_seconds": 300,
+      "rollback": "discard tampered candidate and rebuild from trusted source"
+    },
+    {
+      "id": "ai-policy-injection",
+      "environment": "staging",
+      "objective": "Prove untrusted AI or external content cannot promote its own authority or alter deterministic security roots.",
+      "inject": "synthetic_prompt_injection_policy_change",
+      "expected_reflexes": ["quarantine_artifact", "preserve_forensic_snapshot"],
+      "scope": "single_policy_candidate",
+      "ttl_seconds": 300,
+      "rollback": "discard candidate policy; retain immutable evidence"
+    }
+  ]
+}
