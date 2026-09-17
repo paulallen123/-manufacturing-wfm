@@ -52,10 +52,16 @@ function report(label, status, extra = '') {
   report('unauthenticated bootstrap', response.status, 'fail-closed confirmed');
 }
 
-// Authenticate without ever printing the credential.
+// Authenticate without ever printing the credential. Hosted staging rejects cross-origin
+// or originless state-changing requests, so model a normal same-origin browser request.
 const login = await fetchText('/api/login', {
   method: 'POST',
-  headers: { 'content-type': 'application/json' },
+  headers: {
+    'content-type': 'application/json',
+    'origin': origin,
+    'referer': `${origin}/`,
+    'accept': 'application/json,text/plain,*/*',
+  },
   body: JSON.stringify({ password }),
 });
 assert.equal(login.response.status, 200, `Live staging login failed with HTTP ${login.response.status}.`);
@@ -65,7 +71,11 @@ report('authenticated login', login.response.status);
 
 async function authedGet(path, { required = true } = {}) {
   const { response, text } = await fetchText(path, {
-    headers: { cookie, accept: 'application/json,text/plain,*/*' },
+    headers: {
+      cookie,
+      accept: 'application/json,text/plain,*/*',
+      referer: `${origin}/`,
+    },
   });
   report(path, response.status);
   if (required) assert.equal(response.status, 200, `${path} did not return HTTP 200.`);
@@ -124,7 +134,7 @@ for (const path of [
   '/kiosk-admin-ui.js',
   '/kiosk.html',
 ]) {
-  const { response } = await fetchText(path, { headers: { cookie } });
+  const { response } = await fetchText(path, { headers: { cookie, referer: `${origin}/` } });
   assert.equal(response.status, 200, `${path} did not load.`);
   report(path, response.status);
 }
