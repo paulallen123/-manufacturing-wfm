@@ -34,6 +34,43 @@ jobs:
             exit 1
           fi
 
+      - name: Enforce immutable third-party actions and Trivy denylist
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Every external GitHub Action must be pinned to a full immutable commit SHA.
+          # This prevents mutable-tag takeover from silently changing CI behaviour.
+          bad_actions="$(
+            grep -RhoE '^[[:space:]]*uses:[[:space:]]+[^#[:space:]]+' .github/workflows \
+              --include='*.yml' --include='*.yaml' 2>/dev/null \
+            | sed -E 's/^[[:space:]]*uses:[[:space:]]+//' \
+            | grep -vE '^\./' \
+            | grep -vE '@[0-9a-fA-F]{40}$' \
+            || true
+          )"
+          if [ -n "$bad_actions" ]; then
+            echo "Refusing mutable third-party GitHub Action references:"
+            echo "$bad_actions"
+            exit 1
+          fi
+
+          # Explicitly reject Trivy artifacts known to have been compromised in the
+          # March 2026 supply-chain incident, plus floating latest references.
+          trivy_deny_re='(aquasec/trivy:(latest|0[.]69[.](4|5|6))|trivy[^[:space:]]*0[.]69[.](4|5|6))'
+          trivy_hits="$(
+            grep -RInE "$trivy_deny_re" . \
+              --exclude-dir=.git \
+              --exclude='last-line-defense-gates.yml' \
+              2>/dev/null \
+            || true
+          )"
+          if [ -n "$trivy_hits" ]; then
+            echo "Refusing known-compromised or floating Trivy artifacts:"
+            echo "$trivy_hits"
+            exit 1
+          fi
+
       - name: Validate staging-only manifest
         shell: bash
         run: |
