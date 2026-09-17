@@ -24,6 +24,8 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle5.css >> /app/public/factory-control-ui.css \
  && printf '\n/* WFM_UX_RESET_CYCLE6_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle6.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* WFM_UX_RESET_CYCLE7_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle7.css >> /app/public/factory-control-ui.css \
  && printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/ux-reset.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
@@ -36,6 +38,8 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle5.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_UX_RESET_CYCLE6_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle6.js >> /app/public/value-cockpit-ui.js \
+ && printf '\n;/* WFM_UX_RESET_CYCLE7_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle7.js >> /app/public/value-cockpit-ui.js \
  && rm -rf /tmp/wfm-ux-overlay \
  && chown node:node /app/public/factory-control-ui.css /app/public/value-cockpit-ui.js
 
