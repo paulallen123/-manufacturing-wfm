@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: railway-first-deploy-wfm-customer-proof-0676
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   first-deploy:
@@ -72,11 +72,15 @@ jobs:
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --service "$RAILWAY_SERVICE_ID"
 
-          # Reuse the same reviewed credential boundary to inject the service's staging
-          # variables only into this local proof process. The password is never printed,
-          # committed, copied to another secret, or passed as an explicit CLI argument.
-          "$RAILWAY_BIN" run \
+          # Link explicitly before local variable injection so CI never enters an
+          # interactive project/service selection prompt.
+          "$RAILWAY_BIN" link \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --service "$RAILWAY_SERVICE_ID" \
-            node scripts/live-auth-proof.mjs
+            --json >/tmp/railway-link.json
+
+          # Reuse the same reviewed credential boundary to inject the service's staging
+          # variables only into this local proof process. The password is never printed,
+          # committed, copied to another secret, or passed as an explicit CLI argument.
+          "$RAILWAY_BIN" run node scripts/live-auth-proof.mjs
