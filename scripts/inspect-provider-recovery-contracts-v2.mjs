@@ -9,7 +9,7 @@ const require=createRequire(import.meta.url);
 const root=process.cwd();
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'DEPLOYMENT_MANIFEST.json'),'utf8'));
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'wfm-provider-contracts-v2-'));
-const src=(fn,n=4500)=>typeof fn==='function'?String(fn).slice(0,n):null;
+const src=(fn,n=9000)=>typeof fn==='function'?String(fn).slice(0,n):null;
 try {
   execFileSync('tar',['-xzf',path.join(root,manifest.runtime_artifact),'-C',tmp]);
   const load=n=>require(path.join(tmp,'lib',n));
@@ -18,6 +18,7 @@ try {
   const VW=load('disposable-verification-worker.cjs');
   const ATA=load('agent-tool-authority.cjs');
   const PRA=load('provider-recovery-authority.cjs');
+  const BAP=load('build-attestation-policy.cjs');
   const db=new DatabaseSync(':memory:');
   db.exec("PRAGMA foreign_keys=ON; CREATE TABLE tenants(id TEXT PRIMARY KEY); INSERT INTO tenants(id) VALUES ('proof-tenant-a');");
   const providerJobs=PJ.createStore(db);
@@ -27,10 +28,13 @@ try {
   const authority=ATA.createAuthority({key:'proof-authority-key-that-is-long-enough-0123456789',db,toolPolicy:{[PRA.TOOL_ID]:[...PRA.ACTIONS]}});
   const recovery=PRA.createExecutor({db,providerJobs,investigations,authority});
   investigations.connectBoundedExecutor(recovery);
+  const describe=o=>Object.fromEntries(Object.entries(o||{}).map(([k,v])=>[k,typeof v==='function'?{type:'function',arity:v.length,source:src(v,5000)}:v]));
   const out={
     candidate:manifest.candidate,
     buildIdentity,
     attestationPolicyConfigured:verificationWorkers.attestationPolicyConfigured,
+    buildAttestationPolicyExports:describe(BAP),
+    verificationCreateStoreSource:src(VW.createStore,12000),
     contracts:{
       scanTenant:src(investigations.scanTenant),
       requestVerification:src(investigations.requestVerification),
