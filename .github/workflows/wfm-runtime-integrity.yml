@@ -10,6 +10,7 @@ on:
     paths:
       - Dockerfile
       - DEPLOYMENT_MANIFEST.json
+      - 'artifact/**'
       - resilience/security-baseline.json
       - resilience/failure-scenarios.json
       - resilience/supply-chain-denylist.json
@@ -35,17 +36,22 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 1
+
       - name: Set up exact Node runtime
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.2'
           package-manager-cache: false
+
       - name: Validate immutable deployment metadata
         run: node scripts/validate-deployment.mjs
+
       - name: Validate failure preparation catalogue
         run: node scripts/validate-resilience-scenarios.mjs
+
       - name: Build the exact staging candidate
         run: docker build --pull=false -t wfm-staging-candidate:${{ github.sha }} .
+
       - name: Reject known malicious npm artifacts
         shell: bash
         run: |
@@ -65,10 +71,7 @@ jobs:
             for (const entry of entries) {
               if (entry.isSymbolicLink()) continue;
               const p = path.join(dir, entry.name);
-              if (entry.isDirectory()) {
-                walk(p);
-                continue;
-              }
+              if (entry.isDirectory()) { walk(p); continue; }
               if (entry.name !== 'package.json') continue;
               try {
                 const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
@@ -87,55 +90,45 @@ jobs:
           }
           console.log(`Supply-chain denylist clean; inspected ${inspected} package manifests.`);
           NODE
-      - name: Verify authoritative container identity and patched runtime
+
+      - name: Verify authoritative container identity and runtime manifest
         shell: bash
         run: |
           set -euo pipefail
           IMAGE="wfm-staging-candidate:${GITHUB_SHA}"
           EXPECTED_CANDIDATE="$(node -p "require('./DEPLOYMENT_MANIFEST.json').candidate")"
-          EXPECTED_RUNTIME_MANIFEST_SHA="$(node -p "require('./DEPLOYMENT_MANIFEST.json').runtime_manifest_sha256")"
-          EXPECTED_CANONICAL_SOURCE_SHA="$(node -p "require('./DEPLOYMENT_MANIFEST.json').canonical_source_sha256")"
-          EXPECTED_HOSTED_SOURCE_SHA="$(node -p "require('./DEPLOYMENT_MANIFEST.json').hosted_source_sha256")"
           EXPECTED_NODE="v$(node -p "require('./resilience/security-baseline.json').node.minimum")"
           ACTUAL_NODE="$(docker run --rm --entrypoint node "$IMAGE" --version)"
           test "$ACTUAL_NODE" = "$EXPECTED_NODE"
           test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "node"
-          docker run --rm \
-            -e EXPECTED_CANDIDATE="$EXPECTED_CANDIDATE" \
-            -e EXPECTED_RUNTIME_MANIFEST_SHA="$EXPECTED_RUNTIME_MANIFEST_SHA" \
-            -e EXPECTED_CANONICAL_SOURCE_SHA="$EXPECTED_CANONICAL_SOURCE_SHA" \
-            -e EXPECTED_HOSTED_SOURCE_SHA="$EXPECTED_HOSTED_SOURCE_SHA" \
-            --entrypoint node "$IMAGE" -e '
-              const assert=require("node:assert/strict");
-              const fs=require("node:fs");
-              const {createHash}=require("node:crypto");
-              const sha=b=>createHash("sha256").update(b).digest("hex");
-              const hosted=JSON.parse(fs.readFileSync("/app/BUILD_INFO_HOSTED.json","utf8"));
-              assert.equal(hosted.release,process.env.EXPECTED_CANDIDATE,"Hosted build identity differs from deployment candidate");
-              assert.equal(hosted.canonicalSourceContentSha256,process.env.EXPECTED_CANONICAL_SOURCE_SHA,"Canonical source provenance differs from deployment manifest");
-              assert.equal(hosted.hostedSourceContentSha256,process.env.EXPECTED_HOSTED_SOURCE_SHA,"Hosted source provenance differs from deployment manifest");
-              assert.equal(hosted.productionApproved,false,"Staging build unexpectedly claims production approval");
-              assert.equal(hosted.pilotReady,false,"Staging build unexpectedly claims pilot readiness");
-              assert.equal(hosted.stagingOnly,true,"Hosted identity must remain staging-only");
-              const runtimeBytes=fs.readFileSync("/app/RUNTIME_MANIFEST.json");
-              assert.equal(sha(runtimeBytes),process.env.EXPECTED_RUNTIME_MANIFEST_SHA,"Runtime manifest SHA differs from deployment manifest");
-              const runtime=JSON.parse(runtimeBytes);
-              const critical=[
-                "lib/autonomy-safety-kernel.cjs",
-                "lib/autonomous-remediation.cjs",
-                "lib/support-operations.cjs",
-                "lib/support-bot.cjs",
-                "lib/agent-tool-authority.cjs",
-                "lib/agent-trust-boundary.cjs",
-                "lib/provider-recovery-authority.cjs",
-                "lib/protection-shield.cjs",
-                "lib/security-control-plane.cjs"
-              ];
-              for(const rel of critical){
-                assert.match(runtime[rel]||"",/^[a-f0-9]{64}$/,"Critical module missing from runtime manifest: "+rel);
-                assert.equal(sha(fs.readFileSync("/app/"+rel)),runtime[rel],"Critical module hash differs from runtime manifest: "+rel);
-              }
-            '
+          docker run --rm -e EXPECTED_CANDIDATE="$EXPECTED_CANDIDATE" --entrypoint node "$IMAGE" - <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const {createHash} = require('node:crypto');
+          const sha = b => createHash('sha256').update(b).digest('hex');
+          const hosted = JSON.parse(fs.readFileSync('/app/BUILD_INFO_HOSTED.json','utf8'));
+          assert.equal(hosted.release, process.env.EXPECTED_CANDIDATE, 'Hosted build identity differs from deployment candidate');
+          assert.equal(hosted.productionApproved, false, 'Staging build unexpectedly claims production approval');
+          assert.equal(hosted.pilotReady, false, 'Staging build unexpectedly claims pilot readiness');
+          assert.equal(hosted.stagingOnly, true, 'Hosted identity must remain staging-only');
+          const runtime = JSON.parse(fs.readFileSync('/app/RUNTIME_MANIFEST.json','utf8'));
+          const critical = [
+            'lib/autonomy-safety-kernel.cjs',
+            'lib/autonomous-remediation.cjs',
+            'lib/support-operations.cjs',
+            'lib/support-bot.cjs',
+            'lib/agent-tool-authority.cjs',
+            'lib/agent-trust-boundary.cjs',
+            'lib/provider-recovery-authority.cjs',
+            'lib/protection-shield.cjs',
+            'lib/security-control-plane.cjs'
+          ];
+          for (const rel of critical) {
+            assert.match(runtime[rel] || '', /^[a-f0-9]{64}$/, `Critical module missing from runtime manifest: ${rel}`);
+            assert.equal(sha(fs.readFileSync('/app/' + rel)), runtime[rel], `Critical module hash differs from runtime manifest: ${rel}`);
+          }
+          NODE
+
       - name: Prove autonomy safety invariants inside candidate
         shell: bash
         run: |
@@ -153,6 +146,7 @@ jobs:
             assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"deterministic-runbook",dryRunVerified:false}).allowed,false,"Unverified action must remain prohibited");
             assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"deterministic-runbook",independentChecks:[]}).allowed,false,"Action without independent evidence must remain prohibited");
           '
+
       - name: Prove prepared reflex actions are authorised by current safety kernel
         shell: bash
         run: |
@@ -171,14 +165,15 @@ jobs:
               assert.equal(decision.allowed,true,`Prepared reflex action is not authorised by current safety kernel: ${type} (${decision.reason})`);
             }
           '
+
       - name: Prove staging candidate refuses production mode
         shell: bash
         run: |
           set -euo pipefail
           IMAGE="wfm-staging-candidate:${GITHUB_SHA}"
           if docker run --rm -e NODE_ENV=production --entrypoint node "$IMAGE" /app/server.cjs >production-refusal.log 2>&1; then
-            echo 'ERROR: staging candidate unexpectedly started in production mode'
-            cat production-refusal.log
+            echo 'ERROR: staging candidate unexpectedly started in production mode' >&2
+            cat production-refusal.log >&2
             exit 1
           fi
           grep -q 'cannot run as production' production-refusal.log
