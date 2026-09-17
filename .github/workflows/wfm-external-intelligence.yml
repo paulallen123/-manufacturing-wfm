@@ -1,0 +1,107 @@
+name: WFM external intelligence prevention gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'autonomy/**'
+    paths:
+      - Dockerfile
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/security-baseline.json
+      - resilience/supply-chain-denylist.json
+      - .github/workflows/wfm-external-intelligence.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-external-intelligence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prevention:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Validate external intelligence controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const baseline = require('./resilience/security-baseline.json');
+          const expectedNodeCves = [
+            'CVE-2026-56846','CVE-2026-56848','CVE-2026-58043',
+            'CVE-2026-56850','CVE-2026-58040','CVE-2026-58042',
+            'CVE-2026-58045','CVE-2026-56847','CVE-2026-58039'
+          ].sort();
+          assert.equal(baseline.node.minimum, '22.23.2', 'Node security floor changed without external-intelligence review.');
+          assert.equal(baseline.node.security_release_source, 'https://nodejs.org/en/blog/release/v22.23.2');
+          assert.deepEqual([...new Set(baseline.node.tracked_cves)].sort(), expectedNodeCves, 'Node 22.23.2 advisory coverage is incomplete or inconsistent.');
+          const intel = baseline.external_intelligence;
+          assert.ok(intel && typeof intel === 'object', 'External intelligence controls are required.');
+          assert.equal(intel.runtime_dependency_expectation.third_party_npm_packages, 0, 'Third-party runtime dependency introduction requires explicit baseline review.');
+          assert.equal(intel.runtime_dependency_expectation.server_imports, 'node-builtins-only');
+          const memory = intel.agent_threat_rules.find(x => x.id === 'persistent-memory-context-poisoning');
+          assert.ok(memory, 'Persistent memory/context poisoning prevention rule is required.');
+          assert.equal(memory.severity, 'critical');
+          assert.equal(memory.direct_execution_authority, false, 'Poisoned memory must never obtain direct action authority.');
+          assert.ok(memory.signals.length >= 3 && memory.containment.length >= 3 && memory.verification.length >= 3, 'Memory poisoning rule needs detection, containment and verification evidence.');
+          assert.equal(memory.source, intel.authoritative_sources.owasp_memory_context_poisoning, 'Memory poisoning rule source provenance must match the baseline.');
+          assert.equal(baseline.autonomy.language_model_direct_authority, false, 'Language models must remain proposal-only.');
+          console.log(JSON.stringify({ok:true,nodeCves:expectedNodeCves.length,agentRule:memory.id}, null, 2));
+          NODE
+      - name: Build exact staging candidate
+        run: docker build --pull=false -t wfm-external-intel:${{ github.sha }} .
+      - name: Prove runtime dependency boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-external-intel:${GITHUB_SHA}"
+          docker run --rm --entrypoint node "$IMAGE" - <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const Module = require('node:module');
+          const pkg = JSON.parse(fs.readFileSync('/app/package.json','utf8'));
+          for (const field of ['dependencies','devDependencies','optionalDependencies','peerDependencies']) {
+            assert.equal(Object.keys(pkg[field] || {}).length, 0, `Unexpected ${field} in staged runtime.`);
+          }
+          assert.equal(fs.existsSync('/app/node_modules'), false, 'Staged runtime unexpectedly contains node_modules.');
+          const builtins = new Set(Module.builtinModules.flatMap(x => [x, `node:${x}`]));
+          const files = ['/app/server.cjs'];
+          const walk = dir => {
+            for (const entry of fs.readdirSync(dir,{withFileTypes:true})) {
+              const p = path.join(dir,entry.name);
+              if (entry.isDirectory()) walk(p);
+              else if (/\.(cjs|mjs|js)$/.test(entry.name)) files.push(p);
+            }
+          };
+          walk('/app/lib');
+          const external = [];
+          for (const file of files) {
+            const source = fs.readFileSync(file,'utf8');
+            for (const re of [/require\(['"]([^'"]+)['"]\)/g,/from\s+['"]([^'"]+)['"]/g]) {
+              let match;
+              while ((match = re.exec(source))) {
+                const spec = match[1];
+                if (spec.startsWith('.') || spec.startsWith('/') || builtins.has(spec)) continue;
+                external.push({file:path.relative('/app',file),spec});
+              }
+            }
+          }
+          assert.deepEqual(external, [], 'Staged server runtime introduced a non-built-in module import without security-baseline review.');
+          console.log(JSON.stringify({ok:true,package:'builtins-only',serverFilesScanned:files.length}, null, 2));
+          NODE
