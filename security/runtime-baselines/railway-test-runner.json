@@ -1,22 +1,31 @@
 {
-  "version": 1,
+  "version": 2,
   "service": "wfm-test-runner",
   "environment_class": "private-test",
-  "minimum_playwright_image": "mcr.microsoft.com/playwright:v1.63.0-noble",
-  "minimum_browser_baseline": {
-    "chrome_for_testing_major": 153,
-    "reason": "Playwright 1.57 bundled Chrome for Testing 143, which predates multiple 2026 Chrome security fixes including actively exploited CVE-2026-2441. The runner was upgraded and successfully redeployed on 2026-09-17."
+  "configured_playwright_image": "mcr.microsoft.com/playwright:v1.63.0-noble",
+  "bundled_browser": {
+    "name": "Chromium",
+    "version": "153.0.8010.12",
+    "source": "Playwright 1.63 official release notes"
+  },
+  "minimum_browser_security_floor": {
+    "chromium_version": "153.0.8010.47",
+    "source_date": "2026-09-15",
+    "reason": "Google Chrome Stable 153.0.8010.47/.48 included 42 security fixes, including three Critical vulnerabilities. Playwright 1.63 bundles Chromium 153.0.8010.12, which predates that security-fix floor. Browser execution is paused fail-closed until a verified runner image meets or exceeds the floor."
   },
   "network": {
     "public_domains_allowed": false,
     "ipv6_egress": false
   },
   "execution": {
+    "browser_execution_enabled": false,
+    "containment_mode": "paused",
     "downloaded_hardening_script_must_match_sha256": true,
-    "fail_closed_on_hash_mismatch": true
+    "fail_closed_on_hash_mismatch": true,
+    "resume_requires_verified_browser_at_or_above_security_floor": true
   },
   "rollback": {
     "allowed": true,
-    "must_not_restore_playwright_below_minimum": true
+    "must_not_restore_browser_below_security_floor": true
   }
 }
