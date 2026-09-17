@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: railway-first-deploy-wfm-customer-proof-0676
+  group: railway-auth-proof-wfm-customer-proof-0676-v2
   cancel-in-progress: true
 
 jobs:
