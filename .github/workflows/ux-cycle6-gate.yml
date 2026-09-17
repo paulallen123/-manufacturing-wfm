@@ -32,7 +32,7 @@ jobs:
           const fs=require('node:fs');
           const js=fs.readFileSync('ux-overlay/ux-reset-cycle6.js','utf8');
           const css=fs.readFileSync('ux-overlay/ux-reset-cycle6.css','utf8');
-          for(const x of ['Capacity by area','Readiness map','Decision flow','ux-today-actions','ux-today-pulse','data.uxToday=\'calm\'']) if(!js.includes(x)) throw new Error('Missing Cycle 6 invariant: '+x);
+          for(const x of ['Capacity by area','Readiness map','Decision flow','ux-today-actions','ux-today-pulse','content.dataset.uxToday=\'calm\'']) if(!js.includes(x)) throw new Error('Missing Cycle 6 invariant: '+x);
           for(const x of ['[data-ux-job="today"]','.ux-today-detail','.ux-today-pulse','.ux-today-actions','overflow-x:hidden','@media(max-width:760px)']) if(!css.includes(x)) throw new Error('Missing Cycle 6 CSS invariant: '+x);
           if(/\.remove\s*\(/.test(js)) throw new Error('Cycle 6 must not delete functional Today content.');
           if(/innerHTML\s*=\s*['"`]\s*£?\d/.test(js)) throw new Error('Cycle 6 must not manufacture operational figures.');
