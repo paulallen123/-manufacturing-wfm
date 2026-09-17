@@ -1,0 +1,58 @@
+name: UX source excerpts
+
+on:
+  push:
+    branches: ['ux/simplified-role-shell']
+    paths:
+      - '.github/workflows/ux-source-excerpts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract targeted UX source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wfm
+          tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C /tmp/wfm
+          node <<'NODE'
+          const fs = require('fs');
+          const files = [
+            '/tmp/wfm/public/app.js',
+            '/tmp/wfm/public/core.js',
+            '/tmp/wfm/public/availability-ui.js',
+            '/tmp/wfm/public/resources-ui.js',
+            '/tmp/wfm/public/personal-ui.js',
+            '/tmp/wfm/public/cost-ui.js',
+            '/tmp/wfm/public/ui-evolution.css',
+            '/tmp/wfm/public/styles.css'
+          ];
+          const needles = [
+            'buildPendingRequests','buildTable','buildSummary','leave-team-list','Pending leave decisions',
+            'resources-section','operations-section','factory-section','company-section','data-nav=',
+            'section-jump','top-nav','table-wrap','overflow-x','overflow: auto','renderShell','UIShell'
+          ];
+          for (const file of files) {
+            const s = fs.readFileSync(file,'utf8');
+            console.log(`FILE ${file} BYTES ${s.length}`);
+            for (const needle of needles) {
+              let from = 0, count = 0;
+              while (count < 5) {
+                const at = s.indexOf(needle, from);
+                if (at < 0) break;
+                console.log(`EXCERPT_START file=${file} needle=${needle} at=${at}`);
+                console.log(s.slice(Math.max(0, at-1400), Math.min(s.length, at+5200)));
+                console.log('EXCERPT_END');
+                from = at + needle.length;
+                count++;
+              }
+            }
+          }
+          NODE
