@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "observed": "2026-09-17",
+  "logical_classification": "staging_customer_proof",
+  "provider": "railway",
+  "project": {
+    "id": "9a774359-37fa-47e8-bde0-932420c32923",
+    "name": "manufacturing-wfm-staging-proof"
+  },
+  "environment": {
+    "id": "6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6",
+    "provider_name": "production",
+    "provider_label_is_authorization_signal": false,
+    "note": "Railway created the default environment with the label 'production' inside a project whose explicit purpose and identity is bounded WFM staging proof. WFM safety classification must come from the complete target tuple and release manifest, never this provider label alone."
+  },
+  "service": {
+    "id": "ddd54fb9-3564-4251-9959-28cf3308c272",
+    "name": "wfm-customer-proof-0676"
+  },
+  "manifest_requirements": {
+    "candidate": "0.6.76-hosted-staging-rc1",
+    "production_approved": false,
+    "pilot_ready": false,
+    "fixture_only": true,
+    "staging_only": true,
+    "runtime_sha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d"
+  },
+  "authorization": {
+    "require_exact_project_environment_service_tuple": true,
+    "require_manifest_staging_boundary": true,
+    "deny_environment_name_only_authorization": true,
+    "deny_project_name_only_authorization": true,
+    "deny_service_name_only_authorization": true,
+    "deny_production_promotion": true,
+    "deny_target_drift_before_secret_access": true,
+    "deny_target_drift_before_deployment_or_browser_credential_access": true
+  },
+  "last_verified_live_state": {
+    "project_name": "manufacturing-wfm-staging-proof",
+    "environment_provider_name": "production",
+    "service_name": "wfm-customer-proof-0676",
+    "latest_deployment_status": "SUCCESS",
+    "latest_deployment_created_at": "2026-09-17T16:20:31.937Z",
+    "verification_is_read_only": true
+  },
+  "promotion_rule": "No workflow may infer that this target is customer production merely because Railway labels its default environment 'production', and no workflow may treat that label as permission to promote. The exact project/environment/service IDs plus the staging-only deployment manifest define the bounded target. Any tuple or manifest drift must fail before any Railway token or WFM staging credential is exposed."
+}
