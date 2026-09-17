@@ -10,6 +10,7 @@ on:
     paths:
       - Dockerfile
       - DEPLOYMENT_MANIFEST.json
+      - 'artifact/**'
       - resilience/security-baseline.json
       - resilience/failure-scenarios.json
       - resilience/supply-chain-denylist.json
