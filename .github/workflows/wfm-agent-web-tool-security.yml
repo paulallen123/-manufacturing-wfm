@@ -1,0 +1,159 @@
+name: WFM agent web-tool security gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'security/**'
+    paths:
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/security-baseline.json
+      - resilience/agent-network-boundary.json
+      - resilience/agent-web-tool-security-baseline.json
+      - 'resilience/incidents/**'
+      - .github/workflows/wfm-agent-web-tool-security.yml
+  pull_request:
+    paths:
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/security-baseline.json
+      - resilience/agent-network-boundary.json
+      - resilience/agent-web-tool-security-baseline.json
+      - 'resilience/incidents/**'
+      - .github/workflows/wfm-agent-web-tool-security.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-agent-web-tool-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prevention:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout bounded security branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Validate agent web-tool prevention contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const contract = require('./resilience/agent-web-tool-security-baseline.json');
+          const egress = require('./resilience/agent-network-boundary.json');
+          const security = require('./resilience/security-baseline.json');
+          const manifest = require('./DEPLOYMENT_MANIFEST.json');
+
+          const expectedAdvisories = [
+            'GHSA-22h6-qm39-v87j',
+            'GHSA-vmxc-h2x2-jmf3',
+            'GHSA-4x9p-g9wm-8q7f',
+            'GHSA-fpf4-vwcp-v4hp'
+          ].sort();
+          assert.deepEqual(contract.sources.map(x => x.id).sort(), expectedAdvisories, 'Sep 17 agent web-tool advisory coverage drifted without review.');
+          assert.ok(contract.sources.every(x => x.published === '2026-09-17'));
+          assert.ok(contract.sources.every(x => x.cve === null), 'Re-evaluate NVD/SSVC mapping if a CVE is assigned.');
+          assert.equal(contract.nvd_ssvc_status.direct_records_available, false);
+          assert.equal(contract.nvd_ssvc_status.recheck_required_if_cve_assigned, true);
+
+          const current = contract.current_wfm_evaluation;
+          assert.equal(current.candidate, manifest.candidate, 'Agent web-tool risk evaluation must be refreshed with deployment candidate changes.');
+          assert.equal(current.production_approved, manifest.production_approved);
+          assert.equal(current.production_approved, false, 'Current no-production-exposure conclusion must be re-evaluated before production approval.');
+          assert.equal(manifest.staging_only, true);
+          assert.equal(manifest.fixture_only, true);
+          assert.equal(current.pydantic_ai_runtime_present, false);
+          assert.equal(current.python_runtime_present, false);
+          assert.equal(current.third_party_runtime_packages_expected, 0);
+          assert.equal(current.networked_ai_agent_executor_present_in_sealed_candidate, false);
+          assert.equal(current.customer_production_exposure_verified, false);
+          assert.equal(security.external_intelligence.runtime_dependency_expectation.third_party_npm_packages, 0);
+          assert.equal(security.external_intelligence.runtime_dependency_expectation.server_imports, 'node-builtins-only');
+          assert.equal(security.external_intelligence.runtime_dependency_expectation.package_managers_present, false);
+
+          assert.equal(egress.root_of_trust, 'deterministic-executor');
+          assert.equal(egress.language_model_direct_network_authority, false);
+          assert.equal(egress.model_visible_reusable_credentials, false);
+          assert.equal(egress.default_egress, 'deny');
+          assert.equal(egress.approved_egress_requires.explicit_destination_allowlist, true);
+          assert.equal(egress.approved_egress_requires.explicit_method_allowlist, true);
+          assert.equal(egress.approved_egress_requires.same_tenant_scope, true);
+          assert.ok(egress.forbidden_relays.some(x => /cloud metadata, loopback or private-network destination/i.test(x)), 'Existing egress boundary must continue to deny metadata/private/loopback destinations by default.');
+
+          const controls = contract.controls;
+          assert.equal(controls.egress_policy, 'positive-allowlist-only');
+          assert.equal(controls.denylist_is_sufficient_security_boundary, false);
+          assert.equal(controls.model_may_broaden_network_authority, false);
+          assert.equal(controls.canonicalize_hostname_before_policy, true);
+          assert.equal(controls.destination_revalidation_after_resolution, true);
+          assert.equal(controls.local_network_access_for_model_chosen_urls, false);
+          assert.equal(controls.cloud_metadata_access, false);
+          assert.equal(controls.private_or_loopback_access, false);
+          assert.equal(controls.strip_ipv6_zone_identifier_before_security_classification, true);
+          assert.equal(controls.effective_ip_must_be_checked_after_dns_resolution, true);
+          assert.equal(controls.redirect_destination_must_be_reauthorized, true);
+          assert.ok(Array.isArray(controls.hostname_canonicalization_requires) && controls.hostname_canonicalization_requires.length >= 5);
+
+          const telemetry = controls.telemetry;
+          assert.equal(telemetry.content_flag_alone_is_sufficient, false);
+          for (const key of [
+            'redact_exception_message',
+            'redact_exception_stacktrace',
+            'redact_error_status_description',
+            'redact_dynamic_agent_instructions',
+            'redact_prompt_or_output_template',
+            'redact_tool_arguments_and_results',
+            'redact_provider_error_bodies',
+            'telemetry_audience_must_not_exceed_data_authorization'
+          ]) assert.equal(telemetry[key], true, `Telemetry control must remain enabled: ${key}`);
+          assert.equal(telemetry.canary_leak_action, 'fail-closed-quarantine-export-preserve-local-evidence');
+
+          const fetch = controls.untrusted_fetch_processing;
+          for (const key of [
+            'maximum_response_bytes_required',
+            'processing_deadline_required',
+            'cpu_budget_required',
+            'maximum_markup_or_json_nesting_required',
+            'unsupported_or_non_text_charset_fails_as_fetch_error',
+            'attacker_controlled_decoding_or_conversion_must_not_block_service_event_loop',
+            'cancellation_must_release_processing_capacity',
+            'resource_exhaustion_must_not_broaden_network_or_tool_authority'
+          ]) assert.equal(fetch[key], true, `Untrusted fetch control must remain enabled: ${key}`);
+
+          const expectedRuleIds = [
+            'canonicalize-before-egress-policy',
+            'metadata-deny-after-url-and-ip-normalization',
+            'telemetry-redaction-all-channels',
+            'bounded-untrusted-fetch-processing'
+          ].sort();
+          assert.deepEqual(contract.prevention_rules.map(x => x.id).sort(), expectedRuleIds);
+
+          const expectedChaosIds = [
+            'hostname-normalization-equivalence',
+            'ipv6-zone-metadata-smuggling',
+            'telemetry-redaction-canary-exception-path',
+            'quadratic-fetch-response-budget'
+          ].sort();
+          assert.deepEqual(contract.chaos_tests.map(x => x.id).sort(), expectedChaosIds);
+          assert.ok(contract.chaos_tests.every(x => x.current_runtime_status.startsWith('specified-not-run-')), 'Never claim runtime chaos proof before the applicable bounded agent executor exists and the tests actually run.');
+          assert.match(contract.promotion_rule, /No future WFM model-selected web fetch, local-network fetch, agent telemetry export or untrusted response-processing capability may be promoted until the applicable bounded chaos tests execute and pass/);
+
+          console.log(JSON.stringify({
+            ok: true,
+            candidate: current.candidate,
+            currentAffected: false,
+            currentCustomerProductionExposureVerified: current.customer_production_exposure_verified,
+            advisories: expectedAdvisories,
+            rules: expectedRuleIds,
+            chaosTests: expectedChaosIds,
+            rootOfTrust: egress.root_of_trust,
+            defaultEgress: egress.default_egress
+          }, null, 2));
+          NODE
