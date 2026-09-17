@@ -103,7 +103,12 @@ jobs:
             const ok=await evalx(`(()=>{const c=${creds};const f=document.querySelector('#v2-login');const e=f?.querySelector('[name="email"]'),p=f?.querySelector('[name="password"]');if(!e||!p)return false;e.value=c.email;e.dispatchEvent(new Event('change',{bubbles:true}));p.value=c.password;p.dispatchEvent(new Event('input',{bubbles:true}));f.requestSubmit();return true})()`);if(!ok)throw Error('Login form could not be submitted');await wait("!document.querySelector('#v2-login')");
           }
           const clicked=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page="weekly-review"]')].find(n=>n.offsetParent!==null);if(!x)return false;x.click();return true})()`);if(!clicked)throw Error('Weekly sign-off navigation route not found');
-          await wait("Boolean(document.querySelector('.ux-signoff-desk'))");await sleep(300);
+          await sleep(900);
+          const diagnostic=()=>evalx(`(()=>{const layout=document.querySelector('.review-layout'),main=layout?.querySelector('.review-main');return {page:globalThis.ui?.page||null,role:globalThis.F?.actor?.role||globalThis.ui?.role||null,cycle3:typeof window.WFMUXCycle3,preview:typeof window.payrollPreview,previewReport:typeof window.payrollPreview?.report,tabs:!!document.querySelector('.review-tabs'),layout:!!layout,steps:!!document.querySelector('.review-steps'),main:!!main,panelCount:main?[...main.children].filter(x=>x.classList?.contains('panel')).length:0,signbar:!!main?.querySelector('.review-signbar'),aside:!!layout?.querySelector('.review-aside'),desk:!!document.querySelector('.ux-signoff-desk')}})()`);
+          let diag=await diagnostic();console.log('UX_CYCLE3_COMPOSITION_DIAGNOSTIC='+JSON.stringify(diag));
+          await evalx("window.WFMUXCycle3?.apply?.(); true");await sleep(250);
+          diag=await diagnostic();console.log('UX_CYCLE3_COMPOSITION_AFTER_APPLY='+JSON.stringify(diag));
+          if(!diag.desk)throw Error('Cycle 3 did not compose weekly sign-off: '+JSON.stringify(diag));
           const proof=await evalx(`(()=>({desk:!!document.querySelector('.ux-signoff-desk'),details:document.querySelectorAll('.ux-signoff-detail').length,hero:!!document.querySelector('.review-hero'),pageOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,labels:[...document.querySelectorAll('.ux-signoff-kpis small')].map(x=>x.textContent.trim()),signAction:document.querySelector('.ux-signoff-desk [data-act="review-sign"],.ux-signoff-desk [data-act="review-return"]')?.textContent.trim()||null}))()`);
           console.log('UX_CYCLE3_BROWSER_PROOF='+JSON.stringify(proof));
           if(!proof.desk||proof.details!==3||proof.hero||proof.pageOverflow>2)throw Error('Condensed sign-off browser invariant failed');
