@@ -1,0 +1,30 @@
+name: WFM OneDrive resilience
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/onedrive-sync-guardian.mjs'
+      - 'scripts/validate-onedrive-sync-guardian.mjs'
+      - 'resilience/onedrive-sync-policy.json'
+      - '.github/workflows/wfm-onedrive-resilience.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/onedrive-sync-guardian.mjs'
+      - 'scripts/validate-onedrive-sync-guardian.mjs'
+      - 'resilience/onedrive-sync-policy.json'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate OneDrive Sync Guardian failure handling
+        run: node scripts/validate-onedrive-sync-guardian.mjs
