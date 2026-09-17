@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "status": "staged_contract",
+  "name": "WFM Recovery Vault Survival Contract",
+  "threat_intelligence": {
+    "reference": "CVE-2026-87886",
+    "observed_in_the_wild": true,
+    "lesson": "Recovery infrastructure must be treated as an attack target, not as a trusted extension of production."
+  },
+  "trust_boundaries": {
+    "recovery_plane_independent_from_application_plane": true,
+    "recovery_plane_independent_from_security_control_plane": true,
+    "separate_recovery_identity_required": true,
+    "application_runtime_credentials_may_delete_recovery_points": false,
+    "production_admin_can_destroy_final_recovery_path": false,
+    "security_agent_can_destroy_final_recovery_path": false,
+    "ai_agent_can_destroy_or_rewrite_recovery_points": false
+  },
+  "immutability": {
+    "immutable_or_object_lock_required": true,
+    "version_history_required": true,
+    "minimum_protected_generations": 3,
+    "delete_requires_delayed_tombstone": true,
+    "minimum_delete_delay_hours": 24,
+    "final_generation_delete_requires_two_independent_authorities": true
+  },
+  "integrity": {
+    "manifest_hash_required": true,
+    "independent_witness_hash_required": true,
+    "witness_must_be_outside_production_trust_boundary": true,
+    "restore_rejects_hash_mismatch": true,
+    "audit_chain_must_record_backup_create_delete_restore": true
+  },
+  "restore": {
+    "routine_restore_test_required": true,
+    "maximum_days_between_isolated_restore_tests": 30,
+    "restore_test_target_must_be_isolated": true,
+    "restore_test_must_not_use_live_customer_data_without_authorisation": true,
+    "automatic_bulk_restore_allowed": false,
+    "production_restore_requires_explicit_scope": true,
+    "production_restore_requires_independent_verification": true,
+    "customer_wide_restore_requires_two_independent_authorities": true
+  },
+  "compromise_response": {
+    "loss_of_recovery_telemetry_is_security_incident": true,
+    "unexpected_backup_permission_change_is_security_incident": true,
+    "unexpected_delete_or_retention_change_is_security_incident": true,
+    "safe_automatic_actions": [
+      "freeze_recovery_policy_changes",
+      "revoke_suspicious_recovery_session",
+      "disable_exposed_recovery_credential",
+      "preserve_recovery_audit_evidence",
+      "pause_suspect_restore_job"
+    ],
+    "maximum_automatic_scope": "single_customer_cell",
+    "destructive_automatic_actions_forbidden": true
+  },
+  "survival_invariants": [
+    "Compromise of the application plane cannot delete or rewrite the final recovery path.",
+    "Compromise of the security plane cannot delete or rewrite the final recovery path.",
+    "A single administrator cannot destroy the final recovery generation.",
+    "A restore is rejected when its manifest or independent witness hash does not match.",
+    "Recovery-policy changes and deletion attempts remain visible outside the compromised production boundary.",
+    "AI may recommend recovery actions but cannot approve destructive recovery or deletion."
+  ]
+}
