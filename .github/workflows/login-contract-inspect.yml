@@ -1,0 +1,37 @@
+name: Inspect live login contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/login-contract-inspect.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Inspect public login request contract
+        shell: bash
+        env:
+          WFM_ORIGIN: https://wfm-customer-proof-0676-production.up.railway.app
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const origin = process.env.WFM_ORIGIN;
+          const source = await (await fetch(`${origin}/app.js`, {signal: AbortSignal.timeout(15000)})).text();
+          const needle = '/api/login';
+          const at = source.indexOf(needle);
+          if (at < 0) throw new Error('Login endpoint not found in public app.js');
+          const snippet = source.slice(Math.max(0, at - 1200), Math.min(source.length, at + 1800));
+          console.log('LOGIN_CONTRACT_SNIPPET_START');
+          console.log(snippet);
+          console.log('LOGIN_CONTRACT_SNIPPET_END');
+          const emails = [...new Set(source.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [])];
+          console.log('STATIC_EMAIL_CANDIDATES=' + JSON.stringify(emails.slice(0, 20)));
+          NODE
