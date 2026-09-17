@@ -9,7 +9,9 @@ on:
       - Dockerfile
       - DEPLOYMENT_MANIFEST.json
       - resilience/security-baseline.json
+      - resilience/agent-network-boundary.json
       - resilience/supply-chain-denylist.json
+      - 'resilience/incidents/**'
       - .github/workflows/wfm-external-intelligence.yml
 
 permissions:
@@ -42,6 +44,7 @@ jobs:
           node <<'NODE'
           const assert = require('node:assert/strict');
           const baseline = require('./resilience/security-baseline.json');
+          const egress = require('./resilience/agent-network-boundary.json');
           const expectedNodeCves = [
             'CVE-2026-56846','CVE-2026-56848','CVE-2026-58043',
             'CVE-2026-56850','CVE-2026-58040','CVE-2026-58042',
@@ -50,22 +53,62 @@ jobs:
           assert.equal(baseline.node.minimum, '22.23.2', 'Node security floor changed without external-intelligence review.');
           assert.equal(baseline.node.security_release_source, 'https://nodejs.org/en/blog/release/v22.23.2');
           assert.deepEqual([...new Set(baseline.node.tracked_cves)].sort(), expectedNodeCves, 'Node 22.23.2 advisory coverage is incomplete or inconsistent.');
+
+          const bundled = baseline.node.bundled_undici;
+          assert.ok(bundled && typeof bundled === 'object', 'Bundled undici advisory baseline is required.');
+          assert.equal(bundled.version, '6.28.0', 'Node 22.23.2 bundled-undici version changed; re-evaluate September 2026 advisories.');
+          assert.equal(bundled.minimum_patched_for_2026_09_04_advisories, '6.28.1');
+          assert.deepEqual(
+            bundled.advisories.map(x => x.cve).sort(),
+            ['CVE-2026-18540','CVE-2026-19534','CVE-2026-85024'].sort(),
+            'Bundled undici advisory coverage is incomplete.'
+          );
+          assert.equal(bundled.containment.websocket_client_allowed, false, 'Bundled WebSocket client must remain blocked while undici is below 6.28.1.');
+          assert.equal(bundled.containment.retry_interceptor_allowed, false, 'Undici retry interceptor must remain blocked while undici is below 6.28.1.');
+
           const intel = baseline.external_intelligence;
           assert.ok(intel && typeof intel === 'object', 'External intelligence controls are required.');
           assert.equal(intel.runtime_dependency_expectation.third_party_npm_packages, 0, 'Third-party runtime dependency introduction requires explicit baseline review.');
           assert.equal(intel.runtime_dependency_expectation.server_imports, 'node-builtins-only');
+          assert.equal(intel.runtime_dependency_expectation.package_managers_present, false, 'Package managers must remain absent from the final runtime.');
+
           const memory = intel.agent_threat_rules.find(x => x.id === 'persistent-memory-context-poisoning');
           assert.ok(memory, 'Persistent memory/context poisoning prevention rule is required.');
           assert.equal(memory.severity, 'critical');
           assert.equal(memory.direct_execution_authority, false, 'Poisoned memory must never obtain direct action authority.');
-          assert.ok(memory.signals.length >= 3 && memory.containment.length >= 3 && memory.verification.length >= 3, 'Memory poisoning rule needs detection, containment and verification evidence.');
-          assert.equal(memory.source, intel.authoritative_sources.owasp_memory_context_poisoning, 'Memory poisoning rule source provenance must match the baseline.');
+
+          const broker = intel.agent_threat_rules.find(x => x.id === 'agent-egress-or-credential-exfiltration-via-trusted-broker');
+          assert.ok(broker, 'Agent alternate-egress and credential-exfiltration prevention rule is required.');
+          assert.equal(broker.severity, 'critical');
+          assert.equal(broker.credentials_visible_to_language_model, false);
+          assert.equal(broker.arbitrary_network_egress_allowed, false);
+          assert.equal(broker.direct_execution_authority, false);
+          assert.ok(broker.sources.includes(intel.authoritative_sources.openai_hugging_face_incident));
+          assert.ok(broker.sources.includes(intel.authoritative_sources.anthropic_threat_intelligence_september_2026));
+
+          assert.equal(egress.root_of_trust, 'deterministic-executor');
+          assert.equal(egress.language_model_direct_network_authority, false);
+          assert.equal(egress.model_visible_reusable_credentials, false);
+          assert.equal(egress.default_egress, 'deny');
+          assert.ok(Object.values(egress.approved_egress_requires).every(Boolean), 'Approved agent egress requirements must all remain enabled.');
+          assert.equal(egress.credential_controls.provider_session_or_ai_credentials_in_prompt, false);
+          assert.equal(egress.credential_controls.provider_session_or_ai_credentials_in_persistent_memory, false);
+          assert.equal(egress.credential_controls.inject_at_executor_boundary_only, true);
+          assert.equal(egress.chaos_tests.length, 2, 'Agent network boundary must retain both adversarial and control chaos-test specifications.');
+          assert.ok(egress.chaos_tests.every(x => x.current_runtime_status.startsWith('specified-not-run-')), 'Do not silently convert unexecuted future-agent chaos tests into passes.');
+
           assert.equal(baseline.autonomy.language_model_direct_authority, false, 'Language models must remain proposal-only.');
-          console.log(JSON.stringify({ok:true,nodeCves:expectedNodeCves.length,agentRule:memory.id}, null, 2));
+          console.log(JSON.stringify({
+            ok:true,
+            nodeCves:expectedNodeCves.length,
+            undiciCves:bundled.advisories.length,
+            agentRules:intel.agent_threat_rules.map(x => x.id),
+            egressDefault:egress.default_egress
+          }, null, 2));
           NODE
       - name: Build exact staging candidate
         run: docker build --pull=false -t wfm-external-intel:${{ github.sha }} .
-      - name: Prove runtime dependency boundary
+      - name: Prove runtime dependency and vulnerable-surface boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -80,6 +123,10 @@ jobs:
             assert.equal(Object.keys(pkg[field] || {}).length, 0, `Unexpected ${field} in staged runtime.`);
           }
           assert.equal(fs.existsSync('/app/node_modules'), false, 'Staged runtime unexpectedly contains node_modules.');
+          for (const p of ['/usr/local/bin/npm','/usr/local/bin/npx','/usr/local/bin/corepack','/usr/local/bin/yarn','/usr/local/bin/yarnpkg','/usr/local/bin/pnpm','/usr/local/bin/pnpx']) {
+            assert.equal(fs.existsSync(p), false, `Package-manager entry point unexpectedly present: ${p}`);
+          }
+
           const builtins = new Set(Module.builtinModules.flatMap(x => [x, `node:${x}`]));
           const files = ['/app/server.cjs'];
           const walk = dir => {
@@ -90,7 +137,8 @@ jobs:
             }
           };
           walk('/app/lib');
-          const external = [];
+
+          const external = [], websocketUsage = [], retryInterceptorUsage = [];
           for (const file of files) {
             const source = fs.readFileSync(file,'utf8');
             for (const re of [/require\(['"]([^'"]+)['"]\)/g,/from\s+['"]([^'"]+)['"]/g]) {
@@ -101,7 +149,25 @@ jobs:
                 external.push({file:path.relative('/app',file),spec});
               }
             }
+            if (/\bnew\s+(?:globalThis\s*\.\s*)?WebSocket\s*\(|\bglobalThis\s*\.\s*WebSocket\s*\(/.test(source)) {
+              websocketUsage.push(path.relative('/app',file));
+            }
+            if (/\binterceptors\s*\.\s*retry\s*\(/.test(source)) {
+              retryInterceptorUsage.push(path.relative('/app',file));
+            }
           }
           assert.deepEqual(external, [], 'Staged server runtime introduced a non-built-in module import without security-baseline review.');
-          console.log(JSON.stringify({ok:true,package:'builtins-only',serverFilesScanned:files.length}, null, 2));
+          const undici = String(process.versions.undici || 'unknown');
+          assert.equal(undici, '6.28.0', `Unexpected bundled undici ${undici}; security baseline must be re-evaluated before promotion.`);
+          assert.deepEqual(websocketUsage, [], 'Node 22.23.2 bundles undici 6.28.0; server-side WebSocket client use is blocked until the pinned Node image carries undici >=6.28.1.');
+          assert.deepEqual(retryInterceptorUsage, [], 'Undici 6.28.0 retry-interceptor use is blocked until the pinned runtime carries undici >=6.28.1.');
+          console.log(JSON.stringify({
+            ok:true,
+            package:'builtins-only',
+            serverFilesScanned:files.length,
+            bundledUndici:undici,
+            websocketUsage:'none',
+            retryInterceptorUsage:'none',
+            packageManagerEntryPoints:'absent'
+          }, null, 2));
           NODE

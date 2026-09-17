@@ -17,7 +17,45 @@
       "CVE-2026-58045",
       "CVE-2026-56847",
       "CVE-2026-58039"
-    ]
+    ],
+    "bundled_undici": {
+      "version": "6.28.0",
+      "source": "https://github.com/nodejs/node/blob/v22.23.2/deps/undici/src/package.json",
+      "minimum_patched_for_2026_09_04_advisories": "6.28.1",
+      "upstream_fixed_release": "https://github.com/nodejs/undici/releases/tag/v6.28.1",
+      "advisories": [
+        {
+          "cve": "CVE-2026-19534",
+          "ghsa": "GHSA-rfgv-xxqx-mfg5",
+          "severity": "high",
+          "affected": ">=6.7.0 <6.28.1",
+          "surface": "WebSocket client handshake",
+          "source": "https://github.com/nodejs/undici/security/advisories/GHSA-rfgv-xxqx-mfg5"
+        },
+        {
+          "cve": "CVE-2026-85024",
+          "ghsa": "GHSA-3wwx-pv8p-q78v",
+          "severity": "moderate",
+          "affected": ">=6.25.0 <6.28.1",
+          "surface": "WebSocket permessage-deflate",
+          "source": "https://github.com/nodejs/undici/security/advisories/GHSA-3wwx-pv8p-q78v"
+        },
+        {
+          "cve": "CVE-2026-18540",
+          "ghsa": "GHSA-r53p-7pc4-xj5r",
+          "severity": "low",
+          "affected": "<6.28.1",
+          "surface": "retry interceptor downstream response framing",
+          "source": "https://github.com/nodejs/undici/security/advisories/GHSA-r53p-7pc4-xj5r"
+        }
+      ],
+      "containment": {
+        "websocket_client_allowed": false,
+        "retry_interceptor_allowed": false,
+        "reason": "Node 22.23.2 bundles undici 6.28.0. Until the pinned Node 22 image contains undici >=6.28.1, WFM server code must not use the bundled WebSocket client or undici retry interceptor. Built-in fetch remains permitted because these tracked September 4 advisories require the affected WebSocket or retry-interceptor surfaces.",
+        "upgrade_trigger": "Move to an approved digest-pinned Node 22 image only after exact-candidate integrity and regression gates prove process.versions.undici >= 6.28.1."
+      }
+    }
   },
   "deployment": {
     "production_approved": false,
@@ -62,7 +100,9 @@
       "nist_agent_identity": "https://www.nist.gov/news-events/news/2026/02/new-concept-paper-identity-and-authority-software-agents",
       "nist_multi_agent_security": "https://csrc.nist.gov/Presentations/2026/security-considerations-for-multi-agent-ai-systems",
       "owasp_agent_control_standard": "https://genai.owasp.org/resource/agent-control-standard-acs/",
-      "owasp_memory_context_poisoning": "https://genai.owasp.org/2026/05/13/memory-is-a-feature-it-is-also-an-attack-surface/"
+      "owasp_memory_context_poisoning": "https://genai.owasp.org/2026/05/13/memory-is-a-feature-it-is-also-an-attack-surface/",
+      "openai_hugging_face_incident": "https://openai.com/index/hugging-face-incident-and-the-road-ahead/",
+      "anthropic_threat_intelligence_september_2026": "https://www.anthropic.com/threat-intelligence-report-september-2026"
     },
     "runtime_dependency_expectation": {
       "third_party_npm_packages": 0,
@@ -104,6 +144,32 @@
           "clean context cannot replay poisoned instructions",
           "provenance and isolation evidence are retained"
         ],
+        "direct_execution_authority": false
+      },
+      {
+        "id": "agent-egress-or-credential-exfiltration-via-trusted-broker",
+        "severity": "critical",
+        "sources": [
+          "https://openai.com/index/hugging-face-incident-and-the-road-ahead/",
+          "https://www.anthropic.com/threat-intelligence-report-september-2026"
+        ],
+        "signals": [
+          "agent or model attempts an unapproved outbound destination directly or through a trusted proxy, package registry, callback, browser relay or other broker",
+          "provider, session or AI credentials become readable by the language model, sandbox or untrusted tool content",
+          "egress request origin, destination, method or purpose differs from the deterministic allowlisted workflow"
+        ],
+        "containment": [
+          "deny arbitrary model or sandbox egress and route approved network actions through a deterministic destination-and-method allowlist",
+          "keep reusable provider, session and AI secrets outside model-readable context; inject only short-lived least-privilege credentials into the deterministic executor",
+          "quarantine the affected agent session and revoke the narrowly scoped exposed credential when evidence confirms disclosure"
+        ],
+        "verification": [
+          "an adversarial tool or prompt cannot relay data through an unapproved proxy, registry, callback or alternate egress channel",
+          "model-visible state and logs contain no reusable provider, session or AI credential",
+          "an allowlisted same-tenant provider action still succeeds through the deterministic executor and produces immutable audit evidence"
+        ],
+        "credentials_visible_to_language_model": false,
+        "arbitrary_network_egress_allowed": false,
         "direct_execution_authority": false
       }
     ]
