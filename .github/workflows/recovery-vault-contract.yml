@@ -1,0 +1,27 @@
+name: Recovery Vault Survival Contract
+
+on:
+  push:
+    branches:
+      - security/last-line-defense
+    paths:
+      - 'security/immune-mesh/recovery-vault-policy.json'
+      - 'security/immune-mesh/validate-recovery-vault.mjs'
+      - '.github/workflows/recovery-vault-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 / Node 24
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Validate recovery vault survival invariants
+        run: node security/immune-mesh/validate-recovery-vault.mjs
