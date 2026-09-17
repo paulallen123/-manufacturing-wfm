@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "channel": "isolated-customer-proof-staging",
+  "frozenRelease": "0.6.76-hosted-staging-rc1",
+  "parentRelease": "0.6.76-provider-payroll-handoff-status-reconciliation-candidate",
+  "parentArchiveSha256": "9485df8eeeb59f36b160b8f0515100adbd8b854d8a86dca60708c46d51c40581",
+  "hostedSourceContentSha256": "7a60920a14d6441711af697d94759bb8fb096b6483c0943ef61148a3a46d039d",
+  "runtimeSha256": "e3febf25a33c6becbfe59a215a38bfd77bb3306337c5e66dfd372183f2f97382",
+  "promotionPolicy": "Do not replace this staging release merely because development advances. Promote a later candidate only after equivalent completed regression, hosted security, customer journey and provenance gates pass.",
+  "productionApproved": false,
+  "pilotReady": false
+}
