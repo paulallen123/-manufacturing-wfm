@@ -1,0 +1,40 @@
+name: Import provenance-complete WFM staging runtime
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/import-staging-runtime-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import-runtime:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      WFM_IMPORT_URL: 'https://sdmntprwestus3.oaiusercontent.com/files/00000000-cc6c-81fd-b93b-fed751ef143d/raw?se=2026-09-17T13%3A23%3A18Z&sp=r&sv=2026-02-06&sr=b&scid=ca5c1946-9a7f-53ca-94fa-a24e9d929975&skoid=002823aa-689d-47ca-9347-108c20f4f00d&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-17T08%3A13%3A10Z&ske=2026-09-18T08%3A13%3A10Z&sks=b&skv=2026-02-06&sig=qPG/3WyyMcchDZ/G8yRbFjb3XyypMGdJ/l06MWxa45Y%3D'
+      WFM_IMPORT_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+      - name: Download and verify provenance-complete sealed runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifact
+          curl --fail --location --silent --show-error "$WFM_IMPORT_URL" -o artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz
+          echo "$WFM_IMPORT_SHA256  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz" | sha256sum -c -
+      - name: Commit verified runtime into private repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Replace staging runtime with provenance-complete sealed artifact'
+          git push origin HEAD:main
