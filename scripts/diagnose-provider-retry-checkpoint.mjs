@@ -23,8 +23,20 @@ try{
   jobs.checkpoint(run.id,'diagnostic-worker',{nextRequest:mappedNext,pages:1,sourceRecords:2,stagedRecords:2,heldRecords:0,retries:0,cursor:'proof:2',sourceVersion:'v1',sourceAt:new Date(Date.now()-1000).toISOString(),ingestedAt:new Date().toISOString(),httpStatus:200,httpLatencyMs:5,freshnessSloSeconds:3600});
   jobs.fail(run.id,'diagnostic-worker',new Error('diagnostic transient failure'),{retryDelayMs:0});
   const detail=jobs.detail(actor,run.id);
-  const columns=db.prepare('PRAGMA table_info(provider_jobs)').all().map(x=>x.name);
-  const raw=db.prepare('SELECT * FROM provider_jobs WHERE id=?').get(run.id);
+  const tables=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all().map(x=>x.name);
+  const schemas={};
+  let rawTable=null,raw=null;
+  for(const table of tables){
+    if(!/^[A-Za-z0-9_]+$/.test(table))continue;
+    const cols=db.prepare(`PRAGMA table_info(${table})`).all().map(x=>x.name);
+    schemas[table]=cols;
+    if(!raw&&cols.includes('id')){
+      try{
+        const candidate=db.prepare(`SELECT * FROM ${table} WHERE id=?`).get(run.id);
+        if(candidate){rawTable=table;raw=candidate;}
+      }catch{}
+    }
+  }
   const safeRaw=Object.fromEntries(Object.entries(raw||{}).map(([k,v])=>[k,/token|secret|authorization/i.test(k)?'<redacted>':v]));
-  console.log(JSON.stringify({mappedNext,detail,detailKeys:Object.keys(detail),rawColumns:columns,raw:safeRaw},null,2));
+  console.log(JSON.stringify({mappedNext,detail,detailKeys:Object.keys(detail),tables,schemas,rawTable,raw:safeRaw},null,2));
 }finally{try{db?.close();}catch{}fs.rmSync(tmp,{recursive:true,force:true});}
