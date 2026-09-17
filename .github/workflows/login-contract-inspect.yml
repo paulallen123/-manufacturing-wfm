@@ -1,4 +1,4 @@
-name: Inspect sealed hosted login validation
+name: Inspect sealed tenant and kiosk proof contracts
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Inspect sealed server login contract
+      - name: Inspect tenant and kiosk contracts
         shell: bash
         run: |
           set -euo pipefail
@@ -33,13 +33,20 @@ jobs:
           node - "$SERVER" <<'NODE'
           const fs = require('node:fs');
           const source = fs.readFileSync(process.argv[2], 'utf8');
-          const needles = ['/api/login','WFM_STAGING_PASSWORD','timingSafeEqual','superuser@northstar.example'];
-          for (const needle of needles) {
-            let at = source.indexOf(needle);
-            if (at < 0) continue;
-            console.log(`SEALED_LOGIN_NEEDLE=${needle}`);
-            console.log('SEALED_LOGIN_SNIPPET_START');
-            console.log(source.slice(Math.max(0, at - 1800), Math.min(source.length, at + 3200)));
-            console.log('SEALED_LOGIN_SNIPPET_END');
+          const routeMatches = [...source.matchAll(/['"](\/api\/[^'"]+)['"]/g)].map(m => m[1]);
+          const interesting = [...new Set(routeMatches.filter(r => /bootstrap|kiosk|attendance|correction|audit|time-review/i.test(r)))];
+          console.log('INTERESTING_ROUTES=' + JSON.stringify(interesting));
+          for (const needle of ['/api/bootstrap','/api/kiosk','attendance-corrections','kiosk_devices','kiosk_events']) {
+            let start = 0, count = 0;
+            while (count < 4) {
+              const at = source.indexOf(needle, start);
+              if (at < 0) break;
+              console.log(`CONTRACT_NEEDLE=${needle}#${count+1}`);
+              console.log('CONTRACT_SNIPPET_START');
+              console.log(source.slice(Math.max(0, at - 1400), Math.min(source.length, at + 2800)));
+              console.log('CONTRACT_SNIPPET_END');
+              start = at + needle.length;
+              count++;
+            }
           }
           NODE
