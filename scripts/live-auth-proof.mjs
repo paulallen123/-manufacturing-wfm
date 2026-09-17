@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
+const fixtureEmail = 'manager@northstar.example';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
 const password = process.env.WFM_STAGING_PASSWORD;
 
@@ -52,8 +53,8 @@ function report(label, status, extra = '') {
   report('unauthenticated bootstrap', response.status, 'fail-closed confirmed');
 }
 
-// Authenticate without ever printing the credential. Hosted staging rejects cross-origin
-// or originless state-changing requests, so model a normal same-origin browser request.
+// Authenticate without ever printing the credential. Match the public browser contract:
+// a fictional fixture account email plus the staging password, sent same-origin.
 const login = await fetchText('/api/login', {
   method: 'POST',
   headers: {
@@ -62,12 +63,12 @@ const login = await fetchText('/api/login', {
     'referer': `${origin}/`,
     'accept': 'application/json,text/plain,*/*',
   },
-  body: JSON.stringify({ password }),
+  body: JSON.stringify({ email: fixtureEmail, password }),
 });
 assert.equal(login.response.status, 200, `Live staging login failed with HTTP ${login.response.status}.`);
 const cookie = cookieFrom(login.response);
 assert.ok(cookie, 'Login succeeded but no session cookie was returned.');
-report('authenticated login', login.response.status);
+report('authenticated login', login.response.status, fixtureEmail);
 
 async function authedGet(path, { required = true } = {}) {
   const { response, text } = await fetchText(path, {
