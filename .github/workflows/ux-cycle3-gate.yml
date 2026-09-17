@@ -1,0 +1,103 @@
+name: WFM UX evolution cycle 3 gate
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/**'
+      - '.github/workflows/ux-cycle3-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ux-cycle3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cycle3-signoff:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax and sign-off intent checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset-cycle3.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const js=fs.readFileSync('ux-overlay/ux-reset-cycle3.js','utf8');
+          const css=fs.readFileSync('ux-overlay/ux-reset-cycle3.css','utf8');
+          for(const x of ['window.payrollPreview?.report?.()','Exceptions','Weekly checks','People checked','Worked time','Checks & exceptions','Employee totals','Controls & protection','Ready to sign','data-ux-signoff-open']) if(!js.includes(x)) throw new Error('Missing cycle 3 invariant: '+x);
+          for(const x of ['.ux-signoff-desk','.ux-signoff-kpis','.ux-signoff-detail','overflow:auto','[data-ux-job="signoff"]']) if(!css.includes(x)) throw new Error('Missing cycle 3 CSS invariant: '+x);
+          if(js.includes('t.canSign=true')||js.includes('t.canSign = true')) throw new Error('UX layer must not manufacture sign-off eligibility.');
+          console.log('UX_CYCLE3_SOURCE_INVARIANTS=PASS');
+          NODE
+
+      - name: Build exact composed image
+        run: docker build --pull=false -t wfm-ux-cycle3:pr .
+
+      - name: Verify final composition and immutable runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker create wfm-ux-cycle3:pr)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-cycle3
+          docker cp "$cid:/app/public/index.html" /tmp/wfm-cycle3/index.html
+          docker cp "$cid:/app/public/ux-reset-cycle3.js" /tmp/wfm-cycle3/ux-reset-cycle3.js
+          node --check /tmp/wfm-cycle3/ux-reset-cycle3.js
+          node <<'NODE'
+          const fs=require('node:fs');const h=fs.readFileSync('/tmp/wfm-cycle3/index.html','utf8');
+          const a=h.lastIndexOf('ux-reset.js?v=20260917-1'),b=h.lastIndexOf('ux-reset-cycle2.js?v=20260917-2'),c=h.lastIndexOf('ux-reset-cycle3.js?v=20260917-3');
+          const ac=h.lastIndexOf('ux-reset.css?v=20260917-1'),bc=h.lastIndexOf('ux-reset-cycle2.css?v=20260917-2'),cc=h.lastIndexOf('ux-reset-cycle3.css?v=20260917-3');
+          if(!(a>=0&&b>a&&c>b&&ac>=0&&bc>ac&&cc>bc))throw new Error('Cycle 3 must be the final presentation layer.');
+          console.log('UX_CYCLE3_LOAD_ORDER=PASS');
+          NODE
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          echo 'SEALED_RUNTIME_UNCHANGED=PASS'
+
+      - name: Run isolated staging image and browser-check sign-off UX
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name wfm-ux-cycle3-run -p 3000:3000 \
+            -e WFM_STAGING_PASSWORD='ux-local-only-7d4c219f0c8a11f2a6e5' \
+            wfm-ux-cycle3:pr
+          trap 'docker logs wfm-ux-cycle3-run || true; docker rm -f wfm-ux-cycle3-run >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:3000/api/health >/tmp/health.json; then break; fi
+            sleep .5
+          done
+          test -s /tmp/health.json
+          cat /tmp/health.json
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME"
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --remote-debugging-port=9224 --user-data-dir=/tmp/wfm-cycle3-chrome --window-size=1440,1000 about:blank >/tmp/chrome.log 2>&1 &
+          CHROME_PID=$!
+          trap 'kill "$CHROME_PID" >/dev/null 2>&1 || true; docker logs wfm-ux-cycle3-run || true; docker rm -f wfm-ux-cycle3-run >/dev/null 2>&1 || true' EXIT
+          node <<'NODE'
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          async function retry(fn,n=60){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
+          const targets=await retry(async()=>{const r=await fetch('http://127.0.0.1:9224/json/list');const x=await r.json();if(!x.length)throw Error('No CDP target');return x});
+          const ws=new WebSocket(targets.find(x=>x.type==='page').webSocketDebuggerUrl);await new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=()=>bad(Error('CDP open failed'))});
+          let id=1;const pending=new Map();ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(m.error.message)):p.resolve(m.result)}};
+          const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}))});
+          const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
+          const wait=async expression=>retry(async()=>{const v=await evalx(expression);if(!v)throw Error('wait');return v},100);
+          await send('Page.enable');await send('Runtime.enable');await send('Page.navigate',{url:'http://127.0.0.1:3000'});await wait("document.readyState==='complete'||document.readyState==='interactive'");
+          await sleep(600);
+          if(await evalx("Boolean(document.querySelector('#v2-login'))")){
+            const ok=await evalx(`(()=>{const f=document.querySelector('#v2-login');const e=f?.querySelector('[name="email"]'),p=f?.querySelector('[name="password"]');if(!e||!p)return false;e.value='superuser@northstar.example';e.dispatchEvent(new Event('change',{bubbles:true}));p.value='ux-local-only-7d4c219f0c8a11f2a6e5';p.dispatchEvent(new Event('input',{bubbles:true}));f.requestSubmit();return true})()`);if(!ok)throw Error('Login form could not be submitted');await wait("!document.querySelector('#v2-login')");
+          }
+          const clicked=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page],button,a')].find(n=>(n.textContent||'').replace(/\\s+/g,' ').trim()==='Sign off'&&n.offsetParent!==null);if(!x)return false;x.click();return true})()`);if(!clicked)throw Error('Sign off navigation not found');
+          await wait("Boolean(document.querySelector('.ux-signoff-desk'))");await sleep(300);
+          const proof=await evalx(`(()=>({desk:!!document.querySelector('.ux-signoff-desk'),details:document.querySelectorAll('.ux-signoff-detail').length,heroVisible:!!document.querySelector('.review-hero:not([hidden])'),pageOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,labels:[...document.querySelectorAll('.ux-signoff-kpis small')].map(x=>x.textContent.trim()),signAction:document.querySelector('.ux-signoff-desk [data-act="review-sign"],.ux-signoff-desk [data-act="review-return"]')?.textContent.trim()||null}))()`);
+          console.log('UX_CYCLE3_BROWSER_PROOF='+JSON.stringify(proof));
+          if(!proof.desk||proof.details!==3||proof.pageOverflow>2)throw Error('Condensed sign-off browser invariant failed');
+          for(const label of ['Exceptions','Weekly checks','People checked','Worked time'])if(!proof.labels.includes(label))throw Error('Missing KPI '+label);
+          ws.close();
+          NODE
