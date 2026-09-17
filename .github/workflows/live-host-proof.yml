@@ -1,6 +1,6 @@
 name: Live Host Proof
 
-# Current customer-proof promotion target: Railway deployment 93c91f28-3994-4d45-9cdd-f9b0874214a6
+# Current customer-proof UX promotion: Railway deployment 6a21fea9-4dd5-4911-aa17-c792250879bb from green main 9c23159b2890bb206793e7d10a0b4790d4b187f0
 on:
   push:
     branches:
