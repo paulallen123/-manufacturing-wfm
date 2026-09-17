@@ -14,6 +14,7 @@ on:
       - 'scripts/validate-autonomous-recovery-proof.mjs'
       - 'scripts/validate-autonomous-recovery-matrix.mjs'
       - 'scripts/validate-support-incident-recovery-proof.mjs'
+      - 'scripts/inspect-provider-recovery-runtime.mjs'
       - '.github/workflows/wfm-autonomous-recovery-proof.yml'
 
 permissions:
@@ -55,6 +56,9 @@ jobs:
 
       - name: Prove customer report to bounded recovery chain
         run: node --experimental-sqlite scripts/validate-support-incident-recovery-proof.mjs
+
+      - name: Inspect sealed provider recovery APIs
+        run: node --experimental-sqlite scripts/inspect-provider-recovery-runtime.mjs
 
       - name: Assert proof receipts exist and remain fail-closed
         shell: bash
