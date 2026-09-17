@@ -13,11 +13,12 @@ permissions:
 
 jobs:
   validate:
+    if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Checkout trusted branch
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Checkout trusted owner push
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 / Node 24
         with:
           persist-credentials: false
           fetch-depth: 1
