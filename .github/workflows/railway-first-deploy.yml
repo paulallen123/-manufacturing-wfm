@@ -68,16 +68,23 @@ jobs:
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
 
-          # The exact sealed candidate is already live and independently proven. Link to
-          # that existing service without triggering another build so this run is a pure
-          # read-only customer-proof exercise.
-          "$RAILWAY_BIN" link \
-            --project "$RAILWAY_PROJECT_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
+          # Project tokens can read service variables directly even though Railway does
+          # not permit them to perform account-level `railway link` operations. Capture
+          # the JSON to a temporary file and never print it.
+          "$RAILWAY_BIN" variable list \
             --service "$RAILWAY_SERVICE_ID" \
-            --json >/tmp/railway-link.json
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --json > "$RUNNER_TEMP/railway-vars.json"
 
-          # Reuse the same reviewed credential boundary to inject the service's staging
-          # variables only into this local proof process. The password is never printed,
-          # committed, copied to another secret, or passed as an explicit CLI argument.
-          "$RAILWAY_BIN" run node scripts/live-auth-proof.mjs
+          # Inject only the two staging values required by the local proof process. They
+          # remain in memory and are never echoed, committed or copied to another secret.
+          node --input-type=module - "$RUNNER_TEMP/railway-vars.json" <<'NODE'
+          import fs from 'node:fs';
+          const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          if (!vars.WFM_STAGING_PASSWORD || !vars.WFM_PUBLIC_ORIGIN) {
+            throw new Error('Required staging variables are unavailable to the proof runner.');
+          }
+          process.env.WFM_STAGING_PASSWORD = vars.WFM_STAGING_PASSWORD;
+          process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
+          await import('./scripts/live-auth-proof.mjs');
+          NODE
