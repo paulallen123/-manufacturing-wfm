@@ -35,7 +35,9 @@ assert.equal(dockerRuntimeSha, manifest.runtime_sha256, 'Docker runtime checksum
 const runtimeUrl = dockerfile.match(/const u='([^']+)'/)?.[1];
 assert.ok(runtimeUrl?.startsWith('https://'), 'Runtime artifact must be fetched over HTTPS.');
 const artifactName = path.basename(new URL(runtimeUrl).pathname, '.tgz');
-assert.equal(artifactName, `wfm-${manifest.candidate}`, 'Runtime artifact name and manifest candidate must match exactly.');
+const exactName = `wfm-${manifest.candidate}`;
+const wrapped = artifactName.match(/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-(wfm-.+)$/i);
+assert.ok(artifactName === exactName || (wrapped && wrapped[2] === exactName), 'Runtime artifact identity must exactly match the manifest candidate, with only an optional UUID storage prefix.');
 
 for (const [key, expected] of Object.entries(baseline.deployment)) {
   if (key.startsWith('require_')) continue;
