@@ -1,9 +1,11 @@
 name: Live Host Proof
 
-# Re-run marker: exact 0.6.76 customer-proof deployment 49a53c09-9e4b-41a3-a8dd-0133c97f2792
+# Current customer-proof UX promotion: Railway deployment 6a21fea9-4dd5-4911-aa17-c792250879bb from green main 9c23159b2890bb206793e7d10a0b4790d4b187f0
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'autonomy/live-host-ux-proof'
     paths:
       - '.github/workflows/live-host-proof.yml'
       - 'DEPLOYMENT_MANIFEST.json'
@@ -49,6 +51,28 @@ jobs:
           test -s /tmp/root.html
           test -s /tmp/kiosk.html
           echo "Public application and kiosk surfaces returned non-empty HTTP 2xx responses."
+
+      - name: Prove promoted role-first UX bundle is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 "$WFM_BASE_URL/value-cockpit-ui.js" -o /tmp/value-cockpit-ui.js
+          curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 "$WFM_BASE_URL/factory-control-ui.css" -o /tmp/factory-control-ui.css
+
+          grep -F 'WFM_UX_RESET_CYCLE9_BEGIN' /tmp/value-cockpit-ui.js
+          grep -F "overview:'Today'" /tmp/value-cockpit-ui.js
+          grep -F 'Work the exceptions, not the timesheet.' /tmp/value-cockpit-ui.js
+          grep -F 'Is my time correct?' /tmp/value-cockpit-ui.js
+          grep -F 'ux-more-button' /tmp/value-cockpit-ui.js
+
+          grep -F 'WFM_UX_RESET_CYCLE9_BEGIN' /tmp/factory-control-ui.css
+          grep -F '.ux-tool-drawer' /tmp/factory-control-ui.css
+          grep -F '[data-ux-time-review="calm"]' /tmp/factory-control-ui.css
+          grep -F '[data-ux-employee-time="calm"]' /tmp/factory-control-ui.css
+
+          echo 'LIVE_ROLE_FIRST_UX=PASS'
 
       - name: Prove protected data fails closed without authentication
         shell: bash
