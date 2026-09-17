@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "incident": "railway-success-but-unhealthy",
+  "status": "open-contained",
+  "classification": ["deployment-runtime", "observability", "staging-configuration"],
+  "detected_at": "2026-09-17T15:13:20Z",
+  "customer_or_production_mutation": false,
+  "affected_staging_project": "9a774359-37fa-47e8-bde0-932420c32923",
+  "affected_service": "7273a773-d59b-4636-a69b-e357efd92b80",
+  "affected_service_name": "wfm-staging-runtime-0670",
+  "deployment_id": "6f4ac3df-47af-4266-8aa8-6a0e689dd23f",
+  "control_plane_status": "SUCCESS",
+  "runtime_evidence": {
+    "health_path": "/api/health",
+    "observed_http_status": 502,
+    "upstream_error": "connection dial timeout",
+    "probe_duration_ms": 15000,
+    "repeated_independent_failures": true,
+    "observed_from_utc": "2026-09-17T14:05:47Z",
+    "observed_through_utc": "2026-09-17T14:43:10Z"
+  },
+  "root_cause_status": "not-yet-proven",
+  "working_classification": "Railway accepted the deployment while the application process was not reachable on the configured service path/port. Treat as runtime/configuration/observability until process-level evidence proves a product defect.",
+  "containment": [
+    "Do not treat Railway deployment SUCCESS as customer-proof readiness.",
+    "Block customer-proof or sell-readiness claims while the exact deployed service health probe is non-green.",
+    "Do not reuse the 0.6.70 staging service as evidence for the frozen 0.6.76 candidate.",
+    "Preserve the failed HTTP evidence and avoid blind redeploy/restart while root cause is unverified."
+  ],
+  "prevention": {
+    "rule_id": "staging-deploy-success-requires-runtime-health",
+    "control_plane_success_is_insufficient": true,
+    "required_health_probes": 3,
+    "required_http_status": 200,
+    "require_expected_health_body": true,
+    "independent_probe_requirement": true,
+    "on_failure": "fail-closed-and-preserve-evidence"
+  },
+  "verification_required": [
+    "exact candidate identity matches deployment manifest and runtime SHA",
+    "three independent /api/health probes return 200 with the expected healthy body",
+    "no connection-dial-timeout evidence during the verification window",
+    "authenticated customer journey succeeds before customer-proof readiness is claimed"
+  ],
+  "related_blocker": {
+    "target_service": "ddd54fb9-3564-4251-9959-28cf3308c272",
+    "target_service_name": "wfm-customer-proof-0676",
+    "latest_deployment": null,
+    "github_actions_blocker": "RAILWAY_TOKEN repository secret is not configured",
+    "classification": "deployment-authorization-configuration"
+  },
+  "learning": "Deployment control-plane success is not liveness evidence. Promotion/readiness must require independent runtime health tied to the exact candidate identity, and a missing deployment credential is a configuration blocker rather than a product defect.",
+  "claim_boundary": "This incident records read-only staging evidence. No Railway service, customer state, production resource or credential was mutated."
+}
