@@ -34,68 +34,76 @@ jobs:
           cd "$RUNNER_TEMP/wfm-browser-proof"
           node <<'NODE'
           const { chromium } = require('playwright');
-          const origin = process.env.WFM_ORIGIN;
-          const browser = await chromium.launch({ channel: 'chrome', headless: true });
-          const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-          const page = await context.newPage();
-          const api = [];
-          page.on('response', r => {
+          (async () => {
+            const origin = process.env.WFM_ORIGIN;
+            const browser = await chromium.launch({ channel: 'chrome', headless: true });
             try {
-              const u = new URL(r.url());
-              if (u.origin === origin && u.pathname.startsWith('/api/')) api.push(`${r.request().method()} ${u.pathname} ${r.status()}`);
-            } catch {}
-          });
-          await page.goto(origin, { waitUntil: 'networkidle', timeout: 30000 });
+              const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+              const page = await context.newPage();
+              const api = [];
+              page.on('response', r => {
+                try {
+                  const u = new URL(r.url());
+                  if (u.origin === origin && u.pathname.startsWith('/api/')) api.push(`${r.request().method()} ${u.pathname} ${r.status()}`);
+                } catch {}
+              });
+              await page.goto(origin, { waitUntil: 'networkidle', timeout: 30000 });
 
-          const login = page.locator('#v2-login');
-          if (await login.count()) {
-            const email = await login.locator('select[name="email"]').inputValue();
-            const passwordPresent = (await login.locator('input[name="password"]').inputValue()).length > 0;
-            console.log(`LOGIN_FORM_EMAIL=${email}`);
-            console.log(`LOGIN_FORM_PASSWORD_PREFILLED=${passwordPresent}`);
-            if (!passwordPresent) throw new Error('Hosted login form has no prefilled fixture credential; refusing to guess a password.');
-            const loginResponse = page.waitForResponse(r => r.url() === `${origin}/api/login` && r.request().method() === 'POST', { timeout: 15000 });
-            await login.locator('button[type="submit"]').click();
-            const response = await loginResponse;
-            console.log(`BROWSER_LOGIN_STATUS=${response.status()}`);
-            if (response.status() !== 200) throw new Error(`Prefilled hosted fixture login returned HTTP ${response.status()}`);
-          }
+              const login = page.locator('#v2-login');
+              if (await login.count()) {
+                const email = await login.locator('select[name="email"]').inputValue();
+                const passwordPresent = (await login.locator('input[name="password"]').inputValue()).length > 0;
+                console.log(`LOGIN_FORM_EMAIL=${email}`);
+                console.log(`LOGIN_FORM_PASSWORD_PREFILLED=${passwordPresent}`);
+                if (!passwordPresent) throw new Error('Hosted login form has no prefilled fixture credential; refusing to guess a password.');
+                const loginResponse = page.waitForResponse(r => r.url() === `${origin}/api/login` && r.request().method() === 'POST', { timeout: 15000 });
+                await login.locator('button[type="submit"]').click();
+                const response = await loginResponse;
+                console.log(`BROWSER_LOGIN_STATUS=${response.status()}`);
+                if (response.status() !== 200) throw new Error(`Prefilled hosted fixture login returned HTTP ${response.status()}`);
+              }
 
-          await page.waitForFunction(() => !document.querySelector('#v2-login'), null, { timeout: 15000 });
-          await page.waitForTimeout(1000);
-          console.log('AUTHENTICATED_BROWSER_SESSION=true');
-          console.log(`PAGE_TITLE=${await page.title()}`);
+              await page.waitForFunction(() => !document.querySelector('#v2-login'), null, { timeout: 15000 });
+              await page.waitForTimeout(1000);
+              console.log('AUTHENTICATED_BROWSER_SESSION=true');
+              console.log(`PAGE_TITLE=${await page.title()}`);
 
-          async function clickReadOnly(label) {
-            const loc = page.getByText(label, { exact: true }).first();
-            if (!await loc.count() || !await loc.isVisible()) {
-              console.log(`NAV_SKIP=${label}`);
-              return false;
+              async function clickReadOnly(label) {
+                const loc = page.getByText(label, { exact: true }).first();
+                if (!await loc.count() || !await loc.isVisible()) {
+                  console.log(`NAV_SKIP=${label}`);
+                  return false;
+                }
+                await loc.click();
+                await page.waitForTimeout(800);
+                console.log(`NAV_OK=${label}`);
+                return true;
+              }
+
+              for (const label of ['Inspect readiness','Open weekly schedule','Schedule','Readiness','Time','Payroll','Personal']) {
+                await clickReadOnly(label);
+              }
+
+              const navLabels = await page.locator('a,button,[role="tab"]').evaluateAll(nodes =>
+                [...new Set(nodes.map(n => (n.textContent || '').replace(/\s+/g,' ').trim()).filter(Boolean))].slice(0,120)
+              );
+              console.log('VISIBLE_NAV_LABELS=' + JSON.stringify(navLabels));
+
+              const kiosk = await context.newPage();
+              const kioskResponse = await kiosk.goto(`${origin}/kiosk.html`, { waitUntil: 'networkidle', timeout: 30000 });
+              console.log(`KIOSK_STATUS=${kioskResponse?.status()}`);
+              if (!kioskResponse || kioskResponse.status() !== 200) throw new Error('Kiosk did not load successfully.');
+              console.log(`KIOSK_TITLE=${await kiosk.title()}`);
+
+              console.log('API_RESPONSES_START');
+              for (const line of [...new Set(api)]) console.log(line);
+              console.log('API_RESPONSES_END');
+              console.log('LIVE_BROWSER_READ_ONLY_PROOF=PASS');
+            } finally {
+              await browser.close();
             }
-            await loc.click();
-            await page.waitForTimeout(800);
-            console.log(`NAV_OK=${label}`);
-            return true;
-          }
-
-          for (const label of ['Inspect readiness','Open weekly schedule','Schedule','Readiness','Time','Payroll','Personal']) {
-            await clickReadOnly(label);
-          }
-
-          const navLabels = await page.locator('a,button,[role="tab"]').evaluateAll(nodes =>
-            [...new Set(nodes.map(n => (n.textContent || '').replace(/\s+/g,' ').trim()).filter(Boolean))].slice(0,120)
-          );
-          console.log('VISIBLE_NAV_LABELS=' + JSON.stringify(navLabels));
-
-          const kiosk = await context.newPage();
-          const kioskResponse = await kiosk.goto(`${origin}/kiosk.html`, { waitUntil: 'networkidle', timeout: 30000 });
-          console.log(`KIOSK_STATUS=${kioskResponse?.status()}`);
-          if (!kioskResponse || kioskResponse.status() !== 200) throw new Error('Kiosk did not load successfully.');
-          console.log(`KIOSK_TITLE=${await kiosk.title()}`);
-
-          console.log('API_RESPONSES_START');
-          for (const line of [...new Set(api)]) console.log(line);
-          console.log('API_RESPONSES_END');
-          console.log('LIVE_BROWSER_READ_ONLY_PROOF=PASS');
-          await browser.close();
+          })().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
           NODE
