@@ -1,0 +1,37 @@
+name: Import sealed WFM staging artifact
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/import-staging-artifact.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      WFM_IMPORT_URL: 'https://sdmntprdenmarkeast.oaiusercontent.com/files/00000000-2984-8210-9dfa-a85b0cd29a6f/raw?se=2026-09-17T13%3A08%3A18Z&sp=r&sv=2026-02-06&sr=b&scid=c8225409-4ef5-5618-b165-929cfcb5c224&skoid=002823aa-689d-47ca-9347-108c20f4f00d&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-17T07%3A20%3A12Z&ske=2026-09-18T07%3A20%3A12Z&sks=b&skv=2026-02-06&sig=jCaurFzh3XRYlnPUxlCG/FsyuWoSa2B5onN7jK841v4%3D'
+      WFM_IMPORT_SHA256: '1ae963bbbfa32bffaa6e92a6e7aad099362319fefc0cec5a0a87974d14bd9d3e'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify encrypted staging artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifact
+          curl --fail --location --silent --show-error "$WFM_IMPORT_URL" -o artifact/wfm-0.6.76-hosted-staging-rc1.aesgcm
+          echo "$WFM_IMPORT_SHA256  artifact/wfm-0.6.76-hosted-staging-rc1.aesgcm" | sha256sum -c -
+      - name: Commit verified ciphertext into private repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add artifact/wfm-0.6.76-hosted-staging-rc1.aesgcm
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Import verified encrypted 0.6.76 staging artifact'
+          git push origin HEAD:main
