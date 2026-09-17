@@ -81,7 +81,10 @@ jobs:
           const runtime = workflow.indexOf('Re-verify frozen runtime before any credential-bearing step');
           const browser = workflow.indexOf('Require patched Chrome before any staging credential retrieval');
           const cli = workflow.indexOf('Install pinned Railway CLI with release-asset digest verification');
-          const secret = workflow.indexOf('RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}');
+          // Construct the GitHub expression marker at runtime so this validation workflow
+          // does not itself evaluate or request the Railway secret.
+          const secretNeedle = 'RAILWAY_TOKEN: $' + '{{ secrets.RAILWAY_TOKEN }}';
+          const secret = workflow.indexOf(secretNeedle);
           const variableRead = workflow.indexOf('variable list');
           assert.ok(identity >= 0 && runtime > identity && browser > runtime && cli > browser && secret > cli && variableRead > secret,
             'Railway target/runtime/browser/CLI checks must all occur before the token-bearing read-only provider step.');
