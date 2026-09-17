@@ -85,7 +85,8 @@ jobs:
               echo 'Railway bootstrap may reference only secrets.RAILWAY_TOKEN.' >&2
               exit 1
             }
-            [ "$(grep -Fc '${{ secrets.RAILWAY_TOKEN }}' "$RAILWAY_WORKFLOW")" -eq 1 ] || {
+            secret_expression='$''{{ secrets.RAILWAY_TOKEN }}'
+            [ "$(grep -Fc "$secret_expression" "$RAILWAY_WORKFLOW")" -eq 1 ] || {
               echo 'Railway bootstrap must consume RAILWAY_TOKEN exactly once.' >&2
               exit 1
             }
@@ -98,7 +99,7 @@ jobs:
             grep -Fq "RAILWAY_SERVICE_ID: 'ddd54fb9-3564-4251-9959-28cf3308c272'" "$RAILWAY_WORKFLOW"
             grep -Fq "EXPECTED_RUNTIME_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'" "$RAILWAY_WORKFLOW"
             deploy_line="$(grep -nF 'name: Bootstrap exact existing Railway customer-proof service' "$RAILWAY_WORKFLOW" | cut -d: -f1)"
-            secret_line="$(grep -nF 'RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}' "$RAILWAY_WORKFLOW" | cut -d: -f1)"
+            secret_line="$(grep -nF "RAILWAY_TOKEN: $secret_expression" "$RAILWAY_WORKFLOW" | cut -d: -f1)"
             [ -n "$deploy_line" ] && [ -n "$secret_line" ] && [ "$secret_line" -gt "$deploy_line" ] && [ $((secret_line-deploy_line)) -le 4 ] || {
               echo 'RAILWAY_TOKEN must be scoped only to the deployment step.' >&2
               exit 1
