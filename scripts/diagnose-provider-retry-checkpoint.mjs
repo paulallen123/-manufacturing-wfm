@@ -16,30 +16,13 @@ try{
   db=new DatabaseSync(':memory:');
   db.exec("PRAGMA foreign_keys=ON; CREATE TABLE tenants(id TEXT PRIMARY KEY); INSERT INTO tenants(id) VALUES ('proof-tenant-a');");
   const jobs=PJ.createStore(db);
-  const actor={tenant:'proof-tenant-a',email:'proof@example.invalid',permissions:['company.configure']};
   const mappedNext={offset:2,limit:2};
   const run=jobs.ensure({tenant:'proof-tenant-a',connectorId:'proof',provider:'netsuite',objectType:'demand',adapterName:'proof-adapter',providerVersion:'1',fixtureContract:'checkpoint-diagnostic',runKey:'checkpoint-diagnostic',startRequest:{offset:0,limit:2},maxFailures:3});
   jobs.acquire(run.id,'diagnostic-worker',{leaseMs:60000});
   jobs.checkpoint(run.id,'diagnostic-worker',{nextRequest:mappedNext,pages:1,sourceRecords:2,stagedRecords:2,heldRecords:0,retries:0,cursor:'proof:2',sourceVersion:'v1',sourceAt:new Date(Date.now()-1000).toISOString(),ingestedAt:new Date().toISOString(),httpStatus:200,httpLatencyMs:5,freshnessSloSeconds:3600});
   jobs.fail(run.id,'diagnostic-worker',new Error('diagnostic transient failure'),{retryDelayMs:0});
-  const detail=jobs.detail(actor,run.id);
-  const tables=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all().map(x=>x.name);
-  const schemas={};
-  let rawTable=null,raw=null;
-  for(const table of tables){
-    if(!/^[A-Za-z0-9_]+$/.test(table))continue;
-    const cols=db.prepare(`PRAGMA table_info(${table})`).all().map(x=>x.name);
-    schemas[table]=cols;
-    if(!raw&&cols.includes('id')){
-      try{
-        const candidate=db.prepare(`SELECT * FROM ${table} WHERE id=?`).get(run.id);
-        if(candidate){rawTable=table;raw=candidate;}
-      }catch{}
-    }
-  }
-  const safeRaw=Object.fromEntries(Object.entries(raw||{}).map(([k,v])=>[k,/token|secret|authorization/i.test(k)?'<redacted>':v]));
-  const reacquired=jobs.acquire(run.id,'diagnostic-recovery-worker',{leaseMs:60000});
-  let sameOwnerReacquire=null,sameOwnerReacquireError=null;
-  try{sameOwnerReacquire=jobs.acquire(run.id,'diagnostic-recovery-worker',{leaseMs:60000});}catch(e){sameOwnerReacquireError={message:String(e.message),code:e.code||null,status:e.status||null};}
-  console.log(JSON.stringify({mappedNext,storeKeys:Object.keys(jobs),detail,detailKeys:Object.keys(detail),reacquired,reacquiredKeys:Object.keys(reacquired||{}),sameOwnerReacquire,sameOwnerReacquireError,tables,schemas,rawTable,raw:safeRaw},null,2));
+  const first=jobs.acquire(run.id,'diagnostic-recovery-worker',{leaseMs:60000});
+  let second=null,error=null;
+  try{second=jobs.acquire(run.id,'diagnostic-recovery-worker',{leaseMs:60000});}catch(e){error={message:String(e.message),code:e.code||null,status:e.status||null};}
+  console.log(JSON.stringify({first:{state:first.state,leaseOwner:first.leaseOwner,nextRequest:first.nextRequest||null,nextRequestDigest:first.nextRequestDigest},second:second?{state:second.state,leaseOwner:second.leaseOwner,nextRequest:second.nextRequest||null,nextRequestDigest:second.nextRequestDigest}:null,error},null,2));
 }finally{try{db?.close();}catch{}fs.rmSync(tmp,{recursive:true,force:true});}
