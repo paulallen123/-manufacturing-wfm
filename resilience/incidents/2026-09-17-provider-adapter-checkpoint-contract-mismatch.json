@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "incident": "provider-adapter-checkpoint-contract-mismatch",
+  "status": "open-investigation",
+  "classification": ["test-proof-harness", "integration-contract", "recovery-verification"],
+  "detected_at": "2026-09-17T15:14:09Z",
+  "customer_or_production_mutation": false,
+  "affected_branch": "autonomy/provider-adapter-reconciliation-proof-0676",
+  "failed_workflow_runs": [35238636403, 35238871134],
+  "failed_step": "Prove recovered provider adapter continuation and reconciliation",
+  "failure": "Adapter did not resume from committed checkpoint.",
+  "correlation": {
+    "deployment_provenance_passed": true,
+    "resilience_policy_passed": true,
+    "worker_recovery_passed": true,
+    "deterministic_recovery_matrix_passed": true,
+    "support_incident_recovery_passed": true,
+    "signed_provider_recovery_authority_passed": true,
+    "continuation_reconciliation_passed": false
+  },
+  "evidence_interpretation": "The failure is isolated to the continuation proof after bounded recovery authority is already proven. A callback-signature compatibility change did not remove the same checkpoint assertion failure, so the earlier callback-shape diagnosis was insufficient.",
+  "root_cause_status": "not-yet-proven",
+  "working_classification": "Treat as proof-harness or sealed adapter/checkpoint contract mismatch until the exact provider-job detail shape and runPagedAdapter startRequest contract are established from the sealed runtime. Do not classify as a customer product defect from this evidence alone.",
+  "containment": [
+    "Keep the provider continuation/reconciliation claim blocked.",
+    "Do not widen bounded recovery authority or bypass independent verification to make the proof pass.",
+    "Do not overwrite the active provider-adapter proof branch from another automation/source owner.",
+    "Preserve both failed workflow runs and the exact assertion fingerprint."
+  ],
+  "detection": {
+    "fingerprint": "provider-recovery-authority-pass-and-continuation-checkpoint-resume-fail",
+    "signals": [
+      "signed provider recovery authority passes",
+      "provider adapter continuation fails before page reconciliation",
+      "checkpoint resume assertion reports wrong or missing offset/limit"
+    ],
+    "on_match": "classify-as-contract-investigation-and-block-provider-continuation-claim"
+  },
+  "verification_required": [
+    "exact sealed provider-job detail structure is observed without mutating runtime",
+    "startRequest is derived from the committed durable checkpoint using the actual contract",
+    "continuation fetch begins at the expected next provider page",
+    "remaining page stages exactly once",
+    "final reconciliation counters include both pre-failure and post-recovery pages",
+    "all existing tenant, LLM, payroll, replay, stale-evidence and tamper denials remain green"
+  ],
+  "learning": "Recovery authority and recovery continuation are separate proof surfaces. A green one-shot lease reacquisition must never be treated as proof that the normal adapter resumed from the durable checkpoint; the continuation contract requires its own exact-interface and reconciliation evidence.",
+  "claim_boundary": "This is CI-only evidence. No live provider request, customer business mutation, Railway deployment or production repair occurred."
+}
