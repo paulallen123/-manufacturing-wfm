@@ -54,6 +54,12 @@ assert.equal(baseline.deployment.require_runtime_sha256, true, 'Runtime checksum
 assert.equal(baseline.deployment.require_manifest_image_match, true, 'Manifest/image match requirement must remain enabled.');
 assert.equal(baseline.deployment.require_image_digest, true, 'Immutable image digest requirement must remain enabled.');
 assert.equal(baseline.deployment.require_non_root_user, true, 'Non-root runtime requirement must remain enabled.');
+assert.equal(baseline.deployment.require_package_managers_removed, true, 'Package-manager removal requirement must remain enabled.');
+assert.equal(baseline.external_intelligence?.runtime_dependency_expectation?.package_managers_present, false, 'Runtime baseline must forbid package managers.');
+assert.match(dockerfile, /rm -rf\s+\/usr\/local\/lib\/node_modules\/npm\s+\/usr\/local\/lib\/node_modules\/corepack/, 'Dockerfile must remove npm and corepack module trees from the final image.');
+for (const bin of ['npm','npx','corepack','yarn','yarnpkg','pnpm','pnpx']) {
+  assert.ok(dockerfile.includes(`/usr/local/bin/${bin}`), `Dockerfile must remove package-manager entry point: ${bin}.`);
+}
 assert.equal(baseline.autonomy.language_model_direct_authority, false, 'Language models must never receive direct execution authority.');
 assert.ok(baseline.autonomy.require_reversible_action, 'Autonomous remediation must remain reversible.');
 assert.ok(baseline.autonomy.require_verified_dry_run, 'Autonomous remediation must require a verified dry run.');
@@ -68,6 +74,7 @@ console.log(JSON.stringify({
   nodeImage: manifest.node_image,
   runtimeUser: manifest.runtime_user,
   nodeSecurityFloor: baseline.node.minimum,
+  packageManagersPresent: baseline.external_intelligence.runtime_dependency_expectation.package_managers_present,
   productionApproved: manifest.production_approved,
   stagingOnly: manifest.staging_only
 }, null, 2));
