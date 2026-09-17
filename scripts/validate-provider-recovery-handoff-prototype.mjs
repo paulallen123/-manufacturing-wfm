@@ -55,7 +55,7 @@ try{
 
   const consumed=store.consumeInternal({token:issued.internalToken,tenant,providerRunId:runId,workerId,currentStateDigest:stateDigest});
   assert(consumed.action==='integration.retry'&&consumed.providerRunId===runId&&consumed.workerId===workerId,'Consumed handoff scope/action mismatch.');
-  assert(JSON.stringify(consumed.nextRequest)===JSON.stringify(nextRequest),'Authorised internal worker did not receive exact continuation.');
+  assert(Prototype.canonical(consumed.nextRequest)===Prototype.canonical(nextRequest),'Authorised internal worker did not receive exact continuation.');
   expect(()=>store.consumeInternal({token:issued.internalToken,tenant,providerRunId:runId,workerId,currentStateDigest:stateDigest}),'WFM_PROVIDER_HANDOFF_REPLAY');
   assert(store.publicStatus({tenant,handoffId:issued.publicReceipt.handoffId}).status==='consumed','Consumed public status incorrect.');
   const events=store.events({tenant,handoffId:issued.publicReceipt.handoffId});
