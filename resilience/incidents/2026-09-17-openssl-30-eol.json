@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "id": "openssl-30-public-eol-current-staging-base",
+  "observed_at": "2026-09-17T12:37:00Z",
+  "verified_at": "2026-09-17T12:42:12Z",
+  "classification": "security-dependency-lifecycle",
+  "severity": "high",
+  "status": "verified-contained-by-promotion-block",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "evidence": {
+    "current_docker_base": "node:22.16.0-bookworm-slim",
+    "resolved_base_digest_during_probe": "sha256:048ed02c5fd52e86fda6fbd2f6a76cf0d4492fd6c6fee9e2c463ed5108da0e34",
+    "node_22_openssl_transition_source": "https://nodejs.org/en/blog/release/v22.20.0",
+    "openssl_30_eol_source": "https://openssl-library.org/post/2026-09-16-eol30/",
+    "openssl_30_public_eol_date": "2026-09-07",
+    "node_22_20_change": "Node.js 22.20.0 moved official Node 22 builds to OpenSSL 3.5.2 so the line could remain supported beyond OpenSSL 3.0 EOL.",
+    "candidate_probe": "process.versions.openssl reported the 3.0 line and the new prevention gate failed closed",
+    "workflow_run": "https://github.com/paulallen123/-manufacturing-wfm/actions/runs/35222581612",
+    "current_candidate_already_blocked": true
+  },
+  "affected_assessment": {
+    "status": "verified",
+    "reason": "The exact candidate image was built in GitHub Actions and a direct `process.versions.openssl` probe confirmed that the Node runtime is on OpenSSL 3.0. The gate failed before later dependency-boundary checks, preserving fail-closed behavior."
+  },
+  "customer_impact": "No production exposure is claimed because the candidate remains staging-only and not production-approved. Promotion with an EOL cryptographic runtime would create unsupported future security-fix risk.",
+  "containment": [
+    "keep 0.6.76 promotion blocked while deployment/security gates fail",
+    "require the approved Node 22.23.2 digest-pinned base or a later explicitly reviewed Node 22 security release",
+    "require a non-root runtime and exact manifest/image agreement",
+    "do not weaken the encrypted-bootstrap or runtime provenance gates to accelerate promotion"
+  ],
+  "regression_test": {
+    "workflow": ".github/workflows/wfm-external-intelligence.yml",
+    "probe": "docker run --rm --entrypoint node <candidate> -p process.versions.openssl",
+    "pass_condition": "OpenSSL is at least 3.5.2 and is not on the 3.0 line"
+  },
+  "safe_runbook": {
+    "action": "deployment.base-runtime-upgrade",
+    "reversible": true,
+    "authority": "staging-wrapper-only",
+    "steps": [
+      "rebase encrypted bootstrap onto digest-pinned Node 22.23.2 bookworm-slim",
+      "create/chown runtime extraction directory before USER node",
+      "run bootstrap and runtime integrity tests against the exact encrypted artifact",
+      "run staging browser/customer proof for the exact candidate",
+      "promote only if all gates pass and main has not moved incompatibly"
+    ]
+  },
+  "autonomy_constraints": {
+    "language_model_direct_authority": false,
+    "tenant_boundary_changes": false,
+    "production_mutation": false,
+    "payroll_authority_changes": false
+  }
+}

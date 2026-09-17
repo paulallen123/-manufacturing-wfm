@@ -50,10 +50,15 @@ jobs:
           assert.equal(baseline.node.minimum, '22.23.2', 'Node security floor changed without external-intelligence review.');
           assert.equal(baseline.node.security_release_source, 'https://nodejs.org/en/blog/release/v22.23.2');
           assert.deepEqual([...new Set(baseline.node.tracked_cves)].sort(), expectedNodeCves, 'Node 22.23.2 advisory coverage is incomplete or inconsistent.');
+          assert.equal(baseline.node.minimum_openssl, '3.5.2', 'OpenSSL floor changed without external-intelligence review.');
+          assert.equal(baseline.node.openssl_eol_source, 'https://openssl-library.org/post/2026-09-16-eol30/');
           const intel = baseline.external_intelligence;
           assert.ok(intel && typeof intel === 'object', 'External intelligence controls are required.');
           assert.equal(intel.runtime_dependency_expectation.third_party_npm_packages, 0, 'Third-party runtime dependency introduction requires explicit baseline review.');
           assert.equal(intel.runtime_dependency_expectation.server_imports, 'node-builtins-only');
+          assert.equal(intel.runtime_dependency_expectation.minimum_openssl, '3.5.2');
+          assert.equal(intel.runtime_dependency_expectation.forbid_eol_openssl_30, true, 'OpenSSL 3.0 must remain blocked after public EOL.');
+          assert.equal(intel.authoritative_sources.openssl_30_eol, baseline.node.openssl_eol_source, 'OpenSSL EOL source provenance must match the baseline.');
           const memory = intel.agent_threat_rules.find(x => x.id === 'persistent-memory-context-poisoning');
           assert.ok(memory, 'Persistent memory/context poisoning prevention rule is required.');
           assert.equal(memory.severity, 'critical');
@@ -61,10 +66,34 @@ jobs:
           assert.ok(memory.signals.length >= 3 && memory.containment.length >= 3 && memory.verification.length >= 3, 'Memory poisoning rule needs detection, containment and verification evidence.');
           assert.equal(memory.source, intel.authoritative_sources.owasp_memory_context_poisoning, 'Memory poisoning rule source provenance must match the baseline.');
           assert.equal(baseline.autonomy.language_model_direct_authority, false, 'Language models must remain proposal-only.');
-          console.log(JSON.stringify({ok:true,nodeCves:expectedNodeCves.length,agentRule:memory.id}, null, 2));
+          console.log(JSON.stringify({ok:true,nodeCves:expectedNodeCves.length,minimumOpenSsl:baseline.node.minimum_openssl,agentRule:memory.id}, null, 2));
           NODE
       - name: Build exact staging candidate
         run: docker build --pull=false -t wfm-external-intel:${{ github.sha }} .
+      - name: Enforce supported OpenSSL runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-external-intel:${GITHUB_SHA}"
+          ACTUAL_OPENSSL="$(docker run --rm --entrypoint node "$IMAGE" -p 'process.versions.openssl')"
+          MIN_OPENSSL="$(node -p "require('./resilience/security-baseline.json').node.minimum_openssl")"
+          ACTUAL_OPENSSL="$ACTUAL_OPENSSL" MIN_OPENSSL="$MIN_OPENSSL" node <<'NODE'
+          const assert = require('node:assert/strict');
+          const parse = value => {
+            const m = String(value).match(/^(\d+)\.(\d+)\.(\d+)/);
+            assert.ok(m, `Unparseable OpenSSL version: ${value}`);
+            return m.slice(1).map(Number);
+          };
+          const gte = (a,b) => {
+            for (let i=0;i<3;i++) { if (a[i]>b[i]) return true; if (a[i]<b[i]) return false; }
+            return true;
+          };
+          const actual = parse(process.env.ACTUAL_OPENSSL);
+          const minimum = parse(process.env.MIN_OPENSSL);
+          assert.notEqual(actual[0] === 3 && actual[1] === 0, true, 'OpenSSL 3.0 reached public EOL on 2026-09-07 and is blocked.');
+          assert.ok(gte(actual,minimum), `OpenSSL ${process.env.ACTUAL_OPENSSL} is below supported floor ${process.env.MIN_OPENSSL}.`);
+          console.log(JSON.stringify({ok:true,actualOpenSsl:process.env.ACTUAL_OPENSSL,minimumOpenSsl:process.env.MIN_OPENSSL}, null, 2));
+          NODE
       - name: Prove runtime dependency boundary
         shell: bash
         run: |
