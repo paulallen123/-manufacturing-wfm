@@ -2,7 +2,7 @@
 
 **Evidence date:** 17 September 2026  
 **Purpose:** customer-facing proof of the existing Manufacturing Workforce Management platform.  
-**Claim boundary:** demonstration/customer-proof staging only. This file does not claim production approval, genuine provider certification, external security assurance, or real-customer ROI.
+**Claim boundary:** demonstration/customer-proof staging only. This file does not claim production approval, genuine provider certification, independent external security assurance, or verified real-customer ROI.
 
 ## Frozen customer-proof baseline
 
@@ -10,113 +10,114 @@
 - Runtime SHA-256: `3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d`
 - Runtime artifact: `artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz`
 - Runtime artifact size: `562434` bytes
-- Runtime manifest SHA-256: `8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce`
-- Runtime package manifest SHA-256: `b0c435abc6bf1ea6fa38d8fbb8f8eabdfac846dba3380c4b0cd4eab52099213a`
-- Runtime source content SHA-256: `456e8f6961525e0dd9d4449db94772c0902a4e6743b312cf09070ce611014781`
-- Sealed runtime source commit: `b265ba9c28fef68e1d3556c86a58f9bcdb183bd1`
-- Sealed regression / hosted-acceptance result recorded in the manifest: **1878/1878 passed, 0 failed**.
-- Docker packaging verifies the frozen artifact hash before extraction, uses pinned base image `node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96`, removes package managers from the final runtime, and starts as non-root `node`.
+- Pinned base image: `node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96`
+- Full split regression recorded in the deployment manifest: **1878/1878 passed, 0 failed**.
+- Runtime remains fixture-only/staging-only with `pilot_ready=false` and `production_approved=false`.
 
-These facts establish build, packaging and provenance readiness for the frozen candidate. They do **not** by themselves establish that this exact candidate is the artifact currently running on Railway.
+## Exact live Railway customer-proof deployment — PROVEN
 
-## Railway staging-proof lane
-
-Dedicated project: `manufacturing-wfm-staging-proof`
-
-- Project ID: `9a774359-37fa-47e8-bde0-932420c32923`
-- Environment ID: `6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6`
-- This lane is staging/customer-proof only even though Railway uses its default environment name `production` internally.
-- Production systems remain disconnected.
-
-### Exact repo-backed customer-proof service
-
+Railway project: `manufacturing-wfm-staging-proof`  
+Project ID: `9a774359-37fa-47e8-bde0-932420c32923`  
+Environment ID: `6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6`  
 Service: `wfm-customer-proof-0676`  
 Service ID: `ddd54fb9-3564-4251-9959-28cf3308c272`  
-Public origin reserved by Railway: `https://wfm-customer-proof-0676-production.up.railway.app`
+Public origin: `https://wfm-customer-proof-0676-production.up.railway.app`  
+Deployment ID: `49a53c09-9e4b-41a3-a8dd-0133c97f2792`
 
-Verified service configuration at this checkpoint:
+### Deployment provenance
 
-- source repository: `paulallen123/-manufacturing-wfm`;
-- Dockerfile builder using repository `Dockerfile`;
-- watch paths limited to `Dockerfile`, `DEPLOYMENT_MANIFEST.json`, `STAGING_FREEZE.json`, and `artifact/**`;
-- health check: `/api/health`;
-- target port: `3000`;
-- hardened staging variables applied: `NODE_ENV=staging`, `NODE_OPTIONS=--experimental-sqlite`, `WFM_HOSTED_STAGING=true`, `WFM_DB=/tmp/wfm-proof.sqlite`, exact public origin, exact runtime SHA-256, and an isolated strong staging password;
-- `WFM_RUNTIME_SHA256` is pinned to `3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d`;
-- no deployment history exists yet;
-- no production approval or pilot-ready flag has been enabled.
+The one-time GitHub Actions bootstrap was successfully re-run after the project-scoped Railway token was added as the repository secret `RAILWAY_TOKEN`.
 
-2FA has been completed and the prior empty placeholder was removed. The dedicated resource slot is no longer blocked by 2FA.
+- GitHub Actions workflow: `Railway first deploy - customer proof 0.6.76`
+- Run ID: `35236184751`
+- Successful rerun job ID: `105264296024`
+- Frozen runtime SHA check passed before upload.
+- Pinned Railway CLI `v5.57.8` archive digest verification passed.
+- The exact existing Railway service was targeted; no replacement service was created.
 
-## First-deployment bootstrap evidence
+Railway build evidence for deployment `49a53c09-9e4b-41a3-a8dd-0133c97f2792` confirms:
 
-Railway's redeploy API explicitly confirms that a service with zero deployment history cannot receive deployment #1 through redeploy. Railway's supported bootstrap is `railway up` against the existing service.
+- repository `Dockerfile` was used;
+- base image resolved to the exact pinned Node `22.23.2` digest;
+- `artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz` was copied into the build;
+- in-build SHA-256 check returned `/tmp/runtime.tgz: OK` for `3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d`;
+- package managers were removed from the final runtime image;
+- Railway produced image digest `sha256:b67e05912c6d7014774faca4a543e09354ff5a0033c18cd28188b98d30b22ce6`;
+- Railway `/api/health` deployment health check succeeded on the first attempt.
 
-A fail-closed GitHub Actions bootstrap was therefore added at `.github/workflows/railway-first-deploy.yml` in commit `f076f77a3e46dfd0a9c46c515b515d6803cb9025`.
+Runtime logs confirm:
 
-The workflow:
+- `Fixture/demo data only. Production approved: false.`
+- server listening on `0.0.0.0:3000`;
+- public origin is the dedicated customer-proof Railway HTTPS domain.
 
-- checks out the repository with a commit-pinned checkout action;
-- refuses to continue if `RAILWAY_TOKEN` is absent;
-- re-verifies the frozen runtime SHA-256 and staging-only claim flags before upload;
-- downloads Railway CLI `v5.57.8` from Railway's immutable GitHub release;
-- verifies the published Linux x86_64 archive SHA-256 `43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d` before execution;
-- disables Railway CLI auto-update;
-- targets only project `9a774359-37fa-47e8-bde0-932420c32923`, environment `6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6`, service `ddd54fb9-3564-4251-9959-28cf3308c272`.
+## Independent outside-in live-host proof — PASSED
 
-GitHub Actions run `35235275548` failed **only** at the explicit `RAILWAY_TOKEN` availability check. Checkout passed; runtime verification, CLI download and Railway deployment were skipped. No credential was exposed and no deployment occurred.
+A GitHub-hosted runner independently tested the public Railway domain after deployment.
 
-The repository currently has no `RAILWAY_TOKEN` Actions secret available to that workflow. Railway's connected API does not expose project-token creation, and GitHub's connected API does not expose repository-secret creation, so this is now a deliberate human credential boundary rather than an engineering failure.
+- Workflow: `Live Host Proof`
+- Run ID: `35239783975`
+- Job ID: `105264944927`
+- Target: `https://wfm-customer-proof-0676-production.up.railway.app`
 
-## Outside-in proof target
+Passed evidence:
 
-`live-host-proof.yml` was retargeted in commit `267d6f486728eff86b632933b1baccafca242f46` to the dedicated customer-proof origin:
+1. Public `GET /api/health` returned HTTP 2xx and reported:
+   - `status: ok`
+   - `mode: hosted-staging`
+   - `fixtureOnly: true`
+   - `hosted: true`
+   - `productionApproved: false`
+   - `pilotReady: false`
+   - `release: 0.6.76-hosted-staging-rc1`
+2. Public application root returned a non-empty HTTP 2xx response.
+3. Public `/kiosk.html` returned a non-empty HTTP 2xx response.
+4. Unauthenticated `GET /api/bootstrap` returned **HTTP 401** with `{"error":"Sign in is required."}`.
 
-`https://wfm-customer-proof-0676-production.up.railway.app`
+This is independent outside-in evidence that the exact customer-proof host is reachable and that protected application data fails closed without authentication.
 
-The workflow remains fail-closed. It must not be treated as passing evidence until deployment #1 exists and the live endpoint returns the expected release/mode/fixture/claim flags.
+## Security gate on the proof commit — PASSED
 
-## Existing runtime service
+The owner-originated main-branch proof commit also passed the repository-wide security gate.
 
-Service: `wfm-staging-runtime-0670`  
-Service ID: `7273a773-d59b-4636-a69b-e357efd92b80`
+- Workflow run ID: `35239783955`
+- Job ID: `105264942369`
+- Workflow-security regression checks: PASS
+- Deployment/resilience metadata validation: PASS
+- Exact staging candidate Docker build: PASS
+- Runtime identity/reduced attack-surface proof: PASS
+- Staging candidate refuses production mode: PASS
 
-Latest observed successful Railway deployment: `6f4ac3df-47af-4266-8aa8-6a0e689dd23f`.
+## What is now genuinely demonstrated
 
-That service is **not accepted as proof** of the sealed 0.6.76 Docker build and has not been repurposed or weakened to force success.
+The platform can now be described as a **live, isolated customer-proof staging deployment of the exact sealed 0.6.76 candidate**, backed by reproducible build/provenance evidence and independent public availability/authentication-boundary proof.
 
-## External customer-proof gates still required
+The demo uses fictional/fixture data. The application and customer-facing surfaces are real hosted application behaviour, not screenshots or a mock landing page.
 
-The following remain **unverified** until the exact sealed candidate receives deployment #1:
+## Remaining customer-proof gates
 
-1. Railway build/deployment provenance proving the exact `0.6.76-hosted-staging-rc1` packaging path and artifact hash.
-2. Public HTTPS `/api/health` from that exact deployment.
-3. Public HTTPS login and authenticated browser customer journey evidence.
-4. Hosted tenant-isolation browser/API evidence.
-5. Hosted onboarding, kiosk/clocking, attendance correction and payroll/provider-handoff journeys.
-6. Restart/recovery and bounded failure-mode evidence for the hosted service.
-7. Reproducible hosted traces/screenshots/logs and final deployment identifiers tied to the sealed candidate.
+These remain open and must not be implied as complete:
 
-## Immediate next action
+1. Authenticated browser sign-in on the live host using the staging credential.
+2. Authenticated end-to-end customer journey evidence across readiness/operations, onboarding, workforce data, skills, availability, production demand, labour planning, scheduling, kiosk/clocking, disruption/recovery, time review, payroll handoff, cost/ROI and audit/support surfaces.
+3. Hosted tenant-isolation browser/API evidence.
+4. Interactive kiosk/clocking behaviour beyond public page availability.
+5. Hosted attendance correction and payroll/provider-handoff journey evidence.
+6. Restart/recovery and bounded failure-mode evidence on the live service.
+7. Reproducible screenshots/traces/video tied to this deployment ID and frozen runtime hash.
 
-Create a Railway **project token** from the Tokens page in the `manufacturing-wfm-staging-proof` project settings, scoped to environment `6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6`, and store it directly in GitHub repository Actions secrets as `RAILWAY_TOKEN`. Do not paste the token into chat or source control.
+## Production/pilot gates remain deliberately blocked
 
-Once that secret exists, re-run failed GitHub Actions run `35235275548`. The workflow will then re-verify the sealed candidate, install the digest-pinned CLI and execute deployment #1 against the existing service. No second service is required.
+`pilot_ready` and `production_approved` remain false.
 
-As soon as deployment #1 exists, the next proof sequence is: verify build logs show the sealed Docker path and successful `3ca08429...` tarball check → verify Railway deployment ID/status → verify public HTTPS `/api/health` release/mode/fixture/claim flags → verify unauthenticated `/api/bootstrap` fails closed → run authenticated browser customer journeys → tenant isolation → onboarding → kiosk/clocking → attendance correction → payroll/provider handoff → restart/recovery/failure modes → capture reproducible logs/traces/screenshots.
+Separate evidence is still required for:
 
-No production execution is connected or authorised by this status.
+- genuine authorised provider proof against customer-grade NetSuite/SAP/Oracle HCM/payroll or equivalent endpoints rather than fixtures/harnesses;
+- independent external security assurance / penetration testing appropriate to release scope;
+- production-scale performance and resilience at agreed reference loads;
+- production operational ownership, monitoring/SLOs, backup/recovery and incident controls;
+- verified real-customer ROI from customer data.
 
-## Claims that remain deliberately blocked
+## Current customer-proof wording
 
-`pilot_ready` and `production_approved` must remain false until their separate evidence gates are genuinely satisfied.
-
-- Genuine authorised provider proof against customer-grade NetSuite/SAP/Oracle HCM or equivalent endpoints rather than fixtures/harnesses.
-- Independent external security assurance / penetration evidence appropriate to the intended release scope.
-- Production-scale performance / resilience evidence at agreed reference loads.
-- Production acceptance, operational ownership, monitoring/SLOs, backup/recovery and incident controls signed off for a real customer deployment.
-- Verified real-customer ROI from customer data.
-
-## Customer-proof message
-
-The correct statement today is: **the frozen 0.6.76 candidate is sealed, hash-pinned, extensively regression-tested and its dedicated Railway service is fully configured. Deployment #1 is now blocked only by the absence of a project-scoped Railway CI token in GitHub Actions. External proof of the exact candidate remains incomplete until that one-time credential boundary is satisfied and the HTTPS/browser proof sequence passes.**
+**Supported statement:** “This is a live, isolated instance of the actual Manufacturing WFM application running the exact sealed 0.6.76 customer-proof build. Its build provenance, public HTTPS health, application/kiosk availability and unauthenticated protection boundary have been independently re-proven. The demonstration uses fictional data and remains staging-only; production and genuine external-provider acceptance are separate gates.”
