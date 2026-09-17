@@ -87,14 +87,19 @@ jobs:
           set -euo pipefail
           jq -e '.production_approved == false and .fixture_only == true' DEPLOYMENT_MANIFEST.json >/dev/null
 
-      - name: Require patched and consistent Node runtime
+      - name: Require patched, consistent and immutable Node runtime
         shell: bash
         run: |
           set -euo pipefail
+          expected='node:22.23.2-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5'
           manifest_image="$(jq -r '.node_image' DEPLOYMENT_MANIFEST.json)"
           docker_image="$(awk '/^FROM / { print $2; exit }' Dockerfile)"
           test "$manifest_image" = "$docker_image"
-          test "$manifest_image" = 'node:22.23.2-bookworm-slim'
+          test "$manifest_image" = "$expected"
+          case "$manifest_image" in
+            *@sha256:[0-9a-f][0-9a-f]*) ;;
+            *) echo "Refusing mutable base-image tag without digest pin."; exit 1 ;;
+          esac
 
       - name: Require immutable runtime chunks
         shell: bash
