@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "status": "staged",
+  "purpose": "Prevent compromise or authentication bypass in a central identity/access controller from becoming universal authority over WFM customer environments.",
+  "threat_model": {
+    "assume_identity_controller_authentication_bypass": true,
+    "assume_identity_admin_session_theft": true,
+    "assume_identity_controller_remote_code_execution": true,
+    "assume_identity_telemetry_may_be_tampered_with": true,
+    "central_identity_decision_is_not_sufficient_authority": true
+  },
+  "service_boundary_authorization": {
+    "every_privileged_request_must_be_authorized_at_resource_service": true,
+    "authentication_success_must_not_imply_authorization": true,
+    "tenant_scope_required": true,
+    "wildcard_tenant_scope_forbidden": true,
+    "audience_binding_required": true,
+    "issuer_binding_required": true,
+    "policy_version_binding_required": true,
+    "session_epoch_or_revocation_version_required": true,
+    "privileged_capability_single_use_nonce_required": true,
+    "maximum_privileged_capability_ttl_seconds": 300,
+    "resource_service_must_deny_unknown_or_stale_policy": true
+  },
+  "trust_split": {
+    "identity_issuer_cannot_modify_resource_authorization_policy": true,
+    "identity_issuer_cannot_modify_security_policy_root": true,
+    "resource_authorization_policy_has_independent_trust_anchor": true,
+    "recovery_identity_is_independent_from_normal_identity_plane": true,
+    "security_evidence_witness_is_independent_from_identity_plane": true
+  },
+  "privileged_identity": {
+    "standing_global_admin_sessions_forbidden": true,
+    "just_in_time_privilege_required": true,
+    "phishing_resistant_authentication_required_where_supported": true,
+    "proof_of_possession_required_where_supported": true,
+    "cross_customer_privileged_session_forbidden": true,
+    "new_privileged_session_after_identity_boundary_change_requires_reauthentication": true
+  },
+  "identity_plane_compromise_response": {
+    "affected_issuer_or_customer_cell_scope_required": true,
+    "freeze_new_privileged_session_issuance": true,
+    "revoke_evidenced_suspicious_sessions": true,
+    "disable_exposed_identity_credentials": true,
+    "preserve_identity_and_resource_access_evidence": true,
+    "continue_existing_low_risk_sessions_only_if_locally_validated": true,
+    "deny_new_cross_cell_privilege": true,
+    "require_independent_verification_before_identity_plane_rejoin": true,
+    "automatic_global_shutdown": false,
+    "automatic_mass_disable_identities": false,
+    "automatic_production_wide_credential_rotation": false
+  },
+  "detection_invariants": {
+    "unexpected_wildcard_tenant_claim_is_incident": true,
+    "issuer_key_change_without_expected_witness_is_incident": true,
+    "privilege_without_matching_resource_policy_is_incident": true,
+    "identity_log_loss_or_sequence_regression_is_incident": true,
+    "cross_customer_token_reuse_is_incident": true
+  },
+  "forbidden_automatic_actions": [
+    "hack_back",
+    "external_retaliation",
+    "global_shutdown",
+    "mass_disable_identities",
+    "delete_customer_data",
+    "delete_security_evidence",
+    "delete_recovery_state",
+    "production_wide_credential_rotation",
+    "alter_payroll_or_workforce_records",
+    "cross_tenant_wildcard_containment"
+  ]
+}
