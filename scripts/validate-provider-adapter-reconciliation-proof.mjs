@@ -19,7 +19,6 @@ function canonical(v){if(Array.isArray(v))return '['+v.map(canonical).join(',')+
 function sha(v){return createHash('sha256').update(typeof v==='string'?v:canonical(v)).digest('hex');}
 function fileSha(file){return createHash('sha256').update(fs.readFileSync(file)).digest('hex');}
 function expectThrow(fn,{code,status,messageIncludes}={}){try{const out=fn();if(out&&typeof out.then==='function')throw new Error('expectThrow requires sync operation');}catch(e){if(code)assert(e.code===code,`Expected ${code}, got ${e.code||'no-code'}: ${e.message}`);if(status)assert(e.status===status,`Expected HTTP ${status}, got ${e.status}: ${e.message}`);if(messageIncludes)assert(String(e.message).includes(messageIncludes),`Expected error containing ${messageIncludes}, got ${e.message}`);return e;}throw new Error('Expected operation to fail closed.');}
-async function expectReject(fn,{code,status,messageIncludes}={}){try{await fn();}catch(e){if(code)assert(e.code===code,`Expected ${code}, got ${e.code||'no-code'}: ${e.message}`);if(status)assert(e.status===status,`Expected HTTP ${status}, got ${e.status}: ${e.message}`);if(messageIncludes)assert(String(e.message).includes(messageIncludes),`Expected error containing ${messageIncludes}, got ${e.message}`);return e;}throw new Error('Expected operation to fail closed.');}
 function elapsedMicros(start){return Math.round(Number(process.hrtime.bigint()-start)/1000);}
 
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'wfm-provider-adapter-reconciliation-'));
@@ -151,15 +150,8 @@ try{
     return {job,proof,ready};
   }
 
-  // The first provider page completed before the injected failure. It is staged through the
-  // actual integration gateway and committed into the real durable provider checkpoint.
   const page1={
-    offset:0,
-    count:2,
-    limit:2,
-    hasMore:true,
-    totalResults:4,
-    sourceVersion:'proof-v1',
+    offset:0,count:2,limit:2,hasMore:true,totalResults:4,sourceVersion:'proof-v1',
     items:[
       {id:'D-001',lastModifiedDate:'2026-09-17T13:00:00Z',trandate:'2026-09-18',department:'LINE-A',item:'SKU-A',quantity:10,status:'Open'},
       {id:'D-002',lastModifiedDate:'2026-09-17T13:01:00Z',trandate:'2026-09-18',department:'LINE-A',item:'SKU-B',quantity:20,status:'Open'}
@@ -180,33 +172,14 @@ try{
   assert(staged1.status==='staged'&&staged1.valid===2&&staged1.held===0,'Page 1 did not stage cleanly.');
 
   const run=providerJobs.ensure({
-    tenant,
-    connectorId:connectorCfg.id,
-    provider:connectorCfg.provider,
-    objectType:'demand',
-    adapterName,
-    providerVersion,
-    fixtureContract:'ci-provider-adapter-reconciliation-proof',
-    runKey:'adapter-recovery-main',
-    startRequest:{offset:0,limit:2},
-    maxFailures:3
+    tenant,connectorId:connectorCfg.id,provider:connectorCfg.provider,objectType:'demand',adapterName,providerVersion,
+    fixtureContract:'ci-provider-adapter-reconciliation-proof',runKey:'adapter-recovery-main',startRequest:{offset:0,limit:2},maxFailures:3
   });
   const originalWorker='original-provider-adapter';
   providerJobs.acquire(run.id,originalWorker,{leaseMs:60_000});
   providerJobs.checkpoint(run.id,originalWorker,{
-    nextRequest:mapped1.nextRequest,
-    pages:1,
-    sourceRecords:mapped1.reconciliation.sourceCount,
-    stagedRecords:staged1.valid,
-    heldRecords:staged1.held,
-    retries:0,
-    cursor:mapped1.envelope.cursor,
-    sourceVersion:mapped1.envelope.sourceVersion,
-    sourceAt:mapped1.reconciliation.sourceAt,
-    ingestedAt:new Date().toISOString(),
-    httpStatus:200,
-    httpLatencyMs:11,
-    freshnessSloSeconds:3600
+    nextRequest:mapped1.nextRequest,pages:1,sourceRecords:mapped1.reconciliation.sourceCount,stagedRecords:staged1.valid,heldRecords:staged1.held,retries:0,
+    cursor:mapped1.envelope.cursor,sourceVersion:mapped1.envelope.sourceVersion,sourceAt:mapped1.reconciliation.sourceAt,ingestedAt:new Date().toISOString(),httpStatus:200,httpLatencyMs:11,freshnessSloSeconds:3600
   });
   providerJobs.fail(run.id,originalWorker,new Error('Injected transient provider timeout after committed page 1'),{retryDelayMs:0});
   const retry=providerJobs.detail(admin,run.id);
@@ -233,12 +206,7 @@ try{
   assert(recoveryResult.providerNetworkCall===false&&recoveryResult.businessMutation===false,'Recovery executor exceeded authority.');
 
   const page2={
-    offset:2,
-    count:2,
-    limit:2,
-    hasMore:false,
-    totalResults:4,
-    sourceVersion:'proof-v1',
+    offset:2,count:2,limit:2,hasMore:false,totalResults:4,sourceVersion:'proof-v1',
     items:[
       {id:'D-003',lastModifiedDate:'2026-09-17T13:02:00Z',trandate:'2026-09-18',department:'LINE-B',item:'SKU-C',quantity:30,status:'Open'},
       {id:'D-004',lastModifiedDate:'2026-09-17T13:03:00Z',trandate:'2026-09-18',department:'LINE-B',item:'SKU-D',quantity:40,status:'Open'}
@@ -254,34 +222,31 @@ try{
     maxPages:5,
     maxRetries:2,
     sleep:async()=>{},
-    fetchPage:async({request,accessToken,attempt})=>{
+    fetchPage:async(...args)=>{
       providerFetches++;
+      let request,accessToken,attempt;
+      if(args.length===1&&args[0]&&typeof args[0]==='object'&&Object.hasOwn(args[0],'request'))({request,accessToken,attempt}=args[0]);
+      else [request,accessToken,attempt]=args;
       assert(accessToken==='ci-fixture-token','Unexpected fixture token.');
       assert(attempt===0,'Unexpected provider retry inside continuation fixture.');
-      assert(request.offset===2&&request.limit===2,'Adapter did not resume from committed checkpoint.');
+      assert(request?.offset===2&&request?.limit===2,'Adapter did not resume from committed checkpoint.');
       return {status:200,body:page2,elapsedMs:9};
     },
-    mapPage:(body,request)=>PAC.mapNetSuiteDemandPage(body,{sourceVersion:'proof-v1',request}),
-    submitBatch:async({envelope,idempotencyKey})=>{
+    mapPage:(...args)=>{
+      const body=args.length===1&&args[0]&&typeof args[0]==='object'&&Object.hasOwn(args[0],'body')?args[0].body:args[0];
+      return PAC.mapNetSuiteDemandPage(body,{sourceVersion:'proof-v1'});
+    },
+    submitBatch:async(...args)=>{
       submitCalls++;
+      let envelope,idempotencyKey;
+      if(args.length===1&&args[0]&&typeof args[0]==='object'&&Object.hasOwn(args[0],'envelope'))({envelope,idempotencyKey}=args[0]);
+      else [envelope,idempotencyKey]=args;
       return gateway.stage(connectorCfg,envelope,idempotencyKey,canonicalDemand);
     },
     onPage:async page=>{
       providerJobs.checkpoint(run.id,resumedWorker,{
-        nextRequest:page.nextRequest,
-        pages:1,
-        sourceRecords:page.sourceRecords,
-        stagedRecords:page.stagedRecords,
-        heldRecords:page.heldRecords,
-        retries:page.retries,
-        cursor:page.cursor,
-        sourceVersion:page.sourceVersion,
-        sourceAt:page.sourceAt,
-        ingestedAt:page.ingestedAt,
-        httpStatus:page.httpStatus,
-        httpLatencyMs:page.httpLatencyMs,
-        tokenExpiresAt:page.tokenExpiresAt,
-        freshnessSloSeconds:3600
+        nextRequest:page.nextRequest,pages:1,sourceRecords:page.sourceRecords,stagedRecords:page.stagedRecords,heldRecords:page.heldRecords,retries:page.retries,
+        cursor:page.cursor,sourceVersion:page.sourceVersion,sourceAt:page.sourceAt,ingestedAt:page.ingestedAt,httpStatus:page.httpStatus,httpLatencyMs:page.httpLatencyMs,tokenExpiresAt:page.tokenExpiresAt,freshnessSloSeconds:3600
       });
     }
   });
@@ -315,7 +280,6 @@ try{
   const stagedEvents=db.prepare("SELECT COUNT(*) n FROM audit_events WHERE tenant=? AND action='integration-stage'").get(tenant).n;
   assert(stagedEvents===2,'Expected exactly two integration-stage audit events.');
 
-  // Negative reconciliation scenario: held/invalid staged data must never be called reconciled.
   const badRun=providerJobs.ensure({tenant,connectorId:'proof-bad',provider:'netsuite',objectType:'demand',adapterName:'proof-bad-adapter',providerVersion,fixtureContract:'ci-negative-reconciliation',runKey:'adapter-negative-held',startRequest:{offset:0,limit:1},maxFailures:2});
   providerJobs.acquire(badRun.id,'bad-worker',{leaseMs:60_000});
   providerJobs.checkpoint(badRun.id,'bad-worker',{nextRequest:null,pages:1,sourceRecords:1,stagedRecords:0,heldRecords:1,retries:0,cursor:'bad:1',sourceVersion:'proof-v1',sourceAt:new Date(Date.now()-1000).toISOString(),ingestedAt:new Date().toISOString(),httpStatus:200,httpLatencyMs:5,freshnessSloSeconds:3600});
@@ -336,48 +300,16 @@ try{
 
   const receipt={
     schemaVersion:1,
-    proof:'provider-recovery-adapter-continuation-reconciliation',
-    status:'PASS',
-    candidate:manifest.candidate,
-    runtimeSha256:manifest.runtime_sha256,
-    humanInteractionRequired:false,
-    productionMutation:false,
-    realProviderJobStore:true,
-    realProviderInvestigation:true,
-    attestedIndependentVerification:true,
-    signedOneShotRecoveryPermit:true,
-    boundedRecoveryExecutor:true,
-    recoveryExecutorProviderNetworkCall:false,
-    recoveryExecutorBusinessMutation:false,
-    normalSealedAdapterContinued:true,
-    resumedFromCommittedCheckpoint:true,
-    deterministicProviderFixture:true,
-    externalNetworkCall:false,
-    realIntegrationGatewayStage:true,
-    gatewayBusinessApplyCalled:false,
-    gatewayBatches:2,
-    gatewayAppliedRecords:0,
-    pageReplayDeduplicated:true,
-    changedPayloadSameIdempotencyKeyDenied:true,
-    finalProviderState:completed.state,
-    finalPagesCompleted:completed.pagesCompleted,
-    finalSourceRecords:completed.sourceRecords,
-    finalStagedRecords:completed.stagedRecords,
-    finalHeldRecords:completed.heldRecords,
-    finalReconciliation:completed.diagnostics.reconciliation,
-    finalRecordDelta:completed.diagnostics.recordDelta,
-    heldRecordScenarioAutonomyDenied:true,
-    crossTenantDenied:Boolean(crossTenantError),
-    directLlmExecutionDenied:true,
-    payrollWriteDenied:true,
-    unknownBusinessMutationRunbookDenied:true,
-    tokenFetches,
-    providerFixtureFetches:providerFetches,
-    gatewaySubmitCalls:submitCalls,
-    recoveryExecutorMicros:recoveryMicros,
-    adapterContinuationMicros:continuationMicros,
-    recoverySafetyDecisionDigest:verified.ready.remediation.safety.decisionDigest,
-    recoveryVerificationDigest:verified.proof.proofDigest,
+    proof:'provider-recovery-adapter-continuation-reconciliation',status:'PASS',candidate:manifest.candidate,runtimeSha256:manifest.runtime_sha256,
+    humanInteractionRequired:false,productionMutation:false,realProviderJobStore:true,realProviderInvestigation:true,attestedIndependentVerification:true,
+    signedOneShotRecoveryPermit:true,boundedRecoveryExecutor:true,recoveryExecutorProviderNetworkCall:false,recoveryExecutorBusinessMutation:false,
+    normalSealedAdapterContinued:true,resumedFromCommittedCheckpoint:true,deterministicProviderFixture:true,externalNetworkCall:false,
+    realIntegrationGatewayStage:true,gatewayBusinessApplyCalled:false,gatewayBatches:2,gatewayAppliedRecords:0,pageReplayDeduplicated:true,
+    changedPayloadSameIdempotencyKeyDenied:true,finalProviderState:completed.state,finalPagesCompleted:completed.pagesCompleted,finalSourceRecords:completed.sourceRecords,
+    finalStagedRecords:completed.stagedRecords,finalHeldRecords:completed.heldRecords,finalReconciliation:completed.diagnostics.reconciliation,finalRecordDelta:completed.diagnostics.recordDelta,
+    heldRecordScenarioAutonomyDenied:true,crossTenantDenied:Boolean(crossTenantError),directLlmExecutionDenied:true,payrollWriteDenied:true,unknownBusinessMutationRunbookDenied:true,
+    tokenFetches,providerFixtureFetches:providerFetches,gatewaySubmitCalls:submitCalls,recoveryExecutorMicros:recoveryMicros,adapterContinuationMicros:continuationMicros,
+    recoverySafetyDecisionDigest:verified.ready.remediation.safety.decisionDigest,recoveryVerificationDigest:verified.proof.proofDigest,
     learning:{
       boundary:'The recovery executor only reacquires durable provider work. The normal sealed adapter owns page fetching/mapping/staging/checkpointing; integration apply remains separate and was not invoked.',
       idempotency:'Replaying the same recovered provider page returns the existing staged batch; changed content under the same key is rejected.',
