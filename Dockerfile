@@ -6,15 +6,27 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
  && tar -xzf /tmp/runtime.tgz -C /app \
  && rm -f /tmp/runtime.tgz \
  && chown -R node:node /app
-# Keep the sealed runtime immutable and add the UX reset as final, reviewable presentation layers.
-COPY --chown=node:node ux-overlay/ux-reset.css /app/public/ux-reset.css
-COPY --chown=node:node ux-overlay/ux-reset.js /app/public/ux-reset.js
-COPY --chown=node:node ux-overlay/ux-reset-cycle2.css /app/public/ux-reset-cycle2.css
-COPY --chown=node:node ux-overlay/ux-reset-cycle2.js /app/public/ux-reset-cycle2.js
-COPY --chown=node:node ux-overlay/ux-reset-cycle3.css /app/public/ux-reset-cycle3.css
-COPY --chown=node:node ux-overlay/ux-reset-cycle3.js /app/public/ux-reset-cycle3.js
-RUN sed -i 's#</head>#<link rel="stylesheet" href="ux-reset.css?v=20260917-1"><link rel="stylesheet" href="ux-reset-cycle2.css?v=20260917-2"><link rel="stylesheet" href="ux-reset-cycle3.css?v=20260917-3"></head>#' /app/public/index.html \
- && sed -i 's#</body>#<script src="ux-reset.js?v=20260917-1"></script><script src="ux-reset-cycle2.js?v=20260917-2"></script><script src="ux-reset-cycle3.js?v=20260917-3"></script></body>#' /app/public/index.html
+
+# Preserve the sealed server/security contract. Compose the reviewable UX layers only
+# through existing presentation assets that are already in the server's static allow-list.
+# factory-control-ui.css and value-cockpit-ui.js are the final approved CSS/JS assets in
+# the base page, so appending here keeps the UX ordering deterministic without adding routes.
+COPY --chown=node:node ux-overlay/ /tmp/wfm-ux-overlay/
+RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/ux-reset.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle2.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* WFM_UX_RESET_CYCLE3_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle3.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset.js >> /app/public/value-cockpit-ui.js \
+ && printf '\n;/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle2.js >> /app/public/value-cockpit-ui.js \
+ && printf '\n;/* WFM_UX_RESET_CYCLE3_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle3.js >> /app/public/value-cockpit-ui.js \
+ && rm -rf /tmp/wfm-ux-overlay \
+ && chown node:node /app/public/factory-control-ui.css /app/public/value-cockpit-ui.js
+
 # The staged application is self-contained and uses Node built-ins only. Remove package
 # managers from the final runtime so npm-bundled libraries (including node-tar) are not
 # an exposed production attack surface.
