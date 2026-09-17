@@ -1,0 +1,78 @@
+name: Fast Path Safety Contract
+
+on:
+  push:
+    branches:
+      - 'security/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fast-path-safety-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-fast-path-contract:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 / Node 24
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Validate safe shadow contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          p='security/fast-path/fast-path-policy.json'
+          test -f "$p"
+
+          jq -e '
+            .version == 1 and
+            .status == "design-only" and
+            .mode == "shadow" and
+            .enforcement_enabled == false and
+            .policy_generated_by_ai == false and
+            .require_signed_policy == true and
+            .control_plane_failure_mode == "last-known-good" and
+            .atomic_updates_required == true and
+            .tenant_isolation_required == true and
+            .rollback_required == true and
+            .audit_required == true and
+            (.emergency_rule_ttl_seconds > 0) and
+            (.max_rule_ttl_seconds <= 3600) and
+            (.emergency_rule_ttl_seconds <= .max_rule_ttl_seconds)
+          ' "$p" >/dev/null
+
+      - name: Validate bounded fast-path actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          p='security/fast-path/fast-path-policy.json'
+
+          allowed='["pass","drop","rate_limit","redirect_authorised_quarantine"]'
+          test "$(jq -c '.allowed_fast_path_actions | sort' "$p")" = "$(printf '%s' "$allowed" | jq -c 'sort')"
+
+          for forbidden in hack_back external_retaliation delete_production_data mass_disable_identities alter_payroll_or_workforce_records; do
+            jq -e --arg x "$forbidden" '.forbidden_actions | index($x) != null' "$p" >/dev/null
+          done
+
+      - name: Validate measurement-before-claim requirements
+        shell: bash
+        run: |
+          set -euo pipefail
+          p='security/fast-path/fast-path-policy.json'
+          for requirement in measured_latency false_block_rate signed_policy rollback_test tenant_boundary_test staging_validation; do
+            jq -e --arg x "$requirement" '.promotion_requirements | index($x) != null' "$p" >/dev/null
+          done
+
+          jq -e '
+            .latency_targets.xdp_p99_microseconds <= 100 and
+            .latency_targets.host_hook_p99_microseconds <= 250 and
+            .latency_targets.app_guard_p99_microseconds <= 500 and
+            .latency_targets.containment_dispatch_p99_milliseconds <= 50
+          ' "$p" >/dev/null
