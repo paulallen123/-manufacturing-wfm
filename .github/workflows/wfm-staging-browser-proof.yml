@@ -1,0 +1,69 @@
+name: WFM staging browser proof
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/wfm-staging-browser-proof.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  browser-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BASE_URL: https://wfm-staging-runtime-0670-production.up.railway.app
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - name: Install Playwright Chromium
+        run: |
+          mkdir -p "$RUNNER_TEMP/wfm-proof"
+          cd "$RUNNER_TEMP/wfm-proof"
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Run authenticated customer journey
+        run: |
+          cd "$RUNNER_TEMP/wfm-proof"
+          cat > proof.mjs <<'NODE'
+          import { chromium } from 'playwright';
+          import { createHash } from 'node:crypto';
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const base=process.env.BASE_URL;
+          const proofCredential=createHash('sha256').update('PUBLIC-WFM-E2E:'+base).digest('hex');
+          const out='proof'; fs.mkdirSync(out,{recursive:true});
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:1440,height:1000},recordVideo:{dir:`${out}/video`,size:{width:1280,height:720}}});
+          await context.tracing.start({screenshots:true,snapshots:true,sources:true});
+          const page=await context.newPage();
+          const consoleErrors=[]; page.on('pageerror',e=>consoleErrors.push(String(e))); page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+          const health=await context.request.get(`${base}/api/health`); assert.equal(health.status(),200); const healthBody=await health.json(); assert.equal(healthBody.mode,'hosted-staging'); assert.equal(healthBody.productionApproved,false); assert.equal(healthBody.pilotReady,false);
+          await page.goto(base,{waitUntil:'networkidle'}); await page.screenshot({path:`${out}/01-login.png`,fullPage:true});
+          await page.locator('select[name="email"]').selectOption('manager@northstar.example');
+          await page.locator('input[name="password"]').fill(proofCredential);
+          await page.locator('#v2-login button[type="submit"]').click();
+          await page.waitForFunction(()=>!document.querySelector('#v2-login'),null,{timeout:15000});
+          await page.waitForLoadState('networkidle'); await page.screenshot({path:`${out}/02-overview.png`,fullPage:true});
+          const boot=await page.evaluate(async()=>{const r=await fetch('/api/bootstrap');return {status:r.status,body:await r.json()}}); assert.equal(boot.status,200); assert.equal(boot.body.mode,'hosted-staging'); assert.equal(boot.body.actor?.email,'manager@northstar.example'); assert.equal(boot.body.actor?.tenant,'northstar-demo');
+          const cookies=await context.cookies(base); const session=cookies.find(c=>c.name==='wfm_session'); assert.ok(session); assert.equal(session.httpOnly,true); assert.equal(session.secure,true); assert.equal(session.sameSite,'Strict');
+          await page.locator('[data-page="attendance"]').click(); await page.waitForTimeout(300); assert.match(await page.locator('body').innerText(),/Attendance register|Needs your attention/); await page.screenshot({path:`${out}/03-attendance.png`,fullPage:true});
+          await page.locator('[data-page="shifts"]').click(); await page.waitForTimeout(300); assert.match(await page.locator('body').innerText(),/Shift|rota|schedule/i); await page.screenshot({path:`${out}/04-shift-planner.png`,fullPage:true});
+          const costs=page.locator('[data-page="costs"]'); if(await costs.count()){await costs.click();await page.waitForTimeout(300);await page.screenshot({path:`${out}/05-labour-costs.png`,fullPage:true});}
+          const payroll=page.locator('[data-page="payroll"]'); if(await payroll.count()){await payroll.click();await page.waitForTimeout(300);await page.screenshot({path:`${out}/06-payroll.png`,fullPage:true});}
+          const unauth=await browser.newContext(); const denied=await unauth.request.get(`${base}/api/bootstrap`); assert.equal(denied.status(),401); await unauth.close();
+          const kiosk=await browser.newContext({viewport:{width:1024,height:768}}); const kp=await kiosk.newPage(); await kp.goto(`${base}/kiosk.html`,{waitUntil:'networkidle'}); assert.match(await kp.locator('body').innerText(),/Register this tablet/); await kp.screenshot({path:`${out}/07-kiosk.png`,fullPage:true}); await kiosk.close();
+          const result={passed:true,base,health:healthBody,actor:{email:boot.body.actor.email,tenant:boot.body.actor.tenant,role:boot.body.actor.role},staff:boot.body.state?.staff?.length??null,assignments:boot.body.state?.assignments?.length??null,secureCookie:{httpOnly:session.httpOnly,secure:session.secure,sameSite:session.sameSite},unauthenticatedBootstrap:denied.status(),consoleErrors}; fs.writeFileSync(`${out}/result.json`,JSON.stringify(result,null,2));
+          await context.tracing.stop({path:`${out}/trace.zip`}); await context.close(); await browser.close(); if(consoleErrors.length) console.log('Browser console errors:',consoleErrors); console.log(JSON.stringify(result));
+          NODE
+          node proof.mjs
+      - name: Upload browser proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wfm-staging-browser-proof
+          path: ${{ runner.temp }}/wfm-proof/proof
+          if-no-files-found: warn
