@@ -6,6 +6,11 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
  && tar -xzf /tmp/runtime.tgz -C /app \
  && rm -f /tmp/runtime.tgz \
  && chown -R node:node /app
+# Keep the sealed runtime immutable and add the UX reset as a final, reviewable overlay.
+COPY --chown=node:node ux-overlay/ux-reset.css /app/public/ux-reset.css
+COPY --chown=node:node ux-overlay/ux-reset.js /app/public/ux-reset.js
+RUN sed -i 's#</head>#<link rel="stylesheet" href="ux-reset.css?v=20260917-1"></head>#' /app/public/index.html \
+ && sed -i 's#</body>#<script src="ux-reset.js?v=20260917-1"></script></body>#' /app/public/index.html
 # The staged application is self-contained and uses Node built-ins only. Remove package
 # managers from the final runtime so npm-bundled libraries (including node-tar) are not
 # an exposed production attack surface.
