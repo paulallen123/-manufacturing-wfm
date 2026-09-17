@@ -3,26 +3,29 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { DatabaseSync } from 'node:sqlite';
 
 const require=createRequire(import.meta.url);
 const root=process.cwd();
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'DEPLOYMENT_MANIFEST.json'),'utf8'));
-const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'wfm-provider-retry-diagnostic-'));
-let db;
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'wfm-provider-handoff-diagnostic-'));
 try{
   execFileSync('tar',['-xzf',path.join(root,manifest.runtime_artifact),'-C',tmp]);
-  const PJ=require(path.join(tmp,'lib','provider-job-store.cjs'));
-  db=new DatabaseSync(':memory:');
-  db.exec("PRAGMA foreign_keys=ON; CREATE TABLE tenants(id TEXT PRIMARY KEY); INSERT INTO tenants(id) VALUES ('proof-tenant-a');");
-  const jobs=PJ.createStore(db);
-  const mappedNext={offset:2,limit:2};
-  const run=jobs.ensure({tenant:'proof-tenant-a',connectorId:'proof',provider:'netsuite',objectType:'demand',adapterName:'proof-adapter',providerVersion:'1',fixtureContract:'checkpoint-diagnostic',runKey:'checkpoint-diagnostic',startRequest:{offset:0,limit:2},maxFailures:3});
-  jobs.acquire(run.id,'diagnostic-worker',{leaseMs:60000});
-  jobs.checkpoint(run.id,'diagnostic-worker',{nextRequest:mappedNext,pages:1,sourceRecords:2,stagedRecords:2,heldRecords:0,retries:0,cursor:'proof:2',sourceVersion:'v1',sourceAt:new Date(Date.now()-1000).toISOString(),ingestedAt:new Date().toISOString(),httpStatus:200,httpLatencyMs:5,freshnessSloSeconds:3600});
-  jobs.fail(run.id,'diagnostic-worker',new Error('diagnostic transient failure'),{retryDelayMs:0});
-  const first=jobs.acquire(run.id,'diagnostic-recovery-worker',{leaseMs:60000});
-  let second=null,error=null;
-  try{second=jobs.acquire(run.id,'diagnostic-recovery-worker',{leaseMs:60000});}catch(e){error={message:String(e.message),code:e.code||null,status:e.status||null};}
-  console.log(JSON.stringify({first:{state:first.state,leaseOwner:first.leaseOwner,nextRequest:first.nextRequest||null,nextRequestDigest:first.nextRequestDigest},second:second?{state:second.state,leaseOwner:second.leaseOwner,nextRequest:second.nextRequest||null,nextRequestDigest:second.nextRequestDigest}:null,error},null,2));
-}finally{try{db?.close();}catch{}fs.rmSync(tmp,{recursive:true,force:true});}
+  const PRA=require(path.join(tmp,'lib','provider-recovery-authority.cjs'));
+  const server=fs.readFileSync(path.join(tmp,'server.cjs'),'utf8');
+  const recoverySource=fs.readFileSync(path.join(tmp,'lib','provider-recovery-authority.cjs'),'utf8');
+  const investigationSource=fs.readFileSync(path.join(tmp,'lib','provider-investigation.cjs'),'utf8');
+  const snippets=[];
+  for(const needle of ['issueRecoveryPermit','executeRecoveryPermit','recoveryEvents','provider-recovery']){
+    let at=0;
+    while((at=server.indexOf(needle,at))!==-1){snippets.push({needle,source:server.slice(Math.max(0,at-900),Math.min(server.length,at+1800))});at+=needle.length;}
+  }
+  const execAt=recoverySource.indexOf('function executePermit');
+  const connectAt=investigationSource.indexOf('function executeRecoveryPermit');
+  console.log(JSON.stringify({
+    toolId:PRA.TOOL_ID,
+    actions:[...PRA.ACTIONS],
+    serverReferences:snippets,
+    executePermitSource:execAt>=0?recoverySource.slice(execAt,execAt+6500):null,
+    investigationExecuteSource:connectAt>=0?investigationSource.slice(connectAt,connectAt+1800):null
+  },null,2));
+}finally{fs.rmSync(tmp,{recursive:true,force:true});}
