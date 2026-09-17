@@ -16,8 +16,19 @@
       "CVE-2026-58042",
       "CVE-2026-58045",
       "CVE-2026-56847",
-      "CVE-2026-58039"
+      "CVE-2026-58039",
+      "CVE-2026-58044"
     ],
+    "http_header_truncation_desync": {
+      "official_cve": "CVE-2026-58044",
+      "severity": "low",
+      "surface": "Node.js forwarding proxies that rebuild outbound headers from visible IncomingMessage headers while piping the original request body to a reused backend connection",
+      "minimum_patched": "22.23.2",
+      "current_runtime_affected_by_version": false,
+      "source": "https://nodejs.org/en/blog/release/v22.23.2",
+      "reason": "The exact WFM staging runtime is pinned to Node 22.23.2, the Node.js security release containing the official CVE-2026-58044 fix. Retain this rule so a future runtime downgrade or incomplete security-release inventory fails review.",
+      "external_advisory_note": "GitHub's unreviewed GHSA-44cw-v76j-7fvv currently describes the same request-desynchronization condition under CVE-2026-48932. Treat the Node.js project's CVE-2026-58044 security-release record as canonical for WFM runtime version decisions until external databases reconcile identifiers."
+    },
     "bundled_undici": {
       "version": "6.28.0",
       "source": "https://github.com/nodejs/node/blob/v22.23.2/deps/undici/src/package.json",
