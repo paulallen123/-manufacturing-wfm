@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "status": "design-only",
+  "mode": "shadow",
+  "enforcement_enabled": false,
+  "policy_generated_by_ai": false,
+  "require_signed_policy": true,
+  "control_plane_failure_mode": "last-known-good",
+  "atomic_updates_required": true,
+  "tenant_isolation_required": true,
+  "rollback_required": true,
+  "audit_required": true,
+  "emergency_rule_ttl_seconds": 300,
+  "max_rule_ttl_seconds": 3600,
+  "latency_targets": {
+    "xdp_p99_microseconds": 100,
+    "host_hook_p99_microseconds": 250,
+    "app_guard_p99_microseconds": 500,
+    "containment_dispatch_p99_milliseconds": 50
+  },
+  "allowed_fast_path_actions": [
+    "pass",
+    "drop",
+    "rate_limit",
+    "redirect_authorised_quarantine"
+  ],
+  "forbidden_actions": [
+    "hack_back",
+    "external_retaliation",
+    "delete_production_data",
+    "mass_disable_identities",
+    "alter_payroll_or_workforce_records"
+  ],
+  "promotion_requirements": [
+    "measured_latency",
+    "false_block_rate",
+    "signed_policy",
+    "rollback_test",
+    "tenant_boundary_test",
+    "staging_validation"
+  ]
+}
