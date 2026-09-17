@@ -15,8 +15,6 @@
   "node_image": "node:22.23.2-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5",
   "runtime_user": "node",
   "artifact_transport": "private-repository-immutable-tarball",
-  "encrypted_artifact_sha256": "1ae963bbbfa32bffaa6e92a6e7aad099362319fefc0cec5a0a87974d14bd9d3e",
-  "encrypted_artifact_size_bytes": 554667,
   "tests": {
     "full_split_regression": "1878/1878",
     "identity_source_rerun": "68/68",
