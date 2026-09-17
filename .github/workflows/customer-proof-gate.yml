@@ -68,14 +68,19 @@ jobs:
       - name: Prove hosted HTTP boundary
         run: |
           set -euo pipefail
+          proxy_curl() {
+            curl -fsS -H 'Host: wfm-ci.invalid' -H 'X-Forwarded-Proto: https' "$@"
+          }
           for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:3000/api/health >/tmp/health.json; then break; fi
+            if proxy_curl http://127.0.0.1:3000/api/health >/tmp/health.json; then break; fi
             sleep 1
           done
-          curl -fsS http://127.0.0.1:3000/api/health
-          curl -fsS http://127.0.0.1:3000/ >/dev/null
-          curl -fsS http://127.0.0.1:3000/kiosk.html >/dev/null
-          status=$(curl -sS -o /tmp/bootstrap-unauth.json -w '%{http_code}' http://127.0.0.1:3000/api/bootstrap)
+          proxy_curl http://127.0.0.1:3000/api/health
+          proxy_curl http://127.0.0.1:3000/ >/dev/null
+          proxy_curl http://127.0.0.1:3000/kiosk.html >/dev/null
+          status=$(curl -sS -o /tmp/bootstrap-unauth.json -w '%{http_code}' \
+            -H 'Host: wfm-ci.invalid' -H 'X-Forwarded-Proto: https' \
+            http://127.0.0.1:3000/api/bootstrap)
           test "$status" = "401"
           echo "Unauthenticated /api/bootstrap correctly returned HTTP 401"
 
