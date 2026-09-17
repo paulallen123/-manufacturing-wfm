@@ -10,6 +10,7 @@
     "deployment_manifest": "DEPLOYMENT_MANIFEST.json",
     "node_source": "https://github.com/nodejs/node/blob/v22.23.2/deps/undici/src/package.json",
     "fixed_release": "https://github.com/nodejs/undici/releases/tag/v6.28.1",
+    "bounded_ci_run": "https://github.com/paulallen123/-manufacturing-wfm/actions/runs/35228041377",
     "advisories": [
       {
         "cve": "CVE-2026-19534",
@@ -32,8 +33,16 @@
     ]
   },
   "exposure_assessment": {
-    "status": "pending_exact_candidate_static_proof",
-    "reason": "The vulnerable bundled component is present in the pinned Node runtime. Exploitability depends on whether WFM server code reaches the affected WebSocket or retry-interceptor surfaces; the bounded external-intelligence branch adds an exact-image static/runtime proof rather than assuming exposure."
+    "status": "present_but_not_currently_reachable",
+    "reason": "The vulnerable bundled component is present in the pinned Node runtime, but the exact 0.6.76 staging image was built and scanned successfully. server.cjs and lib JavaScript contain no server-side WebSocket construction and no undici retry-interceptor use, so the three September 4 advisory surfaces are not currently reachable in WFM server code.",
+    "proof": {
+      "exact_image_built": true,
+      "process_versions_undici": "6.28.0",
+      "server_websocket_usage": 0,
+      "retry_interceptor_usage": 0,
+      "non_builtin_runtime_imports": 0,
+      "external_intelligence_gate": "passed"
+    }
   },
   "containment": [
     "keep staging candidate non-production-approved",
@@ -51,6 +60,6 @@
   ],
   "remediation": {
     "preferred": "when an approved digest-pinned Node 22 image bundles undici >=6.28.1, update the Node image only through normal exact-candidate integrity/regression/browser proof gates",
-    "current": "surface-level containment is deterministic and reversible; no production mutation is required"
+    "current": "surface-level containment is deterministic, verified and reversible; no production mutation is required"
   }
 }
