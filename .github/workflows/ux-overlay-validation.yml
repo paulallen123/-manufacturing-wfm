@@ -1,0 +1,60 @@
+name: UX simplification validation
+
+on:
+  push:
+    branches: ['ux/simplified-role-shell']
+    paths:
+      - 'ux/**'
+      - 'Dockerfile'
+      - '.github/workflows/ux-overlay-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax and UX contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux/ux-role-shell.js
+          grep -q 'Action centre' ux/ux-role-shell.js
+          grep -q 'Cost & efficiency' ux/ux-role-shell.js
+          grep -q 'Balance if approved' ux/ux-role-shell.js
+          grep -q 'Who else is off / waiting' ux/ux-role-shell.js
+          grep -q 'Available after pending' ux/ux-role-shell.js
+          grep -q 'overflow-x:hidden' ux/ux-role-shell.css
+          grep -q 'wfm-tool-drawer' ux/ux-role-shell.css
+      - name: Build isolated UX image
+        run: docker build --pull=false -t wfm-ux-review:${{ github.sha }} .
+      - name: Verify packaged overlay and injection
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-ux-review:${GITHUB_SHA}"
+          CID="$(docker create "$IMAGE")"
+          trap 'docker rm -f "$CID" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/ux-proof
+          docker cp "$CID:/app/public/index.html" /tmp/ux-proof/index.html
+          docker cp "$CID:/app/public/ux-role-shell.js" /tmp/ux-proof/ux-role-shell.js
+          docker cp "$CID:/app/public/ux-role-shell.css" /tmp/ux-proof/ux-role-shell.css
+          grep -q 'ux-role-shell.css' /tmp/ux-proof/index.html
+          grep -q 'ux-role-shell.js' /tmp/ux-proof/index.html
+          node --check /tmp/ux-proof/ux-role-shell.js
+          test -s /tmp/ux-proof/ux-role-shell.css
+          echo 'UX_OVERLAY_BUILD=PASS'
+      - name: Confirm sealed runtime remains present
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-ux-review:${GITHUB_SHA}"
+          CID="$(docker create "$IMAGE")"
+          trap 'docker rm -f "$CID" >/dev/null 2>&1 || true' EXIT
+          docker export "$CID" | tar -tf - | grep -q 'app/server.cjs'
+          docker export "$CID" | tar -tf - | grep -q 'app/public/app.js'
+          echo 'SEALED_RUNTIME_PRESERVED=PASS'
