@@ -19,6 +19,14 @@
       "CVE-2026-58039"
     ]
   },
+  "browser": {
+    "family": "google-chrome",
+    "minimum": "153.0.8010.47",
+    "security_release": "2026-09-15",
+    "security_release_source": "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0541751186.html",
+    "execution_scope": "localhost-sealed-candidate-only",
+    "third_party_browser_test_packages": 0
+  },
   "deployment": {
     "production_approved": false,
     "pilot_ready": false,
@@ -57,6 +65,7 @@
   "external_intelligence": {
     "authoritative_sources": {
       "node_security_release": "https://nodejs.org/en/blog/release/v22.23.2",
+      "chrome_security_release": "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0541751186.html",
       "node_tar_decompression_dos": "https://github.com/advisories/ghsa-23hp-3jrh-7fpw",
       "node_tar_replace_infinite_loop": "https://github.com/advisories/GHSA-8x88-c5mf-7j5w",
       "nist_agent_identity": "https://www.nist.gov/news-events/news/2026/02/new-concept-paper-identity-and-authority-software-agents",
