@@ -15,6 +15,7 @@ on:
       - 'scripts/validate-autonomous-recovery-matrix.mjs'
       - 'scripts/validate-support-incident-recovery-proof.mjs'
       - 'scripts/validate-provider-recovery-authority-proof.mjs'
+      - 'scripts/inspect-provider-adapter-reconciliation.mjs'
       - '.github/workflows/wfm-autonomous-recovery-proof.yml'
 
 permissions:
@@ -59,6 +60,9 @@ jobs:
 
       - name: Prove attested signed provider recovery authority
         run: node --experimental-sqlite scripts/validate-provider-recovery-authority-proof.mjs
+
+      - name: Inspect sealed provider adapter reconciliation contracts
+        run: node scripts/inspect-provider-adapter-reconciliation.mjs
 
       - name: Assert proof receipts exist and remain fail-closed
         shell: bash
