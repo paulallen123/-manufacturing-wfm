@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: railway-auth-proof-wfm-customer-proof-0676-v3
+  group: railway-auth-proof-wfm-customer-proof-0676-v4
   cancel-in-progress: true
 
 jobs:
@@ -69,25 +69,20 @@ jobs:
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
 
-          # Project tokens can read service variables directly even though Railway does
-          # not permit them to perform account-level `railway link` operations. Capture
-          # the JSON to a temporary file and never print it.
+          # The hosted fixture database was cleanly recreated from this canonical
+          # uppercase staging password on the current deployment. Read variables into a
+          # temporary file and never print credential values.
           "$RAILWAY_BIN" variable list \
             --service "$RAILWAY_SERVICE_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --json > "$RUNNER_TEMP/railway-vars.json"
 
-          # An early mobile setup pass created a mixed-case duplicate of the password
-          # variable. The browser session proved the service accepts that credential,
-          # while the uppercase value returned by the CLI did not. Prefer the known
-          # legacy duplicate for proof, fall back to the canonical uppercase key, and
-          # never print either value.
           node --input-type=module - "$RUNNER_TEMP/railway-vars.json" <<'NODE'
           import fs from 'node:fs';
           const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-          const password = vars.Wfm_staging_password || vars.WFM_STAGING_PASSWORD;
+          const password = vars.WFM_STAGING_PASSWORD;
           if (!password || !vars.WFM_PUBLIC_ORIGIN) {
-            throw new Error('Required staging variables are unavailable to the proof runner.');
+            throw new Error('Required canonical staging variables are unavailable to the proof runner.');
           }
           process.env.WFM_STAGING_PASSWORD = password;
           process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
