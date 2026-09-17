@@ -1,0 +1,44 @@
+/* WFM UX evolution cycle 9: specialist workspaces are calm by default. */
+body.ux-reset-active .ux-tool-drawer[data-ux-specialist-drawer="calm"]{padding-bottom:32px}
+.ux-tool-search{display:grid;gap:6px;margin:14px 0 10px}
+.ux-tool-search>span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ux-muted)}
+.ux-tool-search input{width:100%;min-width:0;border:1px solid var(--ux-line);border-radius:11px;background:#fff;color:var(--ux-ink);padding:11px 12px;font:inherit;outline:none}
+.ux-tool-search input:focus{border-color:#9aa8ba;box-shadow:0 0 0 3px rgba(77,103,136,.10)}
+.ux-tool-group-fold{border-top:1px solid var(--ux-line)}
+.ux-tool-group-fold:first-of-type{border-top:0}
+.ux-tool-group-fold>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 2px;color:var(--ux-ink)}
+.ux-tool-group-fold>summary::-webkit-details-marker{display:none}
+.ux-tool-group-fold>summary span:first-child{min-width:0}
+.ux-tool-group-fold>summary b{display:block;font-size:14px}
+.ux-tool-group-fold>summary small{display:block;margin-top:3px;color:var(--ux-muted);font-size:12px;line-height:1.35;font-weight:400}
+.ux-tool-count{flex:0 0 auto;display:inline-grid;place-items:center;min-width:27px;height:27px;padding:0 7px;border-radius:999px;background:var(--ux-soft);color:var(--ux-muted);font-size:11px;font-weight:700}
+.ux-tool-group-fold>.ux-tool-list{padding:0 0 16px}
+.ux-tool-group-fold:not([open])>.ux-tool-list{display:none}
+.ux-tool-group-fold[hidden]{display:none!important}
+.ux-tool-list .navbtn[hidden]{display:none!important}
+body.ux-reset-active .content[data-ux-specialist="calm"]>.heading{margin-bottom:10px}
+.ux-specialist-context{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin:0 0 16px;color:var(--ux-muted)}
+.ux-specialist-context>span{display:inline-flex;align-items:center;min-height:28px;padding:5px 9px;border-radius:999px;background:var(--ux-soft);border:1px solid var(--ux-line);color:var(--ux-ink);font-size:11px;font-weight:750;letter-spacing:.03em;text-transform:uppercase}
+.ux-specialist-context p{margin:0;font-size:12px;line-height:1.45;max-width:760px}
+.ux-specialist-scope{margin:0 0 16px;border:1px solid var(--ux-line);border-radius:13px;background:#fff}
+.ux-specialist-scope>summary{cursor:pointer;list-style:none;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:16px;color:var(--ux-ink)}
+.ux-specialist-scope>summary::-webkit-details-marker{display:none}
+.ux-specialist-scope>summary b{display:block;font-size:13px}
+.ux-specialist-scope>summary small{display:block;margin-top:2px;color:var(--ux-muted);font-size:11px;font-weight:400}
+.ux-specialist-state{font-size:11px;font-weight:700;color:var(--ux-muted)}
+.ux-specialist-scope[open] .ux-specialist-state{font-size:0}
+.ux-specialist-scope[open] .ux-specialist-state:after{content:'Close';font-size:11px}
+.ux-specialist-scope-body{padding:0 12px 12px}
+.ux-specialist-scope-body>.filters,.ux-specialist-scope-body>.filterbar,.ux-specialist-scope-body>.ops-filters,.ux-specialist-scope-body>.toolbar{margin:0;max-width:100%;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end}
+body.ux-reset-active .content[data-ux-specialist="calm"] .tablewrap,
+body.ux-reset-active .content[data-ux-specialist="calm"] .ops-scroll,
+body.ux-reset-active .content[data-ux-specialist="calm"] .dp-table-scroll,
+body.ux-reset-active .content[data-ux-specialist="calm"] .pci-table-wrap{max-width:100%;overflow:auto;overscroll-behavior-inline:contain}
+@media(max-width:760px){
+ .ux-tool-search{position:sticky;top:-22px;z-index:2;background:#fff;padding:10px 0 8px;margin-top:4px}
+ .ux-specialist-context{align-items:flex-start}
+ .ux-specialist-context p{width:100%}
+ .ux-specialist-scope>summary{align-items:flex-start}
+ .ux-specialist-scope-body>.filters,.ux-specialist-scope-body>.filterbar,.ux-specialist-scope-body>.ops-filters,.ux-specialist-scope-body>.toolbar{display:grid;grid-template-columns:1fr}
+ .ux-specialist-scope-body label,.ux-specialist-scope-body select,.ux-specialist-scope-body input{max-width:100%;width:100%}
+}
