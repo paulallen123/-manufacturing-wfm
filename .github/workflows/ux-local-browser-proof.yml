@@ -1,0 +1,142 @@
+name: UX local browser proof
+
+on:
+  push:
+    branches: ['ux/simplified-role-shell']
+    paths:
+      - '.github/workflows/ux-local-browser-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble branch runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/wfm-ux-runtime
+          mkdir -p /tmp/wfm-ux-runtime
+          tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C /tmp/wfm-ux-runtime
+          cp ux/ux-role-shell.css /tmp/wfm-ux-runtime/public/ux-role-shell.css
+          cp ux/ux-role-shell.js /tmp/wfm-ux-runtime/public/ux-role-shell.js
+          node <<'NODE'
+          const fs=require('fs');const p='/tmp/wfm-ux-runtime/public/index.html';let s=fs.readFileSync(p,'utf8');
+          if(!s.includes('ux-role-shell.css'))s=s.replace('</head>','<link rel="stylesheet" href="ux-role-shell.css">\n</head>');
+          if(!s.includes('ux-role-shell.js'))s=s.replace('</body>','<script src="ux-role-shell.js"></script>\n</body>');
+          fs.writeFileSync(p,s);
+          NODE
+          node --check /tmp/wfm-ux-runtime/public/ux-role-shell.js
+      - name: Start isolated local runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wfm-ux-runtime
+          NODE_ENV=staging PORT=4100 node server.cjs >/tmp/wfm-ux-server.log 2>&1 &
+          echo $! > /tmp/wfm-ux-server.pid
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4100/ >/dev/null; then exit 0; fi
+            sleep .25
+          done
+          cat /tmp/wfm-ux-server.log
+          exit 1
+      - name: Install pinned browser driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/wfm-ux-browser"
+          cd "$RUNNER_TEMP/wfm-ux-browser"
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund --save-exact playwright@1.63.0 >/dev/null
+      - name: Exercise manager and employee UX
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/wfm-ux-browser"
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          const origin='http://127.0.0.1:4100';
+          const password='Factory-local-demo-2026!';
+          const assert=(condition,message)=>{if(!condition)throw new Error(message);};
+          const noPageOverflow=async page=>page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+2);
+          async function login(page,matcher){
+            await page.goto(origin,{waitUntil:'networkidle',timeout:30000});
+            const form=page.locator('#v2-login');
+            assert(await form.count(),'Expected local login form.');
+            const select=form.locator('select[name="email"]');
+            const options=await select.locator('option').evaluateAll(os=>os.map(o=>({value:o.value,text:o.textContent||''})));
+            const chosen=options.find(o=>matcher.test(`${o.value} ${o.text}`))||options[0];
+            console.log('LOGIN_AS='+chosen.value);
+            await select.selectOption(chosen.value);
+            await form.locator('input[name="password"]').fill(password);
+            await form.locator('button[type="submit"]').click();
+            await page.waitForFunction(()=>!document.querySelector('#v2-login'),null,{timeout:15000});
+            await page.waitForTimeout(350);
+            return chosen;
+          }
+          async function clickVisibleText(page,label){
+            const all=page.getByText(label,{exact:true});
+            for(let i=0;i<await all.count();i++){if(await all.nth(i).isVisible()){await all.nth(i).click();await page.waitForTimeout(300);return;}}
+            throw new Error(`Visible control not found: ${label}`);
+          }
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true});
+            try{
+              const managerContext=await browser.newContext({viewport:{width:1440,height:960}});
+              const manager=await managerContext.newPage();
+              await login(manager,/(manager|director|leeds)/i);
+              assert(await manager.locator('.wfm-job-nav').count(),'Simplified job navigation did not render.');
+              for(const label of ['Action centre','Time off','Cost & efficiency']) assert(await manager.getByText(label,{exact:true}).first().count(),`Missing primary manager job: ${label}`);
+              assert(await manager.locator('.wfm-action-centre').count(),'Manager Action Centre did not render.');
+              assert(await noPageOverflow(manager),'Manager Action Centre has page-level horizontal overflow.');
+              await manager.screenshot({path:'/tmp/wfm-manager-action-centre.png',fullPage:true});
+
+              await clickVisibleText(manager,'Time off');
+              assert(await manager.locator('.wfm-leave-layout').count(),'Simplified manager leave layout did not render.');
+              assert(await manager.locator('.wfm-decision-card').count(),'No leave decision cards rendered.');
+              assert(await manager.getByText('Who else is off / waiting',{exact:true}).count(),'Conflict context is missing.');
+              assert(await manager.getByText('Balance if approved',{exact:true}).count() || await manager.getByText('Current balance',{exact:true}).count(),'Post-decision balance context is missing.');
+              assert(await noPageOverflow(manager),'Manager leave page has page-level horizontal overflow.');
+              await manager.screenshot({path:'/tmp/wfm-manager-time-off.png',fullPage:true});
+
+              await manager.setViewportSize({width:390,height:844});
+              await manager.waitForTimeout(250);
+              assert(await noPageOverflow(manager),'Manager mobile Time off has page-level horizontal overflow.');
+              await manager.screenshot({path:'/tmp/wfm-manager-time-off-mobile.png',fullPage:true});
+
+              const employeeContext=await browser.newContext({viewport:{width:1280,height:900}});
+              const employee=await employeeContext.newPage();
+              const chosen=await login(employee,/(operator|employee|worker)/i);
+              console.log('EMPLOYEE_ACCOUNT='+chosen.value);
+              await clickVisibleText(employee,'Time off');
+              assert(await employee.locator('.wfm-self-balance').count(),'Employee balance summary did not render.');
+              assert(await employee.getByText('Available after pending',{exact:true}).count(),'Employee post-pending balance is missing.');
+              assert(await noPageOverflow(employee),'Employee Time off has page-level horizontal overflow.');
+              await employee.screenshot({path:'/tmp/wfm-employee-time-off.png',fullPage:true});
+              console.log('UX_LOCAL_BROWSER_PROOF=PASS');
+            } finally {await browser.close();}
+          })().catch(err=>{console.error(err);process.exit(1);});
+          NODE
+      - name: Upload UX proof images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wfm-ux-browser-proof
+          path: |
+            /tmp/wfm-manager-action-centre.png
+            /tmp/wfm-manager-time-off.png
+            /tmp/wfm-manager-time-off-mobile.png
+            /tmp/wfm-employee-time-off.png
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Stop isolated runtime
+        if: always()
+        shell: bash
+        run: |
+          if [ -f /tmp/wfm-ux-server.pid ]; then kill "$(cat /tmp/wfm-ux-server.pid)" 2>/dev/null || true; fi
+          tail -n 80 /tmp/wfm-ux-server.log 2>/dev/null || true
