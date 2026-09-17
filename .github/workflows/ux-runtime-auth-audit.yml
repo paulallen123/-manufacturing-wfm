@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect runtime environment contract
+      - name: Inspect runtime environment and static asset contract
         shell: bash
         run: |
           set -euo pipefail
@@ -27,8 +27,8 @@ jobs:
           const s=fs.readFileSync('/tmp/wfm/server.cjs','utf8');
           const vars=[...s.matchAll(/process\.env\.([A-Z0-9_]+)/g)].map(m=>m[1]);
           console.log('ENV_NAMES='+[...new Set(vars)].sort().join(','));
-          for(const term of ['passphrase','password','/login','PORT']){
+          for(const term of ['styles.css','app.js','content-type','text/css','javascript','public/','sendFile','readFile','pathname']){
             let from=0,count=0;
-            while(count<5){const at=s.toLowerCase().indexOf(term.toLowerCase(),from);if(at<0)break;console.log(`SNIPPET ${term} ${at}`);console.log(s.slice(Math.max(0,at-800),Math.min(s.length,at+1800)));from=at+term.length;count++;}
+            while(count<12){const at=s.toLowerCase().indexOf(term.toLowerCase(),from);if(at<0)break;console.log(`SNIPPET ${term} ${at}`);console.log(s.slice(Math.max(0,at-1800),Math.min(s.length,at+4200)));from=at+term.length;count++;}
           }
           NODE
