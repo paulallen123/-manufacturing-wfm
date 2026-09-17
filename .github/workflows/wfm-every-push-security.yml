@@ -40,6 +40,7 @@ jobs:
           set -euo pipefail
           SELF='wfm-every-push-security.yml'
           RAILWAY_WORKFLOW='.github/workflows/railway-first-deploy.yml'
+          BROWSER_PROOF_WORKFLOW='.github/workflows/live-browser-readonly-proof.yml'
 
           if grep -RInE 'runs-on:[[:space:]]*ubuntu-latest' .github/workflows --include='*.yml' --include='*.yaml' --exclude="$SELF"; then
             echo 'Refusing mutable ubuntu-latest runner references.' >&2
@@ -65,17 +66,19 @@ jobs:
             exit 1
           fi
 
-          # Secret use remains denied everywhere except the explicitly reviewed Railway
-          # bootstrap workflow. That workflow may reference exactly one secret and the
-          # static assertions below keep the credential scoped to an owner-only, pinned,
-          # fixed-target staging deployment path.
+          # Secret use remains denied everywhere except the two explicitly reviewed,
+          # owner-only proof workflows below. Each workflow may reference only its one
+          # named credential, exactly once and scoped to the reviewed step.
           secret_files="$(grep -RlE 'secrets\.|secrets:[[:space:]]*inherit' .github/workflows --include='*.yml' --include='*.yaml' --exclude="$SELF" || true)"
           if [ -n "$secret_files" ]; then
             while IFS= read -r file; do
-              [ "$file" = "$RAILWAY_WORKFLOW" ] || {
-                echo "Refusing unreviewed workflow secret consumption in $file" >&2
-                exit 1
-              }
+              case "$file" in
+                "$RAILWAY_WORKFLOW"|"$BROWSER_PROOF_WORKFLOW") ;;
+                *)
+                  echo "Refusing unreviewed workflow secret consumption in $file" >&2
+                  exit 1
+                  ;;
+              esac
             done <<< "$secret_files"
           fi
 
@@ -104,6 +107,30 @@ jobs:
               echo 'RAILWAY_TOKEN must be scoped only to the deployment step.' >&2
               exit 1
             }
+          fi
+
+          if [ -f "$BROWSER_PROOF_WORKFLOW" ]; then
+            browser_secret_refs="$(grep -oE 'secrets\.[A-Za-z0-9_]+' "$BROWSER_PROOF_WORKFLOW" | sort -u || true)"
+            if [ -n "$browser_secret_refs" ]; then
+              [ "$browser_secret_refs" = 'secrets.WFM_DEMO_PASSWORD' ] || {
+                echo 'Live browser proof may reference only secrets.WFM_DEMO_PASSWORD.' >&2
+                exit 1
+              }
+              browser_secret_expression='$''{{ secrets.WFM_DEMO_PASSWORD }}'
+              [ "$(grep -Fc "$browser_secret_expression" "$BROWSER_PROOF_WORKFLOW")" -eq 1 ] || {
+                echo 'Live browser proof must consume WFM_DEMO_PASSWORD exactly once.' >&2
+                exit 1
+              }
+              grep -Fq 'if: github.actor == github.repository_owner' "$BROWSER_PROOF_WORKFLOW"
+              grep -Fq 'runs-on: ubuntu-24.04' "$BROWSER_PROOF_WORKFLOW"
+              grep -Fq 'contents: read' "$BROWSER_PROOF_WORKFLOW"
+              proof_line="$(grep -nF 'name: Run authenticated read-only customer journey' "$BROWSER_PROOF_WORKFLOW" | cut -d: -f1)"
+              browser_secret_line="$(grep -nF "WFM_DEMO_PASSWORD: $browser_secret_expression" "$BROWSER_PROOF_WORKFLOW" | cut -d: -f1)"
+              [ -n "$proof_line" ] && [ -n "$browser_secret_line" ] && [ "$browser_secret_line" -gt "$proof_line" ] && [ $((browser_secret_line-proof_line)) -le 4 ] || {
+                echo 'WFM_DEMO_PASSWORD must be scoped only to the browser proof step.' >&2
+                exit 1
+              }
+            fi
           fi
 
           if grep -RInF 'PUBLIC-WFM-E2E' .github/workflows --include='*.yml' --include='*.yaml' --exclude="$SELF"; then
