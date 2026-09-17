@@ -1,11 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "incident_id": "WFM-2026-09-17-RC4-HOSTED-IDENTITY-DRIFT",
   "observed_at": "2026-09-17T11:10:47Z",
   "environment": "hosted-staging",
   "candidate_claimed_by_health": "0.6.70-hosted-staging-rc4",
   "source_workflow_run": 35214255572,
-  "classification": "release-ui-consistency-drift",
+  "classification": "product-defect-hosted-presentation-global-shadowing",
   "severity": "high",
   "customer_data_used": false,
   "production_impact": false,
@@ -16,18 +16,42 @@
     "failure_step": "authenticated current-product journey",
     "proof_artifact_preserved": true
   },
+  "root_cause": {
+    "confirmed": true,
+    "file": "public/company-ui.js",
+    "mechanism": "company-ui.js redefined the global showLogin function after features.js in index.html script order. The later definition did not branch on hosted-staging mode, so its local-development copy and prefilled local demo credential became the effective hosted login renderer.",
+    "not_a_cache_or_test_flake": true
+  },
   "containment": {
     "promote_rc4_into_verified_wrapper": false,
-    "keep_last_verified_wrapper_candidate": "0.6.70-hosted-staging-rc2",
+    "last_verified_wrapper_candidate_during_incident": "0.6.70-hosted-staging-rc2",
     "production_promotion_allowed": false
   },
-  "autonomous_investigation_requirements": [
-    "compare RC4 static/UI file hashes with served assets",
-    "verify whether server response rewriting is expected to replace development wording",
-    "bypass/cache-bust only in staging proof to distinguish stale edge cache from package defect",
-    "re-run exact clean-browser journey with release identity and presentation assertions together",
-    "if defect is confirmed, fix in the active presentation source owner rather than patching the deployment wrapper",
-    "convert root cause into a regression assertion that couples health identity with served UI identity"
-  ],
-  "resolution_gate": "Do not mark RC4 hosted presentation proved until a clean browser obtains RC4 health identity and RC4 presentation identity from the same deployment and the journey completes with zero page errors."
+  "resolution": {
+    "status": "verified-in-rc5-hosted-staging",
+    "candidate": "0.6.70-hosted-staging-rc5",
+    "runtime_sha256": "5fbe9c2923890c410cf6d7184f7678409da92cf3c6b485a217de60d6259a9931",
+    "runtime_bytes": 586910,
+    "hosted_source_sha256": "3e8e98eb2d7ccc8efea0d7d76bb4435cc5d08a9c940e3f961f27082cdd4fd59e",
+    "runtime_manifest_sha256": "b6b6bc486fc661a7f650d3258b24abe146dfbae993e1abbbb592007044b91c94",
+    "cloud_browser_workflow_run": 35214869595,
+    "browser_result": {
+      "passed": true,
+      "release": "0.6.70-hosted-staging-rc5",
+      "hosted_login_copy": "passed",
+      "hosted_password_blank": true,
+      "manager_authenticated": true,
+      "secure_session_cookie": "HttpOnly; Secure; SameSite=Strict",
+      "unauthenticated_bootstrap_status": 401,
+      "page_errors": 0
+    }
+  },
+  "prevention": {
+    "require_health_and_effective_ui_identity_consistency": true,
+    "determine_effective_login_renderer_in_actual_index_script_order": true,
+    "forbid_local_demo_password_prefill_in_hosted_mode": true,
+    "block_candidate_claim_on_mismatch": true,
+    "preserve_browser_trace_screenshots_and_video": true
+  },
+  "resolution_gate": "Resolved only when the same hosted deployment returns RC5 health identity, renders hosted-staging login identity with a blank password, completes the authenticated customer journey, rejects unauthenticated bootstrap, and records zero page errors. GitHub Actions run 35214869595 satisfied this gate."
 }
