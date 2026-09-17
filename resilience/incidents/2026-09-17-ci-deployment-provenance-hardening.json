@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-17T22:43:00Z",
+  "classification": [
+    "security_concern",
+    "deployment_provenance_problem",
+    "configuration_problem"
+  ],
+  "findings": [
+    {
+      "id": "mutable-github-action-refs-in-merged-ux-gates",
+      "evidence": "Merged UX workflows used mutable refs such as actions/checkout@v4 and actions/upload-artifact@v4 while newer security workflows already use immutable commit SHAs.",
+      "cause": "CI dependency references were not governed by a repository-wide immutable-ref rule.",
+      "prevention": "Pin merged workflows and fail future pushes containing mutable external action refs."
+    },
+    {
+      "id": "canonical-hosted-service-predates-current-main",
+      "evidence": "Railway deployment 2d399257-e7ea-43e8-a728-d563e8cb366b was created 2026-09-17T16:20:31Z; current main 02d364e82bdb7699e0f91a47aa4a0f941b89ad2f merged at 2026-09-17T22:34:38Z after identity-survival and UX wrapper changes.",
+      "cause": "Canonical deployment provenance is decoupled from repository/isolated-proof progress.",
+      "prevention": "Do not claim canonical staging is current until a newer deployment is rebound to the expected immutable runtime/wrapper inputs and hosted proof passes."
+    },
+    {
+      "id": "railway-watch-pattern-gap",
+      "evidence": "Railway watches Dockerfile, DEPLOYMENT_MANIFEST.json, STAGING_FREEZE.json and artifact/**; Dockerfile also copies security/runtime/** and ux-overlay/**.",
+      "cause": "Source-watch configuration does not enumerate all deployment-sensitive build inputs.",
+      "prevention": "Require security/runtime/** and ux-overlay/** in Railway watch patterns before relying on automatic source-linked deployment."
+    },
+    {
+      "id": "case-variant-staging-password-variable",
+      "evidence": "Railway reports WFM_STAGING_PASSWORD and Wfm_staging_password. Values were redacted and not inspected.",
+      "cause": "Credential configuration contains a case-variant alias.",
+      "prevention": "After dependent workflow verification, remove the obsolete alias only through an explicitly approved staging configuration change."
+    }
+  ],
+  "production_mutation": false,
+  "railway_mutation": false,
+  "credential_values_accessed": false,
+  "direct_llm_execution_authority": false
+}

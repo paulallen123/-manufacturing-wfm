@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/railway-first-deploy.yml'
+      - 'Dockerfile'
+      - 'DEPLOYMENT_MANIFEST.json'
+      - 'STAGING_FREEZE.json'
+      - 'security/runtime/**'
+      - 'ux-overlay/**'
       - 'scripts/live-auth-proof.mjs'
       - 'scripts/live-isolation-kiosk-proof.mjs'
       - 'scripts/live-correction-proof.mjs'
@@ -82,6 +87,17 @@ jobs:
           node --input-type=module - "$RUNNER_TEMP/railway-vars.json" <<'NODE'
           import fs from 'node:fs';
           const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const byFoldedName = new Map();
+          for (const name of Object.keys(vars)) {
+            const key = name.toLowerCase();
+            const group = byFoldedName.get(key) || [];
+            group.push(name);
+            byFoldedName.set(key, group);
+          }
+          const collisions = [...byFoldedName.values()].filter(group => group.length > 1);
+          if (collisions.length) {
+            throw new Error('Case-insensitive duplicate Railway variable names are forbidden: ' + collisions.map(group => group.join('/')).join(', '));
+          }
           const password = vars.WFM_STAGING_PASSWORD;
           if (!password || !vars.WFM_PUBLIC_ORIGIN) {
             throw new Error('Required canonical staging variables are unavailable to the proof runner.');

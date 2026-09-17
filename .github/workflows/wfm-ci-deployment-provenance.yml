@@ -1,0 +1,79 @@
+name: WFM CI and deployment provenance gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'security/**'
+      - 'autonomy/**'
+    paths:
+      - '.github/workflows/**'
+      - 'Dockerfile'
+      - 'security/runtime/**'
+      - 'ux-overlay/**'
+      - 'resilience/ci-deployment-provenance-baseline.json'
+      - 'resilience/incidents/2026-09-17-ci-deployment-provenance-hardening.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ci-deployment-provenance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  provenance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Fail closed on mutable CI dependencies and deployment trigger drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('node:fs');
+          const path=require('node:path');
+          const assert=require('node:assert/strict');
+          const root='.github/workflows';
+          const files=fs.readdirSync(root).filter(x=>/\.ya?ml$/.test(x)).sort();
+          const mutable=[];
+          const forbidden=[];
+          for(const name of files){
+            const file=path.join(root,name);
+            const source=fs.readFileSync(file,'utf8');
+            if(/^\s*pull_request_target\s*:/m.test(source)) forbidden.push({file,reason:'pull_request_target'});
+            if(/^\s*permissions\s*:\s*write-all\s*$/m.test(source)) forbidden.push({file,reason:'write-all permissions'});
+            for(const line of source.split(/\r?\n/)){
+              const m=line.match(/^\s*(?:-\s*)?uses:\s*['"]?([^'"\s#]+)['"]?/);
+              if(!m) continue;
+              const ref=m[1];
+              if(ref.startsWith('./')) continue;
+              if(ref.startsWith('docker://')){
+                if(!/@sha256:[a-f0-9]{64}$/.test(ref)) mutable.push({file,ref});
+                continue;
+              }
+              if(!/@[a-f0-9]{40}$/.test(ref)) mutable.push({file,ref});
+            }
+          }
+          assert.deepEqual(forbidden,[], 'Forbidden workflow trust expansion detected: '+JSON.stringify(forbidden));
+          assert.deepEqual(mutable,[], 'External Actions/reusable workflows must use immutable refs: '+JSON.stringify(mutable));
+          const baseline=JSON.parse(fs.readFileSync('resilience/ci-deployment-provenance-baseline.json','utf8'));
+          assert.equal(baseline.ci_supply_chain.external_github_actions_must_be_immutable_sha,true);
+          assert.equal(baseline.secret_hygiene.variable_names_must_be_case_insensitively_unique,true);
+          const railway=fs.readFileSync('.github/workflows/railway-first-deploy.yml','utf8');
+          for(const p of baseline.customer_proof_deployment_inputs.required_proof_trigger_paths){
+            assert.ok(railway.includes(`- '${p}'`) || railway.includes(`- "${p}"`),
+              'Customer-proof workflow missing deployment-sensitive trigger path '+p);
+          }
+          const dockerfile=fs.readFileSync('Dockerfile','utf8');
+          assert.ok(/COPY\s+security\/runtime\//.test(dockerfile),'Identity/security runtime overlay is no longer copied as expected.');
+          assert.ok(/COPY\s+ux-overlay\//.test(dockerfile),'UX overlay is no longer copied as expected.');
+          console.log(JSON.stringify({ok:true,workflowFiles:files.length,mutableExternalRefs:0},null,2));
+          NODE

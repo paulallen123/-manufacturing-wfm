@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build composed image
         run: docker build --pull=false -t wfm-ux-inspect:pr .
       - name: Inspect employee self-service runtime structure
@@ -39,7 +39,7 @@ jobs:
             grep -n -C 6 -E "employeeRouteLabel|enhanceEmployeeSelfService|employeeBalanceCard|fixEmployeeLeaveModal" /tmp/wfm-public/value-cockpit-ui.js | head -n 420 || true
           } | tee /tmp/wfm-runtime-contract.txt
       - name: Preserve runtime contract evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: wfm-ux-runtime-contract
           path: /tmp/wfm-runtime-contract.txt
