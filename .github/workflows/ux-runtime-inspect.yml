@@ -26,9 +26,9 @@ jobs:
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
           rm -rf /tmp/wfm-public && mkdir -p /tmp/wfm-public
           docker cp "$cid:/app/public/." /tmp/wfm-public/
-          echo '=== PUBLIC ASSETS ==='
-          find /tmp/wfm-public -maxdepth 1 -type f -printf '%f\n' | sort
+          echo '=== REVIEW UI EXACT CORE ==='
+          sed -n '24,36p' /tmp/wfm-public/review-ui.js || true
+          echo '=== REVIEW CSS STRUCTURE ==='
+          grep -n -E 'review-(hero|grid|main|aside|metrics|categories|issues|signbar|checklist|issue|filters)' /tmp/wfm-public/review-ui.css | head -n 220 || true
           echo '=== WEEKLY REVIEW MATCHES ==='
-          grep -Rni -C 2 --include='*.js' --include='*.html' -E "weekly-review|Weekly review|week review|sign.?off" /tmp/wfm-public | head -n 260 || true
-          echo '=== EXCEPTION/PAYROLL MATCHES ==='
-          grep -Rni -C 1 --include='*.js' -E "missing time|time exception|payroll.*exception|exception.*payroll|sign.?off" /tmp/wfm-public | head -n 220 || true
+          grep -Rni -C 1 --include='*.js' -E "weekly-review|Weekly review|sign.?off" /tmp/wfm-public/review-ui.js /tmp/wfm-public/time-review-ui.js | head -n 260 || true
