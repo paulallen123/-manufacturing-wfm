@@ -28,14 +28,18 @@ jobs:
           npm install --no-audit --no-fund --save-exact playwright@1.63.0 >/dev/null
 
       - name: Run authenticated read-only customer journey
+        env:
+          WFM_DEMO_PASSWORD: ${{ secrets.WFM_DEMO_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
+          test -n "${WFM_DEMO_PASSWORD:-}" || { echo 'WFM_DEMO_PASSWORD repository secret is not configured.' >&2; exit 1; }
           cd "$RUNNER_TEMP/wfm-browser-proof"
           node <<'NODE'
           const { chromium } = require('playwright');
           (async () => {
             const origin = process.env.WFM_ORIGIN;
+            const password = process.env.WFM_DEMO_PASSWORD;
             const browser = await chromium.launch({ channel: 'chrome', headless: true });
             try {
               const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
@@ -52,15 +56,13 @@ jobs:
               const login = page.locator('#v2-login');
               if (await login.count()) {
                 const email = await login.locator('select[name="email"]').inputValue();
-                const passwordPresent = (await login.locator('input[name="password"]').inputValue()).length > 0;
                 console.log(`LOGIN_FORM_EMAIL=${email}`);
-                console.log(`LOGIN_FORM_PASSWORD_PREFILLED=${passwordPresent}`);
-                if (!passwordPresent) throw new Error('Hosted login form has no prefilled fixture credential; refusing to guess a password.');
+                await login.locator('input[name="password"]').fill(password);
                 const loginResponse = page.waitForResponse(r => r.url() === `${origin}/api/login` && r.request().method() === 'POST', { timeout: 15000 });
                 await login.locator('button[type="submit"]').click();
                 const response = await loginResponse;
                 console.log(`BROWSER_LOGIN_STATUS=${response.status()}`);
-                if (response.status() !== 200) throw new Error(`Prefilled hosted fixture login returned HTTP ${response.status()}`);
+                if (response.status() !== 200) throw new Error(`Hosted fixture login returned HTTP ${response.status()}`);
               }
 
               await page.waitForFunction(() => !document.querySelector('#v2-login'), null, { timeout: 15000 });
