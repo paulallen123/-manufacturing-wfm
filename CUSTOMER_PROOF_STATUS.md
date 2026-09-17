@@ -10,6 +10,9 @@
 - Runtime SHA-256: `3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d`
 - Runtime artifact: `artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz`
 - Runtime artifact size: `562434` bytes
+- Runtime source content SHA-256: `456e8f6961525e0dd9d4449db94772c0902a4e6743b312cf09070ce611014781`
+- Runtime manifest SHA-256: `8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce`
+- Runtime package manifest SHA-256: `b0c435abc6bf1ea6fa38d8fbb8f8eabdfac846dba3380c4b0cd4eab52099213a`
 - Pinned base image: `node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96`
 - Full split regression recorded in the deployment manifest: **1878/1878 passed, 0 failed**.
 - Runtime remains fixture-only/staging-only with `pilot_ready=false` and `production_approved=false`.
@@ -22,75 +25,95 @@ Environment ID: `6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6`
 Service: `wfm-customer-proof-0676`  
 Service ID: `ddd54fb9-3564-4251-9959-28cf3308c272`  
 Public origin: `https://wfm-customer-proof-0676-production.up.railway.app`  
-Deployment ID: `49a53c09-9e4b-41a3-a8dd-0133c97f2792`
+Latest verified successful deployment ID: `2d399257-e7ea-43e8-a728-d563e8cb366b`
+
+Railway's internal environment name is `production`, but this project is deliberately an isolated customer-proof staging lane. Product production approval remains false and production execution remains disconnected.
 
 ### Deployment provenance
 
-The one-time GitHub Actions bootstrap was successfully re-run after the project-scoped Railway token was added as the repository secret `RAILWAY_TOKEN`.
-
-- GitHub Actions workflow: `Railway first deploy - customer proof 0.6.76`
-- Run ID: `35236184751`
-- Successful rerun job ID: `105264296024`
-- Frozen runtime SHA check passed before upload.
-- Pinned Railway CLI `v5.57.8` archive digest verification passed.
-- The exact existing Railway service was targeted; no replacement service was created.
-
-Railway build evidence for deployment `49a53c09-9e4b-41a3-a8dd-0133c97f2792` confirms:
+Latest Railway build evidence for deployment `2d399257-e7ea-43e8-a728-d563e8cb366b` confirms the sealed deployment path remains intact:
 
 - repository `Dockerfile` was used;
-- base image resolved to the exact pinned Node `22.23.2` digest;
-- `artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz` was copied into the build;
-- in-build SHA-256 check returned `/tmp/runtime.tgz: OK` for `3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d`;
+- base image resolved through the exact digest-pinned Node 22.23.2 image;
+- `artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz` was copied into the image;
+- the in-build SHA-256 check returned `/tmp/runtime.tgz: OK` for `3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d`;
+- the sealed runtime was extracted only after that integrity check;
 - package managers were removed from the final runtime image;
-- Railway produced image digest `sha256:b67e05912c6d7014774faca4a543e09354ff5a0033c18cd28188b98d30b22ce6`;
-- Railway `/api/health` deployment health check succeeded on the first attempt.
+- the application runs as the non-root `node` user;
+- Railway health checks complete successfully.
 
-Runtime logs confirm:
+Runtime logs confirm the staged server is listening on `0.0.0.0:3000` and serving the dedicated HTTPS customer-proof origin.
 
-- `Fixture/demo data only. Production approved: false.`
-- server listening on `0.0.0.0:3000`;
-- public origin is the dedicated customer-proof Railway HTTPS domain.
+## Independent live-host proof — PASSED
 
-## Independent outside-in live-host proof — PASSED
+The latest main-branch outside-in proof has passed against the public customer-proof host.
 
-A GitHub-hosted runner independently tested the public Railway domain after deployment.
-
+- Main source checkpoint: `b20147641ba3e1f93f3189a28ded706f9d535166`
 - Workflow: `Live Host Proof`
-- Run ID: `35239783975`
-- Job ID: `105264944927`
-- Target: `https://wfm-customer-proof-0676-production.up.railway.app`
+- Run ID: `35278351691`
+- Result: **SUCCESS**
 
-Passed evidence:
+Passed evidence includes:
 
-1. Public `GET /api/health` returned HTTP 2xx and reported:
-   - `status: ok`
-   - `mode: hosted-staging`
-   - `fixtureOnly: true`
-   - `hosted: true`
-   - `productionApproved: false`
-   - `pilotReady: false`
-   - `release: 0.6.76-hosted-staging-rc1`
-2. Public application root returned a non-empty HTTP 2xx response.
-3. Public `/kiosk.html` returned a non-empty HTTP 2xx response.
-4. Unauthenticated `GET /api/bootstrap` returned **HTTP 401** with `{"error":"Sign in is required."}`.
+1. Public `GET /api/health` returns HTTP 2xx and reports the exact `0.6.76-hosted-staging-rc1` hosted-staging identity.
+2. The health boundary continues to report fixture/demo mode and keeps `productionApproved=false` and `pilotReady=false`.
+3. Public application root returns HTTP 2xx.
+4. Public `/kiosk.html` returns HTTP 2xx.
+5. Unauthenticated protected bootstrap access fails closed with HTTP 401.
 
-This is independent outside-in evidence that the exact customer-proof host is reachable and that protected application data fails closed without authentication.
+## Authenticated hosted journey — MATERIAL PROGRESS PROVEN
 
-## Security gate on the proof commit — PASSED
+The live deployment has now progressed beyond public-health-only proof. Railway HTTP/runtime evidence records successful authentication and authenticated application traffic against the dedicated proof host:
 
-The owner-originated main-branch proof commit also passed the repository-wide security gate.
+- `POST /api/login` → HTTP 200;
+- authenticated `/api/bootstrap` → HTTP 200;
+- `/api/readiness` → HTTP 200;
+- `/api/availability` → HTTP 200;
+- `/api/schedule` → HTTP 200;
+- `/api/scheduling-summary` → HTTP 200;
+- `/api/schedule-publication` → HTTP 200;
+- `/api/payroll-control` → HTTP 200;
+- `/api/providers/NetSuite` → HTTP 200;
+- `/api/workflows` → HTTP 200;
+- `/api/cost/realization` → HTTP 200;
+- `/api/proof` → HTTP 200;
+- kiosk/device token, revoke and clocking calls were exercised successfully;
+- attendance-correction calls were exercised successfully.
 
-- Workflow run ID: `35239783955`
-- Job ID: `105264942369`
-- Workflow-security regression checks: PASS
-- Deployment/resilience metadata validation: PASS
-- Exact staging candidate Docker build: PASS
-- Runtime identity/reduced attack-surface proof: PASS
-- Staging candidate refuses production mode: PASS
+Hosted request evidence also includes a Playwright/Headless Chrome browser session against the proof host. This materially demonstrates authenticated hosted application behaviour across readiness, planning/scheduling, kiosk/clocking, attendance and payroll/provider-control surfaces. It is not yet treated as a complete final visual evidence pack until the trace/screenshot/video artefacts are preserved and tied to the same deployment identity.
+
+## Probe cleanup — NOT CURRENTLY CLASSIFIED AS PRODUCT DEFECTS
+
+Two diagnostic requests returned HTTP 404:
+
+- `/api/demand`
+- `/api/cost`
+
+Repository search finds no current application routes with those exact paths. The working canonical planning/demand surfaces include `/api/scheduling-summary`, `/api/schedule` and `/api/readiness`, while the working cost surface includes `/api/cost/realization`.
+
+The two 404 responses are therefore currently classified as obsolete/guessed diagnostic probe paths rather than evidence that the corresponding product capability is broken. Proof tooling should use canonical routes and remove these stale probes; no frozen runtime mutation is justified solely to make invented endpoints return 200.
+
+## Current security/integrity gates — GREEN
+
+Latest relevant main-branch checks include:
+
+- `Live Host Proof` run `35278351691` — **SUCCESS**;
+- `WFM every-push security gate` run `35278351695` — **SUCCESS**;
+- `WFM runtime integrity and resilience gate` run `35278351709` — **SUCCESS**.
+
+Recent identity-survival/security work also reached a successful reviewed runtime-guard gate before the current main checkpoint. Failed/cancelled intermediate experiments are not treated as release proof; the latest applicable successful gates are the evidence baseline.
 
 ## What is now genuinely demonstrated
 
-The platform can now be described as a **live, isolated customer-proof staging deployment of the exact sealed 0.6.76 candidate**, backed by reproducible build/provenance evidence and independent public availability/authentication-boundary proof.
+The platform can now be described as a **live, isolated customer-proof staging deployment of the exact sealed 0.6.76 candidate** with:
+
+- reproducible sealed build and artifact-integrity evidence;
+- live public HTTPS health and application/kiosk availability;
+- unauthenticated protected-data rejection;
+- successful hosted sign-in and authenticated bootstrap;
+- successful hosted functional traffic across core manufacturing-WFM customer journeys;
+- browser-driven hosted activity;
+- current green public-host, security and runtime-integrity gates.
 
 The demo uses fictional/fixture data. The application and customer-facing surfaces are real hosted application behaviour, not screenshots or a mock landing page.
 
@@ -98,13 +121,11 @@ The demo uses fictional/fixture data. The application and customer-facing surfac
 
 These remain open and must not be implied as complete:
 
-1. Authenticated browser sign-in on the live host using the staging credential.
-2. Authenticated end-to-end customer journey evidence across readiness/operations, onboarding, workforce data, skills, availability, production demand, labour planning, scheduling, kiosk/clocking, disruption/recovery, time review, payroll handoff, cost/ROI and audit/support surfaces.
-3. Hosted tenant-isolation browser/API evidence.
-4. Interactive kiosk/clocking behaviour beyond public page availability.
-5. Hosted attendance correction and payroll/provider-handoff journey evidence.
-6. Restart/recovery and bounded failure-mode evidence on the live service.
-7. Reproducible screenshots/traces/video tied to this deployment ID and frozen runtime hash.
+1. Explicit hosted tenant-isolation negative proof across at least two isolated customer identities/contexts.
+2. Controlled hosted restart/recovery and bounded failure-mode proof tied to the exact customer-proof deployment.
+3. Preserve and index the final browser screenshot/trace/video evidence package against the exact deployment ID and frozen runtime hash.
+4. Clean obsolete `/api/demand` and `/api/cost` probe assumptions from proof tooling and re-run against canonical routes where applicable.
+5. Final evidence reconciliation so every claimed customer journey points to a reproducible hosted log, test, trace or artefact rather than only aggregate traffic observation.
 
 ## Production/pilot gates remain deliberately blocked
 
@@ -120,4 +141,4 @@ Separate evidence is still required for:
 
 ## Current customer-proof wording
 
-**Supported statement:** “This is a live, isolated instance of the actual Manufacturing WFM application running the exact sealed 0.6.76 customer-proof build. Its build provenance, public HTTPS health, application/kiosk availability and unauthenticated protection boundary have been independently re-proven. The demonstration uses fictional data and remains staging-only; production and genuine external-provider acceptance are separate gates.”
+**Supported statement:** “This is a live, isolated instance of the actual Manufacturing WFM application running the exact sealed 0.6.76 customer-proof build. Its artifact hash, deployment path, public HTTPS health, authentication boundary and a substantial authenticated hosted customer journey have been re-proven. The demonstration uses fictional data and remains staging-only; tenant-isolation/recovery evidence, production acceptance and genuine external-provider acceptance remain separate gates.”
