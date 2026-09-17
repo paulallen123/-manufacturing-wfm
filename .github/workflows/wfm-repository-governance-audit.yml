@@ -9,11 +9,6 @@ on:
       - resilience/repository-governance-baseline.json
       - 'resilience/incidents/**'
       - .github/workflows/wfm-repository-governance-audit.yml
-  pull_request:
-    paths:
-      - resilience/repository-governance-baseline.json
-      - 'resilience/incidents/**'
-      - .github/workflows/wfm-repository-governance-audit.yml
   workflow_dispatch:
 
 permissions:
