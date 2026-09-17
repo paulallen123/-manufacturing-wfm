@@ -35,6 +35,15 @@ try {
     attestationPolicyConfigured:verificationWorkers.attestationPolicyConfigured,
     buildAttestationPolicyExports:describe(BAP),
     verificationCreateStoreSource:src(VW.createStore,12000),
+    providerJobContracts:{
+      ensure:src(providerJobs.ensure,12000),
+      acquire:src(providerJobs.acquire,12000),
+      checkpoint:src(providerJobs.checkpoint,12000),
+      complete:src(providerJobs.complete,12000),
+      fail:src(providerJobs.fail,12000),
+      requeue:src(providerJobs.requeue,12000),
+      detail:src(providerJobs.detail,12000)
+    },
     contracts:{
       scanTenant:src(investigations.scanTenant),
       requestVerification:src(investigations.requestVerification),
