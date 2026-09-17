@@ -1,0 +1,25 @@
+name: Security resilience simulation contract
+
+on:
+  push:
+    branches:
+      - security/last-line-defense
+    paths:
+      - 'security/adversary-simulation/**'
+      - '.github/workflows/security-resilience-simulation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Validate bounded resilience scenarios
+        run: node security/adversary-simulation/validate-resilience-scenarios.mjs
