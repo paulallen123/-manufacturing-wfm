@@ -1,0 +1,93 @@
+name: WFM browser security-floor prevention gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'security/**'
+    paths:
+      - '.github/workflows/live-browser-readonly-proof.yml'
+      - '.github/workflows/railway-first-deploy.yml'
+      - '.github/workflows/wfm-browser-security-floor.yml'
+      - 'scripts/browser-security-floor.mjs'
+      - 'scripts/live-visual-evidence.mjs'
+      - 'resilience/browser-security-floor.json'
+      - 'resilience/incidents/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-browser-security-floor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prevention:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout bounded security candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Validate version floor, secret ordering and defense in depth
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import {
+            minimumBrowserVersion,
+            browserVersionMeetsFloor,
+            parseBrowserVersion
+          } from './scripts/browser-security-floor.mjs';
+
+          const policy = JSON.parse(fs.readFileSync('./resilience/browser-security-floor.json', 'utf8'));
+          assert.equal(policy.minimum_version, '153.0.8010.47');
+          assert.equal(minimumBrowserVersion, policy.minimum_version);
+          assert.equal(policy.controls.fail_closed_on_unknown_version, true);
+          assert.equal(policy.controls.allow_credential_bearing_browser_below_floor, false);
+          assert.equal(policy.controls.allow_version_gate_bypass_environment_variable, false);
+          assert.equal(policy.controls.allow_unverified_chromium_fallback_for_credential_bearing_proof, false);
+          assert.equal(policy.controls.check_before_secret_injection, true);
+
+          for (const test of policy.regression_tests.find(x => x.id === 'version-comparator-boundary').cases) {
+            assert.equal(browserVersionMeetsFloor(test.actual), test.allowed, `Unexpected browser-floor decision for ${test.actual}`);
+          }
+          assert.throws(() => parseBrowserVersion('unknown'), /Unable to parse/, 'Unknown browser versions must fail closed.');
+
+          const live = fs.readFileSync('./.github/workflows/live-browser-readonly-proof.yml', 'utf8');
+          const railway = fs.readFileSync('./.github/workflows/railway-first-deploy.yml', 'utf8');
+          const visual = fs.readFileSync('./scripts/live-visual-evidence.mjs', 'utf8');
+          const helper = fs.readFileSync('./scripts/browser-security-floor.mjs', 'utf8');
+
+          const liveGate = live.indexOf('Require patched Chrome before exposing staging credential');
+          const liveSecret = live.indexOf('WFM_DEMO_PASSWORD: ${{ secrets.WFM_DEMO_PASSWORD }}');
+          assert.ok(liveGate >= 0 && liveSecret > liveGate, 'Live browser secret step must remain after the Chrome security-floor preflight.');
+          assert.ok(live.includes('node scripts/browser-security-floor.mjs'), 'Live browser workflow must execute the shared floor check.');
+
+          const railwayGate = railway.indexOf('Require patched Chrome before any staging credential retrieval');
+          const railwaySecret = railway.indexOf('RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}');
+          assert.ok(railwayGate >= 0 && railwaySecret > railwayGate, 'Railway credential retrieval must remain after the Chrome security-floor preflight.');
+          assert.ok(railway.includes('node scripts/browser-security-floor.mjs'), 'Railway proof workflow must execute the shared floor check.');
+
+          const visualCheck = visual.indexOf('assertCurrentBrowserSecurityFloor()');
+          const browserSpawn = visual.indexOf('spawn(chrome');
+          assert.ok(visualCheck >= 0 && browserSpawn > visualCheck, 'Visual evidence script must recheck the browser floor before browser spawn.');
+          assert.ok(!helper.includes('process.env.WFM_BROWSER_VERSION_OVERRIDE'), 'The real browser-floor gate must not have an environment-variable bypass.');
+          assert.ok(!helper.includes("'chromium'"), 'Credential-bearing floor checker must not accept an unverified generic Chromium fallback.');
+
+          console.log(JSON.stringify({
+            ok: true,
+            minimumBrowserVersion,
+            versionCases: policy.regression_tests.find(x => x.id === 'version-comparator-boundary').cases.length,
+            liveSecretAfterGate: liveSecret > liveGate,
+            railwaySecretAfterGate: railwaySecret > railwayGate,
+            visualRecheckBeforeSpawn: browserSpawn > visualCheck
+          }, null, 2));
+          NODE
