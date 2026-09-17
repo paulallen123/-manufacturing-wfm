@@ -1,0 +1,108 @@
+name: WFM UX evolution cycle 8 gate
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/**'
+      - '.github/workflows/ux-cycle8-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ux-cycle8-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cycle8-employee-my-time:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Source safety checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset-cycle8.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const js=fs.readFileSync('ux-overlay/ux-reset-cycle8.js','utf8');
+          const css=fs.readFileSync('ux-overlay/ux-reset-cycle8.css','utf8');
+          for(const x of ['Is my time correct?','Week &amp; filters','What needs checking','Review and correct','window.WFMUXCycle8=']) if(!js.includes(x)) throw new Error('Missing Cycle 8 invariant: '+x);
+          for(const x of ['[data-ux-employee-time="calm"]','.ux-mytime-command','.ux-mytime-scope','.tr-list .tablewrap','.tr-form-sticky','@media(max-width:760px)']) if(!css.includes(x)) throw new Error('Missing Cycle 8 CSS invariant: '+x);
+          if(/\.remove\s*\(/.test(js)) throw new Error('Cycle 8 must preserve existing employee time controls and evidence.');
+          console.log('UX_CYCLE8_SOURCE_INVARIANTS=PASS');
+          NODE
+
+      - name: Build and verify sealed composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false -t wfm-ux-cycle8:pr .
+          cid="$(docker create wfm-ux-cycle8:pr)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-cycle8
+          docker cp "$cid:/app/public/index.html" /tmp/wfm-cycle8/index.html
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-cycle8/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-cycle8/factory-control-ui.css
+          node --check /tmp/wfm-cycle8/value-cockpit-ui.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const html=fs.readFileSync('/tmp/wfm-cycle8/index.html','utf8');
+          const js=fs.readFileSync('/tmp/wfm-cycle8/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-cycle8/factory-control-ui.css','utf8');
+          if(/ux-reset(?:-cycle[2345678])?\.(?:js|css)/.test(html)) throw new Error('Standalone UX paths must not be exposed outside the sealed static allow-list.');
+          const j7=js.indexOf('WFM_UX_RESET_CYCLE7_BEGIN'),j8=js.indexOf('WFM_UX_RESET_CYCLE8_BEGIN');
+          const c7=css.indexOf('WFM_UX_RESET_CYCLE7_BEGIN'),c8=css.indexOf('WFM_UX_RESET_CYCLE8_BEGIN');
+          if(!(j7>=0&&j8>j7&&c7>=0&&c8>c7)) throw new Error('Cycle 8 must compose after Cycle 7.');
+          if(!js.includes('window.WFMUXCycle8=')||!css.includes('.ux-mytime-command')) throw new Error('Cycle 8 is missing from approved served assets.');
+          console.log('UX_CYCLE8_APPROVED_ASSET_COMPOSITION=PASS');
+          NODE
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace or mutate sealed server logic'; exit 1; fi
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
+
+      - name: Browser-check employee desktop and mobile journey
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ux-mytime-harness
+          cp ux-overlay/ux-reset-cycle8.js /tmp/ux-mytime-harness/ux-reset-cycle8.js
+          cp ux-overlay/ux-reset-cycle8.css /tmp/ux-mytime-harness/ux-reset-cycle8.css
+          cat > /tmp/ux-mytime-harness/index.html <<'HTML'
+          <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/ux-reset-cycle8.css"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f7;font-family:Arial;color:#193842}.workspace{max-width:1320px;margin:auto}.content{padding:20px}.tr-toolbar{display:flex;gap:12px;flex-wrap:wrap}.tr-toolbar label{display:flex;flex-direction:column}.tr-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.tr-kpi{padding:16px;border:1px solid #ddd}.tr-kpi b,.tr-kpi span{display:block}.tr-layout{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}.tr-list,.tr-panel{background:#fff;border:1px solid #ddd}.tr-panel{padding:20px}.tablewrap{overflow:auto}.tr-list table{width:100%;min-width:680px;border-collapse:collapse}.tr-list th,.tr-list td{padding:12px}.tr-config{padding:12px}.tr-progress{height:4px;background:#ddd}.tr-progress span{display:block;width:50%;height:100%;background:#456}.btn{padding:8px 12px}.eyebrow{font-size:10px}</style></head><body><main class="workspace tr-workspace"><div class="content"><div class="heading"><h1>My time</h1><p>Review your clocking records.</p></div><div class="tr-toolbar"><label>Week<select id="tri-period"><option>This week</option></select></label><label>Show<select id="tri-filter"><option>Needs my attention</option></select></label><label>Find record<input id="tri-search" type="search"></label><button class="btn" data-act="tri-refresh">Refresh</button></div><div class="tr-source" id="feed-source">Stored attendance and expected shifts.</div><div class="tr-kpis"><div class="tr-kpi"><b>2</b><span>Need checking</span></div><div class="tr-kpi"><b>1</b><span>Correction pending</span></div><div class="tr-kpi"><b>3</b><span>Clocking exceptions</span></div><div class="tr-kpi"><b>7</b><span>Days correct</span></div></div><div class="tr-progress"><span></span></div><p class="tr-source" id="week-status">Your reviewed time will feed the normal approval process.</p><details class="tr-config"><summary>Display settings</summary><input id="tolerance" value="5"></details><div class="tr-layout"><section class="tr-list"><div class="tablewrap"><table><thead><tr><th>Date</th><th>Expected</th><th>Recorded</th><th>Status</th></tr></thead><tbody><tr><td><button class="tr-person">Mon 14 Sep</button></td><td>06:00</td><td>06:12</td><td>Check late start</td></tr></tbody></table></div></section><section class="tr-panel"><h2>Mon 14 Sep</h2><p id="evidence">Recorded 06:12 against expected 06:00.</p><form id="tri-decision"><label>Correction reason<select id="reason"><option>Clock terminal delay</option></select></label><details><summary>Evidence & history</summary><p>Original record preserved.</p></details><div class="tr-form-sticky"><button class="btn" id="tri-save">Submit correction</button></div></form></section></div></div></main><script>var ui={page:'time-review',role:'employee'};var F={actor:{role:'employee'}};function isEmployee(){return true}</script><script src="/ux-reset-cycle8.js"></script></body></html>
+          HTML
+          python3 -m http.server 9248 --bind 127.0.0.1 --directory /tmp/ux-mytime-harness >/tmp/ux-mytime-harness.log 2>&1 &
+          HARNESS_PID=$!
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME"
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --remote-debugging-port=9249 --user-data-dir=/tmp/wfm-cycle8-chrome --window-size=1440,1000 http://127.0.0.1:9248 >/tmp/chrome8.log 2>&1 &
+          CHROME_PID=$!
+          trap 'kill "$CHROME_PID" "$HARNESS_PID" >/dev/null 2>&1 || true' EXIT
+          timeout 35s node <<'NODE'
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          async function retry(fn,n=75){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
+          const targets=await retry(async()=>{const r=await fetch('http://127.0.0.1:9249/json/list');const x=await r.json();if(!x.find(v=>v.type==='page'))throw Error('No browser page');return x});
+          const page=targets.find(x=>x.type==='page'),ws=new WebSocket(page.webSocketDebuggerUrl);await new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=()=>bad(Error('CDP open failed'))});
+          let id=1;const pending=new Map();ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(m.error.message)):p.resolve(m.result)}};
+          const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}))});
+          const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
+          await send('Runtime.enable');
+          await retry(async()=>{if(!(await evalx("document.querySelector('.tr-workspace')?.dataset.uxEmployeeTime==='calm'")))throw Error('not ready');return true});
+          const proof=await evalx(`(()=>{const scope=document.querySelector('.ux-mytime-scope'),layout=document.querySelector('.tr-layout');return {command:!!document.querySelector('.ux-mytime-command'),kpis:!!document.querySelector('.ux-mytime-command>.tr-kpis'),scope:!!scope?.querySelector('.tr-toolbar')&&!scope.open,layout:scope?.nextElementSibling===layout,controls:['tri-period','tri-search','tri-save','reason','evidence'].every(id=>!!document.getElementById(id)),local:document.querySelector('.tablewrap')?.getAttribute('tabindex')==='0',list:document.querySelector('.tr-list')?.dataset.uxEmployeeStep,panel:document.querySelector('.tr-panel')?.dataset.uxEmployeeStep,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}})()`);
+          console.log('UX_CYCLE8_BROWSER_PROOF='+JSON.stringify(proof));
+          if(!proof.command||!proof.kpis||!proof.scope||!proof.layout||!proof.controls||!proof.local)throw Error('Employee My time hierarchy or preserved controls missing');
+          if(proof.list!=='What needs checking'||proof.panel!=='Review and correct')throw Error('Employee correction flow markers missing');
+          if(proof.overflow>2)throw Error('Desktop page-wide overflow detected');
+          await evalx("document.querySelector('.ux-mytime-scope').open=true");
+          if(!(await evalx("getComputedStyle(document.getElementById('tri-search')).display!=='none'")))throw Error('Disclosed filters unusable');
+          await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await sleep(250);
+          const mobile=await evalx(`(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,controls:['tri-period','tri-save'].every(id=>!!document.getElementById(id)),columns:getComputedStyle(document.querySelector('.tr-layout')).gridTemplateColumns}))()`);
+          console.log('UX_CYCLE8_MOBILE_PROOF='+JSON.stringify(mobile));
+          if(mobile.overflow>2||!mobile.controls)throw Error('Mobile containment/control preservation failed');
+          console.log('UX_CYCLE8_BROWSER_INTERACTION=PASS');
+          ws.close();
+          NODE
