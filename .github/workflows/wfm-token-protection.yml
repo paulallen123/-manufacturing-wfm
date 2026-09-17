@@ -1,0 +1,116 @@
+name: WFM token protection prevention gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'autonomy/**'
+      - 'security/**'
+    paths:
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/agent-network-boundary.json
+      - resilience/token-protection-baseline.json
+      - 'resilience/incidents/**'
+      - .github/workflows/wfm-token-protection.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-token-protection-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prevention:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Validate NIST IR 8587 token protection contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const token = require('./resilience/token-protection-baseline.json');
+          const egress = require('./resilience/agent-network-boundary.json');
+          const manifest = require('./DEPLOYMENT_MANIFEST.json');
+
+          assert.equal(token.publication.name, 'NIST IR 8587');
+          assert.equal(token.publication.status, 'final');
+          assert.equal(token.publication.published, '2026-09-15');
+          assert.ok(token.publication.authoritative_sources.includes('https://csrc.nist.gov/pubs/ir/8587/final'));
+          assert.ok(token.publication.authoritative_sources.includes('https://csrc.nist.gov/news/2026/protecting-tokens-and-assertions-nist-ir-8587'));
+
+          const current = token.current_wfm_evaluation;
+          assert.equal(current.candidate, manifest.candidate, 'Token-risk evaluation must be refreshed when the sealed deployment candidate changes.');
+          assert.equal(current.production_approved, manifest.production_approved, 'Token-risk evaluation disagrees with deployment approval state.');
+          assert.equal(current.production_approved, false, 'Current token exposure classification must be re-evaluated before any production approval.');
+          assert.equal(manifest.staging_only, true, 'Current token exposure classification is valid only for the staging-only sealed candidate.');
+          assert.equal(current.networked_ai_agent_executor_present_in_sealed_candidate, false, 'A networked AI-agent executor requires executable token chaos tests before promotion.');
+
+          assert.equal(egress.root_of_trust, 'deterministic-executor');
+          assert.equal(egress.language_model_direct_network_authority, false);
+          assert.equal(egress.model_visible_reusable_credentials, false);
+          assert.equal(egress.default_egress, 'deny');
+          assert.equal(egress.approved_egress_requires.same_tenant_scope, true);
+          assert.equal(egress.approved_egress_requires.purpose_bound_request, true);
+          assert.equal(egress.approved_egress_requires.short_lived_least_privilege_credential, true);
+          assert.equal(egress.credential_controls.inject_at_executor_boundary_only, true);
+          assert.equal(egress.credential_controls.redact_from_logs_and_traces, true);
+
+          const controls = token.controls;
+          const mustBeTrue = [
+            'short_lived_workload_tokens_preferred',
+            'trusted_issuer_or_authoritative_validation_required',
+            'recipient_resource_binding_required',
+            'tenant_and_purpose_binding_required',
+            'lifetime_and_activation_window_validation_required',
+            'cryptographic_validation_required_for_signed_tokens_or_assertions',
+            'unknown_or_retired_signing_key_rejected',
+            'automated_signing_key_rotation_supported_where_wfm_controls_keys',
+            'revocation_or_compromise_signal_consumed_when_provider_supports_it',
+            'replay_detection_or_sender_constraint_used_when_supported'
+          ];
+          for (const key of mustBeTrue) {
+            assert.equal(controls[key], true, `Token protection control must remain enabled: ${key}`);
+          }
+          assert.equal(controls.language_model_can_read_reusable_token_material, false);
+          assert.equal(controls.untrusted_tool_output_can_supply_authority_bearing_token_material, false);
+          assert.equal(controls.static_workload_secret_default_allowed, false);
+          assert.equal(controls.token_material_in_logs_traces_or_audit_payloads, false);
+          assert.equal(controls.cross_tenant_token_reuse_allowed, false);
+          assert.equal(controls.scope_broadening_during_recovery_allowed, false);
+          assert.equal(controls.token_injection_boundary, 'deterministic-executor-only');
+          assert.equal(controls.token_validation_failure_action, 'deny-before-provider-mutation-and-preserve-redacted-evidence');
+          assert.ok(Array.isArray(controls.static_secret_exception_requires) && controls.static_secret_exception_requires.length >= 5, 'Static credential exceptions require explicit compensating controls.');
+
+          const expectedChaosIds = [
+            'wrong-recipient-or-cross-tenant-token',
+            'expired-not-yet-valid-or-retired-key-token',
+            'revoked-or-replayed-token',
+            'valid-short-lived-same-tenant-control'
+          ].sort();
+          const actualChaosIds = token.chaos_tests.map(x => x.id).sort();
+          assert.deepEqual(actualChaosIds, expectedChaosIds, 'Token chaos-test coverage drifted without review.');
+          assert.ok(token.chaos_tests.every(x => x.current_runtime_status.startsWith('specified-not-run-')), 'Do not claim token chaos tests passed until a real bounded token executor exists and the tests execute against it.');
+          assert.match(token.promotion_rule, /No future networked identity\/provider\/workload token path may be promoted/);
+
+          console.log(JSON.stringify({
+            ok: true,
+            publication: token.publication.name,
+            candidate: current.candidate,
+            currentCustomerProductionExposureVerified: current.customer_production_exposure_verified,
+            productionApproved: current.production_approved,
+            tokenChaosTests: actualChaosIds,
+            rootOfTrust: egress.root_of_trust,
+            defaultEgress: egress.default_egress
+          }, null, 2));
+          NODE
