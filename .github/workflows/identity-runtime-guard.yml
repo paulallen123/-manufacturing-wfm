@@ -64,11 +64,19 @@ jobs:
             "$image")"
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
 
+          ready=0
           for _ in $(seq 1 40); do
-            if curl -fsS http://127.0.0.1:38117/api/health >/tmp/health.json 2>/dev/null; then break; fi
+            code="$(curl -sS -o /tmp/health.json -w '%{http_code}' http://127.0.0.1:38117/api/health 2>/dev/null || true)"
+            if [ "$code" = '200' ]; then ready=1; break; fi
             sleep 0.25
           done
-          grep -q '"status":"ok"' /tmp/health.json
+          if [ "$ready" != '1' ]; then
+            echo 'Guarded staging server did not become healthy.' >&2
+            cat /tmp/health.json 2>/dev/null || true
+            docker logs "$cid" || true
+            exit 1
+          fi
+          echo 'health=PASS'
 
           login_code="$(curl -sS -D /tmp/login.headers -o /tmp/login.body -w '%{http_code}' \
             -H 'Host: staging.identity.test' \
@@ -77,15 +85,22 @@ jobs:
             -H 'Content-Type: application/json' \
             --data "{\"email\":\"manager@northstar.example\",\"password\":\"$password\"}" \
             http://127.0.0.1:38117/api/login)"
-          test "$login_code" = '200'
+          if [ "$login_code" != '200' ]; then
+            echo "login failed with HTTP $login_code" >&2
+            cat /tmp/login.body >&2 || true
+            docker logs "$cid" >&2 || true
+            exit 1
+          fi
           cookie="$(awk 'BEGIN{IGNORECASE=1} /^set-cookie:/ {gsub("\\r",""); print $2; exit}' /tmp/login.headers | cut -d';' -f1)"
           test -n "$cookie"
+          echo 'login=PASS'
 
           # First authenticated request creates a resource-side binding from server DB truth.
           bound_code="$(curl -sS -o /tmp/bound.body -w '%{http_code}' \
             -H 'Host: staging.identity.test' -H 'X-Forwarded-Proto: https' \
             -H "Cookie: $cookie" http://127.0.0.1:38117/api/health)"
           test "$bound_code" = '200'
+          echo 'resource-binding=PASS'
 
           # A client cannot invent tenant authority even with a valid bearer session.
           inject_code="$(curl -sS -o /tmp/inject.body -w '%{http_code}' \
@@ -93,20 +108,23 @@ jobs:
             -H "Cookie: $cookie" -H 'X-WFM-Tenant: isolation-test' \
             http://127.0.0.1:38117/api/health)"
           test "$inject_code" = '400'
+          echo 'identity-header-injection-block=PASS'
+
+          # Derive the authoritative customer cell from the running server database rather
+          # than hard-coding a tenant identifier into the proof harness.
+          tenant="$(docker exec "$cid" node -e "const {DatabaseSync}=require('node:sqlite');const d=new DatabaseSync('/tmp/wfm-ci.sqlite');const r=d.prepare('SELECT tenant FROM users WHERE email=?').get('manager@northstar.example');if(!r)process.exit(2);process.stdout.write(r.tenant);d.close();")"
+          test -n "$tenant"
 
           # Rotate only this tenant's security epoch out-of-band, then prove the old session
           # is rejected by the resource boundary before the application handles it.
-          docker exec "$cid" node - <<'NODE'
-          const {createIdentitySurvivalGuard}=require('/app/security-runtime/identity-survival-guard.cjs');
-          const g=createIdentitySurvivalGuard({dbPath:'/tmp/wfm-ci.sqlite'});
-          const c=g.securityControlForTests();
-          c.bumpEpoch('northstar-demo');
-          c.db.close();
-          NODE
+          docker exec -e TARGET_TENANT="$tenant" "$cid" node -e "const {createIdentitySurvivalGuard}=require('/app/security-runtime/identity-survival-guard.cjs');const g=createIdentitySurvivalGuard({dbPath:'/tmp/wfm-ci.sqlite'});const c=g.securityControlForTests();c.bumpEpoch(process.env.TARGET_TENANT);c.db.close();"
 
           stale_code="$(curl -sS -o /tmp/stale.body -w '%{http_code}' \
             -H 'Host: staging.identity.test' -H 'X-Forwarded-Proto: https' \
             -H "Cookie: $cookie" http://127.0.0.1:38117/api/health)"
           test "$stale_code" = '401'
 
+          event_count="$(docker exec "$cid" node -e "const {DatabaseSync}=require('node:sqlite');const d=new DatabaseSync('/tmp/wfm-ci.sqlite');const r=d.prepare(\"SELECT count(*) c FROM identity_guard_events WHERE event='session-binding-mismatch-contained'\").get();process.stdout.write(String(r.c));d.close();")"
+          test "$event_count" -ge 1
+          echo 'tenant-epoch-containment=PASS'
           echo 'real-staged-identity-survival=PASS'
