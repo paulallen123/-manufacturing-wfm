@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "incident": "ux-cycle3-test-oracle-regression",
+  "status": "contained-evidence-only",
+  "classification": "test-defect",
+  "materiality": "medium",
+  "detected_at": "2026-09-17T18:25:09Z",
+  "affected_pr": 37,
+  "affected_workflow": ".github/workflows/ux-evolution-cycle3.yml",
+  "affected_head_sha": "35e84b2bbdf0843845d081a72d92fba6fae9b691",
+  "failed_run_id": 35258499439,
+  "failed_job_id": 105328227466,
+  "sealed_runtime": {
+    "release": "0.6.76-hosted-staging-rc1",
+    "runtime_sha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+    "build_verified_in_failed_run": true,
+    "approved_asset_composition_verified_in_failed_run": true,
+    "server_contract_unchanged_verified_in_failed_run": true
+  },
+  "root_cause": "The browser gate clicks the weekly-review route and then waits for .review-layout. The cycle-3 implementation intentionally converts that layout into the condensed .ux-signoff-desk and calls layout.remove() as part of the successful transformation. Therefore the test waits for an element whose absence is an intended postcondition; a correctly functioning cycle-3 transform can make the test time out.",
+  "correlation": {
+    "earlier_failure": "An earlier cycle-3 verifier incorrectly expected a standalone /app/public/ux-reset-cycle3.js even though the approved composition appends the UX layer into value-cockpit-ui.js and factory-control-ui.css.",
+    "recurring_pattern": "The cycle-3 proof harness has repeatedly asserted pre-composition implementation details rather than durable post-composition behavior. Both failures occurred after the exact sealed runtime build remained intact.",
+    "product_defect_evidence": false,
+    "staging_runtime_defect_evidence": false,
+    "deployment_provenance_defect_evidence": false
+  },
+  "machine_readable_detection_rules": {
+    "forbid_waiting_on_removed_postcondition": true,
+    "removed_selector": ".review-layout",
+    "durable_postconditions": [
+      "ui.page === 'weekly-review'",
+      "document.querySelector('.ux-signoff-desk')",
+      "document.body.dataset.uxSignoff === 'condensed'"
+    ],
+    "static_rule": "If a browser gate waits for selector S after invoking the transform and the implementation deliberately removes S in that successful transform, classify the gate as contradictory and fail the test definition review before runtime execution.",
+    "do_not_weaken_runtime_boundary": true,
+    "do_not_bypass_tenant_or_autonomy_controls": true,
+    "no_llm_direct_execution_authority": true
+  },
+  "safe_regression_scenario": [
+    "Build the exact composed image and verify runtime SHA-256 before browser execution.",
+    "Navigate and authenticate only in the isolated fixture environment.",
+    "Invoke the weekly-review route.",
+    "Wait for the durable semantic postcondition .ux-signoff-desk, not the transient pre-transform .review-layout.",
+    "Assert exactly three .ux-signoff-detail sections, no legacy hero, no page-level horizontal overflow, and required KPI labels.",
+    "Assert the sealed server contract and runtime artifact remain unchanged.",
+    "If the durable postcondition does not appear, capture page/role/overlay globals and browser console errors before classifying a product defect."
+  ],
+  "collision_avoidance": {
+    "active_source_owner": "PR 37 / ux/role-first-simplification-20260917-v2",
+    "source_or_workflow_modified_by_this_incident_branch": false,
+    "reason": "PR 37 was actively receiving commits while the defect was diagnosed. This branch preserves the validated cause without editing the active owner's UX implementation or workflow."
+  },
+  "claim_boundary": "This finding is confined to a draft UX proof harness. It does not demonstrate a staging outage, product defect, tenant-isolation failure, payroll mutation, production exposure or customer-data impact."
+}
