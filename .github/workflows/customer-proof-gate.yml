@@ -52,7 +52,7 @@ jobs:
             -e NODE_ENV=staging \
             -e NODE_OPTIONS=--experimental-sqlite \
             -e WFM_HOSTED_STAGING=true \
-            -e WFM_PUBLIC_ORIGIN=http://127.0.0.1:3000 \
+            -e WFM_PUBLIC_ORIGIN=https://wfm-ci.invalid \
             -e WFM_DB=/tmp/wfm-proof.sqlite \
             -e WFM_STAGING_PASSWORD='CI-only-customer-proof-2026!' \
             manufacturing-wfm:customer-proof
