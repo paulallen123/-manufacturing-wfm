@@ -77,15 +77,19 @@ jobs:
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --json > "$RUNNER_TEMP/railway-vars.json"
 
-          # Inject only the two staging values required by the local proof process. They
-          # remain in memory and are never echoed, committed or copied to another secret.
+          # An early mobile setup pass created a mixed-case duplicate of the password
+          # variable. The browser session proved the service accepts that credential,
+          # while the uppercase value returned by the CLI did not. Prefer the known
+          # legacy duplicate for proof, fall back to the canonical uppercase key, and
+          # never print either value.
           node --input-type=module - "$RUNNER_TEMP/railway-vars.json" <<'NODE'
           import fs from 'node:fs';
           const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-          if (!vars.WFM_STAGING_PASSWORD || !vars.WFM_PUBLIC_ORIGIN) {
+          const password = vars.Wfm_staging_password || vars.WFM_STAGING_PASSWORD;
+          if (!password || !vars.WFM_PUBLIC_ORIGIN) {
             throw new Error('Required staging variables are unavailable to the proof runner.');
           }
-          process.env.WFM_STAGING_PASSWORD = vars.WFM_STAGING_PASSWORD;
+          process.env.WFM_STAGING_PASSWORD = password;
           process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
           await import('./scripts/live-auth-proof.mjs');
           NODE
