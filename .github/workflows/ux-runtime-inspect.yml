@@ -1,0 +1,34 @@
+name: WFM UX runtime structure inspect
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/ux-runtime-inspect.yml'
+      - 'Dockerfile'
+      - 'ux-overlay/**'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build composed image
+        run: docker build --pull=false -t wfm-ux-inspect:pr .
+      - name: Inspect weekly-review runtime structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker create wfm-ux-inspect:pr)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          rm -rf /tmp/wfm-public && mkdir -p /tmp/wfm-public
+          docker cp "$cid:/app/public/." /tmp/wfm-public/
+          echo '=== PUBLIC ASSETS ==='
+          find /tmp/wfm-public -maxdepth 1 -type f -printf '%f\n' | sort
+          echo '=== WEEKLY REVIEW MATCHES ==='
+          grep -Rni -C 2 --include='*.js' --include='*.html' -E "weekly-review|Weekly review|week review|sign.?off" /tmp/wfm-public | head -n 260 || true
+          echo '=== EXCEPTION/PAYROLL MATCHES ==='
+          grep -Rni -C 1 --include='*.js' -E "missing time|time exception|payroll.*exception|exception.*payroll|sign.?off" /tmp/wfm-public | head -n 220 || true
