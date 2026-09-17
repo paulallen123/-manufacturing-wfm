@@ -12,6 +12,7 @@ on:
       - 'scripts/validate-deployment.mjs'
       - 'scripts/validate-resilience-scenarios.mjs'
       - 'scripts/validate-autonomous-recovery-proof.mjs'
+      - 'scripts/validate-autonomous-recovery-matrix.mjs'
       - '.github/workflows/wfm-autonomous-recovery-proof.yml'
 
 permissions:
@@ -22,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  prove-known-worker-recovery:
+  prove-known-recovery:
     if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -48,9 +49,21 @@ jobs:
       - name: Inject and recover a known worker failure with zero human interaction
         run: node scripts/validate-autonomous-recovery-proof.mjs
 
-      - name: Assert proof receipt exists and is machine-readable
+      - name: Prove deterministic recovery matrix
+        run: node scripts/validate-autonomous-recovery-matrix.mjs
+
+      - name: Assert proof receipts exist and remain fail-closed
         shell: bash
         run: |
           set -euo pipefail
           test -s autonomous-recovery-proof.json
-          node -e "const p=require('./autonomous-recovery-proof.json'); if(p.status!=='PASS'||p.humanInteractionRequired!==false||p.productionMutation!==false||p.safetyKernelApproved!==true||p.negativeAuthorityTests?.payrollWriteDenied!==true||p.negativeAuthorityTests?.languageModelDirectExecutionDenied!==true||p.negativeAuthorityTests?.crossTenantExecutionDenied!==true) process.exit(1); console.log(JSON.stringify(p,null,2));"
+          test -s autonomous-recovery-matrix-proof.json
+          node - <<'NODE'
+          const worker=require('./autonomous-recovery-proof.json');
+          const matrix=require('./autonomous-recovery-matrix-proof.json');
+          const safe = p => p.negativeAuthorityTests?.payrollWriteDenied===true && p.negativeAuthorityTests?.languageModelDirectExecutionDenied===true && p.negativeAuthorityTests?.crossTenantExecutionDenied===true && p.negativeAuthorityTests?.unknownFaultFailsClosed===true;
+          if(worker.status!=='PASS'||worker.humanInteractionRequired!==false||worker.productionMutation!==false||worker.safetyKernelApproved!==true||!safe(worker)) process.exit(1);
+          if(matrix.status!=='PASS'||matrix.humanInteractionRequired!==false||matrix.productionMutation!==false||matrix.scenariosPassed!==6||!safe(matrix)) process.exit(1);
+          if(!matrix.scenarios.every(s=>s.blockedBeforeIndependentProof&&s.independentDryRunVerified&&s.safetyKernelApproved&&s.isolatedRecoveryVerified&&s.idempotencyVerified)) process.exit(1);
+          console.log(JSON.stringify({worker,matrix},null,2));
+          NODE
