@@ -11,7 +11,7 @@ const page=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return nu
 const employee=()=>{try{return typeof isEmployee==='function'&&isEmployee();}catch{return false;}};
 const manager=()=>{try{const role=(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'&&ui.role);return !employee()&&['manager','director','supervisor'].includes(role);}catch{return false;}};
 function groupFor(route){for(const [key,value] of Object.entries(groups))if(value.routes.includes(route))return [key,value];return null;}
-function safe(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
+function safe(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function enhanceDrawer(){
  const drawer=document.querySelector('.ux-tool-drawer');
  if(!drawer||drawer.dataset.uxSpecialistDrawer==='calm')return;
