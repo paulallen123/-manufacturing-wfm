@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/railway-first-deploy.yml'
       - 'scripts/live-auth-proof.mjs'
+      - 'scripts/live-isolation-kiosk-proof.mjs'
       - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
 
@@ -87,4 +88,5 @@ jobs:
           process.env.WFM_STAGING_PASSWORD = password;
           process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
           await import('./scripts/live-auth-proof.mjs');
+          await import('./scripts/live-isolation-kiosk-proof.mjs');
           NODE
