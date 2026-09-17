@@ -1,12 +1,17 @@
 {
-  "candidate": "0.6.31-hosted-staging-rc1",
-  "runtime_artifact": "runtime-hosted-staging.tgz",
-  "runtime_sha256": "b5344cbd866320c3e7afcb177f2cc1f6060118af6780fedf33c9764d25c1935f",
-  "runtime_size_bytes": 407117,
-  "parent_archive_sha256": "1d650fb7e077ad5c8a4e20e3246a2b330ecdeaa075e443bf9e726854fac9709c",
-  "server_sha256": "73cbc8e27fa004e28f9fecfb8591ea7e5a4c25468495114233913d64e8dc04e8",
-  "hosting_patch_sha256": "81ecdac23f4d0eea3a68bc707dc6343c4e3d92e0ef4b2107107630fd7b9c1f9b",
+  "candidate": "0.6.70-hosted-staging-rc1",
+  "parent": "0.6.70-provider-native-reconciliation-controls-candidate",
+  "canonical_source_sha256": "3ee986c0e3ea9d7e057ab8ed238e598cdb14f846259877a995c88cf00e8e5735",
+  "hosted_source_sha256": "e50bdc71bc7db05d455842add946221d826fe896e373135737dcd9263a9903f9",
+  "runtime_manifest_sha256": "a972da9b7b76e37e3c4ca9eccf775d508754a36005a880d76ef9f8c74a7efc59",
+  "runtime_sha256": "3b39402fcabcbe5267915561474684b010427110b0b5f38562af4d4624b6a181",
+  "runtime_size_bytes": 394016,
   "node_image": "node:22.16.0-bookworm-slim",
+  "customer_security_gate": "65/65 passed",
+  "customer_operations_gate": "61/61 passed",
+  "hosted_acceptance": "passed",
   "production_approved": false,
-  "fixture_only": true
+  "pilot_ready": false,
+  "fixture_only": true,
+  "staging_only": true
 }
