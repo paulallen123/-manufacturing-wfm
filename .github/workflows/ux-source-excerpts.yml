@@ -16,28 +16,24 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Extract targeted UX source
+      - name: Extract leave and navigation source
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/wfm
           tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C /tmp/wfm
-          echo 'AVAILABILITY_UI_START'
-          cat /tmp/wfm/public/availability-ui.js
-          echo 'AVAILABILITY_UI_END'
-          echo 'APP_STRUCTURE_START'
           node <<'NODE'
-          const fs = require('fs');
-          const s = fs.readFileSync('/tmp/wfm/public/app.js','utf8');
-          const terms=['data-nav','factory-section','operations-section','resources-section','company-section','section-jump','UIShell','<main','sidebar','workspace'];
+          const fs=require('fs');
+          const s=fs.readFileSync('/tmp/wfm/public/app.js','utf8');
+          const terms=['function leave','leavePage','Holiday','holiday','entitlement','remaining','who else','requests','const navs','function shell','function overview','function attendance','function cost'];
           for(const term of terms){
             let from=0,count=0;
-            while(count<8){
+            while(count<12){
               const at=s.indexOf(term,from); if(at<0) break;
-              console.log(`TERM ${term} AT ${at}`);
-              console.log(s.slice(Math.max(0,at-900),Math.min(s.length,at+3200)));
+              console.log(`EXCERPT_START term=${term} at=${at}`);
+              console.log(s.slice(Math.max(0,at-1800),Math.min(s.length,at+6500)));
+              console.log('EXCERPT_END');
               from=at+term.length; count++;
             }
           }
           NODE
-          echo 'APP_STRUCTURE_END'
