@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build composed image
         run: docker build --pull=false -t wfm-ux-inspect:pr .
-      - name: Inspect manager performance runtime structure
+      - name: Inspect employee self-service runtime structure
         shell: bash
         run: |
           set -euo pipefail
@@ -26,18 +26,17 @@ jobs:
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
           rm -rf /tmp/wfm-public && mkdir -p /tmp/wfm-public
           docker cp "$cid:/app/public/." /tmp/wfm-public/
-          docker cp "$cid:/app/server.cjs" /tmp/wfm-server.cjs
           {
-            echo '=== APPROVED PAGE ASSET ORDER ==='
-            grep -oE '<(script|link)[^>]+(src|href)="[^"]+"[^>]*>' /tmp/wfm-public/index.html || true
-            echo '=== PERFORMANCE / COST / SAVINGS HOOKS ==='
-            grep -RIn -E "savings-decisions|value-cockpit|labou?r cost|productivity|saving|opportunity|decision|efficiency|overtime|agency|variance" /tmp/wfm-public --include='*.js' | head -n 700 || true
-            echo '=== PERFORMANCE CSS HOOKS ==='
-            grep -RIn -E "savings|value-cockpit|performance|decision|opportunity|efficiency|cost" /tmp/wfm-public --include='*.css' | head -n 500 || true
-            echo '=== CORE NAVIGATION / RENDER CONTRACT ==='
-            grep -RIn -E "savings-decisions|dataset\.page|data-page|ui\.page|function render|render\s*=|window\.render" /tmp/wfm-public --include='*.js' | head -n 420 || true
-            echo '=== VALUE COCKPIT SERVED SOURCE ==='
-            sed -n '1,420p' /tmp/wfm-public/value-cockpit-ui.js || true
+            echo '=== EMPLOYEE NAV / PAGE HOOKS ==='
+            grep -RIn -E "personHome|personLeave|personShifts|time-review|employee-hero|newleave|leave balance|entitlement|availability|personal|profile|my time|my day|time off|shift" /tmp/wfm-public --include='*.js' | head -n 900 || true
+            echo '=== EMPLOYEE CSS / RESPONSIVE HOOKS ==='
+            grep -RIn -E "employee|personal|leave|shift|time-review|mobile|@media|overflow|person" /tmp/wfm-public --include='*.css' | head -n 700 || true
+            echo '=== CORE EMPLOYEE RENDERERS ==='
+            grep -RIn -E "function person(Home|Leave|Shifts)|person(Home|Leave|Shifts)\s*=|function .*employee|function .*profile|function .*time.*review" /tmp/wfm-public --include='*.js' | head -n 500 || true
+            echo '=== EMPLOYEE SOURCE CONTEXT ==='
+            grep -RIl -E "personHome|personLeave|personShifts" /tmp/wfm-public --include='*.js' | while read f; do echo "--- $f ---"; grep -n -C 12 -E "personHome|personLeave|personShifts" "$f" | head -n 420; done || true
+            echo '=== ROLE-FIRST EMPLOYEE OVERLAY ==='
+            grep -n -C 6 -E "employeeRouteLabel|enhanceEmployeeSelfService|employeeBalanceCard|fixEmployeeLeaveModal" /tmp/wfm-public/value-cockpit-ui.js | head -n 420 || true
           } | tee /tmp/wfm-runtime-contract.txt
       - name: Preserve runtime contract evidence
         uses: actions/upload-artifact@v4
