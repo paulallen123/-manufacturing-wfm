@@ -1,11 +1,11 @@
 # Manufacturing WFM — isolated customer-proof staging lane
 
-This branch is the deployment wrapper for **0.6.70-hosted-staging-rc1**, derived from the canonical **0.6.70-provider-native-reconciliation-controls-candidate**.
+This branch records **0.6.70-hosted-staging-rc4**, derived from the canonical **0.6.70-provider-native-reconciliation-controls-candidate**. It exists to prove the latest customer journey without weakening the separate containment environment or implying production approval.
 
-The customer-proof build remains **fictional/demo-data staging only**. It deliberately refuses `NODE_ENV=production`. Hosted mode is opt-in and requires an explicit HTTPS `WFM_PUBLIC_ORIGIN`, an explicit staging database path, and a non-default 20+ character `WFM_STAGING_PASSWORD`. The local development credential is rejected in hosted mode.
+The build is **fictional/demo-data staging only** and refuses `NODE_ENV=production`. Hosted mode requires HTTPS origin enforcement, an explicit staging database path and a non-default credential. The old local demo credential is rejected. The customer-facing UI identifies itself as **Hosted staging demo** and explicitly states that it is not production or pilot approved.
 
-The runtime is fetched only during the container build, verified against SHA-256 `3b39402fcabcbe5267915561474684b010427110b0b5f38562af4d4624b6a181`, then baked into the isolated image. `DEPLOYMENT_MANIFEST.json` records canonical source identity, hosted derivative identity, runtime manifest identity and completed customer-focused test gates.
+The runtime is SHA-256 pinned to `c99f0ffb724978cb758eb16237b293791fe1e9aeca9d395d8c4238283789f380`. `DEPLOYMENT_MANIFEST.json` records the canonical parent, hosted derivative identity, runtime manifest and completed customer-focused gates.
 
-Completed pre-cloud proof: security/authentication/tenant/correction gate **65/65**, onboarding/kiosk/manufacturing/payroll gate **61/61**, and dedicated hosted-mode acceptance passed.
+Completed evidence before independent Chromium proof: **65/65** security/authentication/tenant/correction tests, **61/61** onboarding/kiosk/manufacturing/payroll tests, **39/39** hosted-presentation/API/Factory Control Centre/source-watch tests plus **5/5** explicit hosted-presentation assertions, and external HTTPS health with HSTS on the RC4 Railway service.
 
-Open gates remain external HTTPS/browser acceptance on the exact cloud image, full-suite regression completion, genuine provider Level A evidence, external security/performance assurance, production persistence/backup architecture and customer acceptance. No production or pilot approval is implied by this staging deployment.
+Open gates remain final independent browser evidence, full-suite regression completion, genuine provider Level A acceptance, external security/performance assurance, production persistence/backup architecture and customer acceptance. This staging lane is suitable only for controlled customer demonstration and evidence gathering until those gates close.
