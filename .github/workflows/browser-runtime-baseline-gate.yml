@@ -1,0 +1,60 @@
+name: Browser Runtime Security Floor
+
+on:
+  push:
+    branches:
+      - 'security/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-runtime-floor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-browser-security-floor:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 / Node 24
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Validate fail-closed browser baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          p='security/runtime-baselines/railway-test-runner.json'
+          test -f "$p"
+
+          configured="$(jq -r '.bundled_browser.version' "$p")"
+          floor="$(jq -r '.minimum_browser_security_floor.chromium_version' "$p")"
+          enabled="$(jq -r '.execution.browser_execution_enabled' "$p")"
+          mode="$(jq -r '.execution.containment_mode' "$p")"
+          resume_gate="$(jq -r '.execution.resume_requires_verified_browser_at_or_above_security_floor' "$p")"
+
+          test "$resume_gate" = "true"
+
+          lowest="$(printf '%s\n%s\n' "$configured" "$floor" | sort -V | head -n1)"
+          if [ "$configured" != "$floor" ] && [ "$lowest" = "$configured" ]; then
+            test "$enabled" = "false"
+            test "$mode" = "paused"
+            echo "Browser remains fail-closed: $configured is below security floor $floor"
+          else
+            echo "Configured browser meets or exceeds security floor: $configured >= $floor"
+          fi
+
+      - name: Require private-test network baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          p='security/runtime-baselines/railway-test-runner.json'
+          jq -e '
+            .environment_class == "private-test" and
+            .network.public_domains_allowed == false and
+            .network.ipv6_egress == false
+          ' "$p" >/dev/null
