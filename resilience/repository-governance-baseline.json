@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-17T21:02:00Z",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "default_branch": "main",
+  "classification": "security_and_change_control_gap",
+  "expected_controls": {
+    "main_branch_protected": true,
+    "required_status_checks_enforced_before_merge_or_direct_update": true,
+    "direct_push_bypass_of_ci_preconditions": false,
+    "autonomy_safety_and_runtime_integrity_gates_are_preconditions_not_post_facto_observations": true
+  },
+  "current_observation": {
+    "main_branch_protected": false,
+    "required_status_checks_enforcement": "off",
+    "observation_source": "GitHub branches/main API",
+    "main_head_at_observation": "4218e829de3e47ef3e8965eae9df16b51c61d79f"
+  },
+  "correlated_risk": {
+    "summary": "A direct update can land on main before CI/security/integrity results are known. Because the Railway customer-proof service is source-linked to this repository and watches deployment-sensitive paths, unprotected-main drift is also a staging provenance risk if a watched path changes.",
+    "not_claimed": [
+      "No production compromise is claimed.",
+      "No current staging mutation from this finding is claimed.",
+      "No tenant-isolation or autonomy-kernel bypass has been observed."
+    ]
+  },
+  "containment": {
+    "production_approved_must_remain_false": true,
+    "pilot_ready_must_remain_false": true,
+    "do_not_treat_post_push_ci_as_equivalent_to_pre_merge_enforcement": true,
+    "do_not_auto_merge_or_redeploy_from_this evidence_branch": true,
+    "preserve_rollback_and_exact_candidate_hash_checks": true
+  },
+  "detection_rules": [
+    {
+      "id": "main-must-be-protected",
+      "condition": "GET /repos/{owner}/{repo}/branches/main -> protected != true",
+      "severity": "high",
+      "classification": "repository_governance"
+    },
+    {
+      "id": "required-checks-must-be-preconditions",
+      "condition": "main.required_status_checks.enforcement_level == off OR branch protection unavailable",
+      "severity": "high",
+      "classification": "change_control"
+    },
+    {
+      "id": "watched-deploy-path-requires-protected-main",
+      "condition": "source-linked staging service watches Dockerfile, DEPLOYMENT_MANIFEST.json, STAGING_FREEZE.json or artifact/** while main is unprotected",
+      "severity": "high",
+      "classification": "deployment_provenance"
+    }
+  ],
+  "safe_runbook": [
+    "Keep this repository private; do not weaken privacy to gain ruleset features.",
+    "Enable enforceable protection for main using the strongest repository control available to the account plan.",
+    "Require the repository security/integrity gates that protect the sealed candidate before merges or direct updates are accepted.",
+    "Disallow force-pushes and routine direct pushes to main; use bounded branches and pull requests.",
+    "After protection is enabled, rerun this audit and verify protected=true before changing any deployment-sensitive watched path.",
+    "Do not change Railway staging or production settings merely to make this audit green."
+  ],
+  "promotion_rule": "No production or pilot promotion may rely on repository CI as a mandatory gate while main can be updated without enforceable pre-merge/pre-update protection."
+}
