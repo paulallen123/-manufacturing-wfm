@@ -9,6 +9,8 @@ on:
       - 'scripts/live-isolation-kiosk-proof.mjs'
       - 'scripts/live-correction-proof.mjs'
       - 'scripts/live-visual-evidence.mjs'
+      - 'scripts/browser-security-floor.mjs'
+      - 'resilience/browser-security-floor.json'
       - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
 
@@ -45,6 +47,10 @@ jobs:
           grep -F '"production_approved": false' DEPLOYMENT_MANIFEST.json
           grep -F '"pilot_ready": false' DEPLOYMENT_MANIFEST.json
           grep -F '"staging_only": true' DEPLOYMENT_MANIFEST.json
+
+      - name: Require patched Chrome before any staging credential retrieval
+        shell: bash
+        run: node scripts/browser-security-floor.mjs
 
       - name: Install pinned Railway CLI with published digest verification
         shell: bash
