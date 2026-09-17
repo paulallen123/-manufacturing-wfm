@@ -1,0 +1,68 @@
+name: Immune Mesh Safety Contract
+
+on:
+  push:
+    branches:
+      - 'security/**'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 / Node 24
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Enforce immune-mesh invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/policy.json
+          test -f "$p"
+          jq -e '
+            .principles.assume_compromise == true and
+            .principles.separate_security_control_plane == true and
+            .principles.tenant_blast_radius_cells == true and
+            .principles.immutable_external_audit == true and
+            .principles.independent_recovery_authority == true and
+            .principles.ai_is_not_root_of_trust == true and
+            .principles.two_key_catastrophic_actions == true and
+            .principles.telemetry_loss_is_incident == true and
+            .reflex.require_evidence_predicates == true and
+            .reflex.require_customer_scope == true and
+            .reflex.require_action_budget == true and
+            .reflex.require_rollback == true and
+            .reflex.require_audit == true and
+            .reflex.default_ttl_seconds > 0 and
+            .reflex.max_ttl_seconds <= 3600 and
+            .deception.production_authority == false and
+            .identity.short_lived_credentials_required == true and
+            .identity.shared_admin_secrets_forbidden == true and
+            .identity.just_in_time_privilege_required == true and
+            .recovery.production_admin_can_destroy_final_backup == false and
+            .recovery.immutable_or_soft_delete_required == true and
+            .recovery.out_of_band_access_required == true and
+            .recovery.isolated_restore_test_required == true and
+            .ai.may_self_approve_policy == false and
+            .ai.may_change_root_of_trust == false and
+            .ai.may_disable_audit == false and
+            .catastrophic_actions.require_two_independent_authorities == true
+          ' "$p" >/dev/null
+
+      - name: Reject dangerous reflex capabilities
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/policy.json
+          for bad in hack_back external_retaliation delete_production_data mass_disable_identities alter_payroll_or_workforce_records disable_audit delete_recovery; do
+            if jq -e --arg x "$bad" '.reflex.allowed | index($x) != null' "$p" >/dev/null; then
+              echo "Forbidden reflex capability: $bad" >&2
+              exit 1
+            fi
+          done

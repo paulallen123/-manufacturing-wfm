@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "status": "staged",
+  "name": "WFM Adaptive Immune Defence Mesh",
+  "principles": {
+    "assume_compromise": true,
+    "separate_security_control_plane": true,
+    "tenant_blast_radius_cells": true,
+    "immutable_external_audit": true,
+    "independent_recovery_authority": true,
+    "ai_is_not_root_of_trust": true,
+    "two_key_catastrophic_actions": true,
+    "telemetry_loss_is_incident": true
+  },
+  "reflex": {
+    "default_ttl_seconds": 300,
+    "max_ttl_seconds": 3600,
+    "require_evidence_predicates": true,
+    "require_customer_scope": true,
+    "require_action_budget": true,
+    "require_rollback": true,
+    "require_audit": true,
+    "allowed": [
+      "revoke_session",
+      "invalidate_auth_cache",
+      "temporary_rate_limit",
+      "isolate_workload",
+      "terminate_confirmed_malicious_process",
+      "remove_temporary_unauthorised_privilege",
+      "quarantine_artifact",
+      "pause_deployment",
+      "block_confirmed_malicious_ingress_egress",
+      "capture_forensic_snapshot"
+    ]
+  },
+  "deception": {
+    "enabled_in_design": true,
+    "production_authority": false,
+    "objects": [
+      "decoy_session_token",
+      "decoy_user_credential",
+      "decoy_file",
+      "decoy_api_resource",
+      "decoy_privileged_identity"
+    ]
+  },
+  "identity": {
+    "short_lived_credentials_required": true,
+    "shared_admin_secrets_forbidden": true,
+    "just_in_time_privilege_required": true,
+    "session_rotation_required": true
+  },
+  "recovery": {
+    "production_admin_can_destroy_final_backup": false,
+    "immutable_or_soft_delete_required": true,
+    "version_history_required": true,
+    "out_of_band_access_required": true,
+    "isolated_restore_test_required": true
+  },
+  "ai": {
+    "may_propose_policy": true,
+    "may_execute_pre_authorised_reflex_only_via_deterministic_executor": true,
+    "may_self_approve_policy": false,
+    "may_change_root_of_trust": false,
+    "may_disable_audit": false
+  },
+  "catastrophic_actions": {
+    "require_two_independent_authorities": true,
+    "examples": [
+      "mass_disable_identities",
+      "production_wide_credential_rotation",
+      "tenant_shutdown",
+      "bulk_restore",
+      "global_network_deny",
+      "delete_audit_or_recovery_data"
+    ]
+  }
+}
