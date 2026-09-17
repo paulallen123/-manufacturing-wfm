@@ -12,6 +12,7 @@ on:
       - DEPLOYMENT_MANIFEST.json
       - resilience/security-baseline.json
       - resilience/failure-scenarios.json
+      - resilience/supply-chain-denylist.json
       - scripts/validate-deployment.mjs
       - scripts/validate-resilience-scenarios.mjs
       - .github/workflows/wfm-runtime-integrity.yml
@@ -45,6 +46,47 @@ jobs:
         run: node scripts/validate-resilience-scenarios.mjs
       - name: Build the exact staging candidate
         run: docker build --pull=false -t wfm-staging-candidate:${{ github.sha }} .
+      - name: Reject known malicious npm artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-staging-candidate:${GITHUB_SHA}"
+          DENYLIST="$(jq -c '.entries' resilience/supply-chain-denylist.json)"
+          docker run --rm -i -e WFM_NPM_DENYLIST="$DENYLIST" --entrypoint node "$IMAGE" - <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const denyEntries = JSON.parse(process.env.WFM_NPM_DENYLIST || '[]');
+          const denied = new Map(denyEntries.map(x => [`${x.name}@${x.version}`, x]));
+          const hits = [];
+          let inspected = 0;
+          const walk = dir => {
+            let entries;
+            try { entries = fs.readdirSync(dir, {withFileTypes: true}); } catch { return; }
+            for (const entry of entries) {
+              if (entry.isSymbolicLink()) continue;
+              const p = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                walk(p);
+                continue;
+              }
+              if (entry.name !== 'package.json') continue;
+              try {
+                const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+                if (!pkg.name || !pkg.version) continue;
+                inspected += 1;
+                const key = `${pkg.name}@${pkg.version}`;
+                if (denied.has(key)) hits.push({...denied.get(key), path: p});
+              } catch {}
+            }
+          };
+          walk('/app');
+          if (hits.length) {
+            console.error('Refusing staging candidate containing known malicious npm package versions:');
+            for (const hit of hits) console.error(`${hit.name}@${hit.version} ${hit.advisory} ${hit.path}`);
+            process.exit(1);
+          }
+          console.log(`Supply-chain denylist clean; inspected ${inspected} package manifests.`);
+          NODE
       - name: Verify authoritative container identity and patched runtime
         shell: bash
         run: |
