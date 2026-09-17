@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "proof": "staging-surface-watch",
+  "status": "bounded-evidence-validation",
+  "base_main_sha": "4218e829de3e47ef3e8965eae9df16b51c61d79f",
+  "branch": "autonomy/staging-surface-watch-20260917",
+  "scope": [
+    "resilience/incidents/2026-09-17-public-staging-crawler-exposure.json",
+    "resilience/incidents/2026-09-17-live-proof-deployment-identity-drift.json"
+  ],
+  "runtime_mutation": false,
+  "railway_mutation": false,
+  "production_mutation": false,
+  "required_validation": [
+    "WFM every-push security gate",
+    "deployment and resilience metadata validation",
+    "exact sealed staging candidate image build",
+    "runtime boundary proof",
+    "production-mode refusal"
+  ],
+  "promotion_boundary": "Evidence-only. A green validation confirms that recording these findings does not weaken the sealed staging candidate; it does not itself remediate crawler exposure or re-bind current Railway deployment provenance."
+}
