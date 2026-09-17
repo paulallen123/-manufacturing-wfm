@@ -1,0 +1,121 @@
+name: Untrusted Content Airlock Contract
+
+on:
+  push:
+    branches:
+      - 'security/**'
+    paths:
+      - 'security/immune-mesh/untrusted-content-airlock-policy.json'
+      - '.github/workflows/untrusted-content-airlock-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Enforce hostile-content isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/untrusted-content-airlock-policy.json
+          jq -e '
+            .status == "staged" and
+            .threat_model.all_external_content_is_untrusted == true and
+            .threat_model.assume_parser_compromise == true and
+            .threat_model.assume_content_type_spoofing == true and
+            .threat_model.assume_archive_bomb_or_resource_exhaustion == true and
+            .threat_model.assume_prompt_injection_in_extracted_text == true and
+            .threat_model.parser_compromise_must_not_grant_application_or_control_plane_authority == true and
+            .execution_airlock.per_customer_cell == true and
+            .execution_airlock.ephemeral_sandbox_required == true and
+            .execution_airlock.run_as_non_root == true and
+            .execution_airlock.read_only_root_filesystem == true and
+            .execution_airlock.drop_all_linux_capabilities == true and
+            .execution_airlock.no_host_mounts == true and
+            .execution_airlock.no_persistent_volumes == true and
+            .execution_airlock.no_application_secrets == true and
+            .execution_airlock.no_security_plane_secrets == true and
+            .execution_airlock.network_ingress_allowed == false and
+            .execution_airlock.network_egress_allowed == false and
+            .execution_airlock.seccomp_or_equivalent_required == true and
+            .execution_airlock.maximum_runtime_seconds > 0 and
+            .execution_airlock.maximum_runtime_seconds <= 30 and
+            .execution_airlock.maximum_memory_mib > 0 and
+            .execution_airlock.maximum_memory_mib <= 256 and
+            .execution_airlock.maximum_pids > 0 and
+            .execution_airlock.maximum_pids <= 64
+          ' "$p" >/dev/null
+
+      - name: Enforce parser bomb and traversal limits
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/untrusted-content-airlock-policy.json
+          jq -e '
+            .input_limits.maximum_input_bytes > 0 and
+            .input_limits.maximum_input_bytes <= 52428800 and
+            .input_limits.verify_type_from_content_not_filename_only == true and
+            .input_limits.archive_max_entries > 0 and
+            .input_limits.archive_max_entries <= 1000 and
+            .input_limits.archive_max_nesting_depth >= 0 and
+            .input_limits.archive_max_nesting_depth <= 2 and
+            .input_limits.archive_max_expansion_ratio > 0 and
+            .input_limits.archive_max_expansion_ratio <= 20 and
+            .input_limits.archive_max_uncompressed_bytes > 0 and
+            .input_limits.archive_max_uncompressed_bytes <= 104857600 and
+            .input_limits.reject_path_traversal_entries == true and
+            .input_limits.reject_device_files_and_special_nodes == true
+          ' "$p" >/dev/null
+
+      - name: Enforce data-only output and AI boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/untrusted-content-airlock-policy.json
+          jq -e '
+            .output_boundary.raw_content_never_becomes_command_or_policy == true and
+            .output_boundary.schema_validated_output_only == true and
+            .output_boundary.executable_output_forbidden == true and
+            .output_boundary.customer_write_authority_for_parser == false and
+            .output_boundary.security_policy_write_authority_for_parser == false and
+            .output_boundary.cross_customer_output_forbidden == true and
+            .output_boundary.preserve_original_content_hash == true and
+            .ai_boundary.extracted_content_is_data_not_instruction == true and
+            .ai_boundary.content_cannot_grant_tool_authority == true and
+            .ai_boundary.content_cannot_approve_security_action == true and
+            .ai_boundary.content_cannot_mutate_memory_or_policy_root == true and
+            .ai_boundary.ai_requires_structured_trusted_context_for_actions == true
+          ' "$p" >/dev/null
+
+      - name: Enforce bounded reversible response
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/untrusted-content-airlock-policy.json
+          jq -e '
+            .bounded_reflexes.maximum_ttl_seconds > 0 and
+            .bounded_reflexes.maximum_ttl_seconds <= 900 and
+            .bounded_reflexes.require_customer_scope == true and
+            .bounded_reflexes.require_rollback == true and
+            .evidence.sha256_required == true and
+            .evidence.customer_cell_required == true and
+            .evidence.source_connector_identity_required == true and
+            .evidence.external_immutable_audit_required == true
+          ' "$p" >/dev/null
+          for bad in hack_back external_retaliation delete_customer_data delete_security_evidence delete_recovery_state mass_disable_identities global_network_deny customer_wide_shutdown organisation_wide_shutdown production_wide_credential_rotation alter_payroll_or_workforce_records; do
+            jq -e --arg x "$bad" '.forbidden_automatic_actions | index($x) != null' "$p" >/dev/null
+            if jq -e --arg x "$bad" '.bounded_reflexes.allowed | index($x) != null' "$p" >/dev/null; then
+              echo "Forbidden action found in allowed reflexes: $bad" >&2
+              exit 1
+            fi
+          done

@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "status": "staged",
+  "name": "WFM Untrusted Content Airlock",
+  "purpose": "Prevent hostile files, payloads, parsed text or AI-visible external content from turning parser compromise into customer or platform compromise.",
+  "threat_model": {
+    "all_external_content_is_untrusted": true,
+    "assume_parser_compromise": true,
+    "assume_content_type_spoofing": true,
+    "assume_archive_bomb_or_resource_exhaustion": true,
+    "assume_prompt_injection_in_extracted_text": true,
+    "parser_compromise_must_not_grant_application_or_control_plane_authority": true
+  },
+  "execution_airlock": {
+    "per_customer_cell": true,
+    "ephemeral_sandbox_required": true,
+    "run_as_non_root": true,
+    "read_only_root_filesystem": true,
+    "drop_all_linux_capabilities": true,
+    "no_host_mounts": true,
+    "no_persistent_volumes": true,
+    "no_application_secrets": true,
+    "no_security_plane_secrets": true,
+    "network_ingress_allowed": false,
+    "network_egress_allowed": false,
+    "seccomp_or_equivalent_required": true,
+    "maximum_runtime_seconds": 30,
+    "maximum_memory_mib": 256,
+    "maximum_pids": 64
+  },
+  "input_limits": {
+    "maximum_input_bytes": 52428800,
+    "verify_type_from_content_not_filename_only": true,
+    "archive_max_entries": 1000,
+    "archive_max_nesting_depth": 2,
+    "archive_max_expansion_ratio": 20,
+    "archive_max_uncompressed_bytes": 104857600,
+    "reject_path_traversal_entries": true,
+    "reject_device_files_and_special_nodes": true
+  },
+  "output_boundary": {
+    "raw_content_never_becomes_command_or_policy": true,
+    "schema_validated_output_only": true,
+    "executable_output_forbidden": true,
+    "customer_write_authority_for_parser": false,
+    "security_policy_write_authority_for_parser": false,
+    "cross_customer_output_forbidden": true,
+    "preserve_original_content_hash": true,
+    "preserve_parser_version": true,
+    "preserve_policy_version": true
+  },
+  "ai_boundary": {
+    "extracted_content_is_data_not_instruction": true,
+    "content_cannot_grant_tool_authority": true,
+    "content_cannot_approve_security_action": true,
+    "content_cannot_mutate_memory_or_policy_root": true,
+    "ai_requires_structured_trusted_context_for_actions": true
+  },
+  "evidence": {
+    "sha256_required": true,
+    "customer_cell_required": true,
+    "source_connector_identity_required": true,
+    "ingest_timestamp_required": true,
+    "sandbox_identity_required": true,
+    "policy_hash_required": true,
+    "result_schema_version_required": true,
+    "external_immutable_audit_required": true
+  },
+  "bounded_reflexes": {
+    "maximum_ttl_seconds": 900,
+    "require_customer_scope": true,
+    "require_rollback": true,
+    "allowed": [
+      "quarantine_artifact",
+      "terminate_parser_sandbox",
+      "temporary_rate_limit_source",
+      "pause_ingestion_connector",
+      "block_confirmed_malicious_artifact_hash",
+      "capture_forensic_snapshot"
+    ]
+  },
+  "forbidden_automatic_actions": [
+    "hack_back",
+    "external_retaliation",
+    "delete_customer_data",
+    "delete_security_evidence",
+    "delete_recovery_state",
+    "mass_disable_identities",
+    "global_network_deny",
+    "customer_wide_shutdown",
+    "organisation_wide_shutdown",
+    "production_wide_credential_rotation",
+    "alter_payroll_or_workforce_records"
+  ]
+}
