@@ -1,0 +1,131 @@
+/* WFM role-based simplification layer.
+   This file changes presentation only; product capabilities remain available under All tools. */
+
+:root{
+  --ux-ink:#172539;
+  --ux-muted:#657488;
+  --ux-line:#e4e9ef;
+  --ux-soft:#f7f9fb;
+  --ux-positive:#157a5b;
+  --ux-warn:#9a6400;
+  --ux-danger:#a43d4b;
+}
+
+html,body,.app,.workspace,.content{max-width:100%;overflow-x:hidden}
+.workspace,.content,.grid2,.panel{min-width:0}
+.content{padding-top:24px}
+.tablewrap,.personal-table-wrap{max-width:100%;overflow:auto;overscroll-behavior-x:contain}
+.tablewrap table,.personal-table-wrap table{width:100%}
+
+/* The sidebar is now a job switcher, not a module catalogue. */
+.sidebar nav.wfm-job-nav{display:flex;flex-direction:column;gap:5px;overflow:visible}
+.wfm-primary-link{font-weight:650}
+.wfm-tool-drawer{margin-top:4px;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
+.wfm-tool-drawer>summary{list-style:none;cursor:pointer;color:#b8c5c9;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:9px 12px;border-radius:9px;user-select:none}
+.wfm-tool-drawer>summary::-webkit-details-marker{display:none}
+.wfm-tool-drawer>summary:hover{background:rgba(255,255,255,.06);color:white}
+.wfm-tool-list{display:flex;flex-direction:column;gap:3px;margin-top:5px;max-height:42vh;overflow:auto;overscroll-behavior:contain}
+.wfm-tool-list .navbtn{font-size:11px;min-height:38px;padding-top:8px;padding-bottom:8px}
+.wfm-tool-list .navbtn span{white-space:normal;line-height:1.15}
+.sidebar .pilot{font-size:11px;line-height:1.45}
+
+/* Action Centre: one screen = one job. */
+.wfm-simple-heading{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin:0 0 16px}
+.wfm-simple-heading h1{margin:0;color:var(--ux-ink);font-size:34px;letter-spacing:-1.2px;line-height:1.08}
+.wfm-simple-heading p{margin:8px 0 0;color:var(--ux-muted);font-size:14px;max-width:720px}
+.wfm-action-centre{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 18px}
+.wfm-action-card{border:1px solid var(--ux-line);background:white;border-radius:16px;padding:18px;box-shadow:0 6px 22px rgba(23,37,57,.045);display:flex;flex-direction:column;min-height:170px}
+.wfm-action-card .wfm-kicker{font-size:11px;color:var(--ux-muted);font-weight:750;letter-spacing:.055em;text-transform:uppercase}
+.wfm-action-card strong{font-size:34px;line-height:1.05;color:var(--ux-ink);margin:10px 0 4px;font-weight:650;letter-spacing:-1px}
+.wfm-action-card p{font-size:12px;color:var(--ux-muted);line-height:1.5;margin:0 0 14px}
+.wfm-action-card .btn{margin-top:auto;align-self:flex-start}
+.wfm-action-card[data-state="attention"]{border-color:#ead6a9;background:#fffdf8}
+.wfm-action-card[data-state="clear"]{border-color:#cfe6dd;background:#fbfefc}
+.wfm-progressive{border:1px solid var(--ux-line);border-radius:14px;background:white;overflow:hidden;margin-top:12px}
+.wfm-progressive>summary{cursor:pointer;list-style:none;padding:15px 18px;font-weight:650;color:var(--ux-ink);display:flex;justify-content:space-between;align-items:center}
+.wfm-progressive>summary::-webkit-details-marker{display:none}
+.wfm-progressive>summary:after{content:'+';font-size:20px;color:var(--ux-muted);font-weight:400}
+.wfm-progressive[open]>summary:after{content:'−'}
+.wfm-progressive-body{padding:0 16px 16px}
+.wfm-progressive-body>.heading,.wfm-progressive-body>.filters{display:none!important}
+.wfm-progressive-body>.grid2:first-of-type{margin-top:0}
+
+/* Leave approval: decision context is visible before the decision buttons. */
+.wfm-leave-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.65fr);gap:16px;align-items:start}
+.wfm-request-list{display:flex;flex-direction:column;gap:12px}
+.wfm-decision-card{border:1px solid var(--ux-line);border-radius:16px;background:white;overflow:hidden;box-shadow:0 5px 20px rgba(23,37,57,.04)}
+.wfm-decision-card[data-status="pending"]{border-color:#e6d6ae}
+.wfm-decision-head{display:flex;align-items:center;gap:11px;padding:16px 18px 12px}
+.wfm-decision-head .person{flex:1;min-width:0}
+.wfm-decision-head .person small{white-space:normal}
+.wfm-decision-status{font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.04em;border-radius:999px;padding:5px 8px;background:#f1f4f7;color:#667588}
+.wfm-decision-card[data-status="pending"] .wfm-decision-status{background:#fff4d7;color:#805400}
+.wfm-decision-card[data-status="approved"] .wfm-decision-status{background:#e9f7f1;color:#146e54}
+.wfm-decision-card[data-status="declined"] .wfm-decision-status{background:#faecee;color:#923644}
+.wfm-request-line{padding:0 18px 13px;font-size:13px;color:var(--ux-ink)}
+.wfm-request-line b{font-weight:680}
+.wfm-decision-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ux-line);border-bottom:1px solid var(--ux-line)}
+.wfm-decision-metric{padding:13px 14px;min-width:0}
+.wfm-decision-metric+.wfm-decision-metric{border-left:1px solid var(--ux-line)}
+.wfm-decision-metric small{display:block;color:var(--ux-muted);font-size:10px;line-height:1.3;margin-bottom:4px}
+.wfm-decision-metric b{font-size:18px;color:var(--ux-ink);font-weight:650}
+.wfm-decision-metric[data-emphasis="true"]{background:#f8fbfa}
+.wfm-context-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 18px}
+.wfm-context{border:1px solid var(--ux-line);border-radius:11px;padding:11px 12px;background:var(--ux-soft);min-width:0}
+.wfm-context small{display:block;color:var(--ux-muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.035em;margin-bottom:5px}
+.wfm-context b{font-size:12px;color:var(--ux-ink);font-weight:650}
+.wfm-context p{margin:4px 0 0;color:var(--ux-muted);font-size:11px;line-height:1.4}
+.wfm-context[data-risk="true"]{background:#fffaf0;border-color:#ecdcb9}
+.wfm-decision-actions{position:sticky;bottom:0;z-index:2;display:flex;justify-content:flex-end;gap:8px;align-items:center;padding:12px 18px;background:rgba(255,255,255,.96);backdrop-filter:blur(7px);border-top:1px solid var(--ux-line)}
+.wfm-decision-actions .wfm-spacer{flex:1;color:var(--ux-muted);font-size:11px}
+.wfm-leave-side{position:sticky;top:92px;border:1px solid var(--ux-line);border-radius:16px;background:white;padding:16px}
+.wfm-leave-side h2{font-size:17px;margin:0 0 9px;color:var(--ux-ink)}
+.wfm-leave-side p{font-size:12px;line-height:1.5;color:var(--ux-muted);margin:0 0 12px}
+.wfm-mini-rule{display:flex;gap:9px;padding:9px 0;border-top:1px solid var(--ux-line);font-size:11px;color:var(--ux-muted);line-height:1.4}
+.wfm-mini-rule b{color:var(--ux-ink)}
+
+/* Employee self service: answer the four questions before showing history. */
+.wfm-self-balance{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0 16px}
+.wfm-self-stat{border:1px solid var(--ux-line);background:white;border-radius:14px;padding:15px}
+.wfm-self-stat small{display:block;color:var(--ux-muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:5px}
+.wfm-self-stat strong{font-size:25px;color:var(--ux-ink);font-weight:650;letter-spacing:-.5px}
+.wfm-self-stat p{font-size:10px;color:var(--ux-muted);margin:5px 0 0;line-height:1.35}
+.wfm-self-stat[data-emphasis="true"]{background:#f6fbf8;border-color:#cfe6dd}
+
+/* Cost/efficiency is a single mental destination even where existing modules remain separate. */
+.wfm-insight-switcher{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px;padding:8px;border:1px solid var(--ux-line);border-radius:13px;background:white}
+.wfm-insight-switcher .btn{min-height:34px;padding:7px 11px;font-size:11px}
+
+/* Never let a wide specialist tool create a page-level scrollbar. */
+.shift-grid{min-width:900px}
+.week-strip{max-width:100%;overflow:auto;overscroll-behavior-x:contain}
+
+@media(max-width:1100px){
+  .wfm-action-centre{grid-template-columns:1fr 1fr}
+  .wfm-leave-layout{grid-template-columns:1fr}
+  .wfm-leave-side{position:static}
+  .wfm-decision-metrics{grid-template-columns:1fr 1fr}
+  .wfm-decision-metric:nth-child(3){border-left:0;border-top:1px solid var(--ux-line)}
+  .wfm-decision-metric:nth-child(4){border-top:1px solid var(--ux-line)}
+}
+
+@media(max-width:800px){
+  .wfm-simple-heading{display:block}
+  .wfm-simple-heading h1{font-size:29px}
+  .wfm-action-centre{grid-template-columns:1fr}
+  .wfm-context-grid{grid-template-columns:1fr}
+  .wfm-self-balance{grid-template-columns:1fr 1fr}
+}
+
+@media(max-width:600px){
+  /* Existing bottom navigation remains horizontally safe by showing only the three primary jobs. */
+  .sidebar nav.wfm-job-nav{flex-direction:row;align-items:stretch;overflow:hidden}
+  .wfm-job-nav>.wfm-primary-link{flex:1 1 0;min-width:0;padding-left:5px;padding-right:5px}
+  .wfm-job-nav>.wfm-primary-link span{max-width:100%;font-size:9px}
+  .wfm-tool-drawer{display:none}
+  .wfm-decision-head{align-items:flex-start}
+  .wfm-decision-metrics{grid-template-columns:1fr 1fr}
+  .wfm-decision-actions{flex-wrap:wrap}
+  .wfm-decision-actions .wfm-spacer{flex-basis:100%}
+  .wfm-self-balance{grid-template-columns:1fr 1fr}
+}
