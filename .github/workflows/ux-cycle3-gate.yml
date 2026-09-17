@@ -119,13 +119,31 @@ jobs:
             const creds=JSON.stringify({email:'superuser@northstar.example',password});
             const ok=await evalx(`(()=>{const c=${creds};const f=document.querySelector('#v2-login');const e=f?.querySelector('[name="email"]'),p=f?.querySelector('[name="password"]');if(!e||!p)return false;e.value=c.email;e.dispatchEvent(new Event('change',{bubbles:true}));p.value=c.password;p.dispatchEvent(new Event('input',{bubbles:true}));f.requestSubmit();return true})()`);if(!ok)throw Error('Login form could not be submitted');await wait("!document.querySelector('#v2-login')");
           }
+          const renderRefs=await evalx(`(()=>({renderType:typeof render,windowRenderType:typeof window.render,same:typeof render==='function'&&render===window.render,renderVsReview:typeof render==='function'&&render===window.payrollPreview?.refresh,windowVsReview:typeof window.render==='function'&&window.render===window.payrollPreview?.refresh,renderHead:typeof render==='function'?String(render).slice(0,160):null,windowHead:typeof window.render==='function'?String(window.render).slice(0,160):null,reviewHead:typeof window.payrollPreview?.refresh==='function'?String(window.payrollPreview.refresh).slice(0,160):null}))()`);
+          console.log('UX_CYCLE3_RENDER_REFS='+JSON.stringify(renderRefs));
+          const endpoint=await evalx(`(async()=>{try{const r=await fetch('/api/weekly-review?period=2026-09-07',{credentials:'same-origin'});const text=await r.text();return {ok:r.ok,status:r.status,error:r.ok?null:text.slice(0,180)}}catch(e){return {ok:false,status:0,error:String(e?.message||e)}}})()`);
+          console.log('UX_CYCLE3_WEEKLY_ENDPOINT='+JSON.stringify(endpoint));
           const targetBefore=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page="weekly-review"]')].find(n=>n.offsetParent!==null);return x?{tag:x.tagName,text:x.textContent.trim(),classes:x.className,page:typeof ui!=='undefined'?ui.page:null,role:(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'?ui.role:null)}:null})()`);
           console.log('UX_CYCLE3_NAV_TARGET='+JSON.stringify(targetBefore));
           const clicked=await evalx(`(()=>{const x=[...document.querySelectorAll('[data-page="weekly-review"]')].find(n=>n.offsetParent!==null);if(!x)return false;x.click();return true})()`);if(!clicked)throw Error('Weekly sign-off navigation route not found');
           await sleep(900);
-          const diagnostic=()=>evalx(`(()=>{const layout=document.querySelector('.review-layout'),main=layout?.querySelector('.review-main');return {page:typeof ui!=='undefined'?ui.page:null,role:(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'?ui.role:null),base:typeof window.WFMUXReset,cycle2:typeof window.WFMUXCycle2,cycle3:typeof window.WFMUXCycle3,preview:typeof window.payrollPreview,previewReport:typeof window.payrollPreview?.report,tabs:!!document.querySelector('.review-tabs'),layout:!!layout,steps:!!document.querySelector('.review-steps'),main:!!main,panelCount:main?[...main.children].filter(x=>x.classList?.contains('panel')).length:0,signbar:!!main?.querySelector('.review-signbar'),aside:!!layout?.querySelector('.review-aside'),desk:!!document.querySelector('.ux-signoff-desk'),heading:document.querySelector('.content h1,.content h2')?.textContent?.trim()?.slice(0,120)||null}})()`);
+          const diagnostic=()=>evalx(`(()=>{const layout=document.querySelector('.review-layout'),main=layout?.querySelector('.review-main');return {page:typeof ui!=='undefined'?ui.page:null,role:(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'?ui.role:null),base:typeof window.WFMUXReset,cycle2:typeof window.WFMUXCycle2,cycle3:typeof window.WFMUXCycle3,preview:typeof window.payrollPreview,previewReport:typeof window.payrollPreview?.report,reportTeams:window.payrollPreview?.report?.()?.teams?.length??null,tabs:!!document.querySelector('.review-tabs'),layout:!!layout,steps:!!document.querySelector('.review-steps'),main:!!main,panelCount:main?[...main.children].filter(x=>x.classList?.contains('panel')).length:0,signbar:!!main?.querySelector('.review-signbar'),aside:!!layout?.querySelector('.review-aside'),desk:!!document.querySelector('.ux-signoff-desk'),heading:document.querySelector('.content h1,.content h2')?.textContent?.trim()?.slice(0,120)||null,toast:[...document.querySelectorAll('[class*="toast"],[role="alert"]')].map(x=>x.textContent.trim()).filter(Boolean).slice(-3)}})()`);
           let diag=await diagnostic();console.log('UX_CYCLE3_NAV_DIAGNOSTIC='+JSON.stringify(diag));
           if(diag.page!=='weekly-review')throw Error('Weekly sign-off navigation did not set the expected page: '+JSON.stringify(diag));
+          if(!diag.layout){
+            const directReview=await evalx(`(async()=>{try{await window.payrollPreview.refresh();return {ok:true}}catch(e){return {ok:false,error:String(e?.message||e)}}})()`);
+            await sleep(500);
+            diag=await diagnostic();
+            console.log('UX_CYCLE3_DIRECT_REVIEW_RESULT='+JSON.stringify(directReview));
+            console.log('UX_CYCLE3_AFTER_DIRECT_REVIEW='+JSON.stringify(diag));
+          }
+          if(!diag.layout){
+            const directWindow=await evalx(`(async()=>{try{if(typeof window.render!=='function')return {ok:false,error:'window.render unavailable'};await window.render();return {ok:true}}catch(e){return {ok:false,error:String(e?.message||e)}}})()`);
+            await sleep(500);
+            diag=await diagnostic();
+            console.log('UX_CYCLE3_DIRECT_WINDOW_RENDER_RESULT='+JSON.stringify(directWindow));
+            console.log('UX_CYCLE3_AFTER_WINDOW_RENDER='+JSON.stringify(diag));
+          }
           if(!diag.layout)throw Error('Weekly sign-off page did not render its authoritative layout: '+JSON.stringify(diag));
           if(!diag.desk){await evalx("window.WFMUXCycle3?.apply?.(); true");await sleep(250);diag=await diagnostic();console.log('UX_CYCLE3_COMPOSITION_AFTER_APPLY='+JSON.stringify(diag));}
           if(!diag.desk)throw Error('Cycle 3 did not compose weekly sign-off: '+JSON.stringify(diag));
