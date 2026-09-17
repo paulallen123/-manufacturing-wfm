@@ -24,14 +24,40 @@ jobs:
           set -euo pipefail
           node <<'NODE'
           const origin = process.env.WFM_ORIGIN;
-          const source = await (await fetch(`${origin}/app.js`, {signal: AbortSignal.timeout(15000)})).text();
-          const needle = '/api/login';
-          const at = source.indexOf(needle);
-          if (at < 0) throw new Error('Login endpoint not found in public app.js');
-          const snippet = source.slice(Math.max(0, at - 1200), Math.min(source.length, at + 1800));
-          console.log('LOGIN_CONTRACT_SNIPPET_START');
-          console.log(snippet);
-          console.log('LOGIN_CONTRACT_SNIPPET_END');
-          const emails = [...new Set(source.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [])];
-          console.log('STATIC_EMAIL_CANDIDATES=' + JSON.stringify(emails.slice(0, 20)));
+          const get = async path => {
+            const r = await fetch(`${origin}${path}`, {signal: AbortSignal.timeout(15000)});
+            if (!r.ok) throw new Error(`${path} returned HTTP ${r.status}`);
+            return r.text();
+          };
+          const html = await get('/');
+          const paths = new Set(['/']);
+          for (const m of html.matchAll(/<script[^>]+src=["']([^"']+\.js(?:\?[^"']*)?)["']/gi)) {
+            const raw = m[1];
+            paths.add(raw.startsWith('http') ? new URL(raw).pathname : (raw.startsWith('/') ? raw : `/${raw}`));
+          }
+          // The live app can lazy-load these first-party bundles after bootstrap.
+          for (const path of [
+            '/app.js','/core.js','/personal-core.js','/personal-view.js','/features.js',
+            '/company-ui.js','/org-admin-ui.js','/onboarding-ui.js','/integration-ui.js',
+            '/factory-control-ui.js','/operations-ui.js','/review-ui.js','/schedule-ui.js',
+            '/resources-ui.js','/availability-ui.js','/time-review-ui.js','/support-bot-ui.js'
+          ]) paths.add(path);
+
+          const needles = ['/api/login', 'api/login'];
+          const emailSet = new Set(html.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || []);
+          let found = false;
+          for (const path of paths) {
+            const source = path === '/' ? html : await get(path).catch(() => '');
+            for (const email of source.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || []) emailSet.add(email);
+            const at = needles.map(n => source.indexOf(n)).find(i => i >= 0) ?? -1;
+            if (at >= 0) {
+              found = true;
+              console.log(`LOGIN_CONTRACT_FILE=${path}`);
+              console.log('LOGIN_CONTRACT_SNIPPET_START');
+              console.log(source.slice(Math.max(0, at - 1800), Math.min(source.length, at + 2600)));
+              console.log('LOGIN_CONTRACT_SNIPPET_END');
+            }
+          }
+          console.log('STATIC_EMAIL_CANDIDATES=' + JSON.stringify([...emailSet].slice(0, 30)));
+          if (!found) throw new Error('Login endpoint not found in inspected public application bundles');
           NODE
