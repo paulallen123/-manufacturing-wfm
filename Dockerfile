@@ -4,8 +4,13 @@ WORKDIR /app
 COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
 RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp/runtime.tgz" | sha256sum -c - \
  && tar -xzf /tmp/runtime.tgz -C /app \
- && rm -f /tmp/runtime.tgz \
- && chown -R node:node /app
+ && rm -f /tmp/runtime.tgz
+
+# Resource-side identity survival overlay. Keep the original sealed artifact intact and
+# add the defence overlay as a separately reviewable layer.
+RUN mkdir -p /app/security-runtime
+COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
+COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 
 # Patch PCRE2 in the pinned Bookworm base to Debian's fixed security build.
 # The exact version pin makes repository drift fail closed.
@@ -31,7 +36,14 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
  && find / -xdev -type f \( -perm /4000 -o -perm /2000 \) -print -exec chmod a-s {} + \
  && test -z "$(find / -xdev -type f \( -perm /4000 -o -perm /2000 \) -print -quit)"
 
+# A compromised Node process must not be able to rewrite the sealed application or its
+# identity guard. Runtime state lives outside /app (hosted staging uses explicit WFM_DB).
+RUN chown -R root:root /app \
+ && find /app -type d -exec chmod 0555 {} + \
+ && find /app -type f -exec chmod 0444 {} +
+
 USER node
 ENV NODE_ENV=staging
+ENV WFM_IDENTITY_SURVIVAL_GUARD=enforce
 EXPOSE 3000
-CMD ["node","server.cjs"]
+CMD ["node","security-runtime/bootstrap.cjs"]
