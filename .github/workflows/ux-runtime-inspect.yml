@@ -28,6 +28,8 @@ jobs:
           docker cp "$cid:/app/public/." /tmp/wfm-public/
           docker cp "$cid:/app/server.cjs" /tmp/wfm-server.cjs
           {
+            echo '=== APPROVED PAGE ASSET ORDER ==='
+            grep -oE '<(script|link)[^>]+(src|href)="[^"]+"[^>]*>' /tmp/wfm-public/index.html || true
             echo '=== REVIEW UI EXACT CORE ==='
             sed -n '24,36p' /tmp/wfm-public/review-ui.js || true
             echo '=== SERVER BIND/HOSTED CONTRACT ==='
