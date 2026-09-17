@@ -39,5 +39,7 @@ try{
   }
   const safeRaw=Object.fromEntries(Object.entries(raw||{}).map(([k,v])=>[k,/token|secret|authorization/i.test(k)?'<redacted>':v]));
   const reacquired=jobs.acquire(run.id,'diagnostic-recovery-worker',{leaseMs:60000});
-  console.log(JSON.stringify({mappedNext,storeKeys:Object.keys(jobs),detail,detailKeys:Object.keys(detail),reacquired,reacquiredKeys:Object.keys(reacquired||{}),tables,schemas,rawTable,raw:safeRaw},null,2));
+  let sameOwnerReacquire=null,sameOwnerReacquireError=null;
+  try{sameOwnerReacquire=jobs.acquire(run.id,'diagnostic-recovery-worker',{leaseMs:60000});}catch(e){sameOwnerReacquireError={message:String(e.message),code:e.code||null,status:e.status||null};}
+  console.log(JSON.stringify({mappedNext,storeKeys:Object.keys(jobs),detail,detailKeys:Object.keys(detail),reacquired,reacquiredKeys:Object.keys(reacquired||{}),sameOwnerReacquire,sameOwnerReacquireError,tables,schemas,rawTable,raw:safeRaw},null,2));
 }finally{try{db?.close();}catch{}fs.rmSync(tmp,{recursive:true,force:true});}
