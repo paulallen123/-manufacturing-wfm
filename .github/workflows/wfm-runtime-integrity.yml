@@ -1,0 +1,80 @@
+name: WFM runtime integrity and resilience gate
+
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/security-baseline.json
+      - scripts/validate-deployment.mjs
+      - .github/workflows/wfm-runtime-integrity.yml
+  push:
+    branches:
+      - main
+      - 'autonomy/**'
+    paths:
+      - Dockerfile
+      - DEPLOYMENT_MANIFEST.json
+      - resilience/security-baseline.json
+      - scripts/validate-deployment.mjs
+      - .github/workflows/wfm-runtime-integrity.yml
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.2'
+      - name: Validate immutable deployment metadata
+        run: node scripts/validate-deployment.mjs
+      - name: Build the exact staging candidate
+        run: docker build --pull -t wfm-staging-candidate:${{ github.sha }} .
+      - name: Verify container identity and patched runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-staging-candidate:${GITHUB_SHA}"
+          EXPECTED_CANDIDATE="$(node -p "require('./DEPLOYMENT_MANIFEST.json').candidate")"
+          EXPECTED_NODE="v$(node -p "require('./resilience/security-baseline.json').node.minimum")"
+          ACTUAL_NODE="$(docker run --rm --entrypoint node "$IMAGE" --version)"
+          test "$ACTUAL_NODE" = "$EXPECTED_NODE"
+          docker run --rm -e EXPECTED_CANDIDATE="$EXPECTED_CANDIDATE" --entrypoint node "$IMAGE" -e '
+            const assert=require("node:assert/strict");
+            const pkg=require("/app/package.json");
+            assert.equal(pkg.version,process.env.EXPECTED_CANDIDATE,"Runtime package identity differs from manifest candidate");
+          '
+      - name: Prove autonomy safety invariants inside candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-staging-candidate:${GITHUB_SHA}"
+          docker run --rm --entrypoint node "$IMAGE" -e '
+            const assert=require("node:assert/strict");
+            const S=require("/app/lib/autonomy-safety-kernel.cjs");
+            const evidence="a".repeat(64);
+            const common={tenant:"tenant-a",targetTenant:"tenant-a",reversible:true,dryRunVerified:true,independentChecks:[evidence],confidence:1};
+            assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"deterministic-runbook"}).allowed,true,"Known reversible deterministic remediation should remain eligible");
+            assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"language-model"}).allowed,false,"Language model must never receive direct action authority");
+            assert.equal(S.evaluate({...common,type:"payroll.write",actorType:"deterministic-runbook"}).allowed,false,"Payroll writes must remain prohibited autonomously");
+            assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"deterministic-runbook",targetTenant:"tenant-b"}).allowed,false,"Cross-tenant action must remain prohibited");
+            assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"deterministic-runbook",dryRunVerified:false}).allowed,false,"Unverified action must remain prohibited");
+            assert.equal(S.evaluate({...common,type:"worker.restart",actorType:"deterministic-runbook",independentChecks:[]}).allowed,false,"Action without independent evidence must remain prohibited");
+          '
+      - name: Prove staging candidate refuses production mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-staging-candidate:${GITHUB_SHA}"
+          if docker run --rm -e NODE_ENV=production --entrypoint node "$IMAGE" /app/server.cjs >production-refusal.log 2>&1; then
+            echo 'ERROR: staging candidate unexpectedly started in production mode'
+            cat production-refusal.log
+            exit 1
+          fi
+          grep -q 'cannot run as production' production-refusal.log
+          cat production-refusal.log
