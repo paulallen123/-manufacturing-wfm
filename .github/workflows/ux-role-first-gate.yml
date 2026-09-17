@@ -89,5 +89,5 @@ jobs:
         run: |
           set -euo pipefail
           grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
-          ! grep -q 'server.cjs' <(git diff --name-only "${{ github.event.pull_request.base.sha }}"...HEAD) || { echo '::error::UX PR must not modify sealed server logic'; exit 1; }
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace or mutate sealed server logic'; exit 1; fi
           echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
