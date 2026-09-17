@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "incident": "live-proof-deployment-identity-drift",
+  "status": "current-runtime-healthy-proof-record-stale",
+  "classification": ["deployment-provenance", "documentation", "change-control"],
+  "detected_by": "Railway deployment history correlated with CUSTOMER_PROOF_STATUS.md",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtime_sha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "repository_main_sha_at_detection": "4218e829de3e47ef3e8965eae9df16b51c61d79f",
+  "documented_proof": {
+    "file": "CUSTOMER_PROOF_STATUS.md",
+    "deployment_id": "49a53c09-9e4b-41a3-a8dd-0133c97f2792",
+    "current_railway_state": "REMOVED"
+  },
+  "current_live_deployment": {
+    "deployment_id": "2d399257-e7ea-43e8-a728-d563e8cb366b",
+    "created_at_utc": "2026-09-17T16:20:31.937Z",
+    "status": "SUCCESS",
+    "reason": "redeploy",
+    "service": "wfm-customer-proof-0676",
+    "service_id": "ddd54fb9-3564-4251-9959-28cf3308c272",
+    "project_id": "9a774359-37fa-47e8-bde0-932420c32923",
+    "environment_id": "6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6"
+  },
+  "correlation": [
+    "The immutable repository manifest still identifies the same sealed 0.6.76 artifact and runtime SHA.",
+    "The current Railway deployment is a redeploy and is healthy, with fixture/demo-only and production-approved=false runtime messages.",
+    "The customer-proof status document still calls the earlier now-removed deployment the exact live deployment.",
+    "Therefore runtime health is not in dispute, but the current live deployment identity is no longer bound by the existing written proof record."
+  ],
+  "root_cause": "A later Railway redeploy changed the live deployment identifier after the original exact-deployment proof document was written. Mutable platform deployment identity and immutable candidate identity were not separated strongly enough in the proof record.",
+  "customer_or_production_mutation": false,
+  "containment": [
+    "Do not claim the removed deployment ID is the current live deployment.",
+    "Continue to describe the host as staging/fixture-only and production-unapproved.",
+    "Preserve the immutable candidate hash as the root release identity, but require fresh platform provenance for each redeploy before calling that deployment exact-proven.",
+    "Do not redeploy merely to repair documentation."
+  ],
+  "detection_rules": [
+    {
+      "id": "live-proof-platform-id-must-match",
+      "when": "A proof document names a concrete cloud deployment as current or exact.",
+      "require": [
+        "The named deployment ID is the platform's current successful deployment for the fixed service/environment.",
+        "The deployment is independently tied to the frozen runtime SHA or to a verified redeploy of the exact immutable image/snapshot.",
+        "Outside-in health and authentication-boundary evidence is newer than or equal to the deployment creation time."
+      ],
+      "on_mismatch": "downgrade claim from exact-current-deployment proof to healthy-host evidence until provenance is re-bound",
+      "fail_closed_for_promotion": true
+    }
+  ],
+  "safe_runbook": [
+    "Read the fixed Railway project, environment and service IDs from the approved proof record.",
+    "Resolve the latest successful deployment and its reason without changing Railway state.",
+    "If the deployment ID differs, obtain build/snapshot provenance and re-run outside-in health, auth, tenant and integrity proof.",
+    "Update proof documentation only after the current deployment is bound to the immutable candidate identity.",
+    "Never infer production approval from Railway environment naming or SUCCESS status."
+  ],
+  "learning": "Candidate identity and cloud deployment identity are separate. A safe redeploy can preserve the candidate while invalidating an old claim that a specific deployment ID is the current exact proof."
+}
