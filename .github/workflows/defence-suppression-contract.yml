@@ -1,0 +1,95 @@
+name: Defence Suppression Survival Contract
+
+on:
+  push:
+    branches:
+      - 'security/**'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 / Node 24
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Enforce independent defence watchers
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/defence-suppression-policy.json
+          jq -e '
+            .status == "staged" and
+            .independence.monitoring_outside_application_trust_boundary == true and
+            .independence.application_admin_cannot_rewrite_security_history == true and
+            .independence.application_runtime_cannot_disable_watchers == true and
+            .independence.minimum_independent_watchers >= 2 and
+            .independence.watchers_must_not_share_runtime_identity == true
+          ' "$p" >/dev/null
+
+      - name: Enforce defence-blinding detection
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/defence-suppression-policy.json
+          jq -e '
+            .heartbeat.required == true and
+            .heartbeat.maximum_gap_seconds > 0 and
+            .heartbeat.maximum_gap_seconds <= 60 and
+            .heartbeat.missing_heartbeat_is_security_event == true and
+            .heartbeat.audit_chain_gap_is_security_event == true and
+            .heartbeat.clock_regression_is_security_event == true and
+            .heartbeat.sequence_regression_is_security_event == true
+          ' "$p" >/dev/null
+
+      - name: Enforce cell-scoped degraded security mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/defence-suppression-policy.json
+          jq -e '
+            .degraded_security_mode.scope == "affected_customer_cell_only" and
+            .degraded_security_mode.freeze_new_privileged_sessions == true and
+            .degraded_security_mode.freeze_new_deployments == true and
+            .degraded_security_mode.preserve_forensic_state == true and
+            .degraded_security_mode.keep_safe_existing_business_operations_running == true and
+            .degraded_security_mode.mass_disable_identities == false and
+            .degraded_security_mode.delete_customer_data == false and
+            .degraded_security_mode.global_shutdown == false and
+            .degraded_security_mode.automatic_expiry_seconds > 0 and
+            .degraded_security_mode.automatic_expiry_seconds <= 1800 and
+            .degraded_security_mode.require_independent_verification_before_release == true
+          ' "$p" >/dev/null
+
+      - name: Enforce bounded tripwire reflexes
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/defence-suppression-policy.json
+          allowed='["capture_forensic_snapshot","isolate_workload","pause_deployment","revoke_session","temporary_rate_limit"]'
+          actual="$(jq -c '[.tripwires[]?.automatic_actions[]] | unique | sort' "$p")"
+          expected="$(printf '%s' "$allowed" | jq -c 'unique | sort')"
+          test "$actual" = "$expected"
+          jq -e '[.tripwires[] | .customer_scope_required == true and .ttl_required == true] | all' "$p" >/dev/null
+
+      - name: Refuse destructive or retaliatory automation
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/defence-suppression-policy.json
+          for bad in hack_back external_retaliation global_shutdown mass_disable_identities delete_customer_data delete_security_evidence delete_recovery_state production_wide_credential_rotation alter_payroll_or_workforce_records; do
+            jq -e --arg x "$bad" '.forbidden_automatic_actions | index($x) != null' "$p" >/dev/null
+          done
+          jq -e '
+            .uncertain_signal_policy.destructive_action_forbidden == true and
+            .uncertain_signal_policy.confirmed_malicious_process_required_for_termination == true and
+            .uncertain_signal_policy.high_blast_radius_requires_escalation == true and
+            .uncertain_signal_policy.ai_may_not_raise_its_own_authority == true
+          ' "$p" >/dev/null
