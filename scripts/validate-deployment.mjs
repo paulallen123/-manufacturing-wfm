@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 const manifest = JSON.parse(fs.readFileSync('DEPLOYMENT_MANIFEST.json', 'utf8'));
 const baseline = JSON.parse(fs.readFileSync('resilience/security-baseline.json', 'utf8'));
@@ -36,12 +37,14 @@ assert.match(manifest.runtime_sha256, /^[a-f0-9]{64}$/i, 'Runtime SHA-256 is inv
 const dockerRuntimeSha = dockerfile.match(/echo\s+"([a-f0-9]{64})\s+\/tmp\/runtime\.tgz"/i)?.[1];
 assert.equal(dockerRuntimeSha, manifest.runtime_sha256, 'Docker runtime checksum must equal the deployment manifest checksum.');
 
-const runtimeUrl = dockerfile.match(/const u='([^']+)'/)?.[1];
-assert.ok(runtimeUrl?.startsWith('https://'), 'Runtime artifact must be fetched over HTTPS.');
-const artifactName = path.basename(new URL(runtimeUrl).pathname, '.tgz');
-const exactName = `wfm-${manifest.candidate}`;
-const wrapped = artifactName.match(/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-(wfm-.+)$/i);
-assert.ok(artifactName === exactName || (wrapped && wrapped[2] === exactName), 'Runtime artifact identity must exactly match the manifest candidate, with only an optional UUID storage prefix.');
+const copyMatch = dockerfile.match(/^COPY\s+artifact\/([^\s]+)\s+\/tmp\/runtime\.tgz\s*$/m);
+assert.ok(copyMatch, 'Dockerfile must copy the sealed runtime from the private repository build context.');
+const artifactPath = path.join('artifact', copyMatch[1]);
+assert.equal(artifactPath, manifest.runtime_artifact, 'Docker runtime artifact path must equal the deployment manifest artifact path.');
+assert.equal(path.basename(artifactPath), `wfm-${manifest.candidate}.tar.gz`, 'Runtime artifact identity must exactly match the manifest candidate.');
+assert.ok(fs.existsSync(artifactPath), 'Sealed runtime artifact is missing from the private repository.');
+const artifactSha = crypto.createHash('sha256').update(fs.readFileSync(artifactPath)).digest('hex');
+assert.equal(artifactSha, manifest.runtime_sha256, 'Private repository runtime artifact checksum mismatch.');
 
 for (const [key, expected] of Object.entries(baseline.deployment)) {
   if (key.startsWith('require_')) continue;
@@ -60,6 +63,7 @@ assert.ok(Number(baseline.autonomy.minimum_confidence) >= 0.98, 'Autonomy confid
 console.log(JSON.stringify({
   ok: true,
   candidate: manifest.candidate,
+  runtimeArtifact: manifest.runtime_artifact,
   runtimeSha256: manifest.runtime_sha256,
   nodeImage: manifest.node_image,
   runtimeUser: manifest.runtime_user,
