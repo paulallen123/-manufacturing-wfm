@@ -29,7 +29,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/sealed-runtime"
           tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C "$RUNNER_TEMP/sealed-runtime"
           CORR="$RUNNER_TEMP/sealed-runtime/public/attendance-corrections.js"
-          ENGINE="$RUNNER_TEMP/sealed-runtime/lib/engine.js"
+          ENGINE="$RUNNER_TEMP/sealed-runtime/public/engine.js"
           test -f "$CORR"
           test -f "$ENGINE"
           node - "$CORR" "$ENGINE" <<'NODE'
@@ -38,7 +38,7 @@ jobs:
           const engine = fs.readFileSync(process.argv[3], 'utf8');
           for (const [name, source, needles] of [
             ['CORRECTION', corr, ['function note','function submit','resolveLondon(x.clockIn)']],
-            ['ENGINE', engine, ['function resolveLondon','resolveLondon=','resolveLondon:']]
+            ['ENGINE', engine, ['function resolveLondon','resolveLondon=','resolveLondon:','resolveLondon,']]
           ]) {
             for (const needle of needles) {
               const at = source.indexOf(needle);
