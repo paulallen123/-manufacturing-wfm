@@ -1,0 +1,34 @@
+name: UX local runtime auth audit
+
+on:
+  push:
+    branches: ['ux/simplified-role-shell']
+    paths:
+      - '.github/workflows/ux-runtime-auth-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect runtime environment contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wfm
+          tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C /tmp/wfm
+          node <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('/tmp/wfm/server.cjs','utf8');
+          const vars=[...s.matchAll(/process\.env\.([A-Z0-9_]+)/g)].map(m=>m[1]);
+          console.log('ENV_NAMES='+[...new Set(vars)].sort().join(','));
+          for(const term of ['passphrase','password','/login','PORT']){
+            let from=0,count=0;
+            while(count<5){const at=s.toLowerCase().indexOf(term.toLowerCase(),from);if(at<0)break;console.log(`SNIPPET ${term} ${at}`);console.log(s.slice(Math.max(0,at-800),Math.min(s.length,at+1800)));from=at+term.length;count++;}
+          }
+          NODE
