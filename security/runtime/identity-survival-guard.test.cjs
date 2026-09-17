@@ -24,9 +24,9 @@ function fixture() {
   `);
   setup.prepare('INSERT INTO tenants VALUES(?,?,?)').run('alpha', 1, '{}');
   setup.prepare('INSERT INTO tenants VALUES(?,?,?)').run('bravo', 1, '{}');
-  setup.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?,?)').run('manager@alpha','alpha','m1','manager',1,'s','00','[]');
-  setup.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?,?)').run('employee@alpha','alpha','e1','employee',0,'s','00','[]');
-  setup.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?,?)').run('manager@bravo','bravo','m1','manager',1,'s','00','[]');
+  setup.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@alpha','alpha','m1','manager',1,'s','00','[]');
+  setup.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('employee@alpha','alpha','e1','employee',0,'s','00','[]');
+  setup.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@bravo','bravo','m1','manager',1,'s','00','[]');
   const tokens = { alphaManager: 'a'.repeat(64), alphaEmployee: 'b'.repeat(64), bravoManager: 'c'.repeat(64) };
   const expires = Date.now() + 60_000;
   setup.prepare('INSERT INTO sessions VALUES(?,?,?)').run(tokenHash(tokens.alphaManager),'manager@alpha',expires);
