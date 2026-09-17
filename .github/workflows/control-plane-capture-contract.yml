@@ -1,0 +1,108 @@
+name: Defence Plane Capture Breaker Contract
+
+on:
+  push:
+    branches:
+      - 'security/**'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 / Node 24
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Enforce defence-plane trust split
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/control-plane-capture-policy.json
+          test -f "$p"
+          jq -e '
+            .status == "staged" and
+            .threat_model.assume_defence_plane_compromise == true and
+            .threat_model.assume_valid_admin_session_theft == true and
+            .threat_model.assume_remote_code_execution_on_management_plane == true and
+            .threat_model.central_management_plane_must_not_hold_unbounded_runtime_authority == true and
+            .trust_split.policy_root_separate_from_action_executor == true and
+            .trust_split.evidence_witness_separate_from_action_executor == true and
+            .trust_split.recovery_authority_separate_from_action_executor == true and
+            .trust_split.issuer_and_executor_must_not_share_identity == true and
+            .trust_split.single_identity_cannot_change_policy_and_execute_action == true
+          ' "$p" >/dev/null
+
+      - name: Enforce cell-scoped capability airlock
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/control-plane-capture-policy.json
+          jq -e '
+            .capability_airlock.standing_cross_tenant_root_credentials_forbidden == true and
+            .capability_airlock.automatic_actions_require_explicit_customer_cell == true and
+            .capability_airlock.wildcard_customer_scope_forbidden == true and
+            .capability_airlock.single_use_nonce_required == true and
+            .capability_airlock.policy_hash_binding_required == true and
+            .capability_airlock.evidence_hash_binding_required == true and
+            .capability_airlock.short_lived_capability_required == true and
+            .capability_airlock.maximum_capability_ttl_seconds > 0 and
+            .capability_airlock.maximum_capability_ttl_seconds <= 300 and
+            .capability_airlock.local_cell_governor_must_revalidate_scope_and_budget == true and
+            .capability_airlock.local_cell_governor_may_reject_central_instruction == true
+          ' "$p" >/dev/null
+
+      - name: Prevent self-authorising policy mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/control-plane-capture-policy.json
+          jq -e '
+            .policy_mutation.runtime_agent_may_change_policy_root == false and
+            .policy_mutation.ai_may_change_policy_root == false and
+            .policy_mutation.automatic_policy_promotion == false and
+            .policy_mutation.two_independent_authorities_required == true and
+            .policy_mutation.new_policy_must_be_versioned_and_hash_pinned == true and
+            .policy_mutation.last_known_good_policy_must_be_recoverable == true
+          ' "$p" >/dev/null
+
+      - name: Enforce fail-safe defence-plane capture response
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/control-plane-capture-policy.json
+          jq -e '
+            .defence_plane_compromise_response.freeze_policy_mutation == true and
+            .defence_plane_compromise_response.freeze_new_cross_cell_operations == true and
+            .defence_plane_compromise_response.revoke_affected_defence_plane_sessions == true and
+            .defence_plane_compromise_response.preserve_forensic_state == true and
+            .defence_plane_compromise_response.continue_existing_cell_local_safe_reflexes == true and
+            .defence_plane_compromise_response.switch_to_last_known_good_signed_policy == true and
+            .defence_plane_compromise_response.require_independent_verification_before_rejoin == true and
+            .defence_plane_compromise_response.global_shutdown == false and
+            .defence_plane_compromise_response.mass_disable_customer_identities == false and
+            .defence_plane_compromise_response.delete_customer_data == false and
+            .defence_plane_compromise_response.delete_security_evidence == false and
+            .defence_plane_compromise_response.delete_recovery_state == false
+          ' "$p" >/dev/null
+
+      - name: Refuse cross-cell and destructive automation
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=security/immune-mesh/control-plane-capture-policy.json
+          jq -e '
+            .cross_cell_and_catastrophic_actions.automatic_cross_cell_action_forbidden == true and
+            .cross_cell_and_catastrophic_actions.automatic_global_action_forbidden == true and
+            .cross_cell_and_catastrophic_actions.two_independent_authorities_required == true and
+            .cross_cell_and_catastrophic_actions.customer_business_critical_change_requires_escalation == true
+          ' "$p" >/dev/null
+          for bad in hack_back external_retaliation global_shutdown mass_disable_identities delete_customer_data delete_security_evidence delete_recovery_state production_wide_credential_rotation alter_payroll_or_workforce_records cross_tenant_wildcard_containment; do
+            jq -e --arg x "$bad" '.forbidden_automatic_actions | index($x) != null' "$p" >/dev/null
+          done
