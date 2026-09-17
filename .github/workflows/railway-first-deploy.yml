@@ -8,6 +8,7 @@ on:
       - 'scripts/live-auth-proof.mjs'
       - 'scripts/live-isolation-kiosk-proof.mjs'
       - 'scripts/live-correction-proof.mjs'
+      - 'scripts/live-visual-evidence.mjs'
       - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
 
@@ -15,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: railway-auth-proof-wfm-customer-proof-0676-v4
+  group: railway-auth-proof-wfm-customer-proof-0676-v5
   cancel-in-progress: true
 
 jobs:
@@ -71,9 +72,8 @@ jobs:
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
 
-          # The hosted fixture database was cleanly recreated from this canonical
-          # uppercase staging password on the current deployment. Read variables into a
-          # temporary file and never print credential values.
+          # Read the canonical hosted-staging variables into a runner-temp file. Neither
+          # the Railway token nor the staging password is printed or written to evidence.
           "$RAILWAY_BIN" variable list \
             --service "$RAILWAY_SERVICE_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
@@ -86,9 +86,24 @@ jobs:
           if (!password || !vars.WFM_PUBLIC_ORIGIN) {
             throw new Error('Required canonical staging variables are unavailable to the proof runner.');
           }
+          // The Railway project token has completed its job before the proof modules run.
+          // Remove it from this child process so browser/proof code never receives it.
+          delete process.env.RAILWAY_TOKEN;
           process.env.WFM_STAGING_PASSWORD = password;
           process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
           await import('./scripts/live-auth-proof.mjs');
           await import('./scripts/live-isolation-kiosk-proof.mjs');
           await import('./scripts/live-correction-proof.mjs');
+          await import('./scripts/live-visual-evidence.mjs');
           NODE
+
+          rm -f "$RUNNER_TEMP/railway-vars.json"
+
+      - name: Upload live visual evidence package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wfm-customer-proof-0676-live-evidence
+          path: ${{ runner.temp }}/wfm-evidence-output
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
