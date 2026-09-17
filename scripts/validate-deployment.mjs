@@ -22,11 +22,15 @@ const gte = (actual, minimum) => {
 
 const fromImage = dockerfile.match(/^FROM\s+(\S+)\s*$/m)?.[1];
 assert.equal(fromImage, manifest.node_image, 'Docker base image and deployment manifest must match exactly.');
-const imageMatch = String(manifest.node_image).match(/^node:(\d+\.\d+\.\d+)-(.+)$/);
-assert.ok(imageMatch, 'Deployment manifest must pin an exact Node image version.');
+const imageMatch = String(manifest.node_image).match(/^node:(\d+\.\d+\.\d+)-([^@]+)@sha256:([a-f0-9]{64})$/i);
+assert.ok(imageMatch, 'Deployment manifest must pin an exact Node image version and immutable sha256 digest.');
 assert.equal(Number(imageMatch[1].split('.')[0]), baseline.node.major, 'Node major differs from the approved resilience baseline.');
 assert.ok(gte(imageMatch[1], baseline.node.minimum), `Node ${imageMatch[1]} is below security floor ${baseline.node.minimum}.`);
 assert.equal(imageMatch[2], baseline.node.image_suffix, 'Node image family differs from the approved resilience baseline.');
+assert.match(imageMatch[3], /^[a-f0-9]{64}$/i, 'Node image digest is invalid.');
+
+assert.equal(manifest.runtime_user, 'node', 'Runtime must use the unprivileged node account.');
+assert.match(dockerfile, /^USER\s+node\s*$/m, 'Dockerfile must switch to USER node.');
 
 assert.match(manifest.runtime_sha256, /^[a-f0-9]{64}$/i, 'Runtime SHA-256 is invalid.');
 const dockerRuntimeSha = dockerfile.match(/echo\s+"([a-f0-9]{64})\s+\/tmp\/runtime\.tgz"/i)?.[1];
@@ -43,6 +47,10 @@ for (const [key, expected] of Object.entries(baseline.deployment)) {
   if (key.startsWith('require_')) continue;
   assert.equal(manifest[key], expected, `Deployment safety invariant changed: ${key}.`);
 }
+assert.equal(baseline.deployment.require_runtime_sha256, true, 'Runtime checksum requirement must remain enabled.');
+assert.equal(baseline.deployment.require_manifest_image_match, true, 'Manifest/image match requirement must remain enabled.');
+assert.equal(baseline.deployment.require_image_digest, true, 'Immutable image digest requirement must remain enabled.');
+assert.equal(baseline.deployment.require_non_root_user, true, 'Non-root runtime requirement must remain enabled.');
 assert.equal(baseline.autonomy.language_model_direct_authority, false, 'Language models must never receive direct execution authority.');
 assert.ok(baseline.autonomy.require_reversible_action, 'Autonomous remediation must remain reversible.');
 assert.ok(baseline.autonomy.require_verified_dry_run, 'Autonomous remediation must require a verified dry run.');
@@ -54,6 +62,7 @@ console.log(JSON.stringify({
   candidate: manifest.candidate,
   runtimeSha256: manifest.runtime_sha256,
   nodeImage: manifest.node_image,
+  runtimeUser: manifest.runtime_user,
   nodeSecurityFloor: baseline.node.minimum,
   productionApproved: manifest.production_approved,
   stagingOnly: manifest.staging_only
