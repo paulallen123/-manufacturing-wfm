@@ -1,0 +1,177 @@
+name: WFM UX evolution cycle 3 gate
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/**'
+      - '.github/workflows/ux-cycle3-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ux-cycle3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cycle3-signoff:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax and sign-off intent checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset-cycle3.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const js=fs.readFileSync('ux-overlay/ux-reset-cycle3.js','utf8');
+          const css=fs.readFileSync('ux-overlay/ux-reset-cycle3.css','utf8');
+          for(const x of ['window.payrollPreview?.report?.()','Exceptions','Weekly checks','People checked','Worked time','Checks & exceptions','Employee totals','Controls & protection','Ready to sign','data-ux-signoff-open']) if(!js.includes(x)) throw new Error('Missing cycle 3 invariant: '+x);
+          for(const x of ['.ux-signoff-desk','.ux-signoff-kpis','.ux-signoff-detail','overflow:auto','[data-ux-job="signoff"]']) if(!css.includes(x)) throw new Error('Missing cycle 3 CSS invariant: '+x);
+          if(js.includes('t.canSign=true')||js.includes('t.canSign = true')) throw new Error('UX layer must not manufacture sign-off eligibility.');
+          console.log('UX_CYCLE3_SOURCE_INVARIANTS=PASS');
+          NODE
+
+      - name: Build exact composed image
+        run: docker build --pull=false -t wfm-ux-cycle3:pr .
+
+      - name: Verify approved presentation-bundle composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker create wfm-ux-cycle3:pr)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-cycle3
+          docker cp "$cid:/app/public/index.html" /tmp/wfm-cycle3/index.html
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-cycle3/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-cycle3/factory-control-ui.css
+          node --check /tmp/wfm-cycle3/value-cockpit-ui.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const html=fs.readFileSync('/tmp/wfm-cycle3/index.html','utf8');
+          const js=fs.readFileSync('/tmp/wfm-cycle3/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-cycle3/factory-control-ui.css','utf8');
+          if (!html.includes('value-cockpit-ui.js') || !html.includes('factory-control-ui.css')) throw new Error('Approved presentation assets are not loaded.');
+          if (/ux-reset(?:-cycle[23])?\.(?:js|css)/.test(html)) throw new Error('Standalone UX paths must not be introduced outside the sealed static allow-list.');
+          const j1=js.indexOf('WFM_UX_RESET_BASE_BEGIN'),j2=js.indexOf('WFM_UX_RESET_CYCLE2_BEGIN'),j3=js.indexOf('WFM_UX_RESET_CYCLE3_BEGIN');
+          const c1=css.indexOf('WFM_UX_RESET_BASE_BEGIN'),c2=css.indexOf('WFM_UX_RESET_CYCLE2_BEGIN'),c3=css.indexOf('WFM_UX_RESET_CYCLE3_BEGIN');
+          if (!(j1>=0&&j2>j1&&j3>j2&&c1>=0&&c2>c1&&c3>c2)) throw new Error('UX layers are not composed in deterministic order.');
+          for(const x of ['window.WFMUXReset=','window.WFMUXCycle2=','window.WFMUXCycle3=']) if(!js.includes(x)) throw new Error('Missing served UX implementation: '+x);
+          for(const x of ['.ux-signoff-desk','.ux-signoff-kpis','.ux-signoff-detail']) if(!css.includes(x)) throw new Error('Missing served Cycle 3 CSS: '+x);
+          console.log('UX_CYCLE3_APPROVED_ASSET_COMPOSITION=PASS');
+          NODE
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace or mutate sealed server logic'; exit 1; fi
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
+
+      - name: Verify sealed server delivers the composed bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name wfm-ux-cycle3-run --network host \
+            -e PORT=4100 \
+            -e NODE_ENV=staging \
+            -e NODE_OPTIONS=--experimental-sqlite \
+            -e WFM_DB=/tmp/wfm-ux-cycle3.sqlite \
+            wfm-ux-cycle3:pr
+          trap 'docker rm -f wfm-ux-cycle3-run >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4100/api/health >/tmp/health.json; then break; fi
+            sleep .5
+          done
+          test -s /tmp/health.json
+          curl -fsS http://127.0.0.1:4100/value-cockpit-ui.js >/tmp/served-ui.js
+          curl -fsS http://127.0.0.1:4100/factory-control-ui.css >/tmp/served-ui.css
+          grep -q 'WFM_UX_RESET_CYCLE3_BEGIN' /tmp/served-ui.js
+          grep -q 'WFM_UX_RESET_CYCLE3_BEGIN' /tmp/served-ui.css
+          test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:4100/ux-reset-cycle3.js)" = "404"
+          echo 'UX_CYCLE3_SERVER_DELIVERY_CONTRACT=PASS'
+
+      - name: Browser-check condensed sign-off interaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ux-harness
+          cp ux-overlay/ux-reset-cycle3.js /tmp/ux-harness/ux-reset-cycle3.js
+          cp ux-overlay/ux-reset-cycle3.css /tmp/ux-harness/ux-reset-cycle3.css
+          cat > /tmp/ux-harness/index.html <<'HTML'
+          <!doctype html>
+          <html><head><meta charset="utf-8"><link rel="stylesheet" href="/ux-reset-cycle3.css"></head>
+          <body>
+          <main class="content">
+            <section class="review-hero"><h1>Weekly review</h1></section>
+            <div class="review-metrics"></div>
+            <div class="review-tabs"><select id="review-team"><option value="team-1">Assembly</option></select></div>
+            <div class="review-steps"><div>Step evidence</div></div>
+            <div class="review-layout">
+              <div class="review-main">
+                <div class="panel">Checks and exceptions</div>
+                <div class="panel">Employee totals</div>
+                <div class="review-signbar"><button data-act="review-sign">Sign off week</button></div>
+              </div>
+              <aside class="review-aside">Controls and protection</aside>
+            </div>
+          </main>
+          <script>
+          window.ui={page:'weekly-review',role:'director'};
+          window.F={actor:{role:'director'}};
+          window.isEmployee=()=>false;
+          window.render=async()=>{};
+          window.payrollPreview={report:()=>({teams:[{
+            id:'team-1',site:'Assembly',status:'in_review',canSign:false,workedMinutes:2400,
+            issues:[{id:'issue-1',status:'open'}],
+            categories:[{id:'attendance',confirmed:false},{id:'pay',confirmed:true}],
+            employees:[{id:'e1'},{id:'e2'}],checkedEmployees:1,blockers:[]
+          }]})};
+          </script>
+          <script src="/ux-reset-cycle3.js"></script>
+          </body></html>
+          HTML
+          python3 -m http.server 9225 --bind 127.0.0.1 --directory /tmp/ux-harness >/tmp/ux-harness.log 2>&1 &
+          HARNESS_PID=$!
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME"
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --remote-debugging-port=9224 --user-data-dir=/tmp/wfm-cycle3-chrome --window-size=1440,1000 http://127.0.0.1:9225 >/tmp/chrome.log 2>&1 &
+          CHROME_PID=$!
+          trap 'kill "$CHROME_PID" "$HARNESS_PID" >/dev/null 2>&1 || true' EXIT
+          node <<'NODE'
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          async function retry(fn,n=60){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
+          const targets=await retry(async()=>{const r=await fetch('http://127.0.0.1:9224/json/list');const x=await r.json();const page=x.find(v=>v.type==='page');if(!page)throw Error('No browser page');return x});
+          const page=targets.find(x=>x.type==='page');
+          const ws=new WebSocket(page.webSocketDebuggerUrl);await new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=()=>bad(Error('CDP open failed'))});
+          let id=1;const pending=new Map();
+          ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(m.error.message)):p.resolve(m.result)}};
+          const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}))});
+          const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
+          await send('Runtime.enable');
+          await retry(async()=>{const ready=await evalx("document.readyState==='complete'&&Boolean(document.querySelector('.ux-signoff-desk'))");if(!ready)throw Error('not ready');return true});
+          const proof=await evalx(`(()=>({
+            desk:!!document.querySelector('.ux-signoff-desk'),
+            details:document.querySelectorAll('.ux-signoff-detail').length,
+            oldLayout:!!document.querySelector('.review-layout'),
+            hero:!!document.querySelector('.review-hero'),
+            condensed:document.body.dataset.uxSignoff||null,
+            pageOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+            labels:[...document.querySelectorAll('.ux-signoff-kpis small')].map(x=>x.textContent.trim()),
+            nextText:document.querySelector('.ux-signoff-next')?.textContent.trim()||null
+          }))()`);
+          console.log('UX_CYCLE3_BROWSER_PROOF='+JSON.stringify(proof));
+          if(!proof.desk)throw Error('Condensed sign-off desk is missing');
+          if(proof.details!==3)throw Error('Expected exactly three progressive-disclosure sections');
+          if(proof.oldLayout)throw Error('Legacy review layout should be consumed after composition');
+          if(proof.hero)throw Error('Legacy review hero should be removed after composition');
+          if(proof.condensed!=='condensed')throw Error('Condensed state marker is missing');
+          if(proof.pageOverflow>2)throw Error('Page-wide horizontal overflow detected');
+          for(const label of ['Exceptions','Weekly checks','People checked','Worked time']) if(!proof.labels.includes(label)) throw Error('Missing KPI '+label);
+          if(proof.nextText!=='Resolve exceptions')throw Error('Unexpected next action: '+proof.nextText);
+          const interaction=await evalx(`(()=>{const b=document.querySelector('.ux-signoff-next');if(!b)return false;b.click();const d=document.querySelector('[data-ux-signoff-detail="checks"]');return Boolean(d?.open)})()`);
+          if(!interaction)throw Error('Next action did not open checks and exceptions');
+          console.log('UX_CYCLE3_BROWSER_INTERACTION=PASS');
+          ws.close();
+          NODE

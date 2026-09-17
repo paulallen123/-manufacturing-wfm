@@ -1,0 +1,82 @@
+name: WFM UX evolution cycle 2 gate
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/**'
+      - '.github/workflows/ux-cycle2-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ux-cycle2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cycle2-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax and decision-safety checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset-cycle2.js
+          node <<'NODE'
+          const fs = require('node:fs');
+          const js = fs.readFileSync('ux-overlay/ux-reset-cycle2.js','utf8');
+          const css = fs.readFileSync('ux-overlay/ux-reset-cycle2.css','utf8');
+          const requiredJs = [
+            'sameOperationalScope',
+            'Who else is off',
+            'Cost impact',
+            'Only verified cover/overtime cost will be shown',
+            'did not return a verified incremental-cost figure',
+            '/api/leave-capacity',
+            'existing fresh balance, staffing, skills and policy checks'
+          ];
+          for (const x of requiredJs) if (!js.includes(x)) throw new Error(`Missing cycle 2 invariant: ${x}`);
+          const requiredCss = [
+            '[data-ux-job="absence"] .ux-leave-evidence',
+            '.ux-cost-impact',
+            '@media (max-width:760px)'
+          ];
+          for (const x of requiredCss) if (!css.includes(x)) throw new Error(`Missing cycle 2 CSS invariant: ${x}`);
+          if (/cost[^\n]{0,30}=\s*0\b/i.test(js)) throw new Error('Do not silently coerce unknown leave cost to zero.');
+          console.log('UX_CYCLE2_SOURCE_INVARIANTS=PASS');
+          NODE
+
+      - name: Build exact composed image
+        run: docker build --pull=false -t wfm-ux-cycle2:pr .
+
+      - name: Verify served bundle order and base-runtime boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker create wfm-ux-cycle2:pr)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-public
+          docker cp "$cid:/app/public/index.html" /tmp/wfm-public/index.html
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-public/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-public/factory-control-ui.css
+          node --check /tmp/wfm-public/value-cockpit-ui.js
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html=fs.readFileSync('/tmp/wfm-public/index.html','utf8');
+          const js=fs.readFileSync('/tmp/wfm-public/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-public/factory-control-ui.css','utf8');
+          if (/ux-reset(?:-cycle[23])?\.(?:js|css)/.test(html)) throw new Error('Standalone UX files must not be referenced outside the server allow-list.');
+          const j1=js.indexOf('WFM_UX_RESET_BASE_BEGIN'),j2=js.indexOf('WFM_UX_RESET_CYCLE2_BEGIN'),j3=js.indexOf('WFM_UX_RESET_CYCLE3_BEGIN');
+          const c1=css.indexOf('WFM_UX_RESET_BASE_BEGIN'),c2=css.indexOf('WFM_UX_RESET_CYCLE2_BEGIN'),c3=css.indexOf('WFM_UX_RESET_CYCLE3_BEGIN');
+          if (!(j1>=0&&j2>j1&&j3>j2&&c1>=0&&c2>c1&&c3>c2)) throw new Error('UX layers are not composed in deterministic order.');
+          for(const token of ['sameOperationalScope','Only verified cover/overtime cost will be shown','.ux-cost-impact']) if(!(js.includes(token)||css.includes(token))) throw new Error('Cycle 2 is missing from served presentation bundle: '+token);
+          console.log('UX_CYCLE2_SERVED_BUNDLE=PASS');
+          NODE
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace or mutate sealed server logic'; exit 1; fi
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'

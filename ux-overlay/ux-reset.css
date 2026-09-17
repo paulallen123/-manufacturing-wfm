@@ -1,0 +1,108 @@
+/* WFM role-first UX reset — progressive disclosure without removing product capability. */
+:root{
+  --ux-ink:#172539;
+  --ux-muted:#66778b;
+  --ux-line:#e4e9f0;
+  --ux-soft:#f6f8fb;
+  --ux-good:#1f7a59;
+  --ux-warn:#a46a24;
+  --ux-bad:#a94a5c;
+}
+html,body{max-width:100%;overflow-x:hidden}
+body.ux-reset-active .app,
+body.ux-reset-active .workspace,
+body.ux-reset-active .content{min-width:0;max-width:100%;overflow-x:clip}
+body.ux-reset-active .content{padding-bottom:48px}
+body.ux-reset-active .sidebar nav{overflow:visible!important;white-space:normal!important}
+body.ux-reset-active .sidebar .navbtn.ux-secondary-route{display:none!important}
+body.ux-reset-active .sidebar .navbtn.ux-primary-route span:not(.count):not(.review-count){font-weight:600}
+body.ux-reset-active .ux-more-button{margin-top:8px}
+body.ux-reset-active .ux-more-button .ux-chevron{margin-left:auto;font-size:12px;opacity:.6}
+body.ux-reset-active .fcc-workspaces{display:none!important}
+body.ux-reset-active .opsbar{overflow:hidden!important;white-space:normal!important;flex-wrap:wrap;gap:6px 14px}
+body.ux-reset-active .opsbar .opsbar-item:nth-child(n+4){display:none}
+body.ux-reset-active .tablewrap,
+body.ux-reset-active .ops-scroll,
+body.ux-reset-active .dp-table-scroll,
+body.ux-reset-active .pci-table-wrap{max-width:100%;overflow:auto;overscroll-behavior-inline:contain}
+body.ux-reset-active .table{width:100%;table-layout:fixed;white-space:normal}
+body.ux-reset-active .table th,
+body.ux-reset-active .table td{white-space:normal;overflow-wrap:anywhere}
+body.ux-reset-active .shift-grid{min-width:760px}
+body.ux-reset-active .heading{gap:18px;margin-bottom:22px}
+body.ux-reset-active .heading h1{max-width:720px}
+body.ux-reset-active .heading p{max-width:760px}
+body.ux-reset-active .panel,
+body.ux-reset-active .ops-panel,
+body.ux-reset-active .dp-panel{box-shadow:none}
+body.ux-reset-active .fcc-hero{padding:30px 32px;min-height:0}
+body.ux-reset-active .fcc-hero h1{font-size:clamp(34px,4vw,54px);line-height:1.02}
+body.ux-reset-active .fcc-pulse-grid{margin-top:16px}
+body.ux-reset-active .fcc-layout{margin-top:18px}
+body.ux-reset-active .fcc-map,
+body.ux-reset-active .fcc-week{margin-top:14px}
+.ux-detail-fold{margin:18px 0;border:1px solid var(--ux-line);border-radius:14px;background:#fff}
+.ux-detail-fold>summary{cursor:pointer;list-style:none;padding:16px 18px;font-weight:650;color:var(--ux-ink);display:flex;align-items:center;justify-content:space-between}
+.ux-detail-fold>summary::-webkit-details-marker{display:none}
+.ux-detail-fold>summary:after{content:'Show';font-size:12px;color:var(--ux-muted);font-weight:600}
+.ux-detail-fold[open]>summary:after{content:'Hide'}
+.ux-detail-fold>.ux-fold-body{padding:0 14px 14px}
+.ux-detail-fold .fcc-map,.ux-detail-fold .fcc-week{margin:0}
+.ux-tool-backdrop{position:fixed;inset:0;background:rgba(15,25,40,.28);z-index:1200;display:flex;justify-content:flex-end}
+.ux-tool-backdrop[hidden]{display:none}
+.ux-tool-drawer{width:min(440px,94vw);height:100%;background:#fff;box-shadow:-20px 0 45px rgba(20,30,45,.18);padding:22px;overflow:auto}
+.ux-tool-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--ux-line)}
+.ux-tool-head h2{margin:0;font-size:24px;color:var(--ux-ink)}
+.ux-tool-head p{margin:5px 0 0;color:var(--ux-muted);font-size:13px;line-height:1.45}
+.ux-tool-close{border:0;background:var(--ux-soft);border-radius:10px;width:38px;height:38px;font-size:22px;cursor:pointer}
+.ux-tool-group{padding:20px 0 4px}
+.ux-tool-group+ .ux-tool-group{border-top:1px solid var(--ux-line)}
+.ux-tool-group h3{margin:0 0 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ux-muted)}
+.ux-tool-list{display:grid;gap:7px}
+.ux-tool-list .navbtn{display:flex!important;width:100%;position:relative;border:1px solid var(--ux-line);background:#fff;color:var(--ux-ink);border-radius:11px;padding:11px 12px;text-align:left;align-items:center;gap:10px;min-height:44px}
+.ux-tool-list .navbtn:hover{background:var(--ux-soft)}
+.ux-tool-list .navbtn.active{border-color:#bfc7f5;background:#f4f5ff}
+.ux-tool-list .navbtn .count,.ux-tool-list .navbtn .review-count{margin-left:auto}
+.ux-leave-desk{margin:4px 0 20px}
+.ux-leave-desk-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:12px}
+.ux-leave-desk-head h2{font-size:24px;margin:0;color:var(--ux-ink)}
+.ux-leave-desk-head p{margin:4px 0 0;color:var(--ux-muted);max-width:680px}
+.ux-leave-count{font-size:13px;color:var(--ux-muted);white-space:nowrap}
+.ux-leave-list{display:grid;gap:12px}
+.ux-leave-card{border:1px solid var(--ux-line);border-radius:16px;background:#fff;padding:18px;display:grid;gap:15px}
+.ux-leave-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.ux-leave-person{display:flex;gap:11px;align-items:center;min-width:0}
+.ux-leave-person .avatar{flex:0 0 auto}
+.ux-leave-person b{display:block;font-size:16px;color:var(--ux-ink)}
+.ux-leave-person span{display:block;color:var(--ux-muted);font-size:13px;margin-top:2px}
+.ux-leave-request{font-weight:700;color:var(--ux-ink);white-space:nowrap;text-align:right}
+.ux-leave-request small{display:block;font-weight:500;color:var(--ux-muted);margin-top:3px}
+.ux-leave-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--ux-line);border-radius:12px;overflow:hidden}
+.ux-leave-kpi{padding:12px 13px;min-width:0;background:#fff}
+.ux-leave-kpi+ .ux-leave-kpi{border-left:1px solid var(--ux-line)}
+.ux-leave-kpi small{display:block;color:var(--ux-muted);font-size:11px;line-height:1.3;margin-bottom:5px}
+.ux-leave-kpi strong{display:block;color:var(--ux-ink);font-size:18px;overflow-wrap:anywhere}
+.ux-leave-evidence{display:grid;grid-template-columns:1.1fr 1fr;gap:10px}
+.ux-leave-evidence>div{background:var(--ux-soft);border-radius:11px;padding:12px 13px;color:var(--ux-ink);font-size:13px;line-height:1.45}
+.ux-leave-evidence b{display:block;margin-bottom:3px}
+.ux-capacity-state{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700;text-transform:capitalize;margin-bottom:5px}
+.ux-capacity-state.clear{background:#e8f5ef;color:var(--ux-good)}
+.ux-capacity-state.review{background:#fff4df;color:var(--ux-warn)}
+.ux-capacity-state.blocked{background:#fbeaec;color:var(--ux-bad)}
+.ux-leave-actions{display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.ux-leave-actions .ux-auto-note{margin-right:auto;color:var(--ux-muted);font-size:12px;max-width:500px}
+.ux-leave-empty{border:1px dashed var(--ux-line);border-radius:14px;padding:24px;text-align:center;background:#fff;color:var(--ux-muted)}
+.ux-leave-ledger{margin-top:14px}
+.ux-leave-ledger .ops-grid{margin-top:0}
+.ux-employee-balance{margin:0 0 16px;border:1px solid var(--ux-line);border-radius:16px;background:#fff;padding:18px}
+.ux-employee-balance-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.ux-employee-balance h2{margin:0;font-size:20px;color:var(--ux-ink)}
+.ux-employee-balance p{margin:4px 0 0;color:var(--ux-muted);font-size:13px}
+.ux-employee-balance-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.ux-employee-balance-grid>div{background:var(--ux-soft);border-radius:11px;padding:12px}
+.ux-employee-balance-grid small{display:block;color:var(--ux-muted);margin-bottom:5px}
+.ux-employee-balance-grid strong{font-size:20px;color:var(--ux-ink)}
+body.ux-reset-active .employee-hero>.panel.ux-redundant-balance{display:none!important}
+@media (max-width:980px){.ux-leave-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ux-leave-kpi:nth-child(3){border-left:0;border-top:1px solid var(--ux-line)}.ux-leave-kpi:nth-child(4){border-top:1px solid var(--ux-line)}.ux-leave-evidence{grid-template-columns:1fr}}
+@media (max-width:720px){body.ux-reset-active .content{padding-left:14px;padding-right:14px}body.ux-reset-active .fcc-hero{padding:22px 20px}.ux-leave-top{display:grid}.ux-leave-request{text-align:left;white-space:normal}.ux-leave-kpis{grid-template-columns:1fr 1fr}.ux-leave-actions{flex-wrap:wrap;justify-content:flex-start}.ux-leave-actions .ux-auto-note{width:100%;max-width:none;margin-right:0}.ux-employee-balance-grid{grid-template-columns:1fr}.ux-tool-drawer{width:100%}}
+@media (max-width:520px){.ux-leave-kpis{grid-template-columns:1fr}.ux-leave-kpi+ .ux-leave-kpi{border-left:0;border-top:1px solid var(--ux-line)}}

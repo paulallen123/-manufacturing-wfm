@@ -1,0 +1,111 @@
+name: WFM UX evolution cycle 9 gate
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/**'
+      - '.github/workflows/ux-cycle9-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ux-cycle9-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cycle9-specialist-workspaces:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Source safety checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset-cycle9.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const js=fs.readFileSync('ux-overlay/ux-reset-cycle9.js','utf8');
+          const css=fs.readFileSync('ux-overlay/ux-reset-cycle9.css','utf8');
+          for(const x of ['Find a tool','Scope &amp; filters','Daily decisions remain in Today, Absence, Sign off and Performance.','window.WFMUXCycle9=']) if(!js.includes(x)) throw new Error('Missing Cycle 9 invariant: '+x);
+          for(const x of ['.ux-tool-search','.ux-tool-group-fold','.ux-specialist-context','.ux-specialist-scope','@media(max-width:760px)']) if(!css.includes(x)) throw new Error('Missing Cycle 9 CSS invariant: '+x);
+          if(/\.remove\s*\(/.test(js)) throw new Error('Cycle 9 must preserve existing specialist tools and controls.');
+          console.log('UX_CYCLE9_SOURCE_INVARIANTS=PASS');
+          NODE
+
+      - name: Build and verify sealed composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false -t wfm-ux-cycle9:pr .
+          cid="$(docker create wfm-ux-cycle9:pr)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-cycle9
+          docker cp "$cid:/app/public/index.html" /tmp/wfm-cycle9/index.html
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-cycle9/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-cycle9/factory-control-ui.css
+          node --check /tmp/wfm-cycle9/value-cockpit-ui.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const html=fs.readFileSync('/tmp/wfm-cycle9/index.html','utf8');
+          const js=fs.readFileSync('/tmp/wfm-cycle9/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-cycle9/factory-control-ui.css','utf8');
+          if(/ux-reset(?:-cycle[23456789])?\.(?:js|css)/.test(html)) throw new Error('Standalone UX paths must not be exposed outside the sealed static allow-list.');
+          const j8=js.indexOf('WFM_UX_RESET_CYCLE8_BEGIN'),j9=js.indexOf('WFM_UX_RESET_CYCLE9_BEGIN');
+          const c8=css.indexOf('WFM_UX_RESET_CYCLE8_BEGIN'),c9=css.indexOf('WFM_UX_RESET_CYCLE9_BEGIN');
+          if(!(j8>=0&&j9>j8&&c8>=0&&c9>c8)) throw new Error('Cycle 9 must compose after Cycle 8.');
+          if(!js.includes('window.WFMUXCycle9=')||!css.includes('.ux-specialist-scope')) throw new Error('Cycle 9 is missing from approved served assets.');
+          console.log('UX_CYCLE9_APPROVED_ASSET_COMPOSITION=PASS');
+          NODE
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace or mutate sealed server logic'; exit 1; fi
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
+
+      - name: Browser-check drawer and specialist workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ux-cycle9-harness
+          cp ux-overlay/ux-reset-cycle9.js /tmp/ux-cycle9-harness/ux-reset-cycle9.js
+          cp ux-overlay/ux-reset-cycle9.css /tmp/ux-cycle9-harness/ux-reset-cycle9.css
+          cat > /tmp/ux-cycle9-harness/index.html <<'HTML'
+          <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/ux-reset-cycle9.css"><style>*{box-sizing:border-box}body{margin:0;font-family:Arial;color:#172539}.content{max-width:1180px;margin:auto;padding:20px}.heading{display:flex;justify-content:space-between}.filters{display:flex;gap:10px}.tablewrap{overflow:auto}.tablewrap table{min-width:900px}.ux-tool-drawer{width:420px;padding:22px}.ux-tool-head{display:flex;justify-content:space-between}.ux-tool-list{display:grid;gap:6px}.navbtn{display:flex;padding:10px}.btn.primary{padding:10px 14px}</style></head><body class="ux-reset-active"><main class="content"><div class="heading"><div><h1>Integrations</h1><p>Manage connection health and mappings.</p></div><button class="btn primary" data-act="connect">Connect provider</button></div><div class="filters"><label>Provider<select id="provider"><option>All</option></select></label><label>Status<select id="status"><option>All</option></select></label><label>Search<input id="search" type="search"></label></div><section class="panel"><h2>Connection health</h2><div class="tablewrap"><table><tr><th>Provider</th><th>Status</th><th>Freshness</th><th>Mapping</th></tr><tr><td>ERP</td><td>Healthy</td><td>2 min</td><td>Current</td></tr></table></div></section></main><aside class="ux-tool-drawer"><div class="ux-tool-head"><div><h2>More tools</h2><p>Specialist workflows</p></div></div><section class="ux-tool-group"><h3>Run the week</h3><div class="ux-tool-list"><button class="navbtn" data-page="cover">Cover</button><button class="navbtn" data-page="readiness">Readiness</button></div></section><section class="ux-tool-group"><h3>Cost &amp; efficiency</h3><div class="ux-tool-list"><button class="navbtn" data-page="payroll">Payroll</button><button class="navbtn" data-page="forecast">Forecast</button></div></section><section class="ux-tool-group"><h3>People &amp; setup</h3><div class="ux-tool-list"><button class="navbtn active" data-page="integrations">Integrations</button><button class="navbtn" data-page="compliance">Compliance</button></div></section><section class="ux-tool-group"><h3>Evidence &amp; support</h3><div class="ux-tool-list"><button class="navbtn" data-page="audit">Audit</button></div></section></aside><script>var ui={page:'integrations',role:'manager'};var F={actor:{role:'manager'}};function isEmployee(){return false}</script><script src="/ux-reset-cycle9.js"></script></body></html>
+          HTML
+          python3 -m http.server 9258 --bind 127.0.0.1 --directory /tmp/ux-cycle9-harness >/tmp/ux-cycle9-harness.log 2>&1 &
+          SERVER_PID=$!
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME"
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --remote-debugging-port=9259 --user-data-dir=/tmp/wfm-cycle9-chrome --window-size=1440,1000 http://127.0.0.1:9258 >/tmp/chrome9.log 2>&1 &
+          CHROME_PID=$!
+          trap 'kill "$CHROME_PID" "$SERVER_PID" >/dev/null 2>&1 || true' EXIT
+          timeout 35s node <<'NODE'
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          async function retry(fn,n=75){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
+          const targets=await retry(async()=>{const r=await fetch('http://127.0.0.1:9259/json/list');const x=await r.json();if(!x.find(v=>v.type==='page'))throw Error('No browser page');return x});
+          const page=targets.find(x=>x.type==='page'),ws=new WebSocket(page.webSocketDebuggerUrl);await new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=()=>bad(Error('CDP open failed'))});
+          let id=1;const pending=new Map();ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(m.error.message)):p.resolve(m.result)}};
+          const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}))});
+          const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
+          await send('Runtime.enable');
+          await retry(async()=>{if(!(await evalx("document.querySelector('.content')?.dataset.uxSpecialist==='calm'")))throw Error('not ready');return true});
+          const proof=await evalx(`(()=>{const scope=document.querySelector('.ux-specialist-scope'),drawer=document.querySelector('.ux-tool-drawer');return {context:!!document.querySelector('.ux-specialist-context'),scope:!!scope&&!scope.open&&!!scope.querySelector('#provider')&&!!scope.querySelector('#status'),primary:!!document.querySelector('[data-act="connect"]'),search:!!drawer.querySelector('.ux-tool-search input'),groups:drawer.querySelectorAll('.ux-tool-group-fold').length,activeOpen:[...drawer.querySelectorAll('.ux-tool-group-fold')].some(x=>x.open&&x.querySelector('[data-page="integrations"]')),local:document.querySelector('.tablewrap')?.getAttribute('tabindex')==='0',overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}})()`);
+          console.log('UX_CYCLE9_BROWSER_PROOF='+JSON.stringify(proof));
+          if(!proof.context||!proof.scope||!proof.primary||!proof.search||proof.groups!==4||!proof.activeOpen||!proof.local)throw Error('Specialist hierarchy or preserved control failed');
+          if(proof.overflow>2)throw Error('Desktop page-wide overflow detected');
+          await evalx(`(()=>{const i=document.querySelector('.ux-tool-search input');i.value='payroll';i.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+          const searchProof=await evalx(`(()=>({payroll:!document.querySelector('[data-page="payroll"]').hidden,cover:document.querySelector('[data-page="cover"]').hidden,visibleGroups:[...document.querySelectorAll('.ux-tool-group-fold')].filter(x=>!x.hidden).length}))()`);
+          console.log('UX_CYCLE9_SEARCH_PROOF='+JSON.stringify(searchProof));
+          if(!searchProof.payroll||!searchProof.cover||searchProof.visibleGroups!==1)throw Error('More-tool search filtering failed');
+          await evalx("document.querySelector('.ux-specialist-scope').open=true");
+          if(!(await evalx("getComputedStyle(document.getElementById('provider')).display!=='none'")))throw Error('Disclosed specialist filters unusable');
+          await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await sleep(250);
+          const mobile=await evalx(`(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,primary:!!document.querySelector('[data-act="connect"]'),scope:!!document.querySelector('.ux-specialist-scope')}))()`);
+          console.log('UX_CYCLE9_MOBILE_PROOF='+JSON.stringify(mobile));
+          if(mobile.overflow>2||!mobile.primary||!mobile.scope)throw Error('Mobile containment/control preservation failed');
+          console.log('UX_CYCLE9_BROWSER_INTERACTION=PASS');
+          ws.close();
+          NODE

@@ -1,0 +1,147 @@
+name: WFM UX evolution cycle 6 gate
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/**'
+      - '.github/workflows/ux-cycle6-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ux-cycle6-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cycle6-manager-today:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax and simplification-safety checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset-cycle5.js
+          node --check ux-overlay/ux-reset-cycle6.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const js=fs.readFileSync('ux-overlay/ux-reset-cycle6.js','utf8');
+          const css=fs.readFileSync('ux-overlay/ux-reset-cycle6.css','utf8');
+          for(const x of ['Capacity by area','Readiness map','Decision flow','ux-today-actions','ux-today-pulse','content.dataset.uxToday=\'calm\'']) if(!js.includes(x)) throw new Error('Missing Cycle 6 invariant: '+x);
+          for(const x of ['[data-ux-job="today"]','.ux-today-detail','.ux-today-pulse','.ux-today-actions','overflow-x:hidden','@media(max-width:760px)']) if(!css.includes(x)) throw new Error('Missing Cycle 6 CSS invariant: '+x);
+          if(/\.remove\s*\(/.test(js)) throw new Error('Cycle 6 must not delete functional Today content.');
+          if(/innerHTML\s*=\s*['"`]\s*£?\d/.test(js)) throw new Error('Cycle 6 must not manufacture operational figures.');
+          const employee=fs.readFileSync('ux-overlay/ux-reset-cycle5.js','utf8');
+          for(const x of ['My details','Request time off','Holiday breakdown','Balance breakdown','Full shift detail']) if(!employee.includes(x)) throw new Error('Employee self-service layer missing: '+x);
+          console.log('UX_CYCLE6_SOURCE_INVARIANTS=PASS');
+          NODE
+
+      - name: Build exact composed image
+        run: docker build --pull=false -t wfm-ux-cycle6:pr .
+
+      - name: Verify final presentation composition and sealed runtime boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker create wfm-ux-cycle6:pr)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-cycle6
+          docker cp "$cid:/app/public/index.html" /tmp/wfm-cycle6/index.html
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-cycle6/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-cycle6/factory-control-ui.css
+          node --check /tmp/wfm-cycle6/value-cockpit-ui.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const html=fs.readFileSync('/tmp/wfm-cycle6/index.html','utf8');
+          const js=fs.readFileSync('/tmp/wfm-cycle6/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-cycle6/factory-control-ui.css','utf8');
+          if(/ux-reset(?:-cycle[23456])?\.(?:js|css)/.test(html)) throw new Error('Standalone UX paths must not be exposed outside the sealed static allow-list.');
+          const j5=js.indexOf('WFM_UX_RESET_CYCLE5_BEGIN'),j6=js.indexOf('WFM_UX_RESET_CYCLE6_BEGIN');
+          const c5=css.indexOf('WFM_UX_RESET_CYCLE5_BEGIN'),c6=css.indexOf('WFM_UX_RESET_CYCLE6_BEGIN');
+          if(!(j5>=0&&j6>j5&&c5>=0&&c6>c5)) throw new Error('Cycle 6 must compose after Cycle 5.');
+          for(const x of ['window.WFMUXCycle5=','window.WFMUXCycle6=']) if(!js.includes(x)) throw new Error('Missing served UX layer: '+x);
+          if(!css.includes('.ux-today-detail')) throw new Error('Cycle 6 CSS missing from served bundle.');
+          console.log('UX_CYCLE6_APPROVED_ASSET_COMPOSITION=PASS');
+          NODE
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace or mutate sealed server logic'; exit 1; fi
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
+
+      - name: Verify sealed server delivers Cycle 6 through approved assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name wfm-ux-cycle6-run --network host \
+            -e PORT=4102 \
+            -e NODE_ENV=staging \
+            -e NODE_OPTIONS=--experimental-sqlite \
+            -e WFM_DB=/tmp/wfm-ux-cycle6.sqlite \
+            wfm-ux-cycle6:pr
+          trap 'docker rm -f wfm-ux-cycle6-run >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4102/api/health >/tmp/health6.json; then break; fi
+            sleep .5
+          done
+          test -s /tmp/health6.json
+          curl -fsS http://127.0.0.1:4102/value-cockpit-ui.js >/tmp/served-ui6.js
+          curl -fsS http://127.0.0.1:4102/factory-control-ui.css >/tmp/served-ui6.css
+          grep -q 'WFM_UX_RESET_CYCLE6_BEGIN' /tmp/served-ui6.js
+          grep -q 'WFM_UX_RESET_CYCLE6_BEGIN' /tmp/served-ui6.css
+          test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:4102/ux-reset-cycle6.js)" = "404"
+          echo 'UX_CYCLE6_SERVER_DELIVERY_CONTRACT=PASS'
+
+      - name: Browser-check manager Today hierarchy and responsive containment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ux-today-harness
+          cp ux-overlay/ux-reset-cycle6.js /tmp/ux-today-harness/ux-reset-cycle6.js
+          cp ux-overlay/ux-reset-cycle6.css /tmp/ux-today-harness/ux-reset-cycle6.css
+          cat > /tmp/ux-today-harness/index.html <<'HTML'
+          <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/ux-reset-cycle6.css"><style>*{box-sizing:border-box}body{margin:0;background:#f4f6f7;font-family:Arial,sans-serif}.content{max-width:1280px;margin:auto;padding:24px}.fcc-hero{display:grid;grid-template-columns:1fr 220px;background:#183b34;color:#fff;padding:40px;border-radius:22px}.fcc-decision-number{border-left:1px solid #ffffff33;padding-left:24px}.fcc-decision-number strong{font-size:72px}.fcc-pulse-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin:18px 0;background:#ddd}.fcc-pulse-grid>div{background:#fff;padding:22px;min-height:120px}.fcc-layout{display:grid;grid-template-columns:2fr 1fr;gap:18px}.fcc-main,.fcc-map,.fcc-week,.fcc-dept-grid{background:#fff;border:1px solid #dfe6e3;border-radius:16px;padding:20px;margin:16px 0}.fcc-actions{display:grid;gap:10px}.fcc-action{border:1px solid #ddd;padding:16px}.fcc-dept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.fcc-week{min-width:0}.eyebrow{font-size:10px}</style></head>
+          <body class="ux-reset-active" data-ux-role="manager"><main class="content">
+            <section class="fcc-hero"><div><span class="eyebrow">TODAY</span><h1>Run the factory by exception.</h1><p>Start with the decisions that need a manager.</p></div><div class="fcc-decision-number"><small>NEEDS YOU</small><strong>3</strong></div></section>
+            <div class="fcc-pulse-grid"><div><small>ON SHIFT</small><strong>124</strong></div><div><small>ABSENT</small><strong>6</strong></div><div><small>AT RISK</small><strong>2</strong></div><div><small>PLAN</small><strong>96%</strong></div></div>
+            <div class="fcc-dept-grid"><div>Assembly detail</div><div>Packaging detail</div><div>Mixing detail</div></div>
+            <div class="fcc-layout"><section class="fcc-main"><div class="fcc-section-head"><h2>What needs attention</h2></div><div class="fcc-actions"><div class="fcc-action">Missing clock-out</div><div class="fcc-action">Leave decision</div><div class="fcc-action">Coverage risk</div></div></section><section class="fcc-map">Large readiness map</section></div>
+            <section class="fcc-week">Long end-to-end decision flow</section>
+          </main>
+          <script>var ui={page:'overview',role:'manager'};var F={actor:{role:'manager'}};function isEmployee(){return false}async function render(){}</script><script src="/ux-reset-cycle6.js"></script></body></html>
+          HTML
+          python3 -m http.server 9229 --bind 127.0.0.1 --directory /tmp/ux-today-harness >/tmp/ux-today-harness.log 2>&1 &
+          HARNESS_PID=$!
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME"
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --remote-debugging-port=9228 --user-data-dir=/tmp/wfm-cycle6-chrome --window-size=1440,1000 http://127.0.0.1:9229 >/tmp/chrome6.log 2>&1 &
+          CHROME_PID=$!
+          trap 'kill "$CHROME_PID" "$HARNESS_PID" >/dev/null 2>&1 || true' EXIT
+          node <<'NODE'
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          async function retry(fn,n=60){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
+          const targets=await retry(async()=>{const r=await fetch('http://127.0.0.1:9228/json/list');const x=await r.json();const p=x.find(v=>v.type==='page');if(!p)throw Error('No browser page');return x});
+          const page=targets.find(x=>x.type==='page'),ws=new WebSocket(page.webSocketDebuggerUrl);await new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=()=>bad(Error('CDP open failed'))});
+          let id=1;const pending=new Map();ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(m.error.message)):p.resolve(m.result)}};
+          const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}))});
+          const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
+          await send('Runtime.enable');
+          await retry(async()=>{const ready=await evalx("document.querySelector('.content')?.dataset.uxToday==='calm'");if(!ready)throw Error('not ready');return true});
+          const proof=await evalx(`(()=>{const h=document.querySelector('.fcc-hero'),m=document.querySelector('.fcc-main'),p=document.querySelector('.fcc-pulse-grid');const children=[...document.querySelector('.content').children];return {job:document.body.dataset.uxJob,order:[children.indexOf(h),children.indexOf(m),children.indexOf(p)],capacityFold:!!document.querySelector('.ux-today-detail.capacity .fcc-dept-grid'),mapFold:!!document.querySelector('.ux-today-detail.readiness .fcc-map'),flowFold:!!document.querySelector('.ux-today-detail.flow .fcc-week'),actionCount:document.querySelectorAll('.fcc-main .fcc-action').length,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}})()`);
+          console.log('UX_CYCLE6_BROWSER_PROOF='+JSON.stringify(proof));
+          if(proof.job!=='today')throw Error('Today intent marker missing');
+          if(!(proof.order[0]>=0&&proof.order[1]===proof.order[0]+1&&proof.order[2]===proof.order[1]+1))throw Error('Hero, action queue and pulse are not in decision-first order');
+          if(!proof.capacityFold||!proof.mapFold||!proof.flowFold)throw Error('Operational depth was not moved behind disclosure');
+          if(proof.actionCount!==3)throw Error('Existing manager actions were not preserved');
+          if(proof.overflow>2)throw Error('Desktop page-wide overflow detected');
+          await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await sleep(250);
+          const mobile=await evalx(`(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,pulse:getComputedStyle(document.querySelector('.fcc-pulse-grid')).gridTemplateColumns,actions:document.querySelectorAll('.fcc-main .fcc-action').length}))()`);
+          console.log('UX_CYCLE6_MOBILE_PROOF='+JSON.stringify(mobile));
+          if(mobile.overflow>2)throw Error('Mobile page-wide overflow detected');
+          if(mobile.actions!==3)throw Error('Mobile view lost manager actions');
+          console.log('UX_CYCLE6_BROWSER_INTERACTION=PASS');
+          ws.close();
+          NODE
