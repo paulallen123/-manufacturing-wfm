@@ -4,7 +4,6 @@ const http = require('node:http');
 const { createHash, randomBytes, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
-const { createUxPreferenceStore } = require('./ux-preference.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
@@ -13,10 +12,10 @@ const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workf
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
-  { key: 'version-d-access', tokenHash: '56ee02ec22d0ffb576da2aca01fdb9ef283a3cad1ee01edcf6bdbefde626eafe' },
-  { key: 'version-d-probe', tokenHash: '4c63718f69bf65b3340dad010e5b2c055ab2a88fdd7f275cf9c1faf7c76e5d91' }
+  { key: 'vector-ui-access-20260919', tokenHash: '4d79994b1c66f552d89901120851535018189ca75c92eb437b66bce73bd4c788' },
+  { key: 'vector-ui-probe-20260919', tokenHash: 'a1a70f9319430281482a623d3453756ef8c0f279a243d9fe8d67fafcb5fc1c16' }
 ]);
-const STAGING_ACCESS_EXPIRES_AT = Date.parse('2026-09-19T02:30:00.000Z');
+const STAGING_ACCESS_EXPIRES_AT = Date.parse('2026-09-19T04:30:00.000Z');
 const STAGING_ACCESS_EMAIL = 'superuser@northstar.example';
 
 function sha256(value) {
@@ -31,8 +30,6 @@ function secureEqualHex(left, right) {
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
 installHostedListenGuard(http, { hosted });
 let guard = null;
-let uxPreferences = null;
-let uxPreferencesInitError = null;
 let integrationHub = null;
 let integrationHubInitError = null;
 let learningEngine = null;
@@ -182,14 +179,6 @@ http.createServer = function guardedCreateServer(listener) {
     throw new Error('Hosted staging refuses to start without the identity survival guard.');
   }
 
-  if (!uxPreferences && !uxPreferencesInitError && process.env.WFM_DB) {
-    try {
-      uxPreferences = createUxPreferenceStore({ dbPath: process.env.WFM_DB });
-    } catch (error) {
-      uxPreferencesInitError = error;
-    }
-  }
-
   if (!integrationHub && !integrationHubInitError && process.env.WFM_DB) {
     try {
       integrationHub = createAutonomousIntegrationHub({ dbPath: process.env.WFM_DB });
@@ -244,19 +233,6 @@ http.createServer = function guardedCreateServer(listener) {
           res.setHeader('X-Content-Type-Options', 'nosniff');
           res.end(JSON.stringify({ error: 'Security control unavailable. Request refused.' }));
         }
-        return;
-      }
-    }
-
-    if (requestPath(req) === '/api/ux-preference') {
-      if (!uxPreferences || uxPreferencesInitError) {
-        overlayUnavailable(res, 'UX preference');
-        return;
-      }
-      try {
-        if (await uxPreferences.beforeRequest(req, res)) return;
-      } catch {
-        overlayUnavailable(res, 'UX preference');
         return;
       }
     }
