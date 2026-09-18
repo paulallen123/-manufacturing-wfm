@@ -1,7 +1,7 @@
 import {deriveProfileOpportunity} from './energy-profile-benchmark.mjs';
 import {evaluateEnergyFlexibilityHardened} from './energy-input-hardening.mjs';
 
-export const ENERGY_PROFILE_BINDING_VERSION='energy-profile-binding-v0.2.0';
+export const ENERGY_PROFILE_BINDING_VERSION='energy-profile-binding-v0.3.0';
 
 const finite=(value)=>Number.isFinite(Number(value));
 const fraction=(value)=>finite(value)&&Number(value)>=0&&Number(value)<=1;
@@ -26,11 +26,13 @@ function profileQualityStats(profileEvidence){
   return {weakestQualityScore,qualityImpliedUncertaintyPct};
 }
 
-export function bindMeasuredProfileEconomics(input,{minQuality=0.8}={}){
+export function bindMeasuredProfileEconomics(input,{minQuality=0.8,minUncertaintyPct}={}){
   const next=structuredClone(input??{});
   const failures=[];
   const evidence=[];
   const options=Array.isArray(next.options)?next.options:[];
+  const acceptedMinQuality=fraction(minQuality)?Number(minQuality):0.8;
+  const fixedUncertaintyFloorPct=fraction(minUncertaintyPct)?Number(minUncertaintyPct):1-acceptedMinQuality;
 
   options.forEach((option,index)=>{
     if(!option||option.kind==='do_nothing') return;
@@ -47,7 +49,7 @@ export function bindMeasuredProfileEconomics(input,{minQuality=0.8}={}){
     try {
       derived=deriveProfileOpportunity(
         {baseline:profileEvidence.baseline,candidate:profileEvidence.candidate},
-        {now:next.now,minQuality}
+        {now:next.now,minQuality:acceptedMinQuality}
       );
     } catch (error) {
       failures.push(`${label}:evaluation_error`);
@@ -69,7 +71,7 @@ export function bindMeasuredProfileEconomics(input,{minQuality=0.8}={}){
 
     const declaredUncertaintyPct=Number(profileEvidence.uncertaintyPct);
     const {weakestQualityScore,qualityImpliedUncertaintyPct}=profileQualityStats(profileEvidence);
-    const uncertaintyPct=Math.max(declaredUncertaintyPct,qualityImpliedUncertaintyPct);
+    const uncertaintyPct=Math.max(declaredUncertaintyPct,fixedUncertaintyFloorPct);
     const uncertaintyFloorApplied=uncertaintyPct>declaredUncertaintyPct;
     const derivedAvoidedEnergyCost=Math.max(0,Number(derived.avoidedEnergyCost));
     const headlineGrossSaving=finite(option.energy?.grossSaving)?Number(option.energy.grossSaving):null;
@@ -93,8 +95,10 @@ export function bindMeasuredProfileEconomics(input,{minQuality=0.8}={}){
       declaredUncertaintyPct,
       weakestQualityScore,
       qualityImpliedUncertaintyPct,
+      fixedUncertaintyFloorPct,
       effectiveUncertaintyPct:uncertaintyPct,
       uncertaintyFloorApplied,
+      uncertaintyPolicy:'fixed_floor_until_adapter_calibration',
       uncertaintyPct,
       baselineCost:derived.baseline.cost,
       candidateCost:derived.candidate.cost,
