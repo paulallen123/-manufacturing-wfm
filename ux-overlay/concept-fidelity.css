@@ -826,3 +826,31 @@ body[data-ux-concept="fidelity-v3"][data-ux-view-mode="decision_first"] .ux-appr
   .ux-approved-section-head{display:grid}
   .ux-approved-count{justify-self:start}
 }
+
+
+.ux-approved-evidence{
+  margin:0;
+  border:1px solid var(--cf-line);
+  border-radius:15px;
+  background:#fff;
+  overflow:hidden;
+}
+.ux-approved-evidence>summary{
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:13px 15px;
+  cursor:pointer;
+  color:#405951;
+  background:#fbfcfb;
+}
+.ux-approved-evidence>summary::-webkit-details-marker{display:none}
+.ux-approved-evidence>summary span:first-child{display:grid;gap:2px}
+.ux-approved-evidence>summary b{font-size:11px;color:#304a42}
+.ux-approved-evidence>summary small{font-size:9px;color:#7b8a85;font-weight:400}
+.ux-approved-evidence[open]>summary{border-bottom:1px solid var(--cf-line)}
+.ux-approved-evidence-body{padding:14px;min-width:0}
+.ux-approved-evidence-body>.heading:first-child{display:none!important}
+.ux-approved-evidence-body .ux-concept-source-hidden{display:none!important}
