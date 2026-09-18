@@ -14,6 +14,8 @@ on:
       - 'scripts/validate-support-selfhelp.mjs'
       - 'resilience/autonomous-repair-factory.cjs'
       - 'scripts/validate-autonomous-repair-factory.mjs'
+      - 'resilience/provider-recovery-handoff.cjs'
+      - 'scripts/validate-provider-recovery-handoff.mjs'
       - '.github/workflows/wfm-zero-engineer-support-contract.yml'
   workflow_dispatch:
 
@@ -50,6 +52,9 @@ jobs:
 
       - name: Validate deterministic Tier 0 self-help
         run: node scripts/validate-support-selfhelp.mjs
+
+      - name: Validate T1 provider recovery handoff
+        run: node scripts/validate-provider-recovery-handoff.mjs
 
       - name: Validate Tier 2 repair-factory authority separation
         run: node scripts/validate-autonomous-repair-factory.mjs
