@@ -1,7 +1,7 @@
 import {deriveProfileOpportunity} from './energy-profile-benchmark.mjs';
 import {evaluateEnergyFlexibilityHardened} from './energy-input-hardening.mjs';
 
-export const ENERGY_PROFILE_BINDING_VERSION='energy-profile-binding-v0.1.0';
+export const ENERGY_PROFILE_BINDING_VERSION='energy-profile-binding-v0.2.0';
 
 const finite=(value)=>Number.isFinite(Number(value));
 const fraction=(value)=>finite(value)&&Number(value)>=0&&Number(value)<=1;
@@ -15,6 +15,15 @@ function requireScope(label,evidence,input,failures){
 
 function sourceIds(profile){
   return [...new Set((Array.isArray(profile)?profile:[]).map(segment=>segment?.sourceId).filter(value=>typeof value==='string'&&value.trim()))].sort();
+}
+
+function profileQualityStats(profileEvidence){
+  const qualities=[...(profileEvidence?.baseline??[]),...(profileEvidence?.candidate??[])]
+    .map(segment=>Number(segment?.qualityScore))
+    .filter(value=>Number.isFinite(value)&&value>=0&&value<=1);
+  const weakestQualityScore=qualities.length?Math.min(...qualities):null;
+  const qualityImpliedUncertaintyPct=weakestQualityScore===null?1:Math.max(0,Math.min(1,1-weakestQualityScore));
+  return {weakestQualityScore,qualityImpliedUncertaintyPct};
 }
 
 export function bindMeasuredProfileEconomics(input,{minQuality=0.8}={}){
@@ -58,7 +67,10 @@ export function bindMeasuredProfileEconomics(input,{minQuality=0.8}={}){
       return;
     }
 
-    const uncertaintyPct=Number(profileEvidence.uncertaintyPct);
+    const declaredUncertaintyPct=Number(profileEvidence.uncertaintyPct);
+    const {weakestQualityScore,qualityImpliedUncertaintyPct}=profileQualityStats(profileEvidence);
+    const uncertaintyPct=Math.max(declaredUncertaintyPct,qualityImpliedUncertaintyPct);
+    const uncertaintyFloorApplied=uncertaintyPct>declaredUncertaintyPct;
     const derivedAvoidedEnergyCost=Math.max(0,Number(derived.avoidedEnergyCost));
     const headlineGrossSaving=finite(option.energy?.grossSaving)?Number(option.energy.grossSaving):null;
     const conservativeLowerBound=derivedAvoidedEnergyCost*(1-uncertaintyPct);
@@ -78,6 +90,11 @@ export function bindMeasuredProfileEconomics(input,{minQuality=0.8}={}){
       headlineGrossSaving,
       derivedAvoidedEnergyCost,
       conservativeLowerBound,
+      declaredUncertaintyPct,
+      weakestQualityScore,
+      qualityImpliedUncertaintyPct,
+      effectiveUncertaintyPct:uncertaintyPct,
+      uncertaintyFloorApplied,
       uncertaintyPct,
       baselineCost:derived.baseline.cost,
       candidateCost:derived.candidate.cost,
