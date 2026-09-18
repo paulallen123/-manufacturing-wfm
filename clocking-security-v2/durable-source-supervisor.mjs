@@ -58,6 +58,7 @@ export class AtomicSupervisorStateStore {
     this.activeKeyId=keyId(activeKeyId);
     if(!this.integrityKeys.has(this.activeKeyId)) throw new Error('Active attendance state integrity key is not trusted.');
     this.rollbackAnchor=rollbackAnchor(anchor);
+    this.needsRecovery=false;
     fs.mkdirSync(path.dirname(filePath),{recursive:true});
   }
 
@@ -65,6 +66,7 @@ export class AtomicSupervisorStateStore {
     const anchoredGeneration=generation(this.rollbackAnchor.current(),'Attendance rollback anchor generation');
     if(!fs.existsSync(this.filePath)){
       if(anchoredGeneration!==0) throw new Error('Attendance source state is missing while rollback anchor is advanced.');
+      this.needsRecovery=false;
       return null;
     }
     const raw=fs.readFileSync(this.filePath);
@@ -81,15 +83,30 @@ export class AtomicSupervisorStateStore {
     if(!key) throw new Error('Attendance source state integrity key is not trusted.');
     const expected=macFor(frame.schemaVersion,frameGeneration,frame.state,key);
     if(!sameMac(expected,integrity.mac)) throw new Error('Attendance source state authentication failed.');
-    if(frameGeneration!==anchoredGeneration) throw new Error('Attendance source state rollback detected.');
-    return clone(frame.state);
+
+    if(frameGeneration===anchoredGeneration){
+      this.needsRecovery=false;
+      return clone(frame.state);
+    }
+
+    // The file is committed before the independent anchor. Exactly one authenticated
+    // generation ahead therefore means a crash/interruption happened after durable
+    // file commit but before anchor commit. Recover by advancing the anchor once.
+    if(frameGeneration===anchoredGeneration+1){
+      const advanced=generation(this.rollbackAnchor.advance(anchoredGeneration),'Attendance rollback anchor recovery generation');
+      if(advanced!==frameGeneration) throw new Error('Attendance rollback anchor recovery did not advance exactly once.');
+      this.needsRecovery=false;
+      return clone(frame.state);
+    }
+
+    throw new Error('Attendance source state rollback detected.');
   }
 
   save(state){
+    if(this.needsRecovery) throw new Error('Attendance source state requires restart/recovery before another write.');
     const stateCopy=clone(state);
     const current=generation(this.rollbackAnchor.current(),'Attendance rollback anchor generation');
-    const next=generation(this.rollbackAnchor.advance(current),'Attendance rollback anchor advanced generation');
-    if(next!==current+1) throw new Error('Attendance rollback anchor did not advance exactly once.');
+    const next=current+1;
     const payload={
       schemaVersion:this.schemaVersion,
       rollbackGeneration:next,
@@ -118,8 +135,22 @@ export class AtomicSupervisorStateStore {
       try{ if(fs.existsSync(tmp)) fs.unlinkSync(tmp); }catch{}
       throw e;
     }
+
+    try{
+      const advanced=generation(this.rollbackAnchor.advance(current),'Attendance rollback anchor advanced generation');
+      if(advanced!==next) throw new Error('Attendance rollback anchor did not advance exactly once.');
+    }catch(e){
+      // The new authenticated file is already durable. Freeze this store so the
+      // process cannot overwrite it from rolled-back memory. A new store instance
+      // will reconcile the one-generation-ahead file through load().
+      this.needsRecovery=true;
+      throw e;
+    }
     return {bytes:body.length,integrityKeyId:this.activeKeyId,rollbackGeneration:next};
   }
+
+  requiresRecovery(){ return this.needsRecovery; }
+
 }
 
 export class DurableAttendanceSourceRuntime {
@@ -139,10 +170,11 @@ export class DurableAttendanceSourceRuntime {
   disconnected(args){ return this.#mutate('disconnected',args); }
   reconnected(args){ return this.#mutate('reconnected',args); }
   completeRecovery(args){ return this.#mutate('completeRecovery',args); }
-  status(args){ return this.supervisor.status(args); }
-  pendingRecovery(args){ return this.supervisor.pendingRecovery(args); }
+  status(args){ this.#assertWritableState(); return this.supervisor.status(args); }
+  pendingRecovery(args){ this.#assertWritableState(); return this.supervisor.pendingRecovery(args); }
 
   #mutate(method,args){
+    this.#assertWritableState();
     const before=this.supervisor.exportState();
     let result;
     try{
@@ -153,5 +185,9 @@ export class DurableAttendanceSourceRuntime {
       try{ this.supervisor.restoreState(before); }catch(restoreError){ e.rollbackError=restoreError; }
       throw e;
     }
+  }
+
+  #assertWritableState(){
+    if(this.store.requiresRecovery?.()) throw new Error('Attendance source runtime requires restart/recovery after interrupted durable commit.');
   }
 }
