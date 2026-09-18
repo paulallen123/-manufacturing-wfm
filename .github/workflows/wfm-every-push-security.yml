@@ -116,112 +116,7 @@ jobs:
               echo 'Canonical staging may reference only secrets.RAILWAY_TOKEN.' >&2
               exit 1
             }
-            canonical_secret_expression='
-            browser_secret_refs="$(grep -oE 'secrets\.[A-Za-z0-9_]+' "$BROWSER_PROOF_WORKFLOW" | sort -u || true)"
-            if [ -n "$browser_secret_refs" ]; then
-              [ "$browser_secret_refs" = 'secrets.WFM_DEMO_PASSWORD' ] || {
-                echo 'Live browser proof may reference only secrets.WFM_DEMO_PASSWORD.' >&2
-                exit 1
-              }
-              browser_secret_expression='$''{{ secrets.WFM_DEMO_PASSWORD }}'
-              [ "$(grep -Fc "$browser_secret_expression" "$BROWSER_PROOF_WORKFLOW")" -eq 1 ] || {
-                echo 'Live browser proof must consume WFM_DEMO_PASSWORD exactly once.' >&2
-                exit 1
-              }
-              grep -Fq 'if: github.actor == github.repository_owner' "$BROWSER_PROOF_WORKFLOW"
-              grep -Fq 'runs-on: ubuntu-24.04' "$BROWSER_PROOF_WORKFLOW"
-              grep -Fq 'contents: read' "$BROWSER_PROOF_WORKFLOW"
-              proof_line="$(grep -nF 'name: Run authenticated read-only customer journey' "$BROWSER_PROOF_WORKFLOW" | cut -d: -f1)"
-              browser_secret_line="$(grep -nF "WFM_DEMO_PASSWORD: $browser_secret_expression" "$BROWSER_PROOF_WORKFLOW" | cut -d: -f1)"
-              [ -n "$proof_line" ] && [ -n "$browser_secret_line" ] && [ "$browser_secret_line" -gt "$proof_line" ] && [ $((browser_secret_line-proof_line)) -le 4 ] || {
-                echo 'WFM_DEMO_PASSWORD must be scoped only to the browser proof step.' >&2
-                exit 1
-              }
-            fi
-          fi
-
-          if grep -RInF 'PUBLIC-WFM-E2E' .github/workflows --include='*.yml' --include='*.yaml' --exclude="$SELF"; then
-            echo 'Refusing public/derivable staging authentication material.' >&2
-            exit 1
-          fi
-
-      - name: Validate deployment and resilience metadata
-        run: |
-          set -euo pipefail
-          node scripts/validate-deployment.mjs
-          node scripts/validate-resilience-scenarios.mjs
-
-      - name: Build exact staging candidate
-        run: docker build --pull=false -t wfm-every-push:${{ github.sha }} .
-
-      - name: Re-prove runtime boundary
-        shell: bash
-        run: |
-          set -euo pipefail
-          IMAGE="wfm-every-push:${GITHUB_SHA}"
-          EXPECTED_NODE="v$(node -p "require('./resilience/security-baseline.json').node.minimum")"
-          test "$(docker run --rm --entrypoint node "$IMAGE" --version)" = "$EXPECTED_NODE"
-          test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "node"
-
-          docker run --rm --entrypoint sh "$IMAGE" -ec '
-            test ! -e /usr/local/lib/node_modules/npm
-            test ! -e /usr/local/lib/node_modules/corepack
-            for p in npm npx corepack yarn yarnpkg pnpm pnpx; do
-              if command -v "$p" >/dev/null 2>&1; then
-                echo "Unexpected package manager in final runtime: $p" >&2
-                exit 1
-              fi
-            done
-          '
-
-          docker run --rm --entrypoint node "$IMAGE" - <<'NODE'
-          const assert = require('node:assert/strict');
-          const fs = require('node:fs');
-          const path = require('node:path');
-          const Module = require('node:module');
-          const pkg = JSON.parse(fs.readFileSync('/app/package.json','utf8'));
-          for (const field of ['dependencies','devDependencies','optionalDependencies','peerDependencies']) {
-            assert.equal(Object.keys(pkg[field] || {}).length, 0, `Unexpected ${field} in staged runtime.`);
-          }
-          assert.equal(fs.existsSync('/app/node_modules'), false, 'Staged runtime unexpectedly contains node_modules.');
-          const builtins = new Set(Module.builtinModules.flatMap(x => [x, `node:${x}`]));
-          const files = ['/app/server.cjs'];
-          const walk = dir => {
-            for (const entry of fs.readdirSync(dir,{withFileTypes:true})) {
-              const p = path.join(dir,entry.name);
-              if (entry.isDirectory()) walk(p);
-              else if (/\.(cjs|mjs|js)$/.test(entry.name)) files.push(p);
-            }
-          };
-          walk('/app/lib');
-          const external = [];
-          for (const file of files) {
-            const source = fs.readFileSync(file,'utf8');
-            for (const re of [/require\(['"]([^'"]+)['"]\)/g,/from\s+['"]([^'"]+)['"]/g]) {
-              let match;
-              while ((match = re.exec(source))) {
-                const spec = match[1];
-                if (spec.startsWith('.') || spec.startsWith('/') || builtins.has(spec)) continue;
-                external.push({file:path.relative('/app',file),spec});
-              }
-            }
-          }
-          assert.deepEqual(external, [], 'Staged runtime introduced a non-built-in module import without security review.');
-          NODE
-
-      - name: Prove staging candidate refuses production mode
-        shell: bash
-        run: |
-          set -euo pipefail
-          IMAGE="wfm-every-push:${GITHUB_SHA}"
-          if docker run --rm -e NODE_ENV=production --entrypoint node "$IMAGE" /app/server.cjs >production-refusal.log 2>&1; then
-            echo 'ERROR: staging candidate unexpectedly started in production mode' >&2
-            cat production-refusal.log >&2
-            exit 1
-          fi
-          grep -q 'cannot run as production' production-refusal.log
-'{{ secrets.RAILWAY_TOKEN }}'
-            [ "$(grep -Fc "$canonical_secret_expression" "$CANONICAL_STAGING_WORKFLOW")" -eq 1 ] || {
+            [ "$(grep -Fc 'secrets.RAILWAY_TOKEN' "$CANONICAL_STAGING_WORKFLOW")" -eq 1 ] || {
               echo 'Canonical staging must consume RAILWAY_TOKEN exactly once.' >&2
               exit 1
             }
@@ -239,9 +134,7 @@ jobs:
             grep -Fq -- '--ci' "$CANONICAL_STAGING_WORKFLOW"
             grep -Fq 'name: Verify canonical staging health' "$CANONICAL_STAGING_WORKFLOW"
             grep -Fq 'health.productionApproved !== false' "$CANONICAL_STAGING_WORKFLOW"
-            canonical_deploy_line="$(grep -nF 'name: Deploy exact candidate to canonical staging' "$CANONICAL_STAGING_WORKFLOW" | cut -d: -f1)"
-            canonical_secret_line="$(grep -nF "RAILWAY_TOKEN: $canonical_secret_expression" "$CANONICAL_STAGING_WORKFLOW" | cut -d: -f1)"
-            [ -n "$canonical_deploy_line" ] && [ -n "$canonical_secret_line" ] && [ "$canonical_secret_line" -gt "$canonical_deploy_line" ] && [ $((canonical_secret_line-canonical_deploy_line)) -le 4 ] || {
+            grep -A4 -F 'name: Deploy exact candidate to canonical staging' "$CANONICAL_STAGING_WORKFLOW" | grep -Fq 'RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}' || {
               echo 'Canonical staging RAILWAY_TOKEN must be scoped only to the deployment step.' >&2
               exit 1
             }
