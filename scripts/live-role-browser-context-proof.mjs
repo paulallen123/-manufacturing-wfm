@@ -42,7 +42,7 @@ function digest(text) {
   return crypto.createHash('sha256').update(String(text)).digest('hex');
 }
 
-async function runRole({slug, email, expectedRole, expectedTenant, expectedPayrollStatus, requiredSurface}, roleIndex) {
+async function runRole({slug, email, expectedRole, expectedTenant, expectedPayrollStatus, requiredSurface, capabilityLabel}, roleIndex) {
   const port = 9300 + roleIndex * 30 + Math.floor(Math.random() * 20);
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-role-${slug}-${crypto.randomBytes(4).toString('hex')}`);
   fs.mkdirSync(profile, { recursive: true });
@@ -154,16 +154,16 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
     assert.ok(browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length>bootstrapBeforeRender,`${slug} browser did not perform a fresh authenticated bootstrap after navigation.`);
     const desktopDomSha256=digest(desktopHtml);
 
-    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|renderedDom=${desktopHtml.length}/${desktopDomSha256.slice(0,12)}`);
+    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|capability=${capabilityLabel}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|renderedDom=${desktopHtml.length}/${desktopDomSha256.slice(0,12)}`);
     return {
-      slug,email,role:expectedRole,tenant:expectedTenant,
+      slug,email,role:expectedRole,tenant:expectedTenant,capabilityLabel,
       freshBrowserCookieCount:beforeCookies.cookies?.length||0,
       freshBootstrapStatus:pre.status,loginStatus:loginResponse.status,payrollStatus:payrollResponse.status,
       requiredSurface,requiredSurfaceStatus:surfaceStatus,
       rendered:{domLength:desktopHtml.length,domSha256:desktopDomSha256,viewport:'1440x1000 browser window',authenticatedBootstrapAfterNavigation:true},
       observedBrowserApi:[...new Map(browserApi.map(x=>[`${x.path}:${x.status}`,x])).values()],
       browserContext:'fresh Chrome process/profile received the exact server-issued authenticated session cookie; cookie value never logged or persisted',
-      uiClaimBoundary:'role-specific authenticated home produced a non-trivial rendered DOM in a fresh browser; visual mobile/keyboard/overflow quality is proven separately by the dedicated authenticated visual gate; not every task is clicked end-to-end'
+      uiClaimBoundary:'role/capability-specific authenticated home produced a non-trivial rendered DOM in a fresh browser; visual mobile/keyboard/overflow quality is proven separately by the dedicated authenticated visual gate; not every task is clicked end-to-end'
     };
   } finally {
     try{ws?.close();}catch{}
@@ -189,11 +189,11 @@ assert.equal(health.productionApproved,false);
 assert.equal(health.pilotReady,false);
 
 const specs=[
-  {slug:'manager',email:'manager@northstar.example',expectedRole:'manager',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/time-review'},
-  {slug:'employee',email:'maya@northstar.example',expectedRole:'employee',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/personal'},
-  {slug:'payroll',email:'payroll@northstar.example',expectedRole:'payroll_admin',expectedTenant:'northstar-demo',expectedPayrollStatus:200,requiredSurface:'/api/payroll-run'},
-  {slug:'superuser',email:'superuser@northstar.example',expectedRole:'superuser',expectedTenant:'northstar-demo',expectedPayrollStatus:200,requiredSurface:'/api/onboarding'},
-  {slug:'isolation-manager',email:'other@isolation.example',expectedRole:'manager',expectedTenant:'isolation-test',expectedPayrollStatus:403,requiredSurface:'/api/bootstrap'}
+  {slug:'manager',email:'manager@northstar.example',expectedRole:'manager',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/time-review',capabilityLabel:'manager-time-review'},
+  {slug:'employee',email:'maya@northstar.example',expectedRole:'employee',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/personal',capabilityLabel:'employee-personal'},
+  {slug:'payroll',email:'payroll@northstar.example',expectedRole:'payroll_admin',expectedTenant:'northstar-demo',expectedPayrollStatus:200,requiredSurface:'/api/payroll-run',capabilityLabel:'payroll-release'},
+  {slug:'company-admin',email:'superuser@northstar.example',expectedRole:'director',expectedTenant:'northstar-demo',expectedPayrollStatus:200,requiredSurface:'/api/onboarding',capabilityLabel:'company-onboarding-and-payroll'},
+  {slug:'isolation-manager',email:'other@isolation.example',expectedRole:'manager',expectedTenant:'isolation-test',expectedPayrollStatus:403,requiredSurface:'/api/bootstrap',capabilityLabel:'separate-tenant-manager'}
 ];
 const roles=[];
 for(let i=0;i<specs.length;i++) roles.push(await runRole(specs[i],i));
@@ -202,10 +202,11 @@ fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.st
   capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,
   processIsolation:'five fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
   authMethod:'real hosted /api/login created the session; CDP bound that server-issued cookie to the corresponding fresh Chrome process; no credential passed to Chrome process environment',
-  renderedEvidence:'each role produced a hashed non-trivial authenticated DOM after a fresh browser navigation and authenticated browser bootstrap',
+  renderedEvidence:'manager, employee, payroll, company-admin capability account and separate-tenant manager each produced a hashed non-trivial authenticated DOM after a fresh browser navigation and authenticated browser bootstrap',
+  companyAdminFixtureNote:'the account named superuser@northstar.example is represented by the server as role=director; company-level capability is proven by successful onboarding and payroll surfaces rather than relabelling the authoritative role enum',
   mobileVisualEvidence:'separate dedicated authenticated visual gate covers desktop/mobile screenshots, no horizontal overflow, keyboard focus and live navigation on the same frozen release',
   roles,result:'PASS',
-  claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts, server-side role/tenant boundaries, and role-specific browser rendering; visual mobile quality is covered separately; not every role-specific task is clicked end-to-end; no production/pilot approval and no real employee/payroll data'
+  claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts, server-side role/tenant/capability boundaries, and role-specific browser rendering; visual mobile quality is covered separately; not every role-specific task is clicked end-to-end; no production/pilot approval and no real employee/payroll data'
 },null,2));
 console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}|rendered_dom=${roles.length}`);
 delete process.env.WFM_STAGING_PASSWORD;
