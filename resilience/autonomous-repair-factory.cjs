@@ -3,7 +3,7 @@
 const { createHash } = require('node:crypto');
 
 const PROTECTED_PATHS = Object.freeze([
-  'resilience/security-baseline.json',
+  'resilience/security-baseline.json',\n  'DEPLOYMENT_MANIFEST.json',\n  'STAGING_FREEZE.json',\n  'Dockerfile',\n  'Dockerfile.proof-runner',\n  'resilience/failure-scenarios.json',\n  'resilience/ci-provider-failover.cjs',\n  'resilience/provider-recovery-handoff.cjs',\n  'resilience/autonomy-control-loop.cjs',\n  'resilience/support-selfhelp.cjs',\n  'scripts/run-portable-autonomy-proof.mjs',\n  'scripts/validate-resilience-scenarios.mjs',\n  'scripts/validate-ci-provider-failover.mjs',\n  'scripts/validate-provider-recovery-handoff.mjs',\n  'scripts/validate-autonomy-control-loop.mjs',\n  'scripts/validate-support-selfhelp.mjs',
   'resilience/support-tier-contract.json',
   'scripts/validate-support-tier-contract.mjs',
   'resilience/autonomous-repair-factory.cjs',
