@@ -52,7 +52,11 @@ jobs:
           set -euo pipefail
           IMAGE="wfm-runtime-attestation:${GITHUB_SHA}"
           EXPECTED="$(node -p "require('./DEPLOYMENT_MANIFEST.json').runtime_sha256")"
-          MISMATCH="4${EXPECTED:1}"
+          if [[ "${EXPECTED:0:1}" == "0" ]]; then
+            MISMATCH="1${EXPECTED:1}"
+          else
+            MISMATCH="0${EXPECTED:1}"
+          fi
 
           if docker run --rm "$IMAGE" >missing-runtime-id.log 2>&1; then
             echo 'ERROR: image started without the independently configured runtime identity' >&2
