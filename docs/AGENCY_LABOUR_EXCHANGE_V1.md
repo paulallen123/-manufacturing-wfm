@@ -17,7 +17,8 @@ This is a bounded development slice on the Manufacturing Event / Cost lane. It d
 7. Agencies can confirm a preferred worker, propose an alternative, partially fill, or decline.
 8. Alternatives are revalidated before acceptance.
 9. Clocked hours can be reconciled against agency claims and invoice lines.
-10. Any mismatch is routed for manufacturer invoice review rather than affecting worker pay.
+10. Supplier outcomes feed role/site-specific agency performance evidence for the next request.
+11. Any mismatch is routed for manufacturer invoice review rather than affecting worker pay.
 
 ## Request pack
 
@@ -50,9 +51,9 @@ A worker cannot enter the ranking pool unless the available evidence confirms:
 
 These are gates, not weighted preferences.
 
-## Explainable ranking
+## Explainable worker ranking
 
-After eligibility, the default score uses:
+After eligibility, the default worker score uses:
 - attendance: 22%
 - punctuality: 18%
 - quality: 18%
@@ -81,6 +82,33 @@ An alternative worker is never trusted solely because an agency proposed them; t
 
 High-risk work is routed through manager approval even when standard-role auto-dispatch is enabled.
 
+## Supplier learning
+
+Supplier performance is measured from operational evidence and prefers site/role evidence when enough history exists, falling back to broader role or portfolio evidence when it does not.
+
+The current supplier score uses:
+- fill reliability: 28%
+- preferred-worker fulfilment: 22%
+- attendance/no-show reliability: 18%
+- response speed: 14%
+- replacement avoidance: 8%
+- invoice accuracy: 6%
+- cost efficiency: 4%
+
+The same neutral-prior shrinkage principle is used here so one lucky request cannot make a new agency appear artificially superior. Evidence confidence is surfaced with the score.
+
+This means the cascade can learn which supplier is actually strongest for a specific manufacturing role/site rather than relying on a static supplier order or cheapest-rate-first strategy.
+
+## Cost and time evidence
+
+The value model is deliberately scenario-based. It can model:
+- manager minutes saved per labour request;
+- invoice reconciliation minutes saved per agency worker;
+- manager/admin cost saved from those hours;
+- modelled avoided no-show cost.
+
+It only reports value from customer-supplied assumptions and labels the output as modelled; it does not claim realised customer savings without measured evidence.
+
 ## Authority boundary
 
 The engine produces planning and workflow hand-offs only. It forbids:
@@ -103,6 +131,11 @@ The deterministic test suite covers:
 - agency confirmations and alternative-worker revalidation;
 - hours/rate/expense invoice reconciliation;
 - deterministic repeatability;
-- 5,000 synthetic candidate evaluations with no ineligible worker selected.
+- 5,000 synthetic candidate evaluations with no ineligible worker selected;
+- site/role supplier performance profiling;
+- small-sample supplier-score shrinkage;
+- reliable supplier selection over cheaper but materially weaker suppliers;
+- exclusion of unapproved suppliers from ranking;
+- scenario-only cost/time value modelling.
 
 This is engineering proof, not customer/pilot evidence. Real supplier integrations, real customer data replay, production security review, UI/browser validation and live operational measurements remain required before promotion.
