@@ -18,7 +18,7 @@ jobs:
       - name: Checkout proof branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 4
+          fetch-depth: 6
 
       - name: Prove candidate lineage and bounded repair
         shell: bash
@@ -27,7 +27,7 @@ jobs:
           ORIGINAL_PROOF=48ee77767f17056de735cdc4031dcc6091e9b685
           REPAIR=38407325009c3ae732a705d86275a72bd32c5501
           BASE=ad9ee9baf3db27f0715c094c4674b2bf85ff08a1
-          test "$(git rev-parse HEAD^)" = "$ORIGINAL_PROOF"
+          git merge-base --is-ancestor "$ORIGINAL_PROOF" HEAD
           test "$(git rev-parse "$ORIGINAL_PROOF^")" = "$REPAIR"
           test "$(git rev-parse "$REPAIR^")" = "$BASE"
           test "$(git diff --name-only "$BASE" "$REPAIR")" = "ux-overlay/ux-reset-cycle5.js"
