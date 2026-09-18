@@ -1,4 +1,4 @@
-export const IDTA_02020_INSTANCE_COMPAT_VERSION = 'idta-02020-instance-compat-v0.1.0';
+export const IDTA_02020_INSTANCE_COMPAT_VERSION = 'idta-02020-instance-compat-v0.2.0';
 
 const IDTA_SUBMODEL = 'https://admin-shell.io/idta/SubmodelTemplate/CapabilityDescription/1/0';
 const PROPERTY_CONTAINER = 'https://admin-shell.io/idta/CapabilityDescription/PropertyContainer/1/0';
@@ -6,6 +6,13 @@ const PROPERTY_TYPE = 'https://admin-shell.io/idta/CapabilityPropertyType/Proper
 const RANGE_TYPE = 'https://admin-shell.io/idta/CapabilityPropertyEnumType/Range/1/0';
 const TEMPLATE_PREFIX = 'https://admin-shell.io/idta/';
 const CONTAINER_KEYS = ['submodelElements', 'value', 'statements', 'annotations'];
+
+const REFERENCE_ALIASES = new Map([
+  ['https://admin-shell.io/idta/CapabilityDescription/1/0/Submodel', IDTA_SUBMODEL],
+  ['https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifiers/Required/1/0', 'https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifier/Required/1/0'],
+  ['https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifiers/Offered/1/0', 'https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifier/Offered/1/0'],
+  ['https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifiers/NotAssigned/1/0', 'https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifier/NotAssigned/1/0'],
+]);
 
 function canonicalReference(reference) {
   const keys = Array.isArray(reference?.keys) ? reference.keys.filter((key) => key?.value) : [];
@@ -26,6 +33,30 @@ function reference(value) {
 
 function isDomainSemantic(value) {
   return typeof value === 'string' && value.length > 0 && !value.startsWith(TEMPLATE_PREFIX);
+}
+
+function rewriteKnownReference(referenceValue, state) {
+  if (!referenceValue || typeof referenceValue !== 'object' || !Array.isArray(referenceValue.keys)) return;
+  for (const key of referenceValue.keys) {
+    const from = typeof key?.value === 'string' ? key.value : null;
+    const to = from ? REFERENCE_ALIASES.get(from) : null;
+    if (!to || to === from) continue;
+    key.value = to;
+    state.normalizedAliases += 1;
+    state.aliases.push({ from, to });
+  }
+}
+
+function normalizeKnownAliases(node, state) {
+  if (!node || typeof node !== 'object') return;
+  rewriteKnownReference(node.semanticId, state);
+  for (const qualifier of node.qualifiers ?? []) rewriteKnownReference(qualifier?.semanticId, state);
+
+  for (const key of CONTAINER_KEYS) {
+    const children = node[key];
+    if (!Array.isArray(children)) continue;
+    for (const child of children) normalizeKnownAliases(child, state);
+  }
 }
 
 function normalizeElement(node, state) {
@@ -70,9 +101,16 @@ function normalizeElement(node, state) {
 
 export function normalizeIdta02020InstanceSubmodels(submodels = []) {
   const normalized = clone(submodels);
-  const state = { normalizedProperties: 0, matchedSubmodels: 0, reviewRequired: [] };
+  const state = {
+    normalizedProperties: 0,
+    normalizedAliases: 0,
+    matchedSubmodels: 0,
+    reviewRequired: [],
+    aliases: [],
+  };
 
   for (const submodel of normalized) {
+    normalizeKnownAliases(submodel, state);
     if (canonicalReference(submodel?.semanticId) !== IDTA_SUBMODEL) continue;
     state.matchedSubmodels += 1;
     normalizeElement(submodel, state);
@@ -83,6 +121,8 @@ export function normalizeIdta02020InstanceSubmodels(submodels = []) {
     submodels: normalized,
     matchedSubmodels: state.matchedSubmodels,
     normalizedProperties: state.normalizedProperties,
+    normalizedAliases: state.normalizedAliases,
+    aliases: state.aliases,
     reviewRequired: state.reviewRequired,
     sourceMutation: false,
     version: IDTA_02020_INSTANCE_COMPAT_VERSION,
