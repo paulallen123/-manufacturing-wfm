@@ -8,6 +8,8 @@ on:
       - 'Dockerfile'
       - 'ux-overlay/ux-reset-cycle10.*'
       - 'scripts/ux-cycle10-r4-hosted-proof.mjs'
+      - 'scripts/browser-security-floor.mjs'
+      - 'resilience/browser-security-floor.json'
       - '.github/workflows/ux-cycle10-r4-proof.yml'
   workflow_dispatch:
 
@@ -79,6 +81,13 @@ jobs:
             --ci \
             --message "Cycle 10 r4 source-bound proof ${GITHUB_SHA}" \
             2>&1 | tee "$RUNNER_TEMP/railway-up.log"
+
+      - name: Enforce browser security floor before provider credential retrieval
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/browser-security-floor.mjs --self-test
+          node scripts/browser-security-floor.mjs
 
       - name: Run authenticated hosted browser proof
         env:
