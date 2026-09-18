@@ -27,6 +27,7 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
 # add the defence overlay as a separately reviewable layer.
 RUN mkdir -p /app/security-runtime
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
+COPY security/runtime/ux-preference.cjs /app/security-runtime/ux-preference.cjs
 COPY security/runtime/hosted-listen-guard.cjs /app/security-runtime/hosted-listen-guard.cjs
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 
@@ -120,6 +121,8 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle11.css >> /app/public/factory-control-ui.css \
  && printf '\n/* WFM_UX_RESET_CYCLE12_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle12.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* WFM_CONCEPT_FIDELITY_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/concept-fidelity.css >> /app/public/factory-control-ui.css \
  && printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/ux-reset.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
@@ -148,11 +151,15 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle12-model.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_UX_RESET_CYCLE12_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle12.js >> /app/public/value-cockpit-ui.js \
+ && node --check /tmp/wfm-ux-overlay/concept-fidelity.js \
+ && printf '\n;/* WFM_CONCEPT_FIDELITY_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/concept-fidelity.js >> /app/public/value-cockpit-ui.js \
  && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/factory-control-ui.css \
  && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/value-cockpit-ui.js \
  && node --check /app/security-runtime/bootstrap.cjs \
+ && node --check /app/security-runtime/ux-preference.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && printf '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/factory-control-ui.css \
