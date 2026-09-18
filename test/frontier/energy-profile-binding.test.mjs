@@ -89,3 +89,29 @@ test('legacy hardened path still works when no measured profile is supplied',()=
   assert.equal(result.profileEvidence.length,0);
   assert.equal(result.status,'recommend_options');
 });
+
+test('profile quality imposes an uncertainty floor when upstream declares zero uncertainty',()=>{
+  const input=baseInput();
+  input.options[1].energy.profileEvidence.uncertaintyPct=0;
+  input.options[1].energy.profileEvidence.baseline=[seg('run',60,100,0.20,{qualityScore:0.8})];
+  input.options[1].energy.profileEvidence.candidate=[seg('run',60,100,0.10,{qualityScore:0.8})];
+  input.options[1].labour={premiumCost:9,upperBoundCost:9};
+  const binding=bindMeasuredProfileEconomics(input);
+  assert.equal(binding.valid,true);
+  assert.equal(binding.evidence[0].declaredUncertaintyPct,0);
+  assert.ok(Math.abs(binding.evidence[0].qualityImpliedUncertaintyPct-0.2)<1e-9);
+  assert.ok(Math.abs(binding.input.options[1].energy.lowerBoundEnergyValue-8)<1e-9);
+  assert.equal(binding.evidence[0].uncertaintyFloorApplied,true);
+  const result=evaluateEnergyFlexibilityProfileAware(input);
+  assert.equal(result.status,'no_safe_or_valuable_flexibility');
+  assert.equal(result.rankedOptions.length,0);
+});
+
+test('higher declared uncertainty remains authoritative when it is more conservative than the quality floor',()=>{
+  const input=baseInput();
+  const binding=bindMeasuredProfileEconomics(input);
+  assert.equal(binding.valid,true);
+  assert.ok(Math.abs(binding.evidence[0].qualityImpliedUncertaintyPct-0.05)<1e-9);
+  assert.equal(binding.evidence[0].effectiveUncertaintyPct,0.1);
+  assert.equal(binding.evidence[0].uncertaintyFloorApplied,false);
+});
