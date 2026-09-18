@@ -283,8 +283,14 @@ function createAutonomousIntegrationHub(options = {}) {
   const insertDiscoverySession = db.prepare(
     'INSERT INTO integration_discovery_sessions(id,tenant,provider,status,expires_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?)'
   );
+  const claimDiscoverySession = db.prepare(
+    'UPDATE integration_discovery_sessions SET status=\'PROCESSING\',updated_at=? WHERE id=? AND status=\'PENDING\' AND expires_at>?'
+  );
   const completeDiscoverySession = db.prepare(
-    'UPDATE integration_discovery_sessions SET status=\'COMPLETED\',updated_at=? WHERE id=? AND status=\'PENDING\''
+    'UPDATE integration_discovery_sessions SET status=\'COMPLETED\',updated_at=? WHERE id=? AND status=\'PROCESSING\''
+  );
+  const failDiscoverySession = db.prepare(
+    'UPDATE integration_discovery_sessions SET status=\'FAILED\',updated_at=? WHERE id=? AND status=\'PROCESSING\''
   );
   const connectionByCandidate = db.prepare('SELECT * FROM integration_connections WHERE tenant=? AND candidate_id=?');
   const insertConnection = db.prepare(
@@ -500,16 +506,29 @@ function createAutonomousIntegrationHub(options = {}) {
     const session = discoverySessionById.get(compact(body.discoverySessionId, 80));
     if (!session) return writeJson(res, 404, { error: 'Discovery session not found.' });
     if (session.status !== 'PENDING') return writeJson(res, 409, { error: 'Discovery session has already been used.' });
-    if (Number(session.expires_at) <= Date.now()) return writeJson(res, 410, { error: 'Discovery session has expired.' });
+    const nowMs = Date.now();
+    if (Number(session.expires_at) <= nowMs) return writeJson(res, 410, { error: 'Discovery session has expired.' });
     if (!Array.isArray(body.apps)) return writeJson(res, 400, { error: 'apps must be an array.' });
     if (body.apps.length > 2000) return writeJson(res, 400, { error: 'Discovery batch exceeds 2000 applications.' });
     const source = compact(body.source, 40).toUpperCase();
     if (source !== session.provider) return writeJson(res, 409, { error: 'Discovery provider does not match the authorized session.' });
-    const found = ingestDiscovery(session.tenant, source, body.apps);
-    const completed = completeDiscoverySession.run(nowIso(), session.id);
-    if (Number(completed.changes) !== 1) return writeJson(res, 409, { error: 'Discovery session could not be completed safely.' });
-    record(session.tenant, null, 'discovery-session-completed', { discoverySessionId: session.id, provider: source, detected: found.length });
-    return writeJson(res, 200, { source, received: body.apps.length, detected: found.length, candidates: found });
+
+    const claimed = claimDiscoverySession.run(nowIso(), session.id, nowMs);
+    if (Number(claimed.changes) !== 1) {
+      return writeJson(res, 409, { error: 'Discovery session is already being processed or is no longer valid.' });
+    }
+
+    try {
+      const found = ingestDiscovery(session.tenant, source, body.apps);
+      const completed = completeDiscoverySession.run(nowIso(), session.id);
+      if (Number(completed.changes) !== 1) throw new Error('Discovery session completion state changed unexpectedly.');
+      record(session.tenant, null, 'discovery-session-completed', { discoverySessionId: session.id, provider: source, detected: found.length });
+      return writeJson(res, 200, { source, received: body.apps.length, detected: found.length, candidates: found });
+    } catch (error) {
+      failDiscoverySession.run(nowIso(), session.id);
+      record(session.tenant, null, 'discovery-session-failed', { discoverySessionId: session.id, provider: source });
+      throw error;
+    }
   }
 
   async function handleConfirm(ctx, req, res) {
