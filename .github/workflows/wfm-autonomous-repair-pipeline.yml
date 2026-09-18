@@ -11,6 +11,10 @@ on:
       - 'resilience/isolated-repair-worker.cjs'
       - 'resilience/independent-repair-verifier.cjs'
       - 'resilience/disposable-staging-gate.cjs'
+      - 'resilience/canary-rollback-controller.cjs'
+      - 'scripts/validate-canary-rollback-controller.mjs'
+      - 'resilience/autonomous-repair-canary-orchestrator.cjs'
+      - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'
       - '.github/workflows/wfm-autonomous-repair-pipeline.yml'
   workflow_dispatch:
 
@@ -40,7 +44,19 @@ jobs:
           package-manager-cache: false
 
       - name: Syntax gate
-        run: node --check resilience/autonomous-repair-pipeline.cjs && node --check scripts/validate-autonomous-repair-pipeline.mjs
+        run: |
+          node --check resilience/autonomous-repair-pipeline.cjs
+          node --check scripts/validate-autonomous-repair-pipeline.mjs
+          node --check resilience/canary-rollback-controller.cjs
+          node --check scripts/validate-canary-rollback-controller.mjs
+          node --check resilience/autonomous-repair-canary-orchestrator.cjs
+          node --check scripts/validate-autonomous-repair-canary-orchestrator.mjs
 
       - name: Prove autonomous repair composition
         run: node scripts/validate-autonomous-repair-pipeline.mjs
+
+      - name: Prove bounded canary and known-good rollback
+        run: node scripts/validate-canary-rollback-controller.mjs
+
+      - name: Prove repair-to-canary decision composition
+        run: node scripts/validate-autonomous-repair-canary-orchestrator.mjs
