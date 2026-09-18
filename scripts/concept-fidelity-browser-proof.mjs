@@ -138,7 +138,7 @@ try {
   assert.equal(op.capacity,true);
   assert.equal(op.readiness,true);
 
-  await evalx('document.querySelector(".fcc-action").click()');
+  await evalx('document.querySelector(".ux-approved-path-button").click()');
   assert.equal(await evalx('document.querySelector(".ux-concept-decision-drawer").classList.contains("open")'),true);
   const stages=await evalx('[...document.querySelectorAll(".ux-concept-step b")].map(x=>x.textContent)');
   assert.deepEqual(stages,['Detected','Analysed','Your Decision','Applying','Verified']);
