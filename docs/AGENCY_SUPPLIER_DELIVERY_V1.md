@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Provide a bounded outbound delivery boundary for Agency Labour Exchange requests without adding any production sender, Railway deployment, customer-data mutation or release-gate bypass.
+Provide a bounded outbound delivery and receipt-reconciliation boundary for Agency Labour Exchange requests without adding any production sender, Railway deployment, customer-data mutation or release-gate bypass.
 
 The delivery boundary sits after supplier eligibility. It is deliberately not a ranking engine and cannot make an ineligible supplier dispatchable.
 
@@ -29,7 +29,7 @@ Raw destinations and raw portal URLs are transient sender inputs. Persistent del
 
 ## Idempotency and fail-closed delivery state
 
-The PostgreSQL adapter contract uses a composite primary key of `(tenant_id, idempotency_key)`. The key is deterministic for tenant/site/request/agency/channel/delivery-revision so repeated processing of the same logical dispatch cannot create a second claim.
+The PostgreSQL delivery adapter contract uses a composite primary key of `(tenant_id, idempotency_key)`. The key is deterministic for tenant/site/request/agency/channel/delivery-revision so repeated processing of the same logical dispatch cannot create a second claim.
 
 The state model is:
 - `dispatching` — exactly one process has claimed the logical delivery;
@@ -37,9 +37,25 @@ The state model is:
 - `not_sent` — provider explicitly confirmed no send occurred, so a bounded retry can be claimed safely;
 - `unknown` — the provider may have accepted the message or the sender failed ambiguously; automatic retry is blocked.
 
-A timeout/exception after a send attempt is therefore treated as unknown rather than automatically retried. This favours duplicate prevention over pretending an uncertain provider result is safe to repeat. A future provider-reconciliation capability is required to resolve unknown outcomes automatically.
+A timeout/exception after a send attempt is therefore treated as unknown rather than automatically retried. This favours duplicate prevention over pretending an uncertain provider result is safe to repeat.
 
 If the durable store is unavailable, the sender is unavailable, the response deadline has passed, or audit persistence fails after a send attempt, the operation fails closed.
+
+## Authenticated provider receipt reconciliation
+
+`agency-supplier-delivery-receipt.mjs` adds a bounded reconciliation path for provider callbacks or lookups. It does not send messages itself and has no authority to modify schedules, payroll or invoices.
+
+A receipt is accepted only after a verifier authenticates the raw provider payload. The core supports provider-specific verifier adapters and includes an HMAC-SHA256 raw-body verifier for integrations that genuinely use that signing scheme; it is not presented as a universal email/SMS-provider signature format.
+
+After authentication, the normalized event is correlated against the existing delivery ledger using tenant + delivery ID, with channel and provider-message-reference checks. Events are also rejected if their timestamp predates the delivery beyond a small clock-skew allowance or is materially in the future.
+
+The receipt ledger is independently idempotent on `(tenant_id, provider_key, provider_event_id)`. PostgreSQL reconciliation locks the target delivery row, records the provider event once and applies only conservative transitions:
+- authenticated `confirmed_sent` can resolve `dispatching`, `unknown` or a prior `not_sent` to `sent`, preventing a later duplicate retry when stronger positive provider evidence arrives;
+- authenticated `definitively_not_sent` can resolve only `dispatching` or `unknown` to `not_sent`;
+- a generic `delivery_failed` event is audit evidence but does **not** become retry-safe automatically;
+- negative evidence never downgrades an already `sent` delivery to a retryable state.
+
+The raw webhook is never persisted by this boundary. Audit output stores a short event fingerprint and a short provider-message-reference fingerprint, while site/request/agency identity comes back from the authoritative delivery ledger. Destination, secure portal URL and worker personal data are excluded.
 
 ## Current UK process context — 18 September 2026
 
@@ -47,26 +63,30 @@ Current Fair Work Agency / GOV.UK Conduct Regulations guidance (Regulation 21, u
 
 The existing validated request pack already carries the manufacturer-side facts needed to support that downstream process, while this outbound message intentionally stays minimal and links the supplier to the full scoped assignment view. This implementation does not claim that WFM itself discharges the employment business's legal duty to the worker.
 
+A fresh official-source check on 18 September 2026 found a Fair Work Agency contact-page update dated 17 September 2026 about how sponsored-visa workers can report serious abuse. That is operational contact guidance rather than a material change to the agency-labour eligibility, licensing or delivery controls encoded here, so no compliance rule was changed in this slice.
+
 ## Development proof
 
-The deterministic delivery suite passes **12/12 tests** and covers:
-- supplier eligibility before dispatch;
-- request-policy binding of supplier eligibility evidence, including gangmaster-licence applicability;
-- deterministic idempotency keys;
-- unsafe channel/link/input rejection;
-- stale-deadline rejection before store or sender calls;
-- missing store/sender fail-closed behaviour;
-- 1,000 concurrent duplicate calls producing one sender call;
-- ambiguous sender failure becoming `unknown` and not being blindly retried;
-- explicit `not_sent` permitting a bounded safe retry;
-- audit-write failure after a send attempt becoming unknown;
-- PostgreSQL uniqueness and state-transition contracts;
-- absence of raw destination/portal-link values from ledger inputs and audit receipts.
+The deterministic outbound-delivery suite remains **12/12 tests** from the preceding slice, including supplier eligibility before dispatch, request-policy binding, 1,000 duplicate-dispatch concurrency, ambiguous-send fail-closed behaviour and the PostgreSQL delivery-state contract.
 
-An additional local stress run of 10,000 simultaneous calls produced 1 sender call, 1 sent result, 9,999 duplicate/in-progress rejections and 0 other outcomes.
+The new deterministic receipt-reconciliation suite passes **12/12 tests** locally on Node 22.16.0 and proves:
+- valid authenticated positive evidence resolves an `unknown` delivery without invoking a sender;
+- raw-body tampering and malformed signatures fail before any receipt-store mutation;
+- missing verifier, missing store and verifier exceptions fail closed;
+- channel, provider-message-reference and event-time mismatches fail closed;
+- only explicit `definitively_not_sent` can turn uncertainty into a retry-safe state;
+- generic delivery failures cannot silently create retry authority;
+- positive proof can supersede a prior `not_sent` state to prevent a later duplicate retry;
+- negative evidence cannot downgrade an already-sent delivery;
+- 1,000 concurrent copies of one authenticated provider event record one event and one state transition;
+- raw webhook fields, routing address, portal URL and worker data do not enter receipt evidence;
+- the PostgreSQL contract uses row locking, provider-event uniqueness and conservative state transitions;
+- a separate 10,000-way replay stress run records exactly one provider event and one state transition, with 9,999 idempotent duplicates and zero rejected authenticated replays.
 
-The DDL is a development contract only. It has not been applied to Railway or any customer environment, and no real email, SMS or API provider is invoked by this slice.
+The committed source and test blobs were re-fetched from the branch and matched to the locally executed Git blob hashes before reporting this evidence.
+
+The DDL remains a development contract only. It has not been applied to Railway or any customer environment, and no real email, SMS or API provider was invoked.
 
 ## Next promotion gap
 
-The next highest-value gap is provider delivery reconciliation: real but non-production adapter proofs for email/SMS/API delivery receipts or webhooks, authenticated callback correlation, and deterministic resolution of `unknown` outcomes without duplicate supplier requests. Real PostgreSQL integration against the target migration/runtime path remains a separate promotion requirement.
+The next highest-value gap is **real PostgreSQL integration proof** for the token, outbound-delivery and receipt-reconciliation stores, including concurrent claim/reconcile races against the intended migration/runtime path. After that, one real-but-non-production provider adapter should be proven using that provider's official signature scheme and sandbox/test callbacks. Browser/UI validation, authorised customer-data replay, production security review and live operational measurements also remain promotion gates.
