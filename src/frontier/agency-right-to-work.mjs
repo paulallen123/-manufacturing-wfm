@@ -38,8 +38,8 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
 
   failures.push(...baseRightToWorkFailures(rightToWork, assignmentEnd));
 
-  const enhancedPolicyApplies = assignmentStart !== null && effectiveAt !== null && assignmentStart >= effectiveAt;
-  if (!enhancedPolicyApplies) {
+  const assignmentAfterCutover = assignmentStart !== null && effectiveAt !== null && assignmentStart >= effectiveAt;
+  if (!assignmentAfterCutover) {
     return {
       version: AGENCY_RIGHT_TO_WORK_ASSURANCE_VERSION,
       workerId: worker?.workerId ?? null,
@@ -55,6 +55,40 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
         evidenceRule: 'existing_right_to_work_gate_preserved_before_uk_2026_policy_effective_date',
       },
     };
+  }
+
+  const engagementType = text(rightToWork.engagementType, 80);
+  const employmentCommencedAt = ms(rightToWork.employmentCommencedAt);
+  if (!engagementType) {
+    failures.push('right_to_work_engagement_type_unclassified');
+  } else if (!['contract_of_employment','workers_contract'].includes(engagementType)) {
+    failures.push('right_to_work_engagement_type_requires_policy_review');
+  }
+
+  if (engagementType === 'workers_contract') {
+    if (employmentCommencedAt === null) {
+      failures.push('right_to_work_employment_commenced_at_missing');
+    } else if (employmentCommencedAt >= effectiveAt) {
+      // New worker-contract scope applies from 1 October 2026 where that employment commenced on/after the cutover.
+    } else {
+      return {
+        version: AGENCY_RIGHT_TO_WORK_ASSURANCE_VERSION,
+        workerId: worker?.workerId ?? null,
+        agencyId: worker?.agencyId ?? agency?.agencyId ?? null,
+        eligible: failures.length === 0,
+        failures,
+        warnings,
+        evidence: {
+          policyMode: 'legacy_worker_contract_pre_2026_10_01_commencement',
+          status: rightToWork.status ?? null,
+          engagementType,
+          employmentCommencedAt: rightToWork.employmentCommencedAt ?? null,
+          indefinite: rightToWork.indefinite === true,
+          validUntil: rightToWork.validUntil ?? null,
+          evidenceRule: 'new_2026_worker_contract_scope_not_inferred_from_assignment_date_when_engagement_commenced_before_cutover',
+        },
+      };
+    }
   }
 
   const scheme = agency?.rightToWorkScheme && typeof agency.rightToWorkScheme === 'object'
@@ -115,6 +149,8 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
     evidence: {
       policyMode: 'uk_2026_assignment_assurance',
       effectiveAt: UK_RIGHT_TO_WORK_2026_EFFECTIVE_AT,
+      engagementType: engagementType || null,
+      employmentCommencedAt: rightToWork.employmentCommencedAt ?? null,
       arrangement: arrangement || null,
       arrangementSource: requestArrangement ? 'request' : supplierArrangement ? 'supplier_policy' : null,
       responsibleParty: text(scheme.responsibleParty, 80) || null,
