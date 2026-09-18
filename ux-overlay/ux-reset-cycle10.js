@@ -1,4 +1,4 @@
-/* WFM UX evolution cycle 10: planner focus mode for schedule publication. */
+/* WFM UX evolution cycle 10: exception-first schedule publication. */
 (function(){
 'use strict';
 const route=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
@@ -6,16 +6,21 @@ const employee=()=>{try{return typeof isEmployee==='function'&&isEmployee();}cat
 const manager=()=>{try{const role=(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'&&ui.role);return !employee()&&['manager','director','supervisor'].includes(role);}catch{return false;}};
 const text=node=>(node?.textContent||'').replace(/\s+/g,' ').trim();
 function findIssuePanel(content){
- const pattern=/(coverage|gap|unfilled|conflict|shortage|skill|overtime|agency|exception|risk)/i;
- const nodes=[...content.querySelectorAll(':scope > .panel,:scope > .card,:scope > section,.ops-panel')];
- return nodes.find(node=>!node.matches('.ux-plan-focus')&&pattern.test(text(node)))||null;
+ const pattern=/(drafts? awaiting action|needs? action|coverage|gap|unfilled|conflict|shortage|skill|overtime|agency|exception|risk)/i;
+ const direct=[...content.children];
+ return direct.find(node=>!node.matches?.('.heading,.ux-specialist-context,.ux-plan-focus')&&!node.querySelector?.('table')&&pattern.test(text(node)))||null;
 }
 function findGrid(content){
- return content.querySelector('.tablewrap,.ops-scroll,.dp-table-scroll,.pci-table-wrap');
+ const known=content.querySelector('.tablewrap,.ops-scroll,.dp-table-scroll,.pci-table-wrap');
+ if(known)return known;
+ const direct=[...content.children];
+ return direct.find(node=>node.querySelector?.('table')&&/(weekly view|week|schedule|person|employee|mon|tue|wed|thu|fri)/i.test(text(node)))||null;
 }
 function findPublish(content){
+ const explicit=content.querySelector('[data-act="publish"],[data-action="publish"],[data-act="publish-schedule"],[data-action="publish-schedule"]');
+ if(explicit)return explicit;
  const candidates=[...content.querySelectorAll('button,[role="button"]')];
- return candidates.find(node=>/publish|release|post schedule/i.test(text(node)))||content.querySelector('[data-act*="publish"],[data-action*="publish"]');
+ return candidates.find(node=>/^(publish(?: schedule)?|release(?: schedule)?|post schedule)\b/i.test(text(node)))||null;
 }
 function button(label,kind){
  const b=document.createElement('button');
@@ -53,12 +58,16 @@ function enhancePlanner(){
  const shell=document.createElement('section');
  shell.className='ux-plan-focus';
  shell.setAttribute('aria-label','Schedule publication focus');
- shell.innerHTML='<div class="ux-plan-focus-copy"><span class="ux-plan-eyebrow">Schedule focus</span><h2>Resolve risk before you publish</h2><p>Start with coverage and skills gaps. Open the full planner only when you need to move people or inspect the grid.</p></div><div class="ux-plan-steps" aria-label="Recommended sequence"><span><b>1</b> Resolve gaps</span><span><b>2</b> Review impact</span><span><b>3</b> Publish</span></div><div class="ux-plan-jumps"></div>';
+ shell.innerHTML='<div class="ux-plan-focus-copy"><span class="ux-plan-eyebrow">Schedule focus</span><h2>Resolve risk before you publish</h2><p>Start with drafts, coverage and skills risks. Open the full week only when you need planning detail.</p></div><div class="ux-plan-steps" aria-label="Recommended sequence"><span><b>1</b> Resolve gaps</span><span><b>2</b> Review impact</span><span><b>3</b> Publish</span></div><div class="ux-plan-jumps"></div>';
  const specialist=content.querySelector(':scope > .ux-specialist-context');
  (specialist||heading).insertAdjacentElement('afterend',shell);
  const jumps=shell.querySelector('.ux-plan-jumps');
  let gridToggle=null;
- if(issue){issue.classList.add('ux-plan-priority');issue.setAttribute('tabindex','-1');jumps.appendChild(button('Coverage & risks','issues'));}
+ if(issue){
+   issue.classList.add('ux-plan-priority');
+   issue.setAttribute('tabindex','-1');
+   jumps.appendChild(button(/draft/i.test(text(issue))?'Drafts & risks':'Coverage & risks','issues'));
+ }
  if(grid){
    grid.classList.add('ux-plan-grid');
    if(!grid.hasAttribute('tabindex'))grid.setAttribute('tabindex','0');
@@ -70,7 +79,11 @@ function enhancePlanner(){
    jumps.appendChild(gridToggle);
    if(issue)hideGrid(content,grid,gridToggle); else revealGrid(content,grid,gridToggle);
  }
- if(publish){publish.classList.add('ux-plan-publish');publish.setAttribute('data-ux-preserved-publish','true');jumps.appendChild(button('Go to publish','publish'));}
+ if(publish){
+   publish.classList.add('ux-plan-publish');
+   publish.setAttribute('data-ux-preserved-publish','true');
+   jumps.appendChild(button('Go to publish','publish'));
+ }
  jumps.addEventListener('click',event=>{
    const control=event.target.closest('.ux-plan-jump');if(!control)return;
    if(control.dataset.target==='issues'&&issue)focusTarget(issue,'start');
