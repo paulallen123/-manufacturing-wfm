@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import {isVerifiedSignedRollbackAnchorClient} from './signed-rollback-anchor.mjs';
+import {isVerifiedSignedRollbackAnchorClient,isLifecycleBoundSignedRollbackAnchorClient} from './signed-rollback-anchor.mjs';
 
 function stable(value){
   if(value===null || typeof value!=='object') return JSON.stringify(value);
@@ -72,9 +72,10 @@ export class AtomicSupervisorStateStore {
     if(releaseGradeSecurityRequired() && (
       typeof this.rollbackAnchor.currentState!=='function' ||
       typeof this.rollbackAnchor.advanceCommitted!=='function' ||
-      !isVerifiedSignedRollbackAnchorClient(this.rollbackAnchor)
+      !isVerifiedSignedRollbackAnchorClient(this.rollbackAnchor) ||
+      !isLifecycleBoundSignedRollbackAnchorClient(this.rollbackAnchor)
     )){
-      throw new Error('Release-grade attendance state requires a verified signed commitment-aware independent rollback authority.');
+      throw new Error('Release-grade attendance state requires a lifecycle-bound verified signed commitment-aware independent rollback authority.');
     }
     this.needsRecovery=false;
     fs.mkdirSync(path.dirname(filePath),{recursive:true});
