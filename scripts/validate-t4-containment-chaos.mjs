@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { createT4ContainmentController } = require('../resilience/t4-containment-controller.cjs');
+const { createT4ContainmentController, createWriteOnceForensicStore } = require('../resilience/t4-containment-controller.cjs');
 const d = (value) => createHash('sha256').update(String(value)).digest('hex');
 const canarySecret = 'executor-only-secret-canary';
+
+const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-t4-forensics-'));
+const forensicStore = createWriteOnceForensicStore({ rootDir: tmpRoot, now: () => 1700000000000 });
 
 const executorCalls = [];
 const containmentExecutor = {
@@ -15,13 +21,6 @@ const containmentExecutor = {
     assert.equal(request.tenant, 'tenant-a');
     return { verified: true, containmentDigest: d(['containment', request.incidentId, request.actions.join(',')].join('|')), productionAuthorityGranted: false, crossTenantMutation: false };
   },
-};
-const forensicStore = {
-  preserve: async ({ incidentId, tenant, evidenceDigest }) => ({
-    verified: true,
-    immutable: true,
-    forensicDigest: d(['forensic', incidentId, tenant, evidenceDigest].join('|')),
-  }),
 };
 const rollbackCalls = [];
 const rollbackExecutor = {
@@ -49,6 +48,8 @@ assert.equal(prompt.requestedActionExecuted, false);
 assert.equal(prompt.modelAuthorityGranted, false);
 assert(prompt.plannedContainmentActions.includes('deny-model-tool-authority'));
 assert(prompt.plannedContainmentActions.includes('quarantine-support-context'));
+assert.equal(prompt.forensicReceipt.immutable, true);
+assert.equal(prompt.forensicReceipt.storageMode, 'write-once-exclusive');
 assert.equal(controller.verifyReceipt(prompt), true);
 
 const memory = await controller.handle({
@@ -193,14 +194,53 @@ await assert.rejects(
   (error) => error?.code === 'WFM_T4_CONTAINMENT_VERIFY',
 );
 
+const mutableForensicsController = createT4ContainmentController({
+  forensicStore: {
+    preserve: async () => ({ verified: true, immutable: false, forensicDigest: d('mutable-evidence') }),
+  },
+  now: () => ++tick,
+});
+await assert.rejects(
+  mutableForensicsController.handle({ ...base, incidentId: 't4-mutable-forensics', scenarioId: 'audit-trail-degraded' }),
+  (error) => error?.code === 'WFM_T4_FORENSICS_VERIFY',
+);
+
+const missingForensicsController = createT4ContainmentController({ now: () => ++tick });
+await assert.rejects(
+  missingForensicsController.handle({ ...base, incidentId: 't4-no-forensics', scenarioId: 'audit-trail-degraded' }),
+  (error) => error?.code === 'WFM_T4_FORENSICS_UNAVAILABLE',
+);
+
+const retryStoreRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-t4-idempotent-'));
+const retryStore = createWriteOnceForensicStore({ rootDir: retryStoreRoot, now: () => 1800000000000 });
+const preservationRequest = {
+  incidentId: 'forensic-idempotent-retry',
+  tenant: 'tenant-a',
+  scenarioId: 'audit-trail-degraded',
+  evidenceDigest: d('retry-evidence'),
+  eventHeadDigest: d('retry-event-head'),
+};
+const firstPreserve = retryStore.preserve(preservationRequest);
+const secondPreserve = retryStore.preserve(preservationRequest);
+assert.equal(firstPreserve.forensicDigest, secondPreserve.forensicDigest);
+assert.equal(firstPreserve.storageKey, secondPreserve.storageKey);
+assert.equal(retryStore.verify(firstPreserve), true);
+const forensicFile = path.join(retryStoreRoot, firstPreserve.tenantDigest, `${firstPreserve.storageKey}.json`);
+fs.chmodSync(forensicFile, 0o600);
+fs.appendFileSync(forensicFile, 'tamper');
+assert.equal(retryStore.verify(firstPreserve), false);
+
 assert.equal(rollbackCalls.length, 1, 'Only the independently verified schema-safe known-good case may roll back.');
 assert.equal(executorCalls.some((call) => call.tenant !== 'tenant-a'), false);
+
+fs.rmSync(tmpRoot, { recursive: true, force: true });
+fs.rmSync(retryStoreRoot, { recursive: true, force: true });
 
 console.log(JSON.stringify({
   schemaVersion: 1,
   proof: 'tier4-adversarial-containment-chaos',
   status: 'PASS',
-  cases: 13,
+  cases: 17,
   promptInjectionContained: true,
   memoryPoisoningContained: true,
   credentialExfiltrationContainedWithoutSecretVisibility: true,
@@ -214,6 +254,11 @@ console.log(JSON.stringify({
   unknownFailureContained: true,
   receiptTamperDetected: true,
   hostileContainmentAuthorityRejected: true,
+  writeOnceForensicsVerified: true,
+  mutableForensicsRejected: true,
+  missingForensicsRejected: true,
+  forensicRetryIdempotent: true,
+  forensicPostWriteTamperDetected: true,
   productionAuthorityGranted: false,
   customerMutation: false,
 }, null, 2));
