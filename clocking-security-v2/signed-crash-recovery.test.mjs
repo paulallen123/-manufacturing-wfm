@@ -5,19 +5,31 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {AtomicSupervisorStateStore} from './durable-source-supervisor.mjs';
-import {SignedRollbackAnchorClient,createSyntheticSignedRollbackAuthority} from './signed-rollback-anchor.mjs';
+import {SignedRollbackAnchorClient,createSyntheticSignedRollbackAuthority,createSyntheticSignedAuthorityKeyPolicy,authorityKeyPolicyDigest} from './signed-rollback-anchor.mjs';
 
 function fixture(){
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'wfm-signed-crash-'));
   const filePath=path.join(dir,'supervisor.json');
   const {publicKey,privateKey}=crypto.generateKeyPairSync('ed25519');
+  const trustRoot=crypto.generateKeyPairSync('ed25519');
   const nowMs=Date.parse('2026-09-18T18:30:00Z');
   const authority=createSyntheticSignedRollbackAuthority({privateKey,now:()=>nowMs});
-  const client=()=>new SignedRollbackAnchorClient({
-    transport:authority,
+  const policy=createSyntheticSignedAuthorityKeyPolicy({
+    rootPrivateKey:trustRoot.privateKey,
+    sequence:1,
+    issuedAtMs:nowMs-1_000,
+    expiresAtMs:nowMs+60_000,
+    keys:[{keyId:'authority-1',status:'active',notBeforeMs:nowMs-60_000,notAfterMs:nowMs+60_000}]
+  });
+  const client=(transport=authority)=>new SignedRollbackAnchorClient({
+    transport,
     authorityPublicKeys:{'authority-1':publicKey},
     authorityId:'wfm-security-anchor-authority',
     anchorId:'attendance-source-continuity',
+    authorityKeyPolicy:policy,
+    authorityTrustRootPublicKeys:{'trust-root-1':trustRoot.publicKey},
+    minimumAuthorityPolicySequence:1,
+    expectedAuthorityPolicyDigest:authorityKeyPolicyDigest(policy),
     now:()=>nowMs,
     randomBytes:()=>crypto.randomBytes(32)
   });
@@ -26,13 +38,11 @@ function fixture(){
   return {dir,filePath,authority,client,store};
 }
 
-function ambiguousCommittedAnchor(real){
+function ambiguousCommittedTransport(real){
   return {
-    current:real.current.bind(real),
-    currentState:real.currentState.bind(real),
-    advance:real.advance.bind(real),
-    advanceCommitted(expected,commitment){
-      real.advanceCommitted(expected,commitment);
+    read:real.read.bind(real),
+    compareAndAdvance(args){
+      real.compareAndAdvance(args);
       throw new Error('simulated transport loss after commit');
     }
   };
@@ -41,7 +51,7 @@ function ambiguousCommittedAnchor(real){
 test('restart completes exact committed state after caller loses response following signed anchor CAS',()=>{
   const f=fixture();
   f.store().save({marker:'one'});
-  const interrupted=f.store(ambiguousCommittedAnchor(f.client()));
+  const interrupted=f.store(f.client(ambiguousCommittedTransport(f.authority)));
   assert.throws(()=>interrupted.save({marker:'two'}),/transport loss after commit/);
   assert.equal(interrupted.requiresRecovery(),true);
   assert.equal(f.authority.generation(),2);
@@ -54,7 +64,7 @@ test('restart completes exact committed state after caller loses response follow
 test('tampering with committed pending state is rejected instead of being published during recovery',()=>{
   const f=fixture();
   f.store().save({marker:'one'});
-  const interrupted=f.store(ambiguousCommittedAnchor(f.client()));
+  const interrupted=f.store(f.client(ambiguousCommittedTransport(f.authority)));
   assert.throws(()=>interrupted.save({marker:'two'}),/transport loss after commit/);
   const pending=fs.readdirSync(f.dir).find(name=>name.includes('.pending.2.'));
   assert.ok(pending);
@@ -69,23 +79,20 @@ test('tampering with committed pending state is rejected instead of being publis
 test('pre-CAS crash residue with identical commitment can be safely reused by a retry',()=>{
   const f=fixture();
   f.store().save({marker:'one'});
-  const real=f.client();
   let first=true;
   const preCommitFailure={
-    current:real.current.bind(real),
-    currentState:real.currentState.bind(real),
-    advance:real.advance.bind(real),
-    advanceCommitted(expected,commitment){
+    read:f.authority.read.bind(f.authority),
+    compareAndAdvance(args){
       if(first){ first=false; throw new Error('simulated outage before commit'); }
-      return real.advanceCommitted(expected,commitment);
+      return f.authority.compareAndAdvance(args);
     }
   };
-  const failed=f.store(preCommitFailure);
+  const failed=f.store(f.client(preCommitFailure));
   assert.throws(()=>failed.save({marker:'two'}),/outage before commit/);
   assert.equal(f.authority.generation(),1);
   const pending=fs.readdirSync(f.dir).filter(name=>name.includes('.pending.2.'));
   assert.equal(pending.length,1);
-  const retry=f.store(real);
+  const retry=f.store(f.client());
   assert.doesNotThrow(()=>retry.save({marker:'two'}));
   assert.equal(f.authority.generation(),2);
   assert.deepEqual(f.store().load(),{marker:'two'});
