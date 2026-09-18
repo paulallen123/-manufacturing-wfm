@@ -307,15 +307,12 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (!['SIGNED', 'COMPLETED', 'CONTRACT_SIGNED'].includes(state)) {
       return writeJson(res, 202, { ignored: true, reason: 'Contract is not in a signed/completed state.' });
     }
-    req[Symbol.asyncIterator] = async function* () {
-      yield Buffer.from(JSON.stringify({
-        tenant: body.tenant,
-        contractRef: body.contractRef || body.contractId,
-        recipientEmail: body.recipientEmail || body.implementationContactEmail,
-        targetHours: body.targetHours || 8
-      }));
-    };
-    return await handleContractActivated(req, res);
+    return await activateContract({
+      tenant: body.tenant,
+      contractRef: body.contractRef || body.contractId,
+      recipientEmail: body.recipientEmail || body.implementationContactEmail,
+      targetHours: body.targetHours || 8
+    }, res);
   }
 
   function parseDecision(row) {
@@ -452,8 +449,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     return /^[^\s@]+@[^\s@]+$/.test(String(email || '').trim());
   }
 
-  async function handleContractActivated(req, res) {
-    const body = await readJson(req);
+  async function activateContract(body, res) {
     const tenant = compact(body.tenant, 120);
     const contractRef = compact(body.contractRef, 300);
     const recipientEmail = compact(body.recipientEmail, 240).trim().toLowerCase();
@@ -521,6 +517,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       invitation: publicInvitation(invitationByContract.get(tenant, contractHash)),
       implementation: null
     });
+  }
+
+  async function handleContractActivated(req, res) {
+    return await activateContract(await readJson(req), res);
   }
 
   function invitationForContext(ctx, token) {
