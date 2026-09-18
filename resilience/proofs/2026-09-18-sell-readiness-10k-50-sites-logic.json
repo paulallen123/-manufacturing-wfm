@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "proof": "sell-readiness-10k-50-sites-configuration-logic",
+  "status": "PASS",
+  "executedAt": "2026-09-18T16:47:00Z",
+  "source": {
+    "branch": "proof/sell-readiness-10k-50-sites-20260918",
+    "configurationInferenceSha256": "2fe6930b6fe8c03121d1efa181a968fa11579912",
+    "executionLane": "provider-independent V8 logic execution",
+    "exactNodeRuntime": false,
+    "releaseEvidence": false
+  },
+  "cleanScale": {
+    "employees": 10000,
+    "sites": 50,
+    "punches": 100000,
+    "timecards": 40000,
+    "cohorts": 1750,
+    "inferenceMs": 207,
+    "peopleCountCorrect": true,
+    "siteCountCorrect": true,
+    "organisationAutoApply": true,
+    "massAssignments": 10000,
+    "assignmentCoverage": 1,
+    "assignmentExceptions": 0,
+    "overtimeThresholdHours": 40,
+    "overtimeConfidence": 1,
+    "highRiskPayrollAutoApply": false
+  },
+  "hostileScale": {
+    "inferenceMs": 222,
+    "duplicateEmployeeIdsDetected": 1,
+    "orphanManagersDetected": 1,
+    "assignmentExceptionsDetected": 1,
+    "malformedPunchesRejected": 1,
+    "organisationAutoApplyDenied": true,
+    "workforceAutoApplyDenied": true,
+    "highRiskPayrollAutoApplyDenied": true
+  },
+  "historicalReplay": {
+    "status": "PASS",
+    "employees": 10000,
+    "payrollLines": 40000,
+    "oracleGrossCents": 2885080000,
+    "projectedGrossCents": 2885080000,
+    "absoluteVarianceCents": 0,
+    "employeesWithVariance": 0,
+    "zeroUnexplainedVariance": true,
+    "hostileCorruptedLineDetected": true,
+    "hostileVarianceCents": -2000
+  },
+  "sellReady": false,
+  "blockers": [
+    "Exact Node 22.23.2 committed proof lane has not executed because GitHub hosted runners fail before execution.",
+    "Sealed hosted payroll runtime has not yet processed the full 10,000-employee dataset.",
+    "10,000-user adaptive-learning and autonomous-implementation SQLite control planes have not yet executed on an eligible exact-runtime lane.",
+    "Unified candidate still needs implementation/training and T0-T4 support changes brought together and regression-proven.",
+    "External provider/customer production acceptance remains separate."
+  ],
+  "claimBoundary": "Real execution of exact configuration-inference source plus an independent historical-replay oracle at 10,000 employees / 50 sites. This is strong scale logic evidence, not release or production evidence. Sell-ready remains fail-closed."
+}
