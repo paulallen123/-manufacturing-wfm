@@ -1,10 +1,8 @@
-name: Deploy Cycle 12 hosted UX proof
+name: Proof only - Deploy Cycle 12 hosted UX
 
+# Proof-only workflow. Canonical staging/production are branch-bound Railway services.
+# Do not add a push trigger here.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/deploy-cycle12-hosted-ux.yml'
   workflow_dispatch:
 
 permissions:
