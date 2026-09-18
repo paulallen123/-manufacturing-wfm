@@ -5,6 +5,8 @@ import {
   assessCapabilityCoverage,
   findTrainingCandidates,
   summarizeCapabilityHome,
+  applyApprovedSemanticMappings,
+  measureConfigurationReuse,
 } from '../../src/frontier/factory-capability-graph.mjs';
 
 const now = '2026-09-18T16:00:00Z';
@@ -87,4 +89,43 @@ test('demand can raise minimum qualified staffing without mutating qualification
   assert.equal(press.minimumQualifiedPeople, 2);
   assert.equal(press.gap, 1);
   assert.equal(press.status, 'at_risk');
+});
+
+
+test('approved tenant semantic mappings are reusable across sites without granting qualifications', () => {
+  const raw = { ...assets[2], siteId: 'site-2' };
+  const mapping = { tenantId: 'tenant-a', scope: 'tenant', mappingId: 'm-weld', semanticId: 'urn:vendor:arcweld', capabilityId: 'robotic-weld', approvalStatus: 'approved' };
+  const mapped = applyApprovedSemanticMappings(raw, [mapping]);
+  assert.equal(mapped.capabilities[0].capabilityId, 'robotic-weld');
+  assert.equal(mapped.capabilities[0].mappingStatus, 'reused_approved_semantic');
+});
+
+test('conflicting or unapproved semantic mappings remain review-required', () => {
+  const raw = assets[2];
+  const mappings = [
+    { tenantId: 'tenant-a', scope: 'tenant', mappingId: 'm1', semanticId: 'urn:vendor:arcweld', capabilityId: 'robotic-weld', approvalStatus: 'approved' },
+    { tenantId: 'tenant-a', scope: 'tenant', mappingId: 'm2', semanticId: 'urn:vendor:arcweld', capabilityId: 'manual-weld', approvalStatus: 'approved' },
+  ];
+  const mapped = applyApprovedSemanticMappings(raw, mappings);
+  assert.equal(mapped.capabilities[0].capabilityId, undefined);
+  assert.equal(mapped.capabilities[0].mappingStatus, 'conflict');
+  const unapproved = applyApprovedSemanticMappings(raw, [{ ...mappings[0], approvalStatus: 'suggested' }]);
+  assert.equal(unapproved.capabilities[0].capabilityId, undefined);
+});
+
+test('second-site semantic reuse clears the 60% repeated-configuration threshold under a mixed fixture', () => {
+  const knownMappings = Array.from({ length: 8 }, (_, i) => ({ tenantId: 'tenant-a', scope: 'tenant', mappingId: `m${i}`, semanticId: `urn:cap:${i}`, capabilityId: `cap-${i}`, approvalStatus: 'approved' }));
+  const secondSite = Array.from({ length: 50 }, (_, i) => ({
+    tenantId: 'tenant-a',
+    siteId: 'site-2',
+    assetId: `a${i}`,
+    source,
+    capabilities: [{ semanticId: i < 40 ? `urn:cap:${i % 8}` : `urn:novel:${i}`, label: `Capability ${i}` }],
+  }));
+  const result = measureConfigurationReuse({ assets: secondSite, semanticMappings: knownMappings });
+  assert.equal(result.manualBaselineDecisions, 50);
+  assert.equal(result.autoMapped, 40);
+  assert.equal(result.reviewRequired, 10);
+  assert.equal(result.repeatedConfigurationReductionPct, 0.8);
+  assert.ok(result.repeatedConfigurationReductionPct >= 0.6);
 });
