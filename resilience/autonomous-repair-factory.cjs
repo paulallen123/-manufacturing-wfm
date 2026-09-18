@@ -13,6 +13,7 @@ const PROTECTED_PATHS = Object.freeze([
   'resilience/provider-recovery-handoff.cjs',
   'resilience/autonomy-control-loop.cjs',
   'resilience/support-selfhelp.cjs',
+  'resilience/isolated-repair-worker.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
   'scripts/validate-autonomy-source-syntax.mjs',
   'scripts/validate-resilience-scenarios.mjs',
@@ -24,6 +25,7 @@ const PROTECTED_PATHS = Object.freeze([
   'scripts/validate-support-tier-contract.mjs',
   'resilience/autonomous-repair-factory.cjs',
   'scripts/validate-autonomous-repair-factory.mjs',
+  'scripts/validate-isolated-repair-worker.mjs',
   '.github/workflows/wfm-every-push-security.yml',
   '.github/workflows/wfm-zero-engineer-support-contract.yml'
 ]);
@@ -44,7 +46,7 @@ function createFactory({ maxAttempts = 3 } = {}) {
   function openIncident({ incidentId, tenant, evidenceDigest }) {
     if (!incidentId || !tenant || !/^[a-f0-9]{64}$/.test(evidenceDigest||'')) deny('WFM_REPAIR_INPUT','invalid incident input');
     if (incidents.has(incidentId)) deny('WFM_REPAIR_DUPLICATE','incident already exists');
-    const rec={incidentId,tenant,evidenceDigest,state:'diagnosing',attempts:0,reproducer:null,candidate:null,verification:null,stagingPermit:null};
+    const rec={incidentId,tenant,evidenceDigest,state:'diagnosing',attempts:0,reproducer:null,candidate:null,verification:null,stagingPermit:null,containment:null};
     incidents.set(incidentId,rec); return structuredClone(rec);
   }
 
@@ -59,7 +61,7 @@ function createFactory({ maxAttempts = 3 } = {}) {
     const r=incidents.get(incidentId); if(!r||r.tenant!==tenant) deny('WFM_REPAIR_SCOPE','incident scope');
     if(!r.reproducer) deny('WFM_REPAIR_NO_REPRODUCER','reproducible failing test required');
     if(r.state!=='reproduced'&&r.state!=='candidate-rejected') deny('WFM_REPAIR_STATE','candidate state');
-    if(r.attempts>=maxAttempts) { r.state='contained'; deny('WFM_REPAIR_BUDGET','repair attempt budget exhausted'); }
+    if(r.attempts>=maxAttempts) { r.state='contained'; r.containment={reason:'repair-attempt-budget-exhausted',actorId:'repair-factory',containmentDigest:sha({incidentId,tenant,reason:'repair-attempt-budget-exhausted'})}; deny('WFM_REPAIR_BUDGET','repair attempt budget exhausted'); }
     if(!proposerId) deny('WFM_REPAIR_INPUT','proposer required');
     if(!/^[a-f0-9]{64}$/.test(patchDigest||'')) deny('WFM_REPAIR_INPUT','patch digest required');
     if(!Array.isArray(changedPaths)||changedPaths.length===0) deny('WFM_REPAIR_INPUT','changed paths required');
@@ -90,13 +92,23 @@ function createFactory({ maxAttempts = 3 } = {}) {
     r.state='staging-authorised'; return structuredClone(r.stagingPermit);
   }
 
+  function containIncident({ incidentId, tenant, reason, actorId = 'deterministic-controller' }) {
+    const r=incidents.get(incidentId); if(!r||r.tenant!==tenant) deny('WFM_REPAIR_SCOPE','incident scope');
+    if(!reason || !/^[a-z0-9][a-z0-9:_-]{2,127}$/.test(reason)) deny('WFM_REPAIR_INPUT','invalid containment reason');
+    if(!actorId || actorId.length > 128) deny('WFM_REPAIR_INPUT','invalid containment actor');
+    if(r.state==='staging-authorised') deny('WFM_REPAIR_STATE','staging-authorised incident requires staging controller rollback/containment');
+    r.state='contained';
+    r.containment={reason,actorId,containmentDigest:sha({incidentId,tenant,reason,actorId,evidenceDigest:r.evidenceDigest,candidateDigest:r.candidate?.candidateDigest||null})};
+    return structuredClone(r);
+  }
+
   function issueProductionPermit() {
     deny('WFM_REPAIR_PRODUCTION_DENIED','repair factory cannot mint production authority');
   }
 
   function snapshot(incidentId){const r=incidents.get(incidentId); return r?structuredClone(r):null;}
 
-  return { openIncident, registerReproducer, proposeCandidate, verifyCandidate, issueStagingPermit, issueProductionPermit, snapshot, protectedPaths:[...PROTECTED_PATHS] };
+  return { openIncident, registerReproducer, proposeCandidate, verifyCandidate, issueStagingPermit, containIncident, issueProductionPermit, snapshot, protectedPaths:[...PROTECTED_PATHS] };
 }
 
 module.exports={createFactory,PROTECTED_PATHS};
