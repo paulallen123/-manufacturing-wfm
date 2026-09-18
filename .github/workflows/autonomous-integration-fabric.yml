@@ -137,3 +137,94 @@ jobs:
           if (status.readiness.needsAdminAction !== 0) throw new Error('Unexpected admin action remains.');
           console.log('AUTONOMOUS_INTEGRATION_HTTP_PROOF=PASS');
           NODE
+
+
+      - name: Install pinned Railway CLI for isolated hosted proof
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
+          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
+          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
+          echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/railway-cli"
+          tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
+          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)"
+          test -n "$CLI_BIN"
+          echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
+          "$CLI_BIN" --version
+
+      - name: Upload tested branch directly to isolated Railway proof service
+        if: github.event_name != 'pull_request'
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
+          "$RAILWAY_BIN" up --ci             --project '9a774359-37fa-47e8-bde0-932420c32923'             --environment '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'             --service '2631d462-61bf-4c01-ac4b-e106a562feeb'             -m "autonomous integration fabric proof ${GITHUB_SHA}"
+
+      - name: Prove hosted integration flow on Railway
+        if: github.event_name != 'pull_request'
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://wfm-integration-fabric-v1-proof-production.up.railway.app'
+          vars_file="$RUNNER_TEMP/integration-proof-vars.json"
+          "$RAILWAY_BIN" variable list             --project '9a774359-37fa-47e8-bde0-932420c32923'             --environment '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'             --service '2631d462-61bf-4c01-ac4b-e106a562feeb'             --json > "$vars_file"
+
+          mapfile -t secrets < <(node - "$vars_file" <<'NODE'
+          const fs = require('node:fs');
+          const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          if (!vars.WFM_STAGING_PASSWORD || !vars.WFM_INTEGRATION_INTERNAL_TOKEN) process.exit(2);
+          console.log(vars.WFM_STAGING_PASSWORD);
+          console.log(vars.WFM_INTEGRATION_INTERNAL_TOKEN);
+          NODE
+          )
+          password="${secrets[0]}"
+          internal="${secrets[1]}"
+          rm -f "$vars_file"
+
+          ready=0
+          for _ in $(seq 1 60); do
+            code="$(curl -sS -o /tmp/hosted-health.json -w '%{http_code}' "$base/api/health" 2>/dev/null || true)"
+            if [ "$code" = '200' ]; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" = '1'
+
+          login_code="$(curl -sS -D /tmp/hosted-login.headers -o /tmp/hosted-login.body -w '%{http_code}'             -H "Origin: $base"             -H 'Content-Type: application/json'             --data "{\"email\":\"manager@northstar.example\",\"password\":\"$password\"}"             "$base/api/login")"
+          test "$login_code" = '200'
+          cookie="$(awk 'BEGIN{IGNORECASE=1} /^set-cookie:/ {gsub("\\r",""); print $2; exit}' /tmp/hosted-login.headers | cut -d';' -f1)"
+          test -n "$cookie"
+
+          curl -sSf -H "Cookie: $cookie" "$base/api/integrations/autonomous/status" >/tmp/hosted-status.json
+          curl -sSf             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data '{"source":"ENTRA","apps":[{"appId":"wd-hosted","displayName":"Workday Production"},{"appId":"ns-hosted","displayName":"Oracle NetSuite"}]}'             "$base/api/integrations/autonomous/discover" >/tmp/hosted-discover.json
+
+          candidate_id="$(node -e "const d=require('/tmp/hosted-discover.json');const c=d.candidates.find(x=>x.productKey==='workday');if(!c)process.exit(2);process.stdout.write(c.id)")"
+          test -n "$candidate_id"
+
+          curl -sSf             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data "{\"candidateId\":\"$candidate_id\",\"authoritativeFor\":[\"people\",\"absence\"]}"             "$base/api/integrations/autonomous/confirm" >/tmp/hosted-confirm.json
+
+          curl -sSf             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data "{\"candidateId\":\"$candidate_id\",\"authMethod\":\"oauth2\",\"sourceInstanceId\":\"workday-hosted-proof\"}"             "$base/api/integrations/autonomous/connect" >/tmp/hosted-connect.json
+
+          connection_id="$(node -e "const d=require('/tmp/hosted-connect.json');if(d.connection.state!=='AUTHORIZATION_REQUIRED')process.exit(2);process.stdout.write(d.connection.id)")"
+          test -n "$connection_id"
+
+          curl -sSf             -H "Cookie: $cookie"             -H "X-WFM-Integration-Internal: $internal"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"authorizationRef\":\"vault://railway-proof/workday\",\"grantedScopes\":[\"people.read\",\"absence.read\"]}"             "$base/api/integrations/autonomous/authorize-complete" >/tmp/hosted-authorize.json
+
+          curl -sSf             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"mappings\":[{\"sourceField\":\"employee_id\",\"canonicalField\":\"employeeId\",\"confidence\":1},{\"sourceField\":\"first_name\",\"canonicalField\":\"firstName\",\"confidence\":1},{\"sourceField\":\"last_name\",\"canonicalField\":\"lastName\",\"confidence\":1}]}"             "$base/api/integrations/autonomous/mapping-activate" >/tmp/hosted-mapping.json
+
+          curl -sSf             -H "Cookie: $cookie"             -H "X-WFM-Integration-Internal: $internal"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"records\":[{\"employee_id\":\"E-HOST-100\",\"first_name\":\"A\",\"last_name\":\"One\"},{\"employee_id\":\"E-HOST-101\",\"first_name\":\"B\",\"last_name\":\"Two\"}]}"             "$base/api/integrations/autonomous/sync-validate" >/tmp/hosted-sync.json
+
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const sync = JSON.parse(fs.readFileSync('/tmp/hosted-sync.json', 'utf8'));
+          if (sync.connection.state !== 'ACTIVE' || sync.reconciliation.status !== 'PASS') {
+            throw new Error('Hosted connection did not become ACTIVE after trusted validation.');
+          }
+          console.log('HOSTED_AUTONOMOUS_INTEGRATION_PROOF=PASS');
+          NODE
