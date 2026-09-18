@@ -1,6 +1,8 @@
 'use strict';
 
 const http = require('node:http');
+const { createHash, randomBytes, timingSafeEqual } = require('node:crypto');
+const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
@@ -9,6 +11,19 @@ const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/on
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
+const STAGING_ACCESS_TOKEN_HASH = '56ee02ec22d0ffb576da2aca01fdb9ef283a3cad1ee01edcf6bdbefde626eafe';
+const STAGING_ACCESS_EXPIRES_AT = Date.parse('2026-09-19T02:30:00.000Z');
+const STAGING_ACCESS_EMAIL = 'superuser@northstar.example';
+
+function sha256(value) {
+  return createHash('sha256').update(String(value)).digest('hex');
+}
+
+function secureEqualHex(left, right) {
+  const a = Buffer.from(String(left || ''));
+  const b = Buffer.from(String(right || ''));
+  return a.length > 0 && a.length === b.length && timingSafeEqual(a, b);
+}
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
 installHostedListenGuard(http, { hosted });
 let guard = null;
@@ -43,6 +58,79 @@ function implementationPath(req) {
 
 function lifecyclePath(req) {
   return requestPath(req).startsWith('/api/workforce/lifecycle');
+}
+
+function stagingAccessPath(req) {
+  return requestPath(req) === '/api/staging-access';
+}
+
+function handleStagingAccess(req, res) {
+  if (!hosted || process.env.NODE_ENV !== 'staging') return false;
+  if (!stagingAccessPath(req)) return false;
+  if (String(req.method || 'GET').toUpperCase() !== 'GET') {
+    res.statusCode = 405;
+    res.setHeader('Allow', 'GET');
+    res.end('Method Not Allowed');
+    return true;
+  }
+
+  let rawToken = '';
+  try {
+    rawToken = new URL(String(req.url || '/'), 'https://staging.invalid').searchParams.get('token') || '';
+  } catch {}
+
+  if (
+    Date.now() > STAGING_ACCESS_EXPIRES_AT ||
+    !rawToken ||
+    !secureEqualHex(sha256(rawToken), STAGING_ACCESS_TOKEN_HASH)
+  ) {
+    res.statusCode = 404;
+    res.setHeader('Cache-Control', 'no-store');
+    res.end('Not Found');
+    return true;
+  }
+
+  const db = new DatabaseSync(process.env.WFM_DB);
+  try {
+    db.exec(
+      'CREATE TABLE IF NOT EXISTS staging_access_grants(' +
+      'grant_key TEXT PRIMARY KEY, used_at TEXT NOT NULL);'
+    );
+    const used = db.prepare('SELECT used_at FROM staging_access_grants WHERE grant_key=?').get('version-d-access');
+    if (used) {
+      res.statusCode = 410;
+      res.setHeader('Cache-Control', 'no-store');
+      res.end('This staging access link has already been used.');
+      return true;
+    }
+
+    const account = db.prepare('SELECT email FROM users WHERE email=?').get(STAGING_ACCESS_EMAIL);
+    if (!account) {
+      res.statusCode = 503;
+      res.setHeader('Cache-Control', 'no-store');
+      res.end('Staging account is unavailable.');
+      return true;
+    }
+
+    const sessionToken = randomBytes(32).toString('base64url');
+    const sessionExpires = Math.min(Date.now() + 4 * 60 * 60 * 1000, STAGING_ACCESS_EXPIRES_AT + 4 * 60 * 60 * 1000);
+    const transaction = db.transaction(() => {
+      db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)')
+        .run(sha256(sessionToken), STAGING_ACCESS_EMAIL, sessionExpires);
+      db.prepare('INSERT INTO staging_access_grants(grant_key,used_at) VALUES(?,?)')
+        .run('version-d-access', new Date().toISOString());
+    });
+    transaction();
+
+    res.statusCode = 302;
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Set-Cookie', 'wfm_session=' + sessionToken + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=14400');
+    res.setHeader('Location', '/');
+    res.end();
+    return true;
+  } finally {
+    try { db.close(); } catch {}
+  }
 }
 
 function overlayUnavailable(res, label) {
@@ -123,6 +211,8 @@ http.createServer = function guardedCreateServer(listener) {
   }
 
   return originalCreateServer.call(http, async (req, res) => {
+    if (handleStagingAccess(req, res)) return;
+
     if (guard) {
       try {
         if (guard.beforeRequest(req, res)) return;
