@@ -78,8 +78,15 @@ jobs:
           done
           test -s /tmp/concept-health.json
           cat /tmp/concept-health.json
-          curl -fsS "$PREVIEW_ORIGIN/value-cockpit-ui.js" -o /tmp/concept-ui.js
-          curl -fsS "$PREVIEW_ORIGIN/factory-control-ui.css" -o /tmp/concept-ui.css
+          curl -fsS "$PREVIEW_ORIGIN/" -o /tmp/concept-root.html
+          JS_PATH="$(grep -oE 'src="[^"]*value-cockpit-ui\.js"' /tmp/concept-root.html | head -n1 | cut -d'"' -f2)"
+          CSS_PATH="$(grep -oE 'href="[^"]*factory-control-ui\.css"' /tmp/concept-root.html | head -n1 | cut -d'"' -f2)"
+          test -n "$JS_PATH"
+          test -n "$CSS_PATH"
+          case "$JS_PATH" in http*) JS_URL="$JS_PATH";; *) JS_URL="$PREVIEW_ORIGIN/${JS_PATH#/}";; esac
+          case "$CSS_PATH" in http*) CSS_URL="$CSS_PATH";; *) CSS_URL="$PREVIEW_ORIGIN/${CSS_PATH#/}";; esac
+          curl -fsS "$JS_URL" -o /tmp/concept-ui.js
+          curl -fsS "$CSS_URL" -o /tmp/concept-ui.css
           grep -F 'WFM_CONCEPT_FIDELITY_V3' /tmp/concept-ui.js
           grep -F 'WFM_CONCEPT_FIDELITY_BEGIN' /tmp/concept-ui.js
           grep -F 'ux-approved-today' /tmp/concept-ui.css
