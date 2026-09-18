@@ -20,11 +20,11 @@
 .ux11-trust>div{display:grid;gap:7px;padding-top:8px}
 .ux11-trust span{display:grid;grid-template-columns:78px 1fr;gap:8px;font-size:.8rem;line-height:1.35}
 .ux11-open{margin-top:auto;align-self:flex-start}
-.ux11-more,.ux11-receipts{margin-top:12px;border-top:1px solid var(--ux-line,#dfe5ec);padding-top:10px}
-.ux11-more>summary,.ux11-receipts>summary{cursor:pointer;font-weight:800}
+.ux11-more,.ux11-receipts,.ux11-information{margin-top:12px;border-top:1px solid var(--ux-line,#dfe5ec);padding-top:10px}
+.ux11-more>summary,.ux11-receipts>summary,.ux11-information>summary{cursor:pointer;font-weight:800}
 .ux11-more-grid{margin-top:12px}
-.ux11-receipts ul{list-style:none;padding:8px 0 0;margin:0;display:grid;gap:8px}
-.ux11-receipts li{display:grid;grid-template-columns:minmax(160px,1fr) 2fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--ux-line,#dfe5ec);font-size:.84rem}
+.ux11-receipts ul,.ux11-information ul{list-style:none;padding:8px 0 0;margin:0;display:grid;gap:8px}
+.ux11-receipts li,.ux11-information li{display:grid;grid-template-columns:minmax(160px,1fr) 2fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--ux-line,#dfe5ec);font-size:.84rem}
 .ux11-back{margin-left:auto}
 .ux11-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .ux11-card :focus-visible,.ux11-queue summary:focus-visible,.ux11-back:focus-visible{outline:3px solid currentColor;outline-offset:3px}
@@ -34,6 +34,6 @@
  .ux11-head{align-items:center}
  .ux11-cards,.ux11-more-grid{grid-template-columns:1fr}
  .ux11-card{width:100%;overflow-wrap:anywhere}
- .ux11-receipts li{grid-template-columns:1fr}
+ .ux11-receipts li,.ux11-information li{grid-template-columns:1fr}
  .ux11-open{width:100%}
 }
