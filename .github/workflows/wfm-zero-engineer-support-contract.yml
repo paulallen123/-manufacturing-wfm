@@ -10,6 +10,8 @@ on:
       - 'resilience/failure-scenarios.json'
       - 'resilience/security-baseline.json'
       - 'scripts/validate-support-tier-contract.mjs'
+      - 'resilience/support-selfhelp.cjs'
+      - 'scripts/validate-support-selfhelp.mjs'
       - '.github/workflows/wfm-zero-engineer-support-contract.yml'
   workflow_dispatch:
 
@@ -43,6 +45,9 @@ jobs:
 
       - name: Validate zero-engineer tier contract
         run: node scripts/validate-support-tier-contract.mjs
+
+      - name: Validate deterministic Tier 0 self-help
+        run: node scripts/validate-support-selfhelp.mjs
 
       - name: Assert proof receipt
         run: |
