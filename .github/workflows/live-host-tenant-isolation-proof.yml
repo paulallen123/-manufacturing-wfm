@@ -1,0 +1,84 @@
+name: Live host tenant isolation proof
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/live-host-tenant-isolation-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-two-tenant-boundary:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      WFM_ORIGIN: https://wfm-customer-proof-0676-production.up.railway.app
+      EXPECTED_RELEASE: 0.6.76-hosted-staging-rc1
+    steps:
+      - name: Install pinned browser driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/wfm-tenant-proof"
+          cd "$RUNNER_TEMP/wfm-tenant-proof"
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund --save-exact playwright@1.63.0 >/dev/null
+
+      - name: Prove separate hosted tenant contexts and no bootstrap leakage
+        env:
+          WFM_DEMO_PASSWORD: ${{ secrets.WFM_DEMO_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${WFM_DEMO_PASSWORD:-}" || { echo 'WFM_DEMO_PASSWORD repository secret is not configured.' >&2; exit 1; }
+          cd "$RUNNER_TEMP/wfm-tenant-proof"
+          node <<'NODE'
+          const { chromium }=require('playwright');
+          const crypto=require('node:crypto');
+          const origin=process.env.WFM_ORIGIN,password=process.env.WFM_DEMO_PASSWORD;
+          const assert=(ok,msg)=>{if(!ok)throw Error(msg)};
+          const sha=o=>crypto.createHash('sha256').update(JSON.stringify(o)).digest('hex');
+          async function authenticate(browser,email){
+            const context=await browser.newContext();
+            const page=await context.newPage();
+            await page.goto(origin,{waitUntil:'domcontentloaded',timeout:30000});
+            const login=await page.evaluate(async ({email,password})=>{
+              const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+              return {status:r.status,body:await r.text()};
+            },{email,password});
+            assert(login.status===200,`Hosted login failed for ${email} with HTTP ${login.status}: ${login.body.slice(0,160)}`);
+            const bootstrap=await page.evaluate(async()=>{const r=await fetch('/api/bootstrap');return {status:r.status,json:await r.json()};});
+            assert(bootstrap.status===200,`Hosted bootstrap failed for ${email} with HTTP ${bootstrap.status}`);
+            return {context,page,bootstrap:bootstrap.json};
+          }
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true});
+            try{
+              const health=await (await fetch(origin+'/api/health')).json();
+              assert(health.status==='ok','Hosted health is not ok');
+              assert(health.release===process.env.EXPECTED_RELEASE,`Unexpected hosted release ${health.release}`);
+              assert(health.fixtureOnly===true,'Hosted proof must remain fixture-only');
+              assert(health.productionApproved===false,'Hosted proof must remain production-unapproved');
+              const north=await authenticate(browser,'manager@northstar.example');
+              const other=await authenticate(browser,'other@isolation.example');
+              assert(north.bootstrap.actor?.tenant==='northstar-demo',`Unexpected Northstar tenant ${north.bootstrap.actor?.tenant}`);
+              assert(other.bootstrap.actor?.tenant==='isolation-test',`Unexpected isolation tenant ${other.bootstrap.actor?.tenant}`);
+              assert(north.bootstrap.actor?.tenant!==other.bootstrap.actor?.tenant,'Tenant identities unexpectedly match');
+              const northText=JSON.stringify(north.bootstrap),otherText=JSON.stringify(other.bootstrap);
+              for(const forbidden of ['other@isolation.example','isolation-test']) assert(!northText.includes(forbidden),`Northstar bootstrap leaked ${forbidden}`);
+              for(const forbidden of ['maya@northstar.example','manager@northstar.example','payroll@northstar.example','superuser@northstar.example']) assert(!otherText.includes(forbidden),`Isolation bootstrap leaked ${forbidden}`);
+              console.log(`HOSTED_RELEASE=${health.release}`);
+              console.log(`NORTH_TENANT=${north.bootstrap.actor.tenant}`);
+              console.log(`ISOLATION_TENANT=${other.bootstrap.actor.tenant}`);
+              console.log(`NORTH_BOOTSTRAP_SHA256=${sha(north.bootstrap)}`);
+              console.log(`ISOLATION_BOOTSTRAP_SHA256=${sha(other.bootstrap)}`);
+              console.log('SEPARATE_BROWSER_CONTEXTS=true');
+              console.log('LIVE_HOST_TWO_TENANT_BOOTSTRAP_ISOLATION=PASS');
+              await north.context.close();await other.context.close();
+            } finally {await browser.close();}
+          })().catch(err=>{console.error(err);process.exit(1)});
+          NODE
