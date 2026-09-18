@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 
 const VERIFIED_SIGNED_ROLLBACK_CLIENTS=new WeakSet();
+const LIFECYCLE_BOUND_SIGNED_ROLLBACK_CLIENTS=new WeakSet();
 
 function stable(value){
   if(value===null || typeof value!=='object') return JSON.stringify(value);
@@ -38,13 +39,50 @@ function verifySignature(receipt,publicKey){
   if(!ok) throw new Error('Rollback-anchor receipt signature invalid.');
   return payload;
 }
+function policyDigest(payload){ return crypto.createHash('sha256').update(stable(payload)).digest('hex'); }
+function verifyAuthorityKeyPolicy({policy,trustRootPublicKeys,authorityId,now,maxAgeMs,minimumSequence=0,expectedDigest=null}){
+  if(!policy||typeof policy!=='object') throw new Error('Rollback-anchor authority key policy required.');
+  const rootEntries=trustRootPublicKeys instanceof Map?[...trustRootPublicKeys.entries()]:Object.entries(trustRootPublicKeys||{});
+  if(rootEntries.length===0) throw new Error('Rollback-anchor authority trust roots required.');
+  const roots=new Map(rootEntries.map(([k,v])=>[safeId(k,'Rollback-anchor authority trust root ID'),v]));
+  const rootKeyId=safeId(policy.rootKeyId,'Rollback-anchor authority trust root ID');
+  const rootKey=roots.get(rootKeyId);
+  if(!rootKey) throw new Error('Rollback-anchor authority trust root is not trusted.');
+  const payload=verifySignature(policy,rootKey);
+  if(payload.schemaVersion!==1) throw new Error('Rollback-anchor authority key policy schema unsupported.');
+  if(payload.authorityId!==authorityId) throw new Error('Rollback-anchor authority key policy identity mismatch.');
+  const sequence=safeGeneration(payload.sequence,'Rollback-anchor authority key policy sequence');
+  if(sequence<safeGeneration(minimumSequence,'Minimum rollback-anchor authority key policy sequence')) throw new Error('Rollback-anchor authority key policy sequence is below the required minimum.');
+  const issued=parseTime(payload.issuedAt,'Rollback-anchor authority key policy issuedAt');
+  const expires=parseTime(payload.expiresAt,'Rollback-anchor authority key policy expiresAt');
+  if(expires<=issued || now<issued-5_000 || now>expires || now-issued>maxAgeMs) throw new Error('Rollback-anchor authority key policy is stale or outside its validity window.');
+  if(!Array.isArray(payload.keys)||payload.keys.length===0) throw new Error('Rollback-anchor authority key policy has no keys.');
+  const entries=new Map();
+  for(const raw of payload.keys){
+    const keyId=safeId(raw?.keyId,'Rollback-anchor authority key ID');
+    if(entries.has(keyId)) throw new Error('Rollback-anchor authority key policy contains duplicate key IDs.');
+    const status=String(raw?.status||'');
+    if(!['active','retiring','revoked'].includes(status)) throw new Error('Rollback-anchor authority key status invalid.');
+    const notBefore=parseTime(raw?.notBefore,'Rollback-anchor authority key notBefore');
+    const notAfter=parseTime(raw?.notAfter,'Rollback-anchor authority key notAfter');
+    if(notAfter<=notBefore) throw new Error('Rollback-anchor authority key validity window invalid.');
+    entries.set(keyId,{keyId,status,notBefore,notAfter});
+  }
+  const digest=policyDigest(payload);
+  if(expectedDigest!==null && String(expectedDigest).toLowerCase()!==digest) throw new Error('Rollback-anchor authority key policy digest mismatch.');
+  return {sequence,digest,entries};
+}
 
 export function isVerifiedSignedRollbackAnchorClient(value){
   return Boolean(value && VERIFIED_SIGNED_ROLLBACK_CLIENTS.has(value));
 }
 
+export function isLifecycleBoundSignedRollbackAnchorClient(value){
+  return Boolean(value && LIFECYCLE_BOUND_SIGNED_ROLLBACK_CLIENTS.has(value));
+}
+
 export class SignedRollbackAnchorClient {
-  constructor({transport,authorityPublicKeys,authorityId,anchorId,maxReceiptAgeMs=30_000,now=()=>Date.now(),randomBytes=crypto.randomBytes}={}){
+  constructor({transport,authorityPublicKeys,authorityId,anchorId,maxReceiptAgeMs=30_000,now=()=>Date.now(),randomBytes=crypto.randomBytes,authorityKeyPolicy=null,authorityTrustRootPublicKeys=null,minimumAuthorityPolicySequence=0,expectedAuthorityPolicyDigest=null,maxAuthorityPolicyAgeMs=24*60*60_000}={}){
     if(!transport?.read || !transport?.compareAndAdvance) throw new Error('Rollback-anchor transport required.');
     const entries=authorityPublicKeys instanceof Map?[...authorityPublicKeys.entries()]:Object.entries(authorityPublicKeys||{});
     if(entries.length===0) throw new Error('Rollback-anchor authority keys required.');
@@ -56,6 +94,22 @@ export class SignedRollbackAnchorClient {
     this.now=now;
     this.randomBytes=randomBytes;
     this.lastSeenGeneration=null;
+    this.authorityKeyPolicy=null;
+    if(authorityKeyPolicy!==null){
+      this.authorityKeyPolicy=verifyAuthorityKeyPolicy({
+        policy:authorityKeyPolicy,
+        trustRootPublicKeys:authorityTrustRootPublicKeys,
+        authorityId:this.authorityId,
+        now:this.now(),
+        maxAgeMs:maxAuthorityPolicyAgeMs,
+        minimumSequence:minimumAuthorityPolicySequence,
+        expectedDigest:expectedAuthorityPolicyDigest
+      });
+      for(const keyId of this.authorityKeyPolicy.entries.keys()){
+        if(!this.keys.has(keyId)) throw new Error('Rollback-anchor authority key policy references unavailable key material.');
+      }
+      LIFECYCLE_BOUND_SIGNED_ROLLBACK_CLIENTS.add(this);
+    }
     VERIFIED_SIGNED_ROLLBACK_CLIENTS.add(this);
   }
 
@@ -106,6 +160,13 @@ export class SignedRollbackAnchorClient {
     const keyId=safeId(receipt.keyId,'Rollback-anchor authority key ID');
     const key=this.keys.get(keyId);
     if(!key) throw new Error('Rollback-anchor authority key is not trusted.');
+    if(this.authorityKeyPolicy){
+      const policyEntry=this.authorityKeyPolicy.entries.get(keyId);
+      if(!policyEntry) throw new Error('Rollback-anchor authority key is absent from the current signed policy.');
+      if(!['active','retiring'].includes(policyEntry.status)) throw new Error('Rollback-anchor authority key is revoked by the current signed policy.');
+      const now=this.now();
+      if(now<policyEntry.notBefore || now>policyEntry.notAfter) throw new Error('Rollback-anchor authority key is outside its signed validity window.');
+    }
     const payload=verifySignature(receipt,key);
     if(payload.schemaVersion!==1) throw new Error('Rollback-anchor receipt schema unsupported.');
     if(payload.authorityId!==this.authorityId) throw new Error('Rollback-anchor authority identity mismatch.');
@@ -122,6 +183,31 @@ export class SignedRollbackAnchorClient {
     if(operation==='advance') safeGeneration(payload.previousGeneration,'Rollback-anchor receipt previous generation');
     return payload;
   }
+}
+
+export function createSyntheticSignedAuthorityKeyPolicy({authorityId='wfm-security-anchor-authority',rootKeyId='trust-root-1',rootPrivateKey,sequence=1,issuedAtMs=Date.now(),expiresAtMs=issuedAtMs+60*60_000,keys=[]}={}){
+  if(!rootPrivateKey) ({privateKey:rootPrivateKey}=crypto.generateKeyPairSync('ed25519'));
+  const payload={
+    schemaVersion:1,
+    authorityId:safeId(authorityId,'Rollback-anchor authority ID'),
+    sequence:safeGeneration(sequence,'Rollback-anchor authority key policy sequence'),
+    issuedAt:new Date(issuedAtMs).toISOString(),
+    expiresAt:new Date(expiresAtMs).toISOString(),
+    keys:keys.map(raw=>({
+      keyId:safeId(raw?.keyId,'Rollback-anchor authority key ID'),
+      status:String(raw?.status||''),
+      notBefore:new Date(raw?.notBeforeMs??issuedAtMs).toISOString(),
+      notAfter:new Date(raw?.notAfterMs??expiresAtMs).toISOString()
+    }))
+  };
+  const signed={...payload,rootKeyId:safeId(rootKeyId,'Rollback-anchor authority trust root ID')};
+  return {...signed,signature:crypto.sign(null,Buffer.from(stable(signed)),rootPrivateKey).toString('base64url')};
+}
+
+export function authorityKeyPolicyDigest(policy){
+  if(!policy||typeof policy!=='object') throw new Error('Rollback-anchor authority key policy required.');
+  const {signature,...payload}=policy;
+  return policyDigest(payload);
 }
 
 export function createSyntheticSignedRollbackAuthority({authorityId='wfm-security-anchor-authority',anchorId='attendance-source-continuity',keyId='authority-1',privateKey,now=()=>Date.now(),initialGeneration=0}={}){
