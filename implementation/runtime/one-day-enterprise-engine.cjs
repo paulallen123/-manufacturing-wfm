@@ -20,10 +20,10 @@ const REQUIREMENTS = Object.freeze([
   { key: 'payroll-mapping', label: 'Payroll mappings', minConfidence: 0.995, budgetMinutes: 45, dependsOn: ['source-systems', 'people-data', 'time-policies'] },
   { key: 'historical-replay', label: 'Historical replay and reconciliation', minConfidence: 0.995, budgetMinutes: 60, dependsOn: ['payroll-mapping', 'time-policies'] },
   { key: 'security-controls', label: 'Security and tenant isolation', minConfidence: 1.0, budgetMinutes: 30, dependsOn: ['tenant-environment', 'identity-access'] },
+  { key: 'resilience', label: 'Recovery and failure handling', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['source-systems', 'security-controls'] },
   { key: 'scenario-validation', label: 'Rigorous end-to-end scenario testing', minConfidence: 1.0, budgetMinutes: 60, dependsOn: ['scheduling', 'approvals', 'clocking', 'historical-replay', 'security-controls', 'resilience'] },
   { key: 'test-data-cleanup', label: 'Test data removed and environment reset', minConfidence: 1.0, budgetMinutes: 20, dependsOn: ['scenario-validation'] },
   { key: 'live-data-import', label: 'Live data imported and reconciled', minConfidence: 1.0, budgetMinutes: 45, dependsOn: ['test-data-cleanup', 'people-data', 'organisation-model', 'payroll-mapping'] },
-  { key: 'resilience', label: 'Recovery and failure handling', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['source-systems', 'security-controls'] },
   { key: 'role-learning', label: 'Role learning journeys generated', minConfidence: 0.99, budgetMinutes: 15, dependsOn: ['people-data'] },
   { key: 'privileged-competency', label: 'Managers/admins certified for privileged tasks', minConfidence: 0.99, budgetMinutes: 90, dependsOn: ['role-learning', 'time-policies', 'scheduling', 'payroll-mapping', 'security-controls'] },
   { key: 'frontline-readiness', label: 'Frontline users certified for first use', minConfidence: 0.99, budgetMinutes: 20, dependsOn: ['role-learning', 'absence-policies', 'scheduling', 'clocking'] }

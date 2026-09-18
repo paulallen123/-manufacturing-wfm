@@ -111,12 +111,18 @@ function activeWork(){
     return '<div class="wfm-ij-work"><span class="'+tone+'">'+(tone==='blocked'?'!':'•')+'</span><div><b>'+safe(x.label)+'</b><small>'+safe(x.status==='MISSING'?'Waiting for required evidence':stateLabel(x.status))+'</small></div></div>';
   }).join('')+'</div>';
 }
+function proposalSummary(proposal){
+  if(!proposal||typeof proposal!=='object')return '';
+  const entries=Object.entries(proposal).slice(0,4);
+  return entries.map(([key,value])=>String(key).replaceAll('_',' ') + ': ' + (typeof value==='object'?JSON.stringify(value):String(value))).join(' · ');
+}
 function decisionsMarkup(){
   const rows=S.status?.blockingDecisions||[];
   if(!rows.length)return '';
-  return '<section class="wfm-ij-panel wfm-ij-decisions"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">YOUR DECISION</span><h2>'+rows.length+' item'+(rows.length===1?'':'s')+' need confirmation</h2></div></div><div class="wfm-ij-decision-list">'+rows.map(d=>
-    '<article><div><b>'+safe(d.question)+'</b><small>'+safe(d.risk)+' risk · '+safe(d.status)+'</small></div><button class="btn small primary" type="button" data-ij-decision="'+safe(d.key)+'">Review</button></article>'
-  ).join('')+'</div></section>';
+  return '<section class="wfm-ij-panel wfm-ij-decisions"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">YOUR DECISION</span><h2>'+rows.length+' item'+(rows.length===1?'':'s')+' need confirmation</h2><p>High-risk inferred settings stay blocked until an authorised customer accepts them or reviews the source configuration.</p></div></div><div class="wfm-ij-decision-list">'+rows.map(d=>{
+    const summary=proposalSummary(d.proposal);
+    return '<article><div><b>'+safe(d.question)+'</b><small>'+safe(d.risk)+' risk · '+safe(d.status)+(summary?' · '+safe(summary):'')+'</small></div><div class="wfm-ij-decision-actions"><button class="btn small primary" type="button" data-ij-decision-accept="'+safe(d.key)+'">Accept proposal</button><button class="btn small" type="button" data-ij-decision-review="'+safe(d.key)+'">Review setup</button></div></article>';
+  }).join('')+'</div></section>';
 }
 function welcomeMarkup(){
   const invitation=S.invitation?.invitation||S.status?.invitation||null;
@@ -212,6 +218,22 @@ async function start(){
     S.invitation=null;await load(true);
   }catch(error){S.error=error.message||'Implementation could not be started.';renderView();}
 }
+async function acceptDecision(key,button){
+  if(!S.status?.runId||!key)return;
+  if(button){button.disabled=true;button.textContent='Confirming…';}
+  try{
+    S.status=await request(IMPL+'/decision',{method:'POST',body:JSON.stringify({
+      runId:S.status.runId,
+      key,
+      action:'ACCEPTED',
+      detail:{source:'implementation-dashboard'}
+    })});
+    renderView();
+  }catch(error){
+    S.error=error.message||'The decision could not be recorded.';
+    renderView();
+  }
+}
 function apply(){
   if(currentPage()!=='onboarding'||isEmployeeRole()){stop();return;}
   const nav=document.querySelector('.sidebar .navbtn[data-page="onboarding"] span:not(.count):not(.review-count)');
@@ -225,7 +247,8 @@ document.addEventListener('click',event=>{
   const refresh=event.target.closest('[data-ij-refresh]');if(refresh){event.preventDefault();S.error='';load(true);return;}
   const route=event.target.closest('[data-ij-route]');if(route){event.preventDefault();openRoute(route.dataset.ijRoute);return;}
   const training=event.target.closest('[data-ij-training]');if(training){event.preventDefault();document.querySelector('.wfm-coach-trigger')?.click();return;}
-  const decision=event.target.closest('[data-ij-decision]');if(decision){event.preventDefault();openRoute('onboarding');return;}
+  const accept=event.target.closest('[data-ij-decision-accept]');if(accept){event.preventDefault();acceptDecision(accept.dataset.ijDecisionAccept,accept);return;}
+  const review=event.target.closest('[data-ij-decision-review]');if(review){event.preventDefault();openRoute('op-settings');return;}
 },true);
 const priorRender=window.render;
 if(typeof priorRender==='function')window.render=async function(...args){const out=await priorRender.apply(this,args);apply();return out;};
