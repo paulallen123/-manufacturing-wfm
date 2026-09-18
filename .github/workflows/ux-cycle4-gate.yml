@@ -35,7 +35,7 @@ jobs:
           const fs=require('node:fs');
           const js=fs.readFileSync('ux-overlay/ux-reset-cycle4.js','utf8');
           const css=fs.readFileSync('ux-overlay/ux-reset-cycle4.css','utf8');
-          for(const x of ['COST & EFFICIENCY','VALUE AWAITING A DECISION','Highest-value evidenced opportunity','More opportunities','Reviewed decisions','Estimate · not realised cash','not automatically claimable','uxPerformance=\'focused\'']) if(!js.includes(x)) throw new Error('Missing Cycle 4 invariant: '+x);
+          for(const x of ['COST & EFFICIENCY','VALUE AWAITING A DECISION','Highest-value evidenced opportunity','More opportunities','Reviewed decisions','Estimate · not realised cash','not automatically claimable','opportunityValue','uxPerformance=\'focused\'']) if(!js.includes(x)) throw new Error('Missing Cycle 4 invariant: '+x);
           for(const x of ['.ux-performance-desk','.ux-performance-focus','.ux-performance-detail-body','[data-ux-job="performance"]','@media(max-width:680px)']) if(!css.includes(x)) throw new Error('Missing Cycle 4 CSS invariant: '+x);
           if(/predictedValueAwaitingPence\s*=/.test(js)||/hardCashAvoidableCostPoolPence\s*=/.test(js)) throw new Error('Presentation layer must not rewrite value calculations.');
           console.log('UX_CYCLE4_SOURCE_INVARIANTS=PASS');
@@ -63,7 +63,7 @@ jobs:
           if(/ux-reset(?:-cycle[234])?\.(?:js|css)/.test(html)) throw new Error('Standalone UX paths must not be introduced outside the sealed static allow-list.');
           const j3=js.indexOf('WFM_UX_RESET_CYCLE3_BEGIN'),j4=js.indexOf('WFM_UX_RESET_CYCLE4_BEGIN');
           const c3=css.indexOf('WFM_UX_RESET_CYCLE3_BEGIN'),c4=css.indexOf('WFM_UX_RESET_CYCLE4_BEGIN');
-          if(!(j3>=0&&j4>j3&&c3>=0&&c4>c3)) throw new Error('Cycle 4 must be composed after Cycle 3.');
+          if(!(j3>=0&&j4>j3&&c3>=0&&c4>c3)) throw new Error('Cycle 4 must compose after Cycle 3.');
           if(!js.includes('window.WFMUXCycle4=')) throw new Error('Cycle 4 is missing from the served JS bundle.');
           if(!css.includes('.ux-performance-desk')) throw new Error('Cycle 4 is missing from the served CSS bundle.');
           console.log('UX_CYCLE4_APPROVED_ASSET_COMPOSITION=PASS');
@@ -108,8 +108,8 @@ jobs:
             <section class="vc-hero"><h1>Original value desk</h1></section>
             <div class="vc-insight">Original avoidable-cost context</div>
             <div class="vc-grid">
-              <article class="vc-card"><div class="vc-card-top"><div><span class="eyebrow">staffing recommendation</span><h2>Prevent premium on Assembly</h2></div><span class="vc-state waiting">Decision needed</span></div><div class="vc-value"><small>Estimated plan cost reduction</small><strong>£1,200</strong><span>Estimate · not realised cash</span></div><p class="vc-why">Lower-cost eligible cover exists.</p><div class="vc-explain"><b>What happens if you say YES?</b><p>Create the controlled recommendation.</p></div><details><summary>Show evidence</summary><p>Evidence A</p></details><div class="vc-buttons"><button data-act="vc-decision" data-decision="no">NO · not now</button><button data-act="vc-decision" data-decision="yes">YES · proceed</button></div></article>
               <article class="vc-card"><div class="vc-card-top"><div><span class="eyebrow">manufacturing recovery</span><h2>Protect output on Packaging</h2></div><span class="vc-state waiting">Decision needed</span></div><div class="vc-value"><small>Predicted economic improvement</small><strong>£500</strong><span>Estimate · not realised cash</span></div><p class="vc-why">A reviewed recovery scenario is available.</p><div class="vc-buttons"><button data-act="vc-decision" data-decision="no">NO · not now</button><button data-act="vc-decision" data-decision="yes">YES · proceed</button></div></article>
+              <article class="vc-card"><div class="vc-card-top"><div><span class="eyebrow">staffing recommendation</span><h2>Prevent premium on Assembly</h2></div><span class="vc-state waiting">Decision needed</span></div><div class="vc-value"><small>Estimated plan cost reduction</small><strong>£1,200</strong><span>Estimate · not realised cash</span></div><p class="vc-why">Lower-cost eligible cover exists.</p><div class="vc-explain"><b>What happens if you say YES?</b><p>Create the controlled recommendation.</p></div><details><summary>Show evidence</summary><p>Evidence A</p></details><div class="vc-buttons"><button data-act="vc-decision" data-decision="no">NO · not now</button><button data-act="vc-decision" data-decision="yes">YES · proceed</button></div></article>
               <article class="vc-card"><div class="vc-card-top"><div><span class="eyebrow">staffing recommendation</span><h2>Reviewed Mixing plan</h2></div><span class="vc-state yes">YES · approved</span></div><div class="vc-value"><small>Estimated plan cost reduction</small><strong>£300</strong></div><div class="vc-done"><b>Approved for controlled progression.</b></div></article>
             </div>
             <div class="vc-principle"><b>Control rule:</b> YES never bypasses consent, coverage, payroll authority or fresh eligibility.</div>
@@ -120,8 +120,8 @@ jobs:
           function isEmployee(){return false}
           async function render(){}
           var VCU={report:{summary:{awaitingDecision:2,predictedValueAwaitingPence:170000,predictedValueApprovedPence:30000},insight:{hardCashAvoidableCostPoolPence:240000},opportunities:[
-            {key:'op-a',status:'awaiting_decision',value:{amountPence:120000}},
             {key:'op-b',status:'awaiting_decision',value:{amountPence:50000}},
+            {key:'op-a',status:'awaiting_decision',value:{amountPence:120000}},
             {key:'op-c',status:'yes',value:{amountPence:30000}}
           ]}};
           </script><script src="/ux-reset-cycle4.js"></script></body></html>
@@ -143,10 +143,10 @@ jobs:
           const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
           await send('Runtime.enable');
           await retry(async()=>{const ready=await evalx("document.readyState==='complete'&&Boolean(document.querySelector('.ux-performance-desk'))");if(!ready)throw Error('not ready');return true});
-          const proof=await evalx(`(()=>({desk:!!document.querySelector('.ux-performance-desk'),focused:document.querySelector('.ux-performance-card-focus')?.dataset.uxOpportunityKey||null,queueCards:document.querySelectorAll('.ux-performance-detail.queue .vc-card').length,reviewedCards:document.querySelectorAll('.ux-performance-detail.reviewed .vc-card').length,oldHero:!!document.querySelector('.vc-hero'),oldGrid:!!document.querySelector('.vc-grid'),state:document.body.dataset.uxPerformance||null,yesButtons:document.querySelectorAll('.ux-performance-focus [data-decision="yes"]').length,noButtons:document.querySelectorAll('.ux-performance-focus [data-decision="no"]').length,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,text:document.querySelector('.ux-performance-desk')?.textContent||''}))()`);
+          const proof=await evalx(`(()=>({desk:!!document.querySelector('.ux-performance-desk'),focused:document.querySelector('.ux-performance-card-focus')?.dataset.uxOpportunityKey||null,queueKey:document.querySelector('.ux-performance-detail.queue .vc-card')?.dataset.uxOpportunityKey||null,queueCards:document.querySelectorAll('.ux-performance-detail.queue .vc-card').length,reviewedCards:document.querySelectorAll('.ux-performance-detail.reviewed .vc-card').length,oldHero:!!document.querySelector('.vc-hero'),oldGrid:!!document.querySelector('.vc-grid'),state:document.body.dataset.uxPerformance||null,yesButtons:document.querySelectorAll('.ux-performance-focus [data-decision="yes"]').length,noButtons:document.querySelectorAll('.ux-performance-focus [data-decision="no"]').length,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,text:document.querySelector('.ux-performance-desk')?.textContent||''}))()`);
           console.log('UX_CYCLE4_BROWSER_PROOF='+JSON.stringify(proof));
-          if(!proof.desk||proof.focused!=='op-a')throw Error('Highest-value waiting opportunity is not focused');
-          if(proof.queueCards!==1||proof.reviewedCards!==1)throw Error('Opportunity queue/reviewed grouping is incorrect');
+          if(!proof.desk||proof.focused!=='op-a')throw Error('Highest-value waiting opportunity is not focused independent of source order');
+          if(proof.queueKey!=='op-b'||proof.queueCards!==1||proof.reviewedCards!==1)throw Error('Opportunity value ranking/grouping is incorrect');
           if(proof.oldHero||proof.oldGrid)throw Error('Legacy long-stack containers remain visible');
           if(proof.state!=='focused')throw Error('Focused performance state marker is missing');
           if(proof.yesButtons!==1||proof.noButtons!==1)throw Error('Existing YES/NO controls were not preserved');
