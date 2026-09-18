@@ -12,33 +12,45 @@ const K1=Buffer.alloc(32,0x41);
 const K2=Buffer.alloc(32,0x42);
 function file(){const d=fs.mkdtempSync(path.join(os.tmpdir(),'wfm-source-state-'));return path.join(d,'supervisor.json');}
 function sup(){return new AttendanceSourceSupervisor({heartbeatSlaMs:10_000,lagWarningMs:2_000,authRefreshLeadMs:60_000});}
-function stateStore(filePath,{activeKeyId='k1',integrityKeys={k1:K1}}={}){
-  return new AtomicSupervisorStateStore({filePath,activeKeyId,integrityKeys});
+function memoryAnchor(start=0){
+  let current=start;
+  return {
+    current(){return current;},
+    advance(expected){
+      if(expected!==current) throw new Error('rollback anchor compare-and-set mismatch');
+      current+=1;
+      return current;
+    },
+    forceForTest(value){current=value;}
+  };
 }
-function setup(filePath,storeOptions){
-  const runtime=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(filePath,storeOptions)});
+function stateStore(filePath,{activeKeyId='k1',integrityKeys={k1:K1},rollbackAnchor}={}){
+  return new AtomicSupervisorStateStore({filePath,activeKeyId,integrityKeys,rollbackAnchor});
+}
+function setup(filePath,{rollbackAnchor=memoryAnchor(),...storeOptions}={}){
+  const runtime=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(filePath,{...storeOptions,rollbackAnchor})});
   runtime.register({tenant:'acme',sourceId:'wifi',provider:'nps',site:'s1',supportsBackfill:true,nowMs:T});
   runtime.startCertificationWindow({tenant:'acme',sourceId:'wifi',windowId:'shift-1',startMs:T});
   runtime.heartbeat({tenant:'acme',sourceId:'wifi',atMs:T+1000});
-  return runtime;
+  return {runtime,rollbackAnchor};
 }
 
-test('unresolved gap survives a real persistent-store restart',()=>{
-  const p=file(); const a=setup(p);
+test('unresolved gap survives a real persistent-store restart with the same independent anchor',()=>{
+  const p=file(); const anchor=memoryAnchor(); const {runtime:a}=setup(p,{rollbackAnchor:anchor});
   a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e1',observedAt:new Date(T+100).toISOString(),receivedAtMs:T+150,sequence:10});
   a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e2',observedAt:new Date(T+200).toISOString(),receivedAtMs:T+250,sequence:12});
   assert.equal(a.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}).periodCoverageComplete,false);
-  const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p)});
+  const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p,{rollbackAnchor:anchor})});
   assert.equal(b.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}).periodCoverageComplete,false);
   assert.equal(b.pendingRecovery({tenant:'acme',sourceId:'wifi'}).length,1);
 });
 
 test('provider retry after restart is exactly-once for gap accounting',()=>{
-  const p=file(); const a=setup(p);
+  const p=file(); const anchor=memoryAnchor(); const {runtime:a}=setup(p,{rollbackAnchor:anchor});
   a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e1',observedAt:new Date(T+100).toISOString(),receivedAtMs:T+150,sequence:10});
   const e2={tenant:'acme',sourceId:'wifi',providerEventId:'e2',observedAt:new Date(T+200).toISOString(),receivedAtMs:T+250,sequence:12};
   a.event(e2);
-  const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p)});
+  const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p,{rollbackAnchor:anchor})});
   assert.equal(b.event(e2).status,'duplicate');
   const h=b.status({tenant:'acme',sourceId:'wifi',nowMs:T+300});
   assert.equal(h.gaps,1); assert.equal(b.pendingRecovery({tenant:'acme',sourceId:'wifi'}).length,1);
@@ -56,56 +68,90 @@ test('failed durable save rolls back in-memory mutation and refuses success',()=
 });
 
 test('tampered canonical state fails authentication on restart',()=>{
-  const p=file(); setup(p);
+  const p=file(); const anchor=memoryAnchor(); setup(p,{rollbackAnchor:anchor});
   const frame=JSON.parse(fs.readFileSync(p,'utf8')); frame.state.connectors[0].lastSequence=999;
   fs.writeFileSync(p,JSON.stringify(frame));
-  assert.throws(()=>new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p)}),/authentication failed/);
+  assert.throws(()=>new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p,{rollbackAnchor:anchor})}),/authentication failed/);
 });
 
 test('recomputing an unkeyed digest cannot forge authenticated state',()=>{
-  const p=file(); setup(p);
+  const p=file(); const anchor=memoryAnchor(); setup(p,{rollbackAnchor:anchor});
   const frame=JSON.parse(fs.readFileSync(p,'utf8'));
   frame.state.connectors[0].lastSequence=999;
   frame.integrity.mac=crypto.createHash('sha256').update(JSON.stringify(frame.state)).digest('hex');
   fs.writeFileSync(p,JSON.stringify(frame));
-  assert.throws(()=>stateStore(p).load(),/authentication failed/);
+  assert.throws(()=>stateStore(p,{rollbackAnchor:anchor}).load(),/authentication failed/);
 });
 
 test('checksum-only legacy frame is rejected rather than silently trusted',()=>{
-  const p=file();
+  const p=file(); const anchor=memoryAnchor();
   const legacy={schemaVersion:1,state:{version:1,config:{},connectors:[],recovery:[]},checksum:'0'.repeat(64)};
   fs.writeFileSync(p,JSON.stringify(legacy));
-  assert.throws(()=>stateStore(p).load(),/authenticated frame is invalid/);
+  assert.throws(()=>stateStore(p,{rollbackAnchor:anchor}).load(),/rollback generation/);
 });
 
 test('stale crash temp file cannot replace last committed canonical state',()=>{
-  const p=file(); setup(p);
+  const p=file(); const anchor=memoryAnchor(); setup(p,{rollbackAnchor:anchor});
   fs.writeFileSync(path.join(path.dirname(p),`.${path.basename(p)}.stale.tmp`),'partial');
-  const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p)});
+  const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p,{rollbackAnchor:anchor})});
   assert.equal(b.status({tenant:'acme',sourceId:'wifi',nowMs:T+1001}).certificationWindowId,'shift-1');
 });
 
 test('reconciliation completion is durably preserved across restart',()=>{
-  const p=file(); const a=setup(p);
+  const p=file(); const anchor=memoryAnchor(); const {runtime:a}=setup(p,{rollbackAnchor:anchor});
   a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e1',observedAt:new Date(T+100).toISOString(),receivedAtMs:T+150,sequence:10});
   a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e2',observedAt:new Date(T+200).toISOString(),receivedAtMs:T+250,sequence:12});
   const [job]=a.pendingRecovery({tenant:'acme',sourceId:'wifi'}); a.completeRecovery({jobId:job.jobId});
-  const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p)});
+  const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p,{rollbackAnchor:anchor})});
   assert.equal(b.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}).periodCoverageComplete,true);
   assert.equal(b.pendingRecovery({tenant:'acme',sourceId:'wifi'}).length,0);
 });
 
 test('integrity key rotation accepts retained old key and rewrites with active new key',()=>{
-  const p=file(); setup(p);
+  const p=file(); const anchor=memoryAnchor(); setup(p,{rollbackAnchor:anchor});
   const oldFrame=fs.readFileSync(p);
-  const rotating={activeKeyId:'k2',integrityKeys:{k1:K1,k2:K2}};
+  const rotating={activeKeyId:'k2',integrityKeys:{k1:K1,k2:K2},rollbackAnchor:anchor};
   const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p,rotating)});
   b.heartbeat({tenant:'acme',sourceId:'wifi',atMs:T+1500});
   const newFrame=JSON.parse(fs.readFileSync(p,'utf8'));
   assert.equal(newFrame.integrity.keyId,'k2');
-  assert.doesNotThrow(()=>stateStore(p,{activeKeyId:'k2',integrityKeys:{k2:K2}}).load());
+  assert.doesNotThrow(()=>stateStore(p,{activeKeyId:'k2',integrityKeys:{k2:K2},rollbackAnchor:anchor}).load());
 
   const oldPath=path.join(path.dirname(p),'old.json');
   fs.writeFileSync(oldPath,oldFrame);
-  assert.throws(()=>stateStore(oldPath,{activeKeyId:'k2',integrityKeys:{k2:K2}}).load(),/not trusted/);
+  assert.throws(()=>stateStore(oldPath,{activeKeyId:'k2',integrityKeys:{k2:K2},rollbackAnchor:anchor}).load(),/not trusted|rollback detected/);
+});
+
+test('replaying an older valid authenticated state is rejected by the independent monotonic anchor',()=>{
+  const p=file(); const anchor=memoryAnchor(); const {runtime}=setup(p,{rollbackAnchor:anchor});
+  const oldFrame=fs.readFileSync(p);
+  runtime.heartbeat({tenant:'acme',sourceId:'wifi',atMs:T+2000});
+  const current=JSON.parse(fs.readFileSync(p,'utf8'));
+  assert.ok(current.rollbackGeneration>JSON.parse(oldFrame).rollbackGeneration);
+  fs.writeFileSync(p,oldFrame);
+  assert.throws(()=>stateStore(p,{rollbackAnchor:anchor}).load(),/rollback detected/);
+});
+
+test('deleting state cannot reset history when independent anchor has advanced',()=>{
+  const p=file(); const anchor=memoryAnchor(); setup(p,{rollbackAnchor:anchor});
+  assert.ok(anchor.current()>0);
+  fs.unlinkSync(p);
+  assert.throws(()=>stateStore(p,{rollbackAnchor:anchor}).load(),/missing while rollback anchor is advanced/);
+});
+
+test('attacker cannot forge a higher rollback generation without the integrity key',()=>{
+  const p=file(); const anchor=memoryAnchor(); setup(p,{rollbackAnchor:anchor});
+  const frame=JSON.parse(fs.readFileSync(p,'utf8'));
+  frame.rollbackGeneration=anchor.current()+1;
+  anchor.forceForTest(frame.rollbackGeneration);
+  fs.writeFileSync(p,JSON.stringify(frame));
+  assert.throws(()=>stateStore(p,{rollbackAnchor:anchor}).load(),/authentication failed/);
+});
+
+test('rollback anchor must advance exactly once or save fails closed',()=>{
+  const p=file();
+  const badAnchor={current(){return 0;},advance(){return 2;}};
+  const store=stateStore(p,{rollbackAnchor:badAnchor});
+  assert.throws(()=>store.save({version:1,config:{},connectors:[],recovery:[]}),/did not advance exactly once/);
+  assert.equal(fs.existsSync(p),false);
 });
