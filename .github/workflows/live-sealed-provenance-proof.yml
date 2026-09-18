@@ -53,13 +53,14 @@ jobs:
           echo "EXPECTED_FACTORY_SHA256=$(sha256sum "$RUNNER_TEMP/expected-factory-control-ui.css" | awk '{print $1}')"
           echo "EXPECTED_COCKPIT_SHA256=$(sha256sum "$RUNNER_TEMP/expected-value-cockpit-ui.js" | awk '{print $1}')"
 
-      - name: Prove exact release health and fail-closed unauthenticated boundary
+      - name: Record exact release health and fail-closed unauthenticated boundary
+        id: health
         shell: bash
         run: |
           set -euo pipefail
           curl --fail --silent --show-error --retry 4 --retry-all-errors --connect-timeout 10 --max-time 30 \
             "$WFM_ORIGIN/api/health" -o "$RUNNER_TEMP/health.json"
-          node - "$RUNNER_TEMP/health.json" <<'NODE'
+          node - "$RUNNER_TEMP/health.json" "$GITHUB_OUTPUT" <<'NODE'
           const fs=require('node:fs');
           const h=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
           const a=(x,m)=>{if(!x)throw Error(m)};
@@ -68,9 +69,14 @@ jobs:
           a(h.fixtureOnly===true,'host is not fixture-only');
           a(h.productionApproved===false,'host unexpectedly production-approved');
           a(h.pilotReady===false,'host unexpectedly pilot-ready');
-          a(h.externalNotificationsEnabled===false,'external notifications unexpectedly enabled');
           a(h.livePayrollEnabled===false,'live payroll unexpectedly enabled');
-          console.log('HEALTH_RELEASE_BOUNDARY=PASS');
+          console.log(`HEALTH_RELEASE=${h.release}`);
+          console.log(`HEALTH_FIXTURE_ONLY=${h.fixtureOnly}`);
+          console.log(`HEALTH_PRODUCTION_APPROVED=${h.productionApproved}`);
+          console.log(`HEALTH_PILOT_READY=${h.pilotReady}`);
+          console.log(`HEALTH_EXTERNAL_NOTIFICATIONS_ENABLED=${h.externalNotificationsEnabled}`);
+          console.log(`HEALTH_LIVE_PAYROLL_ENABLED=${h.livePayrollEnabled}`);
+          fs.appendFileSync(process.argv[3],`external_notifications=${String(h.externalNotificationsEnabled)}\n`);
           NODE
 
           for header in '' 'X-WFM-Tenant: isolation-test' 'X-WFM-Tenant: northstar-demo'; do
@@ -122,3 +128,30 @@ jobs:
             exit 1
           fi
           echo 'PUBLIC_ENTRY_SECURITY_HEADERS=PASS'
+
+      - name: Inspect notification health contract without secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - "$RUNNER_TEMP/wfm-sealed/server.cjs" <<'NODE'
+          const fs=require('node:fs');
+          const s=fs.readFileSync(process.argv[2],'utf8');
+          const needle='externalNotificationsEnabled';
+          const i=s.indexOf(needle);
+          if(i<0){console.log('NOTIFICATION_HEALTH_CONTRACT_NOT_FOUND');process.exit(0)}
+          const snippet=s.slice(Math.max(0,i-700),Math.min(s.length,i+1100));
+          console.log('NOTIFICATION_HEALTH_CONTRACT_BEGIN');
+          console.log(snippet.replace(/([A-Za-z0-9_]*PASSWORD[A-Za-z0-9_]*\s*[:=]\s*)[^,;\n}]+/gi,'$1[REDACTED]'));
+          console.log('NOTIFICATION_HEALTH_CONTRACT_END');
+          NODE
+
+      - name: Enforce synthetic Test communication safety boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ '${{ steps.health.outputs.external_notifications }}' != 'false' ]; then
+            echo 'SAFETY_GATE=FAIL externalNotificationsEnabled is not false on the live customer-proof host.' >&2
+            echo 'No authenticated mutation, invitation, notification or payroll proof is permitted while this safety gate is open.' >&2
+            exit 1
+          fi
+          echo 'TEST_EXTERNAL_COMMUNICATION_SAFETY=PASS'
