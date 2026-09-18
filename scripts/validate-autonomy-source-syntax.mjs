@@ -7,6 +7,7 @@ const root = process.cwd();
 const jsFiles = [
   'resilience/support-selfhelp.cjs',
   'resilience/autonomous-repair-factory.cjs',
+  'resilience/isolated-repair-worker.cjs',
   'resilience/provider-recovery-handoff.cjs',
   'resilience/autonomy-control-loop.cjs',
   'resilience/ci-provider-failover.cjs',
@@ -17,6 +18,7 @@ const jsFiles = [
   'scripts/validate-support-selfhelp.mjs',
   'scripts/validate-provider-recovery-handoff.mjs',
   'scripts/validate-autonomous-repair-factory.mjs',
+  'scripts/validate-isolated-repair-worker.mjs',
   'scripts/validate-autonomy-control-loop.mjs',
 ];
 
@@ -29,14 +31,21 @@ for (const rel of jsFiles) {
   checked.push(rel);
 }
 
+const workerSource = fs.readFileSync(path.join(root, 'resilience/isolated-repair-worker.cjs'), 'utf8');
+for (const forbidden of ["require('node:http')", "require('node:https')", "require('node:net')", 'process.env', 'fetch(']) {
+  assert.equal(workerSource.includes(forbidden), false, `Isolated repair worker contains forbidden direct network/ambient-secret surface: ${forbidden}`);
+}
+
 const workflowRel = '.github/workflows/wfm-zero-engineer-support-contract.yml';
 const workflow = fs.readFileSync(path.join(root, workflowRel), 'utf8');
 assert.equal(workflow.includes('\\n      - '), false, 'Workflow contains a literal escaped newline before a path item.');
 
 const requiredWorkflowPaths = [
   "      - 'resilience/autonomous-repair-factory.cjs'",
+  "      - 'resilience/isolated-repair-worker.cjs'",
   "      - 'resilience/autonomy-control-loop.cjs'",
   "      - 'scripts/validate-autonomous-repair-factory.mjs'",
+  "      - 'scripts/validate-isolated-repair-worker.mjs'",
   "      - 'scripts/validate-autonomy-control-loop.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
   "      - 'scripts/run-portable-autonomy-proof.mjs'",
@@ -50,6 +59,8 @@ console.log(JSON.stringify({
   proof: 'autonomy-source-syntax-and-workflow-integrity',
   status: 'PASS',
   jsFilesChecked: checked.length,
+  isolatedWorkerDirectNetworkSurfaceDenied: true,
+  isolatedWorkerAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
   workflowCriticalPathsPresent: true,
   productionMutation: false,
