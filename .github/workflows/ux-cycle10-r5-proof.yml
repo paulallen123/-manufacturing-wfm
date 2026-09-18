@@ -8,6 +8,8 @@ on:
       - 'Dockerfile'
       - 'ux-overlay/ux-reset-cycle10.*'
       - 'scripts/ux-cycle10-r4-hosted-proof.mjs'
+      - 'scripts/browser-security-floor.mjs'
+      - 'resilience/browser-security-floor.json'
       - '.github/workflows/ux-cycle10-r5-proof.yml'
   workflow_dispatch:
 
@@ -64,6 +66,13 @@ jobs:
           test -n "$CLI_BIN"
           echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
           "$CLI_BIN" --version
+
+      - name: Enforce browser security floor before provider credential retrieval
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/browser-security-floor.mjs --self-test
+          node scripts/browser-security-floor.mjs
 
       - name: Fail-closed hosted staging preflight
         env:
