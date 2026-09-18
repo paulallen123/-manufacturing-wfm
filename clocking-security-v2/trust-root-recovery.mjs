@@ -53,6 +53,7 @@ export function trustRootRecoveryDigest(packageValue){ return sha(recoveryPayloa
 
 export function createTrustRootRecoveryPackage({
   authorityId='wfm-security-anchor-authority',
+  trustDomainId,
   recoveryEpoch,
   previousRootPublicKeys,
   newRootPublicKeys,
@@ -67,6 +68,7 @@ export function createTrustRootRecoveryPackage({
   const payload={
     schemaVersion:1,
     authorityId:safeId(authorityId,'Rollback-anchor authority ID'),
+    trustDomainId:safeId(trustDomainId,'Trust-root recovery trust domain ID'),
     recoveryEpoch:safeEpoch(recoveryEpoch),
     previousRootSetDigest:trustRootSetDigest(previousRootPublicKeys),
     newRootSetDigest:trustRootSetDigest(newRootPublicKeys),
@@ -96,12 +98,14 @@ export function verifyTrustRootRecovery({
   minimumRecoveryEpoch=0,
   expectedRecoveryDigest=null,
   expectedAuthorityId='wfm-security-anchor-authority',
+  expectedTrustDomainId,
   nowMs=Date.now(),
   maxAgeMs=15*60_000
 }={}){
   if(!packageValue||typeof packageValue!=='object') throw new Error('Trust-root recovery package required.');
   if(packageValue.schemaVersion!==1) throw new Error('Trust-root recovery schema unsupported.');
   if(packageValue.authorityId!==safeId(expectedAuthorityId,'Rollback-anchor authority ID')) throw new Error('Trust-root recovery authority identity mismatch.');
+  if(packageValue.trustDomainId!==safeId(expectedTrustDomainId,'Expected trust-root recovery trust domain ID')) throw new Error('Trust-root recovery trust domain mismatch.');
   const epoch=safeEpoch(packageValue.recoveryEpoch);
   if(epoch<=safeEpoch(minimumRecoveryEpoch,'Minimum recovery epoch')) throw new Error('Trust-root recovery epoch must advance beyond the accepted epoch.');
   const currentDigest=trustRootSetDigest(currentRootPublicKeys);
@@ -138,6 +142,7 @@ export function verifyTrustRootRecovery({
 
   return {
     authorityId:packageValue.authorityId,
+    trustDomainId:packageValue.trustDomainId,
     recoveryEpoch:epoch,
     previousRootSetDigest:currentDigest,
     newRootSetDigest:proposedDigest,
