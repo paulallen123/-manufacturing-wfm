@@ -1,0 +1,139 @@
+name: Autonomous Integration Fabric
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'integration/**'
+      - 'security/runtime/bootstrap.cjs'
+      - 'Dockerfile'
+      - '.github/workflows/autonomous-integration-fabric.yml'
+  push:
+    branches:
+      - 'feature/autonomous-integration-fabric-v1'
+    paths:
+      - 'integration/**'
+      - 'security/runtime/bootstrap.cjs'
+      - 'Dockerfile'
+      - '.github/workflows/autonomous-integration-fabric.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: autonomous-integration-fabric-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prove-autonomous-integration-fabric:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout trusted code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Run autonomous integration unit and isolation tests
+        run: node --test integration/runtime/autonomous-integration-hub.test.cjs
+
+      - name: Re-run identity survival regression
+        run: node --test security/runtime/identity-survival-guard.test.cjs
+
+      - name: Prove integration runtime has no external dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const Module = require('node:module');
+          const builtins = new Set(Module.builtinModules.flatMap(x => [x, `node:${x}`]));
+          builtins.add('node:sqlite');
+          const source = fs.readFileSync('integration/runtime/autonomous-integration-hub.cjs', 'utf8');
+          const external = [];
+          for (const re of [/require\(['"]([^'"]+)['"]\)/g, /from\s+['"]([^'"]+)['"]/g]) {
+            let match;
+            while ((match = re.exec(source))) {
+              const spec = match[1];
+              if (spec.startsWith('.') || builtins.has(spec)) continue;
+              external.push(spec);
+            }
+          }
+          assert.deepEqual(external, [], 'Integration runtime introduced an unreviewed external module.');
+          NODE
+
+      - name: Build exact guarded staging image with integration fabric
+        run: docker build --pull=false -t wfm-integration-fabric:${{ github.sha }} .
+
+      - name: Exercise discovery to validated active connection over real HTTP
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="wfm-integration-fabric:${GITHUB_SHA}"
+          password='Integration-Fabric-CI-Only-2026-Long!'
+          internal='integration-worker-ci-token'
+          cid="$(docker run -d --rm             -p 127.0.0.1:38119:3000             -e PORT=3000             -e WFM_HOSTED_STAGING=true             -e WFM_PUBLIC_ORIGIN=https://staging.integration.test             -e WFM_STAGING_PASSWORD="$password"             -e WFM_DB=/tmp/wfm-integration.sqlite             -e WFM_INTEGRATION_INTERNAL_TOKEN="$internal"             "$image")"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+
+          ready=0
+          for _ in $(seq 1 50); do
+            code="$(curl -sS -o /tmp/health.json -w '%{http_code}' http://127.0.0.1:38119/api/health 2>/dev/null || true)"
+            if [ "$code" = '200' ]; then ready=1; break; fi
+            sleep 0.2
+          done
+          test "$ready" = '1'
+
+          login_code="$(curl -sS -D /tmp/login.headers -o /tmp/login.body -w '%{http_code}'             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H 'Origin: https://staging.integration.test'             -H 'Content-Type: application/json'             --data "{\"email\":\"manager@northstar.example\",\"password\":\"$password\"}"             http://127.0.0.1:38119/api/login)"
+          test "$login_code" = '200'
+          cookie="$(awk 'BEGIN{IGNORECASE=1} /^set-cookie:/ {gsub("\\r",""); print $2; exit}' /tmp/login.headers | cut -d';' -f1)"
+          test -n "$cookie"
+
+          status_code="$(curl -sS -o /tmp/status.json -w '%{http_code}'             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             http://127.0.0.1:38119/api/integrations/autonomous/status)"
+          test "$status_code" = '200'
+
+          discover_code="$(curl -sS -o /tmp/discover.json -w '%{http_code}'             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data '{"source":"ENTRA","apps":[{"appId":"wd-ci","displayName":"Workday Production"},{"appId":"ns-ci","displayName":"Oracle NetSuite"}]}'             http://127.0.0.1:38119/api/integrations/autonomous/discover)"
+          test "$discover_code" = '200'
+
+          candidate_id="$(node -e "const d=require('/tmp/discover.json');const c=d.candidates.find(x=>x.productKey==='workday');if(!c)process.exit(2);process.stdout.write(c.id)")"
+          test -n "$candidate_id"
+
+          curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data "{\"candidateId\":\"$candidate_id\",\"authoritativeFor\":[\"people\",\"absence\"]}"             http://127.0.0.1:38119/api/integrations/autonomous/confirm >/tmp/confirm.json
+
+          curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data "{\"candidateId\":\"$candidate_id\",\"authMethod\":\"oauth2\",\"sourceInstanceId\":\"workday-ci\"}"             http://127.0.0.1:38119/api/integrations/autonomous/connect >/tmp/connect.json
+
+          connection_id="$(node -e "const d=require('/tmp/connect.json');if(d.connection.state!=='AUTHORIZATION_REQUIRED')process.exit(2);process.stdout.write(d.connection.id)")"
+          test -n "$connection_id"
+
+          curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H "X-WFM-Integration-Internal: $internal"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"authorizationRef\":\"vault://ci/workday\",\"grantedScopes\":[\"people.read\",\"absence.read\"]}"             http://127.0.0.1:38119/api/integrations/autonomous/authorize-complete >/tmp/authorize.json
+
+          curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"mappings\":[{\"sourceField\":\"employee_id\",\"canonicalField\":\"employeeId\",\"confidence\":1},{\"sourceField\":\"first_name\",\"canonicalField\":\"firstName\",\"confidence\":1},{\"sourceField\":\"last_name\",\"canonicalField\":\"lastName\",\"confidence\":1}]}"             http://127.0.0.1:38119/api/integrations/autonomous/mapping-activate >/tmp/mapping.json
+
+          curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H "X-WFM-Integration-Internal: $internal"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"records\":[{\"employee_id\":\"E-100\",\"first_name\":\"A\",\"last_name\":\"One\"},{\"employee_id\":\"E-101\",\"first_name\":\"B\",\"last_name\":\"Two\"}]}"             http://127.0.0.1:38119/api/integrations/autonomous/sync-validate >/tmp/sync.json
+
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const sync = JSON.parse(fs.readFileSync('/tmp/sync.json', 'utf8'));
+          if (sync.connection.state !== 'ACTIVE' || sync.reconciliation.status !== 'PASS') {
+            throw new Error('Connection did not become ACTIVE after trusted validation.');
+          }
+          NODE
+
+          curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             http://127.0.0.1:38119/api/integrations/autonomous/status >/tmp/final-status.json
+
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const status = JSON.parse(fs.readFileSync('/tmp/final-status.json', 'utf8'));
+          if (!status.readiness.readyForPeopleSync) throw new Error('People sync readiness did not turn true.');
+          if (status.readiness.needsAdminAction !== 0) throw new Error('Unexpected admin action remains.');
+          console.log('AUTONOMOUS_INTEGRATION_HTTP_PROOF=PASS');
+          NODE
