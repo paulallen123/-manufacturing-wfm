@@ -21,6 +21,7 @@ COPY integration/runtime/autonomous-integration-hub.cjs /app/integration-runtime
 # tenant-scoped, fail-closed control planes using Node built-ins and the existing SQLite state.
 RUN mkdir -p /app/implementation-runtime /app/learning-runtime /tmp/wfm-learning-ui
 COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-runtime/one-day-enterprise-engine.cjs
+COPY implementation/runtime/configuration-inference-engine.cjs /app/implementation-runtime/configuration-inference-engine.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 
@@ -29,7 +30,9 @@ COPY learning/ui/ /tmp/wfm-learning-ui/
 # afterwards so they do not expand the runtime attack surface.
 RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime
 COPY implementation/runtime/one-day-enterprise-engine.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.cjs
+COPY implementation/runtime/configuration-inference-engine.cjs /tmp/wfm-tests/implementation/runtime/configuration-inference-engine.cjs
 COPY implementation/runtime/one-day-enterprise-engine.test.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs
+COPY implementation/runtime/configuration-inference-engine.test.cjs /tmp/wfm-tests/implementation/runtime/configuration-inference-engine.test.cjs
 COPY implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.cjs
 COPY learning/runtime/adaptive-learning-engine.test.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs
@@ -37,6 +40,7 @@ COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
       /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs \
+      /tmp/wfm-tests/implementation/runtime/configuration-inference-engine.test.cjs \
       /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs \
       /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs \
  && rm -rf /tmp/wfm-tests
