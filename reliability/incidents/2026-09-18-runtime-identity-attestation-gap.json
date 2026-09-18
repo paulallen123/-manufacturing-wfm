@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "incidentId": "runtime-identity-attestation-gap-2026-09-18",
-  "status": "mitigation-prepared",
+  "status": "mitigation-verified-draft",
   "classification": [
     "deployment/provenance problem",
     "security concern"
@@ -37,6 +37,22 @@
     {
       "order": 4,
       "event": "The live proof workflow read Railway variables but used only public origin and staging password, leaving WFM_RUNTIME_SHA256 inert."
+    },
+    {
+      "order": 5,
+      "event": "Fail-closed runtime attestation was added ahead of application startup and exercised against absent, malformed and mismatched identity fixtures."
+    },
+    {
+      "order": 6,
+      "event": "The existing Identity Runtime Guard integration fixture then failed because it did not supply the newly mandatory external runtime identity; this was classified as a test-harness defect, not a product defect."
+    },
+    {
+      "order": 7,
+      "event": "The integration fixture was corrected to source the approved digest from DEPLOYMENT_MANIFEST.json, verify the image-baked identity is immutable and equal to the manifest, and pass that identity explicitly into the staged HTTP-path test."
+    },
+    {
+      "order": 8,
+      "event": "Runtime attestation, every-push security, and Identity Runtime Guard checks all passed after the fixture correction."
     }
   ],
   "rootCause": {
@@ -71,8 +87,24 @@
       "independently configured runtime identity",
       "pre-server startup comparison",
       "deterministic unit fixtures",
-      "container-level absent/mismatch startup fixtures"
+      "container-level absent/mismatch startup fixtures",
+      "existing identity-survival integration fixture bound to the approved runtime identity"
     ]
+  },
+  "verification": {
+    "exactNode": "22.23.2",
+    "runtimeAttestationUnitFixtures": {
+      "passed": 5,
+      "failed": 0
+    },
+    "runtimeAttestationContainerProof": "passed",
+    "everyPushSecurityGate": "passed",
+    "identityRuntimeGuard": "passed-after-test-fixture-correction",
+    "testDefectLearning": {
+      "classification": "test defect",
+      "symptom": "Identity Runtime Guard container exited before health because the fixture omitted WFM_RUNTIME_SHA256 after attestation became mandatory.",
+      "prevention": "Integration fixtures that intentionally exercise hosted startup must now source the approved runtime identity from DEPLOYMENT_MANIFEST.json and prove the image-baked identity remains immutable."
+    }
   },
   "recoveryPath": {
     "quality": "fail-closed and explicit",
