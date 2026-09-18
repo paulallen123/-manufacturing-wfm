@@ -440,9 +440,16 @@ function createOneDayEnterpriseEngine(options = {}) {
       return writeJson(res, 200, { invitation: { state: 'STARTED', startedRunId: existingRun.id }, implementation: readinessForRun(existingRun) });
     }
 
+    const recipientHash = recipientDigest(recipientEmail);
     const existing = invitationByContract.get(tenant, contractHash);
     if (existing) {
-      return writeJson(res, 200, { invitation: publicInvitation(existing), implementation: null });
+      const expired = Date.now() > existing.expires_at_ms;
+      const recipientChanged = !secureEqual(existing.recipient_hash, recipientHash);
+      if (existing.status === 'PENDING' && (expired || recipientChanged)) {
+        deleteInvitation.run(existing.id);
+      } else {
+        return writeJson(res, 200, { invitation: publicInvitation(existing), implementation: null });
+      }
     }
 
     const id = randomUUID();
@@ -450,7 +457,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     const expiresAtMs = Date.now() + 7 * 24 * 60 * 60 * 1000;
     const ts = nowIso();
     insertInvitation.run(
-      id, tenant, contractHash, recipientDigest(recipientEmail), sha256(rawToken), 'PENDING',
+      id, tenant, contractHash, recipientHash, sha256(rawToken), 'PENDING',
       targetHours, expiresAtMs, null, ts, ts
     );
     const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
