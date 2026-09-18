@@ -82,10 +82,10 @@ Approved provider ids:
 Providers publish structured read-only presentation signals. Provider identity binds the source and cannot impersonate another capability. Unknown/malformed providers fail closed. The UX gains no new write authority.
 
 ## Current boundary
-Cycle 12 is stacked on the existing Cycle 11 UX branch. This prepares the presentation contract; it does not claim the separate feature branches are merged or production-ready.
+Cycle 12 is stacked on the existing Cycle 11 UX branch. The implementation adapter now consumes the manager-safe status contract exposed by the one-day implementation engine when that endpoint exists, but it does not merge that experimental backend into this branch. The remaining separate feature branches are likewise not claimed merged or production-ready.
 
 ## Engineering sequence
-1. Bind one-day implementation readiness to `implementation`.
+1. **Bound now:** one-day implementation readiness is read from `/api/implementation/autonomous/status` when available and mapped into `implementation` signals; 404/401/403/unavailable states stay silent rather than inventing readiness.
 2. Bind autonomous integration health to `integrations`.
 3. Bind attendance coverage/certification exceptions to `attendance`.
 4. Bind agency shortage/delivery reconciliation to `agency`.
