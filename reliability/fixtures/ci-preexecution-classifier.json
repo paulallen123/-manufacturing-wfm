@@ -1,0 +1,51 @@
+{
+  "schema": "wfm.ci-preexecution-fixtures.v1",
+  "cases": [
+    {
+      "name": "single-preexecution-failure-fails-closed-without-product-blame",
+      "input": {"jobs": [{"workflow_name":"Gate A","name":"test","status":"completed","conclusion":"failure","steps":[],"runner_id":0,"runner_name":"","run_attempt":1,"started_at":"2026-09-18T08:00:00Z","completed_at":"2026-09-18T08:00:03Z"}]},
+      "expected": {"classification":"ISOLATED_PREEXECUTION_FAILURE","systemic":false,"persistent_retry_reproduction":false,"release_gate":"FAIL_CLOSED_CI_EVIDENCE_UNAVAILABLE","product_regression":"NOT_EVALUATED"}
+    },
+    {
+      "name": "same-workflow-retry-is-persistent-not-yet-systemic",
+      "input": {"jobs": [
+        {"workflow_name":"Gate A","name":"test","status":"completed","conclusion":"failure","steps":[],"runner_id":0,"runner_name":"","run_attempt":1},
+        {"workflow_name":"Gate A","name":"test","status":"completed","conclusion":"failure","steps":[],"runner_id":0,"runner_name":"","run_attempt":2}
+      ]},
+      "expected": {"classification":"REPEATED_PREEXECUTION_FAILURE","systemic":false,"persistent_retry_reproduction":true,"product_regression":"NOT_EVALUATED"}
+    },
+    {
+      "name": "unrelated-workflows-establish-systemic-preexecution-pattern",
+      "input": {"jobs": [
+        {"workflow_name":"Security Gate","name":"security","status":"completed","conclusion":"failure","steps":[],"runner_id":0,"runner_name":"","run_attempt":1},
+        {"workflow_name":"Integration Fabric","name":"local-proof","status":"completed","conclusion":"failure","steps":[],"runner_id":0,"runner_name":"","run_attempt":1}
+      ]},
+      "expected": {"classification":"SYSTEMIC_CI_PREEXECUTION_FAILURE","systemic":true,"persistent_retry_reproduction":false,"release_gate":"FAIL_CLOSED_CI_EVIDENCE_UNAVAILABLE","product_regression":"NOT_EVALUATED"}
+    },
+    {
+      "name": "executed-test-failure-stays-on-normal-product-test-path",
+      "input": {"jobs": [{"workflow_name":"Gate A","name":"test","status":"completed","conclusion":"failure","steps":[{"name":"checkout","conclusion":"success"},{"name":"test","conclusion":"failure"}],"runner_id":88,"runner_name":"GitHub Actions 2"}]},
+      "expected": {"classification":"NO_PREEXECUTION_PATTERN","systemic":false,"persistent_retry_reproduction":false,"release_gate":"USE_NORMAL_CI_RESULT","product_regression":"EVALUATE_EXECUTED_EVIDENCE"}
+    },
+    {
+      "name": "runner-assigned-zero-step-failure-not-mislabelled-as-unassigned-preexecution",
+      "input": {"jobs": [{"workflow_name":"Gate A","name":"bootstrap","status":"completed","conclusion":"failure","steps":[],"runner_id":42,"runner_name":"runner-42"}]},
+      "expected": {"classification":"NO_PREEXECUTION_PATTERN","systemic":false,"persistent_retry_reproduction":false}
+    },
+    {
+      "name": "cancelled-job-without-runner-does-not-create-false-control-plane-incident",
+      "input": {"jobs": [{"workflow_name":"Gate A","name":"test","status":"completed","conclusion":"cancelled","steps":[],"runner_id":0,"runner_name":""}]},
+      "expected": {"classification":"NO_PREEXECUTION_PATTERN","systemic":false,"persistent_retry_reproduction":false}
+    },
+    {
+      "name": "current-incident-shape-is-systemic-and-retry-reproduced",
+      "input": {"jobs": [
+        {"id":105536636157,"run_id":35325238005,"workflow_name":"WFM every-push security gate","name":"security","status":"completed","conclusion":"failure","steps":[],"runner_id":0,"runner_name":"","run_attempt":1,"started_at":"2026-09-18T08:36:32Z","completed_at":"2026-09-18T08:36:35Z"},
+        {"id":105542066107,"run_id":35325238005,"workflow_name":"WFM every-push security gate","name":"security","status":"completed","conclusion":"failure","steps":[],"runner_id":0,"runner_name":"","run_attempt":2,"started_at":"2026-09-18T08:56:31Z","completed_at":"2026-09-18T08:56:34Z"},
+        {"id":105536636115,"run_id":35325238020,"workflow_name":"Identity Runtime Guard","name":"prove-resource-side-identity-survival","status":"completed","conclusion":"failure","steps":[],"runner_id":0,"runner_name":"","run_attempt":1,"started_at":"2026-09-18T08:36:32Z","completed_at":"2026-09-18T08:36:34Z"},
+        {"id":105541867661,"run_id":35326879530,"workflow_name":"Autonomous Integration Fabric","name":"local-proof","status":"completed","conclusion":"failure","steps":[],"runner_id":0,"runner_name":"","run_attempt":1,"started_at":"2026-09-18T08:55:47Z","completed_at":"2026-09-18T08:55:49Z"}
+      ]},
+      "expected": {"classification":"SYSTEMIC_CI_PREEXECUTION_FAILURE","systemic":true,"persistent_retry_reproduction":true,"release_gate":"FAIL_CLOSED_CI_EVIDENCE_UNAVAILABLE","product_regression":"NOT_EVALUATED"}
+    }
+  ]
+}
