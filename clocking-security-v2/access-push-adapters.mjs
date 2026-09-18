@@ -113,3 +113,20 @@ export function normalizeVerkadaAccessWebhook({sourceId,employee,expectedProvide
     event:{providerEventId,doorId,direction,decision:'granted',occurredAt:observedAt,controllerId:data.door_info?.acu_id}
   });
 }
+
+/**
+ * Webhook endpoints must not acknowledge a delivery until the normalized
+ * delivery has crossed a durable boundary. The caller supplies the product's
+ * durable inbox/journal append. A failed append returns 500 so the provider can
+ * retry rather than letting an acknowledged event disappear in a process crash.
+ */
+export async function acknowledgeAfterDurableCommit({verification,delivery,persist}={}){
+  if(!verification?.ok) return {status:'rejected',httpStatus:401,reason:verification?.reason||'UNVERIFIED_DELIVERY'};
+  if(typeof persist!=='function') throw new Error('Durable persist callback required.');
+  try{
+    const receipt=await persist(delivery);
+    return {status:'accepted',httpStatus:200,receipt};
+  }catch{
+    return {status:'retry',httpStatus:500,reason:'DURABLE_COMMIT_FAILED'};
+  }
+}
