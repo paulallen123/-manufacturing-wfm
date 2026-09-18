@@ -8,6 +8,7 @@ on:
       - 'src/frontier/agency-labour-exchange.mjs'
       - 'src/frontier/agency-labour-performance.mjs'
       - 'src/frontier/agency-right-to-work.mjs'
+      - 'src/frontier/agency-right-to-work-lifecycle.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
@@ -17,6 +18,7 @@ on:
       - 'test/frontier/agency-labour-exchange.test.mjs'
       - 'test/frontier/agency-labour-performance.test.mjs'
       - 'test/frontier/agency-right-to-work.test.mjs'
+      - 'test/frontier/agency-right-to-work-lifecycle.test.mjs'
       - 'test/frontier/agency-right-to-work-integration.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
@@ -31,6 +33,7 @@ on:
       - 'docs/AGENCY_SUPPLIER_DELIVERY_V1.md'
       - 'docs/AGENCY_POSTGRES_INTEGRATION_PROOF_V1.md'
       - 'docs/AGENCY_RIGHT_TO_WORK_ASSURANCE_V1.md'
+      - 'docs/AGENCY_RIGHT_TO_WORK_LIFECYCLE_V1.md'
   workflow_dispatch:
 
 permissions:
@@ -58,6 +61,7 @@ jobs:
               test/frontier/agency-labour-exchange.test.mjs \
               test/frontier/agency-labour-performance.test.mjs \
               test/frontier/agency-right-to-work.test.mjs \
+              test/frontier/agency-right-to-work-lifecycle.test.mjs \
               test/frontier/agency-right-to-work-integration.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
