@@ -5,7 +5,13 @@
       "id": "rest-openapi",
       "matches": [
         "REST",
-        "OpenAPI"
+        "OpenAPI",
+        "OpenAPI 2/3",
+        "OpenAPI 3",
+        "OpenAPI 3+",
+        "OpenAPI 3.1",
+        "JSON-2",
+        "REST-via-gateways"
       ],
       "transport": "HTTPS",
       "adapter": "http-json",
@@ -14,12 +20,14 @@
         "push",
         "webhook"
       ],
-      "notes": "Preferred cloud API family; import OpenAPI where available."
+      "notes": "Preferred cloud API family; import OpenAPI where available. JSON-2 is treated as an HTTP/JSON specialization, not as evidence of generic REST semantics."
     },
     {
       "id": "odata",
       "matches": [
-        "OData"
+        "OData",
+        "OData 2/4",
+        "OData-query"
       ],
       "transport": "HTTPS",
       "adapter": "odata",
@@ -34,7 +42,9 @@
     {
       "id": "soap",
       "matches": [
-        "SOAP"
+        "SOAP",
+        "SOAP 1.1/1.2",
+        "XML Web Services"
       ],
       "transport": "HTTPS",
       "adapter": "soap-wsdl",
@@ -42,7 +52,7 @@
         "pull",
         "push"
       ],
-      "notes": "Generate operations from WSDL; preserve vendor namespaces."
+      "notes": "Generate operations from WSDL; preserve vendor namespaces and vendor deprecation timelines."
     },
     {
       "id": "graphql",
@@ -138,7 +148,8 @@
     {
       "id": "mqtt",
       "matches": [
-        "MQTT"
+        "MQTT",
+        "Sparkplug B"
       ],
       "transport": "MQTT/TLS",
       "adapter": "mqtt-edge",
@@ -201,6 +212,64 @@
         "produce-gated"
       ],
       "notes": "Schema registry integration where available."
+    },
+    {
+      "id": "amqp",
+      "matches": [
+        "AMQP",
+        "AMQP 1.0"
+      ],
+      "transport": "AMQP/TLS",
+      "adapter": "message-bus",
+      "supports": [
+        "consume",
+        "publish-gated",
+        "settlement"
+      ],
+      "notes": "Use standards-compliant AMQP 1.0 clients. Do not infer compatibility with retired vendor protocols such as Azure Service Bus SBMP."
+    },
+    {
+      "id": "protobuf-rpc-http2",
+      "matches": [
+        "Protobuf RPC/HTTP2"
+      ],
+      "transport": "HTTPS/HTTP2",
+      "adapter": "protobuf-rpc",
+      "supports": [
+        "query",
+        "list",
+        "events",
+        "mutation-gated"
+      ],
+      "notes": "Generate or use vendor-supported clients from Protocol Buffers definitions where available; preserve vendor status/error semantics and default to read-only methods."
+    },
+    {
+      "id": "schema-registry",
+      "matches": [
+        "Schema Registry"
+      ],
+      "transport": "HTTPS",
+      "adapter": "schema-registry",
+      "supports": [
+        "read",
+        "compatibility-check",
+        "write-gated"
+      ],
+      "notes": "Keep registry credentials separate from broker credentials where the provider scopes them independently."
+    },
+    {
+      "id": "legacy-rpc",
+      "matches": [
+        "JSON-RPC",
+        "XML-RPC"
+      ],
+      "transport": "HTTPS",
+      "adapter": "legacy-rpc",
+      "supports": [
+        "pull",
+        "push-gated"
+      ],
+      "notes": "Migration-only profile for legacy RPC surfaces. Prefer the vendor's current HTTP API for new integrations and enforce published removal timelines."
     },
     {
       "id": "vendor-sdk",
