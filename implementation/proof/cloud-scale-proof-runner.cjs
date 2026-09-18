@@ -6,7 +6,7 @@ const { createHash } = require('node:crypto');
 const { performance } = require('node:perf_hooks');
 
 const ENGINE_PATH = process.env.WFM_CONFIG_ENGINE_PATH || '/tmp/configuration-inference-engine.cjs';
-const EXPECTED_ENGINE_BLOB = process.env.WFM_CONFIG_ENGINE_GIT_BLOB_SHA || '2fe6930b6fe8c03121d1efa181a968fa11579912';
+const EXPECTED_ENGINE_BLOB = process.env.WFM_CONFIG_ENGINE_GIT_BLOB_SHA || 'd3688d27841a28d3b8801b7d4c63f254e8bf7edd';
 const PORT = Number(process.env.PORT || 3000);
 
 function gitBlobSha(content) {
@@ -224,6 +224,7 @@ function runProof() {
 const receipt = runProof();
 process.stdout.write(JSON.stringify(receipt) + '\n');
 if (receipt.status !== 'PASS') process.exit(1);
+if (process.env.WFM_PROOF_ONESHOT === 'true') process.exit(0);
 
 const server = http.createServer((req, res) => {
   const path = String(req.url || '/').split('?')[0];
