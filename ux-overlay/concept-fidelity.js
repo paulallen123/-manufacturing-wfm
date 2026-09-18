@@ -58,6 +58,11 @@ function approvedNavigation(){
       ensureDrawerRoute(b);
     }
   }
+  const currentOrder=[...nav.querySelectorAll('.navbtn.ux-concept-primary[data-page]')].map(b=>b.dataset.page);
+  if(currentOrder.join('|')!==primary.join('|')){
+    const anchor=buttons.find(b=>!primarySet.has(b.dataset.page))||nav.querySelector('.ux-more-button')||null;
+    primary.map(page=>buttons.find(b=>b.dataset.page===page)).filter(Boolean).forEach(b=>nav.insertBefore(b,anchor));
+  }
   const more=nav.querySelector('.ux-more-button');if(more)setButtonLabel(more,'More');
   nav.dataset.uxConceptNav='approved';
 }
