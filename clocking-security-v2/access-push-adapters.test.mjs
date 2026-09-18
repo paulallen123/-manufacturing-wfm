@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import {verifyKisiWebhook,verifyVerkadaWebhook,normalizeVerkadaAccessWebhook} from './access-push-adapters.mjs';
+import {verifyKisiWebhook,verifyVerkadaWebhook,normalizeVerkadaAccessWebhook,acknowledgeAfterDurableCommit} from './access-push-adapters.mjs';
 import {ACCESS_PROVIDER_CAPABILITIES,planAccessConnection} from './access-control-evidence.mjs';
 
 const T=Date.parse('2026-09-18T13:10:00Z');
@@ -97,4 +97,26 @@ test('Verkada is declared as realtime webhook plus historical backfill provider'
   const p=planAccessConnection({provider:'verkada'});
   assert.equal(p.strategy,'cloud_signed_webhook');
   assert.equal(p.backfill,true);
+});
+
+test('webhook is acknowledged only after durable commit succeeds',async()=>{
+  let persisted=false;
+  const r=await acknowledgeAfterDurableCommit({verification:{ok:true},delivery:{id:'e1'},persist:async d=>{ persisted=true; return {id:d.id}; }});
+  assert.equal(persisted,true);
+  assert.equal(r.httpStatus,200);
+  assert.equal(r.status,'accepted');
+});
+
+test('durable commit failure returns retryable 500 instead of false acknowledgement',async()=>{
+  const r=await acknowledgeAfterDurableCommit({verification:{ok:true},delivery:{id:'e1'},persist:async()=>{ throw new Error('disk'); }});
+  assert.equal(r.httpStatus,500);
+  assert.equal(r.reason,'DURABLE_COMMIT_FAILED');
+});
+
+test('unverified delivery never reaches durable attendance inbox',async()=>{
+  let called=false;
+  const r=await acknowledgeAfterDurableCommit({verification:{ok:false,reason:'INVALID_SIGNATURE'},delivery:{id:'e1'},persist:async()=>{ called=true; }});
+  assert.equal(called,false);
+  assert.equal(r.httpStatus,401);
+  assert.equal(r.reason,'INVALID_SIGNATURE');
 });
