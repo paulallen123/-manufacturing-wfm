@@ -39,9 +39,15 @@ function fixture() {
   db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(tokens.bravo), 'manager@bravo', expires);
   db.close();
 
+  const sentInvitations = [];
   const engine = createOneDayEnterpriseEngine({
     dbPath,
-    internalToken: 'implementation-worker-test-token'
+    internalToken: 'implementation-worker-test-token',
+    publicOrigin: 'https://implementation.test',
+    sendInvitation: async invitation => {
+      sentInvitations.push(invitation);
+      return { provider: 'test-mailer', messageId: 'mail-' + sentInvitations.length };
+    }
   });
 
   return {
@@ -49,6 +55,7 @@ function fixture() {
     dbPath,
     engine,
     tokens,
+    sentInvitations,
     internal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },
     close() {
       engine.close();
@@ -92,13 +99,43 @@ async function call(engine, token, method, url, body, extraHeaders = {}) {
   };
 }
 
-async function startRun(f, tenant = 'alpha', contractRef = 'contract-001') {
+function evidenceDetail(kind) {
+  if (kind === 'scenario-validation') {
+    return { totalScenarios: 2400, passedScenarios: 2400, criticalFailures: 0 };
+  }
+  if (kind === 'test-data-cleanup') {
+    return { remainingTestRows: 0, liveRowsTouched: 0 };
+  }
+  if (kind === 'live-data-import') {
+    return { sourceCount: 10000, importedCount: 10000, invalidCount: 0, checksumMatch: true };
+  }
+  return { checked: true };
+}
+
+async function createInvitation(f, tenant = 'alpha', contractRef = 'contract-001', targetHours = 8) {
+  const recipientEmail = tenant === 'bravo' ? 'manager@bravo' : 'manager@alpha';
+  const before = f.sentInvitations.length;
   const result = await call(
     f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
-    { tenant, contractRef, targetHours: 8 }, f.internal
+    { tenant, contractRef, targetHours, recipientEmail }, f.internal
   );
   assert.ok([200, 201].includes(result.status));
-  return result.body;
+  if (result.status === 201) assert.equal(f.sentInvitations.length, before + 1);
+  const sent = f.sentInvitations[f.sentInvitations.length - 1];
+  const token = sent ? new URL(sent.startUrl).searchParams.get('implementation_invite') : null;
+  return { result, token };
+}
+
+async function startRun(f, tenant = 'alpha', contractRef = 'contract-001', targetHours = 8) {
+  const invitation = await createInvitation(f, tenant, contractRef, targetHours);
+  assert.ok(invitation.token);
+  const token = tenant === 'bravo' ? f.tokens.bravo : f.tokens.manager;
+  const started = await call(
+    f.engine, token, 'POST', '/api/implementation/autonomous/start',
+    { token: invitation.token }
+  );
+  assert.ok([200, 201].includes(started.status));
+  return started.body;
 }
 
 async function passAllEvidence(f, runId) {
@@ -112,7 +149,7 @@ async function passAllEvidence(f, runId) {
         status: 'PASS',
         confidence: 1,
         source: 'deterministic-test',
-        detail: { checked: true }
+        detail: evidenceDetail(item.key)
       },
       f.internal
     );
@@ -136,43 +173,112 @@ test('employee cannot inspect enterprise implementation control plane', async ()
 test('eight-hour target is assessed by parallel critical path, not serial task sum', async () => {
   const f = fixture();
   try {
-    const eightHour = await call(
-      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
-      { tenant: 'alpha', contractRef: 'critical-path-8h', targetHours: 8 },
-      { 'x-wfm-implementation-internal': 'implementation-worker-test-token' }
-    );
-    assert.equal(eightHour.status, 201);
-    assert.equal(eightHour.body.state, 'BUILDING');
-    assert.ok(eightHour.body.parallelWorkMinutes > eightHour.body.criticalPathRemainingMinutes);
-    assert.ok(eightHour.body.criticalPathRemainingMinutes <= 480);
+    const eightHour = await startRun(f, 'alpha', 'critical-path-8h', 8);
+    assert.equal(eightHour.state, 'BUILDING');
+    assert.ok(eightHour.parallelWorkMinutes > eightHour.criticalPathRemainingMinutes);
+    assert.ok(eightHour.criticalPathRemainingMinutes <= 480);
 
-    const fourHour = await call(
-      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
-      { tenant: 'bravo', contractRef: 'critical-path-4h', targetHours: 4 },
-      { 'x-wfm-implementation-internal': 'implementation-worker-test-token' }
-    );
-    assert.equal(fourHour.status, 201);
-    assert.equal(fourHour.body.state, 'AT_RISK');
-    assert.ok(fourHour.body.criticalPathRemainingMinutes > 240);
+    const fourHour = await startRun(f, 'bravo', 'critical-path-4h', 4);
+    assert.equal(fourHour.state, 'AT_RISK');
+    assert.ok(fourHour.criticalPathRemainingMinutes > 240);
   } finally {
     f.close();
   }
 });
 
-test('contract activation is trusted-worker only and idempotent', async () => {
+test('contract activation creates an idempotent invitation but does not start implementation', async () => {
   const f = fixture();
   try {
     const denied = await call(
       f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/contract-activated',
-      { tenant: 'alpha', contractRef: 'contract-idempotent' }
+      { tenant: 'alpha', contractRef: 'contract-idempotent', recipientEmail: 'manager@alpha' }
     );
     assert.equal(denied.status, 403);
 
-    const first = await startRun(f, 'alpha', 'contract-idempotent');
-    const second = await startRun(f, 'alpha', 'contract-idempotent');
-    assert.equal(first.runId, second.runId);
-    assert.equal(first.targetHours, 8);
-    assert.equal(first.operationalReady, false);
+    const first = await createInvitation(f, 'alpha', 'contract-idempotent');
+    const second = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
+      { tenant: 'alpha', contractRef: 'contract-idempotent', targetHours: 8, recipientEmail: 'manager@alpha' },
+      f.internal
+    );
+    assert.equal(first.result.status, 201);
+    assert.equal(second.status, 200);
+    assert.equal(f.sentInvitations.length, 1);
+
+    const beforeStart = await call(
+      f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status'
+    );
+    assert.equal(beforeStart.status, 200);
+    assert.equal(beforeStart.body.state, 'AWAITING_CUSTOMER_START');
+    assert.equal(beforeStart.body.runId, undefined);
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 0);
+    db.close();
+
+    const started = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',
+      { token: first.token }
+    );
+    assert.equal(started.status, 201);
+    assert.equal(started.body.state, 'BUILDING');
+    assert.equal(started.body.targetHours, 8);
+    assert.equal(started.body.operationalReady, false);
+
+    const replay = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',
+      { token: first.token }
+    );
+    assert.equal(replay.status, 200);
+    assert.equal(replay.body.runId, started.body.runId);
+  } finally {
+    f.close();
+  }
+});
+
+test('invitation is bound to the intended tenant and recipient', async () => {
+  const f = fixture();
+  try {
+    const invitation = await createInvitation(f, 'alpha', 'recipient-boundary');
+    const wrongTenant = await call(
+      f.engine, f.tokens.bravo, 'POST', '/api/implementation/autonomous/start',
+      { token: invitation.token }
+    );
+    assert.equal(wrongTenant.status, 404);
+
+    const employeeAttempt = await call(
+      f.engine, f.tokens.employee, 'POST', '/api/implementation/autonomous/start',
+      { token: invitation.token }
+    );
+    assert.equal(employeeAttempt.status, 403);
+
+    const managerPreview = await call(
+      f.engine, f.tokens.manager, 'GET',
+      '/api/implementation/autonomous/invitation?token=' + encodeURIComponent(invitation.token)
+    );
+    assert.equal(managerPreview.status, 200);
+    assert.equal(managerPreview.body.invitation.state, 'AWAITING_CUSTOMER_START');
+  } finally {
+    f.close();
+  }
+});
+
+test('rigorous testing, cleanup and live import cannot be falsely marked complete', async () => {
+  const f = fixture();
+  try {
+    const run = await startRun(f, 'alpha', 'strict-proof');
+    for (const [kind, detail] of [
+      ['scenario-validation', { totalScenarios: 100, passedScenarios: 99, criticalFailures: 1 }],
+      ['test-data-cleanup', { remainingTestRows: 1, liveRowsTouched: 0 }],
+      ['live-data-import', { sourceCount: 100, importedCount: 99, invalidCount: 0, checksumMatch: true }]
+    ]) {
+      const result = await call(
+        f.engine, null, 'POST', '/api/implementation/autonomous/evidence',
+        { runId: run.runId, kind, status: 'PASS', confidence: 1, source: 'invalid-proof', detail },
+        f.internal
+      );
+      assert.equal(result.status, 409);
+    }
   } finally {
     f.close();
   }
