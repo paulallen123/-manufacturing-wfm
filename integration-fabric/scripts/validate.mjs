@@ -5,13 +5,17 @@ import {loadCatalog, loadResearchDelta} from './load-catalog.mjs';
 const catalog = loadCatalog();
 const research = loadResearchDelta();
 const contract = fs.readFileSync(new URL('../openapi.yaml', import.meta.url), 'utf8');
+const opportunities = JSON.parse(fs.readFileSync(new URL('../opportunity-profiles.json', import.meta.url), 'utf8'));
 
 assert.equal(catalog.schemaVersion, 1);
 assert.equal(research.schemaVersion, 1);
-assert.ok(Array.isArray(catalog.systems) && catalog.systems.length >= 150, 'Expected >=150 effective systems after research overlay.');
-assert.ok(Array.isArray(catalog.protocolFamilies) && catalog.protocolFamilies.length >= 20);
+assert.equal(opportunities.schemaVersion, 1);
+assert.ok(Array.isArray(catalog.systems) && catalog.systems.length >= 153, 'Expected >=153 effective systems after research overlay.');
+assert.ok(Array.isArray(catalog.protocolFamilies) && catalog.protocolFamilies.length >= 21);
 assert.equal(catalog.researchOverlay.newSystems, research.systems.length);
 assert.equal(catalog.researchOverlay.overrides, research.overrides.length);
+assert.ok(Array.isArray(opportunities.profiles) && opportunities.profiles.length >= 12);
+assert.ok(opportunities.systemOverrides && typeof opportunities.systemOverrides === 'object');
 
 const allowedMaturity = new Set(catalog.maturityLevels);
 const ids = new Set();
@@ -27,6 +31,10 @@ for (const s of catalog.systems) {
     const u = new URL(s.docsUrl);
     assert.equal(u.protocol, 'https:', 'Documentation URLs must use HTTPS.');
   }
+  const opportunityMatches=opportunities.profiles.filter(profile=>
+    Array.isArray(profile.categoryIncludes) && profile.categoryIncludes.some(token=>s.category.includes(token))
+  );
+  assert.ok(opportunityMatches.length>0, 'Every catalogued system must map to at least one WFM opportunity profile: '+s.id+' ('+s.category+')');
 }
 
 for (const must of [
@@ -38,10 +46,10 @@ for (const must of [
   'salto-nebula','infor-workforce-management','adp-workforce-suite',
   'google-cloud-application-integration','azure-service-bus','confluent-cloud',
   'jitterbit-harmony','ifs-ultimo','beckhoff-twincat-opcua','onelogin',
-  'axway-b2bi','veeva-vault-quality'
+  'axway-b2bi','veeva-vault-quality','ibm-mq','jumpcloud','sap-fieldglass'
 ]) assert.ok(ids.has(must), 'Required seed missing: ' + must);
 
-for (const family of ['AMQP','Protobuf RPC/HTTP2','Schema Registry','JSON-2']) {
+for (const family of ['AMQP','Protobuf RPC/HTTP2','Schema Registry','JSON-2','JMS']) {
   assert.ok(catalog.protocolFamilies.includes(family), 'Research protocol family missing: ' + family);
 }
 
@@ -54,6 +62,17 @@ assert.match(byId.get('odoo').evidenceNote || '', /Odoo 22/);
 assert.match(byId.get('oracle-netsuite').evidenceNote || '', /2028\.2/);
 assert.ok(byId.get('salto-nebula').protocols.includes('Protobuf RPC/HTTP2'));
 assert.ok(byId.get('azure-service-bus').protocols.includes('AMQP 1.0'));
+assert.ok(byId.get('ibm-mq').protocols.includes('JMS'));
+assert.equal(byId.get('jumpcloud').testLevel,'spec-verified');
+assert.equal(byId.get('ptc-windchill').testLevel,'spec-verified');
+assert.equal(byId.get('aws-iot-sitewise').testLevel,'spec-verified');
+assert.equal(byId.get('azure-iot-operations').testLevel,'spec-verified');
+assert.equal(byId.get('sap-digital-manufacturing').testLevel,'spec-verified');
+assert.equal(byId.get('sap-fieldglass').testLevel,'discovery-queued');
+
+for(const id of ['sap-digital-manufacturing','ptc-windchill','aws-iot-sitewise','azure-iot-operations','jumpcloud','ibm-mq','sap-fieldglass']){
+  assert.ok(opportunities.systemOverrides[id], 'System-specific value/data review missing: '+id);
+}
 
 assert.match(contract, /^openapi: 3\.0\.3/m);
 for (const path of ['/connectors','/workers','/shifts','/time-events','/production-events','/access-events','/events','/webhooks/{connectorId}']) {
@@ -68,5 +87,7 @@ console.log(JSON.stringify({
   protocolFamilies:catalog.protocolFamilies.length,
   p0:catalog.systems.filter(x=>x.priority==='P0').length,
   specVerified:catalog.systems.filter(x=>x.testLevel==='spec-verified').length,
-  tenantAuthenticated:catalog.systems.filter(x=>x.testLevel==='tenant-authenticated').length
+  tenantAuthenticated:catalog.systems.filter(x=>x.testLevel==='tenant-authenticated').length,
+  opportunityProfiles:opportunities.profiles.length,
+  systemSpecificOpportunityReviews:Object.keys(opportunities.systemOverrides).length
 }, null, 2));
