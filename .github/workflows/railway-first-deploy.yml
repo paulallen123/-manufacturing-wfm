@@ -91,3 +91,31 @@ jobs:
           grep -F 'WFM_CONCEPT_FIDELITY_BEGIN' /tmp/concept-ui.js
           grep -F 'ux-approved-today' /tmp/concept-ui.css
           echo 'HOSTED_CONCEPT_FIDELITY_PREVIEW=PASS'
+
+      - name: Prove authenticated hosted concept journey
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RAILWAY_TOKEN:-}"
+          "$RAILWAY_BIN" variable list             --service "$RAILWAY_SERVICE_ID"             --environment "$RAILWAY_ENVIRONMENT_ID"             --json > "$RUNNER_TEMP/concept-vars.json"
+          node --input-type=module - "$RUNNER_TEMP/concept-vars.json" <<'NODE'
+          import fs from 'node:fs';
+          const vars=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          if(!vars.WFM_STAGING_PASSWORD||!vars.WFM_PUBLIC_ORIGIN) throw new Error('Preview staging variables unavailable.');
+          delete process.env.RAILWAY_TOKEN;
+          process.env.WFM_STAGING_PASSWORD=vars.WFM_STAGING_PASSWORD;
+          process.env.WFM_PUBLIC_ORIGIN=vars.WFM_PUBLIC_ORIGIN;
+          await import('./scripts/concept-hosted-browser-proof.mjs');
+          delete process.env.WFM_STAGING_PASSWORD;
+          NODE
+          rm -f "$RUNNER_TEMP/concept-vars.json"
+
+      - name: Upload hosted concept evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wfm-concept-hosted-functional-proof
+          path: ${{ runner.temp }}/wfm-concept-hosted-evidence
+          if-no-files-found: error
+          retention-days: 7
