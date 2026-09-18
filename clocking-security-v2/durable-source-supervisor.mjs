@@ -39,6 +39,13 @@ function generation(value,label='Attendance rollback generation'){
   if(!Number.isSafeInteger(value) || value<0) throw new Error(`${label} must be a non-negative safe integer.`);
   return value;
 }
+function commitment(value,label='Attendance rollback commitment'){
+  if(value===null || value===undefined) return null;
+  const v=String(value).toLowerCase();
+  if(!/^[a-f0-9]{64}$/.test(v)) throw new Error(`${label} must be a SHA-256 hex digest.`);
+  return v;
+}
+function bodyCommitment(body){ return crypto.createHash('sha256').update(body).digest('hex'); }
 function macFor(schemaVersion,rollbackGeneration,state,key){
   return crypto.createHmac('sha256',key).update(stable({schemaVersion,rollbackGeneration,state})).digest('hex');
 }
@@ -62,14 +69,24 @@ export class AtomicSupervisorStateStore {
     fs.mkdirSync(path.dirname(filePath),{recursive:true});
   }
 
-  load(){
-    const anchoredGeneration=generation(this.rollbackAnchor.current(),'Attendance rollback anchor generation');
-    if(!fs.existsSync(this.filePath)){
-      if(anchoredGeneration!==0) throw new Error('Attendance source state is missing while rollback anchor is advanced.');
-      this.needsRecovery=false;
-      return null;
+  #anchorState(){
+    if(typeof this.rollbackAnchor.currentState==='function'){
+      const state=this.rollbackAnchor.currentState();
+      return {generation:generation(state?.generation,'Attendance rollback anchor generation'),commitment:commitment(state?.commitment)};
     }
-    const raw=fs.readFileSync(this.filePath);
+    return {generation:generation(this.rollbackAnchor.current(),'Attendance rollback anchor generation'),commitment:null};
+  }
+
+  #pendingPath(next,commit){
+    return path.join(path.dirname(this.filePath),`.${path.basename(this.filePath)}.pending.${next}.${commit}`);
+  }
+
+  #fsyncDir(){
+    const dirFd=fs.openSync(path.dirname(this.filePath),'r');
+    try{ fs.fsyncSync(dirFd); } finally { fs.closeSync(dirFd); }
+  }
+
+  #parseAuthenticatedFrame(raw){
     if(raw.length>this.maxBytes) throw new Error('Attendance source state exceeds size limit.');
     let frame;
     try{ frame=JSON.parse(raw.toString('utf8')); }catch{ throw new Error('Attendance source state is invalid JSON.'); }
@@ -83,10 +100,73 @@ export class AtomicSupervisorStateStore {
     if(!key) throw new Error('Attendance source state integrity key is not trusted.');
     const expected=macFor(frame.schemaVersion,frameGeneration,frame.state,key);
     if(!sameMac(expected,integrity.mac)) throw new Error('Attendance source state authentication failed.');
+    return {frame,frameGeneration};
+  }
 
-    if(frameGeneration===anchoredGeneration){
+  #publishPending(pendingPath,expectedGeneration,expectedCommitment){
+    const raw=fs.readFileSync(pendingPath);
+    const parsed=this.#parseAuthenticatedFrame(raw);
+    if(parsed.frameGeneration!==expectedGeneration || bodyCommitment(raw)!==expectedCommitment){
+      throw new Error('Attendance source pending state does not match rollback anchor commitment.');
+    }
+    const tmp=`${this.filePath}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.publish`;
+    let fd=null;
+    try{
+      fd=fs.openSync(tmp,'wx',0o600);
+      fs.writeFileSync(fd,raw);
+      fs.fsyncSync(fd);
+      fs.closeSync(fd); fd=null;
+      fs.renameSync(tmp,this.filePath);
+      this.#fsyncDir();
+      fs.unlinkSync(pendingPath);
+      this.#fsyncDir();
+    }catch(e){
+      if(fd!==null){ try{fs.closeSync(fd);}catch{} }
+      try{ if(fs.existsSync(tmp)) fs.unlinkSync(tmp); }catch{}
+      throw e;
+    }
+    return raw;
+  }
+
+  load(){
+    const anchor=this.#anchorState();
+    if(!fs.existsSync(this.filePath)){
+      if(anchor.generation===0){ this.needsRecovery=false; return null; }
+      if(anchor.commitment){
+        const pending=this.#pendingPath(anchor.generation,anchor.commitment);
+        if(fs.existsSync(pending)){
+          const raw=fs.readFileSync(pending);
+          const parsed=this.#parseAuthenticatedFrame(raw);
+          if(parsed.frameGeneration!==anchor.generation || bodyCommitment(raw)!==anchor.commitment){
+            throw new Error('Attendance source pending state does not match rollback anchor commitment.');
+          }
+          this.#publishPending(pending,anchor.generation,anchor.commitment);
+          this.needsRecovery=false;
+          return clone(parsed.frame.state);
+        }
+      }
+      throw new Error('Attendance source state is missing while rollback anchor is advanced.');
+    }
+
+    const raw=fs.readFileSync(this.filePath);
+    const parsed=this.#parseAuthenticatedFrame(raw);
+    if(parsed.frameGeneration===anchor.generation){
       this.needsRecovery=false;
-      return clone(frame.state);
+      return clone(parsed.frame.state);
+    }
+
+    if(anchor.commitment && parsed.frameGeneration===anchor.generation-1){
+      const pending=this.#pendingPath(anchor.generation,anchor.commitment);
+      if(fs.existsSync(pending)){
+        const pendingRaw=fs.readFileSync(pending);
+        const pendingParsed=this.#parseAuthenticatedFrame(pendingRaw);
+        if(pendingParsed.frameGeneration!==anchor.generation || bodyCommitment(pendingRaw)!==anchor.commitment){
+          throw new Error('Attendance source pending state does not match rollback anchor commitment.');
+        }
+        this.#publishPending(pending,anchor.generation,anchor.commitment);
+        this.needsRecovery=false;
+        return clone(pendingParsed.frame.state);
+      }
     }
 
     throw new Error('Attendance source state rollback detected.');
@@ -95,7 +175,8 @@ export class AtomicSupervisorStateStore {
   save(state){
     if(this.needsRecovery) throw new Error('Attendance source state requires restart/recovery before another write.');
     const stateCopy=clone(state);
-    const current=generation(this.rollbackAnchor.current(),'Attendance rollback anchor generation');
+    const anchor=this.#anchorState();
+    const current=anchor.generation;
     const next=current+1;
     const payload={
       schemaVersion:this.schemaVersion,
@@ -109,6 +190,52 @@ export class AtomicSupervisorStateStore {
     };
     const body=Buffer.from(JSON.stringify(payload));
     if(body.length>this.maxBytes) throw new Error('Attendance source state exceeds size limit.');
+    const commit=bodyCommitment(body);
+
+    if(typeof this.rollbackAnchor.advanceCommitted==='function' && typeof this.rollbackAnchor.currentState==='function'){
+      const pending=this.#pendingPath(next,commit);
+      let fd=null;
+      try{
+        try{
+          fd=fs.openSync(pending,'wx',0o600);
+          fs.writeFileSync(fd,body);
+          fs.fsyncSync(fd);
+          fs.closeSync(fd); fd=null;
+          this.#fsyncDir();
+        }catch(e){
+          if(e?.code!=='EEXIST') throw e;
+          const existing=fs.readFileSync(pending);
+          if(!existing.equals(body)) throw new Error('Attendance source pending commitment collision or corruption.');
+        }
+      }catch(e){
+        if(fd!==null){ try{fs.closeSync(fd);}catch{} }
+        if(e?.message!=='Attendance source pending commitment collision or corruption.'){
+          try{
+            if(fs.existsSync(pending) && !fs.readFileSync(pending).equals(body)) fs.unlinkSync(pending);
+          }catch{}
+        }
+        throw e;
+      }
+
+      this.needsRecovery=true;
+      try{
+        const advanced=this.rollbackAnchor.advanceCommitted(current,commit);
+        if(generation(advanced?.generation,'Attendance rollback anchor advanced generation')!==next || commitment(advanced?.commitment)!==commit){
+          throw new Error('Attendance rollback anchor did not advance with the exact staged commitment.');
+        }
+      }catch(e){
+        throw e;
+      }
+
+      try{
+        this.#publishPending(pending,next,commit);
+        this.needsRecovery=false;
+      }catch(e){
+        throw e;
+      }
+      return {bytes:body.length,integrityKeyId:this.activeKeyId,rollbackGeneration:next,commitment:commit};
+    }
+
     const dir=path.dirname(this.filePath);
     const tmp=path.join(dir,`.${path.basename(this.filePath)}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`);
     let fd=null;
@@ -123,11 +250,6 @@ export class AtomicSupervisorStateStore {
       throw e;
     }
 
-    // The independent monotonic anchor is the cross-process compare-and-set gate.
-    // Claim the next generation before publishing the canonical file so a stale
-    // writer can never overwrite a winner's state and then discover it lost the CAS.
-    // Any failed/ambiguous anchor transition freezes this store: its in-memory view
-    // may now be stale relative to another process and must be reloaded before reuse.
     this.needsRecovery=true;
     try{
       const advanced=generation(this.rollbackAnchor.advance(current),'Attendance rollback anchor advanced generation');
@@ -139,13 +261,9 @@ export class AtomicSupervisorStateStore {
 
     try{
       fs.renameSync(tmp,this.filePath);
-      const dirFd=fs.openSync(dir,'r');
-      try{ fs.fsyncSync(dirFd); } finally { fs.closeSync(dirFd); }
+      this.#fsyncDir();
       this.needsRecovery=false;
     }catch(e){
-      // Once the anchor advances it must never be rolled back. If publication of
-      // the matching file fails, remain frozen. Restart/load will fail closed while
-      // the anchor is ahead rather than accepting an older or losing writer state.
       try{ if(fs.existsSync(tmp)) fs.unlinkSync(tmp); }catch{}
       throw e;
     }
@@ -153,7 +271,6 @@ export class AtomicSupervisorStateStore {
   }
 
   requiresRecovery(){ return this.needsRecovery; }
-
 }
 
 export class DurableAttendanceSourceRuntime {

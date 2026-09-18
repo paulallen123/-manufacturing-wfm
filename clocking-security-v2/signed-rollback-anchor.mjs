@@ -14,6 +14,12 @@ function safeGeneration(value,label='generation'){
   if(!Number.isSafeInteger(value)||value<0) throw new Error(`${label} invalid.`);
   return value;
 }
+function safeCommitment(value,label='Rollback-anchor commitment'){
+  if(value===null || value===undefined) return null;
+  const v=String(value).toLowerCase();
+  if(!/^[a-f0-9]{64}$/.test(v)) throw new Error(`${label} invalid.`);
+  return v;
+}
 function challengeHash(challenge){
   if(!Buffer.isBuffer(challenge) || challenge.length<32) throw new Error('Fresh rollback-anchor challenge required.');
   return crypto.createHash('sha256').update(challenge).digest('hex');
@@ -46,14 +52,33 @@ export class SignedRollbackAnchorClient {
     this.lastSeenGeneration=null;
   }
 
-  current(){
+  currentState(){
     const challenge=this.randomBytes(32);
     const receipt=this.transport.read({anchorId:this.anchorId,challengeHash:challengeHash(challenge)});
     const payload=this.#verify(receipt,{operation:'read',challenge});
     const g=safeGeneration(payload.generation,'Rollback-anchor generation');
+    const commitment=safeCommitment(payload.commitment);
     if(this.lastSeenGeneration!==null && g<this.lastSeenGeneration) throw new Error('Rollback-anchor authority generation regressed.');
     this.lastSeenGeneration=g;
-    return g;
+    return {generation:g,commitment};
+  }
+
+  current(){ return this.currentState().generation; }
+
+  advanceCommitted(expected,commitment){
+    expected=safeGeneration(expected,'Expected rollback-anchor generation');
+    commitment=safeCommitment(commitment);
+    if(!commitment) throw new Error('Rollback-anchor commitment required.');
+    const challenge=this.randomBytes(32);
+    const receipt=this.transport.compareAndAdvance({anchorId:this.anchorId,expectedGeneration:expected,commitment,challengeHash:challengeHash(challenge)});
+    const payload=this.#verify(receipt,{operation:'advance',challenge});
+    if(payload.previousGeneration!==expected) throw new Error('Rollback-anchor receipt previous generation mismatch.');
+    const g=safeGeneration(payload.generation,'Rollback-anchor advanced generation');
+    if(g!==expected+1) throw new Error('Rollback-anchor authority did not advance exactly once.');
+    if(safeCommitment(payload.commitment)!==commitment) throw new Error('Rollback-anchor commitment mismatch.');
+    if(this.lastSeenGeneration!==null && expected<this.lastSeenGeneration) throw new Error('Rollback-anchor stale compare-and-advance rejected.');
+    this.lastSeenGeneration=g;
+    return {generation:g,commitment};
   }
 
   advance(expected){
@@ -94,13 +119,14 @@ export class SignedRollbackAnchorClient {
 
 export function createSyntheticSignedRollbackAuthority({authorityId='wfm-security-anchor-authority',anchorId='attendance-source-continuity',keyId='authority-1',privateKey,now=()=>Date.now(),initialGeneration=0}={}){
   let generation=safeGeneration(initialGeneration);
+  let commitment=null;
   if(!privateKey) ({privateKey}=crypto.generateKeyPairSync('ed25519'));
   const sign=(payload)=>({...payload,keyId,signature:crypto.sign(null,Buffer.from(stable({...payload,keyId})),privateKey).toString('base64url')});
   const receipt=({operation,challengeHash:ch,previousGeneration=null})=>{
     const issued=now();
     const payload={
       schemaVersion:1,authorityId,anchorId,operation,
-      generation,challengeHash:ch,
+      generation,commitment,challengeHash:ch,
       issuedAt:new Date(issued).toISOString(),expiresAt:new Date(issued+15_000).toISOString()
     };
     if(operation==='advance') payload.previousGeneration=previousGeneration;
@@ -111,10 +137,10 @@ export function createSyntheticSignedRollbackAuthority({authorityId='wfm-securit
       if(requested!==anchorId) throw new Error('unknown anchor');
       return receipt({operation:'read',challengeHash});
     },
-    compareAndAdvance({anchorId:requested,expectedGeneration,challengeHash}){
+    compareAndAdvance({anchorId:requested,expectedGeneration,commitment:nextCommitment=null,challengeHash}){
       if(requested!==anchorId) throw new Error('unknown anchor');
       if(expectedGeneration!==generation) throw new Error('compare-and-set mismatch');
-      const previous=generation; generation+=1;
+      const previous=generation; generation+=1; commitment=safeCommitment(nextCommitment);
       return receipt({operation:'advance',challengeHash,previousGeneration:previous});
     },
     forceGenerationForTest(value){generation=safeGeneration(value);},
