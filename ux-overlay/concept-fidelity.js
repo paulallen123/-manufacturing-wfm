@@ -350,6 +350,7 @@ function buildApprovedToday(content){
 
   content.dataset.uxApprovedToday='1';
   ensureDecisionDrawer();
+  correctHostedLabels();
   applyMode();
 }
 function enhancePageLabels(content){
@@ -371,6 +372,23 @@ function enhancePageLabels(content){
   const h=heading.querySelector('h1'),p=heading.querySelector('p');
   if(h&&!h.dataset.uxConceptTitle){h.dataset.uxConceptTitle='1';h.textContent=spec[0];}
   if(p&&!p.dataset.uxConceptSubtitle){p.dataset.uxConceptSubtitle='1';p.textContent=spec[1];}
+}
+function correctHostedLabels(){
+  const replacements=[
+    ['LOCAL DEVELOPMENT','CUSTOMER-PROOF STAGING'],
+    ['Development build','Staging proof build'],
+    ['Local development v0.6','Hosted staging v0.6']
+  ];
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  while(walker.nextNode())nodes.push(walker.currentNode);
+  for(const node of nodes){
+    const parent=node.parentElement;
+    if(!parent||parent.closest('script,style'))continue;
+    let value=node.nodeValue||'',next=value;
+    for(const [from,to] of replacements)next=next.replaceAll(from,to);
+    if(next!==value)node.nodeValue=next;
+  }
 }
 function apply(){
   document.body.dataset.uxConcept='fidelity-v3';
