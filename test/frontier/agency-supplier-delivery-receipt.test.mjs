@@ -14,7 +14,7 @@ const receivedAt='2026-09-18T14:40:00.000Z';
 
 function signed(rawBody){return crypto.createHmac('sha256',SECRET).update(Buffer.from(rawBody)).digest('hex');}
 function verifier(){return createHmacSha256ReceiptVerifier({providerKey:'mail-test',secret:SECRET,parseEvent:async({rawBody})=>JSON.parse(rawBody)});}
-function event(overrides={}){return {providerEventId:'evt-1',deliveryId:DELIVERY_ID,providerMessageRef:'provider-1',channel:'email',normalizedOutcome:'confirmed_sent',eventAt:'2026-09-18T14:39:30.000Z',...overrides};}
+function event(overrides={}){return {providerEventId:'evt-1',deliveryId:DELIVERY_ID,providerMessageRef:'provider-1',attemptNumber:1,channel:'email',normalizedOutcome:'confirmed_sent',eventAt:'2026-09-18T14:39:30.000Z',...overrides};}
 function raw(overrides={}){return JSON.stringify(event(overrides));}
 function headers(body){return {'x-wfm-signature-sha256':signed(body)};}
 
@@ -29,6 +29,7 @@ function memoryStore(initial={}){
       if(!row)return {result:'delivery_not_found'};
       if(row.channel!==record.channel)return {result:'channel_mismatch',priorStatus:row.status,status:row.status,...row};
       if(row.providerMessageRef&&record.providerMessageRef&&row.providerMessageRef!==record.providerMessageRef)return {result:'provider_message_ref_mismatch',priorStatus:row.status,status:row.status,...row};
+      if(record.normalizedOutcome==='definitively_not_sent'&&record.attemptNumber!==row.attemptCount)return {result:'attempt_mismatch',priorStatus:row.status,status:row.status,...row};
       if(Date.parse(record.eventAt)<Date.parse(row.createdAt)-5*60*1000)return {result:'event_before_delivery',priorStatus:row.status,status:row.status,...row};
       const eventKey=`${record.tenantId}:${record.providerKey}:${record.providerEventId}`;
       if(events.has(eventKey))return {result:'duplicate_event',priorStatus:row.status,status:row.status,...row};
@@ -48,7 +49,7 @@ async function reconcile({body=raw(), hdrs=null, store=memoryStore(), v=verifier
 
 test('authenticated confirmed_sent receipt resolves an unknown outcome without resending',async()=>{const store=memoryStore();const result=await reconcile({store});assert.equal(result.reconciled,true);assert.equal(result.status,'sent');assert.equal(result.priorStatus,'unknown');assert.equal(result.transitionApplied,true);assert.equal(store.deliveries.get(`T1:${DELIVERY_ID}`).status,'sent');assert.equal(store.records.length,1);});
 
-test('HMAC verification fails closed for body tampering and bad signatures before store mutation',async()=>{const store=memoryStore();const body=raw();const tampered=body.replace('confirmed_sent','definitively_not_sent');const bad=await reconcile({body:tampered,hdrs:headers(body),store});assert.equal(bad.reconciled,false);assert.equal(bad.reason,'receipt_authentication_failed');assert.equal(store.records.length,0);const malformed=await reconcile({body,hdrs:{'x-wfm-signature-sha256':'00'},store});assert.equal(malformed.reason,'receipt_authentication_failed');assert.equal(store.records.length,0);});
+test('HMAC verification fails closed for body tampering and bad signatures before store mutation',async()=>{const store=memoryStore();const body=raw();const tampered=body.replace('confirmed_sent','definitively_not_sent');const bad=await reconcile({body:tampered,hdrs:headers(body),store});assert.equal(bad.reconciled,false);assert.equal(bad.reason,'receipt_authentication_failed');assert.equal(store.records.length,0);const malformed=await reconcile({body,hdrs:{'x-wfm-signature-sha256':'00'},store});assert.equal(malformed.reason,'receipt_authentication_failed');assert.equal(store.records.length,0);const parsed=JSON.parse(body);const parsedResult=await verifier().verify({rawBody:parsed,headers:headers(body)});assert.equal(parsedResult.verified,false);});
 
 test('missing verifier/store and verifier exceptions fail closed',async()=>{const body=raw();let r=await reconcileAgencySupplierDeliveryReceipt({tenantId:'T1',rawBody:body,headers:headers(body),receiptStore:memoryStore(),receivedAt});assert.equal(r.reason,'receipt_verifier_unavailable');r=await reconcileAgencySupplierDeliveryReceipt({tenantId:'T1',rawBody:body,headers:headers(body),verifier:verifier(),receivedAt});assert.equal(r.reason,'receipt_store_unavailable');r=await reconcile({body,v:{providerKey:'mail-test',verify:async()=>{throw new Error('bad verifier')}}});assert.equal(r.reason,'receipt_verification_failed');});
 
@@ -61,6 +62,8 @@ test('definitively_not_sent can make an unknown outcome retry-safe, but generic 
 test('positive provider proof supersedes a prior not_sent state to prevent a later duplicate retry',async()=>{const store=memoryStore({status:'not_sent'});const r=await reconcile({store});assert.equal(r.status,'sent');assert.equal(r.transitionApplied,true);});
 
 test('negative receipt cannot make an actively dispatching send retryable',async()=>{const store=memoryStore({status:'dispatching'});const body=raw({normalizedOutcome:'definitively_not_sent'});const r=await reconcile({body,hdrs:headers(body),store});assert.equal(r.reconciled,true);assert.equal(r.status,'dispatching');assert.equal(r.transitionApplied,false);});
+
+test('negative receipt for an earlier attempt cannot unlock retry for a newer unknown attempt',async()=>{const store=memoryStore({status:'unknown',attemptCount:2});const body=raw({normalizedOutcome:'definitively_not_sent',attemptNumber:1});const r=await reconcile({body,hdrs:headers(body),store});assert.equal(r.reconciled,false);assert.equal(r.reason,'receipt_attempt_mismatch');assert.equal(store.records.length,0);assert.equal(store.deliveries.get(`T1:${DELIVERY_ID}`).status,'unknown');});
 
 test('a negative receipt never downgrades an already sent delivery into a retryable state',async()=>{const store=memoryStore({status:'sent',providerMessageRef:'provider-1'});const body=raw({normalizedOutcome:'definitively_not_sent'});const r=await reconcile({body,hdrs:headers(body),store});assert.equal(r.reconciled,true);assert.equal(r.status,'sent');assert.equal(r.transitionApplied,false);});
 
