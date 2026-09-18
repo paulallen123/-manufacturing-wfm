@@ -26,6 +26,10 @@ COPY implementation/runtime/configuration-inference-engine.cjs /app/implementati
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 
+# Exact cloud-scale proof runtime. Kept read-only with the application and executable only when explicitly selected.
+RUN mkdir -p /app/proof-runtime
+COPY implementation/proof/cloud-scale-proof-runner.cjs /app/proof-runtime/cloud-scale-proof-runner.cjs
+
 # Deterministic build admission for the new implementation and learning control planes.
 # Tests execute against the exact files copied into this image; test sources are removed
 # afterwards so they do not expand the runtime attack surface.
@@ -48,6 +52,13 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs \
       /tmp/wfm-tests/security/runtime/hosted-listen-guard.test.cjs \
  && rm -rf /tmp/wfm-tests
+
+# Railway cloud-build admission: execute the exact 10,000-employee / 50-site
+# configuration and independent payroll reconciliation proof without starting a server.
+RUN WFM_PROOF_ONESHOT=true \
+    WFM_CONFIG_ENGINE_PATH=/app/implementation-runtime/configuration-inference-engine.cjs \
+    WFM_CONFIG_ENGINE_GIT_BLOB_SHA=d3688d27841a28d3b8801b7d4c63f254e8bf7edd \
+    node /app/proof-runtime/cloud-scale-proof-runner.cjs
 
 # Preserve the sealed server/security contract. Compose the reviewable UX layers only
 # through existing presentation assets that are already in the server's static allow-list.
