@@ -12,8 +12,8 @@ This repository uses three long-lived control refs and disposable feature branch
 1. Develop on a short-lived branch.
 2. Validate in an isolated preview/proof lane.
 3. Merge the reviewed change into `integration/canonical`.
-4. Advance `release/staging` to one exact integration commit.
-5. Advance `main` to the **same SHA**; `main` is not an integration branch.
+4. Open a release PR from `integration/canonical` into `main`; `main` is not an integration branch.
+5. Merge the release PR, then point `release/staging` at the resulting **main release SHA**. The canonical workflow waits briefly for this pointer and refuses to deploy if it does not match.
 6. Existing Railway service `3bea5411-cebb-4878-adcc-766f5fd58cc7` (legacy display name `wfm-concept-fidelity-preview`) is the canonical staging executor and follows `main`.
 7. Verify Railway reports terminal SUCCESS for that exact SHA.
 8. Only after staging evidence is green may `release/production` advance to the **same commit SHA**.

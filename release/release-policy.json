@@ -31,6 +31,7 @@
     "deletePreviewAfterMergeOrClose": true,
     "mainIsStagingMirrorOnly": true,
     "mainMustMatchReleaseStagingBeforeCanonicalDeploy": true,
-    "canonicalRailwayCliOnlyFromReleaseWorkflow": true
+    "canonicalRailwayCliOnlyFromReleaseWorkflow": true,
+    "mainPromotionRequiresReleasePr": true
   }
 }
