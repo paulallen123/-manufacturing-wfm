@@ -51,7 +51,7 @@ After authentication, the normalized event is correlated against the existing de
 
 The receipt ledger is independently idempotent on `(tenant_id, provider_key, provider_event_id)`. PostgreSQL reconciliation locks the target delivery row, records the provider event once and applies only conservative transitions:
 - authenticated `confirmed_sent` can resolve `dispatching`, `unknown` or a prior `not_sent` to `sent`, preventing a later duplicate retry when stronger positive provider evidence arrives;
-- authenticated `definitively_not_sent` can resolve only `dispatching` or `unknown` to `not_sent`;
+- authenticated `definitively_not_sent` can resolve only `unknown` to `not_sent`; it cannot make an actively `dispatching` send retryable while that original sender call may still complete;
 - a generic `delivery_failed` event is audit evidence but does **not** become retry-safe automatically;
 - negative evidence never downgrades an already `sent` delivery to a retryable state.
 
@@ -69,12 +69,13 @@ A fresh official-source check on 18 September 2026 found a Fair Work Agency cont
 
 The deterministic outbound-delivery suite remains **12/12 tests** from the preceding slice, including supplier eligibility before dispatch, request-policy binding, 1,000 duplicate-dispatch concurrency, ambiguous-send fail-closed behaviour and the PostgreSQL delivery-state contract.
 
-The new deterministic receipt-reconciliation suite passes **12/12 tests** locally on Node 22.16.0 and proves:
+The new deterministic receipt-reconciliation suite passes **13/13 tests** locally on Node 22.16.0 and proves:
 - valid authenticated positive evidence resolves an `unknown` delivery without invoking a sender;
 - raw-body tampering and malformed signatures fail before any receipt-store mutation;
 - missing verifier, missing store and verifier exceptions fail closed;
 - channel, provider-message-reference and event-time mismatches fail closed;
-- only explicit `definitively_not_sent` can turn uncertainty into a retry-safe state;
+- only explicit `definitively_not_sent` can turn an already-`unknown` outcome into a retry-safe state;
+- a negative receipt cannot make an actively `dispatching` send retryable;
 - generic delivery failures cannot silently create retry authority;
 - positive proof can supersede a prior `not_sent` state to prevent a later duplicate retry;
 - negative evidence cannot downgrade an already-sent delivery;
