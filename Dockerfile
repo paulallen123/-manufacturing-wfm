@@ -10,6 +10,7 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
 # add the defence overlay as a separately reviewable layer.
 RUN mkdir -p /app/security-runtime
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
+COPY security/runtime/ux-preference.cjs /app/security-runtime/ux-preference.cjs
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 
 # Preserve the sealed server/security contract. Compose the reviewable UX layers only
