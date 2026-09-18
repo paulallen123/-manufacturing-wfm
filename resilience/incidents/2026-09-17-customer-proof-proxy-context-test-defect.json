@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "incident_id": "WFM-2026-09-17-CUSTOMER-PROOF-PROXY-CONTEXT",
+  "observed_at": "2026-09-17T13:55:47Z",
+  "environment": "isolated-ci-customer-proof",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "classification": "test-defect",
+  "severity": "medium",
+  "customer_data_used": false,
+  "production_impact": false,
+  "failed_workflow_run": 35230192676,
+  "successful_workflow_run_after_fix": 35230273480,
+  "evidence": {
+    "deployment_provenance_validation": "passed",
+    "resilience_scenario_validation": "passed",
+    "sealed_archive_readability": "passed",
+    "container_build": "passed",
+    "non_root_and_package_manager_reduction": "passed",
+    "health_response": "200 and release identity 0.6.76-hosted-staging-rc1",
+    "failure_step": "Prove hosted HTTP boundary",
+    "observed_failure": "HTTP 403 on hosted page requests made directly to localhost without the reverse-proxy Host and X-Forwarded-Proto context required by the hosted-origin guard",
+    "runtime_logs": "service started normally in hosted-staging mode with WFM_PUBLIC_ORIGIN=https://wfm-ci.invalid"
+  },
+  "root_cause": {
+    "product_defect": false,
+    "test_harness_defect": true,
+    "description": "The CI proof container was intentionally configured with an HTTPS public origin, but the HTTP harness called 127.0.0.1 without modelling the trusted reverse-proxy request context. The application's hosted-origin guard therefore correctly rejected the requests."
+  },
+  "containment": {
+    "candidate_promotion_blocked_while_gate_red": true,
+    "security_guard_weakened": false,
+    "production_change_performed": false
+  },
+  "resolution": {
+    "commit": "61517cce5f2728b99e597b254473112788100b2e",
+    "change": "Customer-proof HTTP probes now send Host: wfm-ci.invalid and X-Forwarded-Proto: https while retaining the HTTPS origin guard.",
+    "verification": "The exact subsequent Customer Proof Gate run 35230273480 passed all steps including hosted HTTP boundary."
+  },
+  "permanent_prevention": {
+    "regression_gate": ".github/workflows/customer-proof-gate.yml",
+    "rule": "Any isolated hosted-staging proof that configures an HTTPS WFM_PUBLIC_ORIGIN must model the same reverse-proxy host/protocol context expected in the deployed environment; never weaken the application origin guard to make a local proof pass.",
+    "failure_classification_requirement": "If health identity passes but hosted page probes return 403, first compare proof proxy context with hosted-origin policy before classifying the candidate as a product regression.",
+    "expected_result": "Hosted health, root page, kiosk page and unauthenticated bootstrap boundary all pass using the declared hosted origin context."
+  }
+}
