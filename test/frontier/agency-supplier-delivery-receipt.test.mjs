@@ -35,7 +35,7 @@ function memoryStore(initial={}){
       events.add(eventKey);records.push(structuredClone(record));
       const priorStatus=row.status;
       if(record.normalizedOutcome==='confirmed_sent'&&['dispatching','unknown','not_sent'].includes(row.status))row.status='sent';
-      else if(record.normalizedOutcome==='definitively_not_sent'&&['dispatching','unknown'].includes(row.status))row.status='not_sent';
+      else if(record.normalizedOutcome==='definitively_not_sent'&&row.status==='unknown')row.status='not_sent';
       if(!row.providerMessageRef&&record.providerMessageRef)row.providerMessageRef=record.providerMessageRef;
       return {result:'recorded',priorStatus,status:row.status,...row};
     },
@@ -59,6 +59,8 @@ test('provider-message correlation mismatch fails closed',async()=>{const store=
 test('definitively_not_sent can make an unknown outcome retry-safe, but generic delivery_failed cannot',async()=>{let store=memoryStore();let body=raw({normalizedOutcome:'definitively_not_sent'});let r=await reconcile({body,hdrs:headers(body),store});assert.equal(r.status,'not_sent');assert.equal(r.transitionApplied,true);store=memoryStore();body=raw({normalizedOutcome:'delivery_failed'});r=await reconcile({body,hdrs:headers(body),store});assert.equal(r.status,'unknown');assert.equal(r.transitionApplied,false);});
 
 test('positive provider proof supersedes a prior not_sent state to prevent a later duplicate retry',async()=>{const store=memoryStore({status:'not_sent'});const r=await reconcile({store});assert.equal(r.status,'sent');assert.equal(r.transitionApplied,true);});
+
+test('negative receipt cannot make an actively dispatching send retryable',async()=>{const store=memoryStore({status:'dispatching'});const body=raw({normalizedOutcome:'definitively_not_sent'});const r=await reconcile({body,hdrs:headers(body),store});assert.equal(r.reconciled,true);assert.equal(r.status,'dispatching');assert.equal(r.transitionApplied,false);});
 
 test('a negative receipt never downgrades an already sent delivery into a retryable state',async()=>{const store=memoryStore({status:'sent',providerMessageRef:'provider-1'});const body=raw({normalizedOutcome:'definitively_not_sent'});const r=await reconcile({body,hdrs:headers(body),store});assert.equal(r.reconciled,true);assert.equal(r.status,'sent');assert.equal(r.transitionApplied,false);});
 
