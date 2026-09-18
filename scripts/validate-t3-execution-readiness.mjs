@@ -5,7 +5,26 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { createT3ExecutionPreflightVerifier, digest } = require('../resilience/t3-execution-preflight-verifier.cjs');
 const { createT3ExecutionReadinessGate } = require('../resilience/t3-execution-readiness-gate.cjs');
+const { createFactory } = require('../resilience/autonomous-repair-factory.cjs');
 const d = (value) => createHash('sha256').update(String(value)).digest('hex');
+
+const expectCode = (fn, code) => {
+  try { fn(); } catch (error) { assert.equal(error.code, code); return; }
+  assert.fail(`Expected ${code}`);
+};
+
+const policyFactory = createFactory();
+policyFactory.openIncident({ incidentId: 'inc-t3-protect', tenant: 'tenant-a', evidenceDigest: d('protect-evidence') });
+policyFactory.registerReproducer({ incidentId: 'inc-t3-protect', tenant: 'tenant-a', failingTestDigest: d('protect-test'), observedFailureDigest: d('protect-observed') });
+expectCode(() => policyFactory.proposeCandidate({
+  incidentId: 'inc-t3-protect', tenant: 'tenant-a', proposerId: 'repair-agent', patchDigest: d('preflight-tamper'), changedPaths: ['resilience/t3-execution-preflight-verifier.cjs'],
+}), 'WFM_REPAIR_PROTECTED_PATH');
+expectCode(() => policyFactory.proposeCandidate({
+  incidentId: 'inc-t3-protect', tenant: 'tenant-a', proposerId: 'repair-agent', patchDigest: d('readiness-tamper'), changedPaths: ['resilience/t3-execution-readiness-gate.cjs'],
+}), 'WFM_REPAIR_PROTECTED_PATH');
+expectCode(() => policyFactory.proposeCandidate({
+  incidentId: 'inc-t3-protect', tenant: 'tenant-a', proposerId: 'repair-agent', patchDigest: d('readiness-validator-tamper'), changedPaths: ['scripts/validate-t3-execution-readiness.mjs'],
+}), 'WFM_REPAIR_PROTECTED_PATH');
 
 const consent = {
   authorisationId: 'auth-1',
@@ -177,6 +196,7 @@ console.log(JSON.stringify({
   schemaVersion: 1,
   proof: 'tier3-execution-readiness-without-execution-authority',
   status: 'PASS',
+  repairAgentCannotRewriteReadinessAuthority: true,
   consumedCustomerConsentRequired: true,
   exactCurrentStateBound: true,
   staleConsentContained: true,
