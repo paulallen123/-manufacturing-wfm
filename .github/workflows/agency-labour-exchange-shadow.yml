@@ -9,6 +9,7 @@ on:
       - 'src/frontier/agency-labour-performance.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
+      - 'src/frontier/agency-portal-token-store.mjs'
       - 'test/frontier/agency-labour-exchange.test.mjs'
       - 'test/frontier/agency-labour-performance.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
