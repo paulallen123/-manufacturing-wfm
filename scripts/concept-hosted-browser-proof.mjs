@@ -182,7 +182,7 @@ try {
   assert.equal(identity.json.actor?.tenant, 'northstar-demo');
   assert.equal(identity.json.actor?.role, 'manager');
   await waitForExpression(`document.body.dataset.uxConcept === 'fidelity-v3' && Boolean(document.querySelector('.ux-approved-today'))`);
-  const concept = await evaluate(`({nav:[...document.querySelectorAll('.sidebar nav .ux-concept-primary span')].map(x=>x.textContent.trim()),kpis:[...document.querySelectorAll('.ux-approved-kpi')].map(x=>({label:x.querySelector('span')?.textContent.trim(),value:x.querySelector('strong')?.textContent.trim()})),decisions:document.querySelectorAll('.ux-approved-decision-card').length,lines:document.querySelectorAll('.ux-approved-line-card').length,greeting:document.querySelector('.ux-approved-greeting h1')?.textContent.trim()||''})`);
+  const concept = await evaluate(`({nav:[...document.querySelectorAll('.sidebar nav .ux-concept-primary span:not(.count):not(.review-count)')].map(x=>x.textContent.trim()),kpis:[...document.querySelectorAll('.ux-approved-kpi')].map(x=>({label:x.querySelector('span')?.textContent.trim(),value:x.querySelector('strong')?.textContent.trim()})),decisions:document.querySelectorAll('.ux-approved-decision-card').length,lines:document.querySelectorAll('.ux-approved-line-card').length,greeting:document.querySelector('.ux-approved-greeting h1')?.textContent.trim()||''})`);
   assert.deepEqual(concept.nav,['Today','People','Plan','Improve']);
   assert.deepEqual(concept.kpis.map(x=>x.label),['Production','Workforce coverage','Labour cost','Decisions']);
   assert.ok(concept.decisions >= 1 && concept.lines >= 1);
