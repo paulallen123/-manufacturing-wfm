@@ -14,7 +14,10 @@ expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patch
 
 f.registerReproducer({incidentId,tenant,failingTestDigest:d('failing-test'),observedFailureDigest:d('observed-failure')});
 
-expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('policy-tamper'),changedPaths:['resilience/security-baseline.json']}),'WFM_REPAIR_PROTECTED_PATH');\nexpect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('control-loop-tamper'),changedPaths:['resilience/autonomy-control-loop.cjs']}),'WFM_REPAIR_PROTECTED_PATH');\nexpect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('handoff-tamper'),changedPaths:['resilience/provider-recovery-handoff.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('policy-tamper'),changedPaths:['resilience/security-baseline.json']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('control-loop-tamper'),changedPaths:['resilience/autonomy-control-loop.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('handoff-tamper'),changedPaths:['resilience/provider-recovery-handoff.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('syntax-gate-tamper'),changedPaths:['scripts/validate-autonomy-source-syntax.mjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('dep-add'),changedPaths:['lib/fix.cjs'],runtimeDependenciesAdded:['some-package']}),'WFM_REPAIR_RUNTIME_DEPENDENCY');
 
 f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('patch1'),changedPaths:['lib/fix.cjs','tests/fix.test.cjs']});
@@ -42,5 +45,5 @@ other.verifyCandidate({incidentId:'inc-budget',tenant,verifierId:'v',failingTest
 expect(()=>other.proposeCandidate({incidentId:'inc-budget',tenant,proposerId:'a',patchDigest:d('p2'),changedPaths:['lib/a.cjs']}),'WFM_REPAIR_BUDGET');
 assert.equal(other.snapshot('inc-budget').state,'contained');
 
-const receipt={schemaVersion:1,proof:'tier2-repair-factory-authority-separation',status:'PASS',reproducerRequired:true,protectedPolicyTamperDenied:true,authoritySurfaceTamperDenied:true,newRuntimeDependencyDenied:true,selfVerificationDenied:true,failedSecurityScanRejected:true,independentReleaseAuthorityRequired:true,artifactDriftDenied:true,stagingOnlyPermit:true,productionPermitDenied:true,repairBudgetContainment:true};
+const receipt={schemaVersion:1,proof:'tier2-repair-factory-authority-separation',status:'PASS',reproducerRequired:true,protectedPolicyTamperDenied:true,authoritySurfaceTamperDenied:true,syntaxGateTamperDenied:true,newRuntimeDependencyDenied:true,selfVerificationDenied:true,failedSecurityScanRejected:true,independentReleaseAuthorityRequired:true,artifactDriftDenied:true,stagingOnlyPermit:true,productionPermitDenied:true,repairBudgetContainment:true};
 console.log(JSON.stringify(receipt,null,2));
