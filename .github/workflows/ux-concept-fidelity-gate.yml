@@ -86,6 +86,8 @@ jobs:
           test "$code" = "401"
 
           login_code="$(curl -sS -D /tmp/cf-login-h -o /tmp/cf-login-b -w '%{http_code}' \
+            -H 'Origin: http://127.0.0.1:4261' \
+            -H 'Referer: http://127.0.0.1:4261/' \
             -H 'Content-Type: application/json' \
             -d '{"email":"manager@northstar.example","password":"ConceptFidelityGate-Password-2026!"}' \
             http://127.0.0.1:4261/api/login)"
@@ -99,7 +101,7 @@ jobs:
           test "$pref0_code" = "200"
           grep -q '"mode":"site_default"' /tmp/cf-pref0.json
 
-          set_code="$(curl -sS -H "Cookie: $COOKIE" -H 'Content-Type: application/json' \
+          set_code="$(curl -sS -H "Cookie: $COOKIE" -H 'Origin: http://127.0.0.1:4261' -H 'Referer: http://127.0.0.1:4261/' -H 'Content-Type: application/json' \
             -o /tmp/cf-pref-set.json -w '%{http_code}' \
             -d '{"scope":"site:tamworth","mode":"operational_visual"}' \
             http://127.0.0.1:4261/api/ux-preference)"
