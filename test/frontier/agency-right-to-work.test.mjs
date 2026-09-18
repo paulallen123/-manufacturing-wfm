@@ -34,6 +34,11 @@ function worker(overrides = {}) {
   };
 }
 
+const positiveNotice = () => ({
+  status:'positive', issuedAt:'2026-10-04T09:00:00.000Z', validUntil:'2027-04-04T09:00:00.000Z',
+  evidenceRef:'private-pvn-record-123',
+});
+
 test('preserves the existing pre-1-October eligibility contract', () => {
   const r = evaluateAgencyRightToWork({ workerId:'W1', agencyId:'A1', rightToWork:{ status:'verified', validUntil:'2027-01-01T00:00:00.000Z' } }, PRE, { agencyId:'A1' }, { now:'2026-09-18T12:00:00.000Z' });
   assert.equal(r.eligible, true);
@@ -96,13 +101,30 @@ test('non-standard or conflicting contractual arrangements fail closed for polic
   assert.ok(b.failures.includes('right_to_work_arrangement_mismatch'));
 });
 
-test('all prescribed check routes are treated neutrally while unrecognised methods fail', () => {
+test('all prescribed check routes are treated neutrally when route-specific evidence is complete', () => {
   for (const checkMethod of ['home_office_online','manual_document','rtw_dvsp','employer_checking_service']) {
-    const r = evaluateAgencyRightToWork(worker({ checkMethod }), POST, agency(), { now:NOW });
+    const overrides = { checkMethod };
+    if (checkMethod === 'employer_checking_service') {
+      overrides.validUntil = '2026-09-30T23:59:59.000Z';
+      overrides.positiveVerificationNotice = positiveNotice();
+    }
+    const r = evaluateAgencyRightToWork(worker(overrides), POST, agency(), { now:NOW });
     assert.equal(r.eligible, true, checkMethod);
   }
   const bad = evaluateAgencyRightToWork(worker({ checkMethod:'passport_copy_only' }), POST, agency(), { now:NOW });
   assert.ok(bad.failures.includes('right_to_work_check_method_not_prescribed'));
+});
+
+test('Employer Checking Service without a Positive Verification Notice fails closed and does not leak the notice reference', () => {
+  const missing = evaluateAgencyRightToWork(worker({ checkMethod:'employer_checking_service' }), POST, agency(), { now:NOW });
+  assert.ok(missing.failures.includes('right_to_work_ecs_positive_verification_notice_missing'));
+
+  const pass = evaluateAgencyRightToWork(worker({
+    checkMethod:'employer_checking_service', validUntil:'2026-09-30T23:59:59.000Z', positiveVerificationNotice:positiveNotice(),
+  }), POST, agency(), { now:NOW });
+  assert.equal(pass.eligible, true);
+  assert.equal(pass.evidence.lifecycle.evidenceSource, 'positive_verification_notice');
+  assert.doesNotMatch(JSON.stringify(pass), /private-pvn-record-123/);
 });
 
 test('check provenance is bound to the supplying employment business and cannot be future dated', () => {
@@ -141,4 +163,12 @@ test('assignment restrictions must be affirmatively confirmed and responsibility
   const hirerOwned = agency({ rightToWorkScheme:{ arrangement:'employment_business_supply_to_hirer_own_operations', responsibleParty:'hirer' } });
   const responsibility = evaluateAgencyRightToWork(worker(), POST, hirerOwned, { now:NOW });
   assert.ok(responsibility.failures.includes('right_to_work_responsible_party_mismatch'));
+});
+
+test('covered time-limited evidence nearing expiry produces an operational refresh warning without becoming a ranking penalty', () => {
+  const r = evaluateAgencyRightToWork(worker({ validUntil:'2026-10-10T23:59:59.000Z' }), POST, agency(), { now:NOW, refreshLeadDays:14 });
+  assert.equal(r.eligible, true);
+  assert.ok(r.warnings.includes('follow_up_due_soon'));
+  assert.equal(r.evidence.lifecycle.status, 'refresh_due');
+  assert.equal(r.evidence.lifecycle.refreshAction.type, 'request_updated_right_to_work_assurance_from_supplying_agency');
 });
