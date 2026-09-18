@@ -79,6 +79,24 @@ test('tenant/site/source boundaries fail closed',()=>{
   assert.throws(()=>ingest(e,{sourceId:'door',eventId:'revoked-door-01',kind:'access_entry',observedAt:new Date(T).toISOString()}),/not active/);
 });
 
+test('revoked source cannot complete a previously pending attendance quorum',()=>{
+  const e=setup();
+  const pending=ingest(e,{sourceId:'door',eventId:'revoked-pending-01',kind:'access_entry',observedAt:new Date(T).toISOString()});
+  assert.equal(pending.decision.status,'review_required');
+  assert.equal(e.revokeSource({tenant:'acme',sourceId:'door'}),true);
+  const r=ingest(e,{sourceId:'wifi',eventId:'revoked-pending-02',kind:'wifi_authenticated',observedAt:new Date(T+20_000).toISOString()});
+  assert.notEqual(r.decision.status,'authoritative');
+  assert.equal(r.decision.reason,'NO_TRUSTED_TIME_ANCHOR');
+  assert.equal(e.getState({tenant:'acme',employee:'e1',site:'s1'}).status,'outside');
+  assert.equal(e.audit.filter(x=>x.action==='attendance-in-authoritative').length,0);
+});
+
+test('source clock drift beyond configured future and offline bounds fails closed',()=>{
+  const e=setup();
+  assert.throws(()=>e.ingest({tenant:'acme',sourceId:'door',eventId:'future-drift-01',employee:'e1',kind:'access_entry',observedAt:new Date(T+130_001).toISOString(),receivedAtMs:T+10_000}),/too far in the future/);
+  assert.throws(()=>e.ingest({tenant:'acme',sourceId:'door',eventId:'stale-drift-001',employee:'e1',kind:'access_entry',observedAt:new Date(T).toISOString(),receivedAtMs:T+86_400_001}),/outside the supported offline window/);
+});
+
 test('metadata minimisation drops coordinates, SSID and arbitrary surveillance detail',()=>{
   const e=setup();
   ingest(e,{sourceId:'door',eventId:'privacy-0001',kind:'access_entry',observedAt:new Date(T).toISOString(),metadata:{controllerId:'c1',lat:52.6,long:-1.6,ssid:'Factory',rawImage:'x',zoneId:'entrance'}});
