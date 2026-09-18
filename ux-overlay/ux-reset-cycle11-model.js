@@ -58,8 +58,8 @@ function normalise(input,now=nowMs()){
 function compare(a,b){
   const unresolved=x=>x.kind==='action'&&x.lifecycle!=='resolved';
   if(unresolved(a)!==unresolved(b))return unresolved(a)?-1:1;
-  if(a.mandatory!==b.mandatory)return a.mandatory?-1:1;
   if(a.priority!==b.priority)return b.priority-a.priority;
+  if(a.mandatory!==b.mandatory)return a.mandatory?-1:1;
   if(a.deadline!==b.deadline){
     if(a.deadline==null)return 1;if(b.deadline==null)return -1;return a.deadline-b.deadline;
   }
