@@ -92,7 +92,6 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
 
     await send('Page.enable');
     await send('Network.enable');
-    await send('Accessibility.enable');
     await send('Emulation.setDeviceMetricsOverride',{width:mobile?390:1280,height:mobile?844:900,deviceScaleFactor:1,mobile});
 
     const beforeCookies = await send('Network.getCookies',{urls:[origin]});
@@ -114,12 +113,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
     assert.equal(loginResponse.status,200,`${slug} login failed.`);
     const session = sessionCookieFrom(loginResponse);
     const cookieSet = await send('Network.setCookie',{
-      name:session.name,
-      value:session.value,
-      url:origin,
-      secure:true,
-      httpOnly:true,
-      sameSite:'Lax'
+      name:session.name,value:session.value,url:origin,secure:true,httpOnly:true,sameSite:'Lax'
     });
     assert.equal(cookieSet.success,true,`${slug} server-issued session could not be bound to the fresh browser.`);
     const browserCookies = await send('Network.getCookies',{urls:[origin]});
@@ -128,8 +122,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
 
     const api = async pathName => fetch(`${origin}${pathName}`,{
       headers:{Cookie:cookieHeader,Accept:'application/json,text/plain,*/*',Referer:`${origin}/`},
-      redirect:'manual',
-      signal:AbortSignal.timeout(15000)
+      redirect:'manual',signal:AbortSignal.timeout(15000)
     });
     const identityResponse = await api('/api/bootstrap');
     assert.equal(identityResponse.status,200,`${slug} authenticated bootstrap failed.`);
@@ -147,28 +140,30 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
       assert.equal(surfaceStatus,200,`${slug} required surface ${requiredSurface} failed.`);
     }
 
+    // Render the authenticated application in the same clean Chrome process. Accessibility
+    // task evidence is already a separate passing proof; this gate stays focused on isolated
+    // sessions, role/tenant boundaries and a real hosted rendered surface.
     await send('Page.navigate',{url:origin});
-    await sleep(2500);
+    await sleep(3000);
+    const afterNavigateCookies = await send('Network.getCookies',{urls:[origin]});
+    assert.ok(afterNavigateCookies.cookies?.some(c=>c.name===session.name),`${slug} session cookie was lost during browser navigation.`);
     const layout = await send('Page.getLayoutMetrics');
     const viewportWidth = layout.cssLayoutViewport?.clientWidth ?? (mobile?390:1280);
     const contentWidth = layout.cssContentSize?.width ?? viewportWidth;
     assert.ok(contentWidth<=viewportWidth+1,`${slug} horizontal overflow.`);
-    const ax = await send('Accessibility.getFullAXTree',{},20000);
-    const interactive = (ax.nodes||[]).filter(n=>['button','link','tab','menuitem','checkbox','textbox','combobox'].includes(n.role?.value)).length;
-    assert.ok(interactive>0,`${slug} authenticated page exposed no interactive accessibility nodes.`);
 
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true},20000);
     const shotName=`40-role-${slug}-${mobile?'mobile':'desktop'}.png`;
     const shotPath=path.join(outDir,shotName); fs.writeFileSync(shotPath,Buffer.from(shot.data,'base64'));
     assert.ok(fs.statSync(shotPath).size>10000,`${slug} screenshot unexpectedly small.`);
-    console.log(`ROLE_BROWSER_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payroll}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|overflow=${contentWidth-viewportWidth}|interactive=${interactive}`);
+    console.log(`ROLE_BROWSER_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payroll}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|overflow=${contentWidth-viewportWidth}`);
     return {
       slug,email,role:expectedRole,tenant:expectedTenant,
       freshBrowserCookieCount:beforeCookies.cookies?.length||0,
       freshBootstrapStatus:pre.status,loginStatus:loginResponse.status,payrollStatus:payroll,
       requiredSurface,requiredSurfaceStatus:surfaceStatus,
       viewport:mobile?'390x844':'1280x900',horizontalOverflowPixels:contentWidth-viewportWidth,
-      accessibilityInteractiveNodes:interactive,screenshot:shotName,
+      screenshot:shotName,
       authBinding:'real hosted login -> server-issued Set-Cookie -> fresh Chrome process; cookie value never logged or persisted in evidence'
     };
   } finally {
@@ -207,9 +202,8 @@ fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.st
   capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,
   processIsolation:'four fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
   authMethod:'real hosted /api/login created the session; CDP bound that server-issued cookie to the corresponding fresh Chrome process; no credential passed to Chrome process environment',
-  roles,
-  result:'PASS',
-  claimBoundary:'fictional fixture staging; separate authenticated browser contexts; no production/pilot approval and no real employee/payroll data'
+  roles,result:'PASS',
+  claimBoundary:'fictional fixture staging; separate authenticated browser contexts; accessibility/keyboard proof is a separate gate; no production/pilot approval and no real employee/payroll data'
 },null,2));
 console.log(`LIVE_SEPARATE_ROLE_BROWSER_CONTEXT_PROOF=PASS|contexts=${roles.length}`);
 delete process.env.WFM_STAGING_PASSWORD;
