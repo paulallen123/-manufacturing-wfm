@@ -81,7 +81,7 @@ function lineStrip(content){
 function relabelPulse(content){
  if(!manager()||ui?.page!=='overview')return;
  const cells=[...content.querySelectorAll('.fcc-pulse-grid>div')],labels=['Production','Workforce coverage','Labour cost','Decisions'];
- cells.slice(0,4).forEach((cell,i)=>{cell.dataset.uxConceptKpi=labels[i];const small=cell.querySelector('small');if(small)small.textContent=labels[i];});
+ cells.slice(0,4).forEach((cell,i)=>{cell.dataset.uxConceptKpi=labels[i];const small=cell.querySelector('small');if(small&&small.textContent!==labels[i])small.textContent=labels[i];});
 }
 function styleActions(content){
  if(!manager()||ui?.page!=='overview')return;
