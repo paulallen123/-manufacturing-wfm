@@ -911,3 +911,14 @@ a.ux-approved-decision-source{
 .ux-approved-action-queue .ux11-card.urgent:before{background:#c95560!important}
 .ux-approved-action-queue .ux11-card.review:before{background:#d09435!important}
 .ux-approved-action-queue .ux11-more,.ux-approved-action-queue .ux11-receipts,.ux-approved-action-queue .ux11-information{margin-top:8px!important;border:1px solid #e4ebe8!important;border-radius:12px!important;background:#fafcfb!important}
+
+/* Canonical navigation: keep the approved primary routes visible; move the rest behind More. */
+body.ux-reset-active .sidebar nav[data-ux-concept-nav="approved"]>.navbtn.ux-secondary-route{
+  display:none!important;
+}
+body.ux-reset-active .sidebar nav[data-ux-concept-nav="approved"]>.navbtn.ux-concept-primary{
+  display:flex!important;
+}
+body.ux-reset-active .sidebar nav[data-ux-concept-nav="approved"]>.ux-more-button{
+  display:flex!important;
+}
