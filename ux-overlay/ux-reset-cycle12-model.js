@@ -2,17 +2,17 @@
 (function(root){
 'use strict';
 const PROVIDERS=Object.freeze({
-  implementation:{label:'Implementation',defaultRoute:'onboarding'},
-  integrations:{label:'Integrations',defaultRoute:'integrations'},
-  attendance:{label:'Attendance',defaultRoute:'attendance'},
-  agency:{label:'Agency labour',defaultRoute:'temporary'},
-  'manufacturing-cost':{label:'Manufacturing cost',defaultRoute:'costs'},
-  energy:{label:'Energy',defaultRoute:'insights'},
-  support:{label:'Support',defaultRoute:'support'},
-  learning:{label:'Learning',defaultRoute:'onboarding'},
-  handover:{label:'Shift handover',defaultRoute:'handover'},
-  documents:{label:'Documents',defaultRoute:'support'},
-  payroll:{label:'Payroll',defaultRoute:'payroll-run'}
+  implementation:{label:'Implementation',defaultRoute:'onboarding',allowedRoutes:Object.freeze(['onboarding'])},
+  integrations:{label:'Integrations',defaultRoute:'integrations',allowedRoutes:Object.freeze(['integrations'])},
+  attendance:{label:'Attendance',defaultRoute:'attendance',allowedRoutes:Object.freeze(['attendance'])},
+  agency:{label:'Agency labour',defaultRoute:'temporary',allowedRoutes:Object.freeze(['temporary'])},
+  'manufacturing-cost':{label:'Manufacturing cost',defaultRoute:'costs',allowedRoutes:Object.freeze(['costs'])},
+  energy:{label:'Energy',defaultRoute:'insights',allowedRoutes:Object.freeze(['insights'])},
+  support:{label:'Support',defaultRoute:'support',allowedRoutes:Object.freeze(['support'])},
+  learning:{label:'Learning',defaultRoute:'onboarding',allowedRoutes:Object.freeze(['onboarding'])},
+  handover:{label:'Shift handover',defaultRoute:'handover',allowedRoutes:Object.freeze(['handover'])},
+  documents:{label:'Documents',defaultRoute:'support',allowedRoutes:Object.freeze(['support'])},
+  payroll:{label:'Payroll',defaultRoute:'payroll-run',allowedRoutes:Object.freeze(['payroll-run'])}
 });
 const KINDS=new Set(['action','information','receipt']);
 const LIFECYCLES=new Set(['action_required','decision_sent','confirming_source','needs_verification','resolved']);
@@ -24,6 +24,10 @@ const REASONS=new Set([
   'DOCUMENT_ACK_REQUIRED','SUPPORT_RECOVERY','NEEDS_REVIEW','INFORMATION'
 ]);
 function provider(providerId){return PROVIDERS[providerId]||null;}
+function sourceRoute(p,inputRoute){
+  const requested=String(inputRoute||p.defaultRoute).trim();
+  return p.allowedRoutes.includes(requested)?requested:p.defaultRoute;
+}
 function normalise(providerId,input){
   const p=provider(providerId);if(!p||!input||typeof input!=='object')return null;
   const id=String(input.id||'').trim();if(!id)return null;
@@ -31,12 +35,12 @@ function normalise(providerId,input){
   const lifecycle=LIFECYCLES.has(input.lifecycle)?input.lifecycle:(kind==='receipt'?'resolved':'action_required');
   const evidenceState=EVIDENCE.has(input.evidenceState)?input.evidenceState:'unknown';
   const reasonCode=REASONS.has(input.reasonCode)?input.reasonCode:(kind==='information'?'INFORMATION':'NEEDS_REVIEW');
-  // Providers own facts, not presentation authority. The source is always bound to the registered provider.
+  // Providers own facts and source navigation. A signal cannot redirect a card outside its registered workflow contract.
   return Object.freeze({
     id:`${providerId}:${id}`,
     source:providerId,
     sourceId:input.sourceId==null?id:String(input.sourceId),
-    route:String(input.route||p.defaultRoute),
+    route:sourceRoute(p,input.route),
     reasonCode,kind,lifecycle,evidenceState,
     evidenceLabel:String(input.evidenceLabel||'Source evidence not yet verified'),
     title:String(input.title||p.label),
