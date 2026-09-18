@@ -15,6 +15,7 @@ expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patch
 f.registerReproducer({incidentId,tenant,failingTestDigest:d('failing-test'),observedFailureDigest:d('observed-failure')});
 
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('policy-tamper'),changedPaths:['resilience/security-baseline.json']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('network-boundary-tamper'),changedPaths:['resilience/agent-network-boundary.json']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('control-loop-tamper'),changedPaths:['resilience/autonomy-control-loop.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('handoff-tamper'),changedPaths:['resilience/provider-recovery-handoff.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('worker-tamper'),changedPaths:['resilience/isolated-repair-worker.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
@@ -27,6 +28,8 @@ expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patch
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('t3-validator-tamper'),changedPaths:['scripts/validate-t3-shadow-support.mjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('t3-customer-auth-gate-tamper'),changedPaths:['resilience/t3-customer-authorisation-gate.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('t3-customer-auth-validator-tamper'),changedPaths:['scripts/validate-t3-customer-authorisation-gate.mjs']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('t4-controller-tamper'),changedPaths:['resilience/t4-containment-controller.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('t4-validator-tamper'),changedPaths:['scripts/validate-t4-containment-chaos.mjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('dep-add'),changedPaths:['lib/fix.cjs'],runtimeDependenciesAdded:['some-package']}),'WFM_REPAIR_RUNTIME_DEPENDENCY');
 
 f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('patch1'),changedPaths:['lib/fix.cjs','tests/fix.test.cjs']});
@@ -64,5 +67,5 @@ assert.equal(contained.state,'contained');
 assert.match(contained.containment.containmentDigest,/^[a-f0-9]{64}$/);
 expect(()=>containment.proposeCandidate({incidentId:'inc-contain',tenant,proposerId:'repair-agent',patchDigest:d('late'),changedPaths:['lib/a.cjs']}),'WFM_REPAIR_STATE');
 
-const receipt={schemaVersion:1,proof:'tier2-repair-factory-authority-separation',status:'PASS',reproducerRequired:true,protectedPolicyTamperDenied:true,authoritySurfaceTamperDenied:true,isolatedWorkerAuthorityTamperDenied:true,repairPipelineAuthorityTamperDenied:true,repairPipelineValidatorTamperDenied:true,repairPipelineWorkflowTamperDenied:true,syntaxGateTamperDenied:true,t3ShadowAuthorityTamperDenied:true,t3CustomerAuthorisationAuthorityTamperDenied:true,newRuntimeDependencyDenied:true,selfVerificationDenied:true,failedSecurityScanRejected:true,independentReleaseAuthorityRequired:true,artifactDriftDenied:true,stagingOnlyPermit:true,postStagingContainmentRequiresStagingController:true,deterministicContainmentRecorded:true,productionPermitDenied:true,repairBudgetContainment:true};
+const receipt={schemaVersion:1,proof:'tier2-repair-factory-authority-separation',status:'PASS',reproducerRequired:true,protectedPolicyTamperDenied:true,agentNetworkBoundaryTamperDenied:true,authoritySurfaceTamperDenied:true,isolatedWorkerAuthorityTamperDenied:true,repairPipelineAuthorityTamperDenied:true,repairPipelineValidatorTamperDenied:true,repairPipelineWorkflowTamperDenied:true,syntaxGateTamperDenied:true,t3ShadowAuthorityTamperDenied:true,t3CustomerAuthorisationAuthorityTamperDenied:true,t4ContainmentAuthorityTamperDenied:true,t4ContainmentValidatorTamperDenied:true,newRuntimeDependencyDenied:true,selfVerificationDenied:true,failedSecurityScanRejected:true,independentReleaseAuthorityRequired:true,artifactDriftDenied:true,stagingOnlyPermit:true,postStagingContainmentRequiresStagingController:true,deterministicContainmentRecorded:true,productionPermitDenied:true,repairBudgetContainment:true};
 console.log(JSON.stringify(receipt,null,2));
