@@ -14,6 +14,8 @@ const jsFiles = [
   'resilience/canary-rollback-controller.cjs',
   'resilience/autonomous-repair-canary-orchestrator.cjs',
   'resilience/provider-recovery-handoff.cjs',
+  'resilience/t3-shadow-simulator.cjs',
+  'resilience/t3-shadow-verifier.cjs',
   'resilience/autonomy-control-loop.cjs',
   'resilience/ci-provider-failover.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
@@ -29,6 +31,7 @@ const jsFiles = [
   'scripts/validate-autonomous-repair-pipeline.mjs',
   'scripts/validate-canary-rollback-controller.mjs',
   'scripts/validate-autonomous-repair-canary-orchestrator.mjs',
+  'scripts/validate-t3-shadow-support.mjs',
   'scripts/validate-autonomy-control-loop.mjs',
 ];
 
@@ -48,6 +51,8 @@ for (const rel of [
   'resilience/autonomous-repair-pipeline.cjs',
   'resilience/canary-rollback-controller.cjs',
   'resilience/autonomous-repair-canary-orchestrator.cjs',
+  'resilience/t3-shadow-simulator.cjs',
+  'resilience/t3-shadow-verifier.cjs',
 ]) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
   for (const forbidden of ["require('node:http')", "require('node:https')", "require('node:net')", 'process.env', 'fetch(']) {
@@ -67,6 +72,8 @@ const requiredWorkflowPaths = [
   "      - 'resilience/autonomous-repair-pipeline.cjs'",
   "      - 'resilience/canary-rollback-controller.cjs'",
   "      - 'resilience/autonomous-repair-canary-orchestrator.cjs'",
+  "      - 'resilience/t3-shadow-simulator.cjs'",
+  "      - 'resilience/t3-shadow-verifier.cjs'",
   "      - 'resilience/autonomy-control-loop.cjs'",
   "      - 'scripts/validate-autonomous-repair-factory.mjs'",
   "      - 'scripts/validate-isolated-repair-worker.mjs'",
@@ -75,6 +82,7 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-autonomous-repair-pipeline.mjs'",
   "      - 'scripts/validate-canary-rollback-controller.mjs'",
   "      - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'",
+  "      - 'scripts/validate-t3-shadow-support.mjs'",
   "      - 'scripts/validate-autonomy-control-loop.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
   "      - 'scripts/run-portable-autonomy-proof.mjs'",
@@ -100,6 +108,8 @@ console.log(JSON.stringify({
   canaryRollbackAmbientEnvironmentDenied: true,
   repairToCanaryOrchestratorDirectNetworkSurfaceDenied: true,
   repairToCanaryOrchestratorAmbientEnvironmentDenied: true,
+  t3ShadowDirectNetworkSurfaceDenied: true,
+  t3ShadowAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
   workflowCriticalPathsPresent: true,
   productionMutation: false,
