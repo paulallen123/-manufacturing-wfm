@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-export const CAPABILITY_GRAPH_VERSION = 'factory-capability-graph-v0.1.0';
+export const CAPABILITY_GRAPH_VERSION = 'factory-capability-graph-v0.2.0';
 
 const stable = (value) => Array.isArray(value)
   ? value.map(stable)
@@ -35,7 +35,8 @@ export function normalizeAsset(raw, { now = new Date().toISOString() } = {}) {
     capabilityId: capability.capabilityId ?? null,
     label: capability.label ?? capability.browseName ?? 'Unmapped capability',
     semanticId: capability.semanticId ?? null,
-    mappingStatus: capability.capabilityId ? 'mapped' : 'unmapped',
+    mappingStatus: capability.mappingStatus ?? (capability.capabilityId ? 'mapped' : 'unmapped'),
+    mappingId: capability.mappingId ?? null,
     source: capability.source ?? raw.source.provider,
   }));
 
@@ -56,7 +57,51 @@ export function normalizeAsset(raw, { now = new Date().toISOString() } = {}) {
   };
 }
 
-export function buildCapabilityGraph({ tenantId, siteId, assets = [], capabilityRequirements = [], people = [], now = new Date().toISOString() }) {
+
+export function applyApprovedSemanticMappings(rawAsset, semanticMappings = []) {
+  if (!rawAsset?.tenantId || !rawAsset?.siteId) return rawAsset;
+  const capabilities = (rawAsset.capabilities ?? []).map((capability) => {
+    if (capability.capabilityId || !capability.semanticId) return capability;
+    const candidates = semanticMappings.filter((mapping) =>
+      mapping?.approvalStatus === 'approved' &&
+      mapping.tenantId === rawAsset.tenantId &&
+      mapping.semanticId === capability.semanticId &&
+      (mapping.scope === 'tenant' || (mapping.scope === 'site' && mapping.siteId === rawAsset.siteId))
+    );
+    const unique = [...new Set(candidates.map((mapping) => mapping.capabilityId).filter(Boolean))];
+    if (unique.length !== 1) {
+      return { ...capability, mappingStatus: unique.length > 1 ? 'conflict' : 'unmapped' };
+    }
+    const selected = candidates.find((mapping) => mapping.capabilityId === unique[0]);
+    return { ...capability, capabilityId: unique[0], mappingStatus: 'reused_approved_semantic', mappingId: selected?.mappingId ?? null };
+  });
+  return { ...rawAsset, capabilities };
+}
+
+export function measureConfigurationReuse({ assets = [], semanticMappings = [] }) {
+  let manualBaselineDecisions = 0;
+  let autoMapped = 0;
+  let reviewRequired = 0;
+  for (const asset of assets) {
+    for (const capability of asset.capabilities ?? []) {
+      if (capability.capabilityId) continue;
+      manualBaselineDecisions += 1;
+    }
+    const mappedAsset = applyApprovedSemanticMappings(asset, semanticMappings);
+    for (const capability of mappedAsset.capabilities ?? []) {
+      if (capability.mappingStatus === 'reused_approved_semantic') autoMapped += 1;
+      else if (!capability.capabilityId) reviewRequired += 1;
+    }
+  }
+  return {
+    manualBaselineDecisions,
+    autoMapped,
+    reviewRequired,
+    repeatedConfigurationReductionPct: manualBaselineDecisions === 0 ? 0 : 1 - (reviewRequired / manualBaselineDecisions),
+  };
+}
+
+export function buildCapabilityGraph({ tenantId, siteId, assets = [], capabilityRequirements = [], people = [], semanticMappings = [], now = new Date().toISOString() }) {
   const scope = { tenantId, siteId };
   if (!tenantId || !siteId) throw new TypeError('tenantId and siteId are required');
 
@@ -67,7 +112,7 @@ export function buildCapabilityGraph({ tenantId, siteId, assets = [], capability
       quarantined.push({ assetId: raw?.assetId ?? null, reason: 'scope_mismatch' });
       continue;
     }
-    const normalized = normalizeAsset(raw, { now });
+    const normalized = normalizeAsset(applyApprovedSemanticMappings(raw, semanticMappings), { now });
     if (normalized.status === 'accepted') acceptedAssets.push(normalized.asset);
     else quarantined.push({ assetId: raw.assetId ?? null, reason: normalized.reason });
   }
