@@ -1,6 +1,6 @@
 import { resolveCapabilitySubsumption } from './factory-capability-hierarchy.mjs';
 
-export const CAPABILITY_ENVELOPE_VERSION = 'factory-capability-envelope-v0.4.0';
+export const CAPABILITY_ENVELOPE_VERSION = 'factory-capability-envelope-v0.5.0';
 
 const OPS = new Set(['lte','gte','eq','in','contains']);
 
@@ -19,11 +19,26 @@ function normalizedUnit(item) {
   };
 }
 
+function hasUnit(item) {
+  const value = normalizedUnit(item);
+  return Boolean(value.unit || value.unitId);
+}
+
 function sameUnit(actual, constraint) {
   const a = normalizedUnit(actual);
   const r = normalizedUnit(constraint);
   if (a.unitId && r.unitId) return a.unitId === r.unitId;
   if (a.unit && r.unit) return a.unit === r.unit;
+  return false;
+}
+
+function categoricalValue(value) {
+  return typeof value === 'string' || typeof value === 'boolean';
+}
+
+function numericConstraintValue(constraint) {
+  if (validFinite(constraint?.value)) return true;
+  if (Array.isArray(constraint?.value)) return constraint.value.some(validFinite);
   return false;
 }
 
@@ -36,11 +51,11 @@ export function normalizeCapabilityEnvelope(raw = {}) {
   for (const property of raw.properties) {
     const semanticId = keyOf(property);
     if (!semanticId) return { status: 'rejected', reason: 'missing_property_semantic_id' };
-    if (!property.unit && !property.unitId) return { status: 'rejected', reason: 'missing_property_unit', semanticId };
 
     const unit = normalizedUnit(property);
     const kind = property.kind ?? (property.min != null || property.max != null ? 'range' : 'scalar');
     if (kind === 'range') {
+      if (!hasUnit(property)) return { status: 'rejected', reason: 'missing_property_unit', semanticId };
       if (!validFinite(property.min) || !validFinite(property.max) || property.min > property.max) {
         return { status: 'rejected', reason: 'invalid_property_range', semanticId };
       }
@@ -48,8 +63,11 @@ export function normalizeCapabilityEnvelope(raw = {}) {
       continue;
     }
 
-    if (!validFinite(property.value) && typeof property.value !== 'string' && typeof property.value !== 'boolean') {
+    if (!validFinite(property.value) && !categoricalValue(property.value)) {
       return { status: 'rejected', reason: 'unsupported_property_value', semanticId };
+    }
+    if (validFinite(property.value) && !hasUnit(property)) {
+      return { status: 'rejected', reason: 'missing_property_unit', semanticId };
     }
     properties.push({ semanticId, kind: 'scalar', value: property.value, ...unit });
   }
@@ -63,6 +81,14 @@ export function normalizeCapabilityEnvelope(raw = {}) {
       standardProfile: raw.standardProfile ?? null,
     },
   };
+}
+
+function categoricalUnitsCompatible(actual, constraint) {
+  const actualHas = hasUnit(actual);
+  const requiredHas = hasUnit(constraint);
+  if (!actualHas && !requiredHas) return true;
+  if (actualHas !== requiredHas) return false;
+  return sameUnit(actual, constraint);
 }
 
 export function evaluateCapabilityRequirement(providedRaw, requiredRaw, { capabilityHierarchy = [], maxHierarchyDepth = 16 } = {}) {
@@ -98,22 +124,22 @@ export function evaluateCapabilityRequirement(providedRaw, requiredRaw, { capabi
       checks.push({ semanticId, status: 'unknown', reason: 'property_missing' });
       continue;
     }
-    if (!sameUnit(actual, constraint)) {
-      checks.push({
-        semanticId,
-        status: 'unknown',
-        reason: 'unit_mismatch',
-        providedUnit: actual.unit,
-        providedUnitId: actual.unitId,
-        requiredUnit: constraint.unit ?? null,
-        requiredUnitId: constraint.unitId ?? null,
-      });
-      continue;
-    }
 
     if (actual.kind === 'range') {
       if (constraint.operator !== 'contains') {
         checks.push({ semanticId, status: 'unknown', reason: 'range_requires_contains_operator' });
+        continue;
+      }
+      if (!sameUnit(actual, constraint)) {
+        checks.push({
+          semanticId,
+          status: 'unknown',
+          reason: 'unit_mismatch',
+          providedUnit: actual.unit,
+          providedUnitId: actual.unitId,
+          requiredUnit: constraint.unit ?? null,
+          requiredUnitId: constraint.unitId ?? null,
+        });
         continue;
       }
       if (!validFinite(constraint.value)) {
@@ -138,14 +164,64 @@ export function evaluateCapabilityRequirement(providedRaw, requiredRaw, { capabi
       continue;
     }
 
-    let pass = false;
     if (constraint.operator === 'lte' || constraint.operator === 'gte') {
       if (!validFinite(actual.value) || !validFinite(constraint.value)) {
         checks.push({ semanticId, status: 'unknown', reason: 'non_numeric_range' });
         continue;
       }
-      pass = constraint.operator === 'lte' ? actual.value <= constraint.value : actual.value >= constraint.value;
-    } else if (constraint.operator === 'eq') {
+      if (!sameUnit(actual, constraint)) {
+        checks.push({
+          semanticId,
+          status: 'unknown',
+          reason: 'unit_mismatch',
+          providedUnit: actual.unit,
+          providedUnitId: actual.unitId,
+          requiredUnit: constraint.unit ?? null,
+          requiredUnitId: constraint.unitId ?? null,
+        });
+        continue;
+      }
+      const pass = constraint.operator === 'lte' ? actual.value <= constraint.value : actual.value >= constraint.value;
+      checks.push({
+        semanticId,
+        status: pass ? 'pass' : 'fail',
+        operator: constraint.operator,
+        actual: actual.value,
+        required: constraint.value,
+        unit: actual.unit,
+        unitId: actual.unitId,
+      });
+      continue;
+    }
+
+    const categorical = categoricalValue(actual.value) && !numericConstraintValue(constraint);
+    if (!categorical && !sameUnit(actual, constraint)) {
+      checks.push({
+        semanticId,
+        status: 'unknown',
+        reason: 'unit_mismatch',
+        providedUnit: actual.unit,
+        providedUnitId: actual.unitId,
+        requiredUnit: constraint.unit ?? null,
+        requiredUnitId: constraint.unitId ?? null,
+      });
+      continue;
+    }
+    if (categorical && !categoricalUnitsCompatible(actual, constraint)) {
+      checks.push({
+        semanticId,
+        status: 'unknown',
+        reason: 'unit_mismatch',
+        providedUnit: actual.unit,
+        providedUnitId: actual.unitId,
+        requiredUnit: constraint.unit ?? null,
+        requiredUnitId: constraint.unitId ?? null,
+      });
+      continue;
+    }
+
+    let pass = false;
+    if (constraint.operator === 'eq') {
       pass = actual.value === constraint.value;
     } else if (constraint.operator === 'in') {
       if (!Array.isArray(constraint.value)) {
