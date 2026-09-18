@@ -47,6 +47,20 @@ test('duplicate custodian signatures cannot manufacture quorum',()=>{
   assert.throws(()=>verify(f),/Duplicate recovery custodian/);
 });
 
+test('different custodian IDs backed by the same key cannot manufacture quorum',()=>{
+  const f=fixture();
+  const aliasedCustodians={'recovery-a':f.c1.publicKey,'recovery-b':f.c1.publicKey};
+  let p=createTrustRootRecoveryPackage({
+    trustDomainId:TRUST_DOMAIN,
+    recoveryEpoch:8,previousRootPublicKeys:f.current,newRootPublicKeys:f.proposed,
+    issuedAtMs:NOW-1_000,expiresAtMs:NOW+60_000,reason:'ROOT_COMPROMISE',changeId:'sec-2026-09-19-key-alias'
+  });
+  p=signTrustRootRecoveryPackage(p,{custodianId:'recovery-a',privateKey:f.c1.privateKey});
+  p=signTrustRootRecoveryPackage(p,{custodianId:'recovery-b',privateKey:f.c1.privateKey});
+  f.pkg=p;
+  assert.throws(()=>verify(f,{recoveryCustodianPublicKeys:aliasedCustodians}),/independent public keys/);
+});
+
 test('untrusted recovery signer is rejected',()=>{
   const f=fixture();
   let p=createTrustRootRecoveryPackage({trustDomainId:TRUST_DOMAIN,recoveryEpoch:8,previousRootPublicKeys:f.current,newRootPublicKeys:f.proposed,issuedAtMs:NOW-1_000,expiresAtMs:NOW+60_000,reason:'ROOT_LOSS',changeId:'sec-2026-09-19-002'});
