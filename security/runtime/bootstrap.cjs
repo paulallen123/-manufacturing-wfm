@@ -35,6 +35,30 @@ http.createServer = function guardedCreateServer(listener) {
   }
 
   return originalCreateServer.call(http, async (req, res) => {
+    const path = String(req.url || '/').split('?')[0] || '/';
+    const publicPasskeyRoute =
+      path === '/api/passkeys/config' ||
+      path === '/api/passkeys/auth/options' ||
+      path === '/api/passkeys/auth/verify';
+
+    // A stale bearer cookie must not prevent a fresh phishing-resistant sign-in.
+    // Only the three public ceremony endpoints bypass the existing-session guard;
+    // the passkey module still enforces same-origin challenge/signature checks.
+    if (passkeys && publicPasskeyRoute) {
+      try {
+        if (await passkeys.beforeRequest(req, res)) return;
+      } catch {
+        if (!res.headersSent && !res.writableEnded) {
+          res.statusCode = 503;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-store');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.end(JSON.stringify({ error: 'Passkey security control unavailable. Request refused.' }));
+        }
+        return;
+      }
+    }
+
     if (guard) {
       try {
         if (guard.beforeRequest(req, res)) return;
@@ -50,10 +74,9 @@ http.createServer = function guardedCreateServer(listener) {
       }
     }
 
-    // Passkey routes sit behind the same resource-side session/tenant guard. Public
-    // authentication ceremonies carry no bearer session; enrolment/revocation paths
-    // require the normal WFM session before the passkey module accepts them.
-    if (passkeys) {
+    // Enrolment, listing and revocation remain behind the same resource-side
+    // session/tenant guard as every other authenticated WFM action.
+    if (passkeys && !publicPasskeyRoute) {
       try {
         if (await passkeys.beforeRequest(req, res)) return;
       } catch {
