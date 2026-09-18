@@ -1,45 +1,50 @@
-# WFM UX scorecard — Cycle 12 r2
+# WFM UX scorecard — Cycle 12 r3
 
 ## Journey reviewed
-Canonical new-UI development lineage: Cycle 11 r10 → Cycle 12 unified operating experience → governed future-capability signals → existing Action Queue / owning source workflow.
+Specialist/system role on Overview → Cycle 12 System Action Queue → existing source-owned workflow → Back to priority queue → exact originating Cycle 12 action regains focus.
 
 ## Reuse / duplicate check
-- Compared the original Cycle 12 base `6bd0092f...` with latest Cycle 11 head `75d3ab19...`: Cycle 11 was 11 commits ahead and none of those intervening commits touched the Cycle 12 delta-owned files.
-- Rebuilt Cycle 12 directly on exact Cycle 11 r10 instead of continuing a stale parallel branch.
-- PR #80 is now explicitly the predecessor/proof owner; PR #90 is the single forward successor lineage for new UX/CX capability work.
-- No legacy/0.6.139 UI was used as an implementation surface.
+- Work remained on the canonical Cycle 12 successor branch based on Cycle 11 r10; no legacy/0.6.139 UI was changed.
+- Reused Cycle 11 `openRoute`, return marker, back-link and return-focus lifecycle instead of creating a Cycle 12 navigation lifecycle.
+- Reused the existing Cycle 12 provider contract, specialist queue and existing signal-contract test script.
+- No new page, drawer, route, Decision Card renderer, approval flow or test harness was created.
+
+## Hypothesis
+If specialist/system actions use the same return-context primitive as manager actions, a user can open an implementation/integration/operating-control source workflow and return to the exact originating action without losing context, while keeping all write authority in the source workflow.
 
 ## Exact implementation delta
-- Refreshed PR #90 onto exact parent `75d3ab19243b2145e66fe69f2a8e23d05704e9b5` while preserving all 11 newer Cycle 11 commits.
-- Preserved the Cycle 12 governed provider contract, implementation-status adapter, future-capability design, CSS and sealed composition as one successor delta.
-- Removed a second action-card renderer from Cycle 12. Cycle 11 now exports the existing authoritative presentation primitive as `renderCard`, and Cycle 12 specialist/system queues reuse that same renderer and existing `.ux11-open` navigation path.
-- Extended the existing UX quality gate to fail if Cycle 12 reintroduces its own card renderer/navigation action.
-- Kept workflow execution owner-push/manual rather than adding another pull-request execution surface.
+- Generalised the existing Cycle 11 return-link observer so it activates for any role that has an active queue return marker, not managers only.
+- Kept manager-only queue rendering unchanged; the generalisation affects only return-context handling after an action has already been opened.
+- Exported the existing `restoreFocus`, `addBackLink` and `returnMarker` helpers as the shared navigation/context primitive.
+- Cycle 12 `renderSpecialistQueue()` now calls the existing Cycle 11 `restoreFocus()` after rendering, so the originating system action regains focus on return.
+- Unknown specialist source workflows do not receive guessed in-page focus selectors; when no verified source-specific target exists, the source route opens normally and the user still gets a deterministic return path.
+- Added static regression guards to the existing Cycle 12 signal-contract script so specialist return context cannot silently become manager-only or forked again.
 
 ## Focused validation
-- Local syntax check of the revised Cycle 12 UI: `UX12_SHARED_CARD_SYNTAX=PASS`.
-- Static duplicate guard: `UX12_NO_DUPLICATE_CARD_RENDERER=PASS`.
-- GitHub compare after refresh: Cycle 12 is ahead of exact Cycle 11 r10 and zero commits behind; no parallel/stale lineage remains.
-- The first exact refreshed head produced the known GitHub pre-execution failure signature (`steps: []`, `runner_id: 0`, no runner). The latest quality-gate head exposed no workflow run at check time, so hosted/browser proof is not claimed green and the unchanged blocker was not repeatedly retried.
+- Local `node --check` passed for revised Cycle 11 UI source.
+- Local `node --check` passed for revised Cycle 12 UI source.
+- Local `node --check` passed for the extended existing Cycle 12 signal-contract test script.
+- New regression contract is expected to emit `UX12_SPECIALIST_RETURN_CONTEXT=PASS` when the existing gate executes.
+- Hosted/browser proof is not claimed green until GitHub executes the existing gate on the exact changed head.
 
 ## UX scorecard impact
-- Calm by default: unchanged.
-- Dense on demand: unchanged; new capability still enters through the existing action grammar.
-- Explainability: preserved; provider identity and source evidence remain bound and write authority stays in owning workflows.
-- Consistency: improved; one Decision Card renderer/navigation path now serves Cycle 11 and Cycle 12 instead of two near-duplicates.
-- Development efficiency: materially improved; one forward branch and one shared action-card primitive reduce drift, repeated fixes and duplicated regression work.
-- Accessibility/mobile: no new visual layout was introduced by the dedupe; hosted composed-browser/screen-reader proof remains unavailable.
-- Capability preservation: green by design; no payroll, schedule, leave, approval, tenant, audit or production authority moved into presentation.
+- Calm by default: unchanged; no new visible permanent navigation was added.
+- Dense on demand: improved; specialist actions return to the same compact queue rather than requiring route hunting.
+- Explainability: preserved; source provider and evidence remain bound to the existing card and source workflow.
+- Navigation predictability: improved structurally; manager and specialist queues now share one return-context lifecycle.
+- Accessibility: improved structurally through focus restoration to the exact originating action; screen-reader/composed-browser behaviour remains unverified.
+- Development efficiency: improved; one navigation lifecycle and one existing regression script cover both role families.
+- Capability preservation: green by design; no payroll, approval, attendance, implementation, tenant, audit or source-write authority changed.
 
 ## Serious-idea decisions
-- Continue Cycle 11 and Cycle 12 as parallel active UX branches: **REJECT**.
-- Refresh Cycle 12 onto latest Cycle 11 and make it the single forward successor: **BUILD NOW — completed**.
-- Keep a separate Cycle 12 Decision Card renderer: **REJECT — removed**.
-- Reuse the Cycle 11 card and navigation primitive across newer capability signals: **BUILD NOW — completed**.
-- Claim CI/browser proof from zero-step/no-run evidence: **REJECT**.
+- Add a second Cycle 12 back/return subsystem: **REJECT** — duplicate lifecycle and future drift risk.
+- Reuse/generalise Cycle 11 return context for specialist/system actions: **BUILD NOW — completed**.
+- Guess source-specific focus selectors for unverified future workflows: **REJECT** — source structure is not yet authoritative.
+- Extend the existing Cycle 12 contract regression rather than create another harness: **BUILD NOW — completed**.
+- Repeat generic competitor research this run: **REJECT** — no unresolved external design question affected the implementation decision.
 
 ## Still unverified
-Exact composed Docker/browser execution on the refreshed successor, specialist-role round-trip return focus, screen-reader behaviour, representative role/task timing, and Cycle 10 source-bound hosted promotion proof.
+Exact sealed-runtime browser round trip for a real specialist route, screen-reader announcement/focus order, mobile/tablet return behaviour, and Cycle 10 exact source-bound hosted promotion proof.
 
 ## Single next highest-value action
-Inspect the refreshed Cycle 12 specialist-role round trip (system action → owning workflow → return) against the existing Cycle 11 context primitive. Reuse/generalise that primitive only if a real return-context gap exists; do not create a second navigation lifecycle.
+Run the existing focused gate on the exact Cycle 12 head if infrastructure executes it; otherwise inspect the next highest-value new-UI specialist journey for a verified source-specific destination target and add exact in-workflow focus only where a stable authoritative selector/ID already exists. Do not guess selectors or create a second navigation path.
