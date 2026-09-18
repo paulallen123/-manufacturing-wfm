@@ -38,6 +38,11 @@ function worker(id, agencyId, quality, rate, completeRtw = true) {
   };
 }
 
+function lcg(seed) {
+  let state = seed >>> 0;
+  return () => ((state = (Math.imul(1664525, state) + 1013904223) >>> 0) / 2 ** 32);
+}
+
 test('post-1-October right-to-work assurance excludes stronger-scoring non-compliant worker before ranking', () => {
   const input = {
     tenantId:'tenant-1', siteId:'site-1', now:'2026-10-04T12:00:00.000Z', request:request(),
@@ -67,4 +72,48 @@ test('post-1-October right-to-work assurance excludes stronger-scoring non-compl
   assert.doesNotMatch(serialized, /private-A1-W-COMPLIANT-rtw-record/);
   assert.equal(Object.hasOwn(result.selectedWorkers[0].rightToWorkEvidence, 'evidenceRef'), false);
   assert.match(result.authorityBoundary, /no_schedule_payroll_or_invoice_mutation/);
+});
+
+test('5,000 post-effective-date candidates never let performance or price outrank missing right-to-work assurance', () => {
+  const random = lcg(0x51a77e11);
+  let selected = 0;
+  let rejectedWithoutAssurance = 0;
+
+  for (let scenario = 0; scenario < 500; scenario++) {
+    const req = request();
+    req.requestId = `REQ-RTW-STRESS-${scenario}`;
+    req.count = 4;
+    const truth = new Map();
+    const candidates = [];
+
+    for (let index = 0; index < 10; index++) {
+      const completeRtw = random() > 0.40;
+      const quality = completeRtw ? 0.60 + random() * 0.25 : 0.95 + random() * 0.05;
+      const rate = completeRtw ? 20 + random() * 5 : 15 + random() * 3;
+      const candidate = worker(`S${scenario}-W${index}`, 'A1', quality, rate, completeRtw);
+      truth.set(candidate.workerId, completeRtw);
+      candidates.push(candidate);
+    }
+
+    const result = planAgencyLabourFulfilment({
+      tenantId:'tenant-1', siteId:'site-1', now:'2026-10-04T12:00:00.000Z', request:req,
+      agencies:[agency('A1', true)], candidates,
+      policy:{parallelAgencies:1,responseSlaMinutes:5,autoDispatchApprovedAgencies:true},
+    });
+
+    for (const chosen of result.selectedWorkers) {
+      selected++;
+      assert.equal(truth.get(chosen.workerId), true, chosen.workerId);
+    }
+    for (const rejected of result.rejectedWorkers) {
+      if (!truth.get(rejected.workerId)) {
+        rejectedWithoutAssurance++;
+        assert.equal(rejected.score, null);
+        assert.ok(rejected.failures.includes('right_to_work_check_method_not_prescribed'));
+      }
+    }
+  }
+
+  assert.ok(selected > 1_000);
+  assert.ok(rejectedWithoutAssurance > 1_500);
 });
