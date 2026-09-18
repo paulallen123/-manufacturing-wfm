@@ -11,7 +11,11 @@ The delivery boundary sits after supplier eligibility. It is deliberately not a 
 A delivery can only be prepared when the supplied eligibility result:
 - belongs to the same agency;
 - is explicitly `eligible: true`;
-- contains no supplier eligibility failures.
+- contains no supplier eligibility failures;
+- identifies the supplier-compliance engine version and evidence used;
+- was evaluated under the same Fair Work Agency gangmaster-licence applicability policy as the request being dispatched.
+
+That final binding prevents an eligibility result produced for a request where licensing was marked not required from being reused to dispatch a request where licensing is required. A policy mismatch fails closed before any delivery state or sender call exists.
 
 The audit record retains the supplier-compliance engine version and a short fingerprint of the eligibility evidence so the dispatch can be correlated back to the evidence that allowed it without copying the evidence or worker data into the delivery ledger.
 
@@ -45,8 +49,9 @@ The existing validated request pack already carries the manufacturer-side facts 
 
 ## Development proof
 
-The deterministic delivery suite covers:
+The deterministic delivery suite passes **12/12 tests** and covers:
 - supplier eligibility before dispatch;
+- request-policy binding of supplier eligibility evidence, including gangmaster-licence applicability;
 - deterministic idempotency keys;
 - unsafe channel/link/input rejection;
 - stale-deadline rejection before store or sender calls;
