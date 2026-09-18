@@ -38,8 +38,8 @@ function sessionCookieFrom(response) {
   return { name: pair.slice(0, split), value: pair.slice(split + 1) };
 }
 
-async function runRole({slug, email, expectedRole, expectedTenant, expectedPayrollStatus, requiredSurface}) {
-  const port = 9300 + Math.floor(Math.random() * 500);
+async function runRole({slug, email, expectedRole, expectedTenant, expectedPayrollStatus, requiredSurface}, roleIndex) {
+  const port = 9300 + roleIndex * 30 + Math.floor(Math.random() * 20);
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-role-${slug}-${crypto.randomBytes(4).toString('hex')}`);
   fs.mkdirSync(profile, { recursive: true });
   const chromeEnv = { ...process.env };
@@ -48,7 +48,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
   delete chromeEnv.WFM_DEMO_PASSWORD;
   const proc = spawn(chrome, [
     '--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
-    `--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'about:blank'
+    `--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'--window-size=1440,1000','about:blank'
   ], {stdio:['ignore','ignore','ignore'], env:chromeEnv});
   let ws;
   try {
@@ -68,12 +68,20 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
       ws.addEventListener('open',()=>{clearTimeout(timer);resolve();},{once:true});
       ws.addEventListener('error',e=>{clearTimeout(timer);reject(e.error||new Error('CDP error'));},{once:true});
     });
-    let id=1; const pending=new Map();
+    let id=1; const pending=new Map(); const browserApi=[];
     ws.addEventListener('message',event=>{
       const msg=JSON.parse(typeof event.data==='string'?event.data:Buffer.from(event.data).toString('utf8'));
-      if (!msg.id) return;
-      const p=pending.get(msg.id); if(!p) return; pending.delete(msg.id);
-      msg.error?p.reject(new Error(`${p.method}: ${msg.error.message}`)):p.resolve(msg.result||{});
+      if (msg.id) {
+        const p=pending.get(msg.id); if(!p) return; pending.delete(msg.id);
+        msg.error?p.reject(new Error(`${p.method}: ${msg.error.message}`)):p.resolve(msg.result||{});
+        return;
+      }
+      if(msg.method==='Network.responseReceived'){
+        try{
+          const u=new URL(msg.params.response.url);
+          if(u.origin===origin&&u.pathname.startsWith('/api/')) browserApi.push({path:u.pathname,status:msg.params.response.status});
+        }catch{}
+      }
     });
     const send=(method,params={},timeoutMs=12000)=>new Promise((resolve,reject)=>{
       const n=id++;
@@ -82,6 +90,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
       ws.send(JSON.stringify({id:n,method,params}));
     });
 
+    await send('Page.enable');
     await send('Network.enable');
     const beforeCookies = await send('Network.getCookies',{urls:[origin]});
     assert.equal(beforeCookies.cookies?.length || 0, 0, `${slug} fresh browser unexpectedly contained cookies.`);
@@ -120,14 +129,46 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
       assert.equal(surfaceStatus,200,`${slug} required surface ${requiredSurface} failed.`);
     }
 
-    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}`);
+    // Customer-facing proof: the same fresh authenticated Chrome context must render
+    // the hosted application, not merely hold a valid session cookie.
+    await send('Page.navigate',{url:origin});
+    const renderDeadline=Date.now()+20000;
+    let domLength=0;
+    while(Date.now()<renderDeadline){
+      try{
+        const doc=await send('DOM.getDocument',{depth:2,pierce:true},5000);
+        const html=await send('DOM.getOuterHTML',{nodeId:doc.root.nodeId},5000);
+        domLength=String(html.outerHTML||'').length;
+        if(domLength>10000&&browserApi.some(x=>x.path==='/api/bootstrap'&&x.status===200)) break;
+      }catch{}
+      await sleep(300);
+    }
+    assert.ok(domLength>10000,`${slug} authenticated rendered DOM did not reach proof threshold.`);
+    assert.ok(browserApi.some(x=>x.path==='/api/bootstrap'&&x.status===200),`${slug} browser did not complete authenticated bootstrap.`);
+    await sleep(600);
+    const desktop=await send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false},10000);
+    const desktopName=`40-role-${slug}-desktop.png`;
+    fs.writeFileSync(path.join(outDir,desktopName),Buffer.from(desktop.data,'base64'));
+    assert.ok(fs.statSync(path.join(outDir,desktopName)).size>10000,`${slug} desktop screenshot is unexpectedly small.`);
+
+    await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    await send('Page.reload',{ignoreCache:true});
+    await sleep(1000);
+    const mobile=await send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false},10000);
+    const mobileName=`41-role-${slug}-mobile.png`;
+    fs.writeFileSync(path.join(outDir,mobileName),Buffer.from(mobile.data,'base64'));
+    assert.ok(fs.statSync(path.join(outDir,mobileName)).size>8000,`${slug} mobile screenshot is unexpectedly small.`);
+
+    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|rendered=desktop+mobile`);
     return {
       slug,email,role:expectedRole,tenant:expectedTenant,
       freshBrowserCookieCount:beforeCookies.cookies?.length||0,
       freshBootstrapStatus:pre.status,loginStatus:loginResponse.status,payrollStatus:payrollResponse.status,
       requiredSurface,requiredSurfaceStatus:surfaceStatus,
+      renderedDomLength:domLength,desktopScreenshot:desktopName,mobileScreenshot:mobileName,
+      observedBrowserApi:[...new Map(browserApi.map(x=>[`${x.path}:${x.status}`,x])).values()],
       browserContext:'fresh Chrome process/profile received the exact server-issued authenticated session cookie; cookie value never logged or persisted',
-      uiClaimBoundary:'role-specific page rendering is not claimed by this gate; separate authenticated screenshot/mobile/keyboard evidence runs independently'
+      uiClaimBoundary:'role-specific authenticated home rendered on desktop and mobile; this gate does not claim every task within that role was clicked end-to-end'
     };
   } finally {
     try{ws?.close();}catch{}
@@ -152,18 +193,23 @@ assert.equal(health.release,expectedRelease);
 assert.equal(health.productionApproved,false);
 assert.equal(health.pilotReady,false);
 
+const specs=[
+  {slug:'manager',email:'manager@northstar.example',expectedRole:'manager',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/time-review'},
+  {slug:'employee',email:'maya@northstar.example',expectedRole:'employee',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/personal'},
+  {slug:'payroll',email:'payroll@northstar.example',expectedRole:'payroll_admin',expectedTenant:'northstar-demo',expectedPayrollStatus:200,requiredSurface:'/api/payroll-run'},
+  {slug:'superuser',email:'superuser@northstar.example',expectedRole:'superuser',expectedTenant:'northstar-demo',expectedPayrollStatus:200,requiredSurface:'/api/onboarding'},
+  {slug:'isolation-manager',email:'other@isolation.example',expectedRole:'manager',expectedTenant:'isolation-test',expectedPayrollStatus:403,requiredSurface:'/api/bootstrap'}
+];
 const roles=[];
-roles.push(await runRole({slug:'manager',email:'manager@northstar.example',expectedRole:'manager',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/time-review'}));
-roles.push(await runRole({slug:'employee',email:'maya@northstar.example',expectedRole:'employee',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/personal'}));
-roles.push(await runRole({slug:'payroll',email:'payroll@northstar.example',expectedRole:'payroll_admin',expectedTenant:'northstar-demo',expectedPayrollStatus:200,requiredSurface:'/api/payroll-run'}));
-roles.push(await runRole({slug:'isolation-manager',email:'other@isolation.example',expectedRole:'manager',expectedTenant:'isolation-test',expectedPayrollStatus:403,requiredSurface:'/api/bootstrap'}));
+for(let i=0;i<specs.length;i++) roles.push(await runRole(specs[i],i));
 
 fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.stringify({
   capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,
-  processIsolation:'four fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
+  processIsolation:'five fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
   authMethod:'real hosted /api/login created the session; CDP bound that server-issued cookie to the corresponding fresh Chrome process; no credential passed to Chrome process environment',
+  renderedEvidence:'each role rendered the authenticated hosted home on 1440x1000 desktop and 390x844 mobile and produced retained screenshots',
   roles,result:'PASS',
-  claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts plus server-side role/tenant boundaries; role-specific UI rendering/accessibility remains covered by separate visual/browser evidence; no production/pilot approval and no real employee/payroll data'
+  claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts, server-side role/tenant boundaries, and role-specific rendered homes on desktop/mobile; not every role-specific task is clicked end-to-end; no production/pilot approval and no real employee/payroll data'
 },null,2));
-console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}`);
+console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}|rendered_screenshots=${roles.length*2}`);
 delete process.env.WFM_STAGING_PASSWORD;
