@@ -12,6 +12,16 @@ on:
       - '.github/scripts/ux-cycle11-context-browser.mjs'
       - '.github/scripts/ux-cycle12-signal-contract.mjs'
       - '.github/workflows/ux-cycle11-gate.yml'
+  pull_request:
+    branches:
+      - 'ux/universal-action-queue-20260918-r1'
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/ux-reset-cycle11*'
+      - 'ux-overlay/ux-reset-cycle12*'
+      - '.github/scripts/ux-cycle11-context-browser.mjs'
+      - '.github/scripts/ux-cycle12-signal-contract.mjs'
+      - '.github/workflows/ux-cycle11-gate.yml'
   workflow_dispatch:
 
 permissions:
