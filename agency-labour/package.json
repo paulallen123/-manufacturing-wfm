@@ -1,0 +1,13 @@
+{
+  "name": "wfm-agency-labour-proof",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test.mjs && node protocol.test.mjs && node recovery.test.mjs && node readiness.test.mjs",
+    "build": "npm test",
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
