@@ -18,6 +18,8 @@ on:
       - 'resilience/autonomous-repair-pipeline.cjs'
       - 'resilience/canary-rollback-controller.cjs'
       - 'resilience/autonomous-repair-canary-orchestrator.cjs'
+      - 'resilience/canonical-release-boundary.cjs'
+      - 'resilience/canonical-release-policy-snapshot.json'
       - 'resilience/t3-shadow-simulator.cjs'
       - 'resilience/t3-shadow-verifier.cjs'
       - 'resilience/t3-customer-authorisation-gate.cjs'
@@ -39,11 +41,13 @@ on:
       - 'scripts/validate-autonomous-repair-pipeline.mjs'
       - 'scripts/validate-canary-rollback-controller.mjs'
       - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'
+      - 'scripts/validate-canonical-release-boundary.mjs'
       - 'scripts/validate-t3-shadow-support.mjs'
       - 'scripts/validate-t3-customer-authorisation-gate.mjs'
       - 'scripts/validate-t3-execution-readiness.mjs'
       - 'scripts/validate-t3-deterministic-execution-sandbox.mjs'
       - 'scripts/validate-t4-containment-chaos.mjs'
+      - 'scripts/validate-t4-outer-terminal-integrity.mjs'
       - 'scripts/validate-autonomy-control-loop.mjs'
       - 'scripts/validate-autonomy-source-syntax.mjs'
       - 'scripts/run-portable-autonomy-proof.mjs'
@@ -63,11 +67,24 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
-      - name: Checkout trusted owner push
+      - name: Checkout trusted owner push with canonical history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - name: Fail closed on canonical base conflict and bind live release policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          CANONICAL_REF='origin/integration/canonical'
+          git rev-parse "$CANONICAL_REF" >/dev/null
+          git merge-tree --write-tree HEAD "$CANONICAL_REF" >/tmp/wfm-autonomy-merge-tree
+          POLICY_FILE="$RUNNER_TEMP/canonical-release-policy.json"
+          git show "$CANONICAL_REF:release/release-policy.json" > "$POLICY_FILE"
+          echo "WFM_CANONICAL_RELEASE_POLICY_FILE=$POLICY_FILE" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_BASE_SHA=$(git rev-parse "$CANONICAL_REF")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_POLICY_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:release/release-policy.json")" >> "$GITHUB_ENV"
 
       - name: Set up exact Node runtime
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
