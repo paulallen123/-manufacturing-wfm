@@ -97,6 +97,10 @@ function createAutonomyControlLoop({
 
     let outcome = 'contained';
     let result = {};
+    // T4 is fail-closed: the outer receipt may only claim a safe terminal after
+    // the dedicated containment controller has completed and its receipt has
+    // independently verified. Other tiers retain their existing contained/abstain semantics.
+    let safeTerminalEstablished = tier !== 'T4';
 
     try {
       if (targetTenant !== tenant && tier !== 'T4') {
@@ -231,6 +235,7 @@ function createAutonomyControlLoop({
         }
         outcome = t4.outcome;
         result = { t4 };
+        safeTerminalEstablished = true;
         append('t4-controller-terminal', {
           status: outcome,
           controllerReceiptDigest: t4.receiptDigest || null,
@@ -252,6 +257,13 @@ function createAutonomyControlLoop({
     } catch (error) {
       outcome = 'contained';
       result = { containedErrorCode: error.code || 'WFM_AUTONOMY_INTERNAL' };
+      if (tier === 'T4') {
+        safeTerminalEstablished = false;
+        append('t4-safe-terminal-not-established', {
+          code: result.containedErrorCode,
+          reason: 'containment-or-forensic-verification-failed',
+        });
+      }
       append('control-failure-contained', {
         code: result.containedErrorCode,
         messageDigest: digest(String(error.message || 'error')),
@@ -265,7 +277,7 @@ function createAutonomyControlLoop({
         : (contract.tiers[tier].allowed_terminal_outcomes || [])[0];
     }
 
-    append('terminal', { tier, outcome, actionCount });
+    append('terminal', { tier, outcome, actionCount, safeTerminal: safeTerminalEstablished });
     const endedAt = Number(now());
     const core = {
       schemaVersion: 1,
@@ -274,7 +286,7 @@ function createAutonomyControlLoop({
       scenarioId,
       tier,
       outcome,
-      safeTerminal: true,
+      safeTerminal: safeTerminalEstablished,
       actionCount,
       maxActions,
       evidenceDigest,
@@ -310,6 +322,10 @@ function createAutonomyControlLoop({
     }
 
     if (receipt.traceHeadDigest !== prev) return false;
+    if (receipt.tier === 'T4' && receipt.safeTerminal === true) {
+      if (!receipt.t4 || receipt.t4.safeTerminal !== true) return false;
+      if (!t4ContainmentController?.verifyReceipt || t4ContainmentController.verifyReceipt(receipt.t4) !== true) return false;
+    }
     const result = {};
     for (const key of ['answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode']) {
       if (Object.prototype.hasOwnProperty.call(receipt, key)) result[key] = receipt[key];
