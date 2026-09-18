@@ -5,6 +5,7 @@ const { DatabaseSync } = require('node:sqlite');
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
+const CONTRACT_WEBHOOK_HEADER = 'x-wfm-contract-webhook';
 
 const REQUIREMENTS = Object.freeze([
   { key: 'tenant-environment', label: 'Tenant environment', minConfidence: 0.99, budgetMinutes: 15, dependsOn: [] },
@@ -120,6 +121,7 @@ async function readJson(req, maxBytes = 256 * 1024) {
 function createOneDayEnterpriseEngine(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
+  const contractWebhookSecret = options.contractWebhookSecret || process.env.WFM_CONTRACT_WEBHOOK_SECRET || '';
   const publicOrigin = String(options.publicOrigin || process.env.WFM_PUBLIC_ORIGIN || '').replace(/\/$/, '');
   const invitationSender = typeof options.sendInvitation === 'function'
     ? options.sendInvitation
@@ -285,6 +287,35 @@ function createOneDayEnterpriseEngine(options = {}) {
       return false;
     }
     return true;
+  }
+
+  function requireContractWebhook(req, res) {
+    if (!contractWebhookSecret) {
+      writeJson(res, 503, { error: 'Contract webhook credential is not configured.' });
+      return false;
+    }
+    if (!secureEqual(req?.headers?.[CONTRACT_WEBHOOK_HEADER], contractWebhookSecret)) {
+      writeJson(res, 403, { error: 'Trusted contract event is required.' });
+      return false;
+    }
+    return true;
+  }
+
+  async function handleContractSigned(req, res) {
+    const body = await readJson(req);
+    const state = compact(body.state || body.status || body.event, 40).trim().toUpperCase();
+    if (!['SIGNED', 'COMPLETED', 'CONTRACT_SIGNED'].includes(state)) {
+      return writeJson(res, 202, { ignored: true, reason: 'Contract is not in a signed/completed state.' });
+    }
+    req[Symbol.asyncIterator] = async function* () {
+      yield Buffer.from(JSON.stringify({
+        tenant: body.tenant,
+        contractRef: body.contractRef || body.contractId,
+        recipientEmail: body.recipientEmail || body.implementationContactEmail,
+        targetHours: body.targetHours || 8
+      }));
+    };
+    return await handleContractActivated(req, res);
   }
 
   function parseDecision(row) {
@@ -682,6 +713,10 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (!path.startsWith(PREFIX)) return false;
 
     try {
+      if (req.method === 'POST' && path === PREFIX + '/contract-signed') {
+        if (!requireContractWebhook(req, res)) return true;
+        return await handleContractSigned(req, res);
+      }
       if (req.method === 'POST' && path === PREFIX + '/contract-activated') {
         if (!requireInternal(req, res)) return true;
         return await handleContractActivated(req, res);
