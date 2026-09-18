@@ -26,7 +26,8 @@ for (const key of [
   'productionMustUseExactStagingCommit',
   'legacyPinnedShaWorkflowsAreProofOnly',
   'mainIsStagingMirrorOnly',
-  'mainMustMatchReleaseStagingBeforeCanonicalDeploy'
+  'mainMustMatchReleaseStagingBeforeCanonicalDeploy',
+  'canonicalRailwayCliOnlyFromReleaseWorkflow'
 ]) {
   if (rules[key] !== true) fail(`required rule is not enabled: ${key}`);
 }
@@ -43,5 +44,6 @@ if (!staging?.projectId || !staging?.environmentId || staging?.serviceId !== '3b
 }
 if (staging?.sourceBranch !== 'main') fail('canonical staging must remain bound to main mirror');
 if (staging?.authorityAlias !== 'wfm-canonical-staging') fail('canonical staging authority alias missing');
+if (staging?.deploymentAuthority !== '.github/workflows/canonical-staging-release.yml') fail('canonical staging deployment authority drifted');
 
 if (!process.exitCode) console.log('RELEASE_POLICY=PASS');

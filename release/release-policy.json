@@ -15,7 +15,8 @@
       "serviceId": "3bea5411-cebb-4878-adcc-766f5fd58cc7",
       "serviceName": "wfm-concept-fidelity-preview",
       "sourceBranch": "main",
-      "authorityAlias": "wfm-canonical-staging"
+      "authorityAlias": "wfm-canonical-staging",
+      "deploymentAuthority": ".github/workflows/canonical-staging-release.yml"
     },
     "production": null
   },
@@ -29,6 +30,7 @@
     "legacyPinnedShaWorkflowsAreProofOnly": true,
     "deletePreviewAfterMergeOrClose": true,
     "mainIsStagingMirrorOnly": true,
-    "mainMustMatchReleaseStagingBeforeCanonicalDeploy": true
+    "mainMustMatchReleaseStagingBeforeCanonicalDeploy": true,
+    "canonicalRailwayCliOnlyFromReleaseWorkflow": true
   }
 }
