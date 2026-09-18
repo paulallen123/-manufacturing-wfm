@@ -1,5 +1,7 @@
 import crypto from 'node:crypto';
 
+const VERIFIED_SIGNED_ROLLBACK_CLIENTS=new WeakSet();
+
 function stable(value){
   if(value===null || typeof value!=='object') return JSON.stringify(value);
   if(Array.isArray(value)) return '['+value.map(stable).join(',')+']';
@@ -37,6 +39,10 @@ function verifySignature(receipt,publicKey){
   return payload;
 }
 
+export function isVerifiedSignedRollbackAnchorClient(value){
+  return Boolean(value && VERIFIED_SIGNED_ROLLBACK_CLIENTS.has(value));
+}
+
 export class SignedRollbackAnchorClient {
   constructor({transport,authorityPublicKeys,authorityId,anchorId,maxReceiptAgeMs=30_000,now=()=>Date.now(),randomBytes=crypto.randomBytes}={}){
     if(!transport?.read || !transport?.compareAndAdvance) throw new Error('Rollback-anchor transport required.');
@@ -50,6 +56,7 @@ export class SignedRollbackAnchorClient {
     this.now=now;
     this.randomBytes=randomBytes;
     this.lastSeenGeneration=null;
+    VERIFIED_SIGNED_ROLLBACK_CLIENTS.add(this);
   }
 
   currentState(){
