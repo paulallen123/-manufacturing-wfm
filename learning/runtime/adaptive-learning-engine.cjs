@@ -319,7 +319,8 @@ function createAdaptiveLearningEngine(options = {}) {
       best.set(item.evidence_type, Math.max(best.get(item.evidence_type) || 0, item.score_value));
     }
     const score = Math.min(100, [...best.values()].reduce((sum, value) => sum + value, 0));
-    const mastered = score >= 80;
+    const requiresTeachBack = Boolean(COMPETENCIES[row.competency_key]?.teachBack);
+    const mastered = score >= 80 && (!requiresTeachBack || best.has('TEACH_BACK'));
     const currentMasteredAt = row.mastered_at_ms || null;
     const masteredAt = mastered ? (currentMasteredAt || Date.now()) : null;
     const dueAt = mastered ? masteredAt + nextRefreshMs(score) : Date.now();
