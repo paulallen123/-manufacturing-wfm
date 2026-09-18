@@ -214,8 +214,6 @@ try {
     ['Improve'],
     ['Today']
   ]) {
-    await send('Page.navigate', { url: origin });
-    await waitForAuthenticatedHome();
     const route = await clickText(labels);
     if (route) {
       routes.push(route);
@@ -225,8 +223,6 @@ try {
   }
   assert.equal(routes.length,4, `Expected all four approved manager navigation targets; observed ${routes.length}.`);
 
-  await send('Page.navigate', { url: origin });
-  await waitForAuthenticatedHome();
   await waitForExpression(`Boolean(document.querySelector('.ux-approved-today'))`);
   const drawerOpened = await evaluate(`(() => { const button=document.querySelector('.ux-approved-path-button'); if(!button) return false; button.click(); return true; })()`);
   assert.equal(drawerOpened,true);
@@ -243,18 +239,17 @@ try {
   assert.equal(evidenceOpen,true);
   console.log('HOSTED_CONCEPT_CONTROLS=PASS');
 
-  await send('Page.navigate', { url: `${origin}/kiosk.html` });
-  await waitForExpression(`document.readyState === 'complete' || document.readyState === 'interactive'`);
-  screenshots.push(await screenshot('20-kiosk-desktop.png'));
-
-  await send('Page.navigate', { url: origin });
-  await waitForAuthenticatedHome();
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   await sleep(700);
   const mobileLayout = await evaluate(`({width: innerWidth, scrollWidth: document.documentElement.scrollWidth})`);
   assert.equal(mobileLayout.width, 390);
   assert.ok(mobileLayout.scrollWidth <= mobileLayout.width + 1, `Mobile horizontal overflow ${mobileLayout.scrollWidth} > ${mobileLayout.width}`);
   screenshots.push(await screenshot('30-auth-control-centre-mobile.png'));
+
+  await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await send('Page.navigate', { url: `${origin}/kiosk.html` });
+  await waitForExpression(`document.readyState === 'complete' || document.readyState === 'interactive'`);
+  screenshots.push(await screenshot('20-kiosk-desktop.png'));
 
   const focus = await evaluate(`(() => {
     const focusables = [...document.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x => {
