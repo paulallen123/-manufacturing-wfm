@@ -72,3 +72,40 @@ test('fails closed when an AAS payload exceeds the configured element count', ()
   assert.equal(result.status, 'rejected');
   assert.equal(result.reason, 'aas_element_limit_exceeded');
 });
+
+test('legacy IDTA public-instance semantics are normalized into the strict offered-capability path', () => {
+  const ref = (value) => ({ type: 'ExternalReference', keys: [{ type: 'GlobalReference', value }] });
+  const legacy = {
+    id: 'urn:sm:legacy-public',
+    semanticId: ref('https://admin-shell.io/idta/CapabilityDescription/1/0/Submodel'),
+    submodelElements: [{
+      idShort: 'HC10CapabilitySet',
+      modelType: 'SubmodelElementCollection',
+      semanticId: ref('https://admin-shell.io/idta/CapabilityDescription/CapabilitySet/1/0'),
+      value: [{
+        idShort: 'HeatingControlledContainer',
+        modelType: 'SubmodelElementCollection',
+        semanticId: ref('https://admin-shell.io/idta/CapabilityDescription/CapabilityContainer/1/0'),
+        value: [{
+          idShort: 'HeatingControlled',
+          modelType: 'Capability',
+          semanticId: ref('https://admin-shell.io/idta/CapabilityDescription/Capability/1/0'),
+          supplementalSemanticIds: [ref('http://www.iat.rwth-aachen.de/capability-ontology#HeatingControlled')],
+          qualifiers: [{
+            type: 'Offered',
+            value: 'true',
+            valueType: 'xs:boolean',
+            semanticId: ref('https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifiers/Offered/1/0'),
+          }],
+        }],
+      }],
+    }],
+  };
+  const result = extractAasCapabilities([legacy]);
+  assert.equal(result.status, 'accepted');
+  assert.equal(result.capabilities.length, 1);
+  assert.equal(result.capabilities[0].role, 'offered');
+  assert.equal(result.capabilities[0].semanticId, 'http://www.iat.rwth-aachen.de/capability-ontology#HeatingControlled');
+  assert.equal(result.idta02020.matchedSubmodels, 1);
+  assert.equal(result.idta02020.normalizedSemanticAliases, 2);
+});
