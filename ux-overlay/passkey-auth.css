@@ -1,0 +1,26 @@
+
+/* WFM_PASSKEY_UI_V1 */
+.wfm-passkey-login{width:100%;margin-top:10px;border:1px solid rgba(25,56,66,.18);background:#fff;color:#193842;font-weight:700}
+.wfm-passkey-login:hover{background:#f4f8f7}
+.wfm-passkey-hint{margin:8px 0 0;font-size:12px;line-height:1.45;color:#64757c}
+.wfm-passkey-security{margin:18px 0;padding:20px;border:1px solid #dfe7e4;border-radius:18px;background:#fff;box-shadow:0 10px 28px rgba(20,55,48,.05)}
+.wfm-passkey-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.wfm-passkey-head h2{margin:4px 0 6px}
+.wfm-passkey-head p{margin:0;max-width:700px;color:#5c6e74}
+.wfm-passkey-list{display:grid;gap:8px;margin:18px 0}
+.wfm-passkey-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 14px;border:1px solid #e2e9e7;border-radius:12px;background:#f8faf9}
+.wfm-passkey-row strong,.wfm-passkey-row small{display:block}
+.wfm-passkey-row small{margin-top:3px;color:#66777d}
+.wfm-passkey-empty{padding:14px;border-radius:12px;background:#f7f9f8;color:#66777d}
+.wfm-passkey-enrol{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.wfm-passkey-enrol label{display:grid;gap:6px;min-width:280px;flex:1}
+.wfm-passkey-enrol input{width:100%}
+.wfm-passkey-status{min-height:20px;margin:12px 0 0;font-weight:600}
+.wfm-passkey-note{margin:8px 0 0;font-size:12px;color:#738187}
+@media(max-width:680px){
+  .wfm-passkey-head{display:block}
+  .wfm-passkey-head .pill{display:inline-block;margin-top:10px}
+  .wfm-passkey-enrol{display:grid}
+  .wfm-passkey-enrol label{min-width:0}
+  .wfm-passkey-row{align-items:flex-start}
+}
