@@ -14,13 +14,16 @@ function sha256(value) {
   return createHash('sha256').update(String(value ?? '')).digest('hex');
 }
 
-const checks = [\n  ['ci-provider-failover', 'scripts/validate-ci-provider-failover.mjs', true],
+const checks = [
+  ['source-syntax-and-workflow-integrity', 'scripts/validate-autonomy-source-syntax.mjs', true],
+  ['ci-provider-failover', 'scripts/validate-ci-provider-failover.mjs', true],
   ['deployment-provenance', 'scripts/validate-deployment.mjs', false],
   ['resilience-policy', 'scripts/validate-resilience-scenarios.mjs', true],
   ['support-tier-contract', 'scripts/validate-support-tier-contract.mjs', true],
   ['tier0-selfhelp', 'scripts/validate-support-selfhelp.mjs', true],
   ['tier1-provider-recovery-handoff', 'scripts/validate-provider-recovery-handoff.mjs', true],
-  ['tier2-repair-authority-separation', 'scripts/validate-autonomous-repair-factory.mjs', true],\n  ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
+  ['tier2-repair-authority-separation', 'scripts/validate-autonomous-repair-factory.mjs', true],
+  ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
 ];
 
 const results = [];
