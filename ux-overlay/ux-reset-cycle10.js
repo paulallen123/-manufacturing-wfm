@@ -75,7 +75,7 @@ function enhancePlanner(){
    const control=event.target.closest('.ux-plan-jump');if(!control)return;
    if(control.dataset.target==='issues'&&issue)focusTarget(issue,'start');
    if(control.dataset.target==='grid'&&grid){
-     if(grid.hidden){revealGrid(content,grid,gridToggle);grid.scrollIntoView({block:'start',behavior:'smooth'});}else hideGrid(content,grid,gridToggle);
+     if(grid.hidden){revealGrid(content,grid,gridToggle);focusTarget(grid,'start');}else hideGrid(content,grid,gridToggle);
    }
    if(control.dataset.target==='publish'&&publish)focusTarget(publish,'center');
  });
