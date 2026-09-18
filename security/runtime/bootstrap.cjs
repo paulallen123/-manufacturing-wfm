@@ -2,10 +2,12 @@
 
 const http = require('node:http');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
+const { createUxPreferenceStore } = require('./ux-preference.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
 let guard = null;
+let uxPreferences = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -20,6 +22,9 @@ http.createServer = function guardedCreateServer(listener) {
   // request until this function returns, so there is no unguarded request window.
   if (enabled && !guard && process.env.WFM_DB) {
     guard = createIdentitySurvivalGuard({ dbPath: process.env.WFM_DB });
+  }
+  if (!uxPreferences && process.env.WFM_DB) {
+    uxPreferences = createUxPreferenceStore({ dbPath: process.env.WFM_DB });
   }
   if (hosted && !guard) {
     throw new Error('Hosted staging refuses to start without the identity survival guard.');
@@ -36,6 +41,20 @@ http.createServer = function guardedCreateServer(listener) {
           res.setHeader('Cache-Control', 'no-store');
           res.setHeader('X-Content-Type-Options', 'nosniff');
           res.end(JSON.stringify({ error: 'Security control unavailable. Request refused.' }));
+        }
+        return;
+      }
+    }
+    if (uxPreferences) {
+      try {
+        if (await uxPreferences.beforeRequest(req, res)) return;
+      } catch {
+        if (!res.headersSent && !res.writableEnded) {
+          res.statusCode = 503;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-store');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.end(JSON.stringify({ error: 'UX preference control unavailable. Request refused.' }));
         }
         return;
       }
