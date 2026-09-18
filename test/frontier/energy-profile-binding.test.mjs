@@ -70,6 +70,7 @@ test('profile evidence must carry the same tenant and site scope as the decision
 test('profile-derived savings remain non-stackable with rewards by default',()=>{
   const input=baseInput();
   input.options[1].energy.flexibilityReward=50;
+  input.options[1].labour={premiumCost:0,upperBoundCost:0};
   const binding=bindMeasuredProfileEconomics(input);
   assert.equal(binding.valid,true);
   assert.equal(binding.input.options[1].energy.valueStackingAllowed,false);
@@ -90,7 +91,7 @@ test('legacy hardened path still works when no measured profile is supplied',()=
   assert.equal(result.status,'recommend_options');
 });
 
-test('profile quality imposes an uncertainty floor when upstream declares zero uncertainty',()=>{
+test('accepted lower-quality profile cannot self-declare zero uncertainty',()=>{
   const input=baseInput();
   input.options[1].energy.profileEvidence.uncertaintyPct=0;
   input.options[1].energy.profileEvidence.baseline=[seg('run',60,100,0.20,{qualityScore:0.8})];
@@ -99,7 +100,7 @@ test('profile quality imposes an uncertainty floor when upstream declares zero u
   const binding=bindMeasuredProfileEconomics(input);
   assert.equal(binding.valid,true);
   assert.equal(binding.evidence[0].declaredUncertaintyPct,0);
-  assert.ok(Math.abs(binding.evidence[0].qualityImpliedUncertaintyPct-0.2)<1e-9);
+  assert.ok(Math.abs(binding.evidence[0].fixedUncertaintyFloorPct-0.2)<1e-9);
   assert.ok(Math.abs(binding.input.options[1].energy.lowerBoundEnergyValue-8)<1e-9);
   assert.equal(binding.evidence[0].uncertaintyFloorApplied,true);
   const result=evaluateEnergyFlexibilityProfileAware(input);
@@ -107,11 +108,49 @@ test('profile quality imposes an uncertainty floor when upstream declares zero u
   assert.equal(result.rankedOptions.length,0);
 });
 
-test('higher declared uncertainty remains authoritative when it is more conservative than the quality floor',()=>{
+test('high profile quality does not imply calibrated low value uncertainty',()=>{
   const input=baseInput();
+  input.options[1].energy.profileEvidence.uncertaintyPct=0;
+  input.options[1].energy.profileEvidence.baseline=[seg('run',60,100,0.20,{qualityScore:1})];
+  input.options[1].energy.profileEvidence.candidate=[seg('run',60,100,0.10,{qualityScore:1})];
   const binding=bindMeasuredProfileEconomics(input);
   assert.equal(binding.valid,true);
-  assert.ok(Math.abs(binding.evidence[0].qualityImpliedUncertaintyPct-0.05)<1e-9);
-  assert.equal(binding.evidence[0].effectiveUncertaintyPct,0.1);
+  assert.equal(binding.evidence[0].qualityImpliedUncertaintyPct,0);
+  assert.ok(Math.abs(binding.evidence[0].effectiveUncertaintyPct-0.2)<1e-9);
+  assert.equal(binding.evidence[0].uncertaintyPolicy,'fixed_floor_until_adapter_calibration');
+});
+
+test('declared uncertainty above the fixed floor remains authoritative',()=>{
+  const input=baseInput();
+  input.options[1].energy.profileEvidence.uncertaintyPct=0.25;
+  const binding=bindMeasuredProfileEconomics(input);
+  assert.equal(binding.valid,true);
+  assert.ok(Math.abs(binding.evidence[0].fixedUncertaintyFloorPct-0.2)<1e-9);
+  assert.equal(binding.evidence[0].effectiveUncertaintyPct,0.25);
   assert.equal(binding.evidence[0].uncertaintyFloorApplied,false);
+});
+
+test('fixed admission-threshold floor is safer than uncalibrated quality mapping under uniform worst-case downside',()=>{
+  let adaptiveOnly=0;
+  let adaptiveFalsePositives=0;
+  let fixedFalsePositives=0;
+  for(let quality=0.8;quality<=1.0001;quality+=0.02){
+    for(let declared=0;declared<=0.2001;declared+=0.05){
+      const adaptiveUncertainty=Math.max(declared,1-quality);
+      const fixedUncertainty=Math.max(declared,0.2);
+      for(const gross of [20,40,60,80,100,150,200]){
+        for(const cost of [0,10,20,40,60,80,100,120,150]){
+          const adaptiveRecommends=gross*(1-adaptiveUncertainty)-cost>0;
+          const fixedRecommends=gross*(1-fixedUncertainty)-cost>0;
+          const uniformWorstCaseNet=gross*0.8-cost;
+          if(adaptiveRecommends&&!fixedRecommends) adaptiveOnly+=1;
+          if(adaptiveRecommends&&uniformWorstCaseNet<=0) adaptiveFalsePositives+=1;
+          if(fixedRecommends&&uniformWorstCaseNet<=0) fixedFalsePositives+=1;
+        }
+      }
+    }
+  }
+  assert.ok(adaptiveOnly>0);
+  assert.ok(adaptiveFalsePositives>0);
+  assert.equal(fixedFalsePositives,0);
 });
