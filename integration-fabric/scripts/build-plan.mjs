@@ -26,6 +26,13 @@ function opportunityProfilesFor(system){
     profile.categoryIncludes.some(token => system.category.includes(token))
   );
 }
+function mergeVendorReviews(inline={},registered={}){
+  const out={...inline,...registered};
+  for(const key of ['requiredPermissions','dataAvailableOrExpected','wfmObjects','writeBackAutomation','automationOpportunities','customerValue','savingsHypotheses','dataGaps','constraintsRisks']){
+    out[key]=unique([...(inline[key]||[]),...(registered[key]||[])]);
+  }
+  return out;
+}
 function mergedField(profiles,override,key,fallback=[]){
   return unique([
     ...profiles.flatMap(profile=>profile[key]||[]),
@@ -50,7 +57,7 @@ function nextActionFor(system,protocolProfiles,override){
 }
 function opportunityFor(system,protocolProfiles){
   const profiles=opportunityProfilesFor(system);
-  const override=opportunities.systemOverrides?.[system.id]||{};
+  const override=mergeVendorReviews(system.valueReview||{},opportunities.systemOverrides?.[system.id]||{});
   const profileIds=profiles.map(x=>x.id);
   const hasVendorDataEvidence=override.basis==='vendor-docs';
   return {
