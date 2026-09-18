@@ -142,6 +142,19 @@ try {
   const mobileReturn=await evalx("({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,focused:document.activeElement?.dataset?.ux11Route||null})");
   console.log('UX11_CONTEXT_MOBILE_RETURN='+JSON.stringify(mobileReturn));
   assert(mobileReturn.overflow<=2&&mobileReturn.focused==='leave','390px return-focus regression failed');
+
+  const confirmedOrigin=await evalx(`(()=>{const b=document.querySelector('.ux11-open[data-ux11-route="leave"]');if(!b)return null;const id=b.dataset.ux11Id;b.click();return id})()`);
+  assert(confirmedOrigin,'Source-confirmation leave action missing');
+  await retry(async()=>{const ok=await evalx("ui.page==='leave'&&document.activeElement?.matches('.ux-leave-card[data-request=\"leave-1\"]')");if(!ok)throw new Error('Source-confirmation absence target not ready');return true;});
+  const sourceMutation=await evalx(`(()=>{const r=data.requests.find(x=>x.id==='leave-1');if(!r)return false;r.status='approved';r.updatedAt='2026-09-18T16:45:00Z';return true})()`);
+  assert(sourceMutation,'Authoritative fixture request missing');
+  await evalx("document.querySelector('.ux11-back').click()");
+  await retry(async()=>{const state=await evalx(`(()=>{const row=document.querySelector('.ux11-resolved [data-ux11-id="${confirmedOrigin}"]');return {ready:ui.page==='overview'&&!!row&&document.activeElement===row,laneOpen:row?.closest('details')?.open===true,live:document.querySelector('.ux11-live')?.textContent||'',handled:document.querySelectorAll('.ux11-receipts:not(.ux11-resolved) [data-ux11-id="${confirmedOrigin}"]').length}})()`);if(!state.ready)throw new Error('Source-confirmed receipt not focused yet');return state;});
+  const confirmed=await evalx(`(()=>{const row=document.querySelector('.ux11-resolved [data-ux11-id="${confirmedOrigin}"]');return {laneOpen:row?.closest('details')?.open===true,live:document.querySelector('.ux11-live')?.textContent||'',handled:document.querySelectorAll('.ux11-receipts:not(.ux11-resolved) [data-ux11-id="${confirmedOrigin}"]').length,status:data.requests.find(x=>x.id==='leave-1')?.status||null}})()`);
+  console.log('UX11_SOURCE_CONFIRMED_RETURN='+JSON.stringify(confirmed));
+  assert(confirmed.status==='approved','Source fixture did not retain approved status');
+  assert(confirmed.laneOpen&&confirmed.handled===0,'Confirmed human decision was not isolated from automation receipts');
+  assert(confirmed.live==='The source workflow confirmed the decision.','Confirmed-return live announcement missing');
   console.log('UX11_CONTEXT_BROWSER_REGRESSION=PASS');
 } finally {
   try { ws?.close(); } catch {}
