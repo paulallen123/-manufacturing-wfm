@@ -27,7 +27,7 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function isOpaqueReference(value) {
+export function isOpaqueReference(value) {
   if (typeof value !== 'string' || !REFERENCE_PATTERN.test(value)) return false;
   const scheme = value.slice(0, value.indexOf(':')).toLowerCase();
   return !DISALLOWED_RAW_REFERENCE_SCHEMES.has(scheme);
@@ -42,7 +42,6 @@ function rejectEmbeddedSecrets(value, path = '$', findings = []) {
   for (const [key, child] of Object.entries(value)) {
     const next = `${path}.${key}`;
     if (SECRET_KEYS.test(key) && typeof child === 'string' && child.trim() !== '') {
-      // Reference-shaped secret fields must contain an opaque reference, never a raw value or URL.
       if (/(Ref|_ref|Reference)$/i.test(key)) {
         if (!isOpaqueReference(child)) findings.push(next);
       } else {
@@ -64,6 +63,19 @@ function validateScope(scope, errors) {
       errors.push('scope.siteIds must be an array of non-empty site IDs');
     } else if (new Set(scope.siteIds).size !== scope.siteIds.length) {
       errors.push('scope.siteIds must not contain duplicates');
+    }
+  }
+}
+
+function validateProviderConfigRefs(provider, errors) {
+  if (provider?.configRefs === undefined) return;
+  if (!isObject(provider.configRefs)) {
+    errors.push('provider.configRefs must be an object of opaque configuration references');
+    return;
+  }
+  for (const [name, ref] of Object.entries(provider.configRefs)) {
+    if (!/^[a-z][A-Za-z0-9]*Ref$/.test(name) || !isOpaqueReference(ref)) {
+      errors.push(`provider.configRefs.${name} must be an opaque configuration reference`);
     }
   }
 }
@@ -110,6 +122,7 @@ export function validateConnectionProfile(profile) {
   if (!isObject(profile.provider) || !profile.provider.key || !profile.provider.mappingVersion) {
     errors.push('provider metadata and mappingVersion are required');
   }
+  validateProviderConfigRefs(profile.provider, errors);
   if (!isObject(profile.mapping) || !profile.mapping.version || !['draft', 'reviewed'].includes(profile.mapping.status)) {
     errors.push('mapping must have version and draft/reviewed status');
   }
