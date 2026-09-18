@@ -34,6 +34,7 @@ const checks = [
   ['tier3-execution-readiness-boundary', 'scripts/validate-t3-execution-readiness.mjs', true],
   ['tier3-deterministic-execution-sandbox', 'scripts/validate-t3-deterministic-execution-sandbox.mjs', true],
   ['tier4-adversarial-containment-chaos', 'scripts/validate-t4-containment-chaos.mjs', true],
+  ['tier4-outer-terminal-integrity', 'scripts/validate-t4-outer-terminal-integrity.mjs', true],
   ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
 ];
 
