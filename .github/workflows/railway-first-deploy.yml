@@ -9,6 +9,7 @@ on:
       - 'scripts/live-isolation-kiosk-proof.mjs'
       - 'scripts/live-correction-proof.mjs'
       - 'scripts/live-browser-screenshot-proof.mjs'
+      - 'scripts/live-role-browser-context-proof.mjs'
       - 'scripts/live-visual-evidence.mjs'
       - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
@@ -98,6 +99,7 @@ jobs:
           await import('./scripts/live-isolation-kiosk-proof.mjs');
           await import('./scripts/live-correction-proof.mjs');
           await import('./scripts/live-browser-screenshot-proof.mjs');
+          await import('./scripts/live-role-browser-context-proof.mjs');
 
           // Video recording remains supplemental. Authenticated browser screenshots,
           // tenant/kiosk/correction proof and server-side evidence are independent gates.
@@ -112,7 +114,7 @@ jobs:
               release: '0.6.76-hosted-staging-rc1',
               status: 'BLOCKED',
               reason: 'ffmpeg unavailable on pinned runner',
-              claimBoundary: 'authenticated browser screenshots and API/tenant/kiosk/correction proof passed separately; walkthrough video not claimed'
+              claimBoundary: 'authenticated browser screenshots, separate role browser contexts and API/tenant/kiosk/correction proof passed separately; walkthrough video not claimed'
             }, null, 2));
             console.log('LIVE_VISUAL_EVIDENCE_CAPTURE=BLOCKED_FFMPEG_UNAVAILABLE');
           }
