@@ -11,6 +11,7 @@ import {
 const DELIVERY_ID = 'a'.repeat(64);
 const ACCOUNT_SID = `AC${'1'.repeat(32)}`;
 const MESSAGE_SID = `SM${'2'.repeat(32)}`;
+const AUTH_TOKEN = 'test-auth-token-32-characters-long!';
 const CALLBACK_BASE = 'https://wfm.example/providers/twilio/sms-status';
 const RECEIVED_AT = '2026-09-18T17:20:00.000Z';
 
@@ -33,23 +34,28 @@ function fixtureTwilioSignature(authToken, url, params) {
   return crypto.createHmac('sha1', authToken).update(`${url}${suffix}`).digest('base64');
 }
 
-function fixtureRequestValidator(authToken) {
-  return {
-    validate(url, params, signature) {
-      const expected = Buffer.from(fixtureTwilioSignature(authToken, url, params));
-      const actual = Buffer.from(String(signature));
-      return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
-    },
+function fixtureValidateRequest(authToken, signature, url, params) {
+  const expected = Buffer.from(fixtureTwilioSignature(authToken, url, params));
+  const actual = Buffer.from(String(signature));
+  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+}
+
+function acceptingValidateRequest(onValidate = null) {
+  return async (authToken, signature, url, params) => {
+    onValidate?.(authToken, signature, url, params);
+    return signature === 'valid';
   };
 }
 
-function acceptingValidator(onValidate = null) {
-  return {
-    async validate(url, params, signature) {
-      onValidate?.(url, params, signature);
-      return signature === 'valid';
-    },
-  };
+function makeVerifier(overrides = {}) {
+  return createTwilioSmsReceiptVerifier({
+    validateRequest:acceptingValidateRequest(),
+    authToken:AUTH_TOKEN,
+    statusCallbackBaseUrl:CALLBACK_BASE,
+    deliveryId:DELIVERY_ID,
+    expectedAccountSid:ACCOUNT_SID,
+    ...overrides,
+  });
 }
 
 test('status callback URL is canonical HTTPS and delivery-scoped', () => {
@@ -94,15 +100,13 @@ test('sender fails closed for wrong channel, unsafe destination, callback URL, o
   await assert.rejects(() => malformed.send({channel:'sms',destination:'+447700900123',deliveryId:DELIVERY_ID,message:'x',portalUrl:'https://wfm.example/r'}), /valid MessageSid/);
 });
 
-test('receipt verifier delegates authentication to the official RequestValidator seam using full canonical URL and all form fields', async () => {
+test('receipt verifier calls the official twilio-node validateRequest seam with token, signature, full URL and all form fields', async () => {
   let observed;
-  const verifier = createTwilioSmsReceiptVerifier({
-    requestValidator:acceptingValidator((url,params,signature)=>{observed={url,params,signature};}),
-    statusCallbackBaseUrl:CALLBACK_BASE,deliveryId:DELIVERY_ID,expectedAccountSid:ACCOUNT_SID,
-  });
+  const verifier = makeVerifier({validateRequest:acceptingValidateRequest((authToken,signature,url,params)=>{observed={authToken,signature,url,params};})});
   const raw = form({FutureTwilioField:'preserved-for-signature'});
   const result = await verifier.verify({rawBody:raw,headers:headers(),receivedAt:RECEIVED_AT});
   assert.equal(result.verified,true);
+  assert.equal(observed.authToken,AUTH_TOKEN);
   assert.equal(observed.url,`${CALLBACK_BASE}/${DELIVERY_ID}`);
   assert.equal(observed.signature,'valid');
   assert.equal(observed.params.FutureTwilioField,'preserved-for-signature');
@@ -114,12 +118,11 @@ test('receipt verifier delegates authentication to the official RequestValidator
 });
 
 test('documented Twilio HMAC-SHA1 fixture proves canonical URL and every form field are signature-bound', async () => {
-  const authToken = 'test-auth-token-not-used-outside-this-fixture';
   const callbackUrl = `${CALLBACK_BASE}/${DELIVERY_ID}`;
   const raw = form({FutureTwilioField:'signed-too'});
   const params = Object.fromEntries(new URLSearchParams(raw));
-  const signature = fixtureTwilioSignature(authToken, callbackUrl, params);
-  const verifier = createTwilioSmsReceiptVerifier({requestValidator:fixtureRequestValidator(authToken),statusCallbackBaseUrl:CALLBACK_BASE,deliveryId:DELIVERY_ID,expectedAccountSid:ACCOUNT_SID});
+  const signature = fixtureTwilioSignature(AUTH_TOKEN, callbackUrl, params);
+  const verifier = makeVerifier({validateRequest:fixtureValidateRequest});
   const valid = await verifier.verify({rawBody:raw,headers:headers(signature),receivedAt:RECEIVED_AT});
   assert.equal(valid.verified,true);
   const tampered = raw.replace('delivered','failed');
@@ -128,7 +131,7 @@ test('documented Twilio HMAC-SHA1 fixture proves canonical URL and every form fi
 });
 
 test('invalid signature, wrong account or wrong content type fail before a trusted event exists', async () => {
-  const verifier = createTwilioSmsReceiptVerifier({requestValidator:acceptingValidator(),statusCallbackBaseUrl:CALLBACK_BASE,deliveryId:DELIVERY_ID,expectedAccountSid:ACCOUNT_SID});
+  const verifier = makeVerifier();
   assert.deepEqual(await verifier.verify({rawBody:form(),headers:headers('bad'),receivedAt:RECEIVED_AT}),{verified:false,event:null});
   assert.deepEqual(await verifier.verify({rawBody:form({AccountSid:`AC${'9'.repeat(32)}`}),headers:headers(),receivedAt:RECEIVED_AT}),{verified:false,event:null});
   assert.deepEqual(await verifier.verify({rawBody:form(),headers:{...headers(),'content-type':'application/json'},receivedAt:RECEIVED_AT}),{verified:false,event:null});
@@ -136,13 +139,13 @@ test('invalid signature, wrong account or wrong content type fail before a trust
 
 test('duplicate form keys are rejected instead of being ambiguously canonicalized for signature validation', async () => {
   let validations=0;
-  const verifier = createTwilioSmsReceiptVerifier({requestValidator:acceptingValidator(()=>validations++),statusCallbackBaseUrl:CALLBACK_BASE,deliveryId:DELIVERY_ID,expectedAccountSid:ACCOUNT_SID});
+  const verifier = makeVerifier({validateRequest:acceptingValidateRequest(()=>validations++)});
   await assert.rejects(() => verifier.verify({rawBody:`${form()}&MessageStatus=failed`,headers:headers(),receivedAt:RECEIVED_AT}),/duplicate parameters/);
   assert.equal(validations,0);
 });
 
 test('negative Twilio terminal statuses never create automatic retry authority', async () => {
-  const verifier = createTwilioSmsReceiptVerifier({requestValidator:acceptingValidator(),statusCallbackBaseUrl:CALLBACK_BASE,deliveryId:DELIVERY_ID,expectedAccountSid:ACCOUNT_SID});
+  const verifier = makeVerifier();
   for (const status of ['failed','undelivered','canceled']) {
     const result = await verifier.verify({rawBody:form({MessageStatus:status,ErrorCode:'30003'}),headers:headers(),receivedAt:RECEIVED_AT});
     assert.equal(result.verified,true);
@@ -152,7 +155,7 @@ test('negative Twilio terminal statuses never create automatic retry authority',
 });
 
 test('non-terminal and future signed statuses remain informational rather than silently gaining state-transition meaning', async () => {
-  const verifier = createTwilioSmsReceiptVerifier({requestValidator:acceptingValidator(),statusCallbackBaseUrl:CALLBACK_BASE,deliveryId:DELIVERY_ID,expectedAccountSid:ACCOUNT_SID});
+  const verifier = makeVerifier();
   for (const status of ['accepted','queued','sending','brand_new_future_status']) {
     const result = await verifier.verify({rawBody:form({MessageStatus:status}),headers:headers(),receivedAt:RECEIVED_AT});
     assert.equal(result.event.normalizedOutcome,'informational');
@@ -160,7 +163,7 @@ test('non-terminal and future signed statuses remain informational rather than s
 });
 
 test('provider event id is deterministic for callback replay and changes when state changes', async () => {
-  const verifier = createTwilioSmsReceiptVerifier({requestValidator:acceptingValidator(),statusCallbackBaseUrl:CALLBACK_BASE,deliveryId:DELIVERY_ID,expectedAccountSid:ACCOUNT_SID});
+  const verifier = makeVerifier();
   const first = await verifier.verify({rawBody:form({MessageStatus:'sent'}),headers:headers(),receivedAt:RECEIVED_AT});
   const replay = await verifier.verify({rawBody:form({MessageStatus:'sent'}),headers:headers(),receivedAt:'2026-09-18T17:21:00Z'});
   const delivered = await verifier.verify({rawBody:form({MessageStatus:'delivered'}),headers:headers(),receivedAt:'2026-09-18T17:22:00Z'});
@@ -169,7 +172,7 @@ test('provider event id is deterministic for callback replay and changes when st
 });
 
 test('10,000 callback replays converge to one deterministic provider event identity', async () => {
-  const verifier = createTwilioSmsReceiptVerifier({requestValidator:acceptingValidator(),statusCallbackBaseUrl:CALLBACK_BASE,deliveryId:DELIVERY_ID,expectedAccountSid:ACCOUNT_SID});
+  const verifier = makeVerifier();
   const results = await Promise.all(Array.from({length:10000},()=>verifier.verify({rawBody:form({MessageStatus:'delivered'}),headers:headers(),receivedAt:RECEIVED_AT})));
   assert.equal(new Set(results.map(x=>x.event.providerEventId)).size,1);
   assert.ok(results.every(x=>x.verified && x.event.normalizedOutcome==='confirmed_sent'));
