@@ -1,8 +1,9 @@
 name: Invisible Attendance Safety
 
 on:
-  pull_request:
-    branches: [main]
+  push:
+    branches:
+      - feature/invisible-attendance-v1
     paths:
       - 'clocking-security-v2/**'
       - '.github/workflows/invisible-attendance-safety.yml'
@@ -11,19 +12,27 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: invisible-attendance-safety-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   node-safety:
+    if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - name: Checkout development branch
+      - name: Checkout trusted owner push
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Record runner Node runtime
-        run: node --version
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
 
       - name: Run invisible-attendance safety suite
         run: node --test clocking-security-v2/invisible-attendance-engine.test.mjs
