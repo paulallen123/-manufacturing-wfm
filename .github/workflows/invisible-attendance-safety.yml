@@ -10,6 +10,7 @@ on:
   pull_request:
     branches:
       - main
+      - feature/invisible-attendance-v1
     paths:
       - 'clocking-security-v2/**'
       - '.github/workflows/invisible-attendance-safety.yml'
