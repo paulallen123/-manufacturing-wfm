@@ -106,6 +106,18 @@ Preferred-worker confirmation is restricted to workers WFM actually offered. Alt
 
 Audit evidence stores a short token fingerprint rather than the raw response link or signing secret.
 
+### Atomic one-time response capture
+
+The portal now has a fail-closed atomic consumption boundary for otherwise valid responses:
+- cryptographic token verification and tenant/site/request/agency scope checks run first;
+- the supplier response is normalized and validated before token consumption, so an ordinary form error does not burn the agency's valid link;
+- a valid response is accepted only if an injected durable token store confirms an atomic first consumption;
+- a missing store, store error or ambiguous store result rejects the capture rather than falling back to an in-memory success path;
+- the PostgreSQL adapter uses one `INSERT ... ON CONFLICT (tenant_id, token_id) DO NOTHING RETURNING ...` operation backed by a composite primary key, so concurrent application instances share one replay decision;
+- the ledger stores scoped IDs, a short token fingerprint, action and timestamps, never the raw signed token or signing secret.
+
+The branch includes the required table DDL as an explicit deployment contract, but this development slice does **not** apply the DDL to Railway or any customer database. Production promotion still requires a real PostgreSQL integration proof against the target migration/runtime path.
+
 ## Supplier learning
 
 Supplier performance is measured from operational evidence and prefers site/role evidence when enough history exists, falling back to broader role or portfolio evidence when it does not.
@@ -159,7 +171,7 @@ Invoice reconciliation is for the manufacturer's agency invoice only. It must ne
 
 ## Current proof
 
-The deterministic test suite now covers:
+The deterministic test suite covers:
 - compliant preferred-worker selection;
 - hard worker-eligibility gates;
 - supplier-compliance gating before supplier and worker ranking;
@@ -184,11 +196,15 @@ The deterministic test suite now covers:
 - exclusion of unapproved suppliers from ranking;
 - scenario-only cost/time value modelling;
 - signed portal token validation;
-- wrong-scope, expired and replayed-token rejection;
+- wrong-scope and expired-token rejection;
+- fail-closed missing/erroring token-store behavior;
+- invalid supplier input not consuming the one-time token;
+- 100 concurrent valid response attempts yielding one accepted capture and 99 replay rejections;
+- PostgreSQL adapter contract using a composite unique key and one `ON CONFLICT DO NOTHING` insert;
 - preferred-worker restriction and alternative-worker pending revalidation;
 - audit receipt secret/raw-token exclusion;
 - 1,000 mutated portal tokens with zero accepted.
 
-The current branch-local regression is 32/32 passing tests across five suites. This is engineering proof, not customer/pilot evidence.
+The changed portal/store slice passes 11/11 deterministic tests locally on Node 22.16.0, plus a separate 10,000-way concurrency stress run produced exactly 1 accepted capture and 9,999 replay rejections. The other four suites are unchanged by this bounded change. Hosted Actions remains a promotion blocker if the runner fails before allocating any executable steps.
 
-Persistent atomic one-time portal-token consumption, real outbound supplier adapters, UI/browser validation, authorised customer-data replay, production security review and live operational measurements remain required before promotion. The portal-token store is the next security-critical gap because the current token verifier supports a consumed-ID input contract but does not yet own durable atomic consumption across concurrent requests/instances.
+A real PostgreSQL migration/integration proof, real outbound supplier adapters, UI/browser validation, authorised customer-data replay, production security review and live operational measurements remain required before promotion. The next highest-value product gap is the real outbound supplier delivery/response adapter boundary, because the engine can now decide who may receive work and safely capture one response, but it still lacks end-to-end evidence that requests can be delivered, retried and correlated across email/SMS/API channels without duplicate dispatch or silent loss.
