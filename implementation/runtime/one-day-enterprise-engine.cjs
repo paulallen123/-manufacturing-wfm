@@ -7,26 +7,47 @@ const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
 
 const REQUIREMENTS = Object.freeze([
-  { key: 'tenant-environment', label: 'Tenant environment', minConfidence: 0.99, budgetMinutes: 15 },
-  { key: 'identity-access', label: 'Identity and access', minConfidence: 0.99, budgetMinutes: 20 },
-  { key: 'source-systems', label: 'Authoritative source systems', minConfidence: 0.95, budgetMinutes: 45 },
-  { key: 'people-data', label: 'People data and hierarchy', minConfidence: 0.99, budgetMinutes: 30 },
-  { key: 'organisation-model', label: 'Sites, departments and cost structure', minConfidence: 0.98, budgetMinutes: 30 },
-  { key: 'time-policies', label: 'Time, break and overtime policies', minConfidence: 0.995, budgetMinutes: 45 },
-  { key: 'absence-policies', label: 'Absence and leave policies', minConfidence: 0.99, budgetMinutes: 30 },
-  { key: 'scheduling', label: 'Shift patterns and scheduling rules', minConfidence: 0.99, budgetMinutes: 45 },
-  { key: 'approvals', label: 'Approval and delegation rules', minConfidence: 0.99, budgetMinutes: 30 },
-  { key: 'clocking', label: 'Clocking and device rules', minConfidence: 0.99, budgetMinutes: 30 },
-  { key: 'payroll-mapping', label: 'Payroll mappings', minConfidence: 0.995, budgetMinutes: 45 },
-  { key: 'historical-replay', label: 'Historical replay and reconciliation', minConfidence: 0.995, budgetMinutes: 60 },
-  { key: 'security-controls', label: 'Security and tenant isolation', minConfidence: 1.0, budgetMinutes: 30 },
-  { key: 'resilience', label: 'Recovery and failure handling', minConfidence: 0.99, budgetMinutes: 30 },
-  { key: 'role-learning', label: 'Role learning journeys generated', minConfidence: 0.99, budgetMinutes: 15 },
-  { key: 'privileged-competency', label: 'Managers/admins certified for privileged tasks', minConfidence: 0.99, budgetMinutes: 90 },
-  { key: 'frontline-readiness', label: 'Frontline first-use learning gate ready', minConfidence: 0.99, budgetMinutes: 20 }
+  { key: 'tenant-environment', label: 'Tenant environment', minConfidence: 0.99, budgetMinutes: 15, dependsOn: [] },
+  { key: 'identity-access', label: 'Identity and access', minConfidence: 0.99, budgetMinutes: 20, dependsOn: ['tenant-environment'] },
+  { key: 'source-systems', label: 'Authoritative source systems', minConfidence: 0.95, budgetMinutes: 45, dependsOn: ['identity-access'] },
+  { key: 'people-data', label: 'People data and hierarchy', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['source-systems'] },
+  { key: 'organisation-model', label: 'Sites, departments and cost structure', minConfidence: 0.98, budgetMinutes: 30, dependsOn: ['people-data'] },
+  { key: 'time-policies', label: 'Time, break and overtime policies', minConfidence: 0.995, budgetMinutes: 45, dependsOn: ['people-data'] },
+  { key: 'absence-policies', label: 'Absence and leave policies', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['people-data'] },
+  { key: 'scheduling', label: 'Shift patterns and scheduling rules', minConfidence: 0.99, budgetMinutes: 45, dependsOn: ['organisation-model', 'time-policies'] },
+  { key: 'approvals', label: 'Approval and delegation rules', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['organisation-model', 'identity-access'] },
+  { key: 'clocking', label: 'Clocking and device rules', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['identity-access', 'time-policies'] },
+  { key: 'payroll-mapping', label: 'Payroll mappings', minConfidence: 0.995, budgetMinutes: 45, dependsOn: ['source-systems', 'people-data', 'time-policies'] },
+  { key: 'historical-replay', label: 'Historical replay and reconciliation', minConfidence: 0.995, budgetMinutes: 60, dependsOn: ['payroll-mapping', 'time-policies'] },
+  { key: 'security-controls', label: 'Security and tenant isolation', minConfidence: 1.0, budgetMinutes: 30, dependsOn: ['tenant-environment', 'identity-access'] },
+  { key: 'resilience', label: 'Recovery and failure handling', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['source-systems', 'security-controls'] },
+  { key: 'role-learning', label: 'Role learning journeys generated', minConfidence: 0.99, budgetMinutes: 15, dependsOn: ['people-data'] },
+  { key: 'privileged-competency', label: 'Managers/admins certified for privileged tasks', minConfidence: 0.99, budgetMinutes: 90, dependsOn: ['role-learning', 'time-policies', 'scheduling', 'payroll-mapping', 'security-controls'] },
+  { key: 'frontline-readiness', label: 'Frontline users certified for first use', minConfidence: 0.99, budgetMinutes: 20, dependsOn: ['role-learning', 'absence-policies', 'scheduling', 'clocking'] }
 ]);
 
 const REQUIREMENT_BY_KEY = new Map(REQUIREMENTS.map(item => [item.key, item]));
+
+function criticalPathRemainingMinutes(requirements) {
+  const byKey = new Map(requirements.map(item => [item.key, item]));
+  const memo = new Map();
+
+  function remaining(key, visiting = new Set()) {
+    const item = byKey.get(key);
+    if (!item || item.satisfied) return 0;
+    if (memo.has(key)) return memo.get(key);
+    if (visiting.has(key)) throw new Error('Implementation requirement dependency cycle detected.');
+
+    const nextVisiting = new Set(visiting);
+    nextVisiting.add(key);
+    const dependencyRemaining = (item.dependsOn || []).map(dep => remaining(dep, nextVisiting));
+    const value = Number(item.budgetMinutes || 0) + Math.max(0, ...dependencyRemaining);
+    memo.set(key, value);
+    return value;
+  }
+
+  return Math.max(0, ...requirements.filter(item => !item.satisfied).map(item => remaining(item.key)));
+}
 
 function nowIso() {
   return new Date().toISOString();
@@ -96,6 +117,9 @@ async function readJson(req, maxBytes = 256 * 1024) {
 function createOneDayEnterpriseEngine(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
+  const learningSummaryProvider = typeof options.learningSummaryProvider === 'function'
+    ? options.learningSummaryProvider
+    : null;
   if (!dbPath) throw new Error('One-day implementation engine requires WFM_DB.');
 
   const db = new DatabaseSync(dbPath);
@@ -222,21 +246,51 @@ function createOneDayEnterpriseEngine(options = {}) {
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
+    let learningSummary = null;
+    if (learningSummaryProvider) {
+      try { learningSummary = learningSummaryProvider(run.tenant); } catch {}
+    }
+
     const requirements = REQUIREMENTS.map(requirement => {
       const row = map.get(requirement.key);
-      const satisfied = Boolean(
-        row &&
-        row.status === 'PASS' &&
-        Number(row.confidence) >= requirement.minConfidence
-      );
+      let derived = null;
+
+      if (learningSummary && requirement.key === 'role-learning') {
+        const ok = learningSummary.users > 0 && learningSummary.assignments >= learningSummary.users;
+        derived = {
+          status: ok ? 'PASS' : 'MISSING',
+          confidence: ok ? 1 : 0,
+          source: 'adaptive-learning-engine',
+          detail: learningSummary
+        };
+      } else if (learningSummary && requirement.key === 'privileged-competency') {
+        const ok = Boolean(learningSummary.privilegedReady);
+        derived = {
+          status: ok ? 'PASS' : 'MISSING',
+          confidence: ok ? 1 : 0,
+          source: 'adaptive-learning-engine',
+          detail: learningSummary
+        };
+      } else if (learningSummary && requirement.key === 'frontline-readiness') {
+        const ok = Boolean(learningSummary.fullyCertified);
+        derived = {
+          status: ok ? 'PASS' : 'MISSING',
+          confidence: ok ? 1 : 0,
+          source: 'adaptive-learning-engine',
+          detail: learningSummary
+        };
+      }
+
+      const status = derived?.status || row?.status || 'MISSING';
+      const confidence = derived ? derived.confidence : (row ? Number(row.confidence) : 0);
       return {
         ...requirement,
-        status: row?.status || 'MISSING',
-        confidence: row ? Number(row.confidence) : 0,
-        satisfied,
-        source: row?.source || null,
-        observedAt: row?.created_at || null,
-        detail: row ? JSON.parse(row.detail_json) : null
+        status,
+        confidence,
+        satisfied: status === 'PASS' && confidence >= requirement.minConfidence,
+        source: derived?.source || row?.source || null,
+        observedAt: derived ? nowIso() : (row?.created_at || null),
+        detail: derived?.detail || (row ? JSON.parse(row.detail_json) : null)
       };
     });
 
@@ -250,7 +304,8 @@ function createOneDayEnterpriseEngine(options = {}) {
     const missing = requirements.filter(item => !item.satisfied);
     const elapsedMinutes = Math.max(0, (Date.now() - run.started_at_ms) / 60000);
     const remainingMinutes = Math.max(0, (run.deadline_at_ms - Date.now()) / 60000);
-    const remainingBudgetMinutes = missing.reduce((sum, item) => sum + item.budgetMinutes, 0);
+    const parallelWorkMinutes = missing.reduce((sum, item) => sum + item.budgetMinutes, 0);
+    const remainingBudgetMinutes = criticalPathRemainingMinutes(requirements);
     const operationalReady = missing.length === 0 && blockingDecisions.length === 0;
     let state = operationalReady ? 'READY' : 'BUILDING';
     if (!operationalReady && Date.now() > run.deadline_at_ms) state = 'SLA_MISSED';
@@ -267,11 +322,14 @@ function createOneDayEnterpriseEngine(options = {}) {
       elapsedMinutes: Math.round(elapsedMinutes),
       remainingMinutes: Math.round(remainingMinutes),
       remainingBudgetMinutes,
+      criticalPathRemainingMinutes: remainingBudgetMinutes,
+      parallelWorkMinutes,
       completedRequirements: requirements.filter(item => item.satisfied).length,
       totalRequirements: requirements.length,
       requirements,
       decisions,
-      blockingDecisions
+      blockingDecisions,
+      learningSummary
     };
   }
 
@@ -451,5 +509,6 @@ function createOneDayEnterpriseEngine(options = {}) {
 
 module.exports = {
   createOneDayEnterpriseEngine,
-  REQUIREMENTS
+  REQUIREMENTS,
+  criticalPathRemainingMinutes
 };
