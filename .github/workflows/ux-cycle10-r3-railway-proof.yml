@@ -59,15 +59,47 @@ jobs:
           "$CLI_BIN" --version
 
       - name: Upload exact branch to isolated proof service
+        id: railway_up
+        continue-on-error: true
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         shell: bash
         run: |
-          set -euo pipefail
-          test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
+          set -uo pipefail
+          LOG="$RUNNER_TEMP/railway-up.log"
+          if [ -z "${RAILWAY_TOKEN:-}" ]; then
+            echo 'RAILWAY_TOKEN repository secret is not configured.' > "$LOG"
+            echo '1' > "$RUNNER_TEMP/railway-up.exit"
+            exit 1
+          fi
+          set +e
           "$RAILWAY_BIN" up . \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --service "$RAILWAY_SERVICE_ID" \
             --ci \
-            --message "Cycle 10 r3 isolated proof ${GITHUB_SHA}"
+            --message "Cycle 10 r3 isolated proof ${GITHUB_SHA}" >"$LOG" 2>&1
+          CODE=$?
+          set -e
+          printf '%s\n' "$CODE" > "$RUNNER_TEMP/railway-up.exit"
+          cat "$LOG"
+          exit "$CODE"
+
+      - name: Preserve deploy diagnostic
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cycle10-r3-railway-first-deploy-diagnostic
+          path: |
+            ${{ runner.temp }}/railway-up.log
+            ${{ runner.temp }}/railway-up.exit
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Enforce deploy result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          CODE=$(cat "$RUNNER_TEMP/railway-up.exit" 2>/dev/null || echo 1)
+          test "$CODE" = '0'
