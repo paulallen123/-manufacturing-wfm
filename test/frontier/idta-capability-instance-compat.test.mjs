@@ -21,6 +21,33 @@ const sm=(element)=>({
   }],
 });
 
+const legacyPublicShape=(name)=>({
+  id:`urn:public:${name}`,
+  semanticId:ref('https://admin-shell.io/idta/CapabilityDescription/1/0/Submodel'),
+  submodelElements:[{
+    idShort:`${name}CapabilitySet`,
+    modelType:'SubmodelElementCollection',
+    semanticId:ref('https://admin-shell.io/idta/CapabilityDescription/CapabilitySet/1/0'),
+    value:[{
+      idShort:`${name}Container`,
+      modelType:'SubmodelElementCollection',
+      semanticId:ref('https://admin-shell.io/idta/CapabilityDescription/CapabilityContainer/1/0'),
+      value:[{
+        idShort:name,
+        modelType:'Capability',
+        semanticId:ref('https://admin-shell.io/idta/CapabilityDescription/Capability/1/0'),
+        supplementalSemanticIds:[ref(`urn:cap:${name.toLowerCase()}`)],
+        qualifiers:[{
+          type:'Offered',
+          valueType:'xs:boolean',
+          value:'true',
+          semanticId:ref('https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifiers/Offered/1/0'),
+        }],
+      }],
+    }],
+  }],
+});
+
 test('normalizes direct domain Property shape used by public IDTA 02020 instances without mutating input',()=>{
   const input=sm({idShort:'OperationType',modelType:'Property',semanticId:ref('https://example.test/semantic/OperationType'),valueType:'xs:string',value:'Recoating'});
   const before=JSON.stringify(input);
@@ -54,4 +81,37 @@ test('ambiguous domain semantics fail closed rather than selecting one',()=>{
   const result=normalizeIdta02020InstanceSubmodels([input]);
   assert.equal(result.normalizedProperties,0);
   assert.equal(result.reviewRequired[0].reason,'ambiguous_domain_property_semantics');
+});
+
+test('normalizes the exact legacy IDTA submodel and role references used by public capability instances',()=>{
+  const input=legacyPublicShape('HeatingControlled');
+  const before=JSON.stringify(input);
+  const result=normalizeIdta02020InstanceSubmodels([input]);
+  const normalized=result.submodels[0];
+  const capability=normalized.submodelElements[0].value[0].value[0];
+  assert.equal(result.matchedSubmodels,1);
+  assert.equal(result.normalizedAliases,2);
+  assert.equal(normalized.semanticId.keys[0].value,'https://admin-shell.io/idta/SubmodelTemplate/CapabilityDescription/1/0');
+  assert.equal(capability.qualifiers[0].semanticId.keys[0].value,'https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifier/Offered/1/0');
+  assert.equal(JSON.stringify(input),before);
+  assert.equal(result.sourceMutation,false);
+});
+
+test('three representative public RWTH capability-instance shapes normalize deterministically with no manual URI mapping',()=>{
+  const inputs=['HeatingControlled','StirringContinuous','PumpingContinuous'].map(legacyPublicShape);
+  const result=normalizeIdta02020InstanceSubmodels(inputs);
+  assert.equal(result.matchedSubmodels,3);
+  assert.equal(result.normalizedAliases,6);
+  assert.equal(result.reviewRequired.length,0);
+  assert.equal(result.submodels.every((item)=>item.semanticId.keys[0].value==='https://admin-shell.io/idta/SubmodelTemplate/CapabilityDescription/1/0'),true);
+});
+
+test('near-match legacy-looking semantics are not widened into trusted IDTA aliases',()=>{
+  const input=legacyPublicShape('HeatingControlled');
+  input.semanticId=ref('https://admin-shell.io/idta/CapabilityDescription/1/0/Submodel-v2');
+  input.submodelElements[0].value[0].value[0].qualifiers[0].semanticId=ref('https://admin-shell.io/idta/CapabilityDescription/CapabilityRoleQualifiers/OfferedExperimental/1/0');
+  const result=normalizeIdta02020InstanceSubmodels([input]);
+  assert.equal(result.matchedSubmodels,0);
+  assert.equal(result.normalizedAliases,0);
+  assert.equal(result.submodels[0].semanticId.keys[0].value,'https://admin-shell.io/idta/CapabilityDescription/1/0/Submodel-v2');
 });
