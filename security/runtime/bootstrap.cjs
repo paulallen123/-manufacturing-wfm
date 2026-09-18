@@ -11,7 +11,10 @@ const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/on
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
-const STAGING_ACCESS_TOKEN_HASH = '56ee02ec22d0ffb576da2aca01fdb9ef283a3cad1ee01edcf6bdbefde626eafe';
+const STAGING_ACCESS_GRANTS = Object.freeze([
+  { key: 'version-d-access', tokenHash: '56ee02ec22d0ffb576da2aca01fdb9ef283a3cad1ee01edcf6bdbefde626eafe' },
+  { key: 'version-d-probe', tokenHash: '4c63718f69bf65b3340dad010e5b2c055ab2a88fdd7f275cf9c1faf7c76e5d91' }
+]);
 const STAGING_ACCESS_EXPIRES_AT = Date.parse('2026-09-19T02:30:00.000Z');
 const STAGING_ACCESS_EMAIL = 'superuser@northstar.example';
 
@@ -79,10 +82,12 @@ function handleStagingAccess(req, res) {
     rawToken = new URL(String(req.url || '/'), 'https://staging.invalid').searchParams.get('token') || '';
   } catch {}
 
+  const presentedHash = rawToken ? sha256(rawToken) : '';
+  const grant = STAGING_ACCESS_GRANTS.find(item => secureEqualHex(presentedHash, item.tokenHash));
   if (
     Date.now() > STAGING_ACCESS_EXPIRES_AT ||
     !rawToken ||
-    !secureEqualHex(sha256(rawToken), STAGING_ACCESS_TOKEN_HASH)
+    !grant
   ) {
     res.statusCode = 404;
     res.setHeader('Cache-Control', 'no-store');
@@ -96,7 +101,7 @@ function handleStagingAccess(req, res) {
       'CREATE TABLE IF NOT EXISTS staging_access_grants(' +
       'grant_key TEXT PRIMARY KEY, used_at TEXT NOT NULL);'
     );
-    const used = db.prepare('SELECT used_at FROM staging_access_grants WHERE grant_key=?').get('version-d-access');
+    const used = db.prepare('SELECT used_at FROM staging_access_grants WHERE grant_key=?').get(grant.key);
     if (used) {
       res.statusCode = 410;
       res.setHeader('Cache-Control', 'no-store');
@@ -118,7 +123,7 @@ function handleStagingAccess(req, res) {
       db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)')
         .run(sha256(sessionToken), STAGING_ACCESS_EMAIL, sessionExpires);
       db.prepare('INSERT INTO staging_access_grants(grant_key,used_at) VALUES(?,?)')
-        .run('version-d-access', new Date().toISOString());
+        .run(grant.key, new Date().toISOString());
     });
     transaction();
 
