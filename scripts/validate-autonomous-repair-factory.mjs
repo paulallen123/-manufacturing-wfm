@@ -17,6 +17,7 @@ f.registerReproducer({incidentId,tenant,failingTestDigest:d('failing-test'),obse
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('policy-tamper'),changedPaths:['resilience/security-baseline.json']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('control-loop-tamper'),changedPaths:['resilience/autonomy-control-loop.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('handoff-tamper'),changedPaths:['resilience/provider-recovery-handoff.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('worker-tamper'),changedPaths:['resilience/isolated-repair-worker.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('syntax-gate-tamper'),changedPaths:['scripts/validate-autonomy-source-syntax.mjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('dep-add'),changedPaths:['lib/fix.cjs'],runtimeDependenciesAdded:['some-package']}),'WFM_REPAIR_RUNTIME_DEPENDENCY');
 
@@ -35,6 +36,7 @@ expect(()=>f.issueStagingPermit({incidentId,tenant,authorityId:'repair-agent',ar
 expect(()=>f.issueStagingPermit({incidentId,tenant,authorityId:'release-authority',artifactDigest:d('changed-artifact')}),'WFM_REPAIR_ARTIFACT_DRIFT');
 const permit=f.issueStagingPermit({incidentId,tenant,authorityId:'release-authority',artifactDigest:d('artifact2')});
 assert.equal(permit.scope,'isolated-staging-only');
+expect(()=>f.containIncident({incidentId,tenant,reason:'worker-safety-violation',actorId:'repair-worker'}),'WFM_REPAIR_STATE');
 expect(()=>f.issueProductionPermit({incidentId,tenant}),'WFM_REPAIR_PRODUCTION_DENIED');
 
 const other=createFactory({maxAttempts:1});
@@ -44,6 +46,15 @@ other.proposeCandidate({incidentId:'inc-budget',tenant,proposerId:'a',patchDiges
 other.verifyCandidate({incidentId:'inc-budget',tenant,verifierId:'v',failingTestNowPasses:false,regressionPassed:true,securityPassed:true,tenantIsolationPassed:true,browserPassed:true,artifactDigest:d('a'),provenanceDigest:d('p'),rollbackDigest:d('r')});
 expect(()=>other.proposeCandidate({incidentId:'inc-budget',tenant,proposerId:'a',patchDigest:d('p2'),changedPaths:['lib/a.cjs']}),'WFM_REPAIR_BUDGET');
 assert.equal(other.snapshot('inc-budget').state,'contained');
+assert.equal(other.snapshot('inc-budget').containment.reason,'repair-attempt-budget-exhausted');
 
-const receipt={schemaVersion:1,proof:'tier2-repair-factory-authority-separation',status:'PASS',reproducerRequired:true,protectedPolicyTamperDenied:true,authoritySurfaceTamperDenied:true,syntaxGateTamperDenied:true,newRuntimeDependencyDenied:true,selfVerificationDenied:true,failedSecurityScanRejected:true,independentReleaseAuthorityRequired:true,artifactDriftDenied:true,stagingOnlyPermit:true,productionPermitDenied:true,repairBudgetContainment:true};
+const containment=createFactory();
+containment.openIncident({incidentId:'inc-contain',tenant,evidenceDigest:d('contain-evidence')});
+containment.registerReproducer({incidentId:'inc-contain',tenant,failingTestDigest:d('cf'),observedFailureDigest:d('co')});
+const contained=containment.containIncident({incidentId:'inc-contain',tenant,reason:'worker-executor-failure',actorId:'isolated-repair-worker'});
+assert.equal(contained.state,'contained');
+assert.match(contained.containment.containmentDigest,/^[a-f0-9]{64}$/);
+expect(()=>containment.proposeCandidate({incidentId:'inc-contain',tenant,proposerId:'repair-agent',patchDigest:d('late'),changedPaths:['lib/a.cjs']}),'WFM_REPAIR_STATE');
+
+const receipt={schemaVersion:1,proof:'tier2-repair-factory-authority-separation',status:'PASS',reproducerRequired:true,protectedPolicyTamperDenied:true,authoritySurfaceTamperDenied:true,isolatedWorkerAuthorityTamperDenied:true,syntaxGateTamperDenied:true,newRuntimeDependencyDenied:true,selfVerificationDenied:true,failedSecurityScanRejected:true,independentReleaseAuthorityRequired:true,artifactDriftDenied:true,stagingOnlyPermit:true,postStagingContainmentRequiresStagingController:true,deterministicContainmentRecorded:true,productionPermitDenied:true,repairBudgetContainment:true};
 console.log(JSON.stringify(receipt,null,2));
