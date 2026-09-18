@@ -100,8 +100,8 @@ test('accepted lower-quality profile cannot self-declare zero uncertainty',()=>{
   const binding=bindMeasuredProfileEconomics(input);
   assert.equal(binding.valid,true);
   assert.equal(binding.evidence[0].declaredUncertaintyPct,0);
-  assert.ok(Math.abs(binding.evidence[0].fixedUncertaintyFloorPct-0.2)<1e-9);
-  assert.ok(Math.abs(binding.input.options[1].energy.lowerBoundEnergyValue-8)<1e-9);
+  assert.ok(Math.abs(binding.evidence[0].fixedUncertaintyFloorPct-0.3)<1e-9);
+  assert.ok(Math.abs(binding.input.options[1].energy.lowerBoundEnergyValue-7)<1e-9);
   assert.equal(binding.evidence[0].uncertaintyFloorApplied,true);
   const result=evaluateEnergyFlexibilityProfileAware(input);
   assert.equal(result.status,'no_safe_or_valuable_flexibility');
@@ -116,7 +116,7 @@ test('high profile quality does not imply calibrated low value uncertainty',()=>
   const binding=bindMeasuredProfileEconomics(input);
   assert.equal(binding.valid,true);
   assert.equal(binding.evidence[0].qualityImpliedUncertaintyPct,0);
-  assert.ok(Math.abs(binding.evidence[0].effectiveUncertaintyPct-0.2)<1e-9);
+  assert.ok(Math.abs(binding.evidence[0].effectiveUncertaintyPct-0.3)<1e-9);
   assert.equal(binding.evidence[0].uncertaintyPolicy,'fixed_floor_until_adapter_calibration');
 });
 
@@ -128,43 +128,51 @@ test('tightening profile admission quality cannot silently weaken the financial 
   input.options[1].labour={premiumCost:8.5,upperBoundCost:8.5};
   const binding=bindMeasuredProfileEconomics(input,{minQuality:0.95});
   assert.equal(binding.valid,true);
-  assert.ok(Math.abs(binding.evidence[0].fixedUncertaintyFloorPct-0.2)<1e-9);
-  assert.ok(Math.abs(binding.input.options[1].energy.lowerBoundEnergyValue-8)<1e-9);
+  assert.ok(Math.abs(binding.evidence[0].fixedUncertaintyFloorPct-0.3)<1e-9);
+  assert.ok(Math.abs(binding.input.options[1].energy.lowerBoundEnergyValue-7)<1e-9);
   const result=evaluateEnergyFlexibilityProfileAware(input,{minQuality:0.95});
   assert.equal(result.status,'no_safe_or_valuable_flexibility');
 });
 
 test('declared uncertainty above the fixed floor remains authoritative',()=>{
   const input=baseInput();
-  input.options[1].energy.profileEvidence.uncertaintyPct=0.25;
+  input.options[1].energy.profileEvidence.uncertaintyPct=0.35;
   const binding=bindMeasuredProfileEconomics(input);
   assert.equal(binding.valid,true);
-  assert.ok(Math.abs(binding.evidence[0].fixedUncertaintyFloorPct-0.2)<1e-9);
-  assert.equal(binding.evidence[0].effectiveUncertaintyPct,0.25);
+  assert.ok(Math.abs(binding.evidence[0].fixedUncertaintyFloorPct-0.3)<1e-9);
+  assert.equal(binding.evidence[0].effectiveUncertaintyPct,0.35);
   assert.equal(binding.evidence[0].uncertaintyFloorApplied,false);
 });
 
-test('fixed admission-threshold floor is safer than uncalibrated quality mapping under uniform worst-case downside',()=>{
-  let adaptiveOnly=0;
-  let adaptiveFalsePositives=0;
-  let fixedFalsePositives=0;
-  for(let quality=0.8;quality<=1.0001;quality+=0.02){
-    for(let declared=0;declared<=0.2001;declared+=0.05){
-      const adaptiveUncertainty=Math.max(declared,1-quality);
-      const fixedUncertainty=Math.max(declared,0.2);
-      for(const gross of [20,40,60,80,100,150,200]){
-        for(const cost of [0,10,20,40,60,80,100,120,150]){
-          const adaptiveRecommends=gross*(1-adaptiveUncertainty)-cost>0;
-          const fixedRecommends=gross*(1-fixedUncertainty)-cost>0;
-          const uniformWorstCaseNet=gross*0.8-cost;
-          if(adaptiveRecommends&&!fixedRecommends) adaptiveOnly+=1;
-          if(adaptiveRecommends&&uniformWorstCaseNet<=0) adaptiveFalsePositives+=1;
-          if(fixedRecommends&&uniformWorstCaseNet<=0) fixedFalsePositives+=1;
+test('30 percent fixed floor is the simplest zero-false-positive baseline across a 10 to 30 percent downside stress range',()=>{
+  const grossValues=[20,40,60,80,100,150,200,300,500];
+  const costs=[0,10,20,30,40,60,80,100,120,150,180,220,300,400];
+  const actualDownsides=[0.10,0.15,0.20,0.25,0.30];
+  const candidateMargins=[0.10,0.15,0.20,0.25,0.30];
+  const results=[];
+
+  for(const margin of candidateMargins){
+    let truePositive=0,falsePositive=0,falseNegative=0;
+    for(const gross of grossValues){
+      for(const cost of costs){
+        for(const actualDownside of actualDownsides){
+          const recommends=gross*(1-margin)-cost>0;
+          const actuallySafe=gross*(1-actualDownside)-cost>0;
+          if(recommends&&actuallySafe) truePositive+=1;
+          else if(recommends&&!actuallySafe) falsePositive+=1;
+          else if(!recommends&&actuallySafe) falseNegative+=1;
         }
       }
     }
+    const safeCapture=truePositive/(truePositive+falseNegative);
+    results.push({margin,truePositive,falsePositive,falseNegative,safeCapture});
   }
-  assert.ok(adaptiveOnly>0);
-  assert.ok(adaptiveFalsePositives>0);
-  assert.equal(fixedFalsePositives,0);
+
+  const twenty=results.find(result=>result.margin===0.20);
+  const thirty=results.find(result=>result.margin===0.30);
+  const zeroFalsePositive=results.filter(result=>result.falsePositive===0);
+  assert.ok(twenty.falsePositive>0);
+  assert.equal(thirty.falsePositive,0);
+  assert.ok(thirty.safeCapture>=0.90);
+  assert.equal(Math.min(...zeroFalsePositive.map(result=>result.margin)),0.30);
 });
