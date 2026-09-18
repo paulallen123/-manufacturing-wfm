@@ -39,7 +39,7 @@ jobs:
           node --check ux-overlay/concept-fidelity.js
           node --check security/runtime/ux-preference.cjs
           node --check scripts/concept-fidelity-browser-proof.mjs
-          grep -q 'WFM_CONCEPT_FIDELITY_V2' ux-overlay/concept-fidelity.js
+          grep -q 'WFM_CONCEPT_FIDELITY_V3' ux-overlay/concept-fidelity.js
           grep -q "label:'Today'" ux-overlay/concept-fidelity.js
           grep -q "label:'People'" ux-overlay/concept-fidelity.js
           grep -q "label:'Plan'" ux-overlay/concept-fidelity.js
@@ -61,7 +61,7 @@ jobs:
           docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-concept-public/factory-control-ui.css
           grep -q 'WFM_CONCEPT_FIDELITY_BEGIN' /tmp/wfm-concept-public/value-cockpit-ui.js
           grep -q 'WFM_CONCEPT_FIDELITY_BEGIN' /tmp/wfm-concept-public/factory-control-ui.css
-          grep -q 'WFM_CONCEPT_FIDELITY_V2' /tmp/wfm-concept-public/value-cockpit-ui.js
+          grep -q 'WFM_CONCEPT_FIDELITY_V3' /tmp/wfm-concept-public/value-cockpit-ui.js
           node --check /tmp/wfm-concept-public/value-cockpit-ui.js
           echo 'CONCEPT_EXACT_IMAGE_COMPOSITION=PASS'
 
