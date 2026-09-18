@@ -1,3 +1,13 @@
+# Discarded Railway build stage: prove T0-T4 zero-engineer support and bounded recovery
+# against the exact candidate sources. Nothing from this stage is copied into runtime.
+FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS autonomy-proof
+WORKDIR /proof
+COPY resilience/ ./resilience/
+COPY scripts/ ./scripts/
+COPY .github/workflows/ ./.github/workflows/
+RUN rm -f scripts/validate-deployment.mjs \
+ && node scripts/run-portable-autonomy-proof.mjs --strict-runtime
+
 # Customer-proof staging build: sealed 0.6.76 runtime
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
 WORKDIR /app
