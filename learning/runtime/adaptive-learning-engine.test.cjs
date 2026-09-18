@@ -169,6 +169,59 @@ test('guided practice teaches but cannot alone certify durable competence', asyn
   }
 });
 
+test('coach and trainer competencies require explicit teach-back evidence', async () => {
+  const f = fixture();
+  try {
+    await call(f.engine, f.tokens.manager, 'GET', '/api/learning/adaptive/plan');
+
+    const observed = await call(
+      f.engine, null, 'POST', '/api/learning/adaptive/evidence',
+      {
+        tenant: 'alpha',
+        email: 'manager@alpha',
+        competencyKey: 'team.coach',
+        evidenceType: 'OBSERVED_SUCCESS',
+        result: 'PASS'
+      },
+      f.internal
+    );
+    assert.equal(observed.status, 200);
+    assert.equal(observed.body.assignment.status, 'DUE');
+
+    const retrieval = await call(
+      f.engine, null, 'POST', '/api/learning/adaptive/evidence',
+      {
+        tenant: 'alpha',
+        email: 'manager@alpha',
+        competencyKey: 'team.coach',
+        evidenceType: 'RETRIEVAL_CHECK',
+        result: 'PASS'
+      },
+      f.internal
+    );
+    assert.equal(retrieval.status, 200);
+    assert.equal(retrieval.body.assignment.score, 90);
+    assert.equal(retrieval.body.assignment.status, 'DUE');
+
+    const teachBack = await call(
+      f.engine, null, 'POST', '/api/learning/adaptive/evidence',
+      {
+        tenant: 'alpha',
+        email: 'manager@alpha',
+        competencyKey: 'team.coach',
+        evidenceType: 'TEACH_BACK',
+        result: 'PASS',
+        detail: { simulatedLearner: true }
+      },
+      f.internal
+    );
+    assert.equal(teachBack.status, 200);
+    assert.equal(teachBack.body.assignment.status, 'MASTERED');
+  } finally {
+    f.close();
+  }
+});
+
 test('browser cannot self-certify independent competence', async () => {
   const f = fixture();
   try {
