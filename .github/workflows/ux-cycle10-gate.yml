@@ -1,0 +1,119 @@
+name: WFM UX evolution cycle 10 verified-exception gate
+
+on:
+  push:
+    branches:
+      - 'ux/planner-focus-20260918-r5'
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/ux-reset-cycle10.*'
+      - '.github/workflows/ux-cycle10-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ux-cycle10-r5-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verified-exception-planner-focus:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Source safety checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset-cycle10.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const js=fs.readFileSync('ux-overlay/ux-reset-cycle10.js','utf8');
+          const css=fs.readFileSync('ux-overlay/ux-reset-cycle10.css','utf8');
+          for(const x of ['Resolve risk before you publish','Coverage & risks','Open full planner','data-ux-preserved-publish','window.WFMUXCycle10=','aria-controls','focusTarget','Previous\\s+week','strong.test(value)']) if(!js.includes(x)) throw new Error('Missing Cycle 10 invariant: '+x);
+          for(const x of ['.ux-plan-focus','.ux-plan-steps','.ux-plan-grid','.ux-plan-publish','@media(max-width:620px)']) if(!css.includes(x)) throw new Error('Missing Cycle 10 CSS invariant: '+x);
+          if(/\.remove\s*\(/.test(js)) throw new Error('Cycle 10 must preserve existing planner controls.');
+          if(!js.includes("route()!=='schedule-publication'")) throw new Error('Planner focus must remain narrowly scoped.');
+          if(/\|skill\|/.test(js)) throw new Error('Bare skill keyword must not activate exception focus.');
+          console.log('UX_CYCLE10_R5_SOURCE_INVARIANTS=PASS');
+          NODE
+
+      - name: Build and verify sealed composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false -t wfm-ux-cycle10:r5 .
+          cid="$(docker create wfm-ux-cycle10:r5)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-cycle10
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-cycle10/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-cycle10/factory-control-ui.css
+          node --check /tmp/wfm-cycle10/value-cockpit-ui.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const js=fs.readFileSync('/tmp/wfm-cycle10/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-cycle10/factory-control-ui.css','utf8');
+          const j9=js.indexOf('WFM_UX_RESET_CYCLE9_BEGIN'),j10=js.indexOf('WFM_UX_RESET_CYCLE10_BEGIN');
+          const c9=css.indexOf('WFM_UX_RESET_CYCLE9_BEGIN'),c10=css.indexOf('WFM_UX_RESET_CYCLE10_BEGIN');
+          if(!(j9>=0&&j10>j9&&c9>=0&&c10>c9)) throw new Error('Cycle 10 must compose after Cycle 9.');
+          if(!js.includes('window.WFMUXCycle10=')||!css.includes('.ux-plan-focus')) throw new Error('Cycle 10 missing from served assets.');
+          console.log('UX_CYCLE10_R5_APPROVED_ASSET_COMPOSITION=PASS');
+          NODE
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace sealed server logic'; exit 1; fi
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
+
+      - name: Browser-check risk and calm schedule states
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ux-cycle10-harness
+          cp ux-overlay/ux-reset-cycle10.js /tmp/ux-cycle10-harness/ux-reset-cycle10.js
+          cp ux-overlay/ux-reset-cycle10.css /tmp/ux-cycle10-harness/ux-reset-cycle10.css
+          cat > /tmp/ux-cycle10-harness/risk.html <<'HTML'
+          <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/ux-reset-cycle10.css"><style>:root{--ux-line:#dde3ea;--ux-soft:#f6f8fb;--ux-muted:#5f6f82;--ux-ink:#172539}*{box-sizing:border-box}body{margin:0;font-family:Arial}.content{max-width:1180px;margin:auto;padding:20px}.heading{display:flex;justify-content:space-between;gap:16px}.panel{border:1px solid #dde3ea;border-radius:14px;padding:16px;margin:0 0 16px}.tablewrap{overflow:auto;border:1px solid #dde3ea}.tablewrap table{min-width:1200px}.primary{padding:10px 14px}</style></head><body class="ux-reset-active"><main class="content"><div class="heading"><div><h1>Schedule publication</h1></div><button class="primary" data-act="publish">Publish schedule</button></div><section class="panel" id="coverage"><h2>Coverage risks</h2><p>2 skill gaps and 1 unfilled shift need a decision.</p><button>Find cover</button></section><div class="tablewrap" id="planner"><table><tr><th>Employee</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr><tr><td>Alex</td><td>06-14</td><td>06-14</td><td>06-14</td><td>06-14</td><td>06-14</td><td>-</td><td>-</td></tr></table></div></main><script>var ui={page:'schedule-publication',role:'manager'};var F={actor:{role:'manager'}};function isEmployee(){return false}</script><script src="/ux-reset-cycle10.js"></script></body></html>
+          HTML
+          cat > /tmp/ux-cycle10-harness/calm.html <<'HTML'
+          <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/ux-reset-cycle10.css"><style>:root{--ux-line:#dde3ea;--ux-soft:#f6f8fb;--ux-muted:#5f6f82;--ux-ink:#172539}*{box-sizing:border-box}body{margin:0;font-family:Arial}.content{max-width:1180px;margin:auto;padding:20px}.heading{display:flex;justify-content:space-between;gap:16px}.panel,.weekly-planner{border:1px solid #dde3ea;border-radius:14px;padding:16px;margin:0 0 16px}.week-grid{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));min-width:900px;gap:6px}.weekly-planner{overflow:auto}.primary{padding:10px 14px}</style></head><body class="ux-reset-active"><main class="content"><div class="heading"><div><h1>Schedule publication</h1></div><button>Export published week</button></div><section class="panel"><h2>Operational planner</h2><p>Build the week around demand, skills and actual decisions.</p></section><section class="weekly-planner" id="planner"><div><button>Previous week</button><b>Published schedule</b><button>Next week</button></div><div class="week-grid"><span>Mon shift</span><span>Tue shift</span><span>Wed shift</span><span>Thu shift</span><span>Fri shift</span><span>Sat shift</span><span>Sun shift</span></div></section></main><script>var ui={page:'schedule-publication',role:'manager'};var F={actor:{role:'manager'}};function isEmployee(){return false}</script><script src="/ux-reset-cycle10.js"></script></body></html>
+          HTML
+          python3 -m http.server 9260 --bind 127.0.0.1 --directory /tmp/ux-cycle10-harness >/tmp/ux-cycle10-harness.log 2>&1 &
+          SERVER_PID=$!
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME"
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --remote-debugging-port=9261 --user-data-dir=/tmp/wfm-cycle10-chrome --window-size=1440,1000 about:blank >/tmp/chrome10.log 2>&1 &
+          CHROME_PID=$!
+          trap 'kill "$CHROME_PID" "$SERVER_PID" >/dev/null 2>&1 || true' EXIT
+          timeout 40s node <<'NODE'
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          async function retry(fn,n=100){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
+          const targets=await retry(async()=>{const r=await fetch('http://127.0.0.1:9261/json/list');const x=await r.json();if(!x.find(v=>v.type==='page'))throw Error('No browser page');return x});
+          const page=targets.find(x=>x.type==='page'),ws=new WebSocket(page.webSocketDebuggerUrl);await new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=()=>bad(Error('CDP open failed'))});
+          let id=1;const pending=new Map();ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(m.error.message)):p.resolve(m.result)}};
+          const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}))});
+          const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
+          await send('Page.enable');await send('Runtime.enable');
+          const navigate=async url=>{await send('Page.navigate',{url});await retry(async()=>{if(!(await evalx("document.readyState==='complete'&&['active','calm'].includes(document.querySelector('.content')?.dataset.uxPlannerFocus||'')")))throw Error('not ready');return true});};
+
+          await navigate('http://127.0.0.1:9260/risk.html');
+          const risk=await evalx(`(()=>({mode:document.querySelector('.content')?.dataset.uxPlannerFocus,focus:!!document.querySelector('.ux-plan-focus'),priority:document.querySelector('#coverage')?.classList.contains('ux-plan-priority'),grid:document.querySelector('#planner')?.classList.contains('ux-plan-grid'),gridHidden:document.querySelector('#planner')?.hidden===true,publish:document.querySelector('[data-ux-preserved-publish="true"]')?.textContent.trim(),jumps:document.querySelectorAll('.ux-plan-jump').length,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}))()`);
+          console.log('UX_CYCLE10_R5_RISK_STATE='+JSON.stringify(risk));
+          if(risk.mode!=='active'||!risk.focus||!risk.priority||!risk.grid||!risk.gridHidden||risk.publish!=='Publish schedule'||risk.jumps!==3||risk.overflow>2)throw Error('Verified exception state failed');
+          await evalx("document.querySelector('.ux-plan-grid-toggle').click()");await sleep(100);
+          if(!(await evalx("document.activeElement?.id==='planner'&&!document.querySelector('#planner').hidden&&document.querySelector('.ux-plan-grid-toggle').getAttribute('aria-expanded')==='true'")))throw Error('Planner disclosure/focus failed');
+          await evalx("document.querySelector('[data-target=\"publish\"]').click()");await sleep(75);
+          if(!(await evalx("document.activeElement?.hasAttribute('data-ux-preserved-publish')")))throw Error('Publish focus failed');
+
+          await navigate('http://127.0.0.1:9260/calm.html');
+          const calm=await evalx(`(()=>({mode:document.querySelector('.content')?.dataset.uxPlannerFocus,focus:!!document.querySelector('.ux-plan-focus'),priority:!!document.querySelector('.ux-plan-priority'),grid:document.querySelector('#planner')?.classList.contains('ux-plan-grid'),gridHidden:document.querySelector('#planner')?.hidden===true,jumps:document.querySelectorAll('.ux-plan-jump').length,exportTagged:!![...document.querySelectorAll('button')].find(n=>/^export published week$/i.test(n.textContent.trim()))?.matches('[data-ux-preserved-publish="true"]'),overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}))()`);
+          console.log('UX_CYCLE10_R5_CALM_STATE='+JSON.stringify(calm));
+          if(calm.mode!=='calm'||calm.focus||calm.priority||!calm.grid||calm.gridHidden||calm.jumps!==0||calm.exportTagged||calm.overflow>2)throw Error('Calm no-risk state failed');
+          await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await sleep(250);
+          const mobile=await evalx("({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,mode:document.querySelector('.content')?.dataset.uxPlannerFocus,grid:document.querySelector('#planner')?.classList.contains('ux-plan-grid')})");
+          console.log('UX_CYCLE10_R5_MOBILE_CALM='+JSON.stringify(mobile));
+          if(mobile.overflow>2||mobile.mode!=='calm'||!mobile.grid)throw Error('Mobile calm containment failed');
+          console.log('UX_CYCLE10_R5_BROWSER_INTERACTION=PASS');
+          ws.close();
+          NODE
