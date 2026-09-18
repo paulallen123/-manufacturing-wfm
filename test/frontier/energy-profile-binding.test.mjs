@@ -120,6 +120,20 @@ test('high profile quality does not imply calibrated low value uncertainty',()=>
   assert.equal(binding.evidence[0].uncertaintyPolicy,'fixed_floor_until_adapter_calibration');
 });
 
+test('tightening profile admission quality cannot silently weaken the financial uncertainty floor',()=>{
+  const input=baseInput();
+  input.options[1].energy.profileEvidence.uncertaintyPct=0;
+  input.options[1].energy.profileEvidence.baseline=[seg('run',60,100,0.20,{qualityScore:1})];
+  input.options[1].energy.profileEvidence.candidate=[seg('run',60,100,0.10,{qualityScore:1})];
+  input.options[1].labour={premiumCost:8.5,upperBoundCost:8.5};
+  const binding=bindMeasuredProfileEconomics(input,{minQuality:0.95});
+  assert.equal(binding.valid,true);
+  assert.ok(Math.abs(binding.evidence[0].fixedUncertaintyFloorPct-0.2)<1e-9);
+  assert.ok(Math.abs(binding.input.options[1].energy.lowerBoundEnergyValue-8)<1e-9);
+  const result=evaluateEnergyFlexibilityProfileAware(input,{minQuality:0.95});
+  assert.equal(result.status,'no_safe_or_valuable_flexibility');
+});
+
 test('declared uncertainty above the fixed floor remains authoritative',()=>{
   const input=baseInput();
   input.options[1].energy.profileEvidence.uncertaintyPct=0.25;
