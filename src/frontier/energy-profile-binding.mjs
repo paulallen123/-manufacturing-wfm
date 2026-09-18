@@ -1,9 +1,9 @@
 import {deriveProfileOpportunity} from './energy-profile-benchmark.mjs';
 import {evaluateEnergyFlexibilityHardened} from './energy-input-hardening.mjs';
 
-export const ENERGY_PROFILE_BINDING_VERSION='energy-profile-binding-v0.4.0';
+export const ENERGY_PROFILE_BINDING_VERSION='energy-profile-binding-v0.5.0';
 export const DEFAULT_MIN_PROFILE_QUALITY=0.8;
-export const DEFAULT_MIN_UNCERTAINTY_PCT=0.2;
+export const DEFAULT_MIN_UNCERTAINTY_PCT=0.3;
 
 const finite=(value)=>Number.isFinite(Number(value));
 const fraction=(value)=>finite(value)&&Number(value)>=0&&Number(value)<=1;
