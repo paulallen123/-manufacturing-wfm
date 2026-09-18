@@ -854,3 +854,50 @@ body[data-ux-concept="fidelity-v3"][data-ux-view-mode="decision_first"] .ux-appr
 .ux-approved-evidence-body{padding:14px;min-width:0}
 .ux-approved-evidence-body>.heading:first-child{display:none!important}
 .ux-approved-evidence-body .ux-concept-source-hidden{display:none!important}
+
+
+/* Decision cards keep the original WFM action intact and add a separate path affordance. */
+.ux-approved-decision-source{
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:inherit!important;
+  text-align:left!important;
+  transform:none!important;
+}
+button.ux-approved-decision-source,
+a.ux-approved-decision-source{
+  display:block!important;
+  min-height:0!important;
+  cursor:pointer!important;
+}
+.ux-approved-decision-source:before,
+.ux-approved-decision-source:after{display:none!important}
+.ux-approved-decision-source:hover,
+.ux-approved-decision-source:focus{
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+.ux-approved-path-button{
+  appearance:none;
+  margin-top:10px;
+  padding:6px 9px;
+  min-height:30px;
+  border:1px solid #d8e2de;
+  border-radius:9px;
+  background:#f6f9f7;
+  color:#526a62;
+  font:750 9px/1.1 inherit;
+  cursor:pointer;
+}
+.ux-approved-path-button:hover,
+.ux-approved-path-button:focus{
+  background:#eaf2ee;
+  border-color:#c3d4cd;
+  outline:none;
+}
