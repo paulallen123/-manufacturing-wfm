@@ -22,6 +22,7 @@ on:
       - 'test/frontier/agency-supplier-delivery-receipt.test.mjs'
       - 'test/frontier/agency-provider-twilio-sms.test.mjs'
       - 'test/frontier/agency-postgres-integration.test.mjs'
+      - 'test/frontier/agency-postgres-send-receipt-race.test.mjs'
       - '.github/workflows/agency-labour-exchange-shadow.yml'
       - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
       - 'docs/AGENCY_SUPPLIER_DELIVERY_V1.md'
@@ -66,3 +67,4 @@ jobs:
           set -euo pipefail
           node --version
           node --test test/frontier/agency-postgres-integration.test.mjs
+          node --test test/frontier/agency-postgres-send-receipt-race.test.mjs
