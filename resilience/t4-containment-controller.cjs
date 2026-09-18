@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('node:fs');
+const path = require('node:path');
 const { createHash } = require('node:crypto');
 
 function canonical(value) {
@@ -20,6 +22,145 @@ function clean(value, max = 160) {
 
 function validDigest(value) {
   return /^[a-f0-9]{64}$/.test(String(value ?? '').toLowerCase());
+}
+
+function forensicError(code, message) {
+  return Object.assign(new Error(message), { code });
+}
+
+function assertSafeDirectory(directory, code) {
+  const stat = fs.lstatSync(directory);
+  if (!stat.isDirectory() || stat.isSymbolicLink()) {
+    throw forensicError(code, 'Forensic storage path must be a real directory, not a symlink.');
+  }
+}
+
+function createWriteOnceForensicStore({ rootDir, now = Date.now } = {}) {
+  if (!rootDir) throw forensicError('WFM_T4_FORENSICS_ROOT', 'Write-once forensic storage requires an explicit root directory.');
+  const root = path.resolve(String(rootDir));
+  fs.mkdirSync(root, { recursive: true, mode: 0o700 });
+  assertSafeDirectory(root, 'WFM_T4_FORENSICS_ROOT');
+
+  function locate(tenantDigest, storageKey) {
+    if (!validDigest(tenantDigest) || !validDigest(storageKey)) {
+      throw forensicError('WFM_T4_FORENSICS_KEY', 'Forensic tenant/storage keys must be SHA-256 digests.');
+    }
+    return path.join(root, tenantDigest, `${storageKey}.json`);
+  }
+
+  function verify(receipt = {}) {
+    try {
+      const file = locate(receipt.tenantDigest, receipt.storageKey);
+      const tenantDir = path.dirname(file);
+      assertSafeDirectory(root, 'WFM_T4_FORENSICS_ROOT');
+      assertSafeDirectory(tenantDir, 'WFM_T4_FORENSICS_TENANT_DIR');
+      const stat = fs.lstatSync(file);
+      if (!stat.isFile() || stat.isSymbolicLink()) return false;
+      const raw = fs.readFileSync(file, 'utf8');
+      if (digest(raw) !== receipt.forensicDigest) return false;
+      const envelope = JSON.parse(raw);
+      if (!envelope?.record || envelope.recordDigest !== digest(envelope.record)) return false;
+      if (envelope.record.tenantDigest !== receipt.tenantDigest) return false;
+      if (envelope.storageKey !== receipt.storageKey) return false;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function preserve({ incidentId, tenant, scenarioId, evidenceDigest, eventHeadDigest }) {
+    const safeIncidentId = clean(incidentId, 120);
+    const safeTenant = clean(tenant, 100);
+    const safeScenarioId = clean(scenarioId || 'unknown', 120);
+    const safeEvidenceDigest = clean(evidenceDigest, 64).toLowerCase();
+    const safeEventHeadDigest = clean(eventHeadDigest, 64).toLowerCase();
+    if (!safeIncidentId || !safeTenant || !validDigest(safeEvidenceDigest) || !validDigest(safeEventHeadDigest)) {
+      throw forensicError('WFM_T4_FORENSICS_INPUT', 'Forensic preservation requires incident, tenant and valid evidence/trace digests.');
+    }
+
+    const tenantDigest = digest(`tenant:${safeTenant}`);
+    const storageKey = digest({
+      incidentId: safeIncidentId,
+      tenant: safeTenant,
+      scenarioId: safeScenarioId,
+      evidenceDigest: safeEvidenceDigest,
+      eventHeadDigest: safeEventHeadDigest,
+    });
+    const tenantDir = path.join(root, tenantDigest);
+    try {
+      fs.mkdirSync(tenantDir, { mode: 0o700 });
+    } catch (error) {
+      if (error?.code !== 'EEXIST') throw error;
+    }
+    assertSafeDirectory(tenantDir, 'WFM_T4_FORENSICS_TENANT_DIR');
+
+    const file = locate(tenantDigest, storageKey);
+    const record = {
+      schemaVersion: 1,
+      incidentIdDigest: digest(`incident:${safeIncidentId}`),
+      tenantDigest,
+      scenarioId: safeScenarioId,
+      evidenceDigest: safeEvidenceDigest,
+      eventHeadDigest: safeEventHeadDigest,
+      createdAt: Number(now()),
+    };
+    const envelope = { schemaVersion: 1, storageKey, record, recordDigest: digest(record) };
+    const raw = canonical(envelope) + '\n';
+    const expectedDigest = digest(raw);
+
+    let existing = false;
+    let fd = null;
+    try {
+      const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | (fs.constants.O_NOFOLLOW || 0);
+      fd = fs.openSync(file, flags, 0o400);
+      fs.writeFileSync(fd, raw, { encoding: 'utf8' });
+      fs.fsyncSync(fd);
+      fs.closeSync(fd);
+      fd = null;
+      fs.chmodSync(file, 0o400);
+      const dirFd = fs.openSync(tenantDir, fs.constants.O_RDONLY);
+      try { fs.fsyncSync(dirFd); } finally { fs.closeSync(dirFd); }
+    } catch (error) {
+      if (fd !== null) {
+        try { fs.closeSync(fd); } catch {}
+      }
+      if (error?.code !== 'EEXIST') throw error;
+      existing = true;
+    }
+
+    let forensicDigest = expectedDigest;
+    if (existing) {
+      const existingRaw = fs.readFileSync(file, 'utf8');
+      const existingEnvelope = JSON.parse(existingRaw);
+      const sameCore = existingEnvelope?.storageKey === storageKey
+        && existingEnvelope?.record?.incidentIdDigest === record.incidentIdDigest
+        && existingEnvelope?.record?.tenantDigest === tenantDigest
+        && existingEnvelope?.record?.scenarioId === safeScenarioId
+        && existingEnvelope?.record?.evidenceDigest === safeEvidenceDigest
+        && existingEnvelope?.record?.eventHeadDigest === safeEventHeadDigest
+        && existingEnvelope?.recordDigest === digest(existingEnvelope.record);
+      if (!sameCore) {
+        throw forensicError('WFM_T4_FORENSICS_COLLISION', 'Existing forensic record does not match the idempotent preservation request.');
+      }
+      forensicDigest = digest(existingRaw);
+    }
+
+    const receipt = {
+      verified: false,
+      immutable: true,
+      storageMode: 'write-once-exclusive',
+      forensicDigest,
+      tenantDigest,
+      storageKey,
+    };
+    receipt.verified = verify(receipt);
+    if (!receipt.verified) {
+      throw forensicError('WFM_T4_FORENSICS_VERIFY', 'Write-once forensic evidence failed read-back verification.');
+    }
+    return receipt;
+  }
+
+  return { preserve, verify, rootDigest: digest(root) };
 }
 
 const ALLOWED_SCENARIOS = Object.freeze(new Set([
@@ -146,28 +287,35 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
     const plan = [...planned];
     record('containment-plan', { actions: plan });
 
-    let forensicReceipt = null;
-    if (forensicStore?.preserve) {
-      consume('forensics.preserve');
-      const preserved = await forensicStore.preserve({
-        incidentId,
-        tenant,
-        scenarioId,
-        evidenceDigest,
-        eventHeadDigest: previousDigest,
-      });
-      if (preserved?.verified !== true || !validDigest(preserved?.forensicDigest)) {
-        throw Object.assign(new Error('Forensic preservation was not independently verified.'), { code: 'WFM_T4_FORENSICS_VERIFY' });
-      }
-      forensicReceipt = {
-        verified: true,
-        forensicDigest: preserved.forensicDigest,
-        immutable: preserved.immutable === true,
-      };
-      record('forensics-preserved', { forensicDigest: preserved.forensicDigest, immutable: preserved.immutable === true });
-    } else {
+    if (!forensicStore?.preserve) {
       record('forensics-preservation-required', { executorAvailable: false });
+      throw Object.assign(new Error('T4 cannot claim a safe terminal without verified forensic preservation.'), { code: 'WFM_T4_FORENSICS_UNAVAILABLE' });
     }
+
+    consume('forensics.preserve');
+    const preserved = await forensicStore.preserve({
+      incidentId,
+      tenant,
+      scenarioId,
+      evidenceDigest,
+      eventHeadDigest: previousDigest,
+    });
+    if (preserved?.verified !== true || preserved?.immutable !== true || !validDigest(preserved?.forensicDigest)) {
+      throw Object.assign(new Error('Forensic preservation must be independently verified and write-once.'), { code: 'WFM_T4_FORENSICS_VERIFY' });
+    }
+    const forensicReceipt = {
+      verified: true,
+      forensicDigest: preserved.forensicDigest,
+      immutable: true,
+      storageMode: clean(preserved.storageMode || 'verified-write-once', 80),
+      storageKey: validDigest(preserved.storageKey) ? preserved.storageKey : null,
+    };
+    record('forensics-preserved', {
+      forensicDigest: preserved.forensicDigest,
+      immutable: true,
+      storageMode: forensicReceipt.storageMode,
+      storageKey: forensicReceipt.storageKey,
+    });
 
     let containmentReceipt = null;
     if (containmentExecutor?.execute) {
@@ -266,6 +414,9 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
 
   function verifyReceipt(receipt) {
     if (!receipt || !Array.isArray(receipt.events) || !validDigest(receipt.receiptDigest)) return false;
+    if (receipt.safeTerminal === true) {
+      if (receipt.forensicReceipt?.verified !== true || receipt.forensicReceipt?.immutable !== true || !validDigest(receipt.forensicReceipt?.forensicDigest)) return false;
+    }
     let previousDigest = digest({
       incidentId: receipt.incidentId,
       tenant: receipt.tenant,
@@ -291,4 +442,4 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
   return { handle, verifyReceipt };
 }
 
-module.exports = { createT4ContainmentController, digest };
+module.exports = { createT4ContainmentController, createWriteOnceForensicStore, digest };
