@@ -92,6 +92,49 @@ export class AttendanceSourceSupervisor {
     };
   }
 
+
+  exportState(){
+    return {
+      version:1,
+      config:{heartbeatSlaMs:this.heartbeatSlaMs,lagWarningMs:this.lagWarningMs,authRefreshLeadMs:this.authRefreshLeadMs},
+      connectors:[...this.connectors.values()].map(c=>({
+        tenant:c.tenant,sourceId:c.sourceId,provider:c.provider,site:c.site,domain:c.domain,supportsBackfill:c.supportsBackfill,
+        registeredAtMs:c.registeredAtMs,lastHeartbeatMs:c.lastHeartbeatMs,lastEventObservedMs:c.lastEventObservedMs,lastEventReceivedMs:c.lastEventReceivedMs,
+        lastSequence:c.lastSequence,lastProviderEventId:c.lastProviderEventId,duplicates:c.duplicates,gaps:c.gaps,reconnects:c.reconnects,authExpiresAtMs:c.authExpiresAtMs,
+        seen:[...c.seen],window:{...c.window}
+      })),
+      recovery:this.recovery.map(j=>({...j}))
+    };
+  }
+
+  restoreState(state){
+    if(!state || state.version!==1 || !Array.isArray(state.connectors) || !Array.isArray(state.recovery)) throw new Error('Unsupported attendance source supervisor state.');
+    const cfg=state.config||{};
+    if(cfg.heartbeatSlaMs!==this.heartbeatSlaMs || cfg.lagWarningMs!==this.lagWarningMs || cfg.authRefreshLeadMs!==this.authRefreshLeadMs){
+      throw new Error('Attendance source supervisor configuration changed; explicit migration required.');
+    }
+    const next=new Map();
+    for(const raw of state.connectors){
+      if(!raw?.tenant||!raw?.sourceId||!raw?.provider||!raw?.site) throw new Error('Invalid persisted attendance source connector.');
+      const c={
+        tenant:String(raw.tenant),sourceId:String(raw.sourceId),provider:String(raw.provider),site:String(raw.site),domain:String(raw.domain||'attendance'),
+        supportsBackfill:Boolean(raw.supportsBackfill),registeredAtMs:raw.registeredAtMs,lastHeartbeatMs:raw.lastHeartbeatMs,
+        lastEventObservedMs:raw.lastEventObservedMs,lastEventReceivedMs:raw.lastEventReceivedMs,lastSequence:raw.lastSequence,
+        lastProviderEventId:raw.lastProviderEventId,duplicates:Number(raw.duplicates)||0,gaps:Number(raw.gaps)||0,reconnects:Number(raw.reconnects)||0,
+        authExpiresAtMs:raw.authExpiresAtMs,seen:new Set(Array.isArray(raw.seen)?raw.seen.slice(-50_000):[]),
+        window:{id:raw.window?.id??null,startMs:raw.window?.startMs??null,continuityComplete:raw.window?.continuityComplete!==false,unrecoverable:raw.window?.unrecoverable===true}
+      };
+      next.set(keyOf(c.tenant,c.sourceId),c);
+    }
+    for(const j of state.recovery){
+      if(!j?.jobId||!j?.tenant||!j?.sourceId||!['pending','complete'].includes(j.status)) throw new Error('Invalid persisted attendance recovery job.');
+      if(!next.has(keyOf(j.tenant,j.sourceId))) throw new Error('Persisted recovery job references unknown connector.');
+    }
+    this.connectors=next;
+    this.recovery=state.recovery.map(j=>({...j}));
+    return true;
+  }
+
   pendingRecovery({tenant,sourceId}={}){
     return this.recovery.filter(j=>(!tenant||j.tenant===tenant)&&(!sourceId||j.sourceId===sourceId)&&j.status==='pending').map(j=>({...j}));
   }
