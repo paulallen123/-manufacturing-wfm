@@ -96,6 +96,9 @@ export function normalizeAccessDecision({
 export const ACCESS_PROVIDER_CAPABILITIES=Object.freeze({
   kisi:{realtime:'webhook',reconciliation:'events_api',deployment:'cloud',customerNetworkChange:false},
   verkada:{realtime:'webhook',reconciliation:'events_api',deployment:'cloud',customerNetworkChange:false},
+  salto_nebula:{realtime:'event_subscription',reconciliation:'list_events_api',inventory:'users_access_points_api',deployment:'cloud',customerNetworkChange:false,eventVisibility:'unit_privacy_may_suppress_user_events'},
+  salto_space:{realtime:'licensed_event_stream',reconciliation:'audit_trail_adapter_pending',inventory:'space_integration_api',deployment:'edge',customerNetworkChange:'outbound_edge',sitePrerequisite:'event_stream_license'},
+  paxton_net2:{realtime:'signalr_event_stream',reconciliation:'events_web_api',inventory:'users_doors_web_api',deployment:'edge',customerNetworkChange:'outbound_edge',vendorPrerequisite:'approved_commercial_integration'},
   gallagher:{realtime:'live_events_api',reconciliation:'historical_events_api',deployment:'hybrid',customerNetworkChange:'gateway_or_edge'},
   genetec:{realtime:'web_sdk_event_listener',reconciliation:'access_event_query',deployment:'hybrid',customerNetworkChange:'usually_edge_or_reachable_websdk'},
   hid_origo:{realtime:'callback',reconciliation:'event_management_api',deployment:'cloud',customerNetworkChange:false},
@@ -107,11 +110,16 @@ export const ACCESS_PROVIDER_CAPABILITIES=Object.freeze({
  * Produces the lowest-friction supported connection strategy. It is deliberately
  * declarative: secret collection/OAuth remains in the product's secure connector
  * layer, while this function decides which integration lane to offer the user.
+ * Vendor-only prerequisites are separated from customer steps so customers are
+ * never asked to solve partner/certification work that belongs to us.
  */
 export function planAccessConnection({provider,hasCloudGateway=false,onvifProfileA=false,webhookAvailable=false,webSdkReachable=false}={}){
   const p=String(provider||'').toLowerCase();
   if(p==='kisi') return {strategy:'cloud_webhook',realtime:true,backfill:true,customerSteps:['authorize','confirm_door_directions']};
   if(p==='verkada') return {strategy:'cloud_signed_webhook',realtime:true,backfill:true,customerSteps:['authorize','configure_webhook_secret','confirm_door_directions']};
+  if(p==='salto_nebula') return {strategy:'cloud_event_subscription',realtime:true,backfill:true,customerSteps:['authorize','confirm_door_directions'],safetyNotes:['use_occur_time','privacy_units_may_suppress_events','unspecified_direction_never_attendance']};
+  if(p==='salto_space') return {strategy:'edge_space_event_stream',realtime:true,backfill:false,customerPrerequisites:['event_stream_license'],customerSteps:['install_or_enable_edge_connector','authorize','confirm_door_directions']};
+  if(p==='paxton_net2') return {strategy:'edge_net2_signalr',realtime:true,backfill:true,vendorPrerequisites:['paxton_commercial_integration_approval'],customerSteps:['install_or_enable_edge_connector','authorize','confirm_door_directions'],safetyNotes:['net2_v7_api_mfa_compatible']};
   if(p==='hid_origo') return {strategy:'cloud_callback',realtime:true,backfill:true,customerSteps:['authorize','confirm_door_directions']};
   if(p==='gallagher'){
     if(hasCloudGateway) return {strategy:'cloud_gateway_live_events',realtime:true,backfill:true,customerSteps:['authorize','confirm_door_directions']};
