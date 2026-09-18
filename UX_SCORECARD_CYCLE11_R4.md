@@ -123,3 +123,48 @@ Execution of the composed browser regression, real screen-reader behaviour, tabl
 
 ### Single next highest-value action
 Move to the next unblocked high-value manager journey in the new UI—prefer Weekly Sign-off exception resolution speed—while preserving this one browser harness as the sole queue context/confirmation regression. Do not add confirmation SLA behaviour until the authoritative owning workflow exposes a structured SLA field.
+
+## r7 — Weekly Sign-off continuation focus
+
+### Journey reviewed
+Manager opens Weekly Sign-off and selects the existing primary next action (`Resolve exceptions`, `Continue review` or `Check employee totals`).
+
+### New-UI lineage
+The change was applied only on `ux/universal-action-queue-20260918-r1` / PR #80, extending the existing Cycle 3 sign-off component inside the canonical new-UI lineage. No legacy UI, customer-proof, staging or production mutation.
+
+### Reuse / duplicate check
+- Reused the existing Cycle 3 condensed sign-off desk, its single primary next-action button and existing progressive-disclosure sections.
+- Did not create a second exception queue, decision card, sign-off workflow, copied payroll logic or new route.
+- Kept the source workflow and existing controls as the only write authority.
+- No external UX research was repeated because the unresolved issue was local continuation/focus behaviour, not a market-pattern question.
+
+### Hypothesis
+When the manager presses the sign-off desk's existing next action, opening the correct disclosure and moving focus to the first existing unresolved/actionable control should reduce scanning and keyboard travel without changing any decision logic or hiding capability.
+
+### Exact implementation delta
+Commit `f349cd3474eb2c6cabdb8148f20b0268f9d92e84` extends `ux-overlay/ux-reset-cycle3.js` with one reusable `openSignoffDetail()` continuation helper. It validates the existing `checks` / `people` / `controls` targets, opens only the existing owning disclosure, prefers an existing exception/resolve/review control, falls back to the first existing interactive control, then to the disclosure summary, and moves scroll/focus there. The existing primary sign-off button now calls this helper instead of only opening and scrolling the disclosure. `window.WFMUXCycle3` exposes the helper for deterministic testing; no authoritative state is mutated.
+
+### Tests and observed result
+- Focused isolated helper test: **`UX_SIGNOFF_NEXT_DECISION_FOCUS=PASS`**. It verified that the checks disclosure opens, a structured exception action is preferred over a generic button, focus moves to it, and an invalid target is rejected.
+- Post-write branch fetch confirms the exact helper and event wiring are present in the source-owned Cycle 3 component.
+- GitHub workflow lookup for exact implementation head `f349cd3474eb2c6cabdb8148f20b0268f9d92e84` returned no workflow runs. The known CI execution blocker was checked once because runtime code changed and was not repeatedly retried.
+- Full composed-browser execution and real screen-reader announcement quality are therefore **not claimed green**.
+
+### UX scorecard impact
+- Calm by default: unchanged; no new surface or persistent information added.
+- Dense on demand: improved continuation into the exact existing detail only when the manager asks for it.
+- Explainability: unchanged; existing evidence and controls remain the source owners.
+- Navigation predictability: improved within Weekly Sign-off because the primary next action now continues into the opened work rather than stopping at the container.
+- Accessibility: improved by deterministic focus continuation; screen-reader quality remains unverified.
+- Capability preservation: green by design; no permissions, payroll, sign-off eligibility, tenant, audit or recovery logic changed.
+
+### Decision log
+- Reuse the existing sign-off next action and progressive disclosure, adding focus continuation: **BUILD NOW** — implemented.
+- Create a new exception panel/queue for sign-off: **REJECT** — duplicate workflow and unnecessary UI.
+- Add external research this cycle: **REJECT** — it would not change the bounded continuation fix.
+
+### Still unverified
+Full composed-browser execution against the real application, screen-reader behaviour, tablet/mobile end-to-end focus, representative manager time-on-task/error delta, and Cycle 10 exact hosted source-bound proof.
+
+### Single next highest-value action
+Extend the existing single composed-browser sign-off check to assert this focus continuation against the real rendered Cycle 3 sign-off fixture, then move to the next unblocked manager journey rather than adding another sign-off abstraction.
