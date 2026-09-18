@@ -1,0 +1,78 @@
+name: Credential-free live static provenance proof
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/live-static-provenance-only.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      WFM_ORIGIN: https://wfm-customer-proof-0676-production.up.railway.app
+      EXPECTED_RELEASE: 0.6.76-hosted-staging-rc1
+      EXPECTED_RUNTIME_SHA256: 3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Verify sealed artifact and reconstruct served composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz | awk '{print $1}')" = "$EXPECTED_RUNTIME_SHA256"
+          mkdir -p "$RUNNER_TEMP/sealed"
+          tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C "$RUNNER_TEMP/sealed"
+          cp "$RUNNER_TEMP/sealed/public/factory-control-ui.css" "$RUNNER_TEMP/factory.css"
+          cp "$RUNNER_TEMP/sealed/public/value-cockpit-ui.js" "$RUNNER_TEMP/cockpit.js"
+          printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> "$RUNNER_TEMP/factory.css"; cat ux-overlay/ux-reset.css >> "$RUNNER_TEMP/factory.css"
+          for n in 2 3 4 5 6 7 8 9; do printf '\n/* WFM_UX_RESET_CYCLE%s_BEGIN */\n' "$n" >> "$RUNNER_TEMP/factory.css"; cat "ux-overlay/ux-reset-cycle${n}.css" >> "$RUNNER_TEMP/factory.css"; done
+          printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> "$RUNNER_TEMP/cockpit.js"; cat ux-overlay/ux-reset.js >> "$RUNNER_TEMP/cockpit.js"
+          for n in 2 3 4 5 6 7 8 9; do printf '\n;/* WFM_UX_RESET_CYCLE%s_BEGIN */\n' "$n" >> "$RUNNER_TEMP/cockpit.js"; cat "ux-overlay/ux-reset-cycle${n}.js" >> "$RUNNER_TEMP/cockpit.js"; done
+          echo "SEALED_RUNTIME_SHA256=$EXPECTED_RUNTIME_SHA256"
+      - name: Prove health identity and record fail-closed statuses
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error "$WFM_ORIGIN/api/health" -o "$RUNNER_TEMP/health.json"
+          node - "$RUNNER_TEMP/health.json" <<'NODE'
+          const h=JSON.parse(require('node:fs').readFileSync(process.argv[2],'utf8'));
+          if(h.status!=='ok'||h.release!==process.env.EXPECTED_RELEASE||h.fixtureOnly!==true||h.productionApproved!==false||h.pilotReady!==false) throw Error(JSON.stringify(h));
+          console.log('HEALTH_IDENTITY=PASS');
+          console.log('HEALTH_KEYS='+Object.keys(h).sort().join(','));
+          NODE
+          plain=$(curl -sS -o /dev/null -w '%{http_code}' "$WFM_ORIGIN/api/bootstrap")
+          iso=$(curl -sS -H 'X-WFM-Tenant: isolation-test' -o /dev/null -w '%{http_code}' "$WFM_ORIGIN/api/bootstrap")
+          north=$(curl -sS -H 'X-WFM-Tenant: northstar-demo' -o /dev/null -w '%{http_code}' "$WFM_ORIGIN/api/bootstrap")
+          echo "UNAUTH_BOOTSTRAP_PLAIN=$plain"
+          echo "UNAUTH_BOOTSTRAP_FORGED_ISOLATION=$iso"
+          echo "UNAUTH_BOOTSTRAP_FORGED_NORTHSTAR=$north"
+          test "$plain" = 401
+          test "$iso" = 401
+          test "$north" = 401
+          echo 'FORGED_TENANT_HEADER_FAIL_CLOSED=PASS'
+      - name: Match live bytes to sealed reviewed composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          compare(){ route="$1" expected="$2" label="$3"; curl --fail --silent --show-error "$WFM_ORIGIN/$route" -o "$RUNNER_TEMP/live"; e=$(sha256sum "$expected"|awk '{print $1}'); l=$(sha256sum "$RUNNER_TEMP/live"|awk '{print $1}'); echo "$label expected=$e live=$l"; test "$e" = "$l"; }
+          compare factory-control-ui.css "$RUNNER_TEMP/factory.css" FACTORY_CONTROL
+          compare value-cockpit-ui.js "$RUNNER_TEMP/cockpit.js" VALUE_COCKPIT
+          for f in index.html kiosk.html attendance-corrections.js payroll-control.js personal-ui.js schedule-publication.js; do route="$f"; [ "$f" = index.html ] && route=''; compare "$route" "$RUNNER_TEMP/sealed/public/$f" "${f//[^A-Za-z0-9]/_}"; done
+          echo 'LIVE_STATIC_PROVENANCE=PASS'
+      - name: Verify public security headers
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sS -D "$RUNNER_TEMP/h" -o /dev/null "$WFM_ORIGIN/"
+          grep -qi '^x-content-type-options:[[:space:]]*nosniff' "$RUNNER_TEMP/h"
+          grep -qi '^referrer-policy:[[:space:]]*no-referrer' "$RUNNER_TEMP/h"
+          grep -qi '^content-security-policy:' "$RUNNER_TEMP/h"
+          ! grep -qi '^access-control-allow-origin:[[:space:]]*\*' "$RUNNER_TEMP/h"
+          echo 'PUBLIC_SECURITY_HEADERS=PASS'
