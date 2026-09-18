@@ -12,16 +12,6 @@ on:
       - '.github/scripts/ux-cycle11-context-browser.mjs'
       - '.github/scripts/ux-cycle12-signal-contract.mjs'
       - '.github/workflows/ux-cycle11-gate.yml'
-  pull_request:
-    branches:
-      - 'ux/universal-action-queue-20260918-r1'
-    paths:
-      - 'Dockerfile'
-      - 'ux-overlay/ux-reset-cycle11*'
-      - 'ux-overlay/ux-reset-cycle12*'
-      - '.github/scripts/ux-cycle11-context-browser.mjs'
-      - '.github/scripts/ux-cycle12-signal-contract.mjs'
-      - '.github/workflows/ux-cycle11-gate.yml'
   workflow_dispatch:
 
 permissions:
@@ -83,6 +73,15 @@ jobs:
           console.log('UX_CYCLE11_MODEL_STRESS_60=PASS');
           console.log('UX_CYCLE11_HUMAN_AUTOMATION_SEPARATION=PASS');
           NODE
+          node <<'NODE'
+          const fs=require('node:fs');
+          const c11=fs.readFileSync('ux-overlay/ux-reset-cycle11.js','utf8');
+          const c12=fs.readFileSync('ux-overlay/ux-reset-cycle12.js','utf8');
+          if(!c11.includes('renderCard:card')) throw new Error('Cycle 11 shared action-card renderer not exported');
+          if(!c12.includes('WFMUXCycle11?.renderCard')) throw new Error('Cycle 12 does not reuse Cycle 11 action-card renderer');
+          if(/function\s+card\s*\(/.test(c12)||c12.includes('ux12-open')) throw new Error('Cycle 12 duplicated action-card rendering/navigation');
+          console.log('UX12_SHARED_ACTION_CARD=PASS');
+          NODE
 
       - name: Browser-check exact source context and return focus
         shell: bash
@@ -116,6 +115,7 @@ jobs:
           if(!(j10>=0&&jm>j10&&j11>jm&&j12m>j11&&j12>j12m&&c10>=0&&c11>c10&&c12>c11)) throw new Error('Cycle 11/12 composition order invalid');
           if(!js.includes('window.WFMUXCycle11=')||!js.includes('WFMUXCycle11Model')||!css.includes('.ux11-queue')) throw new Error('Cycle 11 missing from served assets');
           if(!js.includes('window.WFMUXSignals=')||!js.includes('WFMUXCycle12Model')||!css.includes('.ux12-system-queue')) throw new Error('Cycle 12 missing from served assets');
+          if(!js.includes('renderCard:card')||!js.includes('WFMUXCycle11?.renderCard')) throw new Error('Shared Cycle 11/12 action-card primitive missing');
           if(!js.includes("route:'leave'")||!js.includes("route:'time-review'")||!js.includes("route:'weekly-review'")) throw new Error('Source workflow deep links missing');
           if(!js.includes('Recently confirmed')||!js.includes('Handled automatically')) throw new Error('Resolved and automation lanes not both present');
           console.log('UX_CYCLE11_APPROVED_ASSET_COMPOSITION=PASS');
