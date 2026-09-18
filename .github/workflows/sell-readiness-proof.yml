@@ -1,0 +1,74 @@
+name: Sell Readiness - 10k / 50 Sites
+
+on:
+  push:
+    branches:
+      - 'proof/sell-readiness-10k-50-sites-20260918'
+    paths:
+      - 'proof/**'
+      - 'implementation/**'
+      - 'learning/**'
+      - 'integration/**'
+      - 'security/runtime/**'
+      - 'DEPLOYMENT_MANIFEST.json'
+      - '.github/workflows/sell-readiness-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sell-readiness-10k-50-sites
+  cancel-in-progress: true
+
+jobs:
+  evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout proof candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Verify sealed hosted runtime provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=$(node -p "require('./DEPLOYMENT_MANIFEST.json').runtime_sha256")
+          actual=$(sha256sum "$(node -p "require('./DEPLOYMENT_MANIFEST.json').runtime_artifact")" | awk '{print $1}')
+          test "$actual" = "$expected"
+
+      - name: Run implementation and learning regression
+        run: |
+          node --test             implementation/runtime/one-day-enterprise-engine.test.cjs             implementation/runtime/configuration-inference-engine.test.cjs             implementation/runtime/implementation-learning-integration.test.cjs             learning/runtime/adaptive-learning-engine.test.cjs
+
+      - name: Run autonomous integration regression
+        run: |
+          node --test             integration/runtime/autonomous-integration-hub.test.cjs             integration/runtime/directory-oauth-broker.test.cjs             integration/worker/directory-discovery-worker.test.cjs
+
+      - name: Reproduce one-day timing theory
+        run: node implementation/simulation/one-day-enterprise-simulation.mjs --assert-target
+
+      - name: Prove 10,000 employees across 50 sites
+        run: node proof/sell-readiness-scale.mjs
+
+      - name: Inventory exact sealed payroll/support runtime
+        run: node proof/sealed-runtime-capability-inventory.mjs
+
+      - name: Upload reproducible evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sell-readiness-10k-50-sites-evidence
+          path: proof-output
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
