@@ -52,7 +52,7 @@ function normalise(providerId,input){
 }
 function implementationSignals(status){
   const out=[];if(!status||typeof status!=='object')return Object.freeze(out);
-  const state=String(status.state||'');if(!state||state==='NOT_STARTED')return Object.freeze(out);
+  const state=String(status.state||'');if(!state||['NOT_STARTED','AWAITING_CUSTOMER_START','INVITATION_EXPIRED'].includes(state))return Object.freeze(out);
   const completed=Number(status.completedRequirements||0),total=Number(status.totalRequirements||0);
   const requirements=Array.isArray(status.requirements)?status.requirements:[];
   const missing=requirements.filter(x=>x&&!x.satisfied);
