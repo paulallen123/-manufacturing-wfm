@@ -53,6 +53,21 @@ Default automatic OUT requires a genuine departure anchor (currently existing ac
 
 Future customer-specific adapters may designate a work-ending source as an OUT anchor only after the source semantics are proven and the configuration is explicitly approved.
 
+## Durable recovery slice
+
+The isolated development branch now includes a synchronous append-only evidence journal used to prove crash/restart and exact-once semantics before database integration.
+
+The journal deliberately persists the event before the attendance engine is allowed to act, fsyncs each frame, records a checksum and stable event digest, and stores the resulting engine outcome separately. On restart the runtime rebuilds state by replaying durable events in order. A crash after the event is persisted but before it is applied therefore replays it once; a crash after application but before the caller receives the response becomes a deterministic replay rather than a second attendance mutation.
+
+Additional safeguards:
+- partial trailing frames from interrupted writes are truncated without discarding earlier complete frames;
+- checksum corruption fails closed;
+- conflicting reuse of a provider event ID fails closed;
+- rejected evidence gets a durable rejection outcome so restart does not create an infinite poison-message loop;
+- logic-version mismatch fails closed instead of silently reinterpreting historic payroll evidence under changed rules.
+
+This file journal is a development proof harness, not the final production persistence choice. Production integration should use the existing transactional datastore with unique event identity and durable commit settings. If SQLite is used for an embedded/site component, WAL with `synchronous=FULL` is the minimum durability mode under consideration because SQLite documents FULL WAL transactions as ACID across power loss; the final datastore decision remains subject to the product's existing persistence architecture.
+
 ## Reliability acceptance target
 
 "100% reliability" is an engineering acceptance target, not a promise that third-party networks and physical infrastructure never fail. Release requires 100% pass on the defined safety/integrity suite and, critically, zero silent wrong payroll mutations in tested failure scenarios.
@@ -75,10 +90,21 @@ Before release:
 
 If uncertainty remains, fail safe to review rather than fabricate an attendance time.
 
+## Legacy terminal integration pattern
+
+For existing Suprema/BioStar estates, near-real-time attendance should prefer the platform's WebSocket event stream rather than polling the event-search REST API. Suprema documents that event-search reads from the database after an approximately 3–10 second delay, whereas the WebSocket stream exposes monitoring events in real time. Historical/API retrieval remains valuable for reconciliation and gap filling.
+
+The adapter must preserve both provider event time and our receive time. Suprema documents that `datetime` is the actual device event time while `server_datetime` is the later database synchronisation time. Therefore `datetime` should be treated as source evidence after timezone handling; `server_datetime` must not silently replace the actual event occurrence time.
+
+Recommended pattern: realtime WebSocket ingest -> durable event journal/inbox -> deterministic attendance engine -> historical API/index reconciliation for missed intervals after reconnect. Existing Suprema hardware can remain in place; no replacement clock or new credential is required.
+
 ## Research basis (checked 18 Sep 2026)
 
 - Microsoft NPS/RADIUS accounting supports Accounting-Start/Stop/Interim records tied to authenticated user sessions.
 - HPE Aruba Central exposes client/location streaming events where the customer already has the required WLAN/location configuration.
+- Cisco Meraki exposes wireless client auth/association/disassociation/roam events that can be mapped into the provider-neutral Wi-Fi evidence adapter, subject to identity-binding quality.
+- Suprema BioStar 2/X recommends WebSocket for real-time event logs because REST event-search reads from the database after an approximately 3–10 second delay; the device `datetime` and later `server_datetime` are distinct.
 - Android 16 Ranging provides a unified API for UWB, Bluetooth Channel Sounding, Wi-Fi NAN RTT and Bluetooth RSSI where compatible hardware already exists.
 - Bluetooth Core 6.0 Channel Sounding adds secure fine-ranging mechanisms; it is an optional enhancement, never a hardware dependency.
+- SQLite documents `synchronous=FULL` in WAL mode as ACID, including durability across power loss; this informs the persistent-site adapter design but does not force SQLite as the product datastore.
 - UK ICO worker-monitoring guidance requires clear purpose, necessity/proportionality and transparency; biometric timekeeping creates additional special-category-data obligations, so biometrics are not the default design.
