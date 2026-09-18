@@ -37,6 +37,11 @@ function hideGrid(content,grid,toggle){
  if(toggle)toggle.textContent='Open full planner';
  content.dataset.uxPlannerGrid='closed';
 }
+function focusTarget(node,block='center'){
+ if(!node)return;
+ try{node.focus({preventScroll:true});}catch{try{node.focus();}catch{}}
+ node.scrollIntoView({block,behavior:'smooth'});
+}
 function enhancePlanner(){
  if(!manager()||route()!=='schedule-publication')return;
  const content=document.querySelector('.content');
@@ -57,20 +62,22 @@ function enhancePlanner(){
  if(grid){
    grid.classList.add('ux-plan-grid');
    if(!grid.hasAttribute('tabindex'))grid.setAttribute('tabindex','0');
+   if(!grid.id)grid.id='ux-plan-grid-detail';
    gridToggle=button('Open full planner','grid');
    gridToggle.classList.add('ux-plan-grid-toggle');
    gridToggle.setAttribute('aria-expanded','false');
+   gridToggle.setAttribute('aria-controls',grid.id);
    jumps.appendChild(gridToggle);
    if(issue)hideGrid(content,grid,gridToggle);
  }
  if(publish){publish.classList.add('ux-plan-publish');publish.setAttribute('data-ux-preserved-publish','true');jumps.appendChild(button('Go to publish','publish'));}
  jumps.addEventListener('click',event=>{
    const control=event.target.closest('.ux-plan-jump');if(!control)return;
-   if(control.dataset.target==='issues'&&issue)issue.scrollIntoView({block:'start',behavior:'smooth'});
+   if(control.dataset.target==='issues'&&issue)focusTarget(issue,'start');
    if(control.dataset.target==='grid'&&grid){
      if(grid.hidden){revealGrid(content,grid,gridToggle);grid.scrollIntoView({block:'start',behavior:'smooth'});}else hideGrid(content,grid,gridToggle);
    }
-   if(control.dataset.target==='publish'&&publish)publish.scrollIntoView({block:'center',behavior:'smooth'});
+   if(control.dataset.target==='publish'&&publish)focusTarget(publish,'center');
  });
 }
 function apply(){try{enhancePlanner();}catch(e){console.warn('WFM UX cycle 10 skipped:',e);}}
