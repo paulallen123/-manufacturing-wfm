@@ -1,0 +1,106 @@
+name: WFM UX cycle 10 r4 source-bound hosted proof
+
+on:
+  push:
+    branches:
+      - 'ux/planner-focus-20260918-r4'
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/ux-reset-cycle10.*'
+      - 'scripts/ux-cycle10-r4-hosted-proof.mjs'
+      - '.github/workflows/ux-cycle10-r4-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ux-cycle10-r4-source-bound-proof
+  cancel-in-progress: true
+
+jobs:
+  deploy-and-prove:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      RAILWAY_NO_AUTO_UPDATE: '1'
+      RAILWAY_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'
+      RAILWAY_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'
+      RAILWAY_SERVICE_ID: '5de85004-a85d-41cd-848d-554f16afd1ff'
+      EXPECTED_ORIGIN: 'https://wfm-ux-cycle10-r4-proof-production.up.railway.app'
+      EXPECTED_RUNTIME_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'
+    steps:
+      - name: Checkout exact r4 candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify immutable source and frozen runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "$EXPECTED_RUNTIME_SHA256  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz" | sha256sum -c -
+          grep -q 'WFM_UX_RESET_CYCLE10_BEGIN' Dockerfile
+          grep -q 'window.WFMUXCycle10=' ux-overlay/ux-reset-cycle10.js
+          grep -q 'data-ux-preserved-publish' ux-overlay/ux-reset-cycle10.js
+          grep -q "focusTarget(grid,'start')" ux-overlay/ux-reset-cycle10.js
+          printf 'UX_CYCLE10_R4_SOURCE_SHA=%s\n' "$GITHUB_SHA"
+          echo 'UX_CYCLE10_R4_PREDEPLOY_INVARIANTS=PASS'
+
+      - name: Install pinned Railway CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
+          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
+          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
+          echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/railway-cli"
+          tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
+          CLI_BIN=$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)
+          test -n "$CLI_BIN"
+          echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
+          "$CLI_BIN" --version
+
+      - name: Deploy exact checkout to isolated proof service
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is unavailable.' >&2; exit 1; }
+          "$RAILWAY_BIN" up \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_SERVICE_ID" \
+            --ci \
+            --message "Cycle 10 r4 source-bound proof ${GITHUB_SHA}" \
+            2>&1 | tee "$RUNNER_TEMP/railway-up.log"
+
+      - name: Run authenticated hosted browser proof
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RAILWAY_BIN" variable list \
+            --service "$RAILWAY_SERVICE_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --json > "$RUNNER_TEMP/ux-r4-vars.json"
+          node scripts/ux-cycle10-r4-hosted-proof.mjs "$RUNNER_TEMP/ux-r4-vars.json" "$RUNNER_TEMP"
+          rm -f "$RUNNER_TEMP/ux-r4-vars.json"
+
+      - name: Upload source-bound hosted evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cycle10-r4-source-bound-hosted-evidence
+          path: |
+            ${{ runner.temp }}/cycle10-r4-hosted-evidence
+            ${{ runner.temp }}/railway-up.log
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
