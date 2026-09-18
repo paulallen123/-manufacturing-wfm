@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "incident": "last-line-defence-branch-provenance-drift",
+  "status": "contained-unmerged-rebase-required",
+  "severity": "medium",
+  "classification": ["test-defect", "deployment-provenance", "security-control-drift", "non-production"],
+  "observed_at": "2026-09-17T15:32:15Z",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "affected_branch": "security/last-line-defense",
+  "affected_branch_head": "dedfca551c09c71eb5edd6cd798c68108c6dace9",
+  "current_main_at_preservation": "381ee348d61f1dd5baea949fd6bc0729bde14e3e",
+  "branch_comparison": {
+    "status": "diverged",
+    "main_ahead_by": 86,
+    "security_branch_unique_commits": 26,
+    "merge_base": "f174988bfbcac98756e45d6d56f20c2b60cee491"
+  },
+  "failed_workflow": {
+    "run_id": 35240872022,
+    "job_id": 105268669339,
+    "job": "integrity-and-containment-gates",
+    "failed_step": "Require immutable runtime chunks",
+    "observed_failure": "Runtime artifact chunks are missing. Deployment must fail closed."
+  },
+  "validated_mismatch": {
+    "defence_branch_expected_runtime_transport": "artifact/runtime.b64.* reconstructed into /tmp/runtime.tgz",
+    "current_main_runtime_artifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "defence_branch_expected_node_image": "node:22.23.2-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5",
+    "current_main_node_image": "node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96",
+    "current_candidate": "0.6.76-hosted-staging-rc1",
+    "current_runtime_sha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d"
+  },
+  "impact": {
+    "customer_runtime_impact_observed": false,
+    "production_exposure_observed": false,
+    "security_bypass_observed": false,
+    "engineering_effect": "The defence branch cannot produce trustworthy green integrity evidence against the current staging candidate until its provenance contract is refreshed. The gate failed closed, so stale assumptions were not accepted."
+  },
+  "root_cause": "The long-lived defence branch evolved independently from the deployment/provenance lane. Its integrity gate still assumes a legacy base64-chunk runtime transport and an older reviewed Node image digest while current main uses a directly committed hash-pinned 0.6.76 tarball and a different immutable Node image digest.",
+  "containment": [
+    "Keep the divergent security branch unmerged and non-deploying.",
+    "Do not weaken or bypass the failed immutable-artifact check to obtain a green run.",
+    "Treat current main deployment manifest plus Dockerfile and exact runtime artifact as the candidate provenance source of truth.",
+    "Do not alter the sealed 0.6.76 runtime to satisfy a stale branch test."
+  ],
+  "prevention_contract": {
+    "rebase_security_work_on_current_main_before_merge": true,
+    "runtime_artifact_path_must_come_from_deployment_manifest": true,
+    "runtime_artifact_sha_must_match_deployment_manifest": true,
+    "docker_node_image_must_equal_manifest_node_image": true,
+    "reviewed_node_digest_allowlist_must_track_current_candidate": true,
+    "legacy_runtime_chunk_transport_must_not_be_required_when_manifest_points_to_direct_tarball": true,
+    "security_gate_failure_must_remain_fail_closed": true,
+    "no_production_or_customer_mutation_for_repair": true
+  },
+  "regression_required": [
+    "Rebase or reconstruct Last Line Defence changes on current main without copying stale deployment files.",
+    "Run Last Line Defence Gates against the exact current deployment manifest, Dockerfile and runtime artifact.",
+    "Verify the runtime artifact directly from manifest.runtime_artifact and manifest.runtime_sha256.",
+    "Re-run WFM every-push security, runtime-integrity, external-intelligence, autonomous-recovery and customer-proof gates on the rebased candidate.",
+    "Reject merge if main moves incompatibly before final verification."
+  ],
+  "autonomous_runbook": {
+    "trigger": "defence gate fails because expected provenance transport or pinned runtime identity differs from current deployment manifest",
+    "safe_action": "isolate branch, classify as provenance/test drift, refresh branch from current main, reapply defence-only changes, rerun all gates",
+    "forbidden_actions": ["disable integrity checks", "change current runtime artifact to match stale tests", "copy credentials into branch source", "deploy the divergent branch", "grant an LLM merge, deployment or production authority"]
+  },
+  "claim_boundary": "Repository engineering evidence only. This does not indicate compromise of the live 0.6.76 staging runtime; it records fail-closed test/provenance drift in a divergent defensive development branch."
+}
