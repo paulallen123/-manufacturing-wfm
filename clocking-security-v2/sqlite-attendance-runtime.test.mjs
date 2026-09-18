@@ -17,6 +17,9 @@ function bootstrap(file){
   e.registerPerson({tenant:'acme',employee:'e1',sites:['s1']});
   e.registerSource({tenant:'acme',sourceId:'door',site:'s1',type:'access'});
   e.registerSource({tenant:'acme',sourceId:'wifi',site:'s1',type:'radius'});
+  e.registerPerson({tenant:'beta',employee:'e1',sites:['s9']});
+  e.registerSource({tenant:'beta',sourceId:'door',site:'s9',type:'access'});
+  e.registerSource({tenant:'beta',sourceId:'wifi',site:'s9',type:'radius'});
   const r=new SQLiteAttendanceRuntime({filePath:file,engine:e});
   r.close();
 }
@@ -94,5 +97,22 @@ test('rejected poison event is durably rejected once and never mutates canonical
   assert.equal(r.storedEventCount(),1);
   assert.equal(e.events.size,0);
   assert.equal(e.audit.length,0);
+  r.close();
+});
+
+test('same source and event ids in different tenants remain isolated under concurrent ingestion',async()=>{
+  const file=dbPath(); bootstrap(file);
+  const base=event('door','shared-cross-tenant-0001','access_entry',T);
+  const beta={...base,tenant:'beta'};
+  const [a,b]=await Promise.all([runWorker(file,base),runWorker(file,beta)]);
+  assert.equal(a.ok,true); assert.equal(b.ok,true);
+
+  const e=engine(); const r=new SQLiteAttendanceRuntime({filePath:file,engine:e});
+  assert.equal(r.storedEventCount(),2);
+  const evidenceAudit=e.audit.filter(x=>x.action==='attendance-evidence-recorded');
+  assert.equal(evidenceAudit.length,2);
+  assert.deepEqual(new Set(evidenceAudit.map(x=>x.tenant)),new Set(['acme','beta']));
+  assert.equal(e.getState({tenant:'acme',employee:'e1',site:'s1'}).status,'outside');
+  assert.equal(e.getState({tenant:'beta',employee:'e1',site:'s9'}).status,'outside');
   r.close();
 });
