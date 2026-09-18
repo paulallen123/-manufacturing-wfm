@@ -10,13 +10,13 @@ This is a bounded development slice on the Manufacturing Event / Cost lane. It d
 
 1. A shortage is identified after internal staffing and approved overtime options.
 2. WFM builds a structured agency request pack containing the assignment facts needed by the supplier.
-3. Only approved suppliers enter the cascade.
-4. Candidate eligibility is evaluated before any performance ranking.
+3. Supplier eligibility is evaluated before supplier performance or worker performance can influence ranking.
+4. Candidate eligibility is evaluated before any worker performance ranking.
 5. Eligible candidates are ranked using job-relevant, explainable evidence.
-6. Preferred workers are sent to agencies in configurable parallel cascade phases.
+6. Preferred workers are sent only to eligible suppliers in configurable parallel cascade phases.
 7. An agency can respond through an account-free, scoped link or a future API adapter.
 8. Agencies can confirm a preferred worker, propose an alternative, partially fill, or decline.
-9. Alternatives are revalidated before acceptance.
+9. Alternatives are revalidated before acceptance, including supplier compliance where the assignment requires it.
 10. Clocked hours can be reconciled against agency claims and invoice lines.
 11. Supplier outcomes feed role/site-specific agency performance evidence for the next request.
 12. Any mismatch is routed for manufacturer invoice review rather than affecting worker pay.
@@ -30,14 +30,32 @@ The request model includes:
 - required skills and qualifications;
 - health and safety risks and control measures;
 - expenses and pay/condition metadata;
-- an explicit industrial-action replacement flag.
+- an explicit industrial-action replacement flag;
+- an explicit Fair Work Agency gangmaster-licensing applicability flag where the customer/policy layer has determined that the assignment is in scope.
 
 Requests with incomplete core evidence or an industrial-action replacement purpose fail closed.
 
-## Eligibility before ranking
+The engine deliberately does not infer gangmaster-licensing scope from a generic industry label. Current FWA guidance says licensing is generally relevant to agriculture, horticulture, shellfish gathering, and food processing/packaging, but exemptions exist, including some food-packaging activities. The policy/onboarding layer must therefore resolve applicability from auditable customer facts before setting the flag.
+
+## Supplier eligibility before ranking
+
+An approved supplier is not automatically rankable. When the request is marked as requiring an FWA gangmaster licence, the supplier must have auditable evidence that:
+- the supplier is approved and active;
+- the FWA licence status is `licensed`;
+- a dated evidence reference from the public register/Active Check process is retained;
+- the licence check has been performed within the previous three calendar months;
+- any supplied licence-expiry evidence covers the assignment end;
+- every disclosed subcontractor in the labour chain passes the same licence-evidence gate;
+- when the request is in supplier contract negotiation, the FWA Authorised Person/postholder check is confirmed.
+
+A legacy `glaaLicenceValid: true` boolean can be recognised for migration but is not sufficient on its own because it cannot prove when or how the licence was checked. Missing current evidence fails closed.
+
+Supplier eligibility evidence is attached to the cascade/audit result, and ineligible suppliers are removed before role/site supplier-performance scoring is calculated. This prevents a cheap or historically high-performing supplier from outranking a compliant supplier when the required licensing evidence is absent.
+
+## Worker eligibility before ranking
 
 A worker cannot enter the ranking pool unless the available evidence confirms:
-- approved/active supplying agency;
+- supplying agency eligibility;
 - worker consent to share the profile;
 - availability covering the shift;
 - site readiness and induction validity;
@@ -47,8 +65,7 @@ A worker cannot enter the ranking pool unless the available evidence confirms:
 - required skills;
 - required qualifications valid through the assignment;
 - AWR equal-treatment confirmation once the supplied evidence reports 12+ weeks in the same role;
-- charge rate within an explicit cap when a cap exists;
-- GLAA licence evidence when the request explicitly requires it.
+- charge rate within an explicit cap when a cap exists.
 
 These are gates, not weighted preferences.
 
@@ -104,7 +121,20 @@ The current supplier score uses:
 
 The same neutral-prior shrinkage principle is used here so one lucky request cannot make a new agency appear artificially superior. Evidence confidence is surfaced with the score.
 
-This means the cascade can learn which supplier is actually strongest for a specific manufacturing role/site rather than relying on a static supplier order or cheapest-rate-first strategy.
+Supplier compliance is a prerequisite, not a score component. Compliance cannot be offset by price, fill rate, or historical performance.
+
+## Current UK regulatory snapshot — 18 September 2026
+
+The Fair Work Agency has administered gangmaster licensing since 7 April 2026. Current GOV.UK guidance instructs labour users to retain date-stamped licence evidence, note Authorised Persons/postholders, check the register every three months, and check subcontractors where used. This bounded implementation encodes those evidence/freshness controls only when the assignment has already been determined to require a gangmaster licence.
+
+HMRC's umbrella-company PAYE rules have applied to payments made on or after 6 April 2026. Where an umbrella company employs supplied workers, the relevant agency — or in specified cases the end client — now carries responsibility for ensuring PAYE is operated correctly and can face recovery of underpaid PAYE. This is a material adjacent workstream and is not falsely represented as covered by the gangmaster-licence gate.
+
+The Employment Rights Act 2025 guaranteed-hours and reasonable-shift-notice measures include agency workers, but the government's June-August 2026 implementation consultation states that these measures have **not yet taken effect**. The current engine therefore does not falsely enforce an uncommenced notice/guaranteed-hours threshold; the architecture should retain readiness for the future secondary legislation.
+
+Primary guidance used for this snapshot:
+- https://www.gov.uk/government/publications/how-to-check-if-a-labour-provider-has-a-gangmasters-licence/how-to-check-if-a-labour-provider-has-a-gangmasters-licence
+- https://www.gov.uk/guidance/paye-rules-for-labour-supply-chains-that-include-umbrella-companies-from-6-april-2026
+- https://www.gov.uk/government/consultations/make-work-pay-ending-one-sided-flexibility-reforms-of-zero-hours-and-similar-contracts
 
 ## Cost and time evidence
 
@@ -122,15 +152,24 @@ The engine and portal produce planning, response capture and workflow hand-offs 
 - direct schedule writes;
 - direct payroll writes;
 - direct invoice approval;
-- bypassing candidate compliance checks.
+- bypassing worker compliance checks;
+- bypassing supplier compliance checks.
 
 Invoice reconciliation is for the manufacturer's agency invoice only. It must never be used to withhold or delay the worker's wages.
 
 ## Current proof
 
-The deterministic test suite covers:
+The deterministic test suite now covers:
 - compliant preferred-worker selection;
-- hard eligibility gates;
+- hard worker-eligibility gates;
+- supplier-compliance gating before supplier and worker ranking;
+- fresh FWA licence evidence acceptance;
+- fail-closed rejection of legacy boolean-only licensing evidence where freshness/proof is absent;
+- three-calendar-month licence-check freshness;
+- subcontractor licensing evidence;
+- Authorised Person confirmation for supplier contract-negotiation state;
+- licence validity through assignment end when an expiry is supplied;
+- proof that an unlicensed supplier with stronger worker metrics cannot enter ranking or dispatch;
 - industrial-action request blocking;
 - sensitive-field exclusion;
 - ranking evidence quality;
@@ -150,4 +189,6 @@ The deterministic test suite covers:
 - audit receipt secret/raw-token exclusion;
 - 1,000 mutated portal tokens with zero accepted.
 
-This is engineering proof, not customer/pilot evidence. Real outbound supplier adapters, persistent one-time token consumption, UI/browser validation, authorised customer-data replay, production security review and live operational measurements remain required before promotion.
+The current branch-local regression is 32/32 passing tests across five suites. This is engineering proof, not customer/pilot evidence.
+
+Persistent atomic one-time portal-token consumption, real outbound supplier adapters, UI/browser validation, authorised customer-data replay, production security review and live operational measurements remain required before promotion. The portal-token store is the next security-critical gap because the current token verifier supports a consumed-ID input contract but does not yet own durable atomic consumption across concurrent requests/instances.
