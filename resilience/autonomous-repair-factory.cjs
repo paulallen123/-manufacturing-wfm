@@ -16,6 +16,7 @@ const PROTECTED_PATHS = Object.freeze([
   'resilience/isolated-repair-worker.cjs',
   'resilience/independent-repair-verifier.cjs',
   'resilience/disposable-staging-gate.cjs',
+  'resilience/autonomous-repair-pipeline.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
   'scripts/validate-autonomy-source-syntax.mjs',
   'scripts/validate-resilience-scenarios.mjs',
@@ -30,8 +31,10 @@ const PROTECTED_PATHS = Object.freeze([
   'scripts/validate-isolated-repair-worker.mjs',
   'scripts/validate-independent-repair-verifier.mjs',
   'scripts/validate-disposable-staging-gate.mjs',
+  'scripts/validate-autonomous-repair-pipeline.mjs',
   '.github/workflows/wfm-every-push-security.yml',
-  '.github/workflows/wfm-zero-engineer-support-contract.yml'
+  '.github/workflows/wfm-zero-engineer-support-contract.yml',
+  '.github/workflows/wfm-autonomous-repair-pipeline.yml'
 ]);
 
 function sha(value) {
