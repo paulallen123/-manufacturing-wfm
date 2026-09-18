@@ -4,6 +4,7 @@ import { evaluateAgencyRightToWorkLifecycle } from './agency-right-to-work-lifec
 export const AGENCY_RIGHT_TO_WORK_ASSURANCE_VERSION = 'agency-right-to-work-assurance-v0.2.1';
 export const UK_RIGHT_TO_WORK_2026_EFFECTIVE_AT = '2026-10-01T00:00:00.000Z';
 export const UK_RIGHT_TO_WORK_DVSP_SUPPLEMENTARY_CODE_VERSION = '1.1';
+export const UK_RIGHT_TO_WORK_DVSP_VALID_SUPPLEMENTARY_CODE_VERSIONS = Object.freeze(['0.4','1.1']);
 
 const SUPPORTED_ARRANGEMENT = 'employment_business_supply_to_hirer_own_operations';
 const ALLOWED_METHODS = new Set([
@@ -41,7 +42,7 @@ function evaluateDvspPolicyEvidence({ rightToWork, scheme, checkedAt, now }) {
   if (configured.trustFrameworkCertified !== true) failures.push('right_to_work_dvsp_trust_framework_certification_not_confirmed');
   if (registryStatus !== 'registered') failures.push('right_to_work_dvsp_provider_not_registered');
   if (configured.rightToWorkSupplementaryCodeCertified !== true) failures.push('right_to_work_dvsp_supplementary_code_certification_not_confirmed');
-  if (supplementaryCodeVersion !== UK_RIGHT_TO_WORK_DVSP_SUPPLEMENTARY_CODE_VERSION) {
+  if (!UK_RIGHT_TO_WORK_DVSP_VALID_SUPPLEMENTARY_CODE_VERSIONS.includes(supplementaryCodeVersion)) {
     failures.push('right_to_work_dvsp_supplementary_code_version_not_current');
   }
   if (!registryEvidenceRef) failures.push('right_to_work_dvsp_registry_evidence_ref_missing');
@@ -68,10 +69,12 @@ function evaluateDvspPolicyEvidence({ rightToWork, scheme, checkedAt, now }) {
       trustFrameworkCertified: configured.trustFrameworkCertified === true,
       rightToWorkSupplementaryCodeCertified: configured.rightToWorkSupplementaryCodeCertified === true,
       rightToWorkSupplementaryCodeVersion: supplementaryCodeVersion || null,
+      supplementaryCodeVersionCurrent: supplementaryCodeVersion === UK_RIGHT_TO_WORK_DVSP_SUPPLEMENTARY_CODE_VERSION,
+      supplementaryCodeVersionTransitional: supplementaryCodeVersion === '0.4',
       registryVerifiedAt: configured.registryVerifiedAt ?? null,
       registryEvidenceFingerprint: fingerprint(registryEvidenceRef),
       rawRegistryEvidenceReturned: false,
-      evidenceRule: 'rtw_dvsp_requires_server_authoritative_registered_and_certified_provider_evidence_for_the_current_right_to_work_supplementary_code',
+      evidenceRule: 'rtw_dvsp_requires_server_authoritative_registered_and_certified_provider_evidence_for_a_current_or_transitionally_valid_right_to_work_supplementary_code',
     },
   };
 }
