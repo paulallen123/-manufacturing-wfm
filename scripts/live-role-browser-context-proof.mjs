@@ -64,7 +64,19 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
       const p=pending.get(msg.id); if(!p) return; pending.delete(msg.id);
       msg.error?p.reject(new Error(`${p.method}: ${msg.error.message}`)):p.resolve(msg.result||{});
     });
-    const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject,method});ws.send(JSON.stringify({id:n,method,params}));});
+    const send=(method,params={},timeoutMs=12000)=>new Promise((resolve,reject)=>{
+      const n=id++;
+      const timer=setTimeout(()=>{
+        pending.delete(n);
+        reject(new Error(`CDP ${method} timeout for ${slug}`));
+      },timeoutMs);
+      pending.set(n,{
+        method,
+        resolve:value=>{clearTimeout(timer);resolve(value);},
+        reject:error=>{clearTimeout(timer);reject(error);}
+      });
+      ws.send(JSON.stringify({id:n,method,params}));
+    });
     const evalv=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw new Error(r.exceptionDetails.text||'eval failed');return r.result?.value;};
     const wait=async (expr,timeout=15000)=>{const start=Date.now();while(Date.now()-start<timeout){if(await evalv(expr))return;await sleep(180);}throw new Error(`wait timeout ${slug}: ${expr}`);};
     await send('Page.enable'); await send('Runtime.enable');
@@ -95,7 +107,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
     const layout=await evalv(`({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,buttons:[...document.querySelectorAll('button,a[href]')].filter(x=>{const s=getComputedStyle(x);return x.getClientRects().length>0&&s.display!=='none'&&s.visibility!=='hidden'}).length})`);
     assert.ok(layout.scrollWidth<=layout.width+1,`${slug} horizontal overflow.`);
     assert.ok(layout.buttons>0,`${slug} has no rendered interactive controls.`);
-    const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
+    const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true},20000);
     const shotName=`40-role-${slug}-${mobile?'mobile':'desktop'}.png`;
     const shotPath=path.join(outDir,shotName); fs.writeFileSync(shotPath,Buffer.from(shot.data,'base64'));
     assert.ok(fs.statSync(shotPath).size>10000,`${slug} screenshot unexpectedly small.`);
@@ -103,8 +115,19 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
     return {slug,email,role:expectedRole,tenant:expectedTenant,freshBootstrapStatus:pre,loginStatus:login,payrollStatus:payroll,requiredSurface,requiredSurfaceStatus:surfaceStatus,viewport:mobile?'390x844':'1280x900',horizontalOverflowPixels:layout.scrollWidth-layout.width,renderedInteractiveControls:layout.buttons,screenshot:shotName};
   } finally {
     try{ws?.close();}catch{}
-    proc.kill('SIGTERM'); await sleep(200); if(!proc.killed)proc.kill('SIGKILL');
-    fs.rmSync(profile,{recursive:true,force:true});
+    const exited = new Promise(resolve => {
+      if (proc.exitCode !== null || proc.signalCode !== null) return resolve(true);
+      proc.once('exit', () => resolve(true));
+    });
+    if (proc.exitCode === null && proc.signalCode === null) proc.kill('SIGTERM');
+    await Promise.race([exited, sleep(1500)]);
+    if (proc.exitCode === null && proc.signalCode === null) {
+      proc.kill('SIGKILL');
+      await Promise.race([exited, sleep(1500)]);
+    }
+    try { fs.rmSync(profile,{recursive:true,force:true}); } catch (error) {
+      console.warn(`ROLE_BROWSER_PROFILE_CLEANUP_WARNING=${slug}|${error?.message||error}`);
+    }
   }
 }
 
