@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-export const CAPABILITY_GRAPH_VERSION = 'factory-capability-graph-v0.3.0';
+export const CAPABILITY_GRAPH_VERSION = 'factory-capability-graph-v0.4.0';
 
 const stable = (value) => Array.isArray(value)
   ? value.map(stable)
@@ -29,8 +29,13 @@ function validateSource(source, now) {
 function copyProperties(properties = []) {
   return Array.isArray(properties) ? properties.map((property) => ({
     semanticId: property?.semanticId ?? null,
+    kind: property?.kind ?? (property?.min != null || property?.max != null ? 'range' : 'scalar'),
     value: property?.value ?? null,
+    min: property?.min ?? null,
+    max: property?.max ?? null,
     unit: property?.unit ?? null,
+    unitId: property?.unitId ?? null,
+    unitSource: property?.unitSource ?? null,
     matchingStatus: property?.matchingStatus ?? null,
   })) : [];
 }
