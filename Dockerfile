@@ -37,12 +37,13 @@ COPY integration/runtime/autonomous-integration-hub.cjs /app/integration-runtime
 
 # One-day implementation and adaptive learning overlays. These remain additive,
 # tenant-scoped, fail-closed control planes using Node built-ins and the existing SQLite state.
-RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /tmp/wfm-learning-ui
+RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-runtime/one-day-enterprise-engine.cjs
 COPY implementation/runtime/configuration-inference-engine.cjs /app/implementation-runtime/configuration-inference-engine.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
 COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
+COPY implementation/ui/ /tmp/wfm-implementation-ui/
 
 # Exact cloud-scale proof runtime. Kept read-only with the application and executable only when explicitly selected.
 RUN mkdir -p /app/proof-runtime
@@ -151,7 +152,12 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/factory-control-ui.css \
  && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/value-cockpit-ui.js \
- && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui
+ && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
+ && printf '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/factory-control-ui.css \
+ && printf '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-implementation-ui/implementation-journey.js >> /app/public/value-cockpit-ui.js \
+ && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
 # managers from the final runtime so npm-bundled libraries are not an exposed attack surface.

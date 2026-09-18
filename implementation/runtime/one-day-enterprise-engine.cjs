@@ -1,6 +1,6 @@
 'use strict';
 
-const { createHash, randomUUID, timingSafeEqual } = require('node:crypto');
+const { createHash, randomBytes, randomUUID, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 
 const PREFIX = '/api/implementation/autonomous';
@@ -20,6 +20,9 @@ const REQUIREMENTS = Object.freeze([
   { key: 'payroll-mapping', label: 'Payroll mappings', minConfidence: 0.995, budgetMinutes: 45, dependsOn: ['source-systems', 'people-data', 'time-policies'] },
   { key: 'historical-replay', label: 'Historical replay and reconciliation', minConfidence: 0.995, budgetMinutes: 60, dependsOn: ['payroll-mapping', 'time-policies'] },
   { key: 'security-controls', label: 'Security and tenant isolation', minConfidence: 1.0, budgetMinutes: 30, dependsOn: ['tenant-environment', 'identity-access'] },
+  { key: 'scenario-validation', label: 'Rigorous end-to-end scenario testing', minConfidence: 1.0, budgetMinutes: 60, dependsOn: ['scheduling', 'approvals', 'clocking', 'historical-replay', 'security-controls', 'resilience'] },
+  { key: 'test-data-cleanup', label: 'Test data removed and environment reset', minConfidence: 1.0, budgetMinutes: 20, dependsOn: ['scenario-validation'] },
+  { key: 'live-data-import', label: 'Live data imported and reconciled', minConfidence: 1.0, budgetMinutes: 45, dependsOn: ['test-data-cleanup', 'people-data', 'organisation-model', 'payroll-mapping'] },
   { key: 'resilience', label: 'Recovery and failure handling', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['source-systems', 'security-controls'] },
   { key: 'role-learning', label: 'Role learning journeys generated', minConfidence: 0.99, budgetMinutes: 15, dependsOn: ['people-data'] },
   { key: 'privileged-competency', label: 'Managers/admins certified for privileged tasks', minConfidence: 0.99, budgetMinutes: 90, dependsOn: ['role-learning', 'time-policies', 'scheduling', 'payroll-mapping', 'security-controls'] },
@@ -117,6 +120,46 @@ async function readJson(req, maxBytes = 256 * 1024) {
 function createOneDayEnterpriseEngine(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
+  const publicOrigin = String(options.publicOrigin || process.env.WFM_PUBLIC_ORIGIN || '').replace(/\/$/, '');
+  const invitationSender = typeof options.sendInvitation === 'function'
+    ? options.sendInvitation
+    : async ({ to, startUrl, expiresAt }) => {
+        const apiKey = process.env.RESEND_API_KEY || '';
+        const from = process.env.WFM_IMPLEMENTATION_FROM_EMAIL || '';
+        if (!apiKey || !from) {
+          const error = new Error('Implementation invitation email transport is not configured.');
+          error.statusCode = 503;
+          throw error;
+        }
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + apiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from,
+            to: [to],
+            subject: 'Your implementation is ready to start',
+            text: [
+              'Your workforce implementation workspace is ready.',
+              '',
+              'Open your secure implementation link:',
+              startUrl,
+              '',
+              'Nothing starts until you select “Go ahead and start” inside the workspace.',
+              'The link expires ' + expiresAt + '.'
+            ].join('\n')
+          })
+        });
+        if (!response.ok) {
+          const error = new Error('Implementation invitation email could not be delivered.');
+          error.statusCode = 503;
+          throw error;
+        }
+        const result = await response.json().catch(() => ({}));
+        return { provider: 'resend', messageId: result.id || null };
+      };
   const learningSummaryProvider = typeof options.learningSummaryProvider === 'function'
     ? options.learningSummaryProvider
     : null;
@@ -125,6 +168,10 @@ function createOneDayEnterpriseEngine(options = {}) {
   const db = new DatabaseSync(dbPath);
   db.exec(
     'PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;' +
+    'CREATE TABLE IF NOT EXISTS implementation_invitations(' +
+      'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, recipient_hash TEXT NOT NULL,' +
+      'token_hash TEXT NOT NULL UNIQUE, status TEXT NOT NULL, target_hours INTEGER NOT NULL, expires_at_ms INTEGER NOT NULL,' +
+      'started_run_id TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(tenant,contract_ref_hash));' +
     'CREATE TABLE IF NOT EXISTS implementation_runs(' +
       'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, state TEXT NOT NULL,' +
       'started_at_ms INTEGER NOT NULL, deadline_at_ms INTEGER NOT NULL, target_hours INTEGER NOT NULL,' +
@@ -150,6 +197,18 @@ function createOneDayEnterpriseEngine(options = {}) {
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
   );
+  const invitationByContract = db.prepare('SELECT * FROM implementation_invitations WHERE tenant=? AND contract_ref_hash=?');
+  const invitationByToken = db.prepare('SELECT * FROM implementation_invitations WHERE token_hash=?');
+  const latestInvitationForRecipient = db.prepare(
+    'SELECT * FROM implementation_invitations WHERE tenant=? AND recipient_hash=? ORDER BY created_at DESC LIMIT 1'
+  );
+  const insertInvitation = db.prepare(
+    'INSERT INTO implementation_invitations(id,tenant,contract_ref_hash,recipient_hash,token_hash,status,target_hours,expires_at_ms,started_run_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
+  );
+  const startInvitation = db.prepare(
+    "UPDATE implementation_invitations SET status='STARTED',started_run_id=?,updated_at=? WHERE id=? AND status='PENDING'"
+  );
+  const deleteInvitation = db.prepare('DELETE FROM implementation_invitations WHERE id=? AND status=\'PENDING\'');
   const runById = db.prepare('SELECT * FROM implementation_runs WHERE id=? AND tenant=?');
   const runByIdAnyTenant = db.prepare('SELECT * FROM implementation_runs WHERE id=?');
   const currentRun = db.prepare(
@@ -343,31 +402,152 @@ function createOneDayEnterpriseEngine(options = {}) {
     return readiness;
   }
 
+  function publicInvitation(row) {
+    if (!row) return null;
+    return {
+      invitationId: row.id,
+      state: row.status === 'STARTED' ? 'STARTED' : (Date.now() > row.expires_at_ms ? 'EXPIRED' : 'AWAITING_CUSTOMER_START'),
+      targetHours: row.target_hours,
+      expiresAt: new Date(row.expires_at_ms).toISOString(),
+      startedRunId: row.started_run_id || null
+    };
+  }
+
+  function recipientDigest(email) {
+    return sha256(String(email || '').trim().toLowerCase());
+  }
+
+  function validEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+  }
+
   async function handleContractActivated(req, res) {
     const body = await readJson(req);
     const tenant = compact(body.tenant, 120);
     const contractRef = compact(body.contractRef, 300);
+    const recipientEmail = compact(body.recipientEmail, 240).trim().toLowerCase();
     const targetHours = Math.max(1, Math.min(24, Number(body.targetHours || 8)));
-    if (!tenant || !contractRef) {
-      return writeJson(res, 400, { error: 'tenant and contractRef are required.' });
+    if (!tenant || !contractRef || !validEmail(recipientEmail)) {
+      return writeJson(res, 400, { error: 'tenant, contractRef and a valid recipientEmail are required.' });
+    }
+    if (!publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
+      return writeJson(res, 503, { error: 'Implementation public origin is not configured.' });
     }
 
     const contractHash = sha256(contractRef);
-    const existing = runByContract.get(tenant, contractHash);
+    const existingRun = runByContract.get(tenant, contractHash);
+    if (existingRun) {
+      return writeJson(res, 200, { invitation: { state: 'STARTED', startedRunId: existingRun.id }, implementation: readinessForRun(existingRun) });
+    }
+
+    const recipientHash = recipientDigest(recipientEmail);
+    const existing = invitationByContract.get(tenant, contractHash);
     if (existing) {
-      return writeJson(res, 200, readinessForRun(existing));
+      const expired = Date.now() > existing.expires_at_ms;
+      const recipientChanged = !secureEqual(existing.recipient_hash, recipientHash);
+      if (existing.status === 'PENDING' && (expired || recipientChanged)) {
+        deleteInvitation.run(existing.id);
+      } else {
+        return writeJson(res, 200, { invitation: publicInvitation(existing), implementation: null });
+      }
     }
 
     const id = randomUUID();
-    const started = Date.now();
-    const deadline = started + targetHours * 60 * 60 * 1000;
+    const rawToken = randomBytes(32).toString('base64url');
+    const expiresAtMs = Date.now() + 7 * 24 * 60 * 60 * 1000;
     const ts = nowIso();
-    insertRun.run(id, tenant, contractHash, 'BUILDING', started, deadline, targetHours, ts, ts);
-    record(id, tenant, 'CONTRACT_ACTIVATED', {
-      targetHours,
-      contractRefDigest: contractHash.slice(0, 16)
+    insertInvitation.run(
+      id, tenant, contractHash, recipientHash, sha256(rawToken), 'PENDING',
+      targetHours, expiresAtMs, null, ts, ts
+    );
+    const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
+
+    try {
+      const delivery = await invitationSender({
+        to: recipientEmail,
+        startUrl,
+        expiresAt: new Date(expiresAtMs).toISOString(),
+        tenant,
+        invitationId: id
+      });
+      record(null, tenant, 'CONTRACT_INVITATION_SENT', {
+        invitationId: id,
+        targetHours,
+        contractRefDigest: contractHash.slice(0, 16),
+        provider: delivery?.provider || 'configured-sender',
+        messageId: delivery?.messageId || null
+      });
+    } catch (error) {
+      deleteInvitation.run(id);
+      record(null, tenant, 'CONTRACT_INVITATION_FAILED', {
+        invitationId: id,
+        contractRefDigest: contractHash.slice(0, 16)
+      });
+      throw error;
+    }
+
+    return writeJson(res, 201, {
+      invitation: publicInvitation(invitationByContract.get(tenant, contractHash)),
+      implementation: null
     });
-    const run = runByIdAnyTenant.get(id);
+  }
+
+  function invitationForContext(ctx, token) {
+    const digest = sha256(compact(token, 500));
+    const invitation = invitationByToken.get(digest);
+    if (!invitation) return null;
+    if (invitation.tenant !== ctx.tenant) return null;
+    if (!secureEqual(invitation.recipient_hash, recipientDigest(ctx.email))) return null;
+    return invitation;
+  }
+
+  function handleInvitation(ctx, req, res) {
+    let token = '';
+    try { token = new URL(String(req.url || '/'), 'https://local.invalid').searchParams.get('token') || ''; } catch {}
+    const invitation = invitationForContext(ctx, token);
+    if (!invitation) return writeJson(res, 404, { error: 'Implementation invitation not found.' });
+    return writeJson(res, 200, { invitation: publicInvitation(invitation) });
+  }
+
+  async function handleStart(ctx, req, res) {
+    const body = await readJson(req);
+    const invitation = invitationForContext(ctx, body.token);
+    if (!invitation) return writeJson(res, 404, { error: 'Implementation invitation not found.' });
+    if (Date.now() > invitation.expires_at_ms) {
+      return writeJson(res, 410, { error: 'Implementation invitation has expired.' });
+    }
+    if (invitation.status === 'STARTED' && invitation.started_run_id) {
+      const existing = runById.get(invitation.started_run_id, ctx.tenant);
+      if (existing) return writeJson(res, 200, readinessForRun(existing));
+    }
+    if (invitation.status !== 'PENDING') {
+      return writeJson(res, 409, { error: 'Implementation invitation is no longer available.' });
+    }
+
+    let run = runByContract.get(ctx.tenant, invitation.contract_ref_hash);
+    if (!run) {
+      const id = randomUUID();
+      const started = Date.now();
+      const deadline = started + Number(invitation.target_hours) * 60 * 60 * 1000;
+      const ts = nowIso();
+      insertRun.run(id, ctx.tenant, invitation.contract_ref_hash, 'BUILDING', started, deadline, invitation.target_hours, ts, ts);
+      run = runById.get(id, ctx.tenant);
+      record(id, ctx.tenant, 'CUSTOMER_START_CONFIRMED', {
+        invitationId: invitation.id,
+        targetHours: invitation.target_hours,
+        by: sha256(ctx.email).slice(0, 16)
+      });
+    }
+
+    const consumed = startInvitation.run(run.id, nowIso(), invitation.id);
+    if (Number(consumed.changes) !== 1 && invitation.status !== 'STARTED') {
+      const refreshed = invitationByToken.get(invitation.token_hash);
+      if (refreshed?.started_run_id) {
+        const existing = runById.get(refreshed.started_run_id, ctx.tenant);
+        if (existing) return writeJson(res, 200, readinessForRun(existing));
+      }
+      return writeJson(res, 409, { error: 'Implementation start state changed. Refresh and try again.' });
+    }
     return writeJson(res, 201, readinessForRun(run));
   }
 
@@ -390,6 +570,28 @@ function createOneDayEnterpriseEngine(options = {}) {
       return writeJson(res, 400, { error: 'confidence must be between 0 and 1.' });
     }
 
+    const detail = body.detail && typeof body.detail === 'object' ? body.detail : {};
+    if (status === 'PASS' && kind === 'scenario-validation') {
+      const total = Number(detail.totalScenarios);
+      const passed = Number(detail.passedScenarios);
+      const criticalFailures = Number(detail.criticalFailures);
+      if (!Number.isInteger(total) || total <= 0 || passed !== total || criticalFailures !== 0) {
+        return writeJson(res, 409, { error: 'Scenario validation PASS requires every scenario to pass with zero critical failures.' });
+      }
+    }
+    if (status === 'PASS' && kind === 'test-data-cleanup') {
+      if (Number(detail.remainingTestRows) !== 0 || Number(detail.liveRowsTouched) !== 0) {
+        return writeJson(res, 409, { error: 'Cleanup PASS requires zero remaining test rows and zero live rows touched.' });
+      }
+    }
+    if (status === 'PASS' && kind === 'live-data-import') {
+      const sourceCount = Number(detail.sourceCount);
+      const importedCount = Number(detail.importedCount);
+      if (!Number.isInteger(sourceCount) || sourceCount < 0 || importedCount !== sourceCount || Number(detail.invalidCount) !== 0 || detail.checksumMatch !== true) {
+        return writeJson(res, 409, { error: 'Live import PASS requires reconciled counts, zero invalid rows and a matching checksum.' });
+      }
+    }
+
     insertEvidence.run(
       run.id,
       run.tenant,
@@ -397,7 +599,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       status,
       confidence,
       source,
-      JSON.stringify(body.detail || {}),
+      JSON.stringify(detail),
       nowIso()
     );
     record(run.id, run.tenant, 'EVIDENCE_RECORDED', { kind, status, confidence, source });
@@ -458,13 +660,21 @@ function createOneDayEnterpriseEngine(options = {}) {
 
   function handleStatus(ctx, res) {
     const run = currentRun.get(ctx.tenant);
-    if (!run) return writeJson(res, 200, {
+    if (run) return writeJson(res, 200, recompute(run));
+    const invitation = latestInvitationForRecipient.get(ctx.tenant, recipientDigest(ctx.email));
+    if (invitation) return writeJson(res, 200, {
+      state: Date.now() > invitation.expires_at_ms ? 'INVITATION_EXPIRED' : 'AWAITING_CUSTOMER_START',
+      operationalReady: false,
+      targetHours: invitation.target_hours,
+      invitation: publicInvitation(invitation),
+      requirements: REQUIREMENTS
+    });
+    return writeJson(res, 200, {
       state: 'NOT_STARTED',
       operationalReady: false,
       targetHours: 8,
       requirements: REQUIREMENTS
     });
-    return writeJson(res, 200, recompute(run));
   }
 
   async function handleRequest(req, res) {
@@ -488,6 +698,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       const ctx = requireManager(req, res);
       if (!ctx) return true;
       if (req.method === 'GET' && path === PREFIX + '/status') return handleStatus(ctx, res);
+      if (req.method === 'GET' && path === PREFIX + '/invitation') return handleInvitation(ctx, req, res);
+      if (req.method === 'POST' && path === PREFIX + '/start') return await handleStart(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/decision') return await handleDecision(ctx, req, res);
       return writeJson(res, 404, { error: 'Autonomous implementation endpoint not found.' });
     } catch (error) {

@@ -93,9 +93,15 @@ function fixture() {
     dbPath,
     internalToken: 'learning-worker-test-token'
   });
+  const sentInvitations = [];
   const implementation = createOneDayEnterpriseEngine({
     dbPath,
     internalToken: 'implementation-worker-test-token',
+    publicOrigin: 'https://implementation.test',
+    sendInvitation: async invitation => {
+      sentInvitations.push(invitation);
+      return { provider: 'test-mailer', messageId: 'mail-' + sentInvitations.length };
+    },
     learningSummaryProvider: tenant => learning.summaryForTenant(tenant)
   });
 
@@ -105,6 +111,7 @@ function fixture() {
     learning,
     implementation,
     tokens,
+    sentInvitations,
     learningInternal: { 'x-wfm-learning-internal': 'learning-worker-test-token' },
     implementationInternal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },
     close() {
@@ -113,6 +120,19 @@ function fixture() {
       fs.rmSync(dir, { recursive: true, force: true });
     }
   };
+}
+
+function evidenceDetail(kind) {
+  if (kind === 'scenario-validation') {
+    return { totalScenarios: 2400, passedScenarios: 2400, criticalFailures: 0 };
+  }
+  if (kind === 'test-data-cleanup') {
+    return { remainingTestRows: 0, liveRowsTouched: 0 };
+  }
+  if (kind === 'live-data-import') {
+    return { sourceCount: 10000, importedCount: 10000, invalidCount: 0, checksumMatch: true };
+  }
+  return { checked: true };
 }
 
 async function passTechnicalEvidence(f, runId) {
@@ -130,7 +150,8 @@ async function passTechnicalEvidence(f, runId) {
         kind: item.key,
         status: 'PASS',
         confidence: 1,
-        source: 'deterministic-technical-proof'
+        source: 'deterministic-technical-proof',
+        detail: evidenceDetail(item.key)
       },
       f.implementationInternal
     );
@@ -204,13 +225,30 @@ async function masterPlanFor(f, email, token) {
 test('enterprise implementation cannot go READY until real role competence is proven', async () => {
   const f = fixture();
   try {
-    const start = await call(
+    const invitation = await call(
       f.implementation,
       null,
       'POST',
       '/api/implementation/autonomous/contract-activated',
-      { tenant: 'alpha', contractRef: 'enterprise-contract-001', targetHours: 8 },
+      {
+        tenant: 'alpha',
+        contractRef: 'enterprise-contract-001',
+        targetHours: 8,
+        recipientEmail: 'manager@alpha'
+      },
       f.implementationInternal
+    );
+    assert.equal(invitation.status, 201);
+    assert.equal(invitation.body.invitation.state, 'AWAITING_CUSTOMER_START');
+    const token = new URL(f.sentInvitations[0].startUrl).searchParams.get('implementation_invite');
+    assert.ok(token);
+
+    const start = await call(
+      f.implementation,
+      f.tokens.manager,
+      'POST',
+      '/api/implementation/autonomous/start',
+      { token }
     );
     assert.equal(start.status, 201);
     const runId = start.body.runId;

@@ -19,6 +19,9 @@ const PHASES = Object.freeze([
   ['historical-replay', 20, 40, 60, ['payroll-mapping', 'time-policies']],
   ['security-controls', 8, 18, 30, ['tenant-environment', 'identity-access']],
   ['resilience', 8, 18, 30, ['source-systems', 'security-controls']],
+  ['scenario-validation', 20, 40, 60, ['scheduling', 'approvals', 'clocking', 'historical-replay', 'security-controls', 'resilience']],
+  ['test-data-cleanup', 5, 10, 20, ['scenario-validation']],
+  ['live-data-import', 10, 25, 45, ['test-data-cleanup', 'people-data', 'organisation-model', 'payroll-mapping']],
   ['role-learning', 4, 8, 15, ['people-data']],
   ['privileged-competency', 35, 55, 90, ['role-learning', 'time-policies', 'scheduling', 'payroll-mapping', 'security-controls']],
   ['frontline-readiness', 8, 14, 20, ['role-learning', 'absence-policies', 'scheduling', 'clocking']]
