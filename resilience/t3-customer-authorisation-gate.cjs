@@ -100,14 +100,20 @@ function verifyShadowEvidence(simulation, verification) {
   return policy;
 }
 
-function createT3CustomerAuthorisationGate({ key, now = Date.now, maxTtlMs = 15 * 60 * 1000 } = {}) {
+function validateReplayStore(replayStore) {
+  if (!replayStore || replayStore.durable !== true || replayStore.atomic !== true || typeof replayStore.consumeOnce !== 'function') {
+    throw new Error('T3 customer authorisation requires a durable atomic replay store.');
+  }
+}
+
+function createT3CustomerAuthorisationGate({ key, replayStore, now = Date.now, maxTtlMs = 15 * 60 * 1000 } = {}) {
   const secret = Buffer.from(String(key || ''));
   if (secret.length < 32) throw new Error('T3 customer authorisation key must be at least 32 bytes.');
+  validateReplayStore(replayStore);
   if (!Number.isSafeInteger(maxTtlMs) || maxTtlMs < 1000 || maxTtlMs > 60 * 60 * 1000) {
     throw new Error('T3 customer authorisation maxTtlMs must be between 1 second and 1 hour.');
   }
 
-  const consumed = new Set();
   const sign = (payload) => createHmac('sha256', secret).update(payload).digest('base64url');
   const tokenFor = (claims) => {
     const payload = b64(canonical(claims));
@@ -205,7 +211,7 @@ function createT3CustomerAuthorisationGate({ key, now = Date.now, maxTtlMs = 15 
     };
   }
 
-  function consume({ token, tenant, scenarioId, proposalDigest, approverId } = {}) {
+  async function consume({ token, tenant, scenarioId, proposalDigest, approverId } = {}) {
     const claims = verifyToken(token);
     const at = Number(now());
     if (claims.scope !== 'customer-consent-record-only') deny('WFM_T3_AUTH_SCOPE', 'Customer authorisation scope is invalid.');
@@ -217,8 +223,22 @@ function createT3CustomerAuthorisationGate({ key, now = Date.now, maxTtlMs = 15 
     }
     if (claims.approverId !== clean(approverId, 120)) deny('WFM_T3_AUTH_APPROVER', 'Customer authorisation approver changed.');
     if (!Number.isSafeInteger(claims.expiresAt) || at > claims.expiresAt) deny('WFM_T3_AUTH_EXPIRED', 'Customer authorisation token expired.');
-    if (consumed.has(claims.jti)) deny('WFM_T3_AUTH_REPLAY', 'Customer authorisation token was already consumed.');
-    consumed.add(claims.jti);
+
+    let firstUse;
+    try {
+      firstUse = await replayStore.consumeOnce({
+        jti: claims.jti,
+        tenant: claims.tenant,
+        scenarioId: claims.scenarioId,
+        proposalDigest: claims.proposalDigest,
+        expiresAt: claims.expiresAt,
+        consumedAt: at,
+      });
+    } catch {
+      deny('WFM_T3_AUTH_REPLAY_STORE', 'Durable replay store unavailable; customer consent fails closed.');
+    }
+    const consumed = firstUse === true || firstUse?.consumed === true;
+    if (!consumed) deny('WFM_T3_AUTH_REPLAY', 'Customer authorisation token was already consumed.');
 
     const core = {
       authorisationId: claims.jti,
@@ -238,6 +258,7 @@ function createT3CustomerAuthorisationGate({ key, now = Date.now, maxTtlMs = 15 
       approverRole: claims.approverRole,
       scope: claims.scope,
       customerConsentRecorded: true,
+      durableReplayProtection: true,
       executionAuthority: false,
       automaticExecutionEligible: false,
       productionAuthorityGranted: false,
