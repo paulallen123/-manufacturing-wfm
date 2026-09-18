@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "incidentId": "runtime-identity-attestation-gap-2026-09-18",
+  "status": "mitigation-prepared",
+  "classification": [
+    "deployment/provenance problem",
+    "security concern"
+  ],
+  "observedEvidence": {
+    "railwayService": "wfm-customer-proof-0676",
+    "latestDeployment": "a1d4693c-9c0c-42e9-8b64-4da66503d1be",
+    "latestDeploymentStatus": "SUCCESS",
+    "configuredVariablePresent": "WFM_RUNTIME_SHA256",
+    "runtimeVariableWasEnforcedAtStartup": false,
+    "proofWorkflowComparedConfiguredRuntimeIdentity": false,
+    "githubAutodeployEnabled": false,
+    "watchPatterns": [
+      "Dockerfile",
+      "DEPLOYMENT_MANIFEST.json",
+      "STAGING_FREEZE.json",
+      "artifact/**"
+    ]
+  },
+  "causalTimeline": [
+    {
+      "order": 1,
+      "event": "Sealed staging artifact checksum is verified during image build."
+    },
+    {
+      "order": 2,
+      "event": "Railway service carries an independently configured WFM_RUNTIME_SHA256 variable."
+    },
+    {
+      "order": 3,
+      "event": "Hosted bootstrap started the application without comparing that configured identity to the image-baked artifact identity."
+    },
+    {
+      "order": 4,
+      "event": "The live proof workflow read Railway variables but used only public origin and staging password, leaving WFM_RUNTIME_SHA256 inert."
+    }
+  ],
+  "rootCause": {
+    "statement": "Provenance was strongly checked while building the image but the independent runtime identity configured outside source control was not part of startup admission, so a source/deployment identity drift could survive until a later manual evidence review.",
+    "confidence": "high"
+  },
+  "reproduction": {
+    "deterministic": true,
+    "method": "Inspect bootstrap and proof admission for WFM_RUNTIME_SHA256 consumption; both lacked a comparison against the sealed runtime identity.",
+    "evidenceHops": 6
+  },
+  "mitigation": {
+    "type": "fail-closed runtime admission",
+    "imageIdentity": "/app/security-runtime/runtime-sha256",
+    "externalIdentity": "WFM_RUNTIME_SHA256",
+    "comparison": "constant-time SHA-256 equality",
+    "startupOrder": "attestation-before-server",
+    "failureCodes": [
+      "WFM_RUNTIME_ATTESTATION_IMAGE_UNAVAILABLE",
+      "WFM_RUNTIME_ATTESTATION_IMAGE_INVALID",
+      "WFM_RUNTIME_ATTESTATION_CONFIG_INVALID",
+      "WFM_RUNTIME_ATTESTATION_MISMATCH"
+    ]
+  },
+  "preventionCoverage": {
+    "before": [
+      "build-time artifact checksum"
+    ],
+    "after": [
+      "build-time artifact checksum",
+      "image-baked immutable runtime identity",
+      "independently configured runtime identity",
+      "pre-server startup comparison",
+      "deterministic unit fixtures",
+      "container-level absent/mismatch startup fixtures"
+    ]
+  },
+  "recoveryPath": {
+    "quality": "fail-closed and explicit",
+    "rule": "Do not auto-rewrite WFM_RUNTIME_SHA256 from source. On mismatch, hold the deployment, verify the approved manifest/artifact independently, then change the external identity only through an authorized audited configuration change or roll back to the last approved image."
+  },
+  "safety": {
+    "productionMutation": false,
+    "railwayMutation": false,
+    "workforceOrPayrollMutation": false,
+    "llmConsequentialAuthorityAdded": false
+  },
+  "openUncertainty": [
+    "The connected Railway OAuth view exposes the variable name but not its plaintext value, so the current WFM_RUNTIME_SHA256 value cannot be independently confirmed from this read-only session.",
+    "Mitigation remains draft source until reviewed and merged; no Railway deployment has been changed."
+  ]
+}
