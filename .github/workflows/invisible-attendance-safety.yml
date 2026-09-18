@@ -1,0 +1,24 @@
+name: Invisible Attendance Safety
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'clocking-security-v2/**'
+      - '.github/workflows/invisible-attendance-safety.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  node-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.2'
+      - name: Run invisible-attendance safety suite
+        run: node --test clocking-security-v2/invisible-attendance-engine.test.mjs
