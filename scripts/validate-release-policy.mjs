@@ -27,7 +27,8 @@ for (const key of [
   'legacyPinnedShaWorkflowsAreProofOnly',
   'mainIsStagingMirrorOnly',
   'mainMustMatchReleaseStagingBeforeCanonicalDeploy',
-  'canonicalRailwayCliOnlyFromReleaseWorkflow'
+  'canonicalRailwayCliOnlyFromReleaseWorkflow',
+  'mainPromotionRequiresReleasePr'
 ]) {
   if (rules[key] !== true) fail(`required rule is not enabled: ${key}`);
 }
