@@ -6,6 +6,12 @@ const { DatabaseSync } = require('node:sqlite');
 const PREFIX = '/api/integrations/autonomous';
 const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
 const INTERNAL_HEADER = 'x-wfm-integration-internal';
+const WORKER_PATHS = new Set([
+  PREFIX + '/discovery-result',
+  PREFIX + '/authorize-complete',
+  PREFIX + '/sync-validate',
+  PREFIX + '/health-report'
+]);
 
 const CATALOG = Object.freeze([
   { key: 'workday', name: 'Workday', category: 'hcm', aliases: ['workday'], authMethods: ['oauth2', 'service-account'], supports: ['people', 'organisation', 'absence', 'compensation'] },
@@ -230,6 +236,9 @@ function createAutonomousIntegrationHub(options = {}) {
       'category TEXT NOT NULL, confidence REAL NOT NULL, evidence_json TEXT NOT NULL, status TEXT NOT NULL,' +
       'authoritative_for_json TEXT NOT NULL DEFAULT \'[]\', created_at TEXT NOT NULL, updated_at TEXT NOT NULL,' +
       'UNIQUE(tenant,product_key));' +
+    'CREATE TABLE IF NOT EXISTS integration_discovery_sessions(' +
+      'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, provider TEXT NOT NULL, status TEXT NOT NULL,' +
+      'expires_at INTEGER NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);' +
     'CREATE TABLE IF NOT EXISTS integration_connections(' +
       'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, candidate_id TEXT NOT NULL, product_key TEXT NOT NULL,' +
       'category TEXT NOT NULL, state TEXT NOT NULL, auth_method TEXT NOT NULL, semantic_scopes_json TEXT NOT NULL,' +
@@ -269,6 +278,14 @@ function createAutonomousIntegrationHub(options = {}) {
   );
 
   const connectionById = db.prepare('SELECT * FROM integration_connections WHERE id=? AND tenant=?');
+  const connectionByIdAnyTenant = db.prepare('SELECT * FROM integration_connections WHERE id=?');
+  const discoverySessionById = db.prepare('SELECT * FROM integration_discovery_sessions WHERE id=?');
+  const insertDiscoverySession = db.prepare(
+    'INSERT INTO integration_discovery_sessions(id,tenant,provider,status,expires_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?)'
+  );
+  const completeDiscoverySession = db.prepare(
+    'UPDATE integration_discovery_sessions SET status=\'COMPLETED\',updated_at=? WHERE id=? AND status=\'PENDING\''
+  );
   const connectionByCandidate = db.prepare('SELECT * FROM integration_connections WHERE tenant=? AND candidate_id=?');
   const insertConnection = db.prepare(
     'INSERT INTO integration_connections(id,tenant,candidate_id,product_key,category,state,auth_method,semantic_scopes_json,granted_scopes_json,credential_ref,source_instance_id,mapping_version,last_health_at,last_sync_at,failure_class,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
@@ -406,28 +423,22 @@ function createAutonomousIntegrationHub(options = {}) {
     };
   }
 
-  async function handleDiscover(ctx, req, res) {
-    const body = await readJson(req, maxBodyBytes);
-    const source = compact(body.source, 40).toUpperCase();
-    if (!DISCOVERY_SOURCES.has(source)) return writeJson(res, 400, { error: 'Unsupported discovery source.' });
-    if (!Array.isArray(body.apps)) return writeJson(res, 400, { error: 'apps must be an array.' });
-    if (body.apps.length > 2000) return writeJson(res, 400, { error: 'Discovery batch exceeds 2000 applications.' });
-
+  function ingestDiscovery(tenant, source, apps) {
     const found = [];
-    for (const app of body.apps) {
+    for (const app of apps) {
       const detected = detectProduct(app, source);
       if (!detected) continue;
       const { product, confidence, method } = detected;
       const evidence = candidateEvidence(app, source, method);
-      let row = candidateByProduct.get(ctx.tenant, product.key);
+      let row = candidateByProduct.get(tenant, product.key);
       if (!row) {
         const id = randomUUID();
         const now = nowIso();
         insertCandidate.run(
-          id, ctx.tenant, product.key, product.name, product.category, confidence,
+          id, tenant, product.key, product.name, product.category, confidence,
           JSON.stringify([evidence]), 'DETECTED', '[]', now, now
         );
-        row = candidateById.get(id, ctx.tenant);
+        row = candidateById.get(id, tenant);
       } else {
         const evidenceList = safeJsonParse(row.evidence_json, []);
         const signature = evidence.source + ':' + evidence.observedIdentifier + ':' + evidence.displayName;
@@ -436,14 +447,23 @@ function createAutonomousIntegrationHub(options = {}) {
         }
         updateCandidate.run(
           product.name, product.category, Math.max(Number(row.confidence), confidence),
-          JSON.stringify(evidenceList.slice(-20)), nowIso(), row.id, ctx.tenant
+          JSON.stringify(evidenceList.slice(-20)), nowIso(), row.id, tenant
         );
-        row = candidateById.get(row.id, ctx.tenant);
+        row = candidateById.get(row.id, tenant);
       }
       found.push(publicCandidate(row));
     }
+    record(tenant, null, 'discovery-ingested', { source, received: apps.length, detected: found.length });
+    return found;
+  }
 
-    record(ctx.tenant, null, 'discovery-ingested', { source, received: body.apps.length, detected: found.length });
+  async function handleDiscover(ctx, req, res) {
+    const body = await readJson(req, maxBodyBytes);
+    const source = compact(body.source, 40).toUpperCase();
+    if (!DISCOVERY_SOURCES.has(source)) return writeJson(res, 400, { error: 'Unsupported discovery source.' });
+    if (!Array.isArray(body.apps)) return writeJson(res, 400, { error: 'apps must be an array.' });
+    if (body.apps.length > 2000) return writeJson(res, 400, { error: 'Discovery batch exceeds 2000 applications.' });
+    const found = ingestDiscovery(ctx.tenant, source, body.apps);
     return writeJson(res, 200, {
       source,
       received: body.apps.length,
@@ -451,6 +471,45 @@ function createAutonomousIntegrationHub(options = {}) {
       candidates: found,
       note: 'Discovery identifies likely systems. Source-system authorization is still required before data access.'
     });
+  }
+
+  async function handleCreateDiscoverySession(ctx, req, res) {
+    const body = await readJson(req, maxBodyBytes);
+    const provider = compact(body.provider, 40).toUpperCase();
+    if (!['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE'].includes(provider)) {
+      return writeJson(res, 400, { error: 'Unsupported directory discovery provider.' });
+    }
+    const id = randomUUID();
+    const ttlMs = 15 * 60 * 1000;
+    const expiresAt = Date.now() + ttlMs;
+    const now = nowIso();
+    insertDiscoverySession.run(id, ctx.tenant, provider, 'PENDING', expiresAt, now, now);
+    record(ctx.tenant, null, 'discovery-session-created', { discoverySessionId: id, provider, expiresAt });
+    return writeJson(res, 201, {
+      discoverySession: { id, provider, expiresAt },
+      requiredAction: {
+        type: 'AUTHORIZE_DIRECTORY',
+        provider,
+        instruction: 'An authorised administrator approves read-only application inventory access. The worker returns metadata against this short-lived session.'
+      }
+    });
+  }
+
+  async function handleWorkerDiscoveryResult(req, res) {
+    const body = await readJson(req, maxBodyBytes);
+    const session = discoverySessionById.get(compact(body.discoverySessionId, 80));
+    if (!session) return writeJson(res, 404, { error: 'Discovery session not found.' });
+    if (session.status !== 'PENDING') return writeJson(res, 409, { error: 'Discovery session has already been used.' });
+    if (Number(session.expires_at) <= Date.now()) return writeJson(res, 410, { error: 'Discovery session has expired.' });
+    if (!Array.isArray(body.apps)) return writeJson(res, 400, { error: 'apps must be an array.' });
+    if (body.apps.length > 2000) return writeJson(res, 400, { error: 'Discovery batch exceeds 2000 applications.' });
+    const source = compact(body.source, 40).toUpperCase();
+    if (source !== session.provider) return writeJson(res, 409, { error: 'Discovery provider does not match the authorized session.' });
+    const found = ingestDiscovery(session.tenant, source, body.apps);
+    const completed = completeDiscoverySession.run(nowIso(), session.id);
+    if (Number(completed.changes) !== 1) return writeJson(res, 409, { error: 'Discovery session could not be completed safely.' });
+    record(session.tenant, null, 'discovery-session-completed', { discoverySessionId: session.id, provider: source, detected: found.length });
+    return writeJson(res, 200, { source, received: body.apps.length, detected: found.length, candidates: found });
   }
 
   async function handleConfirm(ctx, req, res) {
@@ -502,10 +561,9 @@ function createAutonomousIntegrationHub(options = {}) {
     });
   }
 
-  async function handleAuthorizeComplete(ctx, req, res) {
-    if (!requireInternal(req, res)) return true;
+  async function handleAuthorizeComplete(req, res) {
     const body = await readJson(req, maxBodyBytes);
-    const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
+    const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
     const authorizationRef = compact(body.authorizationRef, 220);
     if (!validCredentialReference(authorizationRef)) {
@@ -514,10 +572,10 @@ function createAutonomousIntegrationHub(options = {}) {
     const grantedScopes = arrayOfStrings(body.grantedScopes, 80, 120);
     authorizeConnection.run(
       JSON.stringify(grantedScopes), authorizationRef, compact(body.sourceInstanceId, 160) || connection.source_instance_id,
-      nowIso(), connection.id, ctx.tenant
+      nowIso(), connection.id, connection.tenant
     );
-    const updated = connectionById.get(connection.id, ctx.tenant);
-    record(ctx.tenant, connection.id, 'authorization-attested', { grantedScopeCount: grantedScopes.length });
+    const updated = connectionById.get(connection.id, connection.tenant);
+    record(connection.tenant, connection.id, 'authorization-attested', { grantedScopeCount: grantedScopes.length });
     return writeJson(res, 200, { connection: publicConnection(updated) });
   }
 
@@ -577,10 +635,9 @@ function createAutonomousIntegrationHub(options = {}) {
     return writeJson(res, 200, { connection: publicConnection(updated), mappingVersion: version });
   }
 
-  async function handleSyncValidate(ctx, req, res) {
-    if (!requireInternal(req, res)) return true;
+  async function handleSyncValidate(req, res) {
     const body = await readJson(req, maxBodyBytes);
-    const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
+    const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
     if (!['VALIDATING', 'ACTIVE', 'DEGRADED'].includes(connection.state)) {
       return writeJson(res, 409, { error: 'Connection is not ready for validation.' });
@@ -589,7 +646,7 @@ function createAutonomousIntegrationHub(options = {}) {
       return writeJson(res, 400, { error: 'records must be an array with at most 500 items.' });
     }
 
-    const mappings = activeMappings.all(ctx.tenant, connection.id, Number(connection.mapping_version));
+    const mappings = activeMappings.all(connection.tenant, connection.id, Number(connection.mapping_version));
     if (!mappings.length) return writeJson(res, 409, { error: 'Activate mappings before validating a sync.' });
 
     const ids = [];
@@ -612,16 +669,16 @@ function createAutonomousIntegrationHub(options = {}) {
     const status = invalid === 0 && duplicateCount === 0 ? 'PASS' : 'NEEDS_REVIEW';
     const idDigest = sha256(ids.sort().join('|'));
     insertRecon.run(
-      randomUUID(), ctx.tenant, connection.id, Number(connection.mapping_version), body.records.length,
+      randomUUID(), connection.tenant, connection.id, Number(connection.mapping_version), body.records.length,
       valid, invalid, duplicateCount, idDigest, status, nowIso()
     );
 
     const nextState = status === 'PASS' ? 'ACTIVE' : 'DEGRADED';
     const failureClass = status === 'PASS' ? null : 'DATA_VALIDATION';
     const stamp = nowIso();
-    markSync.run(nextState, failureClass, stamp, stamp, stamp, connection.id, ctx.tenant);
-    const updated = connectionById.get(connection.id, ctx.tenant);
-    record(ctx.tenant, connection.id, 'sync-validation-completed', {
+    markSync.run(nextState, failureClass, stamp, stamp, stamp, connection.id, connection.tenant);
+    const updated = connectionById.get(connection.id, connection.tenant);
+    record(connection.tenant, connection.id, 'sync-validation-completed', {
       sourceCount: body.records.length, validCount: valid, invalidCount: invalid,
       duplicateCount, status, mappingVersion: connection.mapping_version
     });
@@ -631,10 +688,9 @@ function createAutonomousIntegrationHub(options = {}) {
     });
   }
 
-  async function handleHealthReport(ctx, req, res) {
-    if (!requireInternal(req, res)) return true;
+  async function handleHealthReport(req, res) {
     const body = await readJson(req, maxBodyBytes);
-    const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
+    const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
     const health = compact(body.health, 40);
     const transitions = {
@@ -646,9 +702,9 @@ function createAutonomousIntegrationHub(options = {}) {
     };
     if (!transitions[health]) return writeJson(res, 400, { error: 'Unsupported health state.' });
     const [state, failureClass] = transitions[health];
-    updateConnectionState.run(state, failureClass, nowIso(), nowIso(), connection.id, ctx.tenant);
-    const updated = connectionById.get(connection.id, ctx.tenant);
-    record(ctx.tenant, connection.id, 'connection-health-changed', { health, state, failureClass });
+    updateConnectionState.run(state, failureClass, nowIso(), nowIso(), connection.id, connection.tenant);
+    const updated = connectionById.get(connection.id, connection.tenant);
+    record(connection.tenant, connection.id, 'connection-health-changed', { health, state, failureClass });
     return writeJson(res, 200, { connection: publicConnection(updated) });
   }
 
@@ -671,24 +727,30 @@ function createAutonomousIntegrationHub(options = {}) {
   async function handleRequest(req, res) {
     const path = requestPath(req);
     if (!path.startsWith(PREFIX)) return false;
-    const ctx = requireManager(req, res);
-    if (!ctx) return true;
 
     try {
+      if (req.method === 'POST' && WORKER_PATHS.has(path)) {
+        if (!requireInternal(req, res)) return true;
+        if (path === PREFIX + '/discovery-result') return await handleWorkerDiscoveryResult(req, res);
+        if (path === PREFIX + '/authorize-complete') return await handleAuthorizeComplete(req, res);
+        if (path === PREFIX + '/sync-validate') return await handleSyncValidate(req, res);
+        if (path === PREFIX + '/health-report') return await handleHealthReport(req, res);
+      }
+
+      const ctx = requireManager(req, res);
+      if (!ctx) return true;
       if (req.method === 'GET' && path === PREFIX + '/catalog') {
         return writeJson(res, 200, { systems: publicCatalog(), discoverySources: [...DISCOVERY_SOURCES] });
       }
       if (req.method === 'GET' && path === PREFIX + '/status') {
         return writeJson(res, 200, statusForTenant(ctx.tenant));
       }
+      if (req.method === 'POST' && path === PREFIX + '/discovery-session') return await handleCreateDiscoverySession(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/discover') return await handleDiscover(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/confirm') return await handleConfirm(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/connect') return await handleConnect(ctx, req, res);
-      if (req.method === 'POST' && path === PREFIX + '/authorize-complete') return await handleAuthorizeComplete(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/mapping-preview') return await handleMappingPreview(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/mapping-activate') return await handleMappingActivate(ctx, req, res);
-      if (req.method === 'POST' && path === PREFIX + '/sync-validate') return await handleSyncValidate(ctx, req, res);
-      if (req.method === 'POST' && path === PREFIX + '/health-report') return await handleHealthReport(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/repair') return await handleRepair(ctx, req, res);
       return writeJson(res, 404, { error: 'Autonomous integration endpoint not found.' });
     } catch (error) {
