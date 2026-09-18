@@ -12,6 +12,7 @@ const jsFiles = [
   'resilience/disposable-staging-gate.cjs',
   'resilience/autonomous-repair-pipeline.cjs',
   'resilience/canary-rollback-controller.cjs',
+  'resilience/autonomous-repair-canary-orchestrator.cjs',
   'resilience/provider-recovery-handoff.cjs',
   'resilience/autonomy-control-loop.cjs',
   'resilience/ci-provider-failover.cjs',
@@ -27,6 +28,7 @@ const jsFiles = [
   'scripts/validate-disposable-staging-gate.mjs',
   'scripts/validate-autonomous-repair-pipeline.mjs',
   'scripts/validate-canary-rollback-controller.mjs',
+  'scripts/validate-autonomous-repair-canary-orchestrator.mjs',
   'scripts/validate-autonomy-control-loop.mjs',
 ];
 
@@ -39,7 +41,14 @@ for (const rel of jsFiles) {
   checked.push(rel);
 }
 
-for (const rel of ['resilience/isolated-repair-worker.cjs', 'resilience/independent-repair-verifier.cjs', 'resilience/disposable-staging-gate.cjs', 'resilience/autonomous-repair-pipeline.cjs', 'resilience/canary-rollback-controller.cjs']) {
+for (const rel of [
+  'resilience/isolated-repair-worker.cjs',
+  'resilience/independent-repair-verifier.cjs',
+  'resilience/disposable-staging-gate.cjs',
+  'resilience/autonomous-repair-pipeline.cjs',
+  'resilience/canary-rollback-controller.cjs',
+  'resilience/autonomous-repair-canary-orchestrator.cjs',
+]) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
   for (const forbidden of ["require('node:http')", "require('node:https')", "require('node:net')", 'process.env', 'fetch(']) {
     assert.equal(source.includes(forbidden), false, `${rel} contains forbidden direct network/ambient-secret surface: ${forbidden}`);
@@ -57,6 +66,7 @@ const requiredWorkflowPaths = [
   "      - 'resilience/disposable-staging-gate.cjs'",
   "      - 'resilience/autonomous-repair-pipeline.cjs'",
   "      - 'resilience/canary-rollback-controller.cjs'",
+  "      - 'resilience/autonomous-repair-canary-orchestrator.cjs'",
   "      - 'resilience/autonomy-control-loop.cjs'",
   "      - 'scripts/validate-autonomous-repair-factory.mjs'",
   "      - 'scripts/validate-isolated-repair-worker.mjs'",
@@ -64,6 +74,7 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-disposable-staging-gate.mjs'",
   "      - 'scripts/validate-autonomous-repair-pipeline.mjs'",
   "      - 'scripts/validate-canary-rollback-controller.mjs'",
+  "      - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'",
   "      - 'scripts/validate-autonomy-control-loop.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
   "      - 'scripts/run-portable-autonomy-proof.mjs'",
@@ -87,6 +98,8 @@ console.log(JSON.stringify({
   repairPipelineAmbientEnvironmentDenied: true,
   canaryRollbackDirectNetworkSurfaceDenied: true,
   canaryRollbackAmbientEnvironmentDenied: true,
+  repairToCanaryOrchestratorDirectNetworkSurfaceDenied: true,
+  repairToCanaryOrchestratorAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
   workflowCriticalPathsPresent: true,
   productionMutation: false,
