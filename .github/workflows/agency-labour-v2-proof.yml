@@ -1,0 +1,32 @@
+name: Agency Labour V2 Proof
+
+on:
+  push:
+    branches:
+      - agency-labour-v2-20260918
+    paths:
+      - 'agency-labour/**'
+      - '.github/workflows/agency-labour-v2-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: agency-labour
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: agency-labour/package.json
+      - name: Run complete proof suite
+        run: npm test
