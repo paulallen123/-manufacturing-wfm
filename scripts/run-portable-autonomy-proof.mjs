@@ -14,6 +14,29 @@ function sha256(value) {
   return createHash('sha256').update(String(value ?? '')).digest('hex');
 }
 
+function validGitSha(value) {
+  return /^[a-f0-9]{40}$/.test(String(value ?? '').toLowerCase());
+}
+
+function gitHeadSha() {
+  const run = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' });
+  return run.status === 0 ? String(run.stdout || '').trim().toLowerCase() : '';
+}
+
+const releaseEvidence = {
+  headSha: String(process.env.WFM_AUTONOMY_HEAD_SHA || '').trim().toLowerCase(),
+  canonicalBaseSha: String(process.env.WFM_CANONICAL_BASE_SHA || '').trim().toLowerCase(),
+  canonicalPolicyBlobSha: String(process.env.WFM_CANONICAL_POLICY_BLOB_SHA || '').trim().toLowerCase(),
+  mergeTreeSha: String(process.env.WFM_CANONICAL_MERGE_TREE_SHA || '').trim().toLowerCase(),
+};
+const releaseBindingComplete = Object.values(releaseEvidence).every(validGitSha);
+const actualHeadSha = gitHeadSha();
+const releaseHeadMatchesCheckout = releaseBindingComplete && actualHeadSha === releaseEvidence.headSha;
+const releaseBinding = releaseBindingComplete ? {
+  ...releaseEvidence,
+  bindingDigest: sha256(JSON.stringify(releaseEvidence)),
+} : null;
+
 const checks = [
   ['source-syntax-and-workflow-integrity', 'scripts/validate-autonomy-source-syntax.mjs', true],
   ['canonical-release-boundary-compatibility', 'scripts/validate-canonical-release-boundary.mjs', true],
@@ -60,6 +83,24 @@ if (strictRuntime && !exactRuntime) {
   });
 }
 
+if (strictRuntime && (!releaseBindingComplete || !releaseHeadMatchesCheckout)) {
+  failed = true;
+  results.push({
+    id: 'canonical-proof-binding',
+    status: 'FAIL',
+    reason: !releaseBindingComplete ? 'canonical-release-evidence-incomplete' : 'proof-head-does-not-match-checkout',
+    actualHeadSha,
+    releaseEvidence,
+  });
+} else {
+  results.push({
+    id: 'canonical-proof-binding',
+    status: releaseBindingComplete && releaseHeadMatchesCheckout ? 'PASS' : 'NON_RELEASE_UNBOUND_LOGIC_PROOF',
+    actualHeadSha,
+    releaseBinding,
+  });
+}
+
 for (const [id, rel, required] of checks) {
   const file = path.join(ROOT, rel);
   if (!fs.existsSync(file)) {
@@ -102,7 +143,7 @@ for (const [id, rel, required] of checks) {
 }
 
 const receipt = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'portable-zero-engineer-autonomy-gate',
   status: failed ? 'FAIL' : 'PASS',
   strictRuntime,
@@ -111,6 +152,8 @@ const receipt = {
   actualNode,
   providerNeutral: true,
   requiresGitHubHostedRunner: false,
+  canonicalReleaseEvidenceBound: releaseBindingComplete && releaseHeadMatchesCheckout,
+  releaseBinding,
   productionMutation: false,
   customerMutation: false,
   checks: results,
