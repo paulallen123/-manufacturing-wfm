@@ -18,25 +18,31 @@ Manager schedule publication on the latest verified main baseline, with a govern
 - Detected that main advanced 14 commits beyond PR #64's base. PR #64 therefore became non-mergeable; no attempt was made to force the stale branch over current work.
 - Created isolated branch `ux/planner-focus-20260918-r3` from current main `5a1502edebadc8d1bcec3972a54de5eacb49def3`.
 - Reapplied only the bounded Cycle 10 presentation files and Docker composition after Cycle 9. The 14 newer main commits remain in the branch because r3 starts from current main.
-- Server-side tenant, payroll, schedule, permission and publish-write authority remain untouched.
+- Opened draft PR #66 against current main. Server-side tenant, payroll, schedule, permission and publish-write authority remain untouched.
 
 ### Validation observed
 - Git compare confirms current main is 14 commits ahead of the r2 base; those commits affect live-host/deployment proof tooling rather than the Cycle 10 UI files.
-- Functional Cycle 10 source/gate is being rerun on r3 before a new PR can be considered promotable.
+- Exact Cycle 10 r3 functional head `0c38f54dee63090d2c408daf742259f67cc29f4a` passed GitHub Actions run `35309376503`.
+- Source-safety checks: PASS.
+- Exact Docker/sealed composition after Cycle 9: PASS; sealed runtime/server checksum contract unchanged.
+- Browser hierarchy/disclosure: PASS.
+- Keyboard focus destinations for Coverage & risks and authoritative Publish schedule: PASS.
+- 390px mobile containment/original publish-control preservation: PASS.
+- A fresh isolated Railway service `wfm-ux-cycle10-r3-proof` was created from the r3 branch. At the time of this record Railway had not yet materialised a first deployment, so hosted proof is not claimed.
 
 ### UX scorecard impact
-- Role/job clarity: candidate preserved/improved by risk-first publication; not yet measured with real users.
+- Role/job clarity: candidate structurally improves schedule publication by putting risk ahead of grid density; no real-user improvement claim yet.
 - Navigation predictability: preserved; existing schedule route and publish control remain canonical.
 - Action visibility: preserved; no write action is cloned.
-- Cognitive load: structurally reduced by progressive disclosure; no real-user improvement claim yet.
+- Cognitive load: structurally reduced by progressive disclosure; real-user impact remains unmeasured.
 - Explainability: Cycle 11 research strengthens the need for identical deterministic ordering across novice/expert density modes.
-- Accessibility: keyboard/disclosure behavior must pass the r3 gate; full audit remains open.
-- Mobile/tablet: 390px containment must pass again on r3.
+- Accessibility: keyboard/disclosure behavior is browser-verified on r3; full accessibility audit remains open.
+- Mobile/tablet: 390px containment is browser-verified on r3.
 - Expert depth: preserved; full planner remains available on demand.
-- Capability preservation: mandatory and revalidated on each candidate.
+- Capability preservation: source/build/browser gates passed and authoritative write logic remains outside the presentation layer.
 
 ### Still unverified
-Exact r3 browser/build gate result, isolated hosted Cycle 10 runtime proof, full accessibility audit, real-user first-click/time-on-task/error metrics, and Cycle 11 novice-vs-expert density measurements.
+Exact isolated hosted Cycle 10 runtime proof, full accessibility audit, real-user first-click/time-on-task/error metrics, and Cycle 11 novice-vs-expert density measurements.
 
 ### Single next highest-value action
-Finish the r3 gate on current main, then create an exact isolated hosted service from the r3 branch and verify the served Cycle 10 markers/interactions. Only after hosted proof should Cycle 11 implementation begin.
+Materialise and prove the exact r3 branch in the fresh isolated Railway service, verify served Cycle 10 markers and interactions, then close the superseded r2 PR. Only after hosted proof should Cycle 11 implementation begin.
