@@ -18,18 +18,21 @@ jobs:
       - name: Checkout proof branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 3
+          fetch-depth: 4
 
       - name: Prove candidate lineage and bounded repair
         shell: bash
         run: |
           set -euo pipefail
+          ORIGINAL_PROOF=48ee77767f17056de735cdc4031dcc6091e9b685
           REPAIR=38407325009c3ae732a705d86275a72bd32c5501
           BASE=ad9ee9baf3db27f0715c094c4674b2bf85ff08a1
-          test "$(git rev-parse HEAD^)" = "$REPAIR"
+          test "$(git rev-parse HEAD^)" = "$ORIGINAL_PROOF"
+          test "$(git rev-parse "$ORIGINAL_PROOF^")" = "$REPAIR"
           test "$(git rev-parse "$REPAIR^")" = "$BASE"
           test "$(git diff --name-only "$BASE" "$REPAIR")" = "ux-overlay/ux-reset-cycle5.js"
-          test "$(git diff --name-only "$REPAIR" HEAD)" = ".github/workflows/r1-release-proof.yml"
+          test "$(git diff --name-only "$REPAIR" "$ORIGINAL_PROOF")" = ".github/workflows/r1-release-proof.yml"
+          test "$(git diff --name-only "$ORIGINAL_PROOF" HEAD)" = ".github/workflows/r1-release-proof.yml"
           test "$(git rev-parse "$REPAIR:ux-overlay/ux-reset-cycle5.js")" = "0c9e9463872cb232d6263b11a9ff2bdd1a867b72"
 
       - name: Verify frozen base and build exact repair composition
