@@ -12,6 +12,8 @@ on:
       - 'scripts/validate-support-tier-contract.mjs'
       - 'resilience/support-selfhelp.cjs'
       - 'scripts/validate-support-selfhelp.mjs'
+      - 'resilience/autonomous-repair-factory.cjs'
+      - 'scripts/validate-autonomous-repair-factory.mjs'
       - '.github/workflows/wfm-zero-engineer-support-contract.yml'
   workflow_dispatch:
 
@@ -48,6 +50,9 @@ jobs:
 
       - name: Validate deterministic Tier 0 self-help
         run: node scripts/validate-support-selfhelp.mjs
+
+      - name: Validate Tier 2 repair-factory authority separation
+        run: node scripts/validate-autonomous-repair-factory.mjs
 
       - name: Assert proof receipt
         run: |
