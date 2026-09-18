@@ -9,6 +9,7 @@ function baseProfile() {
   const profile = {
     schemaVersion: 1,
     connectionId: 'demo-connection',
+    scope: { tenantId: 'tenant-a', siteIds: ['site-1'] },
     provider: { key: 'provider-neutral', mappingVersion: 'v1' },
     transport: { kind: 'rest_api', endpointRef: 'tenant-config://endpoint/hr-core' },
     authentication: { method: 'oauth2_client', credentialRef: 'vault://connection/hr-core' },
@@ -29,10 +30,30 @@ function baseProfile() {
 const cases = [];
 function test(name, fn) { cases.push([name, fn]); }
 
-test('accepts a safe reviewed connection profile', () => {
+test('accepts a safe reviewed tenant-scoped connection profile', () => {
   const profile = baseProfile();
   assert.equal(validateConnectionProfile(profile).ok, true);
   assert.equal(activationReadiness(profile).ready, true);
+});
+
+test('rejects missing tenant scope', () => {
+  const profile = baseProfile();
+  delete profile.scope;
+  assert.match(validateConnectionProfile(profile).errors.join('\n'), /tenant isolation/);
+});
+
+test('rejects duplicate or malformed site scope', () => {
+  const profile = baseProfile();
+  profile.scope.siteIds = ['site-1', 'site-1'];
+  assert.match(validateConnectionProfile(profile).errors.join('\n'), /must not contain duplicates/);
+});
+
+test('tenant scope changes invalidate prior activation approval', () => {
+  const profile = baseProfile();
+  const approved = profile.activation.fingerprint;
+  profile.scope.tenantId = 'tenant-b';
+  assert.notEqual(approvalFingerprint(profile), approved);
+  assert.match(activationReadiness(profile).reasons.join('\n'), /stale/);
 });
 
 test('rejects embedded raw secrets', () => {
@@ -41,9 +62,31 @@ test('rejects embedded raw secrets', () => {
   assert.match(validateConnectionProfile(profile).errors.join('\n'), /embedded secret-like value/);
 });
 
-test('permits a secret reference rather than a secret value', () => {
+test('permits an opaque secret reference rather than a secret value', () => {
   const profile = baseProfile();
   profile.authentication.clientSecretRef = 'vault://connection/hr-core/client-secret';
+  assert.equal(validateConnectionProfile(profile).ok, true);
+});
+
+test('rejects a raw credential disguised as credentialRef', () => {
+  const profile = baseProfile();
+  profile.authentication.credentialRef = 'super-secret-value';
+  assert.match(validateConnectionProfile(profile).errors.join('\n'), /opaque secret reference/);
+});
+
+test('rejects raw network endpoints in endpointRef', () => {
+  const profile = baseProfile();
+  profile.transport.endpointRef = 'https://hr.example.test/api?token=secret';
+  assert.match(validateConnectionProfile(profile).errors.join('\n'), /opaque configuration reference/);
+});
+
+test('requires separately referenced verification for unauthenticated webhook ingress', () => {
+  const profile = baseProfile();
+  profile.transport.kind = 'webhook';
+  profile.authentication = { method: 'none' };
+  assert.match(validateConnectionProfile(profile).errors.join('\n'), /verifierRef/);
+  profile.authentication.verifierRef = 'tenant-config://webhooks/provider-signature';
+  profile.activation.fingerprint = approvalFingerprint(profile);
   assert.equal(validateConnectionProfile(profile).ok, true);
 });
 
@@ -64,6 +107,12 @@ test('requires deterministic authority', () => {
   const profile = baseProfile();
   profile.authority.entityOwners = {};
   assert.match(validateConnectionProfile(profile).errors.join('\n'), /deterministic entity authority/);
+});
+
+test('requires bounded integer retries', () => {
+  const profile = baseProfile();
+  profile.recovery.maxAttempts = 1000;
+  assert.match(validateConnectionProfile(profile).errors.join('\n'), /integer between 1 and 10/);
 });
 
 test('requires idempotency before retry is enabled', () => {
