@@ -1,4 +1,4 @@
-# WFM UX scorecard — Cycle 11 r8–r9
+# WFM UX scorecard — Cycle 11 r8–r10
 
 ## r8 — Weekly Sign-off composed continuation proof contract
 
@@ -105,5 +105,61 @@ Runtime commit `dee74539ff0fb0f75117800c1bdc7b16791aa2e8` extends only `ux-overl
 ### Still unverified
 Executable composed-browser proof on the real sealed runtime, screen-reader announcement quality, real 390/tablet focus behaviour, measured first-click/time-on-task/error-rate improvement and Cycle 10 exact source-bound hosted proof.
 
+## r10 — Performance value-order integrity and branch efficiency guard
+
+### Journey reviewed
+Manager/director → Performance → cost & efficiency decision desk → highest-value evidenced decision → more opportunities.
+
+### New-UI lineage / reuse check
+- Runtime work stayed on the canonical new role-first branch `ux/universal-action-queue-20260918-r1` / PR #80.
+- The existing Cycle 4 Performance desk, cards, YES/NO controls, value fields and browser gate were extended; no replacement dashboard, decision engine, route or test harness was created.
+- Time Review `Save & next` was inspected only to the extent supported by available source/test evidence. The source-owned action is preserved, but the sealed authoritative implementation is not visible in the overlay and the current browser infrastructure cannot execute, so no speculative duplicate continuation handler was added.
+- A reuse/diff check found Cycle 12 PR #90 had diverged from the active Cycle 11 source owner. PR #90 is now explicitly marked **do not mutate until refreshed** so overlapping UX work is not developed twice.
+
+### Research delta
+No external research was repeated. The material issue was internal evidence integrity: Cycle 4 labelled its first card `Highest-value evidenced opportunity`, but the presentation code preserved source array order and did not itself guarantee that the focused waiting item had the highest structured value.
+
+### Hypothesis
+If the Performance desk deterministically ranks waiting opportunities by the existing source-provided `value.amountPence`, while preserving original order for ties and pushing unknown/unquantified values behind known values, the UI label `Highest-value evidenced opportunity` becomes true independent of source array order without changing any underlying value calculation or decision authority.
+
+### Exact implementation/design delta
+Runtime commit `45b3562ebaddc4495279b45f2cd822ca60f29410` extends only `ux-overlay/ux-reset-cycle4.js`:
+- adds one presentation-only `opportunityValue()` helper reading the existing structured source amount;
+- preserves card ↔ source-opportunity pairing and its original ordinal;
+- sorts only the local `waiting` presentation rows by known value descending, then original ordinal for deterministic ties;
+- ranks missing/unquantified values after known values rather than treating them as a reason to claim top value;
+- leaves `predictedValueAwaitingPence`, avoidable-cost calculations, YES/NO actions, permissions and source statuses untouched.
+
+Regression commit `755c690f34134937aeafa9153b38ecabca44aabd` extends the existing Cycle 4 gate instead of adding another test system:
+- reverses the fixture so the £500 opportunity arrives before the £1,200 opportunity;
+- requires `op-a` (£1,200) to become the focused card anyway;
+- requires `op-b` (£500) to remain in `More opportunities`;
+- retains the existing grouping, preserved YES/NO controls, desktop containment and 390 px mobile checks.
+
+### Focused tests and observed result
+- Exact revised Cycle 4 runtime source passes `node --check` in an isolated local syntax check.
+- A focused deterministic ordering check returned `UX11_PERFORMANCE_VALUE_ORDER=PASS` for out-of-order, tie and unknown-value cases.
+- GitHub workflow lookup for exact regression head `755c690f34134937aeafa9153b38ecabca44aabd` returned no workflow runs/statuses, consistent with the known repository runner pre-execution blocker. It was checked once after the meaningful gate change and not repeatedly retried.
+- Full Docker composition, composed Chromium execution and screen-reader behaviour are therefore **not claimed green** for this delta.
+
+### UX scorecard impact
+- Calm by default: unchanged; no new visible UI or density.
+- Dense on demand: unchanged; one focused decision plus disclosure remains.
+- Explainability: improved; `Highest-value evidenced opportunity` is now backed by deterministic structured-value ranking rather than an unproven source-order assumption.
+- Decision efficiency: likely improved when source order differs from value order because the largest quantified opportunity is surfaced first; real user time-on-task is still unmeasured.
+- Accessibility/mobile: no interaction or layout change; existing controls and responsive rules are preserved.
+- Capability preservation: green by design; only presentation ordering changed and no business calculation/write authority moved into UX code.
+
+### Serious-idea decision log
+- Add a second Performance queue or ranking service: **REJECT** — duplicate ownership.
+- Recalculate savings/value in the presentation layer: **REJECT** — source authority must remain upstream.
+- Keep the `Highest-value` label while trusting incidental source order: **REJECT** — explainability mismatch.
+- Rank existing waiting cards by their existing structured value with stable ties: **BUILD NOW** — implemented.
+- Add a speculative Time Review `Save & next` handler without observable source proof: **REJECT for now** — avoid duplicate or conflicting behaviour.
+- Continue adding Cycle 12 changes while its branch is behind active Cycle 11: **REJECT until refreshed** — PR #90 marked accordingly.
+
+### Still unverified
+Exact composed Docker/browser pass for the revised Performance ranking, real screen-reader behaviour, representative manager/director time-on-task impact, Time Review post-`Save & next` focus in the sealed runtime, and Cycle 10 exact source-bound hosted proof.
+
 ### Single next highest-value new-UI action
-Inspect whether the existing Time Review `Save & next` source action already advances to the next unresolved employee with deterministic focus. If it already does, do not duplicate it and move to the next manager journey. If it leaves the manager at a dead focus/scroll position, extend the same `focusDecisionPanel()` continuation after the source-owned next-record render, then protect it in the existing shared browser regression only.
+Refresh/reconcile the Cycle 12 successor onto the latest Cycle 11 canonical state before doing further successor UX work. If that cannot be performed safely with the available branch tooling, keep PR #90 frozen and inspect the next unblocked current-lineage journey for an evidence-backed defect rather than creating parallel changes.
