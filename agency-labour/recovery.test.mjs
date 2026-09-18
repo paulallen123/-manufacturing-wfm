@@ -35,4 +35,22 @@ const exhausted = buildShortfallRecoveryPlan({
 assert.equal(exhausted.touchlessCanContinue, false);
 assert.equal(exhausted.unrecoveredShortfall, 7);
 
-console.log('3/3 shortfall recovery tests passed');
+const noDuplicate = buildShortfallRecoveryPlan({
+  requirement:{id:'R4',role:'PACKING_OPERATOR',headcount:3},
+  suppliers,
+  capacityHolds:[
+    {supplierId:'A',requestedHeadcount:2},
+    {supplierId:'B',requestedHeadcount:1}
+  ],
+  supplierResponses:[{supplierId:'A',status:'PARTIAL',acceptedHeadcount:1}]
+});
+assert.equal(noDuplicate.acceptedCapacity, 1);
+assert.equal(noDuplicate.pendingCapacity, 2);
+assert.equal(noDuplicate.recoveryActions.length, 1);
+assert.equal(noDuplicate.recoveryActions[0].supplierId, 'B');
+assert.equal(noDuplicate.recoveryActions[0].action, 'TOP_UP_EXISTING_CAPACITY_HOLD');
+assert.equal(noDuplicate.recoveryActions[0].requestedHeadcount, 1);
+assert.equal(noDuplicate.projectedCapacityCoverage, 3);
+assert.equal(noDuplicate.unrecoveredShortfall, 0);
+
+console.log('4/4 shortfall recovery tests passed');
