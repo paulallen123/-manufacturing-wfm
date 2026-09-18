@@ -146,7 +146,9 @@ try {
         const nodes = [...document.querySelectorAll('nav a,nav button,[role="tab"],[data-nav],[data-page],a,button')];
         const el = nodes.find(n => {
           const s = getComputedStyle(n);
-          return (n.textContent || '').replace(/\\s+/g,' ').trim() === wanted && n.getClientRects().length > 0 && s.display !== 'none' && s.visibility !== 'hidden';
+          const primary = n.querySelector?.('span:not(.count):not(.review-count)');
+          const routeLabel = (primary?.textContent || n.textContent || '').replace(/\\s+/g,' ').trim();
+          return routeLabel === wanted && n.getClientRects().length > 0 && s.display !== 'none' && s.visibility !== 'hidden';
         });
         if (!el) return false;
         el.click();
