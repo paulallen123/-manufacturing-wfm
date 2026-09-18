@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'autonomy/**'
+      - 'ux/**'
   workflow_dispatch:
 
 permissions:
