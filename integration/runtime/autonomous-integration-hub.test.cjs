@@ -174,6 +174,82 @@ test('discovery evidence is tenant-isolated', async () => {
   }
 });
 
+
+test('trusted directory worker is bound to a short-lived server-side discovery session', async () => {
+  const f = fixture();
+  try {
+    const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
+    const session = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/discovery-session', {
+      provider: 'ENTRA'
+    });
+    assert.equal(session.status, 201);
+    assert.equal(session.body.discoverySession.provider, 'ENTRA');
+
+    const denied = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/discovery-result', {
+      discoverySessionId: session.body.discoverySession.id,
+      source: 'ENTRA',
+      apps: [{ appId: 'wd-no-worker', displayName: 'Workday' }]
+    });
+    assert.equal(denied.status, 403);
+
+    const ingested = await call(f.hub, null, 'POST', '/api/integrations/autonomous/discovery-result', {
+      discoverySessionId: session.body.discoverySession.id,
+      source: 'ENTRA',
+      apps: [{ appId: 'wd-worker', displayName: 'Workday Production' }]
+    }, internal);
+    assert.equal(ingested.status, 200);
+    assert.equal(ingested.body.detected, 1);
+
+    const alpha = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    const bravo = await call(f.hub, f.tokens.bravo, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(alpha.body.discovery.candidateCount, 1);
+    assert.equal(bravo.body.discovery.candidateCount, 0);
+
+    const replay = await call(f.hub, null, 'POST', '/api/integrations/autonomous/discovery-result', {
+      discoverySessionId: session.body.discoverySession.id,
+      source: 'ENTRA',
+      apps: [{ appId: 'replay', displayName: 'Oracle NetSuite' }]
+    }, internal);
+    assert.equal(replay.status, 409);
+  } finally {
+    f.close();
+  }
+});
+
+test('discovery session rejects provider substitution and expired sessions', async () => {
+  const f = fixture();
+  try {
+    const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
+    const mismatchSession = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/discovery-session', {
+      provider: 'ENTRA'
+    });
+    const mismatch = await call(f.hub, null, 'POST', '/api/integrations/autonomous/discovery-result', {
+      discoverySessionId: mismatchSession.body.discoverySession.id,
+      source: 'OKTA',
+      apps: [{ appId: 'substitute', displayName: 'Workday' }]
+    }, internal);
+    assert.equal(mismatch.status, 409);
+
+    const expiredSession = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/discovery-session', {
+      provider: 'OKTA'
+    });
+    const db = new DatabaseSync(f.dbPath);
+    db.prepare('UPDATE integration_discovery_sessions SET expires_at=? WHERE id=?').run(
+      Date.now() - 1,
+      expiredSession.body.discoverySession.id
+    );
+    db.close();
+    const expired = await call(f.hub, null, 'POST', '/api/integrations/autonomous/discovery-result', {
+      discoverySessionId: expiredSession.body.discoverySession.id,
+      source: 'OKTA',
+      apps: [{ appId: 'expired', displayName: 'Workday' }]
+    }, internal);
+    assert.equal(expired.status, 410);
+  } finally {
+    f.close();
+  }
+});
+
 test('browser/admin cannot attest provider authorization without trusted worker', async () => {
   const f = fixture();
   try {
@@ -199,7 +275,7 @@ test('trusted worker can attest authorization, activate mapping, validate sync a
     const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
 
     const authorized = await call(
-      f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/authorize-complete',
+      f.hub, null, 'POST', '/api/integrations/autonomous/authorize-complete',
       {
         connectionId: connection.id,
         authorizationRef: 'vault://tenant/alpha/workday',
@@ -257,7 +333,7 @@ test('validation with duplicate identifiers degrades safely instead of silently 
   try {
     const connection = await configuredConnection(f);
     const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
-    await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/authorize-complete', {
+    await call(f.hub, null, 'POST', '/api/integrations/autonomous/authorize-complete', {
       connectionId: connection.id,
       authorizationRef: 'managed://kombo/linked-account-1',
       grantedScopes: ['people.read']
@@ -271,7 +347,7 @@ test('validation with duplicate identifiers degrades safely instead of silently 
       ]
     });
 
-    const validated = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/sync-validate', {
+    const validated = await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', {
       connectionId: connection.id,
       records: [
         { employee_id: 'E-1', first_name: 'A', last_name: 'One' },
@@ -291,7 +367,7 @@ test('schema drift produces targeted repair guidance while preserving mapping ve
   try {
     const connection = await configuredConnection(f);
     const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
-    await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/authorize-complete', {
+    await call(f.hub, null, 'POST', '/api/integrations/autonomous/authorize-complete', {
       connectionId: connection.id,
       authorizationRef: 'vault://tenant/alpha/workday',
       grantedScopes: ['people.read']
@@ -301,7 +377,7 @@ test('schema drift produces targeted repair guidance while preserving mapping ve
       mappings: [{ sourceField: 'employee_id', canonicalField: 'employeeId', confidence: 1 }]
     });
 
-    const health = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/health-report', {
+    const health = await call(f.hub, null, 'POST', '/api/integrations/autonomous/health-report', {
       connectionId: connection.id,
       health: 'schema_drift'
     }, internal);
@@ -324,7 +400,7 @@ test('reconciliation stores only counts and digests, not raw employee payloads',
   try {
     const connection = await configuredConnection(f);
     const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
-    await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/authorize-complete', {
+    await call(f.hub, null, 'POST', '/api/integrations/autonomous/authorize-complete', {
       connectionId: connection.id,
       authorizationRef: 'vault://tenant/alpha/workday',
       grantedScopes: ['people.read']
@@ -333,7 +409,7 @@ test('reconciliation stores only counts and digests, not raw employee payloads',
       connectionId: connection.id,
       mappings: [{ sourceField: 'employee_id', canonicalField: 'employeeId', confidence: 1 }]
     });
-    await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/sync-validate', {
+    await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', {
       connectionId: connection.id,
       records: [{ employee_id: 'SECRET-EMPLOYEE-ID', salary: 'VERY-SENSITIVE' }]
     }, internal);
