@@ -101,7 +101,10 @@ test('reconciliation completion is durably preserved across restart',()=>{
   const p=file(); const anchor=memoryAnchor(); const {runtime:a}=setup(p,{rollbackAnchor:anchor});
   a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e1',observedAt:new Date(T+100).toISOString(),receivedAtMs:T+150,sequence:10});
   a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e2',observedAt:new Date(T+200).toISOString(),receivedAtMs:T+250,sequence:12});
-  const [job]=a.pendingRecovery({tenant:'acme',sourceId:'wifi'}); a.completeRecovery({jobId:job.jobId});
+  const [job]=a.pendingRecovery({tenant:'acme',sourceId:'wifi'});
+  assert.equal(a.completeRecovery({jobId:job.jobId}),false);
+  a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e-backfill-11',observedAt:new Date(T+150).toISOString(),receivedAtMs:T+275,sequence:11});
+  assert.equal(a.completeRecovery({jobId:job.jobId}),true);
   const b=new DurableAttendanceSourceRuntime({supervisor:sup(),store:stateStore(p,{rollbackAnchor:anchor})});
   assert.equal(b.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}).periodCoverageComplete,true);
   assert.equal(b.pendingRecovery({tenant:'acme',sourceId:'wifi'}).length,0);
