@@ -19,14 +19,18 @@ function supervisor(){
 }
 function health(s,now){return ['door','wifi'].map(sourceId=>s.status({tenant:'acme',sourceId,nowMs:now}));}
 
-test('sequence gap revokes 100% certificate until reconciliation completes',()=>{
+test('sequence gap revokes 100% certificate until missing evidence is observed and reconciliation completes',()=>{
  const s=supervisor(); const c=new AttendanceClaimCertifier({coverage});
  assert.equal(c.certifyShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T+2000,expectedSourceIds:['door','wifi'],sourceHealth:health(s,T+2000)}).claimLevel,'PASSIVE_AND_VERIFIED_100');
  s.event({tenant:'acme',sourceId:'wifi',providerEventId:'w1',observedAt:new Date(T+2100).toISOString(),receivedAtMs:T+2200,sequence:10});
  s.event({tenant:'acme',sourceId:'wifi',providerEventId:'w2',observedAt:new Date(T+2300).toISOString(),receivedAtMs:T+2400,sequence:12});
  let r=c.certifyShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T+2500,expectedSourceIds:['door','wifi'],sourceHealth:health(s,T+2500)});
  assert.equal(r.claimLevel,'NOT_CERTIFIED');
- const [job]=s.pendingRecovery({tenant:'acme',sourceId:'wifi'}); s.completeRecovery({jobId:job.jobId});
+ const [job]=s.pendingRecovery({tenant:'acme',sourceId:'wifi'});
+ assert.equal(s.completeRecovery({jobId:job.jobId}),false);
+ assert.equal(c.certifyShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T+2500,expectedSourceIds:['door','wifi'],sourceHealth:health(s,T+2500)}).claimLevel,'NOT_CERTIFIED');
+ s.event({tenant:'acme',sourceId:'wifi',providerEventId:'w-backfill-11',observedAt:new Date(T+2200).toISOString(),receivedAtMs:T+2450,sequence:11});
+ assert.equal(s.completeRecovery({jobId:job.jobId}),true);
  r=c.certifyShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T+2500,expectedSourceIds:['door','wifi'],sourceHealth:health(s,T+2500)});
  assert.equal(r.claimLevel,'PASSIVE_AND_VERIFIED_100');
 });
