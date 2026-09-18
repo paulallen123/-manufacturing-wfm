@@ -2,6 +2,7 @@
 (function(){
 'use strict';
 const registry=new Map();
+let implementationCache=[],implementationLast=0,implementationBusy=false;
 const M=()=>window.WFMUXCycle12Model;
 const safe=v=>String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
 const page=()=>{try{return ui?.page||null;}catch{return null;}};
@@ -10,6 +11,18 @@ const employee=()=>{try{return typeof isEmployee==='function'&&isEmployee();}cat
 const manager=()=>!employee()&&['manager','director','supervisor'].includes(role());
 const labels={implementation:'Implementation',integrations:'Integrations',attendance:'Attendance',agency:'Agency labour','manufacturing-cost':'Cost',energy:'Energy',support:'Support',learning:'Learning',handover:'Shift handover',documents:'Documents',payroll:'Payroll'};
 function signals(){return M()?.collect(registry)||[];}
+async function refreshImplementation(force=false){
+  if(employee()||implementationBusy)return;
+  const now=Date.now();if(!force&&now-implementationLast<15000)return;
+  implementationLast=now;implementationBusy=true;
+  try{
+    const res=await fetch('/api/implementation/autonomous/status',{credentials:'same-origin',headers:{Accept:'application/json'}});
+    if(res.status===404||res.status===401||res.status===403){implementationCache=[];return;}
+    if(!res.ok){implementationCache=[];return;}
+    const status=await res.json();implementationCache=M()?.implementationSignals?.(status)||[];
+  }catch{implementationCache=[];}
+  finally{implementationBusy=false;setTimeout(apply,0);}
+}
 function register(providerId,getter){
   if(!M()?.PROVIDERS?.[providerId])throw new Error('Unknown UX signal provider');
   if(typeof getter!=='function')throw new TypeError('Provider getter must be a function');
@@ -41,6 +54,7 @@ function relabelTools(){
   });
 }
 function apply(){
+  refreshImplementation();
   const rows=signals();
   if(manager()&&page()==='overview'&&window.WFMUXCycle11?.renderQueue)window.WFMUXCycle11.renderQueue(rows);
   else renderSpecialistQueue(rows);
@@ -52,6 +66,7 @@ document.addEventListener('click',e=>{
 });
 const priorRender=window.render;if(typeof priorRender==='function')window.render=async function(...args){const out=await priorRender.apply(this,args);apply();return out;};
 const observer=new MutationObserver(()=>{try{relabelTools();}catch{}});observer.observe(document.documentElement,{subtree:true,childList:true});
+registry.set('implementation',()=>implementationCache);
 setTimeout(apply,0);setTimeout(apply,450);
-window.WFMUXSignals=Object.freeze({register,list:()=>signals(),providers:()=>Object.keys(M()?.PROVIDERS||{})});
+window.WFMUXSignals=Object.freeze({register,list:()=>signals(),providers:()=>Object.keys(M()?.PROVIDERS||{}),refreshImplementation:()=>refreshImplementation(true)});
 })();
