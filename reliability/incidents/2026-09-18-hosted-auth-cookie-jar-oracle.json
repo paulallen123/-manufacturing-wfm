@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "incident_id": "WFM-REL-2026-09-18-HOSTED-AUTH-COOKIE-JAR-ORACLE",
+  "detected_at_utc": "2026-09-18T08:18:34Z",
+  "confirmed_at_utc": "2026-09-18T08:34:26Z",
+  "classification": {
+    "primary": "test_defect",
+    "subtype": "secure_cookie_local_transport_oracle",
+    "not_supported_by_evidence": [
+      "product_authentication_defect",
+      "tenant_isolation_failure",
+      "hosted_service_outage"
+    ]
+  },
+  "deduplication": {
+    "new_incident_class": true,
+    "related_but_distinct": [
+      "WFM-REL-2026-09-18-ROLE-RENDER-CONVERGENCE",
+      "Railway runtime-admission false-green incident",
+      "provider-derived browser credential floor incident"
+    ]
+  },
+  "causal_timeline": [
+    {
+      "at_utc": "2026-09-18T08:18:34Z",
+      "event": "R1 release-repair proof run 35323715835 started on candidate head 48ee77767f17056de735cdc4031dcc6091e9b685."
+    },
+    {
+      "event": "The isolated hosted-staging candidate became healthy, unauthenticated bootstrap returned 401, and employee login completed successfully."
+    },
+    {
+      "event": "The proof stored the session in a curl cookie jar while calling the application over plain loopback HTTP with X-Forwarded-Proto=https, then replayed the jar with curl -b. The authenticated bootstrap returned 401, so API continuity was marked failed."
+    },
+    {
+      "at_utc": "2026-09-18T08:34:26Z",
+      "event": "The same candidate lineage and runtime passed after the synthetic harness captured the successful login Set-Cookie header, proved the cookie is Secure, and replayed only its session token with an explicit Cookie header on the isolated loopback request. Both authenticated bootstrap and /api/personal passed."
+    }
+  ],
+  "observed_evidence": {
+    "original_failure_run": 35323715835,
+    "confirmed_diagnostic_run": 35325024757,
+    "candidate_repair_commit": "38407325009c3ae732a705d86275a72bd32c5501",
+    "base_runtime_sha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+    "diagnostic_result": [
+      "secure-cookie-transport=PASS",
+      "employee-api-continuity=PASS"
+    ],
+    "runtime_boundaries": [
+      "fixture-only hosted staging",
+      "productionApproved=false",
+      "pilotReady=false",
+      "synthetic random CI password",
+      "no Railway or external deployment"
+    ]
+  },
+  "inferred_root_cause": {
+    "confidence": "high",
+    "statement": "The failing oracle mixed hosted HTTPS semantics with a plain loopback transport and delegated session replay to a cookie jar. The canonical repository harness instead treats loopback as an isolated transport shim: it verifies the successful Set-Cookie contract and explicitly supplies the resulting session token. The latter passed against the exact candidate, so the red CI signal was a harness transport defect rather than evidence of broken product authentication."
+  },
+  "prevention": {
+    "rule": "A hosted-staging synthetic proof must not use a plain-HTTP loopback curl cookie jar as the sole authenticated-session oracle. Use real TLS, or explicitly capture and validate Set-Cookie and then send the session token only within an isolated loopback harness.",
+    "validator": "scripts/validate-hosted-auth-harness.mjs",
+    "fixture": "reliability/fixtures/hosted-auth-harness.json",
+    "workflow": ".github/workflows/wfm-hosted-auth-harness-prevention.yml"
+  },
+  "metrics": {
+    "reproducibility": "original pattern failed deterministically; corrected transport pattern passed on the same R1 lineage",
+    "detection_effort_minutes": 16,
+    "recovery_path_quality": "high: no application change or restart required; replace the invalid synthetic transport oracle",
+    "prevention_coverage_change": "manual CI interpretation -> machine-readable detection of plain-loopback secure-session cookie-jar misuse"
+  },
+  "safety_boundary": "Test harness and prevention only. No production, Railway, credential, tenant, payroll, workforce or consequential security-state mutation is authorized by this record."
+}
