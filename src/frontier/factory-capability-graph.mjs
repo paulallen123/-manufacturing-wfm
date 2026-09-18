@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-export const CAPABILITY_GRAPH_VERSION = 'factory-capability-graph-v0.2.0';
+export const CAPABILITY_GRAPH_VERSION = 'factory-capability-graph-v0.3.0';
 
 const stable = (value) => Array.isArray(value)
   ? value.map(stable)
@@ -26,6 +26,15 @@ function validateSource(source, now) {
   return { trusted: true };
 }
 
+function copyProperties(properties = []) {
+  return Array.isArray(properties) ? properties.map((property) => ({
+    semanticId: property?.semanticId ?? null,
+    value: property?.value ?? null,
+    unit: property?.unit ?? null,
+    matchingStatus: property?.matchingStatus ?? null,
+  })) : [];
+}
+
 export function normalizeAsset(raw, { now = new Date().toISOString() } = {}) {
   if (!raw?.tenantId || !raw?.siteId || !raw?.assetId) return { status: 'rejected', reason: 'missing_scope_or_identity' };
   const sourceState = validateSource(raw.source, now);
@@ -37,6 +46,10 @@ export function normalizeAsset(raw, { now = new Date().toISOString() } = {}) {
     semanticId: capability.semanticId ?? null,
     mappingStatus: capability.mappingStatus ?? (capability.capabilityId ? 'mapped' : 'unmapped'),
     mappingId: capability.mappingId ?? null,
+    role: capability.role ?? null,
+    properties: copyProperties(capability.properties),
+    technicalSkillRefs: Array.isArray(capability.technicalSkillRefs) ? [...new Set(capability.technicalSkillRefs.filter(Boolean))] : [],
+    evidence: capability.evidence ?? null,
     source: capability.source ?? raw.source.provider,
   }));
 
@@ -56,7 +69,6 @@ export function normalizeAsset(raw, { now = new Date().toISOString() } = {}) {
     },
   };
 }
-
 
 export function applyApprovedSemanticMappings(rawAsset, semanticMappings = []) {
   if (!rawAsset?.tenantId || !rawAsset?.siteId) return rawAsset;
