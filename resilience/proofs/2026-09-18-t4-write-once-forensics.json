@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-18T22:39:00Z",
+  "currentBranch": "autonomy/zero-engineer-support-sprint-20260918",
+  "pullRequest": 86,
+  "buildHeadBeforeProofRecord": "be7daab627cfeb20dda3ca5b5d25cb5e5a1f8425",
+  "tiersAdvanced": ["T4"],
+  "codeConfigActuallyChanged": [
+    "resilience/t4-containment-controller.cjs",
+    "scripts/validate-t4-containment-chaos.mjs"
+  ],
+  "testsChaosProofsActuallyRun": {
+    "independentSyntheticHarness": {
+      "status": "PASS",
+      "runtime": "local Node logic runtime",
+      "assertions": [
+        "write-once creation succeeds",
+        "idempotent retry returns the same forensic digest",
+        "post-write tampering is detected",
+        "symlink forensic root is rejected"
+      ]
+    },
+    "committedT4ChaosValidatorExpanded": {
+      "cases": 17,
+      "adds": [
+        "real write-once forensic store",
+        "mutable forensic receipt rejection",
+        "missing forensic store rejection",
+        "idempotent forensic retry",
+        "post-write tamper detection"
+      ],
+      "executionStatus": "CI_EVIDENCE_UNAVAILABLE"
+    }
+  },
+  "ciProviderHealthAndSelectedLane": {
+    "githubHostedActions": "PRE_EXECUTION_FAILURE",
+    "latestObservedHead": "be7daab627cfeb20dda3ca5b5d25cb5e5a1f8425",
+    "latestValidateContractJob": 105784290332,
+    "stepsExecuted": 0,
+    "classification": "external CI evidence unavailable, not product/test failure",
+    "selectedLane": "independent local synthetic logic harness only",
+    "releaseEvidence": "FAIL_CLOSED_CI_EVIDENCE_UNAVAILABLE"
+  },
+  "defectsFoundAndFixed": [
+    {
+      "defect": "T4 accepted a verified forensic receipt even when immutable=false and could still claim a safe terminal with no forensic store configured.",
+      "fix": "T4 now requires verified write-once forensic preservation before a safe terminal receipt can be created; missing or mutable forensic preservation fails closed."
+    }
+  ],
+  "safeTerminalPathsAdded": [
+    "T4 evidence is written with exclusive create semantics into tenant-hashed storage",
+    "forensic evidence is fsynced, reopened and digest-verified before terminal success",
+    "idempotent retry reuses the original preserved record instead of overwriting it",
+    "tampering or unsafe storage topology invalidates verification"
+  ],
+  "openBlockers": [
+    "Exact Node 22.23.2 portable proof has not executed because GitHub-hosted jobs still fail before their first step.",
+    "The central autonomy loop still needs an explicit no-false-green rule so a failed T4 controller cannot be represented as a fully verified safe terminal by the outer receipt."
+  ],
+  "productionClaimBoundary": "No production, customer, payroll, identity, DNS, credential or frozen customer-proof artifact mutation occurred. This is autonomy-branch logic and synthetic proof only.",
+  "singleNextHighestValueAction": "Make the outer autonomy receipt fail closed when a T4 containment/forensic verifier fails, then add regression proof that false-green safeTerminal=true is impossible."
+}
