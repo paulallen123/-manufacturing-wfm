@@ -140,7 +140,10 @@ try {
       const clicked = await evaluate(`(() => {
         const wanted = ${JSON.stringify(label)};
         const nodes = [...document.querySelectorAll('nav a,nav button,[role="tab"],[data-nav],[data-page],a,button')];
-        const el = nodes.find(n => (n.textContent || '').replace(/\\s+/g,' ').trim() === wanted && n.offsetParent !== null);
+        const el = nodes.find(n => {
+          const s = getComputedStyle(n);
+          return (n.textContent || '').replace(/\\s+/g,' ').trim() === wanted && n.getClientRects().length > 0 && s.display !== 'none' && s.visibility !== 'hidden';
+        });
         if (!el) return false;
         el.click();
         return true;
@@ -185,7 +188,7 @@ try {
   assert.ok(desktopLayout.scrollWidth <= desktopLayout.width + 1, `Desktop horizontal overflow ${desktopLayout.scrollWidth} > ${desktopLayout.width}`);
 
   const visibleControls = await evaluate(`[...new Set([...document.querySelectorAll('nav a,nav button,[role="tab"],[data-nav],[data-page],a,button')]
-    .filter(n => n.offsetParent !== null)
+    .filter(n => { const s=getComputedStyle(n); return n.getClientRects().length > 0 && s.display !== 'none' && s.visibility !== 'hidden'; })
     .map(n => (n.textContent || '').replace(/\\s+/g,' ').trim())
     .filter(Boolean))].slice(0,120)`);
   console.log('AUTH_BROWSER_VISIBLE_CONTROLS=' + JSON.stringify(visibleControls));
@@ -223,13 +226,17 @@ try {
   screenshots.push(await screenshot('30-auth-control-centre-mobile.png'));
 
   const focus = await evaluate(`(() => {
-    const focusables = [...document.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null);
+    const focusables = [...document.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x => {
+      const s = getComputedStyle(x);
+      return x.getClientRects().length > 0 && s.display !== 'none' && s.visibility !== 'hidden' && s.opacity !== '0';
+    });
     if (!focusables.length) return {count:0, tag:'', focused:false};
     focusables[0].focus();
     const after = document.activeElement;
-    return {count:focusables.length, tag:after?.tagName || '', focused:after === focusables[0]};
+    return {count:focusables.length, tag:after?.tagName || '', focused:after === focusables[0], text:(focusables[0].textContent || '').trim().slice(0,80)};
   })()`);
-  assert.ok(focus.count > 0 && focus.focused, 'Authenticated mobile view could not programmatically focus a visible keyboard target.');
+  console.log('AUTH_BROWSER_MOBILE_FOCUS=' + JSON.stringify(focus));
+  assert.ok(focus.count > 0 && focus.focused, 'Authenticated mobile view could not focus a rendered interactive target.');
 
   const uniqueApi = [...new Map(apiResponses.map(x => [`${x.method} ${x.path} ${x.status}`, x])).values()];
   const evidence = {
