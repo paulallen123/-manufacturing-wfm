@@ -105,9 +105,9 @@ jobs:
           if(publishFocus!=='publish')throw Error('Publish jump did not move keyboard focus to authoritative publish control');
           console.log('UX_CYCLE10_KEYBOARD_NAVIGATION=PASS');
           await evalx("document.querySelector('.ux-plan-grid-toggle').click()");await sleep(150);
-          const opened=await evalx(`(()=>({hidden:document.querySelector('#planner').hidden,expanded:document.querySelector('.ux-plan-grid-toggle').getAttribute('aria-expanded'),controls:document.querySelector('.ux-plan-grid-toggle').getAttribute('aria-controls'),parent:document.querySelector('#planner').parentElement.className}))()`);
+          const opened=await evalx(`(()=>({hidden:document.querySelector('#planner').hidden,expanded:document.querySelector('.ux-plan-grid-toggle').getAttribute('aria-expanded'),controls:document.querySelector('.ux-plan-grid-toggle').getAttribute('aria-controls'),parent:document.querySelector('#planner').parentElement.className,focused:document.activeElement?.id}))()`);
           console.log('UX_CYCLE10_GRID_DISCLOSURE='+JSON.stringify(opened));
-          if(opened.hidden||opened.expanded!=='true'||opened.controls!=='planner'||opened.parent!=='content')throw Error('Planner disclosure changed ownership, semantics or failed');
+          if(opened.hidden||opened.expanded!=='true'||opened.controls!=='planner'||opened.parent!=='content'||opened.focused!=='planner')throw Error('Planner disclosure changed ownership, semantics, focus destination or failed');
           await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await sleep(250);
           const mobile=await evalx(`(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,publish:!!document.querySelector('[data-ux-preserved-publish="true"]'),focus:!!document.querySelector('.ux-plan-focus')}))()`);
           console.log('UX_CYCLE10_MOBILE_PROOF='+JSON.stringify(mobile));
