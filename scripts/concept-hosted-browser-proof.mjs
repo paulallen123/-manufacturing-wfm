@@ -39,7 +39,7 @@ const chromeEnv = { ...process.env };
 delete chromeEnv.WFM_STAGING_PASSWORD;
 delete chromeEnv.RAILWAY_TOKEN;
 delete chromeEnv.WFM_DEMO_PASSWORD;
-const debugPort = 9285;
+const debugPort = 9225;
 const chromeProc = spawn(chrome, [
   '--headless=new',
   '--no-sandbox',
@@ -52,7 +52,7 @@ const chromeProc = spawn(chrome, [
 ], { stdio: ['ignore', 'ignore', 'ignore'], env: chromeEnv });
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function retry(fn, attempts = 50, delay = 200) {
+async function retry(fn, attempts = 100, delay = 250) {
   let last;
   for (let i = 0; i < attempts; i++) {
     try { return await fn(); } catch (err) { last = err; await sleep(delay); }
