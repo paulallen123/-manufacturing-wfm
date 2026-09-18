@@ -1,8 +1,9 @@
 import { extractIdta02020CapabilityProfile, isIdta02020CapabilitySubmodel } from './idta-02020-capability-profile.mjs';
+import { normalizeIdta02020InstanceSubmodels } from './idta-02020-instance-compat.mjs';
 
 const CONTAINER_KEYS = ['submodelElements', 'value', 'statements', 'annotations'];
 
-export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.3.0';
+export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.4.0';
 
 function canonicalReference(reference) {
   const keys = Array.isArray(reference?.keys) ? reference.keys.filter((key) => key?.value) : [];
@@ -23,18 +24,21 @@ function pushChildren(node, depth, stack) {
 }
 
 export function extractAasCapabilities(submodels = [], { maxElements = 10_000, maxDepth = 12, conceptDescriptions = [] } = {}) {
-  const profile = extractIdta02020CapabilityProfile(submodels, { maxElements, maxDepth, conceptDescriptions });
+  const normalized = normalizeIdta02020InstanceSubmodels(submodels);
+  const normalizedSubmodels = normalized.submodels;
+  const profile = extractIdta02020CapabilityProfile(normalizedSubmodels, { maxElements, maxDepth, conceptDescriptions });
   if (profile.status !== 'accepted') return { status: 'rejected', reason: profile.reason, capabilities: [] };
 
   const capabilities = [...profile.offered];
   const requiredCapabilities = [...profile.required];
   const reviewRequired = [
+    ...normalized.reviewRequired,
     ...profile.reviewRequired,
     ...profile.notAssigned.map((item) => ({ ...item, reason: 'capability_role_not_assigned' })),
   ];
   let visited = profile.visitedElements;
 
-  for (const submodel of submodels) {
+  for (const submodel of normalizedSubmodels) {
     if (isIdta02020CapabilitySubmodel(submodel)) continue;
     const stack = [];
     const roots = Array.isArray(submodel?.submodelElements) ? submodel.submodelElements : [];
@@ -79,6 +83,8 @@ export function extractAasCapabilities(submodels = [], { maxElements = 10_000, m
       offeredCount: profile.offered.length,
       requiredCount: profile.required.length,
       reviewRequiredCount: reviewRequired.length,
+      normalizedInstanceProperties: normalized.normalizedProperties,
+      sourceMutation: normalized.sourceMutation,
     },
   };
 }
