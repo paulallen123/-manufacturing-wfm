@@ -554,12 +554,18 @@
       "name": "Paycom",
       "category": "payroll-hcm",
       "priority": "P2",
-      "protocols": [],
-      "auth": "enterprise",
-      "researchStatus": "research-queued",
+      "protocols": [
+        "REST",
+        "SFTP",
+        "EDI"
+      ],
+      "auth": "access-key",
+      "researchStatus": "docs-verified",
       "docsUrl": null,
-      "testLevel": "discovery-queued",
-      "writeEnabled": false
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://cdn.paycom.com/mkon/www/media/resources-content/General_Terms_and_Conditions.pdf",
+      "evidenceNote": "Paycom terms describe API, SFTP and EDI Data Services, access keys and request-volume controls; automated probing is not enabled."
     },
     {
       "id": "paylocity",
