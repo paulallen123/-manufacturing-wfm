@@ -108,3 +108,50 @@ Recommended pattern: realtime WebSocket ingest -> durable event journal/inbox ->
 - Bluetooth Core 6.0 Channel Sounding adds secure fine-ranging mechanisms; it is an optional enhancement, never a hardware dependency.
 - SQLite documents `synchronous=FULL` in WAL mode as ACID, including durability across power loss; this informs the persistent-site adapter design but does not force SQLite as the product datastore.
 - UK ICO worker-monitoring guidance requires clear purpose, necessity/proportionality and transparency; biometric timekeeping creates additional special-category-data obligations, so biometrics are not the default design.
+
+
+## Access-control integration autopilot
+
+Physical access is now treated as a first-class zero-hardware attendance evidence domain, but access activity is not blindly equated with work or presence.
+
+New isolated modules:
+- \`access-control-evidence.mjs\`: provider-neutral safety boundary for person-bound access decisions;
+- \`access-feed-supervisor.mjs\`: connector health, token-expiry, reconnect, deduplication and historical-reconciliation supervision.
+
+Safety rules:
+- a generic door-unlock/door-state event is never treated as proof that a person crossed the door;
+- only a granted event tied to a mapped personal credential and a known directional reader can become \`access_entry\` or \`access_exit\`;
+- shared/weak identity bindings fail to review;
+- denied access is operational/security intelligence, not attendance evidence;
+- doors can be marked attendance-ineligible so internal movements do not create attendance transitions;
+- raw credential numbers, images and biometric templates are not required or stored by the adapter.
+
+Lowest-friction onboarding strategy:
+1. Detect or select the customer's access platform.
+2. Prefer vendor push/event subscription over high-frequency polling.
+3. Prefer a vendor cloud gateway when available to avoid customer firewall changes.
+4. Otherwise use the existing site edge-connector pattern with outbound-only connectivity.
+5. Auto-discover access points and people where APIs permit.
+6. Auto-map people through existing workforce identifiers/credential assignments.
+7. Ask the customer only to confirm ambiguous doors, direction and attendance eligibility.
+8. Start in evidence-only mode until identity/direction mapping and feed health tests pass.
+
+Continuous operation:
+- connector heartbeat proves the integration is alive even when no doors are used;
+- auth expiry is detected before failure so credentials can be refreshed proactively;
+- duplicate provider events are ignored safely;
+- sequence gaps create reconciliation/backfill work rather than silent data loss;
+- reconnect automatically schedules historical reconciliation where supported;
+- event lag is measured from provider event time to receipt time;
+- feed health can be shown as healthy / reconciling / degraded / stale / auth refresh due.
+
+Current local proof: 15/15 new access-control/autopilot tests passed on 18 Sep 2026. These tests are additive to the existing invisible-attendance safety suite and do not make the branch release-approved.
+
+## Access-control research basis (checked 18 Sep 2026)
+
+- Kisi documents real-time webhooks and recommends event push instead of repeated API polling; its authenticated API is rate-limited.
+- Gallagher Command Centre's View Events & Alarms REST API supports historical retrieval and monitoring live events. Gallagher's Cloud API Gateway is specifically intended to simplify remote connectivity and reduce firewall/IT configuration by tunnelling to on-prem Command Centre.
+- Genetec Security Center Web SDK supports receiving/listening for events and querying access-control events; the integration lane may be cloud-reachable or site-edge depending on deployment.
+- HID Origo supports callback/webhook event delivery plus an Event Management API for later retrieval. Its callback lifecycle includes suspension/recovery behavior, reinforcing the need for our independent reconciliation supervisor.
+- ONVIF Profile A supports standardized access-control configuration and standardized access-control-related events, giving us a vendor-neutral path for conformant products.
+- UK ICO guidance treats access-control/timekeeping monitoring as worker monitoring; biometric identification is special-category data when used to uniquely identify a person. The product should therefore minimize collected data, keep workers informed, and avoid ingesting biometric templates where not required.
