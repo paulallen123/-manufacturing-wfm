@@ -1,6 +1,7 @@
 import fs from 'node:fs';
+import {loadCatalog} from './load-catalog.mjs';
 
-const catalog = JSON.parse(fs.readFileSync(new URL('../systems.json', import.meta.url), 'utf8'));
+const catalog = loadCatalog();
 const timeoutMs = Number(process.env.PROBE_TIMEOUT_MS || 12000);
 const concurrency = Math.max(1, Math.min(8, Number(process.env.PROBE_CONCURRENCY || 4)));
 
@@ -26,7 +27,6 @@ async function one(t) {
       headers:{'user-agent':'Manufacturing-WFM-Integration-Lab/0.1 (+read-only-public-probe)'},
       signal:AbortSignal.timeout(timeoutMs)
     });
-    // Drain a bounded amount only; the test is reachability, not scraping.
     const reader=res.body?.getReader();
     if (reader) {
       try { await reader.read(); } finally { try { await reader.cancel(); } catch {} }
@@ -52,7 +52,8 @@ results.sort((a,b)=>a.id.localeCompare(b.id));
 const report={
   schemaVersion:1,
   generatedAt:new Date().toISOString(),
-  claimBoundary:'Public documentation/auth-boundary reachability only. No customer credentials, tenant data, provider certification or write operations are exercised.',
+  claimBoundary:'Public documentation/auth-boundary reachability only. No customer credentials, tenant data, provider certification or write operations are exercised. Public reachability never promotes a system to sandbox-authenticated, tenant-authenticated or round-trip evidence.',
+  catalogOverlay:catalog.researchOverlay || null,
   total:results.length,
   reachable:results.filter(x=>x.state!=='network-or-dns-unreachable').length,
   results
