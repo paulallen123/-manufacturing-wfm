@@ -9,12 +9,35 @@ const REQUIRED_GATES=Object.freeze([
   'reviewCorrectionAudit',
   'privacyDpia',
   'hostedSyntheticSoak',
+  'rollbackAuthority',
   'regression'
+]);
+
+const ROLLBACK_AUTHORITY_REQUIREMENTS=Object.freeze([
+  'realExternalAuthority',
+  'signedReceipts',
+  'commitmentBoundCas',
+  'restartRecoveryProven'
 ]);
 
 function clone(value){ return JSON.parse(JSON.stringify(value)); }
 function validSha(value){ return /^[a-f0-9]{40}$/i.test(String(value||'')); }
 function validEvidenceId(value){ return /^[A-Za-z0-9._:/-]{4,240}$/.test(String(value||'')); }
+
+function gateIsValid(name,gate,candidateSha){
+  const common=Boolean(
+    gate &&
+    gate.passed===true &&
+    gate.candidateSha===candidateSha &&
+    validEvidenceId(gate.evidenceId) &&
+    (!Number.isSafeInteger(gate.skipped) || gate.skipped===0)
+  );
+  if(!common) return false;
+  if(name==='rollbackAuthority'){
+    return ROLLBACK_AUTHORITY_REQUIREMENTS.every(field=>gate[field]===true);
+  }
+  return true;
+}
 
 export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[]}={}){
   if(!validSha(candidateSha)) throw new Error('A full candidate commit SHA is required.');
@@ -23,13 +46,7 @@ export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[]
 
   for(const name of REQUIRED_GATES){
     const gate=gates[name];
-    const valid=Boolean(
-      gate &&
-      gate.passed===true &&
-      gate.candidateSha===candidateSha &&
-      validEvidenceId(gate.evidenceId) &&
-      (!Number.isSafeInteger(gate.skipped) || gate.skipped===0)
-    );
+    const valid=gateIsValid(name,gate,candidateSha);
     accepted[name]=valid;
     if(!valid) blockers.push(name);
   }
@@ -100,4 +117,4 @@ export class AttendanceReleaseSwitch {
   state(){ return clone({enabled:this.enabled,candidateSha:this.candidateSha,audit:this.audit}); }
 }
 
-export { REQUIRED_GATES };
+export { REQUIRED_GATES, ROLLBACK_AUTHORITY_REQUIREMENTS };
