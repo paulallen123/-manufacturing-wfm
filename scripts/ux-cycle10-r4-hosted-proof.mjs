@@ -54,7 +54,7 @@ console.log('HOSTED_CYCLE10_FAIL_CLOSED_BOOTSTRAP=PASS');
 console.log('HOSTED_CYCLE10_MANAGER_WORKFLOW_HTTP=PASS');
 
 const which=name=>{const x=spawnSync('which',[name],{encoding:'utf8'});return x.status===0?x.stdout.trim():''};
-const chrome=['google-chrome','google-chrome-stable','chromium','chromium-browser'].map(which).find(Boolean);assert.ok(chrome,'Chrome/Chromium unavailable.');
+const chrome=['google-chrome','google-chrome-stable'].map(which).find(Boolean);assert.ok(chrome,'Approved Google Chrome unavailable after security preflight.');
 const profile=path.join(process.argv[3],'cycle10-r4-chrome');fs.rmSync(profile,{recursive:true,force:true});
 const port=9231,chromeEnv={...process.env};delete chromeEnv.RAILWAY_TOKEN;
 const cp=spawn(chrome,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--remote-debugging-address=127.0.0.1',`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'--window-size=1440,1000','about:blank'],{stdio:['ignore','ignore','ignore'],env:chromeEnv});
