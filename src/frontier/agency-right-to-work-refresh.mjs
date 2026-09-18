@@ -124,7 +124,8 @@ export function verifyAgencyRightToWorkRefreshToken(token, expected = {}, secret
   if (now === null) return fail('invalid_now');
   if (!Number.isFinite(Number(claims.exp)) || now > Number(claims.exp)) return fail('expired_token');
   for (const key of ['tenantId','siteId','requestId','agencyId','workerId']) {
-    if (expected[key] !== undefined && claims[key] !== expected[key]) return fail(`scope_mismatch:${key}`);
+    if (!text(expected[key], 200)) return fail(`expected_scope_missing:${key}`);
+    if (claims[key] !== expected[key]) return fail(`scope_mismatch:${key}`);
   }
   let currentAssignmentFingerprint;
   try { currentAssignmentFingerprint = assignmentFingerprint(options.request); }
