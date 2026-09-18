@@ -418,7 +418,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   }
 
   function validEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+    return /^[^\s@]+@[^\s@]+$/.test(String(email || '').trim());
   }
 
   async function handleContractActivated(req, res) {
