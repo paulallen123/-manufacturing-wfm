@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 
-const vars=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+const rawVars=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+const vars=rawVars?.variables&&typeof rawVars.variables==='object'?rawVars.variables:rawVars;
 const outDir=path.join(process.argv[3],'cycle10-r4-hosted-evidence');
 fs.mkdirSync(outDir,{recursive:true});
 const origin=String(vars.WFM_PUBLIC_ORIGIN||'').replace(/\/$/,'');
@@ -14,16 +15,29 @@ assert.ok(password&&password.length>=20,'Isolated hosted password did not resolv
 assert.match(sourceSha,/^[0-9a-f]{40}$/,'Expected immutable Git source SHA.');
 delete process.env.RAILWAY_TOKEN;
 
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function text(pathname,init={}){
  const r=await fetch(origin+pathname,{...init,signal:AbortSignal.timeout(20_000)});
  return {r,body:await r.text()};
+}
+async function waitForHealth(attempts=40){
+ let last='no response';
+ for(let i=0;i<attempts;i++){
+  try{
+   const result=await text('/api/health');
+   last=`HTTP ${result.r.status}`;
+   if(result.r.status===200)return result;
+  }catch(e){last=String(e?.message||e);}
+  await sleep(750);
+ }
+ throw new Error(`Isolated hosted service never became ready: ${last}`);
 }
 function cookieFrom(r){
  const values=typeof r.headers.getSetCookie==='function'?r.headers.getSetCookie():[r.headers.get('set-cookie')].filter(Boolean);
  return values[0]?.split(';',1)[0]||'';
 }
 
-const health=await text('/api/health');assert.equal(health.r.status,200);
+const health=await waitForHealth();
 const hb=JSON.parse(health.body);assert.equal(hb.mode,'hosted-staging');assert.equal(hb.productionApproved,false);assert.equal(hb.fixtureOnly,true);
 const unauth=await text('/api/bootstrap');assert.equal(unauth.r.status,401,'Protected bootstrap must fail closed before login.');
 const login=await text('/api/login',{method:'POST',headers:{'content-type':'application/json',origin,referer:origin+'/'},body:JSON.stringify({email:'manager@northstar.example',password})});
@@ -44,8 +58,7 @@ const chrome=['google-chrome','google-chrome-stable','chromium','chromium-browse
 const profile=path.join(process.argv[3],'cycle10-r4-chrome');fs.rmSync(profile,{recursive:true,force:true});
 const port=9231,chromeEnv={...process.env};delete chromeEnv.RAILWAY_TOKEN;
 const cp=spawn(chrome,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--remote-debugging-address=127.0.0.1',`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'--window-size=1440,1000','about:blank'],{stdio:['ignore','ignore','ignore'],env:chromeEnv});
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-async function retry(fn,n=75){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
+async function retry(fn,n=125){let e;for(let i=0;i<n;i++){try{return await fn()}catch(x){e=x;await sleep(200)}}throw e}
 let ws;
 try{
  const targets=await retry(async()=>{const r=await fetch(`http://127.0.0.1:${port}/json/list`);const a=await r.json();if(!a.find(x=>x.type==='page'))throw Error('No browser page');return a});
