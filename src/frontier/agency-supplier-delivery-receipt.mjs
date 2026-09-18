@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS wfm_agency_supplier_delivery_receipts (
   provider_event_id varchar(200) NOT NULL,
   delivery_id varchar(64) NOT NULL,
   provider_message_ref text,
+  attempt_number integer CHECK (attempt_number IS NULL OR attempt_number >= 1),
   channel text NOT NULL CHECK (channel IN ('email','sms','api')),
   normalized_outcome text NOT NULL CHECK (normalized_outcome IN ('confirmed_sent','definitively_not_sent','delivery_failed','informational')),
   event_at timestamptz NOT NULL,
@@ -34,15 +35,16 @@ WITH target AS (
   SELECT *,
     (channel=$7) AS channel_ok,
     (provider_message_ref IS NULL OR $5::text IS NULL OR provider_message_ref=$5) AS message_ref_ok,
+    ($6 <> 'definitively_not_sent' OR ($11::integer IS NOT NULL AND $11::integer = attempt_count)) AS attempt_ok,
     ($8::timestamptz >= created_at - interval '5 minutes') AS event_time_ok
   FROM target
 ), inserted AS (
   INSERT INTO wfm_agency_supplier_delivery_receipts
     (tenant_id, provider_key, provider_event_id, delivery_id, provider_message_ref,
-     channel, normalized_outcome, event_at, received_at, event_fingerprint)
-  SELECT $1,$2,$3,$4,$5,$7,$6,$8,$9,$10
+     attempt_number, channel, normalized_outcome, event_at, received_at, event_fingerprint)
+  SELECT $1,$2,$3,$4,$5,$11,$7,$6,$8,$9,$10
   FROM checked
-  WHERE channel_ok AND message_ref_ok AND event_time_ok
+  WHERE channel_ok AND message_ref_ok AND attempt_ok AND event_time_ok
   ON CONFLICT (tenant_id, provider_key, provider_event_id) DO NOTHING
   RETURNING true AS recorded
 ), updated AS (
@@ -64,6 +66,7 @@ SELECT
     WHEN NOT EXISTS (SELECT 1 FROM target) THEN 'delivery_not_found'
     WHEN EXISTS (SELECT 1 FROM checked WHERE NOT channel_ok) THEN 'channel_mismatch'
     WHEN EXISTS (SELECT 1 FROM checked WHERE NOT message_ref_ok) THEN 'provider_message_ref_mismatch'
+    WHEN EXISTS (SELECT 1 FROM checked WHERE NOT attempt_ok) THEN 'attempt_mismatch'
     WHEN EXISTS (SELECT 1 FROM checked WHERE NOT event_time_ok) THEN 'event_before_delivery'
     WHEN NOT EXISTS (SELECT 1 FROM inserted) THEN 'duplicate_event'
     ELSE 'recorded'
@@ -148,9 +151,12 @@ function normalizeVerifiedEvent(event = {}, receivedAt) {
     throw new TypeError('normalizedOutcome is not supported');
   }
   const providerMessageRef = optionalString(event.providerMessageRef, 'providerMessageRef', 200);
+  const attemptNumber = event.attemptNumber === null || event.attemptNumber === undefined ? null : Number(event.attemptNumber);
+  if (attemptNumber !== null && (!Number.isInteger(attemptNumber) || attemptNumber < 1 || attemptNumber > 1000)) throw new TypeError('attemptNumber must be a positive integer');
+  if (normalizedOutcome === 'definitively_not_sent' && attemptNumber === null) throw new TypeError('attemptNumber is required for definitively_not_sent');
   const eventAt = requiredIso(event.eventAt, 'eventAt');
   if (Date.parse(eventAt) > Date.parse(receivedAt) + 5 * 60 * 1000) throw new TypeError('eventAt is too far in the future');
-  return {providerKey, providerEventId, deliveryId, providerMessageRef, channel, normalizedOutcome, eventAt};
+  return {providerKey, providerEventId, deliveryId, providerMessageRef, attemptNumber, channel, normalizedOutcome, eventAt};
 }
 
 function auditResult({tenantId, event = null, fingerprint = null, storeResult = null, reconciled = false, reason = null, receivedAt = null} = {}) {
@@ -168,6 +174,7 @@ function auditResult({tenantId, event = null, fingerprint = null, storeResult = 
     channel: storeResult?.channel ?? event?.channel ?? null,
     providerKey: event?.providerKey ?? null,
     providerEventId: event?.providerEventId ?? null,
+    attemptNumber:event?.attemptNumber ?? null,
     providerMessageRefFingerprint: event?.providerMessageRef
       ? crypto.createHash('sha256').update(event.providerMessageRef).digest('hex').slice(0,16)
       : null,
@@ -196,6 +203,7 @@ export function createHmacSha256ReceiptVerifier({providerKey, secret, parseEvent
   return Object.freeze({
     providerKey:key,
     async verify({rawBody, headers} = {}) {
+      if (!(typeof rawBody === 'string' || Buffer.isBuffer(rawBody) || rawBody instanceof Uint8Array)) return {verified:false, event:null};
       const bytes = rawReceiptBytes(rawBody);
       const suppliedRaw = normalizeHeaders(headers).get(headerName) ?? '';
       const supplied = suppliedRaw.toLowerCase().startsWith('sha256=') ? suppliedRaw.slice(7) : suppliedRaw;
@@ -226,7 +234,10 @@ export function createPostgresAgencySupplierDeliveryReceiptStore({query} = {}) {
         requiredIso(record.eventAt, 'eventAt'),
         requiredIso(record.receivedAt, 'receivedAt'),
         requiredString(record.eventFingerprint, 'eventFingerprint', 16).toLowerCase(),
+        record.attemptNumber === null || record.attemptNumber === undefined ? null : Number(record.attemptNumber),
       ];
+      if (values[10] !== null && (!Number.isInteger(values[10]) || values[10] < 1 || values[10] > 1000)) throw new TypeError('attemptNumber must be a positive integer');
+      if (values[5] === 'definitively_not_sent' && values[10] === null) throw new TypeError('attemptNumber is required for definitively_not_sent');
       const result = await query(RECONCILE_SQL, values);
       const row = result?.rows?.[0];
       if (!row) throw new Error('unexpected_receipt_store_result');
@@ -299,6 +310,7 @@ export async function reconcileAgencySupplierDeliveryReceipt({tenantId, rawBody,
     delivery_not_found:'receipt_delivery_not_found',
     channel_mismatch:'receipt_channel_mismatch',
     provider_message_ref_mismatch:'receipt_provider_message_ref_mismatch',
+    attempt_mismatch:'receipt_attempt_mismatch',
     event_before_delivery:'receipt_event_before_delivery',
   };
   if (rejectedByStore[storeResult?.result]) return reject(rejectedByStore[storeResult.result], event, storeResult);
