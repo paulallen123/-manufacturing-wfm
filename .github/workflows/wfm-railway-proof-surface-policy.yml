@@ -1,0 +1,53 @@
+name: WFM Railway proof-surface policy fixtures
+
+on:
+  push:
+    branches:
+      - 'autonomy/**'
+    paths:
+      - '.github/workflows/wfm-railway-proof-surface-policy.yml'
+      - 'scripts/railway-proof-surface-classifier.mjs'
+      - 'tests/railway-proof-surface-fixtures.json'
+      - 'resilience/railway-proof-surface-policy.json'
+      - 'resilience/evidence/2026-09-18-railway-proof-surface-snapshot.json'
+      - 'resilience/incidents/2026-09-18-railway-proof-service-admission-drift.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-policy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+      - name: Run deterministic proof-surface fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import {classifySnapshot} from './scripts/railway-proof-surface-classifier.mjs';
+          const data=JSON.parse(fs.readFileSync('tests/railway-proof-surface-fixtures.json','utf8'));
+          let failed=0;
+          for(const c of data.cases){
+            const out=classifySnapshot({policy:data.policy,services:[c.service]});
+            const svc=out.services[0];
+            const got=svc.findings.map(x=>x.code).sort();
+            const expected=[...c.expected.codes].sort();
+            const ok=svc.can_count_as_hosted_proof===c.expected.eligible && JSON.stringify(got)===JSON.stringify(expected);
+            console.log(`${ok?'PASS':'FAIL'} ${c.name} eligible=${svc.can_count_as_hosted_proof} codes=${got.join(',')}`);
+            if(!ok) failed++;
+          }
+          if(failed) process.exit(1);
+          console.log(`RAILWAY_PROOF_SURFACE_FIXTURES=${data.cases.length}/${data.cases.length}`);
+          NODE
+      - name: Classify preserved live snapshot without mutating Railway
+        run: node scripts/railway-proof-surface-classifier.mjs resilience/evidence/2026-09-18-railway-proof-surface-snapshot.json
