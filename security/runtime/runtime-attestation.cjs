@@ -1,8 +1,10 @@
 'use strict';
 
 const crypto = require('node:crypto');
+const fs = require('node:fs');
 
 const SHA256_RE = /^[a-f0-9]{64}$/i;
+const IMAGE_RUNTIME_ID_PATH = '/app/security-runtime/runtime-sha256';
 
 function attestationError(code, message) {
   const error = new Error(message);
@@ -18,8 +20,19 @@ function normalizeDigest(value, code, label) {
   return digest;
 }
 
+function readImageRuntimeSha256() {
+  try {
+    return fs.readFileSync(IMAGE_RUNTIME_ID_PATH, 'utf8');
+  } catch {
+    throw attestationError(
+      'WFM_RUNTIME_ATTESTATION_IMAGE_UNAVAILABLE',
+      'Sealed image runtime identity is unavailable.'
+    );
+  }
+}
+
 function assertRuntimeAttestation({
-  imageRuntimeSha256 = process.env.WFM_IMAGE_RUNTIME_SHA256,
+  imageRuntimeSha256 = readImageRuntimeSha256(),
   configuredRuntimeSha256 = process.env.WFM_RUNTIME_SHA256
 } = {}) {
   const imageDigest = normalizeDigest(
