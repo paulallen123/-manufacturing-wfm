@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "name": "role-render-convergence-admission",
+  "purpose": "Prevent authenticated API success or a non-trivial generic HTML shell from being misclassified as proof that a role-specific UI is usable.",
+  "required_roles": {
+    "manager": "manager",
+    "employee": "employee",
+    "payroll": "payroll_admin",
+    "company-admin": "director"
+  },
+  "known_generic_shell_sha256": [
+    "c0e1b662b6e457337c0d81ffeb4666393726b66f9d8840117c386c6d815f7a05"
+  ],
+  "minimum_accessible_interactive_controls": 1,
+  "minimum_rendered_dom_bytes": 1000,
+  "required_context_assertions": [
+    "authenticatedBootstrapAfterNavigation"
+  ],
+  "admission_rules": [
+    "Each required role must exist in both the fresh-browser context proof and the later accessibility diagnostic.",
+    "A known generic-shell fingerprint may be observed during initial browser convergence, but it can never be accepted as the final role-ready state.",
+    "The final diagnostic must have at least one accessible interactive control and must report pass=true.",
+    "A screenshot timeout is diagnostic evidence, not by itself proof of a product defect; it becomes material when correlated with a generic shell or zero accessible controls.",
+    "API authentication, tenant binding and authorization success are necessary but are not sufficient proof of usable role rendering.",
+    "Role rendering must fail closed without weakening tenant, payroll, credential, provenance or autonomy controls."
+  ],
+  "diagnostic_capture_on_failure": [
+    "DOM hash progression",
+    "DOM length progression",
+    "document.readyState",
+    "accessibility interactive-control count",
+    "browser console exceptions",
+    "Runtime.exceptionThrown",
+    "Network.loadingFailed",
+    "same-origin resource response failures",
+    "main-thread responsiveness probe",
+    "final screenshot attempt status"
+  ]
+}

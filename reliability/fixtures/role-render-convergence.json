@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "observed_failure": {
+    "context": {
+      "result": "PASS",
+      "roles": [
+        {"slug":"manager","role":"manager","rendered":{"domLength":3973,"domSha256":"c0e1b662b6e457337c0d81ffeb4666393726b66f9d8840117c386c6d815f7a05","authenticatedBootstrapAfterNavigation":true}},
+        {"slug":"employee","role":"employee","rendered":{"domLength":3973,"domSha256":"c0e1b662b6e457337c0d81ffeb4666393726b66f9d8840117c386c6d815f7a05","authenticatedBootstrapAfterNavigation":true}},
+        {"slug":"payroll","role":"payroll_admin","rendered":{"domLength":3997,"domSha256":"92ff0c9351486ef1044bfb5a16a5b061e4cdbacd76939f43c63e312be3eb8ccd","authenticatedBootstrapAfterNavigation":true}},
+        {"slug":"company-admin","role":"director","rendered":{"domLength":3973,"domSha256":"c0e1b662b6e457337c0d81ffeb4666393726b66f9d8840117c386c6d815f7a05","authenticatedBootstrapAfterNavigation":true}}
+      ]
+    },
+    "diagnostic": {
+      "pass": false,
+      "roles": [
+        {"slug":"manager","role":"manager","htmlLength":46556,"htmlSha256":"4547a4289cfc2b58a00fad6d3cf4ac6ca29be57a38bd51614607e58060157927","controlCount":14,"screenshotStatus":"PASS","pass":true},
+        {"slug":"employee","role":"employee","htmlLength":3973,"htmlSha256":"c0e1b662b6e457337c0d81ffeb4666393726b66f9d8840117c386c6d815f7a05","controlCount":0,"screenshotStatus":"BLOCKED:Page.captureScreenshot timeout","pass":false},
+        {"slug":"payroll","role":"payroll_admin","htmlLength":12235,"htmlSha256":"9a438263591b89e503b8f71a6558ec36b25b6f9e3a2645ebc5291573a538e62f","controlCount":13,"screenshotStatus":"PASS","pass":true},
+        {"slug":"company-admin","role":"director","htmlLength":54309,"htmlSha256":"ba4dcb3331bf603b58a1b0329a9d7614cf85ee18feaafef8b367454642c48acc","controlCount":14,"screenshotStatus":"PASS","pass":true}
+      ]
+    }
+  },
+  "false_green_variant": {
+    "description": "Simulates the old weak oracle incorrectly setting the employee diagnostic pass flag to true while the role remains on the generic shell with zero controls.",
+    "employee_override": {"pass":true}
+  },
+  "healthy_variant": {
+    "description": "Synthetic recovery fixture: the employee converges to a different final DOM and exposes bounded interactive controls.",
+    "employee_override": {
+      "htmlLength":11842,
+      "htmlSha256":"d82b8f9d06a601e0475638a0d1d3a0120f522574cfcc1c78ef64b8137b5b2480",
+      "controlCount":6,
+      "screenshotStatus":"PASS",
+      "pass":true
+    }
+  },
+  "screenshot_only_degradation_variant": {
+    "description": "A screenshot encoder/CDP capture problem must not become a role-render product failure when the final non-generic DOM and accessible controls are healthy.",
+    "manager_override": {"screenshotStatus":"BLOCKED:synthetic capture failure"}
+  }
+}

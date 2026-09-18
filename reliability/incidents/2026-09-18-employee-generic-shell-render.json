@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "incident_id": "WFM-REL-2026-09-18-ROLE-RENDER-CONVERGENCE",
+  "detected_at_utc": "2026-09-18T06:50:14Z",
+  "latest_reproduction_at_utc": "2026-09-18T06:55:06Z",
+  "classification": {
+    "primary": "unknown",
+    "suspected": ["product_defect", "ux_render_defect"],
+    "confirmed_secondary": "test_defect",
+    "not_supported_by_evidence": ["deployment_outage", "tenant_isolation_failure", "payroll_authorization_failure"]
+  },
+  "deduplication": {
+    "new_incident_class": true,
+    "separate_known_issues_not_reopened": [
+      "provider-derived browser credential floor gap tracked by draft PR 73",
+      "unprotected main / required-check governance gap tracked by draft PR 45",
+      "Railway watch-pattern provenance gap tracked separately"
+    ]
+  },
+  "causal_timeline": [
+    {
+      "at_utc": "2026-09-18T06:48:26Z",
+      "event": "Railway customer-proof run 35316495688 started on main 2cbf657c3a2a11558d6813c4c348a56a1e43fb9e."
+    },
+    {
+      "at_utc": "2026-09-18T06:49:45Z",
+      "event": "Fresh-browser role-context proof reported PASS although manager, employee, company-admin and isolation-manager all produced the same 3973-byte DOM fingerprint c0e1b662b6e4..., demonstrating that authenticated API/bootstrap success plus non-trivial DOM length was too weak an oracle for role-specific UI readiness."
+    },
+    {
+      "at_utc": "2026-09-18T06:50:14Z",
+      "event": "Stricter accessibility inventory failed closed because the employee role exposed zero accessible interactive controls."
+    },
+    {
+      "at_utc": "2026-09-18T06:52:46Z",
+      "event": "Run 35316817797 started on newer main 31570633f1b4a0b5dea0f5504c79aaf2586c17f4 with evidence-preservation improvements."
+    },
+    {
+      "at_utc": "2026-09-18T06:54:14Z",
+      "event": "The weak role-context proof again reported PASS: manager, employee, company-admin and isolation-manager remained on the same 3973-byte generic-shell fingerprint; payroll showed a separate 3997-byte shell."
+    },
+    {
+      "at_utc": "2026-09-18T06:54:20Z",
+      "event": "Later convergence diagnostic showed manager had reached 46556 bytes with 14 controls."
+    },
+    {
+      "at_utc": "2026-09-18T06:54:57Z",
+      "event": "Employee remained at the 3973-byte generic-shell fingerprint, exposed zero controls, and screenshot capture timed out."
+    },
+    {
+      "at_utc": "2026-09-18T06:55:05Z",
+      "event": "Payroll reached 12235 bytes / 13 controls and company-admin reached 54309 bytes / 14 controls."
+    },
+    {
+      "at_utc": "2026-09-18T06:55:06Z",
+      "event": "Diagnostic failed only employee and preserved role evidence before exiting red."
+    }
+  ],
+  "observed_evidence": {
+    "railway_control_plane": "Customer-proof deployment remains SUCCESS; this is not evidence of a service outage.",
+    "health_and_security": [
+      "public /api/health returned 200 for 0.6.76-hosted-staging-rc1",
+      "unauthenticated bootstrap returned 401",
+      "tenant-isolation, kiosk, attendance-correction and authorization proofs passed",
+      "manager payroll boundary returned 403 as expected"
+    ],
+    "employee_final_render": {
+      "dom_length": 3973,
+      "dom_sha256": "c0e1b662b6e457337c0d81ffeb4666393726b66f9d8840117c386c6d815f7a05",
+      "accessible_interactive_controls": 0,
+      "screenshot_status": "BLOCKED:Page.captureScreenshot timeout"
+    },
+    "other_role_final_render": {
+      "manager": {"dom_length": 46556, "controls": 14},
+      "payroll": {"dom_length": 12235, "controls": 13},
+      "company-admin": {"dom_length": 54309, "controls": 14}
+    }
+  },
+  "inferred_root_cause": {
+    "confidence": "partial",
+    "statement": "The customer-proof service and employee API authorization are healthy, but the employee browser never converges from the shared generic shell to a usable role surface within the diagnostic window. The exact UI/runtime cause is not yet isolated. Separately, the earlier role-context test oracle was definitely defective because it treated generic-shell DOM length plus authenticated bootstrap as role-specific rendering proof."
+  },
+  "prevention": {
+    "rule": "No role-specific UI proof may pass solely from authentication/API success and non-trivial HTML. Required roles must converge away from known generic-shell fingerprints and expose accessible interactive controls in a paired final diagnostic.",
+    "machine_readable_policy": "reliability/role-render-admission-policy.json",
+    "validator": "scripts/validate-role-render-evidence.mjs",
+    "fixture": "reliability/fixtures/role-render-convergence.json",
+    "next_root_cause_capture": "On a failed role convergence, retain DOM hash/length progression, readyState, console/runtime exceptions, network loading failures, resource response failures and main-thread responsiveness before classification."
+  },
+  "metrics": {
+    "reproducibility": "2 consecutive main customer-proof runs reproduced employee non-convergence",
+    "first_material_detection_seconds_from_run_start": 108,
+    "latest_evidence_preservation_seconds_from_run_start": 142,
+    "recovery_path_quality": "No service restart/retry is indicated; hosted service stayed healthy. Recovery requires UI root-cause isolation/fix, followed by paired render admission proof.",
+    "prevention_coverage_change": "generic non-trivial DOM oracle -> cross-correlated authenticated context plus role-render convergence and accessibility admission"
+  },
+  "safety_boundary": "Evidence/prevention only. No Railway configuration, deployment, credential, tenant, payroll, workforce or production mutation is authorized by this record."
+}

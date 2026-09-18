@@ -1,0 +1,45 @@
+name: WFM role-render convergence prevention
+
+on:
+  push:
+    branches:
+      - main
+      - 'autonomy/**'
+    paths:
+      - '.github/workflows/wfm-role-render-convergence.yml'
+      - 'scripts/validate-role-render-evidence.mjs'
+      - 'scripts/test-role-render-admission.mjs'
+      - 'reliability/role-render-admission-policy.json'
+      - 'reliability/fixtures/role-render-convergence.json'
+      - 'reliability/incidents/2026-09-18-employee-generic-shell-render.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-role-render-convergence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prevention:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Prove role-render admission fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/test-role-render-admission.mjs
