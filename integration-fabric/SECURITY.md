@@ -5,10 +5,14 @@ The integration fabric is intentionally safer than a generic "connect to anythin
 - **No arbitrary URL probing.** Public probes may only use URLs already committed to the reviewed registry.
 - **No credentials in Git.** OAuth secrets, API keys, passwords, client certificates and tenant tokens belong at the executor boundary.
 - **Read-only first.** `writeEnabled` is false across the registry. Writes are enabled per connector only after sandbox evidence, idempotency/replay controls and customer authorisation.
+- **Non-destructive messaging discovery.** Queue/topic discovery must use browse, mirror, tap, dedicated subscription or an explicitly authorised test queue where the platform supports it. A passive WFM connector must never destructively consume, acknowledge or remove an existing production message simply to prove connectivity. JMS/AMQP/Kafka adapters must preserve provider-specific acknowledgement, offset, transaction, selector, redelivery and dead-letter semantics.
 - **Plant-network separation.** OPC UA, MQTT, BACnet and Modbus should normally terminate at a customer/site edge gateway. The cloud service should not scan production VLANs.
-- **Data minimisation.** Canonical mapping should ingest only fields needed for workforce, production, cost, compliance and decision workflows.
+- **Industrial control writes are separately gated.** The existence of an OPC UA/MQTT/REST write or method-call capability does not permit WFM to use it. Machine, PLC, BMS, door/access and safety-system control requires an explicit business case, customer authorisation, sandbox/site test, rollback design and a separate production safety review.
+- **Data minimisation.** Canonical mapping should ingest only fields needed for workforce, production, cost, compliance and decision workflows. Category-derived opportunity profiles are planning hypotheses and must not be used to justify collecting fields that the implemented workflow does not require.
+- **Sensitive workforce segregation.** Payroll, identity, access-control and authentication-event data require narrower scopes and retention than general production telemetry. Correlation should prefer stable pseudonymous worker keys over copying unnecessary personal data.
 - **Replay/idempotency.** Webhooks, files and event streams require a source event ID or deterministic dedupe key.
 - **Rate limits.** Each vendor adapter must honour vendor-specific throttling and Retry-After semantics.
 - **Version drift.** API versions and schema fingerprints are evidence inputs; a changed contract degrades the connector until compatibility is re-proven.
 - **Tenant isolation.** Connection configuration and tokens are scoped to one customer tenant/site boundary and never reused between customers.
+- **Regional routing.** Where vendors expose region-specific endpoints, the connector must bind the tenant to the configured region and must not silently fail over across data-residency boundaries.
 - **Diagnostic redaction.** Logs may include connector ID, status, latency and correlation IDs, but not reusable credentials or raw sensitive payloads.
