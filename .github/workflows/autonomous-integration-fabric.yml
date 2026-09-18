@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   prove-autonomous-integration-fabric:
-    if: github.actor == github.repository_owner
+    if: github.repository == 'paulallen123/-manufacturing-wfm' && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/feature/autonomous-integration-fabric-v1') || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
