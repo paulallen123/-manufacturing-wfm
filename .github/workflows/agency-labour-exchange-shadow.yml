@@ -7,9 +7,11 @@ on:
     paths:
       - 'src/frontier/agency-labour-exchange.mjs'
       - 'src/frontier/agency-labour-performance.mjs'
+      - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'test/frontier/agency-labour-exchange.test.mjs'
       - 'test/frontier/agency-labour-performance.test.mjs'
+      - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
       - '.github/workflows/agency-labour-exchange-shadow.yml'
       - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
@@ -39,4 +41,5 @@ jobs:
             node --test \
               test/frontier/agency-labour-exchange.test.mjs \
               test/frontier/agency-labour-performance.test.mjs \
+              test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs
