@@ -40,7 +40,7 @@ jobs:
           echo '=== LOGIN CLIENT CONTRACT ==='
           grep -RInE -C 8 "/api/login|login-email|login-password|Sign in|superuser@" /tmp/wfm-passkey-inspect/public --include='*.js' --include='*.html' | head -n 520 || true
 
-          echo '=== DB TABLE INFO FROM CLEAN BOOT ==='
+          echo '=== REQUEST SOURCE MODULE ==='\n          sed -n '1,240p' /tmp/wfm-passkey-inspect/lib/request-source.cjs || true\n\n          echo '=== DB TABLE INFO FROM CLEAN BOOT ==='
           docker build --pull=false -t wfm-passkey-inspect:branch .
           docker run -d --name wfm-passkey-inspect-run --network host             -e PORT=4199             -e NODE_ENV=staging             -e NODE_OPTIONS=--experimental-sqlite             -e WFM_DB=/tmp/wfm-passkey-inspect.sqlite             -e WFM_STAGING_PASSWORD='PasskeyInspectOnly-DoNotUse-1234!'             wfm-passkey-inspect:branch
           trap 'docker rm -f wfm-passkey-inspect-run >/dev/null 2>&1 || true' EXIT
