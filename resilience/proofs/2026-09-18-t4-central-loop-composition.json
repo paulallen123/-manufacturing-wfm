@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-18T21:22:00Z",
+  "currentBranch": "autonomy/zero-engineer-support-sprint-20260918",
+  "pullRequest": 86,
+  "sourceHeadBeforeProofRecord": "405d5f42210974ed6c6338b877a276ee3850af05",
+  "tiersAdvanced": ["T4"],
+  "codeConfigActuallyChanged": [
+    "resilience/autonomy-control-loop.cjs",
+    "scripts/validate-autonomy-control-loop.mjs"
+  ],
+  "testsChaosProofsActuallyRun": [
+    {
+      "kind": "local-synthetic-logic-harness",
+      "runtime": "Node 22.16.0",
+      "status": "PASS",
+      "claims": {
+        "explicitT4ScenarioClassesRoutedThroughController": 13,
+        "crossTenantContainedInsideT4": true,
+        "unknownFailureFailsSafeThroughT4": true,
+        "authorityEscapeContained": true,
+        "invalidT4ReceiptContained": true
+      }
+    },
+    {
+      "kind": "syntax-check",
+      "runtime": "Node 22.16.0",
+      "status": "PASS",
+      "targets": [
+        "resilience/autonomy-control-loop.cjs",
+        "scripts/validate-autonomy-control-loop.mjs"
+      ]
+    }
+  ],
+  "ciProviderHealth": {
+    "githubHostedActions": "PRE_EXECUTION_UNAVAILABLE",
+    "latestObservedRunId": 35396276123,
+    "runnerId": 0,
+    "stepsExecuted": 0,
+    "classification": "external CI evidence unavailable; not product/test failure"
+  },
+  "selectedLane": {
+    "type": "local-synthetic-logic-only",
+    "incrementalCostZero": true,
+    "customerImpactFree": true,
+    "productionWriteAuthority": false,
+    "exactApprovedRuntime": false,
+    "releaseEvidenceEligible": false
+  },
+  "defectsFoundAndFixed": [
+    {
+      "defect": "Central autonomy loop bypassed the dedicated T4 controller and used only coarse rollback/containment fallback.",
+      "fix": "All T4 cases now delegate to the dedicated containment controller when available and require a safe terminal result, authority invariants, valid terminal outcome, and controller receipt verification."
+    },
+    {
+      "defect": "Cross-tenant T4 incidents were short-circuited before T4-specific forensics/quarantine planning could run.",
+      "fix": "Cross-tenant incidents remain fail-closed but T4-class incidents are now passed into the dedicated T4 controller so deny/quarantine/forensic logic executes without permitting a cross-tenant mutation."
+    }
+  ],
+  "safeTerminalPathsAdded": [
+    "Every explicit T4 override routes through the dedicated T4 controller.",
+    "Unknown scenario IDs route through T4 unknown-fault isolation.",
+    "Cross-tenant T4 cases enter deterministic deny/quarantine handling while rollback remains ineligible.",
+    "T4 controller authority escape or unverifiable receipt is contained by the outer control loop.",
+    "T4 result payloads are now bound into the outer tamper-evident receipt."
+  ],
+  "openBlockers": [
+    "GitHub-hosted runners still fail before execution, preventing committed exact-runtime proof.",
+    "Local logic runtime is Node 22.16.0, not the approved exact Node 22.23.2 release runtime.",
+    "No eligible pre-existing zero-incremental-cost exact-runtime failover lane has been independently verified."
+  ],
+  "productionClaimBoundary": "No production, customer, payroll, identity, tenant, credential, DNS, paid-service or frozen customer-proof artifact was mutated. This is autonomy-development logic evidence only and is not release evidence.",
+  "singleNextHighestValueAction": "Run scripts/run-portable-autonomy-proof.mjs on the first verified zero-cost exact Node 22.23.2 execution lane; if GitHub remains unavailable, continue by strengthening immutable forensic-preservation and recovery-proof invariants without production mutation."
+}
