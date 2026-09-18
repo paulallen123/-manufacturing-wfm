@@ -35,6 +35,9 @@ function rollbackAnchor(value){
   }
   return value;
 }
+function releaseGradeSecurityRequired(){
+  return process.env.NODE_ENV==='production' || process.env.WFM_RELEASE_GRADE_SECURITY==='1';
+}
 function generation(value,label='Attendance rollback generation'){
   if(!Number.isSafeInteger(value) || value<0) throw new Error(`${label} must be a non-negative safe integer.`);
   return value;
@@ -65,6 +68,9 @@ export class AtomicSupervisorStateStore {
     this.activeKeyId=keyId(activeKeyId);
     if(!this.integrityKeys.has(this.activeKeyId)) throw new Error('Active attendance state integrity key is not trusted.');
     this.rollbackAnchor=rollbackAnchor(anchor);
+    if(releaseGradeSecurityRequired() && (typeof this.rollbackAnchor.currentState!=='function' || typeof this.rollbackAnchor.advanceCommitted!=='function')){
+      throw new Error('Release-grade attendance state requires a commitment-aware independent rollback authority.');
+    }
     this.needsRecovery=false;
     fs.mkdirSync(path.dirname(filePath),{recursive:true});
   }
