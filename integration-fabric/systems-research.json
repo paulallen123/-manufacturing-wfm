@@ -6,7 +6,8 @@
     "JSON-2",
     "Protobuf RPC/HTTP2",
     "AMQP",
-    "Schema Registry"
+    "Schema Registry",
+    "JMS"
   ],
   "overrides": [
     {
@@ -14,7 +15,7 @@
       "patch": {
         "testLevel": "tenant-authenticated",
         "evidenceRef": "github:private-repo:paulallen123/-manufacturing-wfm:pr-106",
-        "evidenceNote": "Authenticated GitHub connector read the private Manufacturing WFM repository and PR #106 during the 2026-09-18 integration review. Probe/write defaults remain read-only."
+        "evidenceNote": "Authenticated GitHub connector read the Manufacturing WFM repository and PR #106 during the 2026-09-18 integration review. Probe/write defaults remain read-only."
       }
     },
     {
@@ -36,13 +37,7 @@
     {
       "id": "odoo",
       "patch": {
-        "protocols": [
-          "JSON-2",
-          "REST",
-          "JSON-RPC",
-          "XML-RPC",
-          "REST-via-modules"
-        ],
+        "protocols": ["JSON-2", "REST", "JSON-RPC", "XML-RPC", "REST-via-modules"],
         "auth": "api-key-bearer",
         "researchStatus": "docs-verified",
         "docsUrl": "https://www.odoo.com/documentation/19.0/developer/reference/external_api.html",
@@ -57,6 +52,47 @@
         "evidenceUrl": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_1537861842.html",
         "evidenceNote": "NetSuite 2025.2 is the last planned SOAP endpoint. Oracle states SOAP web services will be unavailable from NetSuite 2028.2 and recommends SuiteTalk REST Web Services with OAuth 2.0 for new integrations."
       }
+    },
+    {
+      "id": "ptc-windchill",
+      "patch": {
+        "protocols": ["REST", "OData"],
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://support.ptc.com/help/windchill_rest_services/r2.7/en/windchill_rest_services/restapi/",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://support.ptc.com/help/windchill_rest_services/r2.7/en/windchill_rest_services/restapi/",
+        "evidenceNote": "PTC Windchill REST Services exposes OData domains with $metadata and an API catalogue/Swagger surface. Official domains include Product Management for parts/BOM, Change Management for change/problem/variance records and Document Management for documents/content. No tenant credentials were used."
+      }
+    },
+    {
+      "id": "aws-iot-sitewise",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.aws.amazon.com/iot-sitewise/latest/userguide/configure-sources.html",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://docs.aws.amazon.com/iot-sitewise/latest/userguide/configure-sources.html",
+        "evidenceNote": "AWS documents SiteWise Edge OPC UA sources, asset telemetry and gateway/source status. Node filters can constrain what is sent to cloud. Editing an OPC UA source restarts the gateway, so connector operations must treat configuration changes as a potential temporary ingestion interruption."
+      }
+    },
+    {
+      "id": "azure-iot-operations",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/howto-configure-opc-ua",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/howto-configure-opc-ua",
+        "evidenceNote": "Microsoft documents Azure IoT Operations devices/assets, OPC UA data points, streams and events flowing to its MQTT broker. OPC UA user authentication can be anonymous, username/password or X.509, separately from application certificate trust. Read and control operations also exist over MQTT/RPC, but WFM writes remain disabled."
+      }
+    },
+    {
+      "id": "sap-digital-manufacturing",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.sap.com/docs/sap-digital-manufacturing",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://help.sap.com/docs/sap-digital-manufacturing/apis/order-v2",
+        "evidenceNote": "SAP Digital Manufacturing publishes APIs for production orders and integration. Official integration guidance also documents direct-labour time records from Labor On/Labor Off, with approved duration and operation transferred to integrated SAP S/4HANA Cloud. This creates a high-value labour-to-production attribution path; no tenant credentials were used."
+      }
     }
   ],
   "systems": [
@@ -65,9 +101,7 @@
       "name": "SALTO Nebula",
       "category": "access-control",
       "priority": "P0",
-      "protocols": [
-        "Protobuf RPC/HTTP2"
-      ],
+      "protocols": ["Protobuf RPC/HTTP2"],
       "auth": "oauth2-client-credentials",
       "researchStatus": "docs-verified",
       "docsUrl": "https://developer.saltosystems.com/nebula/api/",
@@ -81,11 +115,7 @@
       "name": "Infor Workforce Management",
       "category": "wfm",
       "priority": "P1",
-      "protocols": [
-        "REST",
-        "OpenAPI",
-        "ION"
-      ],
+      "protocols": ["REST", "OpenAPI", "ION"],
       "auth": "oauth2-ion",
       "researchStatus": "docs-verified",
       "docsUrl": "https://docs.infor.com/wfm/",
@@ -113,12 +143,7 @@
       "name": "Google Cloud Application Integration",
       "category": "ipaas",
       "priority": "P1",
-      "protocols": [
-        "REST",
-        "OpenAPI",
-        "connectors",
-        "events"
-      ],
+      "protocols": ["REST", "OpenAPI", "connectors", "events"],
       "auth": "oauth2-iam",
       "researchStatus": "docs-verified",
       "docsUrl": "https://docs.cloud.google.com/application-integration/docs",
@@ -132,10 +157,7 @@
       "name": "Azure Service Bus",
       "category": "middleware-messaging",
       "priority": "P1",
-      "protocols": [
-        "AMQP 1.0",
-        "REST"
-      ],
+      "protocols": ["AMQP 1.0", "REST"],
       "auth": "entra-or-sas",
       "researchStatus": "docs-verified",
       "docsUrl": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-overview",
@@ -149,11 +171,7 @@
       "name": "Confluent Cloud",
       "category": "event-streaming",
       "priority": "P1",
-      "protocols": [
-        "Kafka protocol",
-        "REST",
-        "Schema Registry"
-      ],
+      "protocols": ["Kafka protocol", "REST", "Schema Registry"],
       "auth": "api-key-or-oauth2",
       "researchStatus": "docs-verified",
       "docsUrl": "https://docs.confluent.io/cloud/current/api.html/",
@@ -167,11 +185,7 @@
       "name": "Jitterbit Harmony",
       "category": "ipaas",
       "priority": "P2",
-      "protocols": [
-        "REST",
-        "OData",
-        "OpenAPI"
-      ],
+      "protocols": ["REST", "OData", "OpenAPI"],
       "auth": "enterprise",
       "researchStatus": "docs-verified",
       "docsUrl": "https://docs.jitterbit.com/api-manager/",
@@ -185,9 +199,7 @@
       "name": "IFS Ultimo",
       "category": "eam-cmms",
       "priority": "P1",
-      "protocols": [
-        "REST"
-      ],
+      "protocols": ["REST"],
       "auth": "api-key",
       "researchStatus": "docs-verified",
       "docsUrl": "https://developer.ultimo.net/",
@@ -201,9 +213,7 @@
       "name": "Beckhoff TwinCAT OPC UA",
       "category": "scada-iiot",
       "priority": "P1",
-      "protocols": [
-        "OPC UA"
-      ],
+      "protocols": ["OPC UA"],
       "auth": "certificates-or-enterprise",
       "researchStatus": "docs-verified",
       "docsUrl": "https://infosys.beckhoff.com/",
@@ -217,12 +227,7 @@
       "name": "OneLogin",
       "category": "identity",
       "priority": "P1",
-      "protocols": [
-        "REST",
-        "SCIM 2.0",
-        "SAML",
-        "OIDC"
-      ],
+      "protocols": ["REST", "SCIM 2.0", "SAML", "OIDC"],
       "auth": "oauth2",
       "researchStatus": "docs-verified",
       "docsUrl": "https://developers.onelogin.com/docs/",
@@ -236,11 +241,7 @@
       "name": "Axway B2Bi",
       "category": "edi-b2b",
       "priority": "P2",
-      "protocols": [
-        "EDI",
-        "AS2",
-        "REST"
-      ],
+      "protocols": ["EDI", "AS2", "REST"],
       "auth": "enterprise",
       "researchStatus": "docs-verified",
       "docsUrl": "https://docs.axway.com/bundle/B2Bi_26_AdministratorGuide_allOS_en_HTML5/page/Content/Transports/HTTP/http_create_RESTAPI.htm",
@@ -254,9 +255,7 @@
       "name": "Veeva Vault Quality",
       "category": "qms",
       "priority": "P2",
-      "protocols": [
-        "REST"
-      ],
+      "protocols": ["REST"],
       "auth": "oauth2-oidc",
       "researchStatus": "docs-verified",
       "docsUrl": "https://general.veevavault.dev/",
@@ -264,6 +263,48 @@
       "writeEnabled": false,
       "evidenceUrl": "https://general.veevavault.dev/",
       "evidenceNote": "Veeva Vault provides a documented API platform for integrations and requires OAuth 2.0/OpenID Connect for Vault API authentication in modern SSO configurations."
+    },
+    {
+      "id": "ibm-mq",
+      "name": "IBM MQ",
+      "category": "middleware-messaging",
+      "priority": "P1",
+      "protocols": ["AMQP 1.0", "JMS", "REST"],
+      "auth": "enterprise-tls",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.ibm.com/docs/en/ibm-mq/9.4.x?topic=api-rest-messaging",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://www.ibm.com/docs/en/ibm-mq/9.4.x?topic=api-rest-messaging",
+      "evidenceNote": "IBM MQ 9.4 documents messaging REST APIs, JMS APIs and AMQP 1.0 client support. REST can put, browse or destructively get messages; the WFM fabric must prefer non-destructive browse/read patterns and keep publish/consume semantics gated until a customer topology is understood."
+    },
+    {
+      "id": "jumpcloud",
+      "name": "JumpCloud",
+      "category": "identity",
+      "priority": "P1",
+      "protocols": ["REST", "SCIM 2.0", "SAML", "OIDC"],
+      "auth": "api-key",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://jumpcloud.com/support/jumpcloud-apis",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://jumpcloud.com/support/directory-insights-api",
+      "evidenceNote": "JumpCloud documents REST v1/v2 APIs, SCIM 2.0 lifecycle integration and Directory Insights event access including system logins and SAML/RADIUS/LDAP authentications. API keys are administrator-associated and regional endpoints differ, so least privilege and data minimisation are critical."
+    },
+    {
+      "id": "sap-fieldglass",
+      "name": "SAP Fieldglass External Workforce Management",
+      "category": "external-workforce",
+      "priority": "P1",
+      "protocols": [],
+      "auth": "enterprise",
+      "researchStatus": "market-verified-api-research-required",
+      "docsUrl": "https://www.sap.com/products/spend-management/fieldglass-external-workforce-management.html",
+      "testLevel": "discovery-queued",
+      "writeEnabled": false,
+      "evidenceUrl": "https://www.sap.com/products/spend-management/fieldglass-external-workforce-management.html",
+      "evidenceNote": "SAP documents Fieldglass as an external-workforce platform with worker profile management, ERP integration, real-time reporting and cost/compliance optimisation. Public protocol-level documentation was not sufficient in this review, so it remains discovery-queued until a supported technical integration surface is verified."
     }
   ]
 }
