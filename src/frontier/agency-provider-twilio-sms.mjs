@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-export const AGENCY_TWILIO_SMS_PROVIDER_VERSION = 'agency-twilio-sms-provider-v0.1.0';
+export const AGENCY_TWILIO_SMS_PROVIDER_VERSION = 'agency-twilio-sms-provider-v0.1.1';
 export const AGENCY_TWILIO_SMS_PROVIDER_KEY = 'twilio_sms';
 
 const TWILIO_SID = /^SM[0-9A-Za-z]{32}$/;
@@ -127,15 +127,19 @@ export function createTwilioSmsSender({messages, statusCallbackBaseUrl, from = n
       const sid = optionalString(result?.sid, 'Twilio MessageSid', 64);
       if (!sid || !TWILIO_SID.test(sid)) throw new Error('Twilio create did not return a valid MessageSid');
 
-      // A successful create only proves provider acceptance/queueing, not carrier delivery.
+      // A successful REST create only proves provider acceptance/queueing, not carrier delivery.
       // Keep the WFM delivery state conservative until an authenticated status callback confirms sent/delivered/read.
       return {status: 'unknown', providerMessageRef: sid};
     },
   });
 }
 
-export function createTwilioSmsReceiptVerifier({requestValidator, statusCallbackBaseUrl, deliveryId, expectedAccountSid} = {}) {
-  if (!requestValidator || typeof requestValidator.validate !== 'function') throw new TypeError('Twilio RequestValidator is required');
+export function createTwilioSmsReceiptVerifier({validateRequest, authToken, statusCallbackBaseUrl, deliveryId, expectedAccountSid} = {}) {
+  // twilio-node exports validateRequest(authToken, twilioHeader, fullUrl, params).
+  // Inject the official helper rather than reproducing Twilio's production signature algorithm here.
+  if (typeof validateRequest !== 'function') throw new TypeError('Twilio validateRequest function is required');
+  const token = cleanString(authToken, 'authToken', 200);
+  if (token.length < 16) throw new TypeError('authToken is unexpectedly short');
   const id = normalizeDeliveryId(deliveryId);
   const callbackUrl = twilioStatusCallbackUrl(statusCallbackBaseUrl, id);
   const accountSid = cleanString(expectedAccountSid, 'expectedAccountSid', 64);
@@ -154,7 +158,7 @@ export function createTwilioSmsReceiptVerifier({requestValidator, statusCallback
 
       const params = parseFormBody(rawBody);
       let valid = false;
-      try { valid = await requestValidator.validate(callbackUrl, params, signature); } catch { return {verified: false, event: null}; }
+      try { valid = await validateRequest(token, signature, callbackUrl, params); } catch { return {verified: false, event: null}; }
       if (valid !== true) return {verified: false, event: null};
 
       if (params.AccountSid !== accountSid) return {verified: false, event: null};
