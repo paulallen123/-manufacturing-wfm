@@ -102,7 +102,10 @@ test('feed gap in one site revokes only that site shift until reconciliation com
   const rb=b.certifier.certifyShift({tenant:'acme',site:'s6',shiftId:'s6-shift-1',nowMs:DAY+SHIFT+301_000,expectedSourceIds:['s6-door','s6-wifi'],sourceHealth:health(b.supervisor,'s6',DAY+SHIFT+301_000)});
   assert.equal(ra.claimLevel,'NOT_CERTIFIED');
   assert.equal(rb.claimLevel,'PASSIVE_AND_VERIFIED_100');
-  const [job]=a.supervisor.pendingRecovery({tenant:'acme',sourceId:'s5-wifi'}); a.supervisor.completeRecovery({jobId:job.jobId});
+  const [job]=a.supervisor.pendingRecovery({tenant:'acme',sourceId:'s5-wifi'});
+  assert.equal(a.supervisor.completeRecovery({jobId:job.jobId}),false);
+  a.supervisor.event({tenant:'acme',sourceId:'s5-wifi',providerEventId:'gap-backfill-11',observedAt:new Date(DAY+2000).toISOString(),receivedAtMs:DAY+4500,sequence:11});
+  assert.equal(a.supervisor.completeRecovery({jobId:job.jobId}),true);
   ra=a.certifier.certifyShift({tenant:'acme',site:'s5',shiftId:'s5-shift-1',nowMs:DAY+SHIFT+301_000,expectedSourceIds:['s5-door','s5-wifi'],sourceHealth:health(a.supervisor,'s5',DAY+SHIFT+301_000)});
   assert.equal(ra.claimLevel,'PASSIVE_AND_VERIFIED_100');
 });
