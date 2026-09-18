@@ -16,6 +16,7 @@ const jsFiles = [
   'resilience/provider-recovery-handoff.cjs',
   'resilience/t3-shadow-simulator.cjs',
   'resilience/t3-shadow-verifier.cjs',
+  'resilience/t3-customer-authorisation-gate.cjs',
   'resilience/autonomy-control-loop.cjs',
   'resilience/ci-provider-failover.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
@@ -32,6 +33,7 @@ const jsFiles = [
   'scripts/validate-canary-rollback-controller.mjs',
   'scripts/validate-autonomous-repair-canary-orchestrator.mjs',
   'scripts/validate-t3-shadow-support.mjs',
+  'scripts/validate-t3-customer-authorisation-gate.mjs',
   'scripts/validate-autonomy-control-loop.mjs',
 ];
 
@@ -53,6 +55,7 @@ for (const rel of [
   'resilience/autonomous-repair-canary-orchestrator.cjs',
   'resilience/t3-shadow-simulator.cjs',
   'resilience/t3-shadow-verifier.cjs',
+  'resilience/t3-customer-authorisation-gate.cjs',
 ]) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
   for (const forbidden of ["require('node:http')", "require('node:https')", "require('node:net')", 'process.env', 'fetch(']) {
@@ -74,6 +77,7 @@ const requiredWorkflowPaths = [
   "      - 'resilience/autonomous-repair-canary-orchestrator.cjs'",
   "      - 'resilience/t3-shadow-simulator.cjs'",
   "      - 'resilience/t3-shadow-verifier.cjs'",
+  "      - 'resilience/t3-customer-authorisation-gate.cjs'",
   "      - 'resilience/autonomy-control-loop.cjs'",
   "      - 'scripts/validate-autonomous-repair-factory.mjs'",
   "      - 'scripts/validate-isolated-repair-worker.mjs'",
@@ -83,6 +87,7 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-canary-rollback-controller.mjs'",
   "      - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'",
   "      - 'scripts/validate-t3-shadow-support.mjs'",
+  "      - 'scripts/validate-t3-customer-authorisation-gate.mjs'",
   "      - 'scripts/validate-autonomy-control-loop.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
   "      - 'scripts/run-portable-autonomy-proof.mjs'",
@@ -110,6 +115,8 @@ console.log(JSON.stringify({
   repairToCanaryOrchestratorAmbientEnvironmentDenied: true,
   t3ShadowDirectNetworkSurfaceDenied: true,
   t3ShadowAmbientEnvironmentDenied: true,
+  t3CustomerAuthorisationDirectNetworkSurfaceDenied: true,
+  t3CustomerAuthorisationAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
   workflowCriticalPathsPresent: true,
   productionMutation: false,
