@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-18",
+  "purpose": "Additive research overlay for newly verified systems, protocol families and evidence corrections. This file does not grant provider certification or enable writes.",
+  "protocolFamilies": [
+    "JSON-2",
+    "Protobuf RPC/HTTP2",
+    "AMQP",
+    "Schema Registry"
+  ],
+  "overrides": [
+    {
+      "id": "github",
+      "patch": {
+        "testLevel": "tenant-authenticated",
+        "evidenceRef": "github:private-repo:paulallen123/-manufacturing-wfm:pr-106",
+        "evidenceNote": "Authenticated GitHub connector read the private Manufacturing WFM repository and PR #106 during the 2026-09-18 integration review. Probe/write defaults remain read-only."
+      }
+    },
+    {
+      "id": "railway",
+      "patch": {
+        "testLevel": "tenant-authenticated",
+        "evidenceRef": "railway:list-projects:2026-09-18",
+        "evidenceNote": "Authenticated Railway connector returned the user's accessible Manufacturing WFM projects during the 2026-09-18 integration review. No deployment mutation was performed."
+      }
+    },
+    {
+      "id": "microsoft-sharepoint-onedrive",
+      "patch": {
+        "testLevel": "tenant-authenticated",
+        "evidenceRef": "microsoft-graph:list-drives:2026-09-18",
+        "evidenceNote": "Delegated Microsoft Graph connection returned the signed-in user's visible OneDrive during the 2026-09-18 integration review. No file mutation was performed."
+      }
+    },
+    {
+      "id": "odoo",
+      "patch": {
+        "protocols": [
+          "JSON-2",
+          "REST",
+          "JSON-RPC",
+          "XML-RPC",
+          "REST-via-modules"
+        ],
+        "auth": "api-key-bearer",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.odoo.com/documentation/19.0/developer/reference/external_api.html",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://www.odoo.com/documentation/19.0/developer/reference/external_api.html",
+        "evidenceNote": "Odoo 19 introduced External JSON-2 at /json/2 with bearer API keys. Legacy /xmlrpc, /xmlrpc/2 and /jsonrpc external RPC APIs are deprecated from 19.0; the db service is removed in Odoo 20 and common/object services are scheduled for removal in Odoo 22."
+      }
+    },
+    {
+      "id": "oracle-netsuite",
+      "patch": {
+        "evidenceUrl": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_1537861842.html",
+        "evidenceNote": "NetSuite 2025.2 is the last planned SOAP endpoint. Oracle states SOAP web services will be unavailable from NetSuite 2028.2 and recommends SuiteTalk REST Web Services with OAuth 2.0 for new integrations."
+      }
+    }
+  ],
+  "systems": [
+    {
+      "id": "salto-nebula",
+      "name": "SALTO Nebula",
+      "category": "access-control",
+      "priority": "P0",
+      "protocols": [
+        "Protobuf RPC/HTTP2"
+      ],
+      "auth": "oauth2-client-credentials",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://developer.saltosystems.com/nebula/api/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://developer.saltosystems.com/nebula/api/",
+      "evidenceNote": "Official Nebula documentation defines RPC over standard HTTP/2 using Protocol Buffers, OAuth 2.0 client-credentials authentication, and an Events API suitable for access-event ingestion. No tenant credentials were used."
+    },
+    {
+      "id": "infor-workforce-management",
+      "name": "Infor Workforce Management",
+      "category": "wfm",
+      "priority": "P1",
+      "protocols": [
+        "REST",
+        "OpenAPI",
+        "ION"
+      ],
+      "auth": "oauth2-ion",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.infor.com/wfm/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://docs.infor.com/wfm/",
+      "evidenceNote": "Infor documents a WFM public API with Swagger documentation and ION API integration using API-consumer/OAuth credentials. No tenant or sandbox authentication was attempted."
+    },
+    {
+      "id": "adp-workforce-suite",
+      "name": "ADP WorkForce Suite",
+      "category": "wfm",
+      "priority": "P1",
+      "protocols": [],
+      "auth": "enterprise",
+      "researchStatus": "market-verified-api-research-required",
+      "docsUrl": "https://workforcesoftware.com/",
+      "testLevel": "discovery-queued",
+      "writeEnabled": false,
+      "evidenceUrl": "https://workforcesoftware.com/",
+      "evidenceNote": "ADP WorkForce Suite is a distinct global enterprise WFM product, including manufacturing, and advertises integration with HCM platforms. Public protocol-level documentation was not sufficient in this review, so it remains discovery-queued rather than spec-verified."
+    },
+    {
+      "id": "google-cloud-application-integration",
+      "name": "Google Cloud Application Integration",
+      "category": "ipaas",
+      "priority": "P1",
+      "protocols": [
+        "REST",
+        "OpenAPI",
+        "connectors",
+        "events"
+      ],
+      "auth": "oauth2-iam",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.cloud.google.com/application-integration/docs",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://docs.cloud.google.com/application-integration/docs/reference/rest",
+      "evidenceNote": "Google documents Application Integration as an iPaaS with v1/v2 REST resources at integrations.googleapis.com and OpenAPI 3.0.1 generation for published API-trigger integrations."
+    },
+    {
+      "id": "azure-service-bus",
+      "name": "Azure Service Bus",
+      "category": "middleware-messaging",
+      "priority": "P1",
+      "protocols": [
+        "AMQP 1.0",
+        "REST"
+      ],
+      "auth": "entra-or-sas",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-overview",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-overview",
+      "evidenceNote": "Azure Service Bus supports AMQP 1.0. Microsoft will retire the legacy WindowsAzure.ServiceBus, Microsoft.Azure.ServiceBus and com.microsoft.azure.servicebus libraries and end SBMP protocol support on 2026-09-30; new fabric work must not depend on SBMP."
+    },
+    {
+      "id": "confluent-cloud",
+      "name": "Confluent Cloud",
+      "category": "event-streaming",
+      "priority": "P1",
+      "protocols": [
+        "Kafka protocol",
+        "REST",
+        "Schema Registry"
+      ],
+      "auth": "api-key-or-oauth2",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.confluent.io/cloud/current/api.html/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://docs.confluent.io/cloud/current/sr/sr-rest-apis.html",
+      "evidenceNote": "Confluent Cloud exposes Kafka plus Schema Registry REST APIs. Schema Registry supports resource-scoped API keys and OAuth; production integrations should use service identities rather than user-bound keys."
+    },
+    {
+      "id": "jitterbit-harmony",
+      "name": "Jitterbit Harmony",
+      "category": "ipaas",
+      "priority": "P2",
+      "protocols": [
+        "REST",
+        "OData",
+        "OpenAPI"
+      ],
+      "auth": "enterprise",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.jitterbit.com/api-manager/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://docs.jitterbit.com/api-manager/",
+      "evidenceNote": "Jitterbit API Manager exposes Harmony operations as custom APIs, OData services or proxy APIs through security-enforced gateways and can generate OpenAPI documentation."
+    },
+    {
+      "id": "ifs-ultimo",
+      "name": "IFS Ultimo",
+      "category": "eam-cmms",
+      "priority": "P1",
+      "protocols": [
+        "REST"
+      ],
+      "auth": "api-key",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://developer.ultimo.net/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://developer.ultimo.net/",
+      "evidenceNote": "Ultimo's official developer documentation describes a REST API for importing, exporting, updating and deleting data. No authenticated requests were made."
+    },
+    {
+      "id": "beckhoff-twincat-opcua",
+      "name": "Beckhoff TwinCAT OPC UA",
+      "category": "scada-iiot",
+      "priority": "P1",
+      "protocols": [
+        "OPC UA"
+      ],
+      "auth": "certificates-or-enterprise",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://infosys.beckhoff.com/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://infosys.beckhoff.com/",
+      "evidenceNote": "Beckhoff documents TwinCAT OPC UA Server capabilities including client/server operation, historical access and alarms/conditions. Plant connectivity remains edge-gateway-only and read-first."
+    },
+    {
+      "id": "onelogin",
+      "name": "OneLogin",
+      "category": "identity",
+      "priority": "P1",
+      "protocols": [
+        "REST",
+        "SCIM 2.0",
+        "SAML",
+        "OIDC"
+      ],
+      "auth": "oauth2",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://developers.onelogin.com/docs/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://developers.onelogin.com/docs/scim/",
+      "evidenceNote": "OneLogin provides OAuth 2.0-secured REST administration APIs and supports SCIM 1.1/2.0 provisioning, SAML and OIDC."
+    },
+    {
+      "id": "axway-b2bi",
+      "name": "Axway B2Bi",
+      "category": "edi-b2b",
+      "priority": "P2",
+      "protocols": [
+        "EDI",
+        "AS2",
+        "REST"
+      ],
+      "auth": "enterprise",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.axway.com/bundle/B2Bi_26_AdministratorGuide_allOS_en_HTML5/page/Content/Transports/HTTP/http_create_RESTAPI.htm",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://docs.axway.com/bundle/B2Bi_26_AdministratorGuide_allOS_en_HTML5/page/Content/Transports/AS2/trnsprt_AS2.htm",
+      "evidenceNote": "Axway B2Bi supports B2B/EDI flows including AS2 and can expose custom REST APIs for partners or backend applications."
+    },
+    {
+      "id": "veeva-vault-quality",
+      "name": "Veeva Vault Quality",
+      "category": "qms",
+      "priority": "P2",
+      "protocols": [
+        "REST"
+      ],
+      "auth": "oauth2-oidc",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://general.veevavault.dev/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://general.veevavault.dev/",
+      "evidenceNote": "Veeva Vault provides a documented API platform for integrations and requires OAuth 2.0/OpenID Connect for Vault API authentication in modern SSO configurations."
+    }
+  ]
+}
