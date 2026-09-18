@@ -30,6 +30,7 @@ const checks = [
   ['tier2-canary-blast-radius-known-good-rollback', 'scripts/validate-canary-rollback-controller.mjs', true],
   ['tier2-repair-to-canary-decision-composition', 'scripts/validate-autonomous-repair-canary-orchestrator.mjs', true],
   ['tier3-shadow-simulation', 'scripts/validate-t3-shadow-support.mjs', true],
+  ['tier3-customer-authorisation-consent-gate', 'scripts/validate-t3-customer-authorisation-gate.mjs', true],
   ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
 ];
 
