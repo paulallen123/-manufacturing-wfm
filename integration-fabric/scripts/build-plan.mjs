@@ -1,6 +1,7 @@
 import fs from 'node:fs';
+import {loadCatalog} from './load-catalog.mjs';
 
-const catalog=JSON.parse(fs.readFileSync(new URL('../systems.json',import.meta.url),'utf8'));
+const catalog=loadCatalog();
 const protocols=JSON.parse(fs.readFileSync(new URL('../protocol-profiles.json',import.meta.url),'utf8'));
 
 function profilesFor(system){
@@ -13,8 +14,9 @@ function profilesFor(system){
 function routeFor(system,profiles){
   if(system.category==='ipaas') return 'northbound-openapi-and-events';
   if(profiles.some(x=>['opcua','mqtt','bacnet','modbus'].includes(x))) return 'site-edge-gateway';
+  if(profiles.some(x=>['kafka','amqp','schema-registry'].includes(x))) return 'event-stream-adapter';
   if(profiles.includes('files-sftp')) return 'batch-ingestion';
-  if(profiles.some(x=>['rest-openapi','odata','soap','graphql','scim','webhooks-events'].includes(x))) return 'direct-cloud-adapter';
+  if(profiles.some(x=>['rest-openapi','odata','soap','graphql','scim','webhooks-events','protobuf-rpc-http2','legacy-rpc'].includes(x))) return 'direct-cloud-adapter';
   return 'vendor-research-required';
 }
 
@@ -33,6 +35,7 @@ const report={
   schemaVersion:1,
   generatedAt:new Date().toISOString(),
   claimBoundary:'Planning output only; a recommended route is not provider certification.',
+  catalogOverlay:catalog.researchOverlay || null,
   total:systems.length,
   coveredByReusableProfiles:systems.filter(x=>x.protocolProfiles.length>0).length,
   researchRequired:systems.filter(x=>x.protocolProfiles.length===0).length,
