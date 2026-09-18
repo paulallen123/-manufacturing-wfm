@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "incidentId": "REL-CI-2026-09-17-WORKFLOW-STEP-NAME-COUPLING",
+  "status": "mitigation-prepared-unmerged",
+  "classification": [
+    "test-defect",
+    "ci-observability"
+  ],
+  "customerImpact": "none-observed",
+  "productionMutation": false,
+  "timeline": [
+    {
+      "at": "2026-09-17T22:58:06Z",
+      "event": "WFM every-push security gate run 35284614110 started on autonomy/live-host-ux-proof at 22a872a1e19631eed386cf4417ae2bfbc55d7477."
+    },
+    {
+      "at": "2026-09-17T22:58:17Z",
+      "event": "Reject workflow-security regressions exited 1 without a specific invariant diagnostic."
+    },
+    {
+      "at": "2026-09-17T23:01:55Z",
+      "event": "Main security gate run 35284915763 passed after the Railway workflow again matched the exact display-name string expected by the shell gate."
+    },
+    {
+      "at": "2026-09-17T23:36:06Z",
+      "event": "Replacement validator regression fixtures and repository scan passed on Node 22.23.2 in run 35287557620."
+    }
+  ],
+  "rootCause": {
+    "observed": "The old gate searched for the exact step display name 'Bootstrap exact existing Railway customer-proof service'. The failing branch renamed that step to 'Upload exact merged UX source to existing customer-proof service' while keeping RAILWAY_TOKEN step-scoped.",
+    "mechanism": "With set -euo pipefail, grep inside command substitution returned non-zero and terminated the step before the intended scope diagnostic executed.",
+    "systemicLearning": "Security validation must bind to security-significant structure and values, not presentation labels. Gate failures must emit stable machine-readable reasons before exiting."
+  },
+  "detection": {
+    "before": "manual Actions-log inspection plus source comparison was required to isolate the silent exit",
+    "after": "dependency-free validator emits WFM_WORKFLOW_SECURITY:<code>:<message> and reports the structurally scoped secret step",
+    "meanDetectionEffortMeasured": false
+  },
+  "reproductionFixtures": [
+    {
+      "name": "harmless-step-rename",
+      "expected": "pass",
+      "purpose": "Proves a display-name change does not fail when the credential remains uniquely scoped to the same step env block."
+    },
+    {
+      "name": "secret-outside-env",
+      "expected": "fail:SECRET_SCOPE",
+      "purpose": "Proves credential references outside a step env block fail closed."
+    },
+    {
+      "name": "duplicate-secret-consumption",
+      "expected": "fail:SECRET_COUNT",
+      "purpose": "Proves duplicate credential consumption fails closed."
+    }
+  ],
+  "preventionRules": [
+    "Validate credential scope structurally rather than by workflow step display name.",
+    "Require exactly one approved credential reference in each explicitly allowlisted workflow.",
+    "Require the credential assignment to be nested under the env block of one named step.",
+    "Keep owner-only execution, pinned runner/actions, fixed Railway target IDs, sealed runtime digest and read-only repository permissions fail-closed.",
+    "Reject untrusted workflow triggers, unreviewed secret use, mutable action references and public/derivable staging authentication material.",
+    "Run positive and negative regression fixtures before repository-wide workflow validation on every owner push."
+  ],
+  "verification": {
+    "securityRun": 35287557620,
+    "securityRunResult": "pass",
+    "workflowFilesScanned": 21,
+    "identityRuntimeGuardRun": 35287557715,
+    "identityRuntimeGuardResult": "pass",
+    "node": "22.23.2",
+    "stagingBuild": "pass",
+    "runtimeBoundary": "pass",
+    "productionModeRefusal": "pass"
+  },
+  "recovery": {
+    "required": false,
+    "reason": "No production or customer state was changed; mitigation is isolated on a review branch."
+  },
+  "openUncertainty": [
+    "Mitigation remains unmerged pending review.",
+    "Latest development candidate 0.6.110 still lacks a completed whole-product regression under an actual supported Node >=22.23.2 runtime.",
+    "Genuine provider Level A and independent external assurance remain separate open gates."
+  ]
+}
