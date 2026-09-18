@@ -2,6 +2,21 @@
 
 const http = require('node:http');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
+const { assertRuntimeAttestation } = require('./runtime-attestation.cjs');
+
+try {
+  const attestation = assertRuntimeAttestation();
+  console.log(JSON.stringify({
+    event: 'WFM_RUNTIME_ATTESTATION_PASSED',
+    runtimeSha256: attestation.runtimeSha256
+  }));
+} catch (error) {
+  console.error(JSON.stringify({
+    event: 'WFM_RUNTIME_ATTESTATION_FAILED',
+    code: error?.code || 'WFM_RUNTIME_ATTESTATION_UNKNOWN'
+  }));
+  process.exit(78);
+}
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';

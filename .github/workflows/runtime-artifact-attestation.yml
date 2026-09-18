@@ -1,0 +1,83 @@
+name: WFM runtime artifact attestation
+
+on:
+  push:
+    branches:
+      - main
+      - 'autonomy/**'
+    paths:
+      - '.github/workflows/runtime-artifact-attestation.yml'
+      - 'Dockerfile'
+      - 'DEPLOYMENT_MANIFEST.json'
+      - 'security/runtime/**'
+      - 'scripts/validate-runtime-attestation.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-runtime-artifact-attestation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runtime-attestation:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Validate runtime attestation contract and regressions
+        run: |
+          set -euo pipefail
+          node scripts/validate-runtime-attestation.mjs
+
+      - name: Build exact staged image
+        run: docker build --pull=false -t wfm-runtime-attestation:${{ github.sha }} .
+
+      - name: Prove startup fails closed on absent or mismatched runtime identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="wfm-runtime-attestation:${GITHUB_SHA}"
+          EXPECTED="$(node -p "require('./DEPLOYMENT_MANIFEST.json').runtime_sha256")"
+          if [[ "${EXPECTED:0:1}" == "0" ]]; then
+            MISMATCH="1${EXPECTED:1}"
+          else
+            MISMATCH="0${EXPECTED:1}"
+          fi
+
+          if docker run --rm "$IMAGE" >missing-runtime-id.log 2>&1; then
+            echo 'ERROR: image started without the independently configured runtime identity' >&2
+            exit 1
+          fi
+          grep -Fq 'WFM_RUNTIME_ATTESTATION_CONFIG_INVALID' missing-runtime-id.log
+
+          if docker run --rm -e WFM_RUNTIME_SHA256="$MISMATCH" "$IMAGE" >mismatched-runtime-id.log 2>&1; then
+            echo 'ERROR: image started with a mismatched runtime identity' >&2
+            exit 1
+          fi
+          grep -Fq 'WFM_RUNTIME_ATTESTATION_MISMATCH' mismatched-runtime-id.log
+
+          # A matching identity must clear attestation before the next independent
+          # hosted-staging control rejects the intentionally absent database path.
+          if docker run --rm \
+            -e WFM_RUNTIME_SHA256="$EXPECTED" \
+            -e WFM_HOSTED_STAGING=true \
+            "$IMAGE" >matching-runtime-id.log 2>&1; then
+            echo 'ERROR: expected hosted DB guard to stop this deliberately incomplete fixture' >&2
+            exit 1
+          fi
+          grep -Fq 'WFM_RUNTIME_ATTESTATION_PASSED' matching-runtime-id.log
+          grep -Fq 'Hosted staging refuses to start without WFM_DB' matching-runtime-id.log
