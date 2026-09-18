@@ -83,19 +83,48 @@ function tone(item){return item.urgent?'urgent':item.evidenceState==='current'?'
 function sourceName(source){return ({'time-review':'Time Review','weekly-review':'Weekly Sign-off','absence':'Absence','schedule-publication':'Schedule','today':'Today','automation':'Automation'})[source]||source;}
 function stateText(item){return ({action_required:'Action required',decision_sent:'Decision sent',confirming_source:'Confirming source',needs_verification:'Needs verification',resolved:'Resolved'})[item.lifecycle]||'Action required';}
 function card(item){
- return `<article class="ux11-card ${tone(item)}" data-ux11-id="${safe(item.id)}" data-ux11-reason="${safe(item.reasonCode)}" data-ux11-source="${safe(item.source)}" data-ux11-evidence="${safe(item.evidenceState)}" data-ux11-priority="${safe(item.priority)}"><div class="ux11-card-top"><span class="ux11-source">${safe(sourceName(item.source))}</span><span class="ux11-state">${safe(stateText(item))}</span></div><h3>${safe(item.title)}</h3><p class="ux11-why"><b>Why now:</b> ${safe(item.whyNow)}</p>${item.consequence?`<p class="ux11-consequence">${safe(item.consequence)}</p>`:''}<details class="ux11-trust"><summary>Why this priority</summary><div><span><b>Reason</b>${safe(item.reasonLabel)}</span><span><b>Evidence</b>${safe(item.evidenceLabel)}</span><span><b>Authority</b>${safe(item.authority)}</span></div></details><button type="button" class="btn small primary ux11-open" data-ux11-route="${safe(item.route)}" data-ux11-id="${safe(item.id)}" data-ux11-source-id="${safe(item.sourceId)}">Open ${safe(sourceName(item.source))}</button></article>`;
+ return `<article class="ux11-card ${tone(item)}" data-ux11-id="${safe(item.id)}" data-ux11-reason="${safe(item.reasonCode)}" data-ux11-source="${safe(item.source)}" data-ux11-evidence="${safe(item.evidenceState)}" data-ux11-priority="${safe(item.priority)}"><div class="ux11-card-top"><span class="ux11-source">${safe(sourceName(item.source))}</span><span class="ux11-state">${safe(stateText(item))}</span></div><h3>${safe(item.title)}</h3><p class="ux11-why"><b>Why now:</b> ${safe(item.whyNow)}</p>${item.consequence?`<p class="ux11-consequence">${safe(item.consequence)}</p>`:''}<details class="ux11-trust"><summary>Why this priority</summary><div><span><b>Reason</b>${safe(item.reasonLabel)}</span><span><b>Evidence</b>${safe(item.evidenceLabel)}</span><span><b>Authority</b>${safe(item.authority)}</span></div></details><button type="button" class="btn small primary ux11-open" data-ux11-route="${safe(item.route)}" data-ux11-id="${safe(item.id)}" data-ux11-source-id="${safe(item.sourceId)}" data-ux11-source="${safe(item.source)}" data-ux11-reason="${safe(item.reasonCode)}" data-ux11-title="${safe(item.title)}">Open ${safe(sourceName(item.source))}</button></article>`;
 }
-function receipt(r){return `<li><b>${safe(r.title)}</b><span>${safe(r.whyNow)}</span><small>${safe(r.auditRef||r.evidenceLabel)}</small></li>`;}
+function receipt(r){return `<li data-ux11-id="${safe(r.id)}"><b>${safe(r.title)}</b><span>${safe(r.whyNow)}</span><small>${safe(r.auditRef||r.evidenceLabel)}</small></li>`;}
+function sourceResolution(marker){
+ if(!marker?.id||!marker?.sourceId)return null;
+ const base={
+   id:String(marker.id),source:String(marker.source||marker.route||'today'),sourceId:String(marker.sourceId),route:String(marker.route||''),
+   reasonCode:String(marker.reasonCode||'NEEDS_REVIEW'),kind:'action',lifecycle:'resolved',mandatory:false,evidenceState:'current',
+   title:String(marker.title||`${sourceName(marker.source||marker.route)} decision`),authority:'Confirmed by source workflow',automated:false,
+   meta:{originId:String(marker.id)}
+ };
+ if(marker.route==='leave'){
+   let requestRow=null;try{requestRow=(data?.requests||[]).find(r=>String(r.id)===String(marker.sourceId))||null;}catch{}
+   if(!requestRow)return null;
+   const status=String(requestRow.status||'').toLowerCase();
+   if(!['approved','rejected','declined','cancelled','withdrawn'].includes(status))return null;
+   return {...base,whyNow:`The authoritative Absence workflow now reports this request as ${status}.`,evidenceLabel:'Current absence request status',auditRef:`Source status: ${status}`,createdAt:requestRow.updatedAt||requestRow.decidedAt||requestRow.approvedAt||new Date(marker.at||Date.now()).toISOString()};
+ }
+ const r=report();if(!r)return null;
+ const team=reportTeams(r).find(t=>String(t?.id||'')===String(marker.sourceId));if(!team)return null;
+ if(marker.route==='time-review'){
+   const open=(team.issues||[]).filter(i=>i.status==='open').length;if(open!==0)return null;
+   return {...base,whyNow:'The current Time Review report confirms there are no open exceptions for this team.',evidenceLabel:'Current payroll/time review report',auditRef:'0 open time exceptions',createdAt:team.updatedAt||r.generatedAt||new Date(marker.at||Date.now()).toISOString()};
+ }
+ if(marker.route==='weekly-review'){
+   if(String(team.status||'')!=='signed')return null;
+   return {...base,whyNow:'The current Weekly Sign-off report confirms this team is signed.',evidenceLabel:'Current weekly review report',auditRef:'Source status: signed',createdAt:team.updatedAt||r.generatedAt||new Date(marker.at||Date.now()).toISOString()};
+ }
+ return null;
+}
 function renderQueue(extra=[]){
  if(!manager()||page()!=='overview')return null;
  const host=document.querySelector('.fcc-main');if(!host)return null;
  host.querySelector(':scope > .ux11-queue')?.remove();
- const bundle=M()?.build([...collectSignals(),...(Array.isArray(extra)?extra:[])])||{actions:[],receipts:[]};
+ const confirmed=sourceResolution(returnMarker());
+ const bundle=M()?.build([...collectSignals(),...(Array.isArray(extra)?extra:[]),...(confirmed?[confirmed]:[])])||{actions:[],receipts:[],resolved:[],information:[]};
  const section=document.createElement('section');section.className='ux11-queue';section.setAttribute('aria-label','Manager action queue');
  const visible=bundle.actions.slice(0,3),rest=bundle.actions.slice(3);
  section.innerHTML=`<div class="ux11-head"><div><span class="eyebrow">NEEDS MY ACTION</span><h2>${bundle.actions.length?'${COUNT} priorities':'You are clear for now'}</h2><p>${bundle.actions.length?'The most important verified decisions across absence, time and sign-off.':'No verified cross-workflow manager decisions are waiting.'}</p></div><span class="ux11-count">${bundle.actions.length}</span></div><div class="ux11-live" aria-live="polite"></div><div class="ux11-cards"></div>`.replace('${COUNT}',String(bundle.actions.length));
  const cards=section.querySelector('.ux11-cards');visible.forEach(x=>cards.insertAdjacentHTML('beforeend',card(x)));
  if(rest.length){const d=document.createElement('details');d.className='ux11-more';d.innerHTML=`<summary>${rest.length} more action${rest.length===1?'':'s'}</summary><div class="ux11-more-grid">${rest.map(card).join('')}</div>`;section.appendChild(d);}
+ if(bundle.resolved.length){const d=document.createElement('details');d.className='ux11-receipts ux11-resolved';d.innerHTML=`<summary>Recently confirmed · ${bundle.resolved.length}</summary><ul>${bundle.resolved.map(receipt).join('')}</ul>`;section.appendChild(d);}
  if(bundle.receipts.length){const d=document.createElement('details');d.className='ux11-receipts';d.innerHTML=`<summary>Handled automatically · ${bundle.receipts.length}</summary><ul>${bundle.receipts.map(receipt).join('')}</ul>`;section.appendChild(d);}
  if(bundle.information.length){const d=document.createElement('details');d.className='ux11-information';d.innerHTML=`<summary>Information · ${bundle.information.length}</summary><ul>${bundle.information.map(receipt).join('')}</ul>`;section.appendChild(d);}
  host.prepend(section);
@@ -103,13 +132,14 @@ function renderQueue(extra=[]){
  return bundle;
 }
 function navButton(route){return document.querySelector(`.sidebar .navbtn[data-page="${CSS.escape(route)}"]`)||document.querySelector(`#ux-tool-backdrop .navbtn[data-page="${CSS.escape(route)}"]`);}
-function openRoute(route,id,sourceId){
- const marker={from:'overview',id:String(id||''),sourceId:String(sourceId||''),route:String(route||''),at:Date.now()};
+function openRoute(route,id,sourceId,source,reasonCode,title){
+ const marker={from:'overview',id:String(id||''),sourceId:String(sourceId||''),route:String(route||''),source:String(source||''),reasonCode:String(reasonCode||''),title:String(title||''),at:Date.now()};
  try{sessionStorage.setItem('wfmUx11Return',JSON.stringify(marker));}catch{}
  const b=navButton(route);if(b){b.click();return true;}
  const live=document.querySelector('.ux11-live');if(live)live.textContent='The source workflow is not available for this role.';return false;
 }
 function returnMarker(){try{return JSON.parse(sessionStorage.getItem('wfmUx11Return')||'null');}catch{return null;}}
+function clearReturnMarker(){try{sessionStorage.removeItem('wfmUx11Return');}catch{}}
 function selectSourceScope(controlId,sourceId){
  if(!sourceId)return false;
  const control=document.getElementById(controlId);if(!control)return false;
@@ -144,15 +174,19 @@ function addBackLink(){
 }
 function restoreFocus(section){
  const marker=returnMarker();if(!marker||marker.from!=='overview'||!marker.id)return;
- const target=section.querySelector(`[data-ux11-id="${CSS.escape(marker.id)}"] .ux11-open`);if(target){setTimeout(()=>target.focus(),40);try{sessionStorage.removeItem('wfmUx11Return');}catch{}}
+ let target=section.querySelector(`[data-ux11-id="${CSS.escape(marker.id)}"] .ux11-open`);
+ if(!target&&marker.route&&marker.sourceId)target=section.querySelector(`.ux11-open[data-ux11-route="${CSS.escape(marker.route)}"][data-ux11-source-id="${CSS.escape(marker.sourceId)}"]`);
+ if(target){setTimeout(()=>target.focus(),40);clearReturnMarker();return;}
+ const confirmed=section.querySelector(`.ux11-resolved [data-ux11-id="${CSS.escape(marker.id)}"]`);
+ if(confirmed){const lane=confirmed.closest('details');if(lane)lane.open=true;focusNode(confirmed);const live=section.querySelector('.ux11-live');if(live)live.textContent='The source workflow confirmed the decision.';clearReturnMarker();}
 }
 function apply(){
  try{if(!manager())return;if(page()==='overview')renderQueue();else addBackLink();}catch(e){console.warn('WFM UX cycle 11 skipped:',e);}
 }
-document.addEventListener('click',e=>{const b=e.target.closest('.ux11-open[data-ux11-route]');if(!b)return;e.preventDefault();openRoute(b.dataset.ux11Route,b.dataset.ux11Id,b.dataset.ux11SourceId);});
+document.addEventListener('click',e=>{const b=e.target.closest('.ux11-open[data-ux11-route]');if(!b)return;e.preventDefault();openRoute(b.dataset.ux11Route,b.dataset.ux11Id,b.dataset.ux11SourceId,b.dataset.ux11Source,b.dataset.ux11Reason,b.dataset.ux11Title);});
 const previousRender=window.render;if(typeof previousRender==='function')window.render=async function(...args){const out=await previousRender.apply(this,args);apply();return out;};
 const observer=new MutationObserver(()=>{try{if(manager()&&page()==='overview'&&!document.querySelector('.ux11-queue'))apply();else if(manager()&&page()!=='overview'&&!document.querySelector('.ux11-back')&&returnMarker())addBackLink();}catch{}});
 observer.observe(document.documentElement,{subtree:true,childList:true});
 setTimeout(apply,0);setTimeout(apply,400);
-window.WFMUXCycle11={apply,collectSignals,renderQueue,openRoute,focusSourceTarget,selectSourceScope};
+window.WFMUXCycle11={apply,collectSignals,renderQueue,openRoute,focusSourceTarget,selectSourceScope,sourceResolution};
 })();
