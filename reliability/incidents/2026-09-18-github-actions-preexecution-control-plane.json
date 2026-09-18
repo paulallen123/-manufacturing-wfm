@@ -1,0 +1,120 @@
+{
+  "schema": "wfm.reliability-incident.v1",
+  "id": "2026-09-18-github-actions-preexecution-control-plane",
+  "status": "OPEN_EXTERNAL_CAUSE_UNKNOWN",
+  "classification": [
+    "dependency/runtime issue",
+    "deployment/provenance problem"
+  ],
+  "customer_impact": "No verified customer or production runtime impact. CI evidence is unavailable for affected candidates, so release gates remain fail-closed.",
+  "observed_evidence": {
+    "github": [
+      {
+        "workflow": "WFM every-push security gate",
+        "run_id": 35325238005,
+        "job_id": 105536636157,
+        "attempt": 1,
+        "result": "failure",
+        "steps": 0,
+        "runner_id": 0,
+        "duration_seconds": 3
+      },
+      {
+        "workflow": "WFM every-push security gate",
+        "run_id": 35325238005,
+        "job_id": 105542066107,
+        "attempt": 2,
+        "result": "failure",
+        "steps": 0,
+        "runner_id": 0,
+        "duration_seconds": 3,
+        "note": "bounded retry reproduced the same pre-execution signature"
+      },
+      {
+        "workflow": "Identity Runtime Guard",
+        "run_id": 35325238020,
+        "job_id": 105536636115,
+        "attempt": 1,
+        "result": "failure",
+        "steps": 0,
+        "runner_id": 0,
+        "duration_seconds": 2
+      },
+      {
+        "workflow": "Autonomous Integration Fabric",
+        "run_id": 35326879530,
+        "job_id": 105541867661,
+        "attempt": 1,
+        "result": "failure",
+        "steps": 0,
+        "runner_id": 0,
+        "duration_seconds": 2,
+        "note": "unrelated PR and workflow reproduced the same signature"
+      }
+    ],
+    "railway": {
+      "project": "manufacturing-wfm-staging-proof",
+      "customer_proof_service": "wfm-customer-proof-0676",
+      "latest_deployment_id": "a1d4693c-9c0c-42e9-8b64-4da66503d1be",
+      "latest_deployment_status": "SUCCESS",
+      "interpretation": "The external CI failure does not correlate with a hosted customer-proof runtime outage."
+    },
+    "public_provider_context": "GitHub public status reported Actions operational during the investigation; this does not rule out a repository/account-specific control-plane or policy condition."
+  },
+  "causal_timeline": [
+    {
+      "at": "2026-09-18T08:36:32Z",
+      "event": "Security and identity workflows began and failed before runner assignment or any job step."
+    },
+    {
+      "at": "2026-09-18T08:55:47Z",
+      "event": "An unrelated Autonomous Integration Fabric workflow on a separate PR failed with the same zero-step, runner_id=0 signature."
+    },
+    {
+      "at": "2026-09-18T08:56:31Z",
+      "event": "A bounded retry of the security gate reproduced the same pre-execution failure in three seconds."
+    }
+  ],
+  "root_cause": {
+    "verified": false,
+    "current_inference": "Repository/account/provider CI control-plane or policy layer; exact cause unknown.",
+    "explicitly_not_proven": [
+      "WFM product defect",
+      "test assertion defect",
+      "Railway runtime outage",
+      "global GitHub Actions outage",
+      "billing/spending-limit cause"
+    ]
+  },
+  "prevention_rule": {
+    "id": "CI-PREEXEC-001",
+    "detector": "A completed failure with zero steps and no assigned runner is pre-execution evidence, not application/test execution evidence.",
+    "correlation": "If two or more unrelated workflows reproduce the signature, classify the CI plane as systemically unavailable for release evidence. If a retry also reproduces it, mark the condition persistent.",
+    "release_behavior": "FAIL_CLOSED_CI_EVIDENCE_UNAVAILABLE",
+    "product_behavior": "Do not label a product regression unless at least one relevant test step actually executed."
+  },
+  "recovery_runbook": [
+    "Do not weaken or bypass security, identity, provenance or release gates.",
+    "Do not repeatedly consume retries as a substitute for diagnosis; one bounded retry is sufficient to establish persistence.",
+    "Investigate repository/account/provider Actions policy, entitlement, billing/spend and runner-provisioning controls through authorized administrative channels.",
+    "Require a previously affected critical workflow to receive a runner and execute steps normally.",
+    "Require a second unrelated critical workflow to execute normally before declaring the CI plane recovered.",
+    "Require the security and identity release gates to complete normally on the candidate before using CI as release evidence again."
+  ],
+  "metrics": {
+    "preexecution_failures_correlated": 4,
+    "unique_workflows": 3,
+    "retry_reproduced": true,
+    "mean_detection_seconds": 2.5,
+    "reproducibility": "HIGH",
+    "recovery_path_quality": "DEFINED_NOT_YET_VERIFIED",
+    "prevention_coverage_change": "Added deterministic distinction between CI pre-execution unavailability and executed product/test failure, with cross-workflow and retry correlation."
+  },
+  "safety": {
+    "production_mutation": false,
+    "railway_mutation": false,
+    "customer_data_mutation": false,
+    "workforce_or_payroll_mutation": false,
+    "security_gate_weakening": false
+  }
+}
