@@ -1,26 +1,48 @@
-# Manufacturing WFM sell-readiness cloud proof — 2026-09-18
+# Manufacturing WFM sell-readiness cloud proof — 2026-09-18/19
 
 ## Candidate and claim discipline
 
-Target branch: `feature/one-day-enterprise-implementation-v1`.
+Target feature branch: `feature/one-day-enterprise-implementation-v1`.
 
-The current functional candidate reached `7bcc7f3cf4b4f9798349eb7cf51d2f330c9ee8fa` before this evidence-only update. Railway private-GitHub source access is restored and `wfm-one-day-enterprise-v1` fetched that exact commit from the connected branch.
+Exact deployed source commit for the final cross-service proof: `510c1f71494572c8df5bb2c11feeac59ba7173e5`.
+
+This commit is an evidence-only descendant of functional candidate `7bcc7f3cf4b4f9798349eb7cf51d2f330c9ee8fa`; no application code changed between those two commits.
+
+Railway private-GitHub access is restored. Both pre-existing proof services fetched the exact feature-branch commit above. No replacement service, database, volume, environment or paid infrastructure was created.
 
 All proof remains fail-closed. Hosted runtime identifies itself as `Fixture/demo data only. Production approved: false.` The eight-hour implementation timing model identifies itself as `SYNTHETIC_THEORY_ONLY`. Neither is accepted as evidence of a live provider connection or a real customer production implementation.
 
-## Current-head Railway proof — wfm-one-day-enterprise-v1
+## Exact-current-head Railway proof — wfm-one-day-enterprise-v1
 
 Existing service: `wfm-one-day-enterprise-v1`.
 
-Deployment: `6d90eedc-849d-47ac-97dd-03259f70a3b9`.
+Deployment: `b4dbd4b7-8af2-466a-aa4b-1093e1e1d1d2`.
 
-Source commit: `7bcc7f3cf4b4f9798349eb7cf51d2f330c9ee8fa`.
+Source commit: `510c1f71494572c8df5bb2c11feeac59ba7173e5`.
 
 Status: `SUCCESS`.
 
-Health: `/api/health` passed on the first Railway health-check attempt and the runtime listened on `0.0.0.0:3000`.
+Runtime: listening on `0.0.0.0:3000`; public origin `https://wfm-one-day-enterprise-v1-production.up.railway.app`; runtime explicitly states `Fixture/demo data only. Production approved: false.`
 
-Admission/regression gate: 66 tests passed, 0 failed. The gate covers implementation readiness controls, signed-contract invitation behaviour, tenant/recipient binding, role mastery, append-only evidence, autonomous integration controls, OAuth/PKCE and credential protections, safe source discovery, schema-drift handling, tenant isolation, workforce lifecycle controls and hosted listener safety.
+The immediately preceding functional deployment at `7bcc7f3cf4b4f9798349eb7cf51d2f330c9ee8fa` ran the full current functional Docker admission gate successfully. The evidence-only `510c1f...` commit did not change application code.
+
+## Exact-current-head Railway proof — wfm-integration-fabric-v1-proof
+
+Existing service: `wfm-integration-fabric-v1-proof`.
+
+Deployment: `f80565e8-b99e-41a9-b29d-bd1865f3b3b4`.
+
+Source commit: `510c1f71494572c8df5bb2c11feeac59ba7173e5`.
+
+Status: `SUCCESS`.
+
+Runtime: listening on `0.0.0.0:3000`; public origin `https://wfm-integration-fabric-v1-proof-production.up.railway.app`; runtime explicitly states `Fixture/demo data only. Production approved: false.`
+
+Admission/regression gate on this exact commit: `66` tests passed, `0` failed.
+
+The strict T0-T4 autonomy admission stage remained present and fail-closed, requiring PASS, strict runtime, and no production/customer mutation before the hosted image can be admitted.
+
+The gate covers implementation readiness, signed-contract invitation behaviour, tenant/recipient binding, role mastery, append-only evidence, autonomous integration controls, OAuth/PKCE and credential protections, safe source discovery, schema-drift handling, tenant isolation, workforce lifecycle controls and hosted listener safety.
 
 Lifecycle edge matrix covers overnight and duplicate/post-leaver clocking, absence boundaries, explicitly approved overtime with no direct payroll mutation, bounded agency assignments, starter/transfer/leaver effective dating, retro changes preserving original evidence, integration outage/recovery checkpoints, idempotency and tenant isolation.
 
@@ -28,11 +50,13 @@ Role-learning controls cover least-privilege curricula, automatic role plans, in
 
 Integration-security controls cover signed OAuth state, PKCE S256, server-side secrets, token/error redaction, least-privilege provider gating, same-origin pagination, malicious next-link rejection, trusted-worker authorization attestation and metadata-only discovery behaviour. These are harness/control proofs, not a claim that an external provider is live.
 
-The build preserved the role-first UX through Cycle 12, the adaptive coach and the Version D implementation journey in the hosted image.
+The hosted build preserves the role-first UX through Cycle 12, the adaptive coach and the Version D implementation journey.
 
 ## Exact cloud scale and payroll reconciliation — current head
 
-Status: PASS.
+Proof: `wfm-cloud-scale-implementation-and-payroll-reconciliation`.
+
+Status: `PASS`.
 
 Scale: 10,000 employees, 50 sites, 100,000 punches, 40,000 timecards, 1,750 cohorts.
 
@@ -44,25 +68,24 @@ Hostile-data controls detected duplicate employee IDs, an orphan manager, missin
 
 The proof runner states the boundary explicitly: this is exact-candidate cloud execution, scale behaviour and fail-closed data handling using an independent deterministic payroll reconciliation harness. It is not evidence of a live payroll/HCM/ERP provider or a customer production implementation.
 
-## Previous integration-fabric cloud proof
-
-Existing service `wfm-integration-fabric-v1-proof` deployment `8105241e-1f82-4317-8b4a-4d392730f833` completed successfully at functional commit `6d391d319c378c60ac38cfa27540afee1f81cb1a`, including the 10k/50-site scale/payroll and lifecycle/security gates then present.
-
-A fresh current-head deployment on this same existing integration service is still required for exact cross-service provenance. No replacement service is permitted or needed.
-
 ## Frozen customer-proof release
 
-`wfm-customer-proof-0676` remains untouched by this programme. Its latest deployment remains the pre-existing successful deployment from 2026-09-18 00:11 UTC.
+`wfm-customer-proof-0676` remains untouched. Its latest deployment is still the pre-existing successful deployment `a1d4693c-9c0c-42e9-8b64-4da66503d1be`, created 2026-09-18 00:11 UTC.
+
+## Cleared blocker
+
+The earlier exact-source provenance blocker is cleared: both requested existing Railway services now have successful deployments from the same exact feature-branch commit `510c1f71494572c8df5bb2c11feeac59ba7173e5`.
 
 ## Remaining hard proof boundaries
 
-1. Fresh exact-current-head provenance on `wfm-integration-fabric-v1-proof`.
-2. A genuinely authorised external-provider sandbox/test API. No provider may be described as live while only fixture/harness evidence exists.
-3. Real zero-human customer environment provisioning/implementation evidence. The eight-hour simulation is architecture timing evidence only.
-4. Complete authenticated role-by-role browser journeys through the hosted new role-first UI.
+1. A genuinely authorised external-provider sandbox/test API. No provider may be described as live while only fixture/harness evidence exists.
+2. Real zero-human customer environment provisioning/implementation evidence. The eight-hour simulation is architecture timing evidence only.
+3. Complete authenticated role-by-role browser journeys through the hosted new role-first UI. The repository's staging-browser proof remains deliberately security-held until reviewed ephemeral authentication and pinned browser tooling criteria are satisfied.
 
 Readiness flags remain unchanged until these boundaries are genuinely cleared.
 
 ## Reproducibility and safety
 
-Evidence sources are Railway build/deploy logs and Git commit identity. No new Railway service, database, volume, environment or paid infrastructure was created. No production/customer mutation was performed. Security controls and readiness gates were not weakened to obtain a pass.
+Primary evidence sources are Railway deployment/build logs for `b4dbd4b7-8af2-466a-aa4b-1093e1e1d1d2` and `f80565e8-b99e-41a9-b29d-bd1865f3b3b4`, plus Git source identity `510c1f71494572c8df5bb2c11feeac59ba7173e5`.
+
+No new Railway resource or paid infrastructure was created. No production/customer mutation was performed. Security controls and readiness gates were not weakened to obtain a pass.
