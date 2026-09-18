@@ -31,6 +31,7 @@ const checks = [
   ['tier2-repair-to-canary-decision-composition', 'scripts/validate-autonomous-repair-canary-orchestrator.mjs', true],
   ['tier3-shadow-simulation', 'scripts/validate-t3-shadow-support.mjs', true],
   ['tier3-customer-authorisation-consent-gate', 'scripts/validate-t3-customer-authorisation-gate.mjs', true],
+  ['tier4-adversarial-containment-chaos', 'scripts/validate-t4-containment-chaos.mjs', true],
   ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
 ];
 
