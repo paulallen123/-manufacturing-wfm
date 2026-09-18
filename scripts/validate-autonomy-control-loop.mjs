@@ -8,6 +8,7 @@ const require = createRequire(import.meta.url);
 const { createAutonomyControlLoop } = require('../resilience/autonomy-control-loop.cjs');
 const { createT3ShadowSimulator } = require('../resilience/t3-shadow-simulator.cjs');
 const { createT3ShadowVerifier } = require('../resilience/t3-shadow-verifier.cjs');
+const { createT4ContainmentController } = require('../resilience/t4-containment-controller.cjs');
 const SelfHelp = require('../resilience/support-selfhelp.cjs');
 
 const root = process.cwd();
@@ -40,12 +41,40 @@ const t3ShadowVerifier = createT3ShadowVerifier();
 const rollbackExecutor = {
   rollback: async () => ({
     verified: true,
-    rollbackDigest: d('known-good-rollback'),
+    rollbackDigest: d('legacy-known-good-rollback'),
     productionAuthorityGranted: false,
   }),
 };
 
 let tick = 1000;
+const t4ContainmentController = createT4ContainmentController({
+  forensicStore: {
+    preserve: async ({ incidentId, evidenceDigest }) => ({
+      verified: true,
+      immutable: true,
+      forensicDigest: d(`forensic:${incidentId}:${evidenceDigest}`),
+    }),
+  },
+  containmentExecutor: {
+    execute: async ({ incidentId, tenant, actions }) => ({
+      verified: true,
+      containmentDigest: d(`containment:${incidentId}:${tenant}:${actions.join(',')}`),
+      productionAuthorityGranted: false,
+      crossTenantMutation: false,
+    }),
+  },
+  rollbackExecutor: {
+    rollback: async ({ incidentId, knownGoodArtifactDigest }) => ({
+      verified: true,
+      rollbackDigest: d(`t4-rollback:${incidentId}:${knownGoodArtifactDigest}`),
+      productionAuthorityGranted: false,
+      crossTenantMutation: false,
+    }),
+  },
+  now: () => ++tick,
+  maxActions: 4,
+});
+
 const loop = createAutonomyControlLoop({
   contract,
   failureScenarios,
@@ -54,6 +83,7 @@ const loop = createAutonomyControlLoop({
   repairCoordinator,
   t3ShadowSimulator,
   t3ShadowVerifier,
+  t4ContainmentController,
   rollbackExecutor,
   now: () => ++tick,
   maxActions: 2,
@@ -66,6 +96,14 @@ const t3Base = {
   afterStateDigest: d('t3-after'),
   compensationPlanDigest: d('t3-compensation'),
   affectedRecords: 4,
+};
+const knownGood = {
+  available: true,
+  schemaCompatible: true,
+  independentlyVerified: true,
+  signatureVerified: true,
+  artifactDigest: d('known-good-artifact'),
+  verificationDigest: d('known-good-verification'),
 };
 
 const t0 = await loop.run({
@@ -129,19 +167,71 @@ assert.equal(badT3.t3Shadow.reason, 'scenario-action-family-mismatch');
 assert.equal(badT3.actionCount, 0);
 assert.equal(loop.verifyReceipt(badT3), true);
 
-const t4 = await loop.run({
+const t4ScenarioIds = Object.entries(contract.scenario_tier_overrides)
+  .filter(([, tier]) => tier === 'T4')
+  .map(([scenarioId]) => scenarioId)
+  .sort();
+assert.ok(t4ScenarioIds.length > 0, 'Expected explicit T4 scenario classes.');
+
+for (const scenarioId of t4ScenarioIds) {
+  const receipt = await loop.run({
+    ...base,
+    incidentId: `inc-t4-class-${scenarioId}`,
+    scenarioId,
+  });
+  assert.equal(receipt.tier, 'T4', `${scenarioId} must classify T4.`);
+  assert.equal(receipt.safeTerminal, true, `${scenarioId} must reach a safe terminal.`);
+  assert.ok(receipt.t4, `${scenarioId} must route through the dedicated T4 controller.`);
+  assert.equal(receipt.t4.safeTerminal, true);
+  assert.equal(receipt.t4.productionAuthorityGranted, false);
+  assert.equal(receipt.t4.modelAuthorityGranted, false);
+  assert.equal(receipt.t4.customerMutation, false);
+  assert.equal(receipt.t4.crossTenantMutation, false);
+  assert.equal(receipt.t4.requestedActionExecuted, false);
+  assert.equal(t4ContainmentController.verifyReceipt(receipt.t4), true);
+  assert.equal(loop.verifyReceipt(receipt), true);
+}
+
+const t4CrossTenant = await loop.run({
   ...base,
-  incidentId: 'inc-t4',
+  incidentId: 'inc-t4-cross-tenant',
   scenarioId: 'cross-tenant-access-attempt',
-  knownGoodRollbackAvailable: true,
+  targetTenant: 'tenant-b',
+  requestedAction: 'identity.grant-admin',
+  threat: { untrustedToolInstruction: true },
+  rollbackRequested: true,
+  knownGood,
 });
-assert.equal(t4.tier, 'T4');
-assert.equal(t4.outcome, 'rolled_back_to_known_good');
-assert.equal(loop.verifyReceipt(t4), true);
+assert.equal(t4CrossTenant.tier, 'T4');
+assert.equal(t4CrossTenant.outcome, 'contained');
+assert.equal(t4CrossTenant.t4.crossTenantMutation, false);
+assert.ok(t4CrossTenant.t4.plannedContainmentActions.includes('deny-cross-tenant-action'));
+assert.ok(t4CrossTenant.t4.plannedContainmentActions.includes('deny-model-tool-authority'));
+assert.equal(t4CrossTenant.t4.rollbackReceipt, null);
+assert.equal(loop.verifyReceipt(t4CrossTenant), true);
+
+const t4Rollback = await loop.run({
+  ...base,
+  incidentId: 'inc-t4-rollback',
+  scenarioId: 'artifact-tampering-or-provenance-drift',
+  provenance: {
+    expectedArtifactDigest: d('expected-artifact'),
+    observedArtifactDigest: d('tampered-artifact'),
+    signatureVerified: false,
+  },
+  rollbackRequested: true,
+  knownGood,
+});
+assert.equal(t4Rollback.tier, 'T4');
+assert.equal(t4Rollback.outcome, 'rolled_back_to_known_good');
+assert.equal(t4Rollback.t4.rollbackReceipt.verified, true);
+assert.equal(loop.verifyReceipt(t4Rollback), true);
 
 const unknown = await loop.run({ ...base, incidentId: 'inc-unknown', scenarioId: 'never-seen-before' });
 assert.equal(unknown.tier, 'T4');
 assert.equal(unknown.outcome, 'contained');
+assert.ok(unknown.t4, 'Unknown failures must enter the dedicated T4 controller.');
+assert.ok(unknown.t4.plannedContainmentActions.includes('unknown-fault-isolation'));
 assert.equal(loop.verifyReceipt(unknown), true);
 
 const hostileRepair = {
@@ -159,6 +249,7 @@ const hostileLoop = createAutonomyControlLoop({
   repairCoordinator: hostileRepair,
   t3ShadowSimulator,
   t3ShadowVerifier,
+  t4ContainmentController,
   rollbackExecutor,
   now: () => ++tick,
   maxActions: 2,
@@ -183,6 +274,7 @@ const hostileT3Loop = createAutonomyControlLoop({
       customerMutation: false,
     }),
   },
+  t4ContainmentController,
   rollbackExecutor,
   now: () => ++tick,
   maxActions: 2,
@@ -197,6 +289,60 @@ assert.equal(hostileT3.outcome, 'contained');
 assert.equal(hostileT3.containedErrorCode, 'WFM_AUTONOMY_T3_AUTHORITY');
 assert.equal(hostileT3Loop.verifyReceipt(hostileT3), true);
 
+const hostileT4Loop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  t4ContainmentController: {
+    handle: async () => ({
+      safeTerminal: true,
+      outcome: 'contained',
+      productionAuthorityGranted: true,
+      modelAuthorityGranted: false,
+      customerMutation: false,
+      crossTenantMutation: false,
+      requestedActionExecuted: false,
+    }),
+    verifyReceipt: () => true,
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const hostileT4 = await hostileT4Loop.run({
+  ...base,
+  incidentId: 'inc-hostile-t4',
+  scenarioId: 'data-integrity-mismatch',
+});
+assert.equal(hostileT4.outcome, 'contained');
+assert.equal(hostileT4.containedErrorCode, 'WFM_AUTONOMY_T4_AUTHORITY');
+assert.equal(hostileT4Loop.verifyReceipt(hostileT4), true);
+
+const unverifiableT4Loop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  t4ContainmentController: {
+    handle: async () => ({
+      safeTerminal: true,
+      outcome: 'contained',
+      productionAuthorityGranted: false,
+      modelAuthorityGranted: false,
+      customerMutation: false,
+      crossTenantMutation: false,
+      requestedActionExecuted: false,
+    }),
+    verifyReceipt: () => false,
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const unverifiableT4 = await unverifiableT4Loop.run({
+  ...base,
+  incidentId: 'inc-unverifiable-t4',
+  scenarioId: 'audit-trail-degraded',
+});
+assert.equal(unverifiableT4.outcome, 'contained');
+assert.equal(unverifiableT4.containedErrorCode, 'WFM_AUTONOMY_T4_VERIFY');
+assert.equal(unverifiableT4Loop.verifyReceipt(unverifiableT4), true);
+
 const tampered = structuredClone(t1);
 tampered.trace[0].detail.tier = 'T4';
 assert.equal(loop.verifyReceipt(tampered), false);
@@ -209,13 +355,22 @@ const t3ResultTampered = structuredClone(t3);
 t3ResultTampered.t3Shadow.afterStateDigest = d('tampered-t3-state');
 assert.equal(loop.verifyReceipt(t3ResultTampered), false);
 
+const t4ResultTampered = structuredClone(t4Rollback);
+t4ResultTampered.t4.outcome = 'contained';
+assert.equal(loop.verifyReceipt(t4ResultTampered), false);
+
 console.log(JSON.stringify({
   schemaVersion: 1,
   proof: 'closed-loop-autonomy-controller',
   status: 'PASS',
-  cases: 10,
-  unknownFailsSafe: true,
-  crossTenantContained: true,
+  t4ScenarioClasses: t4ScenarioIds.length,
+  everyExplicitT4ScenarioRoutedThroughDedicatedController: true,
+  unknownFailsSafeThroughDedicatedT4Controller: true,
+  crossTenantT4ContainedInsideDedicatedController: true,
+  t4ForensicsAndContainmentVerified: true,
+  t4KnownGoodRollbackBounded: true,
+  t4AuthorityEscapeContained: true,
+  t4UnverifiableReceiptContained: true,
   t0GroundedOnly: true,
   t1IndependentVerificationRequired: true,
   t2ProductionAuthorityDenied: true,
@@ -223,10 +378,10 @@ console.log(JSON.stringify({
   t3IndependentShadowVerificationRequired: true,
   t3AutomaticExecutionEligible: false,
   t3CustomerAuthorityBoundary: true,
-  t4KnownGoodRollbackBounded: true,
   tamperEvidence: true,
   resultTamperEvidence: true,
   t3ResultTamperEvidence: true,
+  t4ResultTamperEvidence: true,
   productionMutation: false,
   customerMutation: false,
 }, null, 2));
