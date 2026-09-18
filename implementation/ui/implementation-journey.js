@@ -58,8 +58,10 @@ function stateLabel(value){
 function stateIcon(value){return value==='complete'||value==='ACTIVE'?'✓':value==='progress'||value==='VALIDATING'?'●':'○';}
 function stageMarkup(){
   const integrationStarted=(S.integrations?.connections?.length||0)>0||(S.integrations?.discovery?.candidateCount||0)>0;
+  const trainingStarted=trainingProgress()>0||Number((S.status?.learningSummary||S.learning||{}).assignments||0)>0;
   const stages=[
     ['Environment',['tenant-environment','identity-access','security-controls'],false],
+    ['Training',['role-learning','privileged-competency','frontline-readiness'],trainingStarted],
     ['Integrations',['source-systems'],integrationStarted],
     ['Testing',['scenario-validation'],false],
     ['Clean up',['test-data-cleanup'],false],
@@ -68,7 +70,8 @@ function stageMarkup(){
   ];
   return stages.map((stage,index)=>{
     const st=stage[0]==='Go live'?(S.status?.operationalReady?'complete':'pending'):groupState(stage[1],stage[2]);
-    return '<div class="wfm-ij-stage '+st+'"><span class="wfm-ij-stage-dot">'+stateIcon(st)+'</span><div><b>'+safe(stage[0])+'</b><small>'+stateLabel(st)+'</small></div></div>'+(index<stages.length-1?'<span class="wfm-ij-stage-line"></span>':'');
+    const caption=stage[0]==='Training'&&st!=='complete'?'From day one':stateLabel(st);
+    return '<div class="wfm-ij-stage '+st+'"><span class="wfm-ij-stage-dot">'+stateIcon(st)+'</span><div><b>'+safe(stage[0])+'</b><small>'+safe(caption)+'</small></div></div>'+(index<stages.length-1?'<span class="wfm-ij-stage-line"></span>':'');
   }).join('');
 }
 function integrationMarkup(){
