@@ -137,7 +137,7 @@ test('eight-hour target is assessed by parallel critical path, not serial task s
   const f = fixture();
   try {
     const eightHour = await call(
-      f.hub, null, 'POST', '/api/implementation/autonomous/contract-activated',
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
       { tenant: 'alpha', contractRef: 'critical-path-8h', targetHours: 8 },
       { 'x-wfm-implementation-internal': 'implementation-worker-test-token' }
     );
@@ -147,7 +147,7 @@ test('eight-hour target is assessed by parallel critical path, not serial task s
     assert.ok(eightHour.body.criticalPathRemainingMinutes <= 480);
 
     const fourHour = await call(
-      f.hub, null, 'POST', '/api/implementation/autonomous/contract-activated',
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
       { tenant: 'bravo', contractRef: 'critical-path-4h', targetHours: 4 },
       { 'x-wfm-implementation-internal': 'implementation-worker-test-token' }
     );
