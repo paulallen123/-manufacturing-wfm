@@ -39,7 +39,8 @@ export class AttendancePayrollGate {
     const inMs=asMs(correctedInAt,'corrected IN'); const outMs=asMs(correctedOutAt,'corrected OUT');
     if(outMs<=inMs) throw Object.assign(new Error('Corrected OUT must be after corrected IN.'),{status:400});
 
-    const priorById=this.reviewById.get(reviewId);
+    const reviewScopeKey=`${tenant}:${reviewId}`;
+    const priorById=this.reviewById.get(reviewScopeKey);
     const proposed={tenant,site,shiftId,employee,reviewId,actorId,reasonCode,inMs,outMs,reviewedAt,supersedesReviewId:supersedesReviewId?asId(supersedesReviewId,'superseded review ID'):null};
     const proposedDigest=digest(proposed);
     if(priorById){
@@ -61,7 +62,7 @@ export class AttendancePayrollGate {
     const body={...proposed,originalStatus:current.status,previousAuditHash};
     const entry={...body,contentDigest:proposedDigest,auditHash:digest(body)};
     this.reviews.push(entry);
-    this.reviewById.set(reviewId,entry);
+    this.reviewById.set(reviewScopeKey,entry);
     this.latestByWorkerShift.set(k,entry);
     return {...clone(entry),replayed:false};
   }
