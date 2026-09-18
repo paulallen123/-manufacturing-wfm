@@ -12,6 +12,7 @@ on:
       - 'src/frontier/agency-portal-token-store.mjs'
       - 'src/frontier/agency-supplier-delivery.mjs'
       - 'src/frontier/agency-supplier-delivery-receipt.mjs'
+      - 'src/frontier/agency-provider-twilio-sms.mjs'
       - 'test/frontier/agency-labour-exchange.test.mjs'
       - 'test/frontier/agency-labour-performance.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
@@ -19,6 +20,7 @@ on:
       - 'test/frontier/agency-supplier-portal.test.mjs'
       - 'test/frontier/agency-supplier-delivery.test.mjs'
       - 'test/frontier/agency-supplier-delivery-receipt.test.mjs'
+      - 'test/frontier/agency-provider-twilio-sms.test.mjs'
       - 'test/frontier/agency-postgres-integration.test.mjs'
       - '.github/workflows/agency-labour-exchange-shadow.yml'
       - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
@@ -54,7 +56,8 @@ jobs:
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
               test/frontier/agency-supplier-delivery.test.mjs \
-              test/frontier/agency-supplier-delivery-receipt.test.mjs
+              test/frontier/agency-supplier-delivery-receipt.test.mjs \
+              test/frontier/agency-provider-twilio-sms.test.mjs
       - name: Run real PostgreSQL agency-store race proof
         shell: bash
         env:
