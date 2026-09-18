@@ -11,13 +11,29 @@ function setup(supportsBackfill=true){
 test('healthy source starts with complete continuity window',()=>{
  const s=setup(); const h=s.status({tenant:'acme',sourceId:'wifi',nowMs:T+1000}); assert.equal(h.periodCoverageComplete,true); assert.equal(h.state,'healthy');
 });
-test('sequence gap immediately removes 100% continuity until backfill completes',()=>{
+test('sequence gap cannot be declared recovered before the missing event is observed',()=>{
  const s=setup();
  s.event({tenant:'acme',sourceId:'wifi',providerEventId:'e1',observedAt:new Date(T+100).toISOString(),receivedAtMs:T+150,sequence:10});
  s.event({tenant:'acme',sourceId:'wifi',providerEventId:'e2',observedAt:new Date(T+200).toISOString(),receivedAtMs:T+250,sequence:12});
  let h=s.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}); assert.equal(h.periodCoverageComplete,false); assert.equal(h.state,'reconciling');
- const [job]=s.pendingRecovery({tenant:'acme',sourceId:'wifi'}); s.completeRecovery({jobId:job.jobId});
- h=s.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}); assert.equal(h.periodCoverageComplete,true);
+ const [job]=s.pendingRecovery({tenant:'acme',sourceId:'wifi'}); assert.equal(s.completeRecovery({jobId:job.jobId}),false);
+ h=s.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}); assert.equal(h.periodCoverageComplete,false);
+});
+test('sequence gap restores continuity only after the missing sequence is actually ingested',()=>{
+ const s=setup();
+ s.event({tenant:'acme',sourceId:'wifi',providerEventId:'e1',observedAt:new Date(T+100).toISOString(),receivedAtMs:T+150,sequence:10});
+ s.event({tenant:'acme',sourceId:'wifi',providerEventId:'e2',observedAt:new Date(T+200).toISOString(),receivedAtMs:T+250,sequence:12});
+ const [job]=s.pendingRecovery({tenant:'acme',sourceId:'wifi'});
+ s.event({tenant:'acme',sourceId:'wifi',providerEventId:'e-backfill-11',observedAt:new Date(T+150).toISOString(),receivedAtMs:T+275,sequence:11});
+ assert.equal(s.completeRecovery({jobId:job.jobId}),true);
+ const h=s.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}); assert.equal(h.periodCoverageComplete,true);
+});
+test('caller cannot mutate recovery evidence through a pendingRecovery copy',()=>{
+ const s=setup();
+ s.event({tenant:'acme',sourceId:'wifi',providerEventId:'e1',observedAt:new Date(T+100).toISOString(),receivedAtMs:T+150,sequence:10});
+ s.event({tenant:'acme',sourceId:'wifi',providerEventId:'e2',observedAt:new Date(T+200).toISOString(),receivedAtMs:T+250,sequence:12});
+ const [copy]=s.pendingRecovery({tenant:'acme',sourceId:'wifi'}); copy.recoveredSequences.push(11);
+ const [fresh]=s.pendingRecovery({tenant:'acme',sourceId:'wifi'}); assert.deepEqual(fresh.recoveredSequences,[]); assert.equal(s.completeRecovery({jobId:fresh.jobId}),false);
 });
 test('reconnect without backfill permanently blocks that certification window',()=>{
  const s=setup(false); s.reconnected({tenant:'acme',sourceId:'wifi',atMs:T+1000}); const h=s.status({tenant:'acme',sourceId:'wifi',nowMs:T+1001}); assert.equal(h.periodCoverageComplete,false); assert.equal(h.pendingRecovery,false);
