@@ -37,20 +37,20 @@ Research / competitive insight: official SAP 2026 Joule/Joule Work material is m
 
 Hypothesis: adding explicit disclosure semantics and destination focus to the Cycle 10 focus strip will reduce keyboard ambiguity without changing the task model; a later optional intent/action entry should reduce route hunting only if it preserves stable canonical navigation and deterministic authority.
 
-Validation result: exact branch run `35293777490` on code head `0ae0c6a881117c5b8233f05e6e3fac28fde08378` passed source safety, exact Docker/sealed-runtime composition and the browser interaction gate. Observed browser evidence included `UX_CYCLE10_KEYBOARD_NAVIGATION=PASS`, `aria-expanded=false/true` with `aria-controls=planner`, zero page-wide overflow at desktop and 390px mobile, and preservation of the original `Publish schedule` control. The later scorecard-only commit does not change product code.
+Validation result: exact branch run `35293777490` on code head `0ae0c6a881117c5b8233f05e6e3fac28fde08378` passed source safety, exact Docker/sealed-runtime composition and the browser interaction gate. Observed browser evidence included `UX_CYCLE10_KEYBOARD_NAVIGATION=PASS`, `aria-expanded=false/true` with `aria-controls=planner`, zero page-wide overflow at desktop and 390px mobile, and preservation of the original `Publish schedule` control.
 
 Hosted proof attempt: an isolated Railway service `wfm-ux-cycle10-proof` was created against branch `ux/planner-focus-20260917`, but Railway currently reports no first deployment for that service. Existing customer-proof and Cycle 9 UX services were not modified. Hosted Cycle 10 visual/interaction proof therefore remains open.
 
-Repository drift: main has advanced beyond PR #50's original base with additional hosted proof/isolation work. PR #50 must be reconciled with current main before promotion; do not treat old mergeability state as release readiness.
+Reconciliation and exact-current-main validation: current main `d68ef1e920fdb25d41e754341f5a403810fe6700` was merged into the isolated Cycle 10 branch via PR #56. The reconciled candidate then reran Cycle 10 gate `35293936668` on head `7bdbe8ec9311f0b58809a97cd149b6607d368a1b` and completed successfully. PR #50 is again mergeable but remains draft. This validation keeps the Cycle 10 presentation changes aligned with the latest hosted tenant-isolation proof work without promoting them.
 
 UX scorecard delta:
-- Role/job clarity: unchanged this sub-cycle.
+- Role/job clarity: preserved after reconciliation.
 - Navigation predictability: preserved.
 - Action visibility: preserved.
-- Cognitive load: not newly measured.
+- Cognitive load: not newly measured with real users.
 - Accessibility: improved and browser-verified for disclosure semantics and destination focus; full audit still open.
-- Mobile/tablet: exact rerun passed at 390px with zero page-wide overflow and publish control preserved.
+- Mobile/tablet: exact reconciled run retained zero page-wide overflow at 390px and the publish control.
 - Explainability: future intent/action layer remains BUILD NEXT / EXPERIMENT, not default authority.
-- Capability preservation: exact branch gate passed; authoritative publish and sealed runtime remain unchanged.
+- Capability preservation: exact reconciled gate passed; authoritative publish and sealed runtime remain unchanged.
 
-Single next highest-value UX action: reconcile Cycle 10 with current main and obtain isolated hosted browser proof of that exact candidate before implementing the universal Action Queue experiment.
+Single next highest-value UX action: obtain isolated hosted browser proof of the exact reconciled Cycle 10 candidate. Only after that should the universal Action Queue / optional intent-entry experiment begin, with stable navigation as the control condition and first-click success, route switches and task completion measured rather than assumed.
