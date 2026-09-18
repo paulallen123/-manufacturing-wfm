@@ -10,6 +10,8 @@ const ALLOWED_AUTH = new Set([
 ]);
 const SAFE_MODES = new Set(['read_only', 'staging_only']);
 const SECRET_KEYS = /(password|secret|token|private[_-]?key|client[_-]?secret|access[_-]?key)/i;
+const REFERENCE_PATTERN = /^[a-z][a-z0-9+.-]*:\/\/[A-Za-z0-9._~!$&'()*+,;=:@%\/-]+$/i;
+const DISALLOWED_RAW_REFERENCE_SCHEMES = new Set(['http', 'https', 'ftp', 'ftps', 'ws', 'wss', 'data', 'file']);
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -25,6 +27,12 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function isOpaqueReference(value) {
+  if (typeof value !== 'string' || !REFERENCE_PATTERN.test(value)) return false;
+  const scheme = value.slice(0, value.indexOf(':')).toLowerCase();
+  return !DISALLOWED_RAW_REFERENCE_SCHEMES.has(scheme);
+}
+
 function rejectEmbeddedSecrets(value, path = '$', findings = []) {
   if (Array.isArray(value)) {
     value.forEach((item, index) => rejectEmbeddedSecrets(item, `${path}[${index}]`, findings));
@@ -34,12 +42,30 @@ function rejectEmbeddedSecrets(value, path = '$', findings = []) {
   for (const [key, child] of Object.entries(value)) {
     const next = `${path}.${key}`;
     if (SECRET_KEYS.test(key) && typeof child === 'string' && child.trim() !== '') {
-      // Secret references are permitted; raw values are not.
-      if (!/(Ref|_ref|Reference)$/i.test(key)) findings.push(next);
+      // Reference-shaped secret fields must contain an opaque reference, never a raw value or URL.
+      if (/(Ref|_ref|Reference)$/i.test(key)) {
+        if (!isOpaqueReference(child)) findings.push(next);
+      } else {
+        findings.push(next);
+      }
     }
     rejectEmbeddedSecrets(child, next, findings);
   }
   return findings;
+}
+
+function validateScope(scope, errors) {
+  if (!isObject(scope) || typeof scope.tenantId !== 'string' || scope.tenantId.trim() === '') {
+    errors.push('scope.tenantId is required for tenant isolation');
+    return;
+  }
+  if (scope.siteIds !== undefined) {
+    if (!Array.isArray(scope.siteIds) || scope.siteIds.some((siteId) => typeof siteId !== 'string' || siteId.trim() === '')) {
+      errors.push('scope.siteIds must be an array of non-empty site IDs');
+    } else if (new Set(scope.siteIds).size !== scope.siteIds.length) {
+      errors.push('scope.siteIds must not contain duplicates');
+    }
+  }
 }
 
 export function materialForApproval(profile) {
@@ -60,18 +86,25 @@ export function validateConnectionProfile(profile) {
   if (!isObject(profile)) return { ok: false, errors: ['profile must be an object'] };
   if (profile.schemaVersion !== 1) errors.push('schemaVersion must be 1');
   if (!profile.connectionId || typeof profile.connectionId !== 'string') errors.push('connectionId is required');
+  validateScope(profile.scope, errors);
 
   if (!isObject(profile.transport) || !ALLOWED_TRANSPORTS.has(profile.transport.kind)) {
     errors.push('transport.kind is unsupported');
   }
+  if (!isOpaqueReference(profile.transport?.endpointRef)) {
+    errors.push('transport.endpointRef must be an opaque configuration reference, not a raw network endpoint');
+  }
   if (!isObject(profile.authentication) || !ALLOWED_AUTH.has(profile.authentication.method)) {
     errors.push('authentication.method is unsupported');
   }
-  if (profile.authentication?.method !== 'none' && !profile.authentication?.credentialRef) {
-    errors.push('authentication.credentialRef is required');
+  if (profile.authentication?.method !== 'none' && !isOpaqueReference(profile.authentication?.credentialRef)) {
+    errors.push('authentication.credentialRef must be an opaque secret reference');
   }
   if (profile.authentication?.method === 'none' && profile.transport?.kind !== 'webhook') {
     errors.push('unauthenticated connections are limited to separately verified webhook ingress');
+  }
+  if (profile.authentication?.method === 'none' && !isOpaqueReference(profile.authentication?.verifierRef)) {
+    errors.push('unauthenticated webhook ingress requires an opaque verifierRef');
   }
 
   if (!isObject(profile.provider) || !profile.provider.key || !profile.provider.mappingVersion) {
@@ -97,8 +130,8 @@ export function validateConnectionProfile(profile) {
   if (!isObject(profile.authority) || !profile.authority.entityOwners || Object.keys(profile.authority.entityOwners).length === 0) {
     errors.push('deterministic entity authority is required');
   }
-  if (!isObject(profile.recovery) || typeof profile.recovery.maxAttempts !== 'number' || profile.recovery.maxAttempts < 1) {
-    errors.push('recovery.maxAttempts must be at least 1');
+  if (!isObject(profile.recovery) || !Number.isInteger(profile.recovery.maxAttempts) || profile.recovery.maxAttempts < 1 || profile.recovery.maxAttempts > 10) {
+    errors.push('recovery.maxAttempts must be an integer between 1 and 10');
   }
   if (profile.recovery?.maxAttempts > 1 && !profile.recovery?.idempotencyKey) {
     errors.push('retrying connections require an idempotencyKey');
@@ -110,7 +143,7 @@ export function validateConnectionProfile(profile) {
     errors.push('monitoring.reconciliationRequired must be true');
   }
 
-  for (const path of rejectEmbeddedSecrets(profile)) errors.push(`embedded secret-like value is forbidden at ${path}`);
+  for (const path of rejectEmbeddedSecrets(profile)) errors.push(`embedded secret-like value or unsafe reference is forbidden at ${path}`);
   return { ok: errors.length === 0, errors };
 }
 
