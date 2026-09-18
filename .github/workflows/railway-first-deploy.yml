@@ -5,6 +5,7 @@ on:
     branches: ['ux/concept-fidelity-rebuild']
     paths:
       - '.github/workflows/railway-first-deploy.yml'
+      - 'scripts/concept-hosted-browser-proof.mjs'
   workflow_dispatch:
 
 permissions:
