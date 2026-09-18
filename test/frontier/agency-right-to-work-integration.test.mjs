@@ -27,6 +27,7 @@ function worker(id, agencyId, quality, rate, completeRtw = true) {
     rightToWork:{
       status:'verified', validUntil:'2027-12-31T23:59:59.000Z',
       ...(completeRtw ? {
+        engagementType:'workers_contract', employmentCommencedAt:'2026-10-02T09:00:00.000Z',
         checkedByAgencyId:agencyId, checkMethod:'home_office_online', checkedAt:'2026-10-04T10:00:00.000Z',
         evidenceRef:`private-${agencyId}-${id}-rtw-record`,
         assignmentScope:{ roleId:'PACK-OP', location:'Plant 1, Birmingham', startAt:'2026-10-05T05:00:00.000Z', endAt:'2026-10-05T15:00:00.000Z', restrictionsSatisfied:true },
@@ -64,6 +65,7 @@ test('post-1-October right-to-work assurance excludes stronger-scoring non-compl
   const rejected = result.rejectedWorkers.find(item => item.workerId === 'W-PERFECT-BUT-NO-ASSURANCE');
   assert.ok(rejected);
   assert.equal(rejected.score, null);
+  assert.ok(rejected.failures.includes('right_to_work_engagement_type_unclassified'));
   assert.ok(rejected.failures.includes('right_to_work_arrangement_unclassified'));
   assert.ok(rejected.failures.includes('right_to_work_responsible_party_mismatch'));
   assert.ok(rejected.failures.includes('right_to_work_check_method_not_prescribed'));
