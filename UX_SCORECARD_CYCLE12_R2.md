@@ -1,50 +1,52 @@
-# WFM UX scorecard — Cycle 12 r3
+# WFM UX scorecard — Cycle 12 r4
 
 ## Journey reviewed
-Specialist/system role on Overview → Cycle 12 System Action Queue → existing source-owned workflow → Back to priority queue → exact originating Cycle 12 action regains focus.
+Specialist/system priority → governed Cycle 12 provider contract → shared Cycle 11 Decision Card → owning source workflow.
 
 ## Reuse / duplicate check
-- Work remained on the canonical Cycle 12 successor branch based on Cycle 11 r10; no legacy/0.6.139 UI was changed.
-- Reused Cycle 11 `openRoute`, return marker, back-link and return-focus lifecycle instead of creating a Cycle 12 navigation lifecycle.
-- Reused the existing Cycle 12 provider contract, specialist queue and existing signal-contract test script.
-- No new page, drawer, route, Decision Card renderer, approval flow or test harness was created.
+- Work remained on the canonical Cycle 12 successor branch; no legacy/0.6.139 presentation surface was changed.
+- Reused the existing Cycle 12 provider registry/model, Cycle 11 Decision Card/navigation grammar, and the existing Cycle 12 signal-contract regression.
+- No new page, drawer, route, card renderer, approval flow, write path, or test harness was created.
+- The previous specialist return-context primitive remains the single return lifecycle.
+
+## Research delta
+No external competitor or generic UX research was repeated. The unresolved question was internal and directly observable in the current contract: a registered provider could supply an arbitrary `route`, allowing a card to retain a trusted source label while navigating to an unrelated workflow. Existing source-ownership principles were sufficient to decide the change.
 
 ## Hypothesis
-If specialist/system actions use the same return-context primitive as manager actions, a user can open an implementation/integration/operating-control source workflow and return to the exact originating action without losing context, while keeping all write authority in the source workflow.
+If provider identity and destination route are bound by one governed contract, users cannot be shown a Payroll, Attendance, Integration or other source-bound priority that silently navigates to a different domain. This should improve predictability and explainability without adding interface density or moving write authority into the presentation layer.
 
 ## Exact implementation delta
-- Generalised the existing Cycle 11 return-link observer so it activates for any role that has an active queue return marker, not managers only.
-- Kept manager-only queue rendering unchanged; the generalisation affects only return-context handling after an action has already been opened.
-- Exported the existing `restoreFocus`, `addBackLink` and `returnMarker` helpers as the shared navigation/context primitive.
-- Cycle 12 `renderSpecialistQueue()` now calls the existing Cycle 11 `restoreFocus()` after rendering, so the originating system action regains focus on return.
-- Unknown specialist source workflows do not receive guessed in-page focus selectors; when no verified source-specific target exists, the source route opens normally and the user still gets a deterministic return path.
-- Added static regression guards to the existing Cycle 12 signal-contract script so specialist return context cannot silently become manager-only or forked again.
+- Added an explicit `allowedRoutes` contract to every existing Cycle 12 provider.
+- Added one shared `sourceRoute()` normaliser that accepts a requested route only when it is in that provider's registered allow-list; otherwise it falls back to the provider's existing default route.
+- Preserved all current provider destinations exactly: Implementation/Learning → Onboarding, Integrations → Integrations, Attendance → Attendance, Agency → Temporary, Manufacturing cost → Costs, Energy → Insights, Support/Documents → Support, Handover → Handover, Payroll → Payroll run.
+- Provider source identity remains bound by registration; signal payloads can no longer create cross-domain navigation while retaining a different trusted source label.
+- No server-side permission, payroll, attendance, implementation, approval, tenant, audit or source-write logic changed.
+- Extended the existing Cycle 12 contract regression with a spoofed Payroll → Leave route case and a valid explicit Attendance route case; no second harness was created.
 
 ## Focused validation
-- Local `node --check` passed for revised Cycle 11 UI source.
-- Local `node --check` passed for revised Cycle 12 UI source.
-- Local `node --check` passed for the extended existing Cycle 12 signal-contract test script.
-- New regression contract is expected to emit `UX12_SPECIALIST_RETURN_CONTEXT=PASS` when the existing gate executes.
-- Hosted/browser proof is not claimed green until GitHub executes the existing gate on the exact changed head.
+- `node --check` passed for the revised Cycle 12 model.
+- `node --check` passed for the extended existing Cycle 12 signal-contract script.
+- Focused VM contract check passed: a Payroll signal requesting `leave` was normalised back to `payroll-run`, an authorised Attendance route remained `attendance`, and an unknown provider remained rejected: `UX12_PROVIDER_ROUTE_BINDING=PASS`.
+- The complete repository gate/composed-browser path remains unverified until hosted execution is available on the exact changed head.
 
 ## UX scorecard impact
-- Calm by default: unchanged; no new visible permanent navigation was added.
-- Dense on demand: improved; specialist actions return to the same compact queue rather than requiring route hunting.
-- Explainability: preserved; source provider and evidence remain bound to the existing card and source workflow.
-- Navigation predictability: improved structurally; manager and specialist queues now share one return-context lifecycle.
-- Accessibility: improved structurally through focus restoration to the exact originating action; screen-reader/composed-browser behaviour remains unverified.
-- Development efficiency: improved; one navigation lifecycle and one existing regression script cover both role families.
-- Capability preservation: green by design; no payroll, approval, attendance, implementation, tenant, audit or source-write authority changed.
+- Calm by default: unchanged; no additional visible control or navigation was added.
+- Dense on demand: unchanged; the same shared cards and owning workflows remain in use.
+- Explainability: improved; source label and destination can no longer disagree through provider-supplied route data.
+- Navigation predictability: improved structurally; each provider now has an explicit source-owned route contract.
+- Accessibility: unchanged in presentation; no new focus surface was introduced.
+- Development efficiency: improved; routing governance lives once in the provider normaliser and is protected by the existing contract test.
+- Capability preservation: green by design; existing provider routes and all authoritative workflow controls are preserved.
 
 ## Serious-idea decisions
-- Add a second Cycle 12 back/return subsystem: **REJECT** — duplicate lifecycle and future drift risk.
-- Reuse/generalise Cycle 11 return context for specialist/system actions: **BUILD NOW — completed**.
-- Guess source-specific focus selectors for unverified future workflows: **REJECT** — source structure is not yet authoritative.
-- Extend the existing Cycle 12 contract regression rather than create another harness: **BUILD NOW — completed**.
-- Repeat generic competitor research this run: **REJECT** — no unresolved external design question affected the implementation decision.
+- Guess a specialist in-workflow focus selector without authoritative evidence: **REJECT** — no verified stable source-specific target was found.
+- Let registered provider payloads choose any product route: **REJECT** — source/navigation mismatch and cross-domain drift risk.
+- Bind destination routes to the existing provider contract: **BUILD NOW — completed**.
+- Create a separate routing layer for specialist queues: **REJECT** — duplicates the provider and Cycle 11 navigation contracts.
+- Repeat generic competitor research this run: **REJECT** — it would not change the source-governance decision.
 
 ## Still unverified
-Exact sealed-runtime browser round trip for a real specialist route, screen-reader announcement/focus order, mobile/tablet return behaviour, and Cycle 10 exact source-bound hosted promotion proof.
+Full existing Cycle 12 contract/gate execution on the exact head, sealed-runtime composed-browser behaviour, screen-reader/mobile/tablet specialist round trips, a verified source-specific in-workflow target for the next specialist domain, and Cycle 10 exact source-bound hosted promotion proof.
 
 ## Single next highest-value action
-Run the existing focused gate on the exact Cycle 12 head if infrastructure executes it; otherwise inspect the next highest-value new-UI specialist journey for a verified source-specific destination target and add exact in-workflow focus only where a stable authoritative selector/ID already exists. Do not guess selectors or create a second navigation path.
+Run the existing Cycle 12 contract/gate on the exact head if infrastructure executes it. If hosted execution remains unavailable, inspect the first real next provider adapter (prefer Integrations or Attendance) and wire it only from authoritative structured source state with verified permissions and evidence; reuse the same provider/Decision Card/return contracts and do not create another UI path.
