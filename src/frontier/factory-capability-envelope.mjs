@@ -1,6 +1,6 @@
-export const CAPABILITY_ENVELOPE_VERSION = 'factory-capability-envelope-v0.2.0';
+export const CAPABILITY_ENVELOPE_VERSION = 'factory-capability-envelope-v0.3.0';
 
-const OPS = new Set(['lte','gte','eq','in']);
+const OPS = new Set(['lte','gte','eq','in','contains']);
 
 function keyOf(item) {
   return item?.semanticId ? String(item.semanticId) : null;
@@ -8,6 +8,21 @@ function keyOf(item) {
 
 function validFinite(value) {
   return typeof value === 'number' && Number.isFinite(value);
+}
+
+function normalizedUnit(item) {
+  return {
+    unit: item?.unit != null ? String(item.unit) : null,
+    unitId: item?.unitId != null ? String(item.unitId) : null,
+  };
+}
+
+function sameUnit(actual, constraint) {
+  const a = normalizedUnit(actual);
+  const r = normalizedUnit(constraint);
+  if (a.unitId && r.unitId) return a.unitId === r.unitId;
+  if (a.unit && r.unit) return a.unit === r.unit;
+  return false;
 }
 
 export function normalizeCapabilityEnvelope(raw = {}) {
@@ -19,11 +34,22 @@ export function normalizeCapabilityEnvelope(raw = {}) {
   for (const property of raw.properties) {
     const semanticId = keyOf(property);
     if (!semanticId) return { status: 'rejected', reason: 'missing_property_semantic_id' };
-    if (!property.unit) return { status: 'rejected', reason: 'missing_property_unit', semanticId };
+    if (!property.unit && !property.unitId) return { status: 'rejected', reason: 'missing_property_unit', semanticId };
+
+    const unit = normalizedUnit(property);
+    const kind = property.kind ?? (property.min != null || property.max != null ? 'range' : 'scalar');
+    if (kind === 'range') {
+      if (!validFinite(property.min) || !validFinite(property.max) || property.min > property.max) {
+        return { status: 'rejected', reason: 'invalid_property_range', semanticId };
+      }
+      properties.push({ semanticId, kind: 'range', min: property.min, max: property.max, ...unit });
+      continue;
+    }
+
     if (!validFinite(property.value) && typeof property.value !== 'string' && typeof property.value !== 'boolean') {
       return { status: 'rejected', reason: 'unsupported_property_value', semanticId };
     }
-    properties.push({ semanticId, value: property.value, unit: String(property.unit) });
+    properties.push({ semanticId, kind: 'scalar', value: property.value, ...unit });
   }
 
   return {
@@ -60,8 +86,43 @@ export function evaluateCapabilityRequirement(providedRaw, requiredRaw) {
       checks.push({ semanticId, status: 'unknown', reason: 'property_missing' });
       continue;
     }
-    if (!constraint.unit || String(constraint.unit) !== actual.unit) {
-      checks.push({ semanticId, status: 'unknown', reason: 'unit_mismatch', providedUnit: actual.unit, requiredUnit: constraint.unit ?? null });
+    if (!sameUnit(actual, constraint)) {
+      checks.push({
+        semanticId,
+        status: 'unknown',
+        reason: 'unit_mismatch',
+        providedUnit: actual.unit,
+        providedUnitId: actual.unitId,
+        requiredUnit: constraint.unit ?? null,
+        requiredUnitId: constraint.unitId ?? null,
+      });
+      continue;
+    }
+
+    if (actual.kind === 'range') {
+      if (constraint.operator !== 'contains') {
+        checks.push({ semanticId, status: 'unknown', reason: 'range_requires_contains_operator' });
+        continue;
+      }
+      if (!validFinite(constraint.value)) {
+        checks.push({ semanticId, status: 'unknown', reason: 'non_numeric_range_target' });
+        continue;
+      }
+      const pass = constraint.value >= actual.min && constraint.value <= actual.max;
+      checks.push({
+        semanticId,
+        status: pass ? 'pass' : 'fail',
+        operator: 'contains',
+        actual: { min: actual.min, max: actual.max },
+        required: constraint.value,
+        unit: actual.unit,
+        unitId: actual.unitId,
+      });
+      continue;
+    }
+
+    if (constraint.operator === 'contains') {
+      checks.push({ semanticId, status: 'unknown', reason: 'scalar_cannot_satisfy_contains' });
       continue;
     }
 
@@ -82,7 +143,15 @@ export function evaluateCapabilityRequirement(providedRaw, requiredRaw) {
       pass = constraint.value.includes(actual.value);
     }
 
-    checks.push({ semanticId, status: pass ? 'pass' : 'fail', operator: constraint.operator, actual: actual.value, required: constraint.value, unit: actual.unit });
+    checks.push({
+      semanticId,
+      status: pass ? 'pass' : 'fail',
+      operator: constraint.operator,
+      actual: actual.value,
+      required: constraint.value,
+      unit: actual.unit,
+      unitId: actual.unitId,
+    });
   }
 
   if (checks.some((check) => check.status === 'fail')) return { status: 'infeasible', reason: 'constraint_failed', checks };
