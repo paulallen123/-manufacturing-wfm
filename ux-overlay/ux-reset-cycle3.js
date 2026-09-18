@@ -25,6 +25,31 @@ function detail(key,title,caption,node,open=false){
  const summary=document.createElement('summary');summary.innerHTML=`<span><b>${safe(title)}</b><small>${safe(caption)}</small></span><span class="ux-detail-state">Open</span>`;
  const body=document.createElement('div');body.className='ux-signoff-detail-body';if(node)body.appendChild(node);el.append(summary,body);return el;
 }
+function firstDecisionControl(d){
+ const body=d?.querySelector('.ux-signoff-detail-body');if(!body)return null;
+ const preferred=[
+  '[data-act*="exception"]:not([disabled])',
+  '[data-act*="resolve"]:not([disabled])',
+  '[data-act*="review"]:not([disabled])',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  'a[href]',
+  '[tabindex]:not([tabindex="-1"])'
+ ];
+ for(const selector of preferred){const node=body.querySelector(selector);if(node)return node;}
+ return null;
+}
+function openSignoffDetail(key){
+ if(!['checks','people','controls'].includes(String(key||'')))return false;
+ const d=document.querySelector(`[data-ux-signoff-detail="${String(key)}"]`);if(!d)return false;
+ d.open=true;
+ const target=firstDecisionControl(d)||d.querySelector('summary')||d;
+ try{target.scrollIntoView({behavior:'smooth',block:'center'});}catch{try{target.scrollIntoView();}catch{}}
+ setTimeout(()=>{try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}},80);
+ return true;
+}
 function enhanceSignoff(){
  if(!manager()||ui?.page!=='weekly-review')return;
  const tabs=document.querySelector('.review-tabs'),layout=document.querySelector('.review-layout');
@@ -62,8 +87,8 @@ function enhanceSignoff(){
 }
 function apply(){try{enhanceSignoff();}catch(e){console.warn('WFM UX cycle 3 skipped:',e);}}
 const previousRender=window.render;if(typeof previousRender==='function')window.render=async function(...args){const result=await previousRender.apply(this,args);apply();return result;};
-document.addEventListener('click',e=>{const b=e.target.closest('[data-ux-signoff-open]');if(!b)return;const d=document.querySelector(`[data-ux-signoff-detail="${b.dataset.uxSignoffOpen}"]`);if(!d)return;d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ux-signoff-open]');if(!b)return;openSignoffDetail(b.dataset.uxSignoffOpen);});
 const observer=new MutationObserver(()=>{if(ui?.page==='weekly-review'&&!document.querySelector('.ux-signoff-desk'))apply();});observer.observe(document.documentElement,{subtree:true,childList:true});
 setTimeout(apply,0);setTimeout(apply,450);
-window.WFMUXCycle3={apply,nextState};
+window.WFMUXCycle3={apply,nextState,openSignoffDetail};
 })();

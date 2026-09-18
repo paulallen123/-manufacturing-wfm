@@ -37,6 +37,8 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle9.css >> /app/public/factory-control-ui.css \
  && printf '\n/* WFM_UX_RESET_CYCLE10_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle10.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* WFM_UX_RESET_CYCLE11_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle11.css >> /app/public/factory-control-ui.css \
  && printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/ux-reset.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
@@ -57,6 +59,10 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle9.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_UX_RESET_CYCLE10_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle10.js >> /app/public/value-cockpit-ui.js \
+ && printf '\n;/* WFM_UX_RESET_CYCLE11_MODEL_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle11-model.js >> /app/public/value-cockpit-ui.js \
+ && printf '\n;/* WFM_UX_RESET_CYCLE11_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle11.js >> /app/public/value-cockpit-ui.js \
  && rm -rf /tmp/wfm-ux-overlay
 
 # The staged application is self-contained and uses Node built-ins only. Remove package

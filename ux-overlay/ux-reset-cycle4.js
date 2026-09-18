@@ -6,6 +6,7 @@ const managerWithCost=()=>{try{const a=(typeof F!=='undefined'&&F.actor)||null;r
 const report=()=>{try{return typeof VCU!=='undefined'?VCU.report:null;}catch{return null;}};
 const money=pence=>{const n=Number(pence);if(!Number.isFinite(n))return 'Not quantified';try{return new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP',maximumFractionDigits:0}).format(n/100);}catch{return `£${Math.round(n/100).toLocaleString('en-GB')}`;}};
 const sumValue=rows=>rows.reduce((n,x)=>n+Number(x?.o?.value?.amountPence||0),0);
+const opportunityValue=row=>{const raw=row?.o?.value?.amountPence;if(raw===null||raw===undefined||raw==='')return Number.NEGATIVE_INFINITY;const n=Number(raw);return Number.isFinite(n)?n:Number.NEGATIVE_INFINITY;};
 function detail(title,caption,rows,kind){
  const d=document.createElement('details');d.className=`ux-performance-detail ${kind||''}`;
  const s=document.createElement('summary');s.innerHTML=`<span><b>${safe(title)}</b><small>${safe(caption)}</small></span><span class="ux-detail-state">Open</span>`;
@@ -21,7 +22,8 @@ function enhancePerformance(){
  const cards=[...grid.querySelectorAll(':scope > .vc-card')];
  if(cards.length!==opportunities.length)return;
  const waiting=[],reviewed=[];
- cards.forEach((card,i)=>{const o=opportunities[i];card.dataset.uxOpportunityKey=o.key;card.dataset.uxOpportunityStatus=o.status;const row={card,o};(o.status==='awaiting_decision'?waiting:reviewed).push(row);});
+ cards.forEach((card,i)=>{const o=opportunities[i];card.dataset.uxOpportunityKey=o.key;card.dataset.uxOpportunityStatus=o.status;const row={card,o,ordinal:i};(o.status==='awaiting_decision'?waiting:reviewed).push(row);});
+ waiting.sort((a,b)=>(opportunityValue(b)-opportunityValue(a))||(a.ordinal-b.ordinal));
  const waitingValue=Number(r.summary?.predictedValueAwaitingPence||0);
  const avoidable=r.insight?.hardCashAvoidableCostPoolPence;
  const desk=document.createElement('section');desk.className='ux-performance-desk';desk.setAttribute('aria-label','Cost and efficiency decisions');

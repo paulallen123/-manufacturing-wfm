@@ -1,0 +1,178 @@
+import { createServer } from 'node:http';
+import { readFileSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawn, execFileSync } from 'node:child_process';
+
+const PORT = 9271;
+const CDP_PORT = 9272;
+const cwd = process.cwd();
+const temp = mkdtempSync(join(tmpdir(), 'wfm-ux11-browser-'));
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const assert = (value, message) => { if (!value) throw new Error(message); };
+
+const fixture = `<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/ux-reset-cycle11.css">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7f7;color:#193842}.sidebar{display:flex;gap:8px;padding:8px;border-bottom:1px solid #d8e0e3;overflow:auto}.navbtn,.btn{padding:8px 10px}.shell{max-width:1180px;margin:auto;padding:16px}.heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.fcc-main{min-width:0}.ux-leave-card,.tr-list,.ux-signoff-desk{border:1px solid #d8e0e3;border-radius:12px;padding:14px;margin:10px 0;background:white}.tr-list{display:grid;gap:8px}.tr-person{padding:8px;text-align:left}.scope{display:flex;gap:8px;align-items:center;flex-wrap:wrap}select{max-width:100%;padding:8px}.review-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px}.panel,.review-aside,.review-signbar,.review-steps{border:1px solid #d8e0e3;padding:10px;margin:8px 0}@media(max-width:620px){.shell{padding:10px}.heading{align-items:flex-start;flex-direction:column}.review-layout{grid-template-columns:1fr}}
+</style></head><body>
+<nav class="sidebar" aria-label="Primary">
+<button class="navbtn" data-page="overview">Today</button>
+<button class="navbtn" data-page="leave">Absence</button>
+<button class="navbtn" data-page="time-review">Time Review</button>
+<button class="navbtn" data-page="weekly-review">Weekly Sign-off</button>
+</nav>
+<div class="shell" id="app"></div>
+<script>
+window.ui={page:'overview',role:'manager'};
+window.F={actor:{role:'manager',team:'team-a'}};
+window.isEmployee=()=>false;
+window.reviewTeam='team-a';
+const PEOPLE=[{id:'e1',name:'Alex Morgan',team:'team-a'},{id:'e2',name:'Sam Patel',team:'team-b'}];
+window.people=()=>PEOPLE;
+window.person=id=>PEOPLE.find(p=>String(p.id)===String(id))||null;
+window.data={requests:[
+ {id:'leave-1',employee:'e1',status:'pending',hours:8,date:'2026-09-21',createdAt:'2026-09-18T08:00:00Z'},
+ {id:'leave-2',employee:'e2',status:'approved',hours:8,date:'2026-09-22',createdAt:'2026-09-17T08:00:00Z'}
+]};
+const REPORT={generatedAt:'2026-09-18T08:30:00Z',teams:[
+ {id:'team-a',name:'Assembly',site:'Plant A',status:'in_review',canSign:false,workedMinutes:2400,issues:[{id:'time-1',status:'open',employee:'e1'}],blockers:[],categories:[{id:'attendance',confirmed:false}],employees:[{id:'e1'}],checkedEmployees:0},
+ {id:'team-b',name:'Packing',site:'Plant A',status:'returned',canSign:false,workedMinutes:1800,issues:[],blockers:[],categories:[{id:'attendance',confirmed:false}],employees:[{id:'e2'}],checkedEmployees:1}
+]};
+window.payrollPreview={report:()=>REPORT};
+function heading(title){return '<div class="heading"><div><span class="eyebrow">MANAGER</span><h1>'+title+'</h1></div></div>';}
+function wireTimeScope(){const s=document.getElementById('tri-team'),target=document.querySelector('.tr-list');if(!s||!target)return;s.addEventListener('change',()=>{target.dataset.scope=s.value;target.querySelector('.tr-person').textContent=s.value==='team-a'?'Alex Morgan · late clocking':'Sam Patel · review';});}
+function weeklyBase(){const selected=window.reviewTeam==='team-b'?'team-b':'team-a';return heading('Weekly Sign-off')+'<div class="scope"><label>Team <select id="review-team"><option value="team-a"'+(selected==='team-a'?' selected':'')+'>Assembly</option><option value="team-b"'+(selected==='team-b'?' selected':'')+'>Packing</option></select></label></div><div class="review-shell"><section class="review-hero">Weekly review</section><section class="review-metrics">Authoritative weekly metrics</section><div class="review-tabs">Review tabs</div><div class="review-steps"><button type="button" data-act="review-checks">Review weekly checks</button></div><div class="review-layout"><main class="review-main"><section class="panel"><button type="button" data-act="review-exceptions">Review exception evidence</button></section><section class="panel"><button type="button" data-act="review-people">Review employee totals</button></section><div class="review-signbar"><button type="button" data-act="sign-week">Sign week</button></div></main><aside class="review-aside"><button type="button" data-act="review-controls">Review controls</button></aside></div></div>';}
+function wireWeeklyScope(){const s=document.getElementById('review-team');if(!s)return;s.addEventListener('change',()=>{window.reviewTeam=s.value;window.render();});}
+window.render=async function(){
+ const app=document.getElementById('app');
+ if(ui.page==='overview') app.innerHTML='<main class="fcc-main">'+heading('Today')+'<section><h2>Existing manager actions</h2><p>Authoritative workflows remain the owners.</p></section></main>';
+ else if(ui.page==='leave') app.innerHTML=heading('Absence')+'<section class="ux-leave-card" data-request="leave-2"><b>Sam Patel</b><p>Approved leave.</p></section><section class="ux-leave-card" data-request="leave-1"><b>Alex Morgan</b><p>Pending manager decision.</p><button type="button">Review request</button></section>';
+ else if(ui.page==='time-review') {app.innerHTML=heading('Time Review')+'<div class="scope"><label>Team <select id="tri-team"><option value="">All teams</option><option value="team-a">Assembly</option><option value="team-b">Packing</option></select></label></div><section class="tr-list" data-scope=""><button type="button" class="tr-person">All teams · first exception</button></section>';wireTimeScope();}
+ else if(ui.page==='weekly-review') {app.innerHTML=weeklyBase();wireWeeklyScope();}
+};
+document.querySelectorAll('.navbtn[data-page]').forEach(b=>b.addEventListener('click',()=>{ui.page=b.dataset.page;window.render();}));
+window.render();
+</script>
+<script src="/ux-reset-cycle3.js"></script>
+<script src="/ux-reset-cycle11-model.js"></script>
+<script src="/ux-reset-cycle11.js"></script>
+</body></html>`;
+
+const assets = new Map([
+  ['/ux-reset-cycle3.js', readFileSync(join(cwd, 'ux-overlay/ux-reset-cycle3.js'))],
+  ['/ux-reset-cycle11-model.js', readFileSync(join(cwd, 'ux-overlay/ux-reset-cycle11-model.js'))],
+  ['/ux-reset-cycle11.js', readFileSync(join(cwd, 'ux-overlay/ux-reset-cycle11.js'))],
+  ['/ux-reset-cycle11.css', readFileSync(join(cwd, 'ux-overlay/ux-reset-cycle11.css'))]
+]);
+
+const server = createServer((req, res) => {
+  if (req.url === '/' || req.url === '/index.html') {
+    res.writeHead(200, {'content-type':'text/html; charset=utf-8'}); res.end(fixture); return;
+  }
+  if (assets.has(req.url)) {
+    const type = req.url.endsWith('.css') ? 'text/css' : 'text/javascript';
+    res.writeHead(200, {'content-type':type+'; charset=utf-8'}); res.end(assets.get(req.url)); return;
+  }
+  res.writeHead(404); res.end('not found');
+});
+await new Promise(resolve => server.listen(PORT, '127.0.0.1', resolve));
+
+function chromePath(){
+  for (const name of ['google-chrome','chromium','chromium-browser']) {
+    try { return execFileSync('bash',['-lc',`command -v ${name}`],{encoding:'utf8'}).trim(); } catch {}
+  }
+  throw new Error('Chrome/Chromium executable not found');
+}
+
+const chrome = spawn(chromePath(), [
+  '--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
+  `--remote-debugging-port=${CDP_PORT}`,`--user-data-dir=${join(temp,'chrome')}`,
+  '--window-size=1440,1000',`http://127.0.0.1:${PORT}/`
+], {stdio:'ignore'});
+
+async function retry(fn, attempts=100){let error;for(let i=0;i<attempts;i++){try{return await fn();}catch(e){error=e;await sleep(150);}}throw error;}
+let ws;
+try {
+  const targets = await retry(async()=>{const r=await fetch(`http://127.0.0.1:${CDP_PORT}/json/list`);const x=await r.json();if(!x.find(v=>v.type==='page'))throw new Error('No browser page');return x;});
+  const page = targets.find(x=>x.type==='page');
+  ws = new WebSocket(page.webSocketDebuggerUrl);
+  await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=()=>reject(new Error('CDP open failed'));});
+  let id=1; const pending=new Map();
+  ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(new Error(m.error.message)):p.resolve(m.result);}};
+  const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}));});
+  const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
+  await send('Runtime.enable');
+  await send('Page.enable');
+  await retry(async()=>{const ready=await evalx("document.readyState==='complete'&&document.querySelectorAll('.ux11-open').length===3");if(!ready)throw new Error('Action queue not ready');return true;});
+
+  async function exercise({route,sourceId,targetCheck,beforeReturn}){
+    const origin=await evalx(`(()=>{const b=document.querySelector('.ux11-open[data-ux11-route="${route}"]');if(!b)return null;const x={id:b.dataset.ux11Id,sourceId:b.dataset.ux11SourceId};b.click();return x;})()`);
+    assert(origin, `Missing ${route} queue action`);
+    assert(origin.sourceId===sourceId, `${route} sourceId mismatch: ${origin.sourceId}`);
+    await retry(async()=>{const state=await evalx(targetCheck);if(!state?.ready)throw new Error(`${route} target not focused yet`);return state;});
+    const destination=await evalx(targetCheck);
+    console.log(`UX11_${route.toUpperCase().replaceAll('-','_')}_DESTINATION=`+JSON.stringify(destination));
+    if(beforeReturn)await beforeReturn({origin,destination});
+    const back=await evalx("(()=>{const b=document.querySelector('.ux11-back');if(!b)return false;b.click();return true})()");
+    assert(back, `${route} return control missing`);
+    await retry(async()=>{const ok=await evalx(`ui.page==='overview'&&document.activeElement?.dataset?.ux11Id==='${origin.id}'`);if(!ok)throw new Error(`${route} origin focus not restored`);return true;});
+  }
+
+  await exercise({
+    route:'leave',sourceId:'leave-1',
+    targetCheck:`(()=>({ready:ui.page==='leave'&&document.activeElement?.matches('.ux-leave-card[data-request="leave-1"]'),request:document.activeElement?.dataset?.request||null,back:!!document.querySelector('.ux11-back')}))()`
+  });
+  await exercise({
+    route:'time-review',sourceId:'team-a',
+    targetCheck:`(()=>({ready:ui.page==='time-review'&&document.getElementById('tri-team')?.value==='team-a'&&document.activeElement?.classList.contains('tr-person'),team:document.getElementById('tri-team')?.value||null,target:document.activeElement?.textContent?.trim()||null,back:!!document.querySelector('.ux11-back')}))()`
+  });
+  await exercise({
+    route:'weekly-review',sourceId:'team-b',
+    targetCheck:`(()=>({ready:ui.page==='weekly-review'&&document.getElementById('review-team')?.value==='team-b'&&document.activeElement?.classList.contains('ux-signoff-desk'),team:document.getElementById('review-team')?.value||null,target:document.querySelector('.ux-signoff-desk h2')?.textContent?.trim()||null,back:!!document.querySelector('.ux11-back')}))()`,
+    beforeReturn:async()=>{
+      const started=await evalx(`(()=>{const b=document.querySelector('.ux-signoff-next');if(!b)return null;const x={label:b.textContent.trim(),target:b.dataset.uxSignoffOpen};b.click();return x;})()`);
+      assert(started?.target==='checks',`Weekly sign-off next target mismatch: ${started?.target||'missing'}`);
+      await retry(async()=>{const state=await evalx(`(()=>{const d=document.querySelector('[data-ux-signoff-detail="checks"]');return {ready:!!d?.open&&document.activeElement?.dataset?.act==='review-exceptions',open:!!d?.open,act:document.activeElement?.dataset?.act||null,label:document.activeElement?.textContent?.trim()||null}})()`);if(!state.ready)throw new Error('Weekly sign-off next decision not focused yet');return state;});
+      const next=await evalx(`(()=>{const d=document.querySelector('[data-ux-signoff-detail="checks"]');return {open:!!d?.open,act:document.activeElement?.dataset?.act||null,label:document.activeElement?.textContent?.trim()||null}})()`);
+      console.log('UX11_WEEKLY_SIGNOFF_NEXT_DECISION='+JSON.stringify({button:started,...next}));
+      assert(next.open&&next.act==='review-exceptions','Weekly sign-off did not continue to the existing exception decision control');
+    }
+  });
+
+  await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await sleep(200);
+  const mobile=await evalx(`(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,actions:document.querySelectorAll('.ux11-open').length,queue:!!document.querySelector('.ux11-queue')}))()`);
+  console.log('UX11_CONTEXT_MOBILE='+JSON.stringify(mobile));
+  assert(mobile.queue&&mobile.actions===3&&mobile.overflow<=2,'390px queue containment failed');
+
+  const mobileOrigin=await evalx(`(()=>{const b=document.querySelector('.ux11-open[data-ux11-route="leave"]');const id=b?.dataset.ux11Id||null;b?.click();return id})()`);
+  assert(mobileOrigin,'Mobile leave action missing');
+  await retry(async()=>{const ok=await evalx("ui.page==='leave'&&document.activeElement?.matches('.ux-leave-card[data-request=\"leave-1\"]')");if(!ok)throw new Error('Mobile absence target focus not ready');return true;});
+  await evalx("document.querySelector('.ux11-back').click()");
+  await retry(async()=>{const ok=await evalx(`ui.page==='overview'&&document.activeElement?.dataset?.ux11Id==='${mobileOrigin}'`);if(!ok)throw new Error('Mobile origin focus not restored');return true;});
+  const mobileReturn=await evalx("({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,focused:document.activeElement?.dataset?.ux11Route||null})");
+  console.log('UX11_CONTEXT_MOBILE_RETURN='+JSON.stringify(mobileReturn));
+  assert(mobileReturn.overflow<=2&&mobileReturn.focused==='leave','390px return-focus regression failed');
+
+  const confirmedOrigin=await evalx(`(()=>{const b=document.querySelector('.ux11-open[data-ux11-route="leave"]');if(!b)return null;const id=b.dataset.ux11Id;b.click();return id})()`);
+  assert(confirmedOrigin,'Source-confirmation leave action missing');
+  await retry(async()=>{const ok=await evalx("ui.page==='leave'&&document.activeElement?.matches('.ux-leave-card[data-request=\"leave-1\"]')");if(!ok)throw new Error('Source-confirmation absence target not ready');return true;});
+  const sourceMutation=await evalx(`(()=>{const r=data.requests.find(x=>x.id==='leave-1');if(!r)return false;r.status='approved';r.updatedAt='2026-09-18T16:45:00Z';return true})()`);
+  assert(sourceMutation,'Authoritative fixture request missing');
+  await evalx("document.querySelector('.ux11-back').click()");
+  await retry(async()=>{const state=await evalx(`(()=>{const row=document.querySelector('.ux11-resolved [data-ux11-id="${confirmedOrigin}"]');return {ready:ui.page==='overview'&&!!row&&document.activeElement===row,laneOpen:row?.closest('details')?.open===true,live:document.querySelector('.ux11-live')?.textContent||'',handled:document.querySelectorAll('.ux11-receipts:not(.ux11-resolved) [data-ux11-id="${confirmedOrigin}"]').length}})()`);if(!state.ready)throw new Error('Source-confirmed receipt not focused yet');return state;});
+  const confirmed=await evalx(`(()=>{const row=document.querySelector('.ux11-resolved [data-ux11-id="${confirmedOrigin}"]');return {laneOpen:row?.closest('details')?.open===true,live:document.querySelector('.ux11-live')?.textContent||'',handled:document.querySelectorAll('.ux11-receipts:not(.ux11-resolved) [data-ux11-id="${confirmedOrigin}"]').length,status:data.requests.find(x=>x.id==='leave-1')?.status||null}})()`);
+  console.log('UX11_SOURCE_CONFIRMED_RETURN='+JSON.stringify(confirmed));
+  assert(confirmed.status==='approved','Source fixture did not retain approved status');
+  assert(confirmed.laneOpen&&confirmed.handled===0,'Confirmed human decision was not isolated from automation receipts');
+  assert(confirmed.live==='The source workflow confirmed the decision.','Confirmed-return live announcement missing');
+  console.log('UX11_CONTEXT_BROWSER_REGRESSION=PASS');
+} finally {
+  try { ws?.close(); } catch {}
+  try { chrome.kill('SIGTERM'); } catch {}
+  await new Promise(resolve=>server.close(resolve));
+  rmSync(temp,{recursive:true,force:true});
+}

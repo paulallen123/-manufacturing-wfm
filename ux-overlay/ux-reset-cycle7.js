@@ -9,6 +9,19 @@ function makeScopeFold(){
  details.innerHTML='<summary><span><b>Scope, filters &amp; review settings</b><small>Change week, day, team, queue, search or tolerances only when you need to.</small></span><span class="ux-tr-open">Open</span></summary><div class="ux-tr-scope-body"></div>';
  return details;
 }
+function focusDecisionPanel(){
+ if(!manager()||page()!=='time-review')return false;
+ const panel=document.querySelector('.tr-panel');
+ if(!panel)return false;
+ const target=panel.querySelector('h2,h3,[data-ux-decision-heading]')||panel;
+ if(!target.matches?.('button,a[href],input,select,textarea,[tabindex]'))target.setAttribute('tabindex','-1');
+ try{target.scrollIntoView({block:'start',behavior:'smooth'});}catch{try{target.scrollIntoView();}catch{}}
+ try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}
+ return document.activeElement===target;
+}
+function continueFromEmployeeSelection(){
+ setTimeout(()=>{try{focusDecisionPanel();}catch{}},80);
+}
 function enhanceTimeReview(){
  if(!manager()||page()!=='time-review')return;
  const workspace=document.querySelector('.tr-workspace');
@@ -53,8 +66,9 @@ function enhanceTimeReview(){
  document.querySelector('.heading')?.classList.add('ux-tr-heading');
 }
 function apply(){try{enhanceTimeReview();}catch(e){console.warn('WFM UX cycle 7 skipped:',e);}}
+document.addEventListener('click',e=>{if(e.target.closest('.tr-person'))continueFromEmployeeSelection();},true);
 const observer=new MutationObserver(()=>apply());
 observer.observe(document.documentElement,{subtree:true,childList:true});
 setTimeout(apply,0);setTimeout(apply,250);setTimeout(apply,700);
-window.WFMUXCycle7={apply};
+window.WFMUXCycle7={apply,focusDecisionPanel};
 })();
