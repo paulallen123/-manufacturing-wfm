@@ -91,3 +91,37 @@ test('mixed assets retain review-required when only unknown evidence exists', ()
   });
   assert.equal(result.status, 'review_required');
 });
+
+test('uses unit identity when labels differ but standard unit IDs match',()=>{
+  const result=evaluateCapabilityRequirement(
+    {capabilityId:'laser-cut',properties:[{semanticId:'urn:p',kind:'scalar',value:12,unit:'millimetre',unitId:'urn:unit:mm'}]},
+    {capabilityId:'laser-cut',constraints:[{semanticId:'urn:p',operator:'gte',value:10,unit:'mm',unitId:'urn:unit:mm'}]}
+  );
+  assert.equal(result.status,'feasible');
+});
+
+test('range only passes when requirement explicitly asks whether target is contained',()=>{
+  const rangeProvided={capabilityId:'laser-cut',properties:[{semanticId:'urn:p',kind:'range',min:2,max:12,unit:'mm'}]};
+  const pass=evaluateCapabilityRequirement(rangeProvided,{capabilityId:'laser-cut',constraints:[{semanticId:'urn:p',operator:'contains',value:10,unit:'mm'}]});
+  const fail=evaluateCapabilityRequirement(rangeProvided,{capabilityId:'laser-cut',constraints:[{semanticId:'urn:p',operator:'contains',value:16,unit:'mm'}]});
+  assert.equal(pass.status,'feasible');
+  assert.equal(fail.status,'infeasible');
+});
+
+test('range does not infer gte/lte semantics',()=>{
+  const result=evaluateCapabilityRequirement(
+    {capabilityId:'laser-cut',properties:[{semanticId:'urn:p',kind:'range',min:2,max:12,unit:'mm'}]},
+    {capabilityId:'laser-cut',constraints:[{semanticId:'urn:p',operator:'gte',value:10,unit:'mm'}]}
+  );
+  assert.equal(result.status,'unknown');
+  assert.equal(result.checks[0].reason,'range_requires_contains_operator');
+});
+
+test('different unit IDs fail closed even when labels look compatible',()=>{
+  const result=evaluateCapabilityRequirement(
+    {capabilityId:'laser-cut',properties:[{semanticId:'urn:p',kind:'scalar',value:12,unit:'mm',unitId:'urn:unit:mm'}]},
+    {capabilityId:'laser-cut',constraints:[{semanticId:'urn:p',operator:'gte',value:1,unit:'mm',unitId:'urn:unit:inch'}]}
+  );
+  assert.equal(result.status,'unknown');
+  assert.equal(result.checks[0].reason,'unit_mismatch');
+});
