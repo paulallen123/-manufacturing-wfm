@@ -228,7 +228,7 @@ try {
   await send('Page.navigate', { url: origin });
   await waitForAuthenticatedHome();
   await waitForExpression(`Boolean(document.querySelector('.ux-approved-today'))`);
-  const drawerOpened = await evaluate(`(() => { const card=document.querySelector('.ux-approved-decision-card'); if(!card) return false; card.click(); return true; })()`);
+  const drawerOpened = await evaluate(`(() => { const button=document.querySelector('.ux-approved-path-button'); if(!button) return false; button.click(); return true; })()`);
   assert.equal(drawerOpened,true);
   await waitForExpression(`document.querySelector('.ux-concept-decision-drawer')?.classList.contains('open') === true`);
   const stages = await evaluate(`[...document.querySelectorAll('.ux-concept-step b')].map(x=>x.textContent.trim())`);
