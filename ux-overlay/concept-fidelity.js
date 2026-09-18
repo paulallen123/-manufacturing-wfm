@@ -20,7 +20,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function setButtonLabel(button,label){
   if(!button)return;
   const span=button.querySelector('span:not(.count):not(.review-count)');
-  if(span)span.textContent=label; else button.textContent=label;
+  if(span){if(span.textContent!==label)span.textContent=label;}else if(button.textContent!==label)button.textContent=label;
   button.setAttribute('aria-label',label);button.setAttribute('title',label);
 }
 function routeFor(buttons,pages){return pages.find(page=>buttons.some(b=>b.dataset.page===page))||null;}
