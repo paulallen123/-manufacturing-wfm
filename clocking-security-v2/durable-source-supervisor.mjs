@@ -7,13 +7,46 @@ function stable(value){
   if(Array.isArray(value)) return '['+value.map(stable).join(',')+']';
   return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stable(value[k])).join(',')+'}';
 }
-function checksum(value){ return crypto.createHash('sha256').update(stable(value)).digest('hex'); }
 function clone(value){ return JSON.parse(JSON.stringify(value)); }
+function keyId(value){
+  const id=String(value||'').trim();
+  if(!/^[A-Za-z0-9._:-]{1,128}$/.test(id)) throw new Error('Valid attendance state integrity key ID required.');
+  return id;
+}
+function keyBytes(value){
+  let key;
+  if(Buffer.isBuffer(value)) key=Buffer.from(value);
+  else if(value instanceof Uint8Array) key=Buffer.from(value);
+  else if(typeof value==='string') key=Buffer.from(value,'utf8');
+  else throw new Error('Attendance state integrity key material is required.');
+  if(key.length<32) throw new Error('Attendance state integrity key must be at least 32 bytes.');
+  return key;
+}
+function keyring(value){
+  const entries=value instanceof Map?[...value.entries()]:(value && typeof value==='object' && !Array.isArray(value)?Object.entries(value):[]);
+  if(entries.length===0) throw new Error('Attendance state integrity keyring is required.');
+  const out=new Map();
+  for(const [id,material] of entries) out.set(keyId(id),keyBytes(material));
+  return out;
+}
+function macFor(schemaVersion,state,key){
+  return crypto.createHmac('sha256',key).update(stable({schemaVersion,state})).digest('hex');
+}
+function sameMac(left,right){
+  if(typeof left!=='string'||typeof right!=='string'||!/^[a-f0-9]{64}$/i.test(left)||!/^[a-f0-9]{64}$/i.test(right)) return false;
+  const a=Buffer.from(left,'hex'),b=Buffer.from(right,'hex');
+  return a.length===b.length && crypto.timingSafeEqual(a,b);
+}
 
 export class AtomicSupervisorStateStore {
-  constructor({filePath,schemaVersion=1,maxBytes=16*1024*1024}={}){
+  constructor({filePath,schemaVersion=2,maxBytes=16*1024*1024,integrityKeys,activeKeyId}={}){
     if(!filePath) throw new Error('filePath required.');
-    this.filePath=filePath; this.schemaVersion=schemaVersion; this.maxBytes=maxBytes;
+    this.filePath=filePath;
+    this.schemaVersion=schemaVersion;
+    this.maxBytes=maxBytes;
+    this.integrityKeys=keyring(integrityKeys);
+    this.activeKeyId=keyId(activeKeyId);
+    if(!this.integrityKeys.has(this.activeKeyId)) throw new Error('Active attendance state integrity key is not trusted.');
     fs.mkdirSync(path.dirname(filePath),{recursive:true});
   }
 
@@ -21,14 +54,31 @@ export class AtomicSupervisorStateStore {
     if(!fs.existsSync(this.filePath)) return null;
     const raw=fs.readFileSync(this.filePath);
     if(raw.length>this.maxBytes) throw new Error('Attendance source state exceeds size limit.');
-    let frame; try{ frame=JSON.parse(raw.toString('utf8')); }catch{ throw new Error('Attendance source state is invalid JSON.'); }
-    if(frame?.schemaVersion!==this.schemaVersion || !frame?.state || typeof frame.checksum!=='string') throw new Error('Attendance source state frame is invalid.');
-    if(checksum(frame.state)!==frame.checksum) throw new Error('Attendance source state checksum mismatch.');
+    let frame;
+    try{ frame=JSON.parse(raw.toString('utf8')); }catch{ throw new Error('Attendance source state is invalid JSON.'); }
+    const integrity=frame?.integrity;
+    if(frame?.schemaVersion!==this.schemaVersion || !frame?.state || integrity?.algorithm!=='HMAC-SHA256'){
+      throw new Error('Attendance source state authenticated frame is invalid.');
+    }
+    const trustedKeyId=keyId(integrity.keyId);
+    const key=this.integrityKeys.get(trustedKeyId);
+    if(!key) throw new Error('Attendance source state integrity key is not trusted.');
+    const expected=macFor(frame.schemaVersion,frame.state,key);
+    if(!sameMac(expected,integrity.mac)) throw new Error('Attendance source state authentication failed.');
     return clone(frame.state);
   }
 
   save(state){
-    const payload={schemaVersion:this.schemaVersion,state:clone(state),checksum:checksum(state)};
+    const stateCopy=clone(state);
+    const payload={
+      schemaVersion:this.schemaVersion,
+      state:stateCopy,
+      integrity:{
+        algorithm:'HMAC-SHA256',
+        keyId:this.activeKeyId,
+        mac:macFor(this.schemaVersion,stateCopy,this.integrityKeys.get(this.activeKeyId))
+      }
+    };
     const body=Buffer.from(JSON.stringify(payload));
     if(body.length>this.maxBytes) throw new Error('Attendance source state exceeds size limit.');
     const dir=path.dirname(this.filePath);
@@ -47,7 +97,7 @@ export class AtomicSupervisorStateStore {
       try{ if(fs.existsSync(tmp)) fs.unlinkSync(tmp); }catch{}
       throw e;
     }
-    return {bytes:body.length,checksum:payload.checksum};
+    return {bytes:body.length,integrityKeyId:this.activeKeyId};
   }
 }
 
