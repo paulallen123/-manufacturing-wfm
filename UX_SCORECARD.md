@@ -1,5 +1,54 @@
 # WFM UX scorecard
 
+## 2026-09-18 - Cycle 12 r1: unified implementation and future-capability experience
+
+### Journey reviewed
+Existing role-first shell -> Today / My day -> Cycle 11 Universal Action Queue -> implementation and new operating capability signals -> owning source workflow -> source-confirmed return.
+
+### Reuse / duplicate check
+- Cycle 11 remains the single manager action surface; no replacement dashboard or duplicate decision workflow was added.
+- Existing role navigation and specialist routes are preserved.
+- The existing UX gate was extended rather than creating another CI workflow.
+- New capabilities publish read-only presentation signals and keep their own evidence/write authority.
+
+### Research delta
+- Current workforce platforms are moving toward contextual AI, frontline voice, natural-language payroll/time workflows and real-time action orchestration.
+- Current manufacturing connected-worker products are making shift handover and in-context execution intelligence first-class workflows.
+- The design response is one governed adaptive action surface, not more permanent navigation.
+
+### Implementation completed this run
+- Added Cycle 12 governed provider model and registry.
+- Added provider slots for implementation, integrations, attendance, agency, manufacturing cost, energy, support, learning, handover, documents and payroll.
+- Extended Cycle 11 reason/source taxonomy so those signals can use the existing deterministic ranking and stale-evidence protections.
+- Added specialist-role queue reuse for cross-system setup/control tasks.
+- Renamed More drawer groups to Launch & configure and Trust & support without changing route ownership.
+- Composed Cycle 12 model/UI/CSS after Cycle 11 in the sealed presentation build.
+- Added deterministic provider-contract proof and extended the existing UX gate.
+- Added design specification covering temporary implementation mode, Shift Handover Intelligence, voice, What changed explanations, manager-edit learning, contextual acknowledgements and Outcome Ledger.
+
+### Validation
+- Local Node syntax checks passed for the new Cycle 12 model and UI.
+- Deterministic contract proof passed: `UX12_SIGNAL_CONTRACT=PASS`.
+- Repository structural checks confirmed Cycle 12 CSS and model -> UI composition after Cycle 11.
+- PR #90 is mergeable and remains draft.
+- Hosted PR run `35364950404` failed before execution: the only job returned `steps: []` and no downloadable log blob. No UX/product test step ran, so hosted proof remains unavailable rather than red.
+
+### Capability preservation
+- No server-side permission, tenant, payroll, schedule, leave, attendance or approval authority moved into presentation.
+- Unknown/malformed providers fail closed.
+- Provider identity binds signal source and cannot impersonate another capability.
+- Separate feature branches are not claimed merged or production-ready.
+
+### Serious-idea decision log
+- Separate implementation dashboard: REJECT - becomes another permanent product area and recreates navigation density.
+- Put implementation exceptions into the same action grammar: BUILD NOW - implemented contract.
+- Add every new feature to primary navigation: REJECT - primary navigation remains role-first and stable.
+- Shift Handover Intelligence: BUILD NEXT - strong manufacturing-specific value and fits the source-signal model.
+- Voice/hands-free consequential approvals without confirmation: REJECT - voice may assist, but write authority and explicit confirmation remain.
+- Outcome Ledger: BUILD NEXT - closes the learning loop between predicted and verified operational value.
+
+### Next highest-value action
+Bind the one-day implementation readiness engine to the `implementation` provider first, then use the same adapter pattern for integrations, attendance, agency, cost/energy and support. Do not fork the UI for any of them.
 ## 2026-09-18 — Cycle 11 r5: authoritative return confirmation without automation ambiguity
 
 ### Journey reviewed
