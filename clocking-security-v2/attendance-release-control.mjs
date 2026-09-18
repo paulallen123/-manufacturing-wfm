@@ -30,7 +30,7 @@ function gateIsValid(name,gate,candidateSha){
     gate.passed===true &&
     gate.candidateSha===candidateSha &&
     validEvidenceId(gate.evidenceId) &&
-    (!Number.isSafeInteger(gate.skipped) || gate.skipped===0)
+    gate.skipped===0
   );
   if(!common) return false;
   if(name==='rollbackAuthority'){
