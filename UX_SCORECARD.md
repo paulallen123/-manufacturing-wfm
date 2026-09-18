@@ -37,7 +37,7 @@ Research / competitive insight: official SAP 2026 Joule/Joule Work material is m
 
 Hypothesis: adding explicit disclosure semantics and destination focus to the Cycle 10 focus strip will reduce keyboard ambiguity without changing the task model; a later optional intent/action entry should reduce route hunting only if it preserves stable canonical navigation and deterministic authority.
 
-Validation added: the Cycle 10 browser gate now asserts the disclosure's `aria-expanded`/`aria-controls` state and verifies that the coverage and publish jumps transfer focus to the intended evidence/action targets. Source-safety and exact sealed-runtime composition remain required in the same gate. Run `35293777490` was started for exact branch head `0ae0c6a881117c5b8233f05e6e3fac28fde08378`; do not mark this sub-cycle verified until that run completes successfully.
+Validation result: exact branch run `35293777490` on code head `0ae0c6a881117c5b8233f05e6e3fac28fde08378` passed source safety, exact Docker/sealed-runtime composition and the browser interaction gate. Observed browser evidence included `UX_CYCLE10_KEYBOARD_NAVIGATION=PASS`, `aria-expanded=false/true` with `aria-controls=planner`, zero page-wide overflow at desktop and 390px mobile, and preservation of the original `Publish schedule` control. The later scorecard-only commit does not change product code.
 
 Hosted proof attempt: an isolated Railway service `wfm-ux-cycle10-proof` was created against branch `ux/planner-focus-20260917`, but Railway currently reports no first deployment for that service. Existing customer-proof and Cycle 9 UX services were not modified. Hosted Cycle 10 visual/interaction proof therefore remains open.
 
@@ -48,9 +48,9 @@ UX scorecard delta:
 - Navigation predictability: preserved.
 - Action visibility: preserved.
 - Cognitive load: not newly measured.
-- Accessibility: structurally improved in candidate via disclosure relation and destination-focus behavior; full audit still open.
-- Mobile/tablet: unchanged from prior 390px pass pending rerun on the exact new head.
+- Accessibility: improved and browser-verified for disclosure semantics and destination focus; full audit still open.
+- Mobile/tablet: exact rerun passed at 390px with zero page-wide overflow and publish control preserved.
 - Explainability: future intent/action layer remains BUILD NEXT / EXPERIMENT, not default authority.
-- Capability preservation: unchanged by design; exact branch gate still required.
+- Capability preservation: exact branch gate passed; authoritative publish and sealed runtime remain unchanged.
 
-Single next highest-value UX action: finish the exact-head Cycle 10 gate, then obtain isolated hosted browser proof on the reconciled Cycle 10 candidate before implementing the universal Action Queue experiment.
+Single next highest-value UX action: reconcile Cycle 10 with current main and obtain isolated hosted browser proof of that exact candidate before implementing the universal Action Queue experiment.
