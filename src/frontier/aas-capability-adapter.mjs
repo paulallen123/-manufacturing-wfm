@@ -2,7 +2,7 @@ import { extractIdta02020CapabilityProfile, isIdta02020CapabilitySubmodel } from
 
 const CONTAINER_KEYS = ['submodelElements', 'value', 'statements', 'annotations'];
 
-export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.2.0';
+export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.3.0';
 
 function canonicalReference(reference) {
   const keys = Array.isArray(reference?.keys) ? reference.keys.filter((key) => key?.value) : [];
@@ -22,8 +22,8 @@ function pushChildren(node, depth, stack) {
   }
 }
 
-export function extractAasCapabilities(submodels = [], { maxElements = 10_000, maxDepth = 12 } = {}) {
-  const profile = extractIdta02020CapabilityProfile(submodels, { maxElements, maxDepth });
+export function extractAasCapabilities(submodels = [], { maxElements = 10_000, maxDepth = 12, conceptDescriptions = [] } = {}) {
+  const profile = extractIdta02020CapabilityProfile(submodels, { maxElements, maxDepth, conceptDescriptions });
   if (profile.status !== 'accepted') return { status: 'rejected', reason: profile.reason, capabilities: [] };
 
   const capabilities = [...profile.offered];
@@ -83,12 +83,12 @@ export function extractAasCapabilities(submodels = [], { maxElements = 10_000, m
   };
 }
 
-export function aasShellToCapabilityAsset({ tenantId, siteId, shell, submodels = [], source, workCentreId = null, limits } = {}) {
+export function aasShellToCapabilityAsset({ tenantId, siteId, shell, submodels = [], conceptDescriptions = [], source, workCentreId = null, limits } = {}) {
   if (!tenantId || !siteId || !shell || !source) return { status: 'rejected', reason: 'missing_scope_shell_or_source' };
   const assetId = shell?.assetInformation?.globalAssetId ?? shell?.id ?? null;
   if (!assetId) return { status: 'rejected', reason: 'missing_aas_asset_identity' };
 
-  const extracted = extractAasCapabilities(submodels, limits);
+  const extracted = extractAasCapabilities(submodels, { ...(limits ?? {}), conceptDescriptions });
   if (extracted.status !== 'accepted') return extracted;
 
   return {
