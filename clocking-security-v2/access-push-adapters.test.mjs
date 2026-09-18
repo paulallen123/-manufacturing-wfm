@@ -8,6 +8,12 @@ const T=Date.parse('2026-09-18T13:10:00Z');
 const secret='test-shared-secret';
 const raw='{"hello":"world"}';
 
+function verkadaVerification(rawBody=raw){
+  const ts=String(Math.floor(T/1000));
+  const sig=crypto.createHmac('sha256',secret).update(`${rawBody}|${ts}`).digest('hex');
+  return verifyVerkadaWebhook({rawBody,signatureHeader:`${ts}|${sig}`,secret,nowMs:T});
+}
+
 test('Kisi HMAC verifies raw body and rejects tampering',()=>{
   const sig=crypto.createHmac('sha256',secret).update(raw).digest('hex');
   assert.equal(verifyKisiWebhook({rawBody:raw,signature:sig,secret}).ok,true);
@@ -15,10 +21,9 @@ test('Kisi HMAC verifies raw body and rejects tampering',()=>{
 });
 
 test('Verkada signature validates timestamped HMAC',()=>{
-  const ts=String(Math.floor(T/1000));
-  const sig=crypto.createHmac('sha256',secret).update(`${raw}|${ts}`).digest('hex');
-  const r=verifyVerkadaWebhook({rawBody:raw,signatureHeader:`${ts}|${sig}`,secret,nowMs:T});
+  const r=verkadaVerification(raw);
   assert.equal(r.ok,true);
+  assert.match(r.authenticatedBodySha256,/^[a-f0-9]{64}$/);
 });
 
 test('Verkada stale signed webhook is rejected as replay risk',()=>{
@@ -99,23 +104,52 @@ test('Verkada is declared as realtime webhook plus historical backfill provider'
   assert.equal(p.backfill,true);
 });
 
-test('webhook is acknowledged only after durable commit succeeds',async()=>{
+test('webhook is acknowledged only after the exact authenticated body is derived and durably committed',async()=>{
   let persisted=false;
-  const r=await acknowledgeAfterDurableCommit({verification:{ok:true},delivery:{id:'e1'},persist:async d=>{ persisted=true; return {id:d.id}; }});
+  const verification=verkadaVerification(raw);
+  const r=await acknowledgeAfterDurableCommit({verification,rawBody:raw,deriveDelivery:async parsed=>({id:parsed.hello}),persist:async d=>{ persisted=true; return {id:d.id}; }});
   assert.equal(persisted,true);
   assert.equal(r.httpStatus,200);
   assert.equal(r.status,'accepted');
 });
 
+test('valid signature cannot be paired with a different payload before durable commit',async()=>{
+  let called=false;
+  const verification=verkadaVerification(raw);
+  const r=await acknowledgeAfterDurableCommit({verification,rawBody:'{"hello":"attacker"}',deriveDelivery:async parsed=>parsed,persist:async()=>{called=true;}});
+  assert.equal(called,false);
+  assert.equal(r.httpStatus,401);
+  assert.equal(r.reason,'AUTHENTICATED_BODY_MISMATCH');
+});
+
+test('caller-constructed verification lookalike cannot cross the durable boundary',async()=>{
+  let called=false;
+  const fake={ok:true,authenticatedBodySha256:crypto.createHash('sha256').update(raw).digest('hex')};
+  const r=await acknowledgeAfterDurableCommit({verification:fake,rawBody:raw,deriveDelivery:async parsed=>parsed,persist:async()=>{called=true;}});
+  assert.equal(called,false);
+  assert.equal(r.httpStatus,401);
+  assert.equal(r.reason,'UNVERIFIED_DELIVERY');
+});
+
+test('serialized genuine verification loses process-private authority',async()=>{
+  let called=false;
+  const cloned=JSON.parse(JSON.stringify(verkadaVerification(raw)));
+  const r=await acknowledgeAfterDurableCommit({verification:cloned,rawBody:raw,deriveDelivery:async parsed=>parsed,persist:async()=>{called=true;}});
+  assert.equal(called,false);
+  assert.equal(r.httpStatus,401);
+  assert.equal(r.reason,'UNVERIFIED_DELIVERY');
+});
+
 test('durable commit failure returns retryable 500 instead of false acknowledgement',async()=>{
-  const r=await acknowledgeAfterDurableCommit({verification:{ok:true},delivery:{id:'e1'},persist:async()=>{ throw new Error('disk'); }});
+  const verification=verkadaVerification(raw);
+  const r=await acknowledgeAfterDurableCommit({verification,rawBody:raw,deriveDelivery:async parsed=>parsed,persist:async()=>{ throw new Error('disk'); }});
   assert.equal(r.httpStatus,500);
   assert.equal(r.reason,'DURABLE_COMMIT_FAILED');
 });
 
 test('unverified delivery never reaches durable attendance inbox',async()=>{
   let called=false;
-  const r=await acknowledgeAfterDurableCommit({verification:{ok:false,reason:'INVALID_SIGNATURE'},delivery:{id:'e1'},persist:async()=>{ called=true; }});
+  const r=await acknowledgeAfterDurableCommit({verification:{ok:false,reason:'INVALID_SIGNATURE'},rawBody:raw,deriveDelivery:async parsed=>parsed,persist:async()=>{ called=true; }});
   assert.equal(called,false);
   assert.equal(r.httpStatus,401);
   assert.equal(r.reason,'INVALID_SIGNATURE');
