@@ -11,6 +11,7 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
 RUN mkdir -p /app/security-runtime
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
 COPY security/runtime/runtime-attestation.cjs /app/security-runtime/runtime-attestation.cjs
+COPY security/runtime/deployment-attestation.cjs /app/security-runtime/deployment-attestation.cjs
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 RUN printf '%s\n' '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' > /app/security-runtime/runtime-sha256
 
@@ -56,6 +57,15 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && printf '\n;/* WFM_UX_RESET_CYCLE9_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle9.js >> /app/public/value-cockpit-ui.js \
  && rm -rf /tmp/wfm-ux-overlay
+
+# Seal the final application-content tree after security and UX composition. This digest
+# deliberately covers the extracted runtime plus reviewable overlays so a changed guard,
+# bootstrap or UX layer cannot reuse the unchanged base runtime artifact identity.
+RUN find /app -type f ! -path '/app/security-runtime/deployment-sha256' -print0 \
+ | sort -z \
+ | xargs -0 sha256sum \
+ | sha256sum \
+ | cut -d' ' -f1 > /app/security-runtime/deployment-sha256
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
 # managers from the final runtime so npm-bundled libraries are not an exposed attack surface.
