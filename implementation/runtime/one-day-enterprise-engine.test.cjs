@@ -43,6 +43,7 @@ function fixture() {
   const engine = createOneDayEnterpriseEngine({
     dbPath,
     internalToken: 'implementation-worker-test-token',
+    contractWebhookSecret: 'contract-webhook-test-token',
     publicOrigin: 'https://implementation.test',
     sendInvitation: async invitation => {
       sentInvitations.push(invitation);
@@ -57,6 +58,7 @@ function fixture() {
     tokens,
     sentInvitations,
     internal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },
+    contractWebhook: { 'x-wfm-contract-webhook': 'contract-webhook-test-token' },
     close() {
       engine.close();
       fs.rmSync(dir, { recursive: true, force: true });
@@ -157,6 +159,58 @@ async function passAllEvidence(f, runId) {
   }
   return last.body;
 }
+
+test('provider-neutral signed contract webhook sends one invitation and does not start implementation', async () => {
+  const f = fixture();
+  try {
+    const denied = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',
+      {
+        event: 'contract_signed',
+        tenant: 'alpha',
+        contractId: 'external-contract-001',
+        implementationContactEmail: 'manager@alpha'
+      }
+    );
+    assert.equal(denied.status, 403);
+    assert.equal(f.sentInvitations.length, 0);
+
+    const ignored = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',
+      {
+        event: 'draft',
+        tenant: 'alpha',
+        contractId: 'external-contract-001',
+        implementationContactEmail: 'manager@alpha'
+      },
+      f.contractWebhook
+    );
+    assert.equal(ignored.status, 202);
+    assert.equal(ignored.body.ignored, true);
+    assert.equal(f.sentInvitations.length, 0);
+
+    const signed = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',
+      {
+        event: 'contract_signed',
+        tenant: 'alpha',
+        contractId: 'external-contract-001',
+        implementationContactEmail: 'manager@alpha',
+        targetHours: 8
+      },
+      f.contractWebhook
+    );
+    assert.equal(signed.status, 201);
+    assert.equal(signed.body.invitation.state, 'AWAITING_CUSTOMER_START');
+    assert.equal(f.sentInvitations.length, 1);
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 0);
+    db.close();
+  } finally {
+    f.close();
+  }
+});
 
 test('employee cannot inspect enterprise implementation control plane', async () => {
   const f = fixture();
