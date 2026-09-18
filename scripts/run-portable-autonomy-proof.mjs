@@ -32,6 +32,7 @@ const checks = [
   ['tier3-shadow-simulation', 'scripts/validate-t3-shadow-support.mjs', true],
   ['tier3-customer-authorisation-consent-gate', 'scripts/validate-t3-customer-authorisation-gate.mjs', true],
   ['tier3-execution-readiness-boundary', 'scripts/validate-t3-execution-readiness.mjs', true],
+  ['tier3-deterministic-execution-sandbox', 'scripts/validate-t3-deterministic-execution-sandbox.mjs', true],
   ['tier4-adversarial-containment-chaos', 'scripts/validate-t4-containment-chaos.mjs', true],
   ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
 ];
