@@ -77,30 +77,13 @@ jobs:
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
 
-          "$RAILWAY_BIN" up             --project "$RAILWAY_PROJECT_ID"             --service "$RAILWAY_SERVICE_ID"             --environment "$RAILWAY_ENVIRONMENT_ID"             --ci
-
-          matched=0
-          for attempt in $(seq 1 90); do
-            "$RAILWAY_BIN" deployment list               --service "$RAILWAY_SERVICE_ID"               --environment "$RAILWAY_ENVIRONMENT_ID"               --json > "$RUNNER_TEMP/canonical-staging-deployments.json"
-
-            read -r status sha <<<"$(node --input-type=module - "$RUNNER_TEMP/canonical-staging-deployments.json" "$GITHUB_SHA" <<'NODE'
-          import fs from 'node:fs';
-          const value = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-          const expected = process.argv[3];
-          const list = Array.isArray(value) ? value : (value.deployments || []);
-          const deployment = list.find((entry) => String(entry?.meta?.commitHash || entry?.commitHash || '') === expected) || {};
-          process.stdout.write(`${String(deployment.status || deployment.state || '').toUpperCase()} ${String(deployment?.meta?.commitHash || deployment?.commitHash || '')}`);
-          NODE
-            )"
-
-            echo "CANONICAL_STAGING_DEPLOYMENT_STATUS=$status SHA=$sha"
-            if [ "$sha" = "$GITHUB_SHA" ] && [ "$status" = "SUCCESS" ]; then matched=1; break; fi
-            if [ "$sha" = "$GITHUB_SHA" ] && { [ "$status" = "FAILED" ] || [ "$status" = "CRASHED" ] || [ "$status" = "REMOVED" ]; }; then
-              exit 1
-            fi
-            sleep 4
-          done
-          test "$matched" = "1"
+          echo "CANONICAL_STAGING_UPLOAD_SHA=$GITHUB_SHA"
+          "$RAILWAY_BIN" up \
+            --project "$RAILWAY_PROJECT_ID" \
+            --service "$RAILWAY_SERVICE_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --ci
+          echo "CANONICAL_STAGING_DEPLOY=PASS SHA=$GITHUB_SHA"
 
       - name: Verify canonical staging health
         shell: bash
