@@ -49,6 +49,8 @@ function createAutonomyControlLoop({
   selfHelp,
   recoveryExecutor,
   repairCoordinator,
+  t3ShadowSimulator,
+  t3ShadowVerifier,
   rollbackExecutor,
   now = Date.now,
   maxActions = 3,
@@ -149,8 +151,52 @@ function createAutonomyControlLoop({
           append('t2-result', { status: outcome, independentlyVerified: repair.independentlyVerified === true });
         }
       } else if (tier === 'T3') {
-        outcome = input.customerAuthorisationRequired === true ? 'customer_authorisation_required' : 'contained';
-        append('t3-authority-boundary', { proposedAction: clean(input.proposedAction, 120) || null });
+        if (!t3ShadowSimulator?.simulate || !t3ShadowVerifier?.verify) {
+          outcome = 'contained';
+          append('t3-shadow-unavailable', {
+            simulatorAvailable: Boolean(t3ShadowSimulator?.simulate),
+            verifierAvailable: Boolean(t3ShadowVerifier?.verify),
+          });
+        } else {
+          const t3Shadow = t3ShadowSimulator.simulate({
+            incidentId,
+            tenant,
+            targetTenant,
+            scenarioId,
+            evidenceDigest,
+            proposedAction: input.proposedAction,
+            beforeStateDigest: input.beforeStateDigest,
+            afterStateDigest: input.afterStateDigest,
+            compensationPlanDigest: input.compensationPlanDigest,
+            affectedRecords: input.affectedRecords,
+          });
+
+          if (t3Shadow?.customerMutation !== false || t3Shadow?.productionMutation !== false || t3Shadow?.productionAuthorityGranted !== false || t3Shadow?.modelAuthorityGranted !== false) {
+            deny('WFM_AUTONOMY_T3_AUTHORITY', 'Tier 3 shadow simulation exceeded authority.');
+          }
+
+          if (t3Shadow?.status !== 'customer_authorisation_required') {
+            outcome = 'contained';
+            result = { t3Shadow };
+            append('t3-shadow-contained', { reason: t3Shadow?.reason || 'shadow-simulation-not-authorisable' });
+          } else {
+            const t3Verification = t3ShadowVerifier.verify(t3Shadow, { tenant, scenarioId, evidenceDigest });
+            if (t3Verification?.productionAuthorityGranted === true || t3Verification?.productionMutation === true || t3Verification?.customerMutation === true) {
+              deny('WFM_AUTONOMY_T3_AUTHORITY', 'Tier 3 shadow verifier exceeded authority.');
+            }
+            if (t3Verification?.verified !== true) {
+              deny('WFM_AUTONOMY_T3_VERIFY', 'Tier 3 shadow proposal must be independently verified.');
+            }
+            outcome = 'customer_authorisation_required';
+            result = { t3Shadow, t3Verification };
+            append('t3-shadow-verified', {
+              proposalDigest: t3Shadow.proposalDigest || null,
+              simulationDigest: t3Shadow.simulationDigest || null,
+              verificationDigest: t3Verification.verificationDigest || null,
+              affectedRecords: t3Shadow.affectedRecords,
+            });
+          }
+        }
       } else if (input.knownGoodRollbackAvailable === true && rollbackExecutor?.rollback) {
         consumeAction('known-good.rollback');
         const rollback = await rollbackExecutor.rollback({ incidentId, tenant, scenario, evidenceDigest, input });
@@ -226,12 +272,12 @@ function createAutonomyControlLoop({
 
     if (receipt.traceHeadDigest !== prev) return false;
     const result = {};
-    for (const key of ['answer', 'recovery', 'repair', 'rollback', 'containedErrorCode']) {
+    for (const key of ['answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 'rollback', 'containedErrorCode']) {
       if (Object.prototype.hasOwnProperty.call(receipt, key)) result[key] = receipt[key];
     }
     if (receipt.resultDigest !== digest(result)) return false;
     const core = { ...receipt };
-    for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 'rollback', 'containedErrorCode']) delete core[key];
+    for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 'rollback', 'containedErrorCode']) delete core[key];
     return receipt.receiptDigest === digest(core);
   }
 
