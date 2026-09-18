@@ -45,13 +45,14 @@ If the durable store is unavailable, the sender is unavailable, the response dea
 
 `agency-supplier-delivery-receipt.mjs` adds a bounded reconciliation path for provider callbacks or lookups. It does not send messages itself and has no authority to modify schedules, payroll or invoices.
 
-A receipt is accepted only after a verifier authenticates the raw provider payload. The core supports provider-specific verifier adapters and includes an HMAC-SHA256 raw-body verifier for integrations that genuinely use that signing scheme; it is not presented as a universal email/SMS-provider signature format.
+A receipt is accepted only after a verifier authenticates the original raw provider payload. The core supports provider-specific verifier adapters and includes an HMAC-SHA256 raw-body verifier for integrations that genuinely use that signing scheme; it refuses an already-parsed object at that verifier boundary rather than pretending reconstructed JSON is the provider-signed byte sequence.
 
 After authentication, the normalized event is correlated against the existing delivery ledger using tenant + delivery ID, with channel and provider-message-reference checks. Events are also rejected if their timestamp predates the delivery beyond a small clock-skew allowance or is materially in the future.
 
 The receipt ledger is independently idempotent on `(tenant_id, provider_key, provider_event_id)`. PostgreSQL reconciliation locks the target delivery row, records the provider event once and applies only conservative transitions:
 - authenticated `confirmed_sent` can resolve `dispatching`, `unknown` or a prior `not_sent` to `sent`, preventing a later duplicate retry when stronger positive provider evidence arrives;
 - authenticated `definitively_not_sent` can resolve only `unknown` to `not_sent`; it cannot make an actively `dispatching` send retryable while that original sender call may still complete;
+- negative retry authority is bound to the current delivery `attempt_count`: a negative receipt for an earlier attempt cannot unlock a newer unknown attempt;
 - a generic `delivery_failed` event is audit evidence but does **not** become retry-safe automatically;
 - negative evidence never downgrades an already `sent` delivery to a retryable state.
 
@@ -69,19 +70,20 @@ A fresh official-source check on 18 September 2026 found a Fair Work Agency cont
 
 The deterministic outbound-delivery suite remains **12/12 tests** from the preceding slice, including supplier eligibility before dispatch, request-policy binding, 1,000 duplicate-dispatch concurrency, ambiguous-send fail-closed behaviour and the PostgreSQL delivery-state contract.
 
-The new deterministic receipt-reconciliation suite passes **13/13 tests** locally on Node 22.16.0 and proves:
+The new deterministic receipt-reconciliation suite passes **14/14 tests** locally on Node 22.16.0 and proves:
 - valid authenticated positive evidence resolves an `unknown` delivery without invoking a sender;
-- raw-body tampering and malformed signatures fail before any receipt-store mutation;
+- raw-body tampering, malformed signatures and parsed-body substitution fail before receipt-store mutation;
 - missing verifier, missing store and verifier exceptions fail closed;
 - channel, provider-message-reference and event-time mismatches fail closed;
 - only explicit `definitively_not_sent` can turn an already-`unknown` outcome into a retry-safe state;
 - a negative receipt cannot make an actively `dispatching` send retryable;
+- a negative receipt for an earlier attempt cannot unlock a newer unknown attempt;
 - generic delivery failures cannot silently create retry authority;
 - positive proof can supersede a prior `not_sent` state to prevent a later duplicate retry;
 - negative evidence cannot downgrade an already-sent delivery;
 - 1,000 concurrent copies of one authenticated provider event record one event and one state transition;
 - raw webhook fields, routing address, portal URL and worker data do not enter receipt evidence;
-- the PostgreSQL contract uses row locking, provider-event uniqueness and conservative state transitions;
+- the PostgreSQL contract uses row locking, provider-event uniqueness, attempt correlation and conservative state transitions;
 - a separate 10,000-way replay stress run records exactly one provider event and one state transition, with 9,999 idempotent duplicates and zero rejected authenticated replays.
 
 The committed source and test blobs were re-fetched from the branch and matched to the locally executed Git blob hashes before reporting this evidence.
