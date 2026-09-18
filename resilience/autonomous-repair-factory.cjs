@@ -4,6 +4,7 @@ const { createHash } = require('node:crypto');
 
 const PROTECTED_PATHS = Object.freeze([
   'resilience/security-baseline.json',
+  'resilience/agent-network-boundary.json',
   'DEPLOYMENT_MANIFEST.json',
   'STAGING_FREEZE.json',
   'Dockerfile',
@@ -22,6 +23,7 @@ const PROTECTED_PATHS = Object.freeze([
   'resilience/t3-shadow-simulator.cjs',
   'resilience/t3-shadow-verifier.cjs',
   'resilience/t3-customer-authorisation-gate.cjs',
+  'resilience/t4-containment-controller.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
   'scripts/validate-autonomy-source-syntax.mjs',
   'scripts/validate-resilience-scenarios.mjs',
@@ -31,6 +33,7 @@ const PROTECTED_PATHS = Object.freeze([
   'scripts/validate-support-selfhelp.mjs',
   'scripts/validate-t3-shadow-support.mjs',
   'scripts/validate-t3-customer-authorisation-gate.mjs',
+  'scripts/validate-t4-containment-chaos.mjs',
   'resilience/support-tier-contract.json',
   'scripts/validate-support-tier-contract.mjs',
   'resilience/autonomous-repair-factory.cjs',
