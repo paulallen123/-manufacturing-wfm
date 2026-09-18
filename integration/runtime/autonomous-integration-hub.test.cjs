@@ -216,6 +216,33 @@ test('trusted directory worker is bound to a short-lived server-side discovery s
   }
 });
 
+test('concurrent worker callbacks can claim a discovery session only once', async () => {
+  const f = fixture();
+  try {
+    const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
+    const session = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/discovery-session', {
+      provider: 'ENTRA'
+    });
+    const body = {
+      discoverySessionId: session.body.discoverySession.id,
+      source: 'ENTRA',
+      apps: [{ appId: 'wd-race', displayName: 'Workday Production' }]
+    };
+
+    const results = await Promise.all([
+      call(f.hub, null, 'POST', '/api/integrations/autonomous/discovery-result', body, internal),
+      call(f.hub, null, 'POST', '/api/integrations/autonomous/discovery-result', body, internal)
+    ]);
+    assert.deepEqual(results.map(x => x.status).sort((a,b) => a-b), [200, 409]);
+
+    const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(status.body.discovery.candidateCount, 1);
+    assert.equal(status.body.discovery.candidates[0].evidence.length, 1);
+  } finally {
+    f.close();
+  }
+});
+
 test('discovery session rejects provider substitution and expired sessions', async () => {
   const f = fixture();
   try {
