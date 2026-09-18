@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import {createTrustRootRecoveryPackage,signTrustRootRecoveryPackage,trustRootRecoveryDigest,verifyTrustRootRecovery} from './trust-root-recovery.mjs';
 
 const NOW=Date.parse('2026-09-19T00:00:00Z');
+const TRUST_DOMAIN='attendance-release-eu-west-1';
 function keys(){ return crypto.generateKeyPairSync('ed25519'); }
 function fixture(){
   const oldRoot=keys(),newRoot=keys(),otherRoot=keys();
@@ -12,6 +13,7 @@ function fixture(){
   const proposed={'root-new':newRoot.publicKey};
   const custodians={'recovery-a':c1.publicKey,'recovery-b':c2.publicKey,'recovery-c':c3.publicKey};
   let pkg=createTrustRootRecoveryPackage({
+    trustDomainId:TRUST_DOMAIN,
     recoveryEpoch:8,previousRootPublicKeys:current,newRootPublicKeys:proposed,
     issuedAtMs:NOW-1_000,expiresAtMs:NOW+60_000,reason:'ROOT_COMPROMISE',changeId:'sec-2026-09-19-001'
   });
@@ -22,13 +24,15 @@ function fixture(){
 function verify(f,extra={}){
   return verifyTrustRootRecovery({
     packageValue:f.pkg,currentRootPublicKeys:f.current,proposedRootPublicKeys:f.proposed,
-    recoveryCustodianPublicKeys:f.custodians,requiredApprovals:2,minimumRecoveryEpoch:7,nowMs:NOW,...extra
+    recoveryCustodianPublicKeys:f.custodians,requiredApprovals:2,minimumRecoveryEpoch:7,
+    expectedTrustDomainId:TRUST_DOMAIN,nowMs:NOW,...extra
   });
 }
 
 test('two independent recovery custodians can authorize exact trust-root replacement',()=>{
   const f=fixture(); const out=verify(f);
   assert.equal(out.recoveryEpoch,8);
+  assert.equal(out.trustDomainId,TRUST_DOMAIN);
   assert.deepEqual(out.approvedCustodians,['recovery-a','recovery-b']);
   assert.equal(out.rootPublicKeys.has('root-new'),true);
 });
@@ -45,15 +49,20 @@ test('duplicate custodian signatures cannot manufacture quorum',()=>{
 
 test('untrusted recovery signer is rejected',()=>{
   const f=fixture();
-  let p=createTrustRootRecoveryPackage({recoveryEpoch:8,previousRootPublicKeys:f.current,newRootPublicKeys:f.proposed,issuedAtMs:NOW-1_000,expiresAtMs:NOW+60_000,reason:'ROOT_LOSS',changeId:'sec-2026-09-19-002'});
+  let p=createTrustRootRecoveryPackage({trustDomainId:TRUST_DOMAIN,recoveryEpoch:8,previousRootPublicKeys:f.current,newRootPublicKeys:f.proposed,issuedAtMs:NOW-1_000,expiresAtMs:NOW+60_000,reason:'ROOT_LOSS',changeId:'sec-2026-09-19-002'});
   p=signTrustRootRecoveryPackage(p,{custodianId:'recovery-a',privateKey:f.c1.privateKey});
   p=signTrustRootRecoveryPackage(p,{custodianId:'attacker',privateKey:f.attacker.privateKey}); f.pkg=p;
   assert.throws(()=>verify(f),/untrusted custodian/);
 });
 
-test('old-root mismatch blocks cross-environment recovery package reuse',()=>{
+test('old-root mismatch blocks recovery package reuse against another root set',()=>{
   const f=fixture(); const wrongCurrent={'root-other':f.otherRoot.publicKey};
   assert.throws(()=>verify(f,{currentRootPublicKeys:wrongCurrent}),/previous-root digest mismatch/);
+});
+
+test('same roots cannot authorize recovery in another trust domain',()=>{
+  const f=fixture();
+  assert.throws(()=>verify(f,{expectedTrustDomainId:'attendance-release-us-east-1'}),/trust domain mismatch/);
 });
 
 test('proposed-root substitution after approval is rejected',()=>{
