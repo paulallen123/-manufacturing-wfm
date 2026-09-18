@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "profiles": [
+    {
+      "id": "rest-openapi",
+      "matches": [
+        "REST",
+        "OpenAPI"
+      ],
+      "transport": "HTTPS",
+      "adapter": "http-json",
+      "supports": [
+        "pull",
+        "push",
+        "webhook"
+      ],
+      "notes": "Preferred cloud API family; import OpenAPI where available."
+    },
+    {
+      "id": "odata",
+      "matches": [
+        "OData"
+      ],
+      "transport": "HTTPS",
+      "adapter": "odata",
+      "supports": [
+        "metadata",
+        "query",
+        "pull",
+        "push"
+      ],
+      "notes": "Use $metadata and server-side query/filter/paging."
+    },
+    {
+      "id": "soap",
+      "matches": [
+        "SOAP"
+      ],
+      "transport": "HTTPS",
+      "adapter": "soap-wsdl",
+      "supports": [
+        "pull",
+        "push"
+      ],
+      "notes": "Generate operations from WSDL; preserve vendor namespaces."
+    },
+    {
+      "id": "graphql",
+      "matches": [
+        "GraphQL"
+      ],
+      "transport": "HTTPS",
+      "adapter": "graphql",
+      "supports": [
+        "query",
+        "mutation",
+        "subscription"
+      ],
+      "notes": "Introspection only where vendor allows it."
+    },
+    {
+      "id": "scim",
+      "matches": [
+        "SCIM",
+        "SCIM 2.0"
+      ],
+      "transport": "HTTPS",
+      "adapter": "scim2",
+      "supports": [
+        "users",
+        "groups",
+        "provisioning"
+      ],
+      "notes": "Identity lifecycle/provisioning."
+    },
+    {
+      "id": "webhooks-events",
+      "matches": [
+        "webhooks",
+        "events",
+        "notifications",
+        "Atom feeds"
+      ],
+      "transport": "HTTPS",
+      "adapter": "signed-events",
+      "supports": [
+        "inbound-events",
+        "replay",
+        "dedupe"
+      ],
+      "notes": "Verify signatures where vendor provides them; otherwise validate source/auth and replay bounds."
+    },
+    {
+      "id": "files-sftp",
+      "matches": [
+        "SFTP",
+        "files"
+      ],
+      "transport": "SFTP/Object storage",
+      "adapter": "file-batch",
+      "supports": [
+        "csv",
+        "json",
+        "xml",
+        "fixed-width"
+      ],
+      "notes": "Checksum, idempotency, quarantine, schema validation."
+    },
+    {
+      "id": "database",
+      "matches": [
+        "database",
+        "JDBC/ODBC"
+      ],
+      "transport": "DB",
+      "adapter": "database-readmodel",
+      "supports": [
+        "read",
+        "cdc-when-supported"
+      ],
+      "notes": "Prefer read replicas/views; direct writes disabled by default."
+    },
+    {
+      "id": "opcua",
+      "matches": [
+        "OPC UA"
+      ],
+      "transport": "OPC UA",
+      "adapter": "opcua-edge",
+      "supports": [
+        "browse",
+        "subscribe",
+        "read",
+        "write-gated"
+      ],
+      "notes": "Edge gateway preferred for plant networks."
+    },
+    {
+      "id": "mqtt",
+      "matches": [
+        "MQTT"
+      ],
+      "transport": "MQTT/TLS",
+      "adapter": "mqtt-edge",
+      "supports": [
+        "subscribe",
+        "publish-gated"
+      ],
+      "notes": "Support topic mapping and Sparkplug B profile where present."
+    },
+    {
+      "id": "bacnet",
+      "matches": [
+        "BACnet"
+      ],
+      "transport": "BACnet/IP via edge",
+      "adapter": "bacnet-edge",
+      "supports": [
+        "read",
+        "subscribe"
+      ],
+      "notes": "Energy/BMS telemetry via site edge; cloud should not directly scan plant networks."
+    },
+    {
+      "id": "modbus",
+      "matches": [
+        "Modbus"
+      ],
+      "transport": "Modbus TCP/RTU via edge",
+      "adapter": "modbus-edge",
+      "supports": [
+        "read"
+      ],
+      "notes": "Read-only by default; register maps must be customer/site supplied."
+    },
+    {
+      "id": "edi",
+      "matches": [
+        "EDI",
+        "EDI/AS2",
+        "AS2"
+      ],
+      "transport": "AS2/SFTP/VAN",
+      "adapter": "edi-b2b",
+      "supports": [
+        "inbound",
+        "outbound-gated"
+      ],
+      "notes": "Translate messages to canonical WFM/supply-chain events only where relevant."
+    },
+    {
+      "id": "kafka",
+      "matches": [
+        "Kafka",
+        "Kafka protocol"
+      ],
+      "transport": "Kafka",
+      "adapter": "event-stream",
+      "supports": [
+        "consume",
+        "produce-gated"
+      ],
+      "notes": "Schema registry integration where available."
+    },
+    {
+      "id": "vendor-sdk",
+      "matches": [
+        "SDK",
+        "Web SDK",
+        "Salesforce APIs",
+        "Service Layer",
+        "ION",
+        "HCM Data Loader",
+        "IDoc",
+        "industrial-integration",
+        "industrial-protocols",
+        "Cloud API Gateway",
+        "connectors",
+        "REST-via-modules",
+        "OData-query",
+        "PI Web API",
+        "OPC UA-via-Kepware",
+        "MQTT",
+        "Microsoft Graph",
+        "Admin SDK",
+        "XML Web Services"
+      ],
+      "transport": "vendor-defined",
+      "adapter": "vendor-thin",
+      "supports": [
+        "vendor-defined"
+      ],
+      "notes": "Thin adapter; fall back to standard protocol profile whenever possible."
+    }
+  ]
+}
