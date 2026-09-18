@@ -17,6 +17,12 @@ COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 RUN mkdir -p /app/integration-runtime
 COPY integration/runtime/autonomous-integration-hub.cjs /app/integration-runtime/autonomous-integration-hub.cjs
 
+# One-day implementation and adaptive learning overlays. These remain additive,
+# tenant-scoped, fail-closed control planes using Node built-ins and the existing SQLite state.
+RUN mkdir -p /app/implementation-runtime /app/learning-runtime
+COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-runtime/one-day-enterprise-engine.cjs
+COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
+
 # Preserve the sealed server/security contract. Compose the reviewable UX layers only
 # through existing presentation assets that are already in the server's static allow-list.
 # factory-control-ui.css and value-cockpit-ui.js are the final approved CSS/JS assets in
