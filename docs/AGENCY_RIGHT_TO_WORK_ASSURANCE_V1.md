@@ -2,7 +2,7 @@
 
 Status: development/shadow only  
 Policy snapshot: 18 September 2026  
-Effective-date boundary encoded: assignments beginning on or after 1 October 2026
+Operational cutover: 1 October 2026, with worker-contract scope determined by the worker's employment commencement date rather than assignment date alone
 
 ## Purpose
 
@@ -12,7 +12,9 @@ The WFM platform does not claim to perform the statutory Right to Work check its
 
 ## Current UK basis
 
-The Home Office's draft employer guide updated on 11 September 2026 states that its updated Right to Work Scheme guidance comes into force on 1 October 2026. It expands the Scheme beyond traditional employment relationships, including worker contracts, individual subcontractors and online matching services, with separate extended-liability rules for relevant contractual chains.
+The Home Office's draft employer guide updated on 11 September 2026 states that its updated Right to Work Scheme guidance comes into force on 1 October 2026. It expands the Scheme beyond traditional contracts of employment to worker contracts, individual subcontractors and online matching services, with separate extended-liability rules for relevant contractual chains.
+
+Critically, the guide says that for employment under a **worker's contract**, civil-penalty liability under the new scope applies where that employment commenced on or after 1 October 2026. The implementation therefore does not infer the new worker-contract scope merely because an assignment happens after 1 October: it requires the engagement type and employment commencement date.
 
 The same guide contains a manufacturing-specific example: a manufacturer obtains temporary production workers from an employment business for use in its own factory operations. In that example the extended-liability provisions do not apply to the manufacturer or employment business merely because of that labour-supply arrangement; responsibility for preventing illegal working and civil-penalty liability remains with the employment business as employer of the workers on assignment.
 
@@ -26,7 +28,11 @@ Official source: https://www.gov.uk/government/publications/right-to-work-checks
 
 For assignments beginning before 1 October 2026, the existing branch behavior is preserved: the worker must have verified Right to Work evidence and any time-limited permission must cover the assignment end.
 
-For assignments beginning on or after 1 October 2026, the supported ordinary agency-labour path additionally requires:
+For assignments beginning on or after 1 October 2026, the engine first requires the agency assurance to classify the worker's engagement. It supports the ordinary agency-labour paths `contract_of_employment` and `workers_contract`; other engagement models fail closed for policy review rather than being guessed from a label.
+
+For a `workers_contract` engagement, the new 2026 worker-contract scope is applied only where `employmentCommencedAt` is on or after 1 October 2026. If that worker-contract engagement began before the cutover, the existing verified-and-valid-through-assignment gate is retained and the engine records that the new scope was not inferred from the later assignment date.
+
+Where the enhanced assurance path applies, the supported ordinary manufacturing agency-labour path additionally requires:
 
 - an explicit contractual-arrangement classification;
 - the supplying employment business to be recorded as the responsible Right to Work party for the supported manufacturing labour-supply arrangement;
@@ -43,7 +49,7 @@ A conflicting, missing or non-standard arrangement fails closed for policy revie
 
 The eligibility engine does not need to retain or expose a share code, date of birth, passport/document number, raw immigration document or raw Right to Work record. It emits a short evidence fingerprint plus minimum audit metadata. The supplying employment business remains responsible for retaining the statutory evidence required for the check it owns.
 
-The output is designed to answer only the WFM assurance questions needed for an assignment: who owned the check, which prescribed route was used, when it was checked, whether the assignment was within the authorised work scope and whether the evidence reference can be reconciled later.
+The output is designed to answer only the WFM assurance questions needed for an assignment: what type of engagement applies, when a worker-contract engagement commenced, who owned the check, which prescribed route was used, when it was checked, whether the assignment was within the authorised work scope and whether the evidence reference can be reconciled later.
 
 ## Fairness boundary
 
@@ -69,6 +75,8 @@ The new unit and integration suites cover:
 
 - pre-1-October compatibility;
 - preserved legacy failure names;
+- worker-contract scope tied to employment commencement rather than assignment date alone;
+- fail-closed missing/unsupported engagement classification;
 - responsibility and arrangement classification;
 - neutral acceptance of prescribed check routes;
 - supplier/checker provenance;
