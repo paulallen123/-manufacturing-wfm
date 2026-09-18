@@ -133,7 +133,13 @@ export class AutomaticAttendanceEvidenceEngine {
       return {status:'evidence_only',direction:'in',reason:'ABSENCE_SIGNAL_CANNOT_START_ATTENDANCE'};
     }
 
-    const all=this.employeeEvents.get(employeeKey)??[];
+    // Revocation is immediate for future decisions: evidence accepted before a source
+    // was revoked may remain in the immutable audit record, but it cannot complete a
+    // still-pending quorum after the source loses authority.
+    const all=(this.employeeEvents.get(employeeKey)??[]).filter(e=>{
+      const registered=this.sources.get(`${tenant}:${e.sourceId}`);
+      return Boolean(registered?.active) && registered.site===site;
+    });
     const cluster=all.filter(e=>Math.abs(e.observedMs-trigger.observedMs)<=this.corroborationWindowMs);
     const wanted=cluster.filter(e=>direction==='in'?e.polarity==='present':e.polarity==='absent');
     const anchors=wanted.filter(e=>direction==='in'?e.anchorIn:e.anchorOut);
