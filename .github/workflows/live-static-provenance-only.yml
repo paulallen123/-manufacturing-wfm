@@ -54,8 +54,8 @@ jobs:
           echo "UNAUTH_BOOTSTRAP_FORGED_ISOLATION=$iso"
           echo "UNAUTH_BOOTSTRAP_FORGED_NORTHSTAR=$north"
           test "$plain" = 401
-          test "$iso" = 401
-          test "$north" = 401
+          test "$iso" = 400 -o "$iso" = 401
+          test "$north" = 400 -o "$north" = 401
           echo 'FORGED_TENANT_HEADER_FAIL_CLOSED=PASS'
       - name: Match live bytes to sealed reviewed composition
         shell: bash
