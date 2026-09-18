@@ -12,6 +12,7 @@ on:
       - 'test/frontier/agency-labour-exchange.test.mjs'
       - 'test/frontier/agency-labour-performance.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
+      - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
       - '.github/workflows/agency-labour-exchange-shadow.yml'
       - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
@@ -42,4 +43,5 @@ jobs:
               test/frontier/agency-labour-exchange.test.mjs \
               test/frontier/agency-labour-performance.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
+              test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs
