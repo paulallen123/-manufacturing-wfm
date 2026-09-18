@@ -23,7 +23,7 @@ function container(c){return {idShort:'CapabilityContainer',modelType:'SubmodelE
 function sm(containers){return {id:'urn:sm:02020',semanticId:ref(IDTA_02020.submodel),submodelElements:[{idShort:'CapabilitySet',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.capabilitySet),value:containers}]};}
 
 const shell={id:'urn:aas:laser-1',idShort:'Laser1',assetInformation:{globalAssetId:'urn:asset:laser-1'}};
-const source={provider:'aas-server',observedAt:'2026-09-18T18:20:00Z',revision:'r2',staleAfterMinutes:60};
+const source={provider:'aas-server',observedAt:'2026-09-18T18:20:00Z',revision:'r2',staleAfterMinutes:180};
 
 test('IDTA required capability cannot leak into machine-provided capability graph',()=>{
   const data=sm([container(capability('Offered','urn:cap:laser-cut')),container(capability('Required','urn:cap:paint'))]);
@@ -66,4 +66,35 @@ test('missing unit remains review-required through end-to-end technical matching
   });
   assert.equal(result.status,'review_required');
   assert.equal(result.candidates[0].reason,'missing_property_unit');
+});
+
+test('IEC61360 unit identity and IDTA range survive adapter -> graph -> deterministic feasibility',()=>{
+  const offered={
+    idShort:'OfferedLaser',modelType:'Capability',semanticId:ref(IDTA_02020.capability),supplementalSemanticIds:[ref('urn:cap:laser-cut')],
+    qualifiers:[{type:'Offered',value:'true',semanticId:ref(IDTA_02020.roleOffered)}],
+  };
+  const rangeContainer={idShort:'CapabilityContainer',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.capabilityContainer),value:[
+    offered,
+    {idShort:'PropertySet',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.propertySet),value:[
+      {idShort:'PropertyContainer',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.propertyContainer),value:[
+        {idShort:'SameProperty',modelType:'RelationshipElement',semanticId:ref(IDTA_02020.sameProperty),second:ref('urn:prop:max-thickness')},
+        {idShort:'PropertyRange',modelType:'Range',semanticId:ref(IDTA_02020.propertyRange),valueType:'xs:double',min:'2',max:'12'},
+      ]},
+    ]},
+  ]};
+  const data=sm([rangeContainer]);
+  const conceptDescriptions=[{id:'urn:prop:max-thickness',embeddedDataSpecifications:[{dataSpecificationContent:{modelType:'DataSpecificationIec61360',dataType:'REAL_MEASURE',unit:'millimetre',unitId:ref('urn:unit:mm')}}]}];
+  const adapted=aasShellToCapabilityAsset({tenantId:'tenant-a',siteId:'site-1',shell,submodels:[data],conceptDescriptions,source});
+  const graph=buildCapabilityGraph({
+    tenantId:'tenant-a',siteId:'site-1',now:'2026-09-18T18:30:00Z',assets:[adapted.asset],
+    semanticMappings:[{tenantId:'tenant-a',scope:'tenant',mappingId:'m1',semanticId:'urn:cap:laser-cut',capabilityId:'laser-cut',approvalStatus:'approved'}],
+  });
+  const property=graph.assets[0].capabilities[0].properties[0];
+  assert.equal(property.kind,'range');
+  assert.equal(property.unitId,'urn:unit:mm');
+  const result=assessGraphProductionCapability({
+    graph,
+    requirement:{capabilityId:'laser-cut',constraints:[{semanticId:'urn:prop:max-thickness',operator:'contains',value:10,unit:'mm',unitId:'urn:unit:mm'}]},
+  });
+  assert.equal(result.status,'ready');
 });
