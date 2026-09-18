@@ -83,7 +83,7 @@ function tone(item){return item.urgent?'urgent':item.evidenceState==='current'?'
 function sourceName(source){return ({'time-review':'Time Review','weekly-review':'Weekly Sign-off','absence':'Absence','schedule-publication':'Schedule','today':'Today','automation':'Automation'})[source]||source;}
 function stateText(item){return ({action_required:'Action required',decision_sent:'Decision sent',confirming_source:'Confirming source',needs_verification:'Needs verification',resolved:'Resolved'})[item.lifecycle]||'Action required';}
 function card(item){
- return `<article class="ux11-card ${tone(item)}" data-ux11-id="${safe(item.id)}" data-ux11-reason="${safe(item.reasonCode)}" data-ux11-source="${safe(item.source)}" data-ux11-evidence="${safe(item.evidenceState)}" data-ux11-priority="${safe(item.priority)}"><div class="ux11-card-top"><span class="ux11-source">${safe(sourceName(item.source))}</span><span class="ux11-state">${safe(stateText(item))}</span></div><h3>${safe(item.title)}</h3><p class="ux11-why"><b>Why now:</b> ${safe(item.whyNow)}</p>${item.consequence?`<p class="ux11-consequence">${safe(item.consequence)}</p>`:''}<details class="ux11-trust"><summary>Why this priority</summary><div><span><b>Reason</b>${safe(item.reasonLabel)}</span><span><b>Evidence</b>${safe(item.evidenceLabel)}</span><span><b>Authority</b>${safe(item.authority)}</span></div></details><button type="button" class="btn small primary ux11-open" data-ux11-route="${safe(item.route)}" data-ux11-id="${safe(item.id)}">Open ${safe(sourceName(item.source))}</button></article>`;
+ return `<article class="ux11-card ${tone(item)}" data-ux11-id="${safe(item.id)}" data-ux11-reason="${safe(item.reasonCode)}" data-ux11-source="${safe(item.source)}" data-ux11-evidence="${safe(item.evidenceState)}" data-ux11-priority="${safe(item.priority)}"><div class="ux11-card-top"><span class="ux11-source">${safe(sourceName(item.source))}</span><span class="ux11-state">${safe(stateText(item))}</span></div><h3>${safe(item.title)}</h3><p class="ux11-why"><b>Why now:</b> ${safe(item.whyNow)}</p>${item.consequence?`<p class="ux11-consequence">${safe(item.consequence)}</p>`:''}<details class="ux11-trust"><summary>Why this priority</summary><div><span><b>Reason</b>${safe(item.reasonLabel)}</span><span><b>Evidence</b>${safe(item.evidenceLabel)}</span><span><b>Authority</b>${safe(item.authority)}</span></div></details><button type="button" class="btn small primary ux11-open" data-ux11-route="${safe(item.route)}" data-ux11-id="${safe(item.id)}" data-ux11-source-id="${safe(item.sourceId)}">Open ${safe(sourceName(item.source))}</button></article>`;
 }
 function receipt(r){return `<li><b>${safe(r.title)}</b><span>${safe(r.whyNow)}</span><small>${safe(r.auditRef||r.evidenceLabel)}</small></li>`;}
 function renderQueue(extra=[]){
@@ -103,18 +103,28 @@ function renderQueue(extra=[]){
  return bundle;
 }
 function navButton(route){return document.querySelector(`.sidebar .navbtn[data-page="${CSS.escape(route)}"]`)||document.querySelector(`#ux-tool-backdrop .navbtn[data-page="${CSS.escape(route)}"]`);}
-function openRoute(route,id){
- const marker={from:'overview',id:String(id||''),route:String(route||''),at:Date.now()};
+function openRoute(route,id,sourceId){
+ const marker={from:'overview',id:String(id||''),sourceId:String(sourceId||''),route:String(route||''),at:Date.now()};
  try{sessionStorage.setItem('wfmUx11Return',JSON.stringify(marker));}catch{}
  const b=navButton(route);if(b){b.click();return true;}
  const live=document.querySelector('.ux11-live');if(live)live.textContent='The source workflow is not available for this role.';return false;
 }
 function returnMarker(){try{return JSON.parse(sessionStorage.getItem('wfmUx11Return')||'null');}catch{return null;}}
+function focusSourceTarget(marker){
+ if(!marker?.sourceId)return false;
+ let target=null;
+ if(marker.route==='leave')target=[...document.querySelectorAll('.ux-leave-card[data-request]')].find(el=>String(el.dataset.request)===String(marker.sourceId))||null;
+ if(!target)return false;
+ target.setAttribute('tabindex','-1');
+ try{target.scrollIntoView({block:'center',behavior:'smooth'});}catch{target.scrollIntoView();}
+ setTimeout(()=>{try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}},60);
+ return true;
+}
 function addBackLink(){
  if(!manager()||page()==='overview')return;
  const marker=returnMarker();if(!marker)return;
  const head=document.querySelector('.heading');if(!head||head.querySelector('.ux11-back'))return;
- const b=document.createElement('button');b.type='button';b.className='btn small ux11-back';b.textContent='Back to priority queue';b.addEventListener('click',()=>{const o=navButton('overview');o?.click();});head.appendChild(b);
+ const b=document.createElement('button');b.type='button';b.className='btn small ux11-back';b.textContent='Back to priority queue';b.addEventListener('click',()=>{const o=navButton('overview');o?.click();});head.appendChild(b);focusSourceTarget(marker);
 }
 function restoreFocus(section){
  const marker=returnMarker();if(!marker||marker.from!=='overview'||!marker.id)return;
@@ -123,10 +133,10 @@ function restoreFocus(section){
 function apply(){
  try{if(!manager())return;if(page()==='overview')renderQueue();else addBackLink();}catch(e){console.warn('WFM UX cycle 11 skipped:',e);}
 }
-document.addEventListener('click',e=>{const b=e.target.closest('.ux11-open[data-ux11-route]');if(!b)return;e.preventDefault();openRoute(b.dataset.ux11Route,b.dataset.ux11Id);});
+document.addEventListener('click',e=>{const b=e.target.closest('.ux11-open[data-ux11-route]');if(!b)return;e.preventDefault();openRoute(b.dataset.ux11Route,b.dataset.ux11Id,b.dataset.ux11SourceId);});
 const previousRender=window.render;if(typeof previousRender==='function')window.render=async function(...args){const out=await previousRender.apply(this,args);apply();return out;};
 const observer=new MutationObserver(()=>{try{if(manager()&&page()==='overview'&&!document.querySelector('.ux11-queue'))apply();else if(manager()&&page()!=='overview'&&!document.querySelector('.ux11-back')&&returnMarker())addBackLink();}catch{}});
 observer.observe(document.documentElement,{subtree:true,childList:true});
 setTimeout(apply,0);setTimeout(apply,400);
-window.WFMUXCycle11={apply,collectSignals,renderQueue,openRoute};
+window.WFMUXCycle11={apply,collectSignals,renderQueue,openRoute,focusSourceTarget};
 })();
