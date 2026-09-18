@@ -28,6 +28,12 @@ assert.equal(pack.complete, true);
 assert.equal(pack.touchlessReady, true);
 assert.equal(pack.versionHash.length, 64);
 
+const sameSemanticDifferentTimestamp = buildAssignmentReadyPack({
+  ...baseInput,
+  versionedAt: '2026-09-18T13:00:00Z'
+});
+assert.equal(sameSemanticDifferentTimestamp.versionHash, pack.versionHash);
+
 const changed = buildAssignmentReadyPack({
   ...baseInput,
   versionedAt: '2026-09-18T12:00:00Z',
@@ -98,4 +104,4 @@ const reset = assessAwrContinuity({
 assert(reset.qualifyingWeeks < 12);
 assert.equal(reset.lastReset.evidenceRef, 'ROLE-CHANGE-123');
 
-console.log('readiness tests: 8/8 passed');
+console.log('readiness tests: 9/9 passed');
