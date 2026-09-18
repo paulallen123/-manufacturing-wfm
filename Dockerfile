@@ -24,6 +24,21 @@ COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-ru
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 
+# Deterministic build admission for the new implementation and learning control planes.
+# Tests execute against the exact files copied into this image; test sources are removed
+# afterwards so they do not expand the runtime attack surface.
+RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime
+COPY implementation/runtime/one-day-enterprise-engine.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.cjs
+COPY implementation/runtime/one-day-enterprise-engine.test.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs
+COPY implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs
+COPY learning/runtime/adaptive-learning-engine.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.cjs
+COPY learning/runtime/adaptive-learning-engine.test.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs
+RUN node --test \
+      /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs \
+      /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs \
+      /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs \
+ && rm -rf /tmp/wfm-tests
+
 # Preserve the sealed server/security contract. Compose the reviewable UX layers only
 # through existing presentation assets that are already in the server's static allow-list.
 # factory-control-ui.css and value-cockpit-ui.js are the final approved CSS/JS assets in
