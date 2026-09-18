@@ -12,11 +12,11 @@ Core families include REST/OpenAPI, OData, SOAP, GraphQL, SCIM, webhooks, SFTP/f
 
 ## Catalogue model
 
-`systems.json` remains the stable base seed catalogue. `systems-research.json` is an additive, reviewable research overlay for newly verified systems, protocol families and evidence corrections. `scripts/load-catalog.mjs` composes them into the effective catalogue used by validation, conformance, planning and public probing.
+`systems.json` remains the stable base seed catalogue. `systems-research.json` is the baseline reviewed research overlay. `research-overlays/*.json` contains deterministic, additive follow-on deltas for subsequent market/evidence reviews. `scripts/load-catalog.mjs` loads the baseline and then the follow-on overlays in lexical order into the effective catalogue used by validation, conformance, planning and public probing.
 
-The overlay may patch an existing system only when the vendor's current documentation or a directly observed authenticated connection materially changes what can be claimed. It cannot silently replace an unknown system, duplicate an ID, enable writes or promote evidence beyond what was actually observed.
+An overlay may patch an existing effective system, including a system introduced by an earlier overlay, only when current vendor documentation or a directly observed authorised connection materially changes what can be claimed. A new-system entry cannot duplicate an existing ID. No overlay may enable writes or promote evidence beyond what was actually observed.
 
-The current research overlay also tracks newly verified middleware/identity targets such as IBM MQ and JumpCloud, while retaining systems such as SAP Fieldglass at discovery level when product relevance is clear but public protocol-level evidence is not yet sufficient. That distinction is deliberate: market relevance is not API certification.
+The effective catalogue now covers 154 systems. The latest research delta upgrades IFS Cloud, Epicor Kinetic and Inductive Automation Ignition to `spec-verified`, and adds Siemens Industrial Edge as a newly verified IIoT/edge platform. Siemens' documented gRPC/Protocol Buffers route reuses the existing `Protobuf RPC/HTTP2` profile rather than creating another transport family. The programme still deliberately retains systems such as SAP Fieldglass at discovery level when product relevance is clear but public protocol-level evidence is not yet sufficient. Market relevance is not API certification.
 
 ## Evidence levels
 
@@ -49,7 +49,7 @@ Enterprise messaging is also treated as a first-class reuse path. Kafka, AMQP 1.
 
 ## Tests
 
-`scripts/validate.mjs` validates the effective registry, research overlay, opportunity coverage and integration contract without external dependencies.
+`scripts/validate.mjs` validates the effective registry, all research overlays, opportunity coverage and integration contract without external dependencies.
 
 `scripts/conformance.mjs` requires every P0 system to map to at least one reusable protocol/vendor profile, every catalogued system to map to a WFM data/value opportunity profile, forbids write-enabled probes, rejects ambiguous evidence labels and requires evidence references for tenant-authenticated or round-trip claims.
 
