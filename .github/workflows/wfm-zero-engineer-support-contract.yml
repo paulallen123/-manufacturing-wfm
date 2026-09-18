@@ -79,12 +79,15 @@ jobs:
           set -euo pipefail
           CANONICAL_REF='origin/integration/canonical'
           git rev-parse "$CANONICAL_REF" >/dev/null
-          git merge-tree --write-tree HEAD "$CANONICAL_REF" >/tmp/wfm-autonomy-merge-tree
+          MERGE_TREE_SHA="$(git merge-tree --write-tree HEAD "$CANONICAL_REF")"
+          test "${#MERGE_TREE_SHA}" -eq 40
           POLICY_FILE="$RUNNER_TEMP/canonical-release-policy.json"
           git show "$CANONICAL_REF:release/release-policy.json" > "$POLICY_FILE"
           echo "WFM_CANONICAL_RELEASE_POLICY_FILE=$POLICY_FILE" >> "$GITHUB_ENV"
+          echo "WFM_AUTONOMY_HEAD_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           echo "WFM_CANONICAL_BASE_SHA=$(git rev-parse "$CANONICAL_REF")" >> "$GITHUB_ENV"
           echo "WFM_CANONICAL_POLICY_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:release/release-policy.json")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_MERGE_TREE_SHA=$MERGE_TREE_SHA" >> "$GITHUB_ENV"
 
       - name: Set up exact Node runtime
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -96,7 +99,25 @@ jobs:
         run: node scripts/run-portable-autonomy-proof.mjs --strict-runtime
 
       - name: Assert portable proof receipt
+        shell: bash
         run: |
           set -euo pipefail
           test -s portable-autonomy-proof.json
-          node -e "const p=require('./portable-autonomy-proof.json'); if(p.status!=='PASS'||p.providerNeutral!==true||p.requiresGitHubHostedRunner!==false||p.exactRuntime!==true||p.productionMutation!==false||p.customerMutation!==false) process.exit(1)"
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const p = JSON.parse(fs.readFileSync('portable-autonomy-proof.json', 'utf8'));
+          const b = p.releaseBinding;
+          const required = p.status === 'PASS'
+            && p.providerNeutral === true
+            && p.requiresGitHubHostedRunner === false
+            && p.exactRuntime === true
+            && p.productionMutation === false
+            && p.customerMutation === false
+            && p.canonicalReleaseEvidenceBound === true
+            && b
+            && b.headSha === process.env.WFM_AUTONOMY_HEAD_SHA
+            && b.canonicalBaseSha === process.env.WFM_CANONICAL_BASE_SHA
+            && b.canonicalPolicyBlobSha === process.env.WFM_CANONICAL_POLICY_BLOB_SHA
+            && b.mergeTreeSha === process.env.WFM_CANONICAL_MERGE_TREE_SHA;
+          if (!required) process.exit(1);
+          NODE
