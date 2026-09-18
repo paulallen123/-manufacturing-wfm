@@ -107,7 +107,7 @@ function safeAssignmentSummary(requestPack = {}) {
   };
 }
 
-function validateSupplierEligibility(supplierEligibility, agencyId) {
+function validateSupplierEligibility(supplierEligibility, agencyId, requestPack) {
   if (!supplierEligibility || typeof supplierEligibility !== 'object') {
     return { ok:false, reason:'supplier_eligibility_missing' };
   }
@@ -116,6 +116,12 @@ function validateSupplierEligibility(supplierEligibility, agencyId) {
   }
   if (supplierEligibility.eligible !== true || (supplierEligibility.failures || []).length) {
     return { ok:false, reason:'supplier_not_eligible' };
+  }
+  if (!text(supplierEligibility.version, 80)) return { ok:false, reason:'supplier_eligibility_version_missing' };
+  if (!supplierEligibility.evidence || typeof supplierEligibility.evidence !== 'object') return { ok:false, reason:'supplier_eligibility_evidence_missing' };
+  const requestLicenceRequired = requestPack?.assignment?.fairWorkAgencyGangmasterLicenceRequired === true;
+  if (supplierEligibility.evidence.licenceRequired !== requestLicenceRequired) {
+    return { ok:false, reason:'supplier_eligibility_policy_mismatch' };
   }
   return { ok:true, reason:null };
 }
@@ -135,7 +141,7 @@ export function prepareAgencySupplierDelivery(input = {}) {
   if (!Number.isInteger(deliveryRevision) || deliveryRevision < 1) throw new TypeError('deliveryRevision must be a positive integer');
   if (input.requestPack?.requestId && input.requestPack.requestId !== requestId) throw new TypeError('requestPack.requestId must match requestId');
 
-  const supplierEligibility = validateSupplierEligibility(input.supplierEligibility, agencyId);
+  const supplierEligibility = validateSupplierEligibility(input.supplierEligibility, agencyId, input.requestPack);
   if (!supplierEligibility.ok) {
     return {
       ready:false,
@@ -253,40 +259,40 @@ export function createPostgresAgencySupplierDeliveryStore({query}) {
         requiredIso(record.at, 'at'),
       ];
       if (!Number.isInteger(values[7]) || values[7] < 1) throw new TypeError('deliveryRevision must be a positive integer');
-      const result = await query(CLAIM_SQL, values);
-      const row = result?.rows?.[0];
-      if (!row) throw new Error('unexpected_delivery_store_result');
-      return { claimed:row.claimed === true, status:row.status, attemptCount:Number(row.attempt_count ?? row.attemptCount ?? 1) };
+      const result=await query(CLAIM_SQL,values);
+      const row=result?.rows?.[0];
+      if(!row)throw new Error('unexpected_delivery_store_result');
+      return {claimed:row.claimed===true,status:row.status,attemptCount:Number(row.attempt_count??row.attemptCount??1)};
     },
-    async claimRetry({tenantId,idempotencyKey,at,maxAttempts=3} = {}) {
-      const limit = Number(maxAttempts);
-      if (!Number.isInteger(limit) || limit < 1 || limit > 10) throw new TypeError('maxAttempts must be between 1 and 10');
-      const result = await query(RETRY_SQL,[
+    async claimRetry({tenantId,idempotencyKey,at,maxAttempts=3}={}) {
+      const limit=Number(maxAttempts);
+      if(!Number.isInteger(limit)||limit<1||limit>10)throw new TypeError('maxAttempts must be between 1 and 10');
+      const result=await query(RETRY_SQL,[
         requiredString(tenantId,'tenantId',100),
         requiredString(idempotencyKey,'idempotencyKey',64),
         requiredIso(at,'at'),
         limit,
       ]);
-      const row = result?.rows?.[0];
-      return row ? {claimed:true,status:row.status,attemptCount:Number(row.attempt_count ?? row.attemptCount)} : {claimed:false,status:null,attemptCount:null};
+      const row=result?.rows?.[0];
+      return row?{claimed:true,status:row.status,attemptCount:Number(row.attempt_count??row.attemptCount)}:{claimed:false,status:null,attemptCount:null};
     },
-    async recordOutcome({tenantId,idempotencyKey,status,providerMessageRef,at} = {}) {
-      if (!['sent','not_sent','unknown'].includes(status)) throw new TypeError('invalid delivery outcome status');
-      const result = await query(OUTCOME_SQL,[
+    async recordOutcome({tenantId,idempotencyKey,status,providerMessageRef,at}={}) {
+      if(!['sent','not_sent','unknown'].includes(status))throw new TypeError('invalid delivery outcome status');
+      const result=await query(OUTCOME_SQL,[
         requiredString(tenantId,'tenantId',100),
         requiredString(idempotencyKey,'idempotencyKey',64),
         status,
-        text(providerMessageRef,200) || null,
+        text(providerMessageRef,200)||null,
         requiredIso(at,'at'),
       ]);
-      const row = result?.rows?.[0];
-      if (!row) throw new Error('unexpected_delivery_state');
-      return {status:row.status,attemptCount:Number(row.attempt_count ?? row.attemptCount),providerMessageRef:row.provider_message_ref ?? row.providerMessageRef ?? null};
+      const row=result?.rows?.[0];
+      if(!row)throw new Error('unexpected_delivery_state');
+      return {status:row.status,attemptCount:Number(row.attempt_count??row.attemptCount),providerMessageRef:row.provider_message_ref??row.providerMessageRef??null};
     },
   });
 }
 
-function storeRecord(prepared, at) {
+function storeRecord(prepared,at){
   return {
     tenantId:prepared.delivery.tenantId,
     idempotencyKey:prepared.delivery.idempotencyKey,
@@ -302,52 +308,52 @@ function storeRecord(prepared, at) {
   };
 }
 
-function existingReason(status) {
-  if (status === 'sent') return 'already_sent';
-  if (status === 'dispatching' || status === 'unknown') return 'delivery_outcome_unknown';
-  if (status === 'not_sent') return 'retry_available';
+function existingReason(status){
+  if(status==='sent')return 'already_sent';
+  if(status==='dispatching'||status==='unknown')return 'delivery_outcome_unknown';
+  if(status==='not_sent')return 'retry_available';
   return 'delivery_store_rejected';
 }
 
-export async function dispatchAgencySupplierRequest({prepared,deliveryStore,sender,now,maxAttempts=3} = {}) {
-  const at = requiredIso(now, 'now');
-  const reject = (reason, extra = {}) => ({
+export async function dispatchAgencySupplierRequest({prepared,deliveryStore,sender,now,maxAttempts=3}={}){
+  const at=requiredIso(now,'now');
+  const reject=(reason,extra={})=>({
     dispatched:false,
     reason,
     receipt:deliveryAuditReceipt({prepared,status:'rejected',at,reason,...extra}),
   });
 
-  if (!prepared?.ready || !prepared?.delivery || !prepared?.transient || !prepared?.audit) return reject(prepared?.reason || 'delivery_not_ready');
-  if (ms(at) > ms(prepared.delivery.responseDeadline)) return reject('response_deadline_passed');
-  if (!deliveryStore || typeof deliveryStore.claimOnce !== 'function' || typeof deliveryStore.recordOutcome !== 'function') return reject('delivery_store_unavailable');
-  if (!sender || typeof sender.send !== 'function') return reject('sender_unavailable');
+  if(!prepared?.ready||!prepared?.delivery||!prepared?.transient||!prepared?.audit)return reject(prepared?.reason||'delivery_not_ready');
+  if(ms(at)>ms(prepared.delivery.responseDeadline))return reject('response_deadline_passed');
+  if(!deliveryStore||typeof deliveryStore.claimOnce!=='function'||typeof deliveryStore.recordOutcome!=='function')return reject('delivery_store_unavailable');
+  if(!sender||typeof sender.send!=='function')return reject('sender_unavailable');
 
   let claim;
-  try {
-    claim = await deliveryStore.claimOnce(storeRecord(prepared, at));
-  } catch {
+  try{
+    claim=await deliveryStore.claimOnce(storeRecord(prepared,at));
+  }catch{
     return reject('delivery_store_unavailable');
   }
 
-  if (claim?.claimed !== true) {
-    if (claim?.status !== 'not_sent') return reject(existingReason(claim?.status), {attemptCount:claim?.attemptCount ?? null});
-    if (typeof deliveryStore.claimRetry !== 'function') return reject('delivery_retry_store_unavailable', {attemptCount:claim?.attemptCount ?? null});
-    try {
-      claim = await deliveryStore.claimRetry({
+  if(claim?.claimed!==true){
+    if(claim?.status!=='not_sent')return reject(existingReason(claim?.status),{attemptCount:claim?.attemptCount??null});
+    if(typeof deliveryStore.claimRetry!=='function')return reject('delivery_retry_store_unavailable',{attemptCount:claim?.attemptCount??null});
+    try{
+      claim=await deliveryStore.claimRetry({
         tenantId:prepared.delivery.tenantId,
         idempotencyKey:prepared.delivery.idempotencyKey,
         at,
         maxAttempts,
       });
-    } catch {
+    }catch{
       return reject('delivery_store_unavailable');
     }
-    if (claim?.claimed !== true) return reject('retry_not_claimed', {attemptCount:claim?.attemptCount ?? null});
+    if(claim?.claimed!==true)return reject('retry_not_claimed',{attemptCount:claim?.attemptCount??null});
   }
 
   let outcome;
-  try {
-    outcome = await sender.send({
+  try{
+    outcome=await sender.send({
       channel:prepared.delivery.channel,
       destination:prepared.transient.destination,
       idempotencyKey:prepared.delivery.idempotencyKey,
@@ -357,35 +363,35 @@ export async function dispatchAgencySupplierRequest({prepared,deliveryStore,send
       portalUrl:prepared.transient.portalUrl,
       responseDeadline:prepared.delivery.responseDeadline,
     });
-  } catch {
-    outcome = {status:'unknown',providerMessageRef:null};
+  }catch{
+    outcome={status:'unknown',providerMessageRef:null};
   }
 
-  if (!outcome || !['sent','not_sent','unknown'].includes(outcome.status)) outcome = {status:'unknown',providerMessageRef:null};
-  const providerMessageRef = text(outcome.providerMessageRef,200) || null;
+  if(!outcome||!['sent','not_sent','unknown'].includes(outcome.status))outcome={status:'unknown',providerMessageRef:null};
+  const providerMessageRef=text(outcome.providerMessageRef,200)||null;
 
   let recorded;
-  try {
-    recorded = await deliveryStore.recordOutcome({
+  try{
+    recorded=await deliveryStore.recordOutcome({
       tenantId:prepared.delivery.tenantId,
       idempotencyKey:prepared.delivery.idempotencyKey,
       status:outcome.status,
       providerMessageRef,
       at,
     });
-  } catch {
+  }catch{
     return {
       dispatched:false,
       reason:'delivery_audit_write_failed_after_send_attempt',
-      receipt:deliveryAuditReceipt({prepared,status:'unknown',attemptCount:claim?.attemptCount ?? null,providerMessageRef:null,at,reason:'delivery_audit_write_failed_after_send_attempt'}),
+      receipt:deliveryAuditReceipt({prepared,status:'unknown',attemptCount:claim?.attemptCount??null,providerMessageRef:null,at,reason:'delivery_audit_write_failed_after_send_attempt'}),
     };
   }
 
-  const status = recorded?.status ?? outcome.status;
-  const reason = status === 'sent' ? null : status === 'not_sent' ? 'not_sent_retry_safe' : 'delivery_outcome_unknown';
+  const status=recorded?.status??outcome.status;
+  const reason=status==='sent'?null:status==='not_sent'?'not_sent_retry_safe':'delivery_outcome_unknown';
   return {
-    dispatched:status === 'sent',
+    dispatched:status==='sent',
     reason,
-    receipt:deliveryAuditReceipt({prepared,status,attemptCount:recorded?.attemptCount ?? claim?.attemptCount ?? null,providerMessageRef:recorded?.providerMessageRef ?? providerMessageRef,at,reason}),
+    receipt:deliveryAuditReceipt({prepared,status,attemptCount:recorded?.attemptCount??claim?.attemptCount??null,providerMessageRef:recorded?.providerMessageRef??providerMessageRef,at,reason}),
   };
 }
