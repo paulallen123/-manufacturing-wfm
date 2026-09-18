@@ -1,5 +1,60 @@
 # WFM UX scorecard
 
+## 2026-09-18 — Cycle 11 r2: direct source-context continuation
+
+### Journey reviewed
+Manager Today → Universal Action Queue → a specific pending absence request → the existing new-UI Absence decision card → return to the priority queue.
+
+### Reuse / duplicate check
+- Confirmed the new role-first `ux-reset.js` already contains the rich manager Absence decision surface: annual entitlement, remaining balance, projected balance after approval, available balance after pending requests, approved/pending colleagues off, staffing/skill coverage, existing Review/Approve actions, and fresh-check messaging.
+- Therefore did **not** rebuild or restyle the Absence card and did **not** reuse the legacy 0.6.139 experiment. The existing new-UI card remains the single owner.
+- Existing Cycle 11 queue, return marker and source deep-link were extended rather than forked.
+
+### Research delta
+No new external scan was required. The unresolved problem was implementation-level context loss, and existing evidence already supports exception-first navigation plus progressive disclosure. Re-running competitor/general UX research would not change this decision.
+
+### Hypothesis
+If a manager opens an Absence priority from Today and lands on the exact existing request card, rather than only opening the Absence page, the journey should remove search/hunting interactions without duplicating evidence or moving decision authority into the queue.
+
+### Implementation completed this run
+- Updated the existing Cycle 11 queue on the canonical new-UI branch `ux/universal-action-queue-20260918-r1`; no new branch or replacement module was created.
+- Queue action buttons now carry the existing structured `sourceId`.
+- The existing return marker now preserves `sourceId` together with queue item and route.
+- On the Absence route, Cycle 11 finds the matching existing `.ux-leave-card[data-request]`, scrolls it into view and programmatically focuses that exact card.
+- Existing `Back to priority queue` behaviour and focus restoration to the originating queue action remain intact.
+- Server-side permissions, approval logic, leave calculations, staffing/skill rules and audit authority remain unchanged.
+- Commit: `ef6f8e2a64298d877fcdccfb2d22cef8e89affb1`.
+
+### Focused validation
+- Source ID emitted on the queue button: PASS.
+- Source ID persisted through the route marker: PASS.
+- Correct matching Absence card selected from multiple request cards: PASS.
+- Target made programmatically focusable, scrolled to centre and focused: PASS.
+- Focused Node harness result: `UX11_SOURCE_CONTEXT_FOCUS=PASS`.
+- GitHub returned no workflow status/run for the new commit; the already-known Cycle 11 CI infrastructure blocker was not repeatedly retried.
+
+### UX scorecard impact
+- Calm by default: preserved; no new dashboard density or duplicate evidence.
+- Dense on demand: improved structurally; rich Absence evidence remains only in the owning workflow.
+- Explainability: preserved; queue reason/evidence/authority stays visible and source detail remains authoritative.
+- Navigation predictability: improved structurally by maintaining exact task context across the deep link.
+- Interaction count: expected to reduce by removing manual request search after opening Absence; not yet browser/user measured.
+- Accessibility: programmatic focus continuation added; full screen-reader/browser validation remains open.
+- Mobile/tablet: no layout code changed; existing Cycle 11 containment remains unchanged, but end-to-end responsive focus behaviour remains unverified.
+- Capability preservation: green by design; existing Absence functionality was reused, not replaced.
+
+### Serious-idea decision log
+- Rebuild the rich Absence card in Cycle 11: **REJECT** — duplicate of the existing new-UI owner.
+- Preserve exact source context from queue into existing Absence card: **BUILD NOW** — implemented.
+- Generalise exact-card focus to Time Review and Weekly Sign-off: **BUILD NEXT** only after confirming stable authoritative target identifiers in those existing new-UI workflows.
+- Re-run generic competitor research this cycle: **REJECT** — no unresolved decision justified the cost.
+
+### Still unverified
+Actual browser route transition/focus on the composed application, screen-reader announcement quality, 320/390/tablet end-to-end behaviour, first-click/time-on-task delta, and exact hosted proof. Cycle 10 promotion remains gated on its source-bound hosted proof.
+
+### Single next highest-value action
+Inspect the existing new-UI Time Review and Weekly Sign-off surfaces for stable source-bound target identifiers; if present, extend the same source-context primitive rather than creating route-specific duplicate navigation logic, then validate the three manager journeys in one focused browser pass when executable browser evidence is available.
+
 ## 2026-09-18 — Cycle 10 r5: calm-state false-positive correction
 
 ### Journey reviewed
