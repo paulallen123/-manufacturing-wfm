@@ -97,6 +97,7 @@ function renderQueue(extra=[]){
  const cards=section.querySelector('.ux11-cards');visible.forEach(x=>cards.insertAdjacentHTML('beforeend',card(x)));
  if(rest.length){const d=document.createElement('details');d.className='ux11-more';d.innerHTML=`<summary>${rest.length} more action${rest.length===1?'':'s'}</summary><div class="ux11-more-grid">${rest.map(card).join('')}</div>`;section.appendChild(d);}
  if(bundle.receipts.length){const d=document.createElement('details');d.className='ux11-receipts';d.innerHTML=`<summary>Handled automatically · ${bundle.receipts.length}</summary><ul>${bundle.receipts.map(receipt).join('')}</ul>`;section.appendChild(d);}
+ if(bundle.information.length){const d=document.createElement('details');d.className='ux11-information';d.innerHTML=`<summary>Information · ${bundle.information.length}</summary><ul>${bundle.information.map(receipt).join('')}</ul>`;section.appendChild(d);}
  host.prepend(section);
  restoreFocus(section);
  return bundle;
