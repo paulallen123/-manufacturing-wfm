@@ -24,6 +24,7 @@ const checks = [
   ['tier1-provider-recovery-handoff', 'scripts/validate-provider-recovery-handoff.mjs', true],
   ['tier2-repair-authority-separation', 'scripts/validate-autonomous-repair-factory.mjs', true],
   ['tier2-isolated-repair-worker', 'scripts/validate-isolated-repair-worker.mjs', true],
+  ['tier2-independent-repair-verifier', 'scripts/validate-independent-repair-verifier.mjs', true],
   ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
 ];
 
