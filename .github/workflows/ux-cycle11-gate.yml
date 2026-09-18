@@ -53,14 +53,18 @@ jobs:
           }
           mixed.push({id:'signoff',source:'weekly-review',reasonCode:'SIGNOFF_STALE',kind:'action',mandatory:true,evidenceState:'current'});
           mixed.push({id:'confirming',source:'time-review',reasonCode:'TIME_EXCEPTION_OPEN',kind:'action',mandatory:true,evidenceState:'current',lifecycle:'confirming_source'});
+          mixed.push({id:'human-resolved',source:'absence',reasonCode:'LEAVE_DECISION_PENDING',kind:'action',lifecycle:'resolved',automated:false,evidenceState:'current',auditRef:'Source status: approved'});
           const a=M.build(mixed),b=M.build(mixed.slice());
           if(a.actions.filter(x=>x.mandatory).length!==12) throw new Error('Mandatory actions lost');
           if(a.receipts.length!==20) throw new Error('Automation receipts lost');
+          if(a.resolved.length!==1||a.resolved[0].id!=='human-resolved') throw new Error('Source-confirmed human decision not separated');
+          if(a.receipts.some(x=>x.id==='human-resolved')) throw new Error('Human judgment mislabeled as automation');
           if(a.actions.some(x=>/^(leave|info)-/.test(x.id)&&x.urgent)) throw new Error('False urgent classification');
           if(a.actions[0].id!=='signoff') throw new Error('Highest-severity blocker not first');
           if(JSON.stringify(a.actions.map(x=>x.id))!==JSON.stringify(b.actions.map(x=>x.id))) throw new Error('Ranking not deterministic');
           if(a.actions.findIndex(x=>x.id==='confirming')<a.actions.findIndex(x=>x.id==='pay-0')) throw new Error('Confirming item outranked unresolved blocker');
           console.log('UX_CYCLE11_MODEL_STRESS_60=PASS');
+          console.log('UX_CYCLE11_HUMAN_AUTOMATION_SEPARATION=PASS');
           NODE
 
       - name: Browser-check exact source context and return focus
@@ -92,6 +96,7 @@ jobs:
           if(!(j10>=0&&jm>j10&&j11>jm&&c10>=0&&c11>c10)) throw new Error('Cycle 11 composition order invalid');
           if(!js.includes('window.WFMUXCycle11=')||!js.includes('WFMUXCycle11Model')||!css.includes('.ux11-queue')) throw new Error('Cycle 11 missing from served assets');
           if(!js.includes("route:'leave'")||!js.includes("route:'time-review'")||!js.includes("route:'weekly-review'")) throw new Error('Source workflow deep links missing');
+          if(!js.includes('Recently confirmed')||!js.includes('Handled automatically')) throw new Error('Resolved and automation lanes not both present');
           console.log('UX_CYCLE11_APPROVED_ASSET_COMPOSITION=PASS');
           NODE
           grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
