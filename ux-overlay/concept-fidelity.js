@@ -156,21 +156,30 @@ function topMetrics(content){
   ];
 }
 function styleAction(action){
-  action.dataset.uxPriority=classifyAction(action);
-  action.classList.add('ux-approved-decision-card');
-  if(!action.querySelector('.ux-approved-decision-badge')){
-    const badge=document.createElement('span');
-    badge.className='ux-approved-decision-badge '+action.dataset.uxPriority;
-    badge.textContent=action.dataset.uxPriority==='critical'?'Needs attention':action.dataset.uxPriority==='review'?'Review':'Decision';
-    action.insertAdjacentElement('afterbegin',badge);
-  }
-  if(!action.dataset.uxConceptBound){
-    action.dataset.uxConceptBound='1';
-    action.addEventListener('click',event=>{
-      if(event.target.closest('button,a,input,select,textarea,summary'))return;
-      openDrawer(action);
-    });
-  }
+  const priority=classifyAction(action);
+  const wrapper=document.createElement('article');
+  wrapper.className='ux-approved-decision-card';
+  wrapper.dataset.uxPriority=priority;
+  wrapper.dataset.uxConceptBound='1';
+
+  const badge=document.createElement('span');
+  badge.className='ux-approved-decision-badge '+priority;
+  badge.textContent=priority==='critical'?'Needs attention':priority==='review'?'Review':'Decision';
+
+  action.classList.add('ux-approved-decision-source');
+  const pathButton=document.createElement('button');
+  pathButton.type='button';
+  pathButton.className='ux-approved-path-button';
+  pathButton.textContent='Decision path';
+  pathButton.setAttribute('aria-label','Open decision path for '+text(action).slice(0,120));
+  pathButton.addEventListener('click',event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    openDrawer(action);
+  });
+
+  wrapper.append(badge,action,pathButton);
+  return wrapper;
 }
 function ensureDecisionDrawer(){
   if(document.querySelector('.ux-concept-decision-drawer'))return;
@@ -301,7 +310,7 @@ function buildApprovedToday(content){
   decisions.className='ux-approved-decisions';
   decisions.innerHTML='<div class="ux-approved-section-head"><div><span class="eyebrow">YOUR DECISIONS</span><h2>What needs your decision</h2><p>The system has already narrowed the work. Open an item to see the controlled path, or use its existing action.</p></div><span class="ux-approved-count">'+actions.length+' waiting</span></div><div class="ux-approved-decision-list"></div>';
   const decisionList=decisions.querySelector('.ux-approved-decision-list');
-  actions.forEach(action=>{styleAction(action);decisionList.appendChild(action);});
+  actions.forEach(action=>decisionList.appendChild(styleAction(action)));
   if(!actions.length)decisionList.innerHTML='<div class="ux-approved-empty">Nothing needs a manager decision right now.</div>';
   mainGrid.appendChild(decisions);
 
