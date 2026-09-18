@@ -22,7 +22,7 @@ function findIssuePanel(content){
  })||null;
 }
 function findGrid(content){
- const known=content.querySelector('.tablewrap,.ops-scroll,.dp-table-scroll,.pci-table-wrap,[role="grid"],[data-week-grid],[data-schedule-grid]');
+ const known=content.querySelector('.tablewrap,.ops-scroll,.dp-table-scroll,.pci-table-wrap,.weekly-planner,[role="grid"],[data-week-grid],[data-schedule-grid]');
  if(known)return known;
  const tables=[...content.querySelectorAll('table')];
  const weekly=tables.find(table=>{
@@ -84,12 +84,34 @@ function focusTarget(node,block='center'){
  try{node.focus({preventScroll:true});}catch{try{node.focus();}catch{}}
  node.scrollIntoView({block,behavior:'smooth'});
 }
+function clearFocusState(content){
+ const shell=content.querySelector(':scope > .ux-plan-focus')||content.querySelector('.ux-plan-focus');
+ if(shell?.parentNode)shell.parentNode.removeChild(shell);
+ content.querySelectorAll('.ux-plan-priority').forEach(node=>{
+   node.classList.remove('ux-plan-priority');
+   if(node.dataset.uxPlannerAddedTabindex==='true'){
+     node.removeAttribute('tabindex');
+     node.removeAttribute('data-ux-planner-added-tabindex');
+   }
+ });
+ const grid=content.querySelector('.ux-plan-grid');
+ if(grid)grid.hidden=false;
+ delete content.dataset.uxPlannerGrid;
+ delete content.dataset.uxPlannerFocus;
+}
 function enhancePlanner(){
  if(!manager()||route()!=='schedule-publication')return;
  const content=document.querySelector('.content');
- if(!content||content.dataset.uxPlannerFocus==='active'||content.dataset.uxPlannerFocus==='calm')return;
+ if(!content)return;
+ let issue=findIssuePanel(content),grid=findGrid(content),publish=findPublish(content);
+ const state=content.dataset.uxPlannerFocus;
+ if(state==='active'&&issue)return;
+ if(state==='calm'&&!issue)return;
+ if(state==='active'||state==='calm'){
+   clearFocusState(content);
+   issue=findIssuePanel(content);grid=findGrid(content);publish=findPublish(content);
+ }
  const heading=content.querySelector(':scope > .heading')||content.querySelector('.heading');
- const issue=findIssuePanel(content),grid=findGrid(content),publish=findPublish(content);
  if(!heading||(!issue&&!grid&&!publish))return;
  if(grid){
    grid.classList.add('ux-plan-grid');
@@ -103,7 +125,10 @@ function enhancePlanner(){
  }
  content.dataset.uxPlannerFocus='active';
  issue.classList.add('ux-plan-priority');
- issue.setAttribute('tabindex','-1');
+ if(!issue.hasAttribute('tabindex')){
+   issue.setAttribute('tabindex','-1');
+   issue.dataset.uxPlannerAddedTabindex='true';
+ }
  const shell=document.createElement('section');
  shell.className='ux-plan-focus';
  shell.setAttribute('aria-label','Schedule publication focus');
