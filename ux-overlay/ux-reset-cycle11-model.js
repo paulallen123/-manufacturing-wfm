@@ -13,11 +13,23 @@ const REASONS=Object.freeze({
   SIGNOFF_READY:{weight:56,urgent:false,label:'Ready to sign'},
   LEAVE_DECISION_PENDING:{weight:46,urgent:false,label:'Leave decision pending'},
   NEEDS_REVIEW:{weight:40,urgent:false,label:'Needs review'},
+  IMPLEMENTATION_BLOCKER:{weight:99,urgent:true,label:'Implementation blocker'},
+  ATTENDANCE_GAP:{weight:98,urgent:true,label:'Attendance evidence gap'},
+  PAYROLL_VALIDATION:{weight:95,urgent:true,label:'Payroll validation'},
+  HANDOVER_CRITICAL:{weight:92,urgent:true,label:'Critical shift handover'},
+  INTEGRATION_DEGRADED:{weight:88,urgent:true,label:'Integration degraded'},
+  AGENCY_COVER_SHORTAGE:{weight:84,urgent:true,label:'Agency cover shortage'},
+  PRODUCTION_DISRUPTION:{weight:82,urgent:true,label:'Production disruption'},
+  COST_SAVING_OPPORTUNITY:{weight:66,urgent:false,label:'Cost saving opportunity'},
+  ENERGY_SAVING_OPPORTUNITY:{weight:64,urgent:false,label:'Energy saving opportunity'},
+  TRAINING_DUE:{weight:48,urgent:false,label:'Training due'},
+  DOCUMENT_ACK_REQUIRED:{weight:42,urgent:false,label:'Acknowledgement required'},
+  SUPPORT_RECOVERY:{weight:30,urgent:false,label:'Support recovery'},
   INFORMATION:{weight:10,urgent:false,label:'Information'}
 });
 const LIFECYCLES=new Set(['action_required','decision_sent','confirming_source','needs_verification','resolved']);
 const KINDS=new Set(['action','information','receipt']);
-const SOURCES=new Set(['absence','time-review','weekly-review','schedule-publication','today','automation']);
+const SOURCES=new Set(['absence','time-review','weekly-review','schedule-publication','today','automation','implementation','integrations','attendance','agency','manufacturing-cost','energy','support','learning','handover','documents','payroll']);
 const nowMs=()=>Date.now();
 const parseTime=v=>{const n=Date.parse(v||'');return Number.isFinite(n)?n:null;};
 function normalise(input,now=nowMs()){

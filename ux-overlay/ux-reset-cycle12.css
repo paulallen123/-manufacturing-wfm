@@ -1,0 +1,5 @@
+/* WFM UX evolution cycle 12: future capability intake stays visually inside the existing action grammar. */
+.ux12-system-queue{margin-bottom:16px}
+.ux12-system-queue .ux11-head p{max-width:760px}
+.ux12-system-queue .ux11-card.review{opacity:.92}
+@media(max-width:620px){.ux12-system-queue{margin-left:0;margin-right:0}}
