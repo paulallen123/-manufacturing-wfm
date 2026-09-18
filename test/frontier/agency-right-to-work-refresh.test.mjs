@@ -106,6 +106,13 @@ test('tamper, expiry and worker-scope mismatches fail before refresh evaluation'
   assert.equal(verifyAgencyRightToWorkRefreshToken(issued, { ...EXPECTED, workerId:'W2' }, SECRET, { now:NOW, request:REQUEST }).reason, 'scope_mismatch:workerId');
 });
 
+test('server-side expected scope is mandatory rather than optional', () => {
+  const issued = token();
+  const verified = verifyAgencyRightToWorkRefreshToken(issued, { tenantId:'T1' }, SECRET, { now:NOW, request:REQUEST });
+  assert.equal(verified.valid, false);
+  assert.equal(verified.reason, 'expected_scope_missing:siteId');
+});
+
 test('a token cannot be reused after the authoritative assignment changes', () => {
   const issued = token();
   const changed = { ...REQUEST, endAt:'2026-10-05T16:00:00.000Z' };
