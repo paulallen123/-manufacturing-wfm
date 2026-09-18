@@ -1,4 +1,6 @@
-export const CAPABILITY_ENVELOPE_VERSION = 'factory-capability-envelope-v0.3.0';
+import { resolveCapabilitySubsumption } from './factory-capability-hierarchy.mjs';
+
+export const CAPABILITY_ENVELOPE_VERSION = 'factory-capability-envelope-v0.4.0';
 
 const OPS = new Set(['lte','gte','eq','in','contains']);
 
@@ -63,14 +65,24 @@ export function normalizeCapabilityEnvelope(raw = {}) {
   };
 }
 
-export function evaluateCapabilityRequirement(providedRaw, requiredRaw) {
+export function evaluateCapabilityRequirement(providedRaw, requiredRaw, { capabilityHierarchy = [], maxHierarchyDepth = 16 } = {}) {
   const provided = normalizeCapabilityEnvelope(providedRaw);
   if (provided.status !== 'accepted') return { status: 'unknown', reason: provided.reason, checks: [] };
   if (!requiredRaw?.capabilityId || !Array.isArray(requiredRaw.constraints)) {
     return { status: 'unknown', reason: 'invalid_requirement', checks: [] };
   }
-  if (String(requiredRaw.capabilityId) !== provided.envelope.capabilityId) {
-    return { status: 'infeasible', reason: 'capability_mismatch', checks: [] };
+
+  const identity = resolveCapabilitySubsumption(
+    provided.envelope.capabilityId,
+    String(requiredRaw.capabilityId),
+    capabilityHierarchy,
+    { maxDepth: maxHierarchyDepth },
+  );
+  if (identity.status === 'review_required') {
+    return { status: 'unknown', reason: identity.reason, checks: [], capabilityMatch: identity };
+  }
+  if (identity.status !== 'match') {
+    return { status: 'infeasible', reason: 'capability_mismatch', checks: [], capabilityMatch: identity };
   }
 
   const bySemanticId = new Map(provided.envelope.properties.map((item) => [item.semanticId, item]));
@@ -79,7 +91,7 @@ export function evaluateCapabilityRequirement(providedRaw, requiredRaw) {
   for (const constraint of requiredRaw.constraints) {
     const semanticId = keyOf(constraint);
     if (!semanticId || !OPS.has(constraint.operator)) {
-      return { status: 'unknown', reason: 'unsupported_constraint', checks };
+      return { status: 'unknown', reason: 'unsupported_constraint', checks, capabilityMatch: identity };
     }
     const actual = bySemanticId.get(semanticId);
     if (!actual) {
@@ -154,15 +166,15 @@ export function evaluateCapabilityRequirement(providedRaw, requiredRaw) {
     });
   }
 
-  if (checks.some((check) => check.status === 'fail')) return { status: 'infeasible', reason: 'constraint_failed', checks };
-  if (checks.some((check) => check.status === 'unknown')) return { status: 'unknown', reason: 'insufficient_or_incompatible_evidence', checks };
-  return { status: 'feasible', reason: 'all_supported_constraints_pass', checks };
+  if (checks.some((check) => check.status === 'fail')) return { status: 'infeasible', reason: 'constraint_failed', checks, capabilityMatch: identity };
+  if (checks.some((check) => check.status === 'unknown')) return { status: 'unknown', reason: 'insufficient_or_incompatible_evidence', checks, capabilityMatch: identity };
+  return { status: 'feasible', reason: 'all_supported_constraints_pass', checks, capabilityMatch: identity };
 }
 
-export function assessProductionCapability({ providedCapabilities = [], requirement, workforceCoverage = null } = {}) {
+export function assessProductionCapability({ providedCapabilities = [], requirement, workforceCoverage = null, capabilityHierarchy = [], maxHierarchyDepth = 16 } = {}) {
   const candidates = providedCapabilities.map((provided) => ({
     assetId: provided.assetId ?? null,
-    ...evaluateCapabilityRequirement(provided, requirement),
+    ...evaluateCapabilityRequirement(provided, requirement, { capabilityHierarchy, maxHierarchyDepth }),
   }));
 
   const technicallyFeasible = candidates.filter((candidate) => candidate.status === 'feasible');
@@ -194,14 +206,16 @@ export function assessProductionCapability({ providedCapabilities = [], requirem
   };
 }
 
-export function providedCapabilityEnvelopesFromGraph(graph, capabilityId) {
+export function providedCapabilityEnvelopesFromGraph(graph, capabilityId, capabilityHierarchy = []) {
   const provided = [];
   for (const asset of graph?.assets ?? []) {
     for (const capability of asset?.capabilities ?? []) {
-      if (capability?.capabilityId !== capabilityId || capability?.role === 'required') continue;
+      if (capability?.role === 'required' || !capability?.capabilityId) continue;
+      const match = resolveCapabilitySubsumption(capability.capabilityId, capabilityId, capabilityHierarchy);
+      if (match.status !== 'match') continue;
       provided.push({
         assetId: asset.assetId,
-        capabilityId,
+        capabilityId: capability.capabilityId,
         properties: capability.properties ?? [],
         source: capability.source ?? asset?.source?.provider ?? null,
         standardProfile: capability?.evidence?.profileVersion ?? asset?.semanticModel ?? null,
@@ -211,7 +225,7 @@ export function providedCapabilityEnvelopesFromGraph(graph, capabilityId) {
   return provided;
 }
 
-export function assessGraphProductionCapability({ graph, requirement, workforceCoverage = null } = {}) {
-  const providedCapabilities = providedCapabilityEnvelopesFromGraph(graph, requirement?.capabilityId);
-  return assessProductionCapability({ providedCapabilities, requirement, workforceCoverage });
+export function assessGraphProductionCapability({ graph, requirement, workforceCoverage = null, capabilityHierarchy = [], maxHierarchyDepth = 16 } = {}) {
+  const providedCapabilities = providedCapabilityEnvelopesFromGraph(graph, requirement?.capabilityId, capabilityHierarchy);
+  return assessProductionCapability({ providedCapabilities, requirement, workforceCoverage, capabilityHierarchy, maxHierarchyDepth });
 }
