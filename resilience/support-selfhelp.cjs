@@ -9,8 +9,15 @@ const KNOWLEDGE = Object.freeze([
     roles: ['employee','manager','payroll','company-admin','support']
   },
   {
+    id: 'integration-recovery',
+    patterns: [/integration.*(timeout|failed|failure|retry)|provider.*(timeout|failed|failure)|transfer.*failed/i],
+    answer: 'A customer report creates evidence and investigation work but cannot grant repair authority. Known recovery requires same-tenant deterministic system evidence plus independent verification before an allowlisted retry/replay can execute.',
+    sources: ['resilience/proofs/2026-09-17-support-incident-bounded-recovery.json','resilience/security-baseline.json'],
+    roles: ['manager','payroll','company-admin','support']
+  },
+  {
     id: 'provider-certification-status',
-    patterns: [/netsuite|successfactors|sap|oracle hcm|provider certification/i],
+    patterns: [/\b(?:netsuite|successfactors|sap|oracle hcm)\b|provider certification/i],
     answer: 'Do not claim a genuine live NetSuite, SAP SuccessFactors or Oracle HCM production integration unless a separately authorised provider test has been completed and evidenced.',
     sources: ['CUSTOMER_DEMO_RUNBOOK.md','DEPLOYMENT_MANIFEST.json'],
     roles: ['manager','payroll','company-admin','support']
@@ -30,13 +37,6 @@ const KNOWLEDGE = Object.freeze([
     roles: ['employee','manager','payroll','company-admin','support']
   },
   {
-    id: 'integration-recovery',
-    patterns: [/integration.*(timeout|failed|failure|retry)|provider.*(timeout|failed|failure)|transfer.*failed/i],
-    answer: 'A customer report creates evidence and investigation work but cannot grant repair authority. Known recovery requires same-tenant deterministic system evidence plus independent verification before an allowlisted retry/replay can execute.',
-    sources: ['resilience/proofs/2026-09-17-support-incident-bounded-recovery.json','resilience/security-baseline.json'],
-    roles: ['manager','payroll','company-admin','support']
-  },
-  {
     id: 'autonomous-authority',
     patterns: [/can (the )?(ai|assistant|bot).*change|autonomous.*(payroll|permission|schedule)|ignore.*safeguard|bypass.*approval/i],
     answer: 'No language model has direct authority over consequential actions. Payroll writes, identity grants/disables, security policy/secrets, tenant-boundary changes and other prohibited action classes remain blocked by deterministic policy.',
@@ -46,7 +46,7 @@ const KNOWLEDGE = Object.freeze([
 ]);
 
 function normalise(value) {
-  return String(value || '').replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F]/g, '').trim().slice(0, 4000);
+  return String(value || '').normalize('NFKC').replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F]/g, '').trim().slice(0, 4000);
 }
 
 function answer({ text, role='support', version='0.6.76-hosted-staging-rc1' } = {}) {
