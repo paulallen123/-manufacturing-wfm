@@ -33,6 +33,17 @@ test('missing or skipped mandatory gate blocks promotion',()=>{
   assert(a.blockers.includes('ci'));
 });
 
+test('missing or malformed skipped count cannot satisfy a mandatory gate',()=>{
+  for(const skipped of [undefined,null,'0']){
+    const gates=greenGates();
+    if(skipped===undefined) delete gates.deterministic.skipped;
+    else gates.deterministic.skipped=skipped;
+    const a=assessAttendanceRelease({candidateSha:SHA,gates,providerProofs:providers()});
+    assert.equal(a.ready,false,String(skipped));
+    assert(a.blockers.includes('deterministic'),String(skipped));
+  }
+});
+
 test('evidence proven on another commit cannot green the candidate',()=>{
   const gates=greenGates();
   gates.durabilityRestart.candidateSha='0'.repeat(40);
