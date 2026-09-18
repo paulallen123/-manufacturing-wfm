@@ -37,16 +37,28 @@ test('restart preserves last sequence so a later event cannot hide a missing ran
   assert.equal(job.expected,101); assert.equal(job.received,103);
 });
 
-test('completed reconciliation remains complete after restart',()=>{
+test('completed reconciliation remains complete after restart only after missing sequence was observed',()=>{
   const a=make();
   a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e1',observedAt:new Date(T+100).toISOString(),receivedAtMs:T+150,sequence:10});
   a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e2',observedAt:new Date(T+200).toISOString(),receivedAtMs:T+250,sequence:12});
-  const [job]=a.pendingRecovery({tenant:'acme',sourceId:'wifi'}); a.completeRecovery({jobId:job.jobId});
+  const [job]=a.pendingRecovery({tenant:'acme',sourceId:'wifi'});
+  a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e-backfill-11',observedAt:new Date(T+150).toISOString(),receivedAtMs:T+275,sequence:11});
+  assert.equal(a.completeRecovery({jobId:job.jobId}),true);
   assert.equal(a.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}).periodCoverageComplete,true);
   const b=new AttendanceSourceSupervisor({heartbeatSlaMs:10_000,lagWarningMs:2_000,authRefreshLeadMs:60_000});
   b.restoreState(a.exportState());
   assert.equal(b.status({tenant:'acme',sourceId:'wifi',nowMs:T+300}).periodCoverageComplete,true);
   assert.equal(b.pendingRecovery({tenant:'acme',sourceId:'wifi'}).length,0);
+});
+
+test('forged persisted sequence recovery evidence is rejected',()=>{
+  const a=make();
+  a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e1',observedAt:new Date(T+100).toISOString(),receivedAtMs:T+150,sequence:10});
+  a.event({tenant:'acme',sourceId:'wifi',providerEventId:'e2',observedAt:new Date(T+200).toISOString(),receivedAtMs:T+250,sequence:12});
+  const snap=a.exportState();
+  snap.recovery[0].recoveredSequences=[12];
+  const b=new AttendanceSourceSupervisor({heartbeatSlaMs:10_000,lagWarningMs:2_000,authRefreshLeadMs:60_000});
+  assert.throws(()=>b.restoreState(snap),/Invalid persisted sequence-gap recovery evidence/);
 });
 
 test('configuration drift cannot silently reinterpret persisted continuity state',()=>{
