@@ -135,6 +135,17 @@ test('normalization derives role, location and assignment window from authoritat
   });
 });
 
+test('default branch right-to-work evaluator contract accepts a complete scoped refresh', async () => {
+  const store = memoryStore();
+  const result = await captureAgencyRightToWorkRefresh({
+    token:token({ tokenId:'default-evaluator' }), expected:EXPECTED, secret:SECRET, now:NOW, request:REQUEST, agency:AGENCY,
+    submission:submission(), currentAssuranceCheckedAt:'2026-09-20T09:00:00.000Z', refreshStore:store,
+  });
+  assert.equal(result.accepted, true);
+  assert.equal(result.assurance.eligible, true);
+  assert.equal(result.assurance.evidence.checkMethod, 'home_office_online');
+});
+
 test('valid refreshed evidence is revalidated before it is atomically recorded', async () => {
   const store = memoryStore();
   const result = await captureAgencyRightToWorkRefresh({
