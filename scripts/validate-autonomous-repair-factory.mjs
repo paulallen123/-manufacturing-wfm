@@ -18,6 +18,9 @@ expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patch
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('control-loop-tamper'),changedPaths:['resilience/autonomy-control-loop.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('handoff-tamper'),changedPaths:['resilience/provider-recovery-handoff.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('worker-tamper'),changedPaths:['resilience/isolated-repair-worker.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('pipeline-tamper'),changedPaths:['resilience/autonomous-repair-pipeline.cjs']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('pipeline-validator-tamper'),changedPaths:['scripts/validate-autonomous-repair-pipeline.mjs']}),'WFM_REPAIR_PROTECTED_PATH');
+expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('pipeline-workflow-tamper'),changedPaths:['.github/workflows/wfm-autonomous-repair-pipeline.yml']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('syntax-gate-tamper'),changedPaths:['scripts/validate-autonomy-source-syntax.mjs']}),'WFM_REPAIR_PROTECTED_PATH');
 expect(()=>f.proposeCandidate({incidentId,tenant,proposerId:'repair-agent',patchDigest:d('dep-add'),changedPaths:['lib/fix.cjs'],runtimeDependenciesAdded:['some-package']}),'WFM_REPAIR_RUNTIME_DEPENDENCY');
 
@@ -56,5 +59,5 @@ assert.equal(contained.state,'contained');
 assert.match(contained.containment.containmentDigest,/^[a-f0-9]{64}$/);
 expect(()=>containment.proposeCandidate({incidentId:'inc-contain',tenant,proposerId:'repair-agent',patchDigest:d('late'),changedPaths:['lib/a.cjs']}),'WFM_REPAIR_STATE');
 
-const receipt={schemaVersion:1,proof:'tier2-repair-factory-authority-separation',status:'PASS',reproducerRequired:true,protectedPolicyTamperDenied:true,authoritySurfaceTamperDenied:true,isolatedWorkerAuthorityTamperDenied:true,syntaxGateTamperDenied:true,newRuntimeDependencyDenied:true,selfVerificationDenied:true,failedSecurityScanRejected:true,independentReleaseAuthorityRequired:true,artifactDriftDenied:true,stagingOnlyPermit:true,postStagingContainmentRequiresStagingController:true,deterministicContainmentRecorded:true,productionPermitDenied:true,repairBudgetContainment:true};
+const receipt={schemaVersion:1,proof:'tier2-repair-factory-authority-separation',status:'PASS',reproducerRequired:true,protectedPolicyTamperDenied:true,authoritySurfaceTamperDenied:true,isolatedWorkerAuthorityTamperDenied:true,repairPipelineAuthorityTamperDenied:true,repairPipelineValidatorTamperDenied:true,repairPipelineWorkflowTamperDenied:true,syntaxGateTamperDenied:true,newRuntimeDependencyDenied:true,selfVerificationDenied:true,failedSecurityScanRejected:true,independentReleaseAuthorityRequired:true,artifactDriftDenied:true,stagingOnlyPermit:true,postStagingContainmentRequiresStagingController:true,deterministicContainmentRecorded:true,productionPermitDenied:true,repairBudgetContainment:true};
 console.log(JSON.stringify(receipt,null,2));
