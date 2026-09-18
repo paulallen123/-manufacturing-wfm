@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import {verifyKisiWebhook,verifyVerkadaWebhook,normalizeVerkadaAccessWebhook,acknowledgeAfterDurableCommit} from './access-push-adapters.mjs';
+import {verifyKisiWebhook,verifyVerkadaWebhook,normalizeVerkadaAccessWebhook,normalizeSaltoNebulaEvent,acknowledgeAfterDurableCommit} from './access-push-adapters.mjs';
 import {ACCESS_PROVIDER_CAPABILITIES,planAccessConnection} from './access-control-evidence.mjs';
 
 const T=Date.parse('2026-09-18T13:10:00Z');
@@ -97,6 +97,79 @@ test('Verkada is declared as realtime webhook plus historical backfill provider'
   const p=planAccessConnection({provider:'verkada'});
   assert.equal(p.strategy,'cloud_signed_webhook');
   assert.equal(p.backfill,true);
+});
+
+function saltoEvent(type,{user='installations/acme/users/u1',accessPoint='installations/acme/access-points/d1',credentialType='salto.nebula.user.v1.CardKey',direction='ENTRY',occurAt=new Date(T).toISOString(),createAt=new Date(T+60_000).toISOString()}={}){
+  return {name:'installations/acme/events/evt-1',type,occur_time:occurAt,create_time:createAt,data:{user,access_point:accessPoint,credential_type:credentialType,direction,card_uid:'never-copy',photo_uri:'never-copy'}};
+}
+const saltoBase={sourceId:'salto',employee:'e1',expectedProviderUserResource:'installations/acme/users/u1',accessPoint:{id:'d1',direction:'entry',attendanceEligible:true,zoneId:'site'},receivedAtMs:T+120_000,identityBinding:'assigned_badge'};
+
+test('SALTO Nebula card unlock with ENTRY becomes access_entry using occur_time',()=>{
+  const r=normalizeSaltoNebulaEvent({...saltoBase,event:saltoEvent('com.saltosystems.nebula.event.v1.accesspointunlocked')});
+  assert.equal(r.status,'evidence');
+  assert.equal(r.event.kind,'access_entry');
+  assert.equal(r.event.observedAt,new Date(T).toISOString());
+  const serialized=JSON.stringify(r);
+  assert.equal(serialized.includes('never-copy'),false);
+});
+
+test('SALTO Nebula app key EXIT becomes access_exit',()=>{
+  const r=normalizeSaltoNebulaEvent({...saltoBase,event:saltoEvent('com.saltosystems.nebula.event.v1.accesspointunlocked',{credentialType:'salto.nebula.user.v1.AppKey',direction:'EXIT'})});
+  assert.equal(r.status,'evidence');
+  assert.equal(r.event.kind,'access_exit');
+});
+
+test('SALTO remote unlock with unspecified direction can never create attendance',()=>{
+  const r=normalizeSaltoNebulaEvent({...saltoBase,event:saltoEvent('com.saltosystems.nebula.event.v1.accesspointunlocked',{credentialType:'',direction:'DIRECTION_UNSPECIFIED'})});
+  assert.notEqual(r.status,'evidence');
+});
+
+test('SALTO passcode is not accepted as automatic personal attendance identity',()=>{
+  const r=normalizeSaltoNebulaEvent({...saltoBase,event:saltoEvent('com.saltosystems.nebula.event.v1.accesspointunlocked',{credentialType:'salto.nebula.user.v1.Passcode'})});
+  assert.equal(r.status,'review_required');
+  assert.equal(r.reason,'SHARED_OR_UNPROVEN_CREDENTIAL');
+});
+
+test('SALTO provider-user mismatch fails closed',()=>{
+  const r=normalizeSaltoNebulaEvent({...saltoBase,event:saltoEvent('com.saltosystems.nebula.event.v1.accesspointunlocked',{user:'installations/acme/users/other'})});
+  assert.equal(r.status,'review_required');
+  assert.equal(r.reason,'PROVIDER_USER_ID_MISMATCH');
+});
+
+test('SALTO access denied remains operational intelligence only',()=>{
+  const r=normalizeSaltoNebulaEvent({...saltoBase,event:saltoEvent('com.saltosystems.nebula.event.v1.accessdenied')});
+  assert.equal(r.status,'operational_event');
+  assert.equal(r.event.type,'access_denied');
+});
+
+test('SALTO general accessgranted is not passage evidence',()=>{
+  const r=normalizeSaltoNebulaEvent({...saltoBase,event:saltoEvent('com.saltosystems.nebula.event.v1.accessgranted')});
+  assert.equal(r.status,'ignored');
+  assert.equal(r.reason,'ACCESS_GRANT_HAS_NO_PROVEN_SINGLE_PASSAGE');
+});
+
+test('SALTO Nebula offers cloud realtime subscription plus ListEvents reconciliation',()=>{
+  assert.equal(ACCESS_PROVIDER_CAPABILITIES.salto_nebula.realtime,'event_subscription');
+  assert.equal(ACCESS_PROVIDER_CAPABILITIES.salto_nebula.reconciliation,'list_events_api');
+  const p=planAccessConnection({provider:'salto_nebula'});
+  assert.equal(p.strategy,'cloud_event_subscription');
+  assert.equal(p.backfill,true);
+  assert.equal(p.safetyNotes.includes('use_occur_time'),true);
+});
+
+test('Paxton Net2 is planned as edge SignalR plus Events API and hides vendor approval from customer steps',()=>{
+  const p=planAccessConnection({provider:'paxton_net2'});
+  assert.equal(p.strategy,'edge_net2_signalr');
+  assert.equal(p.backfill,true);
+  assert.equal(p.vendorPrerequisites.includes('paxton_commercial_integration_approval'),true);
+  assert.equal(p.customerSteps.includes('paxton_commercial_integration_approval'),false);
+});
+
+test('SALTO Space event-stream licence is surfaced as a site prerequisite, not silently assumed',()=>{
+  const p=planAccessConnection({provider:'salto_space'});
+  assert.equal(p.strategy,'edge_space_event_stream');
+  assert.equal(p.customerPrerequisites.includes('event_stream_license'),true);
+  assert.equal(p.backfill,false);
 });
 
 test('webhook is acknowledged only after durable commit succeeds',async()=>{
