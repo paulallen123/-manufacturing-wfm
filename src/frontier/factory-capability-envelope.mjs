@@ -1,4 +1,4 @@
-export const CAPABILITY_ENVELOPE_VERSION = 'factory-capability-envelope-v0.1.0';
+export const CAPABILITY_ENVELOPE_VERSION = 'factory-capability-envelope-v0.2.0';
 
 const OPS = new Set(['lte','gte','eq','in']);
 
@@ -123,4 +123,26 @@ export function assessProductionCapability({ providedCapabilities = [], requirem
     candidates,
     technicallyFeasibleAssets: technicallyFeasible.map((item) => item.assetId),
   };
+}
+
+export function providedCapabilityEnvelopesFromGraph(graph, capabilityId) {
+  const provided = [];
+  for (const asset of graph?.assets ?? []) {
+    for (const capability of asset?.capabilities ?? []) {
+      if (capability?.capabilityId !== capabilityId || capability?.role === 'required') continue;
+      provided.push({
+        assetId: asset.assetId,
+        capabilityId,
+        properties: capability.properties ?? [],
+        source: capability.source ?? asset?.source?.provider ?? null,
+        standardProfile: capability?.evidence?.profileVersion ?? asset?.semanticModel ?? null,
+      });
+    }
+  }
+  return provided;
+}
+
+export function assessGraphProductionCapability({ graph, requirement, workforceCoverage = null } = {}) {
+  const providedCapabilities = providedCapabilityEnvelopesFromGraph(graph, requirement?.capabilityId);
+  return assessProductionCapability({ providedCapabilities, requirement, workforceCoverage });
 }
