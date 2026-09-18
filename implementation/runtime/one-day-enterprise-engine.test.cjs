@@ -133,6 +133,32 @@ test('employee cannot inspect enterprise implementation control plane', async ()
   }
 });
 
+test('eight-hour target is assessed by parallel critical path, not serial task sum', async () => {
+  const f = fixture();
+  try {
+    const eightHour = await call(
+      f.hub, null, 'POST', '/api/implementation/autonomous/contract-activated',
+      { tenant: 'alpha', contractRef: 'critical-path-8h', targetHours: 8 },
+      { 'x-wfm-implementation-internal': 'implementation-worker-test-token' }
+    );
+    assert.equal(eightHour.status, 201);
+    assert.equal(eightHour.body.state, 'BUILDING');
+    assert.ok(eightHour.body.parallelWorkMinutes > eightHour.body.criticalPathRemainingMinutes);
+    assert.ok(eightHour.body.criticalPathRemainingMinutes <= 480);
+
+    const fourHour = await call(
+      f.hub, null, 'POST', '/api/implementation/autonomous/contract-activated',
+      { tenant: 'bravo', contractRef: 'critical-path-4h', targetHours: 4 },
+      { 'x-wfm-implementation-internal': 'implementation-worker-test-token' }
+    );
+    assert.equal(fourHour.status, 201);
+    assert.equal(fourHour.body.state, 'AT_RISK');
+    assert.ok(fourHour.body.criticalPathRemainingMinutes > 240);
+  } finally {
+    f.close();
+  }
+});
+
 test('contract activation is trusted-worker only and idempotent', async () => {
   const f = fixture();
   try {
