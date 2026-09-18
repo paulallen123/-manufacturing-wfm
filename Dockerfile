@@ -12,6 +12,7 @@ RUN mkdir -p /app/security-runtime
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
 COPY security/runtime/runtime-attestation.cjs /app/security-runtime/runtime-attestation.cjs
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
+RUN printf '%s\n' '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' > /app/security-runtime/runtime-sha256
 
 # Preserve the sealed server/security contract. Compose the reviewable UX layers only
 # through existing presentation assets that are already in the server's static allow-list.
@@ -71,6 +72,5 @@ RUN chown -R root:root /app \
 USER node
 ENV NODE_ENV=staging
 ENV WFM_IDENTITY_SURVIVAL_GUARD=enforce
-ENV WFM_IMAGE_RUNTIME_SHA256=3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d
 EXPOSE 3000
 CMD ["node","security-runtime/bootstrap.cjs"]
