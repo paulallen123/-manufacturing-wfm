@@ -13,6 +13,10 @@ if(rows[0].source!=='implementation'||rows[0].route!=='onboarding')throw new Err
 if(rows[1].source!=='handover'||rows[1].route!=='handover')throw new Error('handover binding failed');
 if(M.normalise('not-approved',{id:'x'}))throw new Error('unknown provider accepted');
 if(M.normalise('energy',{}))throw new Error('missing id accepted');
+const spoofed=M.normalise('payroll',{id:'pay-1',route:'leave',reasonCode:'PAYROLL_VALIDATION',evidenceState:'current'});
+if(!spoofed||spoofed.source!=='payroll'||spoofed.route!=='payroll-run')throw new Error('provider route escaped registered source workflow');
+const validExplicit=M.normalise('attendance',{id:'att-1',route:'attendance',reasonCode:'ATTENDANCE_GAP',evidenceState:'current'});
+if(!validExplicit||validExplicit.route!=='attendance')throw new Error('registered provider route rejected');
 
 const impl=M.implementationSignals({runId:'run-1',state:'AT_RISK',completedRequirements:12,totalRequirements:17,remainingMinutes:30,criticalPathRemainingMinutes:75,deadlineAt:'2026-09-18T17:00:00Z',requirements:[{key:'payroll-mapping',status:'MISSING',satisfied:false}],blockingDecisions:[{key:'overtime-rule',question:'Confirm overtime rule?',risk:'HIGH',status:'PENDING'}]});
 if(impl.length!==3)throw new Error('implementation mapper did not emit decision, gap and target risk');
@@ -26,4 +30,5 @@ if(c11.includes("if(!manager()||page()==='overview')return;"))throw new Error('r
 if(!c11.includes("else if(page()!=='overview'&&!document.querySelector('.ux11-back')&&returnMarker())addBackLink()"))throw new Error('specialist source workflow return link is not observed');
 if(!c12.includes('WFMUXCycle11?.restoreFocus?.(section)'))throw new Error('specialist queue does not reuse shared return-focus primitive');
 console.log('UX12_SIGNAL_CONTRACT=PASS');
+console.log('UX12_PROVIDER_ROUTE_BINDING=PASS');
 console.log('UX12_SPECIALIST_RETURN_CONTEXT=PASS');
