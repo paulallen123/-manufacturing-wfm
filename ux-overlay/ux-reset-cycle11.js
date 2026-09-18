@@ -110,15 +110,31 @@ function openRoute(route,id,sourceId){
  const live=document.querySelector('.ux11-live');if(live)live.textContent='The source workflow is not available for this role.';return false;
 }
 function returnMarker(){try{return JSON.parse(sessionStorage.getItem('wfmUx11Return')||'null');}catch{return null;}}
-function focusSourceTarget(marker){
- if(!marker?.sourceId)return false;
- let target=null;
- if(marker.route==='leave')target=[...document.querySelectorAll('.ux-leave-card[data-request]')].find(el=>String(el.dataset.request)===String(marker.sourceId))||null;
+function selectSourceScope(controlId,sourceId){
+ if(!sourceId)return false;
+ const control=document.getElementById(controlId);if(!control)return false;
+ const option=[...control.options].find(o=>String(o.value)===String(sourceId));
+ if(!option||String(control.value)===String(option.value))return false;
+ control.value=option.value;
+ control.dispatchEvent(new Event('change',{bubbles:true}));
+ return true;
+}
+function focusNode(target){
  if(!target)return false;
- target.setAttribute('tabindex','-1');
+ if(!target.matches?.('button,a[href],input,select,textarea,[tabindex]'))target.setAttribute('tabindex','-1');
  try{target.scrollIntoView({block:'center',behavior:'smooth'});}catch{target.scrollIntoView();}
  setTimeout(()=>{try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}},60);
  return true;
+}
+function focusSourceTarget(marker){
+ if(!marker?.sourceId)return false;
+ if(marker.route==='time-review'&&selectSourceScope('tri-team',marker.sourceId)){setTimeout(()=>focusSourceTarget(marker),90);return true;}
+ if(marker.route==='weekly-review'&&selectSourceScope('review-team',marker.sourceId)){setTimeout(()=>focusSourceTarget(marker),90);return true;}
+ let target=null;
+ if(marker.route==='leave')target=[...document.querySelectorAll('.ux-leave-card[data-request]')].find(el=>String(el.dataset.request)===String(marker.sourceId))||null;
+ else if(marker.route==='time-review')target=document.querySelector('.tr-list .tr-person')||document.querySelector('.tr-list');
+ else if(marker.route==='weekly-review')target=document.querySelector('.ux-signoff-desk')||document.querySelector('.review-layout');
+ return focusNode(target);
 }
 function addBackLink(){
  if(!manager()||page()==='overview')return;
@@ -138,5 +154,5 @@ const previousRender=window.render;if(typeof previousRender==='function')window.
 const observer=new MutationObserver(()=>{try{if(manager()&&page()==='overview'&&!document.querySelector('.ux11-queue'))apply();else if(manager()&&page()!=='overview'&&!document.querySelector('.ux11-back')&&returnMarker())addBackLink();}catch{}});
 observer.observe(document.documentElement,{subtree:true,childList:true});
 setTimeout(apply,0);setTimeout(apply,400);
-window.WFMUXCycle11={apply,collectSignals,renderQueue,openRoute,focusSourceTarget};
+window.WFMUXCycle11={apply,collectSignals,renderQueue,openRoute,focusSourceTarget,selectSourceScope};
 })();
