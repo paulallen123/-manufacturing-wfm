@@ -54,3 +54,38 @@ UX scorecard delta:
 - Capability preservation: exact reconciled gate passed; authoritative publish and sealed runtime remain unchanged.
 
 Single next highest-value UX action: obtain isolated hosted browser proof of the exact reconciled Cycle 10 candidate. Only after that should the universal Action Queue / optional intent-entry experiment begin, with stable navigation as the control condition and first-click success, route switches and task completion measured rather than assumed.
+
+## 2026-09-18 — Cycle 11 action-queue human-factors guardrail / hosted-proof diagnosis
+
+Journey reviewed: cross-workflow manager action discovery, with special attention to whether a future universal Action Queue could become an alert/event flood; in parallel, the exact hosted proof path for Cycle 10 schedule publication was re-validated.
+
+Research / competitive insight:
+- Industrial alarm-management guidance provides a stronger independent human-factors model than vendor dashboards: important signals should direct attention to conditions requiring timely action, have an identifiable priority and defined response, remain readable under high activity, and avoid operator overload.
+- Microsoft 2026 Next Best Action direction independently supports cross-prioritising work and keeping relevant context beside the action, but this remains first-party product evidence rather than independent WFM usability proof.
+
+Design decision for Cycle 11: BUILD NEXT, but treat the universal queue as a decision surface rather than an event feed. Distinguish ACTION from INFORMATION, keep hard blockers and imminent payroll/compliance/coverage decisions individually visible, group repetitive lower-level signals behind one explainable card without discarding underlying items, and keep consequential writes in their owning workflow until the exact same authority, stale-state, permission and audit semantics can be proven inline. AI may explain ranking or accept an optional intent query, but cannot suppress mandatory actions or become the only route to them.
+
+Measurable hypothesis: on a synthetic burst of at least 50 mixed signals, deterministic prioritisation plus grouping will keep mandatory blockers visible and let a manager reach the correct owning decision in one primary action, while reducing scan-to-correct-action time versus the route-specific baseline. First-click success and decision error rate must be measured separately for novice and expert cohorts; no improvement is claimed yet.
+
+Hosted Cycle 10 verification work completed this cycle:
+- Isolated service `wfm-ux-pr37` was repointed from `ux/role-first-simplification-20260917-v2` to `ux/planner-focus-20260917`; customer-proof and staging runtime services were left untouched.
+- Railway deployment `d41cb593-4a80-4202-a1bc-049df7cba8e5` completed and passed `/api/health`, but its build still contained UX layers only through Cycle 9.
+- GitHub independently confirms the Cycle 10 branch contains `WFM_UX_RESET_CYCLE10` in the Dockerfile and `ux-overlay/ux-reset-cycle10.js` at head `a97eb7cd7243a0fee4bb1f64395b975ee1183de8`.
+- The isolated Railway service accepted an exact source commit pin, but redeploy `b61e5431-8dcb-4bfa-9c14-9365f4b7f6d3` again fetched the same source snapshot and built only through Cycle 9 while passing health.
+- A documentation-only branch commit `7ae695e41cdb03eb7ef37860b413ee1addc77a5a` was then created solely to force a fresh source revision; the isolated service was pointed at that revision and redeploy `4ba96e3e-4128-48a8-b250-9c40c3d14435` again returned the same source snapshot and Cycle-9-only build, while `/api/health` passed.
+
+Observed conclusion: Cycle 10 code is present in GitHub but is still not being materialised into the isolated Railway build. The exact Railway/GitHub source-snapshot mechanism causing the stale source is not proven, so this is recorded as a source-synchronisation blocker rather than a product defect or a confirmed platform-cache rule. A successful healthcheck is explicitly not accepted as Cycle 10 UX proof when the Cycle 10 markers are absent.
+
+UX scorecard delta:
+- Role/job clarity: Cycle 10 candidate unchanged; Cycle 11 expected improvement remains unproven.
+- Navigation predictability: preserved; canonical routes remain the control condition.
+- Action visibility: Cycle 11 specification strengthened so mandatory actions cannot be buried by grouped informational signals.
+- Cognitive load: stronger human-factors acceptance criteria added; no real-user improvement claimed.
+- Evidence/explainability: improved governance — every priority card must expose why-now/reason context and a defined response; unknown impact remains unknown.
+- Accessibility: no new hosted accessibility evidence this cycle; full audit remains open.
+- Mobile/tablet: no regression evidence added this cycle; prior 390px candidate gate remains the latest proof.
+- Capability preservation: no customer-facing runtime, permissions, payroll, schedule authority or tenant controls were changed in this cycle.
+
+Still unverified: exact Cycle 10 hosted visual/interaction proof, full accessibility audit, real-user first-click/time-on-task/error metrics, and the Cycle 11 mixed-signal queue experiment.
+
+Single next highest-value UX action: solve the isolated host's stale source-snapshot resolution or use another safe deterministic hosted proof route that can be tied to the exact Cycle 10 commit. Do not promote Cycle 10 until its markers and interactions are proven on that hosted candidate; after that, build and stress-test the deterministic universal Action Queue against mixed synthetic manager actions.
