@@ -1,8 +1,9 @@
 import crypto from 'node:crypto';
 import { evaluateAgencyRightToWorkLifecycle } from './agency-right-to-work-lifecycle.mjs';
 
-export const AGENCY_RIGHT_TO_WORK_ASSURANCE_VERSION = 'agency-right-to-work-assurance-v0.2.0';
+export const AGENCY_RIGHT_TO_WORK_ASSURANCE_VERSION = 'agency-right-to-work-assurance-v0.2.1';
 export const UK_RIGHT_TO_WORK_2026_EFFECTIVE_AT = '2026-10-01T00:00:00.000Z';
+export const UK_RIGHT_TO_WORK_DVSP_SUPPLEMENTARY_CODE_VERSION = '1.1';
 
 const SUPPORTED_ARRANGEMENT = 'employment_business_supply_to_hirer_own_operations';
 const ALLOWED_METHODS = new Set([
@@ -24,6 +25,55 @@ function baseRightToWorkFailures(rightToWork) {
   const failures = [];
   if (rightToWork.status !== 'verified') failures.push('right_to_work_not_verified');
   return failures;
+}
+
+function evaluateDvspPolicyEvidence({ rightToWork, scheme, checkedAt, now }) {
+  const failures = [];
+  const configured = scheme?.rtwDvsp && typeof scheme.rtwDvsp === 'object' ? scheme.rtwDvsp : {};
+  const providerId = text(configured.providerId, 120);
+  const workerProviderId = text(rightToWork.dvspProviderId, 120);
+  const registryStatus = text(configured.registryStatus, 40);
+  const supplementaryCodeVersion = text(configured.rightToWorkSupplementaryCodeVersion, 20);
+  const registryEvidenceRef = text(configured.registryEvidenceRef, 200);
+  const registryVerifiedAt = ms(configured.registryVerifiedAt);
+
+  if (!providerId) failures.push('right_to_work_dvsp_provider_configuration_missing');
+  if (configured.trustFrameworkCertified !== true) failures.push('right_to_work_dvsp_trust_framework_certification_not_confirmed');
+  if (registryStatus !== 'registered') failures.push('right_to_work_dvsp_provider_not_registered');
+  if (configured.rightToWorkSupplementaryCodeCertified !== true) failures.push('right_to_work_dvsp_supplementary_code_certification_not_confirmed');
+  if (supplementaryCodeVersion !== UK_RIGHT_TO_WORK_DVSP_SUPPLEMENTARY_CODE_VERSION) {
+    failures.push('right_to_work_dvsp_supplementary_code_version_not_current');
+  }
+  if (!registryEvidenceRef) failures.push('right_to_work_dvsp_registry_evidence_ref_missing');
+  if (registryVerifiedAt === null) failures.push('right_to_work_dvsp_registry_verification_time_missing');
+  if (registryVerifiedAt !== null && now !== null && registryVerifiedAt > now) {
+    failures.push('right_to_work_dvsp_registry_verification_in_future');
+  }
+  if (registryVerifiedAt !== null && checkedAt !== null && registryVerifiedAt > checkedAt) {
+    failures.push('right_to_work_dvsp_registry_evidence_after_worker_check');
+  }
+
+  if (workerProviderId) {
+    if (providerId && workerProviderId !== providerId) failures.push('right_to_work_dvsp_provider_mismatch');
+  } else if (configured.exclusiveForAgencyRightToWork !== true) {
+    failures.push('right_to_work_dvsp_provider_provenance_missing');
+  }
+
+  return {
+    failures,
+    evidence: {
+      providerId: providerId || null,
+      providerSource: workerProviderId ? 'worker_evidence_bound_to_agency_policy' : configured.exclusiveForAgencyRightToWork === true ? 'agency_exclusive_right_to_work_policy' : null,
+      registryStatus: registryStatus || null,
+      trustFrameworkCertified: configured.trustFrameworkCertified === true,
+      rightToWorkSupplementaryCodeCertified: configured.rightToWorkSupplementaryCodeCertified === true,
+      rightToWorkSupplementaryCodeVersion: supplementaryCodeVersion || null,
+      registryVerifiedAt: configured.registryVerifiedAt ?? null,
+      registryEvidenceFingerprint: fingerprint(registryEvidenceRef),
+      rawRegistryEvidenceReturned: false,
+      evidenceRule: 'rtw_dvsp_requires_server_authoritative_registered_and_certified_provider_evidence_for_the_current_right_to_work_supplementary_code',
+    },
+  };
 }
 
 export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, options = {}) {
@@ -132,6 +182,13 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
   if (checkedAt !== null && now !== null && checkedAt > now) failures.push('right_to_work_check_in_future');
   if (checkedAt !== null && assignmentStart !== null && checkedAt > assignmentStart) failures.push('right_to_work_check_after_assignment_start');
 
+  let dvspEvidence = null;
+  if (method === 'rtw_dvsp') {
+    const dvsp = evaluateDvspPolicyEvidence({ rightToWork, scheme, checkedAt, now });
+    failures.push(...dvsp.failures);
+    dvspEvidence = dvsp.evidence;
+  }
+
   const assignmentScope = rightToWork.assignmentScope && typeof rightToWork.assignmentScope === 'object'
     ? rightToWork.assignmentScope
     : {};
@@ -166,6 +223,7 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
       indefinite: rightToWork.indefinite === true,
       validUntil: rightToWork.validUntil ?? null,
       evidenceFingerprint: fingerprint(evidenceRef),
+      digitalVerificationService: dvspEvidence,
       lifecycle: lifecycle.evidence,
       assignmentScope: {
         roleId: text(assignmentScope.roleId, 100) || null,
@@ -174,7 +232,7 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
         endAt: assignmentScope.endAt ?? null,
         restrictionsSatisfied: assignmentScope.restrictionsSatisfied === true,
       },
-      privacyBoundary: 'no_share_code_date_of_birth_document_number_or_raw_right_to_work_evidence_in_engine_output',
+      privacyBoundary: 'no_share_code_date_of_birth_document_number_or_raw_right_to_work_or_dvsp_registry_evidence_in_engine_output',
       evidenceRule: 'employment_business_assurance_must_be_assignment_scoped_and_use_a_prescribed_check_method_before_work_starts',
     },
   };
