@@ -3,7 +3,7 @@ import { normalizeIdta02020InstanceSubmodels } from './idta-02020-instance-compa
 
 const CONTAINER_KEYS = ['submodelElements', 'value', 'statements', 'annotations'];
 
-export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.4.0';
+export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.5.0';
 
 function canonicalReference(reference) {
   const keys = Array.isArray(reference?.keys) ? reference.keys.filter((key) => key?.value) : [];
@@ -84,6 +84,7 @@ export function extractAasCapabilities(submodels = [], { maxElements = 10_000, m
       requiredCount: profile.required.length,
       reviewRequiredCount: reviewRequired.length,
       normalizedInstanceProperties: normalized.normalizedProperties,
+      normalizedSemanticAliases: normalized.normalizedAliases,
       sourceMutation: normalized.sourceMutation,
     },
   };
