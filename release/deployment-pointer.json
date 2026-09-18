@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "releaseSequence": 1,
+  "purpose": "canonical-release-path-proof",
+  "integrationBranch": "integration/canonical",
+  "stagingCandidateRef": "release/staging",
+  "stagingDeployMirror": "main",
+  "productionRef": "release/production",
+  "canonicalRailwayServiceId": "3bea5411-cebb-4878-adcc-766f5fd58cc7",
+  "requiresExactShaMatch": true,
+  "customerMutation": false,
+  "productionMutation": false
+}
