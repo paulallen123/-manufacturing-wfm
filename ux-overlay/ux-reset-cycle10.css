@@ -1,0 +1,29 @@
+/* WFM UX evolution cycle 10: exception-first schedule publication. */
+body.ux-reset-active .content[data-ux-planner-focus="active"]{overflow-x:clip}
+.ux-plan-focus{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.9fr);gap:14px 22px;align-items:center;margin:0 0 16px;padding:16px 18px;border:1px solid var(--ux-line);border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(23,37,57,.05)}
+.ux-plan-focus-copy{min-width:0}
+.ux-plan-eyebrow{display:inline-flex;align-items:center;min-height:26px;padding:4px 8px;margin-bottom:8px;border-radius:999px;background:var(--ux-soft);border:1px solid var(--ux-line);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ux-muted)}
+.ux-plan-focus h2{margin:0;color:var(--ux-ink);font-size:18px;line-height:1.2}
+.ux-plan-focus p{margin:6px 0 0;max-width:700px;color:var(--ux-muted);font-size:12px;line-height:1.5}
+.ux-plan-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.ux-plan-steps span{display:flex;align-items:center;gap:7px;min-height:40px;padding:8px;border:1px solid var(--ux-line);border-radius:11px;background:var(--ux-soft);font-size:11px;font-weight:700;color:var(--ux-ink)}
+.ux-plan-steps b{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:999px;background:#fff;border:1px solid var(--ux-line);font-size:10px}
+.ux-plan-jumps{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;padding-top:2px}
+.ux-plan-jump{appearance:none;border:1px solid var(--ux-line);background:#fff;color:var(--ux-ink);border-radius:10px;min-height:36px;padding:8px 11px;font:inherit;font-size:11px;font-weight:750;cursor:pointer}
+.ux-plan-jump:hover,.ux-plan-jump:focus-visible{border-color:#9aa8ba;box-shadow:0 0 0 3px rgba(77,103,136,.10);outline:none}
+.ux-plan-priority{scroll-margin-top:16px;border-color:#cbd5e1!important;box-shadow:0 8px 24px rgba(23,37,57,.04)}
+body.ux-reset-active .content[data-ux-planner-focus="active"] .ux-plan-grid{max-width:100%;overflow:auto;overscroll-behavior-inline:contain;scroll-margin-top:16px}
+body.ux-reset-active .content[data-ux-planner-focus="active"] .ux-plan-grid[hidden]{display:none!important}
+body.ux-reset-active .content[data-ux-planner-focus="active"] .ux-plan-publish{position:relative;z-index:1}
+@media(max-width:900px){
+ .ux-plan-focus{grid-template-columns:1fr}
+ .ux-plan-jumps{grid-column:auto}
+}
+@media(max-width:620px){
+ .ux-plan-focus{padding:14px;border-radius:14px}
+ .ux-plan-steps{grid-template-columns:1fr}
+ .ux-plan-steps span{min-height:34px}
+ .ux-plan-jumps{display:grid;grid-template-columns:1fr 1fr}
+ .ux-plan-jump{width:100%;text-align:left}
+ .ux-plan-jump:last-child:nth-child(odd){grid-column:1/-1}
+}

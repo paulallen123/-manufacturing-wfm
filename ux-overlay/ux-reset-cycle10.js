@@ -1,0 +1,166 @@
+/* WFM UX evolution cycle 10: planner focus mode for schedule publication. */
+(function(){
+'use strict';
+const route=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
+const employee=()=>{try{return typeof isEmployee==='function'&&isEmployee();}catch{return false;}};
+const manager=()=>{try{const role=(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'&&ui.role);return !employee()&&['manager','director','supervisor'].includes(role);}catch{return false;}};
+const text=node=>(node?.textContent||'').replace(/\s+/g,' ').trim();
+const dayCount=value=>['mon','tue','wed','thu','fri','sat','sun'].filter(day=>new RegExp(`\\b${day}`, 'i').test(value)).length;
+function findIssuePanel(content){
+ const nodes=[...content.querySelectorAll(':scope > .panel,:scope > .card,:scope > section,.ops-panel')];
+ const strong=/(coverage\s+(?:gap|risk|shortage)|skills?\s+(?:gap|shortage)|unfilled|under[- ]?staffed|conflict|shortage|needs?\s+(?:cover|action|attention)|requires?\s+action|at\s+risk|overtime\s+(?:risk|breach)|agency\s+(?:risk|cost)|exception(?:s)?\s+(?:need|requiring|awaiting))/i;
+ const action=/(resolve|find\s+cover|reassign|approve|review|needs?\s+action|requires?\s+action)/i;
+ return nodes.find(node=>{
+   if(node.matches('.ux-plan-focus'))return false;
+   const value=text(node);
+   const attrs=[...node.attributes].map(a=>`${a.name} ${a.value}`).join(' ');
+   const explicitData=/data-(?:risk|exception|coverage|gap|conflict)/i.test(attrs);
+   const semantic=strong.test(value)||explicitData;
+   const actionable=action.test(value)||!!node.querySelector('button,[role="button"],a[href]');
+   const quantified=/\b\d+\b/.test(value);
+   return semantic&&(actionable||quantified);
+ })||null;
+}
+function findGrid(content){
+ const known=content.querySelector('.tablewrap,.ops-scroll,.dp-table-scroll,.pci-table-wrap,.weekly-planner,[role="grid"],[data-week-grid],[data-schedule-grid]');
+ if(known)return known;
+ const tables=[...content.querySelectorAll('table')];
+ const weekly=tables.find(table=>{
+   const value=text(table).slice(0,12000);
+   return dayCount(value)>=5&&/(person|employee|worker|published|draft|shift|schedule|rota)/i.test(value);
+ });
+ if(weekly)return weekly.closest('[data-grid],[data-table-scroll],.scroll,.table-scroll,.grid-scroll,.panel,.card,section')||weekly.parentElement||weekly;
+ const navControls=[...content.querySelectorAll('button,[role="button"],a')].filter(node=>/^(previous\s+week|next\s+week)$/i.test(text(node)));
+ const structural=[];
+ for(const control of navControls){
+   let node=control.parentElement;
+   for(let depth=0;node&&node!==content&&depth<8;depth++,node=node.parentElement){
+     if(node.matches?.('.ux-plan-focus'))continue;
+     const value=text(node).slice(0,30000);
+     if(dayCount(value)>=5&&/(published|draft|shift|schedule|rota|weekly\s+view)/i.test(value))structural.push(node);
+   }
+ }
+ if(structural.length)return [...new Set(structural)].sort((a,b)=>text(a).length-text(b).length)[0];
+ const candidates=[...content.querySelectorAll('section,.panel,.card,.ops-panel,[class*="week"],[class*="schedule"],[class*="planner"],[class*="grid"]')]
+   .filter(node=>{
+     if(node.matches('.ux-plan-focus'))return false;
+     const value=text(node).slice(0,30000);
+     const weekNav=/(Previous\s+week|Next\s+week)/i.test(value);
+     return dayCount(value)>=5&&weekNav&&/(published|draft|shift|schedule|rota|weekly\s+view)/i.test(value);
+   })
+   .sort((a,b)=>text(a).length-text(b).length);
+ return candidates[0]||null;
+}
+function findPublish(content){
+ const candidates=[...content.querySelectorAll('button,[role="button"]')];
+ return candidates.find(node=>{
+   const label=text(node);
+   if(!label||/\bexport\b|\bpublished\b|\bhistory\b|\breceipt\b|\bdetails\b/i.test(label))return false;
+   return /^(publish\b|release\s+(schedule|rota)\b|post\s+schedule\b)/i.test(label);
+ })||null;
+}
+function button(label,kind){
+ const b=document.createElement('button');
+ b.type='button';
+ b.className='ux-plan-jump';
+ b.dataset.target=kind;
+ b.textContent=label;
+ return b;
+}
+function revealGrid(content,grid,toggle){
+ grid.hidden=false;
+ toggle?.setAttribute('aria-expanded','true');
+ if(toggle)toggle.textContent='Hide full planner';
+ content.dataset.uxPlannerGrid='open';
+}
+function hideGrid(content,grid,toggle){
+ grid.hidden=true;
+ toggle?.setAttribute('aria-expanded','false');
+ if(toggle)toggle.textContent='Open full planner';
+ content.dataset.uxPlannerGrid='closed';
+}
+function focusTarget(node,block='center'){
+ if(!node)return;
+ try{node.focus({preventScroll:true});}catch{try{node.focus();}catch{}}
+ node.scrollIntoView({block,behavior:'smooth'});
+}
+function clearFocusState(content){
+ const shell=content.querySelector(':scope > .ux-plan-focus')||content.querySelector('.ux-plan-focus');
+ if(shell?.parentNode)shell.parentNode.removeChild(shell);
+ content.querySelectorAll('.ux-plan-priority').forEach(node=>{
+   node.classList.remove('ux-plan-priority');
+   if(node.dataset.uxPlannerAddedTabindex==='true'){
+     node.removeAttribute('tabindex');
+     node.removeAttribute('data-ux-planner-added-tabindex');
+   }
+ });
+ const grid=content.querySelector('.ux-plan-grid');
+ if(grid)grid.hidden=false;
+ delete content.dataset.uxPlannerGrid;
+ delete content.dataset.uxPlannerFocus;
+}
+function enhancePlanner(){
+ if(!manager()||route()!=='schedule-publication')return;
+ const content=document.querySelector('.content');
+ if(!content)return;
+ let issue=findIssuePanel(content),grid=findGrid(content),publish=findPublish(content);
+ const state=content.dataset.uxPlannerFocus;
+ if(state==='active'&&issue)return;
+ if(state==='calm'&&!issue)return;
+ if(state==='active'||state==='calm'){
+   clearFocusState(content);
+   issue=findIssuePanel(content);grid=findGrid(content);publish=findPublish(content);
+ }
+ const heading=content.querySelector(':scope > .heading')||content.querySelector('.heading');
+ if(!heading||(!issue&&!grid&&!publish))return;
+ if(grid){
+   grid.classList.add('ux-plan-grid');
+   if(!grid.hasAttribute('tabindex'))grid.setAttribute('tabindex','0');
+   if(!grid.id)grid.id='ux-plan-grid-detail';
+ }
+ if(publish){publish.classList.add('ux-plan-publish');publish.setAttribute('data-ux-preserved-publish','true');}
+ if(!issue){
+   content.dataset.uxPlannerFocus='calm';
+   return;
+ }
+ content.dataset.uxPlannerFocus='active';
+ issue.classList.add('ux-plan-priority');
+ if(!issue.hasAttribute('tabindex')){
+   issue.setAttribute('tabindex','-1');
+   issue.dataset.uxPlannerAddedTabindex='true';
+ }
+ const shell=document.createElement('section');
+ shell.className='ux-plan-focus';
+ shell.setAttribute('aria-label','Schedule publication focus');
+ shell.innerHTML='<div class="ux-plan-focus-copy"><span class="ux-plan-eyebrow">Schedule focus</span><h2>Resolve risk before you publish</h2><p>Start with coverage and skills gaps. Open the full planner only when you need to move people or inspect the grid.</p></div><div class="ux-plan-steps" aria-label="Recommended sequence"><span><b>1</b> Resolve gaps</span><span><b>2</b> Review impact</span><span><b>3</b> Publish</span></div><div class="ux-plan-jumps"></div>';
+ const specialist=content.querySelector(':scope > .ux-specialist-context');
+ (specialist||heading).insertAdjacentElement('afterend',shell);
+ const jumps=shell.querySelector('.ux-plan-jumps');
+ jumps.appendChild(button('Coverage & risks','issues'));
+ let gridToggle=null;
+ if(grid){
+   gridToggle=button('Open full planner','grid');
+   gridToggle.classList.add('ux-plan-grid-toggle');
+   gridToggle.setAttribute('aria-expanded','false');
+   gridToggle.setAttribute('aria-controls',grid.id);
+   jumps.appendChild(gridToggle);
+   hideGrid(content,grid,gridToggle);
+ }
+ if(publish)jumps.appendChild(button('Go to publish','publish'));
+ jumps.addEventListener('click',event=>{
+   const control=event.target.closest('.ux-plan-jump');if(!control)return;
+   if(control.dataset.target==='issues')focusTarget(issue,'start');
+   if(control.dataset.target==='grid'&&grid){
+     if(grid.hidden){revealGrid(content,grid,gridToggle);focusTarget(grid,'start');}else hideGrid(content,grid,gridToggle);
+   }
+   if(control.dataset.target==='publish'&&publish)focusTarget(publish,'center');
+ });
+}
+function apply(){try{enhancePlanner();}catch(e){console.warn('WFM UX cycle 10 skipped:',e);}}
+const previousRender=window.render;
+if(typeof previousRender==='function')window.render=async function(...args){const result=await previousRender.apply(this,args);apply();return result;};
+const observer=new MutationObserver(()=>apply());
+observer.observe(document.documentElement,{subtree:true,childList:true});
+setTimeout(apply,0);setTimeout(apply,250);setTimeout(apply,700);
+window.WFMUXCycle10={apply};
+})();
