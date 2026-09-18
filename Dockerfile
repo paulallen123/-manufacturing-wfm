@@ -12,10 +12,11 @@ RUN rm -f scripts/validate-deployment.mjs \
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
 WORKDIR /app
 
-# Force the discarded T0-T4 proof stage to execute and admit only a PASS receipt.
-# The read-only mount is build-time only; no proof scripts or receipts enter the runtime filesystem.
-RUN --mount=type=bind,from=autonomy-proof,source=/proof,target=/mnt/autonomy-proof,ro \
-    node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('/mnt/autonomy-proof/portable-autonomy-proof.json','utf8'));if(p.status!=='PASS'||p.strictRuntime!==true||p.productionMutation!==false||p.customerMutation!==false)process.exit(1);console.log('WFM_T0_T4_AUTONOMY_ADMISSION=PASS')"
+# Force the discarded T0-T4 proof stage to execute and admit only its non-secret PASS receipt.
+# No support/repair source code is copied into the runtime stage; the receipt is verified then removed.
+COPY --from=autonomy-proof /proof/portable-autonomy-proof.json /tmp/portable-autonomy-proof.json
+RUN node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('/tmp/portable-autonomy-proof.json','utf8'));if(p.status!=='PASS'||p.strictRuntime!==true||p.productionMutation!==false||p.customerMutation!==false)process.exit(1);console.log('WFM_T0_T4_AUTONOMY_ADMISSION=PASS')" \
+ && rm -f /tmp/portable-autonomy-proof.json
 
 COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
 RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp/runtime.tgz" | sha256sum -c - \
