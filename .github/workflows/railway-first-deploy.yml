@@ -10,7 +10,7 @@ on:
       - 'scripts/live-correction-proof.mjs'
       - 'scripts/live-browser-screenshot-proof.mjs'
       - 'scripts/live-role-browser-context-proof.mjs'
-      - 'scripts/live-role-control-inventory-proof.mjs'
+      - 'scripts/live-role-accessibility-diagnostic.mjs'
       - 'scripts/live-visual-evidence.mjs'
       - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: railway-auth-proof-wfm-customer-proof-0676-v5
+  group: railway-auth-proof-wfm-customer-proof-0676-v6
   cancel-in-progress: true
 
 jobs:
@@ -64,9 +64,6 @@ jobs:
           echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
           "$CLI_BIN" --version
 
-      # Security boundary: this is the only step that receives the deployment credential.
-      # The repository-wide security gate enforces the exact secret name, workflow path,
-      # owner-only trigger, fixed target IDs, pinned runner/actions and non-persistent checkout.
       - name: Bootstrap exact existing Railway customer-proof service
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -86,9 +83,7 @@ jobs:
           import { spawnSync } from 'node:child_process';
           const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
           const password = vars.WFM_STAGING_PASSWORD;
-          if (!password || !vars.WFM_PUBLIC_ORIGIN) {
-            throw new Error('Required canonical staging variables are unavailable to the proof runner.');
-          }
+          if (!password || !vars.WFM_PUBLIC_ORIGIN) throw new Error('Required canonical staging variables are unavailable to the proof runner.');
           delete process.env.RAILWAY_TOKEN;
           process.env.WFM_STAGING_PASSWORD = password;
           process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
@@ -97,13 +92,10 @@ jobs:
           await import('./scripts/live-correction-proof.mjs');
           await import('./scripts/live-browser-screenshot-proof.mjs');
 
-          // Individual proof modules defensively clear the credential after use. Restore
-          // it only from the in-memory server-held value before the next isolated proof;
-          // it is never printed, persisted in evidence, or passed to Chrome environments.
           process.env.WFM_STAGING_PASSWORD = password;
           await import('./scripts/live-role-browser-context-proof.mjs');
           process.env.WFM_STAGING_PASSWORD = password;
-          await import('./scripts/live-role-control-inventory-proof.mjs');
+          await import('./scripts/live-role-accessibility-diagnostic.mjs');
 
           const ffmpeg = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' });
           if (ffmpeg.status === 0 && ffmpeg.stdout.trim()) {
@@ -113,9 +105,7 @@ jobs:
             const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
             fs.mkdirSync(outDir, { recursive: true });
             fs.writeFileSync(path.join(outDir, 'visual-recording-status.json'), JSON.stringify({
-              capturedAt: new Date().toISOString(),
-              release: '0.6.76-hosted-staging-rc1',
-              status: 'BLOCKED',
+              capturedAt: new Date().toISOString(), release: '0.6.76-hosted-staging-rc1', status: 'BLOCKED',
               reason: 'ffmpeg unavailable on pinned runner',
               claimBoundary: 'authenticated browser screenshots, separate role browser contexts and API/tenant/kiosk/correction proof passed separately; walkthrough video not claimed'
             }, null, 2));
@@ -126,11 +116,12 @@ jobs:
 
           rm -f "$RUNNER_TEMP/railway-vars.json"
 
-      - name: Upload live visual evidence package
+      - name: Upload live evidence package even when a new proof gate fails
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: wfm-customer-proof-0676-live-evidence
           path: ${{ runner.temp }}/wfm-evidence-output
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
           compression-level: 6
