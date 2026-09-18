@@ -19,9 +19,10 @@ COPY integration/runtime/autonomous-integration-hub.cjs /app/integration-runtime
 
 # One-day implementation and adaptive learning overlays. These remain additive,
 # tenant-scoped, fail-closed control planes using Node built-ins and the existing SQLite state.
-RUN mkdir -p /app/implementation-runtime /app/learning-runtime
+RUN mkdir -p /app/implementation-runtime /app/learning-runtime /tmp/wfm-learning-ui
 COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-runtime/one-day-enterprise-engine.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
+COPY learning/ui/ /tmp/wfm-learning-ui/
 
 # Preserve the sealed server/security contract. Compose the reviewable UX layers only
 # through existing presentation assets that are already in the server's static allow-list.
@@ -64,7 +65,11 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle8.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_UX_RESET_CYCLE9_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle9.js >> /app/public/value-cockpit-ui.js \
- && rm -rf /tmp/wfm-ux-overlay
+ && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/factory-control-ui.css \
+ && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/value-cockpit-ui.js \
+ && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
 # managers from the final runtime so npm-bundled libraries are not an exposed attack surface.
