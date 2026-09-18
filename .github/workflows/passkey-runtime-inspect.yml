@@ -1,0 +1,57 @@
+name: Passkey runtime contract inspect
+
+on:
+  push:
+    branches:
+      - 'autonomy/passkey-webauthn'
+    paths:
+      - '.github/workflows/passkey-runtime-inspect.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout trusted owner branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Inspect sealed authentication contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/wfm-passkey-inspect
+          mkdir -p /tmp/wfm-passkey-inspect
+          tar -xzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz -C /tmp/wfm-passkey-inspect
+
+          echo '=== AUTH SCHEMA ==='
+          grep -nE 'CREATE TABLE.*(users|sessions)|CREATE TABLE IF NOT EXISTS (users|sessions)|sessions\s*\(' /tmp/wfm-passkey-inspect/server.cjs | head -n 80 || true
+
+          echo '=== LOGIN / LOGOUT / COOKIE ==='
+          grep -nE -C 14 "/api/(login|logout)|wfm_session|Set-Cookie|token_hash|password_hash|scrypt|pbkdf|argon|timingSafeEqual" /tmp/wfm-passkey-inspect/server.cjs | head -n 520 || true
+
+          echo '=== LOGIN CLIENT CONTRACT ==='
+          grep -RInE -C 8 "/api/login|login-email|login-password|Sign in|superuser@" /tmp/wfm-passkey-inspect/public --include='*.js' --include='*.html' | head -n 520 || true
+
+          echo '=== DB TABLE INFO FROM CLEAN BOOT ==='
+          docker build --pull=false -t wfm-passkey-inspect:branch .
+          docker run -d --name wfm-passkey-inspect-run --network host             -e PORT=4199             -e NODE_ENV=staging             -e NODE_OPTIONS=--experimental-sqlite             -e WFM_DB=/tmp/wfm-passkey-inspect.sqlite             -e WFM_STAGING_PASSWORD='PasskeyInspectOnly-DoNotUse-1234!'             wfm-passkey-inspect:branch
+          trap 'docker rm -f wfm-passkey-inspect-run >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 40); do
+            curl -fsS http://127.0.0.1:4199/api/health >/tmp/passkey-health.json && break || sleep .5
+          done
+          test -s /tmp/passkey-health.json
+          docker exec wfm-passkey-inspect-run node --experimental-sqlite - <<'NODE'
+          const {DatabaseSync}=require('node:sqlite');
+          const db=new DatabaseSync('/tmp/wfm-passkey-inspect.sqlite');
+          for (const table of ['users','sessions']) {
+            console.log('TABLE',table, db.prepare(`PRAGMA table_info(${table})`).all());
+          }
+          NODE
