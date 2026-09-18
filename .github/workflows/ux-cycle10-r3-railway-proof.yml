@@ -5,6 +5,8 @@ on:
     branches:
       - 'ux/planner-focus-20260918-r3'
     paths:
+      - 'Dockerfile'
+      - 'ux-overlay/ux-reset-cycle10.*'
       - '.github/workflows/ux-cycle10-r3-railway-proof.yml'
   workflow_dispatch:
 
