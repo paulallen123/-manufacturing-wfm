@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-export const AGENCY_SUPPLIER_DELIVERY_VERSION = 'agency-supplier-delivery-v0.1.0';
+export const AGENCY_SUPPLIER_DELIVERY_VERSION = 'agency-supplier-delivery-v0.1.1';
 
 export const AGENCY_SUPPLIER_DELIVERY_DDL = `
 CREATE TABLE IF NOT EXISTS wfm_agency_supplier_deliveries (
@@ -49,10 +49,34 @@ RETURNING status, attempt_count;
 `;
 
 const OUTCOME_SQL = `
-UPDATE wfm_agency_supplier_deliveries
-SET status=$3, provider_message_ref=$4, updated_at=$5
-WHERE tenant_id=$1 AND idempotency_key=$2 AND status='dispatching'
-RETURNING status, attempt_count, provider_message_ref;
+WITH target AS (
+  SELECT status, attempt_count, provider_message_ref
+  FROM wfm_agency_supplier_deliveries
+  WHERE tenant_id=$1 AND idempotency_key=$2
+  FOR UPDATE
+), updated AS (
+  UPDATE wfm_agency_supplier_deliveries d
+  SET status=$3,
+      provider_message_ref=COALESCE(d.provider_message_ref,$4),
+      updated_at=GREATEST(d.updated_at,$5::timestamptz)
+  WHERE d.tenant_id=$1 AND d.idempotency_key=$2
+    AND d.status='dispatching'
+    AND ($6::integer IS NULL OR d.attempt_count=$6)
+  RETURNING d.status, d.attempt_count, d.provider_message_ref
+)
+SELECT
+  CASE
+    WHEN NOT EXISTS (SELECT 1 FROM target) THEN 'delivery_not_found'
+    WHEN $6::integer IS NOT NULL AND (SELECT attempt_count FROM target) <> $6 THEN 'attempt_mismatch'
+    WHEN EXISTS (SELECT 1 FROM updated) THEN 'recorded'
+    WHEN (SELECT status FROM target)='sent'
+      AND ((SELECT provider_message_ref FROM target) IS NULL OR $4::text IS NULL OR (SELECT provider_message_ref FROM target)=$4)
+      THEN 'already_sent'
+    ELSE 'state_conflict'
+  END AS result,
+  COALESCE((SELECT status FROM updated),(SELECT status FROM target)) AS status,
+  COALESCE((SELECT attempt_count FROM updated),(SELECT attempt_count FROM target)) AS attempt_count,
+  COALESCE((SELECT provider_message_ref FROM updated),(SELECT provider_message_ref FROM target)) AS provider_message_ref;
 `;
 
 const text = (value, max = 200) => typeof value === 'string' ? value.trim().replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').slice(0, max) : '';
@@ -276,18 +300,26 @@ export function createPostgresAgencySupplierDeliveryStore({query}) {
       const row=result?.rows?.[0];
       return row?{claimed:true,status:row.status,attemptCount:Number(row.attempt_count??row.attemptCount)}:{claimed:false,status:null,attemptCount:null};
     },
-    async recordOutcome({tenantId,idempotencyKey,status,providerMessageRef,at}={}) {
+    async recordOutcome({tenantId,idempotencyKey,status,providerMessageRef,at,attemptNumber}={}) {
       if(!['sent','not_sent','unknown'].includes(status))throw new TypeError('invalid delivery outcome status');
+      const attempt=attemptNumber === null || attemptNumber === undefined ? null : Number(attemptNumber);
+      if(attempt !== null && (!Number.isInteger(attempt)||attempt<1||attempt>1000))throw new TypeError('attemptNumber must be a positive integer');
       const result=await query(OUTCOME_SQL,[
         requiredString(tenantId,'tenantId',100),
         requiredString(idempotencyKey,'idempotencyKey',64),
         status,
         text(providerMessageRef,200)||null,
         requiredIso(at,'at'),
+        attempt,
       ]);
       const row=result?.rows?.[0];
-      if(!row)throw new Error('unexpected_delivery_state');
-      return {status:row.status,attemptCount:Number(row.attempt_count??row.attemptCount),providerMessageRef:row.provider_message_ref??row.providerMessageRef??null};
+      if(!row)throw new Error('unexpected_delivery_store_result');
+      return {
+        result:row.result ?? null,
+        status:row.status ?? null,
+        attemptCount:Number(row.attempt_count??row.attemptCount),
+        providerMessageRef:row.provider_message_ref??row.providerMessageRef??null,
+      };
     },
   });
 }
@@ -378,12 +410,21 @@ export async function dispatchAgencySupplierRequest({prepared,deliveryStore,send
       status:outcome.status,
       providerMessageRef,
       at,
+      attemptNumber:claim?.attemptCount,
     });
   }catch{
     return {
       dispatched:false,
       reason:'delivery_audit_write_failed_after_send_attempt',
       receipt:deliveryAuditReceipt({prepared,status:'unknown',attemptCount:claim?.attemptCount??null,providerMessageRef:null,at,reason:'delivery_audit_write_failed_after_send_attempt'}),
+    };
+  }
+
+  if(recorded?.result && !['recorded','already_sent'].includes(recorded.result)){
+    return {
+      dispatched:false,
+      reason:'delivery_state_conflict_after_send_attempt',
+      receipt:deliveryAuditReceipt({prepared,status:'unknown',attemptCount:claim?.attemptCount??null,providerMessageRef:null,at,reason:'delivery_state_conflict_after_send_attempt'}),
     };
   }
 
