@@ -6,7 +6,7 @@ const DIRECTIONS=new Set(['entry','exit']);
 
 function safe(v){ return SAFE_ID.test(String(v||'')) ? String(v) : null; }
 function stableId(parts){
-  return \`access-\${crypto.createHash('sha256').update(JSON.stringify(parts)).digest('hex').slice(0,32)}\`;
+  return `access-${crypto.createHash('sha256').update(JSON.stringify(parts)).digest('hex').slice(0,32)}`;
 }
 function occurred(value, receivedAtMs){
   const ms=Date.parse(String(value||''));
@@ -57,7 +57,7 @@ export function normalizeAccessDecision({
     };
   }
 
-  if(['door_forced','forced_open','door_held','held_open','tamper','controller_offline'].includes(eventType)){
+  if(['door_forced','forced_open','door_held','held_open','tamper','controller_offline','door_tailgating','door_tamper','door_acu_tamper','door_lockdown'].includes(eventType)){
     return {
       status:'operational_event',
       event:{type:eventType,provider,providerEventId,employee,sourceId,accessPointId,observedAt:occurred(event.occurredAt||event.timestamp,receivedAtMs)}
@@ -95,6 +95,7 @@ export function normalizeAccessDecision({
 
 export const ACCESS_PROVIDER_CAPABILITIES=Object.freeze({
   kisi:{realtime:'webhook',reconciliation:'events_api',deployment:'cloud',customerNetworkChange:false},
+  verkada:{realtime:'webhook',reconciliation:'events_api',deployment:'cloud',customerNetworkChange:false},
   gallagher:{realtime:'live_events_api',reconciliation:'historical_events_api',deployment:'hybrid',customerNetworkChange:'gateway_or_edge'},
   genetec:{realtime:'web_sdk_event_listener',reconciliation:'access_event_query',deployment:'hybrid',customerNetworkChange:'usually_edge_or_reachable_websdk'},
   hid_origo:{realtime:'callback',reconciliation:'event_management_api',deployment:'cloud',customerNetworkChange:false},
@@ -110,6 +111,7 @@ export const ACCESS_PROVIDER_CAPABILITIES=Object.freeze({
 export function planAccessConnection({provider,hasCloudGateway=false,onvifProfileA=false,webhookAvailable=false,webSdkReachable=false}={}){
   const p=String(provider||'').toLowerCase();
   if(p==='kisi') return {strategy:'cloud_webhook',realtime:true,backfill:true,customerSteps:['authorize','confirm_door_directions']};
+  if(p==='verkada') return {strategy:'cloud_signed_webhook',realtime:true,backfill:true,customerSteps:['authorize','configure_webhook_secret','confirm_door_directions']};
   if(p==='hid_origo') return {strategy:'cloud_callback',realtime:true,backfill:true,customerSteps:['authorize','confirm_door_directions']};
   if(p==='gallagher'){
     if(hasCloudGateway) return {strategy:'cloud_gateway_live_events',realtime:true,backfill:true,customerSteps:['authorize','confirm_door_directions']};
