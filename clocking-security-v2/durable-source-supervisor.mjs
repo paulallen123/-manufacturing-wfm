@@ -89,16 +89,6 @@ export class AtomicSupervisorStateStore {
       return clone(frame.state);
     }
 
-    // The file is committed before the independent anchor. Exactly one authenticated
-    // generation ahead therefore means a crash/interruption happened after durable
-    // file commit but before anchor commit. Recover by advancing the anchor once.
-    if(frameGeneration===anchoredGeneration+1){
-      const advanced=generation(this.rollbackAnchor.advance(anchoredGeneration),'Attendance rollback anchor recovery generation');
-      if(advanced!==frameGeneration) throw new Error('Attendance rollback anchor recovery did not advance exactly once.');
-      this.needsRecovery=false;
-      return clone(frame.state);
-    }
-
     throw new Error('Attendance source state rollback detected.');
   }
 
@@ -127,23 +117,36 @@ export class AtomicSupervisorStateStore {
       fs.writeFileSync(fd,body);
       fs.fsyncSync(fd);
       fs.closeSync(fd); fd=null;
-      fs.renameSync(tmp,this.filePath);
-      const dirFd=fs.openSync(dir,'r');
-      try{ fs.fsyncSync(dirFd); } finally { fs.closeSync(dirFd); }
     }catch(e){
       if(fd!==null){ try{fs.closeSync(fd);}catch{} }
       try{ if(fs.existsSync(tmp)) fs.unlinkSync(tmp); }catch{}
       throw e;
     }
 
+    // The independent monotonic anchor is the cross-process compare-and-set gate.
+    // Claim the next generation before publishing the canonical file so a stale
+    // writer can never overwrite a winner's state and then discover it lost the CAS.
+    // Any failed/ambiguous anchor transition freezes this store: its in-memory view
+    // may now be stale relative to another process and must be reloaded before reuse.
+    this.needsRecovery=true;
     try{
       const advanced=generation(this.rollbackAnchor.advance(current),'Attendance rollback anchor advanced generation');
       if(advanced!==next) throw new Error('Attendance rollback anchor did not advance exactly once.');
     }catch(e){
-      // The new authenticated file is already durable. Freeze this store so the
-      // process cannot overwrite it from rolled-back memory. A new store instance
-      // will reconcile the one-generation-ahead file through load().
-      this.needsRecovery=true;
+      try{ if(fs.existsSync(tmp)) fs.unlinkSync(tmp); }catch{}
+      throw e;
+    }
+
+    try{
+      fs.renameSync(tmp,this.filePath);
+      const dirFd=fs.openSync(dir,'r');
+      try{ fs.fsyncSync(dirFd); } finally { fs.closeSync(dirFd); }
+      this.needsRecovery=false;
+    }catch(e){
+      // Once the anchor advances it must never be rolled back. If publication of
+      // the matching file fails, remain frozen. Restart/load will fail closed while
+      // the anchor is ahead rather than accepting an older or losing writer state.
+      try{ if(fs.existsSync(tmp)) fs.unlinkSync(tmp); }catch{}
       throw e;
     }
     return {bytes:body.length,integrityKeyId:this.activeKeyId,rollbackGeneration:next};
