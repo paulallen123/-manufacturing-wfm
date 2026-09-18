@@ -32,16 +32,17 @@ jobs:
           login() {
             local email="$1" jar="$2" out="$3"
             status="$(curl -sS -o "$out" -w '%{http_code}' -c "$jar" \
+              -H "Origin: $WFM_ORIGIN" \
               -H 'Content-Type: application/json' \
               --data "{\"email\":\"$email\",\"password\":\"$WFM_DEMO_PASSWORD\"}" \
               "$WFM_ORIGIN/api/login")"
-            test "$status" = "200" || { echo "Login failed for fixture identity with HTTP $status" >&2; exit 1; }
+            test "$status" = "200" || { echo "Login failed for fixture identity with HTTP $status" >&2; cat "$out" >&2; exit 1; }
           }
 
           get_json() {
             local jar="$1" path="$2" out="$3"
             status="$(curl -sS -o "$out" -w '%{http_code}' -b "$jar" "$WFM_ORIGIN$path")"
-            test "$status" = "200" || { echo "$path returned HTTP $status" >&2; exit 1; }
+            test "$status" = "200" || { echo "$path returned HTTP $status" >&2; cat "$out" >&2; exit 1; }
           }
 
           login 'manager@northstar.example' "$tmp/north.cookies" "$tmp/north-login.json"
