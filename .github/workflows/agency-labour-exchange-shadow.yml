@@ -11,14 +11,17 @@ on:
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
       - 'src/frontier/agency-supplier-delivery.mjs'
+      - 'src/frontier/agency-supplier-delivery-receipt.mjs'
       - 'test/frontier/agency-labour-exchange.test.mjs'
       - 'test/frontier/agency-labour-performance.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
       - 'test/frontier/agency-supplier-delivery.test.mjs'
+      - 'test/frontier/agency-supplier-delivery-receipt.test.mjs'
       - '.github/workflows/agency-labour-exchange-shadow.yml'
       - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
+      - 'docs/AGENCY_SUPPLIER_DELIVERY_V1.md'
   workflow_dispatch:
 
 permissions:
@@ -48,4 +51,5 @@ jobs:
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
-              test/frontier/agency-supplier-delivery.test.mjs
+              test/frontier/agency-supplier-delivery.test.mjs \
+              test/frontier/agency-supplier-delivery-receipt.test.mjs
