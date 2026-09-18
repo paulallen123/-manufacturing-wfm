@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "updated": "2026-09-17",
+  "rules": [
+    {
+      "id": "staging-deploy-success-requires-runtime-health",
+      "scope": "staging-and-customer-proof",
+      "severity": "critical",
+      "classification": "deployment-runtime-observability",
+      "inputs": [
+        "deployment control-plane status",
+        "exact candidate/runtime identity",
+        "independent HTTP health probes",
+        "expected health response contract"
+      ],
+      "detect_when": {
+        "deployment_status": "SUCCESS",
+        "health_probe_success": false
+      },
+      "minimum_failed_probe_count": 1,
+      "readiness_requires": {
+        "candidate_identity_verified": true,
+        "consecutive_independent_healthy_probes": 3,
+        "expected_http_status": 200,
+        "expected_health_body_verified": true,
+        "authenticated_customer_journey_verified": true
+      },
+      "safe_response": [
+        "mark-deployment-false-green",
+        "block-readiness-claim",
+        "preserve-runtime-and-proxy-evidence",
+        "classify-before-redeploy-or-rollback"
+      ],
+      "automatic_mutation_authority": false,
+      "prohibited_shortcuts": [
+        "treat control-plane SUCCESS as runtime health",
+        "promote based on deployment status alone",
+        "blind restart or redeploy before candidate identity and failure evidence are preserved"
+      ],
+      "verification": [
+        "three independent health probes pass",
+        "candidate/runtime SHA matches authoritative manifest",
+        "no connection dial timeout in the verification window",
+        "customer journey evidence belongs to the same exact deployment"
+      ]
+    },
+    {
+      "id": "staging-deployment-credential-missing",
+      "scope": "customer-proof-bootstrap",
+      "severity": "high",
+      "classification": "deployment-authorization-configuration",
+      "detect_when": {
+        "required_secret_present": false,
+        "deployment_started": false
+      },
+      "safe_response": [
+        "fail-before-provider-mutation",
+        "preserve-candidate-identity",
+        "do-not-classify-as-product-defect"
+      ],
+      "automatic_mutation_authority": false,
+      "verification": [
+        "credential is configured through the reviewed narrow secret boundary",
+        "exact staging service receives a deployment",
+        "post-deploy runtime health requirements pass"
+      ]
+    }
+  ]
+}
