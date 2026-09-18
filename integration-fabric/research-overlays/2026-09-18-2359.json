@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-18",
+  "purpose": "Hourly authoritative-vendor research delta. Evidence upgrades remain spec-level only; no tenant credentials were used and connector writes remain disabled.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "ifs-cloud",
+      "patch": {
+        "protocols": ["REST", "OData", "OpenAPI"],
+        "auth": "oauth2-preferred",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.ifs.com/techdocs/25R2/040_tailoring/300_extensibility/020_api_explorer/",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://docs.ifs.com/techdocs/25R2/040_tailoring/300_extensibility/020_api_explorer/040_entity_services/",
+        "evidenceNote": "IFS Cloud officially exposes REST APIs using OData, with OpenAPI v2/v3 specifications available from API Explorer. Premium and Integration APIs are preferred for system integrations; Entity Service APIs can expose entity models for CRUD/state transitions but require administrator activation. Projection permission sets support read-only access, which is the required WFM starting posture. No tenant authentication was attempted."
+      }
+    },
+    {
+      "id": "epicor-kinetic",
+      "patch": {
+        "protocols": ["REST", "OData"],
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+        "evidenceNote": "Epicor documents Kinetic Open REST API as platform-level access to ERP services, data and business logic. The API is OData v4-compliant, versioned, discoverable through built-in REST help, and protected by API keys, access scopes and ERP user/data permissions. This provides a usable route for manufacturing orders, resources, costs and related ERP context once a customer tenant is authorised. No tenant authentication was attempted."
+      }
+    },
+    {
+      "id": "inductive-automation-ignition",
+      "patch": {
+        "protocols": ["REST", "OpenAPI", "OPC UA", "MQTT", "database"],
+        "auth": "api-token-or-industrial-trust",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.docs.inductiveautomation.com/docs/8.3/platform/gateway/openapi",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://www.docs.inductiveautomation.com/docs/8.3/platform/gateway/openapi",
+        "evidenceNote": "Ignition 8.3 documents a dynamically generated OpenAPI/REST interface at /openapi and /openapi.json, OPC UA client/server connectivity, and Edge IIoT MQTT publication. HTTP API tokens can reach mutative routes and vendor guidance warns they can modify configuration, tags or projects, so WFM must use a segregated read-only facade or equivalent gateway controls rather than assuming a token alone is least privilege. No plant or tenant connection was attempted."
+      }
+    }
+  ],
+  "systems": [
+    {
+      "id": "siemens-industrial-edge",
+      "name": "Siemens Industrial Edge",
+      "category": "iiot-edge",
+      "priority": "P1",
+      "protocols": ["REST", "OpenAPI", "Protobuf RPC/HTTP2", "MQTT", "OPC UA"],
+      "auth": "token-or-enterprise",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.eu1.edge.siemens.cloud/apis_and_references/index.html",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://docs.eu1.edge.siemens.cloud/build_a_device/device_building/development/integration/devicekit.html",
+      "evidenceNote": "Siemens documents public Industrial Edge management APIs, token-based IEM access, and an IE Device Kit based on gRPC/Protocol Buffers; the fabric reuses its existing Protobuf RPC/HTTP2 profile rather than creating a duplicate transport. Industrial Edge also supports shop-floor connectivity through MQTT and OPC UA. Device Kit 1.29.0 (06/2026) added an API-only external-endpoint TCP connectivity check useful for preflight validation. WFM should consume telemetry/health read-only; device onboarding, app deployment and industrial-control actions remain separately gated. No tenant or edge-device authentication was attempted."
+    }
+  ]
+}
