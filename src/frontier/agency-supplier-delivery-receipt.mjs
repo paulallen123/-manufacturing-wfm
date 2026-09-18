@@ -49,7 +49,7 @@ WITH target AS (
   UPDATE wfm_agency_supplier_deliveries d
   SET status = CASE
         WHEN $6='confirmed_sent' AND d.status IN ('dispatching','unknown','not_sent') THEN 'sent'
-        WHEN $6='definitively_not_sent' AND d.status IN ('dispatching','unknown') THEN 'not_sent'
+        WHEN $6='definitively_not_sent' AND d.status='unknown' THEN 'not_sent'
         ELSE d.status
       END,
       provider_message_ref = COALESCE(d.provider_message_ref,$5),
