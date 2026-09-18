@@ -27,6 +27,7 @@ const checks = [
   ['tier2-independent-repair-verifier', 'scripts/validate-independent-repair-verifier.mjs', true],
   ['tier2-exact-artifact-disposable-staging', 'scripts/validate-disposable-staging-gate.mjs', true],
   ['tier2-autonomous-repair-pipeline-composition', 'scripts/validate-autonomous-repair-pipeline.mjs', true],
+  ['tier2-canary-blast-radius-known-good-rollback', 'scripts/validate-canary-rollback-controller.mjs', true],
   ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
 ];
 
