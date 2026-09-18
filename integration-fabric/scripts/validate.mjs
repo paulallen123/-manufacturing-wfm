@@ -81,11 +81,19 @@ assert.equal(byId.get('sap-fieldglass').testLevel,'discovery-queued');
 for(const id of ['sap-digital-manufacturing','ptc-windchill','aws-iot-sitewise','azure-iot-operations','jumpcloud','ibm-mq','sap-fieldglass']){
   assert.ok(opportunities.systemOverrides[id], 'System-specific value/data review missing: '+id);
 }
+for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge']){
+  const review=byId.get(id).valueReview;
+  assert.equal(review?.basis,'vendor-docs','Inline vendor value/data review missing vendor-doc basis: '+id);
+  assert.ok(Array.isArray(review.customerValue)&&review.customerValue.length>0,'Inline customer value review missing: '+id);
+  assert.ok(Array.isArray(review.savingsHypotheses)&&review.savingsHypotheses.length>0,'Inline savings hypotheses missing: '+id);
+  assert.ok(Array.isArray(review.constraintsRisks)&&review.constraintsRisks.length>0,'Inline risk review missing: '+id);
+}
 
 assert.match(contract, /^openapi: 3\.0\.3/m);
 for (const path of ['/connectors','/workers','/shifts','/time-events','/production-events','/access-events','/events','/webhooks/{connectorId}']) {
   assert.ok(contract.includes('  ' + path + ':'), 'OpenAPI path missing: ' + path);
 }
+const inlineVendorReviews=catalog.systems.filter(system=>system.valueReview?.basis==='vendor-docs').length;
 console.log(JSON.stringify({
   ok:true,
   systems:catalog.systems.length,
@@ -98,5 +106,6 @@ console.log(JSON.stringify({
   specVerified:catalog.systems.filter(x=>x.testLevel==='spec-verified').length,
   tenantAuthenticated:catalog.systems.filter(x=>x.testLevel==='tenant-authenticated').length,
   opportunityProfiles:opportunities.profiles.length,
-  systemSpecificOpportunityReviews:Object.keys(opportunities.systemOverrides).length
+  centralSystemSpecificOpportunityReviews:Object.keys(opportunities.systemOverrides).length,
+  inlineVendorValueReviews:inlineVendorReviews
 }, null, 2));
