@@ -151,10 +151,37 @@ test('attacker cannot forge a higher rollback generation without the integrity k
   assert.throws(()=>stateStore(p,{rollbackAnchor:anchor}).load(),/authentication failed/);
 });
 
-test('rollback anchor must advance exactly once or save fails closed',()=>{
+test('authenticated file one generation ahead recovers after interrupted anchor commit',()=>{
+  const p=file(); const anchor=memoryAnchor();
+  let failOnce=true;
+  const flakyAnchor={
+    current(){ return anchor.current(); },
+    advance(expected){
+      if(failOnce){ failOnce=false; throw new Error('simulated anchor outage'); }
+      return anchor.advance(expected);
+    }
+  };
+  const state={version:1,config:{},connectors:[],recovery:[]};
+  const store=stateStore(p,{rollbackAnchor:flakyAnchor});
+  assert.throws(()=>store.save(state),/simulated anchor outage/);
+  assert.equal(fs.existsSync(p),true);
+  assert.equal(store.requiresRecovery(),true);
+  assert.throws(()=>store.save(state),/requires restart\/recovery/);
+
+  const restarted=stateStore(p,{rollbackAnchor:anchor});
+  assert.deepEqual(restarted.load(),state);
+  assert.equal(anchor.current(),1);
+  assert.equal(restarted.requiresRecovery(),false);
+});
+
+test('rollback anchor must advance exactly once or store freezes until recovery',()=>{
   const p=file();
   const badAnchor={current(){return 0;},advance(){return 2;}};
   const store=stateStore(p,{rollbackAnchor:badAnchor});
-  assert.throws(()=>store.save({version:1,config:{},connectors:[],recovery:[]}),/did not advance exactly once/);
-  assert.equal(fs.existsSync(p),false);
+  const state={version:1,config:{},connectors:[],recovery:[]};
+  assert.throws(()=>store.save(state),/did not advance exactly once/);
+  assert.equal(fs.existsSync(p),true);
+  assert.equal(store.requiresRecovery(),true);
+  assert.throws(()=>store.save(state),/requires restart\/recovery/);
+  assert.throws(()=>stateStore(p,{rollbackAnchor:badAnchor}).load(),/recovery did not advance exactly once/);
 });
