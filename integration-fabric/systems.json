@@ -41,9 +41,9 @@
         "webhooks"
       ],
       "auth": "oauth2",
-      "researchStatus": "docs-verified",
+      "researchStatus": "connected",
       "docsUrl": "https://docs.github.com/en/rest",
-      "testLevel": "spec-verified",
+      "testLevel": "external-connected",
       "writeEnabled": false
     },
     {
