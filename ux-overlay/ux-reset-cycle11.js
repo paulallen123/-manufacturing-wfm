@@ -188,5 +188,5 @@ const previousRender=window.render;if(typeof previousRender==='function')window.
 const observer=new MutationObserver(()=>{try{if(manager()&&page()==='overview'&&!document.querySelector('.ux11-queue'))apply();else if(manager()&&page()!=='overview'&&!document.querySelector('.ux11-back')&&returnMarker())addBackLink();}catch{}});
 observer.observe(document.documentElement,{subtree:true,childList:true});
 setTimeout(apply,0);setTimeout(apply,400);
-window.WFMUXCycle11={apply,collectSignals,renderQueue,openRoute,focusSourceTarget,selectSourceScope,sourceResolution};
+window.WFMUXCycle11={apply,collectSignals,renderQueue,renderCard:card,openRoute,focusSourceTarget,selectSourceScope,sourceResolution};
 })();
