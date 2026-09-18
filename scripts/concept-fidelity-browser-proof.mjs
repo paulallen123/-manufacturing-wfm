@@ -41,7 +41,7 @@ const html = [
   '<details class="ux-today-detail readiness"><summary>Readiness map</summary><div class="fcc-map">Readiness detail</div></details>',
   '</main></div>',
   '<div class="ux-tool-drawer"><div class="ux-tool-list"></div><div class="ux-tool-list"></div><div class="ux-tool-list"></div><div class="ux-tool-list"></div></div>',
-  '<script>var ui={page:"overview",role:"manager"};var F={actor:{role:"manager"},scope:{site:"tamworth"}};function isEmployee(){return false}window.__controlClicks=0;document.getElementById("real-control").addEventListener("click",function(){window.__controlClicks++});window.fetch=async function(){return {ok:false,status:404,json:async function(){return {error:"harness"}}}}</script>',
+  '<script>var ui={page:"overview",role:"manager"};var F={actor:{role:"manager"},scope:{site:"tamworth"}};function isEmployee(){return false}window.__controlClicks=0;window.__prefMode="site_default";document.getElementById("real-control").addEventListener("click",function(){window.__controlClicks++});window.fetch=async function(url,init){init=init||{};if(String(url).indexOf("/api/ux-preference")===0){if(init.method==="POST"){var p=JSON.parse(init.body||"{}");window.__prefMode=p.mode||"site_default";return {ok:true,status:200,json:async function(){return {ok:true,mode:window.__prefMode,scope:p.scope||"site:tamworth"}}}}return {ok:true,status:200,json:async function(){return {mode:window.__prefMode,scope:"site:tamworth",allowedModes:["site_default","decision_first","operational_visual","compact"]}}}}return {ok:false,status:404,json:async function(){return {error:"harness"}}}}</script>',
   '<script src="/concept-fidelity.js"></script>',
   '</body></html>'
 ].join('');
