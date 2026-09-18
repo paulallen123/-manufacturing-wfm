@@ -54,6 +54,7 @@ export class AttendanceSourceSupervisor {
       this.#markContinuityGap(c);
       this.#queueBackfill(c,{reason:'SEQUENCE_GAP',fromMs:c.lastEventObservedMs,toMs:observedMs,expected:c.lastSequence+1,received:sequence});
     }
+    if(Number.isSafeInteger(sequence)) this.#recordSequenceRecovery(c,sequence);
     if(Number.isSafeInteger(sequence) && (!Number.isSafeInteger(c.lastSequence)||sequence>c.lastSequence)) c.lastSequence=sequence;
     c.lastProviderEventId=id;
     c.lastEventObservedMs=c.lastEventObservedMs==null?observedMs:Math.max(c.lastEventObservedMs,observedMs);
@@ -103,7 +104,7 @@ export class AttendanceSourceSupervisor {
         lastSequence:c.lastSequence,lastProviderEventId:c.lastProviderEventId,duplicates:c.duplicates,gaps:c.gaps,reconnects:c.reconnects,authExpiresAtMs:c.authExpiresAtMs,
         seen:[...c.seen],window:{...c.window}
       })),
-      recovery:this.recovery.map(j=>({...j}))
+      recovery:this.recovery.map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{})}))
     };
   }
 
@@ -129,18 +130,23 @@ export class AttendanceSourceSupervisor {
     for(const j of state.recovery){
       if(!j?.jobId||!j?.tenant||!j?.sourceId||!['pending','complete'].includes(j.status)) throw new Error('Invalid persisted attendance recovery job.');
       if(!next.has(keyOf(j.tenant,j.sourceId))) throw new Error('Persisted recovery job references unknown connector.');
+      if(j.reason==='SEQUENCE_GAP' && !this.#sequenceGapStateValid(j)) throw new Error('Invalid persisted sequence-gap recovery evidence.');
     }
     this.connectors=next;
-    this.recovery=state.recovery.map(j=>({...j}));
+    this.recovery=state.recovery.map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{})}));
     return true;
   }
 
   pendingRecovery({tenant,sourceId}={}){
-    return this.recovery.filter(j=>(!tenant||j.tenant===tenant)&&(!sourceId||j.sourceId===sourceId)&&j.status==='pending').map(j=>({...j}));
+    return this.recovery
+      .filter(j=>(!tenant||j.tenant===tenant)&&(!sourceId||j.sourceId===sourceId)&&j.status==='pending')
+      .map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{})}));
   }
 
   completeRecovery({jobId}){
-    const j=this.recovery.find(x=>x.jobId===jobId); if(!j) return false; j.status='complete';
+    const j=this.recovery.find(x=>x.jobId===jobId); if(!j) return false;
+    if(j.reason==='SEQUENCE_GAP' && !this.#sequenceGapSatisfied(j)) return false;
+    j.status='complete';
     const c=this.#get(j.tenant,j.sourceId);
     if(c.window.id===j.windowId && !c.window.unrecoverable && this.#pendingFor(c).length===0) c.window.continuityComplete=true;
     return true;
@@ -161,8 +167,32 @@ export class AttendanceSourceSupervisor {
     const windowId=c.window.id;
     const signature=`${c.tenant}:${c.sourceId}:${windowId||'no-window'}:${details.reason}:${details.fromMs??'start'}:${details.toMs??'now'}`;
     if(this.recovery.some(j=>j.signature===signature&&j.status==='pending')) return;
-    this.recovery.push({jobId:`recovery-${this.recovery.length+1}`,signature,status:'pending',tenant:c.tenant,sourceId:c.sourceId,provider:c.provider,domain:c.domain,site:c.site,windowId,...details});
+    const sequenceEvidence=details.reason==='SEQUENCE_GAP'&&Number.isSafeInteger(details.expected)&&Number.isSafeInteger(details.received)&&details.received>details.expected
+      ? {missingCount:details.received-details.expected,recoveredSequences:[]}
+      : {};
+    this.recovery.push({jobId:`recovery-${this.recovery.length+1}`,signature,status:'pending',tenant:c.tenant,sourceId:c.sourceId,provider:c.provider,domain:c.domain,site:c.site,windowId,...details,...sequenceEvidence});
   }
+  #recordSequenceRecovery(c,sequence){
+    for(const j of this.#pendingFor(c)){
+      if(j.reason!=='SEQUENCE_GAP'||!Number.isSafeInteger(j.expected)||!Number.isSafeInteger(j.received)) continue;
+      if(sequence<j.expected||sequence>=j.received) continue;
+      if(!Array.isArray(j.recoveredSequences)) j.recoveredSequences=[];
+      if(!j.recoveredSequences.includes(sequence)) j.recoveredSequences.push(sequence);
+    }
+  }
+  #sequenceGapStateValid(j){
+    if(!Number.isSafeInteger(j.expected)||!Number.isSafeInteger(j.received)||j.received<=j.expected) return false;
+    const expectedCount=j.received-j.expected;
+    if(!Number.isSafeInteger(j.missingCount)||j.missingCount!==expectedCount||expectedCount<=0) return false;
+    if(!Array.isArray(j.recoveredSequences)||j.recoveredSequences.length>expectedCount) return false;
+    const unique=new Set();
+    for(const n of j.recoveredSequences){
+      if(!Number.isSafeInteger(n)||n<j.expected||n>=j.received||unique.has(n)) return false;
+      unique.add(n);
+    }
+    return true;
+  }
+  #sequenceGapSatisfied(j){ return this.#sequenceGapStateValid(j)&&j.recoveredSequences.length===j.missingCount; }
   #get(tenant,sourceId){ const c=this.connectors.get(keyOf(tenant,sourceId)); if(!c) throw new Error('Connector is not registered.'); return c; }
   #time(ms){ if(!Number.isSafeInteger(ms)||ms<0) throw new Error('Valid millisecond timestamp required.'); }
 }
