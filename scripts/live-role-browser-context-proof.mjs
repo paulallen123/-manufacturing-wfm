@@ -27,12 +27,15 @@ assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runn
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function sessionCookieFrom(response) {
-  const raw = response.headers.get('set-cookie') || '';
-  assert.ok(raw, 'Authenticated login did not return a session cookie.');
-  const first = raw.split(';', 1)[0];
-  const split = first.indexOf('=');
+  const values = typeof response.headers.getSetCookie === 'function'
+    ? response.headers.getSetCookie()
+    : [response.headers.get('set-cookie')].filter(Boolean);
+  const first = values[0];
+  assert.ok(first, 'Authenticated login did not return a session cookie.');
+  const pair = first.split(';', 1)[0];
+  const split = pair.indexOf('=');
   assert.ok(split > 0, 'Session Set-Cookie header is malformed.');
-  return { name: first.slice(0, split), value: first.slice(split + 1) };
+  return { name: pair.slice(0, split), value: pair.slice(split + 1) };
 }
 
 async function runRole({slug, email, expectedRole, expectedTenant, mobile=false, expectedPayrollStatus, requiredSurface}) {
@@ -92,16 +95,19 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
     await send('Accessibility.enable');
     await send('Emulation.setDeviceMetricsOverride',{width:mobile?390:1280,height:mobile?844:900,deviceScaleFactor:1,mobile});
 
-    // Every role gets a genuinely new Chrome process/profile. Prove no session cookie exists before auth.
     const beforeCookies = await send('Network.getCookies',{urls:[origin]});
     assert.equal(beforeCookies.cookies?.length || 0, 0, `${slug} fresh browser unexpectedly contained cookies.`);
     const pre = await fetch(`${origin}/api/bootstrap`, { signal: AbortSignal.timeout(15000) });
     assert.equal(pre.status,401,`${slug} unauthenticated bootstrap did not fail closed.`);
 
-    // Authenticate against the real hosted service. The password never enters Chrome's process environment.
     const loginResponse = await fetch(`${origin}/api/login`,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{
+        'content-type':'application/json',
+        'origin':origin,
+        'referer':`${origin}/`,
+        'accept':'application/json,text/plain,*/*'
+      },
       body:JSON.stringify({email,password}),
       signal:AbortSignal.timeout(15000)
     });
@@ -121,7 +127,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
     const cookieHeader = `${session.name}=${session.value}`;
 
     const api = async pathName => fetch(`${origin}${pathName}`,{
-      headers:{Cookie:cookieHeader},
+      headers:{Cookie:cookieHeader,Accept:'application/json,text/plain,*/*',Referer:`${origin}/`},
       redirect:'manual',
       signal:AbortSignal.timeout(15000)
     });
@@ -141,7 +147,6 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
       assert.equal(surfaceStatus,200,`${slug} required surface ${requiredSurface} failed.`);
     }
 
-    // Render the authenticated application in the same fresh Chrome process without relying on page-thread JS.
     await send('Page.navigate',{url:origin});
     await sleep(2500);
     const layout = await send('Page.getLayoutMetrics');
