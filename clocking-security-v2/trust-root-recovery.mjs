@@ -39,7 +39,17 @@ function normalizedRootSet(rootPublicKeys){
 function normalizedRecoveryKeys(recoveryPublicKeys){
   const entries=recoveryPublicKeys instanceof Map?[...recoveryPublicKeys.entries()]:Object.entries(recoveryPublicKeys||{});
   if(entries.length<2) throw new Error('At least two independent recovery custodians are required.');
-  return new Map(entries.map(([id,key])=>[safeId(id,'Recovery custodian ID'),key]));
+  const custodians=new Map();
+  const fingerprints=new Map();
+  for(const [id,key] of entries){
+    const custodianId=safeId(id,'Recovery custodian ID');
+    if(custodians.has(custodianId)) throw new Error('Duplicate recovery custodian ID.');
+    const fingerprint=publicKeyFingerprint(key);
+    if(fingerprints.has(fingerprint)) throw new Error('Recovery custodians must use independent public keys.');
+    fingerprints.set(fingerprint,custodianId);
+    custodians.set(custodianId,key);
+  }
+  return custodians;
 }
 function recoveryPayload(packageValue){
   const signatures=Array.isArray(packageValue?.signatures)?packageValue.signatures:null;
