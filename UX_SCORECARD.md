@@ -1,5 +1,60 @@
 # WFM UX scorecard
 
+## 2026-09-18 — Cycle 11 r3: source-team context continuation
+
+### Journey reviewed
+Manager Today → Universal Action Queue → team-level Time Review or Weekly Sign-off priority → existing new-UI owning workflow → return to the priority queue.
+
+### Reuse / duplicate check
+- PR #80 remains the canonical Cycle 11 new-UI owner; no replacement branch or parallel navigation mechanism was created.
+- Existing `sourceId`, return marker, Cycle 7 `#tri-team` Time Review scope control, Cycle 3 `#review-team` Weekly Sign-off scope control, `.tr-list` decision surface and `.ux-signoff-desk` were reused.
+- The previous Absence exact-card continuation remains unchanged; no second Decision Card, filter, write path or source calculation was created.
+- Open reliability PR #81 is a separate proof/admission concern and does not overlap this UI source ownership.
+
+### Research delta
+No external competitor/general UX scan was repeated. The unresolved question was whether the existing new UI already exposes stable structured scope controls for Time Review and Sign-off. Existing Cycle 7 browser-harness evidence shows `#tri-team` and `.tr-list/.tr-person`; existing Cycle 3 source ownership uses `#review-team` to select the authoritative team and renders `.ux-signoff-desk`. That evidence was sufficient to make the implementation decision.
+
+### Hypothesis
+If a manager opens a team-level priority and the destination reuses the existing authoritative team selector before focusing the existing decision surface, the handoff should remove wrong-team hunting without duplicating workflow logic or guessing from presentation text.
+
+### Implementation completed this run
+- Extended only `ux-overlay/ux-reset-cycle11.js` on the canonical Cycle 11 branch.
+- Added one reusable `selectSourceScope()` helper that changes an existing selector only when an exact option value matches the structured `sourceId`; no loose text/name matching is allowed.
+- Time Review now aligns `#tri-team` to the queue item's structured team source before focusing the existing first actionable `.tr-person`, with `.tr-list` as the safe structural fallback.
+- Weekly Sign-off now aligns `#review-team` to the queue item's structured team source before focusing the existing `.ux-signoff-desk`, with the original `.review-layout` as fallback during render transition.
+- The existing change event is dispatched so the owning workflow performs its normal render/data selection; no Time Review or Sign-off write authority moved into Cycle 11.
+- Focus handling now preserves naturally focusable controls instead of forcing `tabindex=-1`; non-focusable destination surfaces are made programmatically focusable only for context continuation.
+- Commit: `a28ac91de985cc8fe3336ea446c3dcb91bc1ebab`.
+
+### Focused validation
+- Commit diff verified as a single-file Cycle 11 navigation delta; no model, business rule, server, payroll, tenant, approval or audit code changed.
+- Reused source controls verified from existing new-UI evidence: Cycle 7 browser harness contains `#tri-team` and `.tr-list/.tr-person`; Cycle 3 sign-off source uses `#review-team` and owns `.ux-signoff-desk`.
+- Isolated Node delta harness: exact source option selected, one bubbled `change` dispatched, duplicate same-scope dispatch suppressed, Time Review target focused after scope alignment, Weekly Sign-off decision surface focused safely: `UX11_CONTEXT_DELTA=PASS`.
+- Current commit has no GitHub status/check result exposed. The known zero-step Cycle 11 CI infrastructure blocker was not manually retried.
+
+### UX scorecard impact
+- Calm by default: preserved; no new page or visible control was added.
+- Dense on demand: improved structurally; the manager enters the already-filtered owning workflow rather than adding queue detail.
+- Explainability: preserved; source workflow and reason remain in the queue, while source-specific evidence remains in the owner.
+- Navigation predictability: improved structurally across all three current queue destinations — Absence exact request, Time Review team scope, Weekly Sign-off team scope.
+- Interaction count: structurally removes the manual team-filter step where the structured team option exists; real browser/user time-on-task remains unmeasured.
+- Accessibility: improved by preserving native focusability and moving programmatic focus to the destination; screen-reader announcement quality remains unverified.
+- Mobile/tablet: no layout code changed; existing responsive containment remains unchanged, but composed end-to-end focus behaviour is still unverified.
+- Capability preservation: green by design; existing selectors, render paths and decision authority are reused.
+
+### Serious-idea decision log
+- Create separate Time Review/Sign-off queue destination screens: **REJECT** — duplicate workflow ownership.
+- Infer teams from visible text/name matching: **REJECT** — not sufficiently authoritative or deterministic.
+- Reuse exact structured `sourceId` to align existing team selectors: **BUILD NOW** — implemented.
+- Generalise the same exact-source continuation primitive to future queue sources: **BUILD NEXT** only when their stable source controls/identifiers are verified.
+- Repeat competitor research: **REJECT** this run — no unresolved external design question.
+
+### Still unverified
+Exact composed-browser behaviour after the team-selector change event, async render timing on the sealed runtime, screen-reader announcement quality, 320/390/tablet end-to-end focus, actual first-click/time-on-task delta and hosted source-bound proof. Cycle 10 promotion remains gated on exact hosted proof.
+
+### Single next highest-value action
+Add one focused composed-browser regression covering queue → Absence exact request, queue → Time Review exact team, queue → Sign-off exact team, plus return-focus, using the existing Cycle 7/Cycle 3 harness assets rather than creating separate test harnesses; then use that evidence to decide whether Cycle 11 context continuation is structurally complete.
+
 ## 2026-09-18 — Cycle 11 r2: direct source-context continuation
 
 ### Journey reviewed
