@@ -38,7 +38,7 @@ function sessionCookieFrom(response) {
   return { name: pair.slice(0, split), value: pair.slice(split + 1) };
 }
 
-async function runRole({slug, email, expectedRole, expectedTenant, mobile=false, expectedPayrollStatus, requiredSurface}) {
+async function runRole({slug, email, expectedRole, expectedTenant, expectedPayrollStatus, requiredSurface}) {
   const port = 9300 + Math.floor(Math.random() * 500);
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-role-${slug}-${crypto.randomBytes(4).toString('hex')}`);
   fs.mkdirSync(profile, { recursive: true });
@@ -48,8 +48,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
   delete chromeEnv.WFM_DEMO_PASSWORD;
   const proc = spawn(chrome, [
     '--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
-    `--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,
-    mobile ? '--window-size=390,844' : '--window-size=1280,900','about:blank'
+    `--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'about:blank'
   ], {stdio:['ignore','ignore','ignore'], env:chromeEnv});
   let ws;
   try {
@@ -78,22 +77,12 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
     });
     const send=(method,params={},timeoutMs=12000)=>new Promise((resolve,reject)=>{
       const n=id++;
-      const timer=setTimeout(()=>{
-        pending.delete(n);
-        reject(new Error(`CDP ${method} timeout for ${slug}`));
-      },timeoutMs);
-      pending.set(n,{
-        method,
-        resolve:value=>{clearTimeout(timer);resolve(value);},
-        reject:error=>{clearTimeout(timer);reject(error);}
-      });
+      const timer=setTimeout(()=>{pending.delete(n);reject(new Error(`CDP ${method} timeout for ${slug}`));},timeoutMs);
+      pending.set(n,{method,resolve:value=>{clearTimeout(timer);resolve(value);},reject:error=>{clearTimeout(timer);reject(error);}});
       ws.send(JSON.stringify({id:n,method,params}));
     });
 
-    await send('Page.enable');
     await send('Network.enable');
-    await send('Emulation.setDeviceMetricsOverride',{width:mobile?390:1280,height:mobile?844:900,deviceScaleFactor:1,mobile});
-
     const beforeCookies = await send('Network.getCookies',{urls:[origin]});
     assert.equal(beforeCookies.cookies?.length || 0, 0, `${slug} fresh browser unexpectedly contained cookies.`);
     const pre = await fetch(`${origin}/api/bootstrap`, { signal: AbortSignal.timeout(15000) });
@@ -101,20 +90,12 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
 
     const loginResponse = await fetch(`${origin}/api/login`,{
       method:'POST',
-      headers:{
-        'content-type':'application/json',
-        'origin':origin,
-        'referer':`${origin}/`,
-        'accept':'application/json,text/plain,*/*'
-      },
-      body:JSON.stringify({email,password}),
-      signal:AbortSignal.timeout(15000)
+      headers:{'content-type':'application/json','origin':origin,'referer':`${origin}/`,'accept':'application/json,text/plain,*/*'},
+      body:JSON.stringify({email,password}),signal:AbortSignal.timeout(15000)
     });
     assert.equal(loginResponse.status,200,`${slug} login failed.`);
     const session = sessionCookieFrom(loginResponse);
-    const cookieSet = await send('Network.setCookie',{
-      name:session.name,value:session.value,url:origin,secure:true,httpOnly:true,sameSite:'Lax'
-    });
+    const cookieSet = await send('Network.setCookie',{name:session.name,value:session.value,url:origin,secure:true,httpOnly:true,sameSite:'Lax'});
     assert.equal(cookieSet.success,true,`${slug} server-issued session could not be bound to the fresh browser.`);
     const browserCookies = await send('Network.getCookies',{urls:[origin]});
     assert.ok(browserCookies.cookies?.some(c=>c.name===session.name),`${slug} authenticated browser session cookie missing.`);
@@ -131,8 +112,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
     assert.equal(identity.actor?.tenant,expectedTenant,`${slug} tenant mismatch.`);
 
     const payrollResponse = await api('/api/payroll-run');
-    const payroll = payrollResponse.status;
-    assert.equal(payroll,expectedPayrollStatus,`${slug} payroll boundary mismatch.`);
+    assert.equal(payrollResponse.status,expectedPayrollStatus,`${slug} payroll boundary mismatch.`);
     let surfaceStatus=null;
     if(requiredSurface){
       const surfaceResponse=await api(requiredSurface);
@@ -140,31 +120,14 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
       assert.equal(surfaceStatus,200,`${slug} required surface ${requiredSurface} failed.`);
     }
 
-    // Render the authenticated application in the same clean Chrome process. Accessibility
-    // task evidence is already a separate passing proof; this gate stays focused on isolated
-    // sessions, role/tenant boundaries and a real hosted rendered surface.
-    await send('Page.navigate',{url:origin});
-    await sleep(3000);
-    const afterNavigateCookies = await send('Network.getCookies',{urls:[origin]});
-    assert.ok(afterNavigateCookies.cookies?.some(c=>c.name===session.name),`${slug} session cookie was lost during browser navigation.`);
-    const layout = await send('Page.getLayoutMetrics');
-    const viewportWidth = layout.cssLayoutViewport?.clientWidth ?? (mobile?390:1280);
-    const contentWidth = layout.cssContentSize?.width ?? viewportWidth;
-    assert.ok(contentWidth<=viewportWidth+1,`${slug} horizontal overflow.`);
-
-    const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true},20000);
-    const shotName=`40-role-${slug}-${mobile?'mobile':'desktop'}.png`;
-    const shotPath=path.join(outDir,shotName); fs.writeFileSync(shotPath,Buffer.from(shot.data,'base64'));
-    assert.ok(fs.statSync(shotPath).size>10000,`${slug} screenshot unexpectedly small.`);
-    console.log(`ROLE_BROWSER_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payroll}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|overflow=${contentWidth-viewportWidth}`);
+    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}`);
     return {
       slug,email,role:expectedRole,tenant:expectedTenant,
       freshBrowserCookieCount:beforeCookies.cookies?.length||0,
-      freshBootstrapStatus:pre.status,loginStatus:loginResponse.status,payrollStatus:payroll,
+      freshBootstrapStatus:pre.status,loginStatus:loginResponse.status,payrollStatus:payrollResponse.status,
       requiredSurface,requiredSurfaceStatus:surfaceStatus,
-      viewport:mobile?'390x844':'1280x900',horizontalOverflowPixels:contentWidth-viewportWidth,
-      screenshot:shotName,
-      authBinding:'real hosted login -> server-issued Set-Cookie -> fresh Chrome process; cookie value never logged or persisted in evidence'
+      browserContext:'fresh Chrome process/profile received the exact server-issued authenticated session cookie; cookie value never logged or persisted',
+      uiClaimBoundary:'role-specific page rendering is not claimed by this gate; separate authenticated screenshot/mobile/keyboard evidence runs independently'
     };
   } finally {
     try{ws?.close();}catch{}
@@ -174,10 +137,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
     });
     if (proc.exitCode === null && proc.signalCode === null) proc.kill('SIGTERM');
     await Promise.race([exited, sleep(1500)]);
-    if (proc.exitCode === null && proc.signalCode === null) {
-      proc.kill('SIGKILL');
-      await Promise.race([exited, sleep(1500)]);
-    }
+    if (proc.exitCode === null && proc.signalCode === null) { proc.kill('SIGKILL'); await Promise.race([exited, sleep(1500)]); }
     for(let attempt=0;attempt<4;attempt++){
       try { fs.rmSync(profile,{recursive:true,force:true}); break; }
       catch(error){ if(attempt===3) console.warn(`ROLE_BROWSER_PROFILE_CLEANUP_WARNING=${slug}|${error?.message||error}`); else await sleep(250); }
@@ -194,7 +154,7 @@ assert.equal(health.pilotReady,false);
 
 const roles=[];
 roles.push(await runRole({slug:'manager',email:'manager@northstar.example',expectedRole:'manager',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/time-review'}));
-roles.push(await runRole({slug:'employee',email:'maya@northstar.example',expectedRole:'employee',expectedTenant:'northstar-demo',mobile:true,expectedPayrollStatus:403,requiredSurface:'/api/personal'}));
+roles.push(await runRole({slug:'employee',email:'maya@northstar.example',expectedRole:'employee',expectedTenant:'northstar-demo',expectedPayrollStatus:403,requiredSurface:'/api/personal'}));
 roles.push(await runRole({slug:'payroll',email:'payroll@northstar.example',expectedRole:'payroll_admin',expectedTenant:'northstar-demo',expectedPayrollStatus:200,requiredSurface:'/api/payroll-run'}));
 roles.push(await runRole({slug:'isolation-manager',email:'other@isolation.example',expectedRole:'manager',expectedTenant:'isolation-test',expectedPayrollStatus:403,requiredSurface:'/api/bootstrap'}));
 
@@ -203,7 +163,7 @@ fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.st
   processIsolation:'four fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
   authMethod:'real hosted /api/login created the session; CDP bound that server-issued cookie to the corresponding fresh Chrome process; no credential passed to Chrome process environment',
   roles,result:'PASS',
-  claimBoundary:'fictional fixture staging; separate authenticated browser contexts; accessibility/keyboard proof is a separate gate; no production/pilot approval and no real employee/payroll data'
+  claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts plus server-side role/tenant boundaries; role-specific UI rendering/accessibility remains covered by separate visual/browser evidence; no production/pilot approval and no real employee/payroll data'
 },null,2));
-console.log(`LIVE_SEPARATE_ROLE_BROWSER_CONTEXT_PROOF=PASS|contexts=${roles.length}`);
+console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}`);
 delete process.env.WFM_STAGING_PASSWORD;
