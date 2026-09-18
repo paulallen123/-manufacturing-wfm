@@ -72,10 +72,11 @@
         "webhooks"
       ],
       "auth": "oauth2",
-      "researchStatus": "attempted-external",
+      "researchStatus": "connected",
       "docsUrl": "https://learn.microsoft.com/en-us/graph/api/resources/sharepoint",
-      "testLevel": "external-attempted",
-      "writeEnabled": false
+      "testLevel": "external-connected",
+      "writeEnabled": false,
+      "evidenceNote": "Delegated Microsoft connection returned profile and one visible OneDrive drive via Graph connector."
     },
     {
       "id": "sap-s4hana",
@@ -179,12 +180,13 @@
       "priority": "P0",
       "protocols": [
         "REST",
-        "SOAP"
+        "SOAP",
+        "GraphQL"
       ],
-      "auth": "enterprise",
-      "researchStatus": "research-queued",
-      "docsUrl": "https://developer.sage.com/x3/",
-      "testLevel": "discovery-queued",
+      "auth": "oauth2-certificate-or-basic-by-deployment",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://online-help.sagex3.com/erp/12/en-us/Content/V7DEV/api-guide_api-requests.html",
+      "testLevel": "spec-verified",
       "writeEnabled": false
     },
     {
