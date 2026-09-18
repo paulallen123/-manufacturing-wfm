@@ -1,0 +1,194 @@
+name: 0.6.76-R1 Employee Browser Acceptance
+
+on:
+  push:
+    branches:
+      - 'autonomy/reliability-r1-auth-transport-diagnostic-20260918'
+    paths:
+      - '.github/workflows/r1-employee-browser-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  employee-browser-acceptance:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout proof lineage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 8
+
+      - name: Prove application lineage stayed bounded
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPAIR=38407325009c3ae732a705d86275a72bd32c5501
+          BASE=ad9ee9baf3db27f0715c094c4674b2bf85ff08a1
+          git merge-base --is-ancestor "$REPAIR" HEAD
+          test "$(git rev-parse "$REPAIR^")" = "$BASE"
+          test "$(git diff --name-only "$BASE" "$REPAIR")" = "ux-overlay/ux-reset-cycle5.js"
+          bad=$(git diff --name-only "$REPAIR" HEAD | grep -v '^.github/workflows/' || true)
+          test -z "$bad"
+          test "$(git rev-parse "$REPAIR:ux-overlay/ux-reset-cycle5.js")" = "0c9e9463872cb232d6263b11a9ff2bdd1a867b72"
+          echo "APPLICATION_LINEAGE=PASS"
+
+      - name: Verify frozen base and build R1 composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz" | sha256sum -c -
+          docker build --pull=false -t manufacturing-wfm:0.6.76-r1-browser-proof .
+
+      - name: Start isolated synthetic R1 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          PASS="CI-$(openssl rand -hex 20)"
+          printf '%s' "$PASS" > /tmp/wfm-pass
+          docker run -d --name wfm-r1-browser -p 3000:3000 \
+            -e PORT=3000 \
+            -e NODE_ENV=staging \
+            -e NODE_OPTIONS=--experimental-sqlite \
+            -e WFM_HOSTED_STAGING=true \
+            -e WFM_PUBLIC_ORIGIN=https://wfm-ci.invalid:3443 \
+            -e WFM_DB=/tmp/wfm-r1-browser.sqlite \
+            -e WFM_STAGING_PASSWORD="$PASS" \
+            manufacturing-wfm:0.6.76-r1-browser-proof
+          for i in $(seq 1 35); do
+            code=$(curl -sS -o /tmp/health.json -w '%{http_code}' -H 'Host: wfm-ci.invalid:3443' -H 'X-Forwarded-Proto: https' http://127.0.0.1:3000/api/health || true)
+            if [ "$code" = "200" ]; then break; fi
+            sleep 1
+          done
+          test "$code" = "200"
+          node -e "const h=require('/tmp/health.json'); if(h.release!=='0.6.76-hosted-staging-rc1'||h.fixtureOnly!==true||h.productionApproved!==false||h.pilotReady!==false) process.exit(1)"
+          echo "HOSTED_HEALTH=PASS"
+
+      - name: Start local TLS ingress and install pinned browser driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/r1-browser-proof/evidence"
+          cd "$RUNNER_TEMP/r1-browser-proof"
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund --save-exact playwright@1.63.0 >/dev/null
+          cat > openssl.cnf <<'EOF'
+          [req]
+          distinguished_name=req_distinguished_name
+          x509_extensions=v3_req
+          prompt=no
+          [req_distinguished_name]
+          CN=wfm-ci.invalid
+          [v3_req]
+          subjectAltName=@alt_names
+          [alt_names]
+          DNS.1=wfm-ci.invalid
+          EOF
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -keyout key.pem -out cert.pem -config openssl.cnf >/dev/null 2>&1
+          cat > proxy.py <<'PY'
+          import http.server, ssl, http.client
+          class H(http.server.BaseHTTPRequestHandler):
+              protocol_version='HTTP/1.1'
+              def go(self):
+                  n=int(self.headers.get('content-length','0') or '0'); body=self.rfile.read(n) if n else None
+                  c=http.client.HTTPConnection('127.0.0.1',3000,timeout=30)
+                  h={k:v for k,v in self.headers.items() if k.lower() not in ('connection','proxy-connection','host','content-length')}
+                  h['Host']='wfm-ci.invalid:3443'; h['X-Forwarded-Proto']='https'
+                  if body is not None: h['Content-Length']=str(len(body))
+                  c.request(self.command,self.path,body=body,headers=h); r=c.getresponse(); data=r.read()
+                  self.send_response(r.status,r.reason)
+                  for k,v in r.getheaders():
+                      if k.lower() not in ('connection','transfer-encoding','content-length'): self.send_header(k,v)
+                  self.send_header('Content-Length',str(len(data))); self.end_headers()
+                  if data: self.wfile.write(data)
+                  c.close()
+              do_GET=go; do_POST=go
+              def log_message(self,fmt,*args): pass
+          s=http.server.ThreadingHTTPServer(('127.0.0.1',3443),H)
+          ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER); ctx.load_cert_chain('cert.pem','key.pem')
+          s.socket=ctx.wrap_socket(s.socket,server_side=True); s.serve_forever()
+          PY
+          python proxy.py > proxy.log 2>&1 & echo $! > proxy.pid
+          sleep 1
+
+      - name: Run employee fail-closed rendered-control acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/r1-browser-proof"
+          export WFM_BROWSER_PASS="$(cat /tmp/wfm-pass)"
+          node <<'NODE'
+          const fs=require('fs');
+          const crypto=require('crypto');
+          const { chromium }=require('playwright');
+          const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
+          const origin='https://wfm-ci.invalid:3443';
+          const out={schemaVersion:1,candidate:'0.6.76-r1-employee-render-repair-candidate',repairCommit:'38407325009c3ae732a705d86275a72bd32c5501',sealedRuntimeSha256:'32d0b34ea8f44a95f982a1768af7ad10494e4ca3feb57d7713e60210caf37f5e',environment:'GitHub-hosted isolated synthetic Docker candidate behind local TLS ingress',pass:false};
+          let browser;
+          (async()=>{
+            browser=await chromium.launch({channel:'chrome',headless:true,args:['--host-resolver-rules=MAP wfm-ci.invalid 127.0.0.1']});
+            const context=await browser.newContext({viewport:{width:1440,height:900},ignoreHTTPSErrors:true});
+            const page=await context.newPage();
+            const response=await page.goto(origin,{waitUntil:'load',timeout:30000});
+            assert(response&&response.status()===200,`entry HTTP ${response?.status()}`);
+            const unauth=await page.evaluate(async()=> (await fetch('/api/bootstrap',{headers:{accept:'application/json'}})).status);
+            assert(unauth===401,`unauth bootstrap ${unauth}`);
+            const login=await page.evaluate(async(pass)=>{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'maya@northstar.example',password:pass})});return {status:r.status,body:await r.text()};},process.env.WFM_BROWSER_PASS);
+            assert(login.status===200,`login ${login.status}: ${login.body.slice(0,200)}`);
+            await page.reload({waitUntil:'load',timeout:30000});
+            await page.waitForTimeout(1200);
+            const bootstrap=await page.evaluate(async()=>{const r=await fetch('/api/bootstrap',{headers:{accept:'application/json'}});const j=await r.json();return {status:r.status,role:j.actor?.role,tenant:j.actor?.tenant,email:j.actor?.email};});
+            assert(bootstrap.status===200,'authenticated bootstrap failed');
+            assert(bootstrap.role==='employee',`unexpected role ${bootstrap.role}`);
+            assert(bootstrap.tenant==='northstar-demo',`unexpected tenant ${bootstrap.tenant}`);
+            const samples=[];
+            for(let i=0;i<4;i++){
+              samples.push(await page.evaluate(()=>({nodes:document.getElementsByTagName('*').length,htmlLength:document.documentElement.outerHTML.length,buttons:document.querySelectorAll('button').length,links:document.querySelectorAll('a').length,navButtons:document.querySelectorAll('.navbtn').length,personalPrimary:document.querySelectorAll('.ux-personal-primary').length,myDetails:[...document.querySelectorAll('.navbtn')].filter(x=>x.textContent.trim()==='My details').length})));
+              await page.waitForTimeout(750);
+            }
+            const client=await context.newCDPSession(page);
+            await client.send('Accessibility.enable');
+            const ax=await client.send('Accessibility.getFullAXTree');
+            const interactive=new Set(['button','link','textbox','combobox','checkbox','radio','switch','menuitem','tab','slider','spinbutton']);
+            const controls=(ax.nodes||[]).filter(n=>interactive.has(n.role?.value)&&!n.ignored).map(n=>({role:n.role?.value,name:n.name?.value||''}));
+            const png=await page.screenshot({fullPage:true,timeout:15000});
+            fs.writeFileSync('evidence/employee-r1.png',png);
+            const html=await page.content();
+            const counts=samples.map(x=>x.nodes); const growth=Math.max(...counts)-Math.min(...counts);
+            assert(controls.length>0,'employee exposes zero accessible controls');
+            assert(samples.at(-1).nodes<3000,`employee DOM runaway: ${samples.at(-1).nodes} nodes`);
+            assert(growth<100,`employee DOM not converged: growth ${growth}`);
+            assert(samples.at(-1).myDetails>=1,'employee My details navigation absent');
+            assert(png.length>20000,`screenshot unexpectedly small: ${png.length}`);
+            out.bootstrap=bootstrap; out.samples=samples; out.nodeCountGrowth=growth; out.accessibleControlCount=controls.length; out.accessibleControls=controls.slice(0,60); out.screenshotBytes=png.length; out.screenshotSha256=crypto.createHash('sha256').update(png).digest('hex'); out.finalHtmlSha256=crypto.createHash('sha256').update(html).digest('hex'); out.pass=true; out.claimBoundary='Isolated hosted-mode browser acceptance against exact R1 application lineage. This is not a Railway Test deployment, real provider acceptance or Demo promotion.';
+            console.log(`EMPLOYEE_ACCESSIBLE_CONTROLS=${controls.length}`);
+            console.log(`EMPLOYEE_NODE_GROWTH=${growth}`);
+            console.log(`EMPLOYEE_FINAL_NODES=${samples.at(-1).nodes}`);
+            console.log(`EMPLOYEE_SCREENSHOT_BYTES=${png.length}`);
+            console.log('R1_EMPLOYEE_BROWSER_ACCEPTANCE=PASS');
+          })().catch(e=>{out.error=String(e?.stack||e);console.error(e);process.exitCode=1}).finally(async()=>{try{fs.writeFileSync('evidence/employee-r1-browser-proof.json',JSON.stringify(out,null,2))}catch{};if(browser)await browser.close()});
+          NODE
+
+      - name: Upload browser evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wfm-0.6.76-r1-employee-browser-evidence
+          path: |
+            ${{ runner.temp }}/r1-browser-proof/evidence
+            ${{ runner.temp }}/r1-browser-proof/proxy.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Capture candidate logs on failure
+        if: failure()
+        run: docker logs wfm-r1-browser || true
+
+      - name: Stop isolated candidate
+        if: always()
+        shell: bash
+        run: |
+          docker rm -f wfm-r1-browser || true
+          if [ -f "$RUNNER_TEMP/r1-browser-proof/proxy.pid" ]; then kill "$(cat "$RUNNER_TEMP/r1-browser-proof/proxy.pid")" || true; fi
