@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-export const AGENCY_SUPPLIER_DELIVERY_RECEIPT_VERSION = 'agency-supplier-delivery-receipt-v0.1.0';
+export const AGENCY_SUPPLIER_DELIVERY_RECEIPT_VERSION = 'agency-supplier-delivery-receipt-v0.1.1';
 
 export const AGENCY_SUPPLIER_DELIVERY_RECEIPT_DDL = `
 CREATE UNIQUE INDEX IF NOT EXISTS ux_wfm_agency_supplier_deliveries_tenant_delivery
@@ -34,7 +34,7 @@ WITH target AS (
 ), checked AS (
   SELECT *,
     (channel=$7) AS channel_ok,
-    (provider_message_ref IS NULL OR $5::text IS NULL OR provider_message_ref=$5) AS message_ref_ok,
+    (provider_message_ref IS NULL OR ($5::text IS NOT NULL AND provider_message_ref=$5)) AS message_ref_ok,
     ($6 <> 'definitively_not_sent' OR ($11::integer IS NOT NULL AND $11::integer = attempt_count)) AS attempt_ok,
     ($8::timestamptz >= created_at - interval '5 minutes') AS event_time_ok
   FROM target
