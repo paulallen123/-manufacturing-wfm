@@ -68,7 +68,7 @@ function enhancePlanner(){
    gridToggle.setAttribute('aria-expanded','false');
    gridToggle.setAttribute('aria-controls',grid.id);
    jumps.appendChild(gridToggle);
-   if(issue)hideGrid(content,grid,gridToggle);
+   if(issue)hideGrid(content,grid,gridToggle); else revealGrid(content,grid,gridToggle);
  }
  if(publish){publish.classList.add('ux-plan-publish');publish.setAttribute('data-ux-preserved-publish','true');jumps.appendChild(button('Go to publish','publish'));}
  jumps.addEventListener('click',event=>{
