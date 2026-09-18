@@ -19,6 +19,7 @@ const jsFiles = [
   'resilience/t3-customer-authorisation-gate.cjs',
   'resilience/t3-execution-preflight-verifier.cjs',
   'resilience/t3-execution-readiness-gate.cjs',
+  'resilience/t3-deterministic-execution-sandbox.cjs',
   'resilience/t4-containment-controller.cjs',
   'resilience/autonomy-control-loop.cjs',
   'resilience/ci-provider-failover.cjs',
@@ -38,6 +39,7 @@ const jsFiles = [
   'scripts/validate-t3-shadow-support.mjs',
   'scripts/validate-t3-customer-authorisation-gate.mjs',
   'scripts/validate-t3-execution-readiness.mjs',
+  'scripts/validate-t3-deterministic-execution-sandbox.mjs',
   'scripts/validate-t4-containment-chaos.mjs',
   'scripts/validate-autonomy-control-loop.mjs',
 ];
@@ -63,6 +65,7 @@ for (const rel of [
   'resilience/t3-customer-authorisation-gate.cjs',
   'resilience/t3-execution-preflight-verifier.cjs',
   'resilience/t3-execution-readiness-gate.cjs',
+  'resilience/t3-deterministic-execution-sandbox.cjs',
   'resilience/t4-containment-controller.cjs',
 ]) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
@@ -88,6 +91,7 @@ const requiredWorkflowPaths = [
   "      - 'resilience/t3-customer-authorisation-gate.cjs'",
   "      - 'resilience/t3-execution-preflight-verifier.cjs'",
   "      - 'resilience/t3-execution-readiness-gate.cjs'",
+  "      - 'resilience/t3-deterministic-execution-sandbox.cjs'",
   "      - 'resilience/t4-containment-controller.cjs'",
   "      - 'resilience/autonomy-control-loop.cjs'",
   "      - 'scripts/validate-autonomous-repair-factory.mjs'",
@@ -100,6 +104,7 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-t3-shadow-support.mjs'",
   "      - 'scripts/validate-t3-customer-authorisation-gate.mjs'",
   "      - 'scripts/validate-t3-execution-readiness.mjs'",
+  "      - 'scripts/validate-t3-deterministic-execution-sandbox.mjs'",
   "      - 'scripts/validate-t4-containment-chaos.mjs'",
   "      - 'scripts/validate-autonomy-control-loop.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
@@ -132,6 +137,8 @@ console.log(JSON.stringify({
   t3CustomerAuthorisationAmbientEnvironmentDenied: true,
   t3ExecutionReadinessDirectNetworkSurfaceDenied: true,
   t3ExecutionReadinessAmbientEnvironmentDenied: true,
+  t3DeterministicExecutionSandboxDirectNetworkSurfaceDenied: true,
+  t3DeterministicExecutionSandboxAmbientEnvironmentDenied: true,
   t4ContainmentDirectNetworkSurfaceDenied: true,
   t4ContainmentAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
