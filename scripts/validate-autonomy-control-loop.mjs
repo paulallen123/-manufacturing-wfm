@@ -6,6 +6,8 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { createAutonomyControlLoop } = require('../resilience/autonomy-control-loop.cjs');
+const { createT3ShadowSimulator } = require('../resilience/t3-shadow-simulator.cjs');
+const { createT3ShadowVerifier } = require('../resilience/t3-shadow-verifier.cjs');
 const SelfHelp = require('../resilience/support-selfhelp.cjs');
 
 const root = process.cwd();
@@ -32,6 +34,9 @@ const repairCoordinator = {
   }),
 };
 
+const t3ShadowSimulator = createT3ShadowSimulator();
+const t3ShadowVerifier = createT3ShadowVerifier();
+
 const rollbackExecutor = {
   rollback: async () => ({
     verified: true,
@@ -47,12 +52,21 @@ const loop = createAutonomyControlLoop({
   selfHelp: SelfHelp,
   recoveryExecutor,
   repairCoordinator,
+  t3ShadowSimulator,
+  t3ShadowVerifier,
   rollbackExecutor,
   now: () => ++tick,
   maxActions: 2,
 });
 
 const base = { tenant: 'tenant-a', evidenceDigest: d('evidence') };
+const t3Base = {
+  ...base,
+  beforeStateDigest: d('t3-before'),
+  afterStateDigest: d('t3-after'),
+  compensationPlanDigest: d('t3-compensation'),
+  affectedRecords: 4,
+};
 
 const t0 = await loop.run({
   ...base,
@@ -88,16 +102,32 @@ assert.equal(t2.productionAuthorityGranted, false);
 assert.equal(loop.verifyReceipt(t2), true);
 
 const t3 = await loop.run({
-  ...base,
+  ...t3Base,
   incidentId: 'inc-t3',
   scenarioId: 'payroll-calculation-or-export-anomaly',
-  customerAuthorisationRequired: true,
-  proposedAction: 'payroll.release',
+  proposedAction: 'payroll.release-corrected-export',
 });
 assert.equal(t3.tier, 'T3');
 assert.equal(t3.outcome, 'customer_authorisation_required');
 assert.equal(t3.customerMutation, false);
+assert.equal(t3.actionCount, 0);
+assert.equal(t3.t3Shadow.status, 'customer_authorisation_required');
+assert.equal(t3.t3Shadow.automaticExecutionEligible, false);
+assert.equal(t3.t3Verification.verified, true);
+assert.match(t3.t3Verification.verificationDigest, /^[a-f0-9]{64}$/);
 assert.equal(loop.verifyReceipt(t3), true);
+
+const badT3 = await loop.run({
+  ...t3Base,
+  incidentId: 'inc-t3-bad-family',
+  scenarioId: 'payroll-calculation-or-export-anomaly',
+  proposedAction: 'identity.grant-admin',
+});
+assert.equal(badT3.tier, 'T3');
+assert.equal(badT3.outcome, 'contained');
+assert.equal(badT3.t3Shadow.reason, 'scenario-action-family-mismatch');
+assert.equal(badT3.actionCount, 0);
+assert.equal(loop.verifyReceipt(badT3), true);
 
 const t4 = await loop.run({
   ...base,
@@ -127,6 +157,8 @@ const hostileLoop = createAutonomyControlLoop({
   selfHelp: SelfHelp,
   recoveryExecutor,
   repairCoordinator: hostileRepair,
+  t3ShadowSimulator,
+  t3ShadowVerifier,
   rollbackExecutor,
   now: () => ++tick,
   maxActions: 2,
@@ -136,6 +168,35 @@ assert.equal(hostile.outcome, 'contained');
 assert.equal(hostile.containedErrorCode, 'WFM_AUTONOMY_T2_PRODUCTION');
 assert.equal(hostileLoop.verifyReceipt(hostile), true);
 
+const hostileT3Loop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  selfHelp: SelfHelp,
+  recoveryExecutor,
+  repairCoordinator,
+  t3ShadowSimulator,
+  t3ShadowVerifier: {
+    verify: () => ({
+      verified: true,
+      productionAuthorityGranted: true,
+      productionMutation: false,
+      customerMutation: false,
+    }),
+  },
+  rollbackExecutor,
+  now: () => ++tick,
+  maxActions: 2,
+});
+const hostileT3 = await hostileT3Loop.run({
+  ...t3Base,
+  incidentId: 'inc-hostile-t3',
+  scenarioId: 'payroll-calculation-or-export-anomaly',
+  proposedAction: 'payroll.release-corrected-export',
+});
+assert.equal(hostileT3.outcome, 'contained');
+assert.equal(hostileT3.containedErrorCode, 'WFM_AUTONOMY_T3_AUTHORITY');
+assert.equal(hostileT3Loop.verifyReceipt(hostileT3), true);
+
 const tampered = structuredClone(t1);
 tampered.trace[0].detail.tier = 'T4';
 assert.equal(loop.verifyReceipt(tampered), false);
@@ -144,20 +205,28 @@ const resultTampered = structuredClone(t1);
 resultTampered.recovery.status = 'contained';
 assert.equal(loop.verifyReceipt(resultTampered), false);
 
+const t3ResultTampered = structuredClone(t3);
+t3ResultTampered.t3Shadow.afterStateDigest = d('tampered-t3-state');
+assert.equal(loop.verifyReceipt(t3ResultTampered), false);
+
 console.log(JSON.stringify({
   schemaVersion: 1,
   proof: 'closed-loop-autonomy-controller',
   status: 'PASS',
-  cases: 9,
+  cases: 10,
   unknownFailsSafe: true,
   crossTenantContained: true,
   t0GroundedOnly: true,
   t1IndependentVerificationRequired: true,
   t2ProductionAuthorityDenied: true,
+  t3ShadowSimulationConnected: true,
+  t3IndependentShadowVerificationRequired: true,
+  t3AutomaticExecutionEligible: false,
   t3CustomerAuthorityBoundary: true,
   t4KnownGoodRollbackBounded: true,
   tamperEvidence: true,
   resultTamperEvidence: true,
+  t3ResultTamperEvidence: true,
   productionMutation: false,
   customerMutation: false,
 }, null, 2));
