@@ -75,34 +75,40 @@ try{
  await retry(async()=>{if(!(await evalx("!document.querySelector('#v2-login')&&document.body?.innerText?.length>200")))throw Error('not authenticated');return true});
  assert.equal(await evalx('!!window.WFMUXCycle10'),true,'Hosted browser did not load Cycle 10 runtime.');
  const navigation=await evalx(`(async()=>{const direct=document.querySelector('[data-page="schedule-publication"]');if(direct){direct.click();return 'visible-nav';}if(window.ui&&typeof window.render==='function'){window.ui.page='schedule-publication';await window.render();return 'render-route';}return 'unavailable';})()`);assert.notEqual(navigation,'unavailable');
- await retry(async()=>{if(!(await evalx("document.querySelector('.content')?.dataset.uxPlannerFocus==='active'")))throw Error('Cycle 10 focus not active');return true});
+ const focusMode=await retry(async()=>{const mode=await evalx("document.querySelector('.content')?.dataset.uxPlannerFocus||''");if(!['active','calm'].includes(mode))throw Error('Cycle 10 planner mode not ready');return mode});
 
  const desktop=await evalx(`(()=>{
   const tagged=document.querySelector('[data-ux-preserved-publish="true"]');
   const exportButton=[...document.querySelectorAll('button,[role="button"]')].find(n=>/^export published week$/i.test((n.textContent||'').replace(/\\s+/g,' ').trim()));
-  return {focus:!!document.querySelector('.ux-plan-focus'),priority:!!document.querySelector('.ux-plan-priority'),grid:!!document.querySelector('.ux-plan-grid'),gridHidden:document.querySelector('.ux-plan-grid')?.hidden===true,publish:tagged?.textContent?.replace(/\\s+/g,' ').trim()||'',exportVisible:!!exportButton,exportMisclassified:!!exportButton?.matches('[data-ux-preserved-publish="true"]'),jumps:document.querySelectorAll('.ux-plan-jump').length,issueJump:!!document.querySelector('[data-target="issues"]'),gridJump:!!document.querySelector('[data-target="grid"]'),publishJump:!!document.querySelector('[data-target="publish"]'),overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,expanded:document.querySelector('.ux-plan-grid-toggle')?.getAttribute('aria-expanded')||'',toggleText:document.querySelector('.ux-plan-grid-toggle')?.textContent?.replace(/\\s+/g,' ').trim()||''};
+  return {mode:document.querySelector('.content')?.dataset.uxPlannerFocus||'',focus:!!document.querySelector('.ux-plan-focus'),priority:!!document.querySelector('.ux-plan-priority'),grid:!!document.querySelector('.ux-plan-grid'),gridHidden:document.querySelector('.ux-plan-grid')?.hidden===true,publish:tagged?.textContent?.replace(/\\s+/g,' ').trim()||'',exportVisible:!!exportButton,exportMisclassified:!!exportButton?.matches('[data-ux-preserved-publish="true"]'),jumps:document.querySelectorAll('.ux-plan-jump').length,issueJump:!!document.querySelector('[data-target="issues"]'),gridJump:!!document.querySelector('[data-target="grid"]'),publishJump:!!document.querySelector('[data-target="publish"]'),overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,expanded:document.querySelector('.ux-plan-grid-toggle')?.getAttribute('aria-expanded')||'',toggleText:document.querySelector('.ux-plan-grid-toggle')?.textContent?.replace(/\\s+/g,' ').trim()||''};
  })()`);
  const pre=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});fs.writeFileSync(path.join(outDir,'cycle10-r4-hosted-desktop-before-assert.png'),Buffer.from(pre.data,'base64'));
- fs.writeFileSync(path.join(outDir,'desktop-state.json'),JSON.stringify({capturedAt:new Date().toISOString(),origin,sourceSha,navigation,desktop},null,2));
+ fs.writeFileSync(path.join(outDir,'desktop-state.json'),JSON.stringify({capturedAt:new Date().toISOString(),origin,sourceSha,navigation,focusMode,desktop},null,2));
 
- assert.ok(desktop.focus,'Schedule focus surface missing.');
  assert.ok(desktop.grid,'Weekly planner surface was not identified.');
  assert.equal(desktop.exportMisclassified,false,'Published-week export must never be treated as publish authority.');
  assert.ok(desktop.overflow<=2,`Desktop page overflow ${desktop.overflow}px.`);
- const expectedJumps=(desktop.priority?1:0)+1+(desktop.publish?1:0);assert.equal(desktop.jumps,expectedJumps,'Unexpected focus-action count.');
- assert.equal(desktop.issueJump,desktop.priority,'Issue jump must reflect real issue evidence.');assert.equal(desktop.gridJump,true);
- assert.equal(desktop.publishJump,!!desktop.publish,'Publish jump must exist only when an authoritative publish action exists.');
- if(desktop.priority){assert.equal(desktop.gridHidden,true,'Planner must collapse behind verified issue evidence.');assert.equal(desktop.expanded,'false');assert.match(desktop.toggleText,/open full planner/i);}else{assert.equal(desktop.gridHidden,false,'Planner must remain visible when no issue evidence exists.');assert.equal(desktop.expanded,'true');assert.match(desktop.toggleText,/hide full planner/i);}
-
- await evalx("document.querySelector('.ux-plan-grid-toggle').click()");await sleep(150);
- let toggled=await evalx("({hidden:document.querySelector('.ux-plan-grid')?.hidden===true,expanded:document.querySelector('.ux-plan-grid-toggle')?.getAttribute('aria-expanded'),focused:document.activeElement?.classList.contains('ux-plan-grid')===true})");
- if(desktop.priority){assert.equal(toggled.hidden,false);assert.equal(toggled.expanded,'true');assert.equal(toggled.focused,true,'Opening planner must move keyboard focus into planner detail.');}else{assert.equal(toggled.hidden,true);assert.equal(toggled.expanded,'false');await evalx("document.querySelector('.ux-plan-grid-toggle').click()");await sleep(100);toggled=await evalx("({hidden:document.querySelector('.ux-plan-grid')?.hidden===true,expanded:document.querySelector('.ux-plan-grid-toggle')?.getAttribute('aria-expanded'),focused:document.activeElement?.classList.contains('ux-plan-grid')===true})");assert.equal(toggled.hidden,false);assert.equal(toggled.expanded,'true');assert.equal(toggled.focused,true,'Reopening planner must move keyboard focus into planner detail.');}
- if(desktop.publish){await evalx("document.querySelector('[data-target=\"publish\"]').click()");await sleep(75);assert.equal(await evalx("document.activeElement?.hasAttribute('data-ux-preserved-publish')"),true,'Publish jump did not focus authoritative control.');}
+ let toggled=null;
+ if(desktop.priority){
+  assert.equal(desktop.mode,'active');assert.ok(desktop.focus,'Risk mode must expose the focused decision surface.');
+  const expectedJumps=2+(desktop.publish?1:0);assert.equal(desktop.jumps,expectedJumps,'Unexpected risk-focus action count.');
+  assert.equal(desktop.issueJump,true);assert.equal(desktop.gridJump,true);assert.equal(desktop.publishJump,!!desktop.publish);
+  assert.equal(desktop.gridHidden,true,'Planner must collapse behind verified issue evidence.');assert.equal(desktop.expanded,'false');assert.match(desktop.toggleText,/open full planner/i);
+  await evalx("document.querySelector('.ux-plan-grid-toggle').click()");await sleep(150);
+  toggled=await evalx("({hidden:document.querySelector('.ux-plan-grid')?.hidden===true,expanded:document.querySelector('.ux-plan-grid-toggle')?.getAttribute('aria-expanded'),focused:document.activeElement?.classList.contains('ux-plan-grid')===true})");
+  assert.equal(toggled.hidden,false);assert.equal(toggled.expanded,'true');assert.equal(toggled.focused,true,'Opening planner must move keyboard focus into planner detail.');
+  if(desktop.publish){await evalx("document.querySelector('[data-target=\"publish\"]').click()");await sleep(75);assert.equal(await evalx("document.activeElement?.hasAttribute('data-ux-preserved-publish')"),true,'Publish jump did not focus authoritative control.');}
+ }else{
+  assert.equal(desktop.mode,'calm');assert.equal(desktop.focus,false,'No-risk state must not add a duplicate focus card.');
+  assert.equal(desktop.gridHidden,false,'Planner must remain visible when no verified issue exists.');
+  assert.equal(desktop.jumps,0,'No-risk state must not add redundant jump controls.');
+  assert.equal(desktop.issueJump,false);assert.equal(desktop.gridJump,false);assert.equal(desktop.publishJump,false);
+ }
 
  await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await sleep(300);
- const mobile=await evalx("({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,focus:!!document.querySelector('.ux-plan-focus'),grid:!!document.querySelector('.ux-plan-grid'),exportMisclassified:!![...document.querySelectorAll('button,[role=\"button\"]')].find(n=>/^export published week$/i.test((n.textContent||'').replace(/\\s+/g,' ').trim()))?.matches('[data-ux-preserved-publish=\"true\"]')})");
- assert.ok(mobile.overflow<=2,`Mobile page overflow ${mobile.overflow}px.`);assert.ok(mobile.focus);assert.ok(mobile.grid);assert.equal(mobile.exportMisclassified,false);
+ const mobile=await evalx("({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,mode:document.querySelector('.content')?.dataset.uxPlannerFocus||'',focus:!!document.querySelector('.ux-plan-focus'),grid:!!document.querySelector('.ux-plan-grid'),exportMisclassified:!![...document.querySelectorAll('button,[role=\"button\"]')].find(n=>/^export published week$/i.test((n.textContent||'').replace(/\\s+/g,' ').trim()))?.matches('[data-ux-preserved-publish=\"true\"]')})");
+ assert.ok(mobile.overflow<=2,`Mobile page overflow ${mobile.overflow}px.`);assert.ok(mobile.grid);assert.equal(mobile.exportMisclassified,false);assert.equal(mobile.focus,desktop.priority);
  const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});fs.writeFileSync(path.join(outDir,'cycle10-r4-hosted-mobile.png'),Buffer.from(shot.data,'base64'));
- fs.writeFileSync(path.join(outDir,'proof.json'),JSON.stringify({capturedAt:new Date().toISOString(),origin,sourceSha,health:{mode:hb.mode,fixtureOnly:hb.fixtureOnly,productionApproved:hb.productionApproved},navigation,desktop,toggled,mobile,claimBoundary:'isolated hosted fixture staging only; no production/pilot approval; authoritative publish control preserved'},null,2));
- console.log('HOSTED_CYCLE10_BROWSER_INTERACTION=PASS');console.log('HOSTED_CYCLE10_SOURCE_SHA='+sourceSha);console.log('HOSTED_CYCLE10_RISK_PANEL_PRESENT='+desktop.priority);console.log('HOSTED_CYCLE10_AUTHORITATIVE_PUBLISH_PRESENT='+!!desktop.publish);console.log('HOSTED_CYCLE10_DESKTOP_OVERFLOW='+desktop.overflow);console.log('HOSTED_CYCLE10_MOBILE_OVERFLOW='+mobile.overflow);
+ fs.writeFileSync(path.join(outDir,'proof.json'),JSON.stringify({capturedAt:new Date().toISOString(),origin,sourceSha,health:{mode:hb.mode,fixtureOnly:hb.fixtureOnly,productionApproved:hb.productionApproved},navigation,focusMode,desktop,toggled,mobile,claimBoundary:'isolated hosted fixture staging only; no production/pilot approval; authoritative publish control preserved'},null,2));
+ console.log('HOSTED_CYCLE10_BROWSER_INTERACTION=PASS');console.log('HOSTED_CYCLE10_SOURCE_SHA='+sourceSha);console.log('HOSTED_CYCLE10_MODE='+desktop.mode);console.log('HOSTED_CYCLE10_RISK_PANEL_PRESENT='+desktop.priority);console.log('HOSTED_CYCLE10_AUTHORITATIVE_PUBLISH_PRESENT='+!!desktop.publish);console.log('HOSTED_CYCLE10_DESKTOP_OVERFLOW='+desktop.overflow);console.log('HOSTED_CYCLE10_MOBILE_OVERFLOW='+mobile.overflow);
 }finally{try{ws?.close()}catch{};cp.kill('SIGTERM');await sleep(250);if(!cp.killed)cp.kill('SIGKILL');delete vars.WFM_STAGING_PASSWORD;}
