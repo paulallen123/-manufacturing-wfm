@@ -17,6 +17,7 @@ const PROTECTED_PATHS = Object.freeze([
   'resilience/independent-repair-verifier.cjs',
   'resilience/disposable-staging-gate.cjs',
   'resilience/autonomous-repair-pipeline.cjs',
+  'resilience/canary-rollback-controller.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
   'scripts/validate-autonomy-source-syntax.mjs',
   'scripts/validate-resilience-scenarios.mjs',
@@ -32,6 +33,7 @@ const PROTECTED_PATHS = Object.freeze([
   'scripts/validate-independent-repair-verifier.mjs',
   'scripts/validate-disposable-staging-gate.mjs',
   'scripts/validate-autonomous-repair-pipeline.mjs',
+  'scripts/validate-canary-rollback-controller.mjs',
   '.github/workflows/wfm-every-push-security.yml',
   '.github/workflows/wfm-zero-engineer-support-contract.yml',
   '.github/workflows/wfm-autonomous-repair-pipeline.yml'
