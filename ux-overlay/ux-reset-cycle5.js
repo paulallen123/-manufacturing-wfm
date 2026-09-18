@@ -13,14 +13,9 @@ function promotePersonal(){
  if(!employee())return;
  const nav=document.querySelector('.sidebar nav');if(!nav)return;
  const b=[...nav.querySelectorAll('.navbtn[data-page="personal"]')].find(x=>!x.closest('#ux-tool-backdrop'));if(!b)return;
- if(b.classList.contains('ux-secondary-route'))b.classList.remove('ux-secondary-route');
- if(!b.classList.contains('ux-primary-route'))b.classList.add('ux-primary-route');
- if(!b.classList.contains('ux-personal-primary'))b.classList.add('ux-personal-primary');
- const label=b.querySelector('span');if(label&&label.textContent!=='My details')label.textContent='My details';
- if(b.getAttribute('aria-label')!=='My details')b.setAttribute('aria-label','My details');
- if(b.title!=='My details')b.title='My details';
- const more=nav.querySelector('[data-ux="more"]');
- if((more&&b.nextElementSibling!==more)||(!more&&b.nextElementSibling!==null))nav.insertBefore(b,more||null);
+ b.classList.remove('ux-secondary-route');b.classList.add('ux-primary-route','ux-personal-primary');
+ const label=b.querySelector('span');if(label&&label.textContent!=='My details')label.textContent='My details';if(b.getAttribute('aria-label')!=='My details')b.setAttribute('aria-label','My details');if(b.title!=='My details')b.title='My details';
+ const more=nav.querySelector('[data-ux="more"]');if((more&&b.nextElementSibling!==more)||(!more&&b.nextElementSibling!==null))nav.insertBefore(b,more||null);
  document.querySelectorAll('#ux-tool-backdrop .navbtn[data-page="personal"]').forEach(x=>x.remove());
 }
 function requestAction(balance){
