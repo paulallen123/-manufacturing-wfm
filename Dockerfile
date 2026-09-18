@@ -33,7 +33,9 @@ COPY implementation/runtime/one-day-enterprise-engine.test.cjs /tmp/wfm-tests/im
 COPY implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.cjs
 COPY learning/runtime/adaptive-learning-engine.test.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs
-RUN node --test \
+COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
+RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
+ && node --test \
       /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs \
       /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs \
       /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs \
