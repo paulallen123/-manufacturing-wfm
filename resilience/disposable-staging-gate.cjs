@@ -65,9 +65,12 @@ function verifyAttestor(attestor) {
   return Object.freeze({ ...c });
 }
 
-function createDisposableStagingGate({ factory, executor, attestor, timeoutMs = 180000 } = {}) {
+function createDisposableStagingGate({ factory, executor, attestor, approvedRuntime, timeoutMs = 180000 } = {}) {
   if (!factory || typeof factory.snapshot !== 'function') {
     deny('WFM_STAGING_INPUT', 'repair factory snapshot access is required');
+  }
+  if (typeof approvedRuntime !== 'string' || !/^\d+\.\d+\.\d+$/.test(approvedRuntime)) {
+    deny('WFM_STAGING_INPUT', 'deterministic approved runtime is required');
   }
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 300000) {
     deny('WFM_STAGING_INPUT', 'invalid staging timeout');
@@ -117,8 +120,8 @@ function createDisposableStagingGate({ factory, executor, attestor, timeoutMs = 
     };
   }
 
-  function run({ incidentId, tenant, authorityId, signerId, artifactDigest, provenanceDigest, signatureDigest, expectedRuntime }) {
-    if (!incidentId || !tenant || !authorityId || !signerId || !expectedRuntime) deny('WFM_STAGING_INPUT', 'invalid staging scope');
+  function run({ incidentId, tenant, authorityId, signerId, artifactDigest, provenanceDigest, signatureDigest }) {
+    if (!incidentId || !tenant || !authorityId || !signerId) deny('WFM_STAGING_INPUT', 'invalid staging scope');
     if (authorityId !== signerId) deny('WFM_STAGING_AUTHORITY', 'staging authority must be the artifact signer');
     for (const value of [artifactDigest, provenanceDigest, signatureDigest]) {
       if (!validDigest(value)) deny('WFM_STAGING_INPUT', 'digest-only staging inputs required');
@@ -146,6 +149,7 @@ function createDisposableStagingGate({ factory, executor, attestor, timeoutMs = 
       signatureDigest,
       signerId,
       authorityId,
+      approvedRuntime,
     });
     let attested = false;
     try {
@@ -157,6 +161,7 @@ function createDisposableStagingGate({ factory, executor, attestor, timeoutMs = 
       return {
         status: 'staging-rejected',
         reason: 'artifact-attestation-rejected',
+        stagingStarted: false,
         disposalVerified: true,
         productionAuthority: false,
         customerMutation: false,
@@ -172,7 +177,7 @@ function createDisposableStagingGate({ factory, executor, attestor, timeoutMs = 
       signatureDigest,
       verificationDigest: incident.verification.verificationDigest,
       permitDigest: incident.stagingPermit.permitDigest,
-      expectedRuntime,
+      approvedRuntime,
     });
     const job = Object.freeze({
       schemaVersion: 1,
@@ -184,7 +189,7 @@ function createDisposableStagingGate({ factory, executor, attestor, timeoutMs = 
       rollbackDigest: incident.verification.rollbackDigest,
       verificationDigest: incident.verification.verificationDigest,
       permitDigest: incident.stagingPermit.permitDigest,
-      expectedRuntime,
+      expectedRuntime: approvedRuntime,
       stagingReceiptSeed,
       env: { ...SAFE_ENV },
       secrets: [],
@@ -219,7 +224,7 @@ function createDisposableStagingGate({ factory, executor, attestor, timeoutMs = 
       return dispose(job, 'staging-evidence-drift');
     }
     if (result.status === 'rejected') return dispose(job, result.reason || 'staging-runtime-rejected');
-    if (result.exactRuntime !== true || result.actualRuntime !== expectedRuntime) {
+    if (result.exactRuntime !== true || result.actualRuntime !== approvedRuntime) {
       return dispose(job, 'staging-runtime-drift');
     }
     if (!validDigest(result.stagingInstanceDigest) || !validDigest(result.runtimeEvidenceDigest)) {
@@ -237,7 +242,7 @@ function createDisposableStagingGate({ factory, executor, attestor, timeoutMs = 
       verificationDigest: incident.verification.verificationDigest,
       stagingInstanceDigest: result.stagingInstanceDigest,
       runtimeEvidenceDigest: result.runtimeEvidenceDigest,
-      expectedRuntime,
+      expectedRuntime: approvedRuntime,
       actualRuntime: result.actualRuntime,
       disposable: true,
       canaryEligible: true,
@@ -253,7 +258,7 @@ function createDisposableStagingGate({ factory, executor, attestor, timeoutMs = 
 
   return {
     run,
-    capabilities: () => ({ executor: { ...executorCaps }, attestor: { ...attestorCaps } }),
+    capabilities: () => ({ executor: { ...executorCaps }, attestor: { ...attestorCaps }, approvedRuntime }),
     safeEnvironment: () => ({ ...SAFE_ENV }),
   };
 }
