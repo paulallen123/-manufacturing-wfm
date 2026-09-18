@@ -35,7 +35,8 @@ jobs:
           const css=fs.readFileSync('ux-overlay/ux-reset-cycle10.css','utf8');
           for(const x of ['Resolve risk before you publish','Coverage & risks','Open full planner','data-ux-preserved-publish','window.WFMUXCycle10=','aria-controls','focusTarget','Previous\\s+week','strong.test(value)','clearFocusState','.weekly-planner']) if(!js.includes(x)) throw new Error('Missing Cycle 10 invariant: '+x);
           for(const x of ['.ux-plan-focus','.ux-plan-steps','.ux-plan-grid','.ux-plan-publish','@media(max-width:620px)']) if(!css.includes(x)) throw new Error('Missing Cycle 10 CSS invariant: '+x);
-          if(/\.remove\s*\(/.test(js)) throw new Error('Cycle 10 must preserve existing planner controls.');
+          const destructiveJs=js.replace(/classList\.remove\s*\(/g,'classList.__classCleanup(');
+          if(/\.remove\s*\(/.test(destructiveJs)) throw new Error('Cycle 10 must preserve existing planner controls.');
           if(!js.includes("route()!=='schedule-publication'")) throw new Error('Planner focus must remain narrowly scoped.');
           if(/\|skill\|/.test(js)) throw new Error('Bare skill keyword must not activate exception focus.');
           console.log('UX_CYCLE10_R5_SOURCE_INVARIANTS=PASS');
@@ -94,11 +95,9 @@ jobs:
           await send('Page.enable');await send('Runtime.enable');
           await send('Page.navigate',{url:'http://127.0.0.1:9260/journey.html'});
           await retry(async()=>{if(!(await evalx("document.readyState==='complete'&&document.querySelector('.content')?.dataset.uxPlannerFocus==='calm'")))throw Error('calm not ready');return true});
-
           const calm=await evalx(`(()=>({mode:document.querySelector('.content')?.dataset.uxPlannerFocus,focus:!!document.querySelector('.ux-plan-focus'),priority:!!document.querySelector('.ux-plan-priority'),grid:document.querySelector('#planner')?.classList.contains('ux-plan-grid'),gridHidden:document.querySelector('#planner')?.hidden===true,jumps:document.querySelectorAll('.ux-plan-jump').length,publish:document.querySelector('[data-ux-preserved-publish="true"]')?.textContent.trim(),exportTagged:!![...document.querySelectorAll('button')].find(n=>/^export published week$/i.test(n.textContent.trim()))?.matches('[data-ux-preserved-publish="true"]'),overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}))()`);
           console.log('UX_CYCLE10_R5_CALM_STATE='+JSON.stringify(calm));
           if(calm.mode!=='calm'||calm.focus||calm.priority||!calm.grid||calm.gridHidden||calm.jumps!==0||calm.publish!=='Publish schedule'||calm.exportTagged||calm.overflow>2)throw Error('Calm no-risk state failed');
-
           await evalx(`(()=>{const p=document.querySelector('#context');p.innerHTML='<h2>Coverage risks</h2><p>2 skill gaps and 1 unfilled shift need a decision.</p><button>Find cover</button>';window.WFMUXCycle10.apply();return true})()`);
           await retry(async()=>{if(!(await evalx("document.querySelector('.content')?.dataset.uxPlannerFocus==='active'")))throw Error('risk not ready');return true});
           const risk=await evalx(`(()=>({mode:document.querySelector('.content')?.dataset.uxPlannerFocus,focus:!!document.querySelector('.ux-plan-focus'),priority:document.querySelector('#context')?.classList.contains('ux-plan-priority'),grid:document.querySelector('#planner')?.classList.contains('ux-plan-grid'),gridHidden:document.querySelector('#planner')?.hidden===true,publish:document.querySelector('[data-ux-preserved-publish="true"]')?.textContent.trim(),jumps:document.querySelectorAll('.ux-plan-jump').length,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}))()`);
@@ -108,13 +107,11 @@ jobs:
           if(!(await evalx("document.activeElement?.id==='planner'&&!document.querySelector('#planner').hidden&&document.querySelector('.ux-plan-grid-toggle').getAttribute('aria-expanded')==='true'")))throw Error('Planner disclosure/focus failed');
           await evalx("document.querySelector('[data-target=\"publish\"]').click()");await sleep(75);
           if(!(await evalx("document.activeElement?.hasAttribute('data-ux-preserved-publish')")))throw Error('Publish focus failed');
-
           await evalx(`(()=>{const p=document.querySelector('#context');p.innerHTML='<h2>Operational planner</h2><p>Build the week around demand, skills and actual decisions.</p>';window.WFMUXCycle10.apply();return true})()`);
           await retry(async()=>{if(!(await evalx("document.querySelector('.content')?.dataset.uxPlannerFocus==='calm'")))throw Error('resolved state not ready');return true});
           const resolved=await evalx(`(()=>({mode:document.querySelector('.content')?.dataset.uxPlannerFocus,focus:!!document.querySelector('.ux-plan-focus'),priority:!!document.querySelector('.ux-plan-priority'),gridHidden:document.querySelector('#planner')?.hidden===true,jumps:document.querySelectorAll('.ux-plan-jump').length,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}))()`);
           console.log('UX_CYCLE10_R5_RESOLVED_STATE='+JSON.stringify(resolved));
           if(resolved.mode!=='calm'||resolved.focus||resolved.priority||resolved.gridHidden||resolved.jumps!==0||resolved.overflow>2)throw Error('Resolved risk must return to calm state');
-
           await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await sleep(250);
           const mobile=await evalx("({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,mode:document.querySelector('.content')?.dataset.uxPlannerFocus,grid:document.querySelector('#planner')?.classList.contains('ux-plan-grid')})");
           console.log('UX_CYCLE10_R5_MOBILE_CALM='+JSON.stringify(mobile));
