@@ -24,7 +24,7 @@ const KNOWLEDGE = Object.freeze([
   },
   {
     id: 'payroll-control',
-    patterns: [/payroll|missed clock|clock.?out|time correction|attendance exception/i],
+    patterns: [/(missed clock|clock.?out|time correction|attendance exception|payroll (review|control|handoff))/i],
     answer: 'Attendance exceptions are reviewed through time-review/payroll-control evidence before payroll handoff. The autonomous support layer does not have direct payroll-write or payroll-release authority.',
     sources: ['CUSTOMER_DEMO_RUNBOOK.md','resilience/security-baseline.json','resilience/failure-scenarios.json'],
     roles: ['employee','manager','payroll','company-admin','support']
