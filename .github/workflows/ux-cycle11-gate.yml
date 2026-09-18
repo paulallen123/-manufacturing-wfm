@@ -7,6 +7,7 @@ on:
     paths:
       - 'Dockerfile'
       - 'ux-overlay/ux-reset-cycle11*'
+      - '.github/scripts/ux-cycle11-context-browser.mjs'
       - '.github/workflows/ux-cycle11-gate.yml'
   workflow_dispatch:
 
@@ -30,6 +31,7 @@ jobs:
           set -euo pipefail
           node --check ux-overlay/ux-reset-cycle11-model.js
           node --check ux-overlay/ux-reset-cycle11.js
+          node --check .github/scripts/ux-cycle11-context-browser.mjs
           node <<'NODE'
           const fs=require('node:fs'),vm=require('node:vm');
           const ctx={};ctx.globalThis=ctx;vm.createContext(ctx);
@@ -60,6 +62,12 @@ jobs:
           if(a.actions.findIndex(x=>x.id==='confirming')<a.actions.findIndex(x=>x.id==='pay-0')) throw new Error('Confirming item outranked unresolved blocker');
           console.log('UX_CYCLE11_MODEL_STRESS_60=PASS');
           NODE
+
+      - name: Browser-check exact source context and return focus
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 45s node .github/scripts/ux-cycle11-context-browser.mjs
 
       - name: Build and verify sealed composition
         shell: bash
