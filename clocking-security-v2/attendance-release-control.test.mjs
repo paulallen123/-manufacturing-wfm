@@ -4,7 +4,15 @@ import {assessAttendanceRelease,AttendanceReleaseSwitch,REQUIRED_GATES} from './
 
 const SHA='7eaf0d83675ca7c28b31bcfcd2146846973f427b';
 function greenGates(){
-  return Object.fromEntries(REQUIRED_GATES.map(name=>[name,{passed:true,skipped:0,candidateSha:SHA,evidenceId:`proof/${name}/001`}]));
+  const gates=Object.fromEntries(REQUIRED_GATES.map(name=>[name,{passed:true,skipped:0,candidateSha:SHA,evidenceId:`proof/${name}/001`}]));
+  gates.rollbackAuthority={
+    ...gates.rollbackAuthority,
+    realExternalAuthority:true,
+    signedReceipts:true,
+    commitmentBoundCas:true,
+    restartRecoveryProven:true
+  };
+  return gates;
 }
 function providers(){
   return [
@@ -39,6 +47,34 @@ test('two distinct real provider domains are mandatory',()=>{
   const a=assessAttendanceRelease({candidateSha:SHA,gates:greenGates(),providerProofs:p});
   assert.equal(a.ready,false);
   assert(a.blockers.includes('twoRealProviderDomains'));
+});
+
+test('synthetic or merely signed local rollback proof cannot satisfy the release gate',()=>{
+  const gates=greenGates();
+  gates.rollbackAuthority={
+    passed:true,
+    skipped:0,
+    candidateSha:SHA,
+    evidenceId:'proof/rollbackAuthority/synthetic',
+    realExternalAuthority:false,
+    signedReceipts:true,
+    commitmentBoundCas:true,
+    restartRecoveryProven:true
+  };
+  const a=assessAttendanceRelease({candidateSha:SHA,gates,providerProofs:providers()});
+  assert.equal(a.ready,false);
+  assert(a.blockers.includes('rollbackAuthority'));
+  assert.equal(a.accepted.rollbackAuthority,false);
+});
+
+test('rollback authority proof must cover signed receipts, commitment CAS and restart recovery',()=>{
+  for(const field of ['signedReceipts','commitmentBoundCas','restartRecoveryProven']){
+    const gates=greenGates();
+    gates.rollbackAuthority[field]=false;
+    const a=assessAttendanceRelease({candidateSha:SHA,gates,providerProofs:providers()});
+    assert.equal(a.ready,false,field);
+    assert(a.blockers.includes('rollbackAuthority'),field);
+  }
 });
 
 test('all gates plus two real provider domains allow an explicit enable request',()=>{
