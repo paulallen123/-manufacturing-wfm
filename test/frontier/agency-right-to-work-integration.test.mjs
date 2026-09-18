@@ -76,6 +76,31 @@ test('post-1-October right-to-work assurance excludes stronger-scoring non-compl
   assert.match(result.authorityBoundary, /no_schedule_payroll_or_invoice_mutation/);
 });
 
+test('expired ECS Positive Verification Notice cannot be outranked by price or performance', () => {
+  const compliant = worker('W-COMPLIANT','A1',0.72,24,true);
+  const cheaper = worker('W-CHEAPER-EXPIRED-PVN','A1',1.0,15,true);
+  cheaper.rightToWork.checkMethod = 'employer_checking_service';
+  cheaper.rightToWork.validUntil = '2027-12-31T23:59:59.000Z';
+  cheaper.rightToWork.positiveVerificationNotice = {
+    status:'positive', issuedAt:'2026-04-04T09:00:00.000Z', validUntil:'2026-10-05T13:00:00.000Z',
+    evidenceRef:'private-expired-pvn-reference',
+  };
+
+  const result = planAgencyLabourFulfilment({
+    tenantId:'tenant-1', siteId:'site-1', now:'2026-10-04T12:00:00.000Z', request:request(),
+    agencies:[agency('A1', true)], candidates:[compliant, cheaper],
+    policy:{parallelAgencies:1,responseSlaMinutes:5,autoDispatchApprovedAgencies:true},
+  });
+
+  assert.equal(result.selectedWorkers[0].workerId, 'W-COMPLIANT');
+  const rejected = result.rejectedWorkers.find(item => item.workerId === 'W-CHEAPER-EXPIRED-PVN');
+  assert.ok(rejected);
+  assert.equal(rejected.score, null);
+  assert.ok(rejected.failures.includes('right_to_work_expires_before_shift_end'));
+  assert.equal(rejected.rightToWorkEligibility.evidence.lifecycle.evidenceSource, 'positive_verification_notice');
+  assert.doesNotMatch(JSON.stringify(result), /private-expired-pvn-reference/);
+});
+
 test('5,000 post-effective-date candidates never let performance or price outrank missing right-to-work assurance', () => {
   const random = lcg(0x51a77e11);
   let selected = 0;
