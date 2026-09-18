@@ -68,12 +68,15 @@ function compare(a,b){
   }
   return a.id.localeCompare(b.id);
 }
+function newestFirst(a,b){return (b.createdAt||0)-(a.createdAt||0)||a.id.localeCompare(b.id);}
 function build(inputs,now=nowMs()){
   const items=(Array.isArray(inputs)?inputs:[]).map(x=>normalise(x,now));
   const actions=items.filter(x=>x.kind==='action'&&x.lifecycle!=='resolved').sort(compare);
-  const receipts=items.filter(x=>x.kind==='receipt'||x.lifecycle==='resolved'||x.automated).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)||a.id.localeCompare(b.id));
+  // Automation receipts stay distinct from source-confirmed human decisions. Never imply judgment was automated.
+  const receipts=items.filter(x=>x.kind==='receipt'||x.automated).sort(newestFirst);
+  const resolved=items.filter(x=>x.kind==='action'&&x.lifecycle==='resolved'&&!x.automated).sort(newestFirst);
   const information=items.filter(x=>x.kind==='information').sort(compare);
-  return Object.freeze({actions:Object.freeze(actions),receipts:Object.freeze(receipts),information:Object.freeze(information),all:Object.freeze(items)});
+  return Object.freeze({actions:Object.freeze(actions),receipts:Object.freeze(receipts),resolved:Object.freeze(resolved),information:Object.freeze(information),all:Object.freeze(items)});
 }
 function reason(reasonCode){return REASONS[reasonCode]||REASONS.NEEDS_REVIEW;}
 root.WFMUXCycle11Model=Object.freeze({REASONS,normalise,compare,build,reason});
