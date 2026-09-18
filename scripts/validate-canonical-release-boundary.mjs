@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -8,12 +9,19 @@ const { createCanonicalReleaseBoundary, validateCanonicalReleasePolicy } = requi
 const root = process.cwd();
 const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'resilience/canonical-release-policy-snapshot.json'), 'utf8'));
 
+function gitBlobSha(file) {
+  const run = spawnSync('git', ['hash-object', file], { cwd: root, encoding: 'utf8' });
+  assert.equal(run.status, 0, `Unable to hash canonical release policy file: ${run.stderr || 'unknown error'}`);
+  return String(run.stdout || '').trim().toLowerCase();
+}
+
 function loadPolicyEvidence() {
   const liveFile = process.env.WFM_CANONICAL_RELEASE_POLICY_FILE;
   const liveBaseSha = process.env.WFM_CANONICAL_BASE_SHA;
   const liveBlobSha = process.env.WFM_CANONICAL_POLICY_BLOB_SHA;
   if (liveFile || liveBaseSha || liveBlobSha) {
     assert.ok(liveFile && liveBaseSha && liveBlobSha, 'Live canonical release evidence must provide file, base SHA and policy blob SHA together.');
+    assert.equal(gitBlobSha(liveFile), String(liveBlobSha).toLowerCase(), 'Live canonical policy bytes do not match the claimed Git blob SHA.');
     return {
       sourceRef: snapshot.sourceRef,
       sourceBaseSha: liveBaseSha,
@@ -132,6 +140,7 @@ console.log(JSON.stringify({
   proof: 'canonical-release-boundary-compatibility',
   status: 'PASS',
   liveCanonicalEvidence: evidence.live,
+  livePolicyBytesBoundToBlob: evidence.live,
   sourceRef: evidence.sourceRef,
   sourceBaseSha: evidence.sourceBaseSha,
   sourcePolicyBlobSha: evidence.sourcePolicyBlobSha,
