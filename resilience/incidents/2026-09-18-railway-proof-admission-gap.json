@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "incident_id": "INC-2026-09-18-RAILWAY-PROOF-ADMISSION-GAP",
+  "title": "Railway proof workflow reported success before runtime admission was safe",
+  "date": "2026-09-18",
+  "severity": "high",
+  "status": "mitigated_not_permanently_closed",
+  "classifications": [
+    "deployment_provenance_problem",
+    "configuration_integration_problem",
+    "security_concern",
+    "test_oracle_defect"
+  ],
+  "affected_scope": "isolated UX Cycle 10 r3 proof service only",
+  "customer_or_production_impact_observed": false,
+  "timeline": [
+    {
+      "at": "2026-09-18T05:09:27.765Z",
+      "event": "Railway accepted the exact branch upload and created deployment c61f470f-bb51-4ed0-afcd-1ecce926ecb6."
+    },
+    {
+      "at": "2026-09-18T05:10:02.536Z",
+      "event": "Runtime began failing with EACCES while attempting to create /app/local-data under the deliberately read-only application tree."
+    },
+    {
+      "at": "2026-09-18T05:10:05Z",
+      "event": "GitHub Actions had already completed the deployment proof job successfully even though Railway runtime logs were failing."
+    },
+    {
+      "at": "2026-09-18T05:11:41.483Z",
+      "event": "A bounded redeploy started in development-mode semantics instead of hosted-staging semantics and emitted a demo credential into the platform log stream. The credential value is intentionally not recorded here."
+    },
+    {
+      "at": "2026-09-18T05:12:46.558Z",
+      "event": "A subsequent redeploy started with hosted-staging semantics on the expected public bind/port and reached Railway SUCCESS."
+    }
+  ],
+  "root_cause": {
+    "primary": "The isolated proof workflow treated a successful Railway CLI --ci upload/build result as sufficient deployment evidence instead of independently proving the deployment reached a safe terminal runtime state.",
+    "contributing": [
+      "The isolated service was created without the canonical proof-service healthcheck/restart configuration.",
+      "The workflow did not validate required hosted-staging variables before upload.",
+      "The immutable /app boundary correctly rejected the fallback local-data path, but the failure was not part of the CI admission oracle.",
+      "The runtime retained a development fallback capable of logging demo authentication material when hosted-staging configuration was incomplete."
+    ]
+  },
+  "validated_recovery": {
+    "current_service_status": "SUCCESS",
+    "runtime_mode": "hosted_staging",
+    "public_bind": "0.0.0.0:3000",
+    "production_approved": false
+  },
+  "permanent_prevention_rules": [
+    "Any workflow that invokes railway up must validate the hosted-staging variable contract before upload.",
+    "A Railway upload/build acknowledgement must never be treated as runtime success; poll deployment status to a terminal state.",
+    "After terminal SUCCESS, assert /api/health and expected staging identity before claiming proof completion.",
+    "Root-directory deployments must not use an unnecessary positional dot path in this repository.",
+    "No credential value may be written to CI or provider logs, including demo/default credentials.",
+    "Isolated proof services should inherit the canonical service baseline: Dockerfile build, /api/health healthcheck, bounded restart policy, and explicit hosted-staging variables."
+  ],
+  "evidence": {
+    "github_failed_run": 35309639997,
+    "github_green_run": 35309694989,
+    "railway_failed_runtime_deployment": "c61f470f-bb51-4ed0-afcd-1ecce926ecb6",
+    "railway_intermediate_deployment": "1f230f4b-0189-4aea-949e-e227b5a8afa3",
+    "railway_recovered_deployment": "940e0623-44ae-4d0c-abd2-720f35286da6"
+  },
+  "safety": {
+    "production_mutation_performed_by_reliability_loop": false,
+    "customer_data_accessed": false,
+    "payroll_or_workforce_state_changed": false,
+    "secret_value_persisted_in_incident_record": false
+  }
+}
