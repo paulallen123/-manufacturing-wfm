@@ -11,11 +11,24 @@ function findIssuePanel(content){
  return nodes.find(node=>!node.matches('.ux-plan-focus')&&pattern.test(text(node)))||null;
 }
 function findGrid(content){
- return content.querySelector('.tablewrap,.ops-scroll,.dp-table-scroll,.pci-table-wrap');
+ const known=content.querySelector('.tablewrap,.ops-scroll,.dp-table-scroll,.pci-table-wrap');
+ if(known)return known;
+ const tables=[...content.querySelectorAll('table')];
+ const weekly=tables.find(table=>{
+   const value=text(table).slice(0,5000);
+   const days=['mon','tue','wed','thu','fri','sat','sun'].filter(day=>new RegExp(`\\b${day}`, 'i').test(value)).length;
+   return days>=5&&/(person|employee|worker|published|draft)/i.test(value);
+ });
+ if(!weekly)return null;
+ return weekly.closest('[data-grid],[data-table-scroll],.scroll,.table-scroll,.grid-scroll')||weekly.parentElement||weekly;
 }
 function findPublish(content){
  const candidates=[...content.querySelectorAll('button,[role="button"]')];
- return candidates.find(node=>/publish|release|post schedule/i.test(text(node)))||content.querySelector('[data-act*="publish"],[data-action*="publish"]');
+ return candidates.find(node=>{
+   const label=text(node);
+   if(!label||/\bexport\b|\bpublished\b|\bhistory\b|\breceipt\b|\bdetails\b/i.test(label))return false;
+   return /^(publish\b|release\s+(schedule|rota)\b|post\s+schedule\b)/i.test(label);
+ })||null;
 }
 function button(label,kind){
  const b=document.createElement('button');
@@ -45,11 +58,23 @@ function focusTarget(node,block='center'){
 function enhancePlanner(){
  if(!manager()||route()!=='schedule-publication')return;
  const content=document.querySelector('.content');
- if(!content||content.dataset.uxPlannerFocus==='active')return;
+ if(!content||content.dataset.uxPlannerFocus==='active'||content.dataset.uxPlannerFocus==='calm')return;
  const heading=content.querySelector(':scope > .heading')||content.querySelector('.heading');
  const issue=findIssuePanel(content),grid=findGrid(content),publish=findPublish(content);
  if(!heading||(!issue&&!grid&&!publish))return;
+ if(grid){
+   grid.classList.add('ux-plan-grid');
+   if(!grid.hasAttribute('tabindex'))grid.setAttribute('tabindex','0');
+   if(!grid.id)grid.id='ux-plan-grid-detail';
+ }
+ if(publish){publish.classList.add('ux-plan-publish');publish.setAttribute('data-ux-preserved-publish','true');}
+ if(!issue){
+   content.dataset.uxPlannerFocus='calm';
+   return;
+ }
  content.dataset.uxPlannerFocus='active';
+ issue.classList.add('ux-plan-priority');
+ issue.setAttribute('tabindex','-1');
  const shell=document.createElement('section');
  shell.className='ux-plan-focus';
  shell.setAttribute('aria-label','Schedule publication focus');
@@ -57,23 +82,20 @@ function enhancePlanner(){
  const specialist=content.querySelector(':scope > .ux-specialist-context');
  (specialist||heading).insertAdjacentElement('afterend',shell);
  const jumps=shell.querySelector('.ux-plan-jumps');
+ jumps.appendChild(button('Coverage & risks','issues'));
  let gridToggle=null;
- if(issue){issue.classList.add('ux-plan-priority');issue.setAttribute('tabindex','-1');jumps.appendChild(button('Coverage & risks','issues'));}
  if(grid){
-   grid.classList.add('ux-plan-grid');
-   if(!grid.hasAttribute('tabindex'))grid.setAttribute('tabindex','0');
-   if(!grid.id)grid.id='ux-plan-grid-detail';
    gridToggle=button('Open full planner','grid');
    gridToggle.classList.add('ux-plan-grid-toggle');
    gridToggle.setAttribute('aria-expanded','false');
    gridToggle.setAttribute('aria-controls',grid.id);
    jumps.appendChild(gridToggle);
-   if(issue)hideGrid(content,grid,gridToggle);
+   hideGrid(content,grid,gridToggle);
  }
- if(publish){publish.classList.add('ux-plan-publish');publish.setAttribute('data-ux-preserved-publish','true');jumps.appendChild(button('Go to publish','publish'));}
+ if(publish)jumps.appendChild(button('Go to publish','publish'));
  jumps.addEventListener('click',event=>{
    const control=event.target.closest('.ux-plan-jump');if(!control)return;
-   if(control.dataset.target==='issues'&&issue)focusTarget(issue,'start');
+   if(control.dataset.target==='issues')focusTarget(issue,'start');
    if(control.dataset.target==='grid'&&grid){
      if(grid.hidden){revealGrid(content,grid,gridToggle);focusTarget(grid,'start');}else hideGrid(content,grid,gridToggle);
    }
