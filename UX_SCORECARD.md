@@ -18,6 +18,7 @@ Existing role-first shell -> Today / My day -> Cycle 11 Universal Action Queue -
 
 ### Implementation completed this run
 - Added Cycle 12 governed provider model and registry.
+- Added a read-only implementation adapter for `/api/implementation/autonomous/status`; it maps blocking decisions, missing readiness controls and AT_RISK/SLA_MISSED states into the existing queue, and stays silent on 404/401/403/network absence.
 - Added provider slots for implementation, integrations, attendance, agency, manufacturing cost, energy, support, learning, handover, documents and payroll.
 - Extended Cycle 11 reason/source taxonomy so those signals can use the existing deterministic ranking and stale-evidence protections.
 - Added specialist-role queue reuse for cross-system setup/control tasks.
@@ -48,7 +49,7 @@ Existing role-first shell -> Today / My day -> Cycle 11 Universal Action Queue -
 - Outcome Ledger: BUILD NEXT - closes the learning loop between predicted and verified operational value.
 
 ### Next highest-value action
-Bind the one-day implementation readiness engine to the `implementation` provider first, then use the same adapter pattern for integrations, attendance, agency, cost/energy and support. Do not fork the UI for any of them.
+Implementation readiness is now bound read-only. Use the same adapter pattern for integrations next, then attendance, agency, cost/energy and support. Do not fork the UI for any of them.
 ## 2026-09-18 — Cycle 11 r5: authoritative return confirmation without automation ambiguity
 
 ### Journey reviewed
