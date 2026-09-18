@@ -6,6 +6,7 @@ const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
+const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
@@ -17,6 +18,8 @@ let learningEngine = null;
 let learningEngineInitError = null;
 let implementationEngine = null;
 let implementationEngineInitError = null;
+let lifecycleGuard = null;
+let lifecycleGuardInitError = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -36,6 +39,10 @@ function learningPath(req) {
 
 function implementationPath(req) {
   return requestPath(req).startsWith('/api/implementation/autonomous');
+}
+
+function lifecyclePath(req) {
+  return requestPath(req).startsWith('/api/workforce/lifecycle');
 }
 
 function overlayUnavailable(res, label) {
@@ -107,6 +114,14 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!lifecycleGuard && !lifecycleGuardInitError && process.env.WFM_DB) {
+    try {
+      lifecycleGuard = createWorkforceLifecycleGuard({ dbPath: process.env.WFM_DB });
+    } catch (error) {
+      lifecycleGuardInitError = error;
+    }
+  }
+
   return originalCreateServer.call(http, async (req, res) => {
     if (guard) {
       try {
@@ -133,6 +148,10 @@ http.createServer = function guardedCreateServer(listener) {
 
     if (implementationPath(req)) {
       if (await routeOverlay(implementationEngine, implementationEngineInitError, res, 'Autonomous implementation', req)) return;
+    }
+
+    if (lifecyclePath(req)) {
+      if (await routeOverlay(lifecycleGuard, lifecycleGuardInitError, res, 'Workforce lifecycle', req)) return;
     }
 
     return listener(req, res);
