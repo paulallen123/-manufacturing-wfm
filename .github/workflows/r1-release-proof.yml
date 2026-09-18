@@ -3,7 +3,7 @@ name: 0.6.76-R1 Release Repair Proof
 on:
   push:
     branches:
-      - 'proof/0.6.76-r1-package-v2-20260918'
+      - 'autonomy/reliability-r1-auth-transport-diagnostic-20260918'
     paths:
       - '.github/workflows/r1-release-proof.yml'
 
@@ -68,15 +68,21 @@ jobs:
           status=$(curl -sS -o /tmp/unauth.json -w '%{http_code}' -H 'Host: wfm-ci.invalid' -H 'X-Forwarded-Proto: https' http://127.0.0.1:3000/api/bootstrap)
           test "$status" = "401"
           PASS=$(cat /tmp/wfm-pass)
-          curl -fsS -c /tmp/employee.cookie \
+          login_code=$(curl -sS -D /tmp/login.headers -o /tmp/login.body -w '%{http_code}' \
             -H 'Host: wfm-ci.invalid' -H 'X-Forwarded-Proto: https' \
             -H 'Origin: https://wfm-ci.invalid' -H 'Referer: https://wfm-ci.invalid/' \
             -H 'Content-Type: application/json' \
             --data "{\"email\":\"maya@northstar.example\",\"password\":\"$PASS\"}" \
-            http://127.0.0.1:3000/api/login > /tmp/login.json
-          proxy_curl -b /tmp/employee.cookie -H 'Referer: https://wfm-ci.invalid/' http://127.0.0.1:3000/api/bootstrap > /tmp/employee-bootstrap.json
-          proxy_curl -b /tmp/employee.cookie -H 'Referer: https://wfm-ci.invalid/' http://127.0.0.1:3000/api/personal > /tmp/employee-personal.json
+            http://127.0.0.1:3000/api/login)
+          test "$login_code" = "200"
+          cookie=$(awk 'BEGIN{IGNORECASE=1} /^set-cookie:/ {gsub("\r",""); print $2; exit}' /tmp/login.headers | cut -d';' -f1)
+          test -n "$cookie"
+          grep -qi '^set-cookie: .*;[[:space:]]*Secure' /tmp/login.headers
+          proxy_curl -H "Cookie: $cookie" -H 'Referer: https://wfm-ci.invalid/' http://127.0.0.1:3000/api/bootstrap > /tmp/employee-bootstrap.json
+          proxy_curl -H "Cookie: $cookie" -H 'Referer: https://wfm-ci.invalid/' http://127.0.0.1:3000/api/personal > /tmp/employee-personal.json
           node -e "const b=require('/tmp/employee-bootstrap.json'); if(b.actor?.role!=='employee'||b.actor?.tenant!=='northstar-demo') process.exit(1)"
+          echo 'secure-cookie-transport=PASS'
+          echo 'employee-api-continuity=PASS'
 
       - name: Verify repaired runtime composition
         shell: bash
