@@ -19,9 +19,11 @@ on:
       - 'test/frontier/agency-supplier-portal.test.mjs'
       - 'test/frontier/agency-supplier-delivery.test.mjs'
       - 'test/frontier/agency-supplier-delivery-receipt.test.mjs'
+      - 'test/frontier/agency-postgres-integration.test.mjs'
       - '.github/workflows/agency-labour-exchange-shadow.yml'
       - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
       - 'docs/AGENCY_SUPPLIER_DELIVERY_V1.md'
+      - 'docs/AGENCY_POSTGRES_INTEGRATION_PROOF_V1.md'
   workflow_dispatch:
 
 permissions:
@@ -53,3 +55,11 @@ jobs:
               test/frontier/agency-supplier-portal.test.mjs \
               test/frontier/agency-supplier-delivery.test.mjs \
               test/frontier/agency-supplier-delivery-receipt.test.mjs
+      - name: Run real PostgreSQL agency-store race proof
+        shell: bash
+        env:
+          AGENCY_POSTGRES_PROOF_REQUIRED: '1'
+        run: |
+          set -euo pipefail
+          node --version
+          node --test test/frontier/agency-postgres-integration.test.mjs
