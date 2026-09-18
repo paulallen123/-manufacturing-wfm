@@ -10,6 +10,7 @@ on:
       - 'scripts/live-correction-proof.mjs'
       - 'scripts/live-browser-screenshot-proof.mjs'
       - 'scripts/live-role-browser-context-proof.mjs'
+      - 'scripts/live-employee-overlay-isolation.mjs'
       - 'scripts/live-role-accessibility-diagnostic.mjs'
       - 'scripts/live-visual-evidence.mjs'
       - 'artifact/customer-proof-0676-railway.trigger'
@@ -94,6 +95,8 @@ jobs:
 
           process.env.WFM_STAGING_PASSWORD = password;
           await import('./scripts/live-role-browser-context-proof.mjs');
+          process.env.WFM_STAGING_PASSWORD = password;
+          await import('./scripts/live-employee-overlay-isolation.mjs');
           process.env.WFM_STAGING_PASSWORD = password;
           await import('./scripts/live-role-accessibility-diagnostic.mjs');
 
