@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-export const AGENCY_PORTAL_VERSION='agency-supplier-portal-v0.1.0';
+export const AGENCY_PORTAL_VERSION='agency-supplier-portal-v0.2.0';
 const b64u=v=>Buffer.from(v).toString('base64url');
 const from64=v=>Buffer.from(v,'base64url').toString('utf8');
 const ms=v=>{const x=typeof v==='number'?v:Date.parse(v);return Number.isFinite(x)?x:null};
@@ -74,6 +74,42 @@ export function normalizeAgencyPortalSubmission({view,claims,submission}){
   return {valid:f.length===0,failures:f,response:out};
 }
 
-export function portalAuditReceipt({verification,normalized,receivedAt}){
-  return {version:AGENCY_PORTAL_VERSION,receivedAt:receivedAt??null,tokenFingerprint:verification?.tokenFingerprint??null,tokenId:verification?.claims?.tokenId??null,requestId:normalized?.response?.requestId??verification?.claims?.requestId??null,agencyId:normalized?.response?.agencyId??verification?.claims?.agencyId??null,action:normalized?.response?.action??null,validToken:verification?.valid===true,validSubmission:normalized?.valid===true,status:normalized?.response?.status??'rejected',secretOrRawTokenStored:false};
+export async function captureAgencyPortalSubmission({token,expected,secret,now,view,submission,tokenStore}){
+  const verification=verifyAgencyPortalToken(token,expected,secret,{now});
+  if(!verification.valid)return {accepted:false,reason:verification.reason,verification,normalized:null,consumption:null,receipt:portalAuditReceipt({verification,normalized:null,receivedAt:now})};
+
+  const normalized=normalizeAgencyPortalSubmission({view,claims:verification.claims,submission});
+  if(!normalized.valid)return {accepted:false,reason:'invalid_submission',verification,normalized,consumption:null,receipt:portalAuditReceipt({verification,normalized,receivedAt:now})};
+
+  if(!tokenStore||typeof tokenStore.consumeOnce!=='function'){
+    return {accepted:false,reason:'token_store_unavailable',verification,normalized,consumption:null,receipt:portalAuditReceipt({verification,normalized,receivedAt:now})};
+  }
+
+  let consumption;
+  try{
+    consumption=await tokenStore.consumeOnce({
+      tenantId:verification.claims.tenantId,
+      siteId:verification.claims.siteId,
+      requestId:verification.claims.requestId,
+      agencyId:verification.claims.agencyId,
+      tokenId:verification.claims.tokenId,
+      tokenFingerprint:verification.tokenFingerprint,
+      expiresAt:new Date(Number(verification.claims.exp)).toISOString(),
+      consumedAt:new Date(ms(now)).toISOString(),
+      action:normalized.response.action,
+    });
+  }catch{
+    return {accepted:false,reason:'token_store_unavailable',verification,normalized,consumption:null,receipt:portalAuditReceipt({verification,normalized,receivedAt:now})};
+  }
+
+  if(consumption?.consumed!==true){
+    const reason=consumption?.reason==='already_consumed'?'token_already_consumed':'token_store_rejected';
+    return {accepted:false,reason,verification,normalized,consumption:consumption??null,receipt:portalAuditReceipt({verification:{...verification,valid:false},normalized,receivedAt:now,consumption})};
+  }
+
+  return {accepted:true,reason:null,verification,normalized,consumption,receipt:portalAuditReceipt({verification,normalized,receivedAt:now,consumption})};
+}
+
+export function portalAuditReceipt({verification,normalized,receivedAt,consumption}){
+  return {version:AGENCY_PORTAL_VERSION,receivedAt:receivedAt??null,tokenFingerprint:verification?.tokenFingerprint??null,tokenId:verification?.claims?.tokenId??null,requestId:normalized?.response?.requestId??verification?.claims?.requestId??null,agencyId:normalized?.response?.agencyId??verification?.claims?.agencyId??null,action:normalized?.response?.action??null,validToken:verification?.valid===true,validSubmission:normalized?.valid===true,tokenConsumed:consumption?.consumed===true,status:normalized?.response?.status??'rejected',secretOrRawTokenStored:false};
 }
