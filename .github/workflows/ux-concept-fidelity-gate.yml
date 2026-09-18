@@ -1,0 +1,105 @@
+name: WFM approved concept fidelity gate
+
+on:
+  push:
+    branches:
+      - 'ux/concept-fidelity-rebuild'
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/concept-fidelity.*'
+      - 'security/runtime/ux-preference.cjs'
+      - 'security/runtime/bootstrap.cjs'
+      - 'scripts/concept-fidelity-browser-proof.mjs'
+      - '.github/workflows/ux-concept-fidelity-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-concept-fidelity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  concept-fidelity:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - name: Checkout trusted UX branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify approved concept source contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/concept-fidelity.js
+          node --check security/runtime/ux-preference.cjs
+          node --check scripts/concept-fidelity-browser-proof.mjs
+          grep -q 'WFM_CONCEPT_FIDELITY_V2' ux-overlay/concept-fidelity.js
+          grep -q "label:'Today'" ux-overlay/concept-fidelity.js
+          grep -q "label:'People'" ux-overlay/concept-fidelity.js
+          grep -q "label:'Plan'" ux-overlay/concept-fidelity.js
+          grep -q "label:'Improve'" ux-overlay/concept-fidelity.js
+          grep -q 'Operational Visual' ux-overlay/concept-fidelity.js
+          grep -q 'Your Decision' ux-overlay/concept-fidelity.js
+          grep -q 'ux_preferences' security/runtime/ux-preference.cjs
+          echo 'CONCEPT_SOURCE_CONTRACT=PASS'
+
+      - name: Build exact composed candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false -t wfm-concept-fidelity:branch .
+          cid="$(docker create wfm-concept-fidelity:branch)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-concept-public
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-concept-public/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-concept-public/factory-control-ui.css
+          grep -q 'WFM_CONCEPT_FIDELITY_BEGIN' /tmp/wfm-concept-public/value-cockpit-ui.js
+          grep -q 'WFM_CONCEPT_FIDELITY_BEGIN' /tmp/wfm-concept-public/factory-control-ui.css
+          grep -q 'WFM_CONCEPT_FIDELITY_V2' /tmp/wfm-concept-public/value-cockpit-ui.js
+          node --check /tmp/wfm-concept-public/value-cockpit-ui.js
+          echo 'CONCEPT_EXACT_IMAGE_COMPOSITION=PASS'
+
+      - name: Prove persistent authenticated view preference
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name wfm-concept-pref --network host             -e PORT=4261             -e NODE_ENV=staging             -e NODE_OPTIONS=--experimental-sqlite             -e WFM_DB=/tmp/wfm-concept-pref.sqlite             -e WFM_STAGING_PASSWORD='ConceptFidelityGate-Password-2026!'             wfm-concept-fidelity:branch
+          trap 'docker rm -f wfm-concept-pref >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 40); do
+            curl -fsS http://127.0.0.1:4261/api/health >/tmp/cf-health.json && break || sleep .5
+          done
+          test -s /tmp/cf-health.json
+          code="$(curl -sS -o /tmp/cf-unauth.json -w '%{http_code}' http://127.0.0.1:4261/api/ux-preference)"
+          test "$code" = "401"
+
+          curl -sS -D /tmp/cf-login-h -o /tmp/cf-login-b             -H 'Content-Type: application/json'             -d '{"email":"manager@northstar.example","password":"ConceptFidelityGate-Password-2026!"}'             http://127.0.0.1:4261/api/login
+          COOKIE="$(awk 'BEGIN{IGNORECASE=1}/^Set-Cookie: wfm_session=/{sub(/^Set-Cookie: /,"");sub(/;.*/,"");print;exit}' /tmp/cf-login-h | tr -d '\r')"
+          test -n "$COOKIE"
+
+          curl -fsS -H "Cookie: $COOKIE" 'http://127.0.0.1:4261/api/ux-preference?scope=site:tamworth' -o /tmp/cf-pref0.json
+          grep -q '"mode":"site_default"' /tmp/cf-pref0.json
+          curl -fsS -H "Cookie: $COOKIE" -H 'Content-Type: application/json'             -d '{"scope":"site:tamworth","mode":"operational_visual"}'             http://127.0.0.1:4261/api/ux-preference -o /tmp/cf-pref-set.json
+          grep -q '"mode":"operational_visual"' /tmp/cf-pref-set.json
+          curl -fsS -H "Cookie: $COOKIE" 'http://127.0.0.1:4261/api/ux-preference?scope=site:tamworth' -o /tmp/cf-pref1.json
+          grep -q '"mode":"operational_visual"' /tmp/cf-pref1.json
+          echo 'CONCEPT_VIEW_PREFERENCE_PERSISTENCE=PASS'
+
+      - name: Browser-prove approved concept and functioning controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/concept-fidelity-browser-proof.mjs
+
+      - name: Preserve concept screenshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wfm-approved-concept-fidelity
+          path: ${{ runner.temp }}/concept-fidelity.png
+          if-no-files-found: error
+          retention-days: 7
