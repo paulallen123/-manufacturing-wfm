@@ -16,6 +16,7 @@ function sha256(value) {
 
 const checks = [
   ['source-syntax-and-workflow-integrity', 'scripts/validate-autonomy-source-syntax.mjs', true],
+  ['canonical-release-boundary-compatibility', 'scripts/validate-canonical-release-boundary.mjs', true],
   ['ci-provider-failover', 'scripts/validate-ci-provider-failover.mjs', true],
   ['deployment-provenance', 'scripts/validate-deployment.mjs', false],
   ['resilience-policy', 'scripts/validate-resilience-scenarios.mjs', true],
