@@ -207,10 +207,6 @@ try {
       screenshots.push(await screenshot(`11-auth-${String(routes.length).padStart(2,'0')}.png`));
     }
   }
-  // The hosted RC exposes two primary home/workspace jumps in the current shell; deeper
-  // role surfaces are separately proven by authenticated API evidence. Requiring two
-  // genuine navigation changes plus home, kiosk and mobile prevents a static-page pass
-  // without inventing a third label that the frozen release does not expose here.
   assert.ok(routes.length >= 2, `Expected at least two authenticated primary workspace navigation targets; observed ${routes.length}.`);
 
   await send('Page.navigate', { url: `${origin}/kiosk.html` });
@@ -227,13 +223,13 @@ try {
   screenshots.push(await screenshot('30-auth-control-centre-mobile.png'));
 
   const focus = await evaluate(`(() => {
-    const before = document.activeElement;
     const focusables = [...document.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null);
-    if (focusables.length) focusables[0].focus();
+    if (!focusables.length) return {count:0, tag:'', focused:false};
+    focusables[0].focus();
     const after = document.activeElement;
-    return {count:focusables.length, tag:after?.tagName || '', changed:before!==after};
+    return {count:focusables.length, tag:after?.tagName || '', focused:after === focusables[0]};
   })()`);
-  assert.ok(focus.count > 0 && focus.changed, 'Authenticated mobile view has no focusable keyboard target.');
+  assert.ok(focus.count > 0 && focus.focused, 'Authenticated mobile view could not programmatically focus a visible keyboard target.');
 
   const uniqueApi = [...new Map(apiResponses.map(x => [`${x.method} ${x.path} ${x.status}`, x])).values()];
   const evidence = {
