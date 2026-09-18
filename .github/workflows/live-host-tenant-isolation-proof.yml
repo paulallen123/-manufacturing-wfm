@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/live-host-tenant-isolation-proof.yml'
+      - 'scripts/browser-security-floor.mjs'
+      - 'resilience/browser-security-floor.json'
   workflow_dispatch:
 
 permissions:
@@ -19,6 +21,16 @@ jobs:
       WFM_ORIGIN: https://wfm-customer-proof-0676-production.up.railway.app
       EXPECTED_RELEASE: 0.6.76-hosted-staging-rc1
     steps:
+      - name: Checkout browser security policy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Require patched Chrome before exposing staging credential
+        shell: bash
+        run: node scripts/browser-security-floor.mjs
+
       - name: Install pinned browser driver
         shell: bash
         run: |

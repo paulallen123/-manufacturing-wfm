@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "updated": "2026-09-18",
+  "authoritative_sources": [
+    "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0541751186.html",
+    "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0194356994.html"
+  ],
+  "platform": "linux",
+  "browser": "Google Chrome Stable",
+  "minimum_version": "153.0.8010.47",
+  "reason": "Google's 15 September 2026 desktop stable update set the patched Linux Chrome floor at 153.0.8010.47. Google's 17 September update announced 153.0.8010.52/.53 for Windows and Mac and stated Linux would be updated shortly, so 153.0.8010.47 remains the latest explicitly published Linux stable floor verified for this control. Credential-bearing WFM browser proofs fail closed before credential injection when Chrome is absent, unparsable or below the floor.",
+  "protected_paths": [
+    {
+      "workflow": ".github/workflows/live-browser-readonly-proof.yml",
+      "credential": "WFM_DEMO_PASSWORD",
+      "require_preflight_before_secret_step": true
+    },
+    {
+      "workflow": ".github/workflows/live-host-tenant-isolation-proof.yml",
+      "credential": "WFM_DEMO_PASSWORD",
+      "require_preflight_before_secret_step": true
+    }
+  ],
+  "controls": {
+    "fail_closed_on_unknown_version": true,
+    "allow_credential_bearing_browser_below_floor": false,
+    "allow_version_gate_bypass_environment_variable": false,
+    "allow_unverified_chromium_fallback_for_credential_bearing_proof": false,
+    "check_before_secret_injection": true,
+    "preserve_failure_evidence_without_secret_material": true
+  },
+  "regression_tests": [
+    {"actual": "153.0.8010.46", "allowed": false},
+    {"actual": "153.0.8010.47", "allowed": true},
+    {"actual": "153.0.8010.48", "allowed": true},
+    {"actual": "154.0.0.0", "allowed": true},
+    {"actual": "152.0.7977.82", "allowed": false}
+  ]
+}
