@@ -41,6 +41,8 @@ RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle11.css >> /app/public/factory-control-ui.css \
  && printf '\n/* WFM_UX_RESET_CYCLE12_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-ux-overlay/ux-reset-cycle12.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* WFM_CONCEPT_FIDELITY_CANONICAL */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/concept-fidelity.css >> /app/public/factory-control-ui.css \
  && printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/ux-reset.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
