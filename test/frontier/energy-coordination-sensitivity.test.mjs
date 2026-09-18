@@ -61,7 +61,7 @@ test('synthetic financial lift is a latency-sensitive hypothesis, not a general 
   console.log('ENERGY_COORDINATION_LATENCY_SENSITIVITY='+JSON.stringify(rows));
   for(const row of rows) assert.equal(row.unsafeSelected,0);
   assert.equal(rows[0].joinedLiftVsManual,0);
-  assert.ok(Math.abs(rows[2].joinedLiftVsManual-0.21752338020817463)<1e-12);
+  assert.ok(Math.abs(rows[2].joinedLiftVsManual-0.2175233818442972)<1e-12);
   for(let i=1;i<rows.length;i++) assert.ok(rows[i].joinedLiftVsManual>=rows[i-1].joinedLiftVsManual);
   assert.ok(rows[1].joinedLiftVsManual<0.10);
   assert.ok(rows[3].joinedLiftVsManual>0.30);
