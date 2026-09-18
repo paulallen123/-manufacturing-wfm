@@ -4,6 +4,7 @@ const http = require('node:http');
 const { createHash, randomBytes, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
+const { createUxPreferenceStore } = require('./ux-preference.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
@@ -30,6 +31,8 @@ function secureEqualHex(left, right) {
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
 installHostedListenGuard(http, { hosted });
 let guard = null;
+let uxPreferences = null;
+let uxPreferencesInitError = null;
 let integrationHub = null;
 let integrationHubInitError = null;
 let learningEngine = null;
@@ -179,6 +182,14 @@ http.createServer = function guardedCreateServer(listener) {
     throw new Error('Hosted staging refuses to start without the identity survival guard.');
   }
 
+  if (!uxPreferences && !uxPreferencesInitError && process.env.WFM_DB) {
+    try {
+      uxPreferences = createUxPreferenceStore({ dbPath: process.env.WFM_DB });
+    } catch (error) {
+      uxPreferencesInitError = error;
+    }
+  }
+
   if (!integrationHub && !integrationHubInitError && process.env.WFM_DB) {
     try {
       integrationHub = createAutonomousIntegrationHub({ dbPath: process.env.WFM_DB });
@@ -233,6 +244,19 @@ http.createServer = function guardedCreateServer(listener) {
           res.setHeader('X-Content-Type-Options', 'nosniff');
           res.end(JSON.stringify({ error: 'Security control unavailable. Request refused.' }));
         }
+        return;
+      }
+    }
+
+    if (requestPath(req) === '/api/ux-preference') {
+      if (!uxPreferences || uxPreferencesInitError) {
+        overlayUnavailable(res, 'UX preference');
+        return;
+      }
+      try {
+        if (await uxPreferences.beforeRequest(req, res)) return;
+      } catch {
+        overlayUnavailable(res, 'UX preference');
         return;
       }
     }
