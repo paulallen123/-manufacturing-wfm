@@ -35,4 +35,4 @@ jobs:
           package-manager-cache: false
 
       - name: Run invisible-attendance safety suite
-        run: node --test clocking-security-v2/invisible-attendance-engine.test.mjs
+        run: node --test clocking-security-v2/*.test.mjs
