@@ -152,6 +152,15 @@ test('ignores runtime-only status when checking approval identity', () => {
   assert.equal(approvalFingerprint(profile), approved);
 });
 
+test('provider-specific setup metadata must use opaque references', () => {
+  const profile = baseProfile();
+  profile.provider.configRefs = { companyIdRef: 'tenant-config://sap/company-id', schemaEvidenceRef: 'evidence://sap/schema-reviewed' };
+  profile.activation.fingerprint = approvalFingerprint(profile);
+  assert.equal(validateConnectionProfile(profile).ok, true);
+  profile.provider.configRefs.schemaEvidenceRef = 'https://example.test/schema';
+  assert.match(validateConnectionProfile(profile).errors.join('\n'), /provider.configRefs.schemaEvidenceRef/);
+});
+
 test('keeps provider mapping independent from transport choice', () => {
   const a = baseProfile();
   const b = baseProfile();
