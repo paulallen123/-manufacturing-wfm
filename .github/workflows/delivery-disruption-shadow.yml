@@ -1,0 +1,28 @@
+name: Manufacturing Event + Disruption Shadow Experiment
+
+on:
+  pull_request:
+    paths:
+      - 'src/frontier/manufacturing-event-graph.mjs'
+      - 'src/frontier/delivery-disruption.mjs'
+      - 'test/frontier/delivery-disruption.test.mjs'
+      - '.github/workflows/delivery-disruption-shadow.yml'
+  push:
+    branches:
+      - 'frontier/manufacturing-event-cost-v1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  delivery-disruption-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - name: Run deterministic event and disruption tests
+        run: node --test test/frontier/delivery-disruption.test.mjs
