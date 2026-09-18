@@ -26,7 +26,5 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: agency-labour/package.json
       - name: Run complete proof suite
         run: npm test
