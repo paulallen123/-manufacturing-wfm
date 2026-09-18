@@ -127,7 +127,7 @@ function applyMode(){
    if(effective==='operational_visual')details.filter(d=>d.classList.contains('readiness')||d.classList.contains('capacity')).forEach(d=>d.open=true);
    if(effective==='compact')details.forEach(d=>d.open=false);
  }
- const label=document.querySelector('[data-ux-view-current]');if(label)label.textContent=MODE_LABELS[state.mode]||MODE_LABELS.site_default;
+ const label=document.querySelector('[data-ux-view-current]');const nextLabel=MODE_LABELS[state.mode]||MODE_LABELS.site_default;if(label&&label.textContent!==nextLabel)label.textContent=nextLabel;
 }
 async function loadPreference(){
  if(state.loading||state.loaded||!document.querySelector('.content')||employee())return;
