@@ -2,10 +2,13 @@
 
 const http = require('node:http');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
+const { createPasskeyAuth } = require('./passkey-auth.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
+const passkeysEnabled = process.env.WFM_PASSKEYS !== 'off';
 let guard = null;
+let passkeys = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -21,8 +24,14 @@ http.createServer = function guardedCreateServer(listener) {
   if (enabled && !guard && process.env.WFM_DB) {
     guard = createIdentitySurvivalGuard({ dbPath: process.env.WFM_DB });
   }
+  if (passkeysEnabled && !passkeys && process.env.WFM_DB) {
+    passkeys = createPasskeyAuth({ dbPath: process.env.WFM_DB });
+  }
   if (hosted && !guard) {
     throw new Error('Hosted staging refuses to start without the identity survival guard.');
+  }
+  if (hosted && passkeysEnabled && !passkeys) {
+    throw new Error('Hosted staging refuses to start without passkey authentication controls.');
   }
 
   return originalCreateServer.call(http, async (req, res) => {
@@ -40,6 +49,25 @@ http.createServer = function guardedCreateServer(listener) {
         return;
       }
     }
+
+    // Passkey routes sit behind the same resource-side session/tenant guard. Public
+    // authentication ceremonies carry no bearer session; enrolment/revocation paths
+    // require the normal WFM session before the passkey module accepts them.
+    if (passkeys) {
+      try {
+        if (await passkeys.beforeRequest(req, res)) return;
+      } catch {
+        if (!res.headersSent && !res.writableEnded) {
+          res.statusCode = 503;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-store');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.end(JSON.stringify({ error: 'Passkey security control unavailable. Request refused.' }));
+        }
+        return;
+      }
+    }
+
     return listener(req, res);
   });
 };
