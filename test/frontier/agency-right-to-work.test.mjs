@@ -78,6 +78,13 @@ test('worker-contract scope uses employment commencement rather than assignment 
   const missing = evaluateAgencyRightToWork({ workerId:'W2', agencyId:'A1', rightToWork:{ status:'verified', validUntil:'2027-12-31T23:59:59.000Z' } }, POST, agency(), { now:NOW });
   assert.equal(missing.eligible, false);
   assert.ok(missing.failures.includes('right_to_work_engagement_type_unclassified'));
+
+  const missingCommencement = evaluateAgencyRightToWork(worker({ employmentCommencedAt:null }), POST, agency(), { now:NOW });
+  assert.ok(missingCommencement.failures.includes('right_to_work_employment_commenced_at_missing'));
+
+  const traditionalEmployment = evaluateAgencyRightToWork(worker({ engagementType:'contract_of_employment', employmentCommencedAt:null }), POST, agency(), { now:NOW });
+  assert.equal(traditionalEmployment.eligible, true);
+  assert.equal(traditionalEmployment.evidence.engagementType, 'contract_of_employment');
 });
 
 test('non-standard or conflicting contractual arrangements fail closed for policy review', () => {
