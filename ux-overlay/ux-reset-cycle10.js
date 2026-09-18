@@ -35,7 +35,7 @@ function findGrid(content){
      if(node.matches('.ux-plan-focus'))return false;
      const value=text(node).slice(0,20000);
      const days=['mon','tue','wed','thu','fri','sat','sun'].filter(day=>new RegExp(`\\b${day}`, 'i').test(value)).length;
-     const weekNav=/(previous\s+week|next\s+week)/i.test(value);
+     const weekNav=/(Previous\s+week|Next\s+week)/i.test(value);
      return days>=5&&weekNav&&/(published|draft|shift|schedule|rota)/i.test(value);
    })
    .sort((a,b)=>text(a).length-text(b).length);
