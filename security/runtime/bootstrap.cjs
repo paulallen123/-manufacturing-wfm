@@ -3,6 +3,7 @@
 const http = require('node:http');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
 const { assertRuntimeAttestation } = require('./runtime-attestation.cjs');
+const { assertDeploymentAttestation } = require('./deployment-attestation.cjs');
 
 try {
   const attestation = assertRuntimeAttestation();
@@ -14,6 +15,20 @@ try {
   console.error(JSON.stringify({
     event: 'WFM_RUNTIME_ATTESTATION_FAILED',
     code: error?.code || 'WFM_RUNTIME_ATTESTATION_UNKNOWN'
+  }));
+  process.exit(78);
+}
+
+try {
+  const attestation = assertDeploymentAttestation();
+  console.log(JSON.stringify({
+    event: 'WFM_DEPLOYMENT_ATTESTATION_PASSED',
+    deploymentSha256: attestation.deploymentSha256
+  }));
+} catch (error) {
+  console.error(JSON.stringify({
+    event: 'WFM_DEPLOYMENT_ATTESTATION_FAILED',
+    code: error?.code || 'WFM_DEPLOYMENT_ATTESTATION_UNKNOWN'
   }));
   process.exit(78);
 }

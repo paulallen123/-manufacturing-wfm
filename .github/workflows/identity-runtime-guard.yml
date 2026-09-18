@@ -47,12 +47,11 @@ jobs:
           const fs = require('node:fs');
           const Module = require('node:module');
           const builtins = new Set(Module.builtinModules.flatMap(x => [x, `node:${x}`]));
-          // node:sqlite is an experimental built-in in Node 22 and is not returned by
-          // Module.builtinModules on this runtime, so review and allow that exact specifier.
           builtins.add('node:sqlite');
           const files = [
             'security/runtime/identity-survival-guard.cjs',
             'security/runtime/runtime-attestation.cjs',
+            'security/runtime/deployment-attestation.cjs',
             'security/runtime/bootstrap.cjs'
           ];
           const external = [];
@@ -71,8 +70,11 @@ jobs:
           assert.deepEqual(external, [], 'Identity guard introduced an unreviewed external runtime module.');
           NODE
 
-      - name: Run identity survival unit and isolation tests
-        run: node --test security/runtime/identity-survival-guard.test.cjs
+      - name: Run identity survival and provenance unit tests
+        run: |
+          node --test security/runtime/identity-survival-guard.test.cjs
+          node --test security/runtime/runtime-attestation.test.cjs
+          node --test security/runtime/deployment-attestation.test.cjs
 
       - name: Build exact guarded staging image
         run: docker build --pull=false -t wfm-identity-guard:${{ github.sha }} .
@@ -92,7 +94,9 @@ jobs:
             test ! -w /app/security-runtime/bootstrap.cjs
             test ! -w /app/security-runtime/identity-survival-guard.cjs
             test ! -w /app/security-runtime/runtime-attestation.cjs
+            test ! -w /app/security-runtime/deployment-attestation.cjs
             test ! -w /app/security-runtime/runtime-sha256
+            test ! -w /app/security-runtime/deployment-sha256
             test ! -e /usr/local/lib/node_modules/npm
             test ! -e /usr/local/lib/node_modules/corepack
             for p in npm npx corepack yarn yarnpkg pnpm pnpx; do
@@ -104,8 +108,10 @@ jobs:
           '
 
           image_runtime_sha="$(docker run --rm --entrypoint sh "$image" -ec 'cat /app/security-runtime/runtime-sha256')"
+          deployment_sha="$(docker run --rm --entrypoint sh "$image" -ec 'cat /app/security-runtime/deployment-sha256')"
           test "$image_runtime_sha" = "$expected_runtime_sha"
-          docker run --rm --entrypoint node "$image" -e "require('/app/security-runtime/identity-survival-guard.cjs'); require('/app/security-runtime/runtime-attestation.cjs'); console.log('identity-guard-load=PASS')"
+          test "${#deployment_sha}" -eq 64
+          docker run --rm --entrypoint node "$image" -e "require('/app/security-runtime/identity-survival-guard.cjs'); require('/app/security-runtime/runtime-attestation.cjs'); require('/app/security-runtime/deployment-attestation.cjs'); console.log('identity-guard-load=PASS')"
 
       - name: Exercise guard on the real staged HTTP request path
         shell: bash
@@ -113,6 +119,7 @@ jobs:
           set -euo pipefail
           image="wfm-identity-guard:${GITHUB_SHA}"
           runtime_sha="$(node -p "require('./DEPLOYMENT_MANIFEST.json').runtime_sha256")"
+          deployment_sha="$(docker run --rm --entrypoint cat "$image" /app/security-runtime/deployment-sha256 | tr -d '\r\n')"
           password='Identity-Guard-CI-Only-2026-Long!'
           cid="$(docker run -d --rm \
             -p 127.0.0.1:38117:3000 \
@@ -121,6 +128,7 @@ jobs:
             -e WFM_PUBLIC_ORIGIN=https://staging.identity.test \
             -e WFM_STAGING_PASSWORD="$password" \
             -e WFM_RUNTIME_SHA256="$runtime_sha" \
+            -e WFM_DEPLOYMENT_SHA256="$deployment_sha" \
             -e WFM_DB=/tmp/wfm-ci.sqlite \
             "$image")"
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT

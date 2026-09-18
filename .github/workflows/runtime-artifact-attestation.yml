@@ -10,6 +10,7 @@ on:
       - 'Dockerfile'
       - 'DEPLOYMENT_MANIFEST.json'
       - 'security/runtime/**'
+      - 'ux-overlay/**'
       - 'scripts/validate-runtime-attestation.mjs'
   workflow_dispatch:
 
@@ -42,6 +43,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/validate-runtime-attestation.mjs
+          node --test security/runtime/deployment-attestation.test.cjs
 
       - name: Build exact staged image
         run: docker build --pull=false -t wfm-runtime-attestation:${{ github.sha }} .
@@ -52,6 +54,7 @@ jobs:
           set -euo pipefail
           IMAGE="wfm-runtime-attestation:${GITHUB_SHA}"
           EXPECTED="$(node -p "require('./DEPLOYMENT_MANIFEST.json').runtime_sha256")"
+          DEPLOYMENT_SHA="$(docker run --rm --entrypoint cat "$IMAGE" /app/security-runtime/deployment-sha256 | tr -d '\r\n')"
           if [[ "${EXPECTED:0:1}" == "0" ]]; then
             MISMATCH="1${EXPECTED:1}"
           else
@@ -70,14 +73,16 @@ jobs:
           fi
           grep -Fq 'WFM_RUNTIME_ATTESTATION_MISMATCH' mismatched-runtime-id.log
 
-          # A matching identity must clear attestation before the next independent
-          # hosted-staging control rejects the intentionally absent database path.
+          # A matching base-runtime identity plus matching composed deployment identity must
+          # clear both attestations before the next independent hosted-staging control fires.
           if docker run --rm \
             -e WFM_RUNTIME_SHA256="$EXPECTED" \
+            -e WFM_DEPLOYMENT_SHA256="$DEPLOYMENT_SHA" \
             -e WFM_HOSTED_STAGING=true \
             "$IMAGE" >matching-runtime-id.log 2>&1; then
             echo 'ERROR: expected hosted DB guard to stop this deliberately incomplete fixture' >&2
             exit 1
           fi
           grep -Fq 'WFM_RUNTIME_ATTESTATION_PASSED' matching-runtime-id.log
+          grep -Fq 'WFM_DEPLOYMENT_ATTESTATION_PASSED' matching-runtime-id.log
           grep -Fq 'Hosted staging refuses to start without WFM_DB' matching-runtime-id.log
