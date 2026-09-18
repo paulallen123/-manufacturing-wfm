@@ -49,5 +49,27 @@ jobs:
           if(failed) process.exit(1);
           console.log(`RAILWAY_PROOF_SURFACE_FIXTURES=${data.cases.length}/${data.cases.length}`);
           NODE
-      - name: Classify preserved live snapshot without mutating Railway
-        run: node scripts/railway-proof-surface-classifier.mjs resilience/evidence/2026-09-18-railway-proof-surface-snapshot.json
+      - name: Reproduce preserved live incident shape without mutating Railway
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {classifySnapshot} from './scripts/railway-proof-surface-classifier.mjs';
+          const snapshot=JSON.parse(fs.readFileSync('resilience/evidence/2026-09-18-railway-proof-surface-snapshot.json','utf8'));
+          const out=classifySnapshot(snapshot);
+          assert.equal(out.release_evidence,'FAIL_CLOSED_PROOF_SURFACE_UNVERIFIED');
+          assert.equal(out.metrics.services_examined,10);
+          assert.equal(out.metrics.active_public_credentialled_services,5);
+          assert.equal(out.metrics.blocking_findings,5);
+          assert.equal(out.metrics.public_domains_without_deployment,4);
+          for(const service of ['wfm-ux-cycle10-r3-proof','wfm-ux-cycle10-r4-proof']) {
+            assert.ok(out.blocking.some(x=>x.service===service&&x.code==='PUBLIC_CREDENTIALLED_PROOF_NOT_DOCKERFILE_HARDENED'),
+              service+' Railpack drift must remain detectable');
+          }
+          assert.ok(out.blocking.some(x=>x.service==='wfm-customer-proof-0676'&&x.code==='CASE_INSENSITIVE_VARIABLE_COLLISION'),
+            'Canonical staging credential alias drift must remain detectable');
+          console.log(JSON.stringify(out.metrics,null,2));
+          console.log('RAILWAY_PROOF_SURFACE_LIVE_INCIDENT_REPRODUCTION=PASS');
+          NODE
