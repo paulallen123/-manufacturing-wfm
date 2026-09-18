@@ -38,6 +38,13 @@ function sessionCookieFrom(response) {
   return { name: pair.slice(0, split), value: pair.slice(split + 1) };
 }
 
+function pngDimensions(buffer) {
+  assert.ok(Buffer.isBuffer(buffer) && buffer.length >= 24, 'Screenshot bytes are too short for PNG evidence.');
+  assert.equal(buffer.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', 'Screenshot is not a PNG.');
+  assert.equal(buffer.subarray(12, 16).toString('ascii'), 'IHDR', 'PNG is missing IHDR at the expected position.');
+  return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20), bytes: buffer.length };
+}
+
 async function runRole({slug, email, expectedRole, expectedTenant, expectedPayrollStatus, requiredSurface}, roleIndex) {
   const port = 9300 + roleIndex * 30 + Math.floor(Math.random() * 20);
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-role-${slug}-${crypto.randomBytes(4).toString('hex')}`);
@@ -129,9 +136,6 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
       assert.equal(surfaceStatus,200,`${slug} required surface ${requiredSurface} failed.`);
     }
 
-    // Customer-facing render proof. The exact app shell differs substantially by role,
-    // so the acceptance oracle is a fresh authenticated browser bootstrap plus a
-    // non-trivial DOM and retained screenshots, rather than an arbitrary DOM-size floor.
     await send('Page.navigate',{url:origin});
     const renderDeadline=Date.now()+20000;
     let domLength=0;
@@ -147,26 +151,37 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
     assert.ok(domLength>1000,`${slug} authenticated rendered DOM was unexpectedly empty.`);
     assert.ok(browserApi.some(x=>x.path==='/api/bootstrap'&&x.status===200),`${slug} browser did not complete authenticated bootstrap.`);
     await sleep(600);
-    const desktop=await send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false},10000);
-    const desktopName=`40-role-${slug}-desktop.png`;
-    fs.writeFileSync(path.join(outDir,desktopName),Buffer.from(desktop.data,'base64'));
-    assert.ok(fs.statSync(path.join(outDir,desktopName)).size>10000,`${slug} desktop screenshot is unexpectedly small.`);
 
+    const desktop=await send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false},10000);
+    const desktopBuffer=Buffer.from(desktop.data,'base64');
+    const desktopDimensions=pngDimensions(desktopBuffer);
+    assert.ok(desktopDimensions.width>=1000&&desktopDimensions.height>=700,`${slug} desktop PNG dimensions are unexpectedly small.`);
+    const desktopName=`40-role-${slug}-desktop.png`;
+    fs.writeFileSync(path.join(outDir,desktopName),desktopBuffer);
+
+    const bootstrapBeforeMobile=browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length;
     await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
     await send('Page.reload',{ignoreCache:true});
-    await sleep(1000);
+    const mobileDeadline=Date.now()+15000;
+    while(Date.now()<mobileDeadline&&browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length<=bootstrapBeforeMobile) await sleep(250);
+    assert.ok(browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length>bootstrapBeforeMobile,`${slug} mobile reload did not re-bootstrap the authenticated session.`);
+    await sleep(500);
     const mobile=await send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false},10000);
+    const mobileBuffer=Buffer.from(mobile.data,'base64');
+    const mobileDimensions=pngDimensions(mobileBuffer);
+    assert.equal(mobileDimensions.width,390,`${slug} mobile PNG width mismatch.`);
+    assert.equal(mobileDimensions.height,844,`${slug} mobile PNG height mismatch.`);
     const mobileName=`41-role-${slug}-mobile.png`;
-    fs.writeFileSync(path.join(outDir,mobileName),Buffer.from(mobile.data,'base64'));
-    assert.ok(fs.statSync(path.join(outDir,mobileName)).size>8000,`${slug} mobile screenshot is unexpectedly small.`);
+    fs.writeFileSync(path.join(outDir,mobileName),mobileBuffer);
 
-    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|rendered=desktop+mobile|dom=${domLength}`);
+    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|desktop=${desktopDimensions.width}x${desktopDimensions.height}/${desktopDimensions.bytes}b|mobile=${mobileDimensions.width}x${mobileDimensions.height}/${mobileDimensions.bytes}b|dom=${domLength}`);
     return {
       slug,email,role:expectedRole,tenant:expectedTenant,
       freshBrowserCookieCount:beforeCookies.cookies?.length||0,
       freshBootstrapStatus:pre.status,loginStatus:loginResponse.status,payrollStatus:payrollResponse.status,
       requiredSurface,requiredSurfaceStatus:surfaceStatus,
       renderedDomLength:domLength,desktopScreenshot:desktopName,mobileScreenshot:mobileName,
+      desktopDimensions,mobileDimensions,
       observedBrowserApi:[...new Map(browserApi.map(x=>[`${x.path}:${x.status}`,x])).values()],
       browserContext:'fresh Chrome process/profile received the exact server-issued authenticated session cookie; cookie value never logged or persisted',
       uiClaimBoundary:'role-specific authenticated home rendered on desktop and mobile; this gate does not claim every task within that role was clicked end-to-end'
@@ -208,7 +223,7 @@ fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.st
   capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,
   processIsolation:'five fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
   authMethod:'real hosted /api/login created the session; CDP bound that server-issued cookie to the corresponding fresh Chrome process; no credential passed to Chrome process environment',
-  renderedEvidence:'each role rendered the authenticated hosted home on 1440x1000 desktop and 390x844 mobile and produced retained screenshots',
+  renderedEvidence:'each role rendered the authenticated hosted home on desktop and 390x844 mobile; PNG dimensions and authenticated mobile re-bootstrap were verified and screenshots retained',
   roles,result:'PASS',
   claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts, server-side role/tenant boundaries, and role-specific rendered homes on desktop/mobile; not every role-specific task is clicked end-to-end; no production/pilot approval and no real employee/payroll data'
 },null,2));
