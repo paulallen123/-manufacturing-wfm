@@ -1,0 +1,113 @@
+name: 0.6.76-R1 Seal Proof
+
+on:
+  push:
+    branches: ['proof/0.6.76-r1-seal-v3-20260918']
+    paths: ['.github/workflows/r1-seal-proof.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  seal:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout proof branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 3
+
+      - name: Prove exact repair lineage
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPAIR=38407325009c3ae732a705d86275a72bd32c5501
+          BASE=ad9ee9baf3db27f0715c094c4674b2bf85ff08a1
+          test "$(git rev-parse HEAD^)" = "$REPAIR"
+          test "$(git rev-parse "$REPAIR^")" = "$BASE"
+          test "$(git diff --name-only "$BASE" "$REPAIR")" = "ux-overlay/ux-reset-cycle5.js"
+          test "$(git diff --name-only "$REPAIR" HEAD)" = ".github/workflows/r1-seal-proof.yml"
+          test "$(git rev-parse "$REPAIR:ux-overlay/ux-reset-cycle5.js")" = "0c9e9463872cb232d6263b11a9ff2bdd1a867b72"
+
+      - name: Verify frozen base and build repair composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz" | sha256sum -c -
+          docker build --pull=false -t manufacturing-wfm:0.6.76-r1-seal .
+
+      - name: Verify runtime syntax and composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          PASS="CI-$(openssl rand -hex 20)"
+          docker run -d --name wfm-r1-seal -p 3000:3000 \
+            -e PORT=3000 -e NODE_ENV=staging -e NODE_OPTIONS=--experimental-sqlite \
+            -e WFM_HOSTED_STAGING=true -e WFM_PUBLIC_ORIGIN=https://wfm-ci.invalid \
+            -e WFM_DB=/tmp/wfm-r1.sqlite -e WFM_STAGING_PASSWORD="$PASS" \
+            manufacturing-wfm:0.6.76-r1-seal
+          docker exec wfm-r1-seal node --check /app/public/value-cockpit-ui.js
+          docker exec wfm-r1-seal sh -lc "grep -F \"if(label&&label.textContent!=='My details')\" /app/public/value-cockpit-ui.js >/dev/null"
+          docker exec wfm-r1-seal sh -lc "grep -F \"if((more&&b.nextElementSibling!==more)||(!more&&b.nextElementSibling!==null))nav.insertBefore(b,more||null)\" /app/public/value-cockpit-ui.js >/dev/null"
+          test "$(docker exec wfm-r1-seal sh -lc "grep -c 'WFM_UX_RESET_CYCLE5_BEGIN' /app/public/value-cockpit-ui.js")" = "1"
+          for i in $(seq 1 35); do
+            status=$(curl -sS -o /tmp/health.json -w '%{http_code}' -H 'Host: wfm-ci.invalid' -H 'X-Forwarded-Proto: https' http://127.0.0.1:3000/api/health || true)
+            if [ "$status" = "200" ]; then break; fi
+            sleep 1
+          done
+          test "$status" = "200"
+          node -e "const h=require('/tmp/health.json'); if(h.release!=='0.6.76-hosted-staging-rc1'||h.fixtureOnly!==true||h.productionApproved!==false||h.pilotReady!==false) process.exit(1)"
+          docker exec wfm-r1-seal sh -lc 'sha256sum /app/public/value-cockpit-ui.js /app/public/factory-control-ui.css' > r1-runtime-assets.sha256
+
+      - name: Seal deterministic runtime payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec wfm-r1-seal sh -lc "cd / && tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - app | gzip -n > /tmp/wfm-0.6.76-r1-runtime.tar.gz"
+          docker cp wfm-r1-seal:/tmp/wfm-0.6.76-r1-runtime.tar.gz ./wfm-0.6.76-r1-runtime.tar.gz
+          RUNTIME_SHA=$(sha256sum wfm-0.6.76-r1-runtime.tar.gz | awk '{print $1}')
+          OVERLAY_SHA=$(sha256sum ux-overlay/ux-reset-cycle5.js | awk '{print $1}')
+          VALUE_SHA=$(awk '$2=="/app/public/value-cockpit-ui.js"{print $1}' r1-runtime-assets.sha256)
+          CSS_SHA=$(awk '$2=="/app/public/factory-control-ui.css"{print $1}' r1-runtime-assets.sha256)
+          cat > WFM_0_6_76_R1_SEAL.json <<JSON
+          {
+            "schemaVersion":1,
+            "release":"0.6.76-r1-employee-render-repair-candidate",
+            "baseRelease":"0.6.76-hosted-staging-rc1",
+            "baseRuntimeSha256":"3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+            "baseCommit":"ad9ee9baf3db27f0715c094c4674b2bf85ff08a1",
+            "repairCommit":"38407325009c3ae732a705d86275a72bd32c5501",
+            "repairGitBlob":"0c9e9463872cb232d6263b11a9ff2bdd1a867b72",
+            "repairFileSha256":"$OVERLAY_SHA",
+            "sealedRuntimeTarSha256":"$RUNTIME_SHA",
+            "valueCockpitUiSha256":"$VALUE_SHA",
+            "factoryControlCssSha256":"$CSS_SHA",
+            "productionApproved":false,
+            "pilotReady":false,
+            "externalDeployment":"none",
+            "claimBoundary":"Exact lineage, frozen-base digest, Docker composition, runtime syntax and health only. Employee browser render acceptance and private Test deployment remain separate gates."
+          }
+          JSON
+          sha256sum WFM_0_6_76_R1_SEAL.json > WFM_0_6_76_R1_SEAL.sha256
+          cat WFM_0_6_76_R1_SEAL.json
+
+      - name: Upload sealed R1 candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wfm-0.6.76-r1-sealed-candidate
+          path: |
+            wfm-0.6.76-r1-runtime.tar.gz
+            WFM_0_6_76_R1_SEAL.json
+            WFM_0_6_76_R1_SEAL.sha256
+            r1-runtime-assets.sha256
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Capture logs on failure
+        if: failure()
+        run: docker logs wfm-r1-seal || true
+
+      - name: Stop isolated candidate
+        if: always()
+        run: docker rm -f wfm-r1-seal || true
