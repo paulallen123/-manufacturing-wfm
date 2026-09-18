@@ -1,0 +1,39 @@
+{
+  "schema_version": 3,
+  "updated": "2026-09-18",
+  "authoritative_sources": [
+    "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0541751186.html",
+    "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0194356994.html"
+  ],
+  "platform": "linux",
+  "browser": "Google Chrome Stable",
+  "minimum_version": "153.0.8010.47",
+  "reason": "The latest explicitly verified Linux stable security floor for this control is Chrome 153.0.8010.47. Credential-bearing browser proofs must fail closed before any credential is retrieved, materialized into a runner file, injected into page JavaScript, or exposed to a browser process when the approved browser is missing, unparsable, or below this floor.",
+  "protected_paths": [
+    {
+      "workflow": ".github/workflows/ux-cycle10-r4-proof.yml",
+      "credential": "WFM_STAGING_PASSWORD",
+      "credential_source": "Railway variable list",
+      "require_preflight_before_provider_variable_retrieval": true,
+      "require_approved_google_chrome": true,
+      "allow_chromium_fallback": false
+    }
+  ],
+  "controls": {
+    "fail_closed_on_unknown_version": true,
+    "allow_credential_bearing_browser_below_floor": false,
+    "allow_version_gate_bypass_environment_variable": false,
+    "allow_unverified_chromium_fallback_for_credential_bearing_proof": false,
+    "check_before_secret_injection": true,
+    "check_before_provider_variable_retrieval": true,
+    "preserve_failure_evidence_without_secret_material": true
+  },
+  "regression_tests": [
+    {"actual": "153.0.8010.46", "allowed": false},
+    {"actual": "153.0.8010.47", "allowed": true},
+    {"actual": "153.0.8010.48", "allowed": true},
+    {"actual": "154.0.0.0", "allowed": true},
+    {"actual": "152.0.7977.82", "allowed": false},
+    {"actual": "152.0.0.0", "allowed": false}
+  ]
+}
