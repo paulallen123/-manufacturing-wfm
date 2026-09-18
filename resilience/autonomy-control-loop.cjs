@@ -200,6 +200,7 @@ function createAutonomyControlLoop({
       endedAt,
       trace,
       traceHeadDigest: prev,
+      resultDigest: digest(result),
     };
     return { ...core, receiptDigest: digest(core), ...result };
   }
@@ -224,6 +225,11 @@ function createAutonomyControlLoop({
     }
 
     if (receipt.traceHeadDigest !== prev) return false;
+    const result = {};
+    for (const key of ['answer', 'recovery', 'repair', 'rollback', 'containedErrorCode']) {
+      if (Object.prototype.hasOwnProperty.call(receipt, key)) result[key] = receipt[key];
+    }
+    if (receipt.resultDigest !== digest(result)) return false;
     const core = { ...receipt };
     for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 'rollback', 'containedErrorCode']) delete core[key];
     return receipt.receiptDigest === digest(core);
