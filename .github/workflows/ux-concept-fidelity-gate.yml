@@ -69,7 +69,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          docker run -d --name wfm-concept-pref --network host             -e PORT=4261             -e NODE_ENV=staging             -e NODE_OPTIONS=--experimental-sqlite             -e WFM_DB=/tmp/wfm-concept-pref.sqlite             -e WFM_STAGING_PASSWORD='ConceptFidelityGate-Password-2026!'             wfm-concept-fidelity:branch
+          docker run -d --name wfm-concept-pref --network host             -e PORT=4261             -e NODE_ENV=staging             -e NODE_OPTIONS=--experimental-sqlite             -e WFM_DB=/tmp/wfm-concept-pref.sqlite             -e WFM_STAGING_PASSWORD='Factory-local-demo-2026!'             wfm-concept-fidelity:branch
           trap 'docker rm -f wfm-concept-pref >/dev/null 2>&1 || true' EXIT
           rm -f /tmp/cf-health.json
           for i in $(seq 1 60); do
@@ -89,7 +89,7 @@ jobs:
             -H 'Origin: http://127.0.0.1:4261' \
             -H 'Referer: http://127.0.0.1:4261/' \
             -H 'Content-Type: application/json' \
-            -d '{"email":"manager@northstar.example","password":"ConceptFidelityGate-Password-2026!"}' \
+            -d '{"email":"manager@northstar.example","password":"Factory-local-demo-2026!"}' \
             http://127.0.0.1:4261/api/login)"
           cat /tmp/cf-login-b
           test "$login_code" = "200"
