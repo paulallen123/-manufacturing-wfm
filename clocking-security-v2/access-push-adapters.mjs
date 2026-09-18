@@ -14,6 +14,10 @@ function resourceTail(value){
   const tail=String(value||'').split('/').filter(Boolean).at(-1)||'';
   return /^[A-Za-z0-9_.:-]{1,160}$/.test(tail)?tail:null;
 }
+function installationResource(value){
+  const m=String(value||'').match(/^(installations\/[^/]+)\//);
+  return m?m[1]:null;
+}
 
 /**
  * Kisi documents X-Signature as the HMAC-SHA256 of the raw HTTPS request body
@@ -154,6 +158,21 @@ export function normalizeSaltoNebulaEvent({sourceId,employee,expectedProviderUse
   if(!expectedProviderUserResource || userResource!==String(expectedProviderUserResource)) return {status:'review_required',reason:'PROVIDER_USER_ID_MISMATCH'};
   if(!accessPointResource) return {status:'review_required',reason:'MISSING_ACCESS_POINT_ID'};
 
+  const eventAccessPointId=resourceTail(accessPointResource);
+  const expectedAccessPointId=resourceTail(accessPoint?.id);
+  const expectedAccessPointResource=String(accessPoint?.providerResource||accessPoint?.providerResourceName||accessPoint?.resourceName||'');
+  if(!eventAccessPointId) return {status:'review_required',reason:'INVALID_ACCESS_POINT_RESOURCE'};
+  if(expectedAccessPointResource){
+    if(accessPointResource!==expectedAccessPointResource) return {status:'review_required',reason:'ACCESS_POINT_RESOURCE_MISMATCH'};
+  } else if(!expectedAccessPointId || eventAccessPointId!==expectedAccessPointId){
+    return {status:'review_required',reason:'ACCESS_POINT_ID_MISMATCH'};
+  }
+  const expectedInstallation=installationResource(expectedProviderUserResource);
+  const eventInstallation=installationResource(accessPointResource);
+  if(!expectedInstallation || !eventInstallation || expectedInstallation!==eventInstallation){
+    return {status:'review_required',reason:'ACCESS_POINT_INSTALLATION_MISMATCH'};
+  }
+
   const credentialType=String(data.credential_type||data.credentialType||'');
   if(credentialType==='salto.nebula.user.v1.Passcode' || credentialType==='salto.nebula.emergencykey.v1.EmergencyKey'){
     return {status:'review_required',reason:'SHARED_OR_UNPROVEN_CREDENTIAL'};
@@ -167,7 +186,7 @@ export function normalizeSaltoNebulaEvent({sourceId,employee,expectedProviderUse
 
   return normalizeAccessDecision({
     sourceId,employee,provider:'salto_nebula',receivedAtMs,identityBinding,accessPoint,
-    event:{providerEventId,direction,decision:'granted',occurredAt:observedAt,accessPointId:accessPoint.id}
+    event:{providerEventId,direction,decision:'granted',occurredAt:observedAt,accessPointId:eventAccessPointId}
   });
 }
 
