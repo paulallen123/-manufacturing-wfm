@@ -1,3 +1,4 @@
+# Cycle 10 gate rerun after current-main reconciliation.
 name: WFM UX evolution cycle 10 gate
 
 on:
