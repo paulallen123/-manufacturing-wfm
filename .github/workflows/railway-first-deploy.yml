@@ -10,6 +10,7 @@ on:
       - 'scripts/live-correction-proof.mjs'
       - 'scripts/live-browser-screenshot-proof.mjs'
       - 'scripts/live-role-browser-context-proof.mjs'
+      - 'scripts/live-role-control-inventory-proof.mjs'
       - 'scripts/live-visual-evidence.mjs'
       - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
@@ -101,6 +102,8 @@ jobs:
           // it is never printed, persisted in evidence, or passed to Chrome environments.
           process.env.WFM_STAGING_PASSWORD = password;
           await import('./scripts/live-role-browser-context-proof.mjs');
+          process.env.WFM_STAGING_PASSWORD = password;
+          await import('./scripts/live-role-control-inventory-proof.mjs');
 
           const ffmpeg = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' });
           if (ffmpeg.status === 0 && ffmpeg.stdout.trim()) {
