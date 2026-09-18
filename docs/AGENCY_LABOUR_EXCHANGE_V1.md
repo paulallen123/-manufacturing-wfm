@@ -14,11 +14,12 @@ This is a bounded development slice on the Manufacturing Event / Cost lane. It d
 4. Candidate eligibility is evaluated before any performance ranking.
 5. Eligible candidates are ranked using job-relevant, explainable evidence.
 6. Preferred workers are sent to agencies in configurable parallel cascade phases.
-7. Agencies can confirm a preferred worker, propose an alternative, partially fill, or decline.
-8. Alternatives are revalidated before acceptance.
-9. Clocked hours can be reconciled against agency claims and invoice lines.
-10. Supplier outcomes feed role/site-specific agency performance evidence for the next request.
-11. Any mismatch is routed for manufacturer invoice review rather than affecting worker pay.
+7. An agency can respond through an account-free, scoped link or a future API adapter.
+8. Agencies can confirm a preferred worker, propose an alternative, partially fill, or decline.
+9. Alternatives are revalidated before acceptance.
+10. Clocked hours can be reconciled against agency claims and invoice lines.
+11. Supplier outcomes feed role/site-specific agency performance evidence for the next request.
+12. Any mismatch is routed for manufacturer invoice review rather than affecting worker pay.
 
 ## Request pack
 
@@ -67,20 +68,26 @@ Small-sample performance is shrunk toward a neutral prior so a handful of shifts
 
 Sensitive/protected-like fields are explicitly excluded from ranking inputs. The engine reports when such fields were present and ignored.
 
-## Supplier experience
+## Zero-account supplier response
 
-The request cascade supports:
-- parallel supplier requests;
-- configurable response SLA;
-- preferred-worker IDs;
-- confirm preferred worker;
-- propose alternative;
+The supplier portal contract is designed so an agency does not need an account or technical implementation just to cover a shift.
+
+A request link is:
+- cryptographically signed;
+- bound to tenant, site, request and agency;
+- time limited;
+- assigned a token ID so the host can enforce one-time use;
+- verified before any response is accepted.
+
+The response surface contains only the assignment information and actions needed to answer the request. It supports:
+- confirm a preferred worker;
+- propose an alternative;
 - partial fill;
 - decline.
 
-An alternative worker is never trusted solely because an agency proposed them; the candidate must pass the same eligibility checks.
+Preferred-worker confirmation is restricted to workers WFM actually offered. Alternative workers are captured only as **pending revalidation** and must pass the same eligibility engine before acceptance.
 
-High-risk work is routed through manager approval even when standard-role auto-dispatch is enabled.
+Audit evidence stores a short token fingerprint rather than the raw response link or signing secret.
 
 ## Supplier learning
 
@@ -111,7 +118,7 @@ It only reports value from customer-supplied assumptions and labels the output a
 
 ## Authority boundary
 
-The engine produces planning and workflow hand-offs only. It forbids:
+The engine and portal produce planning, response capture and workflow hand-offs only. They forbid:
 - direct schedule writes;
 - direct payroll writes;
 - direct invoice approval;
@@ -136,6 +143,11 @@ The deterministic test suite covers:
 - small-sample supplier-score shrinkage;
 - reliable supplier selection over cheaper but materially weaker suppliers;
 - exclusion of unapproved suppliers from ranking;
-- scenario-only cost/time value modelling.
+- scenario-only cost/time value modelling;
+- signed portal token validation;
+- wrong-scope, expired and replayed-token rejection;
+- preferred-worker restriction and alternative-worker pending revalidation;
+- audit receipt secret/raw-token exclusion;
+- 1,000 mutated portal tokens with zero accepted.
 
-This is engineering proof, not customer/pilot evidence. Real supplier integrations, real customer data replay, production security review, UI/browser validation and live operational measurements remain required before promotion.
+This is engineering proof, not customer/pilot evidence. Real outbound supplier adapters, persistent one-time token consumption, UI/browser validation, authorised customer-data replay, production security review and live operational measurements remain required before promotion.
