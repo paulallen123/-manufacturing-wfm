@@ -72,3 +72,21 @@ test('invalid or inverted manager interval fails closed',()=>{
   const g=harness({rows:[{employee:'e1',workerType:'employee',status:'missing_out'}]});
   assert.throws(()=>g.recordCorrection({tenant:'acme',site:'s1',shiftId:'shift1',employee:'e1',reviewId:'r1',actorId:'mgr1',reasonCode:'FIX',correctedInAt:'2026-09-18T14:00:00Z',correctedOutAt:'2026-09-18T06:00:00Z',reviewedAt:T}),/after corrected IN/);
 });
+
+test('identical review IDs remain isolated across tenants',()=>{
+  const rows=[{employee:'e1',workerType:'employee',status:'missing_out'}];
+  const g=harness({rows});
+  g.recordCorrection({tenant:'tenantA',site:'s1',shiftId:'shift1',employee:'e1',reviewId:'r1',actorId:'mgr1',reasonCode:'FIX',correctedInAt:'2026-09-18T06:00:00Z',correctedOutAt:'2026-09-18T14:00:00Z',reviewedAt:T});
+  const second=g.recordCorrection({tenant:'tenantB',site:'s1',shiftId:'shift1',employee:'e1',reviewId:'r1',actorId:'mgr1',reasonCode:'FIX',correctedInAt:'2026-09-18T06:00:00Z',correctedOutAt:'2026-09-18T14:00:00Z',reviewedAt:T});
+  assert.equal(second.replayed,false);
+  assert.equal(g.auditTrail({tenant:'tenantA'}).length,1);
+  assert.equal(g.auditTrail({tenant:'tenantB'}).length,1);
+});
+
+test('audit-chain verification detects post-hoc correction tampering',()=>{
+  const g=harness({rows:[{employee:'e1',workerType:'employee',status:'missing_out'}]});
+  g.recordCorrection({tenant:'acme',site:'s1',shiftId:'shift1',employee:'e1',reviewId:'r1',actorId:'mgr1',reasonCode:'FIX',correctedInAt:'2026-09-18T06:00:00Z',correctedOutAt:'2026-09-18T14:00:00Z',reviewedAt:T});
+  assert.equal(g.verifyAuditChain(),true);
+  g.reviews[0].reasonCode='TAMPERED';
+  assert.equal(g.verifyAuditChain(),false);
+});
