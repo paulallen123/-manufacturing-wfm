@@ -331,6 +331,14 @@ function buildApprovedToday(content){
   if(existingMain)existingMain.classList.add('ux-concept-source-hidden');
   if(existingPulse)existingPulse.classList.add('ux-concept-source-hidden');
   if(existingDept)existingDept.classList.add('ux-concept-source-grid');
+
+  const evidence=document.createElement('details');
+  evidence.className='ux-approved-evidence';
+  evidence.innerHTML='<summary><span><b>Full factory evidence &amp; controls</b><small>Open the original detailed workspaces without cluttering the manager command centre.</small></span><span class="ux-detail-state">Open</span></summary><div class="ux-approved-evidence-body"></div>';
+  const evidenceBody=evidence.querySelector('.ux-approved-evidence-body');
+  [...content.children].filter(node=>node!==shell).forEach(node=>evidenceBody.appendChild(node));
+  shell.appendChild(evidence);
+
   content.dataset.uxApprovedToday='1';
   ensureDecisionDrawer();
   applyMode();
