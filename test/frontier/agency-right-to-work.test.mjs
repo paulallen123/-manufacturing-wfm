@@ -25,6 +25,7 @@ function worker(overrides = {}) {
     workerId:'W1', agencyId:'A1',
     rightToWork:{
       status:'verified', validUntil:'2027-12-31T23:59:59.000Z',
+      engagementType:'workers_contract', employmentCommencedAt:'2026-10-02T09:00:00.000Z',
       checkedByAgencyId:'A1', checkMethod:'home_office_online', checkedAt:'2026-10-04T10:00:00.000Z',
       evidenceRef:'rtw-evidence-internal-reference-123',
       assignmentScope:{ roleId:'PACK-OP', location:'Plant 1', startAt:'2026-10-05T05:00:00.000Z', endAt:'2026-10-05T15:00:00.000Z', restrictionsSatisfied:true },
@@ -60,6 +61,23 @@ test('post-effective-date agency supply requires explicit responsibility classif
   assert.equal(pass.evidence.evidenceFingerprint.length, 24);
   assert.equal(Object.hasOwn(pass.evidence, 'evidenceRef'), false);
   assert.doesNotMatch(JSON.stringify(pass), /rtw-evidence-internal-reference-123/);
+});
+
+test('worker-contract scope uses employment commencement rather than assignment date', () => {
+  const legacyWorkerContract = {
+    workerId:'W1', agencyId:'A1',
+    rightToWork:{
+      status:'verified', validUntil:'2027-12-31T23:59:59.000Z',
+      engagementType:'workers_contract', employmentCommencedAt:'2026-09-30T09:00:00.000Z',
+    },
+  };
+  const r = evaluateAgencyRightToWork(legacyWorkerContract, POST, { agencyId:'A1' }, { now:NOW });
+  assert.equal(r.eligible, true);
+  assert.equal(r.evidence.policyMode, 'legacy_worker_contract_pre_2026_10_01_commencement');
+
+  const missing = evaluateAgencyRightToWork({ workerId:'W2', agencyId:'A1', rightToWork:{ status:'verified', validUntil:'2027-12-31T23:59:59.000Z' } }, POST, agency(), { now:NOW });
+  assert.equal(missing.eligible, false);
+  assert.ok(missing.failures.includes('right_to_work_engagement_type_unclassified'));
 });
 
 test('non-standard or conflicting contractual arrangements fail closed for policy review', () => {
