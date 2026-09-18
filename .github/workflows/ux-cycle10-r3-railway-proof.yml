@@ -73,7 +73,7 @@ jobs:
             exit 1
           fi
           set +e
-          "$RAILWAY_BIN" up . \
+          "$RAILWAY_BIN" up \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --service "$RAILWAY_SERVICE_ID" \
