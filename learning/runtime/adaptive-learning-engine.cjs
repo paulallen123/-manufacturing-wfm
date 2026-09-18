@@ -484,6 +484,7 @@ function createAdaptiveLearningEngine(options = {}) {
     const now = Date.now();
     insertHelp.run(ctx.tenant, ctx.email, competencyKey, event, now, nowIso());
     const count = Number(recentHelp.get(ctx.tenant, ctx.email, competencyKey, now - 7 * DAY)?.count || 0);
+    record(ctx.tenant, ctx.email, 'help-' + event.toLowerCase(), competencyKey, { recentHelpCount: count });
     if (count >= 3) {
       dueNow.run(now, nowIso(), ctx.tenant, ctx.email, competencyKey);
       record(ctx.tenant, ctx.email, 'refresh-scheduled', competencyKey, { reason: 'repeated-help', count });
