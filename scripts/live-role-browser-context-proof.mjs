@@ -138,44 +138,32 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
       const html=await send('DOM.getOuterHTML',{nodeId:doc.root.nodeId},5000);
       return String(html.outerHTML||'');
     }
-    async function waitForRenderedDom(minBootstrapCount) {
-      const deadline=Date.now()+20000;
-      let html='';
-      while(Date.now()<deadline){
-        try{
-          html=await currentDom();
-          const count=browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length;
-          if(html.length>1000&&count>minBootstrapCount) return html;
-        }catch{}
-        await sleep(300);
-      }
-      return html;
-    }
-
-    const bootstrapBeforeDesktop=browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length;
+    const bootstrapBeforeRender=browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length;
     await send('Page.navigate',{url:origin});
-    const desktopHtml=await waitForRenderedDom(bootstrapBeforeDesktop);
-    assert.ok(desktopHtml.length>1000,`${slug} authenticated desktop DOM was unexpectedly empty.`);
+    const deadline=Date.now()+20000;
+    let desktopHtml='';
+    while(Date.now()<deadline){
+      try{
+        desktopHtml=await currentDom();
+        const count=browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length;
+        if(desktopHtml.length>1000&&count>bootstrapBeforeRender) break;
+      }catch{}
+      await sleep(300);
+    }
+    assert.ok(desktopHtml.length>1000,`${slug} authenticated rendered DOM was unexpectedly empty.`);
+    assert.ok(browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length>bootstrapBeforeRender,`${slug} browser did not perform a fresh authenticated bootstrap after navigation.`);
     const desktopDomSha256=digest(desktopHtml);
 
-    const bootstrapBeforeMobile=browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length;
-    await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
-    await send('Page.reload',{ignoreCache:true});
-    const mobileHtml=await waitForRenderedDom(bootstrapBeforeMobile);
-    assert.ok(mobileHtml.length>1000,`${slug} authenticated mobile DOM was unexpectedly empty.`);
-    const mobileDomSha256=digest(mobileHtml);
-
-    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|desktopDom=${desktopHtml.length}/${desktopDomSha256.slice(0,12)}|mobileDom=${mobileHtml.length}/${mobileDomSha256.slice(0,12)}`);
+    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|renderedDom=${desktopHtml.length}/${desktopDomSha256.slice(0,12)}`);
     return {
       slug,email,role:expectedRole,tenant:expectedTenant,
       freshBrowserCookieCount:beforeCookies.cookies?.length||0,
       freshBootstrapStatus:pre.status,loginStatus:loginResponse.status,payrollStatus:payrollResponse.status,
       requiredSurface,requiredSurfaceStatus:surfaceStatus,
-      desktop:{domLength:desktopHtml.length,domSha256:desktopDomSha256,viewport:'1440x1000 browser window'},
-      mobile:{domLength:mobileHtml.length,domSha256:mobileDomSha256,viewport:'390x844 emulation',authenticatedRebootstrap:true},
+      rendered:{domLength:desktopHtml.length,domSha256:desktopDomSha256,viewport:'1440x1000 browser window',authenticatedBootstrapAfterNavigation:true},
       observedBrowserApi:[...new Map(browserApi.map(x=>[`${x.path}:${x.status}`,x])).values()],
       browserContext:'fresh Chrome process/profile received the exact server-issued authenticated session cookie; cookie value never logged or persisted',
-      uiClaimBoundary:'role-specific authenticated home produced a non-trivial rendered DOM on desktop and after mobile emulation/reload; visual layout quality remains covered by the separate authenticated screenshot/mobile/keyboard proof'
+      uiClaimBoundary:'role-specific authenticated home produced a non-trivial rendered DOM in a fresh browser; visual mobile/keyboard/overflow quality is proven separately by the dedicated authenticated visual gate; not every task is clicked end-to-end'
     };
   } finally {
     try{ws?.close();}catch{}
@@ -214,9 +202,10 @@ fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.st
   capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,
   processIsolation:'five fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
   authMethod:'real hosted /api/login created the session; CDP bound that server-issued cookie to the corresponding fresh Chrome process; no credential passed to Chrome process environment',
-  renderedEvidence:'each role produced a hashed non-trivial authenticated DOM in its fresh browser and again after 390x844 mobile emulation/reload with a fresh authenticated bootstrap response',
+  renderedEvidence:'each role produced a hashed non-trivial authenticated DOM after a fresh browser navigation and authenticated browser bootstrap',
+  mobileVisualEvidence:'separate dedicated authenticated visual gate covers desktop/mobile screenshots, no horizontal overflow, keyboard focus and live navigation on the same frozen release',
   roles,result:'PASS',
-  claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts, server-side role/tenant boundaries, and role-specific browser rendering/rebootstrap; visual quality is covered separately; not every role-specific task is clicked end-to-end; no production/pilot approval and no real employee/payroll data'
+  claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts, server-side role/tenant boundaries, and role-specific browser rendering; visual mobile quality is covered separately; not every role-specific task is clicked end-to-end; no production/pilot approval and no real employee/payroll data'
 },null,2));
-console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}|rendered_dom_pairs=${roles.length}`);
+console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}|rendered_dom=${roles.length}`);
 delete process.env.WFM_STAGING_PASSWORD;
