@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "incident_id": "2026-09-18-composed-deployment-attestation-gap",
+  "status": "mitigated-in-isolated-draft-not-deployed",
+  "classification": [
+    "deployment/provenance problem",
+    "security concern"
+  ],
+  "observed_evidence": {
+    "base_runtime_identity": "DEPLOYMENT_MANIFEST.runtime_sha256 identifies the sealed 0.6.76 hosted-staging tarball.",
+    "post_artifact_composition": "The Dockerfile adds security/runtime modules and composes ux-overlay content into served CSS/JS after the sealed runtime artifact is verified.",
+    "runtime_admission_before_this_change": "PR #59 compares WFM_RUNTIME_SHA256 only with the sealed base runtime artifact identity.",
+    "railway_source_watch": "The current customer-proof Railway service watches Dockerfile, DEPLOYMENT_MANIFEST.json, STAGING_FREEZE.json and artifact/** but not security/runtime/** or ux-overlay/**.",
+    "active_runtime_impact": "No customer-proof outage or compromise was observed. GitHub autodeploy is disabled and the latest customer-proof Railway deployment remains successful."
+  },
+  "causal_timeline": [
+    {
+      "event": "Earlier provenance review",
+      "learning": "A prior control review already identified that Railway source watch patterns omit security/runtime/** and ux-overlay/**."
+    },
+    {
+      "event": "PR #59 runtime attestation",
+      "learning": "A strong fail-closed comparison was added for the sealed base runtime SHA, but its identity boundary stopped at the tarball."
+    },
+    {
+      "event": "Current reliability correlation",
+      "learning": "Comparing Docker composition, PR #59 admission logic and Railway watch patterns showed that materially different final application content could retain the same WFM_RUNTIME_SHA256."
+    }
+  ],
+  "inferred_root_cause": "Deployment identity was modeled at the immutable base-artifact boundary while the actual deployable application is a composition of that artifact plus security and UX overlays. Source-watch policy and runtime-admission policy therefore shared the same incomplete provenance boundary.",
+  "reproduction": {
+    "method": "Modify a UX overlay while leaving the sealed tarball and DEPLOYMENT_MANIFEST.runtime_sha256 unchanged, rebuild the image, and compare the composed application digest.",
+    "result": "The deterministic chaos fixture proves the composed deployment digest changes when ux-overlay/ux-reset-cycle9.js changes even though the base runtime artifact identity is unchanged.",
+    "reproducibility": "deterministic"
+  },
+  "prevention": {
+    "layered_identity": [
+      "Retain WFM_RUNTIME_SHA256 as the immutable sealed-base-runtime identity.",
+      "Add a separately computed deployment content digest over the final /app file tree after security and UX composition.",
+      "Require independently configured WFM_DEPLOYMENT_SHA256 to equal the image-baked composed digest before server startup."
+    ],
+    "fail_closed_codes": [
+      "WFM_DEPLOYMENT_ATTESTATION_IMAGE_UNAVAILABLE",
+      "WFM_DEPLOYMENT_ATTESTATION_IMAGE_INVALID",
+      "WFM_DEPLOYMENT_ATTESTATION_CONFIG_INVALID",
+      "WFM_DEPLOYMENT_ATTESTATION_MISMATCH"
+    ],
+    "fixtures": [
+      "exact match",
+      "missing/malformed image identity",
+      "missing/malformed external identity",
+      "valid-but-different identity",
+      "UX-overlay mutation changes composed digest",
+      "matching base and composed identities clear attestation before the next independent hosted-staging guard"
+    ],
+    "startup_order": "base-runtime attestation -> composed-deployment attestation -> hosted/identity guards -> application server"
+  },
+  "recovery_rule": "Never auto-correct WFM_DEPLOYMENT_SHA256 from source or from the running image after a mismatch. Recovery requires independent verification of the intended composed image followed by an authorized audited configuration update, or rollback to the previously attested deployment.",
+  "safety_boundary": {
+    "production_mutation": false,
+    "railway_mutation": false,
+    "customer_data_mutation": false,
+    "workforce_or_payroll_mutation": false,
+    "llm_consequential_authority_added": false
+  },
+  "metrics": {
+    "mean_detection_effort_direction": "reduced: cross-source manual correlation becomes deterministic CI/startup admission",
+    "reproducibility": "high",
+    "recovery_path_quality": "improved but requires authorized configuration rollout before deployment",
+    "prevention_coverage_change": "sealed base artifact only -> sealed base artifact plus final composed application content"
+  },
+  "open_uncertainty": [
+    "The current Railway customer-proof service does not yet expose a WFM_DEPLOYMENT_SHA256 variable name, so this prevention must not be deployed until an authorized configuration rollout is coordinated.",
+    "The connected Railway OAuth view does not expose plaintext variable values, so current WFM_RUNTIME_SHA256 equality cannot be independently re-read from this automation.",
+    "Railway watch patterns still need an authorized infrastructure/configuration change to include security/runtime/** and ux-overlay/**; the runtime attestation reduces but does not replace correct source-watch policy."
+  ]
+}
