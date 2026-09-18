@@ -13,16 +13,18 @@ const cap=(role='Offered',semantic='urn:cap:laser-cut')=>({
   idShort:'LaserCutting',modelType:'Capability',semanticId:ref(IDTA_02020.capability),
   supplementalSemanticIds: semantic ? [ref(semantic)] : [], qualifiers:[q(role)],
 });
-const prop=()=>({
+const prop=(opts={})=>({
   idShort:'PropertyContainer',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.propertyContainer),value:[
-    {idShort:'SameProperty',modelType:'RelationshipElement',semanticId:ref(IDTA_02020.sameProperty),second:ref('urn:prop:max-thickness')},
-    {idShort:'PropertyProperty',modelType:'Property',semanticId:ref(IDTA_02020.propertyValue),valueType:'xs:double',value:'12',unit:'mm'},
+    {idShort:'SameProperty',modelType:'RelationshipElement',semanticId:ref(IDTA_02020.sameProperty),second:ref(opts.semanticId ?? 'urn:prop:max-thickness')},
+    opts.range
+      ? {idShort:'PropertyRange',modelType:'Range',semanticId:ref(IDTA_02020.propertyRange),valueType:'xs:double',min:String(opts.min ?? 0),max:String(opts.max ?? 12),...(opts.unit === undefined ? {unit:'mm'} : opts.unit ? {unit:opts.unit} : {})}
+      : {idShort:'PropertyProperty',modelType:'Property',semanticId:ref(IDTA_02020.propertyValue),valueType:'xs:double',value:String(opts.value ?? 12),...(opts.unit === undefined ? {unit:'mm'} : opts.unit ? {unit:opts.unit} : {})},
   ],
 });
-const container=(capability)=>({
+const container=(capability, property=prop())=>({
   idShort:'CapabilityContainer',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.capabilityContainer),value:[
     capability,
-    {idShort:'PropertySet',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.propertySet),value:[prop()]},
+    {idShort:'PropertySet',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.propertySet),value:[property]},
     {idShort:'CapabilityRelations',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.capabilityRelations),value:[
       {idShort:'CapabilityRealizedBy',modelType:'RelationshipElement',semanticId:ref(IDTA_02020.realizedBy),second:ref('urn:machine-skill:laser-program')},
     ]},
@@ -33,6 +35,10 @@ const submodel=(containers)=>({
     {idShort:'CapabilitySet',modelType:'SubmodelElementCollection',semanticId:ref(IDTA_02020.capabilitySet),value:containers},
   ],
 });
+const concept=(id,unit='mm',unitId='urn:unit:mm')=>({
+  id,
+  embeddedDataSpecifications:[{dataSpecificationContent:{modelType:'DataSpecificationIec61360',dataType:'REAL_MEASURE',unit,unitId:ref(unitId)}}],
+});
 
 test('parses an offered IDTA 02020 capability with property and technical skill evidence',()=>{
   const result=extractIdta02020CapabilityProfile([submodel([container(cap())])]);
@@ -40,8 +46,30 @@ test('parses an offered IDTA 02020 capability with property and technical skill 
   assert.equal(result.offered.length,1);
   assert.equal(result.required.length,0);
   assert.equal(result.offered[0].semanticId,'urn:cap:laser-cut');
-  assert.deepEqual(result.offered[0].properties,[{semanticId:'urn:prop:max-thickness',value:12,unit:'mm',matchingStatus:'eligible'}]);
+  assert.deepEqual(result.offered[0].properties[0],{
+    semanticId:'urn:prop:max-thickness',kind:'scalar',value:12,unit:'mm',unitId:null,unitSource:'element',matchingStatus:'eligible'
+  });
   assert.deepEqual(result.offered[0].technicalSkillRefs,['urn:machine-skill:laser-program']);
+});
+
+test('resolves missing inline units from IEC 61360 concept descriptions',()=>{
+  const result=extractIdta02020CapabilityProfile(
+    [submodel([container(cap(),prop({unit:null}))])],
+    {conceptDescriptions:[concept('urn:prop:max-thickness','millimetre','urn:unit:mm')]}
+  );
+  const property=result.offered[0].properties[0];
+  assert.equal(property.unit,'millimetre');
+  assert.equal(property.unitId,'urn:unit:mm');
+  assert.equal(property.unitSource,'concept_description');
+  assert.equal(property.matchingStatus,'eligible');
+  assert.equal(result.offered[0].evidence.propertyReview.length,0);
+});
+
+test('represents standard Range properties without guessing scalar meaning',()=>{
+  const result=extractIdta02020CapabilityProfile([submodel([container(cap(),prop({range:true,min:2,max:12}))])]);
+  assert.deepEqual(result.offered[0].properties[0],{
+    semanticId:'urn:prop:max-thickness',kind:'range',min:2,max:12,unit:'mm',unitId:null,unitSource:'element',matchingStatus:'eligible'
+  });
 });
 
 test('required capabilities are kept separate and never promoted as machine-provided capability',()=>{
@@ -71,12 +99,10 @@ test('generic template semantic alone is not mistaken for domain capability mean
   assert.equal(result.reviewRequired[0].reason,'missing_domain_capability_semantic');
 });
 
-test('missing property unit remains visible but is not eligible for deterministic envelope matching',()=>{
-  const c=container(cap());
-  delete c.value[1].value[0].value[1].unit;
-  const result=extractIdta02020CapabilityProfile([submodel([c])]);
+test('missing property unit remains visible when neither inline nor semantic unit exists',()=>{
+  const result=extractIdta02020CapabilityProfile([submodel([container(cap(),prop({unit:null}))])]);
   assert.equal(result.offered[0].properties[0].matchingStatus,'review_required');
-  assert.equal(result.offered[0].evidence.propertyReview[0].reason,'missing_explicit_unit');
+  assert.equal(result.offered[0].evidence.propertyReview[0].reason,'missing_explicit_or_semantic_unit');
 });
 
 test('synthetic direct-standard benchmark clears the 95% representation and 60% configuration-reduction thresholds',()=>{
