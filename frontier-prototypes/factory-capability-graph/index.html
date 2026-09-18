@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Factory Capability · WFM Frontier Prototype</title>
+<link rel="stylesheet" href="factory-capability-graph.css">
+</head>
+<body>
+<div class="cap-shell">
+  <aside class="cap-sidebar" aria-label="Main navigation">
+    <div class="cap-brand"><span class="cap-mark" aria-hidden="true"></span><div><strong>Workforce</strong><span>Manufacturing operations</span></div></div>
+    <nav class="cap-nav">
+      <button><span class="nav-icon">T</span>Today</button>
+      <button><span class="nav-icon">A</span>Absence</button>
+      <button><span class="nav-icon">S</span>Sign off</button>
+      <button><span class="nav-icon">£</span>Performance</button>
+      <button class="active" aria-current="page"><span class="nav-icon">C</span>Capability</button>
+      <button><span class="nav-icon">···</span>More</button>
+    </nav>
+    <div class="cap-side-foot">Calm by default.<br>Dense detail only when needed.</div>
+  </aside>
+
+  <main class="cap-main">
+    <header class="cap-topbar">
+      <div class="cap-heading"><h1>Factory capability</h1><p>Know what the site can run, who is qualified, and where capability is at risk.</p></div>
+      <div class="cap-actions">
+        <label class="sr-only" for="site">Site</label>
+        <select id="site" class="cap-select"><option>Midlands Plant</option></select>
+        <button class="cap-btn ghost" data-open-review>Review 1 mapping</button>
+        <button class="cap-btn primary">Plan capability</button>
+      </div>
+    </header>
+
+    <div class="cap-status-strip" aria-label="Data confidence">
+      <span class="cap-pill"><span class="dot"></span>MES refreshed 2 min ago</span>
+      <span class="cap-pill"><span class="dot"></span>Skills verified 8 min ago</span>
+      <span class="cap-pill"><span class="dot"></span>17 assets understood</span>
+      <span class="cap-pill warn"><span class="dot"></span>1 semantic mapping needs review</span>
+    </div>
+
+    <section class="cap-kpis" aria-label="Capability summary">
+      <article class="cap-kpi"><span>Ready now</span><strong>92%</strong><small>11 of 12 required capabilities</small></article>
+      <article class="cap-kpi"><span>At risk</span><strong>1</strong><small>Laser cutting · 14:00 window</small></article>
+      <article class="cap-kpi"><span>Assets understood</span><strong>17</strong><small>16 automatically mapped</small></article>
+      <article class="cap-kpi"><span>Near-qualified</span><strong>3</strong><small>People one skill from readiness</small></article>
+    </section>
+
+    <div class="cap-grid">
+      <div>
+        <section class="cap-panel">
+          <div class="cap-panel-head"><div><h2>What needs attention</h2><p>Only capability gaps that can affect the current production plan.</p></div><button class="cap-link">View all</button></div>
+          <div class="cap-attention">
+            <div class="attn-row">
+              <div class="attn-main"><span class="risk-icon">!</span><div><div class="attn-title">Laser cutting needs one more qualified person</div><div class="attn-sub">2 machines ready · 1 of 2 required people available</div></div></div>
+              <div class="attn-metric"><b>14:00–18:00</b><br>production window</div>
+              <button class="row-btn">Resolve</button>
+            </div>
+            <div class="attn-row">
+              <div class="attn-main"><span class="risk-icon">?</span><div><div class="attn-title">Robot weld capability needs mapping review</div><div class="attn-sub">Meaning discovered from OPC UA · not trusted for workforce decisions yet</div></div></div>
+              <div class="attn-metric"><b>No production risk</b><br>review when convenient</div>
+              <button class="row-btn" data-open-review>Review</button>
+            </div>
+            <div class="attn-row">
+              <div class="attn-main"><span class="risk-icon ready-icon">✓</span><div><div class="attn-title">Press shop is fully covered</div><div class="attn-sub">1 machine · 1 required operator · qualification verified</div></div></div>
+              <div class="attn-metric"><b>Ready</b><br>current plan</div>
+              <button class="row-btn">Details</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="cap-panel cap-workcentres">
+          <div class="cap-panel-head"><div><h2>Capability by work centre</h2><p>Select a work centre to see the machine → skill → people chain.</p></div></div>
+          <div class="workcentre-list">
+            <button class="workcentre active" data-workcentre="laser"><span><strong>Laser Cell</strong><small>2 assets · 3 capabilities · 4 relevant skills</small></span><span class="wc-status risk">At risk</span></button>
+            <button class="workcentre" data-workcentre="press"><span><strong>Press Shop</strong><small>1 asset · 2 capabilities · 2 relevant skills</small></span><span class="wc-status">Ready</span></button>
+            <button class="workcentre" data-workcentre="weld"><span><strong>Robot Weld Cell</strong><small>3 assets · 1 capability awaiting review</small></span><span class="wc-status risk">Review</span></button>
+          </div>
+        </section>
+      </div>
+
+      <aside class="cap-panel cap-detail" aria-live="polite">
+        <div class="detail-hero"><span class="detail-label">Selected work centre</span><h2 data-detail-title>Laser Cell</h2><p data-detail-copy>Two cutting assets · one workforce constraint before the 14:00 production window.</p></div>
+        <div class="cap-tabs" role="tablist">
+          <button class="active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+          <button data-tab="graph" role="tab" aria-selected="false">Explore graph</button>
+        </div>
+        <div data-view="overview">
+          <section class="detail-section"><h3>Capability chain</h3><div class="flow">
+            <div class="flow-step"><span class="flow-num">1</span><span><b>Laser Cell 1 + 2</b><small>Machine capability discovered</small></span><span class="flow-tag">Verified</span></div>
+            <div class="flow-step"><span class="flow-num">2</span><span><b>Laser cutting</b><small>Requires Laser L2 + laser safety</small></span><span class="flow-tag">Mapped</span></div>
+            <div class="flow-step"><span class="flow-num">3</span><span><b>1 qualified now</b><small>Minimum 2 for current production demand</small></span><span class="flow-tag">Gap 1</span></div>
+          </div></section>
+          <section class="detail-section"><h3>Qualified &amp; available</h3><div class="people-row"><span class="person-chip"><span class="avatar">AK</span>AK · verified</span></div></section>
+          <section class="detail-section"><h3>Best next action</h3><div class="action-card"><b>JM is one skill away from qualification</b><p>Laser L2 is valid. Laser safety is the only missing requirement. Training remains a human-approved workflow; WFM will never grant qualification automatically.</p><button>Open training plan</button></div></section>
+        </div>
+
+        <div data-view="graph" hidden>
+          <div class="graph-view">
+            <div class="graph-canvas" aria-label="Capability relationship graph">
+              <div class="graph-column"><span class="graph-column-title">Machines</span><div class="graph-node"><strong>Laser Cell 1</strong><small>OPC UA · fresh</small></div><div class="graph-node"><strong>Laser Cell 2</strong><small>MES · fresh</small></div></div>
+              <div class="graph-column"><span class="graph-column-title">Capability</span><div class="graph-node risk"><strong>Laser cutting</strong><small>Mapped semantic capability</small></div></div>
+              <div class="graph-column"><span class="graph-column-title">Skills</span><div class="graph-node"><strong>Laser L2</strong><small>Authoritative requirement</small></div><div class="graph-node"><strong>Laser safety</strong><small>Authoritative requirement</small></div></div>
+              <div class="graph-column"><span class="graph-column-title">People</span><div class="graph-node person"><span class="avatar">AK</span><span><strong>AK</strong><small>Both valid</small></span></div><div class="graph-node person risk"><span class="avatar">JM</span><span><strong>JM</strong><small>1 skill missing</small></span></div></div>
+            </div>
+            <div class="graph-legend"><span class="legend">Discovery never grants a qualification</span><span class="legend">Stale evidence fails closed</span><span class="legend">Tenant/site scoped</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<div class="cap-drawer-backdrop" hidden>
+  <aside class="cap-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+    <div class="drawer-head"><div><h2 id="drawer-title">Review discovered capability</h2><p>Machine meaning can be discovered automatically, but ambiguous mappings stay out of workforce decisions until reviewed.</p></div><button class="drawer-close" aria-label="Close">×</button></div>
+    <div class="drawer-list">
+      <div class="review-item"><strong>Robot Cell 1 · “Arc weld program”</strong><p>OPC UA semantic identifier was discovered, but there is no approved mapping to an existing WFM capability.</p><div class="review-meta"><span>Fresh evidence</span><span>Site scoped</span><span>No workforce action</span></div></div>
+      <div class="review-item"><strong>Suggested mapping: Robotic arc welding</strong><p>Suggestion only. Accepting it links the machine capability to required skills; it does not certify any employee.</p><button class="cap-btn primary">Review suggestion</button></div>
+    </div>
+  </aside>
+</div>
+<script src="factory-capability-graph-ui.js"></script>
+</body>
+</html>
