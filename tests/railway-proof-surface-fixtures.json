@@ -1,0 +1,101 @@
+{
+  "schema": "wfm.railway-proof-surface-fixtures.v1",
+  "policy": {
+    "allowed_repository": "paulallen123/-manufacturing-wfm",
+    "required_dockerfile_path": "Dockerfile",
+    "required_healthcheck_path": "/api/health",
+    "minimum_restart_retries": 1
+  },
+  "cases": [
+    {
+      "name": "hardened-public-proof-is-eligible",
+      "service": {
+        "name": "proof-ok",
+        "service_id": "1",
+        "public_domains": ["proof.example"],
+        "latest_deployment": {"status": "SUCCESS"},
+        "source": {"repo": "paulallen123/-manufacturing-wfm"},
+        "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile"},
+        "deploy": {"healthcheckPath": "/api/health", "restartPolicyMaxRetries": 3},
+        "variable_names": ["PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD"]
+      },
+      "expected": {"eligible": true, "codes": []}
+    },
+    {
+      "name": "railpack-public-credentialled-proof-blocks",
+      "service": {
+        "name": "proof-railpack",
+        "service_id": "2",
+        "public_domains": ["railpack.example"],
+        "latest_deployment": {"status": "SUCCESS"},
+        "source": {"repo": "paulallen123/-manufacturing-wfm"},
+        "build": {"builder": "RAILPACK"},
+        "deploy": {},
+        "variable_names": ["PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD"]
+      },
+      "expected": {
+        "eligible": false,
+        "codes": [
+          "PUBLIC_CREDENTIALLED_PROOF_NOT_DOCKERFILE_HARDENED",
+          "PUBLIC_CREDENTIALLED_PROOF_MISSING_HEALTHCHECK",
+          "PUBLIC_CREDENTIALLED_PROOF_MISSING_RESTART_POLICY"
+        ]
+      }
+    },
+    {
+      "name": "public-domain-without-deployment-is-not-proof",
+      "service": {
+        "name": "orphan-route",
+        "service_id": "3",
+        "public_domains": ["orphan.example"],
+        "source": {"repo": "paulallen123/-manufacturing-wfm"},
+        "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile"},
+        "deploy": {"healthcheckPath": "/api/health", "restartPolicyMaxRetries": 3},
+        "variable_names": []
+      },
+      "expected": {"eligible": false, "codes": ["PUBLIC_DOMAIN_WITHOUT_DEPLOYMENT"]}
+    },
+    {
+      "name": "credential-alias-collision-blocks",
+      "service": {
+        "name": "collision",
+        "service_id": "4",
+        "public_domains": ["collision.example"],
+        "latest_deployment": {"status": "SUCCESS"},
+        "source": {"repo": "paulallen123/-manufacturing-wfm"},
+        "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile"},
+        "deploy": {"healthcheckPath": "/api/health", "restartPolicyMaxRetries": 3},
+        "variable_names": ["PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD","Wfm_staging_password"]
+      },
+      "expected": {"eligible": false, "codes": ["CASE_INSENSITIVE_VARIABLE_COLLISION"]}
+    },
+    {
+      "name": "staged-config-without-deployment-never-counts",
+      "service": {
+        "name": "staged",
+        "service_id": "5",
+        "public_domains": [],
+        "staged_change": {"branch": "ux/test"},
+        "source": {"repo": "paulallen123/-manufacturing-wfm"},
+        "build": {"builder": "RAILPACK"},
+        "deploy": {},
+        "variable_names": []
+      },
+      "expected": {"eligible": false, "codes": ["STAGED_CHANGE_NOT_DEPLOYED"]}
+    },
+    {
+      "name": "wrong-source-repo-blocks-public-proof",
+      "service": {
+        "name": "wrong-repo",
+        "service_id": "6",
+        "public_domains": ["wrong.example"],
+        "latest_deployment": {"status": "SUCCESS"},
+        "source": {"repo": "other/repo"},
+        "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile"},
+        "deploy": {"healthcheckPath": "/api/health", "restartPolicyMaxRetries": 3},
+        "variable_names": ["PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD"]
+      },
+      "expected": {"eligible": false, "codes": ["PUBLIC_CREDENTIALLED_PROOF_SOURCE_REPO_DRIFT"]}
+    }
+  ]
+}
