@@ -116,20 +116,22 @@ try {
     return r.result && r.result.value;
   };
   await send('Runtime.enable');
-  await retry(async()=>{if(!(await evalx('document.body.dataset.uxConcept==="fidelity-v2"')))throw new Error('not ready');return true;});
+  await retry(async()=>{if(!(await evalx('document.body.dataset.uxConcept==="fidelity-v3"')))throw new Error('not ready');return true;});
 
-  const proof=await evalx('(()=>({labels:[...document.querySelectorAll(".sidebar nav .ux-concept-primary span")].map(x=>x.textContent.trim()),pages:[...document.querySelectorAll(".sidebar nav .ux-concept-primary")].map(x=>x.dataset.page),modes:[...document.querySelectorAll(".ux-view-choice")].map(x=>x.textContent.trim()),strip:document.querySelectorAll(".ux-concept-line-chip").length,kpis:[...document.querySelectorAll("[data-ux-concept-kpi]")].map(x=>x.dataset.uxConceptKpi),overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,rail:getComputedStyle(document.querySelector(".sidebar")).backgroundImage}))()');
+  const proof=await evalx('(()=>({labels:[...document.querySelectorAll(".sidebar nav .ux-concept-primary span")].map(x=>x.textContent.trim()),pages:[...document.querySelectorAll(".sidebar nav .ux-concept-primary")].map(x=>x.dataset.page),modes:[...document.querySelectorAll(".ux-approved-view-menu .ux-view-choice")].map(x=>x.textContent.trim()),kpis:[...document.querySelectorAll(".ux-approved-kpi>span")].map(x=>x.textContent.trim()),decisions:document.querySelectorAll(".ux-approved-decision-card").length,lines:document.querySelectorAll(".ux-approved-line-card").length,greeting:document.querySelector(".ux-approved-greeting h1")?.textContent||"",overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,rail:getComputedStyle(document.querySelector(".sidebar")).backgroundImage}))()');
   console.log('CONCEPT_BROWSER_PROOF='+JSON.stringify(proof));
   assert.deepEqual(proof.labels,['Today','People','Plan','Improve']);
   assert.deepEqual(proof.pages,['overview','leave','schedule-publication','savings-decisions']);
   assert.equal(proof.modes.length,4);
   assert.ok(proof.modes.includes('Operational Visual'));
-  assert.ok(proof.strip>=3);
   assert.deepEqual(proof.kpis,['Production','Workforce coverage','Labour cost','Decisions']);
+  assert.ok(proof.decisions>=2);
+  assert.ok(proof.lines>=3);
+  assert.ok(/Good /.test(proof.greeting));
   assert.ok(proof.rail.includes('gradient'));
   assert.ok(proof.overflow<=2);
 
-  await evalx('document.querySelector("[data-mode=operational_visual]").click()');
+  await evalx('document.querySelector("[data-ux-view-toggle]").click();document.querySelector("[data-mode=operational_visual]").click()');
   await sleep(180);
   const op=await evalx('(()=>({mode:document.body.dataset.uxViewMode,capacity:document.querySelector(".ux-today-detail.capacity").open,readiness:document.querySelector(".ux-today-detail.readiness").open}))()');
   assert.equal(op.mode,'operational_visual');
@@ -145,14 +147,15 @@ try {
   assert.equal(await evalx('window.__controlClicks'),1);
   assert.equal(await evalx('document.querySelector(".ux-concept-decision-drawer").classList.contains("open")'),false);
 
+  const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
+  const out=process.env.RUNNER_TEMP ? path.join(process.env.RUNNER_TEMP,'concept-fidelity.png') : path.join(os.tmpdir(),'concept-fidelity.png');
+  fs.writeFileSync(out,Buffer.from(shot.data,'base64'));
+  assert.ok(fs.statSync(out).size>10000);
+
   await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await sleep(250);
   assert.ok((await evalx('document.documentElement.scrollWidth-document.documentElement.clientWidth'))<=2);
 
-  const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
-  const out=process.env.RUNNER_TEMP ? path.join(process.env.RUNNER_TEMP,'concept-fidelity.png') : path.join(os.tmpdir(),'concept-fidelity.png');
-  fs.writeFileSync(out,Buffer.from(shot.data,'base64'));
-  assert.ok(fs.statSync(out).size>10000);
   console.log('CONCEPT_FUNCTIONAL_BROWSER=PASS');
   console.log('CONCEPT_SCREENSHOT='+out);
 } finally {
