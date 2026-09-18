@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "incident_id": "2026-09-18-github-actions-control-plane-failure",
+  "status": "open-external-cause-unresolved",
+  "severity": "high",
+  "category": "release-infrastructure",
+  "observed": {
+    "latest_run_id": 35338466599,
+    "workflow": "Energy Flexibility Shadow Experiment",
+    "run_status": "completed",
+    "run_conclusion": "failure",
+    "job_id": 105578701228,
+    "job_steps": 0,
+    "job_log": "unavailable",
+    "public_github_actions_status": "operational",
+    "railway_customer_proof_latest_deploy": "success",
+    "main_branch_protected": false,
+    "required_status_checks": []
+  },
+  "deduplication_rule": "Any completed GitHub Actions failure where every failed job has no started steps and no job log is the same control-plane/runner-start incident class unless contrary evidence appears.",
+  "root_cause": {
+    "known": "The workflow is failing before repository test code starts, so this is not evidence of a WFM product-test defect.",
+    "unknown": "The repository/account-specific trigger remains unconfirmed; likely candidates include runner allocation, Actions entitlement/billing, or another GitHub control-plane restriction."
+  },
+  "containment": [
+    "Treat affected CI as unavailable, not as a product regression.",
+    "Do not promote or claim a release from affected runs.",
+    "Allow only one bounded retry per new failure fingerprint; repeated identical retries add no evidence.",
+    "Keep Railway hosted proof and application health evidence separate from CI control-plane evidence.",
+    "Because main is currently unprotected, apply an explicit release freeze while required checks cannot be enforced."
+  ],
+  "deterministic_detection": {
+    "classifier": "scripts/reliability/classify_github_actions_failure.py",
+    "regression_tests": "tests/reliability/test_classify_github_actions_failure.py",
+    "classification": "control_plane_or_runner_start_failure"
+  },
+  "permanent_prevention_rule": "A provider-side CI start failure must never be mislabelled as an application failure and must never be bypassed to promote a release. Main must be protected by required independent release checks before release automation is considered reliable.",
+  "recovery_verification": [
+    "A previously failing workflow starts at least one repository-defined step.",
+    "Job logs become available.",
+    "A clean run reaches the deterministic test gates.",
+    "Branch protection requires the selected release checks before merge or promotion."
+  ],
+  "safe_change_policy": "No production, destructive, tenant-data, or Railway deployment changes are authorised by this incident record."
+}
