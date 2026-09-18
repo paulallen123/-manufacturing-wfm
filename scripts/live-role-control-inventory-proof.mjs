@@ -38,27 +38,12 @@ function sessionCookieFrom(response) {
   return { name: pair.slice(0, split), value: pair.slice(split + 1) };
 }
 
-function decodeText(html) {
-  return String(html || '')
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function safeCandidate(text, outerHTML) {
-  const t = String(text || '').trim();
-  if (!t || t.length > 100) return false;
+function safeNavigationCandidate(text) {
+  const t = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!t || t.length > 120) return false;
   if (/sign\s*out|approve|reject|publish|delete|remove|clock\s*(in|out)|sign\s*off|apply|confirm|submit|save/i.test(t)) return false;
-  const navigationish = /^<a\b/i.test(String(outerHTML).trim()) || /role=["']tab["']|data-nav=|data-page=/i.test(outerHTML) || /^(Open|Inspect|View|Today|Personal|Schedule|Payroll|Time|Attendance|Readiness|Onboarding|Resources|Availability|Absence|Performance|More)/i.test(t);
-  return navigationish;
+  return /^(Open|Inspect|View|Today|Personal|Schedule|Payroll|Time|Attendance|Readiness|Onboarding|Resources|Availability|Absence|Performance|More|My\s)/i.test(t)
+    || /schedule|readiness|personal|payroll|onboarding|attendance|availability|absence|performance/i.test(t);
 }
 
 async function login(email) {
@@ -137,6 +122,7 @@ async function runRole(spec, index) {
     await send('Page.enable');
     await send('Network.enable');
     await send('DOM.enable');
+    await send('Accessibility.enable');
     const before = await send('Network.getCookies', { urls: [origin] });
     assert.equal(before.cookies?.length || 0, 0, `${spec.slug} fresh browser unexpectedly contained cookies.`);
     const pre = await fetch(`${origin}/api/bootstrap`, { signal: AbortSignal.timeout(15_000) });
@@ -159,39 +145,30 @@ async function runRole(spec, index) {
     const bootstrapBefore = browserApi.filter(x => x.path === '/api/bootstrap' && x.status === 200).length;
     await send('Page.navigate', { url: origin });
     let html = '';
+    let controls = [];
     const deadline = Date.now() + 20_000;
     while (Date.now() < deadline) {
       try {
         const doc = await send('DOM.getDocument', { depth: 2, pierce: true }, 5000);
         const outer = await send('DOM.getOuterHTML', { nodeId: doc.root.nodeId }, 5000);
         html = String(outer.outerHTML || '');
+        const ax = await send('Accessibility.getFullAXTree', {}, 5000);
+        controls = (ax.nodes || [])
+          .filter(n => !n.ignored && ['button', 'link', 'tab', 'menuitem'].includes(String(n.role?.value || '').toLowerCase()))
+          .map(n => ({ role: String(n.role?.value || ''), name: String(n.name?.value || '').replace(/\s+/g, ' ').trim() }))
+          .filter(x => x.name);
         const count = browserApi.filter(x => x.path === '/api/bootstrap' && x.status === 200).length;
-        if (html.length > 1000 && count > bootstrapBefore) break;
+        if (html.length > 1000 && count > bootstrapBefore && controls.length > 0) break;
       } catch {}
       await sleep(300);
     }
     assert.ok(html.length > 1000, `${spec.slug} rendered DOM was unexpectedly empty.`);
     assert.ok(browserApi.filter(x => x.path === '/api/bootstrap' && x.status === 200).length > bootstrapBefore, `${spec.slug} browser did not bootstrap after navigation.`);
+    assert.ok(controls.length > 0, `${spec.slug} authenticated accessibility tree exposed no interactive controls; prior zero-control evidence must not be treated as a pass.`);
 
-    const doc = await send('DOM.getDocument', { depth: 2, pierce: true }, 5000);
-    const query = await send('DOM.querySelectorAll', { nodeId: doc.root.nodeId, selector: 'a,button,[role="tab"],[data-nav],[data-page]' }, 5000);
-    const controls = [];
-    for (const nodeId of (query.nodeIds || []).slice(0, 160)) {
-      let box;
-      try { box = await send('DOM.getBoxModel', { nodeId }, 1800); } catch { continue; }
-      const quad = box?.model?.border;
-      if (!Array.isArray(quad) || quad.length < 8) continue;
-      const xs = [quad[0], quad[2], quad[4], quad[6]];
-      const ys = [quad[1], quad[3], quad[5], quad[7]];
-      if (Math.max(...xs) - Math.min(...xs) < 2 || Math.max(...ys) - Math.min(...ys) < 2) continue;
-      let outerHTML = '';
-      try { outerHTML = String((await send('DOM.getOuterHTML', { nodeId }, 1800)).outerHTML || ''); } catch { continue; }
-      const text = decodeText(outerHTML).slice(0, 160);
-      if (!text) continue;
-      controls.push({ text, tag: (outerHTML.match(/^<([a-z0-9-]+)/i)?.[1] || '').toLowerCase(), safeNavigationCandidate: safeCandidate(text, outerHTML) });
-    }
-    const unique = [...new Map(controls.map(c => [`${c.tag}:${c.text}`, c])).values()];
-    const safe = unique.filter(c => c.safeNavigationCandidate);
+    const unique = [...new Map(controls.map(c => [`${c.role}:${c.name}`, c])).values()];
+    const safe = unique.filter(c => safeNavigationCandidate(c.name));
+    assert.ok(safe.length > 0, `${spec.slug} exposed controls but no bounded read-only navigation candidate could be identified safely.`);
 
     let screenshot = null;
     let screenshotStatus = 'NOT_ATTEMPTED';
@@ -204,7 +181,7 @@ async function runRole(spec, index) {
       screenshotStatus = `BLOCKED:${error.message}`;
     }
 
-    console.log(`ROLE_CONTROL_INVENTORY_PASS=${spec.slug}|role=${spec.role}|tenant=${spec.tenant}|controls=${unique.length}|safe=${safe.length}|screenshot=${screenshotStatus}`);
+    console.log(`ROLE_CONTROL_INVENTORY_PASS=${spec.slug}|role=${spec.role}|tenant=${spec.tenant}|controls=${unique.length}|safe=${safe.length}|screenshot=${screenshotStatus}|safe_names=${safe.slice(0,8).map(x => x.name).join(' / ')}`);
     return {
       slug: spec.slug,
       role: spec.role,
@@ -214,8 +191,8 @@ async function runRole(spec, index) {
       unauthenticatedBootstrapStatus: pre.status,
       loginStatus: 200,
       renderedDomLength: html.length,
-      controlCount: unique.length,
-      controls: unique.slice(0, 100),
+      accessibilityControlCount: unique.length,
+      accessibilityControls: unique.slice(0, 120),
       safeNavigationCandidates: safe.slice(0, 40),
       screenshot,
       screenshotStatus,
@@ -261,7 +238,8 @@ fs.writeFileSync(path.join(outDir, 'role-control-inventory.json'), JSON.stringif
   sealedRuntimeSha256: expectedRuntimeSha,
   result: 'PASS',
   roles,
-  claimBoundary: 'fixture-only hosted staging; read-only proof of role-specific rendered controls and safe navigation candidates from four fresh authenticated browser processes. It does not claim those tasks were executed, production/pilot approval, or real employee/payroll data.',
+  correctedPriorHarnessFinding: 'The prior control-inventory attempt incorrectly allowed zero discovered controls and too-small screenshots to report PASS. This version fails closed unless each role exposes at least one accessibility control and one bounded read-only navigation candidate.',
+  claimBoundary: 'fixture-only hosted staging; read-only proof of role-specific accessible rendered controls and bounded navigation candidates from four fresh authenticated browser processes. It does not claim those candidate tasks were executed, production/pilot approval, or real employee/payroll data.',
 }, null, 2));
 console.log(`LIVE_ROLE_CONTROL_INVENTORY_PROOF=PASS|roles=${roles.length}`);
 delete process.env.WFM_STAGING_PASSWORD;
