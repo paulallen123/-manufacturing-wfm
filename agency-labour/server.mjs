@@ -7,6 +7,7 @@ import {
   buildPreShiftAssurancePlan,
   assessSupplyChainAssurance
 } from './protocol.mjs';
+import { buildShortfallRecoveryPlan } from './recovery.mjs';
 
 function json(res, status, body) {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
@@ -26,6 +27,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && req.url === '/api/policy') return json(res, 200, DEFAULT_POLICY);
     if (req.method === 'POST' && req.url === '/api/requirements/plan') return json(res, 200, createRequirementPlan(await body(req)));
     if (req.method === 'POST' && req.url === '/api/suppliers/release-plan') return json(res, 200, buildAdaptiveSupplierReleasePlan(await body(req)));
+    if (req.method === 'POST' && req.url === '/api/suppliers/recover-shortfall') return json(res, 200, buildShortfallRecoveryPlan(await body(req)));
     if (req.method === 'POST' && req.url === '/api/workers/offer-protocol') return json(res, 200, buildWorkerOfferProtocol(await body(req)));
     if (req.method === 'POST' && req.url === '/api/workers/nominations/validate') return json(res, 200, validateAgencyNominations(await body(req)));
     if (req.method === 'POST' && req.url === '/api/attendance/pre-shift-assurance') return json(res, 200, buildPreShiftAssurancePlan(await body(req)));
