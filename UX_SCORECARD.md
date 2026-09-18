@@ -1,5 +1,67 @@
 # WFM UX scorecard
 
+## 2026-09-18 — Cycle 11 r5: authoritative return confirmation without automation ambiguity
+
+### Journey reviewed
+Manager Today → Universal Action Queue → existing Absence / Time Review / Weekly Sign-off source workflow → decision completed in the source → return to Today.
+
+### Reuse / duplicate check
+- PR #80 and the existing Cycle 11 branch remain the single new-UI owner; no new branch, page, decision card or workflow was created.
+- Reused the existing Cycle 11 lifecycle model, source-bound return marker, authoritative Absence request state, payroll/time-review report, weekly-sign-off report and existing receipt presentation.
+- Reused the existing quality gate rather than creating another test workflow.
+- No old-shell code was changed or used as a UX implementation surface.
+
+### Research delta
+No competitor/general UX research was repeated. The problem was a verified product-semantic gap: the existing model classified any resolved action in the same receipt bucket as automation, while the UI labelled that bucket `Handled automatically`. That could falsely imply a manager/payroll judgment had been automated. Internal authoritative source state was sufficient to resolve the design decision.
+
+### Hypothesis
+If source-confirmed human decisions are kept separate from automation receipts, and a returned manager receives confirmation only when the authoritative source explicitly reports a terminal state, the queue will be more explainable without adding dashboard density or moving write authority into the UI.
+
+### Implementation completed this run
+- Extended `ux-reset-cycle11-model.js` so unresolved actions, automated receipts and source-confirmed human resolutions are separate deterministic collections.
+- `Handled automatically` now remains automation-only.
+- Added a collapsed `Recently confirmed` lane for human decisions that the authoritative source explicitly confirms.
+- Extended the existing return marker with structured source, reason and title context rather than creating a second context mechanism.
+- Added one reusable `sourceResolution()` primitive:
+  - Absence resolves only from explicit terminal request states (`approved`, `rejected`, `declined`, `cancelled`, `withdrawn`).
+  - Time Review resolves only when the current source report shows zero open exceptions for the exact structured team `sourceId`.
+  - Weekly Sign-off resolves only when the exact current source team reports `signed`.
+- If the task remains active, focus returns to the existing action. If the source confirms resolution, the `Recently confirmed` receipt is opened/focused for continuity. If neither can be verified, no resolved claim is invented.
+- No SLA was invented. `Needs verification` remains available in the model but will only be driven when a source workflow exposes an authoritative SLA/confirmation contract.
+- Code commits this run: `0023e816897f2795917f42ee1f77e828bde6776e`, `b5b13468650dac93272b7ddb2bdead538286b868`, gate commit `b8838494e140adebe62e237173b9403736507aaf`.
+
+### Focused validation
+- `node --check` passed locally for the revised Cycle 11 model and UI source.
+- Focused model test: automation receipt vs source-confirmed human decision separation passed: `UX11_RESOLUTION_MODEL=PASS`.
+- Focused VM/source-state test passed for all three authoritative confirmation paths: pending Absence does not resolve; approved Absence resolves; open Time Review does not resolve; zero-open exact team resolves; unsigned Weekly Sign-off does not resolve; signed exact team resolves; human resolution remains outside automation receipts: `UX11_SOURCE_CONFIRMATION_VM=PASS`.
+- Local headless Chromium composition could not run because the managed browser blocks both localhost and `file:` URLs by organisation policy. This is recorded as environment-blocked, not a product pass/fail.
+- After the meaningful branch change, GitHub was checked once. Run `35360490269` at exact head `b8838494e140adebe62e237173b9403736507aaf` still failed before execution: the single job contains `steps: []`, `runner_id: 0`, and no runner name. The known zero-step infrastructure blocker was therefore not retried.
+
+### UX scorecard impact
+- Calm by default: preserved; both automation and resolved history remain collapsed.
+- Dense on demand: improved; confirmation evidence appears only after the relevant source workflow has been visited and explicitly confirms resolution.
+- Explainability: improved materially; human judgment can no longer be represented inside `Handled automatically`.
+- Authority/audit semantics: improved; resolution is source-confirmed and source evidence is shown, while write authority remains in the owner workflow.
+- Navigation predictability: improved; return focus now handles both still-active tasks and source-confirmed resolved tasks.
+- Interaction count: unchanged for active work; resolution confirmation does not add a required navigation step.
+- Accessibility: confirmation receipt receives programmatic return focus and live-region text; screen-reader announcement quality remains unverified.
+- Mobile/tablet: no layout code changed; existing responsive containment remains unchanged.
+- Capability preservation: green; no server-side permission, payroll, leave, sign-off, tenant, audit or recovery logic moved into the presentation layer.
+
+### Serious-idea decision log
+- Put all resolved actions under `Handled automatically`: **REJECT** — misrepresents human judgment.
+- Create a second resolution/audit subsystem: **REJECT** — duplicates source ownership and existing lifecycle model.
+- Reuse authoritative source state to create a separate `Recently confirmed` lane: **BUILD NOW** — implemented.
+- Infer resolution because a card disappeared: **REJECT** — disappearance is not authoritative confirmation.
+- Invent a generic confirmation SLA in the UI: **REJECT** — no structured source SLA is available.
+- Add `Needs verification` only when the owning workflow exposes an authoritative SLA/confirmation contract: **BUILD NEXT**.
+
+### Still unverified
+Composed browser execution on the actual sealed runtime, screen-reader behaviour, 320/390/tablet return-focus after a real write, actual first-click/time-on-task/error-rate impact, source-provided confirmation SLA availability, and exact hosted proof. Cycle 10 promotion remains gated on exact source-bound hosted proof.
+
+### Single next highest-value action
+Extend the existing single Cycle 11 composed-browser regression with one source-confirmed resolution return case (do not create another harness), then inspect the owning workflows for an explicit structured confirmation/SLA signal. If none exists, do not invent one; move to the next unblocked new-UI manager journey.
+
 ## 2026-09-18 — Cycle 11 r3: source-team context continuation
 
 ### Journey reviewed
