@@ -1,0 +1,37 @@
+{
+  "schema": "wfm.railway-proof-surface-policy.v1",
+  "updated": "2026-09-18",
+  "purpose": "Prevent ad-hoc Railway proof services from counting as WFM release evidence unless the hosted security/deployment path is explicitly evidenced.",
+  "allowed_repository": "paulallen123/-manufacturing-wfm",
+  "required_dockerfile_path": "Dockerfile",
+  "required_healthcheck_path": "/api/health",
+  "minimum_restart_retries": 1,
+  "public_credentialled_proof_requires": {
+    "builder": "DOCKERFILE",
+    "dockerfile_path": "Dockerfile",
+    "source_repo_match": true,
+    "healthcheck": "/api/health",
+    "restart_policy": true,
+    "hosted_variable_names": [
+      "PORT",
+      "WFM_DB",
+      "WFM_HOSTED_STAGING",
+      "WFM_PUBLIC_ORIGIN",
+      "WFM_RUNTIME_SHA256",
+      "WFM_STAGING_PASSWORD"
+    ],
+    "case_insensitive_variable_names_unique": true
+  },
+  "lifecycle": {
+    "public_domain_without_deployment": "warning_and_not_proof",
+    "staged_change_without_deployment": "not_runtime_evidence",
+    "superseded_proof_service": "retire_through_authorized_cloud_change_after_evidence_preservation"
+  },
+  "release_rule": "Any critical/high finding makes that service ineligible as hosted proof. Do not infer that a public SUCCESS deployment is hardened merely from provider lifecycle status.",
+  "safety": {
+    "production_mutation": false,
+    "cloud_deletion_automatic": false,
+    "credential_rotation_automatic": false,
+    "direct_llm_execution_authority": false
+  }
+}

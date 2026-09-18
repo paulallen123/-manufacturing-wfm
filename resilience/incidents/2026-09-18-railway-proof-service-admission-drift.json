@@ -1,0 +1,52 @@
+{
+  "schema": "wfm.reliability-incident.v1",
+  "id": "2026-09-18-railway-proof-service-admission-drift",
+  "status": "OPEN_CONTAINED_BY_EVIDENCE_GATE",
+  "classification": [
+    "deployment/provenance problem",
+    "configuration/integration problem",
+    "security concern"
+  ],
+  "observed_evidence": {
+    "services_examined": 10,
+    "active_public_credentialled_services": 5,
+    "blocking_findings": 5,
+    "public_domains_without_deployment": 4,
+    "railpack_public_credentialled_services": [
+      "wfm-ux-cycle10-r3-proof",
+      "wfm-ux-cycle10-r4-proof"
+    ],
+    "case_variant_credential_alias_service": "wfm-customer-proof-0676",
+    "staged_not_deployed_service": "wfm-ux-cycle10-r5-directproof-1030",
+    "credential_values_read": false
+  },
+  "causal_model": {
+    "inference": "Proof services were created through multiple ad-hoc paths without one admission contract, so provider SUCCESS/public-domain status could be mistaken for hardened WFM hosted proof.",
+    "not_proven": [
+      "identity-survival wrapper bypass on r3/r4",
+      "customer data exposure",
+      "production compromise"
+    ],
+    "why_fail_closed": "Railpack plus public credentials does not prove the Dockerfile-only non-root/read-only/identity-wrapper controls are in the execution path; absence of proof is enough to make the service ineligible as security evidence."
+  },
+  "prevention": {
+    "classifier": "scripts/railway-proof-surface-classifier.mjs",
+    "policy": "resilience/railway-proof-surface-policy.json",
+    "fixtures": "tests/railway-proof-surface-fixtures.json",
+    "rule": "Only public credential-bearing services satisfying hardened builder, source, health, restart and variable-name invariants can count as hosted proof.",
+    "cloud_cleanup": "Preserve evidence first. Retire or reconfigure superseded services only through an explicitly authorized Railway change."
+  },
+  "metrics": {
+    "reproducibility": "HIGH_FROM_LIVE_PROVIDER_CONFIG",
+    "mean_detection_effort": "ONE_PROVIDER_INVENTORY_CORRELATION",
+    "recovery_path_quality": "DEFINED_NOT_EXECUTED",
+    "prevention_coverage_change": "Adds deterministic admission/lifecycle classification for public proof services instead of trusting provider SUCCESS status."
+  },
+  "safety": {
+    "production_mutation": false,
+    "railway_mutation": false,
+    "credential_rotation": false,
+    "customer_data_mutation": false,
+    "direct_llm_execution_authority": false
+  }
+}

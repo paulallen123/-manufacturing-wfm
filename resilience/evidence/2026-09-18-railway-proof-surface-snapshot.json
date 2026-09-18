@@ -1,0 +1,115 @@
+{
+  "schema": "wfm.railway-proof-surface-snapshot.v1",
+  "observed_at": "2026-09-18T09:50:00Z",
+  "project_id": "9a774359-37fa-47e8-bde0-932420c32923",
+  "environment_id": "6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6",
+  "policy": {
+    "allowed_repository": "paulallen123/-manufacturing-wfm",
+    "required_dockerfile_path": "Dockerfile",
+    "required_healthcheck_path": "/api/health",
+    "minimum_restart_retries": 1
+  },
+  "services": [
+    {
+      "name": "wfm-customer-proof-0676",
+      "service_id": "ddd54fb9-3564-4251-9959-28cf3308c272",
+      "public_domains": ["wfm-customer-proof-0676-production.up.railway.app"],
+      "latest_deployment": {"id": "a1d4693c-9c0c-42e9-8b64-4da66503d1be", "status": "SUCCESS", "created_at": "2026-09-18T00:11:41.077Z"},
+      "source": {"repo": "paulallen123/-manufacturing-wfm"},
+      "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile", "watchPatterns": ["Dockerfile","DEPLOYMENT_MANIFEST.json","STAGING_FREEZE.json","artifact/**"]},
+      "deploy": {"healthcheckPath": "/api/health", "restartPolicyMaxRetries": 3},
+      "variable_names": ["NODE_ENV","NODE_OPTIONS","PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD","Wfm_staging_password"]
+    },
+    {
+      "name": "wfm-ux-pr37",
+      "service_id": "575de460-60f5-4221-9e2f-d912379c8d7d",
+      "public_domains": ["wfm-ux-pr37-production.up.railway.app"],
+      "latest_deployment": {"id": "4ba96e3e-4128-48a8-b250-9c40c3d14435", "status": "SUCCESS", "created_at": "2026-09-18T03:09:20.320Z"},
+      "source": {"repo": "paulallen123/-manufacturing-wfm", "branch": "ux/planner-focus-20260917", "commitSha": "7ae695e41cdb03eb7ef37860b413ee1addc77a5a"},
+      "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile"},
+      "deploy": {"healthcheckPath": "/api/health", "restartPolicyMaxRetries": 3},
+      "variable_names": ["NODE_ENV","NODE_OPTIONS","PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD"]
+    },
+    {
+      "name": "wfm-ux-cycle10-r3-proof",
+      "service_id": "fee028b9-f7dc-44bb-b7e4-5234e2c095c5",
+      "public_domains": ["wfm-ux-cycle10-r3-proof-production.up.railway.app"],
+      "latest_deployment": {"id": "a2df454c-d052-4092-992b-1c5380ddb802", "status": "SUCCESS", "created_at": "2026-09-18T05:25:00.265Z"},
+      "source": {"repo": "paulallen123/-manufacturing-wfm"},
+      "build": {"builder": "RAILPACK"},
+      "deploy": {},
+      "variable_names": ["PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD"]
+    },
+    {
+      "name": "wfm-ux-cycle10-r4-proof",
+      "service_id": "5de85004-a85d-41cd-848d-554f16afd1ff",
+      "public_domains": ["wfm-ux-cycle10-r4-proof-production.up.railway.app"],
+      "latest_deployment": {"id": "71ee888c-0f48-4932-a5e6-e3f6d36d1716", "status": "SUCCESS", "created_at": "2026-09-18T06:47:43.273Z"},
+      "source": {"repo": "paulallen123/-manufacturing-wfm"},
+      "build": {"builder": "RAILPACK"},
+      "deploy": {},
+      "variable_names": ["PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD"]
+    },
+    {
+      "name": "wfm-concept-fidelity-preview",
+      "service_id": "3bea5411-cebb-4878-adcc-766f5fd58cc7",
+      "public_domains": ["wfm-concept-fidelity-preview-production.up.railway.app"],
+      "latest_deployment": {"id": "021329d8-2f9b-4869-be31-5ab5859a395e", "status": "SUCCESS", "created_at": "2026-09-18T07:28:42.632Z"},
+      "source": {"repo": "paulallen123/-manufacturing-wfm"},
+      "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile", "watchPatterns": ["Dockerfile","DEPLOYMENT_MANIFEST.json","STAGING_FREEZE.json","artifact/**","ux-overlay/**","security/runtime/**"]},
+      "deploy": {"healthcheckPath": "/api/health", "restartPolicyMaxRetries": 3},
+      "variable_names": ["NODE_ENV","NODE_OPTIONS","PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD"]
+    },
+    {
+      "name": "wfm-ux-cycle10-r5-exact-proof",
+      "service_id": "69a8c9f2-9b9e-4a32-aaa5-82ae23af47e8",
+      "public_domains": ["wfm-ux-cycle10-r5-exact-proof-production.up.railway.app"],
+      "latest_deployment": null,
+      "source": {"repo": "paulallen123/-manufacturing-wfm"},
+      "build": {"builder": "RAILPACK"},
+      "deploy": {},
+      "variable_names": []
+    },
+    {
+      "name": "wfm-ux-cycle10-r5-bound-proof",
+      "service_id": "2329df20-79db-4da2-85bb-c105fa998404",
+      "public_domains": ["wfm-ux-cycle10-r5-bound-proof-production.up.railway.app"],
+      "latest_deployment": null,
+      "source": {"repo": "paulallen123/-manufacturing-wfm"},
+      "build": {"builder": "RAILPACK"},
+      "deploy": {},
+      "variable_names": []
+    },
+    {
+      "name": "wfm-integration-fabric-v1-proof",
+      "service_id": "2631d462-61bf-4c01-ac4b-e106a562feeb",
+      "public_domains": ["wfm-integration-fabric-v1-proof-production.up.railway.app"],
+      "latest_deployment": null,
+      "source": {"repo": "paulallen123/-manufacturing-wfm"},
+      "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile"},
+      "deploy": {"healthcheckPath": "/api/health", "restartPolicyMaxRetries": 2},
+      "variable_names": ["PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_INTEGRATION_INTERNAL_TOKEN","WFM_PUBLIC_ORIGIN","WFM_STAGING_PASSWORD"]
+    },
+    {
+      "name": "wfm-ux-cycle10-r5-sourcebound-1000",
+      "service_id": "7a25f88c-1589-4d96-b574-196cd94c9d2f",
+      "public_domains": ["wfm-ux-cycle10-r5-sourcebound-1000-production.up.railway.app"],
+      "latest_deployment": null,
+      "source": {"repo": "paulallen123/-manufacturing-wfm"},
+      "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile"},
+      "deploy": {"healthcheckPath": "/api/health", "restartPolicyMaxRetries": 3},
+      "variable_names": ["PORT","WFM_DB","WFM_HOSTED_STAGING","WFM_PUBLIC_ORIGIN","WFM_RUNTIME_SHA256","WFM_STAGING_PASSWORD"]
+    },
+    {
+      "name": "wfm-ux-cycle10-r5-directproof-1030",
+      "service_id": "e90225ec-5892-4ae7-8dca-04cbbd0e0559",
+      "public_domains": [],
+      "latest_deployment": null,
+      "source": {"repo": "paulallen123/-manufacturing-wfm"},
+      "build": {"builder": "RAILPACK"},
+      "deploy": {},
+      "variable_names": [],
+      "staged_change": {"patch_id": "52c41ac4-63d8-4c34-b635-8ca1154a8843", "branch": "ux/planner-focus-20260918-r5"}
+    }
+  ]
+}
