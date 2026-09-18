@@ -127,6 +127,10 @@ try {
     }
     throw new Error(`Timed out waiting for browser expression: ${expression}`);
   }
+  async function waitForAuthenticatedHome() {
+    await waitForExpression(`document.readyState === 'complete' || document.readyState === 'interactive'`);
+    await waitForExpression(`!document.querySelector('#v2-login') && document.body && document.body.innerText.length > 200`);
+  }
   async function screenshot(name) {
     await sleep(400);
     const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, fromSurface: true });
@@ -170,8 +174,7 @@ try {
   })()`);
   assert.equal(login.status, 200, `Hosted browser login failed with HTTP ${login.status}`);
   await send('Page.reload', { ignoreCache: true });
-  await waitForExpression(`document.readyState === 'complete' || document.readyState === 'interactive'`);
-  await waitForExpression(`!document.querySelector('#v2-login') && document.body && document.body.innerText.length > 200`);
+  await waitForAuthenticatedHome();
   delete process.env.WFM_STAGING_PASSWORD;
 
   const identity = await evaluate(`(async()=>{const r=await fetch('/api/bootstrap'); return {status:r.status,json:await r.json()};})()`);
@@ -203,6 +206,8 @@ try {
     ['Payroll'],
     ['Personal']
   ]) {
+    await send('Page.navigate', { url: origin });
+    await waitForAuthenticatedHome();
     const route = await clickText(labels);
     if (route) {
       routes.push(route);
@@ -217,7 +222,7 @@ try {
   screenshots.push(await screenshot('20-kiosk-desktop.png'));
 
   await send('Page.navigate', { url: origin });
-  await waitForExpression(`document.readyState === 'complete' || document.readyState === 'interactive'`);
+  await waitForAuthenticatedHome();
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   await sleep(700);
   const mobileLayout = await evaluate(`({width: innerWidth, scrollWidth: document.documentElement.scrollWidth})`);
