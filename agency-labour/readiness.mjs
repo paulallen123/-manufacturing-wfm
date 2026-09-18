@@ -80,7 +80,8 @@ export function buildAssignmentReadyPack(input) {
     versionedAt: input.versionedAt ?? new Date().toISOString()
   };
 
-  const versionHash = sha256(canonical);
+  const { versionedAt: _versionedAt, ...semanticCanonical } = canonical;
+  const versionHash = sha256(semanticCanonical);
   const complete = missing.length === 0;
   const packId = `${input.hirer?.id ?? 'HIRER'}:${input.site?.id ?? 'SITE'}:${input.requirement?.role ?? 'ROLE'}`;
 
@@ -206,32 +207,25 @@ export function assessAvailabilityFreshness({ worker, requirement, now = new Dat
   };
 }
 
-function isoWeekKey(date) {
-  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const day = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const week = Math.ceil((((d - yearStart) / DAY_MS) + 1) / 7);
-  return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
-}
-
-function enumerateWeekKeys(startAt, endAt) {
+function enumerateAssignmentWeekKeys(startAt, endAt, anchorAt) {
   const start = new Date(startAt);
   const end = new Date(endAt ?? startAt);
+  const anchor = new Date(anchorAt);
   const keys = new Set();
   let cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
   const stop = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
   while (cursor <= stop) {
-    keys.add(isoWeekKey(cursor));
+    const index = Math.floor((cursor.getTime() - anchor.getTime()) / (7 * DAY_MS));
+    if (index >= 0) keys.add(`AWEEK-${index + 1}`);
     cursor = new Date(cursor.getTime() + DAY_MS);
   }
   return keys;
 }
 
 /**
- * Conservative AWR continuity guard. It aggregates qualifying calendar weeks across agencies
- * for the same hirer/role and only resets history when an explicit evidenced reset has been
- * recorded. This avoids falsely resetting service simply because the supplying agency changed.
+ * Conservative AWR continuity guard. It aggregates qualifying 7-day assignment weeks across
+ * agencies for the same hirer/role and only resets history when an explicit evidenced reset
+ * has been recorded. This avoids falsely resetting service simply because the supplying agency changed.
  */
 export function assessAwrContinuity({ workerId, hirerId, roleKey, assignments = [], continuityEvents = [] }) {
   if (!workerId || !hirerId || !roleKey) throw new Error('workerId, hirerId and roleKey are required');
@@ -250,9 +244,12 @@ export function assessAwrContinuity({ workerId, hirerId, roleKey, assignments = 
 
   const weeks = new Set();
   const suppliers = new Set();
+  const anchorAt = relevant[0]?.startAt ?? null;
   for (const a of relevant) {
     suppliers.add(a.supplierId ?? 'UNKNOWN');
-    for (const key of enumerateWeekKeys(a.startAt, a.endAt)) weeks.add(key);
+    if (anchorAt) {
+      for (const key of enumerateAssignmentWeekKeys(a.startAt, a.endAt, anchorAt)) weeks.add(key);
+    }
   }
 
   const qualifyingWeeks = weeks.size;
