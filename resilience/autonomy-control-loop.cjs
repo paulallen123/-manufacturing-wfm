@@ -51,6 +51,7 @@ function createAutonomyControlLoop({
   repairCoordinator,
   t3ShadowSimulator,
   t3ShadowVerifier,
+  t4ContainmentController,
   rollbackExecutor,
   now = Date.now,
   maxActions = 3,
@@ -98,7 +99,7 @@ function createAutonomyControlLoop({
     let result = {};
 
     try {
-      if (targetTenant !== tenant) {
+      if (targetTenant !== tenant && tier !== 'T4') {
         append('cross-tenant-denied', { tenant, targetTenant });
       } else if (tier === 'T0') {
         if (!selfHelp?.answer) {
@@ -197,6 +198,44 @@ function createAutonomyControlLoop({
             });
           }
         }
+      } else if (tier === 'T4' && t4ContainmentController?.handle) {
+        consumeAction('t4.containment');
+        const t4 = await t4ContainmentController.handle({
+          incidentId,
+          tenant,
+          targetTenant,
+          scenarioId,
+          evidenceDigest,
+          requestedAction: input.requestedAction,
+          threat: input.threat,
+          provenance: input.provenance,
+          supportSystem: input.supportSystem,
+          knownGood: input.knownGood,
+          rollbackRequested: input.rollbackRequested === true || input.knownGoodRollbackAvailable === true,
+        });
+        if (
+          t4?.safeTerminal !== true
+          || t4?.productionAuthorityGranted === true
+          || t4?.modelAuthorityGranted === true
+          || t4?.customerMutation === true
+          || t4?.crossTenantMutation === true
+          || t4?.requestedActionExecuted === true
+        ) {
+          deny('WFM_AUTONOMY_T4_AUTHORITY', 'Tier 4 containment controller exceeded bounded authority.');
+        }
+        if (t4ContainmentController?.verifyReceipt && t4ContainmentController.verifyReceipt(t4) !== true) {
+          deny('WFM_AUTONOMY_T4_VERIFY', 'Tier 4 containment receipt failed independent integrity verification.');
+        }
+        if (!isAllowedTerminal(contract, tier, t4?.outcome)) {
+          deny('WFM_AUTONOMY_TERMINAL', 'Invalid Tier 4 terminal outcome.');
+        }
+        outcome = t4.outcome;
+        result = { t4 };
+        append('t4-controller-terminal', {
+          status: outcome,
+          controllerReceiptDigest: t4.receiptDigest || null,
+          controllerActions: Number.isSafeInteger(t4.actionCount) ? t4.actionCount : null,
+        });
       } else if (input.knownGoodRollbackAvailable === true && rollbackExecutor?.rollback) {
         consumeAction('known-good.rollback');
         const rollback = await rollbackExecutor.rollback({ incidentId, tenant, scenario, evidenceDigest, input });
@@ -272,12 +311,12 @@ function createAutonomyControlLoop({
 
     if (receipt.traceHeadDigest !== prev) return false;
     const result = {};
-    for (const key of ['answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 'rollback', 'containedErrorCode']) {
+    for (const key of ['answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode']) {
       if (Object.prototype.hasOwnProperty.call(receipt, key)) result[key] = receipt[key];
     }
     if (receipt.resultDigest !== digest(result)) return false;
     const core = { ...receipt };
-    for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 'rollback', 'containedErrorCode']) delete core[key];
+    for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode']) delete core[key];
     return receipt.receiptDigest === digest(core);
   }
 
