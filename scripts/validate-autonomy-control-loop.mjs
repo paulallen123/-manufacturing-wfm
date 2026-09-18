@@ -140,6 +140,10 @@ const tampered = structuredClone(t1);
 tampered.trace[0].detail.tier = 'T4';
 assert.equal(loop.verifyReceipt(tampered), false);
 
+const resultTampered = structuredClone(t1);
+resultTampered.recovery.status = 'contained';
+assert.equal(loop.verifyReceipt(resultTampered), false);
+
 console.log(JSON.stringify({
   schemaVersion: 1,
   proof: 'closed-loop-autonomy-controller',
@@ -153,6 +157,7 @@ console.log(JSON.stringify({
   t3CustomerAuthorityBoundary: true,
   t4KnownGoodRollbackBounded: true,
   tamperEvidence: true,
+  resultTamperEvidence: true,
   productionMutation: false,
   customerMutation: false,
 }, null, 2));
