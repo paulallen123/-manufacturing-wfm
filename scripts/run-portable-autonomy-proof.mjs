@@ -14,7 +14,7 @@ function sha256(value) {
   return createHash('sha256').update(String(value ?? '')).digest('hex');
 }
 
-const checks = [
+const checks = [\n  ['ci-provider-failover', 'scripts/validate-ci-provider-failover.mjs', true],
   ['deployment-provenance', 'scripts/validate-deployment.mjs', false],
   ['resilience-policy', 'scripts/validate-resilience-scenarios.mjs', true],
   ['support-tier-contract', 'scripts/validate-support-tier-contract.mjs', true],
