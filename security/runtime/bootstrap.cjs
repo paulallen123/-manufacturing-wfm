@@ -119,13 +119,17 @@ function handleStagingAccess(req, res) {
 
     const sessionToken = randomBytes(32).toString('base64url');
     const sessionExpires = Math.min(Date.now() + 4 * 60 * 60 * 1000, STAGING_ACCESS_EXPIRES_AT + 4 * 60 * 60 * 1000);
-    const transaction = db.transaction(() => {
+    try {
+      db.exec('BEGIN IMMEDIATE;');
       db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)')
         .run(sha256(sessionToken), STAGING_ACCESS_EMAIL, sessionExpires);
       db.prepare('INSERT INTO staging_access_grants(grant_key,used_at) VALUES(?,?)')
         .run(grant.key, new Date().toISOString());
-    });
-    transaction();
+      db.exec('COMMIT;');
+    } catch (error) {
+      try { db.exec('ROLLBACK;'); } catch {}
+      throw error;
+    }
 
     res.statusCode = 302;
     res.setHeader('Cache-Control', 'no-store');
