@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 import { evaluateAgencySupplierEligibility } from './agency-supplier-compliance.mjs';
+import { evaluateAgencyRightToWork } from './agency-right-to-work.mjs';
 
-export const AGENCY_LABOUR_ENGINE_VERSION = 'agency-labour-exchange-v0.2.0';
+export const AGENCY_LABOUR_ENGINE_VERSION = 'agency-labour-exchange-v0.2.1';
 
 const ms = value => {
   const parsed = typeof value === 'number' ? value : Date.parse(value);
@@ -92,9 +93,9 @@ export function evaluateAgencyCandidate(worker, request, agency, policy = {}) {
   if (ms(worker.availability?.endAt) === null || ms(worker.availability.endAt) < end) failures.push('availability_does_not_cover_shift_end');
   if (worker.inductionNoExpiry !== true && (ms(worker.inductionValidUntil) === null || ms(worker.inductionValidUntil) < end)) failures.push('site_induction_expired_or_missing');
 
-  const rightToWork = worker.rightToWork || {};
-  if (rightToWork.status !== 'verified') failures.push('right_to_work_not_verified');
-  if (rightToWork.indefinite !== true && (ms(rightToWork.validUntil) === null || ms(rightToWork.validUntil) < end)) failures.push('right_to_work_expires_before_shift_end');
+  const rightToWorkEligibility = evaluateAgencyRightToWork(worker, request, agency, { now: policy.now });
+  failures.push(...rightToWorkEligibility.failures);
+  warnings.push(...rightToWorkEligibility.warnings.map(warning => 'right_to_work:' + warning));
 
   for (const required of request.requiredSkills || []) if (!skillOk(worker, required)) failures.push('missing_skill:' + required.id);
   for (const required of request.requiredQualifications || []) if (!qualificationOk(worker, required, end)) failures.push('invalid_qualification:' + required.id);
@@ -115,6 +116,7 @@ export function evaluateAgencyCandidate(worker, request, agency, policy = {}) {
     warnings,
     ignoredSensitiveFields: ignored,
     supplierEligibility,
+    rightToWorkEligibility,
     score: ranking,
   };
 }
@@ -146,6 +148,7 @@ export function buildAgencyRequestPack(input) {
         payAndConditions: structuredClone(request.payAndConditions || {}),
         industrialActionReplacement: request.industrialActionReplacement === true,
         fairWorkAgencyGangmasterLicenceRequired: request.fairWorkAgencyGangmasterLicenceRequired === true || request.glaaLicenceRequired === true,
+        rightToWorkArrangement: request.rightToWorkArrangement ?? null,
       },
     },
   };
@@ -200,6 +203,7 @@ export function planAgencyLabourFulfilment(input) {
     workerId: result.workerId,
     agencyId: result.agencyId,
     score: result.score,
+    rightToWorkEvidence: result.rightToWorkEligibility.evidence,
     rationale: [
       'supplier_compliance_eligible_before_ranking',
       'eligible_and_site_ready',
@@ -304,6 +308,7 @@ export function planAgencyLabourFulfilment(input) {
       eligible: result.eligible,
       failures: result.failures,
       supplierEligibility: result.supplierEligibility,
+      rightToWorkEligibility: result.rightToWorkEligibility,
       score: result.score,
     })),
     result: { ...output, reproducibilityHash: undefined },
