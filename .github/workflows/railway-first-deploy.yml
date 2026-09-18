@@ -1,54 +1,50 @@
-name: Railway first deploy - customer proof 0.6.76
+name: Railway deploy - concept fidelity preview
 
 on:
   push:
-    branches: [main]
+    branches: ['ux/concept-fidelity-rebuild']
     paths:
       - '.github/workflows/railway-first-deploy.yml'
-      - 'scripts/live-auth-proof.mjs'
-      - 'scripts/live-isolation-kiosk-proof.mjs'
-      - 'scripts/live-correction-proof.mjs'
-      - 'scripts/live-browser-screenshot-proof.mjs'
-      - 'scripts/live-role-browser-context-proof.mjs'
-      - 'scripts/live-visual-evidence.mjs'
-      - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: railway-auth-proof-wfm-customer-proof-0676-v5
+  group: railway-concept-fidelity-preview-v1
   cancel-in-progress: true
 
 jobs:
-  first-deploy:
+  deploy-preview:
     if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 12
     env:
       RAILWAY_NO_AUTO_UPDATE: '1'
       RAILWAY_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'
       RAILWAY_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'
-      RAILWAY_SERVICE_ID: 'ddd54fb9-3564-4251-9959-28cf3308c272'
+      RAILWAY_SERVICE_ID: '3bea5411-cebb-4878-adcc-766f5fd58cc7'
+      PREVIEW_ORIGIN: 'https://wfm-concept-fidelity-preview-production.up.railway.app'
       EXPECTED_RUNTIME_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'
     steps:
-      - name: Checkout sealed proof repository
+      - name: Checkout exact concept branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Re-verify frozen runtime before upload
+      - name: Re-verify staging runtime and concept markers
         shell: bash
         run: |
           set -euo pipefail
           echo "$EXPECTED_RUNTIME_SHA256  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz" | sha256sum -c -
           grep -F '"production_approved": false' DEPLOYMENT_MANIFEST.json
           grep -F '"pilot_ready": false' DEPLOYMENT_MANIFEST.json
-          grep -F '"staging_only": true' DEPLOYMENT_MANIFEST.json
+          grep -F 'WFM_CONCEPT_FIDELITY_V3' ux-overlay/concept-fidelity.js
+          node --check ux-overlay/concept-fidelity.js
+          node --check security/runtime/ux-preference.cjs
 
-      - name: Install pinned Railway CLI with published digest verification
+      - name: Install pinned Railway CLI
         shell: bash
         run: |
           set -euo pipefail
@@ -63,71 +59,28 @@ jobs:
           echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
           "$CLI_BIN" --version
 
-      # Security boundary: this is the only step that receives the deployment credential.
-      # The repository-wide security gate enforces the exact secret name, workflow path,
-      # owner-only trigger, fixed target IDs, pinned runner/actions and non-persistent checkout.
-      - name: Bootstrap exact existing Railway customer-proof service
+      - name: Upload exact concept source to isolated preview
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
+          "$RAILWAY_BIN" up             --service "$RAILWAY_SERVICE_ID"             --environment "$RAILWAY_ENVIRONMENT_ID"             --detach
 
-          "$RAILWAY_BIN" variable list \
-            --service "$RAILWAY_SERVICE_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --json > "$RUNNER_TEMP/railway-vars.json"
-
-          node --input-type=module - "$RUNNER_TEMP/railway-vars.json" <<'NODE'
-          import fs from 'node:fs';
-          import path from 'node:path';
-          import { spawnSync } from 'node:child_process';
-          const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-          const password = vars.WFM_STAGING_PASSWORD;
-          if (!password || !vars.WFM_PUBLIC_ORIGIN) {
-            throw new Error('Required canonical staging variables are unavailable to the proof runner.');
-          }
-          delete process.env.RAILWAY_TOKEN;
-          process.env.WFM_STAGING_PASSWORD = password;
-          process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
-          await import('./scripts/live-auth-proof.mjs');
-          await import('./scripts/live-isolation-kiosk-proof.mjs');
-          await import('./scripts/live-correction-proof.mjs');
-          await import('./scripts/live-browser-screenshot-proof.mjs');
-
-          // Individual proof modules defensively clear the credential after use. Restore
-          // it only from the in-memory server-held value before the next isolated proof;
-          // it is never printed, persisted in evidence, or passed to Chrome environments.
-          process.env.WFM_STAGING_PASSWORD = password;
-          await import('./scripts/live-role-browser-context-proof.mjs');
-
-          const ffmpeg = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' });
-          if (ffmpeg.status === 0 && ffmpeg.stdout.trim()) {
-            process.env.WFM_STAGING_PASSWORD = password;
-            await import('./scripts/live-visual-evidence.mjs');
-          } else {
-            const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
-            fs.mkdirSync(outDir, { recursive: true });
-            fs.writeFileSync(path.join(outDir, 'visual-recording-status.json'), JSON.stringify({
-              capturedAt: new Date().toISOString(),
-              release: '0.6.76-hosted-staging-rc1',
-              status: 'BLOCKED',
-              reason: 'ffmpeg unavailable on pinned runner',
-              claimBoundary: 'authenticated browser screenshots, separate role browser contexts and API/tenant/kiosk/correction proof passed separately; walkthrough video not claimed'
-            }, null, 2));
-            console.log('LIVE_VISUAL_EVIDENCE_CAPTURE=BLOCKED_FFMPEG_UNAVAILABLE');
-          }
-          delete process.env.WFM_STAGING_PASSWORD;
-          NODE
-
-          rm -f "$RUNNER_TEMP/railway-vars.json"
-
-      - name: Upload live visual evidence package
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: wfm-customer-proof-0676-live-evidence
-          path: ${{ runner.temp }}/wfm-evidence-output
-          if-no-files-found: error
-          retention-days: 14
-          compression-level: 6
+      - name: Prove hosted concept bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 90); do
+            if curl -fsS --connect-timeout 5 --max-time 10 "$PREVIEW_ORIGIN/api/health" -o /tmp/concept-health.json; then break; fi
+            sleep 2
+          done
+          test -s /tmp/concept-health.json
+          cat /tmp/concept-health.json
+          curl -fsS "$PREVIEW_ORIGIN/value-cockpit-ui.js" -o /tmp/concept-ui.js
+          curl -fsS "$PREVIEW_ORIGIN/factory-control-ui.css" -o /tmp/concept-ui.css
+          grep -F 'WFM_CONCEPT_FIDELITY_V3' /tmp/concept-ui.js
+          grep -F 'WFM_CONCEPT_FIDELITY_BEGIN' /tmp/concept-ui.js
+          grep -F 'ux-approved-today' /tmp/concept-ui.css
+          echo 'HOSTED_CONCEPT_FIDELITY_PREVIEW=PASS'
