@@ -1,6 +1,8 @@
+import { extractIdta02020CapabilityProfile, isIdta02020CapabilitySubmodel } from './idta-02020-capability-profile.mjs';
+
 const CONTAINER_KEYS = ['submodelElements', 'value', 'statements', 'annotations'];
 
-export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.1.0';
+export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.2.0';
 
 function canonicalReference(reference) {
   const keys = Array.isArray(reference?.keys) ? reference.keys.filter((key) => key?.value) : [];
@@ -21,10 +23,19 @@ function pushChildren(node, depth, stack) {
 }
 
 export function extractAasCapabilities(submodels = [], { maxElements = 10_000, maxDepth = 12 } = {}) {
-  const capabilities = [];
-  let visited = 0;
+  const profile = extractIdta02020CapabilityProfile(submodels, { maxElements, maxDepth });
+  if (profile.status !== 'accepted') return { status: 'rejected', reason: profile.reason, capabilities: [] };
+
+  const capabilities = [...profile.offered];
+  const requiredCapabilities = [...profile.required];
+  const reviewRequired = [
+    ...profile.reviewRequired,
+    ...profile.notAssigned.map((item) => ({ ...item, reason: 'capability_role_not_assigned' })),
+  ];
+  let visited = profile.visitedElements;
 
   for (const submodel of submodels) {
+    if (isIdta02020CapabilitySubmodel(submodel)) continue;
     const stack = [];
     const roots = Array.isArray(submodel?.submodelElements) ? submodel.submodelElements : [];
     for (let index = roots.length - 1; index >= 0; index -= 1) stack.push({ node: roots[index], depth: 0 });
@@ -39,6 +50,9 @@ export function extractAasCapabilities(submodels = [], { maxElements = 10_000, m
         capabilities.push({
           label: node.idShort ?? 'Unmapped AAS capability',
           semanticId: canonicalReference(node.semanticId),
+          role: null,
+          properties: [],
+          technicalSkillRefs: [],
           source: 'aas',
           evidence: {
             adapterVersion: AAS_CAPABILITY_ADAPTER_VERSION,
@@ -54,7 +68,19 @@ export function extractAasCapabilities(submodels = [], { maxElements = 10_000, m
     }
   }
 
-  return { status: 'accepted', capabilities, visitedElements: visited };
+  return {
+    status: 'accepted',
+    capabilities,
+    requiredCapabilities,
+    reviewRequired,
+    visitedElements: visited,
+    idta02020: {
+      matchedSubmodels: profile.matchedSubmodels,
+      offeredCount: profile.offered.length,
+      requiredCount: profile.required.length,
+      reviewRequiredCount: reviewRequired.length,
+    },
+  };
 }
 
 export function aasShellToCapabilityAsset({ tenantId, siteId, shell, submodels = [], source, workCentreId = null, limits } = {}) {
@@ -81,8 +107,11 @@ export function aasShellToCapabilityAsset({ tenantId, siteId, shell, submodels =
         shellId: shell.id ?? null,
         globalAssetId: shell?.assetInformation?.globalAssetId ?? null,
         discoveredCapabilityCount: extracted.capabilities.length,
+        requiredCapabilityCount: extracted.requiredCapabilities.length,
+        reviewRequiredCount: extracted.reviewRequired.length,
         visitedElements: extracted.visitedElements,
         adapterVersion: AAS_CAPABILITY_ADAPTER_VERSION,
+        idta02020: extracted.idta02020,
       },
     },
   };
