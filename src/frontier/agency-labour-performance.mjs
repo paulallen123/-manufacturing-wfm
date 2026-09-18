@@ -1,3 +1,5 @@
+import { evaluateAgencySupplierEligibility } from './agency-supplier-compliance.mjs';
+
 export const AGENCY_PERFORMANCE_VERSION='agency-labour-performance-v0.1.0';
 const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
 const c=v=>Math.max(0,Math.min(1,n(v)));
@@ -54,8 +56,12 @@ export function profileAgencyPerformance({agencyId,events=[],request={},now,resp
 
 export function rankAgenciesForRequest({agencies=[],events=[],request={},now,minimumEvidenceConfidence=0}){
   return (Array.isArray(agencies)?agencies:[])
-    .filter(a=>a&&a.approved===true&&a.active!==false)
-    .map(a=>profileAgencyPerformance({agencyId:a.agencyId,events,request:{...request,siteId:request.siteId},now,responseTargetMinutes:a.responseSlaMinutes??request.responseTargetMinutes??15,maxChargePerHour:request.maxChargePerHour??null}))
+    .map(a=>({agency:a,eligibility:evaluateAgencySupplierEligibility(a,request,{now})}))
+    .filter(x=>x.eligibility.eligible)
+    .map(({agency,eligibility})=>({
+      ...profileAgencyPerformance({agencyId:agency.agencyId,events,request:{...request,siteId:request.siteId},now,responseTargetMinutes:agency.responseSlaMinutes??request.responseTargetMinutes??15,maxChargePerHour:request.maxChargePerHour??null}),
+      supplierEligibility:eligibility,
+    }))
     .map(p=>({...p,lowEvidence:p.evidenceConfidence<minimumEvidenceConfidence}))
     .sort((a,b)=>b.score-a.score||b.evidenceConfidence-a.evidenceConfidence||a.agencyId.localeCompare(b.agencyId));
 }
