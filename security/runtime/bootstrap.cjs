@@ -6,7 +6,7 @@ const { createPasskeyAuth } = require('./passkey-auth.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
-const passkeysEnabled = process.env.WFM_PASSKEYS !== 'off';
+const passkeysEnabled = process.env.WFM_PASSKEYS === 'true' || (hosted && process.env.WFM_PASSKEYS !== 'off');
 let guard = null;
 let passkeys = null;
 
