@@ -348,3 +348,131 @@ body.ux-reset-active .ux-tool-drawer{
   body.ux-reset-active[data-ux-job="today"] .fcc-pulse-grid.ux-today-pulse>div{min-height:92px!important;padding:13px!important}
   body.ux-reset-active[data-ux-job="today"] .fcc-pulse-grid.ux-today-pulse strong{font-size:23px!important}
 }
+
+
+/* Approved manager navigation: Today / People / Plan / Improve / More */
+body.ux-reset-active .sidebar nav[data-ux-concept-nav="approved"] .navbtn.ux-concept-primary{
+  display:flex!important;
+  font-size:13px!important;
+  letter-spacing:-.01em!important;
+}
+body.ux-reset-active .sidebar nav[data-ux-concept-nav="approved"] .navbtn.ux-concept-primary span:not(.count):not(.review-count){
+  font-weight:720!important;
+}
+body.ux-reset-active .sidebar nav[data-ux-concept-nav="approved"] .ux-more-button{
+  display:flex!important;
+  margin-top:12px!important;
+  border-top:1px solid rgba(255,255,255,.07)!important;
+  border-radius:0 0 12px 12px!important;
+  padding-top:14px!important;
+}
+
+/* Site/user presentation mode switcher */
+.ux-view-switcher{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  margin:0 0 14px;
+  padding:10px 12px 10px 14px;
+  border:1px solid var(--cf-line);
+  border-radius:14px;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(12px);
+  box-shadow:0 5px 20px rgba(12,33,28,.045);
+}
+.ux-view-copy{display:grid;grid-template-columns:auto auto;gap:1px 9px;align-items:center;min-width:0}
+.ux-view-copy .eyebrow{grid-row:1 / 3;color:#799089!important;font-size:8px!important;letter-spacing:.13em!important}
+.ux-view-copy strong{font-size:12px;color:var(--cf-ink);line-height:1.2}
+.ux-view-copy small{font-size:9px;color:#7a8984;line-height:1.35}
+.ux-view-choices{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.ux-view-choice{
+  appearance:none;
+  border:1px solid #dce5e1;
+  background:#f8faf9;
+  color:#60736d;
+  min-height:31px;
+  padding:6px 9px;
+  border-radius:9px;
+  font:700 10px/1.1 inherit;
+  cursor:pointer;
+}
+.ux-view-choice:hover{background:#eff5f2;color:#31594d}
+.ux-view-choice.active{background:#163c32;color:#fff;border-color:#163c32;box-shadow:0 5px 14px rgba(17,58,47,.16)}
+
+/* View semantics. These only alter presentation; authoritative controls remain. */
+body[data-ux-view-mode="compact"] .content{padding-top:18px!important}
+body[data-ux-view-mode="compact"] .fcc-hero.ux-today-hero{padding:20px 22px!important;border-radius:18px!important}
+body[data-ux-view-mode="compact"] .fcc-hero.ux-today-hero h1{font-size:32px!important}
+body[data-ux-view-mode="compact"] .ux-concept-line-strip{margin:9px 0!important}
+body[data-ux-view-mode="compact"] .fcc-pulse-grid.ux-today-pulse>div{min-height:82px!important;padding:12px 13px!important}
+body[data-ux-view-mode="compact"] .fcc-pulse-grid.ux-today-pulse strong{font-size:22px!important}
+body[data-ux-view-mode="compact"] .fcc-main.ux-today-actions{padding:13px!important}
+body[data-ux-view-mode="compact"] .fcc-action{padding:10px 12px 10px 15px!important}
+body[data-ux-view-mode="compact"] .ux-detail-fold,
+body[data-ux-view-mode="compact"] .ux-today-detail{margin:7px 0!important}
+
+body[data-ux-view-mode="operational_visual"] .fcc-map,
+body[data-ux-view-mode="operational_visual"] .fcc-dept-grid{
+  border-color:#cddbd5!important;
+}
+body[data-ux-view-mode="operational_visual"] .ux-today-detail.readiness,
+body[data-ux-view-mode="operational_visual"] .ux-today-detail.capacity{
+  box-shadow:0 10px 32px rgba(15,55,44,.08)!important;
+}
+body[data-ux-view-mode="operational_visual"] .ux-concept-line-chip{
+  background:#f7faf8;
+  border-color:#d7e3de;
+}
+
+body[data-ux-view-mode="decision_first"] .fcc-main.ux-today-actions{
+  border-color:#cbdad4!important;
+  box-shadow:0 16px 42px rgba(14,55,43,.10)!important;
+}
+body[data-ux-view-mode="decision_first"] .fcc-action[data-ux-priority="critical"]{
+  background:linear-gradient(90deg,#fff 0%,#fff 75%,#fff6f6 100%)!important;
+  border-color:#ebd5d8!important;
+}
+body[data-ux-view-mode="decision_first"] .fcc-action[data-ux-priority="review"]{
+  background:linear-gradient(90deg,#fff 0%,#fff 78%,#fffaf0 100%)!important;
+}
+
+/* Employee and specialist areas share the same premium shell. */
+body.ux-reset-active .employee-hero,
+body.ux-reset-active .tr-workspace,
+body.ux-reset-active .config-panel,
+body.ux-reset-active .pci-panel,
+body.ux-reset-active .dp-shell{
+  border-radius:var(--cf-radius)!important;
+}
+body.ux-reset-active .employee-hero{
+  background:linear-gradient(135deg,#fdfefe,#f1f7f4)!important;
+}
+body.ux-reset-active .tr-panel,
+body.ux-reset-active .tr-list{
+  border-color:var(--cf-line)!important;
+  border-radius:16px!important;
+  box-shadow:0 8px 26px rgba(12,33,28,.05)!important;
+}
+
+/* Avoid never-ending page-wide scroll; large planners retain local scrolling. */
+body.ux-reset-active .content,
+body.ux-reset-active .workspace,
+body.ux-reset-active .app{overflow-x:clip!important}
+body.ux-reset-active .tablewrap,
+body.ux-reset-active .ops-scroll,
+body.ux-reset-active .sch-week-scroll,
+body.ux-reset-active .dp-table-scroll,
+body.ux-reset-active .pci-table-wrap{overflow-x:auto!important;max-width:100%!important}
+
+@media(max-width:900px){
+  .ux-view-switcher{align-items:flex-start;display:grid}
+  .ux-view-choices{justify-content:flex-start}
+}
+@media(max-width:620px){
+  .ux-view-switcher{padding:10px}
+  .ux-view-copy{grid-template-columns:auto 1fr}
+  .ux-view-copy small{grid-column:1 / -1;margin-top:3px}
+  .ux-view-choices{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  .ux-view-choice{width:100%}
+}
