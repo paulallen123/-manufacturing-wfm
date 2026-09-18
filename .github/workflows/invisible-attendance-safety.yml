@@ -24,9 +24,11 @@ concurrency:
 
 jobs:
   node-safety:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.actor == github.repository_owner) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    if: (github.event_name == 'workflow_dispatch' && github.actor == github.repository_owner) || (github.event_name == 'push' && github.actor == github.repository_owner) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      WFM_RELEASE_GRADE_SECURITY: '1'
     steps:
       - name: Checkout trusted owner push
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
