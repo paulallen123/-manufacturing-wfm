@@ -12,6 +12,11 @@ RUN mkdir -p /app/security-runtime
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 
+# Autonomous integration fabric. The control plane is separately reviewable and
+# uses only Node built-ins plus the existing per-tenant SQLite runtime.
+RUN mkdir -p /app/integration-runtime
+COPY integration/runtime/autonomous-integration-hub.cjs /app/integration-runtime/autonomous-integration-hub.cjs
+
 # Preserve the sealed server/security contract. Compose the reviewable UX layers only
 # through existing presentation assets that are already in the server's static allow-list.
 # factory-control-ui.css and value-cockpit-ui.js are the final approved CSS/JS assets in
