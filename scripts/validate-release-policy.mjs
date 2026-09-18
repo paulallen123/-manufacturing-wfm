@@ -15,7 +15,8 @@ const branches = policy.canonicalBranches || {};
 for (const key of ['integration', 'staging', 'production']) {
   if (!branches[key] || typeof branches[key] !== 'string') fail(`missing canonical branch: ${key}`);
 }
-if (new Set(Object.values(branches)).size !== 3) fail('canonical branches must be distinct');
+if (new Set([branches.integration, branches.staging, branches.production]).size !== 3) fail('canonical release branches must be distinct');
+if (branches.stagingDeployMirror !== 'main') fail('main must be the staging deploy mirror');
 
 const rules = policy.rules || {};
 for (const key of [
@@ -23,7 +24,9 @@ for (const key of [
   'canonicalStagingAcceptsOnlyReleaseStagingBranch',
   'canonicalProductionAcceptsOnlyReleaseProductionBranch',
   'productionMustUseExactStagingCommit',
-  'legacyPinnedShaWorkflowsAreProofOnly'
+  'legacyPinnedShaWorkflowsAreProofOnly',
+  'mainIsStagingMirrorOnly',
+  'mainMustMatchReleaseStagingBeforeCanonicalDeploy'
 ]) {
   if (rules[key] !== true) fail(`required rule is not enabled: ${key}`);
 }
@@ -35,8 +38,10 @@ if (!Number.isInteger(rules.previewTtlHours) || rules.previewTtlHours < 1 || rul
 }
 
 const staging = policy.canonicalRailway?.staging;
-if (!staging?.projectId || !staging?.environmentId || staging?.serviceName !== 'wfm-canonical-staging') {
-  fail('canonical staging target is incomplete or renamed');
+if (!staging?.projectId || !staging?.environmentId || staging?.serviceId !== '3bea5411-cebb-4878-adcc-766f5fd58cc7') {
+  fail('canonical staging target is incomplete or changed');
 }
+if (staging?.sourceBranch !== 'main') fail('canonical staging must remain bound to main mirror');
+if (staging?.authorityAlias !== 'wfm-canonical-staging') fail('canonical staging authority alias missing');
 
 if (!process.exitCode) console.log('RELEASE_POLICY=PASS');

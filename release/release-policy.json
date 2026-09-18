@@ -5,13 +5,17 @@
   "canonicalBranches": {
     "integration": "integration/canonical",
     "staging": "release/staging",
-    "production": "release/production"
+    "production": "release/production",
+    "stagingDeployMirror": "main"
   },
   "canonicalRailway": {
     "staging": {
       "projectId": "9a774359-37fa-47e8-bde0-932420c32923",
       "environmentId": "6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6",
-      "serviceName": "wfm-canonical-staging"
+      "serviceId": "3bea5411-cebb-4878-adcc-766f5fd58cc7",
+      "serviceName": "wfm-concept-fidelity-preview",
+      "sourceBranch": "main",
+      "authorityAlias": "wfm-canonical-staging"
     },
     "production": null
   },
@@ -23,6 +27,8 @@
     "productionMustUseExactStagingCommit": true,
     "manualRailwayUpToCanonicalServices": false,
     "legacyPinnedShaWorkflowsAreProofOnly": true,
-    "deletePreviewAfterMergeOrClose": true
+    "deletePreviewAfterMergeOrClose": true,
+    "mainIsStagingMirrorOnly": true,
+    "mainMustMatchReleaseStagingBeforeCanonicalDeploy": true
   }
 }
