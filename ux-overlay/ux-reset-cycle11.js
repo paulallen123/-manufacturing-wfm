@@ -12,11 +12,16 @@ const personFor=id=>{try{return typeof person==='function'?person(id):peopleVisi
 const requestMinutes=r=>Number.isFinite(Number(r?.hours))?Math.round(Number(r.hours)*60):null;
 const hours=m=>m==null?'not quantified':`${(Number(m)/60).toLocaleString('en-GB',{maximumFractionDigits:1})} h`;
 function report(){try{return window.payrollPreview?.report?.()||null;}catch{return null;}}
-function teamFor(r){
- const teams=r?.teams||[];if(!teams.length)return null;
- const a=actor(),keys=[a?.team,a?.teamId,a?.site,a?.siteId].filter(Boolean).map(String);
- return teams.find(t=>keys.includes(String(t.id))||keys.includes(String(t.name))||keys.includes(String(t.team))||keys.includes(String(t.site)))||teams[0];
+function reportTeams(r){
+ const teams=Array.isArray(r?.teams)?r.teams:[];if(!teams.length)return [];
+ const visibleTokens=new Set();
+ const a=actor();[a?.team,a?.teamId,a?.site,a?.siteId].filter(Boolean).forEach(x=>visibleTokens.add(String(x)));
+ peopleVisible().forEach(p=>[p?.team,p?.teamId,p?.site,p?.siteId].filter(Boolean).forEach(x=>visibleTokens.add(String(x))));
+ if(!visibleTokens.size)return teams;
+ const scoped=teams.filter(t=>[t?.id,t?.name,t?.team,t?.site].filter(Boolean).some(x=>visibleTokens.has(String(x))));
+ return scoped.length?scoped:teams;
 }
+function teamLabel(t){return String(t?.name||t?.team||t?.site||t?.id||'Team');}
 function cachedCapacity(requestId){
  try{const cache=window.WFMUXReset?.state?.capacity;if(!cache)return null;for(const [k,v] of cache.entries())if(String(k).endsWith(`:${requestId}`))return v;}catch{}return null;
 }
@@ -39,36 +44,39 @@ function leaveSignals(){
  });
 }
 function timeSignals(){
- const r=report(),t=teamFor(r);if(!t)return [];
- const open=(t.issues||[]).filter(i=>i.status==='open');
- if(!open.length)return [];
- const peopleIds=[...new Set(open.map(i=>i.employee||i.employeeId).filter(Boolean))];
- const names=peopleIds.slice(0,2).map(id=>personFor(id)?.name||id).filter(Boolean);
- return [{
-   id:`time-review:${t.id||t.name||'team'}:open`,source:'time-review',sourceId:t.id||'',route:'time-review',
-   reasonCode:'TIME_EXCEPTION_OPEN',kind:'action',lifecycle:'action_required',mandatory:true,evidenceState:'current',
-   evidenceLabel:'Current payroll/time review report',
-   title:`${open.length} time ${open.length===1?'exception needs':'exceptions need'} review`,
-   whyNow:'Unresolved time evidence can affect weekly review and payroll readiness.',
-   consequence:names.length?`Includes ${names.join(', ')}${peopleIds.length>2?` +${peopleIds.length-2} more`:''}.`:'Review the open exception evidence.',
-   authority:'Manager decision required',createdAt:t.updatedAt||r.generatedAt||null
- }];
+ const r=report();if(!r)return [];
+ return reportTeams(r).flatMap(t=>{
+   const open=(t.issues||[]).filter(i=>i.status==='open');if(!open.length)return [];
+   const peopleIds=[...new Set(open.map(i=>i.employee||i.employeeId).filter(Boolean))];
+   const names=peopleIds.slice(0,2).map(id=>personFor(id)?.name||id).filter(Boolean);
+   return [{
+     id:`time-review:${t.id||t.name||'team'}:open`,source:'time-review',sourceId:t.id||'',route:'time-review',
+     reasonCode:'TIME_EXCEPTION_OPEN',kind:'action',lifecycle:'action_required',mandatory:true,evidenceState:'current',
+     evidenceLabel:'Current payroll/time review report',
+     title:`${teamLabel(t)} · ${open.length} time ${open.length===1?'exception needs':'exceptions need'} review`,
+     whyNow:'Unresolved time evidence can affect weekly review and payroll readiness.',
+     consequence:names.length?`Includes ${names.join(', ')}${peopleIds.length>2?` +${peopleIds.length-2} more`:''}.`:'Review the open exception evidence.',
+     authority:'Manager decision required',createdAt:t.updatedAt||r.generatedAt||null
+   }];
+ });
 }
 function signoffSignals(){
- const r=report(),t=teamFor(r);if(!t)return [];
- const open=(t.issues||[]).filter(i=>i.status==='open').length;
- let reasonCode=null,title='',whyNow='',mandatory=true;
- if(t.status==='stale'){reasonCode='SIGNOFF_STALE';title='Signed week changed';whyNow='The signed evidence changed and must be reviewed before payroll.';}
- else if(t.status==='returned'){reasonCode='SIGNOFF_RETURNED';title='Week returned for review';whyNow='The week was returned and still needs a controlled review.';}
- else if(!open&&t.canSign){reasonCode='SIGNOFF_READY';title='Week is ready to sign';whyNow='Required checks are complete and the authoritative sign-off is available.';}
- else if(!open&&(t.blockers||[]).length){reasonCode='NEEDS_REVIEW';title='Weekly sign-off still blocked';whyNow='The weekly review reports remaining blockers.';}
- if(!reasonCode)return [];
- return [{
-   id:`weekly-review:${t.id||t.name||'team'}:${reasonCode}`,source:'weekly-review',sourceId:t.id||'',route:'weekly-review',
-   reasonCode,kind:'action',lifecycle:'action_required',mandatory,evidenceState:'current',evidenceLabel:'Current weekly review report',
-   title,whyNow,consequence:t.workedMinutes!=null?`${hours(t.workedMinutes)} recorded this week.`:'',
-   authority:'Manager sign-off authority required',createdAt:t.updatedAt||r.generatedAt||null
- }];
+ const r=report();if(!r)return [];
+ return reportTeams(r).flatMap(t=>{
+   const open=(t.issues||[]).filter(i=>i.status==='open').length;
+   let reasonCode=null,title='',whyNow='',mandatory=true;
+   if(t.status==='stale'){reasonCode='SIGNOFF_STALE';title=`${teamLabel(t)} · signed week changed`;whyNow='The signed evidence changed and must be reviewed before payroll.';}
+   else if(t.status==='returned'){reasonCode='SIGNOFF_RETURNED';title=`${teamLabel(t)} · week returned for review`;whyNow='The week was returned and still needs a controlled review.';}
+   else if(!open&&t.canSign){reasonCode='SIGNOFF_READY';title=`${teamLabel(t)} · week is ready to sign`;whyNow='Required checks are complete and the authoritative sign-off is available.';}
+   else if(!open&&(t.blockers||[]).length){reasonCode='NEEDS_REVIEW';title=`${teamLabel(t)} · weekly sign-off still blocked`;whyNow='The weekly review reports remaining blockers.';}
+   if(!reasonCode)return [];
+   return [{
+     id:`weekly-review:${t.id||t.name||'team'}:${reasonCode}`,source:'weekly-review',sourceId:t.id||'',route:'weekly-review',
+     reasonCode,kind:'action',lifecycle:'action_required',mandatory,evidenceState:'current',evidenceLabel:'Current weekly review report',
+     title,whyNow,consequence:t.workedMinutes!=null?`${hours(t.workedMinutes)} recorded this week.`:'',
+     authority:'Manager sign-off authority required',createdAt:t.updatedAt||r.generatedAt||null
+   }];
+ });
 }
 function collectSignals(){return [...timeSignals(),...signoffSignals(),...leaveSignals()];}
 function tone(item){return item.urgent?'urgent':item.evidenceState==='current'?'normal':'review';}
