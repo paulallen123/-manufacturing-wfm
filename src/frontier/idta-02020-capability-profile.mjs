@@ -1,4 +1,4 @@
-export const IDTA_02020_PROFILE_VERSION = 'idta-02020-capability-profile-v0.1.0';
+export const IDTA_02020_PROFILE_VERSION = 'idta-02020-capability-profile-v0.2.0';
 
 export const IDTA_02020 = Object.freeze({
   submodel: 'https://admin-shell.io/idta/SubmodelTemplate/CapabilityDescription/1/0',
@@ -86,8 +86,7 @@ function referenceSemanticFromPropertyContainer(container) {
   const linked = canonicalAasReference(sameProperty?.second);
   if (linked) return linked;
 
-  const candidates = directChildren(container);
-  for (const element of candidates) {
+  for (const element of directChildren(container)) {
     const semantic = semanticIdOf(element);
     if (semantic && !isTemplateSemantic(semantic)) return semantic;
     const supplemental = (element?.supplementalSemanticIds ?? []).map(canonicalAasReference).filter(Boolean);
@@ -97,11 +96,37 @@ function referenceSemanticFromPropertyContainer(container) {
   return null;
 }
 
-function explicitUnit(element, container) {
-  if (typeof element?.unit === 'string' && element.unit.trim()) return element.unit.trim();
+function conceptDescriptionIndex(conceptDescriptions = []) {
+  return new Map(conceptDescriptions.filter((item) => item?.id).map((item) => [String(item.id), item]));
+}
+
+function iec61360Unit(conceptDescription) {
+  for (const embedded of conceptDescription?.embeddedDataSpecifications ?? []) {
+    const content = embedded?.dataSpecificationContent;
+    if (!content || typeof content !== 'object') continue;
+    const unit = typeof content.unit === 'string' && content.unit.trim() ? content.unit.trim() : null;
+    const unitId = canonicalAasReference(content.unitId);
+    if (unit || unitId) return { unit, unitId, dataType: content.dataType ?? null, source: 'concept_description' };
+  }
+  return { unit: null, unitId: null, dataType: null, source: null };
+}
+
+function explicitUnit(element, container, semanticId, conceptIndex) {
+  const inlineUnit = typeof element?.unit === 'string' && element.unit.trim() ? element.unit.trim() : null;
+  const inlineUnitId = canonicalAasReference(element?.unitId);
+  if (inlineUnit || inlineUnitId) return { unit: inlineUnit, unitId: inlineUnitId, source: 'element' };
+
   const qualifiers = [...(element?.qualifiers ?? []), ...(container?.qualifiers ?? [])];
-  const unit = qualifiers.find((q) => String(q?.type ?? '').trim().toLowerCase() === 'unit' && q?.value != null);
-  return unit ? String(unit.value) : null;
+  const unitQualifier = qualifiers.find((q) => String(q?.type ?? '').trim().toLowerCase() === 'unit' && q?.value != null);
+  const unitIdQualifier = qualifiers.find((q) => String(q?.type ?? '').trim().toLowerCase() === 'unitid' && q?.value != null);
+  if (unitQualifier || unitIdQualifier) {
+    return {
+      unit: unitQualifier ? String(unitQualifier.value) : null,
+      unitId: unitIdQualifier ? String(unitIdQualifier.value) : null,
+      source: 'qualifier',
+    };
+  }
+  return iec61360Unit(conceptIndex.get(semanticId));
 }
 
 function scalarValue(element) {
@@ -121,7 +146,14 @@ function scalarValue(element) {
   return typeof raw === 'string' || typeof raw === 'number' || typeof raw === 'boolean' ? raw : null;
 }
 
-function extractProperties(container) {
+function numericRange(range) {
+  const min = Number(range?.min);
+  const max = Number(range?.max);
+  if (!Number.isFinite(min) || !Number.isFinite(max) || min > max) return null;
+  return { min, max };
+}
+
+function extractProperties(container, conceptIndex) {
   const propertySets = bySemanticOrIdShort(directChildren(container), IDTA_02020.propertySet, 'PropertySet');
   const properties = [];
   const review = [];
@@ -138,21 +170,33 @@ function extractProperties(container) {
         review.push({ idShort: propertyContainer?.idShort ?? null, reason: 'missing_domain_property_semantic' });
         continue;
       }
+
       if (scalar) {
         const value = scalarValue(scalar);
-        const unit = explicitUnit(scalar, propertyContainer);
+        const unit = explicitUnit(scalar, propertyContainer, semanticId, conceptIndex);
         if (value == null) {
           review.push({ semanticId, reason: 'unsupported_or_invalid_property_value' });
           continue;
         }
-        properties.push({ semanticId, value, unit, matchingStatus: unit ? 'eligible' : 'review_required' });
-        if (!unit) review.push({ semanticId, reason: 'missing_explicit_unit' });
+        const eligible = Boolean(unit.unit || unit.unitId);
+        properties.push({ semanticId, kind: 'scalar', value, unit: unit.unit, unitId: unit.unitId, unitSource: unit.source, matchingStatus: eligible ? 'eligible' : 'review_required' });
+        if (!eligible) review.push({ semanticId, reason: 'missing_explicit_or_semantic_unit' });
         continue;
       }
+
       if (range) {
-        review.push({ semanticId, reason: 'range_property_not_yet_reduced_to_scalar_envelope', min: range.min ?? null, max: range.max ?? null });
+        const parsed = numericRange(range);
+        const unit = explicitUnit(range, propertyContainer, semanticId, conceptIndex);
+        if (!parsed) {
+          review.push({ semanticId, reason: 'invalid_property_range', min: range?.min ?? null, max: range?.max ?? null });
+          continue;
+        }
+        const eligible = Boolean(unit.unit || unit.unitId);
+        properties.push({ semanticId, kind: 'range', min: parsed.min, max: parsed.max, unit: unit.unit, unitId: unit.unitId, unitSource: unit.source, matchingStatus: eligible ? 'eligible' : 'review_required' });
+        if (!eligible) review.push({ semanticId, reason: 'missing_explicit_or_semantic_unit' });
         continue;
       }
+
       review.push({ semanticId, reason: 'unsupported_property_representation' });
     }
   }
@@ -191,13 +235,14 @@ export function isIdta02020CapabilitySubmodel(submodel) {
   return canonicalAasReference(submodel?.semanticId) === IDTA_02020.submodel;
 }
 
-export function extractIdta02020CapabilityProfile(submodels = [], { maxElements = 10_000, maxDepth = 12 } = {}) {
+export function extractIdta02020CapabilityProfile(submodels = [], { maxElements = 10_000, maxDepth = 12, conceptDescriptions = [] } = {}) {
   const offered = [];
   const required = [];
   const notAssigned = [];
   const reviewRequired = [];
   let visitedElements = 0;
   let matchedSubmodels = 0;
+  const conceptIndex = conceptDescriptionIndex(conceptDescriptions);
 
   for (const submodel of submodels) {
     if (!isIdta02020CapabilitySubmodel(submodel)) continue;
@@ -215,7 +260,7 @@ export function extractIdta02020CapabilityProfile(submodels = [], { maxElements 
       const capability = capabilities[0];
       const role = resolveCapabilityRole(capability);
       const semanticId = domainCapabilitySemanticId(capability);
-      const { properties, review } = extractProperties(container);
+      const { properties, review } = extractProperties(container, conceptIndex);
       const entry = {
         label: capability?.idShort ?? container?.idShort ?? 'Unmapped IDTA capability',
         semanticId,
