@@ -2,12 +2,14 @@
 
 const http = require('node:http');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
+const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
+installHostedListenGuard(http, { hosted });
 let guard = null;
 let integrationHub = null;
 let integrationHubInitError = null;
