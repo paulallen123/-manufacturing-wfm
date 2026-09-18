@@ -90,7 +90,7 @@ function inferOrganisationModel(people) {
     orphanManagers,
     duplicateEmployeeIds: [...new Set(duplicateEmployeeIds)].sort(),
     confidence: round(confidence),
-    status: confidence >= STRUCTURAL_CONFIDENCE ? 'PROPOSED' : 'EXCEPTION',
+    status: orphanManagers.length === 0 && duplicateEmployeeIds.length === 0 && confidence >= STRUCTURAL_CONFIDENCE ? 'PROPOSED' : 'EXCEPTION',
     autoApply: confidence >= STRUCTURAL_CONFIDENCE && orphanManagers.length === 0 && duplicateEmployeeIds.length === 0
   };
 }
