@@ -1,0 +1,91 @@
+name: WFM UX evolution cycle 11 action-queue gate
+
+on:
+  push:
+    branches:
+      - 'ux/universal-action-queue-20260918-r1'
+    paths:
+      - 'Dockerfile'
+      - 'ux-overlay/ux-reset-cycle11*'
+      - '.github/workflows/ux-cycle11-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-ux-cycle11-r1
+  cancel-in-progress: true
+
+jobs:
+  deterministic-action-queue:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Source and deterministic model checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset-cycle11-model.js
+          node --check ux-overlay/ux-reset-cycle11.js
+          node <<'NODE'
+          const fs=require('node:fs'),vm=require('node:vm');
+          const ctx={};ctx.globalThis=ctx;vm.createContext(ctx);
+          vm.runInContext(fs.readFileSync('ux-overlay/ux-reset-cycle11-model.js','utf8'),ctx);
+          const M=ctx.WFMUXCycle11Model;
+          if(!M) throw new Error('Cycle 11 model not exported');
+
+          const stale=M.normalise({id:'stale',source:'time-review',reasonCode:'PAYROLL_CUTOFF',evidenceState:'stale',mandatory:true});
+          if(stale.urgent||stale.priority>50) throw new Error('Stale evidence manufactured urgency');
+          const neutral=M.normalise({id:'neutral',source:'today',reasonCode:'INFORMATION',kind:'information',evidenceState:'current',title:'Skills risk overtime cost'});
+          if(neutral.urgent||neutral.priority>15) throw new Error('Presentation words created urgency');
+
+          const mixed=[];
+          for(let i=0;i<60;i++){
+            if(i<10)mixed.push({id:'pay-'+i,source:'time-review',reasonCode:'TIME_EXCEPTION_OPEN',kind:'action',mandatory:true,evidenceState:'current',createdAt:'2026-09-18T08:'+String(i).padStart(2,'0')+':00Z'});
+            else if(i<20)mixed.push({id:'leave-'+i,source:'absence',reasonCode:'LEAVE_DECISION_PENDING',kind:'action',evidenceState:'unknown',title:'risk skills overtime '+i});
+            else if(i<40)mixed.push({id:'auto-'+i,source:'automation',reasonCode:'INFORMATION',kind:'receipt',lifecycle:'resolved',automated:true,evidenceState:'current',auditRef:'audit-'+i});
+            else mixed.push({id:'info-'+i,source:'today',reasonCode:'INFORMATION',kind:'information',evidenceState:'current',title:'urgent risk '+i});
+          }
+          mixed.push({id:'signoff',source:'weekly-review',reasonCode:'SIGNOFF_STALE',kind:'action',mandatory:true,evidenceState:'current'});
+          mixed.push({id:'confirming',source:'time-review',reasonCode:'TIME_EXCEPTION_OPEN',kind:'action',mandatory:true,evidenceState:'current',lifecycle:'confirming_source'});
+          const a=M.build(mixed),b=M.build(mixed.slice());
+          if(a.actions.filter(x=>x.mandatory).length!==12) throw new Error('Mandatory actions lost');
+          if(a.receipts.length!==20) throw new Error('Automation receipts lost');
+          if(a.actions.some(x=>/^(leave|info)-/.test(x.id)&&x.urgent)) throw new Error('False urgent classification');
+          if(a.actions[0].id!=='signoff') throw new Error('Highest-severity blocker not first');
+          if(JSON.stringify(a.actions.map(x=>x.id))!==JSON.stringify(b.actions.map(x=>x.id))) throw new Error('Ranking not deterministic');
+          if(a.actions.findIndex(x=>x.id==='confirming')<a.actions.findIndex(x=>x.id==='pay-0')) throw new Error('Confirming item outranked unresolved blocker');
+          console.log('UX_CYCLE11_MODEL_STRESS_60=PASS');
+          NODE
+
+      - name: Build and verify sealed composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false -t wfm-ux-cycle11:r1 .
+          cid="$(docker create wfm-ux-cycle11:r1)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-cycle11
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-cycle11/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-cycle11/factory-control-ui.css
+          node --check /tmp/wfm-cycle11/value-cockpit-ui.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const js=fs.readFileSync('/tmp/wfm-cycle11/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-cycle11/factory-control-ui.css','utf8');
+          const j10=js.indexOf('WFM_UX_RESET_CYCLE10_BEGIN');
+          const jm=js.indexOf('WFM_UX_RESET_CYCLE11_MODEL_BEGIN');
+          const j11=js.indexOf('WFM_UX_RESET_CYCLE11_BEGIN');
+          const c10=css.indexOf('WFM_UX_RESET_CYCLE10_BEGIN');
+          const c11=css.indexOf('WFM_UX_RESET_CYCLE11_BEGIN');
+          if(!(j10>=0&&jm>j10&&j11>jm&&c10>=0&&c11>c10)) throw new Error('Cycle 11 composition order invalid');
+          if(!js.includes('window.WFMUXCycle11=')||!js.includes('WFMUXCycle11Model')||!css.includes('.ux11-queue')) throw new Error('Cycle 11 missing from served assets');
+          if(!js.includes("route:'leave'")||!js.includes("route:'time-review'")||!js.includes("route:'weekly-review'")) throw new Error('Source workflow deep links missing');
+          console.log('UX_CYCLE11_APPROVED_ASSET_COMPOSITION=PASS');
+          NODE
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace sealed server logic'; exit 1; fi
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
