@@ -38,6 +38,10 @@ jobs:
           package-manager-cache: false
       - name: Validate registry and northbound contract
         run: node integration-fabric/scripts/validate.mjs
+      - name: Validate P0 connector conformance
+        run: node integration-fabric/scripts/conformance.mjs
+      - name: Build reusable-protocol coverage matrix
+        run: node integration-fabric/scripts/build-plan.mjs
       - name: Read-only public integration-surface probes
         env:
           PROBE_TIMEOUT_MS: '12000'
@@ -48,6 +52,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: integration-public-probe-${{ github.sha }}
-          path: integration-fabric/reports/public-probe.json
+          path: |
+            integration-fabric/reports/public-probe.json
+            integration-fabric/reports/coverage-matrix.json
           if-no-files-found: error
           retention-days: 30
