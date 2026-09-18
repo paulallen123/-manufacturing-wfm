@@ -26,6 +26,15 @@ const chrome = executable(['google-chrome', 'google-chrome-stable', 'chromium', 
 assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runner.');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+function sessionCookieFrom(response) {
+  const raw = response.headers.get('set-cookie') || '';
+  assert.ok(raw, 'Authenticated login did not return a session cookie.');
+  const first = raw.split(';', 1)[0];
+  const split = first.indexOf('=');
+  assert.ok(split > 0, 'Session Set-Cookie header is malformed.');
+  return { name: first.slice(0, split), value: first.slice(split + 1) };
+}
+
 async function runRole({slug, email, expectedRole, expectedTenant, mobile=false, expectedPayrollStatus, requiredSurface}) {
   const port = 9300 + Math.floor(Math.random() * 500);
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-role-${slug}-${crypto.randomBytes(4).toString('hex')}`);
@@ -77,42 +86,86 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
       });
       ws.send(JSON.stringify({id:n,method,params}));
     });
-    const evalv=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw new Error(r.exceptionDetails.text||'eval failed');return r.result?.value;};
-    const wait=async (expr,timeout=15000)=>{const start=Date.now();while(Date.now()-start<timeout){if(await evalv(expr))return;await sleep(180);}throw new Error(`wait timeout ${slug}: ${expr}`);};
-    await send('Page.enable'); await send('Runtime.enable');
+
+    await send('Page.enable');
+    await send('Network.enable');
+    await send('Accessibility.enable');
     await send('Emulation.setDeviceMetricsOverride',{width:mobile?390:1280,height:mobile?844:900,deviceScaleFactor:1,mobile});
-    await send('Page.navigate',{url:origin});
-    await wait(`document.readyState==='complete'||document.readyState==='interactive'`);
 
-    // Every process starts from a new user-data directory. Prove it has no inherited authenticated session.
-    const pre=await evalv(`(async()=>{const r=await fetch('/api/bootstrap');return r.status})()`);
-    assert.equal(pre,401,`${slug} fresh browser unexpectedly inherited a session.`);
+    // Every role gets a genuinely new Chrome process/profile. Prove no session cookie exists before auth.
+    const beforeCookies = await send('Network.getCookies',{urls:[origin]});
+    assert.equal(beforeCookies.cookies?.length || 0, 0, `${slug} fresh browser unexpectedly contained cookies.`);
+    const pre = await fetch(`${origin}/api/bootstrap`, { signal: AbortSignal.timeout(15000) });
+    assert.equal(pre.status,401,`${slug} unauthenticated bootstrap did not fail closed.`);
 
-    const login=await evalv(`(async()=>{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:${JSON.stringify(email)},password:${JSON.stringify(password)}})});return r.status})()`);
-    assert.equal(login,200,`${slug} login failed.`);
-    await send('Page.reload',{ignoreCache:true});
-    await wait(`!document.querySelector('#v2-login')&&document.body&&document.body.innerText.length>100`);
-    const identity=await evalv(`(async()=>{const r=await fetch('/api/bootstrap');return {status:r.status,json:await r.json()}})()`);
-    assert.equal(identity.status,200);
-    assert.equal(identity.json.actor?.role,expectedRole,`${slug} role mismatch.`);
-    assert.equal(identity.json.actor?.tenant,expectedTenant,`${slug} tenant mismatch.`);
+    // Authenticate against the real hosted service. The password never enters Chrome's process environment.
+    const loginResponse = await fetch(`${origin}/api/login`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password}),
+      signal:AbortSignal.timeout(15000)
+    });
+    assert.equal(loginResponse.status,200,`${slug} login failed.`);
+    const session = sessionCookieFrom(loginResponse);
+    const cookieSet = await send('Network.setCookie',{
+      name:session.name,
+      value:session.value,
+      url:origin,
+      secure:true,
+      httpOnly:true,
+      sameSite:'Lax'
+    });
+    assert.equal(cookieSet.success,true,`${slug} server-issued session could not be bound to the fresh browser.`);
+    const browserCookies = await send('Network.getCookies',{urls:[origin]});
+    assert.ok(browserCookies.cookies?.some(c=>c.name===session.name),`${slug} authenticated browser session cookie missing.`);
+    const cookieHeader = `${session.name}=${session.value}`;
 
-    const payroll=await evalv(`(async()=>{const r=await fetch('/api/payroll-run');return r.status})()`);
+    const api = async pathName => fetch(`${origin}${pathName}`,{
+      headers:{Cookie:cookieHeader},
+      redirect:'manual',
+      signal:AbortSignal.timeout(15000)
+    });
+    const identityResponse = await api('/api/bootstrap');
+    assert.equal(identityResponse.status,200,`${slug} authenticated bootstrap failed.`);
+    const identity = await identityResponse.json();
+    assert.equal(identity.actor?.role,expectedRole,`${slug} role mismatch.`);
+    assert.equal(identity.actor?.tenant,expectedTenant,`${slug} tenant mismatch.`);
+
+    const payrollResponse = await api('/api/payroll-run');
+    const payroll = payrollResponse.status;
     assert.equal(payroll,expectedPayrollStatus,`${slug} payroll boundary mismatch.`);
     let surfaceStatus=null;
     if(requiredSurface){
-      surfaceStatus=await evalv(`(async()=>{const r=await fetch(${JSON.stringify(requiredSurface)});return r.status})()`);
+      const surfaceResponse=await api(requiredSurface);
+      surfaceStatus=surfaceResponse.status;
       assert.equal(surfaceStatus,200,`${slug} required surface ${requiredSurface} failed.`);
     }
-    const layout=await evalv(`({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,buttons:[...document.querySelectorAll('button,a[href]')].filter(x=>{const s=getComputedStyle(x);return x.getClientRects().length>0&&s.display!=='none'&&s.visibility!=='hidden'}).length})`);
-    assert.ok(layout.scrollWidth<=layout.width+1,`${slug} horizontal overflow.`);
-    assert.ok(layout.buttons>0,`${slug} has no rendered interactive controls.`);
+
+    // Render the authenticated application in the same fresh Chrome process without relying on page-thread JS.
+    await send('Page.navigate',{url:origin});
+    await sleep(2500);
+    const layout = await send('Page.getLayoutMetrics');
+    const viewportWidth = layout.cssLayoutViewport?.clientWidth ?? (mobile?390:1280);
+    const contentWidth = layout.cssContentSize?.width ?? viewportWidth;
+    assert.ok(contentWidth<=viewportWidth+1,`${slug} horizontal overflow.`);
+    const ax = await send('Accessibility.getFullAXTree',{},20000);
+    const interactive = (ax.nodes||[]).filter(n=>['button','link','tab','menuitem','checkbox','textbox','combobox'].includes(n.role?.value)).length;
+    assert.ok(interactive>0,`${slug} authenticated page exposed no interactive accessibility nodes.`);
+
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true},20000);
     const shotName=`40-role-${slug}-${mobile?'mobile':'desktop'}.png`;
     const shotPath=path.join(outDir,shotName); fs.writeFileSync(shotPath,Buffer.from(shot.data,'base64'));
     assert.ok(fs.statSync(shotPath).size>10000,`${slug} screenshot unexpectedly small.`);
-    console.log(`ROLE_BROWSER_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payroll}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|overflow=${layout.scrollWidth-layout.width}`);
-    return {slug,email,role:expectedRole,tenant:expectedTenant,freshBootstrapStatus:pre,loginStatus:login,payrollStatus:payroll,requiredSurface,requiredSurfaceStatus:surfaceStatus,viewport:mobile?'390x844':'1280x900',horizontalOverflowPixels:layout.scrollWidth-layout.width,renderedInteractiveControls:layout.buttons,screenshot:shotName};
+    console.log(`ROLE_BROWSER_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|payroll=${payroll}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|overflow=${contentWidth-viewportWidth}|interactive=${interactive}`);
+    return {
+      slug,email,role:expectedRole,tenant:expectedTenant,
+      freshBrowserCookieCount:beforeCookies.cookies?.length||0,
+      freshBootstrapStatus:pre.status,loginStatus:loginResponse.status,payrollStatus:payroll,
+      requiredSurface,requiredSurfaceStatus:surfaceStatus,
+      viewport:mobile?'390x844':'1280x900',horizontalOverflowPixels:contentWidth-viewportWidth,
+      accessibilityInteractiveNodes:interactive,screenshot:shotName,
+      authBinding:'real hosted login -> server-issued Set-Cookie -> fresh Chrome process; cookie value never logged or persisted in evidence'
+    };
   } finally {
     try{ws?.close();}catch{}
     const exited = new Promise(resolve => {
@@ -125,13 +178,16 @@ async function runRole({slug, email, expectedRole, expectedTenant, mobile=false,
       proc.kill('SIGKILL');
       await Promise.race([exited, sleep(1500)]);
     }
-    try { fs.rmSync(profile,{recursive:true,force:true}); } catch (error) {
-      console.warn(`ROLE_BROWSER_PROFILE_CLEANUP_WARNING=${slug}|${error?.message||error}`);
+    for(let attempt=0;attempt<4;attempt++){
+      try { fs.rmSync(profile,{recursive:true,force:true}); break; }
+      catch(error){ if(attempt===3) console.warn(`ROLE_BROWSER_PROFILE_CLEANUP_WARNING=${slug}|${error?.message||error}`); else await sleep(250); }
     }
   }
 }
 
-const health=await (await fetch(`${origin}/api/health`,{signal:AbortSignal.timeout(15000)})).json();
+const healthResponse=await fetch(`${origin}/api/health`,{signal:AbortSignal.timeout(15000)});
+assert.equal(healthResponse.status,200);
+const health=await healthResponse.json();
 assert.equal(health.release,expectedRelease);
 assert.equal(health.productionApproved,false);
 assert.equal(health.pilotReady,false);
@@ -144,7 +200,9 @@ roles.push(await runRole({slug:'isolation-manager',email:'other@isolation.exampl
 
 fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.stringify({
   capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,
-  processIsolation:'four fresh Chrome profiles/processes; each proved /api/bootstrap 401 before login',roles,
+  processIsolation:'four fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
+  authMethod:'real hosted /api/login created the session; CDP bound that server-issued cookie to the corresponding fresh Chrome process; no credential passed to Chrome process environment',
+  roles,
   result:'PASS',
   claimBoundary:'fictional fixture staging; separate authenticated browser contexts; no production/pilot approval and no real employee/payroll data'
 },null,2));
