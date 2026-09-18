@@ -9,13 +9,16 @@ on:
       - 'resilience/support-tier-contract.json'
       - 'resilience/failure-scenarios.json'
       - 'resilience/security-baseline.json'
-      - 'scripts/validate-support-tier-contract.mjs'
       - 'resilience/support-selfhelp.cjs'
-      - 'scripts/validate-support-selfhelp.mjs'
       - 'resilience/autonomous-repair-factory.cjs'
-      - 'scripts/validate-autonomous-repair-factory.mjs'
       - 'resilience/provider-recovery-handoff.cjs'
+      - 'scripts/validate-deployment.mjs'
+      - 'scripts/validate-resilience-scenarios.mjs'
+      - 'scripts/validate-support-tier-contract.mjs'
+      - 'scripts/validate-support-selfhelp.mjs'
       - 'scripts/validate-provider-recovery-handoff.mjs'
+      - 'scripts/validate-autonomous-repair-factory.mjs'
+      - 'scripts/run-portable-autonomy-proof.mjs'
       - '.github/workflows/wfm-zero-engineer-support-contract.yml'
   workflow_dispatch:
 
@@ -30,7 +33,7 @@ jobs:
   validate-contract:
     if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Checkout trusted owner push
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,23 +47,11 @@ jobs:
           node-version: '22.23.2'
           package-manager-cache: false
 
-      - name: Validate existing resilience policy
-        run: node scripts/validate-resilience-scenarios.mjs
+      - name: Run canonical portable autonomy proof
+        run: node scripts/run-portable-autonomy-proof.mjs --strict-runtime
 
-      - name: Validate zero-engineer tier contract
-        run: node scripts/validate-support-tier-contract.mjs
-
-      - name: Validate deterministic Tier 0 self-help
-        run: node scripts/validate-support-selfhelp.mjs
-
-      - name: Validate T1 provider recovery handoff
-        run: node scripts/validate-provider-recovery-handoff.mjs
-
-      - name: Validate Tier 2 repair-factory authority separation
-        run: node scripts/validate-autonomous-repair-factory.mjs
-
-      - name: Assert proof receipt
+      - name: Assert portable proof receipt
         run: |
           set -euo pipefail
-          test -s support-tier-contract-proof.json
-          node -e "const p=require('./support-tier-contract-proof.json'); if(p.status!=='PASS'||p.zeroVendorEngineerRequired!==true||p.allCatalogueScenariosMapped!==true||p.languageModelDirectAuthority!==false||p.t2PatchAgentProductionMutation!==false) process.exit(1)"
+          test -s portable-autonomy-proof.json
+          node -e "const p=require('./portable-autonomy-proof.json'); if(p.status!=='PASS'||p.providerNeutral!==true||p.requiresGitHubHostedRunner!==false||p.exactRuntime!==true||p.productionMutation!==false||p.customerMutation!==false) process.exit(1)"
