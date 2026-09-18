@@ -5,6 +5,7 @@ const route=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return n
 const employee=()=>{try{return typeof isEmployee==='function'&&isEmployee();}catch{return false;}};
 const manager=()=>{try{const role=(typeof F!=='undefined'&&F.actor?.role)||(typeof ui!=='undefined'&&ui.role);return !employee()&&['manager','director','supervisor'].includes(role);}catch{return false;}};
 const text=node=>(node?.textContent||'').replace(/\s+/g,' ').trim();
+const dayCount=value=>['mon','tue','wed','thu','fri','sat','sun'].filter(day=>new RegExp(`\\b${day}`, 'i').test(value)).length;
 function findIssuePanel(content){
  const nodes=[...content.querySelectorAll(':scope > .panel,:scope > .card,:scope > section,.ops-panel')];
  const strong=/(coverage\s+(?:gap|risk|shortage)|skills?\s+(?:gap|shortage)|unfilled|under[- ]?staffed|conflict|shortage|needs?\s+(?:cover|action|attention)|requires?\s+action|at\s+risk|overtime\s+(?:risk|breach)|agency\s+(?:risk|cost)|exception(?:s)?\s+(?:need|requiring|awaiting))/i;
@@ -21,22 +22,31 @@ function findIssuePanel(content){
  })||null;
 }
 function findGrid(content){
- const known=content.querySelector('.tablewrap,.ops-scroll,.dp-table-scroll,.pci-table-wrap');
+ const known=content.querySelector('.tablewrap,.ops-scroll,.dp-table-scroll,.pci-table-wrap,[role="grid"],[data-week-grid],[data-schedule-grid]');
  if(known)return known;
  const tables=[...content.querySelectorAll('table')];
  const weekly=tables.find(table=>{
-   const value=text(table).slice(0,5000);
-   const days=['mon','tue','wed','thu','fri','sat','sun'].filter(day=>new RegExp(`\\b${day}`, 'i').test(value)).length;
-   return days>=5&&/(person|employee|worker|published|draft|shift)/i.test(value);
+   const value=text(table).slice(0,12000);
+   return dayCount(value)>=5&&/(person|employee|worker|published|draft|shift|schedule|rota)/i.test(value);
  });
- if(weekly)return weekly.closest('[data-grid],[data-table-scroll],.scroll,.table-scroll,.grid-scroll')||weekly.parentElement||weekly;
- const candidates=[...content.querySelectorAll('section,.panel,.card,[class*="week"],[class*="schedule"],[class*="planner"],[class*="grid"]')]
+ if(weekly)return weekly.closest('[data-grid],[data-table-scroll],.scroll,.table-scroll,.grid-scroll,.panel,.card,section')||weekly.parentElement||weekly;
+ const navControls=[...content.querySelectorAll('button,[role="button"],a')].filter(node=>/^(previous\s+week|next\s+week)$/i.test(text(node)));
+ const structural=[];
+ for(const control of navControls){
+   let node=control.parentElement;
+   for(let depth=0;node&&node!==content&&depth<8;depth++,node=node.parentElement){
+     if(node.matches?.('.ux-plan-focus'))continue;
+     const value=text(node).slice(0,30000);
+     if(dayCount(value)>=5&&/(published|draft|shift|schedule|rota|weekly\s+view)/i.test(value))structural.push(node);
+   }
+ }
+ if(structural.length)return [...new Set(structural)].sort((a,b)=>text(a).length-text(b).length)[0];
+ const candidates=[...content.querySelectorAll('section,.panel,.card,.ops-panel,[class*="week"],[class*="schedule"],[class*="planner"],[class*="grid"]')]
    .filter(node=>{
      if(node.matches('.ux-plan-focus'))return false;
-     const value=text(node).slice(0,20000);
-     const days=['mon','tue','wed','thu','fri','sat','sun'].filter(day=>new RegExp(`\\b${day}`, 'i').test(value)).length;
+     const value=text(node).slice(0,30000);
      const weekNav=/(Previous\s+week|Next\s+week)/i.test(value);
-     return days>=5&&weekNav&&/(published|draft|shift|schedule|rota)/i.test(value);
+     return dayCount(value)>=5&&weekNav&&/(published|draft|shift|schedule|rota|weekly\s+view)/i.test(value);
    })
    .sort((a,b)=>text(a).length-text(b).length);
  return candidates[0]||null;
