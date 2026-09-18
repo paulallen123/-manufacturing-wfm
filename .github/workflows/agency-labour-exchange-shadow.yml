@@ -19,6 +19,7 @@ on:
       - 'test/frontier/agency-labour-exchange.test.mjs'
       - 'test/frontier/agency-labour-performance.test.mjs'
       - 'test/frontier/agency-right-to-work.test.mjs'
+      - 'test/frontier/agency-right-to-work-dvsp-transition.test.mjs'
       - 'test/frontier/agency-right-to-work-lifecycle.test.mjs'
       - 'test/frontier/agency-right-to-work-integration.test.mjs'
       - 'test/frontier/agency-right-to-work-refresh.test.mjs'
@@ -64,6 +65,7 @@ jobs:
               test/frontier/agency-labour-exchange.test.mjs \
               test/frontier/agency-labour-performance.test.mjs \
               test/frontier/agency-right-to-work.test.mjs \
+              test/frontier/agency-right-to-work-dvsp-transition.test.mjs \
               test/frontier/agency-right-to-work-lifecycle.test.mjs \
               test/frontier/agency-right-to-work-integration.test.mjs \
               test/frontier/agency-right-to-work-refresh.test.mjs \
