@@ -40,6 +40,7 @@ jobs:
           set -euo pipefail
           SELF='wfm-every-push-security.yml'
           RAILWAY_WORKFLOW='.github/workflows/railway-first-deploy.yml'
+          CANONICAL_STAGING_WORKFLOW='.github/workflows/canonical-staging-release.yml'
           BROWSER_PROOF_WORKFLOW='.github/workflows/live-browser-readonly-proof.yml'
 
           if grep -RInE 'runs-on:[[:space:]]*ubuntu-latest' .github/workflows --include='*.yml' --include='*.yaml' --exclude="$SELF"; then
@@ -73,7 +74,7 @@ jobs:
           if [ -n "$secret_files" ]; then
             while IFS= read -r file; do
               case "$file" in
-                "$RAILWAY_WORKFLOW"|"$BROWSER_PROOF_WORKFLOW") ;;
+                "$RAILWAY_WORKFLOW"|"$CANONICAL_STAGING_WORKFLOW"|"$BROWSER_PROOF_WORKFLOW") ;;
                 *)
                   echo "Refusing unreviewed workflow secret consumption in $file" >&2
                   exit 1
@@ -105,6 +106,36 @@ jobs:
             secret_line="$(grep -nF "RAILWAY_TOKEN: $secret_expression" "$RAILWAY_WORKFLOW" | cut -d: -f1)"
             [ -n "$deploy_line" ] && [ -n "$secret_line" ] && [ "$secret_line" -gt "$deploy_line" ] && [ $((secret_line-deploy_line)) -le 4 ] || {
               echo 'RAILWAY_TOKEN must be scoped only to the deployment step.' >&2
+              exit 1
+            }
+          fi
+
+          if [ -f "$CANONICAL_STAGING_WORKFLOW" ]; then
+            canonical_secret_refs="$(grep -oE 'secrets\.[A-Za-z0-9_]+' "$CANONICAL_STAGING_WORKFLOW" | sort -u || true)"
+            [ "$canonical_secret_refs" = 'secrets.RAILWAY_TOKEN' ] || {
+              echo 'Canonical staging may reference only secrets.RAILWAY_TOKEN.' >&2
+              exit 1
+            }
+            [ "$(grep -Fc 'secrets.RAILWAY_TOKEN' "$CANONICAL_STAGING_WORKFLOW")" -eq 1 ] || {
+              echo 'Canonical staging must consume RAILWAY_TOKEN exactly once.' >&2
+              exit 1
+            }
+            grep -Fq 'if: github.actor == github.repository_owner' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'runs-on: ubuntu-24.04' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'contents: read' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'persist-credentials: false' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'cancel-in-progress: true' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'ref: ${{ github.sha }}' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq "RAILWAY_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'" "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq "RAILWAY_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'" "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq "RAILWAY_SERVICE_ID: '3bea5411-cebb-4878-adcc-766f5fd58cc7'" "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'git/ref/heads/release/staging' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'node scripts/validate-release-policy.mjs' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq -- '--ci' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'name: Verify canonical staging health' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'health.productionApproved !== false' "$CANONICAL_STAGING_WORKFLOW"
+            grep -A4 -F 'name: Deploy exact candidate to canonical staging' "$CANONICAL_STAGING_WORKFLOW" | grep -Fq 'RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}' || {
+              echo 'Canonical staging RAILWAY_TOKEN must be scoped only to the deployment step.' >&2
               exit 1
             }
           fi
