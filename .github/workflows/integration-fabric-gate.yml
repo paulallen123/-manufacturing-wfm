@@ -38,6 +38,12 @@ jobs:
           package-manager-cache: false
       - name: Validate registry and northbound contract
         run: node integration-fabric/scripts/validate.mjs
+      - name: Re-run autonomous integration hub tests
+        run: node --test integration/runtime/autonomous-integration-hub.test.cjs
+      - name: Re-run directory OAuth broker tests
+        run: node --test integration/runtime/directory-oauth-broker.test.cjs
+      - name: Re-run directory discovery worker tests
+        run: node --test integration/worker/directory-discovery-worker.test.cjs
       - name: Validate P0 connector conformance
         run: node integration-fabric/scripts/conformance.mjs
       - name: Build reusable-protocol coverage matrix
