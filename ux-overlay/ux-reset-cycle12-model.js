@@ -50,6 +50,26 @@ function normalise(providerId,input){
     meta:Object.freeze(input.meta&&typeof input.meta==='object'?{...input.meta}:{})
   });
 }
+function implementationSignals(status){
+  const out=[];if(!status||typeof status!=='object')return Object.freeze(out);
+  const state=String(status.state||'');if(!state||state==='NOT_STARTED')return Object.freeze(out);
+  const completed=Number(status.completedRequirements||0),total=Number(status.totalRequirements||0);
+  const requirements=Array.isArray(status.requirements)?status.requirements:[];
+  const missing=requirements.filter(x=>x&&!x.satisfied);
+  const decisions=Array.isArray(status.blockingDecisions)?status.blockingDecisions:[];
+  for(const d of decisions){
+    if(!d?.key)continue;
+    out.push({id:'decision:'+d.key,sourceId:d.key,route:'onboarding',reasonCode:'IMPLEMENTATION_BLOCKER',kind:'action',lifecycle:'action_required',evidenceState:'current',evidenceLabel:`Implementation decision ${d.status||'PENDING'} - risk ${d.risk||'HIGH'}`,title:String(d.question||'Implementation decision required'),whyNow:'This authorised decision is blocking implementation readiness.',consequence:'Go-live remains blocked until the source workflow records an authorised outcome.',authority:'Authorised implementation manager or administrator',deadline:status.deadlineAt||null,createdAt:d.createdAt||status.startedAt||null,mandatory:true,auditRef:status.runId?`Implementation run ${status.runId}`:''});
+  }
+  if(missing.length){
+    const anyObserved=missing.some(x=>x.status==='FAIL'||x.status==='WARN');
+    out.push({id:'readiness-gap',sourceId:status.runId||'current',route:'onboarding',reasonCode:'IMPLEMENTATION_BLOCKER',kind:'action',lifecycle:'action_required',evidenceState:anyObserved?'current':'missing',evidenceLabel:anyObserved?'Authoritative implementation readiness contains unresolved controls.':'Required launch evidence is incomplete.',title:`${missing.length} launch ${missing.length===1?'control':'controls'} not proven`,whyNow:`${completed}/${total||requirements.length} readiness controls are proven.`,consequence:`State ${state}${Number.isFinite(Number(status.criticalPathRemainingMinutes))?` - critical path ${Number(status.criticalPathRemainingMinutes)} min remaining`:''}.`,authority:'Implementation owner',deadline:status.deadlineAt||null,createdAt:status.startedAt||null,mandatory:true,auditRef:status.runId?`Implementation run ${status.runId}`:'',meta:{missingKeys:missing.map(x=>x.key).filter(Boolean).slice(0,20)}});
+  }
+  if(state==='AT_RISK'||state==='SLA_MISSED'){
+    out.push({id:'target-risk',sourceId:status.runId||'current',route:'onboarding',reasonCode:'IMPLEMENTATION_BLOCKER',kind:'action',lifecycle:'action_required',evidenceState:'current',evidenceLabel:`Implementation engine state ${state}`,title:state==='SLA_MISSED'?'Implementation target missed':'Implementation target at risk',whyNow:`Critical path needs ${Number(status.criticalPathRemainingMinutes||0)} min with ${Number(status.remainingMinutes||0)} min to target.`,consequence:'The one-day launch target needs an exception decision or faster source resolution.',authority:'Implementation owner',deadline:status.deadlineAt||null,createdAt:status.startedAt||null,mandatory:true,auditRef:status.runId?`Implementation run ${status.runId}`:''});
+  }
+  return Object.freeze(out.map(x=>Object.freeze(x)));
+}
 function collect(registry){
   const out=[];if(!registry||typeof registry.entries!=='function')return Object.freeze(out);
   for(const [providerId,getter] of registry.entries()){
@@ -60,5 +80,5 @@ function collect(registry){
   }
   return Object.freeze(out);
 }
-root.WFMUXCycle12Model=Object.freeze({PROVIDERS,normalise,collect});
+root.WFMUXCycle12Model=Object.freeze({PROVIDERS,normalise,implementationSignals,collect});
 })(typeof window!=='undefined'?window:globalThis);
