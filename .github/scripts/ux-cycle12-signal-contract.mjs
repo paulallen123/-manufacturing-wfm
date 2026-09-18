@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+const src=fs.readFileSync(new URL('../../ux-overlay/ux-reset-cycle12-model.js', import.meta.url),'utf8');
+const ctx={globalThis:{}};vm.createContext(ctx);vm.runInContext(src,ctx);
+const M=ctx.globalThis.WFMUXCycle12Model;
+if(!M)throw new Error('model missing');
+const registry=new Map();
+registry.set('implementation',()=>[{id:'ready-1',reasonCode:'IMPLEMENTATION_BLOCKER',evidenceState:'current',title:'Payroll contract missing',whyNow:'Go-live evidence is incomplete.'}]);
+registry.set('handover',()=>[{id:'shift-22',reasonCode:'HANDOVER_CRITICAL',evidenceState:'current',title:'Line 4 handover',whyNow:'Incoming shift has an unresolved quality hold.'}]);
+const rows=M.collect(registry);
+if(rows.length!==2)throw new Error('expected 2 signals');
+if(rows[0].source!=='implementation'||rows[0].route!=='onboarding')throw new Error('provider binding failed');
+if(rows[1].source!=='handover'||rows[1].route!=='handover')throw new Error('handover binding failed');
+if(M.normalise('not-approved',{id:'x'}))throw new Error('unknown provider accepted');
+if(M.normalise('energy',{}))throw new Error('missing id accepted');
+console.log('UX12_SIGNAL_CONTRACT=PASS');
