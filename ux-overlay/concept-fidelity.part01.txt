@@ -1,0 +1,69 @@
+/* WFM approved concept-fidelity shell.
+ * This presentation layer moves existing authoritative controls into the approved
+ * manufacturing command-centre hierarchy. It does not replace server permissions,
+ * attendance/payroll authority, scheduling rules or audit behaviour.
+ */
+(function(){
+'use strict';
+
+const MARKER='WFM_CONCEPT_FIDELITY_V3';
+const MODES=['site_default','decision_first','operational_visual','compact'];
+const MODE_LABELS={site_default:'Site Default',decision_first:'Decision First',operational_visual:'Operational Visual',compact:'Compact'};
+const MANAGER_NAV=[
+  {label:'Today',pages:['overview']},
+  {label:'People',pages:['leave','attendance','time-review','organisation']},
+  {label:'Plan',pages:['schedule-publication','shifts','readiness','cover']},
+  {label:'Improve',pages:['savings-decisions','costs','insights','forecast']}
+];
+const state={mode:'site_default',loaded:false,loading:false,scope:null};
+
+const manager=()=>{try{return !isEmployee()&&['manager','director','supervisor'].includes((typeof F!=='undefined'&&F.actor?.role)||ui?.role);}catch{return false;}};
+const employee=()=>{try{return isEmployee();}catch{return false;}};
+const text=node=>(node?.textContent||'').replace(/\s+/g,' ').trim();
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function setButtonLabel(button,label){
+  if(!button)return;
+  const span=button.querySelector('span:not(.count):not(.review-count)');
+  if(span){if(span.textContent!==label)span.textContent=label;}
+  else if(button.textContent!==label)button.textContent=label;
+  button.setAttribute('aria-label',label);
+  button.setAttribute('title',label);
+}
+function routeFor(buttons,pages){return pages.find(page=>buttons.some(b=>b.dataset.page===page))||null;}
+function drawerBucket(page){
+  if(['leave','attendance','time-review','weekly-review','schedule-publication','shifts','readiness','cover','op-breaks','op-swaps','shutdowns','temporary'].includes(page))return 0;
+  if(['savings-decisions','costs','forecast','demand','benchmarks','op-sites','payroll-run','payroll','insights'].includes(page))return 1;
+  if(['organisation','onboarding','demand-input','op-settings','integrations','compliance'].includes(page))return 2;
+  return 3;
+}
+function ensureDrawerRoute(button){
+  const drawer=document.querySelector('.ux-tool-drawer');
+  if(!drawer||!button?.dataset.page)return;
+  if(drawer.querySelector('.navbtn[data-page="'+CSS.escape(button.dataset.page)+'"]'))return;
+  const lists=[...drawer.querySelectorAll('.ux-tool-list')];
+  if(!lists.length)return;
+  const clone=button.cloneNode(true);
+  clone.removeAttribute('id');
+  clone.classList.remove('ux-primary-route','ux-secondary-route');
+  clone.classList.add('ux-drawer-route');
+  lists[Math.min(drawerBucket(button.dataset.page),lists.length-1)].appendChild(clone);
+}
+function approvedNavigation(){
+  if(!manager())return;
+  const nav=document.querySelector('.sidebar nav');
+  if(!nav)return;
+  const buttons=[...nav.querySelectorAll('.navbtn[data-page]')];
+  if(!buttons.length)return;
+  const primary=[];
+  for(const spec of MANAGER_NAV){
+    const page=routeFor(buttons,spec.pages);
+    if(!page)continue;
+    const button=buttons.find(b=>b.dataset.page===page);
+    primary.push(page);
+    setButtonLabel(button,spec.label);
+  }
+  const primarySet=new Set(primary);
+  for(const button of buttons){
+    if(primarySet.has(button.dataset.page)){
+      button.classList.add('ux-primary-ro
