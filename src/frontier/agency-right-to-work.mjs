@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
+import { evaluateAgencyRightToWorkLifecycle } from './agency-right-to-work-lifecycle.mjs';
 
-export const AGENCY_RIGHT_TO_WORK_ASSURANCE_VERSION = 'agency-right-to-work-assurance-v0.1.0';
+export const AGENCY_RIGHT_TO_WORK_ASSURANCE_VERSION = 'agency-right-to-work-assurance-v0.2.0';
 export const UK_RIGHT_TO_WORK_2026_EFFECTIVE_AT = '2026-10-01T00:00:00.000Z';
 
 const SUPPORTED_ARRANGEMENT = 'employment_business_supply_to_hirer_own_operations';
@@ -19,12 +20,9 @@ const ms = value => {
 const text = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const fingerprint = value => text(value) ? crypto.createHash('sha256').update(text(value)).digest('hex').slice(0, 24) : null;
 
-function baseRightToWorkFailures(rightToWork, assignmentEnd) {
+function baseRightToWorkFailures(rightToWork) {
   const failures = [];
   if (rightToWork.status !== 'verified') failures.push('right_to_work_not_verified');
-  if (rightToWork.indefinite !== true && (ms(rightToWork.validUntil) === null || ms(rightToWork.validUntil) < assignmentEnd)) {
-    failures.push('right_to_work_expires_before_shift_end');
-  }
   return failures;
 }
 
@@ -33,10 +31,15 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
   const warnings = [];
   const rightToWork = worker?.rightToWork && typeof worker.rightToWork === 'object' ? worker.rightToWork : {};
   const assignmentStart = ms(request.startAt);
-  const assignmentEnd = ms(request.endAt);
   const effectiveAt = ms(UK_RIGHT_TO_WORK_2026_EFFECTIVE_AT);
 
-  failures.push(...baseRightToWorkFailures(rightToWork, assignmentEnd));
+  failures.push(...baseRightToWorkFailures(rightToWork));
+  const lifecycle = evaluateAgencyRightToWorkLifecycle(rightToWork, request, {
+    now: options.now,
+    refreshLeadDays: options.refreshLeadDays,
+  });
+  failures.push(...lifecycle.failures);
+  warnings.push(...lifecycle.warnings);
 
   const assignmentAfterCutover = assignmentStart !== null && effectiveAt !== null && assignmentStart >= effectiveAt;
   if (!assignmentAfterCutover) {
@@ -52,6 +55,7 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
         status: rightToWork.status ?? null,
         indefinite: rightToWork.indefinite === true,
         validUntil: rightToWork.validUntil ?? null,
+        lifecycle: lifecycle.evidence,
         evidenceRule: 'existing_right_to_work_gate_preserved_before_uk_2026_policy_effective_date',
       },
     };
@@ -85,6 +89,7 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
           employmentCommencedAt: rightToWork.employmentCommencedAt ?? null,
           indefinite: rightToWork.indefinite === true,
           validUntil: rightToWork.validUntil ?? null,
+          lifecycle: lifecycle.evidence,
           evidenceRule: 'new_2026_worker_contract_scope_not_inferred_from_assignment_date_when_engagement_commenced_before_cutover',
         },
       };
@@ -135,6 +140,7 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
 
   const scopeStart = ms(assignmentScope.startAt);
   const scopeEnd = ms(assignmentScope.endAt);
+  const assignmentEnd = ms(request.endAt);
   if (scopeStart === null || assignmentStart === null || scopeStart > assignmentStart) failures.push('right_to_work_assignment_scope_start_not_covered');
   if (scopeEnd === null || assignmentEnd === null || scopeEnd < assignmentEnd) failures.push('right_to_work_assignment_scope_end_not_covered');
   if (assignmentScope.restrictionsSatisfied !== true) failures.push('right_to_work_assignment_restrictions_not_confirmed');
@@ -160,6 +166,7 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
       indefinite: rightToWork.indefinite === true,
       validUntil: rightToWork.validUntil ?? null,
       evidenceFingerprint: fingerprint(evidenceRef),
+      lifecycle: lifecycle.evidence,
       assignmentScope: {
         roleId: text(assignmentScope.roleId, 100) || null,
         location: text(assignmentScope.location, 200) || null,
