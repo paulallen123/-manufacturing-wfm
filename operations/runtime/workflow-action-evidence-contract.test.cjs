@@ -5,7 +5,8 @@ const assert=require('node:assert/strict');
 const {
   CONTRACT_VERSION,
   validateSourceActionEvidence,
-  acceptSourceActionEvidence
+  acceptSourceActionEvidence,
+  produceTimeReviewActionEvidence
 }=require('./workflow-action-evidence-contract.cjs');
 
 function base(overrides={}){
@@ -24,6 +25,27 @@ function base(overrides={}){
       validUntil:'2026-09-19T10:05:00.000Z'
     },
     confirmation:{state:'action_required'},
+    ...overrides
+  };
+}
+
+function timeReviewReport(overrides={}){
+  return {
+    generatedAt:'2026-09-19T10:00:00.000Z',
+    authorityRequired:'Manager time-review decision',
+    teams:[
+      {
+        id:'team-a',
+        issues:[
+          {
+            id:'issue-1',
+            status:'open',
+            reasonCode:'MISSED_CLOCK_OUT',
+            title:'Alex · missed clock-out'
+          }
+        ]
+      }
+    ],
     ...overrides
   };
 }
@@ -145,4 +167,79 @@ test('consequence is admitted only with explicit verified source evidence',()=>{
 
 test('unsupported source workflow fails closed',()=>{
   assert.equal(acceptSourceActionEvidence(base({workflow:'today'})),null);
+});
+
+test('Time Review producer emits only scoped open structured source issues',()=>{
+  const report=timeReviewReport({
+    teams:[
+      {id:'team-a',issues:[
+        {id:'issue-1',status:'open',reasonCode:'MISSED_CLOCK_OUT',title:'Alex · missed clock-out'},
+        {id:'issue-closed',status:'resolved',reasonCode:'MISSED_CLOCK_IN'}
+      ]},
+      {id:'team-b',issues:[
+        {id:'issue-2',status:'open',reasonCode:'UNPAID_BREAK_EXCEPTION'}
+      ]}
+    ]
+  });
+  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a']});
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].sourceId,'issue-1');
+  assert.equal(rows[0].reasonCode,'MISSED_CLOCK_OUT');
+  assert.equal(rows[0].freshness.state,'unknown');
+  assert.equal(rows[0].confirmation.state,'action_required');
+});
+
+test('Time Review producer fails closed without explicit source scope or required authority fields',()=>{
+  const report=timeReviewReport();
+  assert.deepEqual(produceTimeReviewActionEvidence(report),[]);
+
+  const noId=timeReviewReport({teams:[{id:'team-a',issues:[{status:'open',reasonCode:'MISSED_CLOCK_OUT'}]}]});
+  assert.deepEqual(produceTimeReviewActionEvidence(noId,{allowedTeamIds:['team-a']}),[]);
+
+  const noReason=timeReviewReport({teams:[{id:'team-a',issues:[{id:'issue-1',status:'open'}]}]});
+  assert.deepEqual(produceTimeReviewActionEvidence(noReason,{allowedTeamIds:['team-a']}),[]);
+
+  const noAuthority=timeReviewReport({authorityRequired:null});
+  assert.deepEqual(produceTimeReviewActionEvidence(noAuthority,{allowedTeamIds:['team-a']}),[]);
+
+  const noObservation=timeReviewReport({generatedAt:null});
+  assert.deepEqual(produceTimeReviewActionEvidence(noObservation,{allowedTeamIds:['team-a']}),[]);
+});
+
+test('Time Review producer passes explicit source freshness without deriving it from generatedAt',()=>{
+  const report=timeReviewReport({
+    freshness:{
+      state:'current',
+      policyRef:'time-review-source-sla-v1',
+      validUntil:'2026-09-19T10:05:00.000Z'
+    }
+  });
+  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a']});
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].freshness.state,'current');
+  assert.equal(rows[0].freshness.policyRef,'time-review-source-sla-v1');
+  assert.equal(rows[0].freshness.validUntil,'2026-09-19T10:05:00.000Z');
+});
+
+test('Time Review producer preserves explicit confirmation lifecycle and never applies wall-clock expiry',()=>{
+  const report=timeReviewReport({
+    teams:[{
+      id:'team-a',
+      issues:[{
+        id:'issue-1',
+        status:'open',
+        reasonCode:'MISSED_CLOCK_OUT',
+        confirmation:{
+          state:'confirming_source',
+          decisionId:'decision-1',
+          slaExpiresAt:'2020-01-01T00:00:00.000Z',
+          slaExpired:false
+        }
+      }]
+    }]
+  });
+  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a']});
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].confirmation.state,'confirming_source');
+  assert.equal(rows[0].confirmation.slaExpired,false);
 });

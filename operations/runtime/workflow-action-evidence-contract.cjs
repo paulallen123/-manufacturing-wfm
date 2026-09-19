@@ -35,6 +35,9 @@ function structuredReason(value){
 function freezeArray(values){
   return Object.freeze(values.map(v=>Object.freeze(v)));
 }
+function firstObject(...values){
+  return values.find(isObject)||null;
+}
 
 function validateSourceActionEvidence(input){
   const errors=[];
@@ -129,7 +132,62 @@ function acceptSourceActionEvidence(input){
   return result.ok?result.value:null;
 }
 
+/*
+ * First authoritative producer: Time Review open exceptions.
+ *
+ * This is intentionally fail-closed. It emits only records already present in the
+ * source report with a stable source id, structured reason, observation timestamp,
+ * explicit authority and an explicitly admitted team scope. It does not invent a
+ * freshness SLA: when the source supplies no freshness contract the producer emits
+ * `unknown`. The only inferred confirmation state is `action_required`, and only
+ * from the source workflow's structured `status: open` state. Later lifecycle
+ * states must be supplied explicitly by the source in `issue.confirmation`.
+ */
+function produceTimeReviewActionEvidence(report,{allowedTeamIds=[]}={}){
+  if(!isObject(report)) return Object.freeze([]);
+  const allowed=new Set((Array.isArray(allowedTeamIds)?allowedTeamIds:[])
+    .map(value=>text(value,160)).filter(Boolean));
+  if(!allowed.size) return Object.freeze([]);
+
+  const rows=[];
+  const teams=Array.isArray(report.teams)?report.teams:[];
+  for(const team of teams){
+    if(!isObject(team)) continue;
+    const teamId=text(team.id??team.teamId,160);
+    if(!teamId||!allowed.has(teamId)) continue;
+    const issues=Array.isArray(team.issues)?team.issues:[];
+    for(const issue of issues){
+      if(!isObject(issue)||text(issue.status,32).toLowerCase()!=='open') continue;
+      const sourceId=text(issue.sourceId??issue.id,160);
+      const reasonCode=structuredReason(issue.reasonCode);
+      const observedAt=iso(issue.observedAt)||iso(team.observedAt)||iso(report.observedAt)||iso(report.generatedAt);
+      const authorityRequired=text(issue.authorityRequired??team.authorityRequired??report.authorityRequired,160);
+      if(!sourceId||!reasonCode||!observedAt||!authorityRequired) continue;
+
+      const explicitFreshness=firstObject(issue.freshness,team.freshness,report.freshness);
+      const explicitConfirmation=isObject(issue.confirmation)?issue.confirmation:null;
+      const accepted=acceptSourceActionEvidence({
+        workflow:'time-review',
+        sourceId,
+        reasonCode,
+        observedAt,
+        route:'time-review',
+        authorityRequired,
+        title:issue.title,
+        whyNow:issue.whyNow,
+        recommendation:issue.recommendation,
+        consequence:issue.consequence,
+        alternatives:issue.alternatives,
+        freshness:explicitFreshness||{state:'unknown'},
+        confirmation:explicitConfirmation||{state:'action_required'}
+      });
+      if(accepted) rows.push(accepted);
+    }
+  }
+  return Object.freeze(rows);
+}
+
 module.exports=Object.freeze({
   CONTRACT_VERSION,WORKFLOWS,FRESHNESS_STATES,CONFIRMATION_STATES,
-  validateSourceActionEvidence,acceptSourceActionEvidence
+  validateSourceActionEvidence,acceptSourceActionEvidence,produceTimeReviewActionEvidence
 });
