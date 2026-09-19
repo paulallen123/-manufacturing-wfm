@@ -8,6 +8,7 @@ const { stable } = require('./contract-completion-ingress.cjs');
 const { createFreshCreateProof } = require('./provisioning-fresh-create-proof.cjs');
 const { createReadOnlyProvisioningReconciler } = require('./provisioning-readonly-reconciler.cjs');
 const { createRailwayReadOnlyEnvironmentAdapter } = require('./railway-readonly-environment-adapter.cjs');
+const { deriveProvisioningEnvironmentBinding } = require('./provisioning-environment-binding.cjs');
 
 const RECEIPT_KEY = 'internal-receipt-key-0123456789abcdef0123456789abcdef';
 const PROOF_KEY = 'fresh-create-proof-key-0123456789abcdef0123456789abcdef';
@@ -126,6 +127,7 @@ test('crash after cloud create is recovered by read-only Railway reconciliation 
   const claim = outbox.claim(intent.queueKey, 'mutation-worker');
   const started = outbox.beginMutation(claim.token);
   const originalRequestId = started.providerRequestId;
+  const binding = deriveProvisioningEnvironmentBinding(started.record);
   const creationProof = createFreshCreateProof(started.record, PROOF_KEY, { issuedAt: now });
 
   // Simulate process loss after Railway accepted the create but before its response was durably recorded.
@@ -141,18 +143,15 @@ test('crash after cloud create is recovered by read-only Railway reconciliation 
   const recovered = outbox.claim(intent.queueKey, 'replacement-worker');
   assert.equal(recovered.action, 'RECONCILE_ONLY');
   assert.equal(recovered.record.providerRequestId, originalRequestId);
+  assert.equal(deriveProvisioningEnvironmentBinding(recovered.record).environmentName, binding.environmentName);
 
   let providerReads = 0;
   const adapter = createRailwayReadOnlyEnvironmentAdapter({
     projectId: 'railway-project-test',
     now: () => now,
-    environmentNameForLookup: async lookup => {
-      assert.equal(lookup.providerRequestId, originalRequestId);
-      assert.equal(lookup.queueKey, intent.queueKey);
-      return 'wfm-tenant-a-autonomous';
-    },
     creationProofForLookup: async lookup => {
       assert.equal(lookup.providerRequestId, originalRequestId);
+      assert.equal(lookup.environmentName, binding.environmentName);
       return creationProof;
     },
     executeGraphQL: async request => {
@@ -165,7 +164,7 @@ test('crash after cloud create is recovered by read-only Railway reconciliation 
             edges: [{
               node: {
                 id: 'railway-env-1',
-                name: 'wfm-tenant-a-autonomous',
+                name: binding.environmentName,
                 createdAt: new Date(1_000_100).toISOString()
               }
             }]
