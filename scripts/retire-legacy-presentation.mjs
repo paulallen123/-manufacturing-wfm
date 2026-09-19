@@ -41,6 +41,16 @@ replaceRequired(
   'payrollReport=async function(){await pciOldPayrollReport();',
   'globalThis.payrollReport=async function(){await pciOldPayrollReport();'
 );
+replaceRequired(
+  'payroll-intelligence-ui.js',
+  'const pciOldPayrollPage=payrollPageV4;',
+  "const pciOldPayrollPage=typeof globalThis.payrollPageV4==='function'?globalThis.payrollPageV4:()=>'';"
+);
+replaceRequired(
+  'payroll-intelligence-ui.js',
+  'payrollPageV4=function(){return pciSummary()+pciOldPayrollPage();};',
+  'globalThis.payrollPageV4=function(){return pciSummary()+pciOldPayrollPage();};'
+);
 
 const timeReviewCss=path.join(publicDir,'time-review-ui.css');
 if(fs.existsSync(timeReviewCss)){
@@ -70,6 +80,7 @@ function walk(dir){
     for(const token of forbidden) if(text.includes(token)) violations.push({file:path.relative(publicDir,file),token});
     if(name==='company-ui.js'&&text.includes('payrollShell=content=>shell(content);')&&!text.includes('globalThis.payrollShell=content=>shell(content);')) violations.push({file:path.relative(publicDir,file),token:'unguarded-payrollShell'});
     if(name==='payroll-intelligence-ui.js'&&text.includes('const pciOldPayrollReport=payrollReport;')) violations.push({file:path.relative(publicDir,file),token:'unguarded-payrollReport-read'});
+    if(name==='payroll-intelligence-ui.js'&&text.includes('const pciOldPayrollPage=payrollPageV4;')) violations.push({file:path.relative(publicDir,file),token:'unguarded-payrollPageV4-read'});
   }
 }
 walk(publicDir);
