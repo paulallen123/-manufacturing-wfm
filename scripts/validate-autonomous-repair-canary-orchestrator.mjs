@@ -289,6 +289,81 @@ assert.throws(() => createAutonomousRepairCanaryOrchestrator({
   outcomeRecorder: recorder(),
 }), (error) => error.code === 'WFM_POSTSTAGING_CANARY');
 
+const preRunDriftPipeline = repairPipeline();
+outRec = recorder();
+orchestrator = createAutonomousRepairCanaryOrchestrator({
+  repairPipeline: preRunDriftPipeline,
+  canaryController: canaryController(proven),
+  outcomeRecorder: outRec,
+});
+let replacedProcessCalls = 0;
+preRunDriftPipeline.process = async () => {
+  replacedProcessCalls += 1;
+  return structuredClone(makeRepairResult());
+};
+await assert.rejects(
+  () => orchestrator.run(base),
+  (error) => error.code === 'WFM_POSTSTAGING_COMPONENT_DRIFT',
+);
+assert.equal(replacedProcessCalls, 0);
+assert.equal(outRec.records.length, 0);
+
+const mutablePipelineCaps = { ...pipelineCaps };
+const capabilityDriftPipeline = repairPipeline(makeRepairResult(), mutablePipelineCaps);
+outRec = recorder();
+orchestrator = createAutonomousRepairCanaryOrchestrator({
+  repairPipeline: capabilityDriftPipeline,
+  canaryController: canaryController(proven),
+  outcomeRecorder: outRec,
+});
+mutablePipelineCaps.productionAuthority = true;
+await assert.rejects(
+  () => orchestrator.run(base),
+  (error) => error.code === 'WFM_POSTSTAGING_COMPONENT_DRIFT',
+);
+assert.equal(outRec.records.length, 0);
+
+const midRunCanary = canaryController((input) => proven(input));
+const midRunPipeline = repairPipeline();
+const initialMidRunProcess = midRunPipeline.process;
+let replacementCanaryCalls = 0;
+midRunPipeline.process = async (...args) => {
+  const result = await initialMidRunProcess(...args);
+  midRunCanary.run = async (input) => {
+    replacementCanaryCalls += 1;
+    return proven(input);
+  };
+  return result;
+};
+outRec = recorder();
+orchestrator = createAutonomousRepairCanaryOrchestrator({
+  repairPipeline: midRunPipeline,
+  canaryController: midRunCanary,
+  outcomeRecorder: outRec,
+});
+await assert.rejects(
+  () => orchestrator.run(base),
+  (error) => error.code === 'WFM_POSTSTAGING_COMPONENT_DRIFT',
+);
+assert.equal(replacementCanaryCalls, 0);
+assert.equal(outRec.records.length, 0);
+
+outRec = recorder();
+const recorderDriftCanary = canaryController((input) => {
+  outRec.record = async () => ({ receiptDigest: sha('forged-recorder-receipt') });
+  return proven(input);
+});
+orchestrator = createAutonomousRepairCanaryOrchestrator({
+  repairPipeline: repairPipeline(),
+  canaryController: recorderDriftCanary,
+  outcomeRecorder: outRec,
+});
+await assert.rejects(
+  () => orchestrator.run(base),
+  (error) => error.code === 'WFM_POSTSTAGING_COMPONENT_DRIFT',
+);
+assert.equal(outRec.records.length, 0);
+
 const caps = createAutonomousRepairCanaryOrchestrator({
   repairPipeline: repairPipeline(),
   canaryController: canaryController(proven),
@@ -301,7 +376,7 @@ assert.equal(computeT2CoordinatorCapabilityDigest({ ...caps, productionWriteAuth
 assert.equal(computeT2CoordinatorCapabilityDigest({ ...caps, hiddenExtraAuthority: true }), null);
 
 console.log(JSON.stringify({
-  schemaVersion: 3,
+  schemaVersion: 4,
   proof: 'tier2-repair-to-canary-decision-composition',
   status: 'PASS',
   exactStagedArtifactFeedsCanary: true,
@@ -315,6 +390,10 @@ console.log(JSON.stringify({
   coordinatorCapabilityContractPinned: true,
   coordinatorCapabilityDigestBound: true,
   coordinatorCapabilityTamperDetected: true,
+  runtimeComponentMethodIdentityPinned: true,
+  runtimeComponentCapabilityDriftFailsClosed: true,
+  runtimeComponentMidExecutionDriftFailsClosed: true,
+  runtimeRecorderDriftFailsClosed: true,
   exactRollbackArtifactBound: true,
   sixActorSeparationRequired: true,
   repairContainmentStopsCanary: true,
