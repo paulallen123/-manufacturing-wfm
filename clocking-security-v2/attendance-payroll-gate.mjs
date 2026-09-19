@@ -117,6 +117,17 @@ export class AttendancePayrollGate {
           originalAttendanceStatus:row.status,priorReviewedAttendanceStatus:latest.originalStatus
         };
       }
+      // A manager correction can resolve one worker's ambiguous interval, but it cannot
+      // certify that an unresolved provider/source gap did not hide other evidence for
+      // the shift. Re-evaluate continuity at projection time so a provider degradation
+      // after review revokes payroll authority without deleting the audited correction.
+      if(latest && !sourcePeriodVerified){
+        return {
+          employee:row.employee,workerType:row.workerType,status:'review_required',eligibleForPayrollInput:false,interval:null,
+          provenance:{basis:'manager_correction_source_continuity_not_verified',reviewId:latest.reviewId,actorId:latest.actorId,reasonCode:latest.reasonCode,auditHash:latest.auditHash},
+          originalAttendanceStatus:latest.originalStatus
+        };
+      }
       if(latest){
         return {
           employee:row.employee,workerType:row.workerType,status:'reviewed_correction',eligibleForPayrollInput:true,
