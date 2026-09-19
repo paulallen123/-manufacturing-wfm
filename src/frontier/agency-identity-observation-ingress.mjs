@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
+import {acquireAgencyIdentityScopeLock} from './agency-identity-scope-lock.mjs';
 
-export const AGENCY_IDENTITY_OBSERVATION_INGRESS_VERSION='agency-identity-observation-ingress-v0.1.0';
-export const AGENCY_IDENTITY_OBSERVATION_INGRESS_STORE_VERSION='agency-identity-observation-ingress-store-v0.1.0';
+export const AGENCY_IDENTITY_OBSERVATION_INGRESS_VERSION='agency-identity-observation-ingress-v0.2.0';
+export const AGENCY_IDENTITY_OBSERVATION_INGRESS_STORE_VERSION='agency-identity-observation-ingress-store-v0.2.0';
 export const AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL=`
 CREATE TABLE IF NOT EXISTS wfm_agency_identity_observation_ingress_receipts (
  tenant_id text NOT NULL, source_system_id text NOT NULL,
@@ -53,16 +54,32 @@ const READ_OBS=`SELECT tenant_id,site_id,request_id,agency_id,worker_id,assignme
 const canon=r=>({tenantId:txt(r.tenant_id??r.tenantId,100),siteId:txt(r.site_id??r.siteId,100),requestId:txt(r.request_id??r.requestId,100),agencyId:txt(r.agency_id??r.agencyId,100),workerId:txt(r.worker_id??r.workerId,100),assignmentFingerprint:txt(r.assignment_fingerprint??r.assignmentFingerprint,24).toLowerCase(),assuranceVersionId:txt(r.assurance_version_id??r.assuranceVersionId,32).toLowerCase(),sourceSystemId:txt(r.source_system_id??r.sourceSystemId,100),sourceEventFingerprint:txt(r.source_event_fingerprint??r.sourceEventFingerprint,32).toLowerCase(),subjectFingerprint:txt(r.subject_fingerprint??r.subjectFingerprint,32).toLowerCase(),signalType:txt(r.signal_type??r.signalType,80),observedAt:iso(r.observed_at??r.observedAt)});
 const same=(a,b)=>JSON.stringify(stable(canon(a)))===JSON.stringify(stable(canon(b)));
 
-export function createPostgresAgencyIdentityObservationIngressStore({query}={}){
- if(typeof query!=='function')throw new TypeError('query required');
- return Object.freeze({version:AGENCY_IDENTITY_OBSERVATION_INGRESS_STORE_VERSION,async appendObservation(o={}){
-  const row={tenantId:req(o.tenantId,'tenantId',100),siteId:req(o.siteId,'siteId',100),requestId:req(o.requestId,'requestId',100),agencyId:req(o.agencyId,'agencyId',100),workerId:req(o.workerId,'workerId',100),assignmentFingerprint:hex(o.assignmentFingerprint,24,'assignment'),assuranceVersionId:hex(o.assuranceVersionId,32,'assurance'),sourceSystemId:req(o.sourceSystemId,'source',100),sourceEventFingerprint:hex(o.sourceEventFingerprint,32,'event fp'),subjectFingerprint:hex(o.subjectFingerprint,32,'subject fp'),signalType:req(o.signalType,'signal',80),observedAt:iso(o.observedAt)};
-  const p={auth:hex(o.sourceAuthFingerprint,32,'auth fp'),binding:hex(o.bindingFingerprint,32,'binding fp'),version:req(o.ingressVersion,'ingress version',100),receivedAt:iso(o.receivedAt)}; if(!SIGNALS.has(row.signalType)||!row.observedAt||!p.receivedAt)throw new TypeError('observation invalid');
-  const rv=[row.tenantId,row.sourceSystemId,row.sourceEventFingerprint,p.auth,p.binding,p.version,p.receivedAt], ri=await query(INS_RECEIPT,rv), rr=Array.isArray(ri?.rows)?ri.rows:[]; if(rr.length>1)throw new Error('unexpected_identity_observation_receipt_store_result');
-  let receiptDuplicate=!rr.length; if(receiptDuplicate){const q=await query(READ_RECEIPT,rv.slice(0,4)), rows=q?.rows??[];if(rows.length!==1)throw new Error('unexpected_identity_observation_receipt_store_result');const x=rows[0];if(txt(x.binding_fingerprint??x.bindingFingerprint,32)!==p.binding||txt(x.ingress_version??x.ingressVersion,100)!==p.version||iso(x.received_at??x.receivedAt)!==p.receivedAt)throw new Error('identity_observation_receipt_conflict');}
-  const ov=[row.tenantId,row.siteId,row.requestId,row.agencyId,row.workerId,row.assignmentFingerprint,row.assuranceVersionId,row.sourceSystemId,row.sourceEventFingerprint,row.subjectFingerprint,row.signalType,row.observedAt], oi=await query(INS_OBS,ov), orows=Array.isArray(oi?.rows)?oi.rows:[]; if(orows.length>1||(orows.length===1&&!same(orows[0],row)))throw new Error('unexpected_identity_observation_store_result');
-  if(orows.length===1)return {duplicate:false,receiptDuplicate,row:canon(orows[0])};
-  const q=await query(READ_OBS,[row.tenantId,row.sourceSystemId,row.sourceEventFingerprint]), rows=q?.rows??[]; if(rows.length!==1)throw new Error('unexpected_identity_observation_store_result'); if(!same(rows[0],row))throw new Error('identity_observation_replay_conflict'); return {duplicate:true,receiptDuplicate,row:canon(rows[0])};
+function normalizeObservation(o={}){
+ const row={tenantId:req(o.tenantId,'tenantId',100),siteId:req(o.siteId,'siteId',100),requestId:req(o.requestId,'requestId',100),agencyId:req(o.agencyId,'agencyId',100),workerId:req(o.workerId,'workerId',100),assignmentFingerprint:hex(o.assignmentFingerprint,24,'assignment'),assuranceVersionId:hex(o.assuranceVersionId,32,'assurance'),sourceSystemId:req(o.sourceSystemId,'source',100),sourceEventFingerprint:hex(o.sourceEventFingerprint,32,'event fp'),subjectFingerprint:hex(o.subjectFingerprint,32,'subject fp'),signalType:req(o.signalType,'signal',80),observedAt:iso(o.observedAt)};
+ const provenance={auth:hex(o.sourceAuthFingerprint,32,'auth fp'),binding:hex(o.bindingFingerprint,32,'binding fp'),version:req(o.ingressVersion,'ingress version',100),receivedAt:iso(o.receivedAt)};
+ if(!SIGNALS.has(row.signalType)||!row.observedAt||!provenance.receivedAt)throw new TypeError('observation invalid');
+ return {row,provenance};
+}
+
+async function appendObservationWithQuery(query,o={}){
+ const {row,provenance:p}=normalizeObservation(o);
+ const rv=[row.tenantId,row.sourceSystemId,row.sourceEventFingerprint,p.auth,p.binding,p.version,p.receivedAt], ri=await query(INS_RECEIPT,rv), rr=Array.isArray(ri?.rows)?ri.rows:[]; if(rr.length>1)throw new Error('unexpected_identity_observation_receipt_store_result');
+ let receiptDuplicate=!rr.length; if(receiptDuplicate){const q=await query(READ_RECEIPT,rv.slice(0,4)), rows=q?.rows??[];if(rows.length!==1)throw new Error('unexpected_identity_observation_receipt_store_result');const x=rows[0];if(txt(x.binding_fingerprint??x.bindingFingerprint,32)!==p.binding||txt(x.ingress_version??x.ingressVersion,100)!==p.version||iso(x.received_at??x.receivedAt)!==p.receivedAt)throw new Error('identity_observation_receipt_conflict');}
+ const ov=[row.tenantId,row.siteId,row.requestId,row.agencyId,row.workerId,row.assignmentFingerprint,row.assuranceVersionId,row.sourceSystemId,row.sourceEventFingerprint,row.subjectFingerprint,row.signalType,row.observedAt], oi=await query(INS_OBS,ov), orows=Array.isArray(oi?.rows)?oi.rows:[]; if(orows.length>1||(orows.length===1&&!same(orows[0],row)))throw new Error('unexpected_identity_observation_store_result');
+ if(orows.length===1)return {duplicate:false,receiptDuplicate,row:canon(orows[0])};
+ const q=await query(READ_OBS,[row.tenantId,row.sourceSystemId,row.sourceEventFingerprint]), rows=q?.rows??[]; if(rows.length!==1)throw new Error('unexpected_identity_observation_store_result'); if(!same(rows[0],row))throw new Error('identity_observation_replay_conflict'); return {duplicate:true,receiptDuplicate,row:canon(rows[0])};
+}
+
+export function createPostgresAgencyIdentityObservationIngressStore({withTransaction}={}){
+ if(typeof withTransaction!=='function')throw new TypeError('withTransaction function is required');
+ return Object.freeze({version:AGENCY_IDENTITY_OBSERVATION_INGRESS_STORE_VERSION,concurrencyBoundary:'assignment_scoped_transaction_lock',async appendObservation(o={}){
+  const {row}=normalizeObservation(o);
+  return withTransaction(async transaction=>{
+   if(!transaction||typeof transaction.query!=='function')throw new TypeError('transaction.query function is required');
+   const query=(sql,values)=>transaction.query(sql,values);
+   await acquireAgencyIdentityScopeLock({query,scope:row});
+   return appendObservationWithQuery(query,o);
+  });
  }});
 }
 
