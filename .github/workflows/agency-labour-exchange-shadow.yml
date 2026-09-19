@@ -15,6 +15,7 @@ on:
       - 'src/frontier/agency-right-to-work-authoritative-planner.mjs'
       - 'src/frontier/agency-schedule-preflight.mjs'
       - 'src/frontier/agency-schedule-authority-guard.mjs'
+      - 'src/frontier/agency-schedule-command-permit.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
@@ -36,6 +37,7 @@ on:
       - 'test/frontier/agency-dvsp-planner-gate.test.mjs'
       - 'test/frontier/agency-schedule-preflight.test.mjs'
       - 'test/frontier/agency-schedule-authority-guard.test.mjs'
+      - 'test/frontier/agency-schedule-command-permit.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
@@ -49,6 +51,7 @@ on:
       - 'test/frontier/agency-postgres-portal-assurance-race.test.mjs'
       - 'test/frontier/agency-postgres-schedule-preflight-race.test.mjs'
       - 'test/frontier/agency-postgres-schedule-authority-guard-race.test.mjs'
+      - 'test/frontier/agency-postgres-schedule-command-permit-race.test.mjs'
       - '.github/workflows/agency-labour-exchange-shadow.yml'
       - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
       - 'docs/AGENCY_SUPPLIER_DELIVERY_V1.md'
@@ -93,6 +96,7 @@ jobs:
               test/frontier/agency-dvsp-planner-gate.test.mjs \
               test/frontier/agency-schedule-preflight.test.mjs \
               test/frontier/agency-schedule-authority-guard.test.mjs \
+              test/frontier/agency-schedule-command-permit.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
@@ -113,5 +117,6 @@ jobs:
           node --test test/frontier/agency-postgres-portal-assurance-race.test.mjs
           node --test test/frontier/agency-postgres-schedule-preflight-race.test.mjs
           node --test test/frontier/agency-postgres-schedule-authority-guard-race.test.mjs
+          node --test test/frontier/agency-postgres-schedule-command-permit-race.test.mjs
           node --test test/frontier/agency-right-to-work-dvsp-evidence-postgres.test.mjs
           node --test test/frontier/agency-right-to-work-assurance-ledger-postgres.test.mjs
