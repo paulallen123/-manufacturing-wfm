@@ -150,11 +150,14 @@ function selectSourceScope(controlId,sourceId){
  control.dispatchEvent(new Event('change',{bubbles:true}));
  return true;
 }
-function focusNode(target){
+function focusNode(target,options={}){
  if(!target)return false;
  if(!target.matches?.('button,a[href],input,select,textarea,[tabindex]'))target.setAttribute('tabindex','-1');
- try{target.scrollIntoView({block:'center',behavior:'smooth'});}catch{target.scrollIntoView();}
- setTimeout(()=>{try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}},60);
+ const behavior=options?.behavior||'smooth';
+ const delay=Number.isFinite(Number(options?.delay))?Math.max(0,Number(options.delay)):60;
+ try{target.scrollIntoView({block:'center',inline:'nearest',behavior});}catch{try{target.scrollIntoView();}catch{}}
+ const applyFocus=()=>{try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}};
+ if(delay>0)setTimeout(applyFocus,delay);else applyFocus();
  return true;
 }
 function focusSourceTarget(marker){
@@ -183,11 +186,10 @@ function restoreFocus(section){
      const current=document.querySelector(byId)||(byRoute?document.querySelector(byRoute):null)||target;
      const visible=Boolean(current?.isConnected&&!current.closest('[hidden]')&&current.getClientRects().length);
      if(visible){
+       focusNode(current,{behavior:'auto',delay:0});
        const rect=current.getBoundingClientRect();
        const inViewport=rect.top>=0&&rect.bottom<=innerHeight&&rect.left>=0&&rect.right<=innerWidth;
-       if(!inViewport){try{current.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});}catch{try{current.scrollIntoView();}catch{}}}
-       try{current.focus({preventScroll:true});}catch{try{current.focus();}catch{}}
-       if(document.activeElement===current){clearReturnMarker();return;}
+       if(document.activeElement===current&&inViewport){clearReturnMarker();return;}
      }
      if(attempt<20&&returnMarker()?.id===marker.id)setTimeout(()=>focusProjected(attempt+1),40);
    };
