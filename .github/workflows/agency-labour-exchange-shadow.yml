@@ -17,6 +17,7 @@ on:
       - 'src/frontier/agency-schedule-authority-guard.mjs'
       - 'src/frontier/agency-schedule-command-permit.mjs'
       - 'src/frontier/agency-schedule-ingress-shadow.mjs'
+      - 'src/frontier/agency-identity-scope-lock.mjs'
       - 'src/frontier/agency-identity-continuity.mjs'
       - 'src/frontier/agency-identity-observation-ingress.mjs'
       - 'src/frontier/agency-identity-authoritative-binding.mjs'
