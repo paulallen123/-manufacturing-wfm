@@ -31,7 +31,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SELF='.github/workflows/wfm-containment-guard.yml'
           CANONICAL='.github/workflows/canonical-staging-release.yml'
           RAILWAY_PROOF='.github/workflows/railway-first-deploy.yml'
           BROWSER_PROOF='.github/workflows/live-browser-readonly-proof.yml'
@@ -61,7 +60,8 @@ jobs:
             exit 1
           fi
 
-          secret_expressions="$(grep -RlF '${{ secrets.' .github/workflows --include='*.yml' --include='*.yaml' || true)"
+          secret_marker='$''{{ secrets.'
+          secret_expressions="$(grep -RlF "$secret_marker" .github/workflows --include='*.yml' --include='*.yaml' || true)"
           inherited_secrets="$(grep -RlE 'secrets:[[:space:]]*inherit' .github/workflows --include='*.yml' --include='*.yaml' || true)"
           if [ -n "$secret_expressions" ] || [ -n "$inherited_secrets" ]; then
             echo 'A GitHub workflow can still consume a repository secret during containment.' >&2
