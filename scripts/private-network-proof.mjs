@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { createServer, request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 
@@ -105,11 +106,37 @@ async function authed(cookie, path, extraHeaders = {}) {
   });
 }
 
+async function authedCommand(cookie, path, body, extraHeaders = {}) {
+  return request(path, {
+    method: 'POST',
+    headers: {
+      ...hostedHeaders,
+      cookie,
+      accept: 'application/json',
+      'content-type': 'application/json',
+      origin: browserOrigin,
+      referer: `${browserOrigin}/`,
+      ...extraHeaders,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
 async function require200(cookie, path, label = 'JOURNEY_PASS') {
   const result = await authed(cookie, path);
   assert.equal(result.response.status, 200, `${path} failed with ${result.response.status}`);
   console.log(`${label} ${path}`);
   return result;
+}
+
+function londonLocalMinute(value) {
+  const d = new Date(value);
+  assert.ok(Number.isFinite(d.getTime()), 'Attendance timestamp is invalid');
+  return new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/London',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(d).replace(' ', 'T');
 }
 
 const health = await request('/api/health', { headers: hostedHeaders });
@@ -185,10 +212,150 @@ for (const [category, paths] of Object.entries(categoryCandidates)) {
 
 await require200(employee, '/api/personal', 'EMPLOYEE_JOURNEY_PASS');
 
+// Safe write proof: submit and reject a fixture-only correction whose requested times
+// exactly match the source record. This proves identity binding, idempotency,
+// manager review, audit history and tenant isolation without mutating attendance.
+const openStatuses = new Set(['submitted', 'information_required', 'awaiting_approval', 'payroll_review_required']);
+const employeeCandidates = [
+  ['maya@northstar.example', 'e0', employee],
+  ['leah@northstar.example', 'e32', null],
+  ['quality@northstar.example', 'e16', null],
+  ['leeds-employee@northstar.example', 'e24', null],
+];
+let correctionEmployee = null;
+for (const [email, personId, existingCookie] of employeeCandidates) {
+  const cookie = existingCookie || await login(email);
+  const dash = await authed(cookie, '/api/attendance-corrections');
+  assert.equal(dash.response.status, 200, `${email} correction dashboard failed`);
+  const blockedRecordIds = new Set((dash.body?.requests || [])
+    .filter(q => q.employee === personId && openStatuses.has(q.status))
+    .map(q => q.record));
+  const record = Array.isArray(dash.body?.records)
+    ? dash.body.records.find(r => r.employee === personId && r.effective?.clockIn && r.effective?.clockOut && !blockedRecordIds.has(r.id))
+    : null;
+  if (record) {
+    correctionEmployee = { email, personId, cookie, dash: dash.body, record };
+    break;
+  }
+}
+assert.ok(correctionEmployee, 'No safe fixture attendance record available for correction proof');
+const requestedClockIn = londonLocalMinute(correctionEmployee.record.effective.clockIn);
+const requestedClockOut = londonLocalMinute(correctionEmployee.record.effective.clockOut);
+
+const identityInjection = await authedCommand(correctionEmployee.cookie, '/api/attendance-corrections/command', {
+  version: correctionEmployee.dash.version,
+  command: 'correction-submit',
+  payload: {
+    period: correctionEmployee.record.period,
+    record: correctionEmployee.record.id,
+    employee: 'm1',
+    clockIn: requestedClockIn,
+    clockOut: requestedClockOut,
+    note: 'Private synthetic identity-injection rejection proof.',
+  },
+  idempotencyKey: `private-proof-id-reject-${randomBytes(8).toString('hex')}`,
+});
+assert.equal(identityInjection.response.status, 400, 'Correction accepted client-supplied employee identity');
+console.log('CORRECTION_IDENTITY_BINDING_PASS 400');
+
+const submitKey = `private-proof-correction-${randomBytes(10).toString('hex')}`;
+const submitBody = {
+  version: correctionEmployee.dash.version,
+  command: 'correction-submit',
+  payload: {
+    period: correctionEmployee.record.period,
+    record: correctionEmployee.record.id,
+    clockIn: requestedClockIn,
+    clockOut: requestedClockOut,
+    note: 'Private synthetic correction proof. Requested times match existing evidence; no attendance change intended.',
+  },
+  idempotencyKey: submitKey,
+};
+const submitted = await authedCommand(correctionEmployee.cookie, '/api/attendance-corrections/command', submitBody);
+assert.equal(submitted.response.status, 200, `Correction submit failed: ${submitted.response.status}`);
+const correctionId = submitted.body?.result?.id;
+assert.match(String(correctionId || ''), /^AC-[a-f0-9]{32}$/i, 'Correction request missing server-generated ID');
+assert.ok(['submitted', 'payroll_review_required'].includes(submitted.body?.result?.status));
+assert.equal(submitted.body?.result?.revision, 1);
+console.log(`CORRECTION_SUBMIT_PASS ${correctionId}`);
+
+const submitReplay = await authedCommand(correctionEmployee.cookie, '/api/attendance-corrections/command', submitBody);
+assert.equal(submitReplay.response.status, 200);
+assert.equal(submitReplay.body?.replayed, true);
+assert.equal(submitReplay.body?.result?.id, correctionId);
+console.log('CORRECTION_SUBMIT_IDEMPOTENCY_PASS');
+
+const managerCandidates = [
+  ['manager@northstar.example', manager],
+  ['supervisor@northstar.example', null],
+  ['director@northstar.example', null],
+  ['superuser@northstar.example', north],
+];
+let correctionManager = null;
+for (const [email, existingCookie] of managerCandidates) {
+  const cookie = existingCookie || await login(email);
+  const dash = await authed(cookie, '/api/attendance-corrections');
+  if (dash.response.status !== 200) continue;
+  const visibleRequest = dash.body?.requests?.find(q => q.id === correctionId);
+  if (visibleRequest) {
+    correctionManager = { email, cookie, dash: dash.body, visibleRequest };
+    break;
+  }
+}
+assert.ok(correctionManager, 'No authorised manager can see correction request');
+assert.equal(correctionManager.visibleRequest.employee, correctionEmployee.personId);
+console.log('CORRECTION_MANAGER_VISIBILITY_PASS');
+
+const reviewKey = `private-proof-review-${randomBytes(10).toString('hex')}`;
+const reviewBody = {
+  version: correctionManager.dash.version,
+  command: 'correction-review',
+  payload: {
+    id: correctionId,
+    revision: 1,
+    decision: 'reject',
+    note: 'Private synthetic proof complete. Rejecting by design to preserve attendance evidence.',
+  },
+  idempotencyKey: reviewKey,
+};
+const reviewed = await authedCommand(correctionManager.cookie, '/api/attendance-corrections/command', reviewBody);
+assert.equal(reviewed.response.status, 200, `Manager correction review failed: ${reviewed.response.status}`);
+assert.equal(reviewed.body?.result?.id, correctionId);
+assert.equal(reviewed.body?.result?.status, 'rejected');
+assert.equal(reviewed.body?.result?.revision, 2);
+console.log('CORRECTION_REVIEW_PASS rejected');
+
+const reviewReplay = await authedCommand(correctionManager.cookie, '/api/attendance-corrections/command', reviewBody);
+assert.equal(reviewReplay.response.status, 200);
+assert.equal(reviewReplay.body?.replayed, true);
+assert.equal(reviewReplay.body?.result?.id, correctionId);
+assert.equal(reviewReplay.body?.result?.status, 'rejected');
+console.log('CORRECTION_REVIEW_IDEMPOTENCY_PASS');
+
+const employeeAfter = await authed(correctionEmployee.cookie, '/api/attendance-corrections');
+assert.equal(employeeAfter.response.status, 200);
+const finalRequest = employeeAfter.body?.requests?.find(q => q.id === correctionId);
+assert.ok(finalRequest, 'Correction request missing after review');
+assert.equal(finalRequest.status, 'rejected');
+assert.equal(finalRequest.revision, 2);
+assert.equal(finalRequest.outcome?.applied, false);
+const historyTypes = Array.isArray(finalRequest.history) ? finalRequest.history.map(h => h.type) : [];
+assert.ok(historyTypes.includes('attendance-correction-submitted'));
+assert.ok(historyTypes.includes('attendance-correction-reject'));
+const sourceAfter = employeeAfter.body?.records?.find(r => r.id === correctionEmployee.record.id && r.period === correctionEmployee.record.period);
+assert.ok(sourceAfter, 'Original attendance source record disappeared');
+console.log('CORRECTION_AUDIT_HISTORY_PASS');
+
+const isolationCorrections = await authed(isolation, '/api/attendance-corrections');
+assert.equal(isolationCorrections.response.status, 200, 'Isolation tenant correction dashboard failed');
+assert.ok(!(isolationCorrections.body?.requests || []).some(q => q.id === correctionId), 'Correction leaked into second tenant');
+console.log('CORRECTION_TENANT_ISOLATION_PASS');
+
 console.log('PRIVATE_NETWORK_AUTH_PROOF=PASS');
 console.log('PRIVATE_TENANT_ISOLATION_PROOF=PASS');
 console.log('PRIVATE_ROLE_BOUNDARY_PROOF=PASS');
-console.log('claim_boundary=private synthetic proof only; frozen target unmodified');
+console.log('PRIVATE_CORRECTION_WRITE_PROOF=PASS');
+console.log('claim_boundary=private synthetic proof only; frozen target unmodified; correction rejected by design');
 
 createServer((req, res) => {
   res.statusCode = 200;
