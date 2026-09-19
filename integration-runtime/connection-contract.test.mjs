@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   approvalFingerprint,
   activationReadiness,
+  configurationFingerprint,
   validateConnectionProfile
 } from './connection-contract.mjs';
 
@@ -30,6 +31,10 @@ function baseProfile() {
     reconciliation: { status: 'passed', observedBy: 'trusted_executor', evidenceRef: 'evidence://connection/reconciliation-1' },
     activation: { approved: true, approvedByRole: 'integration_admin', fingerprint: '' }
   };
+  const evidenceFingerprint = configurationFingerprint(profile);
+  profile.connectionTest.configurationFingerprint = evidenceFingerprint;
+  profile.recoveryProof.configurationFingerprint = evidenceFingerprint;
+  profile.reconciliation.configurationFingerprint = evidenceFingerprint;
   profile.activation.fingerprint = approvalFingerprint(profile);
   return profile;
 }
