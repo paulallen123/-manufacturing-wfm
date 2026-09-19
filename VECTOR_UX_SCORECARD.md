@@ -1,188 +1,67 @@
 # Vector UX/CX scorecard
 
-## 2026-09-19 — Vector r4: source-bound identity and upcoming-leave evidence
+This is the single canonical scorecard for the approved Vector role-first NEW-UI lineage. Historical cycle detail remains in Git history; this file keeps the current evidence boundary, validated deltas and one dependency-ordered next action without repeating old research.
+
+## 2026-09-19 — Vector r5: source-bound review queue and notification count
 
 ### Journey reviewed
-Factory/operations manager Vector Home → signed-in identity/site context → upcoming leave summary → owning Absence & Leave workflow.
+Factory/operations manager Vector Home → notification badge / `Items to review` → Time Review or Absence & Leave source workflow.
 
 ### NEW-UI lineage confirmation
-Work remains owned only by the approved Vector Workforce Operations presentation on `feature/one-day-enterprise-implementation-v1` / PR #79. No legacy/0.6.139 presentation code, retired overlay, staging/prod surface, replacement branch, PR or duplicate component was modified.
+Work remains owned only by the approved Vector Workforce Operations presentation on `feature/one-day-enterprise-implementation-v1` / PR #79. The retired Cycle 11 implementation was inspected only for already-validated structured source behaviour; no old overlay, legacy/0.6.139 presentation, staging/prod surface, replacement branch, duplicate renderer or duplicate test workflow was changed or loaded.
 
 ### Reuse / duplicate-work decision
-- Reused the existing authoritative in-browser `me()` identity object already consumed by Vector's scoped workforce statistics; no second identity service or cached UI identity model was created.
-- Reused `data.requests` and the existing `person()` resolver for read-only leave summarisation; no approval, entitlement, coverage or leave calculation moved into Vector.
-- Reused the existing `leaveRows()` / `leaveMarkup()` ownership and existing `leave` route; no second calendar, request list or leave workflow was created.
-- Extended the existing `scripts/validate-vector-only-ui.mjs` guard and existing Vector-only exact-runtime workflow only.
+- Extended the existing `vector-shell.js` Home review surface and existing `scripts/validate-vector-only-ui.mjs` guard; no new queue component, service, branch, PR or harness was created.
+- Reused authoritative in-browser source state already exposed to the application: `payrollPreview.report()` for structured time/sign-off state, `data.requests` for leave-request state, `people()` / `person()` / `me()` for role-visible scope, and the existing `time-review` / `leave` owning routes.
+- Reused the validated predecessor rule that consequential action state comes from structured workflow fields rather than display copy, but re-implemented that requirement directly in Vector rather than loading the retired Cycle 11 presentation.
+- Kept all approval, payroll, sign-off, entitlement, calculation, audit and write authority in the owning workflows.
 
 ### Research delta
-No competitor or generic UX research was repeated. The unresolved question was directly answerable from current code. Vector had two hard-coded presentation identities (`Paul Allen`, `Rugby Plant`) and labelled all `pending` requests as `Upcoming leave (next 7 days)` without actually applying a seven-day date window. That could show the wrong signed-in person/site and present unapproved requests as scheduled leave.
+No competitor or generic UX research was repeated. The unresolved question was directly provable from current Vector code: the notification badge and Home review list counted hidden presentation cards (`.fcc-action` / `.ux-approved-decision-card`) rather than structured actionable workflow state. That made a presentation-card quantity look like an authoritative workload count.
 
 ### Hypothesis
-If identity/site context comes only from structured signed-in source state with neutral fallback, and the Home leave summary shows only approved requests with a valid start date inside the next seven days, managers should be less likely to act on fabricated context or mistake pending requests for scheduled absence while retaining one-click access to the authoritative leave workflow.
+If Vector derives neutral review rows and the notification count only from structured role-visible workflow state, managers should be less likely to mistake hidden presentation-card quantity for verified work, while preserving a compact one-click route to the authoritative workflow.
 
 ### Exact implementation delta
-- Added `VECTOR_IDENTITY_SOURCE_BOUND_V1` and removed hard-coded `Paul Allen` / `Rugby Plant` presentation values.
-- Vector now reads a display name only from structured `me().name`; site is accepted only from explicit structured name fields (`siteName`, `plantName`, `locationName` or nested `.name`). Missing identity/site stays neutral as `Signed-in user` / `Current workspace`; Vector does not infer names or locations from hidden presentation text.
-- Greeting falls back to `there` and the welcome sentence to `your current workspace` when site context is unavailable.
-- Added `VECTOR_LEAVE_SOURCE_BOUND_V1`.
-- `leaveRows()` no longer treats `pending` requests as upcoming leave. It admits only source requests whose status is explicitly `approved`, whose start/date parses successfully, and whose date is from today up to (but not including) seven days later; rows are sorted by date before the existing four-row density cap.
-- Leave person name uses the structured `person()` record or explicit `employeeName`; department/team/area are shown only when explicit named fields exist, otherwise the summary says `Source-confirmed leave`.
-- If the adapter cannot produce a source-confirmed row, the card remains a neutral route back to Absence & Leave instead of inventing an employee/date.
-- Added explicit accessibility/evidence wording: only approved source requests dated within the next seven days are shown.
-- Extended the existing repository guard to fail on hard-coded user/site context, loss of neutral identity fallback, reintroduction of `pending` as upcoming leave, loss of the seven-day filter, or loss of either evidence marker.
+- Added `VECTOR_ACTION_SOURCE_BOUND_V1` to the canonical Vector shell.
+- Removed the presentation-derived `actionRows(source)` adapter and removed the notification badge query over hidden `.fcc-action` / `.ux-approved-decision-card` DOM.
+- Added one reusable `structuredReviewRows()` source adapter. It reads only structured open time issues, structured weekly sign-off states (`stale`, `returned`, `canSign`, explicit blockers), and structured `pending` leave requests for employees visible to the current role.
+- Report-team matching is scoped using structured team/site tokens from the signed-in user and role-visible people. If no structured scope token is available, report-team actions fail closed to none rather than falling back to all teams.
+- Employee views fail closed to no manager review rows.
+- Review rows remain neutral `Needs review`; Vector still does not infer urgency from wording, row order or colour.
+- The global notification badge now uses the structured review-row count and remains hidden at zero. The Home list keeps the existing four-row visual density cap while the section count reflects the full structured set.
+- The former ambiguous `View all items` control now says `Open Time Review`; leave-specific rows keep their own direct Absence & Leave action.
+- Added source-bound accessibility/evidence markers and changed the empty state to `No source-confirmed items need review.`
+- Extended the existing Vector-only guard to reject reintroduction of hidden-presentation action counting, loss of manager/tenant-scope fail-closed behaviour, loss of structured open/pending-state checks, or loss of `VECTOR_ACTION_SOURCE_BOUND_V1`.
 
 ### Focused / affected validation
-Exact product-code head `eacbc53a83145fbde742e6f97dd3d1356f912077` passed Vector-only run `35433767094`. The focused repository guard passed first, including the new identity/leave contract checks; the exact Docker runtime build passed; built-asset proof then passed that Vector remains the only active presentation. This proves source/build composition and regression boundaries. It does not claim authenticated hosted-role rendering, real screen-reader behaviour or measured user task performance.
+Local focused syntax and the extended Vector repository guard passed before commit. Exact product-code head `7d888913a3eef1fde0b18be7bb9bda9480c987a5` then passed Vector-only run `35436525530`: the repository/source guard passed, the exact Docker runtime build passed, and built-asset proof passed that Vector remains the only active presentation. This proves the source/build-composition contract; it does not claim authenticated hosted-role task behaviour or assistive-technology quality.
 
 ### UX scorecard impact
-- Calm by default: improved — fabricated identity/site context and unapproved leave are removed from Home.
-- Dense on demand: unchanged-to-improved — the same compact surfaces remain, with unsupported detail withheld and authoritative workflows one click away.
-- Explainability: improved — identity and leave now have explicit source boundaries and neutral fallback.
-- Accessibility: structurally improved through truthful labels/evidence wording; real assistive-technology behaviour remains unverified.
-- Authority/auditability: preserved — leave approval, entitlement, coverage and writes remain source-owned.
-- Development efficiency: improved — existing identity objects, leave adapter, route, guard and workflow were extended rather than duplicated.
+- Calm by default: improved — hidden presentation quantity can no longer manufacture a global workload count.
+- Dense on demand: improved — the existing compact four-row surface is retained while the source-owned workflow remains one click away.
+- Explainability: improved — review state has an explicit source boundary and neutral wording.
+- Accessibility: structurally improved through source-bound labelling and unambiguous row actions; real screen-reader behaviour remains unverified.
+- Authority/auditability: preserved — Vector remains read/navigation-only for these consequential workflows.
+- Development efficiency: improved — one Vector adapter, one existing guard and one existing exact-runtime workflow were extended; no parallel implementation was created.
 
 ### Still unverified
-Authenticated hosted rendering of real role/site names, real screen-reader behaviour, measured first-click/time-on-task/error rate, and whether a richer authoritative site-name contract should be exposed by bootstrap rather than relying on the existing signed-in in-browser record.
+Authenticated hosted rendering for each role, real screen-reader behaviour, measured first-click/time-on-task/error rate, and an explicit source freshness/SLA contract for these review records. Until freshness is exposed authoritatively, these rows stay neutral and no urgent state is claimed.
 
 ### Single next highest-value NEW-UI action
-Audit the Home notification count and `Items to review` source adapter. The current count still derives from hidden presentation-card quantity rather than an explicit structured action-state contract; bind it only to source-backed actionable state/freshness if available, otherwise keep the badge neutral/absent rather than imply an authoritative workload count.
+Inspect the authoritative Time Review / Absence source contracts for an explicit freshness or observation timestamp plus confirmation lifecycle. If a trustworthy freshness contract already exists, bind it once into the shared Vector review adapter so stale/missing evidence becomes neutral `Needs review` and the top-level badge can suppress unverifiable work. If it does not exist, keep Vector neutral and advance the source-contract/test design without inventing an SLA in the UI.
 
-## 2026-09-19 — Vector r3: source-backed KPI evidence boundary
+## Validated prior Vector increments
 
-### Journey reviewed
-Factory/operations manager Vector Home → primary KPI summary → secondary KPI summary → owning attendance/leave/time/cost/productivity workflows.
+| Increment | Bounded delta | Exact evidence |
+| --- | --- | --- |
+| r4 | Source-bound signed-in identity/site context and approved next-seven-day leave only | Vector-only run `35433767094` green |
+| r3 | Removed synthetic KPI trends, invented labour-cost target progress and unsupported KPI severity | Vector-only run `35431023141` green |
+| r2 | Removed text-inferred department risk, invented shift timeline and percentage-like planning widths | Vector-only run `35428391626` green |
+| r1 | Removed position-derived review urgency; established neutral review-state governance | Vector-only run `35426218781` green |
 
-### NEW-UI lineage confirmation
-Work remains owned only by the approved Vector Workforce Operations presentation on `feature/one-day-enterprise-implementation-v1` / PR #79. The retired/legacy presentation was not modified and no new branch, PR, renderer or KPI surface was created.
-
-### Reuse / duplicate-work decision
-- Reused the existing `metrics()`, `kpiMarkup()` and `secondaryKpis()` ownership in `ux-overlay/vector-shell.js`; no replacement dashboard component was created.
-- Reused existing authoritative current-value sources (`WFM.scopedStaff` / `WFM.stats` and `VCU.report()` where present) and existing source routes; no cost, attendance, payroll, productivity or target calculation was copied into Vector.
-- Extended the existing `scripts/validate-vector-only-ui.mjs` repository guard; no second test harness or workflow was added.
-- Reused the existing Vector-only exact-runtime workflow for affected regression/build validation.
-
-### Research delta
-No competitor or generic UX research was repeated. The unresolved question was answered from current product code. Vector had a hard-coded `68%` labour-cost progress bar and four decorative sparkline arrays that were not bound to any structured historical series. The current Vector adapter exposes a verified current labour-cost total when `VCU.report()` supplies one, but no verified target or historical-series contract is present in this surface. Overtime and labour-cost cards also used red/green semantic tones despite no structured status/threshold contract.
-
-### Hypothesis
-If Vector shows only current verified KPI values/ratios and removes synthetic trend, target-progress and unsupported positive/negative severity cues, managers should be less likely to infer performance direction or risk that the source system has not actually proven, while retaining the same one-click routes to authoritative workflows.
-
-### Exact implementation delta
-- Added `VECTOR_KPI_EVIDENCE_V1` to the canonical Vector shell.
-- Removed the hard-coded labour-cost `68%` progress value. Labour cost now has no progress bar unless a future authoritative target contract is explicitly added.
-- Removed all decorative synthetic sparkline point arrays and the fallback sparkline generator from the secondary KPI cards.
-- Kept the evidence-backed on-site current-workforce proportion because it is directly derived from current scoped workforce counts, not a target or trend.
-- Changed unsupported overtime red and labour-cost green semantic tones to neutral informational blue; no urgency or positive-performance meaning is now implied without structured status.
-- Added a semantic KPI evidence marker and accessibility boundary stating that trend graphics are shown only when verified source history is available.
-- Preserved the existing KPI values, routes and owning source workflows.
-- Extended the existing Vector-only guard to fail if the synthetic labour-cost progress, synthetic sparkline points/helper, unsupported red/green KPI severity, or the KPI evidence marker regress.
-
-### Focused / affected validation
-Exact product/scorecard head `fabe2f612441ad28dd50b53947e99fe4bef19c73` is green in Vector-only run `35431023141`. The focused repository guard passed first, the exact Docker runtime build passed, and built-asset proof passed that Vector remains the only active presentation. This validates the KPI evidence contract at source/build-composition level. It does not claim authenticated hosted-role browser behaviour, real screen-reader behaviour or measured user performance.
-
-### UX scorecard impact
-- Calm by default: improved — Home no longer manufactures trend, target progress or unsupported KPI severity.
-- Dense on demand: improved — decorative trend noise is removed while source detail remains one click away.
-- Explainability: improved — current values remain, while unsupported historical/target meaning is explicitly withheld.
-- Accessibility: structurally improved through an explicit evidence boundary; real assistive-technology behaviour remains unverified.
-- Authority/auditability: preserved — all KPI truth, thresholds, targets and writes remain source-owned.
-- Development efficiency: improved — one Vector owner and one existing guard/workflow were extended rather than forking dashboard logic or tests.
-
-### Still unverified
-Authenticated hosted-role rendering, real screen-reader behaviour, measured first-click/time-on-task/error rate, and any future authoritative historical-series/target contracts that could safely re-enable trend or target-progress visuals.
-
-### Single next highest-value NEW-UI action
-Audit Vector Home identity/site and upcoming-leave summaries for the same source-boundary discipline. Prioritise any hard-coded identity/site context or presentation-derived leave detail that could misstate who/where the user is or what entitlement/coverage evidence is actually authoritative; bind structured source values where available and otherwise fail neutral.
-
-## 2026-09-19 — Vector r2: neutral department-planning evidence boundary
-
-### Journey reviewed
-Factory/operations manager Vector Home → department planning summary → schedule planning source workflow.
-
-### NEW-UI lineage confirmation
-Work remains owned only by the approved Vector Workforce Operations presentation on `feature/one-day-enterprise-implementation-v1` / PR #79. The legacy/retired presentation was not modified. Parallel PR #141 was inspected only to recover its validated bounded-observer requirement; that behavior is already present in PR #79, so #141 was explicitly marked superseded and closed rather than maintained as a second Vector implementation.
-
-### Reuse / duplicate-work decision
-- Reused the existing `departmentRows()` and `shiftsMarkup()` ownership in `vector-shell.js`; no replacement planning component was created.
-- Reused the existing `schedule-publication` owning workflow and its authority rather than copying schedule or coverage logic into Vector.
-- Extended the existing `scripts/validate-vector-only-ui.mjs` guard; no second UX test harness or workflow was added.
-- Reused the existing bounded MutationObserver implementation already present in PR #79 and closed the overlapping PR #141.
-
-### Research delta
-No competitor or generic UX research was repeated. The unresolved question was answered directly from the current Vector implementation: department status was derived from display words (`gap`, `critical`, `short`, `risk`, `review`, `under`) and the UI then invented severity colours, timeline hours and fixed percentage-like widths. The current Vector adapter does not expose a structured planning status/freshness field for those rows, so binding a verified status would have required guessing.
-
-### Hypothesis
-If Vector removes text-derived risk, invented timeline widths and implied shift timings until the source workflow supplies structured status/freshness, managers should be less likely to treat decorative presentation as verified operational evidence while retaining one-click access to schedule planning.
-
-### Exact implementation delta
-- Added `VECTOR_PLANNING_NEUTRAL_V1` to the current Vector shell.
-- `departmentRows()` now uses source cards only for a descriptive label; it no longer parses display words into risk or status.
-- Missing structured status now fails neutral as `Open source planning`.
-- Removed invented red/amber/green planning severity, hard-coded percentage-like widths and hard-coded 06:00–22:00 time-axis presentation from this summary.
-- Kept the approved card hierarchy but changed the section to `Department planning` with a direct `Open schedule planning` route.
-- Neutral rows use a non-timeline, non-severity visual treatment and explicitly state that status/coverage are shown only when verified by the source workflow.
-- Extended the existing Vector-only guard to fail if text-inferred risk, fixed planning widths/times, or the neutral evidence/visual contract regress.
-
-### Focused / affected validation
-Exact product-code head `cbcec55fb2b542fe960a80e7e87e94519efb003e` is green in Vector-only run `35428391626`. The extended repository guard passed, the exact Docker runtime build passed, and built-asset proof passed that Vector remains the only active presentation. This validates the neutral planning contract at source/build-composition level. It does not claim authenticated hosted-role, real browser task, screen-reader or user-performance evidence.
-
-### UX scorecard impact
-- Calm by default: improved — planning no longer manufactures risk/severity from copy or decorative widths.
-- Dense on demand: improved — unverified timeline detail is removed from the summary while source planning remains one click away.
-- Explainability: improved — the evidence boundary is explicit instead of implied through colour/position.
-- Accessibility: neutral-to-improved structurally; real assistive-technology behavior remains unverified.
-- Authority/auditability: preserved — schedule/coverage truth and writes remain in the source workflow.
-- Development efficiency: improved — one Vector owner, one guard, and the redundant PR #141 is closed.
-
-### Still unverified
-Authenticated hosted-role rendering, real screen-reader behavior, measured first-click/time-on-task/error rate, and a structured source-specific planning freshness/status contract that could safely replace the neutral state.
-
-### Single next highest-value NEW-UI action
-Audit the remaining Vector Home KPI/trend presentation for the same evidence problem, starting with hard-coded labour-cost progress and decorative sparklines. Bind only authoritative structured series/targets; otherwise remove the implied trend/progress while preserving the underlying KPI and route.
-
-## 2026-09-19 — Vector r1: neutral review-state governance
-
-### Journey reviewed
-Manager Vector Home → summary items requiring review → owning source workflow.
-
-### NEW-UI lineage confirmation
-Work is owned only by the current approved Vector Workforce Operations presentation on `feature/one-day-enterprise-implementation-v1`. During this cycle the branch had already retired the historical overlay lineage and introduced an explicit Vector-only repository guard. A stale browser harness accidentally recreated during the transition was removed immediately; no retired presentation implementation remains owned by this cycle.
-
-### Reuse / duplicate-work decision
-- Reused the approved `vector-shell.js` as the single presentation owner.
-- Reused underlying WFM routes and source workflows for authority; no calculation, approval, payroll, compliance, tenant or audit rule was copied into Vector.
-- Extended the existing `validate-vector-only-ui.mjs` and existing Vector-only workflow rather than creating another presentation branch or parallel test workflow.
-- The sealed underlying application may remain as hidden functional/source-of-truth behaviour; the guard now verifies that retired presentation overlays are not active instead of incorrectly requiring authoritative source code to disappear from the artifact.
-
-### Research delta
-No external competitor or generic UX research was repeated. The unresolved issue was directly observable in current Vector source: Home review rows were given red/amber urgency purely from their array position even when no structured urgency evidence existed.
-
-### Hypothesis
-If Vector keeps review items neutral unless a structured source contract proves urgency, users should be less likely to treat presentation order as operational severity while retaining one-click access to the owning workflow.
-
-### Exact implementation delta
-- Removed index-based red/amber urgency from Vector Home review rows.
-- Unverified rows now use one neutral review treatment and the explicit state `Needs review`.
-- Added accessible group context stating that source evidence must be reviewed before acting.
-- Added unambiguous `Review <item>` accessible names without increasing visible density.
-- Added `VECTOR_REVIEW_NEUTRAL_V1` as the current presentation-governance contract.
-- Extended the existing Vector-only repository validator to fail if presentation-index urgency returns or the neutral/accessibility contract is removed.
-- Corrected the exact-runtime guard so hidden authoritative source behaviour may remain underneath while retired presentation overlays remain forbidden and Vector remains the only visible shell.
-
-### Focused / affected validation
-Exact workflow run `35426218781` is green. The repository guard passed, the exact Docker runtime build passed, and the built-asset proof passed that retired presentation overlays are absent while Vector is loaded as the only active presentation shell. This verifies the current neutral-review contract at source/build-composition level; it does not claim real assistive-technology or hosted-user evidence.
-
-### UX scorecard impact
-- Calm by default: improved — review ordering no longer manufactures severity.
-- Dense on demand: unchanged — no new panel or page added.
-- Explainability: improved — review state explicitly directs users to authoritative source evidence.
-- Accessibility: improved structurally through descriptive group/action names; real assistive-technology quality remains unverified.
-- Authority/auditability: preserved — all consequential writes and evidence remain in owning workflows.
-- Development efficiency: improved — one current Vector presentation owner and one current guard; stale retired harness removed.
-
-### Still unverified
-Real screen-reader behaviour, measured user task time/error rate, authenticated hosted-role behaviour, structured source-specific freshness/authority on each Home review row, and Cycle 10's separate source-bound promotion proof.
-
-### Single next highest-value NEW-UI action
-Replace Vector's remaining text-derived status/risk presentation with structured source state where authoritative fields already exist. Start with the workforce/department planning summary; if no structured status or freshness contract is available, keep the presentation neutral rather than infer risk from display words.
+## Standing release / evidence boundary
+- Cycle 10 schedule-publication promotion remains separately gated by exact source-bound hosted proof.
+- Vector is the only active NEW-UI presentation owner in this lineage; retired overlays and legacy/0.6.139 presentation remain non-owners.
+- No scorecard entry treats a green source/build gate as real-user, hosted authenticated-role, accessibility-device or production proof.
+- Missing or stale evidence remains neutral; no presentation wording may manufacture urgency, cost, qualification, compliance, authority or confirmation.
