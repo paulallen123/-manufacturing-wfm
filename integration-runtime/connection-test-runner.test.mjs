@@ -44,6 +44,12 @@ function goodProbe(overrides = {}) {
     rawSensitiveDataPersisted: false,
     workforceApplyObserved: false,
     evidenceRef: 'evidence://sap/connection-test',
+    transportSafety: {
+      transportKind: 'rest_api',
+      observedControls: ['endpoint_identity', 'non_mutating_request'],
+      mutationObserved: false,
+      scopeExceeded: false
+    },
     reconciliation: { status: 'passed', sourceCount: 3, stagedCount: 3, evidenceRef: 'evidence://sap/reconciliation' },
     ...overrides
   };
@@ -59,6 +65,7 @@ function executor(overrides = {}) {
       assert.equal(request.safety.persistRawSensitiveData, false);
       assert.equal(request.safety.applyToWorkforce, false);
       assert.equal(request.limits.maxRecords, 5);
+      assert.deepEqual(request.transport.requiredSafetyEvidence, ['endpoint_identity', 'non_mutating_request']);
       return goodProbe();
     },
     proveRecovery: async () => ({
@@ -111,6 +118,12 @@ test('sample exceeding provider policy is rejected', async () => {
   const result = await runSafeConnectionTest(profile(), SAP_SUCCESSFACTORS, executor({ probe: async () => goodProbe({ sampleRecordCount: 6 }) }));
   assert.equal(result.status, 'failed');
   assert.match(result.errors.join('\n'), /exceeds policy/);
+});
+
+test('missing transport safety evidence fails closed', async () => {
+  const result = await runSafeConnectionTest(profile(), SAP_SUCCESSFACTORS, executor({ probe: async () => goodProbe({ transportSafety: undefined }) }));
+  assert.equal(result.status, 'failed');
+  assert.match(result.errors.join('\n'), /transport safety evidence is missing/);
 });
 
 test('recovery cannot pass without an actually observed failure', async () => {
