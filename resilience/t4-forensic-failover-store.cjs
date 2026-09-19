@@ -210,34 +210,48 @@ function createT4RuntimeForensicStore({ stores = [], maxAttempts = 2, requiredEl
     throw fail('WFM_T4_FORENSICS_RUNTIME_CONFIG', 'Zero-engineer T4 runtime requires between 2 and 4 independently attested eligible forensic stores.');
   }
 
-  const eligibleAttestations = (Array.isArray(stores) ? stores : [])
-    .filter((entry) => capabilityEligible(entry?.capability) && typeof entry?.store?.preserve === 'function' && typeof entry?.store?.verify === 'function')
+  const genericEligible = (Array.isArray(stores) ? stores : [])
+    .filter((entry) => capabilityEligible(entry?.capability)
+      && typeof entry?.store?.preserve === 'function'
+      && typeof entry?.store?.verify === 'function')
     .map((entry) => ({
       id: clean(entry?.id, 48),
-      eligibilityEvidenceDigest: validDigest(entry?.capability?.eligibilityEvidenceDigest)
-        ? String(entry.capability.eligibilityEvidenceDigest).toLowerCase()
-        : null,
+      eligibilityEvidenceDigest: String(entry.capability.eligibilityEvidenceDigest).toLowerCase(),
       storeIdentityDigest: validDigest(entry?.capability?.storeIdentityDigest)
         ? String(entry.capability.storeIdentityDigest).toLowerCase()
         : null,
     }));
 
-  if (eligibleAttestations.length < requiredEligibleStores) {
+  if (genericEligible.length < requiredEligibleStores) {
     throw fail('WFM_T4_FORENSICS_RUNTIME_REDUNDANCY', 'Zero-engineer T4 runtime requires an independently eligible primary and secondary forensic sink at startup.', {
-      eligibleStoreCount: eligibleAttestations.length,
+      eligibleStoreCount: genericEligible.length,
       requiredEligibleStores,
     });
   }
 
-  const selected = eligibleAttestations.slice(0, requiredEligibleStores);
-  if (selected.some((entry) => !entry.id || !entry.storeIdentityDigest || !entry.eligibilityEvidenceDigest)) {
-    throw fail('WFM_T4_FORENSICS_RUNTIME_ATTESTATION', 'Each runtime forensic sink requires an explicit store identity digest and eligibility evidence digest.');
+  const runtimeAttested = genericEligible
+    .filter((entry) => entry.id && entry.storeIdentityDigest)
+    .map((entry) => ({
+      ...entry,
+      attestationBindingDigest: digest({
+        storeIdentityDigest: entry.storeIdentityDigest,
+        eligibilityEvidenceDigest: entry.eligibilityEvidenceDigest,
+      }),
+    }));
+
+  if (runtimeAttested.length < requiredEligibleStores) {
+    throw fail('WFM_T4_FORENSICS_RUNTIME_ATTESTATION', 'Each zero-engineer runtime forensic sink requires an explicit store identity digest bound to eligibility evidence.', {
+      runtimeAttestedStoreCount: runtimeAttested.length,
+      requiredEligibleStores,
+    });
   }
+
+  const selected = runtimeAttested.slice(0, requiredEligibleStores);
   if (new Set(selected.map((entry) => entry.storeIdentityDigest)).size !== selected.length) {
     throw fail('WFM_T4_FORENSICS_RUNTIME_IDENTITY', 'Primary and secondary forensic sinks must have distinct attested store identities.');
   }
-  if (new Set(selected.map((entry) => entry.eligibilityEvidenceDigest)).size !== selected.length) {
-    throw fail('WFM_T4_FORENSICS_RUNTIME_ATTESTATION', 'Primary and secondary forensic sinks must carry distinct deployment-supplied eligibility evidence.');
+  if (new Set(selected.map((entry) => entry.attestationBindingDigest)).size !== selected.length) {
+    throw fail('WFM_T4_FORENSICS_RUNTIME_ATTESTATION', 'Primary and secondary forensic sink attestations must bind to distinct store identities.');
   }
 
   const failoverStore = createT4ForensicFailoverStore({ stores, maxAttempts });
@@ -251,7 +265,7 @@ function createT4RuntimeForensicStore({ stores = [], maxAttempts = 2, requiredEl
     requiredEligibleStores,
     eligibleStoreCount: failoverStore.eligibleStoreCount,
     storeIdentityDigests: selected.map((entry) => entry.storeIdentityDigest),
-    eligibilityEvidenceDigests: selected.map((entry) => entry.eligibilityEvidenceDigest),
+    attestationBindingDigests: selected.map((entry) => entry.attestationBindingDigest),
     productionWriteAuthority: false,
     modelAuthorityGranted: false,
     createsResources: false,
