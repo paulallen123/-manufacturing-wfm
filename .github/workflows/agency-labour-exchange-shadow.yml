@@ -12,6 +12,7 @@ on:
       - 'src/frontier/agency-right-to-work-lifecycle.mjs'
       - 'src/frontier/agency-right-to-work-refresh.mjs'
       - 'src/frontier/agency-right-to-work-assurance-ledger.mjs'
+      - 'src/frontier/agency-right-to-work-authoritative-planner.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
@@ -29,6 +30,7 @@ on:
       - 'test/frontier/agency-right-to-work-refresh.test.mjs'
       - 'test/frontier/agency-right-to-work-assurance-ledger.test.mjs'
       - 'test/frontier/agency-right-to-work-assurance-ledger-postgres.test.mjs'
+      - 'test/frontier/agency-right-to-work-authoritative-planner.test.mjs'
       - 'test/frontier/agency-dvsp-planner-gate.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
@@ -80,6 +82,7 @@ jobs:
               test/frontier/agency-right-to-work-integration.test.mjs \
               test/frontier/agency-right-to-work-refresh.test.mjs \
               test/frontier/agency-right-to-work-assurance-ledger.test.mjs \
+              test/frontier/agency-right-to-work-authoritative-planner.test.mjs \
               test/frontier/agency-dvsp-planner-gate.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
