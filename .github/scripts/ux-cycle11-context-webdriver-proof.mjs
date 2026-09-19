@@ -19,8 +19,8 @@ const host=spawn(node,[hostFile],{cwd:process.cwd(),stdio:['ignore','inherit','i
 let driver=null, sessionId=null;
 
 async function retry(fn,attempts=100,delay=150){let err;for(let i=0;i<attempts;i++){try{return await fn();}catch(e){err=e;await sleep(delay);}}throw err;}
-async function jsonFetch(url,opts={}){
-  const r=await fetch(url,{...opts,signal:AbortSignal.timeout(5000)});
+async function jsonFetch(url,opts={},timeoutMs=5000){
+  const r=await fetch(url,{...opts,signal:AbortSignal.timeout(timeoutMs)});
   const text=await r.text();
   let body={}; try{body=text?JSON.parse(text):{};}catch{throw new Error(`Non-JSON WebDriver response ${r.status}: ${text.slice(0,160)}`);}
   if(!r.ok||body?.value?.error)throw new Error(body?.value?.message||`WebDriver HTTP ${r.status}`);
@@ -38,7 +38,7 @@ try{
   driver=spawn(driverPath,[`--port=${DRIVER_PORT}`,'--allowed-ips=127.0.0.1'],{stdio:['ignore','inherit','inherit']});
   await retry(async()=>{const r=await fetch(`http://127.0.0.1:${DRIVER_PORT}/status`,{signal:AbortSignal.timeout(1000)});if(!r.ok)throw new Error('chromedriver not ready');const j=await r.json();if(j?.value?.ready===false)throw new Error('chromedriver reports not ready');return true;});
 
-  const created=await jsonFetch(`http://127.0.0.1:${DRIVER_PORT}/session`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({capabilities:{alwaysMatch:{browserName:'chrome','goog:chromeOptions':{args:['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--window-size=1440,1000']}}}})});
+  const created=await jsonFetch(`http://127.0.0.1:${DRIVER_PORT}/session`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({capabilities:{alwaysMatch:{browserName:'chrome','goog:chromeOptions':{args:['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--window-size=1440,1000']}}}})},20000);
   sessionId=created?.value?.sessionId||created?.sessionId;
   if(!sessionId)throw new Error('ChromeDriver did not return a session id');
   await wd('POST',`/session/${sessionId}/url`,{url:`http://127.0.0.1:${PORT}/`});
