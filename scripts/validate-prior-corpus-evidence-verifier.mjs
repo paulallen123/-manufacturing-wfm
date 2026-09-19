@@ -26,18 +26,32 @@ function validCandidate({ runId, artifactId, createdAt, headChar, corpusChar }) 
       crossTenantMutation: false,
     },
   });
-  const continuityRaw = JSON.stringify({
+  const continuityCore = {
     status: 'PASS',
     proof: 'provider-neutral-incident-regression-corpus-continuity',
+    priorSnapshotLoaded: true,
     outputCorpusDigest: corpusDigest,
     outputSnapshotSha256: sha256(snapshotRaw),
+    outputEntryCount: 33,
+    currentScenarioClasses: 33,
+    appendedCurrentClasses: 0,
+    deduplicatedCurrentClasses: 33,
+    exactPriorCatalogReplay: true,
+    rawCustomerTextPersisted: false,
+    rawTenantIdentifierPersisted: false,
+    reusableSecretsPersisted: false,
     actionAuthorityGranted: false,
     productionAuthorityGranted: false,
     releaseAuthorityGranted: false,
     crossTenantMutation: false,
     productionMutation: false,
     customerMutation: false,
-  });
+  };
+  const continuity = {
+    ...continuityCore,
+    continuityDigest: sha256(JSON.stringify(continuityCore)),
+  };
+  const continuityRaw = JSON.stringify(continuity);
   const portableProofRaw = JSON.stringify({
     status: 'PASS',
     exactRuntime: true,
@@ -48,6 +62,7 @@ function validCandidate({ runId, artifactId, createdAt, headChar, corpusChar }) 
       entryCount: 33,
       snapshotSha256: sha256(snapshotRaw),
       corpusDigest,
+      continuityDigest: continuity.continuityDigest,
     },
   });
   const envelopeRaw = JSON.stringify({
@@ -102,6 +117,7 @@ assert.equal(fallback.rejectedCandidateCount, 1);
 assert.equal(fallback.rejectedCandidates[0].runId, newestTampered.runId);
 assert.equal(fallback.priorSnapshotLoaded, true);
 assert.equal(fallback.durableHistoryKnown, true);
+assert.match(fallback.selectedContinuityDigest, /^[a-f0-9]{64}$/);
 assert.equal(fallback.actionAuthorityGranted, false);
 assert.equal(fallback.productionAuthorityGranted, false);
 assert.equal(fallback.releaseAuthorityGranted, false);
@@ -173,11 +189,43 @@ assert.equal(unavailableOnly.status, 'FAIL_CLOSED_PRIOR_EVIDENCE_UNAVAILABLE');
 assert.equal(unavailableOnly.evidenceUnavailable, true);
 assert.equal(verifySelectionReceipt(unavailableOnly), true);
 
+const continuityBytesTampered = validCandidate({
+  runId: 700,
+  artifactId: 9700,
+  createdAt: '2026-09-19T06:30:00Z',
+  headChar: '6',
+  corpusChar: '7',
+});
+const tamperedContinuity = JSON.parse(continuityBytesTampered.continuityRaw);
+tamperedContinuity.rawCustomerTextPersisted = true;
+continuityBytesTampered.continuityRaw = JSON.stringify(tamperedContinuity);
+const continuityBytesTamperedResult = verifyCandidateEvidence(continuityBytesTampered);
+assert.equal(continuityBytesTamperedResult.ok, false);
+assert.equal(continuityBytesTamperedResult.reason, 'verification-failed:continuityDigestValid');
+
+const continuityDigestRecomputed = validCandidate({
+  runId: 701,
+  artifactId: 9701,
+  createdAt: '2026-09-19T06:31:00Z',
+  headChar: '8',
+  corpusChar: '9',
+});
+const recomputedContinuity = JSON.parse(continuityDigestRecomputed.continuityRaw);
+recomputedContinuity.rawCustomerTextPersisted = true;
+delete recomputedContinuity.continuityDigest;
+recomputedContinuity.continuityDigest = sha256(JSON.stringify(recomputedContinuity));
+continuityDigestRecomputed.continuityRaw = JSON.stringify(recomputedContinuity);
+const continuityDigestRecomputedResult = verifyCandidateEvidence(continuityDigestRecomputed);
+assert.equal(continuityDigestRecomputedResult.ok, false);
+assert.equal(continuityDigestRecomputedResult.reason, 'verification-failed:portableBindsContinuityDigest');
+
 const tamperedReceipt = { ...fallback, selectedRunId: 999 };
 assert.equal(verifySelectionReceipt(tamperedReceipt), false);
+const continuityReceiptTampered = { ...fallback, selectedContinuityDigest: '0'.repeat(64) };
+assert.equal(verifySelectionReceipt(continuityReceiptTampered), false);
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'provider-neutral-prior-corpus-evidence-verifier',
   status: 'PASS',
   newestTamperedOlderVerifiedSelected: true,
@@ -185,6 +233,9 @@ console.log(JSON.stringify({
   partialDurableHistoryMissingSnapshotFailsClosed: true,
   unavailableEvidenceFailsClosed: true,
   deterministicNewestFirstSelection: true,
+  continuityBytesTamperRejected: true,
+  recomputedContinuityDigestWithoutPortableBindingRejected: true,
+  selectionReceiptBindsContinuityDigest: true,
   tamperedSelectionReceiptRejected: true,
   actionAuthorityGranted: false,
   productionAuthorityGranted: false,
