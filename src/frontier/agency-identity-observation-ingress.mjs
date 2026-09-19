@@ -1,8 +1,7 @@
 import crypto from 'node:crypto';
-import {deriveAgencyIdentityScopeLock} from './agency-identity-scope-lock.mjs';
 
 export const AGENCY_IDENTITY_OBSERVATION_INGRESS_VERSION='agency-identity-observation-ingress-v0.2.0';
-export const AGENCY_IDENTITY_OBSERVATION_INGRESS_STORE_VERSION='agency-identity-observation-ingress-store-v0.3.0';
+export const AGENCY_IDENTITY_OBSERVATION_INGRESS_STORE_VERSION='agency-identity-observation-ingress-store-v0.4.0';
 export const AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL=`
 CREATE TABLE IF NOT EXISTS wfm_agency_identity_observation_ingress_receipts (
  tenant_id text NOT NULL, source_system_id text NOT NULL,
@@ -47,9 +46,9 @@ export function createHmacJsonAgencyIdentityObservationAdapter({secret,signature
  }});
 }
 
-export const AGENCY_IDENTITY_OBSERVATION_BOUNDARY_APPEND_SQL=`SELECT observation_duplicate,receipt_duplicate
+export const AGENCY_IDENTITY_OBSERVATION_BOUNDARY_APPEND_SQL=`SELECT observation_duplicate,receipt_duplicate,scope_fingerprint
 FROM public.wfm_append_agency_identity_observation_v1(
- $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::timestamptz,$13,$14,$15,$16::timestamptz,$17::bigint
+ $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::timestamptz,$13,$14,$15,$16::timestamptz
 );`;
 
 const canon=r=>({tenantId:txt(r.tenant_id??r.tenantId,100),siteId:txt(r.site_id??r.siteId,100),requestId:txt(r.request_id??r.requestId,100),agencyId:txt(r.agency_id??r.agencyId,100),workerId:txt(r.worker_id??r.workerId,100),assignmentFingerprint:txt(r.assignment_fingerprint??r.assignmentFingerprint,24).toLowerCase(),assuranceVersionId:txt(r.assurance_version_id??r.assuranceVersionId,32).toLowerCase(),sourceSystemId:txt(r.source_system_id??r.sourceSystemId,100),sourceEventFingerprint:txt(r.source_event_fingerprint??r.sourceEventFingerprint,32).toLowerCase(),subjectFingerprint:txt(r.subject_fingerprint??r.subjectFingerprint,32).toLowerCase(),signalType:txt(r.signal_type??r.signalType,80),observedAt:iso(r.observed_at??r.observedAt)});
@@ -66,28 +65,34 @@ function booleanField(row,snake,camel){
  if(typeof value!=='boolean')throw new Error('unexpected_identity_observation_boundary_result');
  return value;
 }
+function scopeFingerprintField(row){
+ const value=txt(row?.scope_fingerprint??row?.scopeFingerprint,24).toLowerCase();
+ if(!/^[0-9a-f]{24}$/.test(value))throw new Error('unexpected_identity_observation_boundary_result');
+ return value;
+}
 
 export function createPostgresAgencyIdentityObservationIngressStore({executeBoundary}={}){
  if(typeof executeBoundary!=='function')throw new TypeError('executeBoundary function is required');
  return Object.freeze({
   version:AGENCY_IDENTITY_OBSERVATION_INGRESS_STORE_VERSION,
-  concurrencyBoundary:'database_function_assignment_scoped_transaction_lock',
+  concurrencyBoundary:'database_owned_canonical_assignment_scope_lock',
   credentialBoundary:'wfm_agency_identity_ingress_writer_function_only',
   directTableDmlAllowed:false,
+  callerSuppliedScopeLockKeyAccepted:false,
   async appendObservation(o={}){
    const {row,provenance:p}=normalizeObservation(o);
-   const scopeLock=deriveAgencyIdentityScopeLock(row);
    const values=[
     row.tenantId,row.siteId,row.requestId,row.agencyId,row.workerId,row.assignmentFingerprint,row.assuranceVersionId,
     row.sourceSystemId,row.sourceEventFingerprint,row.subjectFingerprint,row.signalType,row.observedAt,
-    p.auth,p.binding,p.version,p.receivedAt,scopeLock.advisoryKey,
+    p.auth,p.binding,p.version,p.receivedAt,
    ];
    const result=await executeBoundary(AGENCY_IDENTITY_OBSERVATION_BOUNDARY_APPEND_SQL,values);
    const rows=Array.isArray(result?.rows)?result.rows:[];
    if(rows.length!==1)throw new Error('unexpected_identity_observation_boundary_result');
    const duplicate=booleanField(rows[0],'observation_duplicate','observationDuplicate');
    const receiptDuplicate=booleanField(rows[0],'receipt_duplicate','receiptDuplicate');
-   return Object.freeze({duplicate,receiptDuplicate,row:Object.freeze(canon(row)),scopeFingerprint:scopeLock.scopeFingerprint});
+   const scopeFingerprint=scopeFingerprintField(rows[0]);
+   return Object.freeze({duplicate,receiptDuplicate,row:Object.freeze(canon(row)),scopeFingerprint});
   },
  });
 }
