@@ -5,12 +5,20 @@ const publicDir=process.argv[2]||'/app/public';
 const retired=Object.freeze({
   'review-ui.js': "'use strict';\n/* Retired presentation: weekly review is surfaced through Vector. Server-side review APIs remain authoritative. */\n",
   'review-ui.css': "/* Retired presentation: Vector owns review presentation. */\n",
-  'value-cockpit-ui.js': "'use strict';\n/* Retired presentation: cost/productivity decisions are surfaced through Vector. Server-side evidence APIs remain authoritative. */\n"
+  'value-cockpit-ui.js': "'use strict';\n/* Retired presentation: cost/productivity decisions are surfaced through Vector. Server-side evidence APIs remain authoritative. */\n",
+  'value-cockpit-ui.css': "/* Retired presentation: Vector owns cost/productivity presentation. */\n"
 });
 
 for(const [name,body] of Object.entries(retired)){
   const file=path.join(publicDir,name);
   if(fs.existsSync(file)) fs.writeFileSync(file,body,'utf8');
+}
+
+const timeReviewCss=path.join(publicDir,'time-review-ui.css');
+if(fs.existsSync(timeReviewCss)){
+  let css=fs.readFileSync(timeReviewCss,'utf8');
+  css=css.replace(/[^{}]*\.review-callout[^{}]*\{[^{}]*\}/g,'');
+  fs.writeFileSync(timeReviewCss,css,'utf8');
 }
 
 const forbidden=[
