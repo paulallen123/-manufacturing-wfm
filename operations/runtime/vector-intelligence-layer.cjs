@@ -39,7 +39,7 @@ const COMMANDS = Object.freeze([
 ]);
 
 const WRITE_INTENTS = new Set(['EMAIL_REPORT','CREATE_TASK','CREATE_AUTOMATION','CHANGE_WIDGET','CHANGE_CHART']);
-const HIGH_IMPACT_TERMS = /\\b(payroll|pay rate|publish rota|publish schedule|change contract|approve absence|decline absence|payment)\\b/i;
+const HIGH_IMPACT_TERMS = /\b(payroll|pay rate|publish rota|publish schedule|change contract|approve absence|decline absence|payment)\b/i;
 
 function compact(v,max=400){ return String(v??'').trim().replace(/\s+/g,' ').slice(0,max); }
 function numberOrNull(v){ const n=Number(v); return Number.isFinite(n)?n:null; }
