@@ -5,32 +5,23 @@ export function assessSourceBoundDeployment({
   variableNames = [],
   branchSnapshot,
   watchPatterns = [],
-  dockerfilePath,
-  holdMarker = '__security_hold__/DO_NOT_MATCH',
-  buildHoldMarker = '__security_hold__/NO_DOCKERFILE'
+  holdMarker = '__security_hold__/DO_NOT_MATCH'
 } = {}) {
   const failures = [];
   const sensitiveVariables = variableNames.filter((name) => SENSITIVE_NAME.test(String(name)));
   const hasGitSource = Boolean(source?.repo && source?.branch);
-  const sourceTriggerHoldActive = Array.isArray(watchPatterns)
+  const autoTriggerHoldActive = Array.isArray(watchPatterns)
     && watchPatterns.length === 1
     && watchPatterns[0] === holdMarker;
-  const manualBuildHoldActive = dockerfilePath === buildHoldMarker;
 
   if (!hasGitSource || sensitiveVariables.length === 0) {
-    return { ok: true, contained: false, failures, sensitiveVariables };
-  }
-
-  if (sourceTriggerHoldActive && manualBuildHoldActive) {
-    return { ok: true, contained: true, failures, sensitiveVariables };
-  }
-
-  if (sourceTriggerHoldActive && !manualBuildHoldActive) {
-    failures.push('security hold is incomplete: repository pushes are blocked but a manual/redeploy build can still execute repository build instructions');
-  }
-
-  if (!sourceTriggerHoldActive && manualBuildHoldActive) {
-    failures.push('security hold is incomplete: repository source triggers are still armed');
+    return {
+      ok: true,
+      contained: false,
+      autoTriggerHoldActive: false,
+      failures,
+      sensitiveVariables
+    };
   }
 
   if (branchSnapshot?.protected !== true) {
@@ -45,9 +36,14 @@ export function assessSourceBoundDeployment({
     failures.push('deployment source does not require successful checks before Railway can build it');
   }
 
+  if (failures.length > 0 && autoTriggerHoldActive) {
+    failures.push('automatic Git-triggered builds are held, but explicit redeploy can still rebuild repository source');
+  }
+
   return {
     ok: failures.length === 0,
     contained: false,
+    autoTriggerHoldActive,
     failures,
     sensitiveVariables
   };
