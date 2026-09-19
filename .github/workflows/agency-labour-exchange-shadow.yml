@@ -42,6 +42,7 @@ on:
       - 'test/frontier/agency-postgres-integration.test.mjs'
       - 'test/frontier/agency-postgres-delivery-claim-race.test.mjs'
       - 'test/frontier/agency-postgres-send-receipt-race.test.mjs'
+      - 'test/frontier/agency-postgres-portal-assurance-race.test.mjs'
       - '.github/workflows/agency-labour-exchange-shadow.yml'
       - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
       - 'docs/AGENCY_SUPPLIER_DELIVERY_V1.md'
@@ -101,5 +102,6 @@ jobs:
           node --test test/frontier/agency-postgres-integration.test.mjs
           node --test test/frontier/agency-postgres-delivery-claim-race.test.mjs
           node --test test/frontier/agency-postgres-send-receipt-race.test.mjs
+          node --test test/frontier/agency-postgres-portal-assurance-race.test.mjs
           node --test test/frontier/agency-right-to-work-dvsp-evidence-postgres.test.mjs
           node --test test/frontier/agency-right-to-work-assurance-ledger-postgres.test.mjs
