@@ -121,13 +121,18 @@ jobs:
 
       - name: Revalidate canonical binding at proof completion
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          git fetch --no-tags origin integration/canonical
-          CANONICAL_REF='origin/integration/canonical'
-          FINAL_CANONICAL_SHA="$(git rev-parse "$CANONICAL_REF")"
-          FINAL_POLICY_BLOB_SHA="$(git rev-parse "$CANONICAL_REF:release/release-policy.json")"
-          FINAL_MERGE_TREE_SHA="$(git merge-tree --write-tree "$WFM_AUTONOMY_HEAD_SHA" "$CANONICAL_REF")"
+          BRANCH_JSON="$(curl --fail-with-body --silent --show-error \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/branches/integration/canonical")"
+          FINAL_CANONICAL_SHA="$(printf '%s' "$BRANCH_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["commit"]["sha"])')"
+          FINAL_POLICY_BLOB_SHA="$(git rev-parse "$WFM_CANONICAL_BASE_SHA:release/release-policy.json")"
+          FINAL_MERGE_TREE_SHA="$(git merge-tree --write-tree "$WFM_AUTONOMY_HEAD_SHA" "$WFM_CANONICAL_BASE_SHA")"
           if [ "$FINAL_CANONICAL_SHA" != "$WFM_CANONICAL_BASE_SHA" ] \
             || [ "$FINAL_POLICY_BLOB_SHA" != "$WFM_CANONICAL_POLICY_BLOB_SHA" ] \
             || [ "$FINAL_MERGE_TREE_SHA" != "$WFM_CANONICAL_MERGE_TREE_SHA" ]; then
