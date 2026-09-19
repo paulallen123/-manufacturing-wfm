@@ -10,11 +10,7 @@ const rogue=crypto.generateKeyPairSync('ed25519');
 
 function guard(options={}){
   const {autoHandoff=true,handoffSequences={},...guardOptions}=options;
-  const g=new TelemetryContinuityGuard({
-    trustDomain:TRUST_DOMAIN,
-    trustedObservers:[{observerId:'observer-a',publicKey,streams:['http','audit']}],
-    ...guardOptions
-  });
+  const g=new TelemetryContinuityGuard({trustDomain:TRUST_DOMAIN,trustedObservers:[{observerId:'observer-a',publicKey,streams:['http','audit']}],...guardOptions});
   if(autoHandoff){
     for(const stream of ['http','audit']) handoff(g,{stream,lastSequence:handoffSequences[stream]??0,observedAtMs:T-10_000});
   }
@@ -74,20 +70,10 @@ test('unsigned or forged live heartbeat cannot manufacture healthy telemetry',()
 });
 
 test('signed evidence cannot cross trust domains or observer stream scopes',()=>{
-  const other=new TelemetryContinuityGuard({
-    trustDomain:'tenant-b.site-9.telemetry',
-    trustedObservers:[{observerId:'observer-a',publicKey,streams:['http']}]
-  });
-  assert.throws(()=>other.observeHeartbeat({
-    stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',
-    signature:sign(other,'heartbeat',{sequence:1,observedAtMs:T})
-  }),/signature verification/);
-
+  const other=new TelemetryContinuityGuard({trustDomain:'tenant-b.site-9.telemetry',trustedObservers:[{observerId:'observer-a',publicKey,streams:['http']}]});
+  assert.throws(()=>other.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',signature:sign(other,'heartbeat',{sequence:1,observedAtMs:T})}),/signature verification/);
   const g=guard();
-  assert.throws(()=>g.observeHeartbeat({
-    stream:'other',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',
-    signature:sign(g,'heartbeat',{stream:'other',sequence:1,observedAtMs:T})
-  }),/not authorised/);
+  assert.throws(()=>g.observeHeartbeat({stream:'other',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',signature:sign(g,'heartbeat',{stream:'other',sequence:1,observedAtMs:T})}),/not authorised/);
 });
 
 test('heartbeat signature cannot be repurposed as canary proof',()=>{
@@ -104,31 +90,23 @@ test('signed heartbeat and canary evidence cannot replay across restart even wit
   const oldHeartbeatSignature=sign(previous,'heartbeat',{stream:'http',sequence:1,observedAtMs:T});
   const observedAtMs=T+11_000;
   const oldCanarySignature=sign(previous,'canary',{stream:'http',canaryId:'restart-canary',emittedAtMs:T,observedAtMs});
-
   const restarted=guard();
   restarted.emitCanary({canaryId:'restart-canary',emittedAtMs:T,stream:'http'});
   assert.notEqual(previous.observerChallenge().observerSessionId,restarted.observerChallenge().observerSessionId);
-  assert.throws(()=>restarted.observeHeartbeat({
-    stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T+12_000,observerId:'observer-a',signature:oldHeartbeatSignature
-  }),/signature verification/);
-  assert.throws(()=>restarted.observeCanary({
-    canaryId:'restart-canary',observedAtMs,receivedAtMs:observedAtMs,observerId:'observer-a',signature:oldCanarySignature
-  }),/signature verification/);
+  assert.throws(()=>restarted.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T+12_000,observerId:'observer-a',signature:oldHeartbeatSignature}),/signature verification/);
+  assert.throws(()=>restarted.observeCanary({canaryId:'restart-canary',observedAtMs,receivedAtMs:observedAtMs,observerId:'observer-a',signature:oldCanarySignature}),/signature verification/);
 });
 
 test('restart requires a fresh observer handoff and cannot forget prior sequence continuity',()=>{
   const restarted=guard({autoHandoff:false,maxHeartbeatAgeMs:60_000,maxCanaryAgeMs:60_000});
   assert.throws(()=>heartbeat(restarted,{sequence:11,observedAtMs:T+1_000}),/session handoff/i);
-
   handoff(restarted,{lastSequence:10,observedAtMs:T+1_000});
   heartbeat(restarted,{sequence:13,observedAtMs:T+2_000});
   restarted.emitCanary({canaryId:'restart-proof',emittedAtMs:T+2_500,stream:'http'});
   canary(restarted,{canaryId:'restart-proof',observedAtMs:T+3_000});
-
   let r=restarted.assess({nowMs:T+4_000,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='SEQUENCE_GAP'&&x.expected===11&&x.received===13));
-
   backfill(restarted,{sequence:11,observedAtMs:T+1_500,receivedAtMs:T+4_100});
   backfill(restarted,{sequence:12,observedAtMs:T+1_800,receivedAtMs:T+4_200});
   r=restarted.assess({nowMs:T+4_300,requiredStreams:['http']});
@@ -140,7 +118,6 @@ test('missing or forged session handoff fails closed',()=>{
   let r=g.assess({nowMs:T,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='MISSING_SESSION_HANDOFF'));
-
   const badSignature=sign(g,'session_handoff',{stream:'http',sequence:0,continuityId:'observer-a',observedAtMs:T},rogue.privateKey);
   assert.throws(()=>g.observeSessionHandoff({stream:'http',lastSequence:0,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',continuityId:'observer-a',signature:badSignature}),/signature verification/);
 });
@@ -163,7 +140,6 @@ test('a fresh later signed canary can recover a prior missed-canary incident',()
   let r=g.assess({nowMs:T+30_001,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='CANARY_NOT_OBSERVED'));
-
   heartbeat(g,{sequence:2,observedAtMs:T+40_000});
   g.emitCanary({canaryId:'recovery',emittedAtMs:T+40_000,stream:'http'});
   canary(g,{canaryId:'recovery',observedAtMs:T+40_500});
@@ -187,12 +163,10 @@ test('sequence gap poisons continuity until every missing signed sequence is obs
   let r=g.assess({nowMs:T+4_000,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='SEQUENCE_GAP'));
-
   backfill(g,{sequence:2,observedAtMs:T+1_500,receivedAtMs:T+4_100});
   r=g.assess({nowMs:T+4_200,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='SEQUENCE_GAP'));
-
   backfill(g,{sequence:3,observedAtMs:T+2_500,receivedAtMs:T+4_300});
   r=g.assess({nowMs:T+4_400,requiredStreams:['http']});
   assert.equal(r.releaseEligible,true);
@@ -207,7 +181,7 @@ test('live heartbeat replay or rollback is rejected rather than treated as backf
 });
 
 test('backfill cannot invent recovery for a sequence outside an unresolved gap',()=>{
-  const g=guard();
+  const g=guard({handoffSequences:{http:9}});
   heartbeat(g,{sequence:10,observedAtMs:T});
   heartbeat(g,{sequence:12,observedAtMs:T+2_000});
   assert.throws(()=>backfill(g,{sequence:9,observedAtMs:T-1_000,receivedAtMs:T+3_000}),/unresolved gap/);
@@ -249,9 +223,5 @@ test('an old successful canary cannot keep promotion green forever',()=>{
 test('telemetry loss containment stays narrow and reversible',()=>{
   const g=guard();
   const r=g.assess({nowMs:T,requiredStreams:['http']});
-  assert.deepEqual(r.containment,[
-    'BLOCK_SECURITY_SENSITIVE_PROMOTION',
-    'PAUSE_AUTOMATED_SECURITY_MUTATIONS',
-    'PRESERVE_LAST_GOOD_EVIDENCE'
-  ]);
+  assert.deepEqual(r.containment,['BLOCK_SECURITY_SENSITIVE_PROMOTION','PAUSE_AUTOMATED_SECURITY_MUTATIONS','PRESERVE_LAST_GOOD_EVIDENCE']);
 });
