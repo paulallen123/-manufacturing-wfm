@@ -73,9 +73,7 @@
       "category": "iiot",
       "priority": "P1",
       "protocols": [
-        "REST",
-        "files",
-        "events"
+        "REST"
       ],
       "auth": "user-token-or-technical-client-credentials",
       "researchStatus": "docs-verified",
@@ -83,14 +81,14 @@
       "testLevel": "spec-verified",
       "writeEnabled": false,
       "evidenceUrl": "https://developer.siemens.com/insights-hub/docs/resources/industrial-iot-sdk-python/index.html",
-      "evidenceNote": "Siemens documents RESTful Insights Hub Industrial IoT APIs and SDK clients for Asset Management, IoT Time Series, Time Series Aggregates, IoT File, MindConnect and related services. Time-series reads can page via Link headers; service/API versions differ across SDKs and older versions are retained for backward compatibility before deprecation. MindConnect supports time series, events, files and asset data models with documented quotas. Technical access can use application or tenant service credentials to obtain tokens. Several services also expose mutative endpoints, so the WFM connector is strictly read-only and must use operation-level permission enforcement rather than assume a named Siemens access tier is read-only. No tenant or sandbox authentication was attempted.",
+      "evidenceNote": "Siemens documents RESTful Insights Hub Industrial IoT APIs and SDK clients for Asset Management, IoT Time Series, Time Series Aggregates, IoT File, MindConnect and related services. Time-series reads can page via Link headers; service/API versions differ across SDKs and older versions are retained for backward compatibility before deprecation. MindConnect supports upstream upload of time series, events, files and asset data models with documented quotas, but that does not imply SFTP or webhook semantics for the WFM read connector: the proven WFM integration path here is the documented REST API family. Technical access can use application or tenant service credentials to obtain tokens. Several services also expose mutative endpoints, so the WFM connector is strictly read-only and must use operation-level permission enforcement rather than assume a named Siemens access tier is read-only. No tenant or sandbox authentication was attempted.",
       "valueReview": {
         "basis": "vendor-docs",
         "evidenceUrl": "https://developer.siemens.com/insights-hub/docs/apis/iot-iottimeseries/api-iottimeseries-overview.html",
         "requiredPermissions": [
           "tenant/application technical identity limited to required read APIs",
           "read Asset Management metadata needed for asset/work-centre mapping",
-          "read IoT Time Series/TS Aggregates and events/files only where required",
+          "read IoT Time Series/TS Aggregates and event/file data through documented read APIs only where required",
           "no time-series, asset, file, event, device, agent or management-plane writes",
           "tenant/site data scope restricted to the customer's approved manufacturing assets"
         ],
@@ -146,7 +144,7 @@
           "write/delete endpoints exist and remain prohibited until separate sandbox write-roundtrip evidence and customer authorisation",
           "direct plant-network access remains prohibited; WFM reads the governed cloud/edge data layer rather than scanning PLC networks"
         ],
-        "nextDevelopmentAction": "Reuse the existing REST, event and file adapters to build an Insights Hub thin adapter with service/version capability discovery, Link-header pagination, quota-aware retries, timestamp/order normalization and canonical asset/aspect mapping. Then obtain an authorised Siemens development/customer tenant for least-privilege authentication and a read round-trip before any write path is considered."
+        "nextDevelopmentAction": "Build an Insights Hub thin adapter on the existing REST profile with service/version capability discovery, Link-header pagination, quota-aware retries, timestamp/order normalization and canonical asset/aspect mapping. Then obtain an authorised Siemens development/customer tenant for least-privilege authentication and a read round-trip before any write path is considered."
       }
     }
   ]
