@@ -63,7 +63,7 @@ The exact-current manager fixture had zero active authoritative Time Review acti
 
 ## Defects found and repaired safely
 
-Two proof/runtime defects were addressed without weakening the product claim boundary:
+Three proof/runtime defects were addressed without weakening the product claim boundary:
 
 1. Hosted browser-proof liveness: the proof service previously waited until the complete browser matrix before opening its health listener, allowing Railway liveness to terminate a valid long-running proof. PR #172 changed the proof harness to listen in `RUNNING` state first and emit `PASS` only after proof completion; failures still terminate the service.
 2. Hosted Time Review action-evidence source: the authoritative loopback replay lost hosted reverse-proxy protocol context and returned `502` while authenticated `/api/time-review` itself was healthy. The candidate now preserves a sanitised `x-forwarded-proto` value (`http`/`https` only) on the existing loopback source request, with regression coverage.
@@ -79,6 +79,14 @@ Requested source SHA: `18be0c40d47b58bef7b472cfce28946f30228b55`
 Result: `FAILED` before product build.
 
 The failure is the deliberate root-directory security hold: `__security_hold_7b6f9d22e1__` does not exist in the source snapshot. The hold was intentionally left intact because the feature branch is still unprotected and repository rulesets remain absent. This is a release-governance blocker, not a product-test failure, and the combined two-service candidate is not green.
+
+## CI admission infrastructure state
+
+The GitHub `Vector-only UI guard` for exact SHA `18be0c40d47b58bef7b472cfce28946f30228b55` concluded `failure`, but its job contained no steps. A targeted rerun was requested and again concluded `failure` with no steps. This is retained as a failed CI admission and is not converted into a product pass; the exact Railway image separately passed `VECTOR_ONLY_PRESENTATION_ADMISSION=PASS` and the hosted Chromium matrix passed. The no-step GitHub result remains an infrastructure/runner gate to clear.
+
+## Provider-access inventory
+
+The exact one-day Railway service configuration exposes only WFM/internal/test variable names and no provider-specific credential variable names. The integration-proof service likewise exposes only WFM/internal/test variable names. This does not prove that no authorised sandbox exists elsewhere; it means no provider-specific authorised credential is currently evidenced on the two mandated proof services, so no external provider is claimed live.
 
 ## Still unproven / claim boundary
 
