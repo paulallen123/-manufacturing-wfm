@@ -2,6 +2,7 @@
 import { spawnSync } from 'node:child_process';
 
 const checks = [
+  'scripts/validate-ci-supply-chain.mjs',
   'scripts/validate-deployment.mjs',
   'scripts/validate-resilience-scenarios.mjs',
   'scripts/validate-autonomous-recovery-proof.mjs',
