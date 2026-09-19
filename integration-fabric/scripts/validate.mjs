@@ -20,6 +20,8 @@ assert.ok(Array.isArray(opportunities.profiles) && opportunities.profiles.length
 assert.ok(opportunities.systemOverrides && typeof opportunities.systemOverrides === 'object');
 
 const allowedMaturity = new Set(catalog.maturityLevels);
+const maturityIndex = new Map(catalog.maturityLevels.map((level,index)=>[level,index]));
+const firstAuthenticatedIndex = maturityIndex.get('sandbox-authenticated');
 const ids = new Set();
 for (const s of catalog.systems) {
   assert.match(s.id, /^[a-z0-9][a-z0-9-]*$/);
@@ -30,6 +32,11 @@ for (const s of catalog.systems) {
   assert.ok(allowedMaturity.has(s.testLevel), 'Unknown test level for ' + s.id + ': ' + s.testLevel);
   assert.equal(s.writeEnabled, false, 'Registry write probes must be disabled by default: ' + s.id);
   if ('customerEdgeRequired' in s) assert.equal(typeof s.customerEdgeRequired, 'boolean', 'customerEdgeRequired must be boolean: ' + s.id);
+  if ('securityEvidenceBlockers' in s) {
+    assert.ok(Array.isArray(s.securityEvidenceBlockers) && s.securityEvidenceBlockers.length > 0, 'securityEvidenceBlockers must be a non-empty array: ' + s.id);
+    for (const blocker of s.securityEvidenceBlockers) assert.ok(typeof blocker === 'string' && blocker.trim().length > 0, 'Invalid security evidence blocker: ' + s.id);
+    assert.ok(maturityIndex.get(s.testLevel) < firstAuthenticatedIndex, 'Unresolved security evidence blockers forbid sandbox/tenant/round-trip/production evidence: ' + s.id);
+  }
   if (s.docsUrl) {
     const u = new URL(s.docsUrl);
     assert.equal(u.protocol, 'https:', 'Documentation URLs must use HTTPS.');
@@ -53,7 +60,7 @@ for (const must of [
   'siemens-industrial-edge','highbyte-intelligence-hub','tulip','cognite-data-fusion',
   'oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex',
   'rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x','seeq','canary-historian',
-  'trendminer','honeywell-uniformance-phd'
+  'trendminer','honeywell-uniformance-phd','safetychain-qms'
 ]) assert.ok(ids.has(must), 'Required seed missing: ' + must);
 
 for (const family of ['AMQP','Protobuf RPC/HTTP2','Schema Registry','JSON-2','JMS','Sparkplug B']) {
@@ -122,11 +129,15 @@ assert.ok(byId.get('honeywell-uniformance-phd').protocols.includes('REST'));
 assert.ok(byId.get('honeywell-uniformance-phd').protocols.includes('OPC UA'));
 assert.ok(byId.get('honeywell-uniformance-phd').protocols.includes('JDBC/ODBC'));
 assert.equal(byId.get('honeywell-uniformance-phd').customerEdgeRequired,true);
+assert.equal(byId.get('safetychain-qms').testLevel,'spec-verified');
+assert.deepEqual(byId.get('safetychain-qms').protocols,['REST']);
+assert.equal(byId.get('safetychain-qms').customerEdgeRequired,false);
+assert.ok(Array.isArray(byId.get('safetychain-qms').securityEvidenceBlockers) && byId.get('safetychain-qms').securityEvidenceBlockers.length >= 2);
 
 for(const id of ['sap-digital-manufacturing','ptc-windchill','aws-iot-sitewise','azure-iot-operations','jumpcloud','ibm-mq','sap-fieldglass']){
   assert.ok(opportunities.systemOverrides[id], 'System-specific value/data review missing: '+id);
 }
-for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion','sap-fieldglass','sap-business-one','microsoft-dynamics-365-business-central','deputy','sap-successfactors','infor-workforce-management','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex','adp-workforce-suite','rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x','seeq','canary-historian','trendminer','honeywell-uniformance-phd']){
+for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion','sap-fieldglass','sap-business-one','microsoft-dynamics-365-business-central','deputy','sap-successfactors','infor-workforce-management','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex','adp-workforce-suite','rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x','seeq','canary-historian','trendminer','honeywell-uniformance-phd','safetychain-qms']){
   const review=byId.get(id).valueReview;
   assert.equal(review?.basis,'vendor-docs','Inline vendor value/data review missing vendor-doc basis: '+id);
   assert.ok(Array.isArray(review.customerValue)&&review.customerValue.length>0,'Inline customer value review missing: '+id);
