@@ -24,6 +24,7 @@ const jsFiles = [
   'resilience/t4-containment-controller.cjs',
   'resilience/autonomy-control-loop.cjs',
   'resilience/incident-learning-planner.cjs',
+  'resilience/incident-regression-corpus.cjs',
   'resilience/ci-provider-failover.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
   'scripts/validate-autonomy-source-syntax.mjs',
@@ -48,6 +49,8 @@ const jsFiles = [
   'scripts/validate-autonomy-control-loop.mjs',
   'scripts/validate-incident-learning-planner.mjs',
   'scripts/validate-historical-incident-replay.mjs',
+  'scripts/validate-incident-regression-corpus.mjs',
+  'scripts/validate-persistent-incident-corpus.mjs',
 ];
 
 const checked = [];
@@ -75,6 +78,7 @@ for (const rel of [
   'resilience/t3-deterministic-execution-sandbox.cjs',
   'resilience/t4-containment-controller.cjs',
   'resilience/incident-learning-planner.cjs',
+  'resilience/incident-regression-corpus.cjs',
 ]) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
   for (const forbidden of ["require('node:http')", "require('node:https')", "require('node:net')", 'process.env', 'fetch(']) {
@@ -105,6 +109,7 @@ const requiredWorkflowPaths = [
   "      - 'resilience/t4-containment-controller.cjs'",
   "      - 'resilience/autonomy-control-loop.cjs'",
   "      - 'resilience/incident-learning-planner.cjs'",
+  "      - 'resilience/incident-regression-corpus.cjs'",
   "      - 'scripts/validate-autonomous-repair-factory.mjs'",
   "      - 'scripts/validate-isolated-repair-worker.mjs'",
   "      - 'scripts/validate-independent-repair-verifier.mjs'",
@@ -122,6 +127,8 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-autonomy-control-loop.mjs'",
   "      - 'scripts/validate-incident-learning-planner.mjs'",
   "      - 'scripts/validate-historical-incident-replay.mjs'",
+  "      - 'scripts/validate-incident-regression-corpus.mjs'",
+  "      - 'scripts/validate-persistent-incident-corpus.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
   "      - 'scripts/run-portable-autonomy-proof.mjs'",
 ];
@@ -129,16 +136,25 @@ for (const line of requiredWorkflowPaths) {
   assert.equal(workflow.split('\n').includes(line), true, `Workflow is missing exact path trigger: ${line.trim()}`);
 }
 
+const hydrateCorpusIndex = workflow.indexOf('- name: Hydrate prior verified incident regression corpus');
 const classifyAnchorIndex = workflow.indexOf('- name: Classify canonical trust anchor');
 const portableProofIndex = workflow.indexOf('- name: Run canonical portable autonomy proof');
 const revalidateIndex = workflow.indexOf('- name: Revalidate canonical binding at proof completion');
 const receiptIndex = workflow.indexOf('- name: Assert portable proof receipt');
 const releaseFailClosedIndex = workflow.indexOf('- name: Enforce release evidence fail-closed boundary');
-assert.ok(classifyAnchorIndex >= 0, 'Workflow must classify the canonical trust anchor.');
+assert.ok(hydrateCorpusIndex >= 0, 'Workflow must attempt to hydrate prior verified incident corpus evidence.');
+assert.ok(classifyAnchorIndex > hydrateCorpusIndex, 'Canonical trust-anchor classification must follow bounded prior-corpus hydration.');
 assert.ok(portableProofIndex > classifyAnchorIndex, 'Portable proof must execute after canonical trust-anchor classification.');
 assert.ok(revalidateIndex > portableProofIndex, 'Canonical binding must be revalidated after the portable proof.');
 assert.ok(receiptIndex > revalidateIndex, 'Proof receipt assertion must happen after canonical revalidation.');
 assert.ok(releaseFailClosedIndex > receiptIndex, 'Release fail-closed enforcement must happen after the portable logic proof and receipt assertion.');
+assert.ok(workflow.includes('actions: read'), 'Prior corpus hydration must use read-only Actions access.');
+assert.ok(workflow.includes('WFM_INCIDENT_CORPUS_INPUT'), 'Verified prior corpus must be passed to the provider-neutral proof only through its input contract.');
+assert.ok(workflow.includes("portable.get('status') == 'PASS'"), 'Prior corpus hydration must require a previously passing portable proof.');
+assert.ok(workflow.includes("envelope.get('portableProofSha256') == sha(portable_raw)"), 'Prior corpus hydration must verify the workflow envelope binds the prior portable proof bytes.');
+assert.ok(workflow.includes("corpus.get('snapshotSha256') == sha(snapshot_raw)"), 'Prior corpus hydration must verify the prior snapshot bytes against the portable proof.');
+assert.ok(workflow.includes('incident-regression-corpus.snapshot.json'), 'Workflow must persist the verified incident regression corpus snapshot.');
+assert.ok(workflow.includes('incident-regression-corpus-continuity.json'), 'Workflow must persist continuity evidence with the corpus snapshot.');
 assert.ok(workflow.includes('WFM_CANONICAL_TRUST_ANCHOR_PROTECTED'), 'Workflow must carry canonical trust-anchor state into the proof.');
 assert.ok(workflow.includes('FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED'), 'Workflow must preserve the explicit unprotected-anchor release blocker.');
 
@@ -158,12 +174,15 @@ for (const required of [
   ": exactRuntime ? 'EXACT_RUNTIME_LOGIC_ONLY' : 'NON_EXACT_LOGIC_ONLY'",
   'canonicalReleaseEvidenceBound: releaseClaimAllowed',
   "['historical-incident-replay-and-learning', 'scripts/validate-historical-incident-replay.mjs', true]",
+  "['persistent-incident-regression-corpus-continuity', 'scripts/validate-persistent-incident-corpus.mjs', true]",
+  'incidentRegressionCorpus,',
+  "id: 'persistent-incident-corpus-artifact-binding'",
 ]) {
   assert.ok(portableProofSource.includes(required), `Portable proof lost release-trust/regression guard: ${required}`);
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'autonomy-source-syntax-and-workflow-integrity',
   status: 'PASS',
   jsFilesChecked: checked.length,
@@ -192,9 +211,13 @@ console.log(JSON.stringify({
   t4ContainmentAmbientEnvironmentDenied: true,
   incidentLearningDirectNetworkSurfaceDenied: true,
   incidentLearningAmbientEnvironmentDenied: true,
+  incidentRegressionCorpusDirectNetworkSurfaceDenied: true,
+  incidentRegressionCorpusAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
   workflowCriticalPathsPresent: true,
   historicalReplayRequiredByPortableProof: true,
+  persistentCorpusContinuityRequiredByPortableProof: true,
+  priorCorpusWorkflowEvidenceBindingRequired: true,
   canonicalTrustAnchorClassificationRequired: true,
   exactRuntimeLogicProofContinuesWhenReleaseTrustBlocked: true,
   authenticatedCanonicalRevalidationRequired: true,
