@@ -1,88 +1,63 @@
-name: Sanitize sealed Vector runtime
+name: Prove sealed Vector runtime sanitization without mutation
 
 on:
   push:
     branches:
-      - feature/one-day-enterprise-implementation-v1
+      - fix/24h-freeze-sealed-runtime-sanitizer-20260919
     paths:
       - '.github/workflows/sanitize-sealed-runtime.yml'
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  sanitize:
+  prove-read-only-sanitizer:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: feature/one-day-enterprise-implementation-v1
-          fetch-depth: 0
-          persist-credentials: true
+          persist-credentials: false
+          fetch-depth: 1
 
-      - name: Repack runtime without retired presentation
+      - name: Prove sanitizer on an ephemeral artifact copy
         shell: bash
         run: |
           set -euo pipefail
           ART='artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz'
-          OLD_SHA="$(python3 - <<'PY'
-          import json
-          print(json.load(open('DEPLOYMENT_MANIFEST.json'))['runtime_sha256'])
-          PY
-          )"
-          OLD_SIZE="$(stat -c %s "$ART")"
+          SOURCE_SHA="$(sha256sum "$ART" | awk '{print $1}')"
           TMP="$(mktemp -d)"
           trap 'rm -rf "$TMP"' EXIT
           tar -xzf "$ART" -C "$TMP"
           node scripts/retire-legacy-presentation.mjs "$TMP/public"
-          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -czf "$ART.new" -C "$TMP" .
-          mv "$ART.new" "$ART"
-          NEW_SHA="$(sha256sum "$ART" | awk '{print $1}')"
-          NEW_SIZE="$(stat -c %s "$ART")"
-          test "$NEW_SHA" != "$OLD_SHA"
-          python3 - "$OLD_SHA" "$NEW_SHA" "$OLD_SIZE" "$NEW_SIZE" <<'PY'
-          import json, pathlib, subprocess, sys
-          old_sha,new_sha,old_size,new_size=sys.argv[1:]
-          paths=subprocess.check_output(['git','ls-files','-z']).split(b'\0')
-          for raw in paths:
-              if not raw:
-                  continue
-              p=pathlib.Path(raw.decode())
-              if str(p)=='artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz' or not p.is_file():
-                  continue
-              try:
-                  text=p.read_text()
-              except UnicodeDecodeError:
-                  continue
-              changed=text.replace(old_sha,new_sha)
-              if p.name=='DEPLOYMENT_MANIFEST.json':
-                  obj=json.loads(changed)
-                  obj['runtime_sha256']=new_sha
-                  obj['runtime_size_bytes']=int(new_size)
-                  changed=json.dumps(obj,indent=2)+'\n'
-              elif p.name=='CUSTOMER_PROOF_STATUS.md':
-                  tick=chr(96)
-                  changed=changed.replace(
-                      f'Runtime artifact size: {tick}{old_size}{tick} bytes',
-                      f'Runtime artifact size: {tick}{new_size}{tick} bytes'
-                  )
-              if changed!=text:
-                  p.write_text(changed)
-          PY
-          node scripts/retire-legacy-presentation.mjs "$TMP/public"
-          echo "SANITIZED_RUNTIME_SHA256=$NEW_SHA"
-          echo "SANITIZED_RUNTIME_SIZE=$NEW_SIZE"
+          test "$(sha256sum "$ART" | awk '{print $1}')" = "$SOURCE_SHA"
+          git diff --exit-code
+          git status --porcelain=v1 | grep -q . && { echo 'Frozen source changed during proof.' >&2; exit 1; } || true
+          echo "FROZEN_RUNTIME_MUTATION=DENIED"
+          echo "EPHEMERAL_PRESENTATION_SANITIZER=PASS"
 
-      - name: Commit sanitized artifact
+      - name: Re-run exact candidate Docker admission
         shell: bash
         run: |
           set -euo pipefail
-          git add -A
-          git diff --cached --quiet && exit 0
-          git config user.name 'Vector Runtime Sanitizer'
-          git config user.email 'vector-runtime-sanitizer@users.noreply.github.com'
-          git commit -m 'Sanitize sealed runtime presentation artifact'
-          git fetch origin feature/one-day-enterprise-implementation-v1
-          git rebase origin/feature/one-day-enterprise-implementation-v1
-          git push origin HEAD:feature/one-day-enterprise-implementation-v1
+          docker build --pull=false -t wfm-frozen-sanitizer-proof:${{ github.sha }} .
+
+      - name: Prove built runtime is Vector-only without changing sealed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker create wfm-frozen-sanitizer-proof:${{ github.sha }})"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          rm -rf "$RUNNER_TEMP/public" && mkdir -p "$RUNNER_TEMP/public"
+          docker cp "$cid:/app/public/." "$RUNNER_TEMP/public/"
+          if grep -RIlE 'WFM_UX_RESET_CYCLE11_BEGIN|WFM_UX_RESET_CYCLE12_BEGIN|VECTOR_PRIORITY_BRIDGE_V1|Payroll review due today|AUTOMATED VALUE DESK|The system finds the saving\.|ux-signoff-desk|ux11-queue|review-callout|review-layout|vc-hero|vc-card' "$RUNNER_TEMP/public" --include='*.js' --include='*.css' --include='*.html'; then
+            echo 'Retired presentation content survived exact runtime composition.' >&2
+            exit 1
+          fi
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/public/vector-shell.js"
+          grep -F 'vector-shell.js' "$RUNNER_TEMP/public/index.html"
+          git diff --exit-code
+          echo 'FROZEN_SOURCE_INTACT=PASS'
+          echo 'VECTOR_ONLY_COMPOSED_RUNTIME=PASS'
+          echo 'CLAIM_BOUNDARY=read-only proof only; no frozen artifact, customer-proof release, readiness flag, provider or production mutation'
