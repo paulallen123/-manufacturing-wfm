@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const {
   sha256,
+  signalsDurableHistory,
   verifyCandidateEvidence,
   selectVerifiedPredecessor,
   verifySelectionReceipt,
@@ -44,6 +45,7 @@ function validCandidate({ runId, artifactId, createdAt, headChar, corpusChar }) 
     productionMutation: false,
     customerMutation: false,
     incidentRegressionCorpus: {
+      entryCount: 33,
       snapshotSha256: sha256(snapshotRaw),
       corpusDigest,
     },
@@ -53,6 +55,9 @@ function validCandidate({ runId, artifactId, createdAt, headChar, corpusChar }) 
     bindingMatches: true,
     workflowHeadSha: headSha,
     portableProofSha256: sha256(portableProofRaw),
+    incidentRegressionCorpusDigest: corpusDigest,
+    incidentRegressionCorpusSnapshotSha256: sha256(snapshotRaw),
+    incidentRegressionCorpusPriorSnapshotLoaded: true,
   });
   return {
     runId,
@@ -136,6 +141,23 @@ assert.equal(failClosed.productionAuthorityGranted, false);
 assert.equal(failClosed.releaseAuthorityGranted, false);
 assert.equal(verifySelectionReceipt(failClosed), true);
 
+const partialDurable = validCandidate({
+  runId: 550,
+  artifactId: 9550,
+  createdAt: '2026-09-19T06:15:00Z',
+  headChar: '4',
+  corpusChar: '5',
+});
+delete partialDurable.snapshotRaw;
+assert.equal(signalsDurableHistory(partialDurable), true);
+const partialFailClosed = selectVerifiedPredecessor({ candidates: [partialDurable] });
+assert.equal(partialFailClosed.status, 'FAIL_CLOSED_DURABLE_HISTORY_UNAUTHENTICATED');
+assert.equal(partialFailClosed.durableHistoryKnown, true);
+assert.equal(partialFailClosed.priorSnapshotLoaded, false);
+assert.equal(partialFailClosed.rejectedCandidateCount, 1);
+assert.match(partialFailClosed.rejectedCandidates[0].reason, /^missing-required-evidence:snapshotRaw$/);
+assert.equal(verifySelectionReceipt(partialFailClosed), true);
+
 const unavailableOnly = selectVerifiedPredecessor({
   candidates: [{
     runId: 600,
@@ -160,6 +182,7 @@ console.log(JSON.stringify({
   status: 'PASS',
   newestTamperedOlderVerifiedSelected: true,
   allDurableCandidatesInvalidFailClosed: true,
+  partialDurableHistoryMissingSnapshotFailsClosed: true,
   unavailableEvidenceFailsClosed: true,
   deterministicNewestFirstSelection: true,
   tamperedSelectionReceiptRejected: true,
