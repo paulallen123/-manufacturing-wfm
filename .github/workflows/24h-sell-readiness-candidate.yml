@@ -78,7 +78,7 @@ jobs:
       - name: Prove T0-T4 autonomous support boundary
         run: node scripts/run-portable-autonomy-proof.mjs --strict-runtime
 
-      - name: Prove unified Cycle 12 role-first signal contract
+      - name: Prove role-first signal contract and Vector presentation composition
         shell: bash
         run: |
           set -euo pipefail
@@ -86,9 +86,12 @@ jobs:
           node --check ux-overlay/ux-reset-cycle11.js
           node --check ux-overlay/ux-reset-cycle12-model.js
           node --check ux-overlay/ux-reset-cycle12.js
+          node --check ux-overlay/vector-shell.js
           node .github/scripts/ux-cycle12-signal-contract.mjs
-          grep -F 'WFM_UX_RESET_CYCLE12_BEGIN' Dockerfile
+          grep -F 'vector-shell.js' Dockerfile
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' Dockerfile
           grep -F 'WFM_ADAPTIVE_COACH_BEGIN' Dockerfile
+          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' Dockerfile
 
       - name: Build exact combined staging image
         run: docker build --pull=false -t wfm-24h-candidate:${{ github.sha }} .
@@ -127,9 +130,13 @@ jobs:
             sleep 4
           done
           test "$success" = 1
+          curl --fail --silent --show-error "$TEST_ORIGIN/" > "$RUNNER_TEMP/test-index.html"
+          grep -F 'vector-shell.js' "$RUNNER_TEMP/test-index.html"
+          curl --fail --silent --show-error "$TEST_ORIGIN/vector-shell.js" > "$RUNNER_TEMP/test-vector-shell.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/test-vector-shell.js"
           curl --fail --silent --show-error "$TEST_ORIGIN/value-cockpit-ui.js" > "$RUNNER_TEMP/test-ui.js"
-          grep -F 'WFM_UX_RESET_CYCLE12_BEGIN' "$RUNNER_TEMP/test-ui.js"
           grep -F 'WFM_ADAPTIVE_COACH_BEGIN' "$RUNNER_TEMP/test-ui.js"
+          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' "$RUNNER_TEMP/test-ui.js"
 
       - name: Upload exact candidate to existing integration proof service
         env:
@@ -149,9 +156,13 @@ jobs:
             sleep 4
           done
           test "$success" = 1
+          curl --fail --silent --show-error "$PROOF_ORIGIN/" > "$RUNNER_TEMP/proof-index.html"
+          grep -F 'vector-shell.js' "$RUNNER_TEMP/proof-index.html"
+          curl --fail --silent --show-error "$PROOF_ORIGIN/vector-shell.js" > "$RUNNER_TEMP/proof-vector-shell.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/proof-vector-shell.js"
           curl --fail --silent --show-error "$PROOF_ORIGIN/value-cockpit-ui.js" > "$RUNNER_TEMP/proof-ui.js"
-          grep -F 'WFM_UX_RESET_CYCLE12_BEGIN' "$RUNNER_TEMP/proof-ui.js"
           grep -F 'WFM_ADAPTIVE_COACH_BEGIN' "$RUNNER_TEMP/proof-ui.js"
+          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' "$RUNNER_TEMP/proof-ui.js"
 
       - name: Publish machine-readable proof receipt
         if: always()
@@ -163,7 +174,7 @@ jobs:
             generatedAt:new Date().toISOString(),
             sha:process.env.GITHUB_SHA,
             branch:process.env.GITHUB_REF_NAME,
-            candidate:'one-day + autonomous integration + adaptive learning + Cycle12 UX + T0-T4 support',
+            candidate:'one-day + autonomous integration + adaptive learning + Cycle12 signal contract + Vector role-first UX + T0-T4 support',
             productionMutation:false,
             frozenCustomerProofMutation:false,
             targetServices:['wfm-one-day-enterprise-v1','wfm-integration-fabric-v1-proof'],
