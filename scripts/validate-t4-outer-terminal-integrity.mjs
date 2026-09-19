@@ -255,6 +255,27 @@ try {
   assert.equal(verificationReceipt.attemptCount, 2);
   assert.equal(await verificationFailover.verify(verificationReceipt), true);
 
+  const mutableStore = {
+    preserve: secondaryStore.preserve,
+    verify: secondaryStore.verify,
+  };
+  const methodPinnedFailover = createT4ForensicFailoverStore({
+    stores: [{ id: 'method-pinned-store', capability: SAFE_FAILOVER_CAPABILITY, store: mutableStore }],
+  });
+  mutableStore.preserve = async () => {
+    throw Object.assign(new Error('substituted preserve method must not run'), { code: 'WFM_T4_HOSTILE_METHOD_SWAP' });
+  };
+  mutableStore.verify = async () => false;
+  const methodPinnedReceipt = await methodPinnedFailover.preserve({
+    incidentId: 'inc-t4-method-swap',
+    tenant: 'tenant-a',
+    scenarioId: 'data-integrity-mismatch',
+    evidenceDigest: d('method-swap-evidence'),
+    eventHeadDigest: d('method-swap-event'),
+  });
+  assert.equal(methodPinnedReceipt.selectedStoreId, 'method-pinned-store');
+  assert.equal(await methodPinnedFailover.verify(methodPinnedReceipt), true, 'Post-construction store method substitution must not replace trusted forensic methods.');
+
   const noEligibleStore = createT4ForensicFailoverStore({
     stores: [{
       id: 'paid-or-unattested-only',
@@ -291,6 +312,7 @@ console.log(JSON.stringify({
   unattestedCostLaneNeverInvoked: true,
   crossTenantForensicReceiptRejected: true,
   independentReadbackFailureTriggersBoundedFailover: true,
+  postConstructionStoreMethodSubstitutionDenied: true,
   productionMutation: false,
   customerMutation: false,
 }, null, 2));
