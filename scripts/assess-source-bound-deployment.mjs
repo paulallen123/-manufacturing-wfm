@@ -1,0 +1,41 @@
+const SENSITIVE_NAME = /(TOKEN|SECRET|PASSWORD|API[_-]?KEY|CREDENTIAL|DATABASE_URL|(^|_)DB($|_))/i;
+
+export function assessSourceBoundDeployment({
+  source,
+  variableNames = [],
+  branchSnapshot,
+  watchPatterns = [],
+  holdMarker = '__security_hold__/DO_NOT_MATCH'
+} = {}) {
+  const failures = [];
+  const sensitiveVariables = variableNames.filter((name) => SENSITIVE_NAME.test(String(name)));
+  const hasGitSource = Boolean(source?.repo && source?.branch);
+  const holdActive = Array.isArray(watchPatterns) && watchPatterns.length === 1 && watchPatterns[0] === holdMarker;
+
+  if (!hasGitSource || sensitiveVariables.length === 0) {
+    return { ok: true, contained: false, failures, sensitiveVariables };
+  }
+
+  if (holdActive) {
+    return { ok: true, contained: true, failures, sensitiveVariables };
+  }
+
+  if (branchSnapshot?.protected !== true) {
+    failures.push('credential-bearing service is sourced from an unprotected branch');
+  }
+
+  if (branchSnapshot?.commit?.commit?.verification?.verified !== true) {
+    failures.push('credential-bearing service is sourced from an unsigned or unverified branch head');
+  }
+
+  if (source?.checkSuites !== true) {
+    failures.push('deployment source does not require successful checks before Railway can build it');
+  }
+
+  return {
+    ok: failures.length === 0,
+    contained: false,
+    failures,
+    sensitiveVariables
+  };
+}
