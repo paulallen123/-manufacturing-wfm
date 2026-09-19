@@ -1,0 +1,215 @@
+name: Evidence hosted authenticated role browser proof
+
+on:
+  push:
+    branches:
+      - 'evidence/hosted-role-browser-ea06829-20260919-1100'
+    paths:
+      - '.github/workflows/evidence-hosted-role-browser.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  hosted-role-browser-proof:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      WFM_ORIGIN: https://wfm-one-day-enterprise-v1-production.up.railway.app
+      EXPECTED_SOURCE_SHA: ea06829a6956dbbe6dd3f022e842dec1c862d7d4
+    steps:
+      - name: Install pinned browser driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/wfm-browser-proof/evidence"
+          cd "$RUNNER_TEMP/wfm-browser-proof"
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund --save-exact playwright@1.63.0 >/dev/null
+
+      - name: Run authenticated role-by-role read-only journey
+        env:
+          WFM_DEMO_PASSWORD: ${{ secrets.WFM_DEMO_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${WFM_DEMO_PASSWORD:-}" || { echo 'WFM_DEMO_PASSWORD repository secret is not configured.' >&2; exit 1; }
+          cd "$RUNNER_TEMP/wfm-browser-proof"
+          node <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const { chromium } = require('playwright');
+
+          const origin = process.env.WFM_ORIGIN;
+          const expectedSourceSha = process.env.EXPECTED_SOURCE_SHA;
+          const password = process.env.WFM_DEMO_PASSWORD;
+          const outDir = `${process.env.RUNNER_TEMP}/wfm-browser-proof/evidence`;
+          const readOnlyEndpoints = [
+            '/api/health',
+            '/api/bootstrap',
+            '/api/learning/plan',
+            '/api/learning/summary',
+            '/api/exceptions',
+            '/api/integrations/discovery',
+            '/api/integrations/providers',
+            '/api/implementation/state',
+            '/api/workforce/lifecycle'
+          ];
+          const safeNavigationLabels = [
+            'Schedule', 'Readiness', 'Time', 'Payroll', 'Personal', 'Training',
+            'Integrations', 'Implementation', 'Absence', 'Time Review'
+          ];
+          const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
+          const safeName = value => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 64) || 'role';
+
+          (async () => {
+            const browser = await chromium.launch({ channel: 'chrome', headless: true });
+            const report = {
+              schemaVersion: 1,
+              proof: 'hosted-authenticated-role-browser-readonly',
+              origin,
+              expectedSourceSha,
+              generatedAt: new Date().toISOString(),
+              productionMutation: false,
+              customerMutation: false,
+              roles: [],
+              assertions: {}
+            };
+            try {
+              const discovery = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+              const discoveryPage = await discovery.newPage();
+              const health = await discovery.request.get(`${origin}/api/health`);
+              report.health = { status: health.status(), ok: health.ok(), bodySha256: sha256(await health.text()) };
+              const unauth = await discovery.request.get(`${origin}/api/bootstrap`);
+              report.unauthenticatedBootstrapStatus = unauth.status();
+              await discoveryPage.goto(origin, { waitUntil: 'networkidle', timeout: 30000 });
+              const login = discoveryPage.locator('#v2-login');
+              if (!(await login.count())) throw new Error('Expected hosted login form was not present.');
+              const options = await login.locator('select[name="email"] option').evaluateAll(nodes => nodes.map(n => ({ value: n.value, label: (n.textContent || '').trim() })).filter(x => x.value));
+              if (!options.length) throw new Error('No fixture role identities were exposed by the hosted login form.');
+              report.discoveredRoleIdentityCount = options.length;
+              await discovery.close();
+
+              for (const identity of options) {
+                const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+                const page = await context.newPage();
+                const apiObserved = [];
+                page.on('response', r => {
+                  try {
+                    const u = new URL(r.url());
+                    if (u.origin === origin && u.pathname.startsWith('/api/')) apiObserved.push({ method: r.request().method(), path: u.pathname, status: r.status() });
+                  } catch {}
+                });
+                await page.goto(origin, { waitUntil: 'networkidle', timeout: 30000 });
+                const form = page.locator('#v2-login');
+                await form.locator('select[name="email"]').selectOption(identity.value);
+                await form.locator('input[name="password"]').fill(password);
+                const loginResponsePromise = page.waitForResponse(r => r.url() === `${origin}/api/login` && r.request().method() === 'POST', { timeout: 15000 });
+                await form.locator('button[type="submit"]').click();
+                const loginResponse = await loginResponsePromise;
+                if (loginResponse.status() !== 200) throw new Error(`Fixture login failed for ${identity.label} with HTTP ${loginResponse.status()}`);
+                await page.waitForFunction(() => !document.querySelector('#v2-login'), null, { timeout: 15000 });
+                await page.waitForTimeout(750);
+
+                const endpointStatuses = {};
+                for (const endpoint of readOnlyEndpoints) {
+                  const response = await context.request.get(`${origin}${endpoint}`);
+                  endpointStatuses[endpoint] = response.status();
+                  if (response.status() >= 500) throw new Error(`${identity.label} received ${response.status()} from read-only ${endpoint}`);
+                }
+
+                const navigation = [];
+                for (const label of safeNavigationLabels) {
+                  const loc = page.locator('a, [role="tab"]').filter({ hasText: label }).first();
+                  if (await loc.count() && await loc.isVisible()) {
+                    await loc.click();
+                    await page.waitForTimeout(250);
+                    navigation.push(label);
+                  }
+                }
+                const headings = await page.locator('h1,h2,[role="heading"]').evaluateAll(nodes => [...new Set(nodes.map(n => (n.textContent || '').replace(/\s+/g,' ').trim()).filter(Boolean))].slice(0, 40));
+                const visibleNav = await page.locator('a,button,[role="tab"]').evaluateAll(nodes => [...new Set(nodes.filter(n => {
+                  const s = getComputedStyle(n); const r = n.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0;
+                }).map(n => (n.textContent || '').replace(/\s+/g,' ').trim()).filter(Boolean))].slice(0, 120));
+                const dimensions = await page.evaluate(() => ({ innerWidth, scrollWidth: document.documentElement.scrollWidth, bodyScrollWidth: document.body?.scrollWidth || 0 }));
+                const fileStem = safeName(identity.label || identity.value);
+                const screenshot = `${outDir}/${fileStem}-desktop.png`;
+                await page.screenshot({ path: screenshot, fullPage: true });
+                report.roles.push({
+                  identityLabel: identity.label,
+                  identityValueSha256: sha256(identity.value),
+                  loginStatus: loginResponse.status(),
+                  endpointStatuses,
+                  navigation,
+                  headings,
+                  visibleNav,
+                  dimensions,
+                  desktopScreenshotSha256: sha256(fs.readFileSync(screenshot)),
+                  apiObserved: [...new Map(apiObserved.map(x => [`${x.method} ${x.path} ${x.status}`, x])).values()]
+                });
+                await context.close();
+              }
+
+              const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
+              const mobilePage = await mobile.newPage();
+              await mobilePage.goto(origin, { waitUntil: 'networkidle', timeout: 30000 });
+              const mobileForm = mobilePage.locator('#v2-login');
+              const first = options[0];
+              await mobileForm.locator('select[name="email"]').selectOption(first.value);
+              await mobileForm.locator('input[name="password"]').fill(password);
+              const mobileLogin = mobilePage.waitForResponse(r => r.url() === `${origin}/api/login` && r.request().method() === 'POST', { timeout: 15000 });
+              await mobileForm.locator('button[type="submit"]').click();
+              if ((await mobileLogin).status() !== 200) throw new Error('Mobile fixture login failed.');
+              await mobilePage.waitForFunction(() => !document.querySelector('#v2-login'), null, { timeout: 15000 });
+              await mobilePage.waitForTimeout(500);
+              const mobileDims = await mobilePage.evaluate(() => ({ innerWidth, scrollWidth: document.documentElement.scrollWidth, bodyScrollWidth: document.body?.scrollWidth || 0 }));
+              const mobileScreenshot = `${outDir}/mobile-first-role.png`;
+              await mobilePage.screenshot({ path: mobileScreenshot, fullPage: true });
+              report.mobile = { ...mobileDims, screenshotSha256: sha256(fs.readFileSync(mobileScreenshot)) };
+              await mobile.close();
+
+              const staticContext = await browser.newContext();
+              const vectorResponse = await staticContext.request.get(`${origin}/vector-shell.js`);
+              const vectorText = await vectorResponse.text();
+              report.vectorShell = {
+                status: vectorResponse.status(),
+                sha256: sha256(vectorText),
+                approvedMarkerPresent: vectorText.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'),
+                retiredCycle11Absent: !vectorText.includes('WFM_UX_RESET_CYCLE11_BEGIN'),
+                retiredCycle12Absent: !vectorText.includes('WFM_UX_RESET_CYCLE12_BEGIN'),
+                retiredPriorityBridgeAbsent: !vectorText.includes('VECTOR_PRIORITY_BRIDGE_V1')
+              };
+              await staticContext.close();
+
+              report.assertions = {
+                health200: report.health.status === 200,
+                unauthenticatedBootstrapDenied: [401,403].includes(report.unauthenticatedBootstrapStatus),
+                rolesDiscovered: report.discoveredRoleIdentityCount > 0,
+                everyRoleAuthenticated: report.roles.every(r => r.loginStatus === 200),
+                noRoleReadOnlyEndpoint5xx: report.roles.every(r => Object.values(r.endpointStatuses).every(s => s < 500)),
+                desktopNoHorizontalOverflow: report.roles.every(r => Math.max(r.dimensions.scrollWidth, r.dimensions.bodyScrollWidth) <= r.dimensions.innerWidth + 2),
+                mobileNoHorizontalOverflow: Math.max(report.mobile.scrollWidth, report.mobile.bodyScrollWidth) <= report.mobile.innerWidth + 2,
+                approvedVectorShell: report.vectorShell.status === 200 && report.vectorShell.approvedMarkerPresent && report.vectorShell.retiredCycle11Absent && report.vectorShell.retiredCycle12Absent && report.vectorShell.retiredPriorityBridgeAbsent
+              };
+              report.status = Object.values(report.assertions).every(Boolean) ? 'PASS' : 'FAIL';
+              fs.writeFileSync(`${outDir}/browser-proof.json`, JSON.stringify(report, null, 2));
+              console.log(JSON.stringify({ status: report.status, assertions: report.assertions, roleCount: report.roles.length, vectorShell: report.vectorShell }, null, 2));
+              if (report.status !== 'PASS') process.exitCode = 1;
+            } finally {
+              await browser.close();
+            }
+          })().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Publish reproducible browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosted-role-browser-ea06829
+          path: ${{ runner.temp }}/wfm-browser-proof/evidence
+          if-no-files-found: warn
+          retention-days: 7
