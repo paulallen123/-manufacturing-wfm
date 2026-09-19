@@ -110,6 +110,9 @@ try {
       mode: null,
       exercised: false,
       sourceId: null,
+      renderedStatus: null,
+      tabletStatusVisible: false,
+      mobileStatusVisible: false,
       postOpenStillPresent: false,
       returnFocused: false,
       inventedActionCount: null
@@ -147,8 +150,40 @@ try {
         const actionButton = page.locator('.vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]').first();
         await actionButton.waitFor({ state: 'visible', timeout: 10000 });
         const sourceId = await actionButton.getAttribute('data-vector-source-id');
-        assert.ok(sourceId && active.some(item => String(item?.sourceId || '') === sourceId), 'Rendered action is not bound to active source evidence.');
+        const sourceItem = active.find(item => String(item?.sourceId || '') === sourceId);
+        assert.ok(sourceId && sourceItem, 'Rendered action is not bound to active source evidence.');
         actionJourney.sourceId = sourceId;
+
+        const expectedStatus = ({
+          action_required: 'Action required',
+          decision_sent: 'Decision sent',
+          confirming_source: 'Confirming source',
+          needs_verification: 'Needs verification',
+          resolved: 'Resolved'
+        })[String(sourceItem?.confirmation?.state || '').toLowerCase()] || 'Needs review';
+        const readRenderedStatus = () => actionButton.evaluate(button => {
+          const node = button.closest('.vector-alert-row')?.querySelector('[data-vector-action-status]');
+          return node ? {
+            value: node.getAttribute('data-vector-action-status'),
+            text: (node.textContent || '').replace(/^\s*·\s*/, '').trim(),
+            visible: node.getClientRects().length > 0
+          } : null;
+        });
+        const desktopStatus = await readRenderedStatus();
+        assert.equal(desktopStatus?.value, expectedStatus, 'Visible lifecycle data attribute diverged from authoritative source state.');
+        assert.equal(desktopStatus?.text, expectedStatus, 'Visible lifecycle text diverged from authoritative source state.');
+        assert.equal(desktopStatus?.visible, true, 'Authoritative lifecycle is not visibly rendered on desktop.');
+        actionJourney.renderedStatus = expectedStatus;
+
+        await page.setViewportSize({ width: 760, height: 900 });
+        actionJourney.tabletStatusVisible = (await readRenderedStatus())?.visible === true;
+        assert.equal(actionJourney.tabletStatusVisible, true, 'Authoritative lifecycle is hidden on tablet.');
+        await page.setViewportSize({ width: 390, height: 844 });
+        actionJourney.mobileStatusVisible = (await readRenderedStatus())?.visible === true;
+        assert.equal(actionJourney.mobileStatusVisible, true, 'Authoritative lifecycle is hidden on mobile.');
+        await page.setViewportSize({ width: 1440, height: 1000 });
+        const stableStatus = await readRenderedStatus();
+        assert.equal(stableStatus?.value, expectedStatus, 'Responsive presentation mutated the authoritative lifecycle state.');
 
         await actionButton.click({ timeout: 5000 });
         const returnButton = page.locator('[data-vector-return-context]').first();
@@ -175,7 +210,7 @@ try {
         actionJourney.mode = 'active-source-action';
         actionJourney.exercised = true;
         timeReviewActionJourneys += 1;
-        console.log(`CURRENT_TIME_REVIEW_ACTION_JOURNEY=PASS|source=${sourceId}|active=${active.length}`);
+        console.log(`CURRENT_TIME_REVIEW_ACTION_JOURNEY=PASS|source=${sourceId}|status=${expectedStatus}|active=${active.length}`);
       }
     }
 
