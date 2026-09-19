@@ -37,11 +37,22 @@ function validEvidenceId(value){ return /^[A-Za-z0-9._:/-]{4,240}$/.test(String(
 function validIssuerId(value){ return /^[A-Za-z0-9][A-Za-z0-9._:-]{1,159}$/.test(String(value||'')); }
 function validPolicyId(value){ return /^[A-Za-z0-9][A-Za-z0-9._:/-]{3,159}$/.test(String(value||'')); }
 function validSignature(value){ return /^[A-Za-z0-9_-]{40,200}$/.test(String(value||'')); }
+function validTime(value){ return Number.isSafeInteger(value) && value>0; }
 function canonicalProviderDomain(value){
   const domain=String(value||'').trim().toLowerCase();
   return /^[a-z0-9][a-z0-9._:-]{1,79}$/.test(domain)?domain:null;
 }
 function validProviderSystemId(value){ return /^[A-Za-z0-9][A-Za-z0-9._:-]{1,159}$/.test(String(value||'')); }
+function evidenceWindowIsValid(evidence,nowMs){
+  return Boolean(
+    validTime(nowMs) &&
+    validTime(evidence?.issuedAtMs) &&
+    validTime(evidence?.expiresAtMs) &&
+    evidence.issuedAtMs<=nowMs &&
+    evidence.expiresAtMs>nowMs &&
+    evidence.expiresAtMs>evidence.issuedAtMs
+  );
+}
 
 function gateAttestationPayload(policyId,name,gate){
   const payload={
@@ -52,7 +63,9 @@ function gateAttestationPayload(policyId,name,gate){
     candidateSha:String(gate?.candidateSha||''),
     evidenceId:String(gate?.evidenceId||''),
     passed:gate?.passed===true,
-    skipped:gate?.skipped
+    skipped:gate?.skipped,
+    issuedAtMs:gate?.issuedAtMs,
+    expiresAtMs:gate?.expiresAtMs
   };
   if(name==='rollbackAuthority'){
     for(const field of ROLLBACK_AUTHORITY_REQUIREMENTS) payload[field]=gate?.[field]===true;
@@ -71,7 +84,9 @@ function providerAttestationPayload(policyId,proof){
     passed:proof?.passed===true,
     skipped:proof?.skipped,
     candidateSha:String(proof?.candidateSha||''),
-    evidenceId:String(proof?.evidenceId||'')
+    evidenceId:String(proof?.evidenceId||''),
+    issuedAtMs:proof?.issuedAtMs,
+    expiresAtMs:proof?.expiresAtMs
   });
 }
 
@@ -120,13 +135,14 @@ export function createAttendanceReleaseEvidencePolicy({policyId,issuers=[]}={}){
   return policy;
 }
 
-function gateIsValid(name,gate,candidateSha,evidencePolicy){
+function gateIsValid(name,gate,candidateSha,evidencePolicy,nowMs){
   const common=Boolean(
     gate &&
     gate.passed===true &&
     gate.candidateSha===candidateSha &&
     validEvidenceId(gate.evidenceId) &&
     gate.skipped===0 &&
+    evidenceWindowIsValid(gate,nowMs) &&
     evidencePolicy?.verifyGate(name,gate)===true
   );
   if(!common) return false;
@@ -136,28 +152,33 @@ function gateIsValid(name,gate,candidateSha,evidencePolicy){
   return true;
 }
 
-export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[],evidencePolicy}={}){
+export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[],evidencePolicy,nowMs=Date.now()}={}){
   if(!validSha(candidateSha)) throw new Error('A full candidate commit SHA is required.');
+  if(!validTime(nowMs)) throw new Error('Valid release assessment time required.');
   if(!evidencePolicy || !TRUSTED_EVIDENCE_POLICIES.has(evidencePolicy)) throw new Error('Trusted release evidence policy required.');
   const blockers=[];
   const accepted={};
+  let validUntilMs=Number.MAX_SAFE_INTEGER;
 
   for(const name of REQUIRED_GATES){
     const gate=gates[name];
-    const valid=gateIsValid(name,gate,candidateSha,evidencePolicy);
+    const valid=gateIsValid(name,gate,candidateSha,evidencePolicy,nowMs);
     accepted[name]=valid;
     if(!valid) blockers.push(name);
+    else validUntilMs=Math.min(validUntilMs,gate.expiresAtMs);
   }
 
   // Two real provider domains must be genuinely distinct evidence, not aliases of
   // one proof. Canonicalise domain names, require zero skipped checks, verify the
-  // signed proof against the trusted release-evidence policy, and prevent the same
-  // provider system or evidence artifact from being counted twice.
+  // signed proof against the trusted release-evidence policy, prevent the same
+  // provider system/evidence artifact from being counted twice, and require the
+  // provider evidence to be live at the assessment instant.
   const providerDomains=new Map();
   const providerSystems=new Set();
   const providerEvidenceIds=new Set();
+  const providerExpiries=[];
   for(const proof of providerProofs){
-    if(!proof || proof.realProvider!==true || proof.passed!==true || proof.skipped!==0 || proof.candidateSha!==candidateSha || !validEvidenceId(proof.evidenceId) || !validProviderSystemId(proof.providerSystemId) || evidencePolicy.verifyProviderProof(proof)!==true) continue;
+    if(!proof || proof.realProvider!==true || proof.passed!==true || proof.skipped!==0 || proof.candidateSha!==candidateSha || !validEvidenceId(proof.evidenceId) || !validProviderSystemId(proof.providerSystemId) || !evidenceWindowIsValid(proof,nowMs) || evidencePolicy.verifyProviderProof(proof)!==true) continue;
     const domain=canonicalProviderDomain(proof.domain);
     if(!domain) continue;
     const systemId=String(proof.providerSystemId);
@@ -165,8 +186,13 @@ export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[]
     providerDomains.set(domain,proof.evidenceId);
     providerSystems.add(systemId);
     providerEvidenceIds.add(proof.evidenceId);
+    providerExpiries.push(proof.expiresAtMs);
   }
   if(providerDomains.size<2) blockers.push('twoRealProviderDomains');
+  else {
+    providerExpiries.sort((a,b)=>b-a);
+    validUntilMs=Math.min(validUntilMs,providerExpiries[1]);
+  }
 
   const assessment=Object.freeze({
     candidateSha,
@@ -174,7 +200,9 @@ export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[]
     blockers:Object.freeze([...blockers]),
     accepted:Object.freeze({...accepted}),
     providerDomains:Object.freeze([...providerDomains.keys()].sort()),
-    evidencePolicyId:evidencePolicy.policyId
+    evidencePolicyId:evidencePolicy.policyId,
+    evaluatedAtMs:nowMs,
+    validUntilMs:blockers.length===0?validUntilMs:null
   });
   TRUSTED_ASSESSMENTS.add(assessment);
   ASSESSMENT_EVIDENCE_POLICIES.set(assessment,evidencePolicy);
@@ -187,31 +215,35 @@ export class AttendanceReleaseSwitch {
     if(!evidencePolicy || !TRUSTED_EVIDENCE_POLICIES.has(evidencePolicy)) throw new Error('Trusted release evidence policy required.');
     this.enabled=false;
     this.candidateSha=null;
+    this.validUntilMs=null;
     this.expectedCandidateSha=expectedCandidateSha;
     this.evidencePolicy=evidencePolicy;
     this.audit=[];
   }
 
-  reconcile({assessment,requestedEnabled=false,actorId='release-controller',reason='gate-reconcile'}={}){
+  reconcile({assessment,requestedEnabled=false,actorId='release-controller',reason='gate-reconcile',nowMs=Date.now()}={}){
     if(!assessment || typeof assessment.ready!=='boolean' || !validSha(assessment.candidateSha) || !TRUSTED_ASSESSMENTS.has(assessment)) throw new Error('Trusted release assessment required.');
     if(assessment.candidateSha!==this.expectedCandidateSha) throw new Error('Release assessment candidate does not match the bound runtime candidate.');
     if(ASSESSMENT_EVIDENCE_POLICIES.get(assessment)!==this.evidencePolicy) throw new Error('Release assessment evidence policy does not match the bound release policy.');
+    if(!validTime(nowMs)) throw new Error('Valid release reconciliation time required.');
     if(!validEvidenceId(actorId)) throw new Error('Valid release actor required.');
-    const shouldEnable=Boolean(requestedEnabled && assessment.ready);
+    const assessmentFresh=assessment.ready===true && validTime(assessment.validUntilMs) && assessment.validUntilMs>nowMs;
+    const shouldEnable=Boolean(requestedEnabled && assessmentFresh);
     const action=shouldEnable?'enabled':(this.enabled?'rolled_back':'disabled');
     this.enabled=shouldEnable;
     this.candidateSha=shouldEnable?assessment.candidateSha:null;
+    this.validUntilMs=shouldEnable?assessment.validUntilMs:null;
     const row=Object.freeze({
       sequence:this.audit.length+1,
       action,
       actorId,
-      reason:String(reason||'gate-reconcile').slice(0,240),
+      reason:assessment.ready && !assessmentFresh?'evidence-expired':String(reason||'gate-reconcile').slice(0,240),
       candidateSha:assessment.candidateSha,
-      ready:assessment.ready,
-      blockers:[...assessment.blockers]
+      ready:assessment.ready && assessmentFresh,
+      blockers:assessment.ready && !assessmentFresh?['evidenceExpired']:[...assessment.blockers]
     });
     this.audit.push(row);
-    return clone({enabled:this.enabled,candidateSha:this.candidateSha,audit:row});
+    return clone({enabled:this.enabled,candidateSha:this.candidateSha,validUntilMs:this.validUntilMs,audit:row});
   }
 
   rollback({actorId='release-controller',reason='manual-rollback'}={}){
@@ -219,6 +251,7 @@ export class AttendanceReleaseSwitch {
     const previousCandidateSha=this.candidateSha;
     this.enabled=false;
     this.candidateSha=null;
+    this.validUntilMs=null;
     const row=Object.freeze({
       sequence:this.audit.length+1,
       action:'rolled_back',
@@ -229,10 +262,10 @@ export class AttendanceReleaseSwitch {
       blockers:['manualRollback']
     });
     this.audit.push(row);
-    return clone({enabled:false,candidateSha:null,audit:row});
+    return clone({enabled:false,candidateSha:null,validUntilMs:null,audit:row});
   }
 
-  state(){ return clone({enabled:this.enabled,candidateSha:this.candidateSha,expectedCandidateSha:this.expectedCandidateSha,evidencePolicyId:this.evidencePolicy.policyId,audit:this.audit}); }
+  state(){ return clone({enabled:this.enabled,candidateSha:this.candidateSha,validUntilMs:this.validUntilMs,expectedCandidateSha:this.expectedCandidateSha,evidencePolicyId:this.evidencePolicy.policyId,audit:this.audit}); }
 }
 
 export { REQUIRED_GATES, ROLLBACK_AUTHORITY_REQUIREMENTS };
