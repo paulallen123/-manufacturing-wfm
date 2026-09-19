@@ -4,6 +4,7 @@ const { createHash } = require('node:crypto');
 const { createIncidentLearningPlanner } = require('./incident-learning-planner.cjs');
 const {
   computeRepairEvidenceChainDigest,
+  computeT2CoordinatorCapabilityDigest,
   computePostStagingDecisionDigest,
 } = require('./autonomous-repair-pipeline.cjs');
 
@@ -91,6 +92,23 @@ function verifyLearningFailureRecord(record) {
   const copy = { ...record };
   delete copy.learningDigest;
   return digest(copy) === record.learningDigest;
+}
+
+function readT2CoordinatorCapabilityAttestation(repairCoordinator) {
+  if (!repairCoordinator || typeof repairCoordinator.capabilities !== 'function') {
+    deny('WFM_AUTONOMY_T2_COORDINATOR_CAPABILITY', 'Tier 2 coordinator must expose a deterministic capability contract.');
+  }
+  let capabilities;
+  try {
+    capabilities = repairCoordinator.capabilities();
+  } catch {
+    deny('WFM_AUTONOMY_T2_COORDINATOR_CAPABILITY', 'Tier 2 coordinator capability contract could not be read safely.');
+  }
+  const capabilityDigest = computeT2CoordinatorCapabilityDigest(capabilities);
+  if (!capabilityDigest) {
+    deny('WFM_AUTONOMY_T2_COORDINATOR_CAPABILITY', 'Tier 2 coordinator capability contract is unsafe or incomplete.');
+  }
+  return { capabilities: Object.freeze({ ...capabilities }), capabilityDigest };
 }
 
 function verifyT2Decision({ repair, tenant, evidenceDigest }) {
@@ -288,6 +306,7 @@ function createAutonomyControlLoop({
         if (!coordinator) {
           append('t2-contained', { coordinatorAvailable: false });
         } else {
+          const coordinatorBefore = readT2CoordinatorCapabilityAttestation(repairCoordinator);
           consumeAction('repair.process');
           const repair = await coordinator({
             ...input,
@@ -298,16 +317,25 @@ function createAutonomyControlLoop({
             scenarioId,
             evidenceDigest,
           });
+          const coordinatorAfter = readT2CoordinatorCapabilityAttestation(repairCoordinator);
+          if (coordinatorAfter.capabilityDigest !== coordinatorBefore.capabilityDigest) {
+            deny('WFM_AUTONOMY_T2_COORDINATOR_CAPABILITY_DRIFT', 'Tier 2 coordinator capability contract changed during execution.');
+          }
+          if (['canary_proven', 'rolled_back_to_known_good'].includes(repair?.status)
+            && repair.coordinatorCapabilityDigest !== coordinatorBefore.capabilityDigest) {
+            deny('WFM_AUTONOMY_T2_COORDINATOR_BINDING', 'Tier 2 decision is not bound to the executing coordinator capability contract.');
+          }
           const t2Decision = verifyT2Decision({ repair, tenant, evidenceDigest });
           outcome = t2Decision.outcome;
           if (!isAllowedTerminal(contract, tier, outcome)) deny('WFM_AUTONOMY_TERMINAL', 'Invalid Tier 2 mapped terminal outcome.');
-          result = { repair };
+          result = { repair, repairCoordinatorCapabilityDigest: coordinatorBefore.capabilityDigest };
           append('t2-result', {
             status: outcome,
             postStagingStatus: t2Decision.postStagingStatus,
             chainVerified: t2Decision.chainVerified,
             repairChainDigest: t2Decision.repairChainDigest || null,
             decisionChainDigest: t2Decision.decisionChainDigest || null,
+            coordinatorCapabilityDigest: coordinatorBefore.capabilityDigest,
           });
         }
       } else if (tier === 'T3') {
@@ -505,25 +533,30 @@ function createAutonomyControlLoop({
       if (!receipt.t4 || receipt.t4.safeTerminal !== true) return false;
       if (!t4ContainmentController?.verifyReceipt || t4ContainmentController.verifyReceipt(receipt.t4) !== true) return false;
     }
-    if (receipt.tier === 'T2' && receipt.repair && ['canary_proven', 'rolled_back_to_known_good'].includes(receipt.repair.status)) {
+    if (receipt.tier === 'T2' && receipt.repair) {
       try {
-        const verified = verifyT2Decision({
-          repair: receipt.repair,
-          tenant: receipt.tenant,
-          evidenceDigest: receipt.evidenceDigest,
-        });
-        if (verified.outcome !== receipt.outcome || verified.chainVerified !== true) return false;
+        const currentCoordinator = readT2CoordinatorCapabilityAttestation(repairCoordinator);
+        if (receipt.repairCoordinatorCapabilityDigest !== currentCoordinator.capabilityDigest) return false;
+        if (['canary_proven', 'rolled_back_to_known_good'].includes(receipt.repair.status)) {
+          if (receipt.repair.coordinatorCapabilityDigest !== currentCoordinator.capabilityDigest) return false;
+          const verified = verifyT2Decision({
+            repair: receipt.repair,
+            tenant: receipt.tenant,
+            evidenceDigest: receipt.evidenceDigest,
+          });
+          if (verified.outcome !== receipt.outcome || verified.chainVerified !== true) return false;
+        }
       } catch {
         return false;
       }
     }
     const result = {};
-    for (const key of ['answer', 'recovery', 'recoveryVerification', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode']) {
+    for (const key of ['answer', 'recovery', 'recoveryVerification', 'repair', 'repairCoordinatorCapabilityDigest', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode']) {
       if (Object.prototype.hasOwnProperty.call(receipt, key)) result[key] = receipt[key];
     }
     if (receipt.resultDigest !== digest(result)) return false;
     const core = { ...receipt };
-    for (const key of ['receiptDigest', 'answer', 'recovery', 'recoveryVerification', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode', 'learning']) delete core[key];
+    for (const key of ['receiptDigest', 'answer', 'recovery', 'recoveryVerification', 'repair', 'repairCoordinatorCapabilityDigest', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode', 'learning']) delete core[key];
     if (receipt.receiptDigest !== digest(core)) return false;
 
     if (!receipt.learning || receipt.learning.sourceReceiptDigest !== receipt.receiptDigest) return false;
