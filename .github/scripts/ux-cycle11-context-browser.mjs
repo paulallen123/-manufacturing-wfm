@@ -127,6 +127,7 @@ try {
   const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
   await send('Runtime.enable');
   await send('Page.enable');
+  await send('Accessibility.enable');
   console.log('UX11_BROWSER_STAGE=CDP_READY');
   await retry(async()=>{const ready=await evalx(`(()=>{const b=document.querySelector('.vector-priority-slot .ux11-open[data-ux11-route="integrations"]');const q=b?.closest('.ux11-queue');return document.body.classList.contains('vector-ui-active')&&!!document.querySelector('.vector-home')&&!!b&&q?.dataset.vectorProjected==='true'&&getComputedStyle(q).display!=='none';})()`);if(!ready)throw new Error('Vector governed action queue not ready');return true;});
 
@@ -185,6 +186,61 @@ try {
 
   await exerciseResponsiveViewport('TABLET',768,1024);
   await exerciseResponsiveViewport('MOBILE',390,844);
+
+  await send('Emulation.clearDeviceMetricsOverride');
+  await sleep(150);
+  const semanticRegistered=await evalx(`(()=>{
+    window.__uxSemanticLifecycle='action_required';
+    window.__uxSemanticReceipt=false;
+    window.__uxSemanticOff?.();
+    window.__uxSemanticOff=window.WFMUXSignals.register('support',()=>{
+      const rows=[{id:'semantic-lifecycle',sourceId:'semantic-1',route:'support',reasonCode:'NEEDS_REVIEW',kind:'action',lifecycle:window.__uxSemanticLifecycle,evidenceState:'current',evidenceLabel:'Current lifecycle validation evidence',title:'Lifecycle validation',whyNow:'Validate governed action state semantics.',authority:'Support workflow authority',createdAt:'2026-09-19T06:00:00Z'}];
+      if(window.__uxSemanticReceipt)rows.push({id:'automation-receipt',sourceId:'auto-1',route:'support',reasonCode:'SUPPORT_RECOVERY',kind:'receipt',lifecycle:'resolved',evidenceState:'current',evidenceLabel:'Current automation receipt',title:'Profile sync completed',whyNow:'The source workflow recorded an automatic recovery.',authority:'Support automation policy',createdAt:'2026-09-19T06:01:00Z',automated:true,auditRef:'Automation run AUTO-1'});
+      return rows;
+    });
+    window.WFMUXCycle11.renderQueue(window.WFMUXSignals.list());
+    return true;
+  })()`);
+  assert(semanticRegistered,'Semantic lifecycle fixture registration failed');
+  await retry(async()=>{const ready=await evalx(`(()=>{const card=document.querySelector('[data-ux11-id="support:semantic-lifecycle"]');const more=card?.closest('.ux11-more');if(more)more.open=true;const live=document.querySelector('.vector-priority-slot .ux11-live');return !!card&&!!live&&card.querySelector('.ux11-state')?.getAttribute('aria-label')==='Status: Action required';})()`);if(!ready)throw new Error('Semantic lifecycle action not ready');return true;});
+  const semanticInitial=await evalx(`(()=>{const card=document.querySelector('[data-ux11-id="support:semantic-lifecycle"]');const more=card?.closest('.ux11-more');if(more)more.open=true;const b=card?.querySelector('.ux11-open');const live=document.querySelector('.vector-priority-slot .ux11-live');return {button:b?.getAttribute('aria-label')||'',state:card?.querySelector('.ux11-state')?.getAttribute('aria-label')||'',source:card?.querySelector('.ux11-source')?.getAttribute('aria-label')||'',liveRole:live?.getAttribute('role')||'',live:live?.getAttribute('aria-live')||'',atomic:live?.getAttribute('aria-atomic')||''};})()`);
+  console.log('UX11_SEMANTIC_INITIAL='+JSON.stringify(semanticInitial));
+  assert(semanticInitial.button==='Open Support: Lifecycle validation'&&semanticInitial.state==='Status: Action required'&&semanticInitial.source==='Source: Support','Action card accessible naming failed');
+  assert(semanticInitial.liveRole==='status'&&semanticInitial.live==='polite'&&semanticInitial.atomic==='true','Shared lifecycle live region semantics failed');
+
+  const initialAx=await send('Accessibility.getFullAXTree');
+  const initialNodes=(initialAx.nodes||[]).filter(n=>!n.ignored);
+  assert(initialNodes.some(n=>n.role?.value==='button'&&n.name?.value==='Open Support: Lifecycle validation'),'Accessibility tree missing unambiguous action button name');
+  assert(initialNodes.some(n=>n.role?.value==='status'),'Accessibility tree missing lifecycle status region');
+
+  async function setLifecycle(state,label){
+    await evalx(`(()=>{window.__uxSemanticLifecycle='${state}';window.WFMUXCycle11.renderQueue(window.WFMUXSignals.list());return true;})()`);
+    await retry(async()=>{const snapshot=await evalx(`(()=>{const card=document.querySelector('[data-ux11-id="support:semantic-lifecycle"]');const resolved=document.querySelector('.ux11-resolved [data-ux11-id="support:semantic-lifecycle"]');const live=document.querySelector('.vector-priority-slot .ux11-live');return {state:card?.querySelector('.ux11-state')?.getAttribute('aria-label')||'',resolved:!!resolved,live:live?.textContent||''};})()`);const ok='${state}'==='resolved'?snapshot.resolved&&snapshot.live.includes('${label}'):snapshot.state==='Status: ${label}'&&snapshot.live.includes('${label}');if(!ok)throw new Error('Lifecycle ${state} semantic update not ready :: '+JSON.stringify(snapshot));return true;});
+  }
+
+  await setLifecycle('decision_sent','Decision sent');
+  await setLifecycle('confirming_source','Confirming source');
+  await setLifecycle('needs_verification','Needs verification');
+  const verifyingAx=await send('Accessibility.getFullAXTree');
+  assert((verifyingAx.nodes||[]).filter(n=>!n.ignored).some(n=>String(n.name?.value||'').includes('Needs verification')),'Accessibility tree missing Needs verification lifecycle text');
+  await setLifecycle('resolved','Resolved');
+
+  await evalx(`(()=>{window.__uxSemanticReceipt=true;window.WFMUXCycle11.renderQueue(window.WFMUXSignals.list());return true;})()`);
+  await retry(async()=>{const state=await evalx(`(()=>{const auto=document.querySelector('.ux11-receipts:not(.ux11-resolved)');const summary=auto?.querySelector(':scope > summary');return {ready:!!auto&&!!summary,open:auto?.open||false,summary:summary?.textContent?.trim()||'',audit:auto?.textContent?.includes('Automation run AUTO-1')||false,action:!!document.querySelector('.ux11-open[data-ux11-id="support:automation-receipt"]')};})()`);if(!state.ready)throw new Error('Handled automatically receipt lane not ready');return state;});
+  const receiptCollapsed=await evalx(`(()=>{const auto=document.querySelector('.ux11-receipts:not(.ux11-resolved)');const summary=auto?.querySelector(':scope > summary');return {open:auto?.open||false,summary:summary?.textContent?.trim()||'',audit:auto?.textContent?.includes('Automation run AUTO-1')||false,action:!!document.querySelector('.ux11-open[data-ux11-id="support:automation-receipt"]')};})()`);
+  console.log('UX11_AUTOMATION_RECEIPT_COLLAPSED='+JSON.stringify(receiptCollapsed));
+  assert(!receiptCollapsed.open&&receiptCollapsed.summary==='Handled automatically · 1'&&receiptCollapsed.audit&&!receiptCollapsed.action,'Automation receipt separation/audit contract failed');
+  const collapsedAx=await send('Accessibility.getFullAXTree');
+  const collapsedNames=(collapsedAx.nodes||[]).filter(n=>!n.ignored).map(n=>String(n.name?.value||''));
+  assert(collapsedNames.includes('Handled automatically · 1'),'Collapsed automation receipt summary missing from accessibility tree');
+  assert(!collapsedNames.some(x=>x.includes('Automation run AUTO-1')),'Collapsed automation audit detail should stay dense-on-demand');
+  await evalx(`(()=>{const auto=document.querySelector('.ux11-receipts:not(.ux11-resolved)');if(auto)auto.open=true;return !!auto;})()`);
+  await sleep(80);
+  const expandedAx=await send('Accessibility.getFullAXTree');
+  const expandedNames=(expandedAx.nodes||[]).filter(n=>!n.ignored).map(n=>String(n.name?.value||''));
+  assert(expandedNames.some(x=>x.includes('Automation run AUTO-1')),'Expanded automation receipt does not expose audit evidence to accessibility tree');
+  await evalx(`window.__uxSemanticOff?.()`);
+  console.log('UX11_SEMANTIC_LIFECYCLE_AX=PASS');
   console.log('UX11_CONTEXT_BROWSER_REGRESSION=PASS');
 } finally {
   try { ws?.close(); } catch {}
