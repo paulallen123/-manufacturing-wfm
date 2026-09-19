@@ -28,6 +28,7 @@ const receipts = [];
 let navigationClicks = 0;
 let timeReviewActionJourneys = 0;
 let timeReviewEmptyStateJourneys = 0;
+let managerAlignmentEvidence = null;
 
 try {
   for (const spec of specs) {
@@ -103,6 +104,23 @@ try {
     assert.ok(ui.nodes > 0, `${spec.slug} Vector DOM missing.`);
     assert.ok(ui.bodyText > 200, `${spec.slug} rendered body too small.`);
     assert.ok(ui.scrollWidth <= ui.width + 1, `${spec.slug} desktop horizontal overflow.`);
+
+    if (spec.slug === 'manager') {
+      const previous = page.viewportSize();
+      await page.setViewportSize({ width: 1000, height: 700 });
+      await page.waitForTimeout(150);
+      const compact = await page.screenshot({
+        type: 'jpeg',
+        quality: 22,
+        clip: { x: 0, y: 0, width: 1000, height: 700 }
+      });
+      managerAlignmentEvidence = {
+        base64: compact.toString('base64'),
+        bytes: compact.length,
+        sha256: crypto.createHash('sha256').update(compact).digest('hex')
+      };
+      await page.setViewportSize(previous || { width: 1440, height: 1000 });
+    }
 
     const actionJourney = {
       evidenceStatus: null,
@@ -229,20 +247,6 @@ try {
     assert.ok(screenshot.length > 10000, `${spec.slug} screenshot too small.`);
     const screenshotSha256 = crypto.createHash('sha256').update(screenshot).digest('hex');
 
-    // Alignment evidence only: emit a bounded JPEG of the current authenticated manager viewport
-    // in log-sized chunks so it can be reconstructed outside the proof container. This does not
-    // alter the product runtime or expose credentials/session state.
-    if (spec.slug === 'manager') {
-      const alignment = await page.screenshot({ type: 'jpeg', quality: 68, fullPage: false });
-      const b64 = alignment.toString('base64');
-      const chunkSize = 12000;
-      const total = Math.ceil(b64.length / chunkSize);
-      console.log(`CURRENT_MANAGER_SCREENSHOT_BEGIN|bytes=${alignment.length}|chunks=${total}|sha=${crypto.createHash('sha256').update(alignment).digest('hex')}`);
-      for (let i = 0; i < total; i += 1) {
-        console.log(`CURRENT_MANAGER_SCREENSHOT_CHUNK|${i + 1}/${total}|${b64.slice(i * chunkSize, (i + 1) * chunkSize)}`);
-      }
-      console.log('CURRENT_MANAGER_SCREENSHOT_END');
-    }
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(250);
@@ -281,6 +285,13 @@ try {
 
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
+  assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
+  const alignmentChunkSize = 12000;
+  const alignmentTotal = Math.ceil(managerAlignmentEvidence.base64.length / alignmentChunkSize);
+  console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|chunks=${alignmentTotal}|sha=${managerAlignmentEvidence.sha256}`);
+  for (let i = 0; i < alignmentTotal; i += 1) {
+    console.log(`CURRENT_MANAGER_SCREENSHOT_CHUNK|${i + 1}/${alignmentTotal}|${managerAlignmentEvidence.base64.slice(i * alignmentChunkSize, (i + 1) * alignmentChunkSize)}`);
+  }
   console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|activeActionJourneys=${timeReviewActionJourneys}|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
 } finally {
   await browser.close();
