@@ -8,7 +8,10 @@ function coverage({release=true,auto=100,rows=[{employee:'e1',status:'complete'}
     evaluateShift(){return {rows,totalScheduled:rows.length,payrollReady,unresolved,unexpectedCount:unexpected,unmappedSignalCount:unmapped};}
   };
 }
-const healthy=[{sourceId:'door',state:'healthy',pendingRecovery:false,periodCoverageComplete:true},{sourceId:'wifi',state:'healthy',pendingRecovery:false,periodCoverageComplete:true}];
+function health(sourceId,overrides={}){
+  return {tenant:'t',site:'s',certificationWindowId:'x',sourceId,state:'healthy',pendingRecovery:false,periodCoverageComplete:true,...overrides};
+}
+const healthy=[health('door'),health('wifi')];
 
 test('full passive coverage + complete clocks + healthy reconciled sources certifies 100%',()=>{
   const c=new AttendanceClaimCertifier({coverage:coverage()});
@@ -33,7 +36,7 @@ test('one missing OUT blocks any 100% claim',()=>{
 
 test('source stream can look healthy now but historical gap blocks period certificate until reconciled',()=>{
   const c=new AttendanceClaimCertifier({coverage:coverage()});
-  const r=c.certifyShift({tenant:'t',site:'s',shiftId:'x',expectedSourceIds:['door'],sourceHealth:[{sourceId:'door',state:'healthy',pendingRecovery:false,periodCoverageComplete:false}]});
+  const r=c.certifyShift({tenant:'t',site:'s',shiftId:'x',expectedSourceIds:['door'],sourceHealth:[health('door',{periodCoverageComplete:false})]});
   assert.equal(r.certification.sourceContinuityLive,true); assert.equal(r.certification.sourceContinuityPeriod,false); assert.equal(r.claimLevel,'PASSIVE_LIVE_100');
 });
 
@@ -41,6 +44,14 @@ test('missing health evidence blocks certification',()=>{
   const c=new AttendanceClaimCertifier({coverage:coverage()});
   const r=c.certifyShift({tenant:'t',site:'s',shiftId:'x',expectedSourceIds:['door','wifi'],sourceHealth:[healthy[0]]});
   assert.equal(r.claimLevel,'NOT_CERTIFIED'); assert.equal(r.blockers.some(x=>x.code==='SOURCE_HEALTH_MISSING'),true);
+});
+
+test('healthy source row from another tenant cannot satisfy this shift continuity quorum',()=>{
+  const c=new AttendanceClaimCertifier({coverage:coverage()});
+  const r=c.certifyShift({tenant:'t',site:'s',shiftId:'x',expectedSourceIds:['door','wifi'],sourceHealth:[health('door'),health('wifi',{tenant:'other-tenant'})]});
+  assert.equal(r.claimLevel,'NOT_CERTIFIED');
+  assert.equal(r.certification.sourceContinuityPeriod,false);
+  assert.equal(r.blockers.some(x=>x.code==='SOURCE_HEALTH_SCOPE_MISMATCH'&&x.sourceIds.includes('wifi')),true);
 });
 
 test('unmapped person signal blocks claim even if scheduled clocks are complete',()=>{
