@@ -4,7 +4,7 @@ import {buildConnectorRegistry,connectorById} from './connector-registry.mjs';
 
 test('effective catalogue compiles safely and preserves explicit interface gaps',()=>{
   const registry=buildConnectorRegistry();
-  assert.equal(registry.connectors.length,165);
+  assert.equal(registry.connectors.length,168);
   assert.deepEqual(registry.connectors.filter(x=>x.adapters.length===0).map(x=>x.id),['schneider-resource-advisor']);
   for(const c of registry.connectors){
     assert.equal(c.security.readOnlyDefault,true,c.id);
@@ -67,6 +67,50 @@ test('external-workforce VMS integrations reuse REST safely and populate conting
   assert.deepEqual(magnit.protocols,['REST']);
 });
 
+test('FactoryTalk DataMosaix uses the reusable API path without inheriting plant-control access',()=>{
+  const c=connectorById('rockwell-factorytalk-datamosaix');
+  assert.equal(c.evidenceLevel,'spec-verified');
+  assert.deepEqual(c.protocols,['REST','OpenAPI']);
+  assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
+  assert.ok(c.canonicalTargets.includes('machine-state'));
+  assert.ok(c.canonicalTargets.includes('downtime-event'));
+  assert.ok(c.canonicalTargets.includes('production-demand'));
+  assert.equal(c.security.customerEdgeRequired,false);
+  assert.equal(c.security.writeEnabled,false);
+  assert.equal(c.security.directPlantNetworkAccess,false);
+  assert.equal(c.nextEvidenceGate,'sandbox-authentication');
+});
+
+test('AspenTech Inmation reuses industrial profiles behind the customer edge and remains read-only',()=>{
+  const c=connectorById('aspentech-inmation');
+  assert.equal(c.evidenceLevel,'spec-verified');
+  assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
+  assert.ok(c.adapters.some(x=>x.id==='opcua'));
+  assert.ok(c.adapters.some(x=>x.id==='mqtt'));
+  assert.ok(c.adapters.some(x=>x.id==='kafka'));
+  assert.ok(c.adapters.some(x=>x.id==='database'));
+  assert.ok(c.adapters.some(x=>x.id==='files-sftp'));
+  assert.ok(c.adapters.some(x=>x.id==='modbus'));
+  assert.ok(c.canonicalTargets.includes('machine-state'));
+  assert.ok(c.canonicalTargets.includes('downtime-event'));
+  assert.equal(c.security.customerEdgeRequired,true);
+  assert.equal(c.security.directPlantNetworkAccess,false);
+  assert.equal(c.security.writeEnabled,false);
+});
+
+test('Körber PAS-X compiles to REST plus a thin industrial adapter with operational mappings only',()=>{
+  const c=connectorById('korber-werum-pas-x');
+  assert.equal(c.evidenceLevel,'spec-verified');
+  assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
+  assert.ok(c.adapters.some(x=>x.id==='vendor-sdk'));
+  assert.ok(c.canonicalTargets.includes('production-demand'));
+  assert.ok(c.canonicalTargets.includes('machine-state'));
+  assert.ok(c.canonicalTargets.includes('downtime-event'));
+  assert.equal(c.security.writeEnabled,false);
+  assert.equal(c.security.directPlantNetworkAccess,false);
+  assert.equal(c.nextEvidenceGate,'sandbox-authentication');
+});
+
 test('legacy Oracle manufacturing estates use published service routes',()=>{
   const jde=connectorById('oracle-jd-edwards-enterpriseone');
   const ebs=connectorById('oracle-ebusiness-suite');
@@ -92,7 +136,7 @@ test('EHS integration is data-minimised and produces restriction/risk targets',(
 });
 
 test('industrial protocols require a customer edge and prohibit direct plant access',()=>{
-  for(const id of ['beckhoff-twincat-opcua','inductive-automation-ignition','highbyte-intelligence-hub']){
+  for(const id of ['beckhoff-twincat-opcua','inductive-automation-ignition','highbyte-intelligence-hub','aspentech-inmation']){
     const c=connectorById(id);
     assert.equal(c.security.customerEdgeRequired,true,id);
     assert.equal(c.security.directPlantNetworkAccess,false,id);
