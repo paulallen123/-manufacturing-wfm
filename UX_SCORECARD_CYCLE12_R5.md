@@ -51,3 +51,37 @@ Actual headless Chromium result on the changed exact head, screen-reader announc
 
 ## Single next highest-value NEW-UI action
 Consume the exact gate result for the new Vector composition once the changed head receives a runner. If browser composition is green, inspect the visible Vector priority hierarchy at tablet width and then bind the next authoritative source only where freshness/authority is already structured. If CI again fails before execution with the known zero-step signature, do not retry repeatedly; advance the next non-blocked Vector-only validation/design dependency instead.
+
+---
+
+# Cycle 12 r7 validation update — browser-gate diagnostics
+
+## Journey reviewed
+Approved Vector manager Home → governed Integrations priority → Integrations workflow → Back to priority queue → exact originating card focus, including the existing 390px mobile return-focus check.
+
+## NEW-UI lineage confirmation
+Validation and code changes remained exclusively on `feature/one-day-enterprise-implementation-v1`. No legacy/0.6.139 presentation code, customer-proof runtime, staging or production surface was changed.
+
+## Reuse / duplicate-work decision
+The existing Cycle 11 browser harness and existing `ux-cycle11-gate.yml` remain the single owners. No second browser harness, workflow, card renderer, route lifecycle or Vector presentation branch was created.
+
+## New evidence
+GitHub runner allocation recovered for exact Vector head `c165f2137e554af3bd3acb1b50b2802664ded2cd`. The source/deterministic model step executed and passed the existing Cycle 11/12 signal, provider-route, integration-source, shared-Decision-Card, specialist-return-context and manager queue stress checks. The browser step then timed out after 45 seconds with exit code 124 before emitting journey evidence; the build/composition step was skipped. This is now a browser-harness/interaction diagnostic problem, not the previous zero-runner state.
+
+## Hypothesis
+The outer 45-second timeout can hide the actual browser failure because the harness cleanup waits indefinitely for `server.close()` while open browser/CDP sockets may still exist. If cleanup is bounded and retry exhaustion emits a stage/error marker, the next exact-head run should either complete normally or expose the first real failed interaction instead of ending as an opaque timeout.
+
+## Exact implementation delta
+Updated only `.github/scripts/ux-cycle11-context-browser.mjs` on the canonical Vector branch. The existing retry helper now emits the final retry error, the harness logs when CDP is ready, and cleanup closes idle/all HTTP connections, bounds the server-close wait to one second, then force-terminates Chrome if required. Product UX, routing rules, provider contracts, permissions, calculations, write authority and audit behavior are unchanged.
+
+## Focused validation / regression state
+The implementation commit is `e390a804e2b703527dbdcf534071163514db012d`. GitHub accepted the source update. No workflow run was attached to that exact new head at the first post-commit check, so the revised Chromium journey is not yet claimed green. The previous exact-head deterministic checks remain valid evidence for unchanged model/contracts; the browser journey remains unverified until the new diagnostic harness executes.
+
+## Blockers not retried
+The obsolete zero-runner blocker was not retried because its state materially changed: a runner successfully executed the prior gate. The failed 45-second browser job was not blindly re-run unchanged; the harness was first corrected to make the next execution diagnostic and bounded.
+
+## UX scorecard impact
+No product-facing score is increased from this cycle alone. Evidence quality and development efficiency improve because future browser failures should expose the failing journey rather than consume a cycle as an opaque timeout. Calm-by-default, density, explainability, permissions and authoritative controls are unchanged.
+
+## Single next highest-value NEW-UI action
+Consume the first workflow result for the exact updated head. If the harness now identifies a real Vector interaction/focus defect, patch that bounded defect in the same canonical lineage and rerun only the affected browser gate. If it passes, proceed to the already-planned tablet-width hierarchy/accessibility validation rather than adding new UI.
