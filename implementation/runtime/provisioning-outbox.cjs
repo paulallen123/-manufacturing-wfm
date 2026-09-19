@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { verifyContractCompletionReceipt } = require('./contract-completion-ingress.cjs');
 
 const OUTBOX_STATES = Object.freeze({
   PENDING: 'PENDING',
@@ -40,7 +41,7 @@ function requireString(value, code, message) {
   return value.trim();
 }
 
-function validateIntent(intent) {
+function validateIntent(intent, contractReceiptKey) {
   if (!intent || typeof intent !== 'object') fail('WFM_OUTBOX_INTENT_REQUIRED', 'A sealed provisioning intent is required.', 400);
   const queueKey = requireString(intent.queueKey, 'WFM_OUTBOX_QUEUE_KEY_REQUIRED', 'Provisioning queue identity is required.');
   const intentDigest = requireString(intent.intentDigest, 'WFM_OUTBOX_DIGEST_REQUIRED', 'Provisioning intent digest is required.').toLowerCase();
@@ -51,7 +52,30 @@ function validateIntent(intent) {
   if (!intent.scope || !intent.build || !intent.plan || intent.plan.creationMode !== 'fresh-provider-create' || intent.plan.isolated !== true) {
     fail('WFM_OUTBOX_UNSAFE_INTENT', 'Provisioning intent is missing sealed scope/build/fresh-isolated plan evidence.', 400);
   }
-  return { queueKey, intentDigest };
+
+  const evidence = intent.completionEvidence;
+  const eventId = requireString(evidence.eventId, 'WFM_OUTBOX_CONTRACT_EVENT_ID_REQUIRED', 'Authenticated contract event id is required.');
+  const receiptSha256 = requireString(evidence.receiptSha256, 'WFM_OUTBOX_CONTRACT_RECEIPT_DIGEST_REQUIRED', 'Contract completion receipt digest is required.').toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(receiptSha256)) fail('WFM_OUTBOX_CONTRACT_RECEIPT_DIGEST_INVALID', 'Contract completion receipt digest must be SHA-256.', 400);
+  if (!evidence.verificationReceipt || typeof evidence.verificationReceipt !== 'object') {
+    fail('WFM_OUTBOX_CONTRACT_RECEIPT_REQUIRED', 'Durable queue admission requires the verified contract-completion receipt.', 403);
+  }
+
+  const verified = verifyContractCompletionReceipt({
+    authenticated: true,
+    provider: intent.contract && intent.contract.provider,
+    eventId,
+    contractId: intent.contract && intent.contract.contractId,
+    contractVersion: intent.contract && intent.contract.contractVersion,
+    tenantId: intent.contract && intent.contract.tenantId,
+    completedAt: intent.contract && intent.contract.completedAt,
+    verificationReceipt: evidence.verificationReceipt
+  }, contractReceiptKey);
+  if (verified.receiptSha256 !== receiptSha256) {
+    fail('WFM_OUTBOX_CONTRACT_RECEIPT_DIGEST_MISMATCH', 'Contract completion receipt digest changed before durable queue admission.', 409);
+  }
+
+  return { queueKey, intentDigest, receiptSha256 };
 }
 
 function verificationSubject(record, providerResourceId = record.providerResourceId) {
@@ -95,10 +119,11 @@ function assertVerificationSubject(record, supplied) {
   return expected;
 }
 
-function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {}) {
+function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000, contractReceiptKey } = {}) {
   if (!store || store.durability !== 'DURABLE_TRANSACTIONAL' || typeof store.transaction !== 'function') {
     throw new Error('Provisioning outbox requires a durable transactional store.');
   }
+  if (!contractReceiptKey) throw new Error('Provisioning outbox requires a trusted contract receipt verification key.');
   const leaseDuration = Math.max(1000, Number(leaseMs) || 30000);
   const stamp = () => Number(now());
 
@@ -112,7 +137,7 @@ function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {
   }
 
   function enqueue(intent) {
-    const { queueKey, intentDigest } = validateIntent(intent);
+    const { queueKey, intentDigest } = validateIntent(intent, contractReceiptKey);
     return transact(tx => {
       const existing = tx.get(queueKey);
       if (existing) {
