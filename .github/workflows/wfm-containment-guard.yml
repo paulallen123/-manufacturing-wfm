@@ -1,5 +1,6 @@
 name: WFM containment guard
 
+# Temporary fail-closed verifier. Remove only after server-side release protection is proven.
 on:
   push:
     branches:
