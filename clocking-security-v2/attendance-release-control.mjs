@@ -9,6 +9,7 @@ const REQUIRED_GATES=Object.freeze([
   'reviewCorrectionAudit',
   'privacyDpia',
   'hostedSyntheticSoak',
+  'telemetryContinuity',
   'rollbackAuthority',
   'regression'
 ]);
