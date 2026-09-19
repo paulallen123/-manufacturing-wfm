@@ -107,7 +107,10 @@ function compileGraph(graph) {
     }
   }
 
-  return Object.freeze({ version: String(graph.version), questions: clone(graph.questions) });
+  const version = String(graph.version);
+  const questions = clone(graph.questions);
+  const graphFingerprint = digest({ version, questions });
+  return Object.freeze({ version, graphFingerprint, questions });
 }
 
 function predicateMatches(predicate, values) {
@@ -133,7 +136,7 @@ function optionFor(question, value) {
 }
 
 function evaluateGraph(compiled, input = {}) {
-  if (!compiled || !compiled.version || !Array.isArray(compiled.questions)) throw new Error('Compiled scoping graph is required.');
+  if (!compiled || !compiled.version || !compiled.graphFingerprint || !Array.isArray(compiled.questions)) throw new Error('Compiled scoping graph is required.');
   const nowMs = Number(input.nowMs || Date.now());
   const purchasedScope = new Set(Array.isArray(input.purchasedScope) ? input.purchasedScope : []);
   const providedAnswers = { ...(input.answers || {}) };
@@ -227,6 +230,7 @@ function evaluateGraph(compiled, input = {}) {
 
   const revisionPayload = {
     graphVersion: compiled.version,
+    graphFingerprint: compiled.graphFingerprint,
     purchasedScope: [...purchasedScope].sort(),
     activeAnswers,
     provenance
@@ -235,6 +239,7 @@ function evaluateGraph(compiled, input = {}) {
 
   return {
     graphVersion: compiled.version,
+    graphFingerprint: compiled.graphFingerprint,
     revision,
     purchasedScope: [...purchasedScope].sort(),
     answers: activeAnswers,
@@ -257,6 +262,12 @@ function applyAnswer(compiled, priorEvaluation, input = {}) {
   if (priorEvaluation.graphVersion !== compiled.version) {
     const error = new Error('Scoping graph version changed; re-evaluate before applying this answer.');
     error.code = 'STALE_GRAPH_VERSION';
+    error.statusCode = 412;
+    throw error;
+  }
+  if (priorEvaluation.graphFingerprint !== compiled.graphFingerprint) {
+    const error = new Error('Scoping graph definition changed without a version migration; re-evaluate before applying this answer.');
+    error.code = 'STALE_GRAPH_DEFINITION';
     error.statusCode = 412;
     throw error;
   }
