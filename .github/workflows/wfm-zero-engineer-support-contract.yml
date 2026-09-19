@@ -125,18 +125,8 @@ jobs:
           set -o pipefail
           node scripts/run-portable-autonomy-proof.mjs --strict-runtime 2>&1 | tee portable-autonomy-proof.log
 
-      - name: Preserve portable proof evidence even on failure
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: portable-autonomy-proof-${{ github.run_id }}
-          path: |
-            portable-autonomy-proof.json
-            portable-autonomy-proof.log
-          if-no-files-found: warn
-          retention-days: 7
-
       - name: Revalidate canonical binding at proof completion
+        id: canonical_revalidate
         shell: bash
         run: |
           set -euo pipefail
@@ -158,6 +148,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: Assert portable proof receipt
+        id: proof_receipt
         shell: bash
         run: |
           set -euo pipefail
@@ -192,6 +183,7 @@ jobs:
           NODE
 
       - name: Enforce release evidence fail-closed boundary
+        id: release_boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -199,3 +191,115 @@ jobs:
             echo '::error::Exact-runtime autonomy logic proof completed, but release evidence remains FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED. No release claim is permitted until integration/canonical is governed by an applicable protected-branch or ruleset trust boundary.' >&2
             exit 1
           fi
+
+      - name: Finalize workflow-bound proof envelope
+        id: proof_envelope
+        if: always()
+        shell: bash
+        env:
+          CANONICAL_REVALIDATE_OUTCOME: ${{ steps.canonical_revalidate.outcome }}
+          PROOF_RECEIPT_OUTCOME: ${{ steps.proof_receipt.outcome }}
+          RELEASE_BOUNDARY_OUTCOME: ${{ steps.release_boundary.outcome }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_RUN_ATTEMPT: ${{ github.run_attempt }}
+          WORKFLOW_HEAD_SHA: ${{ github.sha }}
+          WORKFLOW_REF: ${{ github.ref }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { createHash } from 'node:crypto';
+
+          const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+          const proofPath = 'portable-autonomy-proof.json';
+          let portable = null;
+          let portableRaw = null;
+          let parseError = null;
+          if (fs.existsSync(proofPath)) {
+            portableRaw = fs.readFileSync(proofPath);
+            try {
+              portable = JSON.parse(portableRaw.toString('utf8'));
+            } catch (error) {
+              parseError = String(error?.message || error);
+            }
+          }
+
+          const canonicalRevalidationOutcome = process.env.CANONICAL_REVALIDATE_OUTCOME || 'unknown';
+          const proofReceiptOutcome = process.env.PROOF_RECEIPT_OUTCOME || 'unknown';
+          const releaseBoundaryOutcome = process.env.RELEASE_BOUNDARY_OUTCOME || 'unknown';
+          const workflowHeadSha = String(process.env.WORKFLOW_HEAD_SHA || '').toLowerCase();
+          const canonicalBaseSha = String(process.env.WFM_CANONICAL_BASE_SHA || '').toLowerCase();
+          const canonicalPolicyBlobSha = String(process.env.WFM_CANONICAL_POLICY_BLOB_SHA || '').toLowerCase();
+          const mergeTreeSha = String(process.env.WFM_CANONICAL_MERGE_TREE_SHA || '').toLowerCase();
+
+          const binding = portable?.releaseBinding || null;
+          const bindingMatches = Boolean(binding)
+            && binding.headSha === workflowHeadSha
+            && binding.canonicalBaseSha === canonicalBaseSha
+            && binding.canonicalPolicyBlobSha === canonicalPolicyBlobSha
+            && binding.mergeTreeSha === mergeTreeSha;
+          const portablePassed = portable?.status === 'PASS' && portable?.exactRuntime === true;
+          const postProofGatesPassed = canonicalRevalidationOutcome === 'success' && proofReceiptOutcome === 'success';
+
+          let finalEvidenceStatus;
+          if (!portableRaw || !portable || parseError) {
+            finalEvidenceStatus = 'INCOMPLETE_NO_VALID_PORTABLE_PROOF';
+          } else if (!portablePassed) {
+            finalEvidenceStatus = 'INVALID_PORTABLE_PROOF';
+          } else if (!bindingMatches) {
+            finalEvidenceStatus = 'INVALID_RELEASE_BINDING_MISMATCH';
+          } else if (!postProofGatesPassed) {
+            finalEvidenceStatus = 'INVALID_POST_PROOF_GATES_FAILED';
+          } else if (releaseBoundaryOutcome === 'success' && portable.releaseClaimAllowed === true) {
+            finalEvidenceStatus = 'ELIGIBLE_EXACT_RELEASE_EVIDENCE';
+          } else if (releaseBoundaryOutcome === 'failure' && portable.releaseClaimAllowed === false) {
+            finalEvidenceStatus = 'LOGIC_ONLY_RELEASE_BLOCKED';
+          } else {
+            finalEvidenceStatus = 'INVALID_RELEASE_STATE_MISMATCH';
+          }
+
+          const releaseClaimAllowed = finalEvidenceStatus === 'ELIGIBLE_EXACT_RELEASE_EVIDENCE';
+          const core = {
+            schemaVersion: 1,
+            proof: 'workflow-bound-zero-engineer-autonomy-evidence',
+            workflowRunId: String(process.env.WORKFLOW_RUN_ID || ''),
+            workflowRunAttempt: String(process.env.WORKFLOW_RUN_ATTEMPT || ''),
+            workflowHeadSha,
+            workflowRef: String(process.env.WORKFLOW_REF || ''),
+            canonicalBaseSha,
+            canonicalPolicyBlobSha,
+            mergeTreeSha,
+            portableProofSha256: portableRaw ? sha256(portableRaw) : null,
+            portableProofStatus: portable?.status || null,
+            portableProofScope: portable?.proofScope || null,
+            portableReleaseEvidenceStatus: portable?.releaseEvidenceStatus || null,
+            portableReleaseClaimAllowed: portable?.releaseClaimAllowed === true,
+            canonicalRevalidationOutcome,
+            proofReceiptOutcome,
+            releaseBoundaryOutcome,
+            bindingMatches,
+            finalEvidenceStatus,
+            releaseClaimAllowed,
+            productionMutation: false,
+            customerMutation: false,
+            parseError,
+          };
+          const envelope = { ...core, envelopeDigest: sha256(Buffer.from(JSON.stringify(core))) };
+          fs.writeFileSync('autonomy-proof-envelope.json', JSON.stringify(envelope, null, 2) + '\n');
+          console.log(JSON.stringify(envelope, null, 2));
+
+          if (finalEvidenceStatus.startsWith('INVALID_') || finalEvidenceStatus.startsWith('INCOMPLETE_')) {
+            process.exit(1);
+          }
+          NODE
+
+      - name: Preserve final workflow-bound proof evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portable-autonomy-proof-${{ github.run_id }}
+          path: |
+            portable-autonomy-proof.json
+            portable-autonomy-proof.log
+            autonomy-proof-envelope.json
+          if-no-files-found: warn
+          retention-days: 7
