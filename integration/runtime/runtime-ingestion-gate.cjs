@@ -3,6 +3,7 @@
 const { createHash } = require('node:crypto');
 const { evaluateActivation } = require('./connection-proof-gate.cjs');
 const { gateCircuit } = require('./provider-circuit-breaker.cjs');
+const { evaluateProviderProofLease } = require('./provider-proof-lifecycle.cjs');
 const { evaluateAuthorityObservation } = require('./source-authority-fence.cjs');
 const { evaluateApplyHandoff } = require('./apply-handoff-ledger.cjs');
 
@@ -100,6 +101,22 @@ function gateMappedObservation(review, input = {}, now = Date.now()) {
     return Object.freeze({ action: 'BLOCK', reason: 'activation-not-current', blockers: activation.blockers });
   }
 
+  const providerProof = evaluateProviderProofLease(review, input.providerProofLease || {}, now);
+  if (!providerProof.canUseForBusinessTraffic) {
+    return Object.freeze({
+      action: 'SAFE_PROBE_ONLY',
+      reason: 'provider-proof-not-current',
+      blockers: providerProof.blockers || [],
+      proofState: providerProof.state,
+      probeRequirements: Object.freeze({
+        metadataOnly: true,
+        nonMutating: true,
+        exactReviewedTarget: true,
+        preserveApprovalWhenMetadataUnchanged: true
+      })
+    });
+  }
+
   const circuit = gateCircuit(review, input.circuitState, now);
   if (circuit.action !== 'ALLOW') {
     return Object.freeze({
@@ -113,34 +130,35 @@ function gateMappedObservation(review, input = {}, now = Date.now()) {
 
   const authority = evaluateAuthorityObservation(review, input.fence, input.observation || {});
   if (authority.action === 'DUPLICATE_NOOP') {
-    return Object.freeze({ action: 'NOOP', reason: authority.reason, blockers: [], nextFence: authority.nextFence });
+    return Object.freeze({ action: 'NOOP', reason: authority.reason, blockers: [], nextFence: authority.nextFence, providerProofState: providerProof.state });
   }
   if (authority.action !== 'ACCEPT') {
-    return Object.freeze({ action: authority.action, reason: authority.reason, blockers: authority.blockers || [], nextFence: null });
+    return Object.freeze({ action: authority.action, reason: authority.reason, blockers: authority.blockers || [], nextFence: null, providerProofState: providerProof.state });
   }
 
   const stageCheck = validateDurableStageReceipt(review, input.observation || {}, input.stageReceipt, now);
   if (!stageCheck.valid) {
-    return Object.freeze({ action: 'BLOCK', reason: 'durable-stage-proof-invalid', blockers: stageCheck.blockers, nextFence: null });
+    return Object.freeze({ action: 'BLOCK', reason: 'durable-stage-proof-invalid', blockers: stageCheck.blockers, nextFence: null, providerProofState: providerProof.state });
   }
 
   const applyHandoff = evaluateApplyHandoff(review, input.observation || {}, input.stageReceipt, input.applyLedgerEntry, now);
   if (applyHandoff.action === 'BLOCK') {
-    return Object.freeze({ action: 'BLOCK', reason: applyHandoff.reason, blockers: applyHandoff.blockers || [], nextFence: null });
+    return Object.freeze({ action: 'BLOCK', reason: applyHandoff.reason, blockers: applyHandoff.blockers || [], nextFence: null, providerProofState: providerProof.state });
   }
   if (applyHandoff.action === 'RECONCILE_BEFORE_APPLY') {
-    return Object.freeze({ action: 'RECONCILE_BEFORE_APPLY', reason: applyHandoff.reason, blockers: applyHandoff.blockers || [], operationKey: applyHandoff.operationKey, nextFence: null });
+    return Object.freeze({ action: 'RECONCILE_BEFORE_APPLY', reason: applyHandoff.reason, blockers: applyHandoff.blockers || [], operationKey: applyHandoff.operationKey, nextFence: null, providerProofState: providerProof.state });
   }
   if (applyHandoff.action === 'ADVANCE_FENCE_NO_APPLY') {
-    return Object.freeze({ action: 'ADVANCE_FENCE_NO_APPLY', reason: applyHandoff.reason, blockers: [], operationKey: applyHandoff.operationKey, nextFence: authority.nextFence });
+    return Object.freeze({ action: 'ADVANCE_FENCE_NO_APPLY', reason: applyHandoff.reason, blockers: [], operationKey: applyHandoff.operationKey, nextFence: authority.nextFence, providerProofState: providerProof.state });
   }
 
   return Object.freeze({
     action: 'READY_TO_APPLY',
-    reason: 'approved-authoritative-durably-staged-idempotent-observation',
+    reason: 'approved-current-provider-proof-authoritative-durably-staged-idempotent-observation',
     blockers: [],
     operationKey: applyHandoff.operationKey,
-    nextFence: authority.nextFence
+    nextFence: authority.nextFence,
+    providerProofState: providerProof.state
   });
 }
 
