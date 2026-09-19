@@ -92,7 +92,8 @@ export function buildConnectorRegistry(){
         managementPlaneEnabled:false,
         industrialControlEnabled:false,
         remoteProvisioningEnabled:false,
-        agentActionEnabled:false
+        agentActionEnabled:false,
+        crossScopeReadEnabled:false
       }
     };
   });
