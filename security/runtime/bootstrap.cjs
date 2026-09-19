@@ -146,7 +146,7 @@ function handleStagingAccess(req, res) {
       'grant_key TEXT PRIMARY KEY, used_at TEXT NOT NULL);'
     );
     const used = db.prepare('SELECT used_at FROM staging_access_grants WHERE grant_key=?').get(grant.key);
-    if (used) {
+    if (used && grant.restore !== true) {
       res.statusCode = 410;
       res.setHeader('Cache-Control', 'no-store');
       res.end('This staging access link has already been used.');
@@ -163,8 +163,10 @@ function handleStagingAccess(req, res) {
         res.end('Staging account is unavailable.');
         return true;
       }
-      db.prepare('INSERT INTO staging_access_grants(grant_key,used_at) VALUES(?,?)')
-        .run(grant.key, new Date().toISOString());
+      if (!used) {
+        db.prepare('INSERT INTO staging_access_grants(grant_key,used_at) VALUES(?,?)')
+          .run(grant.key, new Date().toISOString());
+      }
       db.exec('COMMIT;');
 
       res.statusCode = 302;
