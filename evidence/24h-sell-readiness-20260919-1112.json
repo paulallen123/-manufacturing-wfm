@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-19T10:12:00Z",
+  "programme": "24h-sell-readiness",
+  "source": {
+    "repository": "paulallen123/-manufacturing-wfm",
+    "branch": "feature/one-day-enterprise-implementation-v1",
+    "headShaAtRecord": "648fa86951791fd07c22fb849787f10d26b05bc9",
+    "headMessage": "UX: bind review count to structured source state",
+    "headCryptographicallyVerified": false,
+    "branchProtected": false,
+    "repositoryRulesetCountObserved": 0
+  },
+  "railway": {
+    "newResourcesCreated": false,
+    "frozenCustomerProofChanged": false,
+    "oneDayEnterprise": {
+      "service": "wfm-one-day-enterprise-v1",
+      "latestSuccessfulDeploymentId": "ec323e15-3441-483c-a99b-5c66fa9ec456",
+      "deployedSha": "ea06829a6956dbbe6dd3f022e842dec1c862d7d4",
+      "exactCurrentHead": false,
+      "sourceGitHubConnected": true,
+      "fixtureDemoOnly": true,
+      "productionApproved": false
+    },
+    "integrationFabricProof": {
+      "service": "wfm-integration-fabric-v1-proof",
+      "latestSuccessfulDeploymentId": "df36a17f-391a-4250-adc4-623f21398145",
+      "deployedSha": "f463604393086b99dbb38aa8f351a48fa594c9f1",
+      "exactCurrentHead": false,
+      "securityHoldActive": true,
+      "securityHoldRootDirectory": "/__security_hold_7b6f9d22e1__"
+    }
+  },
+  "latestExactHostedProof": {
+    "service": "wfm-one-day-enterprise-v1",
+    "sourceSha": "ea06829a6956dbbe6dd3f022e842dec1c862d7d4",
+    "deploymentId": "ec323e15-3441-483c-a99b-5c66fa9ec456",
+    "containerTests": { "passed": 68, "failed": 0 },
+    "autonomyAdmission": "PASS",
+    "vectorOnlyPresentationAdmission": "PASS",
+    "sealedRuntimePresentationRepair": "PASS",
+    "scale": {
+      "employees": 10000,
+      "sites": 50,
+      "punches": 100000,
+      "timecards": 40000,
+      "cohorts": 1750
+    },
+    "payroll": {
+      "expectedTotal": 15180000,
+      "projectedTotal": 15180000,
+      "unexplainedVariance": 0,
+      "deliberateCorruptionVarianceDetected": 20
+    },
+    "claimBoundary": "Real Railway cloud execution, scale behaviour and fail-closed data handling only; not a live payroll/HCM/ERP provider connection and not a customer production implementation."
+  },
+  "browserProofAttempt": {
+    "branch": "evidence/hosted-role-browser-ea06829-20260919-1100",
+    "workflowRunId": 35436473495,
+    "result": "FAIL_SAFE_BLOCKED",
+    "reason": "WFM_DEMO_PASSWORD repository secret is not configured; no authenticated browser journey was attempted and no credential was written into the repository.",
+    "securityControlWeakened": false
+  },
+  "releaseAuthority": {
+    "draftPullRequest": 143,
+    "status": "BLOCKING",
+    "reason": "Canonical release authority is not yet server-side protected and exact head commits are not cryptographically verified. The integration proof Railway hold therefore remains in place.",
+    "holdMayBeRemoved": false
+  },
+  "remainingHardGates": [
+    "Server-side protected and cryptographically verified release authority before removing the integration service hold",
+    "Exact-current source SHA deployed successfully to both required existing Railway services",
+    "Authorised real external-provider sandbox/test API proof",
+    "Actual zero-human customer environment provisioning rather than SYNTHETIC_THEORY_ONLY timing evidence",
+    "Authenticated role-by-role hosted browser proof on the exact combined candidate"
+  ],
+  "sellReadiness": "CONDITIONAL"
+}
