@@ -1,0 +1,6 @@
+FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
+WORKDIR /inspect
+COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
+RUN tar -xzf /tmp/runtime.tgz -C /inspect \
+ && node -e "const fs=require('fs');const p='/inspect/public/value-cockpit-ui.js';const s=fs.readFileSync(p,'utf8');const needle='payrollActor';let at=0,count=0;while((at=s.indexOf(needle,at))>=0){count++;const start=Math.max(0,at-1800),end=Math.min(s.length,at+needle.length+2200);console.log('SEALED_PAYROLL_ACTOR_CONTEXT_'+count+'='+JSON.stringify(s.slice(start,end)));at+=needle.length;}if(!count){console.error('payrollActor not found in sealed value-cockpit-ui.js');process.exit(2)}console.log('SEALED_PAYROLL_ACTOR_COUNT='+count)"
+CMD ["node","-e","require('http').createServer((req,res)=>{res.statusCode=200;res.end('ok')}).listen(Number(process.env.PORT||3000),'0.0.0.0')"]
