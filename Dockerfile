@@ -91,78 +91,26 @@ RUN WFM_PROOF_ONESHOT=true \
     WFM_CONFIG_ENGINE_GIT_BLOB_SHA=d3688d27841a28d3b8801b7d4c63f254e8bf7edd \
     node /app/proof-runtime/cloud-scale-proof-runner.cjs
 
-# Preserve the sealed server/security contract. Compose the reviewable UX layers only
-# through existing presentation assets that are already in the server's static allow-list.
-# factory-control-ui.css and value-cockpit-ui.js are the final approved CSS/JS assets in
-# the base page, so appending here keeps the UX ordering deterministic without adding routes.
+# Vector-only presentation composition.
+# The retired UX-reset shell is intentionally NOT loaded. Keep the sealed functional
+# application intact, then add training/implementation functionality and Vector as the
+# only active presentation shell.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
-RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle2.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE3_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle3.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE4_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle4.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE5_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle5.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE6_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle6.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE7_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle7.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE8_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle8.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE9_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle9.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE10_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle10.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE11_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle11.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE12_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle12.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle2.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE3_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle3.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE4_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle4.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE5_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle5.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE6_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle6.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE7_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle7.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE8_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle8.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE9_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle9.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE10_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle10.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE11_MODEL_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle11-model.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE11_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle11.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE12_MODEL_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle12-model.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE12_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle12.js >> /app/public/value-cockpit-ui.js \
- && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/factory-control-ui.css \
- && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/value-cockpit-ui.js \
- && node --check /app/security-runtime/bootstrap.cjs \
+RUN node --check /app/security-runtime/bootstrap.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
+ && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/factory-control-ui.css \
+ && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.js \
+ && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/factory-control-ui.js \
  && printf '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/factory-control-ui.css \
+ && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-implementation-ui/implementation-journey.js >> /app/public/value-cockpit-ui.js \
  && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/factory-control-ui.css \
- && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/value-cockpit-ui.js \
  && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
