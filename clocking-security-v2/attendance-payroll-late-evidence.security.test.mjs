@@ -30,8 +30,8 @@ function event(sourceId,eventId,kind,at,receivedAtMs=at+1000){
 }
 function health(){
   return [
-    {sourceId:'door',state:'healthy',pendingRecovery:false,periodCoverageComplete:true},
-    {sourceId:'wifi',state:'healthy',pendingRecovery:false,periodCoverageComplete:true}
+    {tenant:'acme',site:'s1',certificationWindowId:'shift1',sourceId:'door',state:'healthy',pendingRecovery:false,periodCoverageComplete:true},
+    {tenant:'acme',site:'s1',certificationWindowId:'shift1',sourceId:'wifi',state:'healthy',pendingRecovery:false,periodCoverageComplete:true}
   ];
 }
 function project(payroll,nowMs=REVIEWED){
