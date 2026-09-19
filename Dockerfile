@@ -92,26 +92,47 @@ RUN WFM_PROOF_ONESHOT=true \
     node /app/proof-runtime/cloud-scale-proof-runner.cjs
 
 # Vector-only presentation composition.
-# The retired UX-reset shell is intentionally NOT loaded. Keep the sealed functional
-# application intact, then add training/implementation functionality and Vector as the
-# only active presentation shell.
+# Legacy/retired shells remain unloaded. Reuse only the validated role-first Cycle 11/12
+# action/evidence primitives beneath Vector, with Vector remaining the sole visible shell.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
 RUN node --check /app/security-runtime/bootstrap.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
+ && node --check /tmp/wfm-ux-overlay/ux-reset-cycle11-model.js \
+ && node --check /tmp/wfm-ux-overlay/ux-reset-cycle11.js \
+ && node --check /tmp/wfm-ux-overlay/ux-reset-cycle12-model.js \
+ && node --check /tmp/wfm-ux-overlay/ux-reset-cycle12.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
+ && node --check /tmp/wfm-ux-overlay/vector-priority-bridge.js \
  && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/factory-control-ui.css \
- && cp /tmp/wfm-ux-overlay/vector-shell.js /app/public/vector-shell.js \
- && node --check /app/public/vector-shell.js \
- && node -e "const fs=require('fs');const p='/app/public/index.html';let h=fs.readFileSync(p,'utf8');if(!h.includes('vector-shell.js')){h=h.replace('</body>','<script src=\"vector-shell.js\"></script></body>');fs.writeFileSync(p,h)}" \
  && printf '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* WFM_UX_RESET_CYCLE11_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle11.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* WFM_UX_RESET_CYCLE12_BEGIN */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle12.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/factory-control-ui.css \
+ && printf '\n/* VECTOR_PRIORITY_BRIDGE_V1 */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/vector-priority-bridge.css >> /app/public/factory-control-ui.css \
  && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-implementation-ui/implementation-journey.js >> /app/public/value-cockpit-ui.js \
- && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/factory-control-ui.css \
+ && printf '\n;/* WFM_UX_RESET_CYCLE11_MODEL_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle11-model.js >> /app/public/value-cockpit-ui.js \
+ && printf '\n;/* WFM_UX_RESET_CYCLE11_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle11.js >> /app/public/value-cockpit-ui.js \
+ && printf '\n;/* WFM_UX_RESET_CYCLE12_MODEL_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle12-model.js >> /app/public/value-cockpit-ui.js \
+ && printf '\n;/* WFM_UX_RESET_CYCLE12_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/ux-reset-cycle12.js >> /app/public/value-cockpit-ui.js \
+ && cp /tmp/wfm-ux-overlay/vector-shell.js /app/public/vector-shell.js \
+ && printf '\n;/* VECTOR_PRIORITY_BRIDGE_V1 */\n' >> /app/public/vector-shell.js \
+ && cat /tmp/wfm-ux-overlay/vector-priority-bridge.js >> /app/public/vector-shell.js \
+ && node --check /app/public/value-cockpit-ui.js \
+ && node --check /app/public/vector-shell.js \
+ && node -e "const fs=require('fs');const p='/app/public/index.html';let h=fs.readFileSync(p,'utf8');if(!h.includes('vector-shell.js')){h=h.replace('</body>','<script src=\"vector-shell.js\"></script></body>');fs.writeFileSync(p,h)}" \
  && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
