@@ -50,6 +50,8 @@ jobs:
         run: node integration-fabric/scripts/build-plan.mjs
       - name: Test runtime connector registry
         run: node --test integration-fabric/runtime/connector-registry.test.mjs
+      - name: Test process historian and edge additions
+        run: node --test integration-fabric/runtime/process-historian-edge-additions.test.mjs
       - name: Build machine-actionable connector registry
         run: node integration-fabric/scripts/build-connector-registry.mjs
       - name: Read-only public integration-surface probes
