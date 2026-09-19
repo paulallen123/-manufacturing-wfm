@@ -60,6 +60,8 @@ const simulation = simulator.simulate({
   affectedRecords: 12,
 });
 assert.equal(simulation.status, 'customer_authorisation_required');
+assert.equal(simulation.exactActionAllowlistBound, true);
+assert.match(simulation.actionPolicyDigest, /^[a-f0-9]{64}$/);
 const verification = verifier.verify(simulation, {
   tenant: 'tenant-a',
   scenarioId: 'payroll-calculation-or-export-anomaly',
@@ -79,6 +81,7 @@ const issued = gate.issue({
   ttlMs: 30000,
 });
 assert.equal(issued.publicReceipt.scope, 'customer-consent-record-only');
+assert.equal(issued.publicReceipt.actionPolicyDigest, simulation.actionPolicyDigest);
 assert.equal(issued.publicReceipt.executionAuthority, false);
 assert.equal(issued.publicReceipt.productionAuthorityGranted, false);
 assert.equal(issued.publicReceipt.customerMutation, false);
@@ -93,6 +96,7 @@ const consumed = await gate.consume({
 });
 assert.equal(consumed.customerConsentRecorded, true);
 assert.equal(consumed.durableReplayProtection, true);
+assert.equal(consumed.actionPolicyDigest, simulation.actionPolicyDigest);
 assert.equal(consumed.executionAuthority, false);
 assert.equal(consumed.automaticExecutionEligible, false);
 assert.equal(consumed.productionAuthorityGranted, false);
@@ -132,6 +136,20 @@ await expectCode(async () => gate.issue({
   verification,
   approver: { actorType: 'customer-authorised-approver', actorId: 'payroll-2', role: 'payroll', tenant: 'tenant-b' },
 }), 'WFM_T3_AUTH_APPROVER');
+
+const hostileSamePrefixSimulation = { ...simulation, proposedAction: 'payroll.delete-all' };
+await expectCode(async () => gate.issue({
+  simulation: hostileSamePrefixSimulation,
+  verification,
+  approver: { actorType: 'customer-authorised-approver', actorId: 'payroll-hostile', role: 'payroll', tenant: 'tenant-a' },
+}), 'WFM_T3_AUTH_ACTION');
+
+const tamperedPolicySimulation = { ...simulation, actionPolicyDigest: d('forged-policy') };
+await expectCode(async () => gate.issue({
+  simulation: tamperedPolicySimulation,
+  verification,
+  approver: { actorType: 'customer-authorised-approver', actorId: 'payroll-policy-tamper', role: 'payroll', tenant: 'tenant-a' },
+}), 'WFM_T3_AUTH_ACTION_POLICY');
 
 const tamperedSimulation = { ...simulation, affectedRecords: simulation.affectedRecords + 1 };
 await expectCode(async () => gate.issue({
@@ -189,10 +207,13 @@ await expectCode(() => unavailableStoreGate.consume({
 }), 'WFM_T3_AUTH_REPLAY_STORE');
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'tier3-customer-authorisation-consent-only-gate',
   status: 'PASS',
   verifiedShadowRequired: true,
+  exactActionAllowlistBound: true,
+  actionPolicyDigestBoundIntoConsent: true,
+  samePrefixHostileActionDenied: true,
   customerRoleBound: true,
   sameTenantBound: true,
   durableAtomicReplayStoreRequired: true,
@@ -202,6 +223,7 @@ console.log(JSON.stringify({
   expiryEnforced: true,
   tokenTamperDenied: true,
   shadowDigestTamperDenied: true,
+  actionPolicyTamperDenied: true,
   customerConsentRecorded: true,
   executionAuthorityGranted: false,
   automaticExecutionEligible: false,
