@@ -40,5 +40,7 @@ jobs:
         run: node --test integration-runtime/connection-setup-plan.test.mjs
       - name: Validate bounded provider and recovery proof runner
         run: node --test integration-runtime/connection-test-runner.test.mjs
+      - name: Validate transport-specific resilience controls
+        run: node --test integration-runtime/transport-safety.test.mjs
       - name: Validate runtime freshness and reconciliation health
         run: node --test integration-runtime/connection-runtime-health.test.mjs
