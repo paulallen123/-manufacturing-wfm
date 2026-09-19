@@ -275,16 +275,21 @@ export class AttendanceReleaseSwitch {
     return this._enabled?this._validUntilMs:null;
   }
 
-  reconcile({assessment,requestedEnabled=false,actorId='release-controller',reason='gate-reconcile'}={}){
-    const nowMs=Date.now();
-    this._refreshTemporalState(nowMs);
+  reconcile({assessment,requestedEnabled=false,actorId='release-controller',reason='gate-reconcile',nowMs=Date.now()}={}){
+    const wallNowMs=Date.now();
+    if(!validTime(nowMs)) throw new Error('Valid release reconciliation time required.');
+    // Caller-supplied time may only move the decision forward, never backward.
+    // This retains deterministic fail-closed testing without allowing a stale
+    // timestamp to keep expired release evidence alive.
+    const effectiveNowMs=Math.max(nowMs,wallNowMs);
+    this._refreshTemporalState(effectiveNowMs);
     if(this._failClosedReason) throw new Error(`Release switch is fail-closed: ${this._failClosedReason}. Construct a fresh switch only after trusted clock recovery.`);
     if(!assessment || typeof assessment.ready!=='boolean' || !validSha(assessment.candidateSha) || !TRUSTED_ASSESSMENTS.has(assessment)) throw new Error('Trusted release assessment required.');
     if(assessment.candidateSha!==this.expectedCandidateSha) throw new Error('Release assessment candidate does not match the bound runtime candidate.');
     if(ASSESSMENT_EVIDENCE_POLICIES.get(assessment)!==this.evidencePolicy) throw new Error('Release assessment evidence policy does not match the bound release policy.');
     if(!validEvidenceId(actorId)) throw new Error('Valid release actor required.');
-    const assessmentTimeValid=validTime(assessment.evaluatedAtMs) && assessment.evaluatedAtMs<=nowMs;
-    const assessmentFresh=assessment.ready===true && assessmentTimeValid && validTime(assessment.validUntilMs) && assessment.validUntilMs>nowMs;
+    const assessmentTimeValid=validTime(assessment.evaluatedAtMs) && assessment.evaluatedAtMs<=effectiveNowMs;
+    const assessmentFresh=assessment.ready===true && assessmentTimeValid && validTime(assessment.validUntilMs) && assessment.validUntilMs>effectiveNowMs;
     const shouldEnable=Boolean(requestedEnabled && assessmentFresh);
     const wasEnabled=this._enabled;
     const action=shouldEnable?'enabled':(wasEnabled?'rolled_back':'disabled');
@@ -302,7 +307,7 @@ export class AttendanceReleaseSwitch {
       candidateSha:assessment.candidateSha,
       ready:assessment.ready && assessmentFresh,
       blockers:temporalFailure?[temporalBlocker]:[...assessment.blockers],
-      observedAtMs:nowMs
+      observedAtMs:effectiveNowMs
     });
     this.audit.push(row);
     return clone({enabled:this._enabled,candidateSha:this._candidateSha,validUntilMs:this._validUntilMs,audit:row});
