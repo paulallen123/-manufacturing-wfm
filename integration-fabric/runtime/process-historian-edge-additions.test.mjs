@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {connectorById} from './connector-registry.mjs';
@@ -18,6 +19,15 @@ test('new process historian and edge targets stay spec-only, edge-routed and rea
     assert.ok(c.canonicalTargets.includes('machine-state'),id);
     assert.ok(c.canonicalTargets.includes('downtime-event'),id);
     assert.ok(c.canonicalTargets.includes('shift-outcome'),id);
+  }
+});
+
+test('coverage planning honours explicit edge requirements even for ordinary HTTPS/database profiles',()=>{
+  const report=JSON.parse(fs.readFileSync(new URL('../reports/coverage-matrix.json',import.meta.url),'utf8'));
+  for(const id of ids){
+    const system=report.systems.find(x=>x.id===id);
+    assert.ok(system,id+' missing from coverage matrix');
+    assert.equal(system.recommendedRoute,'site-edge-gateway',id);
   }
 });
 
