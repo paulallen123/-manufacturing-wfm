@@ -23,26 +23,27 @@ test('fails closed for a credential-bearing service on an unprotected unsigned b
   });
 
   assert.equal(result.ok, false);
+  assert.equal(result.contained, false);
   assert.match(result.failures.join('\n'), /unprotected branch/);
   assert.match(result.failures.join('\n'), /unsigned or unverified/);
   assert.match(result.failures.join('\n'), /successful checks/);
 });
 
-test('does not treat an auto-deploy watch hold alone as containment because manual redeploy can still build repository code', () => {
+test('treats the Railway watch hold as auto-trigger-only, never full containment of an unsafe source', () => {
   const result = assessSourceBoundDeployment({
     source: { ...source, checkSuites: false },
     variableNames: ['WFM_STAGING_PASSWORD'],
     branchSnapshot: branch({ protectedBranch: false, verified: false }),
-    watchPatterns: ['__security_hold__/DO_NOT_MATCH'],
-    dockerfilePath: 'Dockerfile'
+    watchPatterns: ['__security_hold__/DO_NOT_MATCH']
   });
 
   assert.equal(result.ok, false);
   assert.equal(result.contained, false);
-  assert.match(result.failures.join('\n'), /manual\/redeploy build/);
+  assert.equal(result.autoTriggerHoldActive, true);
+  assert.match(result.failures.join('\n'), /explicit redeploy can still rebuild/);
 });
 
-test('accepts a narrowly contained source only when both source triggers and manual repository builds are disarmed', () => {
+test('an arbitrary Dockerfile-path marker cannot turn an unsafe source into contained', () => {
   const result = assessSourceBoundDeployment({
     source: { ...source, checkSuites: false },
     variableNames: ['WFM_STAGING_PASSWORD'],
@@ -51,21 +52,9 @@ test('accepts a narrowly contained source only when both source triggers and man
     dockerfilePath: '__security_hold__/NO_DOCKERFILE'
   });
 
-  assert.equal(result.ok, true);
-  assert.equal(result.contained, true);
-});
-
-test('requires source trigger hold as well as the manual-build hold', () => {
-  const result = assessSourceBoundDeployment({
-    source: { ...source, checkSuites: false },
-    variableNames: ['WFM_STAGING_PASSWORD'],
-    branchSnapshot: branch({ protectedBranch: false, verified: false }),
-    dockerfilePath: '__security_hold__/NO_DOCKERFILE'
-  });
-
   assert.equal(result.ok, false);
   assert.equal(result.contained, false);
-  assert.match(result.failures.join('\n'), /source triggers are still armed/);
+  assert.equal(result.autoTriggerHoldActive, true);
 });
 
 test('requires checks even when the branch itself is protected and signed', () => {
@@ -88,6 +77,7 @@ test('passes an approved protected signed source that waits for checks', () => {
 
   assert.equal(result.ok, true);
   assert.equal(result.contained, false);
+  assert.equal(result.autoTriggerHoldActive, false);
 });
 
 test('does not classify a source with no credential-like variables as a secret-bearing deployment', () => {
