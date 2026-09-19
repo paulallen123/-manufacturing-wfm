@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "proof": "current-candidate-hosted-role-browser-matrix",
+  "status": "PASS",
+  "candidate_sha": "4962412edf56bed407fd8ab368bd56e26f96f6cc",
+  "target_service": "wfm-one-day-enterprise-v1",
+  "target_deployment_id": "d5eb8771-0868-484b-adce-592f70ea773e",
+  "proof_service": "wfm-vector-mobile-proof",
+  "proof_deployment_id": "859d0c91-643a-45ef-b2b6-994e6f1b2c50",
+  "target_origin": "https://wfm-one-day-enterprise-v1-production.up.railway.app",
+  "runtime_boundary": {
+    "fixture_only": true,
+    "production_approved": false,
+    "real_provider_claim": false,
+    "real_customer_implementation_claim": false
+  },
+  "browser": {
+    "engine": "Chromium via Playwright 1.63.0",
+    "desktop_viewport": "1440x1000",
+    "mobile_viewport": "390x844",
+    "roles": 5,
+    "role_first_navigation_clicks": 4,
+    "vector_marker": "VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1",
+    "retired_markers_absent": [
+      "WFM_UX_RESET_CYCLE11_BEGIN",
+      "WFM_UX_RESET_CYCLE12_BEGIN",
+      "VECTOR_PRIORITY_BRIDGE_V1"
+    ]
+  },
+  "contexts": [
+    {"slug":"manager","role":"manager","tenant":"northstar-demo","unauthenticated_bootstrap":401,"login":200,"payroll":403,"surface":"/api/time-review","surface_status":200,"navigation_clicked":"Time & Attendance","screenshot_sha256_prefix":"61aef660fa0b0f78"},
+    {"slug":"employee","role":"employee","tenant":"northstar-demo","unauthenticated_bootstrap":401,"login":200,"payroll":403,"surface":"/api/personal","surface_status":200,"navigation_clicked":null,"screenshot_sha256_prefix":"772c0a3e4753f609"},
+    {"slug":"payroll","role":"payroll_admin","tenant":"northstar-demo","unauthenticated_bootstrap":401,"login":200,"payroll":200,"surface":"/api/payroll-run","surface_status":200,"navigation_clicked":"Reports","screenshot_sha256_prefix":"2337ab912dbadf7a"},
+    {"slug":"company-admin","role":"director","tenant":"northstar-demo","unauthenticated_bootstrap":401,"login":200,"payroll":200,"surface":"/api/onboarding","surface_status":200,"navigation_clicked":"Integrations","screenshot_sha256_prefix":"7c5d184c3135ffd9"},
+    {"slug":"isolation-manager","role":"manager","tenant":"isolation-test","unauthenticated_bootstrap":401,"login":200,"payroll":403,"surface":"/api/bootstrap","surface_status":200,"navigation_clicked":"Time & Attendance","screenshot_sha256_prefix":"61aef660fa0b0f78"}
+  ],
+  "assertions": {
+    "vector_asset_http_200": true,
+    "vector_shell_executed": true,
+    "vector_dom_present": true,
+    "desktop_horizontal_overflow": false,
+    "mobile_horizontal_overflow": false,
+    "keyboard_focus_advanced": true,
+    "uncaught_page_errors": 0,
+    "full_page_screenshot_each_context": true
+  },
+  "release_control": {
+    "integration_service_aligned": false,
+    "integration_service_hold_preserved": true,
+    "feature_branch_protected": false,
+    "candidate_commit_verified": false,
+    "repo_server_side_rulesets_present": false
+  },
+  "ci": {
+    "vector_only_ui_guard_run_id": 35451495031,
+    "attempt": 2,
+    "job_id": 105924544597,
+    "conclusion": "failure",
+    "runner_id": 0,
+    "steps_executed": 0,
+    "classification": "runner_not_allocated_infrastructure_admission_failure"
+  },
+  "remaining_hard_gates": [
+    "protected and verified release authority before lifting integration hold",
+    "same exact candidate SHA on both required existing Railway services",
+    "authorised real-provider sandbox/test API proof",
+    "real zero-human customer/environment provisioning proof"
+  ]
+}
