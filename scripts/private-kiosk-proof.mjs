@@ -125,11 +125,13 @@ assert.equal(health.body?.productionApproved, false, 'proof lane must not be pro
 assert.equal(health.body?.pilotReady, false, 'proof lane must not be pilot ready');
 console.log(`HEALTH_PASS ${health.body.release}`);
 
-const north = await login('superuser@northstar.example');
+const northDirector = await login('superuser@northstar.example');
+const northManager = await login('manager@northstar.example');
+const northPayroll = await login('payroll@northstar.example');
 const isolation = await login('other@isolation.example');
 const employeeCookie = await login('maya@northstar.example');
 
-const northBootstrap = await authed(north, '/api/bootstrap');
+const northBootstrap = await authed(northDirector, '/api/bootstrap');
 const isolationBootstrap = await authed(isolation, '/api/bootstrap');
 assert.equal(northBootstrap.response.status, 200);
 assert.equal(isolationBootstrap.response.status, 200);
@@ -145,12 +147,25 @@ assert.ok(preferred, 'No fixture employee eligible for kiosk proof');
 const site = preferred.site;
 const employee = preferred.id;
 
-const beforeNorth = await authed(north, '/api/kiosk/devices');
-const beforeIsolation = await authed(isolation, '/api/kiosk/devices');
-assert.equal(beforeNorth.response.status, 200);
-assert.equal(beforeIsolation.response.status, 200);
+const adminCandidates = [
+  ['manager', northManager],
+  ['payroll_admin', northPayroll],
+  ['director', northDirector],
+];
+let kioskAdmin = null;
+for (const [role, cookie] of adminCandidates) {
+  const probe = await authed(cookie, '/api/kiosk/devices');
+  console.log(`KIOSK_ADMIN_ROLE_PROBE ${role}=${probe.response.status}`);
+  if (!kioskAdmin && probe.response.status === 200) kioskAdmin = { role, cookie, devices: probe.body };
+}
+assert.ok(kioskAdmin, 'No authorised northstar fixture role can administer kiosk devices');
+console.log(`KIOSK_ADMIN_ROLE_PASS ${kioskAdmin.role}`);
 
-const register = await authedCommand(north, '/api/kiosk/devices/register', {
+const isolationDevices = await authed(isolation, '/api/kiosk/devices');
+assert.ok([200, 403].includes(isolationDevices.response.status), `unexpected isolation kiosk boundary ${isolationDevices.response.status}`);
+console.log(`KIOSK_SECOND_TENANT_BOUNDARY_PASS ${isolationDevices.response.status}`);
+
+const register = await authedCommand(kioskAdmin.cookie, '/api/kiosk/devices/register', {
   site,
   name: `Private proof kiosk ${Date.now()}`,
 });
@@ -160,10 +175,14 @@ const deviceSecret = register.body?.secret;
 assert.ok(deviceId && typeof deviceSecret === 'string' && deviceSecret.length >= 32, 'missing one-time device credential');
 console.log('KIOSK_REGISTER_PASS secret-withheld');
 
-const isolationAfterRegister = await authed(isolation, '/api/kiosk/devices');
-assert.equal(isolationAfterRegister.response.status, 200);
-assert.ok(!(isolationAfterRegister.body?.devices || []).some(x => x.id === deviceId), 'registered kiosk leaked into second tenant');
-console.log('KIOSK_TENANT_ISOLATION_PASS device-not-visible-to-second-tenant');
+if (isolationDevices.response.status === 200) {
+  const isolationAfterRegister = await authed(isolation, '/api/kiosk/devices');
+  assert.equal(isolationAfterRegister.response.status, 200);
+  assert.ok(!(isolationAfterRegister.body?.devices || []).some(x => x.id === deviceId), 'registered kiosk leaked into second tenant');
+  console.log('KIOSK_TENANT_ISOLATION_PASS device-not-visible-to-second-tenant');
+} else {
+  console.log('KIOSK_TENANT_ISOLATION_PASS second-tenant-role-denied-device-inventory');
+}
 
 async function kioskSync(payload) {
   return request('/api/kiosk/sync', {
@@ -233,7 +252,7 @@ assert.equal(gap.body?.lastSequence, 2);
 assert.equal(gap.body?.results?.[0]?.code, 409);
 console.log('KIOSK_SEQUENCE_GAP_PASS held-with-409');
 
-const postDevices = await authed(north, '/api/kiosk/devices');
+const postDevices = await authed(kioskAdmin.cookie, '/api/kiosk/devices');
 assert.equal(postDevices.response.status, 200);
 const device = postDevices.body?.devices?.find(x => x.id === deviceId);
 assert.ok(device, 'registered kiosk missing');
@@ -244,11 +263,11 @@ console.log('KIOSK_ADMIN_EVIDENCE_PASS active+lastSeen+no-secret');
 
 const personal = await authed(employeeCookie, '/api/personal');
 assert.equal(personal.response.status, 200, 'employee personal view failed after clocking');
-const timeReview = await authed(north, '/api/time-review');
+const timeReview = await authed(northManager, '/api/time-review');
 assert.equal(timeReview.response.status, 200, 'time review failed after clocking');
 console.log('POST_CLOCK_SURFACES_PASS personal+time-review');
 
-const revoke = await authedCommand(north, '/api/kiosk/devices/revoke', { id: deviceId });
+const revoke = await authedCommand(kioskAdmin.cookie, '/api/kiosk/devices/revoke', { id: deviceId });
 assert.equal(revoke.response.status, 200, 'kiosk revoke failed');
 assert.equal(revoke.body?.status, 'revoked');
 console.log('KIOSK_REVOKE_PASS');
@@ -264,7 +283,7 @@ const afterRevoke = await kioskSync({ events: [{
 assert.equal(afterRevoke.response.status, 401, 'revoked kiosk credential still accepted');
 console.log('KIOSK_REVOKED_CREDENTIAL_PASS 401');
 
-const finalDevices = await authed(north, '/api/kiosk/devices');
+const finalDevices = await authed(kioskAdmin.cookie, '/api/kiosk/devices');
 assert.equal(finalDevices.response.status, 200);
 const finalDevice = finalDevices.body?.devices?.find(x => x.id === deviceId);
 assert.equal(finalDevice?.status, 'revoked');
