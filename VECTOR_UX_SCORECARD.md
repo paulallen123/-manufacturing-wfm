@@ -1,5 +1,53 @@
 # Vector UX/CX scorecard
 
+## 2026-09-19 — Vector r4: source-bound identity and upcoming-leave evidence
+
+### Journey reviewed
+Factory/operations manager Vector Home → signed-in identity/site context → upcoming leave summary → owning Absence & Leave workflow.
+
+### NEW-UI lineage confirmation
+Work remains owned only by the approved Vector Workforce Operations presentation on `feature/one-day-enterprise-implementation-v1` / PR #79. No legacy/0.6.139 presentation code, retired overlay, staging/prod surface, replacement branch, PR or duplicate component was modified.
+
+### Reuse / duplicate-work decision
+- Reused the existing authoritative in-browser `me()` identity object already consumed by Vector's scoped workforce statistics; no second identity service or cached UI identity model was created.
+- Reused `data.requests` and the existing `person()` resolver for read-only leave summarisation; no approval, entitlement, coverage or leave calculation moved into Vector.
+- Reused the existing `leaveRows()` / `leaveMarkup()` ownership and existing `leave` route; no second calendar, request list or leave workflow was created.
+- Extended the existing `scripts/validate-vector-only-ui.mjs` guard and existing Vector-only exact-runtime workflow only.
+
+### Research delta
+No competitor or generic UX research was repeated. The unresolved question was directly answerable from current code. Vector had two hard-coded presentation identities (`Paul Allen`, `Rugby Plant`) and labelled all `pending` requests as `Upcoming leave (next 7 days)` without actually applying a seven-day date window. That could show the wrong signed-in person/site and present unapproved requests as scheduled leave.
+
+### Hypothesis
+If identity/site context comes only from structured signed-in source state with neutral fallback, and the Home leave summary shows only approved requests with a valid start date inside the next seven days, managers should be less likely to act on fabricated context or mistake pending requests for scheduled absence while retaining one-click access to the authoritative leave workflow.
+
+### Exact implementation delta
+- Added `VECTOR_IDENTITY_SOURCE_BOUND_V1` and removed hard-coded `Paul Allen` / `Rugby Plant` presentation values.
+- Vector now reads a display name only from structured `me().name`; site is accepted only from explicit structured name fields (`siteName`, `plantName`, `locationName` or nested `.name`). Missing identity/site stays neutral as `Signed-in user` / `Current workspace`; Vector does not infer names or locations from hidden presentation text.
+- Greeting falls back to `there` and the welcome sentence to `your current workspace` when site context is unavailable.
+- Added `VECTOR_LEAVE_SOURCE_BOUND_V1`.
+- `leaveRows()` no longer treats `pending` requests as upcoming leave. It admits only source requests whose status is explicitly `approved`, whose start/date parses successfully, and whose date is from today up to (but not including) seven days later; rows are sorted by date before the existing four-row density cap.
+- Leave person name uses the structured `person()` record or explicit `employeeName`; department/team/area are shown only when explicit named fields exist, otherwise the summary says `Source-confirmed leave`.
+- If the adapter cannot produce a source-confirmed row, the card remains a neutral route back to Absence & Leave instead of inventing an employee/date.
+- Added explicit accessibility/evidence wording: only approved source requests dated within the next seven days are shown.
+- Extended the existing repository guard to fail on hard-coded user/site context, loss of neutral identity fallback, reintroduction of `pending` as upcoming leave, loss of the seven-day filter, or loss of either evidence marker.
+
+### Focused / affected validation
+Exact product-code head `eacbc53a83145fbde742e6f97dd3d1356f912077` passed Vector-only run `35433767094`. The focused repository guard passed first, including the new identity/leave contract checks; the exact Docker runtime build passed; built-asset proof then passed that Vector remains the only active presentation. This proves source/build composition and regression boundaries. It does not claim authenticated hosted-role rendering, real screen-reader behaviour or measured user task performance.
+
+### UX scorecard impact
+- Calm by default: improved — fabricated identity/site context and unapproved leave are removed from Home.
+- Dense on demand: unchanged-to-improved — the same compact surfaces remain, with unsupported detail withheld and authoritative workflows one click away.
+- Explainability: improved — identity and leave now have explicit source boundaries and neutral fallback.
+- Accessibility: structurally improved through truthful labels/evidence wording; real assistive-technology behaviour remains unverified.
+- Authority/auditability: preserved — leave approval, entitlement, coverage and writes remain source-owned.
+- Development efficiency: improved — existing identity objects, leave adapter, route, guard and workflow were extended rather than duplicated.
+
+### Still unverified
+Authenticated hosted rendering of real role/site names, real screen-reader behaviour, measured first-click/time-on-task/error rate, and whether a richer authoritative site-name contract should be exposed by bootstrap rather than relying on the existing signed-in in-browser record.
+
+### Single next highest-value NEW-UI action
+Audit the Home notification count and `Items to review` source adapter. The current count still derives from hidden presentation-card quantity rather than an explicit structured action-state contract; bind it only to source-backed actionable state/freshness if available, otherwise keep the badge neutral/absent rather than imply an authoritative workload count.
+
 ## 2026-09-19 — Vector r3: source-backed KPI evidence boundary
 
 ### Journey reviewed
