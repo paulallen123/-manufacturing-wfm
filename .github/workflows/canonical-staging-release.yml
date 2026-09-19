@@ -39,6 +39,8 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-github-release-authority.mjs
+          echo "GITHUB_RELEASE_AUTHORITY=PASS"
           staging_sha=""
           for attempt in $(seq 1 30); do
             staging_sha="$(curl --fail --silent --show-error \
