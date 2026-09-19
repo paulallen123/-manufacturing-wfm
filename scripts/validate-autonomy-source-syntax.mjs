@@ -129,12 +129,24 @@ for (const line of requiredWorkflowPaths) {
 
 const classifyAnchorIndex = workflow.indexOf('- name: Classify canonical trust anchor');
 const portableProofIndex = workflow.indexOf('- name: Run canonical portable autonomy proof');
+const revalidateIndex = workflow.indexOf('- name: Revalidate canonical binding at proof completion');
+const receiptIndex = workflow.indexOf('- name: Assert portable proof receipt');
 const releaseFailClosedIndex = workflow.indexOf('- name: Enforce release evidence fail-closed boundary');
 assert.ok(classifyAnchorIndex >= 0, 'Workflow must classify the canonical trust anchor.');
 assert.ok(portableProofIndex > classifyAnchorIndex, 'Portable proof must execute after canonical trust-anchor classification.');
-assert.ok(releaseFailClosedIndex > portableProofIndex, 'Release fail-closed enforcement must happen after the portable logic proof.');
+assert.ok(revalidateIndex > portableProofIndex, 'Canonical binding must be revalidated after the portable proof.');
+assert.ok(receiptIndex > revalidateIndex, 'Proof receipt assertion must happen after canonical revalidation.');
+assert.ok(releaseFailClosedIndex > receiptIndex, 'Release fail-closed enforcement must happen after the portable logic proof and receipt assertion.');
 assert.ok(workflow.includes('WFM_CANONICAL_TRUST_ANCHOR_PROTECTED'), 'Workflow must carry canonical trust-anchor state into the proof.');
 assert.ok(workflow.includes('FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED'), 'Workflow must preserve the explicit unprotected-anchor release blocker.');
+
+const revalidateSection = workflow.slice(revalidateIndex, receiptIndex);
+assert.equal(revalidateSection.includes('git fetch --no-tags origin integration/canonical'), false, 'Revalidation must not depend on unauthenticated git fetch after persist-credentials:false checkout.');
+assert.ok(revalidateSection.includes('GH_TOKEN: ${{ github.token }}'), 'Revalidation must use the read-only workflow token explicitly.');
+assert.ok(revalidateSection.includes('/branches/integration/canonical'), 'Revalidation must query the live canonical branch state.');
+assert.ok(revalidateSection.includes('FINAL_CANONICAL_SHA'), 'Revalidation must compare the live canonical SHA with the proof binding.');
+assert.ok(revalidateSection.includes('$WFM_CANONICAL_BASE_SHA:release/release-policy.json'), 'Revalidation must recompute the policy blob from the immutable bound canonical SHA.');
+assert.ok(revalidateSection.includes('$WFM_CANONICAL_BASE_SHA'), 'Revalidation must recompute the merge tree from the immutable bound canonical SHA.');
 
 const portableProofSource = fs.readFileSync(path.join(root, 'scripts/run-portable-autonomy-proof.mjs'), 'utf8');
 for (const required of [
@@ -181,6 +193,8 @@ console.log(JSON.stringify({
   workflowCriticalPathsPresent: true,
   canonicalTrustAnchorClassificationRequired: true,
   exactRuntimeLogicProofContinuesWhenReleaseTrustBlocked: true,
+  authenticatedCanonicalRevalidationRequired: true,
+  unauthenticatedPostCheckoutGitFetchDenied: true,
   unprotectedCanonicalReleaseEvidenceFailsClosed: true,
   productionMutation: false,
   customerMutation: false,
