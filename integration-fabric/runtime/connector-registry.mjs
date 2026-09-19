@@ -47,7 +47,8 @@ function discoveryStrategy(profileIds,edgeRequired){
   return 'vendor-specific-discovery';
 }
 
-function nextEvidence(level){
+function nextEvidence(level,evidenceBlockers=[]){
+  if(evidenceBlockers.length) return 'resolve-security-evidence-blockers-before-authentication';
   switch(level){
     case 'discovery-queued': return 'spec-verification';
     case 'spec-verified': return 'sandbox-authentication';
@@ -66,6 +67,7 @@ export function buildConnectorRegistry(){
   const connectors=catalog.systems.map(system=>{
     const adapters=profilesFor(system);
     const profileIds=adapters.map(x=>x.id);
+    const evidenceBlockers=Array.isArray(system.securityEvidenceBlockers)?[...system.securityEvidenceBlockers]:[];
     // Vendor/system evidence can explicitly require an edge for protected on-prem services or explicitly waive
     // protocol inference for vendor-managed cloud endpoints (for example cloud MQTT). Only infer when unset.
     const edgeRequired=typeof system.customerEdgeRequired==='boolean'
@@ -82,7 +84,8 @@ export function buildConnectorRegistry(){
       adapters,
       canonicalTargets:canonicalTargets(system),
       discoveryStrategy:discoveryStrategy(profileIds,edgeRequired),
-      nextEvidenceGate:nextEvidence(system.testLevel),
+      nextEvidenceGate:nextEvidence(system.testLevel,evidenceBlockers),
+      evidenceBlockers,
       security:{
         readOnlyDefault:true,
         writeEnabled:false,
