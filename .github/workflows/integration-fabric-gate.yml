@@ -19,8 +19,11 @@ on:
 permissions:
   contents: read
 
+# A branch with an open PR receives both push and pull_request events. Key concurrency to the
+# source branch for both event types so one evidence run survives instead of paying for two
+# identical full gates. This does not remove any gate or allow a PR to merge without validation.
 concurrency:
-  group: integration-fabric-${{ github.ref }}
+  group: integration-fabric-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
