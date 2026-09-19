@@ -1,0 +1,156 @@
+name: 0.6.76-R1M1 Packaged Self Verification
+
+on:
+  push:
+    branches: ['proof/0.6.76-r1m1-selfverify-20260919']
+    paths:
+      - 'proof/self-verify.mjs'
+      - 'Dockerfile.selfverify'
+      - '.github/workflows/r1m1-selfverify-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  self-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repair candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 10
+          persist-credentials: false
+
+      - name: Prove immutable frozen lineage and bounded repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          FROZEN=0150d686b21b1d5a7da046554df3c2f7baec5991
+          git cat-file -e "$FROZEN^{commit}"
+          test "$(git merge-base "$FROZEN" HEAD)" = "$FROZEN"
+          test "$(git rev-parse "$FROZEN:Dockerfile")" = "$(git rev-parse HEAD:Dockerfile)"
+          test "$(git rev-parse "$FROZEN:artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz")" = "$(git rev-parse HEAD:artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz)"
+          printf '%s\n' \
+            '.github/workflows/r1m1-selfverify-proof.yml' \
+            'Dockerfile.selfverify' \
+            'proof/self-verify.mjs' > /tmp/expected-files
+          git diff --name-only "$FROZEN" HEAD | sort > /tmp/actual-files
+          diff -u /tmp/expected-files /tmp/actual-files
+          echo 'frozen-lineage=PASS'
+
+      - name: Build frozen base and isolated self-verifying candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz' | sha256sum -c -
+          docker build --pull=false -t wfm-r1-frozen-base .
+          docker build --pull=false --build-arg BASE_IMAGE=wfm-r1-frozen-base -f Dockerfile.selfverify -t wfm-r1m1-selfverify .
+          test "$(docker inspect --format '{{.Config.User}}' wfm-r1m1-selfverify)" = 'node'
+          docker run --rm --entrypoint sh wfm-r1m1-selfverify -ec '
+            test -r /app/proof/self-verify.mjs
+            test ! -w /app/proof/self-verify.mjs
+            test ! -e /usr/local/lib/node_modules/npm
+            test ! -e /usr/local/lib/node_modules/corepack
+          '
+          echo 'packaged-self-verifier=PASS'
+
+      - name: Run private synthetic self verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          password='R1M1-Synthetic-CI-Only-2026-Long!'
+          volume="wfm-r1m1-state-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          docker volume create "$volume" >/dev/null
+          cleanup() {
+            docker rm -f wfm-r1m1-one wfm-r1m1-two >/dev/null 2>&1 || true
+            docker volume rm "$volume" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          start_candidate() {
+            local name="$1"
+            docker run -d --name "$name" --network none \
+              -v "$volume:/state" \
+              -e PORT=3000 \
+              -e NODE_ENV=staging \
+              -e NODE_OPTIONS=--experimental-sqlite \
+              -e WFM_HOSTED_STAGING=true \
+              -e WFM_PUBLIC_ORIGIN=https://wfm-selfverify.invalid \
+              -e WFM_DB=/state/wfm-r1m1.sqlite \
+              -e WFM_STAGING_PASSWORD="$password" \
+              wfm-r1m1-selfverify >/dev/null
+            ready=0
+            for _ in $(seq 1 60); do
+              if docker exec "$name" node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"; then
+                ready=1
+                break
+              fi
+              sleep 0.25
+            done
+            if [ "$ready" != '1' ]; then
+              docker logs "$name" || true
+              exit 1
+            fi
+          }
+
+          start_candidate wfm-r1m1-one
+          docker exec wfm-r1m1-one node /app/proof/self-verify.mjs | tee selfverify-first.json
+          grep -q '"result": "PASS"' selfverify-first.json
+          docker rm -f wfm-r1m1-one >/dev/null
+
+          start_candidate wfm-r1m1-two
+          docker exec wfm-r1m1-two node /app/proof/self-verify.mjs | tee selfverify-after-restart.json
+          grep -q '"result": "PASS"' selfverify-after-restart.json
+          echo 'restart-self-verification=PASS'
+
+          docker exec wfm-r1m1-two sh -lc "cd / && tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - app | gzip -n > /tmp/wfm-0.6.76-r1m1-runtime.tar.gz"
+          docker cp wfm-r1m1-two:/tmp/wfm-0.6.76-r1m1-runtime.tar.gz ./wfm-0.6.76-r1m1-runtime.tar.gz
+
+      - name: Seal reproducible proof evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_sha="$(sha256sum wfm-0.6.76-r1m1-runtime.tar.gz | awk '{print $1}')"
+          verifier_sha="$(sha256sum proof/self-verify.mjs | awk '{print $1}')"
+          cat > WFM_0_6_76_R1M1_SELFVERIFY.json <<JSON
+          {
+            "schemaVersion": 1,
+            "release": "0.6.76-r1m1-selfverify-candidate",
+            "frozenBaseCommit": "0150d686b21b1d5a7da046554df3c2f7baec5991",
+            "baseRelease": "0.6.76-hosted-staging-rc1",
+            "baseRuntimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+            "candidateCommit": "${GITHUB_SHA}",
+            "candidateRuntimeSha256": "$runtime_sha",
+            "selfVerifierSha256": "$verifier_sha",
+            "networkMode": "none",
+            "syntheticOnly": true,
+            "restartSelfVerification": "PASS",
+            "externalDeployment": "none",
+            "productionApproved": false,
+            "pilotReady": false,
+            "claimBoundary": "Private GitHub runner, loopback-only synthetic verification. Frozen R1 behaviour remains unchanged; R1M1 adds only an immutable packaged proof verifier layer and its workflow. No public deployment, DNS change, real employee/payroll data, communications, payments or production integrations."
+          }
+          JSON
+          sha256sum WFM_0_6_76_R1M1_SELFVERIFY.json > WFM_0_6_76_R1M1_SELFVERIFY.sha256
+          cat WFM_0_6_76_R1M1_SELFVERIFY.json
+
+      - name: Upload R1M1 evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wfm-0.6.76-r1m1-selfverify-evidence
+          path: |
+            WFM_0_6_76_R1M1_SELFVERIFY.json
+            WFM_0_6_76_R1M1_SELFVERIFY.sha256
+            wfm-0.6.76-r1m1-runtime.tar.gz
+            selfverify-first.json
+            selfverify-after-restart.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Preserve failure evidence
+        if: failure()
+        shell: bash
+        run: |
+          docker logs wfm-r1m1-one 2>/dev/null || true
+          docker logs wfm-r1m1-two 2>/dev/null || true
