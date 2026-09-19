@@ -43,3 +43,4 @@ jobs:
           node --test integration/runtime/provider-proof-profiles.test.cjs
           node --test integration/runtime/apply-handoff-ledger.test.cjs
           node --test integration/runtime/runtime-ingestion-gate.test.cjs
+          node --test integration/runtime/connection-health-summary.test.cjs
