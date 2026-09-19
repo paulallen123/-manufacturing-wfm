@@ -54,14 +54,13 @@ function restoreProjectedFocus(queue){
     if(token!==state.focusToken)return;
     const currentMarker=window.WFMUXCycle11?.returnMarker?.();
     if(!currentMarker||currentMarker.id!==marker.id)return;
-    const target=projectedTarget(queue,marker);
+    const currentQueue=document.querySelector('.vector-priority-slot > .ux11-queue')||queue;
+    const target=projectedTarget(currentQueue,marker);
     const lane=target?.closest('details');if(lane&&!lane.open)lane.open=true;
     const visible=Boolean(target?.isConnected&&!target.closest('[hidden]')&&target.getClientRects().length);
-    if(visible){
-      try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}
-      if(document.activeElement===target){try{sessionStorage.removeItem('wfmUx11Return');}catch{}return;}
-    }
-    if(attempt<20)setTimeout(()=>focus(attempt+1),40);
+    if(visible&&document.activeElement!==target){try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}}
+    if(attempt<12){setTimeout(()=>focus(attempt+1),40);return;}
+    if(visible&&document.activeElement===target){try{sessionStorage.removeItem('wfmUx11Return');}catch{}}
   };
   focus();
   return true;
