@@ -1,0 +1,286 @@
+'use strict';
+
+const { createHash } = require('node:crypto');
+
+const OUTBOX_STATES = Object.freeze({
+  PENDING: 'PENDING',
+  CLAIMED: 'CLAIMED',
+  MUTATION_STARTED: 'MUTATION_STARTED',
+  RECONCILE_REQUIRED: 'RECONCILE_REQUIRED',
+  VERIFY_REQUIRED: 'VERIFY_REQUIRED',
+  COMPLETED: 'COMPLETED',
+  QUARANTINED: 'QUARANTINED'
+});
+
+function canonical(value) {
+  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
+  if (value && typeof value === 'object') {
+    return '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + canonical(value[key])).join(',') + '}';
+  }
+  return JSON.stringify(value);
+}
+
+function sha256(value) {
+  return createHash('sha256').update(typeof value === 'string' ? value : canonical(value)).digest('hex');
+}
+
+function clone(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
+function fail(code, message, statusCode = 409) {
+  const error = new Error(message);
+  error.code = code;
+  error.statusCode = statusCode;
+  throw error;
+}
+
+function requireString(value, code, message) {
+  if (typeof value !== 'string' || value.trim() === '') fail(code, message, 400);
+  return value.trim();
+}
+
+function validateIntent(intent) {
+  if (!intent || typeof intent !== 'object') fail('WFM_OUTBOX_INTENT_REQUIRED', 'A sealed provisioning intent is required.', 400);
+  const queueKey = requireString(intent.queueKey, 'WFM_OUTBOX_QUEUE_KEY_REQUIRED', 'Provisioning queue identity is required.');
+  const intentDigest = requireString(intent.intentDigest, 'WFM_OUTBOX_DIGEST_REQUIRED', 'Provisioning intent digest is required.').toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(intentDigest)) fail('WFM_OUTBOX_DIGEST_INVALID', 'Provisioning intent digest must be SHA-256.', 400);
+  if (!intent.completionEvidence || intent.completionEvidence.authenticated !== true) {
+    fail('WFM_OUTBOX_UNAUTHENTICATED_CONTRACT', 'Only an authenticated completed-contract intent can enter provisioning.', 403);
+  }
+  if (!intent.scope || !intent.build || !intent.plan || intent.plan.creationMode !== 'fresh-provider-create' || intent.plan.isolated !== true) {
+    fail('WFM_OUTBOX_UNSAFE_INTENT', 'Provisioning intent is missing sealed scope/build/fresh-isolated plan evidence.', 400);
+  }
+  return { queueKey, intentDigest };
+}
+
+function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {}) {
+  if (!store || store.durability !== 'DURABLE_TRANSACTIONAL' || typeof store.transaction !== 'function') {
+    throw new Error('Provisioning outbox requires a durable transactional store.');
+  }
+  const leaseDuration = Math.max(1000, Number(leaseMs) || 30000);
+  const stamp = () => Number(now());
+
+  function transact(work) {
+    return store.transaction(tx => {
+      if (!tx || typeof tx.get !== 'function' || typeof tx.insert !== 'function' || typeof tx.replace !== 'function') {
+        throw new Error('Provisioning outbox transaction must support get/insert/replace.');
+      }
+      return work(tx);
+    });
+  }
+
+  function enqueue(intent) {
+    const { queueKey, intentDigest } = validateIntent(intent);
+    return transact(tx => {
+      const existing = tx.get(queueKey);
+      if (existing) {
+        if (existing.intentDigest !== intentDigest) {
+          fail('WFM_OUTBOX_IDENTITY_DRIFT', 'The same provisioning queue identity was reused for a different sealed intent.');
+        }
+        return { duplicate: true, record: clone(existing) };
+      }
+
+      const createdAt = stamp();
+      const record = {
+        schemaVersion: 1,
+        queueKey,
+        intentDigest,
+        payloadDigest: sha256(intent),
+        payload: clone(intent),
+        state: OUTBOX_STATES.PENDING,
+        version: 1,
+        generation: 0,
+        createdAt,
+        updatedAt: createdAt,
+        leaseOwner: null,
+        leaseUntil: null,
+        providerRequestId: null,
+        providerResourceId: null,
+        lastDecision: 'ENQUEUED'
+      };
+      tx.insert(queueKey, clone(record));
+      return { duplicate: false, record: clone(record) };
+    });
+  }
+
+  function claim(queueKey, workerId) {
+    const key = requireString(queueKey, 'WFM_OUTBOX_QUEUE_KEY_REQUIRED', 'Provisioning queue identity is required.');
+    const worker = requireString(workerId, 'WFM_OUTBOX_WORKER_REQUIRED', 'Provisioning worker identity is required.');
+    return transact(tx => {
+      const record = tx.get(key);
+      if (!record) fail('WFM_OUTBOX_NOT_FOUND', 'Provisioning queue item was not found.', 404);
+      const nowMs = stamp();
+
+      if (record.state === OUTBOX_STATES.MUTATION_STARTED || record.state === OUTBOX_STATES.RECONCILE_REQUIRED) {
+        return { action: 'RECONCILE_ONLY', record: clone(record) };
+      }
+      if (record.state === OUTBOX_STATES.VERIFY_REQUIRED) return { action: 'VERIFY_ONLY', record: clone(record) };
+      if (record.state === OUTBOX_STATES.COMPLETED) return { action: 'COMPLETE', record: clone(record) };
+      if (record.state === OUTBOX_STATES.QUARANTINED) return { action: 'QUARANTINED', record: clone(record) };
+      if (record.state === OUTBOX_STATES.CLAIMED && Number(record.leaseUntil) > nowMs) {
+        fail('WFM_OUTBOX_LEASE_ACTIVE', 'Provisioning queue item is already leased to another worker.');
+      }
+      if (![OUTBOX_STATES.PENDING, OUTBOX_STATES.CLAIMED].includes(record.state)) {
+        fail('WFM_OUTBOX_STATE_INVALID', 'Provisioning queue item is not claimable.');
+      }
+
+      const next = {
+        ...record,
+        state: OUTBOX_STATES.CLAIMED,
+        version: Number(record.version || 0) + 1,
+        generation: Number(record.generation || 0) + 1,
+        updatedAt: nowMs,
+        leaseOwner: worker,
+        leaseUntil: nowMs + leaseDuration,
+        lastDecision: record.state === OUTBOX_STATES.CLAIMED ? 'LEASE_RECOVERED' : 'CLAIMED'
+      };
+      tx.replace(key, clone(next));
+      return {
+        action: 'DISPATCH_ALLOWED',
+        token: {
+          queueKey: key,
+          intentDigest: next.intentDigest,
+          workerId: worker,
+          generation: next.generation
+        },
+        record: clone(next)
+      };
+    });
+  }
+
+  function assertLiveToken(record, token, nowMs) {
+    if (!token || typeof token !== 'object') fail('WFM_OUTBOX_TOKEN_REQUIRED', 'Provisioning lease token is required.', 400);
+    if (record.queueKey !== token.queueKey || record.intentDigest !== token.intentDigest || record.leaseOwner !== token.workerId || Number(record.generation) !== Number(token.generation)) {
+      fail('WFM_OUTBOX_STALE_WORKER', 'Provisioning worker no longer owns this queue item.');
+    }
+    if (record.state !== OUTBOX_STATES.CLAIMED) fail('WFM_OUTBOX_NOT_CLAIMED', 'Provider mutation cannot start from the current queue state.');
+    if (Number(record.leaseUntil) <= nowMs) fail('WFM_OUTBOX_LEASE_EXPIRED', 'Provisioning worker lease expired before provider mutation started.');
+  }
+
+  function beginMutation(token) {
+    return transact(tx => {
+      const record = tx.get(token && token.queueKey);
+      if (!record) fail('WFM_OUTBOX_NOT_FOUND', 'Provisioning queue item was not found.', 404);
+      const nowMs = stamp();
+      assertLiveToken(record, token, nowMs);
+      const providerRequestId = 'wfm-create-' + sha256({ queueKey: record.queueKey, intentDigest: record.intentDigest }).slice(0, 40);
+      const next = {
+        ...record,
+        state: OUTBOX_STATES.MUTATION_STARTED,
+        version: Number(record.version || 0) + 1,
+        updatedAt: nowMs,
+        providerRequestId,
+        lastDecision: 'PROVIDER_MUTATION_INTENT_COMMITTED'
+      };
+      tx.replace(record.queueKey, clone(next));
+      return { providerRequestId, record: clone(next) };
+    });
+  }
+
+  function recordProviderOutcome(token, outcome = {}) {
+    return transact(tx => {
+      const record = tx.get(token && token.queueKey);
+      if (!record) fail('WFM_OUTBOX_NOT_FOUND', 'Provisioning queue item was not found.', 404);
+      if (!token || record.queueKey !== token.queueKey || record.intentDigest !== token.intentDigest || Number(record.generation) !== Number(token.generation) || record.leaseOwner !== token.workerId) {
+        fail('WFM_OUTBOX_STALE_WORKER', 'Provisioning worker no longer owns this provider mutation.');
+      }
+      if (record.state !== OUTBOX_STATES.MUTATION_STARTED) fail('WFM_OUTBOX_MUTATION_NOT_STARTED', 'Provider mutation outcome cannot be recorded from the current state.');
+
+      const result = String(outcome.result || '').toUpperCase();
+      let state;
+      let lastDecision;
+      if (result === 'CONFIRMED_CREATED') {
+        if (!outcome.providerResourceId) fail('WFM_OUTBOX_PROVIDER_RESOURCE_REQUIRED', 'Confirmed provider creation requires a resource identity.', 400);
+        state = OUTBOX_STATES.VERIFY_REQUIRED;
+        lastDecision = 'INDEPENDENT_VERIFICATION_REQUIRED';
+      } else if (result === 'AMBIGUOUS') {
+        state = OUTBOX_STATES.RECONCILE_REQUIRED;
+        lastDecision = 'READ_ONLY_RECONCILIATION_REQUIRED';
+      } else if (result === 'REJECTED') {
+        state = OUTBOX_STATES.QUARANTINED;
+        lastDecision = 'PROVIDER_REJECTED';
+      } else {
+        fail('WFM_OUTBOX_PROVIDER_OUTCOME_INVALID', 'Provider outcome must be confirmed-created, ambiguous or rejected.', 400);
+      }
+
+      const nowMs = stamp();
+      const next = {
+        ...record,
+        state,
+        version: Number(record.version || 0) + 1,
+        updatedAt: nowMs,
+        providerResourceId: outcome.providerResourceId || null,
+        leaseUntil: null,
+        lastDecision
+      };
+      tx.replace(record.queueKey, clone(next));
+      return clone(next);
+    });
+  }
+
+  function recordReconciliation(queueKey, result = {}) {
+    const key = requireString(queueKey, 'WFM_OUTBOX_QUEUE_KEY_REQUIRED', 'Provisioning queue identity is required.');
+    return transact(tx => {
+      const record = tx.get(key);
+      if (!record) fail('WFM_OUTBOX_NOT_FOUND', 'Provisioning queue item was not found.', 404);
+      if (![OUTBOX_STATES.MUTATION_STARTED, OUTBOX_STATES.RECONCILE_REQUIRED].includes(record.state)) {
+        fail('WFM_OUTBOX_RECONCILIATION_NOT_REQUIRED', 'Read-only provider reconciliation is not required for this item.');
+      }
+      const status = String(result.status || '').toUpperCase();
+      const nowMs = stamp();
+      let next;
+      if (status === 'FOUND') {
+        if (!result.providerResourceId) fail('WFM_OUTBOX_PROVIDER_RESOURCE_REQUIRED', 'Reconciliation found an environment but no resource identity.', 400);
+        next = { ...record, state: OUTBOX_STATES.VERIFY_REQUIRED, providerResourceId: result.providerResourceId, lastDecision: 'RECONCILED_FOUND_VERIFY', version: record.version + 1, updatedAt: nowMs, leaseUntil: null };
+      } else if (status === 'NOT_FOUND') {
+        // Safe default: absence does not authorize another create. Provider-specific retry authority is required.
+        next = { ...record, state: OUTBOX_STATES.QUARANTINED, lastDecision: 'RECONCILED_NOT_FOUND_NO_BLIND_RETRY', version: record.version + 1, updatedAt: nowMs, leaseUntil: null };
+      } else {
+        next = { ...record, state: OUTBOX_STATES.RECONCILE_REQUIRED, lastDecision: 'RECONCILIATION_STILL_AMBIGUOUS', version: record.version + 1, updatedAt: nowMs, leaseUntil: null };
+      }
+      tx.replace(key, clone(next));
+      return clone(next);
+    });
+  }
+
+  function recordIndependentVerification(queueKey, verification = {}) {
+    const key = requireString(queueKey, 'WFM_OUTBOX_QUEUE_KEY_REQUIRED', 'Provisioning queue identity is required.');
+    return transact(tx => {
+      const record = tx.get(key);
+      if (!record) fail('WFM_OUTBOX_NOT_FOUND', 'Provisioning queue item was not found.', 404);
+      if (record.state !== OUTBOX_STATES.VERIFY_REQUIRED) fail('WFM_OUTBOX_VERIFY_NOT_REQUIRED', 'Independent readiness verification is not required for this item.');
+      if (verification.independent !== true || !verification.verifierId) fail('WFM_OUTBOX_VERIFIER_NOT_INDEPENDENT', 'An independent verifier identity is required.', 403);
+      const checks = verification.checks || {};
+      const required = ['health', 'security', 'isolation', 'approvedBuild', 'secrets', 'network', 'readiness'];
+      const passed = required.every(name => checks[name] === true);
+      const nowMs = stamp();
+      const next = {
+        ...record,
+        state: passed ? OUTBOX_STATES.COMPLETED : OUTBOX_STATES.QUARANTINED,
+        version: Number(record.version || 0) + 1,
+        updatedAt: nowMs,
+        leaseOwner: null,
+        leaseUntil: null,
+        lastDecision: passed ? 'INDEPENDENTLY_VERIFIED_READY' : 'READINESS_CHECK_FAILED',
+        verificationDigest: sha256({ providerResourceId: record.providerResourceId, verifierId: verification.verifierId, checks })
+      };
+      tx.replace(key, clone(next));
+      return clone(next);
+    });
+  }
+
+  function get(queueKey) {
+    const key = requireString(queueKey, 'WFM_OUTBOX_QUEUE_KEY_REQUIRED', 'Provisioning queue identity is required.');
+    return transact(tx => clone(tx.get(key)));
+  }
+
+  return { enqueue, claim, beginMutation, recordProviderOutcome, recordReconciliation, recordIndependentVerification, get };
+}
+
+module.exports = {
+  OUTBOX_STATES,
+  createProvisioningOutbox,
+  sha256,
+  canonical
+};
