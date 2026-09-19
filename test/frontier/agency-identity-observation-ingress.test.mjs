@@ -90,16 +90,20 @@ test('privacy boundary keeps raw subject, badge, photo, signature, body and secr
   assert.doesNotMatch(serialized,/badge-raw-123|BADGE-123|RAW-PHOTO/);assert.equal(serialized.includes(input.rawBody),false);assert.equal(serialized.includes(input.headers['x-wfm-signature']),false);assert.equal(serialized.includes(SECRET),false);
 });
 
-test('PostgreSQL store acquires the assignment-scoped transaction lock before provenance and observation writes',async()=>{
+test('PostgreSQL store uses only the least-privilege security-definer append boundary and fails closed on malformed boundary results',async()=>{
   const row={tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:ASSIGNMENT,assuranceVersionId:ASSURANCE,sourceSystemId:'turnstile',sourceEventFingerprint:'d'.repeat(32),subjectFingerprint:SUBJECT,signalType:'access_pass',observedAt:'2026-10-05T05:58:00Z',sourceAuthFingerprint:'e'.repeat(32),bindingFingerprint:'f'.repeat(32),ingressVersion:'agency-identity-observation-ingress-v0.2.0',receivedAt:RECEIVED};
-  const calls=[];const dbRow={tenant_id:'T1',site_id:'S1',request_id:'R1',agency_id:'A1',worker_id:'W1',assignment_fingerprint:ASSIGNMENT,assurance_version_id:ASSURANCE,source_system_id:'turnstile',source_event_fingerprint:'d'.repeat(32),subject_fingerprint:SUBJECT,signal_type:'access_pass',observed_at:'2026-10-05T05:58:00Z'};
-  const receiptRow={tenant_id:'T1',source_system_id:'turnstile',source_event_fingerprint:'d'.repeat(32),source_auth_fingerprint:'e'.repeat(32),binding_fingerprint:'f'.repeat(32),ingress_version:'agency-identity-observation-ingress-v0.2.0',received_at:RECEIVED};
-  const store=createPostgresAgencyIdentityObservationIngressStore({withTransaction:async evaluate=>evaluate({query:async(sql,values)=>{calls.push({sql,values});if(calls.length===1)return {rows:[{locked:null}]};if(calls.length===2)return {rows:[receiptRow]};if(calls.length===3)return {rows:[]};return {rows:[dbRow]};}})});
-  const result=await store.appendObservation(row);assert.equal(result.duplicate,true);assert.equal(store.concurrencyBoundary,'assignment_scoped_transaction_lock');assert.equal(calls.length,4);assert.match(calls[0].sql,/pg_advisory_xact_lock/i);assert.equal(calls[0].values.length,1);assert.match(String(calls[0].values[0]),/^-?\d+$/);assert.match(calls[1].sql,/ingress_receipts/i);assert.match(calls[1].sql,/ON CONFLICT/i);assert.match(calls[2].sql,/ON CONFLICT/i);assert.match(calls[3].sql,/^\s*SELECT/i);
-  let conflictCalls=0;
-  const conflictStore=createPostgresAgencyIdentityObservationIngressStore({withTransaction:async evaluate=>evaluate({query:async(sql)=>{conflictCalls+=1;if(conflictCalls===1)return {rows:[{locked:null}]};if(conflictCalls===2)return {rows:[receiptRow]};if(/INSERT INTO wfm_agency_identity_continuity_observations/i.test(sql))return {rows:[]};return {rows:[{...dbRow,worker_id:'OTHER'}]};}})});
-  await assert.rejects(()=>conflictStore.appendObservation(row),/identity_observation_replay_conflict/);
-  assert.throws(()=>createPostgresAgencyIdentityObservationIngressStore({}),/withTransaction function is required/);
+  const calls=[];
+  const store=createPostgresAgencyIdentityObservationIngressStore({executeBoundary:async(sql,values)=>{calls.push({sql,values});return {rows:[{observation_duplicate:false,receipt_duplicate:false}]};}});
+  const result=await store.appendObservation(row);
+  assert.equal(result.duplicate,false);assert.equal(result.receiptDuplicate,false);assert.equal(store.directTableDmlAllowed,false);assert.equal(store.credentialBoundary,'wfm_agency_identity_ingress_writer_function_only');assert.equal(store.concurrencyBoundary,'database_function_assignment_scoped_transaction_lock');
+  assert.equal(calls.length,1);assert.match(calls[0].sql,/wfm_append_agency_identity_observation_v1/i);assert.doesNotMatch(calls[0].sql,/INSERT\s+INTO|UPDATE\s+|DELETE\s+FROM/i);assert.equal(calls[0].values.length,17);assert.equal(calls[0].values[0],'T1');assert.match(String(calls[0].values[16]),/^-?\d+$/);assert.match(result.scopeFingerprint,/^[0-9a-f]{24}$/);
+  const duplicateStore=createPostgresAgencyIdentityObservationIngressStore({executeBoundary:async()=>({rows:[{observation_duplicate:true,receipt_duplicate:true}]})});
+  const duplicate=await duplicateStore.appendObservation(row);assert.equal(duplicate.duplicate,true);assert.equal(duplicate.receiptDuplicate,true);
+  for(const rows of [[],[{}],[{observation_duplicate:'false',receipt_duplicate:false}],[{observation_duplicate:false,receipt_duplicate:false},{observation_duplicate:false,receipt_duplicate:false}]]){
+    const malformed=createPostgresAgencyIdentityObservationIngressStore({executeBoundary:async()=>({rows})});
+    await assert.rejects(()=>malformed.appendObservation(row),/unexpected_identity_observation_boundary_result/);
+  }
+  assert.throws(()=>createPostgresAgencyIdentityObservationIngressStore({}),/executeBoundary function is required/);
 });
 
 test('5,000 forged or replay-conflicting observations produce zero additional durable identities',async()=>{
