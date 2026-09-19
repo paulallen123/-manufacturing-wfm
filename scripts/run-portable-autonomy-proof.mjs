@@ -62,6 +62,7 @@ const checks = [
   ['tier4-outer-terminal-integrity', 'scripts/validate-t4-outer-terminal-integrity.mjs', true],
   ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
   ['incident-learning-and-never-automate-boundary', 'scripts/validate-incident-learning-planner.mjs', true],
+  ['historical-incident-replay-and-learning', 'scripts/validate-historical-incident-replay.mjs', true],
 ];
 
 const results = [];
