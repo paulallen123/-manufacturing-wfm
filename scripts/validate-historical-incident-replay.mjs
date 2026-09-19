@@ -21,16 +21,35 @@ assert.equal(new Set(failureScenarios.scenarios.map((item) => item.id)).size, fa
 
 const recoveryInvocations = new Map();
 const recoveryExecutor = {
+  executorId: 'historical-t1-recovery-executor',
   execute: async ({ incidentId, tenant, scenario, action, evidenceDigest }) => {
     recoveryInvocations.set(incidentId, (recoveryInvocations.get(incidentId) || 0) + 1);
     return {
       status: 'recovered',
-      verified: true,
-      verificationDigest: sha(`historical-recovery:${incidentId}:${tenant}:${scenario?.id}:${action}:${evidenceDigest}`),
+      executorId: 'historical-t1-recovery-executor',
+      executionDigest: sha(`historical-execution:${incidentId}:${tenant}:${scenario?.id}:${action}:${evidenceDigest}`),
       reconciliationGreen: true,
       duplicateBusinessOutcomes: 0,
       productionAuthorityGranted: false,
       customerMutation: false,
+    };
+  },
+};
+
+const recoveryVerificationInvocations = new Map();
+const recoveryVerifier = {
+  verifierId: 'historical-t1-readonly-verifier',
+  verify: async (recovery, { incidentId }) => {
+    recoveryVerificationInvocations.set(incidentId, (recoveryVerificationInvocations.get(incidentId) || 0) + 1);
+    return {
+      verified: true,
+      verifierId: 'historical-t1-readonly-verifier',
+      executionDigest: recovery.executionDigest,
+      verificationDigest: sha(`historical-independent-verification:${recovery.executionDigest}`),
+      productionAuthorityGranted: false,
+      customerMutation: false,
+      modelAuthorityGranted: false,
+      actionAuthorityGranted: false,
     };
   },
 };
@@ -86,6 +105,7 @@ const loop = createAutonomyControlLoop({
   failureScenarios,
   selfHelp: SelfHelp,
   recoveryExecutor,
+  recoveryVerifier,
   repairCoordinator,
   t3ShadowSimulator,
   t3ShadowVerifier,
@@ -173,9 +193,13 @@ for (const [index, scenario] of failureScenarios.scenarios.entries()) {
 
   if (tier === 'T1' && scenario.autonomous_action) {
     assert.equal(recoveryInvocations.get(input.incidentId), 1, `${scenario.id} deterministic recovery must execute at most once in replay.`);
+    assert.equal(recoveryVerificationInvocations.get(input.incidentId), 1, `${scenario.id} deterministic recovery must be independently verified exactly once in replay.`);
     assert.equal(receipt.recovery?.duplicateBusinessOutcomes, 0, `${scenario.id} replay observed a duplicate business outcome.`);
+    assert.equal(receipt.recoveryVerification?.executionDigest, receipt.recovery?.executionDigest, `${scenario.id} verification was not bound to exact execution.`);
+    assert.notEqual(receipt.recoveryVerification?.verifierId, receipt.recovery?.executorId, `${scenario.id} recovery self-verified.`);
   } else {
     assert.ok((recoveryInvocations.get(input.incidentId) || 0) <= 1, `${scenario.id} repeated deterministic recovery unexpectedly.`);
+    assert.ok((recoveryVerificationInvocations.get(input.incidentId) || 0) <= 1, `${scenario.id} repeated recovery verification unexpectedly.`);
   }
   if (tier === 'T2') {
     assert.equal(repairInvocations.get(input.incidentId), 1, `${scenario.id} repair pipeline must execute once in historical replay.`);
@@ -208,7 +232,7 @@ const tierCounts = replay.reduce((acc, item) => {
 }, {});
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'historical-incident-replay-and-learning',
   status: 'PASS',
   scenarioClassesReplayed: replay.length,
@@ -218,6 +242,8 @@ console.log(JSON.stringify({
   everyHistoricalScenarioGeneratedRegressionFixture: true,
   deterministicDetectionRulesTenantScoped: true,
   consequentialClassesDefaultNeverAutomate: true,
+  t1IndependentVerifierReplayed: true,
+  t1ExecutorVerifierSeparationReplayed: true,
   duplicateBusinessOutcomes: 0,
   unknownFutureClassContainedAndLearned: true,
   learningTamperRejected: true,
