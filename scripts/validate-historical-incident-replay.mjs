@@ -6,6 +6,10 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { createAutonomyControlLoop } = require('../resilience/autonomy-control-loop.cjs');
+const {
+  computeRepairEvidenceChainDigest,
+  computePostStagingDecisionDigest,
+} = require('../resilience/autonomous-repair-pipeline.cjs');
 const { createT3ShadowSimulator } = require('../resilience/t3-shadow-simulator.cjs');
 const { createT3ShadowVerifier } = require('../resilience/t3-shadow-verifier.cjs');
 const { createT4ContainmentController } = require('../resilience/t4-containment-controller.cjs');
@@ -54,18 +58,53 @@ const recoveryVerifier = {
   },
 };
 
+function historicalT2Decision({ incidentId, tenant, scenario, evidenceDigest }) {
+  const repairEvidence = {
+    tenantDigest: sha(tenant),
+    actorSetDigest: sha(`historical-t2-repair-actors:${incidentId}`),
+    evidenceDigest,
+    failingTestDigest: sha(`historical-failing-test:${incidentId}:${scenario?.id}`),
+    observedFailureDigest: sha(`historical-observed-failure:${incidentId}:${scenario?.id}`),
+    sourceSnapshotDigest: sha(`historical-source-snapshot:${incidentId}:${scenario?.id}`),
+    repairIntentDigest: sha(`historical-repair-intent:${incidentId}:${scenario?.id}`),
+    patchDigest: sha(`historical-patch:${incidentId}:${scenario?.id}`),
+    candidateDigest: sha(`historical-candidate:${incidentId}:${scenario?.id}`),
+    artifactDigest: sha(`historical-artifact:${incidentId}:${tenant}:${scenario?.id}:${evidenceDigest}`),
+    provenanceDigest: sha(`historical-provenance:${incidentId}:${tenant}:${scenario?.id}:${evidenceDigest}`),
+    rollbackDigest: sha(`historical-t2-rollback:${incidentId}:${scenario?.id}`),
+    verificationDigest: sha(`historical-t2-verification:${incidentId}:${scenario?.id}`),
+    permitDigest: sha(`historical-t2-permit:${incidentId}:${scenario?.id}`),
+    signatureDigest: sha(`historical-t2-signature:${incidentId}:${scenario?.id}`),
+    stagingReceiptDigest: sha(`historical-t2-staging:${incidentId}:${scenario?.id}`),
+  };
+  const repairChainDigest = computeRepairEvidenceChainDigest(repairEvidence);
+  assert.match(repairChainDigest || '', /^[a-f0-9]{64}$/);
+  const payload = {
+    schemaVersion: 2,
+    status: 'canary_proven',
+    ...repairEvidence,
+    repairChainDigest,
+    postStagingActorSetDigest: sha(`historical-t2-post-staging-actors:${incidentId}`),
+    repairOutcomeReceiptDigest: sha(`historical-t2-repair-receipt:${incidentId}`),
+    canaryOutcomeReceiptDigest: sha(`historical-t2-canary-receipt:${incidentId}`),
+    canaryEvidenceDigest: sha(`historical-t2-canary-evidence:${incidentId}`),
+    rollbackEvidenceDigest: null,
+    productionAuthorityGranted: false,
+    promotionAuthorityGranted: false,
+    productionMutation: false,
+    customerMutation: false,
+  };
+  payload.decisionChainDigest = computePostStagingDecisionDigest(payload);
+  assert.match(payload.decisionChainDigest || '', /^[a-f0-9]{64}$/);
+  payload.compositionReceiptDigest = sha(`historical-t2-composition-receipt:${incidentId}`);
+  return payload;
+}
+
 const repairInvocations = new Map();
 const repairCoordinator = {
-  process: async ({ incidentId, tenant, scenario, evidenceDigest }) => {
+  run: async ({ incidentId, tenant, scenario, evidenceDigest }) => {
     repairInvocations.set(incidentId, (repairInvocations.get(incidentId) || 0) + 1);
-    return {
-      status: 'verified_candidate_staged',
-      independentlyVerified: true,
-      artifactDigest: sha(`historical-artifact:${incidentId}:${tenant}:${scenario?.id}:${evidenceDigest}`),
-      provenanceDigest: sha(`historical-provenance:${incidentId}:${tenant}:${scenario?.id}:${evidenceDigest}`),
-      productionAuthorityGranted: false,
-      productionMutation: false,
-    };
+    return historicalT2Decision({ incidentId, tenant, scenario, evidenceDigest });
   },
 };
 
@@ -203,6 +242,10 @@ for (const [index, scenario] of failureScenarios.scenarios.entries()) {
   }
   if (tier === 'T2') {
     assert.equal(repairInvocations.get(input.incidentId), 1, `${scenario.id} repair pipeline must execute once in historical replay.`);
+    assert.equal(receipt.outcome, 'verified_candidate_staged', `${scenario.id} must only reach staged terminal after canary proof.`);
+    assert.equal(receipt.repair?.status, 'canary_proven', `${scenario.id} did not carry canary proof into the central controller.`);
+    assert.equal(receipt.repair?.repairChainDigest, computeRepairEvidenceChainDigest(receipt.repair), `${scenario.id} repair chain failed replay recomputation.`);
+    assert.equal(receipt.repair?.decisionChainDigest, computePostStagingDecisionDigest(receipt.repair), `${scenario.id} post-staging decision failed replay recomputation.`);
   }
 
   replay.push({ scenarioId: scenario.id, tier, outcome: receipt.outcome, learningDecision: receipt.learning.runbookDecision?.decision || null });
@@ -232,7 +275,7 @@ const tierCounts = replay.reduce((acc, item) => {
 }, {});
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'historical-incident-replay-and-learning',
   status: 'PASS',
   scenarioClassesReplayed: replay.length,
@@ -244,6 +287,9 @@ console.log(JSON.stringify({
   consequentialClassesDefaultNeverAutomate: true,
   t1IndependentVerifierReplayed: true,
   t1ExecutorVerifierSeparationReplayed: true,
+  t2RepairEvidenceChainReplayed: true,
+  t2CanaryDecisionChainReplayed: true,
+  t2BareStagedSelfAssertionNotUsed: true,
   duplicateBusinessOutcomes: 0,
   unknownFutureClassContainedAndLearned: true,
   learningTamperRejected: true,
