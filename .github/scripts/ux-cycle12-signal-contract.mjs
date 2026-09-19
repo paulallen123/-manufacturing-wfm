@@ -39,10 +39,18 @@ if(!reauth||reauth.reasonCode!=='INTEGRATION_DEGRADED'||reauth.evidenceState!=='
 const degraded=integration.find(x=>x.id==='degraded:degraded-1');
 if(!degraded||degraded.reasonCode!=='INTEGRATION_DEGRADED'||degraded.evidenceState==='current'||degraded.mandatory)throw new Error('degraded integration manufactured current evidence');
 
+const c11=fs.readFileSync(new URL('../../ux-overlay/ux-reset-cycle11.js', import.meta.url),'utf8');
 const c12=fs.readFileSync(new URL('../../ux-overlay/ux-reset-cycle12.js', import.meta.url),'utf8');
 if(!c12.includes("'/api/integrations/autonomous/status'")||!c12.includes("mapper:'integrationSignals'"))throw new Error('authoritative integration status adapter is not bound');
 if(!c12.includes("const refreshImplementation=force=>refreshSource('implementation',force)")||!c12.includes("const refreshIntegrations=force=>refreshSource('integrations',force)"))throw new Error('implementation and integrations do not reuse the shared source poller');
 if(!c12.includes("registry.set('integrations',()=>sourceState.get('integrations')?.cache||[])"))throw new Error('integration provider is not registered on the unified signal surface');
+if(!c11.includes('renderCard:card')||!c11.includes('restoreFocus')||!c11.includes('returnMarker'))throw new Error('Cycle 11 shared card/return primitives are not exported');
+if(c12.includes('function card(')||c12.includes('ux12-open'))throw new Error('Cycle 12 reintroduced a duplicate decision-card renderer or navigation action');
+if(!c12.includes('items.map(shared.renderCard)')||!c12.includes('shared.restoreFocus?.(section)'))throw new Error('specialist queue is not using the shared Cycle 11 card and return-focus primitive');
+if(c11.includes("if(!manager()||page()==='overview')return"))throw new Error('return-to-context is still restricted to manager roles');
+if(!c11.includes("else if(page()!=='overview'&&!document.querySelector('.ux11-back')&&returnMarker())addBackLink()"))throw new Error('specialist return-to-context observer is not active');
 console.log('UX12_SIGNAL_CONTRACT=PASS');
 console.log('UX12_PROVIDER_ROUTE_BINDING=PASS');
 console.log('UX12_INTEGRATION_SOURCE_BINDING=PASS');
+console.log('UX12_SHARED_DECISION_CARD=PASS');
+console.log('UX12_SPECIALIST_RETURN_CONTEXT=PASS');
