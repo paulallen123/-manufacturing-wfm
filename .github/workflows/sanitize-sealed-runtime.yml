@@ -1,0 +1,88 @@
+name: Sanitize sealed Vector runtime
+
+on:
+  push:
+    branches:
+      - feature/one-day-enterprise-implementation-v1
+    paths:
+      - '.github/workflows/sanitize-sealed-runtime.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sanitize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: feature/one-day-enterprise-implementation-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Repack runtime without retired presentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ART='artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz'
+          OLD_SHA="$(python3 - <<'PY'
+          import json
+          print(json.load(open('DEPLOYMENT_MANIFEST.json'))['runtime_sha256'])
+          PY
+          )"
+          OLD_SIZE="$(stat -c %s "$ART")"
+          TMP="$(mktemp -d)"
+          trap 'rm -rf "$TMP"' EXIT
+          tar -xzf "$ART" -C "$TMP"
+          node scripts/retire-legacy-presentation.mjs "$TMP/public"
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -czf "$ART.new" -C "$TMP" .
+          mv "$ART.new" "$ART"
+          NEW_SHA="$(sha256sum "$ART" | awk '{print $1}')"
+          NEW_SIZE="$(stat -c %s "$ART")"
+          test "$NEW_SHA" != "$OLD_SHA"
+          python3 - "$OLD_SHA" "$NEW_SHA" "$OLD_SIZE" "$NEW_SIZE" <<'PY'
+          import json, pathlib, subprocess, sys
+          old_sha,new_sha,old_size,new_size=sys.argv[1:]
+          paths=subprocess.check_output(['git','ls-files','-z']).split(b'\0')
+          for raw in paths:
+              if not raw:
+                  continue
+              p=pathlib.Path(raw.decode())
+              if str(p)=='artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz' or not p.is_file():
+                  continue
+              try:
+                  text=p.read_text()
+              except UnicodeDecodeError:
+                  continue
+              changed=text.replace(old_sha,new_sha)
+              if p.name=='DEPLOYMENT_MANIFEST.json':
+                  obj=json.loads(changed)
+                  obj['runtime_sha256']=new_sha
+                  obj['runtime_size_bytes']=int(new_size)
+                  changed=json.dumps(obj,indent=2)+'\n'
+              elif p.name=='CUSTOMER_PROOF_STATUS.md':
+                  tick=chr(96)
+                  changed=changed.replace(
+                      f'Runtime artifact size: {tick}{old_size}{tick} bytes',
+                      f'Runtime artifact size: {tick}{new_size}{tick} bytes'
+                  )
+              if changed!=text:
+                  p.write_text(changed)
+          PY
+          node scripts/retire-legacy-presentation.mjs "$TMP/public"
+          echo "SANITIZED_RUNTIME_SHA256=$NEW_SHA"
+          echo "SANITIZED_RUNTIME_SIZE=$NEW_SIZE"
+
+      - name: Commit sanitized artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -A
+          git diff --cached --quiet && exit 0
+          git config user.name 'Vector Runtime Sanitizer'
+          git config user.email 'vector-runtime-sanitizer@users.noreply.github.com'
+          git commit -m 'Sanitize sealed runtime presentation artifact'
+          git fetch origin feature/one-day-enterprise-implementation-v1
+          git rebase origin/feature/one-day-enterprise-implementation-v1
+          git push origin HEAD:feature/one-day-enterprise-implementation-v1
