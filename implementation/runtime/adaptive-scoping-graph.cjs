@@ -4,6 +4,7 @@ const { createHash } = require('node:crypto');
 
 const ACTION_TYPES = new Set(['CONFIG', 'TEST', 'DEPENDENCY', 'RISK', 'DECISION', 'NO_OP']);
 const PREFILL_TRUST = new Set(['VERIFIED', 'AUTHORITATIVE']);
+const PREDICATE_STATES = Object.freeze({ TRUE: 'TRUE', FALSE: 'FALSE', UNKNOWN: 'UNKNOWN' });
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -113,14 +114,36 @@ function compileGraph(graph) {
   return Object.freeze({ version, graphFingerprint, questions });
 }
 
-function predicateMatches(predicate, values) {
-  if (predicate == null) return true;
-  if (Array.isArray(predicate.all)) return predicate.all.every(item => predicateMatches(item, values));
-  if (Array.isArray(predicate.any)) return predicate.any.some(item => predicateMatches(item, values));
-  if (predicate.not) return !predicateMatches(predicate.not, values);
+function predicateState(predicate, values) {
+  if (predicate == null) return PREDICATE_STATES.TRUE;
+  if (Array.isArray(predicate.all)) {
+    const states = predicate.all.map(item => predicateState(item, values));
+    if (states.some(state => state === PREDICATE_STATES.FALSE)) return PREDICATE_STATES.FALSE;
+    if (states.every(state => state === PREDICATE_STATES.TRUE)) return PREDICATE_STATES.TRUE;
+    return PREDICATE_STATES.UNKNOWN;
+  }
+  if (Array.isArray(predicate.any)) {
+    const states = predicate.any.map(item => predicateState(item, values));
+    if (states.some(state => state === PREDICATE_STATES.TRUE)) return PREDICATE_STATES.TRUE;
+    if (states.every(state => state === PREDICATE_STATES.FALSE)) return PREDICATE_STATES.FALSE;
+    return PREDICATE_STATES.UNKNOWN;
+  }
+  if (predicate.not) {
+    const state = predicateState(predicate.not, values);
+    if (state === PREDICATE_STATES.TRUE) return PREDICATE_STATES.FALSE;
+    if (state === PREDICATE_STATES.FALSE) return PREDICATE_STATES.TRUE;
+    return PREDICATE_STATES.UNKNOWN;
+  }
+  if (!Object.prototype.hasOwnProperty.call(values, predicate.question)) return PREDICATE_STATES.UNKNOWN;
   const value = values[predicate.question];
-  if (Object.prototype.hasOwnProperty.call(predicate, 'equals')) return value === predicate.equals;
-  return predicate.in.includes(value);
+  const matched = Object.prototype.hasOwnProperty.call(predicate, 'equals')
+    ? value === predicate.equals
+    : predicate.in.includes(value);
+  return matched ? PREDICATE_STATES.TRUE : PREDICATE_STATES.FALSE;
+}
+
+function predicateMatches(predicate, values) {
+  return predicateState(predicate, values) === PREDICATE_STATES.TRUE;
 }
 
 function validPrefill(prefill, nowMs) {
@@ -151,16 +174,19 @@ function evaluateGraph(compiled, input = {}) {
 
   for (const question of compiled.questions) {
     const scopeEligible = !Array.isArray(question.scope) || question.scope.length === 0 || question.scope.some(item => purchasedScope.has(item));
-    const scopeConditionEligible = predicateMatches(question.scopeWhen, values);
-    const branchEligible = predicateMatches(question.when, values);
-    const visible = scopeEligible && scopeConditionEligible && branchEligible;
+    const scopeConditionState = predicateState(question.scopeWhen, values);
+    const branchState = predicateState(question.when, values);
+    const visible = scopeEligible && scopeConditionState === PREDICATE_STATES.TRUE && branchState === PREDICATE_STATES.TRUE;
 
     if (!visible) {
+      const waitingOnDependency = scopeEligible && (scopeConditionState === PREDICATE_STATES.UNKNOWN || branchState === PREDICATE_STATES.UNKNOWN);
       const hiddenReason = !scopeEligible
         ? 'OUTSIDE_PURCHASED_SCOPE'
-        : !scopeConditionEligible
-          ? 'SCOPE_CONDITION_HIDDEN'
-          : 'BRANCH_HIDDEN';
+        : waitingOnDependency
+          ? 'WAITING_ON_DEPENDENCY'
+          : scopeConditionState !== PREDICATE_STATES.TRUE
+            ? 'SCOPE_CONDITION_HIDDEN'
+            : 'BRANCH_HIDDEN';
       if (Object.prototype.hasOwnProperty.call(priorAnswers, question.id) || Object.prototype.hasOwnProperty.call(providedAnswers, question.id)) {
         invalidated.push({ questionId: question.id, reason: hiddenReason });
       }
@@ -170,9 +196,11 @@ function evaluateGraph(compiled, input = {}) {
         key: question.id,
         reason: hiddenReason === 'OUTSIDE_PURCHASED_SCOPE'
           ? 'outside-purchased-scope'
-          : hiddenReason === 'SCOPE_CONDITION_HIDDEN'
-            ? 'scope-condition-not-reachable'
-            : 'branch-not-reachable'
+          : hiddenReason === 'WAITING_ON_DEPENDENCY'
+            ? 'waiting-on-valid-dependency'
+            : hiddenReason === 'SCOPE_CONDITION_HIDDEN'
+              ? 'scope-condition-not-reachable'
+              : 'branch-not-reachable'
       }));
       continue;
     }
@@ -325,11 +353,13 @@ function assertEveryReachablePathActionable(compiled, purchasedScopes) {
 
 module.exports = {
   ACTION_TYPES,
+  PREDICATE_STATES,
   compileGraph,
   evaluateGraph,
   applyAnswer,
   enumerateReachablePaths,
   assertEveryReachablePathActionable,
+  predicateState,
   predicateMatches,
   validPrefill
 };
