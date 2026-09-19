@@ -41,6 +41,7 @@ function mergedField(profiles,override,key,fallback=[]){
   ]);
 }
 function nextActionFor(system,protocolProfiles,override){
+  if(override.nextDevelopmentAction) return override.nextDevelopmentAction;
   if(override.nextAction) return override.nextAction;
   if(protocolProfiles.length===0) return 'Verify a current vendor-supported API/protocol or authorised file/middleware route before adapter development.';
   switch(system.testLevel){
