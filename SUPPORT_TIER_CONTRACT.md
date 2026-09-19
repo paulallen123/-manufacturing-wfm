@@ -34,6 +34,8 @@ A support case is not considered covered merely because a chatbot answered it. I
 
 A zero-engineer terminal path must not forget previously learned failures merely because a newer CI artifact is incomplete, corrupted or unavailable. Prior incident-regression evidence is therefore selected newest-first but accepted only after deterministic, provider-neutral verification of the proof envelope, exact-runtime proof, corpus digest, snapshot bytes, continuity receipt and zero-authority invariants. A bad newer candidate may be skipped in favour of an older verified predecessor. If durable incident history is evidenced but no candidate authenticates, the support proof must fail closed rather than bootstrap from an empty history. Partial evidence that still proves a durable corpus previously existed is also treated as known history and cannot silently reset the corpus.
 
+Accepted predecessor evidence must also agree across every independently carried corpus identity: the workflow envelope corpus digest and snapshot SHA, the portable proof snapshot SHA, corpus digest and entry count, and the continuity digest must all bind back to the same snapshot bytes. A self-consistent but cross-layer contradictory artifact is rejected rather than used as learning history.
+
 This incident-history verifier is read-only, receives no production credentials, cannot grant action/release authority, and is itself a protected repair-authority surface. Its adversarial proof is mandatory inside the provider-neutral portable autonomy gate.
 
 ## Fast-track sequence
