@@ -48,6 +48,14 @@
     "payrollVarianceRejected": true,
     "syntheticScenarioEvidenceAllowedOnlyWhenExplicitlyLabelled": true
   },
+  "regressionGate": {
+    "githubActionsStatus": "BLOCKED_BEFORE_EXECUTION",
+    "vectorOnlyJobStepsExecuted": 0,
+    "verifyTransformJobStepsExecuted": 0,
+    "retryAttempted": true,
+    "overrideApplied": false,
+    "promotionAllowed": false
+  },
   "requiredBeforePromotion": [
     "build the exact repair candidate image",
     "rerun implementation and regression tests",
