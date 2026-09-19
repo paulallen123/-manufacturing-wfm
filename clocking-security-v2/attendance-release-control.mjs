@@ -30,6 +30,11 @@ const TRUSTED_ASSESSMENTS=new WeakSet();
 function clone(value){ return JSON.parse(JSON.stringify(value)); }
 function validSha(value){ return /^[a-f0-9]{40}$/i.test(String(value||'')); }
 function validEvidenceId(value){ return /^[A-Za-z0-9._:/-]{4,240}$/.test(String(value||'')); }
+function canonicalProviderDomain(value){
+  const domain=String(value||'').trim().toLowerCase();
+  return /^[a-z0-9][a-z0-9._:-]{1,79}$/.test(domain)?domain:null;
+}
+function validProviderSystemId(value){ return /^[A-Za-z0-9][A-Za-z0-9._:-]{1,159}$/.test(String(value||'')); }
 
 function gateIsValid(name,gate,candidateSha){
   const common=Boolean(
@@ -58,12 +63,21 @@ export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[]
     if(!valid) blockers.push(name);
   }
 
+  // Two real provider domains must be genuinely distinct evidence, not aliases of
+  // one proof. Canonicalise domain names, require zero skipped checks and prevent
+  // the same provider system or evidence artifact from being counted twice.
   const providerDomains=new Map();
+  const providerSystems=new Set();
+  const providerEvidenceIds=new Set();
   for(const proof of providerProofs){
-    if(!proof || proof.realProvider!==true || proof.passed!==true || proof.candidateSha!==candidateSha || !validEvidenceId(proof.evidenceId)) continue;
-    const domain=String(proof.domain||'').trim();
+    if(!proof || proof.realProvider!==true || proof.passed!==true || proof.skipped!==0 || proof.candidateSha!==candidateSha || !validEvidenceId(proof.evidenceId) || !validProviderSystemId(proof.providerSystemId)) continue;
+    const domain=canonicalProviderDomain(proof.domain);
     if(!domain) continue;
-    if(!providerDomains.has(domain)) providerDomains.set(domain,proof.evidenceId);
+    const systemId=String(proof.providerSystemId);
+    if(providerDomains.has(domain) || providerSystems.has(systemId) || providerEvidenceIds.has(proof.evidenceId)) continue;
+    providerDomains.set(domain,proof.evidenceId);
+    providerSystems.add(systemId);
+    providerEvidenceIds.add(proof.evidenceId);
   }
   if(providerDomains.size<2) blockers.push('twoRealProviderDomains');
 
