@@ -189,7 +189,12 @@ function commandResultCopy(payload){
   if(intent==='CREATE_TASK')return {title:'Task created',detail:'The task has been saved in your Vector scope and is auditable.'};
   if(intent==='CHANGE_WIDGET'||intent==='CHANGE_CHART')return {title:'View preference saved',detail:'Vector has stored this dashboard preference for the current screen.'};
   if(intent==='CREATE_AUTOMATION')return {title:'Automation configured',detail:status==='CONFIGURED_PENDING_WORKER'?'The schedule is saved. Execution remains fail-closed until the automation runner is connected.':'The automation is active.'};
-  if(intent==='EMAIL_REPORT')return {title:'Email report requested',detail:payload?.capabilities?.emailDelivery?'The report can be generated and delivered through the configured email provider.':'The report request is saved; email delivery remains fail-closed until a provider is configured.'};
+  if(intent==='EMAIL_REPORT'){
+    if(status==='SENT')return {title:'Report emailed',detail:'The generated report was accepted by the configured email provider and its delivery ID was recorded.'};
+    if(status==='DELIVERY_FAILED')return {title:'Report generated, email failed',detail:'The report is stored safely, but the email provider rejected or could not complete delivery.'};
+    if(status==='READY_NOT_SENT')return {title:'Report ready — not emailed',detail:'The report is generated and stored. Email remains fail-closed until an approved provider and sender are configured.'};
+    return {title:'Email report requested',detail:'The report is generated and waiting for the configured delivery path.'};
+  }
   if(intent==='CREATE_REPORT')return {title:'Report requested',detail:'Vector has saved the report request for generation from role-scoped data.'};
   return {title:'Analysing this now',detail:'Vector is handing the question to the analysis assistant with your current screen and role scope.'};
 }
