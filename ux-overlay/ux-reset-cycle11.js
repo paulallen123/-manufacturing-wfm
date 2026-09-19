@@ -167,8 +167,8 @@ function focusSourceTarget(marker){
  return focusNode(target);
 }
 function addBackLink(){
- if(!manager()||page()==='overview')return;
- const marker=returnMarker();if(!marker)return;
+ if(page()==='overview')return;
+ const marker=returnMarker();if(!marker||marker.from!=='overview')return;
  const head=document.querySelector('.heading');if(!head||head.querySelector('.ux11-back'))return;
  const b=document.createElement('button');b.type='button';b.className='btn small ux11-back';b.textContent='Back to priority queue';b.addEventListener('click',()=>{const o=navButton('overview');o?.click();});head.appendChild(b);focusSourceTarget(marker);
 }
@@ -181,12 +181,15 @@ function restoreFocus(section){
  if(confirmed){const lane=confirmed.closest('details');if(lane)lane.open=true;focusNode(confirmed);const live=section.querySelector('.ux11-live');if(live)live.textContent='The source workflow confirmed the decision.';clearReturnMarker();}
 }
 function apply(){
- try{if(!manager())return;if(page()==='overview')renderQueue();else addBackLink();}catch(e){console.warn('WFM UX cycle 11 skipped:',e);}
+ try{
+   if(page()==='overview'){if(manager())renderQueue();}
+   else if(returnMarker())addBackLink();
+ }catch(e){console.warn('WFM UX cycle 11 skipped:',e);}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('.ux11-open[data-ux11-route]');if(!b)return;e.preventDefault();openRoute(b.dataset.ux11Route,b.dataset.ux11Id,b.dataset.ux11SourceId,b.dataset.ux11Source,b.dataset.ux11Reason,b.dataset.ux11Title);});
 const previousRender=window.render;if(typeof previousRender==='function')window.render=async function(...args){const out=await previousRender.apply(this,args);apply();return out;};
-const observer=new MutationObserver(()=>{try{if(manager()&&page()==='overview'&&!document.querySelector('.ux11-queue'))apply();else if(manager()&&page()!=='overview'&&!document.querySelector('.ux11-back')&&returnMarker())addBackLink();}catch{}});
+const observer=new MutationObserver(()=>{try{if(manager()&&page()==='overview'&&!document.querySelector('.ux11-queue'))apply();else if(page()!=='overview'&&!document.querySelector('.ux11-back')&&returnMarker())addBackLink();}catch{}});
 observer.observe(document.documentElement,{subtree:true,childList:true});
 setTimeout(apply,0);setTimeout(apply,400);
-window.WFMUXCycle11={apply,collectSignals,renderQueue,openRoute,focusSourceTarget,selectSourceScope,sourceResolution};
+window.WFMUXCycle11={apply,collectSignals,renderQueue,renderCard:card,openRoute,returnMarker,restoreFocus,addBackLink,focusSourceTarget,selectSourceScope,focusNode,sourceResolution};
 })();
