@@ -229,6 +229,21 @@ try {
     assert.ok(screenshot.length > 10000, `${spec.slug} screenshot too small.`);
     const screenshotSha256 = crypto.createHash('sha256').update(screenshot).digest('hex');
 
+    // Alignment evidence only: emit a bounded JPEG of the current authenticated manager viewport
+    // in log-sized chunks so it can be reconstructed outside the proof container. This does not
+    // alter the product runtime or expose credentials/session state.
+    if (spec.slug === 'manager') {
+      const alignment = await page.screenshot({ type: 'jpeg', quality: 68, fullPage: false });
+      const b64 = alignment.toString('base64');
+      const chunkSize = 12000;
+      const total = Math.ceil(b64.length / chunkSize);
+      console.log(`CURRENT_MANAGER_SCREENSHOT_BEGIN|bytes=${alignment.length}|chunks=${total}|sha=${crypto.createHash('sha256').update(alignment).digest('hex')}`);
+      for (let i = 0; i < total; i += 1) {
+        console.log(`CURRENT_MANAGER_SCREENSHOT_CHUNK|${i + 1}/${total}|${b64.slice(i * chunkSize, (i + 1) * chunkSize)}`);
+      }
+      console.log('CURRENT_MANAGER_SCREENSHOT_END');
+    }
+
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(250);
     const mobile = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth }));
