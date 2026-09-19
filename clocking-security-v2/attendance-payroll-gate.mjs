@@ -12,7 +12,8 @@ function stable(value){
   return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stable(value[k])).join(',')+'}';
 }
 function digest(value){ return crypto.createHash('sha256').update(stable(value)).digest('hex'); }
-function rowKey({tenant,site,shiftId,employee}){ return `${tenant}:${site}:${shiftId}:${employee}`; }
+function scopeKey(...parts){ return JSON.stringify(parts.map(part=>String(part))); }
+function rowKey({tenant,site,shiftId,employee}){ return scopeKey(tenant,site,shiftId,employee); }
 function correctionBasis(row){
   return {
     status:String(row?.status||''),
@@ -63,7 +64,7 @@ export class AttendancePayrollGate {
     if(outMs<=inMs) throw Object.assign(new Error('Corrected OUT must be after corrected IN.'),{status:400});
     if(!this.verifyAuditChain()) throw Object.assign(new Error('Manager correction audit chain is invalid.'),{status:409});
 
-    const reviewScopeKey=`${tenant}:${reviewId}`;
+    const reviewScopeKey=scopeKey(tenant,reviewId);
     const priorById=this.#reviewById.get(reviewScopeKey);
     const proposed={tenant,site,shiftId,employee,reviewId,actorId,reasonCode,inMs,outMs,reviewedAt,supersedesReviewId:supersedesReviewId?asId(supersedesReviewId,'superseded review ID'):null};
     const proposedDigest=digest(proposed);
