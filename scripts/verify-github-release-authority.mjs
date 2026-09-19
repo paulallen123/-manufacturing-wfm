@@ -5,7 +5,58 @@ const REQUIRED_BRANCHES = Object.freeze([
   'main'
 ]);
 
-export function assessReleaseAuthority(branchSnapshots, requiredBranches = REQUIRED_BRANCHES) {
+const REQUIRED_RULE_TYPES = Object.freeze([
+  'deletion',
+  'non_fast_forward',
+  'pull_request',
+  'required_signatures',
+  'required_status_checks'
+]);
+
+function assessBranchRules(branch, rules, failures) {
+  if (!Array.isArray(rules)) {
+    failures.push(`${branch}: active branch-rule evidence is missing`);
+    return;
+  }
+
+  const byType = new Map(rules.map((rule) => [rule?.type, rule]));
+  for (const type of REQUIRED_RULE_TYPES) {
+    if (!byType.has(type)) {
+      failures.push(`${branch}: required ${type} rule is missing`);
+    }
+  }
+
+  const pullRequest = byType.get('pull_request');
+  if (pullRequest) {
+    const parameters = pullRequest.parameters ?? {};
+    if (!Number.isInteger(parameters.required_approving_review_count) || parameters.required_approving_review_count < 1) {
+      failures.push(`${branch}: pull requests do not require an independent approval`);
+    }
+    if (parameters.dismiss_stale_reviews_on_push !== true) {
+      failures.push(`${branch}: stale approvals are not dismissed after new commits`);
+    }
+    if (parameters.require_last_push_approval !== true) {
+      failures.push(`${branch}: the last reviewable push does not require fresh approval`);
+    }
+  }
+
+  const statusChecks = byType.get('required_status_checks');
+  if (statusChecks) {
+    const parameters = statusChecks.parameters ?? {};
+    if (parameters.strict_required_status_checks_policy !== true) {
+      failures.push(`${branch}: required checks are not strict against the latest branch state`);
+    }
+    if (!Array.isArray(parameters.required_status_checks) || parameters.required_status_checks.length === 0) {
+      failures.push(`${branch}: no required status checks are configured`);
+    }
+  }
+}
+
+export function assessReleaseAuthority(
+  branchSnapshots,
+  requiredBranches = REQUIRED_BRANCHES,
+  branchRules = {}
+) {
   const failures = [];
 
   for (const branch of requiredBranches) {
@@ -23,6 +74,8 @@ export function assessReleaseAuthority(branchSnapshots, requiredBranches = REQUI
     if (verification?.verified !== true) {
       failures.push(`${branch}: branch head is not cryptographically verified`);
     }
+
+    assessBranchRules(branch, branchRules?.[branch], failures);
   }
 
   return {
@@ -32,8 +85,8 @@ export function assessReleaseAuthority(branchSnapshots, requiredBranches = REQUI
   };
 }
 
-async function fetchBranch({ repository, branch, token, fetchImpl = fetch }) {
-  const response = await fetchImpl(`https://api.github.com/repos/${repository}/branches/${encodeURIComponent(branch)}`, {
+async function fetchJson(url, { token, fetchImpl, description }) {
+  const response = await fetchImpl(url, {
     headers: {
       Accept: 'application/vnd.github+json',
       Authorization: `Bearer ${token}`,
@@ -42,10 +95,24 @@ async function fetchBranch({ repository, branch, token, fetchImpl = fetch }) {
   });
 
   if (!response.ok) {
-    throw new Error(`GitHub branch posture read failed for ${branch}: HTTP ${response.status}`);
+    throw new Error(`${description}: HTTP ${response.status}`);
   }
 
   return response.json();
+}
+
+async function fetchBranch({ repository, branch, token, fetchImpl = fetch }) {
+  return fetchJson(
+    `https://api.github.com/repos/${repository}/branches/${encodeURIComponent(branch)}`,
+    { token, fetchImpl, description: `GitHub branch posture read failed for ${branch}` }
+  );
+}
+
+async function fetchBranchRules({ repository, branch, token, fetchImpl = fetch }) {
+  return fetchJson(
+    `https://api.github.com/repos/${repository}/rules/branches/${encodeURIComponent(branch)}`,
+    { token, fetchImpl, description: `GitHub active-rule read failed for ${branch}` }
+  );
 }
 
 export async function verifyReleaseAuthority({
@@ -58,11 +125,13 @@ export async function verifyReleaseAuthority({
   if (!token) throw new Error('A GitHub token is required for release-authority verification.');
 
   const snapshots = {};
+  const rules = {};
   for (const branch of branches) {
     snapshots[branch] = await fetchBranch({ repository, branch, token, fetchImpl });
+    rules[branch] = await fetchBranchRules({ repository, branch, token, fetchImpl });
   }
 
-  const result = assessReleaseAuthority(snapshots, branches);
+  const result = assessReleaseAuthority(snapshots, branches, rules);
   if (!result.ok) {
     throw new Error(`Release authority posture is unsafe:\n- ${result.failures.join('\n- ')}`);
   }
