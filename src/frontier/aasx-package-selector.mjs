@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { decodeAasXmlEnvironment } from './aas-xml-environment.mjs';
 
-export const AASX_PACKAGE_SELECTOR_VERSION = 'aasx-package-selector-v0.2.0';
+export const AASX_PACKAGE_SELECTOR_VERSION = 'aasx-package-selector-v0.3.0';
 
 const DEFAULT_LIMITS = Object.freeze({
   maxEntries: 512,
@@ -102,11 +102,14 @@ function parseRelationships(xml) {
   if (typeof xml !== 'string') return { status: 'rejected', reason: 'relationship_part_not_text' };
   if (/<!DOCTYPE|<!ENTITY/i.test(xml)) return { status: 'rejected', reason: 'xml_dtd_or_entity_forbidden' };
   const relationships = [];
+  const ids = new Set();
   const re = /<Relationship\b([^>]*)\/?\s*>/gi;
   let match;
   while ((match = re.exec(xml))) {
     const attrs = parseAttributes(match[1]);
     if (!attrs.Type || !attrs.Target) continue;
+    if (attrs.Id && ids.has(attrs.Id)) return { status: 'rejected', reason: 'duplicate_relationship_id', relationshipId: attrs.Id };
+    if (attrs.Id) ids.add(attrs.Id);
     relationships.push({
       id: attrs.Id ?? null,
       type: attrs.Type,
@@ -159,6 +162,50 @@ function jsonEnvironment(content) {
   } catch {
     return null;
   }
+}
+
+function supplementaryKind(packagePath) {
+  return path.posix.extname(packagePath).toLowerCase() === '.fmu' ? 'fmu' : 'supplementary';
+}
+
+export function inspectAasxSupplementaryArtifacts(specPath, packageIndex) {
+  const relsPath = relationshipPartFor(specPath);
+  if (!relsPath) return { status: 'rejected', reason: 'invalid_aas_spec_path' };
+  const relsEntry = packageIndex.get(relsPath);
+  if (!relsEntry) return { status: 'accepted', relationshipPart: null, artifacts: [], fmuCount: 0 };
+
+  const parsed = parseRelationships(String(relsEntry.content ?? ''));
+  if (parsed.status !== 'accepted') return parsed;
+
+  const byPath = new Map();
+  for (const rel of parsed.relationships.filter((item) => isRelationshipType(item.type, 'aas-suppl'))) {
+    if (String(rel.targetMode).toLowerCase() === 'external') {
+      return { status: 'rejected', reason: 'external_aas_supplementary_forbidden', relationshipId: rel.id ?? null };
+    }
+    const resolved = resolveTarget(specPath, rel.target);
+    if (!resolved) return { status: 'rejected', reason: 'unsafe_aas_supplementary_target', relationshipId: rel.id ?? null };
+    const target = packageIndex.get(resolved);
+    if (!target) return { status: 'review_required', reason: 'aas_supplementary_target_missing', path: resolved, relationshipId: rel.id ?? null };
+
+    const previous = byPath.get(resolved);
+    const relationshipIds = [...new Set([...(previous?.relationshipIds ?? []), rel.id].filter(Boolean))];
+    byPath.set(resolved, {
+      path: resolved,
+      kind: supplementaryKind(resolved),
+      size: target.size,
+      compressedSize: Number.isFinite(target.compressedSize) ? Number(target.compressedSize) : null,
+      contentType: typeof target.contentType === 'string' ? target.contentType : null,
+      relationshipIds,
+    });
+  }
+
+  const artifacts = [...byPath.values()].sort((a, b) => a.path.localeCompare(b.path));
+  return {
+    status: 'accepted',
+    relationshipPart: relsPath,
+    artifacts,
+    fmuCount: artifacts.filter((item) => item.kind === 'fmu').length,
+  };
 }
 
 export function selectAasxEnvironment(entries = [], options = {}) {
@@ -218,6 +265,10 @@ export function selectAasxEnvironment(entries = [], options = {}) {
     const formatOrder = { json: 0, xml: 1 };
     return formatOrder[a.format] - formatOrder[b.format] || a.entry.path.localeCompare(b.entry.path);
   })[0];
+
+  const supplementary = inspectAasxSupplementaryArtifacts(selected.entry.path, inspected.index);
+  if (supplementary.status !== 'accepted') return supplementary;
+
   return {
     status: 'accepted',
     format: selected.format,
@@ -227,6 +278,11 @@ export function selectAasxEnvironment(entries = [], options = {}) {
     jsonSerializations: candidates.filter((item) => item.format === 'json').length,
     xmlSerializations: candidates.filter((item) => item.format === 'xml').length,
     xmlNamespace: selected.xmlNamespace ?? null,
+    supplementaryArtifacts: supplementary.artifacts,
+    supplementaryArtifactCount: supplementary.artifacts.length,
+    fmuArtifactCount: supplementary.fmuCount,
+    supplementaryRelationshipPart: supplementary.relationshipPart,
+    supplementaryExecutionPolicy: 'metadata_only_never_execute',
     totalPackageBytes: inspected.totalBytes,
     version: AASX_PACKAGE_SELECTOR_VERSION,
   };
