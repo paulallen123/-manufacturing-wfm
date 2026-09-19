@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
-export const AGENCY_IDENTITY_CONTINUITY_VERSION='agency-identity-continuity-v0.1.0';
-export const AGENCY_IDENTITY_CONTINUITY_STORE_VERSION='agency-identity-continuity-store-v0.1.0';
+export const AGENCY_IDENTITY_CONTINUITY_VERSION='agency-identity-continuity-v0.1.1';
+export const AGENCY_IDENTITY_CONTINUITY_STORE_VERSION='agency-identity-continuity-store-v0.1.1';
 
 export const AGENCY_IDENTITY_CONTINUITY_DDL=`
 CREATE TABLE IF NOT EXISTS wfm_agency_identity_continuity_observations (
@@ -44,19 +44,26 @@ FOR EACH ROW EXECUTE FUNCTION wfm_agency_identity_continuity_append_only();
 `;
 
 const READ_OBSERVATIONS_SQL=`
-SELECT tenant_id, site_id, request_id, agency_id, worker_id, assignment_fingerprint, assurance_version_id,
-       source_system_id, source_event_fingerprint, subject_fingerprint, signal_type, observed_at
-FROM wfm_agency_identity_continuity_observations
-WHERE tenant_id = $1
-  AND site_id = $2
-  AND request_id = $3
-  AND agency_id = $4
-  AND worker_id = $5
-  AND assignment_fingerprint = $6
-  AND assurance_version_id = $7
-  AND observed_at >= $8::timestamptz
-  AND observed_at <= $9::timestamptz
-ORDER BY observed_at, source_system_id, source_event_fingerprint
+SELECT o.tenant_id, o.site_id, o.request_id, o.agency_id, o.worker_id, o.assignment_fingerprint, o.assurance_version_id,
+       o.source_system_id, o.source_event_fingerprint, o.subject_fingerprint, o.signal_type, o.observed_at,
+       COALESCE((
+         SELECT json_agg(DISTINCT r.binding_fingerprint ORDER BY r.binding_fingerprint)
+         FROM wfm_agency_identity_observation_ingress_receipts r
+         WHERE r.tenant_id = o.tenant_id
+           AND r.source_system_id = o.source_system_id
+           AND r.source_event_fingerprint = o.source_event_fingerprint
+       ), '[]'::json) AS provenance_binding_fingerprints
+FROM wfm_agency_identity_continuity_observations o
+WHERE o.tenant_id = $1
+  AND o.site_id = $2
+  AND o.request_id = $3
+  AND o.agency_id = $4
+  AND o.worker_id = $5
+  AND o.assignment_fingerprint = $6
+  AND o.assurance_version_id = $7
+  AND o.observed_at >= $8::timestamptz
+  AND o.observed_at <= $9::timestamptz
+ORDER BY o.observed_at, o.source_system_id, o.source_event_fingerprint
 LIMIT 201;
 `;
 
@@ -109,6 +116,15 @@ function normalizePolicy(policy,scope){
   return {policy:normalized,policyFingerprint:digest(JSON.stringify(stable(normalized)),24)};
 }
 
+function normalizeFingerprintArray(value){
+  let raw=value;
+  if(typeof raw==='string'){
+    try{raw=JSON.parse(raw);}catch{return [];}
+  }
+  if(!Array.isArray(raw))return [];
+  return [...new Set(raw.map(item=>text(item,32).toLowerCase()).filter(item=>/^[0-9a-f]{32}$/.test(item)))].sort();
+}
+
 function safeObservation(row){
   if(!row||typeof row!=='object'||Array.isArray(row))return null;
   return {
@@ -124,7 +140,22 @@ function safeObservation(row){
     workerId:text(row.worker_id??row.workerId,100),
     assignmentFingerprint:text(row.assignment_fingerprint??row.assignmentFingerprint,24).toLowerCase(),
     assuranceVersionId:text(row.assurance_version_id??row.assuranceVersionId,32).toLowerCase(),
+    provenanceBindingFingerprints:normalizeFingerprintArray(row.provenance_binding_fingerprints??row.provenanceBindingFingerprints),
   };
+}
+
+function expectedBindingFingerprint(row){
+  return digest(JSON.stringify(stable({
+    tenantId:row.tenantId,
+    siteId:row.siteId,
+    requestId:row.requestId,
+    sourceSystemId:row.sourceSystemId,
+    agencyId:row.agencyId,
+    workerId:row.workerId,
+    assignmentFingerprint:row.assignmentFingerprint,
+    assuranceVersionId:row.assuranceVersionId,
+    subjectFingerprint:row.subjectFingerprint,
+  })),32);
 }
 
 export function createPostgresAgencyIdentityContinuityStore({query}={}){
@@ -167,7 +198,7 @@ export async function evaluateAgencyIdentityContinuity({tenantId,siteId,agencyId
     payrollWriteAuthorized:false,
     clockingWriteAuthorized:false,
     authorityBoundary:'identity_continuity_evidence_only_no_ranking_schedule_payroll_invoice_or_clocking_mutation',
-    privacyBoundary:'no_subject_identifier_raw_badge_identifier_photo_biometric_date_of_birth_document_number_share_code_or_source_payload_in_decision_output',
+    privacyBoundary:'no_subject_identifier_raw_badge_identifier_photo_biometric_date_of_birth_document_number_share_code_source_payload_or_authentication_secret_in_decision_output',
   });
 
   let scope;
@@ -204,11 +235,13 @@ export async function evaluateAgencyIdentityContinuity({tenantId,siteId,agencyId
     if(seenEvents.has(pair)){failures.push('identity_continuity_duplicate_observation');continue;}seenEvents.add(pair);
     const mismatches=[['tenantId',scope.tenantId],['siteId',scope.siteId],['requestId',scope.requestId],['agencyId',scope.agencyId],['workerId',scope.workerId],['assignmentFingerprint',scope.assignmentFingerprint],['assuranceVersionId',scope.assuranceVersionId]].filter(([key,value])=>row[key]!==value);
     if(mismatches.length){failures.push('identity_continuity_observation_scope_mismatch');continue;}
+    const expectedProvenance=expectedBindingFingerprint(row);
+    if(!row.provenanceBindingFingerprints.includes(expectedProvenance)){failures.push('identity_continuity_authenticated_provenance_missing_or_mismatched');continue;}
     const observedMs=Date.parse(row.observedAt);
     if(observedMs<windowStartMs||observedMs>windowEndMs||observedMs>nowMs){failures.push('identity_continuity_observation_outside_window');continue;}
     const allowed=policyValue.allowedSources[row.sourceSystemId];
     if(!allowed||!allowed.includes(row.signalType)){failures.push('identity_continuity_untrusted_source_or_signal');continue;}
-    safe.push(Object.freeze({sourceSystemId:row.sourceSystemId,sourceEventFingerprint:row.sourceEventFingerprint,subjectFingerprint:row.subjectFingerprint,signalType:row.signalType,evidenceClass:SIGNALS[row.signalType].evidenceClass,observedAt:row.observedAt}));
+    safe.push(Object.freeze({sourceSystemId:row.sourceSystemId,sourceEventFingerprint:row.sourceEventFingerprint,subjectFingerprint:row.subjectFingerprint,signalType:row.signalType,evidenceClass:SIGNALS[row.signalType].evidenceClass,observedAt:row.observedAt,provenanceBindingFingerprint:expectedProvenance}));
   }
   safe.sort((a,b)=>a.observedAt.localeCompare(b.observedAt)||a.sourceSystemId.localeCompare(b.sourceSystemId)||a.sourceEventFingerprint.localeCompare(b.sourceEventFingerprint));
   if(safe.length===0)failures.push('identity_continuity_evidence_missing');
@@ -221,7 +254,7 @@ export async function evaluateAgencyIdentityContinuity({tenantId,siteId,agencyId
   const publicObservations=Object.freeze(safe.map(({sourceSystemId,sourceEventFingerprint,signalType,evidenceClass,observedAt})=>Object.freeze({sourceSystemId,sourceEventFingerprint,signalType,evidenceClass,observedAt})));
   if(failures.length)return fail(failures[0],{failures,observations:publicObservations,scope,policyFingerprint});
 
-  const evidence={tenantId:scope.tenantId,siteId:scope.siteId,requestId:scope.requestId,agencyId:scope.agencyId,workerId:scope.workerId,assignmentFingerprint:scope.assignmentFingerprint,assuranceVersionId:scope.assuranceVersionId,policyFingerprint,subjectFingerprint:[...subjects][0],observations:safe.map(({sourceSystemId,sourceEventFingerprint,signalType,observedAt})=>({sourceSystemId,sourceEventFingerprint,signalType,observedAt}))};
+  const evidence={tenantId:scope.tenantId,siteId:scope.siteId,requestId:scope.requestId,agencyId:scope.agencyId,workerId:scope.workerId,assignmentFingerprint:scope.assignmentFingerprint,assuranceVersionId:scope.assuranceVersionId,policyFingerprint,subjectFingerprint:[...subjects][0],observations:safe.map(({sourceSystemId,sourceEventFingerprint,signalType,observedAt,provenanceBindingFingerprint})=>({sourceSystemId,sourceEventFingerprint,signalType,observedAt,provenanceBindingFingerprint}))};
   return Object.freeze({
     version:AGENCY_IDENTITY_CONTINUITY_VERSION,
     continuityPassed:true,
@@ -243,7 +276,7 @@ export async function evaluateAgencyIdentityContinuity({tenantId,siteId,agencyId
     payrollWriteAuthorized:false,
     clockingWriteAuthorized:false,
     authorityBoundary:'identity_continuity_evidence_only_no_ranking_schedule_payroll_invoice_or_clocking_mutation',
-    privacyBoundary:'no_subject_identifier_raw_badge_identifier_photo_biometric_date_of_birth_document_number_share_code_or_source_payload_in_decision_output',
-    evidenceRule:'role_and_site_specific_policy_must_be_satisfied_by_fresh_trusted_assignment_and_assurance_bound_observations_before_identity_continuity_can_pass',
+    privacyBoundary:'no_subject_identifier_raw_badge_identifier_photo_biometric_date_of_birth_document_number_share_code_source_payload_or_authentication_secret_in_decision_output',
+    evidenceRule:'role_and_site_specific_policy_must_be_satisfied_by_fresh_trusted_assignment_and_assurance_bound_observations_with_matching_authenticated_ingress_provenance_before_identity_continuity_can_pass',
   });
 }
