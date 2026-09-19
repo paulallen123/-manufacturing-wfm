@@ -2,17 +2,17 @@
 (function(root){
 'use strict';
 const PROVIDERS=Object.freeze({
-  implementation:{label:'Implementation',defaultRoute:'onboarding'},
-  integrations:{label:'Integrations',defaultRoute:'integrations'},
-  attendance:{label:'Attendance',defaultRoute:'attendance'},
-  agency:{label:'Agency labour',defaultRoute:'temporary'},
-  'manufacturing-cost':{label:'Manufacturing cost',defaultRoute:'costs'},
-  energy:{label:'Energy',defaultRoute:'insights'},
-  support:{label:'Support',defaultRoute:'support'},
-  learning:{label:'Learning',defaultRoute:'onboarding'},
-  handover:{label:'Shift handover',defaultRoute:'handover'},
-  documents:{label:'Documents',defaultRoute:'support'},
-  payroll:{label:'Payroll',defaultRoute:'payroll-run'}
+  implementation:{label:'Implementation',defaultRoute:'onboarding',allowedRoutes:Object.freeze(['onboarding'])},
+  integrations:{label:'Integrations',defaultRoute:'integrations',allowedRoutes:Object.freeze(['integrations'])},
+  attendance:{label:'Attendance',defaultRoute:'attendance',allowedRoutes:Object.freeze(['attendance'])},
+  agency:{label:'Agency labour',defaultRoute:'temporary',allowedRoutes:Object.freeze(['temporary'])},
+  'manufacturing-cost':{label:'Manufacturing cost',defaultRoute:'costs',allowedRoutes:Object.freeze(['costs'])},
+  energy:{label:'Energy',defaultRoute:'insights',allowedRoutes:Object.freeze(['insights'])},
+  support:{label:'Support',defaultRoute:'support',allowedRoutes:Object.freeze(['support'])},
+  learning:{label:'Learning',defaultRoute:'onboarding',allowedRoutes:Object.freeze(['onboarding'])},
+  handover:{label:'Shift handover',defaultRoute:'handover',allowedRoutes:Object.freeze(['handover'])},
+  documents:{label:'Documents',defaultRoute:'support',allowedRoutes:Object.freeze(['support'])},
+  payroll:{label:'Payroll',defaultRoute:'payroll-run',allowedRoutes:Object.freeze(['payroll-run'])}
 });
 const KINDS=new Set(['action','information','receipt']);
 const LIFECYCLES=new Set(['action_required','decision_sent','confirming_source','needs_verification','resolved']);
@@ -24,6 +24,10 @@ const REASONS=new Set([
   'DOCUMENT_ACK_REQUIRED','SUPPORT_RECOVERY','NEEDS_REVIEW','INFORMATION'
 ]);
 function provider(providerId){return PROVIDERS[providerId]||null;}
+function sourceRoute(p,inputRoute){
+  const requested=String(inputRoute||p.defaultRoute).trim();
+  return p.allowedRoutes.includes(requested)?requested:p.defaultRoute;
+}
 function normalise(providerId,input){
   const p=provider(providerId);if(!p||!input||typeof input!=='object')return null;
   const id=String(input.id||'').trim();if(!id)return null;
@@ -31,12 +35,12 @@ function normalise(providerId,input){
   const lifecycle=LIFECYCLES.has(input.lifecycle)?input.lifecycle:(kind==='receipt'?'resolved':'action_required');
   const evidenceState=EVIDENCE.has(input.evidenceState)?input.evidenceState:'unknown';
   const reasonCode=REASONS.has(input.reasonCode)?input.reasonCode:(kind==='information'?'INFORMATION':'NEEDS_REVIEW');
-  // Providers own facts, not presentation authority. The source is always bound to the registered provider.
+  // Providers own facts and source navigation. A signal cannot redirect a card outside its registered workflow contract.
   return Object.freeze({
     id:`${providerId}:${id}`,
     source:providerId,
     sourceId:input.sourceId==null?id:String(input.sourceId),
-    route:String(input.route||p.defaultRoute),
+    route:sourceRoute(p,input.route),
     reasonCode,kind,lifecycle,evidenceState,
     evidenceLabel:String(input.evidenceLabel||'Source evidence not yet verified'),
     title:String(input.title||p.label),
@@ -52,7 +56,7 @@ function normalise(providerId,input){
 }
 function implementationSignals(status){
   const out=[];if(!status||typeof status!=='object')return Object.freeze(out);
-  const state=String(status.state||'');if(!state||['NOT_STARTED','AWAITING_CUSTOMER_START','INVITATION_EXPIRED'].includes(state))return Object.freeze(out);
+  const state=String(status.state||'');if(!state||state==='NOT_STARTED')return Object.freeze(out);
   const completed=Number(status.completedRequirements||0),total=Number(status.totalRequirements||0);
   const requirements=Array.isArray(status.requirements)?status.requirements:[];
   const missing=requirements.filter(x=>x&&!x.satisfied);
@@ -70,6 +74,26 @@ function implementationSignals(status){
   }
   return Object.freeze(out.map(x=>Object.freeze(x)));
 }
+function integrationSignals(status){
+  const out=[];if(!status||typeof status!=='object')return Object.freeze(out);
+  const connections=Array.isArray(status.connections)?status.connections:[];
+  for(const connection of connections){
+    if(!connection||typeof connection!=='object')continue;
+    const id=String(connection.id||'').trim();if(!id)continue;
+    const state=String(connection.state||'').trim().toUpperCase();
+    const name=String(connection.name||connection.productKey||'Integration');
+    const common={sourceId:id,route:'integrations',kind:'action',lifecycle:'action_required',authority:'Authorised integration administrator',auditRef:`Integration ${id}`,meta:{state,productKey:connection.productKey||'',category:connection.category||''}};
+    if(state==='AUTHORIZATION_REQUIRED'){
+      out.push({...common,id:`authorize:${id}`,reasonCode:'NEEDS_REVIEW',evidenceState:'current',evidenceLabel:'Integration control plane state AUTHORIZATION_REQUIRED',title:`Authorize ${name}`,whyNow:'The source workflow requires administrator authorization before this connection can activate.',consequence:'Data synchronization remains unavailable until the owning integration workflow records authorization.',mandatory:true});
+    }else if(state==='REAUTH_REQUIRED'){
+      out.push({...common,id:`reauthorize:${id}`,reasonCode:'INTEGRATION_DEGRADED',evidenceState:'current',evidenceLabel:'Integration control plane state REAUTH_REQUIRED',title:`Reconnect ${name}`,whyNow:'The source workflow reports that the existing authorization must be renewed.',consequence:'Automated synchronization cannot be trusted until source authorization is restored.',mandatory:true});
+    }else if(state==='DEGRADED'){
+      const observedAt=connection.lastHealthAt||null;
+      out.push({...common,id:`degraded:${id}`,reasonCode:'INTEGRATION_DEGRADED',evidenceState:observedAt?'unknown':'missing',evidenceLabel:observedAt?`Source reports DEGRADED; last health evidence ${String(observedAt)}`:'Source reports DEGRADED but no health timestamp is available.',title:`Review ${name} connection`,whyNow:'The authoritative integration control plane reports this connection as degraded.',consequence:'Review the owning workflow before relying on this connection for workforce decisions.',createdAt:observedAt,mandatory:false});
+    }
+  }
+  return Object.freeze(out.map(x=>Object.freeze(x)));
+}
 function collect(registry){
   const out=[];if(!registry||typeof registry.entries!=='function')return Object.freeze(out);
   for(const [providerId,getter] of registry.entries()){
@@ -80,5 +104,5 @@ function collect(registry){
   }
   return Object.freeze(out);
 }
-root.WFMUXCycle12Model=Object.freeze({PROVIDERS,normalise,implementationSignals,collect});
+root.WFMUXCycle12Model=Object.freeze({PROVIDERS,normalise,implementationSignals,integrationSignals,collect});
 })(typeof window!=='undefined'?window:globalThis);
