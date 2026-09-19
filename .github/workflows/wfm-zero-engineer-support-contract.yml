@@ -86,101 +86,295 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          META="$RUNNER_TEMP/wfm-autonomy-artifacts.json"
-          SELECTED="$RUNNER_TEMP/wfm-prior-artifact.json"
-          DOWNLOAD_DIR="$RUNNER_TEMP/wfm-prior-artifact"
-          curl --fail-with-body --silent --show-error \
-            -H 'Accept: application/vnd.github+json' \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H 'X-GitHub-Api-Version: 2022-11-28' \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" > "$META"
-          python3 - "$META" "$GITHUB_RUN_ID" "$GITHUB_REF_NAME" "$SELECTED" <<'PY'
+          RUN_PAGES="$RUNNER_TEMP/wfm-autonomy-run-pages"
+          CANDIDATES="$RUNNER_TEMP/wfm-prior-runs.json"
+          REJECTIONS="$RUNNER_TEMP/wfm-prior-rejections.tsv"
+          HYDRATION="$GITHUB_WORKSPACE/incident-regression-corpus-hydration.json"
+          mkdir -p "$RUN_PAGES"
+          : > "$REJECTIONS"
+
+          BRANCH_ENCODED="$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "$GITHUB_REF_NAME")"
+          PAGE=1
+          while [ "$PAGE" -le 10 ]; do
+            PAGE_FILE="$RUN_PAGES/$PAGE.json"
+            curl --fail-with-body --silent --show-error \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/workflows/wfm-zero-engineer-support-contract.yml/runs?branch=${BRANCH_ENCODED}&per_page=100&page=${PAGE}" > "$PAGE_FILE"
+            COUNT="$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1], encoding="utf-8")).get("workflow_runs", [])))' "$PAGE_FILE")"
+            if [ "$COUNT" -lt 100 ]; then
+              break
+            fi
+            PAGE=$((PAGE + 1))
+          done
+
+          python3 - "$RUN_PAGES" "$GITHUB_RUN_ID" "$GITHUB_REF_NAME" "$CANDIDATES" <<'PY'
+          import json, pathlib, sys
+          pages, current_run, branch, output = sys.argv[1:]
+          candidates = []
+          for file in sorted(pathlib.Path(pages).glob('*.json'), key=lambda p: int(p.stem)):
+              data = json.load(open(file, encoding='utf-8'))
+              for run in data.get('workflow_runs', []):
+                  if str(run.get('id', '')) == str(current_run):
+                      continue
+                  if run.get('head_branch') != branch:
+                      continue
+                  if run.get('status') != 'completed':
+                      continue
+                  candidates.append({
+                      'runId': int(run.get('id') or 0),
+                      'headSha': str(run.get('head_sha') or '').lower(),
+                      'createdAt': str(run.get('created_at') or ''),
+                      'updatedAt': str(run.get('updated_at') or ''),
+                  })
+          candidates.sort(key=lambda item: (item['createdAt'], item['runId']), reverse=True)
+          with open(output, 'w', encoding='utf-8') as handle:
+              json.dump(candidates, handle)
+          PY
+
+          mapfile -t RUN_ROWS < <(python3 - "$CANDIDATES" <<'PY'
           import json, sys
-          meta, current_run, branch, output = sys.argv[1:]
+          for run in json.load(open(sys.argv[1], encoding='utf-8')):
+              print(f"{run['runId']}\t{run['headSha']}\t{run['createdAt']}")
+          PY
+          )
+
+          if [ "${#RUN_ROWS[@]}" -eq 0 ]; then
+            python3 - "$HYDRATION" <<'PY'
+          import json, sys
+          with open(sys.argv[1], 'w', encoding='utf-8') as handle:
+              json.dump({
+                  'schemaVersion': 1,
+                  'proof': 'workflow-prior-corpus-hydration',
+                  'status': 'BOOTSTRAP_NO_PRIOR_RUNS',
+                  'priorSnapshotLoaded': False,
+                  'durableHistoryKnown': False,
+                  'evidenceUnavailable': False,
+                  'selectedRunId': None,
+                  'selectedArtifactId': None,
+                  'rejectedCandidateCount': 0,
+                  'productionMutation': False,
+                  'customerMutation': False,
+                  'releaseAuthorityGranted': False,
+              }, handle, indent=2)
+              handle.write('\n')
+          PY
+            echo 'No prior completed autonomy run is available; continuity proof will bootstrap a new verified corpus snapshot.'
+            exit 0
+          fi
+
+          HISTORY_KNOWN=0
+          EVIDENCE_UNAVAILABLE=0
+          SELECTED_RUN_ID=''
+          SELECTED_ARTIFACT_ID=''
+          SELECTED_ARTIFACT_CREATED_AT=''
+          SELECTED_HEAD_SHA=''
+          SELECTED_DIR=''
+
+          for ROW in "${RUN_ROWS[@]}"; do
+            IFS=$'\t' read -r RUN_ID RUN_HEAD_SHA RUN_CREATED_AT <<< "$ROW"
+            ARTIFACT_META="$RUNNER_TEMP/wfm-artifacts-${RUN_ID}.json"
+            if ! curl --fail-with-body --silent --show-error \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/artifacts?per_page=100" > "$ARTIFACT_META"; then
+              EVIDENCE_UNAVAILABLE=1
+              printf '%s\t%s\t%s\n' "$RUN_ID" '' 'artifact-list-unavailable' >> "$REJECTIONS"
+              continue
+            fi
+
+            ARTIFACT_SELECTION="$RUNNER_TEMP/wfm-artifact-selection-${RUN_ID}.json"
+            python3 - "$ARTIFACT_META" "$RUN_ID" "$ARTIFACT_SELECTION" <<'PY'
+          import json, sys
+          meta, run_id, output = sys.argv[1:]
           data = json.load(open(meta, encoding='utf-8'))
           candidates = []
+          expected = f'portable-autonomy-proof-{run_id}'
           for artifact in data.get('artifacts', []):
               if artifact.get('expired'):
                   continue
-              if not str(artifact.get('name', '')).startswith('portable-autonomy-proof-'):
-                  continue
-              run = artifact.get('workflow_run') or {}
-              if str(run.get('id', '')) == str(current_run):
-                  continue
-              if run.get('head_branch') != branch:
+              if artifact.get('name') != expected:
                   continue
               candidates.append((str(artifact.get('created_at') or ''), int(artifact.get('id') or 0), artifact))
           candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
-          chosen = None
           if candidates:
               artifact = candidates[0][2]
-              run = artifact.get('workflow_run') or {}
-              chosen = {
-                  'artifactId': artifact.get('id'),
-                  'artifactName': artifact.get('name'),
-                  'artifactCreatedAt': artifact.get('created_at'),
-                  'workflowRunId': run.get('id'),
-                  'headSha': run.get('head_sha'),
-              }
-          if chosen:
               with open(output, 'w', encoding='utf-8') as handle:
-                  json.dump(chosen, handle)
+                  json.dump({
+                      'artifactId': int(artifact.get('id') or 0),
+                      'artifactName': artifact.get('name'),
+                      'artifactCreatedAt': artifact.get('created_at'),
+                  }, handle)
           PY
-          if [ ! -s "$SELECTED" ]; then
-            echo 'No prior autonomy artifact is available; continuity proof will bootstrap a new verified corpus snapshot.'
-            exit 0
-          fi
-          ARTIFACT_ID="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["artifactId"])' "$SELECTED")"
-          mkdir -p "$DOWNLOAD_DIR"
-          curl --fail-with-body --silent --show-error --location \
-            -H 'Accept: application/vnd.github+json' \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H 'X-GitHub-Api-Version: 2022-11-28' \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" \
-            --output "$RUNNER_TEMP/wfm-prior-artifact.zip"
-          unzip -q "$RUNNER_TEMP/wfm-prior-artifact.zip" -d "$DOWNLOAD_DIR"
-          if [ ! -s "$DOWNLOAD_DIR/incident-regression-corpus.snapshot.json" ]; then
-            echo 'Prior artifact predates durable corpus evidence; continuity proof will bootstrap from the current verified catalog.'
-            exit 0
-          fi
-          python3 - "$DOWNLOAD_DIR" "$SELECTED" <<'PY'
+            if [ ! -s "$ARTIFACT_SELECTION" ]; then
+              printf '%s\t%s\t%s\n' "$RUN_ID" '' 'no-preserved-proof-artifact' >> "$REJECTIONS"
+              continue
+            fi
+
+            ARTIFACT_ID="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["artifactId"])' "$ARTIFACT_SELECTION")"
+            ARTIFACT_CREATED_AT="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["artifactCreatedAt"])' "$ARTIFACT_SELECTION")"
+            DOWNLOAD_DIR="$RUNNER_TEMP/wfm-prior-artifact-${RUN_ID}"
+            ZIP_FILE="$RUNNER_TEMP/wfm-prior-artifact-${RUN_ID}.zip"
+            rm -rf "$DOWNLOAD_DIR" "$ZIP_FILE"
+            mkdir -p "$DOWNLOAD_DIR"
+            if ! curl --fail-with-body --silent --show-error --location \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" \
+              --output "$ZIP_FILE"; then
+              EVIDENCE_UNAVAILABLE=1
+              printf '%s\t%s\t%s\n' "$RUN_ID" "$ARTIFACT_ID" 'artifact-download-unavailable' >> "$REJECTIONS"
+              continue
+            fi
+            if ! unzip -q "$ZIP_FILE" -d "$DOWNLOAD_DIR"; then
+              EVIDENCE_UNAVAILABLE=1
+              printf '%s\t%s\t%s\n' "$RUN_ID" "$ARTIFACT_ID" 'artifact-unzip-failed' >> "$REJECTIONS"
+              continue
+            fi
+
+            if [ -s "$DOWNLOAD_DIR/incident-regression-corpus.snapshot.json" ]; then
+              HISTORY_KNOWN=1
+            fi
+
+            VERIFY_ERROR="$RUNNER_TEMP/wfm-prior-verify-${RUN_ID}.txt"
+            if python3 - "$DOWNLOAD_DIR" "$RUN_HEAD_SHA" 2>"$VERIFY_ERROR" <<'PY'
           import hashlib, json, pathlib, sys
           directory = pathlib.Path(sys.argv[1])
-          selected = json.load(open(sys.argv[2], encoding='utf-8'))
+          expected_head_sha = str(sys.argv[2] or '').lower()
           portable_path = directory / 'portable-autonomy-proof.json'
           envelope_path = directory / 'autonomy-proof-envelope.json'
           snapshot_path = directory / 'incident-regression-corpus.snapshot.json'
-          for candidate in (portable_path, envelope_path, snapshot_path):
+          continuity_path = directory / 'incident-regression-corpus-continuity.json'
+          for candidate in (portable_path, envelope_path, snapshot_path, continuity_path):
               if not candidate.is_file():
-                  raise SystemExit(f'prior autonomy artifact missing required evidence: {candidate.name}')
+                  raise SystemExit(f'missing-required-evidence:{candidate.name}')
           portable_raw = portable_path.read_bytes()
           snapshot_raw = snapshot_path.read_bytes()
           portable = json.loads(portable_raw)
           envelope = json.loads(envelope_path.read_text(encoding='utf-8'))
           snapshot = json.loads(snapshot_raw)
+          continuity = json.loads(continuity_path.read_text(encoding='utf-8'))
           corpus = portable.get('incidentRegressionCorpus') or {}
           sha = lambda value: hashlib.sha256(value).hexdigest()
           accepted_envelope_states = {'LOGIC_ONLY_RELEASE_BLOCKED', 'ELIGIBLE_EXACT_RELEASE_EVIDENCE'}
           checks = [
               portable.get('status') == 'PASS',
               portable.get('exactRuntime') is True,
+              portable.get('providerNeutral') is True,
               portable.get('productionMutation') is False,
               portable.get('customerMutation') is False,
               envelope.get('finalEvidenceStatus') in accepted_envelope_states,
               envelope.get('bindingMatches') is True,
-              envelope.get('workflowHeadSha') == str(selected.get('headSha') or '').lower(),
+              envelope.get('workflowHeadSha') == expected_head_sha,
               envelope.get('portableProofSha256') == sha(portable_raw),
               corpus.get('snapshotSha256') == sha(snapshot_raw),
               corpus.get('corpusDigest') == snapshot.get('corpusDigest'),
               isinstance(snapshot.get('entryCount'), int) and snapshot.get('entryCount') > 0,
+              continuity.get('status') == 'PASS',
+              continuity.get('proof') == 'provider-neutral-incident-regression-corpus-continuity',
+              continuity.get('outputCorpusDigest') == snapshot.get('corpusDigest'),
+              continuity.get('outputSnapshotSha256') == sha(snapshot_raw),
+              continuity.get('actionAuthorityGranted') is False,
+              continuity.get('productionAuthorityGranted') is False,
+              continuity.get('releaseAuthorityGranted') is False,
+              continuity.get('crossTenantMutation') is False,
+              continuity.get('productionMutation') is False,
+              continuity.get('customerMutation') is False,
           ]
           if not all(checks):
-              raise SystemExit('prior incident corpus artifact failed workflow/proof/hash binding verification')
+              raise SystemExit('workflow-proof-hash-or-authority-binding-failed')
           PY
-          PRIOR="$RUNNER_TEMP/incident-regression-corpus.prior.json"
-          cp "$DOWNLOAD_DIR/incident-regression-corpus.snapshot.json" "$PRIOR"
-          echo "WFM_INCIDENT_CORPUS_INPUT=$PRIOR" >> "$GITHUB_ENV"
-          echo 'Prior workflow-bound incident regression corpus verified and loaded as provider-neutral proof input.'
+            then
+              SELECTED_RUN_ID="$RUN_ID"
+              SELECTED_ARTIFACT_ID="$ARTIFACT_ID"
+              SELECTED_ARTIFACT_CREATED_AT="$ARTIFACT_CREATED_AT"
+              SELECTED_HEAD_SHA="$RUN_HEAD_SHA"
+              SELECTED_DIR="$DOWNLOAD_DIR"
+              break
+            fi
+
+            REASON="$(tr '\n\t' '  ' < "$VERIFY_ERROR" | sed 's/[[:space:]]\+/ /g' | cut -c1-240)"
+            printf '%s\t%s\t%s\n' "$RUN_ID" "$ARTIFACT_ID" "verification-failed:${REASON:-unknown}" >> "$REJECTIONS"
+          done
+
+          if [ -n "$SELECTED_DIR" ]; then
+            PRIOR="$RUNNER_TEMP/incident-regression-corpus.prior.json"
+            cp "$SELECTED_DIR/incident-regression-corpus.snapshot.json" "$PRIOR"
+            echo "WFM_INCIDENT_CORPUS_INPUT=$PRIOR" >> "$GITHUB_ENV"
+            python3 - "$HYDRATION" "$REJECTIONS" "$SELECTED_RUN_ID" "$SELECTED_ARTIFACT_ID" "$SELECTED_ARTIFACT_CREATED_AT" "$SELECTED_HEAD_SHA" "$HISTORY_KNOWN" "$EVIDENCE_UNAVAILABLE" <<'PY'
+          import json, pathlib, sys
+          output, rejection_file, run_id, artifact_id, created_at, head_sha, history_known, evidence_unavailable = sys.argv[1:]
+          rejected = []
+          for line in pathlib.Path(rejection_file).read_text(encoding='utf-8').splitlines():
+              if not line:
+                  continue
+              parts = line.split('\t', 2)
+              rejected.append({'runId': parts[0], 'artifactId': parts[1] or None, 'reason': parts[2] if len(parts) > 2 else 'unknown'})
+          with open(output, 'w', encoding='utf-8') as handle:
+              json.dump({
+                  'schemaVersion': 1,
+                  'proof': 'workflow-prior-corpus-hydration',
+                  'status': 'PASS_SELECTED_VERIFIED_PREDECESSOR',
+                  'priorSnapshotLoaded': True,
+                  'durableHistoryKnown': history_known == '1',
+                  'evidenceUnavailable': evidence_unavailable == '1',
+                  'selectedRunId': run_id,
+                  'selectedArtifactId': artifact_id,
+                  'selectedArtifactCreatedAt': created_at,
+                  'selectedHeadSha': head_sha,
+                  'rejectedCandidateCount': len(rejected),
+                  'rejectedCandidates': rejected,
+                  'productionMutation': False,
+                  'customerMutation': False,
+                  'releaseAuthorityGranted': False,
+              }, handle, indent=2)
+              handle.write('\n')
+          PY
+            echo "Verified prior corpus loaded from run ${SELECTED_RUN_ID} artifact ${SELECTED_ARTIFACT_ID}; newer invalid/incomplete candidates were skipped safely."
+            exit 0
+          fi
+
+          STATUS='BOOTSTRAP_NO_DURABLE_HISTORY'
+          if [ "$HISTORY_KNOWN" = '1' ]; then
+            STATUS='FAIL_CLOSED_DURABLE_HISTORY_UNAUTHENTICATED'
+          elif [ "$EVIDENCE_UNAVAILABLE" = '1' ]; then
+            STATUS='FAIL_CLOSED_PRIOR_EVIDENCE_UNAVAILABLE'
+          fi
+          python3 - "$HYDRATION" "$REJECTIONS" "$STATUS" "$HISTORY_KNOWN" "$EVIDENCE_UNAVAILABLE" <<'PY'
+          import json, pathlib, sys
+          output, rejection_file, status, history_known, evidence_unavailable = sys.argv[1:]
+          rejected = []
+          for line in pathlib.Path(rejection_file).read_text(encoding='utf-8').splitlines():
+              if not line:
+                  continue
+              parts = line.split('\t', 2)
+              rejected.append({'runId': parts[0], 'artifactId': parts[1] or None, 'reason': parts[2] if len(parts) > 2 else 'unknown'})
+          with open(output, 'w', encoding='utf-8') as handle:
+              json.dump({
+                  'schemaVersion': 1,
+                  'proof': 'workflow-prior-corpus-hydration',
+                  'status': status,
+                  'priorSnapshotLoaded': False,
+                  'durableHistoryKnown': history_known == '1',
+                  'evidenceUnavailable': evidence_unavailable == '1',
+                  'selectedRunId': None,
+                  'selectedArtifactId': None,
+                  'rejectedCandidateCount': len(rejected),
+                  'rejectedCandidates': rejected,
+                  'productionMutation': False,
+                  'customerMutation': False,
+                  'releaseAuthorityGranted': False,
+              }, handle, indent=2)
+              handle.write('\n')
+          PY
+          if [[ "$STATUS" == FAIL_CLOSED_* ]]; then
+            echo "::error::${STATUS}: prior durable incident history could not be authenticated; refusing to bootstrap from zero." >&2
+            exit 1
+          fi
+          echo 'No durable prior corpus history was observed; continuity proof may bootstrap from the current verified catalog.'
 
       - name: Classify canonical trust anchor
         shell: bash
@@ -259,16 +453,26 @@ jobs:
           test -s portable-autonomy-proof.json
           test -s incident-regression-corpus.snapshot.json
           test -s incident-regression-corpus-continuity.json
+          test -s incident-regression-corpus-hydration.json
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import { createHash } from 'node:crypto';
           const p = JSON.parse(fs.readFileSync('portable-autonomy-proof.json', 'utf8'));
           const corpusRaw = fs.readFileSync('incident-regression-corpus.snapshot.json', 'utf8');
           const corpus = JSON.parse(corpusRaw);
+          const hydration = JSON.parse(fs.readFileSync('incident-regression-corpus-hydration.json', 'utf8'));
           const corpusSha = createHash('sha256').update(corpusRaw).digest('hex');
           const b = p.releaseBinding;
           const protectedAnchor = process.env.WFM_CANONICAL_TRUST_ANCHOR_PROTECTED === 'true';
           const priorCorpusExpected = Boolean(process.env.WFM_INCIDENT_CORPUS_INPUT);
+          const hydrationValid = hydration?.proof === 'workflow-prior-corpus-hydration'
+            && hydration.priorSnapshotLoaded === priorCorpusExpected
+            && hydration.productionMutation === false
+            && hydration.customerMutation === false
+            && hydration.releaseAuthorityGranted === false
+            && (priorCorpusExpected
+              ? hydration.status === 'PASS_SELECTED_VERIFIED_PREDECESSOR'
+              : hydration.status === 'BOOTSTRAP_NO_PRIOR_RUNS' || hydration.status === 'BOOTSTRAP_NO_DURABLE_HISTORY');
           const common = p.status === 'PASS'
             && p.providerNeutral === true
             && p.requiresGitHubHostedRunner === false
@@ -276,6 +480,7 @@ jobs:
             && p.productionMutation === false
             && p.customerMutation === false
             && p.canonicalTrustAnchorProtected === protectedAnchor
+            && hydrationValid
             && p.incidentRegressionCorpus
             && p.incidentRegressionCorpus.priorSnapshotLoaded === priorCorpusExpected
             && p.incidentRegressionCorpus.corpusDigest === corpus.corpusDigest
@@ -327,6 +532,7 @@ jobs:
 
           const sha256 = (value) => createHash('sha256').update(value).digest('hex');
           const proofPath = 'portable-autonomy-proof.json';
+          const hydrationPath = 'incident-regression-corpus-hydration.json';
           let portable = null;
           let portableRaw = null;
           let parseError = null;
@@ -336,6 +542,16 @@ jobs:
               portable = JSON.parse(portableRaw.toString('utf8'));
             } catch (error) {
               parseError = String(error?.message || error);
+            }
+          }
+          let hydration = null;
+          let hydrationRaw = null;
+          if (fs.existsSync(hydrationPath)) {
+            hydrationRaw = fs.readFileSync(hydrationPath);
+            try {
+              hydration = JSON.parse(hydrationRaw.toString('utf8'));
+            } catch (error) {
+              parseError = parseError || `hydration:${String(error?.message || error)}`;
             }
           }
 
@@ -392,6 +608,10 @@ jobs:
             incidentRegressionCorpusDigest: portable?.incidentRegressionCorpus?.corpusDigest || null,
             incidentRegressionCorpusSnapshotSha256: portable?.incidentRegressionCorpus?.snapshotSha256 || null,
             incidentRegressionCorpusPriorSnapshotLoaded: portable?.incidentRegressionCorpus?.priorSnapshotLoaded === true,
+            incidentCorpusHydrationStatus: hydration?.status || null,
+            incidentCorpusHydrationSha256: hydrationRaw ? sha256(hydrationRaw) : null,
+            incidentCorpusHydrationSelectedRunId: hydration?.selectedRunId || null,
+            incidentCorpusHydrationSelectedArtifactId: hydration?.selectedArtifactId || null,
             canonicalRevalidationOutcome,
             proofReceiptOutcome,
             releaseBoundaryOutcome,
@@ -422,5 +642,6 @@ jobs:
             autonomy-proof-envelope.json
             incident-regression-corpus.snapshot.json
             incident-regression-corpus-continuity.json
+            incident-regression-corpus-hydration.json
           if-no-files-found: warn
           retention-days: 7
