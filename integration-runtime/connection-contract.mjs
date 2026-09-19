@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { configurationFingerprint, evidenceMatchesConfiguration } from './evidence-binding.mjs';
 
 const ALLOWED_TRANSPORTS = new Set([
   'rest_api', 'webhook', 'queue', 'stream', 'sftp', 'https_file',
@@ -93,6 +94,8 @@ export function approvalFingerprint(profile) {
     .digest('hex');
 }
 
+export { configurationFingerprint };
+
 export function validateConnectionProfile(profile) {
   const errors = [];
   if (!isObject(profile)) return { ok: false, errors: ['profile must be an object'] };
@@ -165,6 +168,12 @@ function requireTrustedEvidence(evidence, label, reasons) {
   if (!isOpaqueReference(evidence?.evidenceRef)) reasons.push(`${label} requires a reviewable evidence reference`);
 }
 
+function requireCurrentConfigurationEvidence(evidence, profile, label, reasons) {
+  if (!evidenceMatchesConfiguration(evidence, profile)) {
+    reasons.push(`${label} was not produced for the current reviewed connection configuration`);
+  }
+}
+
 export function activationReadiness(profile) {
   const validation = validateConnectionProfile(profile);
   const reasons = [...validation.errors];
@@ -173,6 +182,7 @@ export function activationReadiness(profile) {
   if (profile?.connectionTest?.mode !== 'bounded_non_mutating') reasons.push('connection test must be bounded and non-mutating');
   if (profile?.connectionTest?.status === 'passed') {
     requireTrustedEvidence(profile.connectionTest, 'connection test', reasons);
+    requireCurrentConfigurationEvidence(profile.connectionTest, profile, 'connection test', reasons);
     if (profile.connectionTest.mutationObserved !== false) reasons.push('connection test must prove no mutation was observed');
     if (profile.connectionTest.rawSensitiveDataPersisted !== false) reasons.push('connection test must prove raw sensitive data was not persisted');
   }
@@ -181,6 +191,7 @@ export function activationReadiness(profile) {
       reasons.push('retry/recovery must be proven before activation');
     } else {
       requireTrustedEvidence(profile.recoveryProof, 'recovery proof', reasons);
+      requireCurrentConfigurationEvidence(profile.recoveryProof, profile, 'recovery proof', reasons);
       if (profile.recoveryProof.transientFailureObserved !== true) reasons.push('recovery proof must include an observed transient failure');
       if (profile.recoveryProof.successfulRecoveryObserved !== true) reasons.push('recovery proof must include successful recovery after the observed failure');
       if (profile.recoveryProof.reconciliationPassed !== true) reasons.push('recovery proof must reconcile successfully after recovery');
@@ -191,6 +202,7 @@ export function activationReadiness(profile) {
     reasons.push('reconciliation must pass');
   } else {
     requireTrustedEvidence(profile.reconciliation, 'reconciliation', reasons);
+    requireCurrentConfigurationEvidence(profile.reconciliation, profile, 'reconciliation', reasons);
   }
   if (profile?.activation?.approved !== true) reasons.push('explicit activation approval is required');
 
