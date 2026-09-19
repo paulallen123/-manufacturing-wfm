@@ -6,7 +6,7 @@ const require = createRequire(import.meta.url);
 const {
   createAutonomousRepairPipeline,
   computeRepairEvidenceChainDigest,
-} = require('./autonomous-repair-pipeline.cjs');
+} = require('../resilience/autonomous-repair-pipeline.cjs');
 const d = (v) => createHash('sha256').update(String(v)).digest('hex');
 const expect = async (fn, code) => {
   try { await fn(); } catch (error) { assert.equal(error.code, code); return; }
