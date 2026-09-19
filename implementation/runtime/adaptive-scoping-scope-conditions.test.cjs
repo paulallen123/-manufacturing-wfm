@@ -164,3 +164,84 @@ test('backward nested dependencies are accepted and remain sequential', () => {
   const second = evaluateGraph(nested, { answers: { 'purchased-payroll': true } });
   assert.deepEqual(second.questions.map(item => item.id), ['needs-api']);
 });
+
+test('negated branch waits for a valid controlling answer instead of treating missing as false', () => {
+  const negated = compileGraph({
+    version: 'unknown-negation',
+    questions: [
+      {
+        id: 'api-available',
+        prompt: 'Is an API available?',
+        options: [
+          { value: true, effects: [{ type: 'CONFIG', key: 'integration.api', value: true }] },
+          { value: false, effects: [{ type: 'CONFIG', key: 'integration.api', value: false }] }
+        ]
+      },
+      {
+        id: 'file-fallback',
+        prompt: 'Configure file fallback?',
+        when: { not: { question: 'api-available', equals: true } },
+        options: [
+          { value: true, effects: [{ type: 'CONFIG', key: 'integration.fileFallback', value: true }] },
+          { value: false, effects: [{ type: 'RISK', key: 'integration.noFallback' }] }
+        ]
+      }
+    ]
+  });
+
+  const unresolved = evaluateGraph(negated, {});
+  assert.deepEqual(unresolved.questions.map(item => item.id), ['api-available']);
+  assert.ok(unresolved.operations.some(item => item.type === 'NO_OP' && item.key === 'file-fallback' && item.reason === 'waiting-on-valid-dependency'));
+
+  const apiAvailable = evaluateGraph(negated, { answers: { 'api-available': true } });
+  assert.deepEqual(apiAvailable.questions, []);
+  assert.ok(apiAvailable.operations.some(item => item.type === 'NO_OP' && item.key === 'file-fallback' && item.reason === 'branch-not-reachable'));
+
+  const apiUnavailable = evaluateGraph(negated, { answers: { 'api-available': false } });
+  assert.deepEqual(apiUnavailable.questions.map(item => item.id), ['file-fallback']);
+});
+
+test('compound any branch remains undecided while an earlier dependency is unanswered', () => {
+  const compound = compileGraph({
+    version: 'unknown-any',
+    questions: [
+      {
+        id: 'erp-api',
+        prompt: 'ERP API?',
+        options: [
+          { value: true, effects: [{ type: 'CONFIG', key: 'erp.api', value: true }] },
+          { value: false, effects: [{ type: 'CONFIG', key: 'erp.api', value: false }] }
+        ]
+      },
+      {
+        id: 'payroll-api',
+        prompt: 'Payroll API?',
+        options: [
+          { value: true, effects: [{ type: 'CONFIG', key: 'payroll.api', value: true }] },
+          { value: false, effects: [{ type: 'CONFIG', key: 'payroll.api', value: false }] }
+        ]
+      },
+      {
+        id: 'integration-health',
+        prompt: 'Enable continuous integration health checks?',
+        when: { any: [{ question: 'erp-api', equals: true }, { question: 'payroll-api', equals: true }] },
+        options: [
+          { value: true, effects: [{ type: 'TEST', key: 'integration.health' }] },
+          { value: false, effects: [{ type: 'RISK', key: 'integration.healthDisabled' }] }
+        ]
+      }
+    ]
+  });
+
+  const partial = evaluateGraph(compound, { answers: { 'erp-api': false } });
+  assert.deepEqual(partial.questions.map(item => item.id), ['payroll-api']);
+  assert.ok(partial.operations.some(item => item.type === 'NO_OP' && item.key === 'integration-health' && item.reason === 'waiting-on-valid-dependency'));
+
+  const none = evaluateGraph(compound, { answers: { 'erp-api': false, 'payroll-api': false } });
+  assert.deepEqual(none.questions, []);
+  assert.ok(none.operations.some(item => item.type === 'NO_OP' && item.key === 'integration-health' && item.reason === 'branch-not-reachable'));
+
+  const one = evaluateGraph(compound, { answers: { 'erp-api': false, 'payroll-api': true } });
+  assert.deepEqual(one.questions.map(item => item.id), ['integration-health']);
+  assert.equal(assertEveryReachablePathActionable(compound, [[]]), true);
+});
