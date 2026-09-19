@@ -5,6 +5,9 @@ COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
 RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp/runtime.tgz" | sha256sum -c - \
  && tar -xzf /tmp/runtime.tgz -C /app \
  && rm -f /tmp/runtime.tgz
+COPY scripts/retire-legacy-presentation.mjs /tmp/retire-legacy-presentation.mjs
+RUN node /tmp/retire-legacy-presentation.mjs /app/public \
+ && rm -f /tmp/retire-legacy-presentation.mjs
 
 # Resource-side identity survival overlay. Keep the original sealed artifact intact and
 # add the defence overlay as a separately reviewable layer.
