@@ -3,6 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const http = require('node:http');
 const os = require('node:os');
 const path = require('node:path');
 const { Readable } = require('node:stream');
@@ -10,6 +11,7 @@ const { createHash } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const {
   createWorkflowActionEvidenceBridge,
+  fetchAuthoritativeTimeReview,
   TIME_REVIEW_PATH
 } = require('./workflow-action-evidence-bridge.cjs');
 
@@ -118,4 +120,38 @@ test('source failure and non-GET access fail closed without exposing a synthetic
     const write=await call(f.engine,f.manager,'POST');
     assert.equal(write.status,405);
   }finally{f.close();}
+});
+
+test('default source reader preserves hosted reverse-proxy protocol context',async()=>{
+  let seen=null;
+  const source=http.createServer((req,res)=>{
+    seen={host:req.headers.host,proto:req.headers['x-forwarded-proto'],cookie:req.headers.cookie};
+    res.statusCode=200;
+    res.setHeader('content-type','application/json');
+    res.end(JSON.stringify(report()));
+  });
+  await new Promise((resolve,reject)=>{
+    source.once('error',reject);
+    source.listen(0,'127.0.0.1',resolve);
+  });
+  try{
+    const port=source.address().port;
+    const result=await fetchAuthoritativeTimeReview({
+      headers:{
+        host:'wfm-ci.invalid',
+        cookie:'wfm_session=test-session',
+        'x-forwarded-proto':'https'
+      },
+      socket:{localPort:port}
+    },{port,timeoutMs:1000});
+    assert.equal(result.status,200);
+    assert.equal(result.body.tenant,'alpha');
+    assert.deepEqual(seen,{
+      host:'wfm-ci.invalid',
+      proto:'https',
+      cookie:'wfm_session=test-session'
+    });
+  }finally{
+    await new Promise(resolve=>source.close(resolve));
+  }
 });
