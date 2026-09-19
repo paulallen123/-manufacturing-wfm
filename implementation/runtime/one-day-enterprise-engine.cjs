@@ -8,7 +8,8 @@ const INTERNAL_HEADER = 'x-wfm-implementation-internal';
 const CONTRACT_WEBHOOK_HEADER = 'x-wfm-contract-webhook';
 
 const REQUIREMENTS = Object.freeze([
-  { key: 'tenant-environment', label: 'Tenant environment', minConfidence: 0.99, budgetMinutes: 15, dependsOn: [] },
+  { key: 'configuration-scope', label: 'Customer implementation scope', minConfidence: 1.0, budgetMinutes: 5, dependsOn: [] },
+  { key: 'tenant-environment', label: 'Tenant environment', minConfidence: 0.99, budgetMinutes: 15, dependsOn: ['configuration-scope'] },
   { key: 'identity-access', label: 'Identity and access', minConfidence: 0.99, budgetMinutes: 20, dependsOn: ['tenant-environment'] },
   { key: 'source-systems', label: 'Authoritative source systems', minConfidence: 0.95, budgetMinutes: 45, dependsOn: ['identity-access'] },
   { key: 'people-data', label: 'People data and hierarchy', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['source-systems'] },
@@ -182,6 +183,9 @@ function createOneDayEnterpriseEngine(options = {}) {
       'id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL, tenant TEXT NOT NULL, kind TEXT NOT NULL,' +
       'status TEXT NOT NULL, confidence REAL NOT NULL, source TEXT NOT NULL, detail_json TEXT NOT NULL,' +
       'created_at TEXT NOT NULL);' +
+    'CREATE TABLE IF NOT EXISTS implementation_scope(' +
+      'run_id TEXT PRIMARY KEY, tenant TEXT NOT NULL, scope_json TEXT NOT NULL, submitted_by_hash TEXT NOT NULL,' +
+      'created_at TEXT NOT NULL, updated_at TEXT NOT NULL);' +
     'CREATE TABLE IF NOT EXISTS implementation_decisions(' +
       'id TEXT PRIMARY KEY, run_id TEXT NOT NULL, tenant TEXT NOT NULL, decision_key TEXT NOT NULL,' +
       'question TEXT NOT NULL, proposal_json TEXT NOT NULL, confidence REAL NOT NULL, risk TEXT NOT NULL,' +
@@ -235,6 +239,11 @@ function createOneDayEnterpriseEngine(options = {}) {
   );
   const evidenceByKind = db.prepare(
     'SELECT * FROM implementation_evidence WHERE run_id=? AND tenant=? AND kind=? ORDER BY id DESC LIMIT 1'
+  );
+  const scopeByRun = db.prepare('SELECT * FROM implementation_scope WHERE run_id=? AND tenant=?');
+  const upsertScope = db.prepare(
+    'INSERT INTO implementation_scope(run_id,tenant,scope_json,submitted_by_hash,created_at,updated_at) VALUES(?,?,?,?,?,?) ' +
+    'ON CONFLICT(run_id) DO UPDATE SET scope_json=excluded.scope_json,submitted_by_hash=excluded.submitted_by_hash,updated_at=excluded.updated_at'
   );
   const insertDecision = db.prepare(
     'INSERT INTO implementation_decisions(id,run_id,tenant,decision_key,question,proposal_json,confidence,risk,status,decision_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)'
@@ -333,6 +342,11 @@ function createOneDayEnterpriseEngine(options = {}) {
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
+    const scopeRow = scopeByRun.get(run.id, run.tenant);
+    let customerScope = null;
+    if (scopeRow) {
+      try { customerScope = JSON.parse(scopeRow.scope_json); } catch {}
+    }
     let learningSummary = null;
     if (learningSummaryProvider) {
       try { learningSummary = learningSummaryProvider(run.tenant); } catch {}
@@ -342,7 +356,22 @@ function createOneDayEnterpriseEngine(options = {}) {
       const row = map.get(requirement.key);
       let derived = null;
 
-      if (learningSummary && requirement.key === 'role-learning') {
+      if (requirement.key === 'configuration-scope') {
+        const ok = Boolean(customerScope);
+        derived = {
+          status: ok ? 'PASS' : 'MISSING',
+          confidence: ok ? 1 : 0,
+          source: 'customer-scope',
+          detail: ok ? {
+            companyName: customerScope.companyName,
+            employeeCount: customerScope.employeeCount,
+            countryCount: customerScope.countries.length,
+            siteCount: customerScope.sites.length,
+            systemCount: customerScope.sourceSystems.length,
+            featureCount: customerScope.features.length
+          } : null
+        };
+      } else if (learningSummary && requirement.key === 'role-learning') {
         const ok = learningSummary.users > 0 && learningSummary.assignments >= learningSummary.users;
         derived = {
           status: ok ? 'PASS' : 'MISSING',
@@ -416,7 +445,9 @@ function createOneDayEnterpriseEngine(options = {}) {
       requirements,
       decisions,
       blockingDecisions,
-      learningSummary
+      learningSummary,
+      scopeCaptured: Boolean(customerScope),
+      customerScope
     };
   }
 
@@ -582,6 +613,78 @@ function createOneDayEnterpriseEngine(options = {}) {
     return writeJson(res, 201, readinessForRun(run));
   }
 
+  function cleanList(value, maxItems = 40, maxLength = 120) {
+    const source = Array.isArray(value) ? value : String(value || '').split(',');
+    return [...new Set(source.map(item => compact(item, maxLength)).filter(Boolean))].slice(0, maxItems);
+  }
+
+  function normaliseScope(body = {}) {
+    const companyName = compact(body.companyName || body.organisationName, 160);
+    const countries = cleanList(body.countries, 30, 80);
+    const sites = cleanList(body.sites, 100, 120);
+    const employeeCount = Number(body.employeeCount);
+    const sourceSystems = cleanList(body.sourceSystems, 60, 120);
+    const features = cleanList(body.features, 60, 120);
+    const workPatterns = cleanList(body.workPatterns, 40, 120);
+    const clockingMethods = cleanList(body.clockingMethods, 20, 120);
+    const payrollSystem = compact(body.payrollSystem, 120);
+    const hcmSystem = compact(body.hcmSystem, 120);
+    const erpSystem = compact(body.erpSystem, 120);
+    const priorities = compact(body.priorities, 1000);
+    const notes = compact(body.notes, 2000);
+    if (!companyName || countries.length === 0 || sites.length === 0 || !Number.isInteger(employeeCount) || employeeCount <= 0 || employeeCount > 1000000) {
+      const error = new Error('companyName, at least one country, at least one site and a valid employeeCount are required.');
+      error.statusCode = 400;
+      throw error;
+    }
+    return {
+      companyName,
+      countries,
+      sites,
+      employeeCount,
+      sourceSystems,
+      features,
+      workPatterns,
+      clockingMethods,
+      payrollSystem,
+      hcmSystem,
+      erpSystem,
+      agencyLabour: Boolean(body.agencyLabour),
+      priorities,
+      notes
+    };
+  }
+
+  function handleScopeGet(ctx, res) {
+    const run = currentRun.get(ctx.tenant);
+    if (!run) return writeJson(res, 409, { error: 'Start the implementation before providing configuration scope.' });
+    const row = scopeByRun.get(run.id, ctx.tenant);
+    return writeJson(res, 200, {
+      runId: run.id,
+      scopeCaptured: Boolean(row),
+      scope: row ? JSON.parse(row.scope_json) : null,
+      updatedAt: row?.updated_at || null
+    });
+  }
+
+  async function handleScope(ctx, req, res) {
+    const run = currentRun.get(ctx.tenant);
+    if (!run) return writeJson(res, 409, { error: 'Start the implementation before providing configuration scope.' });
+    const scope = normaliseScope(await readJson(req));
+    const existing = scopeByRun.get(run.id, ctx.tenant);
+    const ts = nowIso();
+    upsertScope.run(run.id, ctx.tenant, JSON.stringify(scope), sha256(ctx.email).slice(0, 16), existing?.created_at || ts, ts);
+    record(run.id, ctx.tenant, existing ? 'CUSTOMER_SCOPE_UPDATED' : 'CUSTOMER_SCOPE_SUBMITTED', {
+      by: sha256(ctx.email).slice(0, 16),
+      employees: scope.employeeCount,
+      countries: scope.countries.length,
+      sites: scope.sites.length,
+      sourceSystems: scope.sourceSystems.length,
+      features: scope.features.length
+    });
+    return writeJson(res, existing ? 200 : 201, recompute(run));
+  }
+
   async function handleEvidence(req, res) {
     const body = await readJson(req);
     const runId = compact(body.runId, 80);
@@ -735,6 +838,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       if (req.method === 'GET' && path === PREFIX + '/status') return handleStatus(ctx, res);
       if (req.method === 'GET' && path === PREFIX + '/invitation') return handleInvitation(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/start') return await handleStart(ctx, req, res);
+      if (req.method === 'GET' && path === PREFIX + '/scope') return handleScopeGet(ctx, res);
+      if (req.method === 'POST' && path === PREFIX + '/scope') return await handleScope(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/decision') return await handleDecision(ctx, req, res);
       return writeJson(res, 404, { error: 'Autonomous implementation endpoint not found.' });
     } catch (error) {
