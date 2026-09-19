@@ -48,16 +48,19 @@ function normaliseOperations(operations) {
 
 function normaliseScope(scope) {
   if (!scope || typeof scope !== 'object') fail('WFM_SCOPE_REQUIRED', 'Final adaptive scope is required.', 400);
-  requiredString(scope.graphVersion, 'WFM_SCOPE_VERSION_REQUIRED', 'Scope graph version is required.');
-  requiredString(scope.revision, 'WFM_SCOPE_REVISION_REQUIRED', 'Scope revision is required.');
+  const graphVersion = requiredString(scope.graphVersion, 'WFM_SCOPE_VERSION_REQUIRED', 'Scope graph version is required.');
+  const graphFingerprint = requiredString(scope.graphFingerprint, 'WFM_SCOPE_FINGERPRINT_REQUIRED', 'Exact scope graph fingerprint is required.').toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(graphFingerprint)) fail('WFM_SCOPE_FINGERPRINT_INVALID', 'Scope graph fingerprint must be exactly 64 hexadecimal characters.', 400);
+  const revision = requiredString(scope.revision, 'WFM_SCOPE_REVISION_REQUIRED', 'Scope revision is required.');
   if (!Array.isArray(scope.purchasedScope)) fail('WFM_SCOPE_PURCHASE_REQUIRED', 'Purchased scope is required.', 400);
   if (!Array.isArray(scope.questions)) fail('WFM_SCOPE_QUESTIONS_REQUIRED', 'Scope question state is required.', 400);
   if (scope.questions.length !== 0) fail('WFM_SCOPE_INCOMPLETE', 'Provisioning cannot start while launch questions remain unanswered.');
 
   const operations = normaliseOperations(scope.operations);
   return {
-    graphVersion: scope.graphVersion,
-    revision: scope.revision,
+    graphVersion,
+    graphFingerprint,
+    revision,
     purchasedScope: [...new Set(scope.purchasedScope.map(String))].sort(),
     operationsDigest: sha256(operations)
   };
