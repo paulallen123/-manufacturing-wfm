@@ -18,6 +18,7 @@ on:
       - 'src/frontier/agency-schedule-command-permit.mjs'
       - 'src/frontier/agency-schedule-ingress-shadow.mjs'
       - 'src/frontier/agency-identity-continuity.mjs'
+      - 'src/frontier/agency-identity-observation-ingress.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
@@ -43,6 +44,8 @@ on:
       - 'test/frontier/agency-schedule-ingress-shadow.test.mjs'
       - 'test/frontier/agency-identity-continuity.test.mjs'
       - 'test/frontier/agency-identity-continuity-postgres.test.mjs'
+      - 'test/frontier/agency-identity-observation-ingress.test.mjs'
+      - 'test/frontier/agency-identity-observation-ingress-postgres.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
@@ -65,6 +68,7 @@ on:
       - 'docs/AGENCY_RIGHT_TO_WORK_LIFECYCLE_V1.md'
       - 'docs/AGENCY_RIGHT_TO_WORK_REFRESH_V1.md'
       - 'docs/AGENCY_IDENTITY_CONTINUITY_V1.md'
+      - 'docs/AGENCY_IDENTITY_OBSERVATION_INGRESS_V1.md'
   workflow_dispatch:
 
 permissions:
@@ -105,6 +109,7 @@ jobs:
               test/frontier/agency-schedule-command-permit.test.mjs \
               test/frontier/agency-schedule-ingress-shadow.test.mjs \
               test/frontier/agency-identity-continuity.test.mjs \
+              test/frontier/agency-identity-observation-ingress.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
@@ -129,3 +134,4 @@ jobs:
           node --test test/frontier/agency-right-to-work-dvsp-evidence-postgres.test.mjs
           node --test test/frontier/agency-right-to-work-assurance-ledger-postgres.test.mjs
           node --test test/frontier/agency-identity-continuity-postgres.test.mjs
+          node --test test/frontier/agency-identity-observation-ingress-postgres.test.mjs
