@@ -71,6 +71,7 @@ else {
   if(vector.includes("tone:i===0?'red':i<3?'amber':'blue'")) violations.push({type:'presentation-inferred-urgency',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes("tone:'blue',action:'Review',status:'Needs review'")) violations.push({type:'review-state-not-neutral',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('Review source evidence before acting.')||!vector.includes('aria-label="Review ${esc(r.title)}"')) violations.push({type:'review-accessibility-contract-missing',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('data-vector-action-status="${esc(r.status)}"')||!vector.includes('· ${esc(r.status)}</small>')) violations.push({type:'action-lifecycle-not-visibly-rendered',path:'ux-overlay/vector-shell.js'});
   if(vector.includes('const risk=/gap|critical|short|risk|review|under/i')) violations.push({type:'planning-risk-inferred-from-copy',path:'ux-overlay/vector-shell.js'});
   if(vector.includes('width:risk?58')||vector.includes("width:[82,71,69,55][i]")) violations.push({type:'planning-width-invented',path:'ux-overlay/vector-shell.js'});
   if(vector.includes("const times=['06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00']")) violations.push({type:'planning-timeline-invented',path:'ux-overlay/vector-shell.js'});
@@ -131,6 +132,7 @@ console.log('VECTOR_KPI_EVIDENCE_CONTRACT=PASS');
 console.log('VECTOR_IDENTITY_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_LEAVE_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_ACTION_SOURCE_CONTRACT=PASS');
+console.log('VECTOR_ACTION_LIFECYCLE_VISIBLE_CONTRACT=PASS');
 console.log('VECTOR_ACTION_FRESHNESS_NEUTRAL_CONTRACT=PASS');
 console.log('VECTOR_ACTION_CONFIRMATION_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_TIME_REVIEW_EVIDENCE_CONSUMER=PASS');
