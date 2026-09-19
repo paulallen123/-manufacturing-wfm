@@ -6,7 +6,7 @@ const opportunities=JSON.parse(fs.readFileSync(new URL('../opportunity-profiles.
 
 const EDGE_PROFILES=new Set(['opcua','mqtt','bacnet','modbus']);
 const MESSAGE_PROFILES=new Set(['kafka','amqp','jms']);
-const METADATA_PROFILES=new Set(['rest-openapi','odata','soap','graphql','scim','schema-registry','protobuf-rpc-http2']);
+const METADATA_PROFILES=new Set(['rest-openapi','odata','soap','graphql','scim','schema-registry','protobuf-rpc-http2','http-rpc-json']);
 
 function unique(xs){return [...new Set(xs.filter(Boolean))];}
 
