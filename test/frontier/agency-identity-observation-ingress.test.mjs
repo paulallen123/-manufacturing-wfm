@@ -13,6 +13,7 @@ const TS=String(Math.floor(Date.parse(RECEIVED)/1000));
 const ASSIGNMENT='a'.repeat(24);
 const ASSURANCE='b'.repeat(32);
 const SUBJECT='c'.repeat(32);
+const SCOPE_FP='9'.repeat(24);
 const payload=(overrides={})=>({eventId:'evt-001',sourceSubjectRef:'badge-raw-123',signalType:'access_pass',observedAt:'2026-10-05T05:58:00.000Z',rawBadgeNumber:'BADGE-123',photo:'RAW-PHOTO',...overrides});
 const sign=body=>crypto.createHmac('sha256',SECRET).update(TS).update('.').update(body).digest('hex');
 const adapter=createHmacJsonAgencyIdentityObservationAdapter({secret:SECRET});
@@ -90,16 +91,16 @@ test('privacy boundary keeps raw subject, badge, photo, signature, body and secr
   assert.doesNotMatch(serialized,/badge-raw-123|BADGE-123|RAW-PHOTO/);assert.equal(serialized.includes(input.rawBody),false);assert.equal(serialized.includes(input.headers['x-wfm-signature']),false);assert.equal(serialized.includes(SECRET),false);
 });
 
-test('PostgreSQL store uses only the least-privilege security-definer append boundary and fails closed on malformed boundary results',async()=>{
+test('PostgreSQL store delegates lock authority and scope fingerprint to the database boundary only',async()=>{
   const row={tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:ASSIGNMENT,assuranceVersionId:ASSURANCE,sourceSystemId:'turnstile',sourceEventFingerprint:'d'.repeat(32),subjectFingerprint:SUBJECT,signalType:'access_pass',observedAt:'2026-10-05T05:58:00Z',sourceAuthFingerprint:'e'.repeat(32),bindingFingerprint:'f'.repeat(32),ingressVersion:'agency-identity-observation-ingress-v0.2.0',receivedAt:RECEIVED};
   const calls=[];
-  const store=createPostgresAgencyIdentityObservationIngressStore({executeBoundary:async(sql,values)=>{calls.push({sql,values});return {rows:[{observation_duplicate:false,receipt_duplicate:false}]};}});
+  const store=createPostgresAgencyIdentityObservationIngressStore({executeBoundary:async(sql,values)=>{calls.push({sql,values});return {rows:[{observation_duplicate:false,receipt_duplicate:false,scope_fingerprint:SCOPE_FP}]};}});
   const result=await store.appendObservation(row);
-  assert.equal(result.duplicate,false);assert.equal(result.receiptDuplicate,false);assert.equal(store.directTableDmlAllowed,false);assert.equal(store.credentialBoundary,'wfm_agency_identity_ingress_writer_function_only');assert.equal(store.concurrencyBoundary,'database_function_assignment_scoped_transaction_lock');
-  assert.equal(calls.length,1);assert.match(calls[0].sql,/wfm_append_agency_identity_observation_v1/i);assert.doesNotMatch(calls[0].sql,/INSERT\s+INTO|UPDATE\s+|DELETE\s+FROM/i);assert.equal(calls[0].values.length,17);assert.equal(calls[0].values[0],'T1');assert.match(String(calls[0].values[16]),/^-?\d+$/);assert.match(result.scopeFingerprint,/^[0-9a-f]{24}$/);
-  const duplicateStore=createPostgresAgencyIdentityObservationIngressStore({executeBoundary:async()=>({rows:[{observation_duplicate:true,receipt_duplicate:true}]})});
-  const duplicate=await duplicateStore.appendObservation(row);assert.equal(duplicate.duplicate,true);assert.equal(duplicate.receiptDuplicate,true);
-  for(const rows of [[],[{}],[{observation_duplicate:'false',receipt_duplicate:false}],[{observation_duplicate:false,receipt_duplicate:false},{observation_duplicate:false,receipt_duplicate:false}]]){
+  assert.equal(result.duplicate,false);assert.equal(result.receiptDuplicate,false);assert.equal(result.scopeFingerprint,SCOPE_FP);assert.equal(store.directTableDmlAllowed,false);assert.equal(store.callerSuppliedScopeLockKeyAccepted,false);assert.equal(store.credentialBoundary,'wfm_agency_identity_ingress_writer_function_only');assert.equal(store.concurrencyBoundary,'database_owned_canonical_assignment_scope_lock');
+  assert.equal(calls.length,1);assert.match(calls[0].sql,/wfm_append_agency_identity_observation_v1/i);assert.match(calls[0].sql,/scope_fingerprint/i);assert.doesNotMatch(calls[0].sql,/INSERT\s+INTO|UPDATE\s+|DELETE\s+FROM|\$17|::bigint/i);assert.equal(calls[0].values.length,16);assert.equal(calls[0].values[0],'T1');assert.equal(calls[0].values.at(-1),RECEIVED);
+  const duplicateStore=createPostgresAgencyIdentityObservationIngressStore({executeBoundary:async()=>({rows:[{observation_duplicate:true,receipt_duplicate:true,scope_fingerprint:SCOPE_FP}]})});
+  const duplicate=await duplicateStore.appendObservation(row);assert.equal(duplicate.duplicate,true);assert.equal(duplicate.receiptDuplicate,true);assert.equal(duplicate.scopeFingerprint,SCOPE_FP);
+  for(const rows of [[],[{}],[{observation_duplicate:'false',receipt_duplicate:false,scope_fingerprint:SCOPE_FP}],[{observation_duplicate:false,receipt_duplicate:false,scope_fingerprint:'not-a-fingerprint'}],[{observation_duplicate:false,receipt_duplicate:false}],[{observation_duplicate:false,receipt_duplicate:false,scope_fingerprint:SCOPE_FP},{observation_duplicate:false,receipt_duplicate:false,scope_fingerprint:SCOPE_FP}]]){
     const malformed=createPostgresAgencyIdentityObservationIngressStore({executeBoundary:async()=>({rows})});
     await assert.rejects(()=>malformed.appendObservation(row),/unexpected_identity_observation_boundary_result/);
   }
