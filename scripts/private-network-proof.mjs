@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { createServer } from 'node:http';
+import { createServer, request as httpRequest } from 'node:http';
+import { request as httpsRequest } from 'node:https';
 
 const targetBase = (process.env.PROOF_TARGET_BASE || '').replace(/\/$/, '');
 const browserOrigin = (process.env.PROOF_BROWSER_ORIGIN || '').replace(/\/$/, '');
@@ -10,8 +11,9 @@ assert.ok(targetBase.startsWith('http://') || targetBase.startsWith('https://'),
 assert.ok(targetBase.includes('.railway.internal'), 'Proof target must stay on Railway private networking');
 assert.ok(browserOrigin.startsWith('https://'), 'PROOF_BROWSER_ORIGIN missing');
 assert.ok(password && password.length >= 20, 'WFM_STAGING_PASSWORD missing');
-const browserHost = new URL(browserOrigin).host;
 
+const target = new URL(targetBase);
+const browserHost = new URL(browserOrigin).host;
 const timeoutMs = 20_000;
 const hostedHeaders = {
   host: browserHost,
@@ -20,14 +22,50 @@ const hostedHeaders = {
 };
 
 async function request(path, init = {}) {
-  const response = await fetch(`${targetBase}${path}`, {
-    ...init,
-    signal: AbortSignal.timeout(timeoutMs),
+  const method = init.method || 'GET';
+  const headers = { ...(init.headers || {}) };
+  const body = init.body == null ? null : String(init.body);
+  if (body != null && headers['content-length'] == null) {
+    headers['content-length'] = Buffer.byteLength(body);
+  }
+
+  const transport = target.protocol === 'https:' ? httpsRequest : httpRequest;
+  const result = await new Promise((resolve, reject) => {
+    const req = transport({
+      protocol: target.protocol,
+      hostname: target.hostname,
+      port: target.port || undefined,
+      method,
+      path: `${target.pathname === '/' ? '' : target.pathname}${path}`,
+      headers,
+      timeout: timeoutMs,
+    }, (res) => {
+      const chunks = [];
+      res.on('data', (chunk) => chunks.push(chunk));
+      res.on('end', () => resolve({ res, text: Buffer.concat(chunks).toString('utf8') }));
+    });
+    req.on('timeout', () => req.destroy(new Error(`request timeout after ${timeoutMs}ms`)));
+    req.on('error', reject);
+    if (body != null) req.write(body);
+    req.end();
   });
-  const text = await response.text();
-  let body = null;
-  try { body = text ? JSON.parse(text) : null; } catch { body = text; }
-  return { response, body, text };
+
+  let parsed = null;
+  try { parsed = result.text ? JSON.parse(result.text) : null; } catch { parsed = result.text; }
+  const response = {
+    status: result.res.statusCode || 0,
+    headers: {
+      get(name) {
+        const value = result.res.headers[String(name).toLowerCase()];
+        return Array.isArray(value) ? value.join(', ') : (value ?? null);
+      },
+      getSetCookie() {
+        const value = result.res.headers['set-cookie'];
+        return Array.isArray(value) ? value : (value ? [value] : []);
+      },
+    },
+  };
+  return { response, body: parsed, text: result.text };
 }
 
 function cookieFrom(response) {
