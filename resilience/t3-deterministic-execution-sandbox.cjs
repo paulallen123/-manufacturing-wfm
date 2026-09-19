@@ -11,7 +11,11 @@ function canonical(value) {
 }
 
 function digest(value) {
-  return createHash('sha256').update(typeof value === 'string' ? value : canonical(value)).digest('hex');
+  try {
+    return createHash('sha256').update(typeof value === 'string' ? value : canonical(value)).digest('hex');
+  } catch {
+    return null;
+  }
 }
 
 function isDigest(value) {
@@ -54,6 +58,10 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
     throw new Error('T3 deterministic execution sandbox requires a separate one-shot execution-authority gate.');
   }
   assertSandboxAdapter(sandboxAdapter);
+  const sandboxCapabilityDigest = digest(sandboxAdapter.capability);
+  if (!isDigest(sandboxCapabilityDigest)) {
+    throw new Error('T3 deterministic execution sandbox capability must be safely digestible.');
+  }
 
   const trustedComponents = Object.freeze({
     readinessVerifyReceipt: readinessGate.verifyReceipt,
@@ -61,7 +69,7 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
     readStateDigest: sandboxAdapter.readStateDigest,
     applyExactPlan: sandboxAdapter.applyExactPlan,
     rollbackKnownGood: sandboxAdapter.rollbackKnownGood,
-    capabilityDigest: digest(sandboxAdapter.capability),
+    capabilityDigest: sandboxCapabilityDigest,
   });
 
   function runtimeComponentsIntact() {
@@ -400,13 +408,18 @@ function createT3ExternalExecutionReconciler({
   if (executionVerifierId === observationVerifierId) {
     throw new Error('T3 external execution reconciliation requires independent execution and observation provenance verifiers.');
   }
+  const executionCapabilityDigest = digest(executionProvenanceVerifier.capability);
+  const observationCapabilityDigest = digest(observationProvenanceVerifier.capability);
+  if (!isDigest(executionCapabilityDigest) || !isDigest(observationCapabilityDigest)) {
+    throw new Error('T3 external execution reconciliation verifier capabilities must be safely digestible.');
+  }
 
   const trustedReconciliationComponents = Object.freeze({
     readinessVerifyReceipt: readinessGate.verifyReceipt,
     executionVerifyReceipt: executionProvenanceVerifier.verifyExecutionReceipt,
     observationVerifyObservation: observationProvenanceVerifier.verifyObservation,
-    executionCapabilityDigest: digest(executionProvenanceVerifier.capability),
-    observationCapabilityDigest: digest(observationProvenanceVerifier.capability),
+    executionCapabilityDigest,
+    observationCapabilityDigest,
   });
   const reconciliationComponentBindingDigest = digest({
     executionVerifierId,
