@@ -51,6 +51,18 @@ test('real attendance engine flows a fully verified interval into payroll input 
   assert.equal(p.attendanceInputs[0].provenance.basis,'automatic_evidence');
 });
 
+test('caller cannot omit a planned source from continuity quorum to force payroll ready',()=>{
+  const x=setup(); clockIn(x.engine); clockOut(x.engine);
+  const p=x.payroll.projectShift({
+    tenant:'acme',site:'s1',shiftId:'shift1',nowMs:END+301_000,shiftWindowClosed:true,
+    expectedSourceIds:['door'],
+    sourceHealth:[{sourceId:'door',state:'healthy',pendingRecovery:false,periodCoverageComplete:true}]
+  });
+  assert.equal(p.payrollReady,false);
+  assert.equal(p.attendanceInputs.length,0);
+  assert.equal(p.certification.sourceContinuityPeriod,false);
+});
+
 test('real missing OUT cannot reach payroll; audited manager correction resolves payroll without upgrading automatic certification',()=>{
   const x=setup(); clockIn(x.engine);
   let p=x.payroll.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:END+301_000,shiftWindowClosed:true,expectedSourceIds:['door','wifi'],sourceHealth:health(true)});
