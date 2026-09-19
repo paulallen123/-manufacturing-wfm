@@ -152,14 +152,14 @@ for (const [index, scenario] of failureScenarios.scenarios.entries()) {
   assert.ok(receipt.learning, `${scenario.id} did not produce an incident-learning record.`);
   assert.equal(receipt.learning.sourceReceiptDigest, receipt.receiptDigest, `${scenario.id} learning is not bound to terminal receipt.`);
   assert.equal(receipt.learning.sourceEvidenceDigest, receipt.evidenceDigest, `${scenario.id} learning is not bound to source evidence.`);
-  assert.equal(receipt.learning.regressionRequired, true, `${scenario.id} historical replay did not require regression preservation.`);
-  assert.ok(receipt.learning.regressionFixture, `${scenario.id} did not produce a regression fixture.`);
+  assert.equal(receipt.learning.regressionFixture?.required, true, `${scenario.id} historical replay did not require regression preservation.`);
+  assert.match(receipt.learning.regressionFixture?.fixtureDigest || '', /^[a-f0-9]{64}$/, `${scenario.id} did not produce a deterministic regression fixture digest.`);
   assert.ok(receipt.learning.detectionRuleProposal, `${scenario.id} did not produce a deterministic detection proposal.`);
   assert.ok(receipt.learning.supportKnowledgeProposal, `${scenario.id} did not produce a support-knowledge proposal.`);
   assert.equal(receipt.learning.detectionRuleProposal.tenantScoped, true, `${scenario.id} detection rule lost tenant scope.`);
   assert.equal(receipt.learning.detectionRuleProposal.crossTenantMatching, false, `${scenario.id} detection rule permitted cross-tenant matching.`);
   assert.equal(receipt.learning.detectionRuleProposal.productionWriteAuthority, false, `${scenario.id} detection rule gained production authority.`);
-  assert.equal(receipt.learning.supportKnowledgeProposal.proposalOnly, true, `${scenario.id} support knowledge stopped being proposal-only.`);
+  assert.equal(receipt.learning.supportKnowledgeProposal.mode, 'proposal-only', `${scenario.id} support knowledge stopped being proposal-only.`);
   assert.equal(receipt.learning.authority?.actionAuthority, false, `${scenario.id} learning minted action authority.`);
   assert.equal(receipt.learning.authority?.productionAuthority, false, `${scenario.id} learning minted production authority.`);
   assert.equal(receipt.learning.authority?.releaseAuthority, false, `${scenario.id} learning minted release authority.`);
@@ -194,7 +194,7 @@ const unknown = await loop.run({
 assert.equal(unknown.tier, 'T4');
 assert.equal(unknown.outcome, 'contained');
 assert.equal(unknown.safeTerminal, true);
-assert.equal(unknown.learning.regressionRequired, true);
+assert.equal(unknown.learning.regressionFixture?.required, true);
 assert.equal(unknown.learning.runbookDecision?.decision, 'NEVER_AUTOMATE');
 assert.equal(loop.verifyReceipt(unknown), true);
 
