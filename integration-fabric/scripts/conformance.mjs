@@ -25,7 +25,7 @@ for(const s of catalog.systems){
 const ipaas=['mulesoft-anypoint','boomi','workato','sap-integration-suite','azure-logic-apps-power-automate','oracle-integration-cloud','google-cloud-application-integration','jitterbit-harmony'];
 for(const id of ipaas) assert.ok(catalog.systems.some(x=>x.id===id),'iPaaS target missing: '+id);
 
-for(const id of ['salto-nebula','azure-service-bus','confluent-cloud','ibm-mq','jumpcloud','highbyte-intelligence-hub','tulip','cognite-data-fusion','sap-fieldglass']){
+for(const id of ['salto-nebula','azure-service-bus','confluent-cloud','ibm-mq','jumpcloud','highbyte-intelligence-hub','tulip','cognite-data-fusion','sap-fieldglass','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex']){
   const system=catalog.systems.find(x=>x.id===id);
   assert.ok(system,'Research target missing: '+id);
   assert.ok(system.protocols.some(p=>matches.has(p)),'Research target has no reusable protocol mapping: '+id);
@@ -43,6 +43,12 @@ assert.ok(matches.has('Sparkplug B'),'Sparkplug B must map to a reusable MQTT pr
 const fieldglass=catalog.systems.find(x=>x.id==='sap-fieldglass');
 assert.equal(fieldglass.testLevel,'spec-verified','Fieldglass should be spec-verified from current SAP protocol documentation.');
 assert.ok(fieldglass.protocols.includes('REST')&&fieldglass.protocols.includes('SCIM'),'Fieldglass must retain REST and SCIM integration paths.');
+for (const id of ['cornerstone-ondemand','docebo','moodle']) {
+  const system=catalog.systems.find(x=>x.id===id);
+  assert.ok(system.category.includes('lms')||system.category.includes('learning'),'Learning platform category missing: '+id);
+}
+const intelex=catalog.systems.find(x=>x.id==='intelex');
+assert.ok(intelex.category.includes('ehs'),'Intelex must retain EHS opportunity coverage.');
 
 console.log(JSON.stringify({
   ok:true,
