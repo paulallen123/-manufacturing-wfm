@@ -1,0 +1,34 @@
+name: Factory Capability Graph Frontier
+
+on:
+  pull_request:
+    paths:
+      - 'src/frontier/factory-capability-*.mjs'
+      - 'src/frontier/aas-capability-adapter.mjs'
+      - 'src/frontier/aas-xml-environment.mjs'
+      - 'src/frontier/aasx-package-selector.mjs'
+      - 'src/frontier/idta-02020-capability-profile.mjs'
+      - 'test/frontier/*capability*.test.mjs'
+      - 'test/frontier/aas-xml-environment.test.mjs'
+      - 'test/frontier/idta-02020-*.test.mjs'
+      - 'frontier-prototypes/factory-capability-graph/**'
+      - '.github/workflows/factory-capability-graph.yml'
+  push:
+    branches:
+      - 'frontier/factory-capability-graph-v1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capability-graph:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+      - name: Run capability graph, AAS, AASX, IDTA and integration tests
+        run: node --test test/frontier/*capability*.test.mjs test/frontier/aas-xml-environment.test.mjs test/frontier/idta-02020-integration.test.mjs
