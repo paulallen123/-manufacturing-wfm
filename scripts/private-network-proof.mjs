@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
 
 const targetBase = (process.env.PROOF_TARGET_BASE || '').replace(/\/$/, '');
 const browserOrigin = (process.env.PROOF_BROWSER_ORIGIN || '').replace(/\/$/, '');
@@ -107,4 +108,8 @@ console.log('PRIVATE_NETWORK_AUTH_PROOF=PASS');
 console.log('PRIVATE_TENANT_ISOLATION_PROOF=PASS');
 console.log('claim_boundary=private synthetic proof only; frozen target unmodified');
 
-await new Promise(() => {});
+createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('content-type', 'text/plain');
+  res.end('private-proof-pass\n');
+}).listen(Number(process.env.PORT || 3000), '0.0.0.0');
