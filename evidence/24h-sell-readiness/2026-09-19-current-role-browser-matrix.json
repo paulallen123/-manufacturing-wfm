@@ -1,0 +1,54 @@
+{
+  "evidenceType": "hosted-current-candidate-role-browser-matrix",
+  "recordedAtUtc": "2026-09-19T16:32:49.304937528Z",
+  "candidateSha": "9e703d3ae5dcfd6e0dcb79be294e8e8ba9827f40",
+  "candidateBranch": "feature/one-day-enterprise-implementation-v1",
+  "targetOrigin": "https://wfm-one-day-enterprise-v1-production.up.railway.app",
+  "proofExecution": {
+    "platform": "Railway",
+    "existingService": "wfm-built-ui-audit",
+    "deploymentId": "648739d8-db8a-41b4-a68d-ac7f63d7f8a3",
+    "status": "SUCCESS",
+    "harness": "Dockerfile.current-candidate-role-browser-proof",
+    "browser": "real headless Chromium via Playwright"
+  },
+  "result": {
+    "status": "PASS",
+    "roles": 5,
+    "navigationClicks": 4,
+    "roleReceipts": [
+      {"name":"manager","role":"manager","tenant":"northstar-demo","nav":"Time & Attendance","screenshotSha256Prefix":"61aef660fa0b0f78"},
+      {"name":"employee","role":"employee","tenant":"northstar-demo","nav":"not-applicable","screenshotSha256Prefix":"772c0a3e4753f609"},
+      {"name":"payroll","role":"payroll_admin","tenant":"northstar-demo","nav":"Reports","screenshotSha256Prefix":"2337ab912dbadf7a"},
+      {"name":"company-admin","role":"director","tenant":"northstar-demo","nav":"Integrations","screenshotSha256Prefix":"7c5d184c3135ffd9"},
+      {"name":"isolation-manager","role":"manager","tenant":"isolation-test","nav":"Time & Attendance","screenshotSha256Prefix":"61aef660fa0b0f78"}
+    ]
+  },
+  "assertedByHarness": [
+    "401-before-authentication",
+    "successful real login",
+    "role identity",
+    "tenant identity",
+    "payroll role-based access control",
+    "required role surface",
+    "approved Vector asset marker",
+    "retired presentation markers absent",
+    "Vector DOM rendered",
+    "desktop horizontal overflow absent",
+    "mobile horizontal overflow absent",
+    "role-first navigation",
+    "keyboard focus not left on body",
+    "no page errors"
+  ],
+  "claimBoundary": {
+    "fixtureDemoOnly": true,
+    "productionApproved": false,
+    "liveExternalProviderProven": false,
+    "zeroHumanCustomerProvisioningProven": false,
+    "frozenCustomerProofModified": false,
+    "newPaidInfrastructureCreated": false
+  },
+  "source": {
+    "railwayLogFinalReceipt": "CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=5|navClicks=4|sha=9e703d3ae5dcfd6e0dcb79be294e8e8ba9827f40"
+  }
+}
