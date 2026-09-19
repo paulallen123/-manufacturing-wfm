@@ -1,4 +1,5 @@
 'use strict';
+// redirect generation 2: force Railway source refresh for retired public UI shells
 const http=require('node:http');
 const target=String(process.env.VECTOR_CANONICAL_URL||'https://wfm-one-day-enterprise-v1-production.up.railway.app').replace(/\/$/,'');
 const marker='VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1';
