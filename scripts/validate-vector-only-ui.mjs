@@ -45,9 +45,15 @@ else {
   const vector=fs.readFileSync(vectorPath,'utf8');
   if(!vector.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')) violations.push({type:'missing-vector-marker',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('VECTOR_REVIEW_NEUTRAL_V1')) violations.push({type:'missing-review-governance',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('VECTOR_PLANNING_NEUTRAL_V1')) violations.push({type:'missing-planning-governance',path:'ux-overlay/vector-shell.js'});
   if(vector.includes("tone:i===0?'red':i<3?'amber':'blue'")) violations.push({type:'presentation-inferred-urgency',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes("tone:'blue',action:'Review',status:'Needs review'")) violations.push({type:'review-state-not-neutral',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('Review source evidence before acting.')||!vector.includes('aria-label="Review ${esc(r.title)}"')) violations.push({type:'review-accessibility-contract-missing',path:'ux-overlay/vector-shell.js'});
+  if(vector.includes('const risk=/gap|critical|short|risk|review|under/i')) violations.push({type:'planning-risk-inferred-from-copy',path:'ux-overlay/vector-shell.js'});
+  if(vector.includes('width:risk?58')||vector.includes("width:[82,71,69,55][i]")) violations.push({type:'planning-width-invented',path:'ux-overlay/vector-shell.js'});
+  if(vector.includes("const times=['06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00']")) violations.push({type:'planning-timeline-invented',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("status:'Open source planning',tone:'grey',width:null")) violations.push({type:'planning-state-not-neutral',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('Status and coverage shown only when verified by the source workflow')) violations.push({type:'planning-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
 }
 
 if(violations.length){
@@ -57,3 +63,4 @@ if(violations.length){
 }
 console.log('VECTOR_ONLY_REPOSITORY_GUARD=PASS');
 console.log('VECTOR_NEUTRAL_REVIEW_CONTRACT=PASS');
+console.log('VECTOR_NEUTRAL_PLANNING_CONTRACT=PASS');
