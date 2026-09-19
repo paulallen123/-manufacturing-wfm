@@ -85,3 +85,25 @@ No product-facing score is increased from this cycle alone. Evidence quality and
 
 ## Single next highest-value NEW-UI action
 Consume the first workflow result for the exact updated head. If the harness now identifies a real Vector interaction/focus defect, patch that bounded defect in the same canonical lineage and rerun only the affected browser gate. If it passes, proceed to the already-planned tablet-width hierarchy/accessibility validation rather than adding new UI.
+
+---
+
+# Cycle 12 r8 validation update — browser roundtrip green
+
+## Exact runtime lineage
+The runtime-fix parent is `ff3f241f1cfc6b48fa220a7aaf0a6cc3e32b4b03`. It was promoted to `feature/one-day-enterprise-implementation-v1` only after the isolated fix branch passed the governed browser/build gate, then the feature-branch gate itself passed on GitHub Actions run `35422064672`.
+
+## Browser proof now green
+Real headless Chromium exercised the composed candidate and passed all required journey assertions: Vector role-first Home rendered; the governed Cycle 11/12 priority queue was projected out of the hidden source shell; Integrations opened its authoritative destination and returned focus to the exact originating projected priority; Absence, Time Review and Weekly Sign-off opened their correct source scopes and returned correctly; and the 390px mobile journey reported zero horizontal overflow with successful Integrations return focus.
+
+## Defects corrected without authority changes
+- Bounded the Vector shell MutationObserver during shell-owned DOM writes to prevent recursive render churn.
+- Preserved Cycle 12 external priorities when Cycle 11 rerenders the queue.
+- Retained return context across queue replacement and restored focus only at the visible projected Vector boundary.
+- No server write authority, provider credential boundary, payroll/compliance authority, tenant boundary, security control or sell-readiness flag was weakened.
+
+## Regression evidence
+The same gate completed the exact Docker composition build after browser execution. The built image retained the previously established strict T0–T4 autonomy admission and full 66-test runtime regression, including the 10,000-employee / 50-site scale harness and independent payroll zero-unexplained-variance gate. Provider fixtures remain fixtures and the one-day implementation timing model remains synthetic; neither is promoted to live/customer proof by this browser result.
+
+## Evidence boundary
+This clears the deterministic composed-browser regression blocker. It does not yet constitute an authenticated role journey against the deployed Railway origin, an authenticated external-provider sandbox connection, or a real zero-human customer provisioning event. Those remain separate sell-readiness gates.
