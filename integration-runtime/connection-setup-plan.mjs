@@ -1,4 +1,4 @@
-import { activationReadiness, isOpaqueReference, validateConnectionProfile } from './connection-contract.mjs';
+import { activationReadiness, configurationFingerprint, isOpaqueReference, validateConnectionProfile } from './connection-contract.mjs';
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -138,6 +138,11 @@ export function evaluateGenuineProviderProof(profile, manifest, evidence = {}) {
   blockers.push(...missingProviderConfigRefs(profile, manifest).map((name) => `missing provider configuration reference: ${name}`));
   if (evidence.authorised !== true) blockers.push('authorised provider proof is not recorded');
   if (evidence.nonProductionTargetVerified !== true) blockers.push('non-production provider target is not verified');
+  if (evidence.observedBy !== 'trusted_executor') blockers.push('genuine provider proof must be observed by the trusted executor');
+  if (!isOpaqueReference(evidence.evidenceRef)) blockers.push('genuine provider proof requires a reviewable evidence reference');
+  if (evidence.configurationFingerprint !== configurationFingerprint(profile)) {
+    blockers.push('genuine provider proof was not produced for the current reviewed connection configuration');
+  }
   if (evidence.providerCallObserved !== true) blockers.push('no genuine provider call has been observed');
   if (evidence.providerIdentityVerified !== true) blockers.push('provider identity has not been verified');
   if (evidence.authenticationObserved !== true) blockers.push('provider authentication has not been observed');
