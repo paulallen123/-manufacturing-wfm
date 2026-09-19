@@ -1,5 +1,8 @@
 'use strict';
 
+const EVIDENCE_VERSION = '0.6.76-hosted-staging-rc1';
+const KNOWN_ROLES = Object.freeze(['employee','manager','payroll','company-admin','support']);
+
 const KNOWLEDGE = Object.freeze([
   {
     id: 'environment-production-status',
@@ -49,38 +52,82 @@ function normalise(value) {
   return String(value || '').normalize('NFKC').replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F]/g, '').trim().slice(0, 4000);
 }
 
-function answer({ text, role='support', version='0.6.76-hosted-staging-rc1' } = {}) {
-  const q = normalise(text);
-  const r = normalise(role).toLowerCase();
-  if (!q) return { status:'abstain', reason:'empty-question', version, actionAuthority:false, sources:[] };
-
-  const instructionShaped = /(ignore|override|bypass|disable).{0,40}(safeguard|policy|approval|security)|reveal.{0,20}(secret|password|token)|system prompt/i.test(q);
-  if (instructionShaped && !/can (the )?(ai|assistant|bot).*change|autonomous.*(payroll|permission|schedule)/i.test(q)) {
-    return { status:'abstain', reason:'untrusted-instruction-shaped-input', version, actionAuthority:false, sources:['resilience/security-baseline.json'] };
-  }
-
-  for (const item of KNOWLEDGE) {
-    if (!item.roles.includes(r)) continue;
-    if (item.patterns.some(re => re.test(q))) {
-      return {
-        status:'answered',
-        intent:item.id,
-        answer:item.answer,
-        version,
-        role:r,
-        actionAuthority:false,
-        sources:[...item.sources]
-      };
-    }
-  }
-  return {
-    status:'abstain',
-    reason:'unknown-or-unverified-procedure',
-    version,
-    role:r,
-    actionAuthority:false,
-    sources:['SUPPORT_TIER_CONTRACT.md']
-  };
+function abstain(reason, { version=EVIDENCE_VERSION, role='support', sources=['SUPPORT_TIER_CONTRACT.md'] } = {}) {
+  return { status:'abstain', reason, version, role, actionAuthority:false, sources:[...sources] };
 }
 
-module.exports = { answer, KNOWLEDGE };
+function answer({ text, role='support', version=EVIDENCE_VERSION, tenant='', targetTenant='' } = {}) {
+  const q = normalise(text);
+  const r = normalise(role).toLowerCase();
+  const requestedVersion = normalise(version) || EVIDENCE_VERSION;
+  const sourceTenant = normalise(tenant);
+  const requestedTenant = normalise(targetTenant || sourceTenant);
+
+  if (!q) return abstain('empty-question', { version:EVIDENCE_VERSION, role:r || 'support', sources:[] });
+  if (!KNOWN_ROLES.includes(r)) return abstain('unrecognised-role', { version:EVIDENCE_VERSION, role:r || 'unknown' });
+  if (requestedVersion !== EVIDENCE_VERSION) {
+    return abstain('unsupported-or-stale-version', { version:EVIDENCE_VERSION, role:r });
+  }
+  if (sourceTenant && requestedTenant && sourceTenant !== requestedTenant) {
+    return abstain('tenant-context-mismatch', {
+      version:EVIDENCE_VERSION,
+      role:r,
+      sources:['resilience/security-baseline.json','resilience/support-tier-contract.json']
+    });
+  }
+
+  const compact = q.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const secretExfiltration = /reveal.{0,30}(secret|password|token)|system prompt/i.test(q)
+    || /reveal.{0,30}(secret|password|token)|systemprompt/.test(compact);
+  if (secretExfiltration) {
+    return abstain('untrusted-instruction-shaped-input', {
+      version:EVIDENCE_VERSION,
+      role:r,
+      sources:['resilience/security-baseline.json']
+    });
+  }
+
+  const authorityQuestion = /can (the )?(ai|assistant|bot).*change|autonomous.*(payroll|permission|schedule)/i.test(q);
+  const instructionShaped = /(ignore|override|bypass|disable).{0,40}(safeguard|policy|approval|security)/i.test(q)
+    || /(ignore|override|bypass|disable).{0,40}(safeguard|policy|approval|security)/.test(compact);
+  if (instructionShaped && !authorityQuestion) {
+    return abstain('untrusted-instruction-shaped-input', {
+      version:EVIDENCE_VERSION,
+      role:r,
+      sources:['resilience/security-baseline.json']
+    });
+  }
+
+  let matches = KNOWLEDGE.filter(item => item.roles.includes(r) && item.patterns.some(re => re.test(q)));
+
+  // A named provider inside an explicit failure/retry question is recovery evidence,
+  // not a second certification-status intent. Keep that known overlap deterministic.
+  if (matches.some(item => item.id === 'integration-recovery')) {
+    matches = matches.filter(item => item.id !== 'provider-certification-status');
+  }
+
+  if (matches.length > 1) {
+    return abstain('ambiguous-multi-intent', {
+      version:EVIDENCE_VERSION,
+      role:r,
+      sources:['SUPPORT_TIER_CONTRACT.md','resilience/security-baseline.json']
+    });
+  }
+
+  const item = matches[0];
+  if (item) {
+    return {
+      status:'answered',
+      intent:item.id,
+      answer:item.answer,
+      version:EVIDENCE_VERSION,
+      role:r,
+      actionAuthority:false,
+      sources:[...item.sources]
+    };
+  }
+
+  return abstain('unknown-or-unverified-procedure', { version:EVIDENCE_VERSION, role:r });
+}
+
+module.exports = { answer, KNOWLEDGE, EVIDENCE_VERSION, KNOWN_ROLES };
