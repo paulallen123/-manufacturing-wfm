@@ -2,9 +2,21 @@
 
 const { createHash } = require('node:crypto');
 
-const POLICIES = Object.freeze({
-  'payroll-calculation-or-export-anomaly': Object.freeze({ actionPrefix: 'payroll.', maxAffectedRecords: 5000 }),
-  'timezone-dst-or-clock-skew': Object.freeze({ actionPrefix: 'time.', maxAffectedRecords: 5000 }),
+const T3_SCENARIO_POLICY = Object.freeze({
+  'payroll-calculation-or-export-anomaly': Object.freeze({
+    policyVersion: 't3-actions-v2',
+    actionPrefix: 'payroll.',
+    allowedActions: Object.freeze(['payroll.correct-export', 'payroll.release-corrected-export']),
+    maxAffectedRecords: 5000,
+    approverRoles: Object.freeze(['payroll', 'company-admin']),
+  }),
+  'timezone-dst-or-clock-skew': Object.freeze({
+    policyVersion: 't3-actions-v2',
+    actionPrefix: 'time.',
+    allowedActions: Object.freeze(['time.apply-normalised-records']),
+    maxAffectedRecords: 5000,
+    approverRoles: Object.freeze(['manager', 'payroll', 'company-admin']),
+  }),
 });
 
 function canonical(value) {
@@ -17,6 +29,19 @@ function canonical(value) {
 
 function digest(value) {
   return createHash('sha256').update(typeof value === 'string' ? value : canonical(value)).digest('hex');
+}
+
+function policyDigest(scenarioId) {
+  const policy = T3_SCENARIO_POLICY[scenarioId];
+  if (!policy) return null;
+  return digest({
+    scenarioId,
+    policyVersion: policy.policyVersion,
+    actionPrefix: policy.actionPrefix,
+    allowedActions: [...policy.allowedActions],
+    maxAffectedRecords: policy.maxAffectedRecords,
+    approverRoles: [...policy.approverRoles],
+  });
 }
 
 function clean(value, max = 160) {
@@ -54,7 +79,7 @@ function createT3ShadowSimulator() {
     const afterStateDigest = clean(input.afterStateDigest, 64).toLowerCase();
     const compensationPlanDigest = clean(input.compensationPlanDigest, 64).toLowerCase();
     const affectedRecords = Number(input.affectedRecords);
-    const policy = POLICIES[scenarioId] || null;
+    const policy = T3_SCENARIO_POLICY[scenarioId] || null;
 
     if (!incidentId || !tenant || !scenarioId) return contained('missing-identity');
     if (targetTenant !== tenant) return contained('cross-tenant-denied', { tenant, targetTenant, scenarioId });
@@ -62,7 +87,7 @@ function createT3ShadowSimulator() {
     if (!isDigest(evidenceDigest) || !isDigest(beforeStateDigest) || !isDigest(afterStateDigest) || !isDigest(compensationPlanDigest)) {
       return contained('deterministic-digests-required', { tenant, scenarioId });
     }
-    if (!proposedAction || !proposedAction.startsWith(policy.actionPrefix)) {
+    if (!proposedAction || !policy.allowedActions.includes(proposedAction)) {
       return contained('scenario-action-family-mismatch', { tenant, scenarioId, proposedAction: proposedAction || null });
     }
     if (!Number.isSafeInteger(affectedRecords) || affectedRecords < 1 || affectedRecords > policy.maxAffectedRecords) {
@@ -100,10 +125,12 @@ function createT3ShadowSimulator() {
       compensationPlanDigest,
       affectedRecords,
       maxAffectedRecords: policy.maxAffectedRecords,
+      actionPolicyDigest: policyDigest(scenarioId),
       proposalDigest,
       simulationOnly: true,
       diagnosisBound: true,
       compensationBound: true,
+      exactActionAllowlistBound: true,
       requiresCustomerAuthorisation: true,
       automaticExecutionEligible: false,
       graduatedAutomaticAction: false,
@@ -116,7 +143,7 @@ function createT3ShadowSimulator() {
     return { ...core, simulationDigest: digest(core) };
   }
 
-  return { simulate, policies: POLICIES };
+  return { simulate, policies: T3_SCENARIO_POLICY };
 }
 
-module.exports = { createT3ShadowSimulator, canonical, digest };
+module.exports = { createT3ShadowSimulator, canonical, digest, policyDigest, T3_SCENARIO_POLICY };
