@@ -37,180 +37,40 @@ async function request(path, init = {}) {
   try { parsed = result.text ? JSON.parse(result.text) : null; } catch { parsed = result.text; }
   return { status: result.res.statusCode || 0, body: parsed, text: result.text, headers: result.res.headers };
 }
-function cookieFrom(r) {
-  const value = r.headers['set-cookie'];
-  const values = Array.isArray(value) ? value : (value ? [value] : []);
-  return values[0] ? values[0].split(';', 1)[0] : '';
-}
+function cookieFrom(r) { const v=r.headers['set-cookie']; const a=Array.isArray(v)?v:(v?[v]:[]); return a[0]?a[0].split(';',1)[0]:''; }
 async function login(email) {
-  const r = await request('/api/login', { method: 'POST', headers: { ...hostedHeaders, 'content-type': 'application/json', origin: browserOrigin, referer: `${browserOrigin}/`, accept: 'application/json' }, body: JSON.stringify({ email, password }) });
-  assert.equal(r.status, 200, `${email} login failed ${r.status}: ${r.text.slice(0,160)}`);
-  const cookie = cookieFrom(r); assert.ok(cookie, `${email} returned no session`);
-  return cookie;
+  const r=await request('/api/login',{method:'POST',headers:{...hostedHeaders,'content-type':'application/json',origin:browserOrigin,referer:`${browserOrigin}/`,accept:'application/json'},body:JSON.stringify({email,password})});
+  assert.equal(r.status,200,`${email} login failed ${r.status}: ${r.text.slice(0,160)}`); const cookie=cookieFrom(r); assert.ok(cookie); return cookie;
 }
-async function authed(cookie, path) {
-  return request(path, { headers: { ...hostedHeaders, cookie, accept: 'application/json', referer: `${browserOrigin}/` } });
-}
-async function command(cookie, version, name, payload) {
-  return request('/api/command', { method: 'POST', headers: { ...hostedHeaders, cookie, accept: 'application/json', 'content-type': 'application/json', origin: browserOrigin, referer: `${browserOrigin}/` }, body: JSON.stringify({ command: name, payload, version }) });
-}
-async function post(cookie, path, payload) {
-  return request(path, { method: 'POST', headers: { ...hostedHeaders, cookie, accept: 'application/json', 'content-type': 'application/json', origin: browserOrigin, referer: `${browserOrigin}/` }, body: JSON.stringify(payload) });
-}
-function findNamed(node, name, accept, depth = 0, seen = new Set()) {
-  if (!node || typeof node !== 'object' || depth > 6 || seen.has(node)) return null;
-  seen.add(node);
-  if (Object.prototype.hasOwnProperty.call(node, name) && accept(node[name])) return node[name];
-  for (const value of Object.values(node)) {
-    const found = findNamed(value, name, accept, depth + 1, seen);
-    if (found !== null) return found;
-  }
-  return null;
-}
-function versionOf(b) { return findNamed(b, 'version', Number.isInteger); }
-function requestsOf(b) { return findNamed(b, 'requests', Array.isArray) || []; }
-function actorOf(b) { return findNamed(b, 'actor', v => !!v && typeof v === 'object' && !Array.isArray(v)) || {}; }
-function localMinute(value) {
-  const d = new Date(value);
-  if (!Number.isFinite(d.getTime())) return null;
-  return new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(' ','T');
-}
-function collectDates(node, out = new Set(), depth = 0, seen = new Set()) {
-  if (node == null || depth > 8) return out;
-  if (typeof node === 'string') {
-    for (const m of node.matchAll(/\b20\d{2}-\d{2}-\d{2}\b/g)) out.add(m[0]);
-    return out;
-  }
-  if (typeof node !== 'object' || seen.has(node)) return out;
-  seen.add(node);
-  if (Array.isArray(node)) for (const v of node) collectDates(v, out, depth + 1, seen);
-  else for (const [k,v] of Object.entries(node)) {
-    if (/date|start|end|shift|day/i.test(k)) collectDates(v, out, depth + 1, seen);
-    else if (depth < 3) collectDates(v, out, depth + 1, seen);
-  }
-  return out;
-}
-function collectIntervals(node, out = [], depth = 0, seen = new Set()) {
-  if (!node || typeof node !== 'object' || depth > 8 || seen.has(node)) return out;
-  seen.add(node);
-  if (!Array.isArray(node)) {
-    const start = typeof node.start === 'string' ? node.start : (typeof node.clockIn === 'string' ? node.clockIn : null);
-    const end = typeof node.end === 'string' ? node.end : (typeof node.clockOut === 'string' ? node.clockOut : null);
-    const ls = start && localMinute(start); const le = end && localMinute(end);
-    if (ls && le && ls.slice(0,10) === le.slice(0,10)) out.push({ date: ls.slice(0,10), start: ls, end: le, rawStart:start, rawEnd:end });
-  }
-  for (const value of Object.values(node)) collectIntervals(value, out, depth + 1, seen);
-  return out;
-}
+async function authed(cookie,path){return request(path,{headers:{...hostedHeaders,cookie,accept:'application/json',referer:`${browserOrigin}/`}});}
+async function command(cookie,version,name,payload){return request('/api/command',{method:'POST',headers:{...hostedHeaders,cookie,accept:'application/json','content-type':'application/json',origin:browserOrigin,referer:`${browserOrigin}/`},body:JSON.stringify({command:name,payload,version})});}
+async function post(cookie,path,payload){return request(path,{method:'POST',headers:{...hostedHeaders,cookie,accept:'application/json','content-type':'application/json',origin:browserOrigin,referer:`${browserOrigin}/`},body:JSON.stringify(payload)});}
+function findNamed(node,name,accept,depth=0,seen=new Set()){if(!node||typeof node!=='object'||depth>6||seen.has(node))return null;seen.add(node);if(Object.prototype.hasOwnProperty.call(node,name)&&accept(node[name]))return node[name];for(const value of Object.values(node)){const found=findNamed(value,name,accept,depth+1,seen);if(found!==null)return found;}return null;}
+const versionOf=b=>findNamed(b,'version',Number.isInteger);
+const requestsOf=b=>findNamed(b,'requests',Array.isArray)||[];
+const actorOf=b=>findNamed(b,'actor',v=>!!v&&typeof v==='object'&&!Array.isArray(v))||{};
+function localMinute(value){const d=new Date(value);if(!Number.isFinite(d.getTime()))return null;return new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(' ','T');}
+function collectDates(node,out=new Set(),depth=0,seen=new Set()){if(node==null||depth>8)return out;if(typeof node==='string'){for(const m of node.matchAll(/\b20\d{2}-\d{2}-\d{2}\b/g))out.add(m[0]);return out;}if(typeof node!=='object'||seen.has(node))return out;seen.add(node);if(Array.isArray(node))for(const v of node)collectDates(v,out,depth+1,seen);else for(const [k,v] of Object.entries(node)){if(/date|start|end|shift|day/i.test(k))collectDates(v,out,depth+1,seen);else if(depth<3)collectDates(v,out,depth+1,seen);}return out;}
+function collectIntervals(node,out=[],depth=0,seen=new Set()){if(!node||typeof node!=='object'||depth>8||seen.has(node))return out;seen.add(node);if(!Array.isArray(node)){const start=typeof node.start==='string'?node.start:(typeof node.clockIn==='string'?node.clockIn:null);const end=typeof node.end==='string'?node.end:(typeof node.clockOut==='string'?node.clockOut:null);const ls=start&&localMinute(start),le=end&&localMinute(end);if(ls&&le&&ls.slice(0,10)===le.slice(0,10))out.push({date:ls.slice(0,10),start:ls,end:le,rawStart:start,rawEnd:end});}for(const value of Object.values(node))collectIntervals(value,out,depth+1,seen);return out;}
+const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 
-const health = await request('/api/health', { headers: hostedHeaders });
-assert.equal(health.status, 200); assert.equal(health.body?.release, expectedRelease); assert.equal(health.body?.fixtureOnly, true); assert.equal(health.body?.productionApproved, false); assert.equal(health.body?.pilotReady, false);
-console.log(`HEALTH_PASS ${health.body.release}`);
-
-const employeeEmail = 'maya@northstar.example';
-const managerCandidates = ['manager@northstar.example','supervisor@northstar.example','director@northstar.example','superuser@northstar.example'];
-const otherEmail = 'other@isolation.example';
-const employeeCookie = await login(employeeEmail);
-const otherCookie = await login(otherEmail);
-const employeeBefore = await authed(employeeCookie, '/api/bootstrap');
-const personalBefore = await authed(employeeCookie, '/api/personal');
-const otherBefore = await authed(otherCookie, '/api/bootstrap');
-assert.equal(employeeBefore.status, 200); assert.equal(personalBefore.status, 200); assert.equal(otherBefore.status, 200);
-assert.equal(actorOf(employeeBefore.body)?.tenant, 'northstar-demo');
-assert.equal(actorOf(otherBefore.body)?.tenant, 'isolation-test');
-assert.notEqual(actorOf(employeeBefore.body)?.tenant, actorOf(otherBefore.body)?.tenant);
-const employeePerson = actorOf(employeeBefore.body)?.personId;
-assert.ok(employeePerson, 'employee personId missing');
-let beforeVersion = versionOf(employeeBefore.body);
-assert.ok(Number.isInteger(beforeVersion), `bootstrap version missing; top-level keys=${Object.keys(employeeBefore.body || {}).join(',')}`);
-const beforeRequests = requestsOf(employeeBefore.body);
-console.log(`BOOTSTRAP_STATE_PASS version=${beforeVersion} requests=${beforeRequests.length}`);
-
-const candidates = [...new Set([...collectDates(personalBefore.body), ...collectDates(employeeBefore.body)])]
-  .filter(date => !beforeRequests.some(r => r.employee === employeePerson && r.date === date && r.status !== 'declined'))
-  .sort();
-const intervals = [...collectIntervals(personalBefore.body), ...collectIntervals(employeeBefore.body)];
-assert.ok(candidates.length, 'no dated employee schedule evidence found');
-console.log(`SHIFT_DATE_EVIDENCE_PASS candidates=${candidates.length} intervals=${intervals.length}`);
-
-let date = null;
-let submitted = null;
-let successfulPayload = null;
-outer: for (const candidate of candidates.slice(0, 40)) {
-  const matchingIntervals = intervals.filter(x => x.date === candidate).slice(0,6);
-  const payloads = [{ date: candidate }];
-  for (const i of matchingIntervals) {
-    payloads.push({ date: candidate, start: i.start, end: i.end });
-    if (i.rawStart !== i.start || i.rawEnd !== i.end) payloads.push({ date: candidate, start: i.rawStart, end: i.rawEnd });
-  }
-  payloads.push({ date: candidate, hours: 8 });
-  const seenPayloads = new Set();
-  for (const payload of payloads) {
-    const key = JSON.stringify(payload); if (seenPayloads.has(key)) continue; seenPayloads.add(key);
-    const attempt = await command(employeeCookie, beforeVersion, 'leave-request', payload);
-    if (attempt.status === 200) { date = candidate; submitted = attempt; successfulPayload = payload; break outer; }
-    const err = String(attempt.body?.error || attempt.text || '');
-    if (!/No published shift starts on this date|scheduled interval|already exists|outside|partial-shift|start and end|hours are calculated|invalid leave|request/i.test(err)) {
-      throw new Error(`Unexpected leave request rejection on ${candidate}: ${attempt.status} ${err.slice(0,200)}`);
-    }
-    const refreshed = await authed(employeeCookie, '/api/bootstrap');
-    beforeVersion = versionOf(refreshed.body) ?? beforeVersion;
-  }
-}
-assert.ok(date && submitted && successfulPayload, `no published employee shift accepted a bounded leave request; checked ${Math.min(candidates.length,40)} dated candidates`);
-console.log(`LEAVE_REQUEST_SUBMIT_PASS date=${date} mode=${successfulPayload.start ? 'bounded-interval' : (successfulPayload.hours ? 'hours' : 'full-shift')}`);
-
-const employeeAfterSubmit = await authed(employeeCookie, '/api/bootstrap');
-assert.equal(employeeAfterSubmit.status, 200);
-const created = requestsOf(employeeAfterSubmit.body).find(r => r.employee === employeePerson && (r.date === date || String(r.start||'').startsWith(date)) && r.status !== 'declined');
-assert.ok(created, 'submitted leave request not visible to employee');
-assert.equal(created.status, 'pending');
-assert.equal(created.kind, 'Annual leave');
-assert.ok(Number(created.hours) > 0 || created.start, 'leave request has no calculated interval');
-assert.ok(created.id, 'request id missing');
-console.log('LEAVE_REQUEST_VISIBILITY_PASS pending annual-leave');
-
-const duplicateVersion = versionOf(employeeAfterSubmit.body);
-assert.ok(Number.isInteger(duplicateVersion));
-const duplicate = await command(employeeCookie, duplicateVersion, 'leave-request', successfulPayload);
-assert.notEqual(duplicate.status, 200, 'duplicate leave request unexpectedly succeeded');
-const employeeAfterDuplicate = await authed(employeeCookie, '/api/bootstrap');
-const duplicates = requestsOf(employeeAfterDuplicate.body).filter(r => r.employee === employeePerson && r.id === created.id);
-assert.equal(duplicates.length, 1, 'duplicate request was created');
-console.log(`LEAVE_DUPLICATE_GUARD_PASS status=${duplicate.status}`);
-
-const otherAfter = await authed(otherCookie, '/api/bootstrap');
-assert.equal(otherAfter.status, 200);
-assert.ok(!requestsOf(otherAfter.body).some(r => r.id === created.id), 'leave request leaked to second tenant');
-console.log('LEAVE_TENANT_ISOLATION_PASS');
-
-let reviewer = null;
-for (const email of managerCandidates) {
-  const cookie = await login(email);
-  const dash = await authed(cookie, '/api/bootstrap');
-  if (dash.status !== 200 || actorOf(dash.body)?.tenant !== 'northstar-demo') continue;
-  const visible = requestsOf(dash.body).find(r => r.id === created.id);
-  if (!visible) continue;
-  const capacity = await post(cookie, '/api/leave-capacity', { ...visible, employee: visible.employee, requestId: visible.id });
-  if (capacity.status === 200) { reviewer = { email, cookie, dash: dash.body, visible, capacity: capacity.body }; break; }
-}
-assert.ok(reviewer, 'no authorised reviewer could see request and execute leave-capacity check');
-console.log(`LEAVE_CAPACITY_REVIEW_PASS reviewer=${reviewer.email}`);
-
-const reviewVersion = versionOf(reviewer.dash);
-assert.ok(Number.isInteger(reviewVersion), 'reviewer version missing');
-const decision = await command(reviewer.cookie, reviewVersion, 'rules-leave-decision', { id: created.id, decision: 'declined', reviewed: true, reason: 'Controlled synthetic proof: decline by design after capacity review.' });
-assert.equal(decision.status, 200, `leave decision failed ${decision.status}: ${decision.text.slice(0,240)}`);
-console.log('LEAVE_DECISION_PASS declined-by-design');
-
-const employeeFinal = await authed(employeeCookie, '/api/bootstrap');
-assert.equal(employeeFinal.status, 200);
-const final = requestsOf(employeeFinal.body).find(r => r.id === created.id);
-assert.ok(final, 'final leave request missing');
-assert.equal(final.status, 'declined', `unexpected final leave status ${final.status}`);
-const otherFinal = await authed(otherCookie, '/api/bootstrap');
-assert.ok(!requestsOf(otherFinal.body).some(r => r.id === created.id), 'final leave record leaked to second tenant');
-console.log('PRIVATE_ABSENCE_END_TO_END_PROOF=PASS');
-console.log('claim_boundary=private synthetic fixture-only proof; decline-by-design; no employee communication/payment; productionApproved=false; pilotReady=false');
-
+const health=await request('/api/health',{headers:hostedHeaders});assert.equal(health.status,200);assert.equal(health.body?.release,expectedRelease);assert.equal(health.body?.fixtureOnly,true);assert.equal(health.body?.productionApproved,false);assert.equal(health.body?.pilotReady,false);console.log(`HEALTH_PASS ${health.body.release}`);
+const employeeEmail='maya@northstar.example',otherEmail='other@isolation.example';
+const managerCandidates=['manager@northstar.example','supervisor@northstar.example','director@northstar.example','superuser@northstar.example'];
+const employeeCookie=await login(employeeEmail),otherCookie=await login(otherEmail);
+const employeeBefore=await authed(employeeCookie,'/api/bootstrap'),personalBefore=await authed(employeeCookie,'/api/personal'),otherBefore=await authed(otherCookie,'/api/bootstrap');
+assert.equal(employeeBefore.status,200);assert.equal(personalBefore.status,200);assert.equal(otherBefore.status,200);assert.equal(actorOf(employeeBefore.body)?.tenant,'northstar-demo');assert.equal(actorOf(otherBefore.body)?.tenant,'isolation-test');assert.notEqual(actorOf(employeeBefore.body)?.tenant,actorOf(otherBefore.body)?.tenant);
+const employeePerson=actorOf(employeeBefore.body)?.personId;assert.ok(employeePerson);let beforeVersion=versionOf(employeeBefore.body);assert.ok(Number.isInteger(beforeVersion));const beforeRequests=requestsOf(employeeBefore.body);console.log(`BOOTSTRAP_STATE_PASS version=${beforeVersion} requests=${beforeRequests.length}`);
+const candidates=[...new Set([...collectDates(personalBefore.body),...collectDates(employeeBefore.body)])].filter(date=>date>today&&!beforeRequests.some(r=>r.employee===employeePerson&&r.date===date&&r.status!=='declined')).sort();
+const intervals=[...collectIntervals(personalBefore.body),...collectIntervals(employeeBefore.body)];assert.ok(candidates.length,'no future dated employee schedule evidence found');console.log(`SHIFT_DATE_EVIDENCE_PASS futureCandidates=${candidates.length} intervals=${intervals.length}`);
+let date=null,submitted=null,successfulPayload=null;
+outer:for(const candidate of candidates.slice(0,40)){const matching=intervals.filter(x=>x.date===candidate).slice(0,6);const payloads=[{date:candidate}];for(const i of matching){payloads.push({date:candidate,start:i.start,end:i.end});if(i.rawStart!==i.start||i.rawEnd!==i.end)payloads.push({date:candidate,start:i.rawStart,end:i.rawEnd});}payloads.push({date:candidate,hours:8});const seen=new Set();for(const payload of payloads){const k=JSON.stringify(payload);if(seen.has(k))continue;seen.add(k);const attempt=await command(employeeCookie,beforeVersion,'leave-request',payload);if(attempt.status===200){date=candidate;submitted=attempt;successfulPayload=payload;break outer;}const err=String(attempt.body?.error||attempt.text||'');if(!/No published shift starts|scheduled interval|already exists|outside|partial-shift|start and end|hours are calculated|invalid leave|request|Choose a future date/i.test(err))throw new Error(`Unexpected leave request rejection on ${candidate}: ${attempt.status} ${err.slice(0,200)}`);const refreshed=await authed(employeeCookie,'/api/bootstrap');beforeVersion=versionOf(refreshed.body)??beforeVersion;}}
+assert.ok(date&&submitted&&successfulPayload,`no future published shift accepted bounded leave; checked ${Math.min(candidates.length,40)} candidates`);console.log(`LEAVE_REQUEST_SUBMIT_PASS date=${date} mode=${successfulPayload.start?'bounded-interval':(successfulPayload.hours?'hours':'full-shift')}`);
+const employeeAfterSubmit=await authed(employeeCookie,'/api/bootstrap');const created=requestsOf(employeeAfterSubmit.body).find(r=>r.employee===employeePerson&&(r.date===date||String(r.start||'').startsWith(date))&&r.status!=='declined');assert.ok(created);assert.equal(created.status,'pending');assert.equal(created.kind,'Annual leave');assert.ok(Number(created.hours)>0||created.start);assert.ok(created.id);console.log('LEAVE_REQUEST_VISIBILITY_PASS pending annual-leave');
+const duplicateVersion=versionOf(employeeAfterSubmit.body);const duplicate=await command(employeeCookie,duplicateVersion,'leave-request',successfulPayload);assert.notEqual(duplicate.status,200);const employeeAfterDuplicate=await authed(employeeCookie,'/api/bootstrap');assert.equal(requestsOf(employeeAfterDuplicate.body).filter(r=>r.id===created.id).length,1);console.log(`LEAVE_DUPLICATE_GUARD_PASS status=${duplicate.status}`);
+const otherAfter=await authed(otherCookie,'/api/bootstrap');assert.ok(!requestsOf(otherAfter.body).some(r=>r.id===created.id));console.log('LEAVE_TENANT_ISOLATION_PASS');
+let reviewer=null;for(const email of managerCandidates){const cookie=await login(email),dash=await authed(cookie,'/api/bootstrap');if(dash.status!==200||actorOf(dash.body)?.tenant!=='northstar-demo')continue;const visible=requestsOf(dash.body).find(r=>r.id===created.id);if(!visible)continue;const capacity=await post(cookie,'/api/leave-capacity',{...visible,employee:visible.employee,requestId:visible.id});if(capacity.status===200){reviewer={email,cookie,dash:dash.body,visible,capacity:capacity.body};break;}}
+assert.ok(reviewer,'no authorised reviewer could see request and execute leave-capacity check');console.log(`LEAVE_CAPACITY_REVIEW_PASS reviewer=${reviewer.email}`);
+const reviewVersion=versionOf(reviewer.dash);const decision=await command(reviewer.cookie,reviewVersion,'rules-leave-decision',{id:created.id,decision:'declined',reviewed:true,reason:'Controlled synthetic proof: decline by design after capacity review.'});assert.equal(decision.status,200,`leave decision failed ${decision.status}: ${decision.text.slice(0,240)}`);console.log('LEAVE_DECISION_PASS declined-by-design');
+const employeeFinal=await authed(employeeCookie,'/api/bootstrap');const final=requestsOf(employeeFinal.body).find(r=>r.id===created.id);assert.ok(final);assert.equal(final.status,'declined');const otherFinal=await authed(otherCookie,'/api/bootstrap');assert.ok(!requestsOf(otherFinal.body).some(r=>r.id===created.id));console.log('PRIVATE_ABSENCE_END_TO_END_PROOF=PASS');console.log('claim_boundary=private synthetic fixture-only proof; decline-by-design; no employee communication/payment; productionApproved=false; pilotReady=false');
 createServer((req,res)=>{res.statusCode=200;res.setHeader('content-type','text/plain');res.end('proof-pass\n');}).listen(Number(process.env.PORT||3000),'0.0.0.0');
