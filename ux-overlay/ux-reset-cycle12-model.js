@@ -74,6 +74,26 @@ function implementationSignals(status){
   }
   return Object.freeze(out.map(x=>Object.freeze(x)));
 }
+function integrationSignals(status){
+  const out=[];if(!status||typeof status!=='object')return Object.freeze(out);
+  const connections=Array.isArray(status.connections)?status.connections:[];
+  for(const connection of connections){
+    if(!connection||typeof connection!=='object')continue;
+    const id=String(connection.id||'').trim();if(!id)continue;
+    const state=String(connection.state||'').trim().toUpperCase();
+    const name=String(connection.name||connection.productKey||'Integration');
+    const common={sourceId:id,route:'integrations',kind:'action',lifecycle:'action_required',authority:'Authorised integration administrator',auditRef:`Integration ${id}`,meta:{state,productKey:connection.productKey||'',category:connection.category||''}};
+    if(state==='AUTHORIZATION_REQUIRED'){
+      out.push({...common,id:`authorize:${id}`,reasonCode:'NEEDS_REVIEW',evidenceState:'current',evidenceLabel:'Integration control plane state AUTHORIZATION_REQUIRED',title:`Authorize ${name}`,whyNow:'The source workflow requires administrator authorization before this connection can activate.',consequence:'Data synchronization remains unavailable until the owning integration workflow records authorization.',mandatory:true});
+    }else if(state==='REAUTH_REQUIRED'){
+      out.push({...common,id:`reauthorize:${id}`,reasonCode:'INTEGRATION_DEGRADED',evidenceState:'current',evidenceLabel:'Integration control plane state REAUTH_REQUIRED',title:`Reconnect ${name}`,whyNow:'The source workflow reports that the existing authorization must be renewed.',consequence:'Automated synchronization cannot be trusted until source authorization is restored.',mandatory:true});
+    }else if(state==='DEGRADED'){
+      const observedAt=connection.lastHealthAt||null;
+      out.push({...common,id:`degraded:${id}`,reasonCode:'INTEGRATION_DEGRADED',evidenceState:observedAt?'unknown':'missing',evidenceLabel:observedAt?`Source reports DEGRADED; last health evidence ${String(observedAt)}`:'Source reports DEGRADED but no health timestamp is available.',title:`Review ${name} connection`,whyNow:'The authoritative integration control plane reports this connection as degraded.',consequence:'Review the owning workflow before relying on this connection for workforce decisions.',createdAt:observedAt,mandatory:false});
+    }
+  }
+  return Object.freeze(out.map(x=>Object.freeze(x)));
+}
 function collect(registry){
   const out=[];if(!registry||typeof registry.entries!=='function')return Object.freeze(out);
   for(const [providerId,getter] of registry.entries()){
@@ -84,5 +104,5 @@ function collect(registry){
   }
   return Object.freeze(out);
 }
-root.WFMUXCycle12Model=Object.freeze({PROVIDERS,normalise,implementationSignals,collect});
+root.WFMUXCycle12Model=Object.freeze({PROVIDERS,normalise,implementationSignals,integrationSignals,collect});
 })(typeof window!=='undefined'?window:globalThis);
