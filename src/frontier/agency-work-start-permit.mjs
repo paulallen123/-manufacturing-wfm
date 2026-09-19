@@ -90,8 +90,8 @@ function validatePrecheck(readiness,scope){
 
 function compareLockedReadiness(precheck,locked){
   if(!locked||locked.workStartReady!==true)return {ok:false,reason:locked?.reason||'work_start_permit_locked_readiness_not_ready'};
-  const keys=['requestId','siteId','agencyId','workerId','assuranceVersionId','assignmentFingerprint','acceptedResponseFingerprint','authorityFingerprint','continuityFingerprint','policyFingerprint','readinessFingerprint'];
-  for(const key of keys)if(text(locked[key],200).toLowerCase()!==text(precheck[key],200).toLowerCase())return {ok:false,reason:'work_start_readiness_changed_since_precheck'};
+  for(const key of ['requestId','siteId','agencyId','workerId'])if(text(locked[key],100)!==text(precheck[key],100))return {ok:false,reason:'work_start_readiness_changed_since_precheck'};
+  for(const key of ['assuranceVersionId','assignmentFingerprint','acceptedResponseFingerprint','authorityFingerprint','continuityFingerprint','policyFingerprint','readinessFingerprint'])if(text(locked[key],200).toLowerCase()!==text(precheck[key],200).toLowerCase())return {ok:false,reason:'work_start_readiness_changed_since_precheck'};
   if(locked.rankingImpact!=='none'||locked.scheduleWriteAuthorized!==false||locked.payrollWriteAuthorized!==false||locked.clockingWriteAuthorized!==false||locked.workStartWriteAuthorized!==false)return {ok:false,reason:'work_start_permit_locked_authority_invalid'};
   return {ok:true};
 }
