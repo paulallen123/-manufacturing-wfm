@@ -1,5 +1,51 @@
 # Vector UX/CX scorecard
 
+## 2026-09-19 — Vector r2: neutral department-planning evidence boundary
+
+### Journey reviewed
+Factory/operations manager Vector Home → department planning summary → schedule planning source workflow.
+
+### NEW-UI lineage confirmation
+Work remains owned only by the approved Vector Workforce Operations presentation on `feature/one-day-enterprise-implementation-v1` / PR #79. The legacy/retired presentation was not modified. Parallel PR #141 was inspected only to recover its validated bounded-observer requirement; that behavior is already present in PR #79, so #141 was explicitly marked superseded and closed rather than maintained as a second Vector implementation.
+
+### Reuse / duplicate-work decision
+- Reused the existing `departmentRows()` and `shiftsMarkup()` ownership in `vector-shell.js`; no replacement planning component was created.
+- Reused the existing `schedule-publication` owning workflow and its authority rather than copying schedule or coverage logic into Vector.
+- Extended the existing `scripts/validate-vector-only-ui.mjs` guard; no second UX test harness or workflow was added.
+- Reused the existing bounded MutationObserver implementation already present in PR #79 and closed the overlapping PR #141.
+
+### Research delta
+No competitor or generic UX research was repeated. The unresolved question was answered directly from the current Vector implementation: department status was derived from display words (`gap`, `critical`, `short`, `risk`, `review`, `under`) and the UI then invented severity colours, timeline hours and fixed percentage-like widths. The current Vector adapter does not expose a structured planning status/freshness field for those rows, so binding a verified status would have required guessing.
+
+### Hypothesis
+If Vector removes text-derived risk, invented timeline widths and implied shift timings until the source workflow supplies structured status/freshness, managers should be less likely to treat decorative presentation as verified operational evidence while retaining one-click access to schedule planning.
+
+### Exact implementation delta
+- Added `VECTOR_PLANNING_NEUTRAL_V1` to the current Vector shell.
+- `departmentRows()` now uses source cards only for a descriptive label; it no longer parses display words into risk or status.
+- Missing structured status now fails neutral as `Open source planning`.
+- Removed invented red/amber/green planning severity, hard-coded percentage-like widths and hard-coded 06:00–22:00 time-axis presentation from this summary.
+- Kept the approved card hierarchy but changed the section to `Department planning` with a direct `Open schedule planning` route.
+- Neutral rows use a non-timeline, non-severity visual treatment and explicitly state that status/coverage are shown only when verified by the source workflow.
+- Extended the existing Vector-only guard to fail if text-inferred risk, fixed planning widths/times, or the neutral evidence/visual contract regress.
+
+### Focused / affected validation
+On exact product-code head `cbcec55fb2b542fe960a80e7e87e94519efb003e`, Vector-only run `35428391626` allocated a runner and the focused `Refuse retired UI source` step passed, which exercises the extended neutral-review/planning contract. The exact Docker build was still running when this scorecard revision was recorded; built-asset proof, hosted role behavior, real browser layout and assistive-technology behavior therefore remain unclaimed until observed.
+
+### UX scorecard impact
+- Calm by default: improved — planning no longer manufactures risk/severity from copy or decorative widths.
+- Dense on demand: improved — unverified timeline detail is removed from the summary while source planning remains one click away.
+- Explainability: improved — the evidence boundary is explicit instead of implied through colour/position.
+- Accessibility: neutral-to-improved structurally; real assistive-technology behavior remains unverified.
+- Authority/auditability: preserved — schedule/coverage truth and writes remain in the source workflow.
+- Development efficiency: improved — one Vector owner, one guard, and the redundant PR #141 is closed.
+
+### Still unverified
+Exact built-asset result for `cbcec55f…`, authenticated hosted-role rendering, real screen-reader behavior, measured first-click/time-on-task/error rate, and a structured source-specific planning freshness/status contract that could safely replace the neutral state.
+
+### Single next highest-value NEW-UI action
+Audit the remaining Vector Home KPI/trend presentation for the same evidence problem, starting with hard-coded labour-cost progress and decorative sparklines. Bind only authoritative structured series/targets; otherwise remove the implied trend/progress while preserving the underlying KPI and route.
+
 ## 2026-09-19 — Vector r1: neutral review-state governance
 
 ### Journey reviewed
