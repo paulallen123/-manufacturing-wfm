@@ -23,6 +23,7 @@ const jsFiles = [
   'resilience/t3-deterministic-execution-sandbox.cjs',
   'resilience/t4-containment-controller.cjs',
   'resilience/autonomy-control-loop.cjs',
+  'resilience/incident-learning-planner.cjs',
   'resilience/ci-provider-failover.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
   'scripts/validate-autonomy-source-syntax.mjs',
@@ -45,6 +46,7 @@ const jsFiles = [
   'scripts/validate-t4-containment-chaos.mjs',
   'scripts/validate-t4-outer-terminal-integrity.mjs',
   'scripts/validate-autonomy-control-loop.mjs',
+  'scripts/validate-incident-learning-planner.mjs',
 ];
 
 const checked = [];
@@ -71,6 +73,7 @@ for (const rel of [
   'resilience/t3-execution-readiness-gate.cjs',
   'resilience/t3-deterministic-execution-sandbox.cjs',
   'resilience/t4-containment-controller.cjs',
+  'resilience/incident-learning-planner.cjs',
 ]) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
   for (const forbidden of ["require('node:http')", "require('node:https')", "require('node:net')", 'process.env', 'fetch(']) {
@@ -100,6 +103,7 @@ const requiredWorkflowPaths = [
   "      - 'resilience/t3-deterministic-execution-sandbox.cjs'",
   "      - 'resilience/t4-containment-controller.cjs'",
   "      - 'resilience/autonomy-control-loop.cjs'",
+  "      - 'resilience/incident-learning-planner.cjs'",
   "      - 'scripts/validate-autonomous-repair-factory.mjs'",
   "      - 'scripts/validate-isolated-repair-worker.mjs'",
   "      - 'scripts/validate-independent-repair-verifier.mjs'",
@@ -115,6 +119,7 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-t4-containment-chaos.mjs'",
   "      - 'scripts/validate-t4-outer-terminal-integrity.mjs'",
   "      - 'scripts/validate-autonomy-control-loop.mjs'",
+  "      - 'scripts/validate-incident-learning-planner.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
   "      - 'scripts/run-portable-autonomy-proof.mjs'",
 ];
@@ -151,6 +156,8 @@ console.log(JSON.stringify({
   t3DeterministicExecutionSandboxAmbientEnvironmentDenied: true,
   t4ContainmentDirectNetworkSurfaceDenied: true,
   t4ContainmentAmbientEnvironmentDenied: true,
+  incidentLearningDirectNetworkSurfaceDenied: true,
+  incidentLearningAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
   workflowCriticalPathsPresent: true,
   productionMutation: false,
