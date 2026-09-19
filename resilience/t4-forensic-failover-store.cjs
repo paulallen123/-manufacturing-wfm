@@ -54,17 +54,24 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
     throw fail('WFM_T4_FORENSICS_FAILOVER_CONFIG', 'Forensic failover maxAttempts must be between 1 and 4.');
   }
 
+  const seenIds = new Set();
   const configured = stores.map((entry, index) => {
     const id = clean(entry?.id || `store-${index + 1}`, 80);
+    if (!id || seenIds.has(id)) {
+      throw fail('WFM_T4_FORENSICS_FAILOVER_CONFIG', 'Forensic store IDs must be unique and non-empty.');
+    }
+    seenIds.add(id);
     const capability = entry?.capability && typeof entry.capability === 'object' ? { ...entry.capability } : {};
+    const store = entry?.store;
+    const preserveMethod = typeof store?.preserve === 'function' ? store.preserve : null;
+    const verifyMethod = typeof store?.verify === 'function' ? store.verify : null;
     return Object.freeze({
       id,
-      store: entry?.store,
       capability: Object.freeze(capability),
       capabilityDigest: capabilityDigest(capability),
-      eligible: capabilityEligible(capability)
-        && typeof entry?.store?.preserve === 'function'
-        && typeof entry?.store?.verify === 'function',
+      preserve: preserveMethod ? preserveMethod.bind(store) : null,
+      verify: verifyMethod ? verifyMethod.bind(store) : null,
+      eligible: capabilityEligible(capability) && Boolean(preserveMethod) && Boolean(verifyMethod),
     });
   });
 
@@ -98,8 +105,8 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
         failureCode: null,
       };
       try {
-        const receipt = await entry.store.preserve(input);
-        const independentlyVerified = await entry.store.verify(receipt);
+        const receipt = await entry.preserve(input);
+        const independentlyVerified = await entry.verify(receipt);
         const receiptValid = receipt?.verified === true
           && receipt?.immutable === true
           && validDigest(receipt?.forensicDigest)
@@ -170,7 +177,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
     });
     if (expectedFailoverDigest !== receipt.failoverDigest) return false;
     try {
-      return await entry.store.verify(receipt) === true;
+      return await entry.verify(receipt) === true;
     } catch {
       return false;
     }
