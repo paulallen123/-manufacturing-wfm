@@ -303,4 +303,220 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
   return { execute, verifyReceipt };
 }
 
-module.exports = { createT3DeterministicExecutionSandbox, canonical, digest };
+function verifyBoundReceipt(receipt, digestField) {
+  if (!receipt || !isDigest(receipt[digestField])) return false;
+  const core = { ...receipt };
+  const expected = core[digestField];
+  delete core[digestField];
+  return expected === digest(core);
+}
+
+function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, maxObservationAgeMs = 2 * 60_000 } = {}) {
+  if (!readinessGate || typeof readinessGate.verifyReceipt !== 'function') {
+    throw new Error('T3 external execution reconciliation requires the execution-readiness verifier.');
+  }
+  if (!Number.isSafeInteger(maxObservationAgeMs) || maxObservationAgeMs < 1000 || maxObservationAgeMs > 10 * 60_000) {
+    throw new Error('T3 external execution reconciliation maxObservationAgeMs must be between 1 second and 10 minutes.');
+  }
+
+  function terminal(base, detail = {}) {
+    const core = {
+      schemaVersion: 1,
+      ...base,
+      ...detail,
+      executionAuthority: false,
+      rollbackAuthority: false,
+      promotionAuthorityGranted: false,
+      productionAuthorityGranted: false,
+      modelAuthorityGranted: false,
+      customerMutation: false,
+      productionMutation: false,
+    };
+    return { ...core, reconciliationReceiptDigest: digest(core) };
+  }
+
+  function rollbackRequired(base, reason, executionReceipt, observation = null) {
+    return terminal(base, {
+      status: 'rollback-required-awaiting-external-authority',
+      reason,
+      executionObserved: true,
+      externalMutationObserved: true,
+      rollbackRequired: true,
+      rollbackDigest: base.rollbackDigest,
+      compensationPlanDigest: base.compensationPlanDigest,
+      executionReceiptDigest: executionReceipt.executionReceiptDigest,
+      observationDigest: observation?.observationDigest || null,
+      observedAfterStateDigest: isDigest(observation?.observedStateDigest) ? observation.observedStateDigest : null,
+      postconditionReconciled: false,
+    });
+  }
+
+  function reconcile({ readinessReceipt, executionReceipt, observation } = {}) {
+    const at = Number(now());
+    const base = {
+      status: 'contained',
+      reason: 'invalid-readiness-receipt',
+      tenant: readinessReceipt?.tenant || null,
+      scenarioId: readinessReceipt?.scenarioId || null,
+      incidentId: readinessReceipt?.incidentId || null,
+      proposalDigest: readinessReceipt?.proposalDigest || null,
+      readinessReceiptDigest: readinessReceipt?.readinessReceiptDigest || null,
+      executionPlanDigest: readinessReceipt?.executionPlanDigest || null,
+      idempotencyKeyDigest: readinessReceipt?.idempotencyKeyDigest || null,
+      expectedBeforeStateDigest: readinessReceipt?.currentStateDigest || null,
+      expectedAfterStateDigest: readinessReceipt?.expectedAfterStateDigest || null,
+      rollbackDigest: readinessReceipt?.rollbackDigest || null,
+      compensationPlanDigest: readinessReceipt?.compensationPlanDigest || null,
+      reconciledAt: at,
+      executionObserved: false,
+      externalMutationObserved: false,
+      rollbackRequired: false,
+      postconditionReconciled: false,
+    };
+
+    if (!readinessGate.verifyReceipt(readinessReceipt)) return terminal(base);
+    if (
+      readinessReceipt.status !== 'execution-ready-awaiting-external-authority'
+      || readinessReceipt.executionReady !== true
+      || readinessReceipt.externalExecutionAuthorityRequired !== true
+      || readinessReceipt.deterministicExecutorRequired !== true
+      || readinessReceipt.executionAuthority !== false
+      || readinessReceipt.productionAuthorityGranted !== false
+      || readinessReceipt.modelAuthorityGranted !== false
+      || readinessReceipt.customerMutation !== false
+      || readinessReceipt.productionMutation !== false
+    ) return terminal(base, { reason: 'readiness-authority-boundary-invalid' });
+
+    for (const key of [
+      'proposalDigest', 'readinessReceiptDigest', 'executionPlanDigest', 'idempotencyKeyDigest',
+      'currentStateDigest', 'expectedAfterStateDigest', 'rollbackDigest', 'compensationPlanDigest',
+    ]) {
+      if (!isDigest(readinessReceipt[key])) return terminal(base, { reason: `readiness-${key}-invalid` });
+    }
+
+    if (!verifyBoundReceipt(executionReceipt, 'executionReceiptDigest')) {
+      return terminal(base, { reason: 'external-execution-receipt-invalid' });
+    }
+
+    const executorId = clean(executionReceipt.executorId, 120);
+    const executionBindingValid = executionReceipt.status === 'executed'
+      && executionReceipt.executorType === 'deterministic-external-executor'
+      && executionReceipt.authoritySource === 'customer-controlled-external-authority'
+      && Boolean(executorId)
+      && executionReceipt.tenant === readinessReceipt.tenant
+      && executionReceipt.scenarioId === readinessReceipt.scenarioId
+      && executionReceipt.incidentId === readinessReceipt.incidentId
+      && executionReceipt.proposalDigest === readinessReceipt.proposalDigest
+      && executionReceipt.readinessReceiptDigest === readinessReceipt.readinessReceiptDigest
+      && executionReceipt.executionPlanDigest === readinessReceipt.executionPlanDigest
+      && executionReceipt.idempotencyKeyDigest === readinessReceipt.idempotencyKeyDigest
+      && executionReceipt.beforeStateDigest === readinessReceipt.currentStateDigest
+      && isDigest(executionReceipt.afterStateDigest)
+      && executionReceipt.affectedRecords === readinessReceipt.affectedRecords
+      && executionReceipt.oneShotAuthorityConsumed === true
+      && executionReceipt.durableReplayProtection === true
+      && isDigest(executionReceipt.externalAuthorityReceiptDigest)
+      && Number.isSafeInteger(executionReceipt.executedAt);
+
+    if (!executionBindingValid) {
+      return terminal(base, { reason: 'external-execution-binding-invalid' });
+    }
+
+    const executionBase = {
+      ...base,
+      executionObserved: true,
+      externalMutationObserved: true,
+      executorId,
+      executionReceiptDigest: executionReceipt.executionReceiptDigest,
+      observedExecutionAfterStateDigest: executionReceipt.afterStateDigest,
+    };
+
+    if (executionReceipt.modelAuthorityUsed !== false || executionReceipt.llmDecisionAuthorityUsed !== false) {
+      return rollbackRequired(executionBase, 'model-authority-used-for-external-execution', executionReceipt, observation);
+    }
+    if (!Number.isSafeInteger(readinessReceipt.evaluatedAt) || !Number.isSafeInteger(readinessReceipt.validUntil)
+      || executionReceipt.executedAt > readinessReceipt.validUntil || executionReceipt.executedAt < readinessReceipt.evaluatedAt) {
+      return rollbackRequired(executionBase, 'external-execution-outside-readiness-window', executionReceipt, observation);
+    }
+
+    if (!verifyBoundReceipt(observation, 'observationDigest')) {
+      return rollbackRequired(executionBase, 'independent-post-execution-observation-invalid', executionReceipt, observation);
+    }
+
+    const observerId = clean(observation.observerId, 120);
+    const observationBindingValid = observation.observerType === 'independent-read-only-reconciler'
+      && Boolean(observerId)
+      && observerId !== executorId
+      && observation.readOnly === true
+      && observation.writeAuthority === false
+      && observation.modelAuthorityUsed === false
+      && observation.tenant === readinessReceipt.tenant
+      && observation.scenarioId === readinessReceipt.scenarioId
+      && observation.incidentId === readinessReceipt.incidentId
+      && observation.proposalDigest === readinessReceipt.proposalDigest
+      && observation.readinessReceiptDigest === readinessReceipt.readinessReceiptDigest
+      && observation.executionReceiptDigest === executionReceipt.executionReceiptDigest
+      && isDigest(observation.observedStateDigest)
+      && Number.isSafeInteger(observation.observedAt)
+      && observation.observedAt >= executionReceipt.executedAt;
+
+    if (!observationBindingValid) {
+      return rollbackRequired(executionBase, 'independent-post-execution-observation-boundary-invalid', executionReceipt, observation);
+    }
+
+    if (at < observation.observedAt || at - observation.observedAt > maxObservationAgeMs) {
+      return rollbackRequired(executionBase, 'independent-post-execution-observation-stale', executionReceipt, observation);
+    }
+
+    const exactPostState = executionReceipt.afterStateDigest === readinessReceipt.expectedAfterStateDigest
+      && observation.observedStateDigest === readinessReceipt.expectedAfterStateDigest
+      && observation.observedStateDigest === executionReceipt.afterStateDigest;
+    const invariantsGreen = observation.businessInvariantPassed === true
+      && observation.securityPassed === true
+      && observation.tenantIsolationPassed === true;
+
+    if (!exactPostState) {
+      return rollbackRequired(executionBase, 'post-execution-state-mismatch', executionReceipt, observation);
+    }
+    if (!invariantsGreen) {
+      return rollbackRequired(executionBase, 'post-execution-invariant-failure', executionReceipt, observation);
+    }
+
+    return terminal(executionBase, {
+      status: 'externally-executed-reconciled',
+      reason: null,
+      observerId,
+      observationDigest: observation.observationDigest,
+      observedAfterStateDigest: observation.observedStateDigest,
+      rollbackRequired: false,
+      postconditionReconciled: true,
+      externalAuthorityConsumed: true,
+      independentObservationVerified: true,
+      exactExpectedPostStateVerified: true,
+      businessInvariantPassed: true,
+      securityPassed: true,
+      tenantIsolationPassed: true,
+    });
+  }
+
+  function verifyReceipt(receipt) {
+    if (!receipt || !isDigest(receipt.reconciliationReceiptDigest)) return false;
+    if (
+      receipt.executionAuthority !== false
+      || receipt.rollbackAuthority !== false
+      || receipt.promotionAuthorityGranted !== false
+      || receipt.productionAuthorityGranted !== false
+      || receipt.modelAuthorityGranted !== false
+      || receipt.customerMutation !== false
+      || receipt.productionMutation !== false
+    ) return false;
+    const core = { ...receipt };
+    const expected = core.reconciliationReceiptDigest;
+    delete core.reconciliationReceiptDigest;
+    return expected === digest(core);
+  }
+
+  return { reconcile, verifyReceipt };
+}
+
+module.exports = { createT3DeterministicExecutionSandbox, createT3ExternalExecutionReconciler, canonical, digest };

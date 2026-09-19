@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { createT3DeterministicExecutionSandbox, digest } = require('../resilience/t3-deterministic-execution-sandbox.cjs');
+const { createT3DeterministicExecutionSandbox, createT3ExternalExecutionReconciler, digest } = require('../resilience/t3-deterministic-execution-sandbox.cjs');
 const d = (value) => createHash('sha256').update(String(value)).digest('hex');
 
 const readinessReceipt = {
@@ -253,8 +253,139 @@ assert.throws(() => createT3DeterministicExecutionSandbox({
   },
 }), /zero-cost isolated/);
 
+function seal(value, field) {
+  const core = { ...value };
+  delete core[field];
+  return { ...core, [field]: digest(core) };
+}
+
+function externalExecution(overrides = {}) {
+  return seal({
+    schemaVersion: 1,
+    status: 'executed',
+    executorType: 'deterministic-external-executor',
+    authoritySource: 'customer-controlled-external-authority',
+    executorId: 'external-executor-1',
+    tenant: readinessReceipt.tenant,
+    scenarioId: readinessReceipt.scenarioId,
+    incidentId: readinessReceipt.incidentId,
+    proposalDigest: readinessReceipt.proposalDigest,
+    readinessReceiptDigest: readinessReceipt.readinessReceiptDigest,
+    executionPlanDigest: readinessReceipt.executionPlanDigest,
+    idempotencyKeyDigest: readinessReceipt.idempotencyKeyDigest,
+    beforeStateDigest: readinessReceipt.currentStateDigest,
+    afterStateDigest: readinessReceipt.expectedAfterStateDigest,
+    affectedRecords: readinessReceipt.affectedRecords,
+    oneShotAuthorityConsumed: true,
+    durableReplayProtection: true,
+    externalAuthorityReceiptDigest: d('external-authority'),
+    modelAuthorityUsed: false,
+    llmDecisionAuthorityUsed: false,
+    executedAt: 5000,
+    ...overrides,
+  }, 'executionReceiptDigest');
+}
+
+function externalObservation(executionReceipt, overrides = {}) {
+  return seal({
+    schemaVersion: 1,
+    observerType: 'independent-read-only-reconciler',
+    observerId: 'independent-observer-1',
+    readOnly: true,
+    writeAuthority: false,
+    modelAuthorityUsed: false,
+    tenant: readinessReceipt.tenant,
+    scenarioId: readinessReceipt.scenarioId,
+    incidentId: readinessReceipt.incidentId,
+    proposalDigest: readinessReceipt.proposalDigest,
+    readinessReceiptDigest: readinessReceipt.readinessReceiptDigest,
+    executionReceiptDigest: executionReceipt.executionReceiptDigest,
+    observedStateDigest: readinessReceipt.expectedAfterStateDigest,
+    businessInvariantPassed: true,
+    securityPassed: true,
+    tenantIsolationPassed: true,
+    observedAt: 6000,
+    ...overrides,
+  }, 'observationDigest');
+}
+
+let reconcileNow = 7000;
+const reconciler = createT3ExternalExecutionReconciler({ readinessGate, now: () => reconcileNow, maxObservationAgeMs: 60_000 });
+
+const externalGoodExecution = externalExecution();
+const externalGoodObservation = externalObservation(externalGoodExecution);
+const externalGood = reconciler.reconcile({ readinessReceipt, executionReceipt: externalGoodExecution, observation: externalGoodObservation });
+assert.equal(externalGood.status, 'externally-executed-reconciled');
+assert.equal(externalGood.postconditionReconciled, true);
+assert.equal(externalGood.rollbackRequired, false);
+assert.equal(externalGood.executionAuthority, false);
+assert.equal(externalGood.rollbackAuthority, false);
+assert.equal(externalGood.productionAuthorityGranted, false);
+assert.equal(externalGood.modelAuthorityGranted, false);
+assert.equal(externalGood.customerMutation, false);
+assert.equal(externalGood.productionMutation, false);
+assert.equal(reconciler.verifyReceipt(externalGood), true);
+
+const mismatchExecution = externalExecution({ afterStateDigest: d('unexpected-after') });
+const mismatchObservation = externalObservation(mismatchExecution, { observedStateDigest: d('unexpected-after') });
+const mismatch = reconciler.reconcile({ readinessReceipt, executionReceipt: mismatchExecution, observation: mismatchObservation });
+assert.equal(mismatch.status, 'rollback-required-awaiting-external-authority');
+assert.equal(mismatch.reason, 'post-execution-state-mismatch');
+assert.equal(mismatch.rollbackRequired, true);
+assert.equal(mismatch.rollbackAuthority, false);
+
+const invariantExecution = externalExecution();
+const invariantObservation = externalObservation(invariantExecution, { securityPassed: false });
+const invariant = reconciler.reconcile({ readinessReceipt, executionReceipt: invariantExecution, observation: invariantObservation });
+assert.equal(invariant.status, 'rollback-required-awaiting-external-authority');
+assert.equal(invariant.reason, 'post-execution-invariant-failure');
+
+const modelExecution = externalExecution({ modelAuthorityUsed: true });
+const modelObservation = externalObservation(modelExecution);
+const model = reconciler.reconcile({ readinessReceipt, executionReceipt: modelExecution, observation: modelObservation });
+assert.equal(model.status, 'rollback-required-awaiting-external-authority');
+assert.equal(model.reason, 'model-authority-used-for-external-execution');
+assert.equal(model.rollbackAuthority, false);
+
+const hostileObserverExecution = externalExecution();
+const hostileObserver = externalObservation(hostileObserverExecution, { writeAuthority: true });
+const hostileObservationResult = reconciler.reconcile({ readinessReceipt, executionReceipt: hostileObserverExecution, observation: hostileObserver });
+assert.equal(hostileObservationResult.status, 'rollback-required-awaiting-external-authority');
+assert.equal(hostileObservationResult.reason, 'independent-post-execution-observation-boundary-invalid');
+
+const staleExecution = externalExecution();
+const staleObservation = externalObservation(staleExecution, { observedAt: 6000 });
+reconcileNow = 70000;
+const stale = reconciler.reconcile({ readinessReceipt, executionReceipt: staleExecution, observation: staleObservation });
+assert.equal(stale.status, 'rollback-required-awaiting-external-authority');
+assert.equal(stale.reason, 'independent-post-execution-observation-stale');
+reconcileNow = 7000;
+
+const crossTenantExecution = externalExecution({ tenant: 'tenant-b' });
+const crossTenantObservation = externalObservation(crossTenantExecution, { tenant: 'tenant-b' });
+const crossTenant = reconciler.reconcile({ readinessReceipt, executionReceipt: crossTenantExecution, observation: crossTenantObservation });
+assert.equal(crossTenant.status, 'contained');
+assert.equal(crossTenant.reason, 'external-execution-binding-invalid');
+assert.equal(crossTenant.executionObserved, false);
+
+const outOfWindowExecution = externalExecution({ executedAt: 100001 });
+const outOfWindowObservation = externalObservation(outOfWindowExecution, { observedAt: 100002 });
+const outOfWindow = reconciler.reconcile({ readinessReceipt, executionReceipt: outOfWindowExecution, observation: outOfWindowObservation });
+assert.equal(outOfWindow.status, 'rollback-required-awaiting-external-authority');
+assert.equal(outOfWindow.reason, 'external-execution-outside-readiness-window');
+
+const externalTampered = { ...externalGood, rollbackAuthority: true };
+assert.equal(reconciler.verifyReceipt(externalTampered), false);
+
+const tamperedExternalExecution = { ...externalGoodExecution, afterStateDigest: d('tampered') };
+const invalidExternalExecution = reconciler.reconcile({ readinessReceipt, executionReceipt: tamperedExternalExecution, observation: externalGoodObservation });
+assert.equal(invalidExternalExecution.status, 'contained');
+assert.equal(invalidExternalExecution.reason, 'external-execution-receipt-invalid');
+
+assert.throws(() => createT3ExternalExecutionReconciler({ readinessGate, maxObservationAgeMs: 999 }), /between 1 second and 10 minutes/);
+
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'tier3-deterministic-execution-sandbox-with-reconciliation-and-known-good-rollback',
   status: 'PASS',
   exactReadinessReceiptRequired: true,
@@ -270,6 +401,17 @@ console.log(JSON.stringify({
   zeroIncrementalCostAdapterRequired: true,
   customerDataVisible: false,
   productionDataVisible: false,
+  externalExecutionPostChangeReconciliationAdded: true,
+  customerControlledExternalAuthorityRequired: true,
+  independentReadOnlyObserverRequired: true,
+  executorObserverSeparationRequired: true,
+  exactExpectedPostStateRequired: true,
+  businessSecurityTenantInvariantRequired: true,
+  staleObservationFailsSafeToRollbackRequired: true,
+  crossTenantExternalExecutionContained: true,
+  outOfWindowExternalExecutionFailsSafeToRollbackRequired: true,
+  modelExecutionAuthorityFailsSafeToRollbackRequired: true,
+  rollbackRecommendationDoesNotGrantAuthority: true,
   customerMutation: false,
   productionMutation: false,
   productionAuthorityGranted: false,
