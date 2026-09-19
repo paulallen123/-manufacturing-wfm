@@ -253,6 +253,27 @@ test('enterprise implementation cannot go READY until real role competence is pr
     assert.equal(start.status, 201);
     const runId = start.body.runId;
 
+    const scope = await call(
+      f.implementation,
+      f.tokens.manager,
+      'POST',
+      '/api/implementation/autonomous/scope',
+      {
+        companyName: 'Alpha Manufacturing',
+        countries: ['United Kingdom'],
+        sites: ['Plant 1'],
+        employeeCount: 10000,
+        sourceSystems: ['ERP', 'Payroll', 'HCM'],
+        features: ['Scheduling', 'Time & attendance', 'Absence', 'Payroll output'],
+        workPatterns: ['24/7 rotating shifts'],
+        clockingMethods: ['Existing access control', 'Mobile fallback'],
+        agencyLabour: true,
+        priorities: 'Accurate payroll and role-ready go live'
+      }
+    );
+    assert.equal(scope.status, 201);
+    assert.equal(scope.body.scopeCaptured, true);
+
     await call(
       f.learning,
       null,
