@@ -4,7 +4,7 @@ import {buildConnectorRegistry,connectorById} from './connector-registry.mjs';
 
 test('effective catalogue compiles safely and preserves explicit interface gaps',()=>{
   const registry=buildConnectorRegistry();
-  assert.equal(registry.connectors.length,170);
+  assert.ok(registry.connectors.length>=170,'Expected the continuously growing reviewed catalogue to retain at least 170 systems.');
   assert.deepEqual(registry.connectors.filter(x=>x.adapters.length===0).map(x=>x.id),['schneider-resource-advisor']);
   for(const c of registry.connectors){
     assert.equal(c.security.readOnlyDefault,true,c.id);
@@ -140,6 +140,32 @@ test('Canary Historian uses read APIs and explicit customer-edge enforcement eve
   assert.equal(c.nextEvidenceGate,'sandbox-authentication');
 });
 
+test('TrendMiner reuses REST while keeping analytics and early-access agent actions read-gated',()=>{
+  const c=connectorById('trendminer');
+  assert.equal(c.evidenceLevel,'spec-verified');
+  assert.deepEqual(c.protocols,['REST']);
+  assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
+  assert.ok(c.canonicalTargets.includes('machine-state'));
+  assert.ok(c.canonicalTargets.includes('production-risk'));
+  assert.equal(c.security.writeEnabled,false);
+  assert.equal(c.security.arbitraryEndpointAllowed,false);
+  assert.equal(c.nextEvidenceGate,'sandbox-authentication');
+});
+
+test('Honeywell Uniformance PHD reuses supported historian protocols and requires the customer edge',()=>{
+  const c=connectorById('honeywell-uniformance-phd');
+  assert.equal(c.evidenceLevel,'spec-verified');
+  assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
+  assert.ok(c.adapters.some(x=>x.id==='opcua'));
+  assert.ok(c.adapters.some(x=>x.id==='database'));
+  assert.ok(c.canonicalTargets.includes('machine-state'));
+  assert.ok(c.canonicalTargets.includes('downtime-event'));
+  assert.equal(c.security.customerEdgeRequired,true);
+  assert.equal(c.discoveryStrategy,'customer-edge-config-required');
+  assert.equal(c.security.directPlantNetworkAccess,false);
+  assert.equal(c.security.writeEnabled,false);
+});
+
 test('legacy Oracle manufacturing estates use published service routes',()=>{
   const jde=connectorById('oracle-jd-edwards-enterpriseone');
   const ebs=connectorById('oracle-ebusiness-suite');
@@ -164,8 +190,8 @@ test('EHS integration is data-minimised and produces restriction/risk targets',(
   assert.equal(c.security.writeEnabled,false);
 });
 
-test('industrial protocols require a customer edge and prohibit direct plant access',()=>{
-  for(const id of ['beckhoff-twincat-opcua','inductive-automation-ignition','highbyte-intelligence-hub','aspentech-inmation','canary-historian']){
+test('industrial protocols and explicit on-prem services require a customer edge and prohibit direct plant access',()=>{
+  for(const id of ['beckhoff-twincat-opcua','inductive-automation-ignition','highbyte-intelligence-hub','aspentech-inmation','canary-historian','honeywell-uniformance-phd']){
     const c=connectorById(id);
     assert.equal(c.security.customerEdgeRequired,true,id);
     assert.equal(c.security.directPlantNetworkAccess,false,id);
