@@ -1,9 +1,10 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
-const { normalizeNetSuiteAccountId } = require('./provider-proof-profiles.cjs');
+const { canonicalProviderKey, normalizeNetSuiteAccountId } = require('./provider-proof-profiles.cjs');
 
 const MAX_CLOCK_SKEW_MS = 5000;
+const DIGEST = /^[a-f0-9]{64}$/i;
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -88,6 +89,9 @@ function verifySuccessFactors(plan, common) {
   if (!expectedCompanyId || observedCompanyId !== expectedCompanyId) {
     throw new Error('SuccessFactors response company identity does not match the reviewed target.');
   }
+  if (plan.targetIdentity && String(plan.targetIdentity).trim() !== observedCompanyId) {
+    throw new Error('SuccessFactors verified identity does not match the reviewed connection identity.');
+  }
 
   return Object.freeze({
     companyId: observedCompanyId,
@@ -101,7 +105,7 @@ function verifyNetSuite(plan, common) {
   try {
     parsed = JSON.parse(common.body.toString('utf8'));
   } catch {
-    throw new Error('NetSuite metadata response is not valid JSON.');
+    throw new Error('NetSuite metadata response is not valid JSON metadata.');
   }
   if (!/^3\./.test(String(parsed?.openapi || '')) || !parsed.paths || typeof parsed.paths !== 'object') {
     throw new Error('NetSuite response is not recognisable OpenAPI 3 metadata.');
@@ -113,20 +117,67 @@ function verifyNetSuite(plan, common) {
   const accountId = String(plan.targetMetadata?.accountId || '').trim();
   const expectedHost = `${normalizeNetSuiteAccountId(accountId)}.suitetalk.api.netsuite.com`;
   if (!accountId || plan.pinnedHost !== expectedHost) throw new Error('NetSuite response identity is not bound to the reviewed account-specific domain.');
+  if (plan.targetIdentity && normalizeNetSuiteAccountId(plan.targetIdentity) !== normalizeNetSuiteAccountId(accountId)) {
+    throw new Error('NetSuite verified account identity does not match the reviewed connection identity.');
+  }
 
   return Object.freeze({ accountId, accountSpecificDomain: plan.pinnedHost });
 }
 
+function verifiedIdentityFor(proof = {}) {
+  const family = canonicalProviderKey(proof.providerFamily || proof.providerKey);
+  if (family === 'sap-successfactors') return String(proof.providerIdentity?.companyId || '').trim();
+  if (family === 'netsuite') return String(proof.providerIdentity?.accountId || '').trim();
+  return '';
+}
+
+function toActivationTargetProof(review, verifiedProof = {}) {
+  if (verifiedProof.status !== 'PASS') throw new Error('Only a verified provider proof can become activation evidence.');
+  const reviewFamily = canonicalProviderKey(review?.providerKey);
+  const proofFamily = canonicalProviderKey(verifiedProof.providerFamily || verifiedProof.providerKey);
+  if (!reviewFamily || reviewFamily !== proofFamily) throw new Error('Verified provider proof belongs to a different provider.');
+  if (verifiedProof.reviewedDigest && verifiedProof.reviewedDigest !== review?.reviewedDigest) {
+    throw new Error('Verified provider proof belongs to a different reviewed connection.');
+  }
+  if (verifiedProof.boundedMetadataOnly !== true || verifiedProof.containsSensitiveData !== false || verifiedProof.responseBodyRetained !== false) {
+    throw new Error('Verified provider proof is not safe bounded metadata evidence.');
+  }
+  if (!DIGEST.test(String(verifiedProof.metadataDigest || ''))) throw new Error('Verified provider proof metadata digest is invalid.');
+  if (!Number.isFinite(Date.parse(String(verifiedProof.observedAt || '')))) throw new Error('Verified provider proof observation time is invalid.');
+  const identity = verifiedIdentityFor(verifiedProof);
+  if (!identity) throw new Error('Verified provider proof contains no provider identity.');
+  const expectedIdentity = String(review?.targetIdentity || '').trim();
+  const identityMatches = reviewFamily === 'netsuite'
+    ? normalizeNetSuiteAccountId(identity) === normalizeNetSuiteAccountId(expectedIdentity)
+    : identity === expectedIdentity;
+  if (!expectedIdentity || !identityMatches) throw new Error('Verified provider identity does not match the reviewed target identity.');
+
+  return Object.freeze({
+    providerKey: String(review.providerKey || '').trim().toLowerCase(),
+    targetIdentity: expectedIdentity,
+    environment: String(review.environment || 'non-production').trim().toLowerCase(),
+    method: 'provider-metadata',
+    observedAt: verifiedProof.observedAt,
+    boundedMetadataOnly: true,
+    containsSensitiveData: false,
+    metadataDigest: verifiedProof.metadataDigest
+  });
+}
+
 function verifyProviderProofResponse(plan, response = {}, now = Date.now()) {
   const common = validateCommon(plan, response, now);
+  const providerFamily = canonicalProviderKey(plan.providerFamily || plan.providerKey);
   let providerIdentity;
-  if (plan.providerKey === 'sap-successfactors') providerIdentity = verifySuccessFactors(plan, common);
-  else if (plan.providerKey === 'netsuite') providerIdentity = verifyNetSuite(plan, common);
+  if (providerFamily === 'sap-successfactors') providerIdentity = verifySuccessFactors(plan, common);
+  else if (providerFamily === 'netsuite') providerIdentity = verifyNetSuite(plan, common);
   else throw new Error('No provider response verifier is available.');
 
   return Object.freeze({
     status: 'PASS',
     providerKey: plan.providerKey,
+    providerFamily,
+    reviewedDigest: plan.reviewedDigest || null,
+    targetIdentity: String(plan.targetIdentity || '').trim() || null,
     targetHost: plan.pinnedHost,
     observedAt: new Date(common.observedAtMs).toISOString(),
     measuredLatencyMs: common.elapsedMs,
@@ -138,4 +189,4 @@ function verifyProviderProofResponse(plan, response = {}, now = Date.now()) {
   });
 }
 
-module.exports = { verifyProviderProofResponse };
+module.exports = { verifyProviderProofResponse, toActivationTargetProof };
