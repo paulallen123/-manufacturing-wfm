@@ -75,7 +75,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Require protected canonical trust anchor
+      - name: Classify canonical trust anchor
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -87,12 +87,14 @@ jobs:
             -H 'X-GitHub-Api-Version: 2022-11-28' \
             "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/branches/integration/canonical")"
           CANONICAL_PROTECTED="$(printf '%s' "$BRANCH_JSON" | python3 -c 'import json,sys; print(str(bool(json.load(sys.stdin).get("protected", False))).lower())')"
-          if [ "$CANONICAL_PROTECTED" != 'true' ]; then
-            echo '::error::Canonical trust anchor integration/canonical is not protected. Exact autonomy proof is intentionally fail-closed until branch protection or an applicable ruleset is enabled.' >&2
-            exit 1
+          echo "WFM_CANONICAL_TRUST_ANCHOR_PROTECTED=$CANONICAL_PROTECTED" >> "$GITHUB_ENV"
+          if [ "$CANONICAL_PROTECTED" = 'true' ]; then
+            echo 'Canonical trust anchor is protected; release evidence may proceed if all other gates pass.'
+          else
+            echo '::warning::Canonical trust anchor integration/canonical is unprotected. Exact-runtime logic proof will continue, but release evidence will remain fail-closed.' >&2
           fi
 
-      - name: Fail closed on canonical base conflict and bind live release policy
+      - name: Bind live canonical state and release policy
         shell: bash
         run: |
           set -euo pipefail
@@ -142,17 +144,36 @@ jobs:
           import fs from 'node:fs';
           const p = JSON.parse(fs.readFileSync('portable-autonomy-proof.json', 'utf8'));
           const b = p.releaseBinding;
-          const required = p.status === 'PASS'
+          const protectedAnchor = process.env.WFM_CANONICAL_TRUST_ANCHOR_PROTECTED === 'true';
+          const common = p.status === 'PASS'
             && p.providerNeutral === true
             && p.requiresGitHubHostedRunner === false
             && p.exactRuntime === true
             && p.productionMutation === false
             && p.customerMutation === false
-            && p.canonicalReleaseEvidenceBound === true
+            && p.canonicalTrustAnchorProtected === protectedAnchor
             && b
             && b.headSha === process.env.WFM_AUTONOMY_HEAD_SHA
             && b.canonicalBaseSha === process.env.WFM_CANONICAL_BASE_SHA
             && b.canonicalPolicyBlobSha === process.env.WFM_CANONICAL_POLICY_BLOB_SHA
             && b.mergeTreeSha === process.env.WFM_CANONICAL_MERGE_TREE_SHA;
-          if (!required) process.exit(1);
+          const releaseState = protectedAnchor
+            ? p.canonicalReleaseEvidenceBound === true
+              && p.releaseClaimAllowed === true
+              && p.releaseEvidenceStatus === 'ELIGIBLE_EXACT_RELEASE_EVIDENCE'
+              && p.proofScope === 'EXACT_RUNTIME_RELEASE_ELIGIBLE'
+            : p.canonicalReleaseEvidenceBound === false
+              && p.releaseClaimAllowed === false
+              && p.releaseEvidenceStatus === 'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED'
+              && p.proofScope === 'EXACT_RUNTIME_LOGIC_ONLY';
+          if (!(common && releaseState)) process.exit(1);
           NODE
+
+      - name: Enforce release evidence fail-closed boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$WFM_CANONICAL_TRUST_ANCHOR_PROTECTED" != 'true' ]; then
+            echo '::error::Exact-runtime autonomy logic proof completed, but release evidence remains FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED. No release claim is permitted until integration/canonical is governed by an applicable protected-branch or ruleset trust boundary.' >&2
+            exit 1
+          fi
