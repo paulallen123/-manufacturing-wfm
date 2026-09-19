@@ -9,7 +9,7 @@ function stable(value){
 }
 function hash(value){ return crypto.createHash('sha256').update(stable(value)).digest('hex'); }
 function clone(value){ return JSON.parse(JSON.stringify(value)); }
-function eventKey(event){ return `${event.tenant}:${event.sourceId}:${event.eventId}`; }
+function eventKey(event){ return JSON.stringify([String(event.tenant),String(event.sourceId),String(event.eventId)]); }
 function error(message,status=500){ return Object.assign(new Error(message),{status}); }
 
 export class DurableEvidenceJournal {
