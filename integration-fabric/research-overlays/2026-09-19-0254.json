@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedAt": "2026-09-19",
-  "purpose": "Hourly authoritative-vendor contingent-workforce integration delta. Adds Beeline Enterprise and Magnit VMS as distinct external-workforce systems with documented reusable REST-based integration paths. Evidence remains specification/public-documentation level only: no sandbox or customer tenant credentials were used and all writes remain disabled.",
+  "purpose": "Hourly authoritative-vendor contingent-workforce integration delta. Adds Beeline Enterprise and Magnit VMS as distinct external-workforce systems with documented reusable REST-based integration paths, and records Beeline's newly launched MCP agent capability behind a separate action/security boundary. Evidence remains specification/public-documentation level only: no sandbox or customer tenant credentials were used and all writes remain disabled.",
   "protocolFamilies": [],
   "overrides": [],
   "systems": [
@@ -22,7 +22,7 @@
       "testLevel": "spec-verified",
       "writeEnabled": false,
       "evidenceUrl": "https://www.beeline.com/integrations",
-      "evidenceNote": "Beeline documents a hybrid integration framework spanning RESTful APIs, webhooks, flat-file/data feeds, Reporting as a Service JSON APIs, plug-and-play connectors and iPaaS for cloud, SaaS and on-premises estates. Its public integration material states 300+ APIs and self-service developer/sandbox tooling, and documents API capacity up to 1,000 calls per minute per endpoint. The integration scope covers workforce lifecycle, hierarchy, cost centres, user roles, approvals, reporting, billing and invoicing. These surfaces include mutative business workflows, so Manufacturing WFM must use narrowly scoped read credentials and keep candidate, assignment, approval, time, invoice and supplier mutations disabled until separately authorised and write-roundtrip certified. No Beeline sandbox or tenant authentication was attempted.",
+      "evidenceNote": "Beeline documents a hybrid integration framework spanning RESTful APIs, webhooks, flat-file/data feeds, Reporting as a Service JSON APIs, plug-and-play connectors and iPaaS for cloud, SaaS and on-premises estates. Its public integration material states 300+ APIs and self-service developer/sandbox tooling, and documents API capacity up to 1,000 calls per minute per endpoint. The integration scope covers workforce lifecycle, hierarchy, cost centres, user roles, approvals, reporting, billing and invoicing. Beeline also launched a native Model Context Protocol (MCP) capability on 2 September 2026 for approved AI agents to discover and invoke governed workforce tools using Beeline identity/permissions; vendor examples include status lookup plus mutative approvals and candidate actions. MCP is therefore recorded as a potentially valuable agent/management capability but is deliberately not declared as a WFM connector protocol until its exact tool contract and read-only enforcement can be proved. These surfaces include mutative business workflows, so Manufacturing WFM must use narrowly scoped read credentials and keep candidate, assignment, approval, time, invoice, supplier and agent actions disabled until separately authorised and write-roundtrip certified. No Beeline sandbox or tenant authentication was attempted.",
       "valueReview": {
         "basis": "vendor-docs",
         "evidenceUrl": "https://www.beeline.com/integrations",
@@ -31,7 +31,7 @@
           "read worker/assignment, organisation/cost-centre, time/expense, supplier and reporting data only where required by the workflow",
           "webhook subscription/read permission only for approved event families",
           "PII, rates, invoice and supplier data minimised to the implemented WFM use case",
-          "no candidate, assignment, approval, timesheet, expense, invoice, supplier or configuration mutations during discovery"
+          "no candidate, assignment, approval, timesheet, expense, invoice, supplier, MCP tool-action or configuration mutations during discovery"
         ],
         "dataAvailableOrExpected": [
           "external/contingent worker and assignment lifecycle data",
@@ -61,6 +61,7 @@
           "reconcile external-worker time, expense and invoice context against WFM attendance and approved labour",
           "surface supplier, rate, qualification and assignment context to improve agency-labour selection and cost decisions",
           "reuse existing customer Beeline connectors, feeds or iPaaS routes instead of creating duplicate point-to-point integrations",
+          "future agent-native implementation/support workflows could use Beeline MCP tool discovery only after operation-level scopes, auditability and human approval boundaries are verified",
           "consider controlled write-back only after sandbox write/read-back proof, idempotency evidence and customer approval"
         ],
         "customerValue": [
@@ -71,6 +72,7 @@
           "timesheet and invoice accuracy",
           "reduced duplicate administration",
           "faster implementation through existing APIs/connectors/feeds",
+          "potential lower future agent-integration engineering through a governed MCP layer once separately certified",
           "cross-site contingent-workforce and executive reporting"
         ],
         "savingsHypotheses": [
@@ -78,12 +80,14 @@
           "reduce manual worker setup and duplicate maintenance between VMS and WFM",
           "reduce timesheet/invoice reconciliation effort and exception leakage",
           "reduce implementation effort by reusing Beeline's existing REST, webhook, file and iPaaS integration routes",
-          "reduce supplier-fragmentation administration by exposing consistent programme and supplier context to planning"
+          "reduce supplier-fragmentation administration by exposing consistent programme and supplier context to planning",
+          "if MCP is later certified for a bounded workflow, reduce one-off AI integration engineering by reusing the vendor's governed agent tool layer"
         ],
         "dataGaps": [
           "enabled APIs, modules, fields, custom fields and report schemas vary by customer configuration and entitlement",
           "assignment data is not automatically a shop-floor roster; shift-level schedule truth may remain in WFM or a shift-based labour system",
           "worker skills/qualifications are only usable where the customer has configured and governed them",
+          "public MCP material describes governed tools and actions but does not by itself prove a least-privilege read-only WFM tool contract or tenant behaviour",
           "employed-worker master and payroll truth normally remain in HCM/payroll systems"
         ],
         "constraintsRisks": [
@@ -93,9 +97,10 @@
           "webhook delivery must be authenticated where supported and processed idempotently with replay protection",
           "flat-file/data-feed routes require checksum, quarantine, duplicate detection and partial-file recovery",
           "customer-specific worker, supplier, cost-centre and assignment identifiers require deterministic reconciliation across sites and legal entities",
+          "Beeline MCP is action-capable, including approvals and candidate lifecycle actions; it must remain a separately gated agent/management surface with human-in-the-loop controls for high-stakes decisions rather than being inferred safe from inherited user roles",
           "write-capable Beeline APIs must not be treated as read-only merely because the WFM adapter issues GET requests"
         ],
-        "nextDevelopmentAction": "Reuse the existing REST/OpenAPI, webhook and file profiles for a thin Beeline adapter. Implement capability/version discovery, customer-region/base-URL binding, bounded rate-limit handling, webhook dedupe/replay protection, report/custom-field schema fingerprinting and deterministic worker-assignment-supplier identity mapping. Then obtain an authorised Beeline sandbox/client site for least-privilege authentication and a read round-trip before any write route is considered."
+        "nextDevelopmentAction": "Reuse the existing REST/OpenAPI, webhook and file profiles for a thin Beeline adapter. Implement capability/version discovery, customer-region/base-URL binding, bounded rate-limit handling, webhook dedupe/replay protection, report/custom-field schema fingerprinting and deterministic worker-assignment-supplier identity mapping. Then obtain an authorised Beeline sandbox/client site for least-privilege authentication and a read round-trip. Keep MCP outside the normal connector transport until an authorised environment proves tool discovery, operation-level permission boundaries, audit behaviour and a read-only tool subset; do not enable any MCP or API write route before separate write-roundtrip certification and customer approval."
       }
     },
     {
