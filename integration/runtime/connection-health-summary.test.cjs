@@ -3,6 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { reviewConnection, approvalFor } = require('./connection-proof-gate.cjs');
+const { createProviderProofLease } = require('./provider-proof-lifecycle.cjs');
 const { summarizeConnectionHealth } = require('./connection-health-summary.cjs');
 
 const NOW = Date.parse('2026-09-19T15:40:00.000Z');
@@ -68,6 +69,26 @@ function approvedEvidence() {
   return evidence;
 }
 
+function providerProofLease(overrides = {}, options = {}) {
+  return createProviderProofLease(review, {
+    status: 'PASS',
+    reviewedDigest: review.reviewedDigest,
+    providerKey: review.providerKey,
+    targetIdentity: review.targetIdentity,
+    environment: review.environment,
+    observedAt: '2026-09-19T15:35:00.000Z',
+    metadataDigest: 'b'.repeat(64),
+    boundedMetadataOnly: true,
+    containsSensitiveData: false,
+    responseBodyRetained: false,
+    ...overrides
+  }, {
+    maxAgeSeconds: 3600,
+    renewWindowSeconds: 600,
+    ...options
+  }, NOW);
+}
+
 function healthyRuntime(overrides = {}) {
   return {
     reviewedDigest: review.reviewedDigest,
@@ -95,6 +116,7 @@ test('healthy connection produces a calm customer-safe summary', () => {
   const result = summarizeConnectionHealth(review, {
     currentConfig: config,
     activationEvidence: approvedEvidence(),
+    providerProofLease: providerProofLease(),
     circuitState: closedCircuit(),
     runtime: healthyRuntime()
   }, NOW);
@@ -121,10 +143,42 @@ test('setup remains fail closed and points to the first useful customer action',
   assert.equal(result.signals.provider, 'NOT_EVALUATED');
 });
 
+test('expired provider proof pauses sync and asks only for safe re-proof', () => {
+  const expired = providerProofLease({ observedAt: '2026-09-19T15:00:00.000Z' }, { maxAgeSeconds: 300, renewWindowSeconds: 60 });
+  const result = summarizeConnectionHealth(review, {
+    currentConfig: config,
+    activationEvidence: approvedEvidence(),
+    providerProofLease: expired,
+    circuitState: closedCircuit(),
+    runtime: healthyRuntime()
+  }, NOW);
+
+  assert.equal(result.state, 'RECOVERING');
+  assert.equal(result.canSync, false);
+  assert.equal(result.signals.provider, 'REPROOF_REQUIRED');
+  assert.match(result.nextAction, /metadata proof/i);
+});
+
+test('proof due soon keeps sync running but is visible as degraded', () => {
+  const due = providerProofLease({ observedAt: '2026-09-19T15:29:30.000Z' }, { maxAgeSeconds: 660, renewWindowSeconds: 600 });
+  const result = summarizeConnectionHealth(review, {
+    currentConfig: config,
+    activationEvidence: approvedEvidence(),
+    providerProofLease: due,
+    circuitState: closedCircuit(),
+    runtime: healthyRuntime()
+  }, NOW);
+
+  assert.equal(result.state, 'DEGRADED');
+  assert.equal(result.canSync, true);
+  assert.equal(result.signals.provider, 'REPROOF_DUE');
+});
+
 test('open provider circuit cannot be shown as healthy or syncing', () => {
   const result = summarizeConnectionHealth(review, {
     currentConfig: config,
     activationEvidence: approvedEvidence(),
+    providerProofLease: providerProofLease(),
     circuitState: {
       reviewedDigest: review.reviewedDigest,
       status: 'OPEN',
@@ -146,6 +200,7 @@ test('unreconciled latest sync is attention-required even when provider is reach
   const result = summarizeConnectionHealth(review, {
     currentConfig: config,
     activationEvidence: approvedEvidence(),
+    providerProofLease: providerProofLease(),
     circuitState: closedCircuit(),
     runtime: healthyRuntime({ lastReconciliationAt: '2026-09-19T15:38:00.000Z' })
   }, NOW);
@@ -159,6 +214,7 @@ test('stale but reconciled data is degraded rather than falsely healthy', () => 
   const result = summarizeConnectionHealth(review, {
     currentConfig: config,
     activationEvidence: approvedEvidence(),
+    providerProofLease: providerProofLease(),
     circuitState: closedCircuit(),
     runtime: healthyRuntime({
       lastSyncAt: '2026-09-19T15:20:00.000Z',
@@ -174,6 +230,7 @@ test('summary never echoes credentials, raw payloads or provider rows', () => {
   const result = summarizeConnectionHealth(review, {
     currentConfig: config,
     activationEvidence: approvedEvidence(),
+    providerProofLease: providerProofLease(),
     circuitState: closedCircuit(),
     runtime: {
       ...healthyRuntime(),
