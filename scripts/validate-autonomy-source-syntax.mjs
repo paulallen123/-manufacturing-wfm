@@ -25,6 +25,7 @@ const jsFiles = [
   'resilience/autonomy-control-loop.cjs',
   'resilience/incident-learning-planner.cjs',
   'resilience/incident-regression-corpus.cjs',
+  'resilience/prior-corpus-evidence-verifier.cjs',
   'resilience/ci-provider-failover.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
   'scripts/validate-autonomy-source-syntax.mjs',
@@ -51,6 +52,7 @@ const jsFiles = [
   'scripts/validate-historical-incident-replay.mjs',
   'scripts/validate-incident-regression-corpus.mjs',
   'scripts/validate-persistent-incident-corpus.mjs',
+  'scripts/validate-prior-corpus-evidence-verifier.mjs',
 ];
 
 const checked = [];
@@ -79,6 +81,7 @@ for (const rel of [
   'resilience/t4-containment-controller.cjs',
   'resilience/incident-learning-planner.cjs',
   'resilience/incident-regression-corpus.cjs',
+  'resilience/prior-corpus-evidence-verifier.cjs',
 ]) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
   for (const forbidden of ["require('node:http')", "require('node:https')", "require('node:net')", 'process.env', 'fetch(']) {
@@ -189,6 +192,7 @@ for (const required of [
   'canonicalReleaseEvidenceBound: releaseClaimAllowed',
   "['historical-incident-replay-and-learning', 'scripts/validate-historical-incident-replay.mjs', true]",
   "['persistent-incident-regression-corpus-continuity', 'scripts/validate-persistent-incident-corpus.mjs', true]",
+  "['provider-neutral-prior-corpus-evidence-selection', 'scripts/validate-prior-corpus-evidence-verifier.mjs', true]",
   'incidentRegressionCorpus,',
   "id: 'persistent-incident-corpus-artifact-binding'",
 ]) {
@@ -227,10 +231,13 @@ console.log(JSON.stringify({
   incidentLearningAmbientEnvironmentDenied: true,
   incidentRegressionCorpusDirectNetworkSurfaceDenied: true,
   incidentRegressionCorpusAmbientEnvironmentDenied: true,
+  priorCorpusEvidenceVerifierDirectNetworkSurfaceDenied: true,
+  priorCorpusEvidenceVerifierAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
   workflowCriticalPathsPresent: true,
   historicalReplayRequiredByPortableProof: true,
   persistentCorpusContinuityRequiredByPortableProof: true,
+  priorCorpusEvidenceVerifierRequiredByPortableProof: true,
   priorCorpusWorkflowEvidenceBindingRequired: true,
   newestPriorCorpusArtifactSelectionRequired: true,
   priorCorpusBackwardSearchRequired: true,
