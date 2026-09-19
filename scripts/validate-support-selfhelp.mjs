@@ -1,7 +1,26 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 const require=createRequire(import.meta.url);
 const SelfHelp=require('../resilience/support-selfhelp.cjs');
+
+const deploymentManifestRaw=fs.readFileSync(new URL('../DEPLOYMENT_MANIFEST.json',import.meta.url),'utf8');
+const deploymentManifest=JSON.parse(deploymentManifestRaw);
+const deploymentManifestSha256=createHash('sha256').update(deploymentManifestRaw).digest('hex');
+
+assert.equal(
+  SelfHelp.EVIDENCE_VERSION,
+  deploymentManifest.candidate,
+  'Tier 0 evidence version must match the exact deployment-manifest candidate'
+);
+assert.equal(deploymentManifest.production_approved,false,'Tier 0 staging support proof must not bind to a production-approved manifest');
+assert.equal(deploymentManifest.staging_only,true,'Tier 0 staging support proof requires staging_only=true');
+assert.equal(deploymentManifest.fixture_only,true,'Tier 0 staging support proof requires fixture_only=true');
+const productionKnowledge=SelfHelp.KNOWLEDGE.find(item=>item.id==='environment-production-status');
+assert.ok(productionKnowledge,'production-status knowledge entry must exist');
+assert.match(productionKnowledge.answer,/not production approved/i,'production-status answer must preserve the manifest production boundary');
+assert.match(productionKnowledge.answer,/staging/i,'production-status answer must identify the evidence as staging');
 
 const cases=[
   {q:'Is this production approved?',role:'manager',status:'answered',intent:'environment-production-status'},
@@ -96,9 +115,13 @@ assert.deepEqual(
 );
 
 const receipt={
-  schemaVersion:2,
+  schemaVersion:3,
   proof:'deterministic-tier0-selfhelp',
   status:'PASS',
+  evidenceVersion:SelfHelp.EVIDENCE_VERSION,
+  deploymentManifestCandidate:deploymentManifest.candidate,
+  deploymentManifestSha256,
+  deploymentManifestBindingChecks:7,
   cases:cases.length+roleBoundaryCases.length+tenantCases.length+versionCases.length+1,
   answered:cases.filter(x=>x.status==='answered').length+tenantCases.filter(x=>x.status==='answered').length+versionCases.filter(x=>x.status==='answered').length,
   safeAbstentions:cases.filter(x=>x.status==='abstain').length+roleBoundaryCases.length+tenantCases.filter(x=>x.status==='abstain').length+versionCases.filter(x=>x.status==='abstain').length+1,
