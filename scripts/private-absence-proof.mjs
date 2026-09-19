@@ -58,7 +58,7 @@ async function post(cookie, path, payload) {
   return request(path, { method: 'POST', headers: { ...hostedHeaders, cookie, accept: 'application/json', 'content-type': 'application/json', origin: browserOrigin, referer: `${browserOrigin}/` }, body: JSON.stringify(payload) });
 }
 function findNamed(node, name, accept, depth = 0, seen = new Set()) {
-  if (!node || typeof node !== 'object' || depth > 5 || seen.has(node)) return null;
+  if (!node || typeof node !== 'object' || depth > 6 || seen.has(node)) return null;
   seen.add(node);
   if (Object.prototype.hasOwnProperty.call(node, name) && accept(node[name])) return node[name];
   for (const value of Object.values(node)) {
@@ -70,7 +70,21 @@ function findNamed(node, name, accept, depth = 0, seen = new Set()) {
 function versionOf(b) { return findNamed(b, 'version', Number.isInteger); }
 function requestsOf(b) { return findNamed(b, 'requests', Array.isArray) || []; }
 function actorOf(b) { return findNamed(b, 'actor', v => !!v && typeof v === 'object' && !Array.isArray(v)) || {}; }
-function isoDatePlus(days) { const d = new Date(Date.now() + days * 86400000); return d.toISOString().slice(0,10); }
+function collectDates(node, out = new Set(), depth = 0, seen = new Set()) {
+  if (node == null || depth > 8) return out;
+  if (typeof node === 'string') {
+    for (const m of node.matchAll(/\b20\d{2}-\d{2}-\d{2}\b/g)) out.add(m[0]);
+    return out;
+  }
+  if (typeof node !== 'object' || seen.has(node)) return out;
+  seen.add(node);
+  if (Array.isArray(node)) for (const v of node) collectDates(v, out, depth + 1, seen);
+  else for (const [k,v] of Object.entries(node)) {
+    if (/date|start|end|shift|day/i.test(k)) collectDates(v, out, depth + 1, seen);
+    else if (depth < 3) collectDates(v, out, depth + 1, seen);
+  }
+  return out;
+}
 
 const health = await request('/api/health', { headers: hostedHeaders });
 assert.equal(health.status, 200); assert.equal(health.body?.release, expectedRelease); assert.equal(health.body?.fixtureOnly, true); assert.equal(health.body?.productionApproved, false); assert.equal(health.body?.pilotReady, false);
@@ -82,27 +96,38 @@ const otherEmail = 'other@isolation.example';
 const employeeCookie = await login(employeeEmail);
 const otherCookie = await login(otherEmail);
 const employeeBefore = await authed(employeeCookie, '/api/bootstrap');
+const personalBefore = await authed(employeeCookie, '/api/personal');
 const otherBefore = await authed(otherCookie, '/api/bootstrap');
-assert.equal(employeeBefore.status, 200); assert.equal(otherBefore.status, 200);
+assert.equal(employeeBefore.status, 200); assert.equal(personalBefore.status, 200); assert.equal(otherBefore.status, 200);
 assert.equal(actorOf(employeeBefore.body)?.tenant, 'northstar-demo');
 assert.equal(actorOf(otherBefore.body)?.tenant, 'isolation-test');
 assert.notEqual(actorOf(employeeBefore.body)?.tenant, actorOf(otherBefore.body)?.tenant);
 const employeePerson = actorOf(employeeBefore.body)?.personId;
 assert.ok(employeePerson, 'employee personId missing');
-const beforeVersion = versionOf(employeeBefore.body);
+let beforeVersion = versionOf(employeeBefore.body);
 assert.ok(Number.isInteger(beforeVersion), `bootstrap version missing; top-level keys=${Object.keys(employeeBefore.body || {}).join(',')}`);
 const beforeRequests = requestsOf(employeeBefore.body);
 console.log(`BOOTSTRAP_STATE_PASS version=${beforeVersion} requests=${beforeRequests.length}`);
 
-let date = null;
-for (const days of [35,42,49,56,63,70,77,84]) {
-  const candidate = isoDatePlus(days);
-  if (!beforeRequests.some(r => r.employee === employeePerson && r.date === candidate && r.status !== 'declined')) { date = candidate; break; }
-}
-assert.ok(date, 'no safe synthetic future leave date found');
+const candidates = [...new Set([...collectDates(personalBefore.body), ...collectDates(employeeBefore.body)])]
+  .filter(date => !beforeRequests.some(r => r.employee === employeePerson && r.date === date && r.status !== 'declined'))
+  .sort();
+assert.ok(candidates.length, 'no dated employee schedule evidence found');
+console.log(`SHIFT_DATE_EVIDENCE_PASS candidates=${candidates.length}`);
 
-const submitted = await command(employeeCookie, beforeVersion, 'leave-request', { date, hours: 8 });
-assert.equal(submitted.status, 200, `leave request failed ${submitted.status}: ${submitted.text.slice(0,240)}`);
+let date = null;
+let submitted = null;
+for (const candidate of candidates.slice(0, 40)) {
+  const attempt = await command(employeeCookie, beforeVersion, 'leave-request', { date: candidate, hours: 8 });
+  if (attempt.status === 200) { date = candidate; submitted = attempt; break; }
+  const err = String(attempt.body?.error || attempt.text || '');
+  if (!/No published shift starts on this date|scheduled interval|already exists|outside/i.test(err)) {
+    throw new Error(`Unexpected leave request rejection on ${candidate}: ${attempt.status} ${err.slice(0,200)}`);
+  }
+  const refreshed = await authed(employeeCookie, '/api/bootstrap');
+  beforeVersion = versionOf(refreshed.body) ?? beforeVersion;
+}
+assert.ok(date && submitted, `no published employee shift accepted a leave request; checked ${Math.min(candidates.length,40)} dated candidates`);
 console.log(`LEAVE_REQUEST_SUBMIT_PASS date=${date}`);
 
 const employeeAfterSubmit = await authed(employeeCookie, '/api/bootstrap');
