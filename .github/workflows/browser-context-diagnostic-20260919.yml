@@ -1,0 +1,46 @@
+name: Browser context diagnostic - bounded cleanup
+
+on:
+  push:
+    branches:
+      - 'evidence/browser-context-diagnostic-20260919'
+    paths:
+      - '.github/workflows/browser-context-diagnostic-20260919.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-context-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Verify exact candidate ancestry and static contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor c165f2137e554af3bd3acb1b50b2802664ded2cd HEAD
+          node --check .github/scripts/ux-cycle11-context-browser.mjs
+          node .github/scripts/ux-cycle12-signal-contract.mjs
+          echo 'EXACT_CANDIDATE_ANCESTRY=PASS'
+      - name: Run unchanged browser assertions with bounded cleanup only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp .github/scripts/ux-cycle11-context-browser.mjs "$RUNNER_TEMP/ux-cycle11-context-browser-diagnostic.mjs"
+          python3 - "$RUNNER_TEMP/ux-cycle11-context-browser-diagnostic.mjs" <<'PY'
+          from pathlib import Path
+          import sys
+          p=Path(sys.argv[1])
+          s=p.read_text()
+          old="""} finally {\n  try { ws?.close(); } catch {}\n  try { chrome.kill('SIGTERM'); } catch {}\n  await new Promise(resolve=>server.close(resolve));\n  rmSync(temp,{recursive:true,force:true});\n}\n"""
+          new="""} finally {\n  try { ws?.close(); } catch {}\n  try { chrome.kill('SIGTERM'); } catch {}\n  try { server.closeIdleConnections?.(); } catch {}\n  try { server.closeAllConnections?.(); } catch {}\n  await Promise.race([new Promise(resolve=>server.close(()=>resolve())), sleep(1500)]);\n  try { chrome.kill('SIGKILL'); } catch {}\n  rmSync(temp,{recursive:true,force:true});\n}\n"""
+          if old not in s:
+              raise SystemExit('cleanup contract not found; refusing diagnostic rewrite')
+          p.write_text(s.replace(old,new,1))
+          PY
+          node --check "$RUNNER_TEMP/ux-cycle11-context-browser-diagnostic.mjs"
+          timeout 45s node "$RUNNER_TEMP/ux-cycle11-context-browser-diagnostic.mjs"
+          echo 'BROWSER_CONTEXT_DIAGNOSTIC=PASS'
