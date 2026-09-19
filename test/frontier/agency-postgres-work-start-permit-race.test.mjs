@@ -3,11 +3,8 @@ import assert from 'node:assert/strict';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import crypto from 'node:crypto';
-import {
-  AGENCY_WORK_START_PERMIT_LOCK_SQL,
-  AGENCY_WORK_START_IDENTITY_RECEIPT_BARRIER_SQL,
-  AGENCY_WORK_START_IDENTITY_OBSERVATION_BARRIER_SQL,
-} from '../../src/frontier/agency-work-start-permit.mjs';
+import {AGENCY_WORK_START_PERMIT_LOCK_SQL} from '../../src/frontier/agency-work-start-permit.mjs';
+import {AGENCY_IDENTITY_SCOPE_LOCK_SQL,deriveAgencyIdentityScopeLock} from '../../src/frontier/agency-identity-scope-lock.mjs';
 import {AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL} from '../../src/frontier/agency-portal-token-store.mjs';
 import {AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL} from '../../src/frontier/agency-right-to-work-assurance-ledger.mjs';
 import {AGENCY_IDENTITY_CONTINUITY_DDL} from '../../src/frontier/agency-identity-continuity.mjs';
@@ -22,7 +19,9 @@ const OLD='a'.repeat(32),NEW='b'.repeat(32),SUBJECT='c'.repeat(32),ALT_SUBJECT='
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
 const digest=(v,n=32)=>crypto.createHash('sha256').update(String(v??'')).digest('hex').slice(0,n);
 const ASSIGNMENT=digest(JSON.stringify(stable({roleId:'PACK-OP',location:'Plant 1, Birmingham',startAt:'2026-10-05T06:00:00.000Z',endAt:'2026-10-05T14:00:00.000Z'})),24);
-const bindingFor=subjectFingerprint=>digest(JSON.stringify(stable({tenantId:'T-START-PERMIT',siteId:'S-START-PERMIT',requestId:'R-START-PERMIT',sourceSystemId:'turnstile',agencyId:'A-START-PERMIT',workerId:'W-START-PERMIT',assignmentFingerprint:ASSIGNMENT,assuranceVersionId:OLD,subjectFingerprint})));
+const SCOPE={tenantId:'T-START-PERMIT',siteId:'S-START-PERMIT',requestId:'R-START-PERMIT',agencyId:'A-START-PERMIT',workerId:'W-START-PERMIT',assignmentFingerprint:ASSIGNMENT};
+const LOCK=deriveAgencyIdentityScopeLock(SCOPE);
+const bindingFor=subjectFingerprint=>digest(JSON.stringify(stable({tenantId:SCOPE.tenantId,siteId:SCOPE.siteId,requestId:SCOPE.requestId,sourceSystemId:'turnstile',agencyId:SCOPE.agencyId,workerId:SCOPE.workerId,assignmentFingerprint:ASSIGNMENT,assuranceVersionId:OLD,subjectFingerprint})));
 const BINDING=bindingFor(SUBJECT),ALT_BINDING=bindingFor(ALT_SUBJECT);
 async function docker(args,options={}){return execFileAsync('docker',args,{maxBuffer:8*1024*1024,timeout:options.timeout??30000,encoding:'utf8'});}
 function lit(value){return `'${String(value).replaceAll("'","''")}'`;}
@@ -45,11 +44,11 @@ async function reset(){
   await psql(`INSERT INTO wfm_agency_portal_token_consumptions (tenant_id,token_id,site_id,request_id,agency_id,token_fingerprint,action,expires_at,consumed_at,assurance_bindings) VALUES ('T-START-PERMIT','TOK-START-PERMIT','S-START-PERMIT','R-START-PERMIT','A-START-PERMIT','${'1'.repeat(16)}','confirm_preferred_worker','2026-10-05T05:00:00Z','2026-10-04T12:00:00Z','${bindings}'::jsonb);`);
   const event='2'.repeat(32),auth=digest(`auth|${BINDING}`);
   await psql(`INSERT INTO wfm_agency_identity_continuity_observations (tenant_id,site_id,request_id,agency_id,worker_id,assignment_fingerprint,assurance_version_id,source_system_id,source_event_fingerprint,subject_fingerprint,signal_type,observed_at) VALUES ('T-START-PERMIT','S-START-PERMIT','R-START-PERMIT','A-START-PERMIT','W-START-PERMIT','${ASSIGNMENT}','${OLD}','turnstile','${event}','${SUBJECT}','access_pass','2026-10-05T05:58:00Z');`);
-  await psql(`INSERT INTO wfm_agency_identity_observation_ingress_receipts (tenant_id,source_system_id,source_event_fingerprint,source_auth_fingerprint,binding_fingerprint,ingress_version,received_at) VALUES ('T-START-PERMIT','turnstile','${event}','${auth}','${BINDING}','agency-identity-observation-ingress-v0.1.0','2026-10-05T05:58:10Z');`);
+  await psql(`INSERT INTO wfm_agency_identity_observation_ingress_receipts (tenant_id,source_system_id,source_event_fingerprint,source_auth_fingerprint,binding_fingerprint,ingress_version,received_at) VALUES ('T-START-PERMIT','turnstile','${event}','${auth}','${BINDING}','agency-identity-observation-ingress-v0.2.0','2026-10-05T05:58:10Z');`);
 }
 const VALUES=['T-START-PERMIT','S-START-PERMIT','R-START-PERMIT','A-START-PERMIT','W-START-PERMIT','2026-10-05T06:10:00Z'];
 const lockedSql=()=>interpolate(AGENCY_WORK_START_PERMIT_LOCK_SQL,VALUES);
-const barrierSql=()=>`${AGENCY_WORK_START_IDENTITY_RECEIPT_BARRIER_SQL}\n${AGENCY_WORK_START_IDENTITY_OBSERVATION_BARRIER_SQL}`;
+const scopeLockSql=()=>interpolate(AGENCY_IDENTITY_SCOPE_LOCK_SQL,[LOCK.advisoryKey]);
 const proofInsert=commandId=>`INSERT INTO wfm_agency_work_start_shadow_proof(command_id,assurance_version_id,continuity_event_fingerprint)
 SELECT ${lit(commandId)},current.assurance_version_id,o.source_event_fingerprint
 FROM wfm_agency_rtw_assurance_current current
@@ -67,42 +66,45 @@ const strictProofInsert=commandId=>`${proofInsert(commandId).replace(/;\s*$/,'')
   );`;
 const contradictoryIngressSql=()=>{
   const event='3'.repeat(32),auth=digest(`auth|${ALT_BINDING}`);
-  return `INSERT INTO wfm_agency_identity_observation_ingress_receipts (tenant_id,source_system_id,source_event_fingerprint,source_auth_fingerprint,binding_fingerprint,ingress_version,received_at) VALUES ('T-START-PERMIT','turnstile','${event}','${auth}','${ALT_BINDING}','agency-identity-observation-ingress-v0.1.0','2026-10-05T05:59:10Z');
+  return `INSERT INTO wfm_agency_identity_observation_ingress_receipts (tenant_id,source_system_id,source_event_fingerprint,source_auth_fingerprint,binding_fingerprint,ingress_version,received_at) VALUES ('T-START-PERMIT','turnstile','${event}','${auth}','${ALT_BINDING}','agency-identity-observation-ingress-v0.2.0','2026-10-05T05:59:10Z');
 INSERT INTO wfm_agency_identity_continuity_observations (tenant_id,site_id,request_id,agency_id,worker_id,assignment_fingerprint,assurance_version_id,source_system_id,source_event_fingerprint,subject_fingerprint,signal_type,observed_at) VALUES ('T-START-PERMIT','S-START-PERMIT','R-START-PERMIT','A-START-PERMIT','W-START-PERMIT','${ASSIGNMENT}','${OLD}','turnstile','${event}','${ALT_SUBJECT}','access_pass','2026-10-05T05:59:00Z');`;
 };
 
-pgTest('an RTW update already in flight wins before work-start permit lock acquisition and zero stale shadow admissions escape',async()=>{
+pgTest('an RTW update already in flight wins before work-start authority locking and zero stale shadow admissions escape',async()=>{
   await reset();const updaterName=`wfm_work_start_permit_first_update_${process.pid}`;
   const updater=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(updaterName)}; BEGIN; UPDATE wfm_agency_rtw_assurance_current SET assurance_version_id='${NEW}',promoted_at='2026-10-05T06:00:00Z' WHERE tenant_id='T-START-PERMIT' AND agency_id='A-START-PERMIT' AND worker_id='W-START-PERMIT'; SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
-  await waitForSleep(updaterName);const permit=psql(`BEGIN; ${barrierSql()} ${lockedSql()} ${proofInsert('START-STALE')} COMMIT;`,{timeout:10000});await Promise.all([updater,permit]);
+  await waitForSleep(updaterName);const permit=psql(`BEGIN; ${scopeLockSql()} ${lockedSql()} ${proofInsert('START-STALE')} COMMIT;`,{timeout:10000});await Promise.all([updater,permit]);
   assert.equal(await scalar("SELECT count(*) FROM wfm_agency_work_start_shadow_proof WHERE command_id='START-STALE';"),'0');assert.equal(await scalar("SELECT assurance_version_id FROM wfm_agency_rtw_assurance_current WHERE tenant_id='T-START-PERMIT' AND agency_id='A-START-PERMIT' AND worker_id='W-START-PERMIT';"),NEW);
 });
 
-pgTest('a valid shadow work-start admission is created only while current RTW and accepted-response rows remain locked in the same transaction',async()=>{
+pgTest('a valid shadow work-start admission keeps current RTW and accepted-response rows locked in the same transaction',async()=>{
   await reset();const permitName=`wfm_work_start_permit_holder_${process.pid}`;const updaterName=`wfm_work_start_permit_waiting_update_${process.pid}`;
-  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${barrierSql()} ${lockedSql()} ${proofInsert('START-VALID')} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
+  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${scopeLockSql()} ${lockedSql()} ${proofInsert('START-VALID')} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
   await waitForSleep(permitName);const updater=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(updaterName)}; UPDATE wfm_agency_rtw_assurance_current SET assurance_version_id='${NEW}',promoted_at='2026-10-05T06:11:00Z' WHERE tenant_id='T-START-PERMIT' AND agency_id='A-START-PERMIT' AND worker_id='W-START-PERMIT';`],{timeout:10000});
   await waitForLockWait(updaterName);assert.equal(await scalar("SELECT count(*) FROM wfm_agency_work_start_shadow_proof WHERE command_id='START-VALID';"),'0');await permit;await updater;
   assert.equal(await scalar("SELECT assurance_version_id FROM wfm_agency_work_start_shadow_proof WHERE command_id='START-VALID';"),OLD);assert.equal(await scalar("SELECT assurance_version_id FROM wfm_agency_rtw_assurance_current WHERE tenant_id='T-START-PERMIT' AND agency_id='A-START-PERMIT' AND worker_id='W-START-PERMIT';"),NEW);
 });
 
-pgTest('authenticated contradictory identity evidence already in flight commits before the work-start barrier and produces zero stale admissions',async()=>{
-  await reset();const ingressName=`wfm_identity_ingress_first_${process.pid}`;const permitName=`wfm_work_start_barrier_wait_${process.pid}`;
-  const ingress=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(ingressName)}; BEGIN; ${contradictoryIngressSql()} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
+pgTest('authenticated contradictory identity evidence already in flight owns the shared scope lock first and produces zero stale admissions',async()=>{
+  await reset();const ingressName=`wfm_identity_ingress_first_${process.pid}`;const permitName=`wfm_work_start_scope_wait_${process.pid}`;
+  const ingress=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(ingressName)}; BEGIN; ${scopeLockSql()} ${contradictoryIngressSql()} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
   await waitForSleep(ingressName);
-  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${barrierSql()} ${lockedSql()} ${strictProofInsert('START-IDENTITY-CONFLICT')} COMMIT;`],{timeout:10000});
+  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${scopeLockSql()} ${lockedSql()} ${strictProofInsert('START-IDENTITY-CONFLICT')} COMMIT;`],{timeout:10000});
   await waitForLockWait(permitName);await Promise.all([ingress,permit]);
   assert.equal(await scalar("SELECT count(*) FROM wfm_agency_work_start_shadow_proof WHERE command_id='START-IDENTITY-CONFLICT';"),'0');
   assert.equal(await scalar(`SELECT count(*) FROM wfm_agency_identity_continuity_observations WHERE tenant_id='T-START-PERMIT' AND source_event_fingerprint='${'3'.repeat(32)}';`),'1');
 });
 
-pgTest('work-start identity write barrier serializes a later contradictory ingress until the shadow admission transaction completes',async()=>{
-  await reset();const permitName=`wfm_work_start_barrier_first_${process.pid}`;const ingressName=`wfm_identity_ingress_wait_${process.pid}`;
-  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${barrierSql()} ${lockedSql()} ${strictProofInsert('START-IDENTITY-SERIALIZED')} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
+pgTest('work-start shared scope lock serializes later contradictory ingress without blocking unrelated assignment scopes',async()=>{
+  await reset();const permitName=`wfm_work_start_scope_first_${process.pid}`;const ingressName=`wfm_identity_ingress_wait_${process.pid}`;const unrelatedName=`wfm_identity_unrelated_${process.pid}`;
+  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${scopeLockSql()} ${lockedSql()} ${strictProofInsert('START-IDENTITY-SERIALIZED')} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
   await waitForSleep(permitName);
-  const ingress=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(ingressName)}; BEGIN; ${contradictoryIngressSql()} COMMIT;`],{timeout:10000});
+  const ingress=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(ingressName)}; BEGIN; ${scopeLockSql()} ${contradictoryIngressSql()} COMMIT;`],{timeout:10000});
   await waitForLockWait(ingressName);
-  assert.equal(await scalar(`SELECT count(*) FROM wfm_agency_identity_continuity_observations WHERE tenant_id='T-START-PERMIT' AND source_event_fingerprint='${'3'.repeat(32)}';`),'0');
+  const unrelated=deriveAgencyIdentityScopeLock({...SCOPE,workerId:'W-UNRELATED'});
+  const unrelatedSql=interpolate(AGENCY_IDENTITY_SCOPE_LOCK_SQL,[unrelated.advisoryKey]);
+  const unrelatedResult=await psql(`SET application_name=${lit(unrelatedName)}; BEGIN; ${unrelatedSql} SELECT 'unrelated-ok'; COMMIT;`,{timeout:3000});
+  assert.match(unrelatedResult,/unrelated-ok/);assert.equal(await scalar(`SELECT count(*) FROM wfm_agency_identity_continuity_observations WHERE tenant_id='T-START-PERMIT' AND source_event_fingerprint='${'3'.repeat(32)}';`),'0');
   await permit;await ingress;
   assert.equal(await scalar("SELECT count(*) FROM wfm_agency_work_start_shadow_proof WHERE command_id='START-IDENTITY-SERIALIZED';"),'1');
   assert.equal(await scalar(`SELECT count(*) FROM wfm_agency_identity_continuity_observations WHERE tenant_id='T-START-PERMIT' AND source_event_fingerprint='${'3'.repeat(32)}';`),'1');
