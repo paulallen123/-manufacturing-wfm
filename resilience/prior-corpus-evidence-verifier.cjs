@@ -32,6 +32,15 @@ function safeParse(raw, label) {
   }
 }
 
+function tryParse(raw) {
+  if (!(typeof raw === 'string' || Buffer.isBuffer(raw)) || raw.length === 0) return null;
+  try {
+    return JSON.parse(Buffer.isBuffer(raw) ? raw.toString('utf8') : raw);
+  } catch {
+    return null;
+  }
+}
+
 function normalizedCandidate(candidate) {
   return {
     runId: Number(candidate?.runId || 0),
@@ -48,6 +57,30 @@ function validMetadata(meta) {
     && HEX40.test(meta.headSha)
     && meta.createdAt.length > 0
     && meta.artifactCreatedAt.length > 0;
+}
+
+function signalsDurableHistory(candidate) {
+  if (candidate?.durableHistoryHint === true) return true;
+  if ((typeof candidate?.snapshotRaw === 'string' || Buffer.isBuffer(candidate?.snapshotRaw))
+    && candidate.snapshotRaw.length > 0) return true;
+
+  const portable = tryParse(candidate?.portableProofRaw);
+  const corpus = portable?.incidentRegressionCorpus;
+  if (corpus && (Number(corpus.entryCount) > 0
+    || HEX64.test(String(corpus.corpusDigest || ''))
+    || HEX64.test(String(corpus.snapshotSha256 || '')))) return true;
+
+  const continuity = tryParse(candidate?.continuityRaw);
+  if (continuity?.proof === 'provider-neutral-incident-regression-corpus-continuity'
+    || HEX64.test(String(continuity?.outputCorpusDigest || ''))
+    || HEX64.test(String(continuity?.outputSnapshotSha256 || ''))) return true;
+
+  const envelope = tryParse(candidate?.envelopeRaw);
+  if (HEX64.test(String(envelope?.incidentRegressionCorpusDigest || ''))
+    || HEX64.test(String(envelope?.incidentRegressionCorpusSnapshotSha256 || ''))
+    || envelope?.incidentRegressionCorpusPriorSnapshotLoaded === true) return true;
+
+  return false;
 }
 
 function verifyCandidateEvidence(candidate) {
@@ -162,10 +195,7 @@ function selectVerifiedPredecessor({ candidates = [] } = {}) {
   let evidenceUnavailable = false;
 
   for (const candidate of ordered) {
-    if ((typeof candidate?.snapshotRaw === 'string' || Buffer.isBuffer(candidate?.snapshotRaw))
-      && candidate.snapshotRaw.length > 0) {
-      durableHistoryKnown = true;
-    }
+    if (signalsDurableHistory(candidate)) durableHistoryKnown = true;
     if (candidate?.evidenceUnavailable === true) evidenceUnavailable = true;
 
     const verification = verifyCandidateEvidence(candidate);
@@ -264,6 +294,7 @@ function verifySelectionReceipt(receipt) {
 
 module.exports = {
   sha256,
+  signalsDurableHistory,
   verifyCandidateEvidence,
   selectVerifiedPredecessor,
   verifySelectionReceipt,
