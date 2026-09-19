@@ -21,6 +21,7 @@ on:
       - 'src/frontier/agency-identity-observation-ingress.mjs'
       - 'src/frontier/agency-identity-authoritative-binding.mjs'
       - 'src/frontier/agency-work-start-readiness.mjs'
+      - 'src/frontier/agency-work-start-permit.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
@@ -52,6 +53,8 @@ on:
       - 'test/frontier/agency-identity-authoritative-binding-postgres.test.mjs'
       - 'test/frontier/agency-work-start-readiness.test.mjs'
       - 'test/frontier/agency-work-start-readiness-postgres.test.mjs'
+      - 'test/frontier/agency-work-start-permit.test.mjs'
+      - 'test/frontier/agency-postgres-work-start-permit-race.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
@@ -119,6 +122,7 @@ jobs:
               test/frontier/agency-identity-observation-ingress.test.mjs \
               test/frontier/agency-identity-authoritative-binding.test.mjs \
               test/frontier/agency-work-start-readiness.test.mjs \
+              test/frontier/agency-work-start-permit.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
@@ -146,3 +150,4 @@ jobs:
           node --test test/frontier/agency-identity-observation-ingress-postgres.test.mjs
           node --test test/frontier/agency-identity-authoritative-binding-postgres.test.mjs
           node --test test/frontier/agency-work-start-readiness-postgres.test.mjs
+          node --test test/frontier/agency-postgres-work-start-permit-race.test.mjs
