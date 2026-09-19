@@ -80,12 +80,14 @@ assert.equal(byId.get('highbyte-intelligence-hub').testLevel,'spec-verified');
 assert.ok(byId.get('highbyte-intelligence-hub').protocols.includes('Sparkplug B'));
 assert.equal(byId.get('tulip').testLevel,'spec-verified');
 assert.equal(byId.get('cognite-data-fusion').testLevel,'spec-verified');
-assert.equal(byId.get('sap-fieldglass').testLevel,'discovery-queued');
+assert.equal(byId.get('sap-fieldglass').testLevel,'spec-verified');
+assert.ok(byId.get('sap-fieldglass').protocols.includes('REST'));
+assert.ok(byId.get('sap-fieldglass').protocols.includes('SCIM'));
 
 for(const id of ['sap-digital-manufacturing','ptc-windchill','aws-iot-sitewise','azure-iot-operations','jumpcloud','ibm-mq','sap-fieldglass']){
   assert.ok(opportunities.systemOverrides[id], 'System-specific value/data review missing: '+id);
 }
-for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion']){
+for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion','sap-fieldglass']){
   const review=byId.get(id).valueReview;
   assert.equal(review?.basis,'vendor-docs','Inline vendor value/data review missing vendor-doc basis: '+id);
   assert.ok(Array.isArray(review.customerValue)&&review.customerValue.length>0,'Inline customer value review missing: '+id);
