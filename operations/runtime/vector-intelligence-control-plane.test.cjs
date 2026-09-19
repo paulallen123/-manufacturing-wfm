@@ -50,19 +50,23 @@ test('status exposes role-aware capability surface',async()=>{
   cp.close();fs.rmSync(s.dir,{recursive:true,force:true});
 });
 
-test('report requests persist and remain pending generation',async()=>{
+test('report requests generate a scoped stored report immediately',async()=>{
   const s=setup();const cp=createVectorIntelligenceControlPlane({dbPath:s.dbPath});
   const response=res();
   await cp.handleRequest(req('/api/intelligence/vector/command','POST',{
-    text:'create a weekly labour report',currentScreen:'costs',siteCount:4,siteIds:['a','b','c','d']
+    text:'create a weekly labour report',currentScreen:'costs',siteCount:4,siteIds:['a','b','c','d'],snapshot:{site:'All sites',metrics:[{label:'Labour vs plan',value:'-4.8%',detail:'Verified current value'}],decisionLens:{soWhat:'Labour is below plan overall.',nextAction:'Review sites above plan before adding labour.'}}
   }),response);
   assert.equal(response.statusCode,202);
   const body=JSON.parse(response.body);
   assert.equal(body.envelope.command.intent,'CREATE_REPORT');
-  assert.equal(body.status,'CONFIGURED_PENDING_WORKER');
+  assert.equal(body.status,'READY');
+  assert.equal(body.created.kind,'REPORT');
   const db=new DatabaseSync(s.dbPath);
-  const row=db.prepare('SELECT status FROM vector_reports').get();
-  assert.equal(row.status,'PENDING_GENERATION');
+  const row=db.prepare('SELECT status,detail_json FROM vector_reports').get();
+  assert.equal(row.status,'READY');
+  const detail=JSON.parse(row.detail_json);
+  assert.match(detail.report.markdown,/Labour vs plan: -4.8%/);
+  assert.match(detail.report.markdown,/Review sites above plan/);
   db.close();cp.close();fs.rmSync(s.dir,{recursive:true,force:true});
 });
 
@@ -92,6 +96,35 @@ test('dashboard changes persist as active preferences',async()=>{
   assert.equal(row.kind,'CHANGE_CHART');
   assert.equal(row.status,'ACTIVE');
   db.close();cp.close();fs.rmSync(s.dir,{recursive:true,force:true});
+});
+
+
+test('email report fails closed when no email provider is configured',async()=>{
+  const s=setup();delete process.env.WFM_VECTOR_EMAIL_PROVIDER;const cp=createVectorIntelligenceControlPlane({dbPath:s.dbPath});
+  const response=res();
+  await cp.handleRequest(req('/api/intelligence/vector/command','POST',{
+    text:'email this report to me',currentScreen:'costs',snapshot:{metrics:[{label:'Cost',value:'£100'}]}
+  }),response);
+  const body=JSON.parse(response.body);
+  assert.equal(body.status,'READY_NOT_SENT');
+  assert.equal(body.created.delivery,'EMAIL');
+  assert.equal(body.created.status,'READY_NOT_SENT');
+  const db=new DatabaseSync(s.dbPath);
+  const row=db.prepare('SELECT status FROM vector_reports').get();
+  assert.equal(row.status,'READY_NOT_SENT');
+  db.close();cp.close();fs.rmSync(s.dir,{recursive:true,force:true});
+});
+
+test('report and task list endpoints return tenant-scoped entities',async()=>{
+  const s=setup();const cp=createVectorIntelligenceControlPlane({dbPath:s.dbPath});
+  await cp.handleRequest(req('/api/intelligence/vector/command','POST',{text:'create a labour report',snapshot:{metrics:[{label:'Coverage',value:'98%'}]}}),res());
+  await cp.handleRequest(req('/api/intelligence/vector/command','POST',{text:'set a task to review agency spend'}),res());
+  const rr=res(),tr=res();
+  await cp.handleRequest(req('/api/intelligence/vector/reports'),rr);
+  await cp.handleRequest(req('/api/intelligence/vector/tasks'),tr);
+  assert.equal(JSON.parse(rr.body).reports.length,1);
+  assert.equal(JSON.parse(tr.body).tasks.length,1);
+  cp.close();fs.rmSync(s.dir,{recursive:true,force:true});
 });
 
 test('unauthenticated requests fail closed',async()=>{
