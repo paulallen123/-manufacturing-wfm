@@ -5,7 +5,9 @@ const publicDir=process.argv[2]||'/app/public';
 const retired=Object.freeze({
   'review-ui.js': "'use strict';\n/* Retired presentation: weekly review is surfaced through Vector. Server-side review APIs remain authoritative. */\n",
   'review-ui.css': "/* Retired presentation: Vector owns review presentation. */\n",
-  'value-cockpit-ui.js': "'use strict';\n/* Retired presentation: cost/productivity decisions are surfaced through Vector. Server-side evidence APIs remain authoritative. */\n"
+  'time-review-ui.css': "/* Retired presentation: Vector owns time-review presentation. Server-side time-review APIs remain authoritative. */\n",
+  'value-cockpit-ui.js': "'use strict';\n/* Retired presentation: cost/productivity decisions are surfaced through Vector. Server-side evidence APIs remain authoritative. */\n",
+  'value-cockpit-ui.css': "/* Retired presentation: Vector owns cost/productivity presentation. */\n"
 });
 
 for(const [name,body] of Object.entries(retired)){
