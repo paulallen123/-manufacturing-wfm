@@ -68,6 +68,12 @@ jobs:
           }
           trap cleanup EXIT
 
+          # A fresh Docker volume is root-owned. Prepare only the empty state mount as root;
+          # the candidate itself still runs as its immutable non-root `node` user.
+          docker run --rm --network none --user 0:0 \
+            -v "$volume:/state" --entrypoint sh wfm-r1m1-selfverify \
+            -ec 'chown 1000:1000 /state && chmod 0700 /state'
+
           start_candidate() {
             local name="$1"
             docker run -d --name "$name" --network none \
