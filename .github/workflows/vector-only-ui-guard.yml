@@ -6,15 +6,18 @@ on:
       - main
       - 'feature/**'
       - 'ux/**'
+      - 'fix/**'
     paths:
       - 'ux-overlay/**'
       - 'Dockerfile'
+      - 'scripts/retire-legacy-presentation.mjs'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
   pull_request:
     paths:
       - 'ux-overlay/**'
       - 'Dockerfile'
+      - 'scripts/retire-legacy-presentation.mjs'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
   workflow_dispatch:
@@ -44,6 +47,10 @@ jobs:
           docker cp "$cid:/app/public/." "$RUNNER_TEMP/public/"
           if grep -RIlE 'WFM_UX_RESET_CYCLE11_BEGIN|WFM_UX_RESET_CYCLE12_BEGIN|VECTOR_PRIORITY_BRIDGE_V1' "$RUNNER_TEMP/public" --include='*.js' --include='*.css' --include='*.html'; then
             echo 'Retired presentation overlay found in built public assets.' >&2
+            exit 1
+          fi
+          if grep -RIlE 'Payroll review due today|AUTOMATED VALUE DESK|The system finds the saving\.|ux-signoff-desk|ux11-queue|review-callout|review-layout|vc-hero|vc-card' "$RUNNER_TEMP/public" --include='*.js' --include='*.css' --include='*.html'; then
+            echo 'Retired presentation renderer/content found in built public assets.' >&2
             exit 1
           fi
           grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/public/vector-shell.js"
