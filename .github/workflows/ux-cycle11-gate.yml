@@ -1,24 +1,29 @@
-name: WFM UX evolution cycle 11 action-queue gate
+name: WFM Vector governed priority gate
 
 on:
   push:
     branches:
+      - 'feature/one-day-enterprise-implementation-v1'
       - 'ux/universal-action-queue-20260918-r1'
-      - 'ux/cycle12-unified-operating-experience-20260918-r1'
     paths:
       - 'Dockerfile'
       - 'ux-overlay/ux-reset-cycle11*'
       - 'ux-overlay/ux-reset-cycle12*'
+      - 'ux-overlay/vector-shell*'
+      - 'ux-overlay/vector-priority-bridge*'
       - '.github/scripts/ux-cycle11-context-browser.mjs'
       - '.github/scripts/ux-cycle12-signal-contract.mjs'
       - '.github/workflows/ux-cycle11-gate.yml'
   pull_request:
     branches:
+      - 'feature/autonomous-integration-fabric-v1'
       - 'ux/universal-action-queue-20260918-r1'
     paths:
       - 'Dockerfile'
       - 'ux-overlay/ux-reset-cycle11*'
       - 'ux-overlay/ux-reset-cycle12*'
+      - 'ux-overlay/vector-shell*'
+      - 'ux-overlay/vector-priority-bridge*'
       - '.github/scripts/ux-cycle11-context-browser.mjs'
       - '.github/scripts/ux-cycle12-signal-contract.mjs'
       - '.github/workflows/ux-cycle11-gate.yml'
@@ -28,7 +33,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: wfm-ux-cycle11-r1
+  group: wfm-vector-governed-priority
   cancel-in-progress: true
 
 jobs:
@@ -46,6 +51,8 @@ jobs:
           node --check ux-overlay/ux-reset-cycle11.js
           node --check ux-overlay/ux-reset-cycle12-model.js
           node --check ux-overlay/ux-reset-cycle12.js
+          node --check ux-overlay/vector-shell.js
+          node --check ux-overlay/vector-priority-bridge.js
           node --check .github/scripts/ux-cycle11-context-browser.mjs
           node --check .github/scripts/ux-cycle12-signal-contract.mjs
           node .github/scripts/ux-cycle12-signal-contract.mjs
@@ -84,41 +91,45 @@ jobs:
           console.log('UX_CYCLE11_HUMAN_AUTOMATION_SEPARATION=PASS');
           NODE
 
-      - name: Browser-check exact source context and return focus
+      - name: Browser-check Vector source context and return focus
         shell: bash
         run: |
           set -euo pipefail
           timeout 45s node .github/scripts/ux-cycle11-context-browser.mjs
 
-      - name: Build and verify sealed composition
+      - name: Build and verify Vector composition
         shell: bash
         run: |
           set -euo pipefail
-          docker build --pull=false -t wfm-ux-cycle11:r1 .
-          cid="$(docker create wfm-ux-cycle11:r1)"
+          docker build --pull=false -t wfm-vector-priority:r1 .
+          cid="$(docker create wfm-vector-priority:r1)"
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
-          mkdir -p /tmp/wfm-cycle11
-          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-cycle11/value-cockpit-ui.js
-          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-cycle11/factory-control-ui.css
-          node --check /tmp/wfm-cycle11/value-cockpit-ui.js
+          mkdir -p /tmp/wfm-vector-priority
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-vector-priority/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-vector-priority/factory-control-ui.css
+          docker cp "$cid:/app/public/vector-shell.js" /tmp/wfm-vector-priority/vector-shell.js
+          node --check /tmp/wfm-vector-priority/value-cockpit-ui.js
+          node --check /tmp/wfm-vector-priority/vector-shell.js
           node <<'NODE'
           const fs=require('node:fs');
-          const js=fs.readFileSync('/tmp/wfm-cycle11/value-cockpit-ui.js','utf8');
-          const css=fs.readFileSync('/tmp/wfm-cycle11/factory-control-ui.css','utf8');
-          const j10=js.indexOf('WFM_UX_RESET_CYCLE10_BEGIN');
+          const js=fs.readFileSync('/tmp/wfm-vector-priority/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-vector-priority/factory-control-ui.css','utf8');
+          const vector=fs.readFileSync('/tmp/wfm-vector-priority/vector-shell.js','utf8');
           const jm=js.indexOf('WFM_UX_RESET_CYCLE11_MODEL_BEGIN');
           const j11=js.indexOf('WFM_UX_RESET_CYCLE11_BEGIN');
-          const c10=css.indexOf('WFM_UX_RESET_CYCLE10_BEGIN');
-          const c11=css.indexOf('WFM_UX_RESET_CYCLE11_BEGIN');
           const j12m=js.indexOf('WFM_UX_RESET_CYCLE12_MODEL_BEGIN');
           const j12=js.indexOf('WFM_UX_RESET_CYCLE12_BEGIN');
+          const c11=css.indexOf('WFM_UX_RESET_CYCLE11_BEGIN');
           const c12=css.indexOf('WFM_UX_RESET_CYCLE12_BEGIN');
-          if(!(j10>=0&&jm>j10&&j11>jm&&j12m>j11&&j12>j12m&&c10>=0&&c11>c10&&c12>c11)) throw new Error('Cycle 11/12 composition order invalid');
-          if(!js.includes('window.WFMUXCycle11=')||!js.includes('WFMUXCycle11Model')||!css.includes('.ux11-queue')) throw new Error('Cycle 11 missing from served assets');
-          if(!js.includes('window.WFMUXSignals=')||!js.includes('WFMUXCycle12Model')||!css.includes('.ux12-system-queue')) throw new Error('Cycle 12 missing from served assets');
+          const cv=css.indexOf('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1');
+          const cb=css.indexOf('VECTOR_PRIORITY_BRIDGE_V1');
+          if(!(jm>=0&&j11>jm&&j12m>j11&&j12>j12m&&c11>=0&&c12>c11&&cv>c12&&cb>cv)) throw new Error('Role-first priority/Vector composition order invalid');
+          if(!js.includes('window.WFMUXCycle11=')||!js.includes('WFMUXCycle11Model')||!css.includes('.ux11-queue')) throw new Error('Cycle 11 shared queue primitive missing from served assets');
+          if(!js.includes('window.WFMUXSignals=')||!js.includes('WFMUXCycle12Model')||!css.includes('.ux12-system-queue')) throw new Error('Cycle 12 governed signal intake missing from served assets');
+          if(!vector.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!vector.includes('VECTOR_PRIORITY_BRIDGE_V1')||!vector.includes('VectorPriorityBridge')) throw new Error('Approved Vector shell or priority projection bridge missing');
           if(!js.includes("route:'leave'")||!js.includes("route:'time-review'")||!js.includes("route:'weekly-review'")) throw new Error('Source workflow deep links missing');
           if(!js.includes('Recently confirmed')||!js.includes('Handled automatically')) throw new Error('Resolved and automation lanes not both present');
-          console.log('UX_CYCLE11_APPROVED_ASSET_COMPOSITION=PASS');
+          console.log('VECTOR_GOVERNED_PRIORITY_ASSET_COMPOSITION=PASS');
           NODE
           grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
           if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace sealed server logic'; exit 1; fi
