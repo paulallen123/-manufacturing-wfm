@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -7,6 +8,18 @@ const {
   verifyDiagnosisReceipt,
   digest,
 } = require('../resilience/railway-proof-failure-classifier.cjs');
+const { createFactory } = require('../resilience/autonomous-repair-factory.cjs');
+
+const d = (value) => createHash('sha256').update(String(value)).digest('hex');
+const expectCode = (fn, code) => {
+  try {
+    fn();
+  } catch (error) {
+    assert.equal(error.code, code);
+    return;
+  }
+  assert.fail(`Expected ${code}`);
+};
 
 const snapshot = classifyRailwayProofFailure({
   deploymentId: 'railway-integration-proof-1',
@@ -126,10 +139,33 @@ assert.throws(
   /FAILED or CRASHED/,
 );
 
+const factory = createFactory({ maxAttempts: 2 });
+factory.openIncident({ incidentId: 'inc-railway-proof-authority', tenant: 'tenant-proof', evidenceDigest: d('railway-proof-evidence') });
+factory.registerReproducer({
+  incidentId: 'inc-railway-proof-authority',
+  tenant: 'tenant-proof',
+  failingTestDigest: d('failing-test'),
+  observedFailureDigest: d('observed-failure'),
+});
+expectCode(() => factory.proposeCandidate({
+  incidentId: 'inc-railway-proof-authority',
+  tenant: 'tenant-proof',
+  proposerId: 'repair-agent',
+  patchDigest: d('classifier-tamper'),
+  changedPaths: ['resilience/railway-proof-failure-classifier.cjs'],
+}), 'WFM_REPAIR_PROTECTED_PATH');
+expectCode(() => factory.proposeCandidate({
+  incidentId: 'inc-railway-proof-authority',
+  tenant: 'tenant-proof',
+  proposerId: 'repair-agent',
+  patchDigest: d('classifier-validator-tamper'),
+  changedPaths: ['scripts/validate-railway-proof-failure-classifier.mjs'],
+}), 'WFM_REPAIR_PROTECTED_PATH');
+
 console.log(JSON.stringify({
   validator: 'railway-proof-failure-classifier',
   result: 'PASS',
-  cases: 10,
+  cases: 12,
   classifications: [
     snapshot.classification,
     auth.classification,
@@ -144,6 +180,7 @@ console.log(JSON.stringify({
     failedDurabilityChecks: persistence.failedDurabilityChecks,
     productStateDurabilityProven: persistence.productStateDurabilityProven,
   },
+  repairAuthoritySurfaceProtected: true,
   authority: {
     autonomyPromotionAllowed: false,
     automaticRedeployAllowed: false,
