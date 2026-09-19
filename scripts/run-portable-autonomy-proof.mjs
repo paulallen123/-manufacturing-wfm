@@ -48,6 +48,7 @@ const checks = [
   ['ci-provider-failover', 'scripts/validate-ci-provider-failover.mjs', true],
   ['deployment-provenance', 'scripts/validate-deployment.mjs', true],
   ['external-deployment-proof-provenance', 'scripts/validate-deployment-proof-provenance.mjs', true],
+  ['railway-proof-failure-and-durability-classification', 'scripts/validate-railway-proof-failure-classifier.mjs', true],
   ['resilience-policy', 'scripts/validate-resilience-scenarios.mjs', true],
   ['support-tier-contract', 'scripts/validate-support-tier-contract.mjs', true],
   ['tier0-selfhelp', 'scripts/validate-support-selfhelp.mjs', true],
