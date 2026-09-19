@@ -31,7 +31,18 @@ function contains(logs, pattern) {
   return logs.some((line) => pattern.test(line));
 }
 
+function restartDurabilityFailures(deployLogs) {
+  const failures = [];
+  if (contains(deployLogs, /POST_RESTART_LEAVE_PERSISTENCE_FAIL/i)) failures.push('approved-leave');
+  if (contains(deployLogs, /POST_RESTART_CORRECTION_PERSISTENCE_FAIL/i)) failures.push('rejected-correction');
+  if (contains(deployLogs, /POST_RESTART_KIOSK_REVOCATION_PERSISTENCE_FAIL/i)) failures.push('revoked-kiosk');
+  return failures;
+}
+
 function terminal(input, detail) {
+  const failedDurabilityChecks = Array.isArray(detail.failedDurabilityChecks)
+    ? detail.failedDurabilityChecks.map((value) => clean(value, 80)).filter(Boolean)
+    : [];
   const core = {
     schemaVersion: 1,
     provider: 'railway',
@@ -44,7 +55,11 @@ function terminal(input, detail) {
     evidenceFingerprint: detail.evidenceFingerprint,
     productRuntimeExecuted: detail.productRuntimeExecuted,
     productFailureProven: false,
+    productStateDurabilityProven: detail.productStateDurabilityProven ?? null,
+    durableStateEvidenceRequired: detail.durableStateEvidenceRequired === true,
+    failedDurabilityChecks,
     releaseClaimAllowed: false,
+    autonomyPromotionAllowed: false,
     automaticRedeployAllowed: false,
     automaticProductionMutationAllowed: false,
     customerMutation: false,
@@ -67,6 +82,27 @@ function classifyRailwayProofFailure(input = {}) {
   const buildLogs = normaliseLogs(input.buildLogs);
   const deployLogs = normaliseLogs(input.deployLogs);
   const evidenceFingerprint = digest({ status, buildLogs, deployLogs });
+  const failedDurabilityChecks = restartDurabilityFailures(deployLogs);
+
+  if (
+    failedDurabilityChecks.length > 0
+    && contains(deployLogs, /HEALTH_PASS\b/i)
+    && contains(deployLogs, /POST_RESTART_AUTH_PASS\b/i)
+    && contains(deployLogs, /POST_RESTART_TENANT_IDENTITY_PASS\b/i)
+    && contains(deployLogs, /POST_RESTART_PERSISTENCE_FATAL\b/i)
+  ) {
+    return terminal(input, {
+      phase: 'post-restart-state-verification',
+      classification: 'consequential-state-durability-proof-blocker',
+      confidence: 'high',
+      evidenceFingerprint,
+      productRuntimeExecuted: true,
+      productStateDurabilityProven: false,
+      durableStateEvidenceRequired: true,
+      failedDurabilityChecks,
+      recommendedAction: 'block-autonomy-promotion-and-release-claims-until-consequential-state-survives-a-clean-restart',
+    });
+  }
 
   if (
     contains(buildLogs, /__security_hold_[a-f0-9]+__/i)
@@ -139,7 +175,9 @@ function verifyDiagnosisReceipt(receipt) {
     receipt.provider !== 'railway'
     || receipt.scope !== 'proof-infrastructure-diagnosis-only'
     || receipt.productFailureProven !== false
+    || receipt.productStateDurabilityProven === true
     || receipt.releaseClaimAllowed !== false
+    || receipt.autonomyPromotionAllowed !== false
     || receipt.automaticRedeployAllowed !== false
     || receipt.automaticProductionMutationAllowed !== false
     || receipt.customerMutation !== false
@@ -148,7 +186,28 @@ function verifyDiagnosisReceipt(receipt) {
     || receipt.productionMutation !== false
     || receipt.modelAuthorityGranted !== false
     || receipt.executionAuthorityGranted !== false
+    || !Array.isArray(receipt.failedDurabilityChecks)
   ) return false;
+
+  const allowedDurabilityChecks = new Set(['approved-leave', 'rejected-correction', 'revoked-kiosk']);
+  if (receipt.failedDurabilityChecks.some((value) => !allowedDurabilityChecks.has(value))) return false;
+
+  if (receipt.classification === 'consequential-state-durability-proof-blocker') {
+    if (
+      receipt.phase !== 'post-restart-state-verification'
+      || receipt.productRuntimeExecuted !== true
+      || receipt.productStateDurabilityProven !== false
+      || receipt.durableStateEvidenceRequired !== true
+      || receipt.failedDurabilityChecks.length === 0
+    ) return false;
+  } else if (
+    receipt.productStateDurabilityProven !== null
+    || receipt.durableStateEvidenceRequired !== false
+    || receipt.failedDurabilityChecks.length !== 0
+  ) {
+    return false;
+  }
+
   const core = { ...receipt };
   const expected = core.diagnosisReceiptDigest;
   delete core.diagnosisReceiptDigest;
