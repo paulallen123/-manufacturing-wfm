@@ -1,13 +1,19 @@
 import { assessCapabilityCoverage } from './factory-capability-graph.mjs';
 import { evaluateCapabilityRequirement } from './factory-capability-envelope.mjs';
 
-export const PROCESS_CAPABILITY_READINESS_VERSION = 'factory-capability-process-readiness-v0.1.0';
+export const PROCESS_CAPABILITY_READINESS_VERSION = 'factory-capability-process-readiness-v0.1.1';
+
+function minimumQualifiedPeople(step) {
+  const value = Number(step?.minimumQualifiedPeople ?? 1);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
 
 function validStep(step) {
   return Boolean(
     step?.stepId &&
     step?.requirement?.capabilityId &&
-    Array.isArray(step.requirement.constraints),
+    Array.isArray(step.requirement.constraints) &&
+    minimumQualifiedPeople(step) != null,
   );
 }
 
@@ -46,6 +52,22 @@ function planStatus(stepResults) {
   return 'not_feasible';
 }
 
+function buildDemand(graph, steps) {
+  const byCapability = new Map();
+  for (const step of steps.filter(validStep)) {
+    const capabilityId = step.requirement.capabilityId;
+    const minimum = minimumQualifiedPeople(step);
+    const previous = byCapability.get(capabilityId) ?? 0;
+    byCapability.set(capabilityId, Math.max(previous, minimum));
+  }
+  return [...byCapability.entries()].map(([capabilityId, minimumQualifiedPeople]) => ({
+    tenantId: graph.scope.tenantId,
+    siteId: graph.scope.siteId,
+    capabilityId,
+    minimumQualifiedPeople,
+  }));
+}
+
 export function buildProcessCapabilityReadinessMask({
   graph,
   steps = [],
@@ -59,15 +81,7 @@ export function buildProcessCapabilityReadinessMask({
     return { status: 'rejected', reason: 'process_steps_required' };
   }
 
-  const demand = steps
-    .filter(validStep)
-    .map((step) => ({
-      tenantId: graph.scope.tenantId,
-      siteId: graph.scope.siteId,
-      capabilityId: step.requirement.capabilityId,
-      minimumQualifiedPeople: Number(step.minimumQualifiedPeople ?? 1),
-    }));
-  const coverage = assessCapabilityCoverage(graph, { demand });
+  const coverage = assessCapabilityCoverage(graph, { demand: buildDemand(graph, steps) });
   const coverageByCapability = new Map(coverage.map((item) => [item.capabilityId, item]));
 
   const stepResults = [];
@@ -148,6 +162,7 @@ export function buildProcessCapabilityReadinessMask({
       stepId: step.stepId,
       label: step.label ?? step.stepId,
       requirement,
+      minimumQualifiedPeople: minimumQualifiedPeople(step),
       workforceCoverage,
       status,
       reason,
