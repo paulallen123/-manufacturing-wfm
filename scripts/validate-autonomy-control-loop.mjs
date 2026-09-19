@@ -6,6 +6,10 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { createAutonomyControlLoop } = require('../resilience/autonomy-control-loop.cjs');
+const {
+  computeRepairEvidenceChainDigest,
+  computePostStagingDecisionDigest,
+} = require('../resilience/autonomous-repair-pipeline.cjs');
 const { createT3ShadowSimulator } = require('../resilience/t3-shadow-simulator.cjs');
 const { createT3ShadowVerifier } = require('../resilience/t3-shadow-verifier.cjs');
 const { createT4ContainmentController } = require('../resilience/t4-containment-controller.cjs');
@@ -15,6 +19,48 @@ const root = process.cwd();
 const contract = JSON.parse(fs.readFileSync(path.join(root, 'resilience/support-tier-contract.json'), 'utf8'));
 const failureScenarios = JSON.parse(fs.readFileSync(path.join(root, 'resilience/failure-scenarios.json'), 'utf8'));
 const d = (v) => createHash('sha256').update(String(v)).digest('hex');
+
+function createT2Decision({ tenant = 'tenant-a', evidenceDigest = d('evidence'), status = 'canary_proven', suffix = 'default' } = {}) {
+  const repairEvidence = {
+    tenantDigest: d(tenant),
+    actorSetDigest: d(`t2-repair-actors:${suffix}`),
+    evidenceDigest,
+    failingTestDigest: d(`t2-failing-test:${suffix}`),
+    observedFailureDigest: d(`t2-observed-failure:${suffix}`),
+    sourceSnapshotDigest: d(`t2-source-snapshot:${suffix}`),
+    repairIntentDigest: d(`t2-repair-intent:${suffix}`),
+    patchDigest: d(`t2-patch:${suffix}`),
+    candidateDigest: d(`t2-candidate:${suffix}`),
+    artifactDigest: d(`t2-artifact:${suffix}`),
+    provenanceDigest: d(`t2-provenance:${suffix}`),
+    rollbackDigest: d(`t2-rollback:${suffix}`),
+    verificationDigest: d(`t2-verification:${suffix}`),
+    permitDigest: d(`t2-permit:${suffix}`),
+    signatureDigest: d(`t2-signature:${suffix}`),
+    stagingReceiptDigest: d(`t2-staging:${suffix}`),
+  };
+  const repairChainDigest = computeRepairEvidenceChainDigest(repairEvidence);
+  assert.match(repairChainDigest || '', /^[a-f0-9]{64}$/);
+  const payload = {
+    schemaVersion: 2,
+    status,
+    ...repairEvidence,
+    repairChainDigest,
+    postStagingActorSetDigest: d(`t2-post-staging-actors:${suffix}`),
+    repairOutcomeReceiptDigest: d(`t2-repair-receipt:${suffix}`),
+    canaryOutcomeReceiptDigest: d(`t2-canary-receipt:${suffix}`),
+    canaryEvidenceDigest: d(`t2-canary-evidence:${suffix}`),
+    rollbackEvidenceDigest: status === 'rolled_back_to_known_good' ? d(`t2-rollback-evidence:${suffix}`) : null,
+    productionAuthorityGranted: false,
+    promotionAuthorityGranted: false,
+    productionMutation: false,
+    customerMutation: false,
+  };
+  payload.decisionChainDigest = computePostStagingDecisionDigest(payload);
+  assert.match(payload.decisionChainDigest || '', /^[a-f0-9]{64}$/);
+  payload.compositionReceiptDigest = d(`t2-composition-receipt:${suffix}`);
+  return payload;
+}
 
 const recoveryExecutor = {
   executorId: 't1-recovery-executor',
@@ -44,12 +90,7 @@ const recoveryVerifier = {
 };
 
 const repairCoordinator = {
-  process: async () => ({
-    status: 'verified_candidate_staged',
-    independentlyVerified: true,
-    productionAuthorityGranted: false,
-    productionMutation: false,
-  }),
+  run: async ({ tenant, evidenceDigest }) => createT2Decision({ tenant, evidenceDigest }),
 };
 
 const t3ShadowSimulator = createT3ShadowSimulator();
@@ -254,8 +295,87 @@ assert.equal(loop.verifyReceipt(cross), true);
 const t2 = await loop.run({ ...base, incidentId: 'inc-t2', scenarioId: 'unknown-customer-reported-issue' });
 assert.equal(t2.tier, 'T2');
 assert.equal(t2.outcome, 'verified_candidate_staged');
+assert.equal(t2.repair.status, 'canary_proven');
+assert.equal(t2.repair.repairChainDigest, computeRepairEvidenceChainDigest(t2.repair));
+assert.equal(t2.repair.decisionChainDigest, computePostStagingDecisionDigest(t2.repair));
 assert.equal(t2.productionAuthorityGranted, false);
 assert.equal(loop.verifyReceipt(t2), true);
+
+const bareStagedLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  repairCoordinator: {
+    process: async () => ({
+      status: 'verified_candidate_staged',
+      independentlyVerified: true,
+      productionAuthorityGranted: false,
+      productionMutation: false,
+    }),
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const bareStaged = await bareStagedLoop.run({ ...base, incidentId: 'inc-t2-bare-staged', scenarioId: 'unknown-customer-reported-issue' });
+assert.equal(bareStaged.outcome, 'contained');
+assert.equal(bareStaged.containedErrorCode, 'WFM_AUTONOMY_T2_CHAIN_REQUIRED');
+assert.equal(bareStagedLoop.verifyReceipt(bareStaged), true);
+
+const badRepairChainLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  repairCoordinator: {
+    run: async ({ tenant, evidenceDigest }) => {
+      const decision = createT2Decision({ tenant, evidenceDigest, suffix: 'bad-repair-chain' });
+      decision.patchDigest = d('tampered-after-repair-chain-created');
+      return decision;
+    },
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const badRepairChain = await badRepairChainLoop.run({ ...base, incidentId: 'inc-t2-bad-repair-chain', scenarioId: 'unknown-customer-reported-issue' });
+assert.equal(badRepairChain.outcome, 'contained');
+assert.equal(badRepairChain.containedErrorCode, 'WFM_AUTONOMY_T2_REPAIR_CHAIN');
+assert.equal(badRepairChainLoop.verifyReceipt(badRepairChain), true);
+
+const badDecisionChainLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  repairCoordinator: {
+    run: async ({ tenant, evidenceDigest }) => {
+      const decision = createT2Decision({ tenant, evidenceDigest, suffix: 'bad-decision-chain' });
+      decision.decisionChainDigest = d('forged-post-staging-decision');
+      return decision;
+    },
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const badDecisionChain = await badDecisionChainLoop.run({ ...base, incidentId: 'inc-t2-bad-decision-chain', scenarioId: 'unknown-customer-reported-issue' });
+assert.equal(badDecisionChain.outcome, 'contained');
+assert.equal(badDecisionChain.containedErrorCode, 'WFM_AUTONOMY_T2_DECISION_CHAIN');
+assert.equal(badDecisionChainLoop.verifyReceipt(badDecisionChain), true);
+
+const t2RollbackLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  repairCoordinator: {
+    run: async ({ tenant, evidenceDigest }) => createT2Decision({
+      tenant,
+      evidenceDigest,
+      status: 'rolled_back_to_known_good',
+      suffix: 'known-good-rollback',
+    }),
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const t2Rollback = await t2RollbackLoop.run({ ...base, incidentId: 'inc-t2-rollback', scenarioId: 'unknown-customer-reported-issue' });
+assert.equal(t2Rollback.outcome, 'contained');
+assert.equal(t2Rollback.repair.status, 'rolled_back_to_known_good');
+assert.match(t2Rollback.repair.rollbackEvidenceDigest, /^[a-f0-9]{64}$/);
+assert.equal(t2Rollback.containedErrorCode, undefined);
+assert.equal(t2RollbackLoop.verifyReceipt(t2Rollback), true);
 
 const t3 = await loop.run({
   ...t3Base,
@@ -475,6 +595,10 @@ const t1VerificationTampered = structuredClone(t1);
 t1VerificationTampered.recoveryVerification.executionDigest = d('tampered-execution-binding');
 assert.equal(loop.verifyReceipt(t1VerificationTampered), false);
 
+const t2ChainTampered = structuredClone(t2);
+t2ChainTampered.repair.patchDigest = d('tampered-t2-patch');
+assert.equal(loop.verifyReceipt(t2ChainTampered), false);
+
 const t3ResultTampered = structuredClone(t3);
 t3ResultTampered.t3Shadow.afterStateDigest = d('tampered-t3-state');
 assert.equal(loop.verifyReceipt(t3ResultTampered), false);
@@ -484,7 +608,7 @@ t4ResultTampered.t4.outcome = 'contained';
 assert.equal(loop.verifyReceipt(t4ResultTampered), false);
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'closed-loop-autonomy-controller',
   status: 'PASS',
   t4ScenarioClasses: t4ScenarioIds.length,
@@ -503,6 +627,12 @@ console.log(JSON.stringify({
   t1VerifierExactExecutionBindingRequired: true,
   t1VerifierReadOnlyAuthorityRequired: true,
   t2ProductionAuthorityDenied: true,
+  t2BareStagedFlagRejected: true,
+  t2RepairChainRecomputed: true,
+  t2PostStagingDecisionChainRecomputed: true,
+  t2CanaryProvenMappedToStagedTerminal: true,
+  t2KnownGoodRollbackMappedToContainment: true,
+  t2ChainTamperRejected: true,
   t3ShadowSimulationConnected: true,
   t3IndependentShadowVerificationRequired: true,
   t3AutomaticExecutionEligible: false,
