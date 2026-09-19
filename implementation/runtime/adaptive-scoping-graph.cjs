@@ -32,6 +32,25 @@ function validateEffect(effect, context) {
   return true;
 }
 
+function validatePrefillPolicy(policy, context) {
+  if (policy == null) return true;
+  if (!policy || typeof policy !== 'object' || Array.isArray(policy)) {
+    throw new Error(context + ' prefillPolicy must be an object.');
+  }
+  if (policy.maxAgeMs != null && (!Number.isFinite(Number(policy.maxAgeMs)) || Number(policy.maxAgeMs) <= 0)) {
+    throw new Error(context + ' prefillPolicy.maxAgeMs must be a positive number.');
+  }
+  if (policy.maxFutureSkewMs != null && (!Number.isFinite(Number(policy.maxFutureSkewMs)) || Number(policy.maxFutureSkewMs) < 0)) {
+    throw new Error(context + ' prefillPolicy.maxFutureSkewMs must be zero or a positive number.');
+  }
+  if (policy.allowedSources != null) {
+    if (!Array.isArray(policy.allowedSources) || policy.allowedSources.length === 0 || policy.allowedSources.some(source => typeof source !== 'string' || source.trim() === '')) {
+      throw new Error(context + ' prefillPolicy.allowedSources must contain non-empty source names.');
+    }
+  }
+  return true;
+}
+
 function validatePredicate(predicate, questionIds, context) {
   if (predicate == null) return;
   if (typeof predicate !== 'object') throw new Error(context + ' predicate must be an object.');
@@ -96,6 +115,7 @@ function compileGraph(graph) {
   for (const q of graph.questions) {
     if (!q.prompt) throw new Error('Question ' + q.id + ' requires a prompt.');
     if (!Array.isArray(q.options) || q.options.length === 0) throw new Error('Question ' + q.id + ' requires options.');
+    validatePrefillPolicy(q.prefillPolicy, 'Question ' + q.id);
     validatePredicate(q.when, ids, 'Question ' + q.id);
     validateDependencyOrder(q, q.when, positions, 'Question ' + q.id);
     validatePredicate(q.scopeWhen, ids, 'Question ' + q.id + ' scope');
@@ -146,11 +166,23 @@ function predicateMatches(predicate, values) {
   return predicateState(predicate, values) === PREDICATE_STATES.TRUE;
 }
 
-function validPrefill(prefill, nowMs) {
+function validPrefill(prefill, nowMs, policy = {}) {
   if (!prefill || !PREFILL_TRUST.has(String(prefill.trust || '').toUpperCase())) return false;
   if (!prefill.source || !prefill.evidenceId) return false;
   if (prefill.conflicted === true || prefill.ambiguous === true) return false;
   if (prefill.expiresAt != null && Number(prefill.expiresAt) <= nowMs) return false;
+
+  if (Array.isArray(policy.allowedSources) && !policy.allowedSources.includes(prefill.source)) return false;
+
+  const requiresObservedAt = policy.maxAgeMs != null || policy.requireObservedAt === true;
+  if (requiresObservedAt) {
+    const observedAt = Number(prefill.observedAt);
+    if (!Number.isFinite(observedAt) || observedAt <= 0) return false;
+    const maxFutureSkewMs = policy.maxFutureSkewMs == null ? 60 * 1000 : Number(policy.maxFutureSkewMs);
+    if (observedAt > nowMs + maxFutureSkewMs) return false;
+    if (policy.maxAgeMs != null && nowMs - observedAt > Number(policy.maxAgeMs)) return false;
+  }
+
   return true;
 }
 
@@ -208,7 +240,7 @@ function evaluateGraph(compiled, input = {}) {
     let value;
     let source = 'UNANSWERED';
     const prefill = prefills[question.id];
-    if (validPrefill(prefill, nowMs)) {
+    if (validPrefill(prefill, nowMs, question.prefillPolicy || {})) {
       value = prefill.value;
       source = 'PREFILL';
       provenance[question.id] = {
