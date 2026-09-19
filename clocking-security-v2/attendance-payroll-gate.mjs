@@ -33,14 +33,20 @@ function correctionBasisDigest(row){ return digest(correctionBasis(row)); }
  * excluded until an explicit, auditable manager correction resolves it.
  */
 export class AttendancePayrollGate {
+  #reviews=[];
+  #reviewById=new Map();
+  #latestByWorkerShift=new Map();
+
   constructor({coverage,certifier}={}){
     if(!coverage?.evaluateShift) throw new Error('AttendanceCoverageAssurance required.');
     if(!certifier?.certifyShift) throw new Error('AttendanceClaimCertifier required.');
-    this.coverage=coverage;
-    this.certifier=certifier;
-    this.reviews=[];
-    this.reviewById=new Map();
-    this.latestByWorkerShift=new Map();
+    Object.defineProperty(this,'coverage',{value:coverage,writable:false,configurable:false,enumerable:false});
+    Object.defineProperty(this,'certifier',{value:certifier,writable:false,configurable:false,enumerable:false});
+    // Public audit mirror is intentionally non-authoritative. Existing diagnostics may
+    // inspect it, while any mutation is detected by verifyAuditChain() and forces the
+    // payroll projection to fail closed. Authoritative correction state stays private.
+    Object.defineProperty(this,'reviews',{value:[],writable:false,configurable:false,enumerable:true});
+    Object.preventExtensions(this);
   }
 
   recordCorrection({tenant,site,shiftId,employee,reviewId,actorId,reasonCode,correctedInAt,correctedOutAt,reviewedAt=Date.now(),supersedesReviewId=null}={}){
@@ -48,9 +54,10 @@ export class AttendancePayrollGate {
     reviewId=asId(reviewId,'review ID'); actorId=asId(actorId,'actor'); reasonCode=asId(reasonCode,'reason code'); reviewedAt=asMs(reviewedAt,'review time');
     const inMs=asMs(correctedInAt,'corrected IN'); const outMs=asMs(correctedOutAt,'corrected OUT');
     if(outMs<=inMs) throw Object.assign(new Error('Corrected OUT must be after corrected IN.'),{status:400});
+    if(!this.verifyAuditChain()) throw Object.assign(new Error('Manager correction audit chain is invalid.'),{status:409});
 
     const reviewScopeKey=`${tenant}:${reviewId}`;
-    const priorById=this.reviewById.get(reviewScopeKey);
+    const priorById=this.#reviewById.get(reviewScopeKey);
     const proposed={tenant,site,shiftId,employee,reviewId,actorId,reasonCode,inMs,outMs,reviewedAt,supersedesReviewId:supersedesReviewId?asId(supersedesReviewId,'superseded review ID'):null};
     const proposedDigest=digest(proposed);
     if(priorById){
@@ -64,17 +71,19 @@ export class AttendancePayrollGate {
     if(!REVIEWABLE.has(current.status)) throw Object.assign(new Error(`Attendance status ${current.status} cannot be corrected through the payroll attendance review path.`),{status:409});
 
     const k=rowKey({tenant,site,shiftId,employee});
-    const latest=this.latestByWorkerShift.get(k)||null;
+    const latest=this.#latestByWorkerShift.get(k)||null;
     if(latest && proposed.supersedesReviewId!==latest.reviewId) throw Object.assign(new Error('Correction must explicitly supersede the latest review.'),{status:409});
     if(!latest && proposed.supersedesReviewId) throw Object.assign(new Error('Superseded review does not exist for this worker shift.'),{status:409});
 
-    const previousAuditHash=this.reviews.length?this.reviews.at(-1).auditHash:null;
+    const previousAuditHash=this.#reviews.length?this.#reviews.at(-1).auditHash:null;
     const body={...proposed,originalStatus:current.status,attendanceBasisDigest:correctionBasisDigest(current),previousAuditHash};
     const entry={...body,contentDigest:proposedDigest,auditHash:digest(body)};
-    this.reviews.push(entry);
-    this.reviewById.set(reviewScopeKey,entry);
-    this.latestByWorkerShift.set(k,entry);
-    return {...clone(entry),replayed:false};
+    const authoritative=Object.freeze({...entry});
+    this.#reviews.push(authoritative);
+    this.#reviewById.set(reviewScopeKey,authoritative);
+    this.#latestByWorkerShift.set(k,authoritative);
+    this.reviews.push(clone(authoritative));
+    return {...clone(authoritative),replayed:false};
   }
 
   projectShift({tenant,site,shiftId,nowMs=Date.now(),expectedSourceIds=[],sourceHealth=[],shiftWindowClosed=false}={}){
@@ -84,9 +93,16 @@ export class AttendancePayrollGate {
     const certification=this.certifier.certifyShift({tenant,site,shiftId,nowMs,expectedSourceIds,sourceHealth});
     const sourcePeriodVerified=certification?.certification?.sourceContinuityPeriod===true;
     const afterClose=evaluation.payrollReady===true || shiftWindowClosed===true;
+    const auditChainValid=this.verifyAuditChain();
 
     const rows=evaluation.rows.map(row=>{
-      const latest=this.latestByWorkerShift.get(rowKey({tenant,site,shiftId,employee:row.employee}))||null;
+      if(!auditChainValid){
+        return {
+          employee:row.employee,workerType:row.workerType,status:'review_required',eligibleForPayrollInput:false,interval:null,
+          provenance:{basis:'manager_correction_audit_invalid'},originalAttendanceStatus:row.status
+        };
+      }
+      const latest=this.#latestByWorkerShift.get(rowKey({tenant,site,shiftId,employee:row.employee}))||null;
       if(latest && latest.attendanceBasisDigest!==correctionBasisDigest(row)){
         return {
           employee:row.employee,workerType:row.workerType,status:'review_required',eligibleForPayrollInput:false,interval:null,
@@ -142,15 +158,18 @@ export class AttendancePayrollGate {
   auditTrail({tenant,site,shiftId,employee}={}){
     const filters={tenant,site,shiftId,employee};
     for(const [k,v] of Object.entries(filters)) if(v!==undefined) filters[k]=asId(v,k);
-    return clone(this.reviews.filter(r=>Object.entries(filters).every(([k,v])=>v===undefined||r[k]===v)));
+    return clone(this.#reviews.filter(r=>Object.entries(filters).every(([k,v])=>v===undefined||r[k]===v)));
   }
 
   verifyAuditChain(){
+    if(this.reviews.length!==this.#reviews.length) return false;
     let previous=null;
-    for(const r of this.reviews){
+    for(let i=0;i<this.#reviews.length;i++){
+      const r=this.#reviews[i];
       if(r.previousAuditHash!==previous) return false;
       const {auditHash,contentDigest,...body}=r;
       if(digest(body)!==auditHash) return false;
+      if(stable(this.reviews[i])!==stable(r)) return false;
       previous=auditHash;
     }
     return true;
