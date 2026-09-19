@@ -160,16 +160,38 @@ export function validateConnectionProfile(profile) {
   return { ok: errors.length === 0, errors };
 }
 
+function requireTrustedEvidence(evidence, label, reasons) {
+  if (evidence?.observedBy !== 'trusted_executor') reasons.push(`${label} must be observed by the trusted executor`);
+  if (!isOpaqueReference(evidence?.evidenceRef)) reasons.push(`${label} requires a reviewable evidence reference`);
+}
+
 export function activationReadiness(profile) {
   const validation = validateConnectionProfile(profile);
   const reasons = [...validation.errors];
   if (profile?.mapping?.status !== 'reviewed') reasons.push('mapping must be reviewed');
   if (profile?.connectionTest?.status !== 'passed') reasons.push('safe connection test must pass');
   if (profile?.connectionTest?.mode !== 'bounded_non_mutating') reasons.push('connection test must be bounded and non-mutating');
-  if (profile?.recovery?.maxAttempts > 1 && profile?.recoveryProof?.status !== 'passed') {
-    reasons.push('retry/recovery must be proven before activation');
+  if (profile?.connectionTest?.status === 'passed') {
+    requireTrustedEvidence(profile.connectionTest, 'connection test', reasons);
+    if (profile.connectionTest.mutationObserved !== false) reasons.push('connection test must prove no mutation was observed');
+    if (profile.connectionTest.rawSensitiveDataPersisted !== false) reasons.push('connection test must prove raw sensitive data was not persisted');
   }
-  if (profile?.reconciliation?.status !== 'passed') reasons.push('reconciliation must pass');
+  if (profile?.recovery?.maxAttempts > 1) {
+    if (profile?.recoveryProof?.status !== 'passed') {
+      reasons.push('retry/recovery must be proven before activation');
+    } else {
+      requireTrustedEvidence(profile.recoveryProof, 'recovery proof', reasons);
+      if (profile.recoveryProof.transientFailureObserved !== true) reasons.push('recovery proof must include an observed transient failure');
+      if (profile.recoveryProof.successfulRecoveryObserved !== true) reasons.push('recovery proof must include successful recovery after the observed failure');
+      if (profile.recoveryProof.reconciliationPassed !== true) reasons.push('recovery proof must reconcile successfully after recovery');
+      if (profile.recoveryProof.mutationObserved !== false) reasons.push('recovery proof must show no mutation was observed');
+    }
+  }
+  if (profile?.reconciliation?.status !== 'passed') {
+    reasons.push('reconciliation must pass');
+  } else {
+    requireTrustedEvidence(profile.reconciliation, 'reconciliation', reasons);
+  }
   if (profile?.activation?.approved !== true) reasons.push('explicit activation approval is required');
 
   const expected = approvalFingerprint(profile);
