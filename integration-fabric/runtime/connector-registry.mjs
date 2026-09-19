@@ -38,8 +38,8 @@ function canonicalTargets(system){
   ]);
 }
 
-function discoveryStrategy(profileIds){
-  if(profileIds.some(id=>EDGE_PROFILES.has(id))) return 'customer-edge-config-required';
+function discoveryStrategy(profileIds,edgeRequired){
+  if(edgeRequired) return 'customer-edge-config-required';
   if(profileIds.some(id=>MESSAGE_PROFILES.has(id))) return 'non-destructive-subscription-or-browse';
   if(profileIds.includes('files-sftp')) return 'sample-file-and-schema-first';
   if(profileIds.some(id=>METADATA_PROFILES.has(id))) return 'vendor-metadata-or-api-catalog-first';
@@ -66,7 +66,9 @@ export function buildConnectorRegistry(){
   const connectors=catalog.systems.map(system=>{
     const adapters=profilesFor(system);
     const profileIds=adapters.map(x=>x.id);
-    const edgeRequired=profileIds.some(id=>EDGE_PROFILES.has(id));
+    // Some on-prem/plant systems expose only HTTPS/gRPC but still sit behind a plant-network boundary.
+    // Allow vendor evidence to require an edge without inventing an industrial protocol solely to trigger the guardrail.
+    const edgeRequired=system.customerEdgeRequired===true || profileIds.some(id=>EDGE_PROFILES.has(id));
     return {
       id:system.id,
       name:system.name,
@@ -77,7 +79,7 @@ export function buildConnectorRegistry(){
       protocols:[...system.protocols],
       adapters,
       canonicalTargets:canonicalTargets(system),
-      discoveryStrategy:discoveryStrategy(profileIds),
+      discoveryStrategy:discoveryStrategy(profileIds,edgeRequired),
       nextEvidenceGate:nextEvidence(system.testLevel),
       security:{
         readOnlyDefault:true,
