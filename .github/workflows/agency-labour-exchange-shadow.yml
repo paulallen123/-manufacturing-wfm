@@ -8,6 +8,7 @@ on:
       - 'src/frontier/agency-labour-exchange.mjs'
       - 'src/frontier/agency-labour-performance.mjs'
       - 'src/frontier/agency-right-to-work.mjs'
+      - 'src/frontier/agency-right-to-work-dvsp-evidence.mjs'
       - 'src/frontier/agency-right-to-work-lifecycle.mjs'
       - 'src/frontier/agency-right-to-work-refresh.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
@@ -20,6 +21,8 @@ on:
       - 'test/frontier/agency-labour-performance.test.mjs'
       - 'test/frontier/agency-right-to-work.test.mjs'
       - 'test/frontier/agency-right-to-work-dvsp-transition.test.mjs'
+      - 'test/frontier/agency-right-to-work-dvsp-evidence.test.mjs'
+      - 'test/frontier/agency-right-to-work-dvsp-evidence-postgres.test.mjs'
       - 'test/frontier/agency-right-to-work-lifecycle.test.mjs'
       - 'test/frontier/agency-right-to-work-integration.test.mjs'
       - 'test/frontier/agency-right-to-work-refresh.test.mjs'
@@ -66,6 +69,7 @@ jobs:
               test/frontier/agency-labour-performance.test.mjs \
               test/frontier/agency-right-to-work.test.mjs \
               test/frontier/agency-right-to-work-dvsp-transition.test.mjs \
+              test/frontier/agency-right-to-work-dvsp-evidence.test.mjs \
               test/frontier/agency-right-to-work-lifecycle.test.mjs \
               test/frontier/agency-right-to-work-integration.test.mjs \
               test/frontier/agency-right-to-work-refresh.test.mjs \
@@ -84,3 +88,4 @@ jobs:
           node --version
           node --test test/frontier/agency-postgres-integration.test.mjs
           node --test test/frontier/agency-postgres-send-receipt-race.test.mjs
+          node --test test/frontier/agency-right-to-work-dvsp-evidence-postgres.test.mjs
