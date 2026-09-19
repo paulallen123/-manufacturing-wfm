@@ -4,7 +4,7 @@ import {buildConnectorRegistry,connectorById} from './connector-registry.mjs';
 
 test('every effective catalogue system compiles to a reusable adapter plan',()=>{
   const registry=buildConnectorRegistry();
-  assert.equal(registry.connectors.length,161);
+  assert.equal(registry.connectors.length,162);
   assert.deepEqual(registry.connectors.filter(x=>x.adapters.length===0).map(x=>x.id),[]);
   for(const c of registry.connectors){
     assert.equal(c.security.readOnlyDefault,true,c.id);
@@ -22,6 +22,18 @@ test('ADP WorkForce Suite compiles REST SOAP and file routes',()=>{
   assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
   assert.ok(c.adapters.some(x=>x.id==='soap'));
   assert.ok(c.adapters.some(x=>x.id==='files-sftp'));
+});
+
+test('Siemens Insights Hub reuses read-only REST event and file profiles',()=>{
+  const c=connectorById('siemens-insights-hub');
+  assert.equal(c.evidenceLevel,'spec-verified');
+  assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
+  assert.ok(c.adapters.some(x=>x.id==='webhooks-events'));
+  assert.ok(c.adapters.some(x=>x.id==='files-sftp'));
+  assert.ok(c.canonicalTargets.includes('machine-state'));
+  assert.ok(c.canonicalTargets.includes('downtime-event'));
+  assert.equal(c.security.writeEnabled,false);
+  assert.equal(c.security.directPlantNetworkAccess,false);
 });
 
 test('legacy Oracle manufacturing estates use published service routes',()=>{
