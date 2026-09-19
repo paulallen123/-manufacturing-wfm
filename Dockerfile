@@ -92,25 +92,24 @@ RUN WFM_PROOF_ONESHOT=true \
     node /app/proof-runtime/cloud-scale-proof-runner.cjs
 
 # Vector-only presentation composition.
-# The retired UX-reset shell is intentionally NOT loaded. Keep the sealed functional
-# application intact, then add training/implementation functionality and Vector as the
-# only active presentation shell.
+# Vector is served as an independent final script/style so failures in the sealed
+# functional modules cannot prevent the brand-new shell from booting.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
-RUN node --check /app/security-runtime/bootstrap.cjs \
+RUN mkdir -p /app/vector-ui \
+ && cp /tmp/wfm-ux-overlay/vector-shell.js /app/vector-ui/vector-shell.js \
+ && cp /tmp/wfm-ux-overlay/vector-shell.css /app/vector-ui/vector-shell.css \
+ && node --check /app/security-runtime/bootstrap.cjs \
+ && node --check /app/vector-ui/vector-shell.js \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
- && node --check /tmp/wfm-ux-overlay/vector-shell.js \
  && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/factory-control-ui.css \
- && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.js \
- && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/factory-control-ui.js \
  && printf '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/factory-control-ui.css \
  && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/value-cockpit-ui.js \
  && printf '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-implementation-ui/implementation-journey.js >> /app/public/value-cockpit-ui.js \
- && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/factory-control-ui.css \
+ && node -e "const fs=require('fs');const p='/app/public/index.html';let s=fs.readFileSync(p,'utf8');if(!s.includes('/vector-shell.css'))s=s.replace('</head>','<link rel=\"stylesheet\" href=\"/vector-shell.css\"></head>');if(!s.includes('/vector-shell.js'))s=s.replace('</body>','<script src=\"/vector-shell.js\"></script></body>');fs.writeFileSync(p,s);" \
  && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
