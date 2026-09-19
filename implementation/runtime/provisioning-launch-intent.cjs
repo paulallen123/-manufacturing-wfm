@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { verifyContractCompletionReceipt } = require('./contract-completion-ingress.cjs');
 
 const ACTION_TYPES = new Set(['CONFIG', 'TEST', 'DEPENDENCY', 'RISK', 'DECISION', 'NO_OP']);
 
@@ -66,10 +67,12 @@ function normaliseScope(scope) {
   };
 }
 
-function normaliseContract(contract) {
+function normaliseContract(contract, contractReceiptKey) {
   if (!contract || typeof contract !== 'object') fail('WFM_CONTRACT_EVENT_REQUIRED', 'Completed-contract event is required.', 400);
   if (contract.authenticated !== true) fail('WFM_CONTRACT_EVENT_UNAUTHENTICATED', 'Contract completion event is not authenticated.', 403);
   if (String(contract.status || '').toLowerCase() !== 'completed') fail('WFM_CONTRACT_NOT_COMPLETED', 'Contract must be completed before provisioning.', 409);
+  if (!contractReceiptKey) fail('WFM_CONTRACT_RECEIPT_KEY_REQUIRED', 'Trusted contract receipt verification key is required.', 500);
+  const receipt = verifyContractCompletionReceipt(contract, contractReceiptKey);
 
   return {
     provider: requiredString(contract.provider, 'WFM_CONTRACT_PROVIDER_REQUIRED', 'Contract provider is required.'),
@@ -77,7 +80,8 @@ function normaliseContract(contract) {
     contractVersion: requiredString(contract.contractVersion, 'WFM_CONTRACT_VERSION_REQUIRED', 'Contract version is required.'),
     tenantId: requiredString(contract.tenantId, 'WFM_TENANT_REQUIRED', 'Tenant id is required.'),
     completedAt: requiredString(contract.completedAt, 'WFM_CONTRACT_COMPLETED_AT_REQUIRED', 'Contract completion time is required.'),
-    eventId: requiredString(contract.eventId, 'WFM_CONTRACT_EVENT_ID_REQUIRED', 'Contract event id is required.')
+    eventId: requiredString(contract.eventId, 'WFM_CONTRACT_EVENT_ID_REQUIRED', 'Contract event id is required.'),
+    receiptSha256: receipt.receiptSha256
   };
 }
 
@@ -111,9 +115,9 @@ function normalisePlan(plan) {
   };
 }
 
-function createLaunchIntent({ scope, contract, build, plan }) {
+function createLaunchIntent({ scope, contract, build, plan }, { contractReceiptKey } = {}) {
   const finalScope = normaliseScope(scope);
-  const completedContract = normaliseContract(contract);
+  const completedContract = normaliseContract(contract, contractReceiptKey);
   const approvedBuild = normaliseBuild(build);
   const provisioningPlan = normalisePlan(plan);
 
@@ -144,16 +148,17 @@ function createLaunchIntent({ scope, contract, build, plan }) {
     ...sealed,
     completionEvidence: {
       authenticated: true,
-      eventId: completedContract.eventId
+      eventId: completedContract.eventId,
+      receiptSha256: completedContract.receiptSha256
     },
     intentDigest,
     queueKey
   };
 }
 
-function verifyLaunchIntent(intent, current) {
+function verifyLaunchIntent(intent, current, options = {}) {
   if (!intent || typeof intent !== 'object') fail('WFM_LAUNCH_INTENT_REQUIRED', 'Provisioning launch intent is required.', 400);
-  const expected = createLaunchIntent(current);
+  const expected = createLaunchIntent(current, options);
 
   if (intent.queueKey !== expected.queueKey) fail('WFM_LAUNCH_QUEUE_KEY_DRIFT', 'Provisioning business identity changed; do not reuse this queue item.');
   if (intent.intentDigest !== expected.intentDigest) fail('WFM_LAUNCH_INTENT_DRIFT', 'Contract, scope, approved build or isolated environment plan changed after provisioning was sealed.');
@@ -162,7 +167,8 @@ function verifyLaunchIntent(intent, current) {
     ok: true,
     queueKey: intent.queueKey,
     intentDigest: intent.intentDigest,
-    eventId: expected.completionEvidence.eventId
+    eventId: expected.completionEvidence.eventId,
+    receiptSha256: expected.completionEvidence.receiptSha256
   };
 }
 
