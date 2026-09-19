@@ -43,11 +43,11 @@ function evaluateSourceSettlement(review, observation, stageReceipt, input = {},
 
   if (transport === 'secure-file') {
     const sourceDigest = String(input.sourceArtifactDigest || '').trim().toLowerCase();
-    const observationDigest = String(observation?.evidenceDigest || '').trim().toLowerCase();
+    const stagedDigest = String(input.stagedArtifactDigest || '').trim().toLowerCase();
     const blockers = [];
     if (input.fileCompletenessVerified !== true) blockers.push('Secure file must be proven complete and stable before it can be marked processed.');
-    if (!DIGEST.test(sourceDigest)) blockers.push('Secure file settlement requires the bounded source artifact digest.');
-    if (sourceDigest !== observationDigest) blockers.push('Secure file digest does not match the durably staged observation.');
+    if (!DIGEST.test(sourceDigest) || !DIGEST.test(stagedDigest)) blockers.push('Secure file settlement requires bounded source and staged artifact digests.');
+    if (sourceDigest && stagedDigest && sourceDigest !== stagedDigest) blockers.push('Secure file source and staged artifact digests do not match.');
     if (blockers.length) {
       return Object.freeze({
         action: 'BLOCK',
