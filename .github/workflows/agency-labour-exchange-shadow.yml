@@ -31,9 +31,11 @@ on:
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
       - 'test/frontier/agency-supplier-delivery.test.mjs'
+      - 'test/frontier/agency-supplier-delivery-claim.test.mjs'
       - 'test/frontier/agency-supplier-delivery-receipt.test.mjs'
       - 'test/frontier/agency-provider-twilio-sms.test.mjs'
       - 'test/frontier/agency-postgres-integration.test.mjs'
+      - 'test/frontier/agency-postgres-delivery-claim-race.test.mjs'
       - 'test/frontier/agency-postgres-send-receipt-race.test.mjs'
       - '.github/workflows/agency-labour-exchange-shadow.yml'
       - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
@@ -79,6 +81,7 @@ jobs:
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
               test/frontier/agency-supplier-delivery.test.mjs \
+              test/frontier/agency-supplier-delivery-claim.test.mjs \
               test/frontier/agency-supplier-delivery-receipt.test.mjs \
               test/frontier/agency-provider-twilio-sms.test.mjs
       - name: Run real PostgreSQL agency-store race proof
@@ -89,5 +92,6 @@ jobs:
           set -euo pipefail
           node --version
           node --test test/frontier/agency-postgres-integration.test.mjs
+          node --test test/frontier/agency-postgres-delivery-claim-race.test.mjs
           node --test test/frontier/agency-postgres-send-receipt-race.test.mjs
           node --test test/frontier/agency-right-to-work-dvsp-evidence-postgres.test.mjs
