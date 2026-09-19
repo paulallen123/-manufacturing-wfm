@@ -1,5 +1,5 @@
 function clone(x){ return JSON.parse(JSON.stringify(x)); }
-function key(...parts){ return parts.join(':'); }
+function key(...parts){ return JSON.stringify(parts.map(part=>String(part))); }
 function asMs(v,name){ const n=typeof v==='number'?v:Date.parse(String(v||'')); if(!Number.isFinite(n)) throw new Error(`Invalid ${name}.`); return n; }
 function id(v,name){ if(!/^[A-Za-z0-9_.:-]{1,160}$/.test(String(v||''))) throw new Error(`Invalid ${name}.`); return String(v); }
 
