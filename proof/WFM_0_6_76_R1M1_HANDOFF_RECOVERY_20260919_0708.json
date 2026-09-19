@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "evidenceDate": "2026-09-19",
+  "candidate": {
+    "branch": "proof/0.6.76-r1m1-selfverify-20260919",
+    "commit": "f9d63ef202743e3bf930f6895a89b798c02a6b84",
+    "release": "0.6.76-hosted-staging-rc1",
+    "githubActionsRunId": 35420907609,
+    "evidenceArtifactId": 10577707618,
+    "evidenceArchiveDigest": "sha256:94455df7e3f60e7061cc97d20fb39ace349115f5cc019462c27849e89e604e5d",
+    "candidateRuntimeSha256": "44b8ade8dfe98ac94fd378aedeefe5cccc75a051ace9bf2ba45e575420ebddc2"
+  },
+  "lane": "derived proof-only branch from exact frozen candidate commit; frozen candidate and development lanes were not modified",
+  "environment": {
+    "privateSynthetic": true,
+    "provider": "loopback-only synthetic Oracle-HCM-shaped acknowledgement harness",
+    "realEmployeeData": false,
+    "realPayrollData": false,
+    "communications": false,
+    "payments": false,
+    "productionIntegrations": false,
+    "publicDnsChanges": false
+  },
+  "result": "PASS",
+  "proof": {
+    "payrollPeriod": "2026-09-07",
+    "independentReleaseControl": "PASS",
+    "exportIntegrity": "PASS",
+    "exportSha256": "821ccee259146ce14b121fed8abcbcca26ba1b9556e5694d8ddce4286b6f2f5b",
+    "transportFailureMode": "first synthetic provider delivery returned HTTP 503",
+    "transportRetry": "PASS",
+    "transportAttempts": 2,
+    "stableIdempotencyKeyAcrossRetry": "PASS",
+    "providerStatusSequence": ["processing", "accepted"],
+    "businessReconciliation": "PASS",
+    "receiptChainEntries": 2,
+    "receiptChainValid": true,
+    "tenantIsolation": "PASS",
+    "restartRecovery": "PASS",
+    "releaseReplayIdempotency": "PASS",
+    "duplicateProviderDeliveryAfterRestartOrReplay": false,
+    "unrequestedProviderPollingAfterRestartOrReplay": false
+  },
+  "preservedFailures": [
+    {
+      "classification": "proof-harness defect",
+      "observation": "Initial loopback client used a fetch Host override that the runtime rejected as an invalid hosted request host.",
+      "productMutation": false
+    },
+    {
+      "classification": "proof-harness defect",
+      "observation": "Initial mutation attempt omitted the current state version and was rejected with the platform's stale-data protection.",
+      "productMutation": false
+    },
+    {
+      "classification": "control evidence",
+      "observation": "A director who signed all teams was correctly blocked from releasing payroll; a separate payroll-authorised synthetic account completed release.",
+      "productMutation": false
+    }
+  ],
+  "claimBoundary": "Private synthetic customer proof only. This proves the frozen candidate's payroll export, outbound handoff, retry, provider-status reconciliation, restart persistence, replay idempotency and tenant isolation against a loopback synthetic provider. It does not prove acceptance by a real payroll provider, production deployment, payments, HMRC filing, external security assurance or customer production readiness."
+}
