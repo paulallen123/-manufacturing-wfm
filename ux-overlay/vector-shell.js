@@ -107,12 +107,17 @@ function acceptTimeReviewEvidenceItem(item){
   if(!Number.isFinite(Date.parse(String(item.observedAt||''))))return null;
   const freshness=item.freshness,confirmation=item.confirmation;
   if(!freshness||typeof freshness!=='object'||!ACTION_FRESHNESS_STATES.has(String(freshness.state||'').toLowerCase()))return null;
-  const freshnessState=String(freshness.state||'').toLowerCase();
+  const freshnessState=String(freshness.state||'').toLowerCase(),validUntil=freshness.validUntil==null?null:Date.parse(String(freshness.validUntil));
   if(freshnessState!=='unknown'&&!String(freshness.policyRef||'').trim())return null;
-  if(freshnessState==='current'&&!Number.isFinite(Date.parse(String(freshness.validUntil||''))))return null;
+  if(freshnessState==='current'&&!Number.isFinite(validUntil))return null;
+  if(freshness.validUntil!=null&&!Number.isFinite(validUntil))return null;
   if(!confirmation||typeof confirmation!=='object'||!ACTION_CONFIRMATION_STATES.has(String(confirmation.state||'').toLowerCase()))return null;
-  const confirmationState=String(confirmation.state||'').toLowerCase();
+  const confirmationState=String(confirmation.state||'').toLowerCase(),decisionId=String(confirmation.decisionId||'').trim(),slaExpiresAt=confirmation.slaExpiresAt==null?null:Date.parse(String(confirmation.slaExpiresAt));
+  if(['decision_sent','confirming_source','needs_verification','resolved'].includes(confirmationState)&&!decisionId)return null;
+  if(['decision_sent','confirming_source','needs_verification'].includes(confirmationState)&&!Number.isFinite(slaExpiresAt))return null;
+  if(confirmation.slaExpiresAt!=null&&!Number.isFinite(slaExpiresAt))return null;
   if(confirmationState==='needs_verification'&&confirmation.slaExpired!==true)return null;
+  if(confirmationState==='confirming_source'&&confirmation.slaExpired===true)return null;
   if(confirmationState==='resolved'&&(!Number.isFinite(Date.parse(String(confirmation.confirmedAt||'')))||!String(confirmation.auditRef||'').trim()))return null;
   return item;
 }
@@ -126,12 +131,14 @@ function timeReviewEvidenceRows(){
     route:'time-review',tone:'blue',action:'Review',status:actionStatus(item.confirmation?.state)
   }));
 }
+function activeTimeReviewSourceIds(){return new Set(state.timeReviewEvidence.status==='ready'?state.timeReviewEvidence.items.filter(item=>String(item?.confirmation?.state||'').toLowerCase()!=='resolved').map(item=>String(item?.sourceId||'').trim()).filter(Boolean):[]);}
 function structuredReviewRows(){
   if(employee())return [];
-  const contractRows=timeReviewEvidenceRows(),rows=[...contractRows],report=payrollReport(),hasContractTimeReview=contractRows.length>0;
+  const contractRows=timeReviewEvidenceRows(),rows=[...contractRows],report=payrollReport(),coveredSourceIds=activeTimeReviewSourceIds();
   for(const team of scopedReportTeams(report)){
     const open=(Array.isArray(team?.issues)?team.issues:[]).filter(issue=>String(issue?.status||'').toLowerCase()==='open');
-    if(!hasContractTimeReview&&open.length)rows.push({title:`${teamLabel(team)} · ${open.length} time ${open.length===1?'exception needs':'exceptions need'} review`,detail:'Open time evidence is reported by the source workflow.',route:'time-review',tone:'blue',action:'Review',status:'Needs review'});
+    const uncovered=open.filter(issue=>{const id=String(issue?.sourceId??issue?.id??'').trim();return !id||!coveredSourceIds.has(id);});
+    if(uncovered.length)rows.push({title:`${teamLabel(team)} · ${uncovered.length} time ${uncovered.length===1?'exception needs':'exceptions need'} review`,detail:'Open Time Review work without admissible contract evidence remains visible for source verification.',route:'time-review',tone:'blue',action:'Review',status:'Needs review'});
     const status=String(team?.status||'').toLowerCase();
     if(status==='stale')rows.push({title:`${teamLabel(team)} · signed week changed`,detail:'The source workflow reports that signed evidence changed.',route:'time-review',tone:'blue',action:'Review',status:'Needs review'});
     else if(status==='returned')rows.push({title:`${teamLabel(team)} · week returned for review`,detail:'The source workflow reports that this week was returned.',route:'time-review',tone:'blue',action:'Review',status:'Needs review'});
