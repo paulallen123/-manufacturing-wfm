@@ -12,7 +12,7 @@ const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workf
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
-  { key: 'vector-ui-access-restore-20260919', tokenHash: '4d79994b1c66f552d89901120851535018189ca75c92eb437b66bce73bd4c788', restore: true },
+  { key: 'vector-ui-access-restore-20260919', tokenHash: '3123f4838c95c9f601cab8966fe4d387cc3c471a9fad483ce62124156e39adce', restore: true },
   { key: 'vector-ui-probe-restore-20260919', tokenHash: 'a1a70f9319430281482a623d3453756ef8c0f279a243d9fe8d67fafcb5fc1c16', restore: false }
 ]);
 const STAGING_ACCESS_EXPIRES_AT = Date.parse('2026-09-19T04:30:00.000Z');
