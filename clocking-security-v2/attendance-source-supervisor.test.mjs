@@ -38,6 +38,30 @@ test('caller cannot mutate recovery evidence through a pendingRecovery copy',()=
 test('reconnect without backfill permanently blocks that certification window',()=>{
  const s=setup(false); s.reconnected({tenant:'acme',sourceId:'wifi',atMs:T+1000}); const h=s.status({tenant:'acme',sourceId:'wifi',nowMs:T+1001}); assert.equal(h.periodCoverageComplete,false); assert.equal(h.pendingRecovery,false);
 });
+test('same-window replay cannot erase an unrecoverable continuity gap',()=>{
+ const s=setup(false);
+ s.reconnected({tenant:'acme',sourceId:'wifi',atMs:T+1000});
+ assert.equal(s.status({tenant:'acme',sourceId:'wifi',nowMs:T+1001}).periodCoverageComplete,false);
+ const replay=s.startCertificationWindow({tenant:'acme',sourceId:'wifi',windowId:'shift-1',startMs:T});
+ assert.equal(replay.periodCoverageComplete,false);
+ assert.throws(()=>s.startCertificationWindow({tenant:'acme',sourceId:'wifi',windowId:'shift-1',startMs:T+1500}),/changed its start time/);
+ assert.equal(s.status({tenant:'acme',sourceId:'wifi',nowMs:T+1501}).periodCoverageComplete,false);
+});
+test('connector registration replay cannot reset continuity or change authority configuration',()=>{
+ const s=setup(false);
+ s.reconnected({tenant:'acme',sourceId:'wifi',atMs:T+1000});
+ s.register({tenant:'acme',sourceId:'wifi',provider:'nps',domain:'network_auth',site:'s1',supportsBackfill:false,nowMs:T+1200});
+ let h=s.status({tenant:'acme',sourceId:'wifi',nowMs:T+1201});
+ assert.equal(h.periodCoverageComplete,false); assert.equal(h.reconnects,1);
+ assert.throws(()=>s.register({tenant:'acme',sourceId:'wifi',provider:'nps',domain:'network_auth',site:'s2',supportsBackfill:false,nowMs:T+1300}),/explicit migration required/);
+ h=s.status({tenant:'acme',sourceId:'wifi',nowMs:T+1301}); assert.equal(h.site,'s1'); assert.equal(h.periodCoverageComplete,false);
+});
+test('prior certification-window IDs cannot be replayed after moving to a new shift',()=>{
+ const s=setup();
+ s.startCertificationWindow({tenant:'acme',sourceId:'wifi',windowId:'shift-2',startMs:T+2000});
+ assert.throws(()=>s.startCertificationWindow({tenant:'acme',sourceId:'wifi',windowId:'shift-1',startMs:T}),/window ID replay/);
+ assert.equal(s.status({tenant:'acme',sourceId:'wifi',nowMs:T+2001}).certificationWindowId,'shift-2');
+});
 test('new certification window resets historical continuity state',()=>{
  const s=setup(false); s.reconnected({tenant:'acme',sourceId:'wifi',atMs:T+1000}); assert.equal(s.status({tenant:'acme',sourceId:'wifi',nowMs:T+1001}).periodCoverageComplete,false);
  s.startCertificationWindow({tenant:'acme',sourceId:'wifi',windowId:'shift-2',startMs:T+2000}); s.heartbeat({tenant:'acme',sourceId:'wifi',atMs:T+2000}); assert.equal(s.status({tenant:'acme',sourceId:'wifi',nowMs:T+2001}).periodCoverageComplete,true);
