@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { AttendancePayrollGate } from './attendance-payroll-gate.mjs';
 
 const T=Date.parse('2026-09-18T14:00:00Z');
-function harness({rows=[{employee:'e1',workerType:'employee',status:'complete',openAt:'2026-09-18T06:00:00.000Z',closeAt:'2026-09-18T14:00:00.000Z'}],sourceContinuityPeriod=true,unexpectedCount=0,unmappedSignalCount=0}={}){
-  const coverage={evaluateShift(){return {rows,payrollReady:false,unexpectedCount,unmappedSignalCount};}};
+function harness({rows=[{employee:'e1',workerType:'employee',status:'complete',openAt:'2026-09-18T06:00:00.000Z',closeAt:'2026-09-18T14:00:00.000Z'}],sourceContinuityPeriod=true,unexpectedCount=0,unmappedSignalCount=0,afterClose=true}={}){
+  const coverage={evaluateShift(){return {rows,payrollReady:false,afterClose,unexpectedCount,unmappedSignalCount};}};
   const certifier={certifyShift(){return {claimLevel:sourceContinuityPeriod?'VERIFIED_100_ONLY':'NOT_CERTIFIED',claim:null,certification:{sourceContinuityPeriod,verifiedPeriodCertified:sourceContinuityPeriod}};}};
   return new AttendancePayrollGate({coverage,certifier});
 }
@@ -29,7 +29,7 @@ test('missing OUT is excluded from payroll until explicitly reviewed',()=>{
 test('manager correction cannot bypass a source-continuity regression after review',()=>{
   const rows=[{employee:'e1',workerType:'employee',status:'missing_out',openAt:'2026-09-18T06:00:00.000Z'}];
   let sourceContinuityPeriod=true;
-  const coverage={evaluateShift(){return {rows,payrollReady:false,unexpectedCount:0,unmappedSignalCount:0};}};
+  const coverage={evaluateShift(){return {rows,payrollReady:false,afterClose:true,unexpectedCount:0,unmappedSignalCount:0};}};
   const certifier={certifyShift(){return {claimLevel:sourceContinuityPeriod?'VERIFIED_100_ONLY':'NOT_CERTIFIED',claim:null,certification:{sourceContinuityPeriod,verifiedPeriodCertified:sourceContinuityPeriod}};}};
   const g=new AttendancePayrollGate({coverage,certifier});
   g.recordCorrection({tenant:'acme',site:'s1',shiftId:'shift1',employee:'e1',reviewId:'r1',actorId:'mgr1',reasonCode:'CONFIRMED_EXIT',correctedInAt:'2026-09-18T06:00:00Z',correctedOutAt:'2026-09-18T14:00:00Z',reviewedAt:T});
@@ -60,9 +60,10 @@ test('approved absence is policy input only and never fabricated as worked time'
   assert.equal(p.payrollReady,true); assert.equal(p.attendanceInputs.length,0); assert.equal(p.policyInputs.length,1); assert.equal(p.policyInputs[0].interval,null);
 });
 
-test('shift cannot close payroll or emit attendance input before attendance window is closed',()=>{
-  const g=harness(); const p=g.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T,shiftWindowClosed:false});
-  assert.equal(p.payrollReady,false); assert.equal(p.attendanceInputs.length,0);
+test('caller-supplied shift closure cannot force payroll export before the authoritative attendance window closes',()=>{
+  const g=harness({afterClose:false});
+  const p=g.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T,shiftWindowClosed:true});
+  assert.equal(p.afterClose,false); assert.equal(p.payrollReady,false); assert.equal(p.attendanceInputs.length,0);
 });
 
 test('one unresolved worker blocks partial attendance export for otherwise verified workers',()=>{

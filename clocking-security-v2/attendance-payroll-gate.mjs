@@ -94,13 +94,16 @@ export class AttendancePayrollGate {
     return {...clone(authoritative),replayed:false};
   }
 
-  projectShift({tenant,site,shiftId,nowMs=Date.now(),expectedSourceIds=[],sourceHealth=[],shiftWindowClosed=false}={}){
+  projectShift({tenant,site,shiftId,nowMs=Date.now(),expectedSourceIds=[],sourceHealth=[]}={}){
     tenant=asId(tenant,'tenant'); site=asId(site,'site'); shiftId=asId(shiftId,'shift');
     if(!Number.isSafeInteger(nowMs)||nowMs<0) throw new Error('Valid nowMs required.');
     const evaluation=this.#evaluateShift({tenant,site,shiftId,nowMs});
     const certification=this.#certifyShift({tenant,site,shiftId,nowMs,expectedSourceIds,sourceHealth});
     const sourcePeriodVerified=certification?.certification?.sourceContinuityPeriod===true;
-    const afterClose=evaluation.payrollReady===true || shiftWindowClosed===true;
+    // Shift closure is payroll authority. It must come from the registered shift
+    // owned by coverage evaluation, never from a caller-supplied boolean that can
+    // forge a closed window while a shift is still active.
+    const afterClose=evaluation.afterClose===true;
     const auditChainValid=this.verifyAuditChain();
 
     const rows=evaluation.rows.map(row=>{

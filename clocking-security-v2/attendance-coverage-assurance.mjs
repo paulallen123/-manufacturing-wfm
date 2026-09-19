@@ -120,7 +120,7 @@ export class AttendanceCoverageAssurance {
       accounted:rows.filter(r=>!['missing_in','missing_out','evidence_pending','stale_open_session'].includes(r.status)).length,
       unresolved:unresolvedRows.length,
       unexpectedCount:unexpected.length,unmappedSignalCount:unmapped.length,
-      payrollReady,rows,unexpected,unmapped
+      afterClose,payrollReady,rows,unexpected,unmapped
     };
   }
 
