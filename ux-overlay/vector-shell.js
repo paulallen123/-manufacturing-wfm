@@ -121,6 +121,38 @@ function ensureTopbar(app){const content=app.querySelector('.content');if(!conte
  <div class="vector-top-actions"><button type="button" class="vector-icon-button" data-vector-alerts aria-label="Notifications">${icon('bell')}<span class="vector-notification-count" hidden>0</span></button><button type="button" class="vector-icon-button" data-vector-help aria-label="Help">${icon('help')}</button><button type="button" class="vector-user-button" data-vector-identity="${IDENTITY_MARKER}"><span class="vector-avatar">${esc(initials())}</span><span class="vector-user-copy"><b>${esc(displayName())}</b><small>${esc(siteName())}</small></span><span class="vector-user-chevron">⌄</span></button></div>`;parent.insertBefore(bar,content);return bar;}
 function updateNav(){const sidebar=document.querySelector('.vector-sidebar');if(!sidebar)return;sidebar.querySelectorAll('[data-vector-nav]').forEach((b,i)=>b.classList.toggle('active',activeFor(NAV[i])));const alerts=document.querySelector('.vector-notification-count');const count=document.querySelectorAll('.vector-home-source .fcc-action,.vector-home-source .ux-approved-decision-card').length;if(alerts){alerts.textContent=String(count);alerts.hidden=!count}}
 function askWorkforce(message){const launch=document.getElementById('wfm-bot-launch');if(launch&&document.getElementById('wfm-bot')?.hidden)launch.click();setTimeout(()=>{const box=document.getElementById('bot-message');if(box){box.value=String(message||'').slice(0,2000);box.dispatchEvent(new Event('input',{bubbles:true}));box.focus();}},180);}
+function assistantSnapshot(){
+  const role=roleContext(),identity=sourceIdentity(),stats=scopedStats(),cost=labourCost();
+  const metrics=[];
+  if(stats.total)metrics.push({label:'People in scope',value:stats.total,detail:'Role-scoped workforce count'});
+  if(stats.onsite!=null&&stats.total)metrics.push({label:'On site now',value:stats.onsite,detail:Math.round((stats.onsite/stats.total)*100)+'% of people in scope'});
+  if(stats.sick!=null&&stats.total)metrics.push({label:'Absent today',value:stats.sick,detail:((stats.sick/stats.total)*100).toFixed(1)+'% absence rate'});
+  if(Number.isFinite(cost))metrics.push({label:'Labour cost',value:money(cost),detail:'Verified cost total from current source'});
+  const homeMetrics=[...document.querySelectorAll('.vector-kpi-card')].slice(0,8).map(card=>{
+    const label=text(card.querySelector('b')),value=text(card.querySelector('strong')),detail=text(card.querySelector('small'));
+    return label&&value?{label,value,detail}:null;
+  }).filter(Boolean);
+  for(const m of homeMetrics)if(!metrics.some(x=>x.label===m.label))metrics.push(m);
+  const lens=document.querySelector('.vector-screen-lens');
+  const lensParagraphs=lens?[...lens.querySelectorAll(':scope > div p')].map(text):[];
+  const rv=roleViewCopy();
+  return {
+    generatedAt:new Date().toISOString(),
+    role:role.key,
+    scope:rv.scope,
+    currentScreen:page(),
+    site:identity.site||siteName(),
+    metrics:metrics.slice(0,24),
+    facts:[
+      stats.late?{label:'Late today',value:stats.late,detail:'Current scoped attendance evidence'}:null,
+      stats.missing?{label:'Missing attendance evidence',value:stats.missing,detail:'Requires reconciliation'}:null
+    ].filter(Boolean),
+    decisionLens:{
+      soWhat:lensParagraphs[0]||rv.principle,
+      nextAction:lensParagraphs[1]||'Ask Vector to identify the highest-impact next action from verified evidence.'
+    }
+  };
+}
 function commandResultCopy(payload){
   const intent=payload?.envelope?.command?.intent||'ANALYSE';
   const status=payload?.status||'ACCEPTED';
@@ -144,7 +176,10 @@ function ensureCommandDrawer(){
 function renderCommandDrawer(message,payload,error){
   const drawer=ensureCommandDrawer(),rv=roleViewCopy();
   const copy=error?{title:'Vector could not complete that request',detail:error}:commandResultCopy(payload);
-  drawer.innerHTML=`<div class="vector-command-head"><span class="vector-ai-glyph">${icon('sparkle')}</span><div><b>Ask Vector</b><small>${esc(rv.label)} · ${esc(rv.scope)}</small></div><button type="button" data-vector-command-close aria-label="Close">×</button></div><div class="vector-command-body"><span class="vector-command-request">${esc(message)}</span><h3>${esc(copy.title)}</h3><p>${esc(copy.detail)}</p><div class="vector-command-policy"><b>Decision lens</b><span>${esc(rv.principle)}</span></div><div class="vector-command-capabilities"><span>Analyse</span><span>Reports</span><span>Email</span><span>Tasks</span><span>Automations</span><span>Widgets</span></div></div>`;
+  const created=payload?.created;
+  const report=created?.kind==='REPORT'&&created?.report?.markdown?'<details class="vector-command-report" open><summary>'+esc(created.report.title||'Generated report')+'</summary><pre>'+esc(created.report.markdown)+'</pre></details>':'';
+  const cadence=created?.kind==='AUTOMATION'&&created?.cadence?.parsed?'<div class="vector-command-cadence"><b>Schedule</b><span>'+esc(created.cadence.frequency)+(created.cadence.dayOfWeek!=null?' · day '+created.cadence.dayOfWeek:'')+(created.cadence.hour!=null?' · '+String(created.cadence.hour).padStart(2,'0')+':00':'')+'</span></div>':'';
+  drawer.innerHTML=`<div class="vector-command-head"><span class="vector-ai-glyph">${icon('sparkle')}</span><div><b>Ask Vector</b><small>${esc(rv.label)} · ${esc(rv.scope)}</small></div><button type="button" data-vector-command-close aria-label="Close">×</button></div><div class="vector-command-body"><span class="vector-command-request">${esc(message)}</span><h3>${esc(copy.title)}</h3><p>${esc(copy.detail)}</p><div class="vector-command-policy"><b>Decision lens</b><span>${esc(rv.principle)}</span></div><div class="vector-command-capabilities"><span>Analyse</span><button type="button" data-vector-list="reports">Reports</button><span>Email</span><button type="button" data-vector-list="tasks">Tasks</button><button type="button" data-vector-list="automations">Automations</button><span>Widgets</span></div>${cadence}${report}<div class="vector-command-list" hidden></div></div>`;
   drawer.hidden=false;
   return drawer;
 }
@@ -154,7 +189,7 @@ async function askVector(message){
   const rv=roleContext();
   renderCommandDrawer(textValue,{envelope:{command:{intent:'ANALYSE'}},status:'ACCEPTED',capabilities:{}});
   try{
-    const response=await fetch('/api/intelligence/vector/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:textValue,currentScreen:page(),jobTitle:rv.raw,siteIds:rv.siteIds,siteCount:rv.siteCount})});
+    const response=await fetch('/api/intelligence/vector/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:textValue,currentScreen:page(),jobTitle:rv.raw,siteIds:rv.siteIds,siteCount:rv.siteCount,snapshot:assistantSnapshot()})});
     const payload=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(payload?.error||'Vector refused the request safely.');
     renderCommandDrawer(textValue,payload);
@@ -165,6 +200,22 @@ async function askVector(message){
     renderCommandDrawer(textValue,null,String(error?.message||error||'Request failed.'));
     askWorkforce(textValue);
   }
+}
+async function openIntelligenceList(kind){
+  const drawer=ensureCommandDrawer(),box=drawer.querySelector('.vector-command-list');
+  if(!box)return;
+  box.hidden=false;box.innerHTML='<p class="vector-command-loading">Loading '+esc(kind)+'…</p>';
+  try{
+    const response=await fetch('/api/intelligence/vector/'+encodeURIComponent(kind),{headers:{Accept:'application/json'}});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(payload?.error||'Unable to load '+kind+'.');
+    const rows=Array.isArray(payload?.[kind])?payload[kind]:[];
+    box.innerHTML=rows.length?'<div class="vector-command-list-head"><b>'+esc(kind[0].toUpperCase()+kind.slice(1))+'</b><span>'+rows.length+'</span></div>'+rows.slice(0,20).map(row=>{
+      const detail=row.detail||{};const cadence=detail.cadence||{};
+      const secondary=kind==='automations'&&cadence.frequency?cadence.frequency:(detail.delivery||row.createdAt||'');
+      return '<article><div><b>'+esc(row.title||row.id)+'</b><small>'+esc(String(secondary||''))+'</small></div><em>'+esc(row.status||'')+'</em></article>';
+    }).join(''):'<p class="vector-command-loading">No '+esc(kind)+' yet.</p>';
+  }catch(error){box.innerHTML='<p class="vector-command-error">'+esc(String(error?.message||error))+'</p>';}
 }
 function buildAssistant(){const rv=roleViewCopy(),prompts=rv.prompts;return `<aside class="vector-assistant" data-vector-intelligence="${INTELLIGENCE_MARKER}"><div class="vector-assistant-title"><span class="vector-ai-glyph">${icon('sparkle')}</span><h2>Ask Vector</h2><span class="vector-beta">${esc(rv.label)}</span></div><p>${esc(rv.principle)} Ask questions, create reports, set tasks or automations, and change how this dashboard is presented.</p><div class="vector-prompt-list">${prompts.map(p=>`<button type="button" data-vector-prompt="${esc(p)}">${esc(p)}</button>`).join('')}</div><label class="vector-assistant-input"><input type="text" placeholder="Ask, report, automate or change this view..." aria-label="Ask Vector"/><button type="button" data-vector-assistant-send aria-label="Ask">${icon('arrow')}</button></label></aside>`;}
 function kpiMarkup(items){return items.map((m,i)=>`<button type="button" class="vector-kpi-card ${m.tone}" data-vector-route="${['attendance','leave','time-review','costs'][i]}"><span class="vector-kpi-icon">${icon(m.icon)}</span><span class="vector-kpi-copy"><strong>${esc(m.value)}</strong><b>${esc(m.label)}</b><small>${esc(m.detail)}</small>${m.progress!=null?`<span class="vector-progress"><i style="width:${Math.max(0,Math.min(100,m.progress))}%"></i></span>`:''}</span></button>`).join('');}
@@ -227,12 +278,12 @@ function screenLens(){
 }
 function generalPage(content){if(content.dataset.vectorHome==='1')return;content.classList.add('vector-page-content');if(!content.querySelector('.vector-screen-lens')){const lens=document.createElement('div');lens.innerHTML=screenLens();const node=lens.firstElementChild;const heading=content.querySelector(':scope > .heading');if(heading?.nextSibling)content.insertBefore(node,heading.nextSibling);else content.prepend(node);}}
 function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi='approved-reference-v1';app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);ensureCommandDrawer();if(page()==='overview')renderHome(content);else generalPage(content);updateNav();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
-document.addEventListener('click',e=>{const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec)go(firstRoute(spec.routes));return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('time-review');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askVector(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askVector(box.value.trim());return;}if(e.target.closest('[data-vector-analyse-screen]')){askVector('Analyse this screen. Explain what matters, why, the financial or operational impact, the root cause, and the next best actions.');return;}if(e.target.closest('[data-vector-command-close]')){const drawer=document.querySelector('.vector-command-drawer');if(drawer)drawer.hidden=true;return;}});
+document.addEventListener('click',e=>{const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec)go(firstRoute(spec.routes));return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('time-review');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askVector(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askVector(box.value.trim());return;}if(e.target.closest('[data-vector-analyse-screen]')){askVector('Analyse this screen. Explain what matters, why, the financial or operational impact, the root cause, and the next best actions.');return;}const listKind=e.target.closest('[data-vector-list]')?.dataset.vectorList;if(listKind){openIntelligenceList(listKind);return;}if(e.target.closest('[data-vector-command-close]')){const drawer=document.querySelector('.vector-command-drawer');if(drawer)drawer.hidden=true;return;}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askVector(input.value.trim());}});
 const previousRender=window.render;
 if(typeof previousRender==='function')window.render=async function(...args){const result=await previousRender.apply(this,args);document.body.classList.remove('vector-menu-open');queueMicrotask(apply);return result;};
 shellObserver=new MutationObserver(()=>apply());
 shellObserver.observe(document.documentElement,observerConfig);
 setTimeout(apply,0);setTimeout(apply,350);
-window.VectorWorkforceOperations={marker:MARKER,reviewMarker:REVIEW_MARKER,planningMarker:PLANNING_MARKER,kpiMarker:KPI_MARKER,identityMarker:IDENTITY_MARKER,leaveMarker:LEAVE_MARKER,intelligenceMarker:INTELLIGENCE_MARKER,apply,go,askWorkforce,askVector,roleContext};
+window.VectorWorkforceOperations={marker:MARKER,reviewMarker:REVIEW_MARKER,planningMarker:PLANNING_MARKER,kpiMarker:KPI_MARKER,identityMarker:IDENTITY_MARKER,leaveMarker:LEAVE_MARKER,intelligenceMarker:INTELLIGENCE_MARKER,apply,go,askWorkforce,askVector,roleContext,assistantSnapshot,openIntelligenceList};
 })();
