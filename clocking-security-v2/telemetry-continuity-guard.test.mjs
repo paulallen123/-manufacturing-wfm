@@ -1,26 +1,89 @@
+import crypto from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {TelemetryContinuityGuard} from './telemetry-continuity-guard.mjs';
+import {TelemetryContinuityGuard,telemetryObserverPayload} from './telemetry-continuity-guard.mjs';
 
 const T=Date.parse('2026-09-19T02:00:00Z');
+const TRUST_DOMAIN='tenant-a.site-1.telemetry';
+const {publicKey,privateKey}=crypto.generateKeyPairSync('ed25519');
+const rogue=crypto.generateKeyPairSync('ed25519');
+
+function guard(options={}){
+  return new TelemetryContinuityGuard({
+    trustDomain:TRUST_DOMAIN,
+    trustedObservers:[{observerId:'observer-a',publicKey,streams:['http','audit']}],
+    ...options
+  });
+}
+function sign(kind,{stream='http',sequence,canaryId,observedAtMs},key=privateKey,trustDomain=TRUST_DOMAIN){
+  return crypto.sign(null,telemetryObserverPayload({trustDomain,kind,stream,sequence,canaryId,observedAtMs}),key).toString('base64');
+}
+function heartbeat(g,{stream='http',sequence,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
+  return g.observeHeartbeat({stream,sequence,observedAtMs,receivedAtMs,observerId,signature:sign('heartbeat',{stream,sequence,observedAtMs},key)});
+}
+function backfill(g,{stream='http',sequence,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
+  return g.observeBackfillHeartbeat({stream,sequence,observedAtMs,receivedAtMs,observerId,signature:sign('backfill_heartbeat',{stream,sequence,observedAtMs},key)});
+}
+function canary(g,{canaryId,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
+  return g.observeCanary({canaryId,observedAtMs,receivedAtMs,observerId,signature:sign('canary',{stream:'http',canaryId,observedAtMs},key)});
+}
 function healthy(options={}){
-  const g=new TelemetryContinuityGuard(options);
-  g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T});
+  const g=guard(options);
+  heartbeat(g,{sequence:1,observedAtMs:T});
   g.emitCanary({canaryId:'c1',emittedAtMs:T+1_000,stream:'http'});
-  g.observeCanary({canaryId:'c1',observedAtMs:T+2_000,receivedAtMs:T+2_000});
+  canary(g,{canaryId:'c1',observedAtMs:T+2_000});
   return g;
 }
 
-test('fresh heartbeat and recent observed canary keep telemetry healthy',()=>{
+test('fresh signed heartbeat and canary keep telemetry healthy',()=>{
   const r=healthy().assess({nowMs:T+60_000,requiredStreams:['http']});
   assert.equal(r.status,'healthy');
   assert.equal(r.releaseEligible,true);
   assert.deepEqual(r.containment,[]);
 });
 
+test('guard cannot start without an explicit trust domain and independent observer key',()=>{
+  assert.throws(()=>new TelemetryContinuityGuard(),/trustDomain|trusted telemetry observer/);
+  assert.throws(()=>new TelemetryContinuityGuard({trustDomain:TRUST_DOMAIN,trustedObservers:[]}),/trusted telemetry observer/);
+});
+
+test('unsigned or forged live heartbeat cannot manufacture healthy telemetry',()=>{
+  const g=guard();
+  assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a'}),/signature/);
+  assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',signature:sign('heartbeat',{sequence:1,observedAtMs:T},rogue.privateKey)}),/signature verification/);
+  const r=g.assess({nowMs:T,requiredStreams:['http']});
+  assert.equal(r.releaseEligible,false);
+  assert.ok(r.reasons.some(x=>x.code==='MISSING_HEARTBEAT'));
+});
+
+test('signed evidence cannot cross trust domains or observer stream scopes',()=>{
+  const other=new TelemetryContinuityGuard({
+    trustDomain:'tenant-b.site-9.telemetry',
+    trustedObservers:[{observerId:'observer-a',publicKey,streams:['http']}]
+  });
+  assert.throws(()=>other.observeHeartbeat({
+    stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',
+    signature:sign('heartbeat',{sequence:1,observedAtMs:T})
+  }),/signature verification/);
+
+  const g=guard();
+  assert.throws(()=>g.observeHeartbeat({
+    stream:'other',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',
+    signature:sign('heartbeat',{stream:'other',sequence:1,observedAtMs:T})
+  }),/not authorised/);
+});
+
+test('heartbeat signature cannot be repurposed as canary proof',()=>{
+  const g=guard();
+  heartbeat(g,{sequence:1,observedAtMs:T});
+  g.emitCanary({canaryId:'c1',emittedAtMs:T,stream:'http'});
+  const reused=sign('heartbeat',{sequence:1,observedAtMs:T+1_000});
+  assert.throws(()=>g.observeCanary({canaryId:'c1',observedAtMs:T+1_000,receivedAtMs:T+1_000,observerId:'observer-a',signature:reused}),/signature verification/);
+});
+
 test('missing canary becomes fail-closed telemetry loss',()=>{
-  const g=new TelemetryContinuityGuard({maxCanaryLagMs:30_000});
-  g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T});
+  const g=guard({maxCanaryLagMs:30_000});
+  heartbeat(g,{sequence:1,observedAtMs:T});
   g.emitCanary({canaryId:'c1',emittedAtMs:T,stream:'http'});
   const r=g.assess({nowMs:T+30_001,requiredStreams:['http'],serviceExpectedLive:true});
   assert.equal(r.status,'telemetry_loss');
@@ -29,24 +92,24 @@ test('missing canary becomes fail-closed telemetry loss',()=>{
   assert.ok(r.reasons.some(x=>x.code==='CANARY_NOT_OBSERVED'));
 });
 
-test('a fresh later canary can recover a prior missed-canary incident',()=>{
-  const g=new TelemetryContinuityGuard({maxCanaryLagMs:30_000,maxCanaryAgeMs:60_000,maxHeartbeatAgeMs:60_000});
-  g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T});
+test('a fresh later signed canary can recover a prior missed-canary incident',()=>{
+  const g=guard({maxCanaryLagMs:30_000,maxCanaryAgeMs:60_000,maxHeartbeatAgeMs:60_000});
+  heartbeat(g,{sequence:1,observedAtMs:T});
   g.emitCanary({canaryId:'missed',emittedAtMs:T,stream:'http'});
   let r=g.assess({nowMs:T+30_001,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='CANARY_NOT_OBSERVED'));
 
-  g.observeHeartbeat({stream:'http',sequence:2,observedAtMs:T+40_000,receivedAtMs:T+40_000});
+  heartbeat(g,{sequence:2,observedAtMs:T+40_000});
   g.emitCanary({canaryId:'recovery',emittedAtMs:T+40_000,stream:'http'});
-  g.observeCanary({canaryId:'recovery',observedAtMs:T+40_500,receivedAtMs:T+40_500});
+  canary(g,{canaryId:'recovery',observedAtMs:T+40_500});
   r=g.assess({nowMs:T+41_000,requiredStreams:['http']});
   assert.equal(r.releaseEligible,true);
   assert.equal(r.reasons.some(x=>x.code==='CANARY_NOT_OBSERVED'),false);
 });
 
 test('quiet traffic alone cannot prove telemetry continuity',()=>{
-  const g=new TelemetryContinuityGuard();
+  const g=guard();
   const r=g.assess({nowMs:T,requiredStreams:['http'],serviceExpectedLive:true});
   assert.equal(r.status,'telemetry_loss');
   assert.equal(r.releaseEligible,false);
@@ -54,56 +117,58 @@ test('quiet traffic alone cannot prove telemetry continuity',()=>{
   assert.ok(r.reasons.some(x=>x.code==='NO_VALID_CANARY'));
 });
 
-test('sequence gap poisons continuity until every missing sequence is observed',()=>{
+test('sequence gap poisons continuity until every missing signed sequence is observed',()=>{
   const g=healthy();
-  g.observeHeartbeat({stream:'http',sequence:4,observedAtMs:T+3_000,receivedAtMs:T+3_000});
+  heartbeat(g,{sequence:4,observedAtMs:T+3_000});
   let r=g.assess({nowMs:T+4_000,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='SEQUENCE_GAP'));
 
-  g.observeBackfillHeartbeat({stream:'http',sequence:2,observedAtMs:T+1_500,receivedAtMs:T+4_100});
+  backfill(g,{sequence:2,observedAtMs:T+1_500,receivedAtMs:T+4_100});
   r=g.assess({nowMs:T+4_200,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='SEQUENCE_GAP'));
 
-  g.observeBackfillHeartbeat({stream:'http',sequence:3,observedAtMs:T+2_500,receivedAtMs:T+4_300});
+  backfill(g,{sequence:3,observedAtMs:T+2_500,receivedAtMs:T+4_300});
   r=g.assess({nowMs:T+4_400,requiredStreams:['http']});
   assert.equal(r.releaseEligible,true);
   assert.equal(r.reasons.some(x=>x.code==='SEQUENCE_GAP'),false);
 });
 
 test('live heartbeat replay or rollback is rejected rather than treated as backfill',()=>{
-  const g=new TelemetryContinuityGuard();
-  g.observeHeartbeat({stream:'http',sequence:7,observedAtMs:T,receivedAtMs:T});
-  assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:7,observedAtMs:T+1_000,receivedAtMs:T+1_000}),/replay|rollback/);
-  assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:6,observedAtMs:T+1_000,receivedAtMs:T+1_000}),/replay|rollback/);
+  const g=guard();
+  heartbeat(g,{sequence:7,observedAtMs:T});
+  assert.throws(()=>heartbeat(g,{sequence:7,observedAtMs:T+1_000}),/replay|rollback/);
+  assert.throws(()=>heartbeat(g,{sequence:6,observedAtMs:T+1_000}),/replay|rollback/);
 });
 
 test('backfill cannot invent recovery for a sequence outside an unresolved gap',()=>{
-  const g=new TelemetryContinuityGuard();
-  g.observeHeartbeat({stream:'http',sequence:10,observedAtMs:T,receivedAtMs:T});
-  g.observeHeartbeat({stream:'http',sequence:12,observedAtMs:T+2_000,receivedAtMs:T+2_000});
-  assert.throws(()=>g.observeBackfillHeartbeat({stream:'http',sequence:9,observedAtMs:T-1_000,receivedAtMs:T+3_000}),/unresolved gap/);
+  const g=guard();
+  heartbeat(g,{sequence:10,observedAtMs:T});
+  heartbeat(g,{sequence:12,observedAtMs:T+2_000});
+  assert.throws(()=>backfill(g,{sequence:9,observedAtMs:T-1_000,receivedAtMs:T+3_000}),/unresolved gap/);
 });
 
 test('future heartbeat timestamp poisoning is rejected',()=>{
-  const g=new TelemetryContinuityGuard({maxClockSkewMs:1_000});
-  assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T+2_001,receivedAtMs:T}),/future/);
+  const g=guard({maxClockSkewMs:1_000});
+  const signature=sign('heartbeat',{sequence:1,observedAtMs:T+2_001});
+  assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T+2_001,receivedAtMs:T,observerId:'observer-a',signature}),/future/);
 });
 
-test('unknown or replayed canary evidence is rejected',()=>{
-  const g=new TelemetryContinuityGuard();
-  assert.throws(()=>g.observeCanary({canaryId:'unknown',observedAtMs:T}),/Unknown/);
+test('unknown or replayed signed canary evidence is rejected',()=>{
+  const g=guard();
+  const unknownSignature=sign('canary',{canaryId:'unknown',observedAtMs:T});
+  assert.throws(()=>g.observeCanary({canaryId:'unknown',observedAtMs:T,observerId:'observer-a',signature:unknownSignature}),/Unknown/);
   g.emitCanary({canaryId:'c1',emittedAtMs:T,stream:'http'});
-  g.observeCanary({canaryId:'c1',observedAtMs:T+1,receivedAtMs:T+1});
-  assert.throws(()=>g.observeCanary({canaryId:'c1',observedAtMs:T+2,receivedAtMs:T+2}),/replay/);
+  canary(g,{canaryId:'c1',observedAtMs:T+1});
+  assert.throws(()=>canary(g,{canaryId:'c1',observedAtMs:T+2}),/replay/);
 });
 
 test('late canary observation cannot satisfy continuity',()=>{
-  const g=new TelemetryContinuityGuard({maxCanaryLagMs:30_000});
-  g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T+31_000,receivedAtMs:T+31_000});
+  const g=guard({maxCanaryLagMs:30_000});
+  heartbeat(g,{sequence:1,observedAtMs:T+31_000});
   g.emitCanary({canaryId:'c1',emittedAtMs:T,stream:'http'});
-  assert.equal(g.observeCanary({canaryId:'c1',observedAtMs:T+30_001,receivedAtMs:T+30_001}),false);
+  assert.equal(canary(g,{canaryId:'c1',observedAtMs:T+30_001}),false);
   const r=g.assess({nowMs:T+31_000,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='NO_VALID_CANARY'));
@@ -111,14 +176,14 @@ test('late canary observation cannot satisfy continuity',()=>{
 
 test('an old successful canary cannot keep promotion green forever',()=>{
   const g=healthy({maxCanaryAgeMs:60_000,maxHeartbeatAgeMs:30_000});
-  g.observeHeartbeat({stream:'http',sequence:2,observedAtMs:T+120_000,receivedAtMs:T+120_000});
+  heartbeat(g,{sequence:2,observedAtMs:T+120_000});
   const r=g.assess({nowMs:T+120_000,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='STALE_CANARY'));
 });
 
 test('telemetry loss containment stays narrow and reversible',()=>{
-  const g=new TelemetryContinuityGuard();
+  const g=guard();
   const r=g.assess({nowMs:T,requiredStreams:['http']});
   assert.deepEqual(r.containment,[
     'BLOCK_SECURITY_SENSITIVE_PROMOTION',
