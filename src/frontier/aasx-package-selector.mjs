@@ -1,6 +1,7 @@
 import path from 'node:path';
+import { decodeAasXmlEnvironment } from './aas-xml-environment.mjs';
 
-export const AASX_PACKAGE_SELECTOR_VERSION = 'aasx-package-selector-v0.1.0';
+export const AASX_PACKAGE_SELECTOR_VERSION = 'aasx-package-selector-v0.2.0';
 
 const DEFAULT_LIMITS = Object.freeze({
   maxEntries: 512,
@@ -19,6 +20,26 @@ function stable(value) {
     return Object.fromEntries(Object.keys(value).sort().map((key) => [key, stable(value[key])]));
   }
   return value;
+}
+
+function semanticCanonical(value) {
+  if (Array.isArray(value)) {
+    const items = value.map(semanticCanonical).filter((item) => item !== undefined);
+    return items.length ? items : undefined;
+  }
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value)
+      .map(([key, item]) => [key, semanticCanonical(item)])
+      .filter(([, item]) => item !== undefined);
+    if (entries.length === 0) return undefined;
+    return Object.fromEntries(entries);
+  }
+  if (value == null || value === '') return undefined;
+  return value;
+}
+
+function fingerprintEnvironment(environment) {
+  return JSON.stringify(stable(semanticCanonical(environment) ?? {}));
 }
 
 function normalizePackagePath(raw) {
@@ -173,39 +194,40 @@ export function selectAasxEnvironment(entries = [], options = {}) {
   }
   if (aasSpecs.length === 0) return { status: 'review_required', reason: 'aas_spec_relationship_missing' };
 
-  const jsonCandidates = [];
-  const xmlCandidates = [];
+  const candidates = [];
   for (const entry of aasSpecs) {
     const lower = entry.path.toLowerCase();
     if (lower.endsWith('.json') || lower.endsWith('.aas.json')) {
       const environment = jsonEnvironment(entry.content);
       if (!environment) return { status: 'review_required', reason: 'invalid_aas_json_environment', path: entry.path };
-      jsonCandidates.push({ entry, environment, fingerprint: JSON.stringify(stable(environment)) });
+      candidates.push({ entry, environment, format: 'json', fingerprint: fingerprintEnvironment(environment) });
     } else if (lower.endsWith('.xml') || lower.endsWith('.aas.xml')) {
-      xmlCandidates.push(entry);
+      const decoded = decodeAasXmlEnvironment(String(entry.content ?? ''), { limits: options.xmlLimits });
+      if (decoded.status !== 'accepted') return { ...decoded, path: entry.path };
+      candidates.push({ entry, environment: decoded.environment, format: 'xml', fingerprint: fingerprintEnvironment(decoded.environment), xmlNamespace: decoded.namespace });
     }
   }
 
-  if (jsonCandidates.length > 0) {
-    const fingerprints = [...new Set(jsonCandidates.map((item) => item.fingerprint))];
-    if (fingerprints.length > 1) {
-      return { status: 'review_required', reason: 'conflicting_aas_serializations', paths: jsonCandidates.map((item) => item.entry.path) };
-    }
-    const selected = jsonCandidates.slice().sort((a, b) => a.entry.path.localeCompare(b.entry.path))[0];
-    return {
-      status: 'accepted',
-      format: 'json',
-      environment: selected.environment,
-      selectedPath: selected.entry.path,
-      equivalentJsonSerializations: jsonCandidates.length,
-      xmlAlternatives: xmlCandidates.map((entry) => entry.path),
-      totalPackageBytes: inspected.totalBytes,
-      version: AASX_PACKAGE_SELECTOR_VERSION,
-    };
+  if (candidates.length === 0) return { status: 'review_required', reason: 'unsupported_aas_spec_serialization', paths: aasSpecs.map((entry) => entry.path) };
+  const fingerprints = [...new Set(candidates.map((item) => item.fingerprint))];
+  if (fingerprints.length > 1) {
+    return { status: 'review_required', reason: 'conflicting_aas_serializations', paths: candidates.map((item) => item.entry.path) };
   }
 
-  if (xmlCandidates.length > 0) {
-    return { status: 'review_required', reason: 'xml_aas_spec_not_supported_yet', paths: xmlCandidates.map((entry) => entry.path) };
-  }
-  return { status: 'review_required', reason: 'unsupported_aas_spec_serialization', paths: aasSpecs.map((entry) => entry.path) };
+  const selected = candidates.slice().sort((a, b) => {
+    const formatOrder = { json: 0, xml: 1 };
+    return formatOrder[a.format] - formatOrder[b.format] || a.entry.path.localeCompare(b.entry.path);
+  })[0];
+  return {
+    status: 'accepted',
+    format: selected.format,
+    environment: selected.environment,
+    selectedPath: selected.entry.path,
+    equivalentSerializations: candidates.length,
+    jsonSerializations: candidates.filter((item) => item.format === 'json').length,
+    xmlSerializations: candidates.filter((item) => item.format === 'xml').length,
+    xmlNamespace: selected.xmlNamespace ?? null,
+    totalPackageBytes: inspected.totalBytes,
+    version: AASX_PACKAGE_SELECTOR_VERSION,
+  };
 }
