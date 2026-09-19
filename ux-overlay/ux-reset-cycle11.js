@@ -183,6 +183,9 @@ function restoreFocus(section){
      const current=document.querySelector(byId)||(byRoute?document.querySelector(byRoute):null)||target;
      const visible=Boolean(current?.isConnected&&!current.closest('[hidden]')&&current.getClientRects().length);
      if(visible){
+       const rect=current.getBoundingClientRect();
+       const inViewport=rect.top>=0&&rect.bottom<=innerHeight&&rect.left>=0&&rect.right<=innerWidth;
+       if(!inViewport){try{current.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});}catch{try{current.scrollIntoView();}catch{}}}
        try{current.focus({preventScroll:true});}catch{try{current.focus();}catch{}}
        if(document.activeElement===current){clearReturnMarker();return;}
      }
