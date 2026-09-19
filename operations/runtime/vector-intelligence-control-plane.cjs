@@ -185,7 +185,7 @@ function createVectorIntelligenceControlPlane(options={}){
     if(!providerReady())return persisted;
     const now=nowIso();
     try{
-      const delivery=await sendResendReport({
+      const rawDelivery=await sendResendReport({
         token:process.env.WFM_VECTOR_RESEND_TOKEN,
         from:process.env.WFM_VECTOR_EMAIL_FROM,
         to:c.email,
@@ -194,6 +194,7 @@ function createVectorIntelligenceControlPlane(options={}){
         text:created.report.markdown,
         idempotencyKey:'vector-report/'+created.id
       });
+      const delivery={provider:compact(rawDelivery?.provider,40)||'EMAIL_PROVIDER',id:compact(rawDelivery?.id,160)};
       created.status='SENT';
       created.deliveryResult=delivery;
       persisted.status='SENT';
