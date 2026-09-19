@@ -118,6 +118,7 @@ assert.equal(fallback.rejectedCandidates[0].runId, newestTampered.runId);
 assert.equal(fallback.priorSnapshotLoaded, true);
 assert.equal(fallback.durableHistoryKnown, true);
 assert.match(fallback.selectedContinuityDigest, /^[a-f0-9]{64}$/);
+assert.match(fallback.selectedEvidenceProofDigest, /^[a-f0-9]{64}$/);
 assert.equal(fallback.actionAuthorityGranted, false);
 assert.equal(fallback.productionAuthorityGranted, false);
 assert.equal(fallback.releaseAuthorityGranted, false);
@@ -152,6 +153,7 @@ assert.equal(failClosed.priorSnapshotLoaded, false);
 assert.equal(failClosed.durableHistoryKnown, true);
 assert.equal(failClosed.rejectedCandidateCount, 2);
 assert.equal(failClosed.selectedRunId, null);
+assert.equal(failClosed.selectedEvidenceProofDigest, null);
 assert.equal(failClosed.actionAuthorityGranted, false);
 assert.equal(failClosed.productionAuthorityGranted, false);
 assert.equal(failClosed.releaseAuthorityGranted, false);
@@ -187,6 +189,7 @@ const unavailableOnly = selectVerifiedPredecessor({
 });
 assert.equal(unavailableOnly.status, 'FAIL_CLOSED_PRIOR_EVIDENCE_UNAVAILABLE');
 assert.equal(unavailableOnly.evidenceUnavailable, true);
+assert.equal(unavailableOnly.selectedEvidenceProofDigest, null);
 assert.equal(verifySelectionReceipt(unavailableOnly), true);
 
 const continuityBytesTampered = validCandidate({
@@ -271,9 +274,11 @@ const tamperedReceipt = { ...fallback, selectedRunId: 999 };
 assert.equal(verifySelectionReceipt(tamperedReceipt), false);
 const continuityReceiptTampered = { ...fallback, selectedContinuityDigest: '0'.repeat(64) };
 assert.equal(verifySelectionReceipt(continuityReceiptTampered), false);
+const evidenceProofReceiptTampered = { ...fallback, selectedEvidenceProofDigest: '0'.repeat(64) };
+assert.equal(verifySelectionReceipt(evidenceProofReceiptTampered), false);
 
 console.log(JSON.stringify({
-  schemaVersion: 3,
+  schemaVersion: 4,
   proof: 'provider-neutral-prior-corpus-evidence-verifier',
   status: 'PASS',
   newestTamperedOlderVerifiedSelected: true,
@@ -287,6 +292,7 @@ console.log(JSON.stringify({
   envelopeSnapshotBindingTamperRejected: true,
   portableEntryCountMismatchRejected: true,
   selectionReceiptBindsContinuityDigest: true,
+  selectionReceiptBindsSelectedEvidenceProofDigest: true,
   tamperedSelectionReceiptRejected: true,
   actionAuthorityGranted: false,
   productionAuthorityGranted: false,

@@ -235,6 +235,7 @@ function selectVerifiedPredecessor({ candidates = [] } = {}) {
         selectedCorpusDigest: verification.corpusDigest,
         selectedEntryCount: verification.entryCount,
         selectedContinuityDigest: verification.continuityDigest,
+        selectedEvidenceProofDigest: verification.proofDigest,
         rejectedCandidateCount: rejectedCandidates.length,
         rejectedCandidates,
         actionAuthorityGranted: false,
@@ -274,6 +275,7 @@ function selectVerifiedPredecessor({ candidates = [] } = {}) {
     selectedCorpusDigest: null,
     selectedEntryCount: 0,
     selectedContinuityDigest: null,
+    selectedEvidenceProofDigest: null,
     rejectedCandidateCount: rejectedCandidates.length,
     rejectedCandidates,
     actionAuthorityGranted: false,
@@ -306,6 +308,7 @@ function verifySelectionReceipt(receipt) {
       && HEX64.test(String(receipt.selectedSnapshotSha256 || ''))
       && HEX64.test(String(receipt.selectedCorpusDigest || ''))
       && HEX64.test(String(receipt.selectedContinuityDigest || ''))
+      && HEX64.test(String(receipt.selectedEvidenceProofDigest || ''))
       && Number.isSafeInteger(receipt.selectedEntryCount) && receipt.selectedEntryCount > 0;
   }
   return new Set([
@@ -313,7 +316,8 @@ function verifySelectionReceipt(receipt) {
     'BOOTSTRAP_NO_DURABLE_HISTORY',
     'FAIL_CLOSED_DURABLE_HISTORY_UNAUTHENTICATED',
     'FAIL_CLOSED_PRIOR_EVIDENCE_UNAVAILABLE',
-  ]).has(receipt.status);
+  ]).has(receipt.status)
+    && receipt.selectedEvidenceProofDigest === null;
 }
 
 module.exports = {

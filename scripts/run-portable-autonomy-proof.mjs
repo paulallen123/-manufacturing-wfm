@@ -68,6 +68,7 @@ const checks = [
   ['append-only-incident-regression-corpus', 'scripts/validate-incident-regression-corpus.mjs', true],
   ['persistent-incident-regression-corpus-continuity', 'scripts/validate-persistent-incident-corpus.mjs', true],
   ['provider-neutral-prior-corpus-evidence-selection', 'scripts/validate-prior-corpus-evidence-verifier.mjs', true],
+  ['provider-neutral-prior-corpus-selection-adapter', 'scripts/validate-prior-corpus-selection-adapter.mjs', true],
 ];
 
 const results = [];
@@ -245,6 +246,7 @@ const receipt = {
   providerNeutral: true,
   requiresGitHubHostedRunner: false,
   priorCorpusEvidenceContinuityDigestRequired: true,
+  priorCorpusSelectionAdapterRequired: true,
   canonicalTrustAnchorProtected,
   canonicalReleaseEvidenceBound: releaseClaimAllowed,
   releaseBinding,
