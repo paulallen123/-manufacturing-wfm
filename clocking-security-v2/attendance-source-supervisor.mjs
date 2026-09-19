@@ -17,18 +17,39 @@ export class AttendanceSourceSupervisor {
 
   register({tenant,sourceId,provider,site,domain='attendance',supportsBackfill=true,nowMs=Date.now()}){
     if(!tenant||!sourceId||!provider||!site||!Number.isSafeInteger(nowMs)) throw new Error('Valid connector registration required.');
-    this.connectors.set(keyOf(tenant,sourceId),{
+    const k=keyOf(tenant,sourceId);
+    const existing=this.connectors.get(k);
+    if(existing){
+      const same=String(existing.provider)===String(provider)
+        && String(existing.site)===String(site)
+        && String(existing.domain)===String(domain)
+        && existing.supportsBackfill===Boolean(supportsBackfill);
+      if(!same) throw new Error('Attendance source already registered with different configuration; explicit migration required.');
+      // Registration is idempotent, not a reset primitive. Re-registering an active
+      // connector must preserve gaps, continuity windows, replay state and recovery.
+      return this.status({tenant,sourceId,nowMs});
+    }
+    this.connectors.set(k,{
       tenant,sourceId,provider,site,domain,supportsBackfill:Boolean(supportsBackfill),
       registeredAtMs:nowMs,lastHeartbeatMs:null,lastEventObservedMs:null,lastEventReceivedMs:null,
       lastSequence:null,lastProviderEventId:null,duplicates:0,gaps:0,reconnects:0,authExpiresAtMs:null,
-      seen:new Set(),window:{id:null,startMs:null,continuityComplete:true,unrecoverable:false}
+      seen:new Set(),seenWindowIds:new Set(),window:{id:null,startMs:null,continuityComplete:true,unrecoverable:false}
     });
   }
 
   startCertificationWindow({tenant,sourceId,windowId,startMs=Date.now()}){
     const c=this.#get(tenant,sourceId); this.#time(startMs);
-    c.window={id:String(windowId||''),startMs,continuityComplete:true,unrecoverable:false};
-    if(!c.window.id) throw new Error('Certification window ID required.');
+    const id=String(windowId||'');
+    if(!id) throw new Error('Certification window ID required.');
+    if(c.window.id===id){
+      if(c.window.startMs!==startMs) throw new Error('Certification window replay changed its start time.');
+      // Exact replay is idempotent and preserves any continuity failure already
+      // observed for this window. It must never be a way to clear an outage/gap.
+      return this.status({tenant,sourceId,nowMs:startMs});
+    }
+    if(c.seenWindowIds.has(id)) throw new Error('Certification window ID replay requires explicit migration.');
+    c.window={id,startMs,continuityComplete:true,unrecoverable:false};
+    c.seenWindowIds.add(id);
     return this.status({tenant,sourceId,nowMs:startMs});
   }
 
@@ -102,7 +123,7 @@ export class AttendanceSourceSupervisor {
         tenant:c.tenant,sourceId:c.sourceId,provider:c.provider,site:c.site,domain:c.domain,supportsBackfill:c.supportsBackfill,
         registeredAtMs:c.registeredAtMs,lastHeartbeatMs:c.lastHeartbeatMs,lastEventObservedMs:c.lastEventObservedMs,lastEventReceivedMs:c.lastEventReceivedMs,
         lastSequence:c.lastSequence,lastProviderEventId:c.lastProviderEventId,duplicates:c.duplicates,gaps:c.gaps,reconnects:c.reconnects,authExpiresAtMs:c.authExpiresAtMs,
-        seen:[...c.seen],window:{...c.window}
+        seen:[...c.seen],seenWindowIds:[...c.seenWindowIds],window:{...c.window}
       })),
       recovery:this.recovery.map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{})}))
     };
@@ -117,12 +138,14 @@ export class AttendanceSourceSupervisor {
     const next=new Map();
     for(const raw of state.connectors){
       if(!raw?.tenant||!raw?.sourceId||!raw?.provider||!raw?.site) throw new Error('Invalid persisted attendance source connector.');
+      const seenWindowIds=new Set(Array.isArray(raw.seenWindowIds)?raw.seenWindowIds.map(String):[]);
+      if(raw.window?.id) seenWindowIds.add(String(raw.window.id));
       const c={
         tenant:String(raw.tenant),sourceId:String(raw.sourceId),provider:String(raw.provider),site:String(raw.site),domain:String(raw.domain||'attendance'),
         supportsBackfill:Boolean(raw.supportsBackfill),registeredAtMs:raw.registeredAtMs,lastHeartbeatMs:raw.lastHeartbeatMs,
         lastEventObservedMs:raw.lastEventObservedMs,lastEventReceivedMs:raw.lastEventReceivedMs,lastSequence:raw.lastSequence,
         lastProviderEventId:raw.lastProviderEventId,duplicates:Number(raw.duplicates)||0,gaps:Number(raw.gaps)||0,reconnects:Number(raw.reconnects)||0,
-        authExpiresAtMs:raw.authExpiresAtMs,seen:new Set(Array.isArray(raw.seen)?raw.seen.slice(-50_000):[]),
+        authExpiresAtMs:raw.authExpiresAtMs,seen:new Set(Array.isArray(raw.seen)?raw.seen.slice(-50_000):[]),seenWindowIds,
         window:{id:raw.window?.id??null,startMs:raw.window?.startMs??null,continuityComplete:raw.window?.continuityComplete!==false,unrecoverable:raw.window?.unrecoverable===true}
       };
       next.set(keyOf(c.tenant,c.sourceId),c);
