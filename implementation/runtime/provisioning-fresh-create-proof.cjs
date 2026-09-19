@@ -1,6 +1,12 @@
 'use strict';
 
 const { createHash, createHmac, timingSafeEqual } = require('node:crypto');
+const {
+  deriveProvisioningEnvironmentBinding,
+  assertProvisioningEnvironmentBinding
+} = require('./provisioning-environment-binding.cjs');
+
+const FRESH_CREATE_PROOF_SCHEMA_VERSION = 2;
 
 function canonical(value) {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -45,7 +51,7 @@ function proofSubject(record, issuedAt) {
   const plan = record.payload && record.payload.plan;
   const contract = record.payload && record.payload.contract;
   return {
-    schemaVersion: 1,
+    schemaVersion: FRESH_CREATE_PROOF_SCHEMA_VERSION,
     queueKey: requireString(record.queueKey, 'WFM_FRESH_CREATE_QUEUE_KEY_REQUIRED', 'Provisioning queue identity is required.'),
     intentDigest: requireString(record.intentDigest, 'WFM_FRESH_CREATE_INTENT_REQUIRED', 'Provisioning intent digest is required.').toLowerCase(),
     providerRequestId: requireString(record.providerRequestId, 'WFM_FRESH_CREATE_REQUEST_REQUIRED', 'Provider request identity is required.'),
@@ -53,6 +59,7 @@ function proofSubject(record, issuedAt) {
     region: requireString(plan && plan.region, 'WFM_FRESH_CREATE_REGION_REQUIRED', 'Cloud region is required.'),
     tenantId: requireString(contract && contract.tenantId, 'WFM_FRESH_CREATE_TENANT_REQUIRED', 'Tenant identity is required.'),
     generation: Number(record.generation),
+    environmentBinding: deriveProvisioningEnvironmentBinding(record),
     issuedAt: Number(issuedAt)
   };
 }
@@ -98,11 +105,19 @@ function verifyFreshCreateReadback(record, evidence = {}, key, {
   if (canonical(subject) !== canonical(expected)) {
     fail('WFM_FRESH_CREATE_SUBJECT_MISMATCH', 'Fresh-create proof does not match the exact queue item, request, tenant or cloud plan.');
   }
+  const binding = assertProvisioningEnvironmentBinding(record, subject.environmentBinding);
   if (providerRequestId !== expected.providerRequestId) {
     fail('WFM_FRESH_CREATE_REQUEST_MISMATCH', 'Found environment was not created by the sealed provider request.');
   }
   if (String(evidence.provider || '') !== expected.provider || String(evidence.region || '') !== expected.region || String(evidence.tenantId || '') !== expected.tenantId) {
     fail('WFM_FRESH_CREATE_ENVIRONMENT_MISMATCH', 'Found environment does not match the sealed provider, region and tenant.');
+  }
+  if (
+    String(evidence.environmentName || '') !== binding.environmentName ||
+    String(evidence.bindingVersion || '') !== binding.bindingVersion ||
+    String(evidence.bindingDigest || '').toLowerCase() !== binding.bindingDigest
+  ) {
+    fail('WFM_FRESH_CREATE_ENVIRONMENT_BINDING_MISMATCH', 'Found environment does not match the cryptographically sealed environment identity.');
   }
 
   const nowMs = Number(now());
@@ -118,6 +133,8 @@ function verifyFreshCreateReadback(record, evidence = {}, key, {
     status: 'FOUND',
     providerResourceId,
     providerRequestId,
+    environmentName: binding.environmentName,
+    bindingDigest: binding.bindingDigest,
     proofDigest: sha256(proof)
   };
 }
@@ -136,6 +153,7 @@ async function recordFreshCreateReconciliation(outbox, queueKey, evidence, key, 
 }
 
 module.exports = {
+  FRESH_CREATE_PROOF_SCHEMA_VERSION,
   createFreshCreateProof,
   verifyFreshCreateReadback,
   recordFreshCreateReconciliation,
