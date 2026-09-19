@@ -1,0 +1,57 @@
+{
+  "programme": "Manufacturing WFM 24-hour sell-readiness",
+  "date": "2026-09-19",
+  "baseCommit": "9e703d3ae5dcfd6e0dcb79be294e8e8ba9827f40",
+  "status": "REPAIR_CANDIDATE_NOT_PROMOTED",
+  "finding": {
+    "severity": "MATERIAL",
+    "type": "readiness-evidence-integrity",
+    "summary": "The implementation readiness engine accepted PASS evidence for several critical requirement kinds based primarily on status/confidence. Existing strict structural validation covered scenario-validation, test-data-cleanup and live-data-import, but did not require minimum real-cloud/provider/payroll/isolation receipts for tenant-environment, source-systems, historical-replay or security-controls.",
+    "impact": "A trusted internal worker could record high-confidence PASS evidence that did not meet the sell-readiness programme's required evidence standard, potentially allowing READY to overstate what had actually been proven. No evidence was found that this had been used to promote the frozen customer-proof release."
+  },
+  "repair": {
+    "approach": "fail-closed additive wrapper around the exact current core engine",
+    "preservesCoreBlob": "0baf58781a329792b50ebf5e7b91725ffc52543f",
+    "strictEvidenceKinds": [
+      "tenant-environment",
+      "source-systems",
+      "historical-replay",
+      "security-controls",
+      "scenario-validation",
+      "live-data-import"
+    ],
+    "claimBoundaries": [
+      "fixture-only providers cannot satisfy source-system readiness",
+      "live provider status requires explicit live verification",
+      "historical payroll replay requires an independent calculation and zero unexplained variance",
+      "tenant environment requires non-fixture cloud-runtime provisioning, health and tenant-isolation receipts",
+      "scenario validation requires non-fixture cloud runtime execution",
+      "live import requires an authoritative source receipt"
+    ],
+    "nonPassDiagnosticEvidenceStillAccepted": true,
+    "readinessFlagsChanged": false,
+    "providerClaimsChanged": false,
+    "frozenCustomerProofChanged": false,
+    "railwayResourcesCreated": false
+  },
+  "localVerification": {
+    "contractTests": 5,
+    "passed": 5,
+    "failed": 0,
+    "wrapperSyntax": "PASS",
+    "weakTenantEnvironmentPassRejected": true
+  },
+  "requiredBeforePromotion": [
+    "build the exact repair candidate image",
+    "rerun implementation and regression tests",
+    "rerun T0-T4 autonomy admission",
+    "rerun cloud scale/payroll proof",
+    "rerun Vector-only presentation admission",
+    "deploy only after the combined candidate is green"
+  ],
+  "releaseControl": {
+    "integrationProofSecurityHold": "UNCHANGED",
+    "featureBranchProtection": "UNPROTECTED_AT_TIME_OF_FINDING",
+    "exactCommitDeploymentToHeldIntegrationService": "NOT_ATTEMPTED_BY_BYPASS"
+  }
+}
