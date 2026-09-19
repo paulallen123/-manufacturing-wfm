@@ -39,6 +39,7 @@ const PROTECTED_PATHS = Object.freeze([
   'resilience/t4-containment-controller.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
   'scripts/select-prior-corpus-evidence.mjs',
+  'scripts/hydrate-prior-corpus-github.mjs',
   'scripts/validate-autonomy-source-syntax.mjs',
   'scripts/validate-resilience-scenarios.mjs',
   'scripts/validate-ci-provider-failover.mjs',
