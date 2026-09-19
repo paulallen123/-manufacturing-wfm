@@ -82,7 +82,7 @@ const failedEvidenceReceipt = learnedReceipt({
 });
 const failedEvidenceResult = corpus.record(failedEvidenceReceipt);
 assert.equal(failedEvidenceResult.status, 'APPENDED_MANDATORY_CASE', 'False-green evidence must be preserved as a mandatory regression case.');
-let afterFalseGreen = corpus.snapshot();
+const afterFalseGreen = corpus.snapshot();
 const falseGreenEntry = afterFalseGreen.entries.find((entry) => entry.caseKeyDigest === failedEvidenceResult.caseKeyDigest);
 assert.ok(falseGreenEntry, 'False-green corpus entry must be present.');
 assert.equal(falseGreenEntry.safeTerminalObserved, false, 'Corpus must preserve that safe terminal was not established.');
@@ -124,7 +124,6 @@ const rejectingLoop = createLearningRecordingControlLoop({
   corpus: restored,
 });
 const beforeRejected = restored.snapshot().entryCount;
-assert.throws(() => null, () => true);
 let rejectedCode = null;
 try {
   await rejectingLoop.run({});
