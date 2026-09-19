@@ -29,7 +29,8 @@ try {
       } catch {}
     });
 
-    await page.goto(`${origin}/?vector_home=1`, { waitUntil:'networkidle', timeout:120000 });
+    await page.goto(`${origin}/?vector_home=1`, { waitUntil:'domcontentloaded', timeout:120000 });
+    await page.waitForTimeout(750);
     const login = page.locator('#v2-login');
     assert.equal(await login.count(), 1, `${spec.slug}: fresh context did not fail closed to login`);
     await login.locator('select[name="email"]').selectOption(spec.email);
@@ -80,7 +81,8 @@ try {
     assert.equal(await page.locator('#v2-login').count(), 0, `${spec.slug}: navigation lost authenticated session`);
 
     await page.setViewportSize({width:390,height:844});
-    await page.reload({waitUntil:'networkidle',timeout:120000});
+    await page.reload({waitUntil:'domcontentloaded',timeout:120000});
+    await page.waitForTimeout(750);
     await page.waitForFunction(() => document.body.dataset.vectorUi === 'approved-reference-v1', null, {timeout:15000});
     const mobile = await page.evaluate(() => ({
       width: innerWidth,
