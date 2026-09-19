@@ -192,3 +192,52 @@ test('worker records transient provider failure as retry without exposing respon
   assert.deepEqual(completed.outcome, { status: 'RETRY', errorClass: 'provider-timeout', retryAfterMs: 2500 });
   assert.equal(JSON.stringify(result).includes('secret-looking'), false);
 });
+
+test('provider response time is evaluated at observation completion rather than claim start', async () => {
+  let wall = 1_000_000;
+  const result = await executeProviderProofClaim({
+    claim: claim(),
+    review: review(),
+    target: target(),
+    priorLease: priorLease(),
+    wallClock: () => wall,
+    executeProof: async () => {
+      wall += 10_000;
+      return response(new Date(NOW + 9_000).toISOString());
+    }
+  }, NOW);
+
+  assert.equal(result.status, 'SUCCESS');
+  assert.equal(result.result.verifiedAt, new Date(NOW + 9_000).toISOString());
+});
+
+test('worker never records success after its durable claim lease expired', async () => {
+  let wall = 2_000_000;
+  let completionCalled = false;
+  const leasedClaim = {
+    ...claim(),
+    claimExpiresAt: new Date(NOW + 1_000).toISOString()
+  };
+  const fakeLedger = {
+    claimNext() { return leasedClaim; },
+    complete() {
+      completionCalled = true;
+      throw new Error('stale worker must not complete');
+    }
+  };
+
+  const result = await processNextProviderProofMaintenance({
+    ledger: fakeLedger,
+    workerId: 'proof-worker-1',
+    wallClock: () => wall,
+    loadContext: async () => ({ review: review(), target: target(), priorLease: priorLease() }),
+    executeProof: async () => {
+      wall += 2_000;
+      return response(new Date(NOW + 1_500).toISOString());
+    }
+  }, NOW);
+
+  assert.equal(result.state, 'CLAIM_EXPIRED');
+  assert.equal(result.errorClass, 'maintenance-claim-expired');
+  assert.equal(completionCalled, false);
+});
