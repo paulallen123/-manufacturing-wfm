@@ -1,4 +1,5 @@
 name: One-day enterprise canonical staging release
+# Established feature-branch staging workflow.
 
 on:
   push:
