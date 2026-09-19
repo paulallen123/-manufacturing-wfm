@@ -1,0 +1,145 @@
+name: Evidence - current hosted Vector role browser
+
+on:
+  push:
+    branches:
+      - evidence/24h-sell-readiness-20260919-0700-live-browser
+    paths:
+      - '.github/workflows/evidence-current-hosted-role-browser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hosted-role-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      WFM_ORIGIN: https://wfm-one-day-enterprise-v1-production.up.railway.app
+      EXPECTED_CANDIDATE: 525dc69399c525300d2310fe9d1f7db2a0202910
+      WFM_STAGING_PASSWORD: ${{ secrets.WFM_STAGING_PASSWORD }}
+    steps:
+      - name: Checkout evidence branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Install pinned browser driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/wfm-current-browser"
+          cd "$RUNNER_TEMP/wfm-current-browser"
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund --save-exact playwright@1.63.0 >/dev/null
+
+      - name: Prove hosted authenticated role journeys are read-only and Vector-first
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${WFM_STAGING_PASSWORD:-}" || { echo 'WFM_STAGING_PASSWORD repository secret is unavailable.' >&2; exit 1; }
+          cd "$RUNNER_TEMP/wfm-current-browser"
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const assert = (ok, msg) => { if (!ok) throw new Error(msg); };
+          const origin = process.env.WFM_ORIGIN.replace(/\/$/, '');
+          const password = process.env.WFM_STAGING_PASSWORD;
+          const specs = [
+            { slug:'manager', email:'manager@northstar.example', role:'manager', surface:'/api/time-review' },
+            { slug:'employee', email:'maya@northstar.example', role:'employee', surface:'/api/personal' },
+            { slug:'payroll', email:'payroll@northstar.example', role:'payroll_admin', surface:'/api/payroll-run' },
+            { slug:'superuser', email:'superuser@northstar.example', role:'superuser', surface:'/api/onboarding' },
+          ];
+          const safeNav = ['Home','Time & Attendance','Absence & Leave','Scheduling','Labour Planning','Skills & Training','Compliance','Cost & Productivity','Reports','Integrations','Admin'];
+          function cookiePair(response) {
+            const values = typeof response.headers.getSetCookie === 'function' ? response.headers.getSetCookie() : [response.headers.get('set-cookie')].filter(Boolean);
+            const first = values[0];
+            assert(first, 'login returned no session cookie');
+            const pair = first.split(';', 1)[0];
+            const i = pair.indexOf('=');
+            assert(i > 0, 'malformed session cookie');
+            return { name: pair.slice(0, i), value: pair.slice(i + 1) };
+          }
+          async function api(cookie, path) {
+            return fetch(origin + path, { headers: { Cookie: `${cookie.name}=${cookie.value}`, Accept: 'application/json,text/plain,*/*', Referer: origin + '/' }, signal: AbortSignal.timeout(15000) });
+          }
+          (async()=>{
+            const healthResponse = await fetch(origin + '/api/health', { signal: AbortSignal.timeout(15000) });
+            assert(healthResponse.status === 200, `health HTTP ${healthResponse.status}`);
+            const health = await healthResponse.json();
+            assert(health.status === 'ok', 'health not ok');
+            assert(health.fixtureOnly === true, 'host must remain fixture-only for this proof');
+            assert(health.productionApproved === false, 'host unexpectedly production approved');
+            console.log(`HOST_HEALTH=PASS|fixtureOnly=${health.fixtureOnly}|productionApproved=${health.productionApproved}|release=${health.release||'unspecified'}`);
+
+            const browser = await chromium.launch({ channel:'chrome', headless:true });
+            try {
+              for (const spec of specs) {
+                const login = await fetch(origin + '/api/login', {
+                  method:'POST', headers:{'content-type':'application/json',origin,referer:origin+'/'},
+                  body:JSON.stringify({email:spec.email,password}), signal:AbortSignal.timeout(15000)
+                });
+                assert(login.status === 200, `${spec.slug} login HTTP ${login.status}`);
+                const cookie = cookiePair(login);
+                const boot = await api(cookie, '/api/bootstrap');
+                assert(boot.status === 200, `${spec.slug} bootstrap HTTP ${boot.status}`);
+                const identity = await boot.json();
+                assert(identity.actor?.role === spec.role, `${spec.slug} role mismatch ${identity.actor?.role}`);
+                assert(identity.actor?.tenant === 'northstar-demo', `${spec.slug} tenant mismatch ${identity.actor?.tenant}`);
+                const surface = await api(cookie, spec.surface);
+                assert(surface.status === 200, `${spec.slug} required read-only surface ${spec.surface} HTTP ${surface.status}`);
+
+                const context = await browser.newContext({ viewport:{width:1440,height:900} });
+                await context.addCookies([{ name:cookie.name, value:cookie.value, url:origin, secure:true, httpOnly:true, sameSite:'Lax' }]);
+                const page = await context.newPage();
+                const mutations = [];
+                page.on('request', r => {
+                  try { const u=new URL(r.url()); if(u.origin===origin && u.pathname.startsWith('/api/') && !['GET','HEAD','OPTIONS'].includes(r.method())) mutations.push(`${r.method()} ${u.pathname}`); } catch {}
+                });
+                const response = await page.goto(origin + '/?vector_home=1', { waitUntil:'networkidle', timeout:30000 });
+                assert(response && response.status() === 200, `${spec.slug} entry HTTP ${response?.status()}`);
+                await page.waitForFunction(() => document.body.classList.contains('vector-ui-active'), null, { timeout:15000 });
+                const desktop = await page.evaluate(() => {
+                  const visible = el => !!el && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden' && el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0;
+                  const legacySidebar = document.querySelector('.app > .sidebar:not(.vector-sidebar)');
+                  const legacyTopbar = document.querySelector('.app > .workspace > .topbar, .app > main > .topbar');
+                  const workspace = document.querySelector('.app > .workspace, .app > main');
+                  const stray = workspace ? [...workspace.children].filter(el => !el.classList.contains('vector-topbar') && !el.classList.contains('content') && visible(el)).map(el => el.className || el.tagName) : [];
+                  return { vector:document.body.classList.contains('vector-ui-active'), overflow:document.documentElement.scrollWidth-window.innerWidth, legacySidebarVisible:visible(legacySidebar), legacyTopbarVisible:visible(legacyTopbar), stray };
+                });
+                assert(desktop.vector, `${spec.slug} Vector mode inactive`);
+                assert(desktop.overflow <= 2, `${spec.slug} desktop horizontal overflow ${desktop.overflow}`);
+                assert(!desktop.legacySidebarVisible && !desktop.legacyTopbarVisible, `${spec.slug} legacy chrome visible`);
+                assert(desktop.stray.length === 0, `${spec.slug} stray legacy workspace chrome: ${desktop.stray.join(',')}`);
+
+                let clicked = 0;
+                for (const label of safeNav) {
+                  const item = page.getByText(label, { exact:true }).first();
+                  if (await item.count() && await item.isVisible()) {
+                    await item.click();
+                    await page.waitForTimeout(350);
+                    assert(await page.evaluate(() => document.body.classList.contains('vector-ui-active')), `${spec.slug} lost Vector after ${label}`);
+                    clicked++;
+                    if (clicked >= 2) break;
+                  }
+                }
+                assert(clicked >= 1, `${spec.slug} had no usable Vector navigation action`);
+
+                mutations.length = 0;
+                await page.setViewportSize({width:390,height:844});
+                await page.reload({waitUntil:'networkidle',timeout:30000});
+                await page.waitForFunction(() => document.body.classList.contains('vector-ui-active'), null, {timeout:15000});
+                const mobile = await page.evaluate(() => ({overflow:document.documentElement.scrollWidth-window.innerWidth, vector:document.body.classList.contains('vector-ui-active')}));
+                assert(mobile.vector, `${spec.slug} mobile Vector inactive`);
+                assert(mobile.overflow <= 2, `${spec.slug} mobile horizontal overflow ${mobile.overflow}`);
+                assert(mutations.length === 0, `${spec.slug} browser journey unexpectedly issued mutation requests: ${[...new Set(mutations)].join(', ')}`);
+                console.log(`HOSTED_ROLE_BROWSER=PASS|role=${spec.role}|surface=${spec.surface}:200|desktopOverflow=${desktop.overflow}|mobileOverflow=${mobile.overflow}|navClicks=${clicked}|legacyChrome=hidden|mutations=0`);
+                await context.close();
+              }
+              console.log('HOSTED_AUTHENTICATED_VECTOR_ROLE_JOURNEYS=PASS');
+              console.log('CLAIM_BOUNDARY=fixture-only hosted staging; authenticated read-only journeys for manager, employee, payroll_admin and superuser. No provider-live, customer-production, implementation-complete or payroll-production claim.');
+            } finally { await browser.close(); }
+          })().catch(err => { console.error(err); process.exit(1); });
+          NODE
