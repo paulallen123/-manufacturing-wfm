@@ -1,0 +1,78 @@
+name: Vector browser WebDriver isolated proof
+
+on:
+  push:
+    branches:
+      - 'fix/browser-webdriver-proof-20260919'
+    paths:
+      - '.github/scripts/ux-cycle11-context-webdriver-proof.mjs'
+      - '.github/workflows/browser-webdriver-proof-20260919.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-browser-without-raw-cdp-websocket:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Candidate ancestry and deterministic contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor 3eb58c473846ed26e8b95113d1c1f37e32e7667d HEAD
+          node --check .github/scripts/ux-cycle11-context-browser.mjs
+          node --check .github/scripts/ux-cycle11-context-webdriver-proof.mjs
+          node --check .github/scripts/ux-cycle12-signal-contract.mjs
+          node .github/scripts/ux-cycle12-signal-contract.mjs
+          node --check ux-overlay/ux-reset-cycle11-model.js
+          node --check ux-overlay/ux-reset-cycle11.js
+          node --check ux-overlay/ux-reset-cycle12-model.js
+          node --check ux-overlay/ux-reset-cycle12.js
+          node --check ux-overlay/vector-shell.js
+          node --check ux-overlay/vector-priority-bridge.js
+          echo 'ISOLATED_FIX_EXACT_BASE_ANCESTRY=PASS'
+      - name: ChromeDriver transport and unchanged journey assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          google-chrome --version
+          chromedriver --version
+          timeout 90s node .github/scripts/ux-cycle11-context-webdriver-proof.mjs
+      - name: Docker composition regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false -t wfm-vector-webdriver-proof:r1 .
+          cid="$(docker create wfm-vector-webdriver-proof:r1)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p /tmp/wfm-vector-proof
+          docker cp "$cid:/app/public/value-cockpit-ui.js" /tmp/wfm-vector-proof/value-cockpit-ui.js
+          docker cp "$cid:/app/public/factory-control-ui.css" /tmp/wfm-vector-proof/factory-control-ui.css
+          docker cp "$cid:/app/public/vector-shell.js" /tmp/wfm-vector-proof/vector-shell.js
+          node --check /tmp/wfm-vector-proof/value-cockpit-ui.js
+          node --check /tmp/wfm-vector-proof/vector-shell.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const js=fs.readFileSync('/tmp/wfm-vector-proof/value-cockpit-ui.js','utf8');
+          const css=fs.readFileSync('/tmp/wfm-vector-proof/factory-control-ui.css','utf8');
+          const vector=fs.readFileSync('/tmp/wfm-vector-proof/vector-shell.js','utf8');
+          const jm=js.indexOf('WFM_UX_RESET_CYCLE11_MODEL_BEGIN');
+          const j11=js.indexOf('WFM_UX_RESET_CYCLE11_BEGIN');
+          const j12m=js.indexOf('WFM_UX_RESET_CYCLE12_MODEL_BEGIN');
+          const j12=js.indexOf('WFM_UX_RESET_CYCLE12_BEGIN');
+          const c11=css.indexOf('WFM_UX_RESET_CYCLE11_BEGIN');
+          const c12=css.indexOf('WFM_UX_RESET_CYCLE12_BEGIN');
+          const cv=css.indexOf('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1');
+          const cb=css.indexOf('VECTOR_PRIORITY_BRIDGE_V1');
+          if(!(jm>=0&&j11>jm&&j12m>j11&&j12>j12m&&c11>=0&&c12>c11&&cv>c12&&cb>cv)) throw new Error('Role-first priority/Vector composition order invalid');
+          if(!vector.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!vector.includes('VECTOR_PRIORITY_BRIDGE_V1')||!vector.includes('VectorPriorityBridge')) throw new Error('Approved Vector shell or priority bridge missing');
+          console.log('VECTOR_GOVERNED_PRIORITY_ASSET_COMPOSITION=PASS');
+          NODE
+          grep -q '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d' Dockerfile
+          if grep -Eq '^(COPY|ADD).*server\.cjs|^RUN .*server\.cjs' Dockerfile; then echo '::error::UX composition must not replace sealed server logic'; exit 1; fi
+          echo 'BASE_RUNTIME_ARTIFACT_AND_SERVER_CONTRACT_UNCHANGED=PASS'
