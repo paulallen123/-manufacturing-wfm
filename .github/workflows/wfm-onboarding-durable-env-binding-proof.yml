@@ -1,0 +1,31 @@
+name: WFM onboarding durable environment binding proof
+
+on:
+  push:
+    branches:
+      - 'autonomy/onboarding-durable-env-binding-*'
+
+permissions:
+  contents: read
+
+jobs:
+  durable-environment-binding-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact branch revision
+        uses: actions/checkout@3d3c42f3688c8f0e1800f0d0631c3f2176c99899 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762f8f4c0aaf3d5b022f70e3ca9f45f0e83d6 # v7.0.0
+        with:
+          node-version: '22.23.2'
+      - name: Prove durable environment binding and crash recovery
+        shell: bash
+        run: >-
+          node --test
+          implementation/runtime/provisioning-environment-binding.test.cjs
+          implementation/runtime/railway-readonly-environment-adapter.test.cjs
+          implementation/runtime/provisioning-crash-restart-integration.test.cjs
