@@ -1,52 +1,59 @@
-# WFM UX scorecard — Cycle 12 r4
+# WFM UX scorecard — Cycle 12 r5
 
 ## Journey reviewed
-Specialist/system priority → governed Cycle 12 provider contract → shared Cycle 11 Decision Card → owning source workflow.
+Authoritative Integration Fabric state → Cycle 12 `integrations` provider → shared Cycle 11 Decision Card → existing Integrations workflow → shared return context.
+
+## New-UI lineage confirmation
+All design and implementation work remained on canonical Cycle 12 PR #90 (`ux/cycle12-unified-operating-experience-20260918-r1`). No legacy/0.6.139 presentation surface, customer-proof environment, staging service or production service was changed.
 
 ## Reuse / duplicate check
-- Work remained on the canonical Cycle 12 successor branch; no legacy/0.6.139 presentation surface was changed.
-- Reused the existing Cycle 12 provider registry/model, Cycle 11 Decision Card/navigation grammar, and the existing Cycle 12 signal-contract regression.
-- No new page, drawer, route, card renderer, approval flow, write path, or test harness was created.
-- The previous specialist return-context primitive remains the single return lifecycle.
+- Reused the existing Cycle 12 provider registry, route binding, Cycle 11 ranking/Decision Card/navigation/return-context primitives and existing signal-contract regression.
+- Reused the existing implementation read-only status adapter pattern by extracting one shared `refreshSource()` poller rather than adding a second polling implementation.
+- Inspected the existing Autonomous Integration Fabric only as authoritative source behaviour. Its manager-safe `GET /api/integrations/autonomous/status` contract is reused; no UX was added to or modified on that separate branch.
+- No new page, drawer, route, card renderer, queue, approval flow, write path, API calculation or test harness was created.
 
 ## Research delta
-No external competitor or generic UX research was repeated. The unresolved question was internal and directly observable in the current contract: a registered provider could supply an arbitrary `route`, allowing a card to retain a trusted source label while navigating to an unrelated workflow. Existing source-ownership principles were sufficient to decide the change.
+No competitor or generic UX research was repeated. The unresolved question was whether a real authoritative integration source already existed. Repository inspection confirmed the Autonomous Integration Fabric exposes a signed-in manager status contract containing connection state, health/sync evidence, source identity and reconciliation summary. That changed the decision from placeholder/provider-only design to a bounded read-only adapter.
 
 ## Hypothesis
-If provider identity and destination route are bound by one governed contract, users cannot be shown a Payroll, Attendance, Integration or other source-bound priority that silently navigates to a different domain. This should improve predictability and explainability without adding interface density or moving write authority into the presentation layer.
+If only actionable authoritative integration states are surfaced through the existing universal action grammar, managers can find authorization and recovery work without hunting through setup screens, while ACTIVE/VALIDATING connections stay calm and a DEGRADED state cannot manufacture urgency when freshness is not contractually proven.
 
 ## Exact implementation delta
-- Added an explicit `allowedRoutes` contract to every existing Cycle 12 provider.
-- Added one shared `sourceRoute()` normaliser that accepts a requested route only when it is in that provider's registered allow-list; otherwise it falls back to the provider's existing default route.
-- Preserved all current provider destinations exactly: Implementation/Learning → Onboarding, Integrations → Integrations, Attendance → Attendance, Agency → Temporary, Manufacturing cost → Costs, Energy → Insights, Support/Documents → Support, Handover → Handover, Payroll → Payroll run.
-- Provider source identity remains bound by registration; signal payloads can no longer create cross-domain navigation while retaining a different trusted source label.
-- No server-side permission, payroll, attendance, implementation, approval, tenant, audit or source-write logic changed.
-- Extended the existing Cycle 12 contract regression with a spoofed Payroll → Leave route case and a valid explicit Attendance route case; no second harness was created.
+- Added one `integrationSignals(status)` mapper to the existing Cycle 12 model.
+- `AUTHORIZATION_REQUIRED` becomes a current, mandatory, neutral `NEEDS_REVIEW` action to the existing Integrations workflow.
+- `REAUTH_REQUIRED` becomes a current, mandatory `INTEGRATION_DEGRADED` recovery action to the existing Integrations workflow.
+- `DEGRADED` becomes an Integration review action but remains `unknown`/`missing` evidence because the source contract does not expose a confirmation-freshness SLA; Cycle 11 therefore caps it to neutral review rather than an urgent blocker.
+- `ACTIVE` and `VALIDATING` produce no action card, preserving calm-by-default behaviour.
+- Generalised the existing implementation status fetch into one reusable `refreshSource()` poller and bound `/api/integrations/autonomous/status` through the same cache/fail-closed path. 401/403/404/non-OK/network absence remains silent rather than inventing status.
+- Registered `integrations` on the existing unified signal surface and exposed a manual refresh through the existing `WFMUXSignals` object.
+- No integration write authority, credential handling, connection state transition, reconciliation, payroll/attendance logic, permissions, audit or tenant logic moved into presentation.
 
 ## Focused validation
-- `node --check` passed for the revised Cycle 12 model.
-- `node --check` passed for the extended existing Cycle 12 signal-contract script.
-- Focused VM contract check passed: a Payroll signal requesting `leave` was normalised back to `payroll-run`, an authorised Attendance route remained `attendance`, and an unknown provider remained rejected: `UX12_PROVIDER_ROUTE_BINDING=PASS`.
-- The complete repository gate/composed-browser path remains unverified until hosted execution is available on the exact changed head.
+- Updated Cycle 12 model syntax check passed locally.
+- Shared source-poller syntax check passed locally: `UX12_SOURCE_POLLER_SYNTAX=PASS`.
+- Focused integration fixture passed: `UX12_INTEGRATION_SOURCE_BINDING_FOCUSED=PASS`.
+- The extended existing contract covers AUTHORIZATION_REQUIRED, REAUTH_REQUIRED, DEGRADED, ACTIVE and VALIDATING; it asserts the first three are the only surfaced actions, all stay source-routed to Integrations, and DEGRADED cannot present current evidence without an authoritative freshness contract.
+- The exact changed code head produced no GitHub workflow run when checked once, so hosted/composed-browser/accessibility proof is not claimed green and the unchanged execution blocker was not retried.
 
 ## UX scorecard impact
-- Calm by default: unchanged; no additional visible control or navigation was added.
-- Dense on demand: unchanged; the same shared cards and owning workflows remain in use.
-- Explainability: improved; source label and destination can no longer disagree through provider-supplied route data.
-- Navigation predictability: improved structurally; each provider now has an explicit source-owned route contract.
-- Accessibility: unchanged in presentation; no new focus surface was introduced.
-- Development efficiency: improved; routing governance lives once in the provider normaliser and is protected by the existing contract test.
-- Capability preservation: green by design; existing provider routes and all authoritative workflow controls are preserved.
+- Calm by default: improved — ACTIVE/VALIDATING connections remain absent from the action queue.
+- Dense on demand: unchanged — detail stays in the existing Integrations workflow.
+- Explainability: improved — source state, authority and route are explicit and source-bound.
+- Decision safety: improved — DEGRADED cannot become urgent from a stale/unspecified health timestamp.
+- Navigation predictability: unchanged/green — all integration actions use the existing route and return lifecycle.
+- Accessibility/responsive: no new visible primitive; full browser/screen-reader proof remains pending.
+- Development efficiency: improved — one shared source poller now serves implementation and integrations.
+- Capability preservation: green by design — no source workflow or write capability was removed or duplicated.
 
 ## Serious-idea decisions
-- Guess a specialist in-workflow focus selector without authoritative evidence: **REJECT** — no verified stable source-specific target was found.
-- Let registered provider payloads choose any product route: **REJECT** — source/navigation mismatch and cross-domain drift risk.
-- Bind destination routes to the existing provider contract: **BUILD NOW — completed**.
-- Create a separate routing layer for specialist queues: **REJECT** — duplicates the provider and Cycle 11 navigation contracts.
-- Repeat generic competitor research this run: **REJECT** — it would not change the source-governance decision.
+- Build a separate integration dashboard/queue: **REJECT** — duplicates the role-first action surface.
+- Treat every non-ACTIVE state as urgent: **REJECT** — would manufacture consequence without freshness/authority evidence.
+- Bind the existing manager-safe Integration Fabric status contract read-only: **BUILD NOW — completed**.
+- Surface ACTIVE/VALIDATING receipts every cycle: **REJECT** — unnecessary density with no decision required.
+- Invent an integration confirmation SLA: **REJECT** — source contract does not provide one.
 
 ## Still unverified
-Full existing Cycle 12 contract/gate execution on the exact head, sealed-runtime composed-browser behaviour, screen-reader/mobile/tablet specialist round trips, a verified source-specific in-workflow target for the next specialist domain, and Cycle 10 exact source-bound hosted promotion proof.
+Sealed-runtime composed-browser behaviour on the exact changed head, mobile/tablet/screen-reader rendering of real Integration Fabric data, real authenticated source round-trip on a safely composed development candidate, and Cycle 10 exact source-bound hosted promotion proof.
 
 ## Single next highest-value action
-Run the existing Cycle 12 contract/gate on the exact head if infrastructure executes it. If hosted execution remains unavailable, inspect the first real next provider adapter (prefer Integrations or Attendance) and wire it only from authoritative structured source state with verified permissions and evidence; reuse the same provider/Decision Card/return contracts and do not create another UI path.
+Inspect the authoritative Attendance source contract already owned by the new-platform engineering line. If it exposes manager-safe structured coverage/certification exceptions, bind only those exceptions through the existing `attendance` provider and the same shared source-poller/Decision Card/return lifecycle. If it does not, do not invent an adapter; advance the next verified provider instead.
