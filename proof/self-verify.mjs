@@ -69,7 +69,7 @@ assert.equal(health.body?.productionApproved, false, 'Self-verification must not
 assert.equal(health.body?.pilotReady, false, 'Self-verification must not run on a pilot-ready candidate.');
 
 const unauth = await request('/api/bootstrap');
-assert.equal(unauth.response.status, 401, 'Protected bootstrap did not fail closed before login.');
+assert.ok([401, 403].includes(unauth.response.status), `Protected bootstrap did not fail closed before login: HTTP ${unauth.response.status}.`);
 
 const badLogin = await login('manager@northstar.example', `${password}-wrong`);
 assert.ok([401, 403].includes(badLogin.status), `Wrong-password login was not rejected: HTTP ${badLogin.status}.`);
