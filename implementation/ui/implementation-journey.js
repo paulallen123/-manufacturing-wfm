@@ -4,7 +4,7 @@
 const IMPL='/api/implementation/autonomous';
 const INTEGRATIONS='/api/integrations/autonomous';
 const LEARNING='/api/learning/adaptive';
-const VERSION='version-d-1';
+const VERSION='version-d-2';
 const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',timer:null,lastLoad:0};
 const inviteToken=()=>{try{return new URL(window.location.href).searchParams.get('implementation_invite')||'';}catch{return '';}};
 const currentPage=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
@@ -116,6 +116,35 @@ function proposalSummary(proposal){
   const entries=Object.entries(proposal).slice(0,4);
   return entries.map(([key,value])=>String(key).replaceAll('_',' ') + ': ' + (typeof value==='object'?JSON.stringify(value):String(value))).join(' · ');
 }
+function listText(value){return Array.isArray(value)?value.join(', '):'';}
+function scopeFields(scope={}){
+  return '<div class="wfm-ij-scope-grid">'+
+    '<label><span>Company / implementation name</span><input name="companyName" required maxlength="160" value="'+safe(scope.companyName||'')+'" placeholder="e.g. Northstar Manufacturing"></label>'+
+    '<label><span>Employees in scope</span><input name="employeeCount" required type="number" min="1" max="1000000" value="'+safe(scope.employeeCount||'')+'" placeholder="e.g. 10000"></label>'+
+    '<label><span>Countries</span><input name="countries" required value="'+safe(listText(scope.countries))+'" placeholder="United Kingdom, Germany"></label>'+
+    '<label><span>Sites / plants</span><input name="sites" required value="'+safe(listText(scope.sites))+'" placeholder="Tamworth Plant, Birmingham DC"></label>'+
+    '<label><span>Payroll system</span><input name="payrollSystem" value="'+safe(scope.payrollSystem||'')+'" placeholder="Current payroll provider"></label>'+
+    '<label><span>HCM / HR system</span><input name="hcmSystem" value="'+safe(scope.hcmSystem||'')+'" placeholder="Current HCM / HRIS"></label>'+
+    '<label><span>ERP / production system</span><input name="erpSystem" value="'+safe(scope.erpSystem||'')+'" placeholder="SAP, NetSuite, Dynamics…"></label>'+
+    '<label><span>Other source systems</span><input name="sourceSystems" value="'+safe(listText(scope.sourceSystems))+'" placeholder="Access control, MES, agency portal…"></label>'+
+    '<label class="wide"><span>What needs to be live?</span><input name="features" value="'+safe(listText(scope.features))+'" placeholder="Scheduling, time & attendance, absence, payroll output, agency labour…"></label>'+
+    '<label><span>Work / shift patterns</span><input name="workPatterns" value="'+safe(listText(scope.workPatterns))+'" placeholder="24/7 rotation, 4-on-4-off…"></label>'+
+    '<label><span>Clocking methods available</span><input name="clockingMethods" value="'+safe(listText(scope.clockingMethods))+'" placeholder="Access control, mobile, terminals…"></label>'+
+    '<label class="wide"><span>Top implementation priorities</span><textarea name="priorities" maxlength="1000" placeholder="What must this implementation get right?">'+safe(scope.priorities||'')+'</textarea></label>'+
+    '<label class="wide"><span>Anything else we must account for?</span><textarea name="notes" maxlength="2000">'+safe(scope.notes||'')+'</textarea></label>'+
+    '<label class="wide wfm-ij-check"><input name="agencyLabour" type="checkbox" '+(scope.agencyLabour?'checked':'')+'><span>Agency / temporary labour is in scope</span></label>'+
+  '</div>';
+}
+function scopeMarkup(){
+  const scope=S.status?.customerScope||{};
+  if(S.status?.scopeCaptured){
+    return '<section class="wfm-ij-panel wfm-ij-scope captured"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">CONFIGURATION SCOPE · CAPTURED</span><h2>This is what the system is building and proving</h2><p>Your scope is stored against this implementation and is part of the readiness evidence.</p></div><span class="wfm-ij-status ready">Scope confirmed</span></div>'+
+      '<div class="wfm-ij-scope-summary"><span><b>'+Number(scope.employeeCount||0).toLocaleString()+'</b> employees</span><span><b>'+Number(scope.sites?.length||0)+'</b> sites</span><span><b>'+Number(scope.countries?.length||0)+'</b> countries</span><span><b>'+Number(scope.sourceSystems?.length||0)+'</b> source systems</span></div>'+
+      '<details class="wfm-ij-scope-edit"><summary>Review or update configuration scope</summary><form data-ij-scope-form>'+scopeFields(scope)+'<div class="wfm-ij-scope-actions"><p>Changes are audit-recorded. High-risk payroll rules are never silently accepted from this form.</p><button class="btn primary" type="submit">Save updated scope</button></div></form></details></section>';
+  }
+  return '<section class="wfm-ij-panel wfm-ij-scope required"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">STEP 1 · TELL US WHAT TO BUILD</span><h2>Confirm your configuration scope</h2><p>Give the system the operating boundary. It uses connected source data to propose the detailed configuration; ambiguous or high-risk rules come back to you for confirmation.</p></div><span class="wfm-ij-status blocked">Required</span></div>'+
+    '<form data-ij-scope-form>'+scopeFields(scope)+'<div class="wfm-ij-scope-actions"><p>No passwords or API secrets belong here. Payroll rules remain protected until independently reconciled and, where needed, explicitly approved.</p><button class="btn primary" type="submit">Confirm scope and continue</button></div></form></section>';
+}
 function decisionsMarkup(){
   const rows=S.status?.blockingDecisions||[];
   if(!rows.length)return '';
@@ -151,6 +180,7 @@ function liveMarkup(){
   const liveImport=requirement('live-data-import');
   return '<div class="wfm-ij-shell">'+
     '<header class="wfm-ij-header"><div><span class="wfm-ij-kicker">IMPLEMENTATION IN PROGRESS</span><h1>Your implementation</h1><p>One place to see what is happening, what has been proven and what needs you.</p></div><span class="wfm-ij-status '+(state==='READY'?'ready':state==='AT_RISK'||state==='SLA_MISSED'?'blocked':'working')+'">'+safe(stateLabel(state))+'</span></header>'+
+    scopeMarkup()+
     '<section class="wfm-ij-overall"><div class="wfm-ij-overall-top"><div><b>Overall progress</b><span>'+progress+'% · '+Number(S.status?.completedRequirements||0)+' of '+Number(S.status?.totalRequirements||(S.status?.requirements||[]).length)+' controls proven</span></div><strong>'+progress+'%</strong></div><div class="wfm-ij-progress"><span style="width:'+progress+'%"></span></div><div class="wfm-ij-stagebar">'+stageMarkup()+'</div></section>'+
     decisionsMarkup()+
     '<div class="wfm-ij-grid">'+
@@ -218,6 +248,35 @@ async function start(){
     S.invitation=null;await load(true);
   }catch(error){S.error=error.message||'Implementation could not be started.';renderView();}
 }
+async function saveScope(form){
+  const button=form.querySelector('button[type="submit"]');
+  if(button){button.disabled=true;button.textContent='Saving scope…';}
+  const data=new FormData(form);
+  const split=name=>String(data.get(name)||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const payload={
+    companyName:String(data.get('companyName')||'').trim(),
+    employeeCount:Number(data.get('employeeCount')),
+    countries:split('countries'),
+    sites:split('sites'),
+    payrollSystem:String(data.get('payrollSystem')||'').trim(),
+    hcmSystem:String(data.get('hcmSystem')||'').trim(),
+    erpSystem:String(data.get('erpSystem')||'').trim(),
+    sourceSystems:split('sourceSystems'),
+    features:split('features'),
+    workPatterns:split('workPatterns'),
+    clockingMethods:split('clockingMethods'),
+    priorities:String(data.get('priorities')||'').trim(),
+    notes:String(data.get('notes')||'').trim(),
+    agencyLabour:data.get('agencyLabour')==='on'
+  };
+  try{
+    S.status=await request(IMPL+'/scope',{method:'POST',body:JSON.stringify(payload)});
+    renderView();
+  }catch(error){
+    S.error=error.message||'Configuration scope could not be saved.';
+    renderView();
+  }
+}
 async function acceptDecision(key,button){
   if(!S.status?.runId||!key)return;
   if(button){button.disabled=true;button.textContent='Confirming…';}
@@ -242,6 +301,12 @@ function apply(){
   if(content.dataset.wfmImplementationJourney!==VERSION){S.status=null;S.error='';renderView();load(true);}
   else if(!S.loading&&!S.timer)schedule();
 }
+document.addEventListener('submit',event=>{
+  const form=event.target.closest('[data-ij-scope-form]');
+  if(!form)return;
+  event.preventDefault();
+  saveScope(form);
+},true);
 document.addEventListener('click',event=>{
   const startButton=event.target.closest('[data-ij-start]');if(startButton){event.preventDefault();start();return;}
   const refresh=event.target.closest('[data-ij-refresh]');if(refresh){event.preventDefault();S.error='';load(true);return;}
