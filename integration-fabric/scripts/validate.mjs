@@ -10,13 +10,13 @@ const opportunities = JSON.parse(fs.readFileSync(new URL('../opportunity-profile
 assert.equal(catalog.schemaVersion, 1);
 assert.equal(research.schemaVersion, 1);
 assert.equal(opportunities.schemaVersion, 1);
-assert.ok(Array.isArray(catalog.systems) && catalog.systems.length >= 155, 'Expected >=155 effective systems after research overlays.');
+assert.ok(Array.isArray(catalog.systems) && catalog.systems.length >= 161, 'Expected >=161 effective systems after research overlays.');
 assert.ok(Array.isArray(catalog.protocolFamilies) && catalog.protocolFamilies.length >= 22);
 assert.equal(catalog.researchOverlay.newSystems, research.systems.length);
 assert.equal(catalog.researchOverlay.overrides, research.overrides.length);
 assert.ok(Array.isArray(research.sources) && research.sources.includes('systems-research.json'));
 assert.ok(research.sources.some(source => source.startsWith('research-overlays/')), 'Expected at least one composable research overlay.');
-assert.ok(Array.isArray(opportunities.profiles) && opportunities.profiles.length >= 12);
+assert.ok(Array.isArray(opportunities.profiles) && opportunities.profiles.length >= 14);
 assert.ok(opportunities.systemOverrides && typeof opportunities.systemOverrides === 'object');
 
 const allowedMaturity = new Set(catalog.maturityLevels);
@@ -49,7 +49,8 @@ for (const must of [
   'google-cloud-application-integration','azure-service-bus','confluent-cloud',
   'jitterbit-harmony','ifs-ultimo','beckhoff-twincat-opcua','onelogin',
   'axway-b2bi','veeva-vault-quality','ibm-mq','jumpcloud','sap-fieldglass',
-  'siemens-industrial-edge','highbyte-intelligence-hub','tulip','cognite-data-fusion'
+  'siemens-industrial-edge','highbyte-intelligence-hub','tulip','cognite-data-fusion',
+  'oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex'
 ]) assert.ok(ids.has(must), 'Required seed missing: ' + must);
 
 for (const family of ['AMQP','Protobuf RPC/HTTP2','Schema Registry','JSON-2','JMS','Sparkplug B']) {
@@ -81,13 +82,24 @@ assert.ok(byId.get('highbyte-intelligence-hub').protocols.includes('Sparkplug B'
 assert.equal(byId.get('tulip').testLevel,'spec-verified');
 assert.equal(byId.get('cognite-data-fusion').testLevel,'spec-verified');
 assert.equal(byId.get('sap-fieldglass').testLevel,'spec-verified');
+assert.equal(byId.get('sap-business-one').testLevel,'spec-verified');
+assert.ok(byId.get('sap-business-one').protocols.includes('OData'));
+assert.equal(byId.get('microsoft-dynamics-365-business-central').testLevel,'spec-verified');
+assert.equal(byId.get('quickbooks-online').testLevel,'spec-verified');
+assert.equal(byId.get('deputy').testLevel,'spec-verified');
+assert.equal(byId.get('oracle-jd-edwards-enterpriseone').testLevel,'spec-verified');
+assert.equal(byId.get('oracle-ebusiness-suite').testLevel,'spec-verified');
+assert.equal(byId.get('cornerstone-ondemand').testLevel,'spec-verified');
+assert.equal(byId.get('docebo').testLevel,'spec-verified');
+assert.equal(byId.get('moodle').testLevel,'spec-verified');
+assert.equal(byId.get('intelex').testLevel,'spec-verified');
 assert.ok(byId.get('sap-fieldglass').protocols.includes('REST'));
 assert.ok(byId.get('sap-fieldglass').protocols.includes('SCIM'));
 
 for(const id of ['sap-digital-manufacturing','ptc-windchill','aws-iot-sitewise','azure-iot-operations','jumpcloud','ibm-mq','sap-fieldglass']){
   assert.ok(opportunities.systemOverrides[id], 'System-specific value/data review missing: '+id);
 }
-for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion','sap-fieldglass']){
+for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion','sap-fieldglass','sap-business-one','microsoft-dynamics-365-business-central','deputy','sap-successfactors','infor-workforce-management','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex']){
   const review=byId.get(id).valueReview;
   assert.equal(review?.basis,'vendor-docs','Inline vendor value/data review missing vendor-doc basis: '+id);
   assert.ok(Array.isArray(review.customerValue)&&review.customerValue.length>0,'Inline customer value review missing: '+id);
