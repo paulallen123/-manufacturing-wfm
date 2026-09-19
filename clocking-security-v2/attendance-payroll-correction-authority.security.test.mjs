@@ -49,8 +49,8 @@ test('post-hoc mutation of the public correction audit mirror cannot silently ch
   assert.equal(authoritative[0].reasonCode,'CONFIRMED_EXIT');
 });
 
-test('caller cannot replace correction authority maps or dependency bindings after construction',()=>{
-  const {payroll}=setup();
+test('caller cannot replace correction authority maps or swap dependency decision methods after construction',()=>{
+  const {payroll,coverage,certifier}=setup();
   assert.equal(Object.isExtensible(payroll),false);
   assert.throws(()=>{ payroll.coverage={evaluateShift(){return {rows:[],payrollReady:true};}}; },TypeError);
   assert.throws(()=>{ payroll.certifier={certifyShift(){return {certification:{sourceContinuityPeriod:true}};}}; },TypeError);
@@ -58,11 +58,17 @@ test('caller cannot replace correction authority maps or dependency bindings aft
   assert.throws(()=>{ payroll.reviewById=new Map(); },TypeError);
   assert.throws(()=>{ payroll.latestByWorkerShift=new Map(); },TypeError);
 
+  // Even mutating the retained dependency objects cannot swap out the exact decision
+  // functions the payroll gate bound at construction time.
+  coverage.evaluateShift=()=>({rows:[],payrollReady:true,unexpectedCount:0,unmappedSignalCount:0});
+  certifier.certifyShift=()=>({claimLevel:'FORGED',claim:'forged',certification:{sourceContinuityPeriod:false,verifiedPeriodCertified:false}});
+
   const p=project(payroll);
   assert.equal(p.payrollReady,true);
   assert.equal(p.attendanceInputs.length,1);
   assert.equal(p.attendanceInputs[0].outAt,OUT);
   assert.equal(p.attendanceInputs[0].provenance.reviewId,'review-1');
+  assert.equal(p.certification.claimLevel,'NOT_CERTIFIED');
 });
 
 test('an invalidated audit mirror cannot be extended with a new manager correction to regain payroll authority',()=>{
