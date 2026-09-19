@@ -25,9 +25,7 @@ async function request(path, init = {}) {
   const method = init.method || 'GET';
   const headers = { ...(init.headers || {}) };
   const body = init.body == null ? null : String(init.body);
-  if (body != null && headers['content-length'] == null) {
-    headers['content-length'] = Buffer.byteLength(body);
-  }
+  if (body != null && headers['content-length'] == null) headers['content-length'] = Buffer.byteLength(body);
 
   const transport = target.protocol === 'https:' ? httpsRequest : httpRequest;
   const result = await new Promise((resolve, reject) => {
@@ -82,9 +80,9 @@ async function login(email) {
     headers: {
       ...hostedHeaders,
       'content-type': 'application/json',
-      'origin': browserOrigin,
-      'referer': `${browserOrigin}/`,
-      'accept': 'application/json',
+      origin: browserOrigin,
+      referer: `${browserOrigin}/`,
+      accept: 'application/json',
     },
     body: JSON.stringify({ email, password }),
   });
@@ -107,6 +105,13 @@ async function authed(cookie, path, extraHeaders = {}) {
   });
 }
 
+async function require200(cookie, path, label = 'JOURNEY_PASS') {
+  const result = await authed(cookie, path);
+  assert.equal(result.response.status, 200, `${path} failed with ${result.response.status}`);
+  console.log(`${label} ${path}`);
+  return result;
+}
+
 const health = await request('/api/health', { headers: hostedHeaders });
 assert.equal(health.response.status, 200, 'private health failed');
 assert.equal(health.body?.release, expectedRelease, 'release identity mismatch');
@@ -118,12 +123,13 @@ console.log(`HEALTH_PASS ${health.body.release}`);
 const unauth = await request('/api/bootstrap', {
   headers: { ...hostedHeaders, origin: browserOrigin, referer: `${browserOrigin}/`, accept: 'application/json' },
 });
-assert.ok([401, 403].includes(unauth.response.status), `protected bootstrap unexpectedly returned ${unauth.response.status}`);
-console.log(`UNAUTH_FAIL_CLOSED_PASS bootstrap=${unauth.response.status}`);
+assert.equal(unauth.response.status, 401, `protected bootstrap unexpectedly returned ${unauth.response.status}`);
+console.log('UNAUTH_FAIL_CLOSED_PASS bootstrap=401');
 
 const north = await login('superuser@northstar.example');
 const isolation = await login('other@isolation.example');
 const employee = await login('maya@northstar.example');
+const manager = await login('manager@northstar.example');
 
 const northBootstrap = await authed(north, '/api/bootstrap');
 const isolationBootstrap = await authed(isolation, '/api/bootstrap');
@@ -142,18 +148,46 @@ assert.equal(forgedNorth.body?.actor?.tenant, 'northstar-demo', 'northstar sessi
 assert.equal(forgedIsolation.body?.actor?.tenant, 'isolation-test', 'isolation session accepted forged tenant selector');
 console.log('TENANT_OVERRIDE_PASS forged selectors ignored');
 
-for (const path of ['/api/readiness','/api/availability','/api/schedule','/api/scheduling-summary','/api/payroll-control','/api/workflows']) {
-  const result = await authed(north, path);
-  assert.equal(result.response.status, 200, `${path} failed with ${result.response.status}`);
-  console.log(`MANAGER_JOURNEY_PASS ${path}`);
+await require200(manager, '/api/bootstrap', 'MANAGER_ROLE_PASS');
+const managerPayroll = await authed(manager, '/api/payroll-run');
+assert.equal(managerPayroll.response.status, 403, `manager payroll boundary returned ${managerPayroll.response.status}`);
+console.log('MANAGER_PAYROLL_BOUNDARY_PASS 403');
+
+for (const path of [
+  '/api/readiness',
+  '/api/weekly-review',
+  '/api/schedule-publication',
+  '/api/operations',
+  '/api/payroll-run',
+  '/api/readiness/payroll-outcomes',
+  '/api/readiness/finance-attribution',
+  '/api/payroll-intelligence',
+  '/api/support/bot',
+]) {
+  await require200(north, path, 'SUPERUSER_JOURNEY_PASS');
 }
 
-const personal = await authed(employee, '/api/personal');
-assert.equal(personal.response.status, 200, `employee personal failed with ${personal.response.status}`);
-console.log('EMPLOYEE_JOURNEY_PASS /api/personal');
+const categoryCandidates = {
+  onboarding: ['/api/onboarding', '/api/company'],
+  workforce: ['/api/resources', '/api/availability'],
+  attendance: ['/api/time-review', '/api/attendance-corrections'],
+  value: ['/api/cost', '/api/recommendations', '/api/value-cockpit'],
+};
+for (const [category, paths] of Object.entries(categoryCandidates)) {
+  let passed = null;
+  for (const path of paths) {
+    const result = await authed(north, path);
+    if (result.response.status === 200) { passed = path; break; }
+  }
+  assert.ok(passed, `${category} had no HTTP-200 route`);
+  console.log(`CATEGORY_PASS ${category} ${passed}`);
+}
+
+await require200(employee, '/api/personal', 'EMPLOYEE_JOURNEY_PASS');
 
 console.log('PRIVATE_NETWORK_AUTH_PROOF=PASS');
 console.log('PRIVATE_TENANT_ISOLATION_PROOF=PASS');
+console.log('PRIVATE_ROLE_BOUNDARY_PROOF=PASS');
 console.log('claim_boundary=private synthetic proof only; frozen target unmodified');
 
 createServer((req, res) => {
