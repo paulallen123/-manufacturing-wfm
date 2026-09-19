@@ -26,6 +26,20 @@ test('site count upgrades otherwise generic manager to ops scope',()=>{
   assert.equal(normalizeRole({jobTitle:'Manager',siteCount:4}).key,'OPS_MANAGER');
 });
 
+test('authoritative session role cannot be upgraded by client scope hints',()=>{
+  const context={
+    role:'employee',
+    jobTitle:'Regional Operations Director',
+    siteCount:99,
+    siteIds:['site-a','site-b']
+  };
+  assert.equal(normalizeRole(context).key,'EMPLOYEE');
+  const envelope=assistantEnvelope('set a task to review agency spend',context);
+  assert.equal(envelope.role,'EMPLOYEE');
+  assert.equal(envelope.scope,'SELF');
+  assert.deepEqual(envelope.policy,{mode:'BLOCK',reason:'ROLE_NOT_AUTHORISED'});
+});
+
 test('assistant distinguishes report, email, task, automation and widget commands',()=>{
   assert.equal(classifyCommand('create a weekly labour report').intent,'CREATE_REPORT');
   assert.equal(classifyCommand('email this report to me').intent,'EMAIL_REPORT');
