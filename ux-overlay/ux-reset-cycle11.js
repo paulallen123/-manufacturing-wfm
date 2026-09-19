@@ -79,6 +79,7 @@ function signoffSignals(){
  });
 }
 function collectSignals(){return [...timeSignals(),...signoffSignals(),...leaveSignals()];}
+function externalSignals(){try{const rows=window.WFMUXSignals?.list?.();return Array.isArray(rows)?rows:[];}catch{return [];}}
 function tone(item){return item.urgent?'urgent':item.evidenceState==='current'?'normal':'review';}
 function sourceName(source){return ({'time-review':'Time Review','weekly-review':'Weekly Sign-off','absence':'Absence','schedule-publication':'Schedule','today':'Today','automation':'Automation','implementation':'Implementation','integrations':'Integrations','attendance':'Attendance','agency':'Agency labour','manufacturing-cost':'Cost','energy':'Energy','support':'Support','learning':'Learning','handover':'Shift handover','documents':'Documents','payroll':'Payroll'})[source]||source;}
 function stateText(item){return ({action_required:'Action required',decision_sent:'Decision sent',confirming_source:'Confirming source',needs_verification:'Needs verification',resolved:'Resolved'})[item.lifecycle]||'Action required';}
@@ -194,7 +195,7 @@ function restoreFocus(section){
 }
 function apply(){
  try{
-   if(page()==='overview'){if(manager())renderQueue();}
+   if(page()==='overview'){if(manager())renderQueue(externalSignals());}
    else if(returnMarker())addBackLink();
  }catch(e){console.warn('WFM UX cycle 11 skipped:',e);}
 }
