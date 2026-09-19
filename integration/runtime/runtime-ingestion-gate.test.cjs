@@ -3,6 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { reviewConnection, approvalFor } = require('./connection-proof-gate.cjs');
+const { createProviderProofLease } = require('./provider-proof-lifecycle.cjs');
 const { seedAuthorityFence } = require('./source-authority-fence.cjs');
 const { makeApplyIntent, markApplyOutcome } = require('./apply-handoff-ledger.cjs');
 const { makeDurableStageReceipt, validateDurableStageReceipt, gateMappedObservation } = require('./runtime-ingestion-gate.cjs');
@@ -62,6 +63,26 @@ function evidence(review) {
   };
 }
 
+function providerProofLease(review, overrides = {}, options = {}) {
+  return createProviderProofLease(review, {
+    status: 'PASS',
+    reviewedDigest: review.reviewedDigest,
+    providerKey: review.providerKey,
+    targetIdentity: review.targetIdentity,
+    environment: review.environment,
+    observedAt: '2026-09-19T13:40:00.000Z',
+    metadataDigest: 'f'.repeat(64),
+    boundedMetadataOnly: true,
+    containsSensitiveData: false,
+    responseBodyRetained: false,
+    ...overrides
+  }, {
+    maxAgeSeconds: 3600,
+    renewWindowSeconds: 600,
+    ...options
+  }, NOW);
+}
+
 function observation(review, overrides = {}) {
   return {
     capability: 'worker.profile',
@@ -95,6 +116,7 @@ function readyInput(review, cfg, first, next) {
   return {
     currentConfig: cfg,
     activationEvidence: evidence(review),
+    providerProofLease: providerProofLease(review),
     circuitState: closedCircuit(review),
     fence,
     observation: next,
@@ -103,14 +125,44 @@ function readyInput(review, cfg, first, next) {
   };
 }
 
-test('approved closed-circuit observation is ready only after durable staging and idempotent apply intent', () => {
+test('approved closed-circuit observation is ready only after current provider proof, durable staging and idempotent apply intent', () => {
   const cfg = config();
   const review = reviewConnection(cfg);
   const first = observation(review);
   const next = observation(review, { sourceOrdinal: '11', evidenceDigest: 'c'.repeat(64), observedAt: '2026-09-19T13:43:30.000Z' });
   const result = gateMappedObservation(review, readyInput(review, cfg, first, next), NOW);
   assert.equal(result.action, 'READY_TO_APPLY');
+  assert.equal(result.providerProofState, 'CURRENT');
   assert.equal(result.nextFence.sourceOrdinal, '11');
+});
+
+test('missing or expired provider proof pauses business traffic for safe metadata re-proof only', () => {
+  const cfg = config();
+  const review = reviewConnection(cfg);
+  const first = observation(review);
+  const next = observation(review, { sourceOrdinal: '11', evidenceDigest: 'c'.repeat(64), observedAt: '2026-09-19T13:43:30.000Z' });
+  const input = readyInput(review, cfg, first, next);
+
+  const missing = gateMappedObservation(review, { ...input, providerProofLease: null }, NOW);
+  assert.equal(missing.action, 'SAFE_PROBE_ONLY');
+  assert.equal(missing.reason, 'provider-proof-not-current');
+
+  const expired = providerProofLease(review, { observedAt: '2026-09-19T13:00:00.000Z' }, { maxAgeSeconds: 300, renewWindowSeconds: 60 });
+  const stale = gateMappedObservation(review, { ...input, providerProofLease: expired }, NOW);
+  assert.equal(stale.action, 'SAFE_PROBE_ONLY');
+  assert.equal(stale.proofState, 'REPROOF_REQUIRED');
+});
+
+test('proof renewal window does not interrupt business traffic before expiry', () => {
+  const cfg = config();
+  const review = reviewConnection(cfg);
+  const first = observation(review);
+  const next = observation(review, { sourceOrdinal: '11', evidenceDigest: 'c'.repeat(64), observedAt: '2026-09-19T13:43:30.000Z' });
+  const input = readyInput(review, cfg, first, next);
+  const due = providerProofLease(review, { observedAt: '2026-09-19T13:34:30.000Z' }, { maxAgeSeconds: 660, renewWindowSeconds: 600 });
+  const result = gateMappedObservation(review, { ...input, providerProofLease: due }, NOW);
+  assert.equal(result.action, 'READY_TO_APPLY');
+  assert.equal(result.providerProofState, 'REPROOF_DUE');
 });
 
 test('missing or tampered durable stage proof blocks apply', () => {
