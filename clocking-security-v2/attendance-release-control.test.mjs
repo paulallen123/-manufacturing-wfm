@@ -33,6 +33,14 @@ test('missing or skipped mandatory gate blocks promotion',()=>{
   assert(a.blockers.includes('ci'));
 });
 
+test('hosted telemetry continuity is an explicit fail-closed promotion gate',()=>{
+  const gates=greenGates();
+  delete gates.telemetryContinuity;
+  const a=assessAttendanceRelease({candidateSha:SHA,gates,providerProofs:providers()});
+  assert.equal(a.ready,false);
+  assert(a.blockers.includes('telemetryContinuity'));
+});
+
 test('missing or malformed skipped count cannot satisfy a mandatory gate',()=>{
   for(const skipped of [undefined,null,'0']){
     const gates=greenGates();
