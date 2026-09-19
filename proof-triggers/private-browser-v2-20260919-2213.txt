@@ -1,0 +1,1 @@
+Trigger private-origin browser matrix v2. DEVELOPMENT harness only; frozen 0.6.76 candidate unchanged.
