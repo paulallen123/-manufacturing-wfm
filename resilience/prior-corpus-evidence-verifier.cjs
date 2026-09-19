@@ -143,9 +143,13 @@ function verifyCandidateEvidence(candidate) {
       envelopeBindingMatches: envelope?.bindingMatches === true,
       envelopeHeadMatches: String(envelope?.workflowHeadSha || '').toLowerCase() === meta.headSha,
       envelopeBindsPortableBytes: envelope?.portableProofSha256 === sha256(portableRaw),
+      envelopeBindsCorpusDigest: envelope?.incidentRegressionCorpusDigest === snapshot?.corpusDigest,
+      envelopeBindsSnapshotBytes: envelope?.incidentRegressionCorpusSnapshotSha256 === sha256(snapshotRaw),
       portableBindsSnapshotBytes: corpus?.snapshotSha256 === sha256(snapshotRaw),
       corpusDigestMatchesSnapshot: HEX64.test(String(snapshot?.corpusDigest || ''))
         && corpus?.corpusDigest === snapshot?.corpusDigest,
+      corpusEntryCountMatchesSnapshot: Number.isSafeInteger(snapshot?.entryCount)
+        && corpus?.entryCount === snapshot?.entryCount,
       nonEmptySnapshot: Number.isSafeInteger(snapshot?.entryCount) && snapshot.entryCount > 0,
       continuityPass: continuity?.status === 'PASS',
       continuityProofIdentity: continuity?.proof === 'provider-neutral-incident-regression-corpus-continuity',
