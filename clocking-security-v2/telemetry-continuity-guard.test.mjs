@@ -15,18 +15,19 @@ function guard(options={}){
     ...options
   });
 }
-function sign(kind,{stream='http',sequence,canaryId,emittedAtMs,observedAtMs},key=privateKey,trustDomain=TRUST_DOMAIN){
-  return crypto.sign(null,telemetryObserverPayload({trustDomain,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}),key).toString('base64');
+function sign(g,kind,{stream='http',sequence,canaryId,emittedAtMs,observedAtMs},key=privateKey,trustDomain=TRUST_DOMAIN){
+  const {observerSessionId}=g.observerChallenge();
+  return crypto.sign(null,telemetryObserverPayload({trustDomain,observerSessionId,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}),key).toString('base64');
 }
 function heartbeat(g,{stream='http',sequence,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
-  return g.observeHeartbeat({stream,sequence,observedAtMs,receivedAtMs,observerId,signature:sign('heartbeat',{stream,sequence,observedAtMs},key)});
+  return g.observeHeartbeat({stream,sequence,observedAtMs,receivedAtMs,observerId,signature:sign(g,'heartbeat',{stream,sequence,observedAtMs},key)});
 }
 function backfill(g,{stream='http',sequence,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
-  return g.observeBackfillHeartbeat({stream,sequence,observedAtMs,receivedAtMs,observerId,signature:sign('backfill_heartbeat',{stream,sequence,observedAtMs},key)});
+  return g.observeBackfillHeartbeat({stream,sequence,observedAtMs,receivedAtMs,observerId,signature:sign(g,'backfill_heartbeat',{stream,sequence,observedAtMs},key)});
 }
 function canary(g,{canaryId,emittedAtMs,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
   const emitted=emittedAtMs ?? g.canaries.get(canaryId)?.emittedAtMs;
-  return g.observeCanary({canaryId,observedAtMs,receivedAtMs,observerId,signature:sign('canary',{stream:'http',canaryId,emittedAtMs:emitted,observedAtMs},key)});
+  return g.observeCanary({canaryId,observedAtMs,receivedAtMs,observerId,signature:sign(g,'canary',{stream:'http',canaryId,emittedAtMs:emitted,observedAtMs},key)});
 }
 function healthy(options={}){
   const g=guard(options);
@@ -48,10 +49,17 @@ test('guard cannot start without an explicit trust domain and independent observ
   assert.throws(()=>new TelemetryContinuityGuard({trustDomain:TRUST_DOMAIN,trustedObservers:[]}),/trusted telemetry observer/);
 });
 
+test('observer challenge is stable only for the life of one guard instance',()=>{
+  const first=guard();
+  assert.deepEqual(first.observerChallenge(),first.observerChallenge());
+  const second=guard();
+  assert.notEqual(first.observerChallenge().observerSessionId,second.observerChallenge().observerSessionId);
+});
+
 test('unsigned or forged live heartbeat cannot manufacture healthy telemetry',()=>{
   const g=guard();
   assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a'}),/signature/);
-  assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',signature:sign('heartbeat',{sequence:1,observedAtMs:T},rogue.privateKey)}),/signature verification/);
+  assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',signature:sign(g,'heartbeat',{sequence:1,observedAtMs:T},rogue.privateKey)}),/signature verification/);
   const r=g.assess({nowMs:T,requiredStreams:['http']});
   assert.equal(r.releaseEligible,false);
   assert.ok(r.reasons.some(x=>x.code==='MISSING_HEARTBEAT'));
@@ -64,13 +72,13 @@ test('signed evidence cannot cross trust domains or observer stream scopes',()=>
   });
   assert.throws(()=>other.observeHeartbeat({
     stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',
-    signature:sign('heartbeat',{sequence:1,observedAtMs:T})
+    signature:sign(other,'heartbeat',{sequence:1,observedAtMs:T})
   }),/signature verification/);
 
   const g=guard();
   assert.throws(()=>g.observeHeartbeat({
     stream:'other',sequence:1,observedAtMs:T,receivedAtMs:T,observerId:'observer-a',
-    signature:sign('heartbeat',{stream:'other',sequence:1,observedAtMs:T})
+    signature:sign(g,'heartbeat',{stream:'other',sequence:1,observedAtMs:T})
   }),/not authorised/);
 });
 
@@ -78,20 +86,25 @@ test('heartbeat signature cannot be repurposed as canary proof',()=>{
   const g=guard();
   heartbeat(g,{sequence:1,observedAtMs:T});
   g.emitCanary({canaryId:'c1',emittedAtMs:T,stream:'http'});
-  const reused=sign('heartbeat',{sequence:1,observedAtMs:T+1_000});
+  const reused=sign(g,'heartbeat',{sequence:1,observedAtMs:T+1_000});
   assert.throws(()=>g.observeCanary({canaryId:'c1',observedAtMs:T+1_000,receivedAtMs:T+1_000,observerId:'observer-a',signature:reused}),/signature verification/);
 });
 
-test('signed canary proof cannot be replayed after restart against a re-emitted identifier',()=>{
+test('signed heartbeat and canary evidence cannot replay across restart even with reused identifiers and timestamps',()=>{
   const previous=guard();
   previous.emitCanary({canaryId:'restart-canary',emittedAtMs:T,stream:'http'});
+  const oldHeartbeatSignature=sign(previous,'heartbeat',{stream:'http',sequence:1,observedAtMs:T});
   const observedAtMs=T+11_000;
-  const oldSignature=sign('canary',{stream:'http',canaryId:'restart-canary',emittedAtMs:T,observedAtMs});
+  const oldCanarySignature=sign(previous,'canary',{stream:'http',canaryId:'restart-canary',emittedAtMs:T,observedAtMs});
 
   const restarted=guard();
-  restarted.emitCanary({canaryId:'restart-canary',emittedAtMs:T+10_000,stream:'http'});
+  restarted.emitCanary({canaryId:'restart-canary',emittedAtMs:T,stream:'http'});
+  assert.notEqual(previous.observerChallenge().observerSessionId,restarted.observerChallenge().observerSessionId);
+  assert.throws(()=>restarted.observeHeartbeat({
+    stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T+12_000,observerId:'observer-a',signature:oldHeartbeatSignature
+  }),/signature verification/);
   assert.throws(()=>restarted.observeCanary({
-    canaryId:'restart-canary',observedAtMs,receivedAtMs:observedAtMs,observerId:'observer-a',signature:oldSignature
+    canaryId:'restart-canary',observedAtMs,receivedAtMs:observedAtMs,observerId:'observer-a',signature:oldCanarySignature
   }),/signature verification/);
 });
 
@@ -165,13 +178,13 @@ test('backfill cannot invent recovery for a sequence outside an unresolved gap',
 
 test('future heartbeat timestamp poisoning is rejected',()=>{
   const g=guard({maxClockSkewMs:1_000});
-  const signature=sign('heartbeat',{sequence:1,observedAtMs:T+2_001});
+  const signature=sign(g,'heartbeat',{sequence:1,observedAtMs:T+2_001});
   assert.throws(()=>g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T+2_001,receivedAtMs:T,observerId:'observer-a',signature}),/future/);
 });
 
 test('unknown or replayed signed canary evidence is rejected',()=>{
   const g=guard();
-  const unknownSignature=sign('canary',{canaryId:'unknown',emittedAtMs:T,observedAtMs:T});
+  const unknownSignature=sign(g,'canary',{canaryId:'unknown',emittedAtMs:T,observedAtMs:T});
   assert.throws(()=>g.observeCanary({canaryId:'unknown',observedAtMs:T,observerId:'observer-a',signature:unknownSignature}),/Unknown/);
   g.emitCanary({canaryId:'c1',emittedAtMs:T,stream:'http'});
   canary(g,{canaryId:'c1',observedAtMs:T+1});
