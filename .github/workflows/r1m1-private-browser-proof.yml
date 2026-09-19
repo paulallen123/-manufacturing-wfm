@@ -1,0 +1,220 @@
+name: 0.6.76-R1M1 Private Browser Proof
+
+on:
+  push:
+    branches: ['proof/0.6.76-r1m1-private-browser-20260919-0808']
+    paths:
+      - '.github/workflows/r1m1-private-browser-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  private-browser-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout proof-only branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 10
+          persist-credentials: false
+
+      - name: Verify exact immutable candidate lineage
+        shell: bash
+        run: |
+          set -euo pipefail
+          CANDIDATE=f9d63ef202743e3bf930f6895a89b798c02a6b84
+          git cat-file -e "$CANDIDATE^{commit}"
+          test "$(git merge-base "$CANDIDATE" HEAD)" = "$CANDIDATE"
+          printf '%s\n' '.github/workflows/r1m1-private-browser-proof.yml' > /tmp/expected-files
+          git diff --name-only "$CANDIDATE" HEAD | sort > /tmp/actual-files
+          diff -u /tmp/expected-files /tmp/actual-files
+          test "$(git rev-parse "$CANDIDATE:Dockerfile")" = "$(git rev-parse HEAD:Dockerfile)"
+          test "$(git rev-parse "$CANDIDATE:Dockerfile.selfverify")" = "$(git rev-parse HEAD:Dockerfile.selfverify)"
+          test "$(git rev-parse "$CANDIDATE:artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz")" = "$(git rev-parse HEAD:artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz)"
+          echo 'candidate-lineage=PASS'
+
+      - name: Build exact sealed candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz' | sha256sum -c -
+          docker build --pull=false -t wfm-r1-frozen-base .
+          docker build --pull=false --build-arg BASE_IMAGE=wfm-r1-frozen-base -f Dockerfile.selfverify -t wfm-r1m1-private-browser .
+          test "$(docker inspect --format '{{.Config.User}}' wfm-r1m1-private-browser)" = 'node'
+          echo 'candidate-build=PASS'
+
+      - name: Start isolated private HTTPS candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          password='R1M1-Private-Browser-CI-2026-Long!'
+          echo "WFM_TEST_PASSWORD=$password" >> "$GITHUB_ENV"
+          network="wfm-private-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          volume="wfm-private-state-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          echo "WFM_PRIVATE_NETWORK=$network" >> "$GITHUB_ENV"
+          echo "WFM_PRIVATE_VOLUME=$volume" >> "$GITHUB_ENV"
+          docker network create --internal "$network" >/dev/null
+          docker volume create "$volume" >/dev/null
+          docker run --rm --network "$network" --user 0:0 -v "$volume:/state" --entrypoint sh wfm-r1m1-private-browser -ec 'chown 1000:1000 /state && chmod 0700 /state'
+          docker run -d --name wfm-r1m1-private-browser --network "$network" \
+            -p 127.0.0.1:39119:3000 \
+            -v "$volume:/state" \
+            -e PORT=3000 \
+            -e NODE_ENV=staging \
+            -e NODE_OPTIONS=--experimental-sqlite \
+            -e WFM_HOSTED_STAGING=true \
+            -e WFM_PUBLIC_ORIGIN=https://127.0.0.1:8443 \
+            -e WFM_DB=/state/wfm-r1m1.sqlite \
+            -e WFM_STAGING_PASSWORD="$password" \
+            wfm-r1m1-private-browser >/dev/null
+
+          mkdir -p "$RUNNER_TEMP/wfm-private-browser"
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -keyout "$RUNNER_TEMP/wfm-private-browser/key.pem" \
+            -out "$RUNNER_TEMP/wfm-private-browser/cert.pem" \
+            -subj '/CN=127.0.0.1' >/dev/null 2>&1
+          cat > "$RUNNER_TEMP/wfm-private-browser/proxy.mjs" <<'NODE'
+          import https from 'node:https';
+          import http from 'node:http';
+          import fs from 'node:fs';
+          const key=fs.readFileSync(process.env.PROXY_KEY);
+          const cert=fs.readFileSync(process.env.PROXY_CERT);
+          const server=https.createServer({key,cert},(req,res)=>{
+            const headers={...req.headers,host:'127.0.0.1:8443','x-forwarded-proto':'https','x-forwarded-host':'127.0.0.1:8443'};
+            const upstream=http.request({hostname:'127.0.0.1',port:39119,path:req.url,method:req.method,headers},r=>{
+              res.writeHead(r.statusCode||502,r.headers); r.pipe(res);
+            });
+            upstream.on('error',e=>{res.writeHead(502,{'content-type':'text/plain'});res.end(String(e));});
+            req.pipe(upstream);
+          });
+          server.listen(8443,'127.0.0.1',()=>console.log('private-https-proxy=READY'));
+          NODE
+          PROXY_KEY="$RUNNER_TEMP/wfm-private-browser/key.pem" PROXY_CERT="$RUNNER_TEMP/wfm-private-browser/cert.pem" \
+            node "$RUNNER_TEMP/wfm-private-browser/proxy.mjs" > "$RUNNER_TEMP/wfm-private-browser/proxy.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/wfm-private-browser/proxy.pid"
+
+          ready=0
+          for _ in $(seq 1 80); do
+            if curl -ksSf https://127.0.0.1:8443/api/health >/tmp/health.json; then ready=1; break; fi
+            sleep 0.25
+          done
+          test "$ready" = '1'
+          cat /tmp/health.json
+          ss -ltn '( sport = :8443 or sport = :39119 )' | tee "$RUNNER_TEMP/wfm-private-browser/listeners.txt"
+          ! grep -Eq '(^|[[:space:]])(0\.0\.0\.0|\[::\]):(8443|39119)' "$RUNNER_TEMP/wfm-private-browser/listeners.txt"
+          echo 'private-loopback-only=PASS'
+
+      - name: Install pinned browser proof tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/wfm-private-browser"
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund --save-exact playwright@1.63.0 axe-core@4.10.3 >/dev/null
+          google-chrome --version
+
+      - name: Run separate authenticated browser journeys
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/wfm-private-browser"
+          node <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const {chromium}=require('playwright');
+          const axePath=require.resolve('axe-core/axe.min.js');
+          const origin='https://127.0.0.1:8443';
+          const password=process.env.WFM_TEST_PASSWORD;
+          const evidence={schemaVersion:1,candidateCommit:'f9d63ef202743e3bf930f6895a89b798c02a6b84',release:'0.6.76-hosted-staging-rc1',privateSynthetic:true,networkExposure:'loopback-only',https:true,roles:[],responsive:[],accessibility:{},tenantNegative:null,kiosk:null,result:'PASS',errors:[]};
+          function recordError(e){evidence.result='FAIL'; evidence.errors.push(String(e?.stack||e));}
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true});
+            try {
+              async function loginRole(spec,viewport){
+                const context=await browser.newContext({ignoreHTTPSErrors:true,viewport});
+                const page=await context.newPage();
+                const api=[];
+                page.on('response',r=>{try{const u=new URL(r.url());if(u.origin===origin&&u.pathname.startsWith('/api/'))api.push(`${r.request().method()} ${u.pathname} ${r.status()}`);}catch{}});
+                await page.goto(origin,{waitUntil:'networkidle',timeout:30000});
+                const form=page.locator('#v2-login');
+                assert.equal(await form.count(),1,`${spec.slug}: login form missing`);
+                const select=form.locator('select[name="email"]');
+                await select.selectOption({label:spec.email}).catch(async()=>select.selectOption(spec.email));
+                await form.locator('input[name="password"]').fill(password);
+                const loginResponse=page.waitForResponse(r=>r.url()===`${origin}/api/login`&&r.request().method()==='POST',{timeout:15000});
+                await form.locator('button[type="submit"]').click();
+                const lr=await loginResponse;
+                assert.equal(lr.status(),200,`${spec.slug}: login failed`);
+                await page.waitForFunction(()=>!document.querySelector('#v2-login'),null,{timeout:15000});
+                const bootstrap=await page.evaluate(async()=>{const r=await fetch('/api/bootstrap');return {status:r.status,body:await r.json()};});
+                assert.equal(bootstrap.status,200,`${spec.slug}: bootstrap failed`);
+                assert.equal(bootstrap.body?.actor?.tenant,spec.tenant,`${spec.slug}: tenant mismatch`);
+                assert.equal(bootstrap.body?.actor?.role,spec.role,`${spec.slug}: role mismatch`);
+                const payrollStatus=await page.evaluate(async()=>fetch('/api/payroll-run').then(r=>r.status));
+                assert.equal(payrollStatus,spec.payrollStatus,`${spec.slug}: payroll boundary mismatch`);
+                const dims=await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,innerWidth:window.innerWidth,scrollHeight:document.documentElement.scrollHeight,innerHeight:window.innerHeight,title:document.title,lang:document.documentElement.lang}));
+                const overflow=dims.scrollWidth>dims.innerWidth+2;
+                evidence.roles.push({slug:spec.slug,tenant:bootstrap.body.actor.tenant,role:bootstrap.body.actor.role,payrollStatus,api:[...new Set(api)].slice(0,80)});
+                evidence.responsive.push({slug:spec.slug,viewport,overflow,dims});
+                assert.equal(overflow,false,`${spec.slug}: page-level horizontal overflow detected`);
+                await page.addScriptTag({path:axePath});
+                const axe=await page.evaluate(async()=>await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}}));
+                const severe=axe.violations.filter(v=>['critical','serious'].includes(v.impact));
+                evidence.accessibility[spec.slug]={violations:axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length})),seriousOrCritical:severe.length};
+                assert.equal(severe.length,0,`${spec.slug}: serious/critical accessibility violations detected`);
+                return {context,page,bootstrap};
+              }
+
+              const manager=await loginRole({slug:'manager',email:'manager@northstar.example',tenant:'northstar-demo',role:'manager',payrollStatus:403},{width:1440,height:900});
+              await manager.context.close();
+              const employee=await loginRole({slug:'employee',email:'maya@northstar.example',tenant:'northstar-demo',role:'employee',payrollStatus:403},{width:390,height:844});
+              await employee.context.close();
+              const payroll=await loginRole({slug:'payroll',email:'payroll@northstar.example',tenant:'northstar-demo',role:'payroll_admin',payrollStatus:200},{width:1280,height:800});
+              await payroll.context.close();
+              const north=await loginRole({slug:'northstar-admin',email:'superuser@northstar.example',tenant:'northstar-demo',role:'director',payrollStatus:200},{width:1024,height:768});
+              const forged=await north.page.evaluate(async()=>{const r=await fetch('/api/bootstrap?tenant=isolation-test',{headers:{'x-tenant-id':'isolation-test'}});return {status:r.status,body:await r.json()};});
+              evidence.tenantNegative={attemptedTenant:'isolation-test',observedTenant:forged.body?.actor?.tenant,status:forged.status,pass:forged.status===200&&forged.body?.actor?.tenant==='northstar-demo'};
+              assert.equal(evidence.tenantNegative.pass,true,'client-supplied tenant override crossed boundary');
+              await north.context.close();
+              const isolation=await loginRole({slug:'isolation-tenant',email:'other@isolation.example',tenant:'isolation-test',role:'manager',payrollStatus:403},{width:1440,height:900});
+              await isolation.context.close();
+
+              const kioskContext=await browser.newContext({ignoreHTTPSErrors:true,viewport:{width:1024,height:768}});
+              const kiosk=await kioskContext.newPage();
+              const kr=await kiosk.goto(`${origin}/kiosk.html`,{waitUntil:'networkidle',timeout:30000});
+              const kd=await kiosk.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,innerWidth:window.innerWidth,title:document.title}));
+              evidence.kiosk={status:kr?.status(),overflow:kd.scrollWidth>kd.innerWidth+2,title:kd.title};
+              assert.equal(evidence.kiosk.status,200,'kiosk failed to load');
+              assert.equal(evidence.kiosk.overflow,false,'kiosk page-level horizontal overflow detected');
+              await kioskContext.close();
+            } catch(e) { recordError(e); }
+            finally { await browser.close(); }
+            fs.writeFileSync('private-browser-proof.json',JSON.stringify(evidence,null,2));
+            console.log(JSON.stringify(evidence,null,2));
+            if(evidence.result!=='PASS') process.exitCode=1;
+          })().catch(e=>{recordError(e);fs.writeFileSync('private-browser-proof.json',JSON.stringify(evidence,null,2));console.error(e);process.exit(1);});
+          NODE
+
+      - name: Upload private browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wfm-0.6.76-r1m1-private-browser-proof
+          path: |
+            ${{ runner.temp }}/wfm-private-browser/private-browser-proof.json
+            ${{ runner.temp }}/wfm-private-browser/listeners.txt
+            ${{ runner.temp }}/wfm-private-browser/proxy.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Cleanup private proof environment
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          if [ -f "$RUNNER_TEMP/wfm-private-browser/proxy.pid" ]; then kill "$(cat "$RUNNER_TEMP/wfm-private-browser/proxy.pid")" 2>/dev/null; fi
+          docker rm -f wfm-r1m1-private-browser >/dev/null 2>&1
+          docker volume rm "${WFM_PRIVATE_VOLUME:-}" >/dev/null 2>&1
+          docker network rm "${WFM_PRIVATE_NETWORK:-}" >/dev/null 2>&1
