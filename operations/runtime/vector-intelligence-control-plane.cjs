@@ -6,6 +6,7 @@ const {
   normalizeRole,classifyCommand,executionPolicy,assistantEnvelope
 }=require('./vector-intelligence-layer.cjs');
 const {sanitizeSnapshot,createReport,parseCadence}=require('./vector-report-engine.cjs');
+const {providerReady,sendResendReport}=require('./vector-email-delivery.cjs');
 
 const PREFIX='/api/intelligence/vector';
 
@@ -86,6 +87,8 @@ function createVectorIntelligenceControlPlane(options={}){
   const insertAutomation=db.prepare('INSERT INTO vector_automations(id,tenant,owner_email,title,status,source_request_id,detail_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)');
   const insertReport=db.prepare('INSERT INTO vector_reports(id,tenant,owner_email,title,status,source_request_id,detail_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)');
   const insertPreference=db.prepare('INSERT INTO vector_dashboard_preferences(id,tenant,owner_email,kind,status,source_request_id,detail_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)');
+  const updateRequestStatus=db.prepare('UPDATE vector_intelligence_requests SET status=?,updated_at=? WHERE id=? AND tenant=?');
+  const updateReportStatus=db.prepare('UPDATE vector_reports SET status=?,detail_json=?,updated_at=? WHERE id=? AND tenant=?');
   const listTasks=db.prepare('SELECT * FROM vector_tasks WHERE tenant=? ORDER BY created_at DESC LIMIT ?');
   const listAutomations=db.prepare('SELECT * FROM vector_automations WHERE tenant=? ORDER BY created_at DESC LIMIT ?');
   const listReports=db.prepare('SELECT * FROM vector_reports WHERE tenant=? ORDER BY created_at DESC LIMIT ?');
@@ -129,7 +132,7 @@ function createVectorIntelligenceControlPlane(options={}){
       execution:{
         analysisEngine:'CLIENT_ASSISTANT',
         reportEngine:'VECTOR_REPORT_ENGINE_V1',
-        deliveryProviderConfigured:Boolean(process.env.WFM_VECTOR_EMAIL_PROVIDER),
+        deliveryProviderConfigured:providerReady(),
         schedulerConfigured:Boolean(process.env.WFM_VECTOR_AUTOMATION_RUNNER)
       }
     };
@@ -164,9 +167,9 @@ function createVectorIntelligenceControlPlane(options={}){
       const delivery=envelope.command.intent==='EMAIL_REPORT'?'EMAIL':'IN_APP';
       const entityStatus=delivery==='EMAIL'?(process.env.WFM_VECTOR_EMAIL_PROVIDER?'READY_FOR_DELIVERY':'READY_NOT_SENT'):'READY';
       insertReport.run(entityId,common[0],common[1],report.title,entityStatus,common[3],JSON.stringify({
-        request:envelope.command.text,delivery,emailProviderReady:Boolean(process.env.WFM_VECTOR_EMAIL_PROVIDER),report
+        request:envelope.command.text,delivery,emailProviderReady:providerReady(),report
       }),common[4],common[5]);
-      createdEntity={kind:'REPORT',id:entityId,status:entityStatus,delivery,report:{title:report.title,markdown:report.markdown}};
+      createdEntity={kind:'REPORT',id:entityId,status:entityStatus,delivery,report:{title:report.title,markdown:report.markdown,html:report.html}};
     }else if(envelope.command.intent==='CHANGE_WIDGET'||envelope.command.intent==='CHANGE_CHART'){
       const entityId='vpref-'+randomUUID();
       insertPreference.run(entityId,common[0],common[1],envelope.command.intent,
@@ -176,13 +179,50 @@ function createVectorIntelligenceControlPlane(options={}){
     return {id,status,detail,created:createdEntity};
   }
 
+  async function deliverEmailReport(c,persisted){
+    const created=persisted?.created;
+    if(!created||created.kind!=='REPORT'||created.delivery!=='EMAIL')return persisted;
+    if(!providerReady())return persisted;
+    const now=nowIso();
+    try{
+      const delivery=await sendResendReport({
+        token:process.env.WFM_VECTOR_RESEND_TOKEN,
+        from:process.env.WFM_VECTOR_EMAIL_FROM,
+        to:c.email,
+        subject:created.report.title,
+        html:created.report.html,
+        text:created.report.markdown,
+        idempotencyKey:'vector-report/'+created.id
+      });
+      created.status='SENT';
+      created.deliveryResult=delivery;
+      persisted.status='SENT';
+      const row=listReports.all(c.tenant,100).find(x=>x.id===created.id);
+      const detail=row?safeJson(row.detail_json,{}):{};
+      detail.deliveryResult=delivery;
+      updateReportStatus.run('SENT',JSON.stringify(detail),now,created.id,c.tenant);
+      updateRequestStatus.run('SENT',now,persisted.id,c.tenant);
+    }catch(error){
+      created.status='DELIVERY_FAILED';
+      created.deliveryError=compact(error?.message||error,300);
+      persisted.status='DELIVERY_FAILED';
+      const row=listReports.all(c.tenant,100).find(x=>x.id===created.id);
+      const detail=row?safeJson(row.detail_json,{}):{};
+      detail.deliveryError=created.deliveryError;
+      updateReportStatus.run('DELIVERY_FAILED',JSON.stringify(detail),now,created.id,c.tenant);
+      updateRequestStatus.run('DELIVERY_FAILED',now,persisted.id,c.tenant);
+    }
+    return persisted;
+  }
+
   async function command(req,res,c){
     const body=await readJson(req);
     const text=compact(body.text,2000);
     if(!text)return writeJson(res,400,{error:'text is required.'});
     const context=roleContext(c,body);
     const envelope=assistantEnvelope(text,context);
-    const persisted=persistAction(c,envelope,body.snapshot||{});
+    let persisted=persistAction(c,envelope,body.snapshot||{});
+    if(envelope.command.intent==='EMAIL_REPORT')persisted=await deliverEmailReport(c,persisted);
     return writeJson(res,persisted.status==='BLOCKED'?403:202,{
       requestId:persisted.id,
       status:persisted.status,
@@ -198,7 +238,7 @@ function createVectorIntelligenceControlPlane(options={}){
         tasks:true,
         automations:true,
         dashboardPreferences:true,
-        emailDelivery:Boolean(process.env.WFM_VECTOR_EMAIL_PROVIDER)
+        emailDelivery:providerReady()
       }
     });
   }
@@ -215,7 +255,7 @@ function createVectorIntelligenceControlPlane(options={}){
         tasks:true,
         automations:true,
         dashboardPreferences:true,
-        emailDelivery:Boolean(process.env.WFM_VECTOR_EMAIL_PROVIDER),
+        emailDelivery:providerReady(),
         automationRunner:Boolean(process.env.WFM_VECTOR_AUTOMATION_RUNNER)
       }
     });
