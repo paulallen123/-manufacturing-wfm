@@ -218,8 +218,10 @@ export class AttendanceReleaseSwitch {
     this._validUntilMs=null;
     this._lastWallClockMs=Date.now();
     this._failClosedReason=null;
-    this.expectedCandidateSha=expectedCandidateSha;
-    this.evidencePolicy=evidencePolicy;
+    Object.defineProperties(this,{
+      expectedCandidateSha:{value:expectedCandidateSha,enumerable:true,writable:false,configurable:false},
+      evidencePolicy:{value:evidencePolicy,enumerable:false,writable:false,configurable:false}
+    });
     this.audit=[];
   }
 
