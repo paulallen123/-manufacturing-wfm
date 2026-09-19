@@ -5,6 +5,8 @@ import {assessAttendanceRelease,AttendanceReleaseSwitch,REQUIRED_GATES,createAtt
 
 const SHA='7eaf0d83675ca7c28b31bcfcd2146846973f427b';
 const POLICY_ID='attendance-release/test-v1';
+const NOW=Date.now();
+const EXP=NOW+(24*60*60*1000);
 const {publicKey,privateKey}=generateKeyPairSync('ed25519');
 const PUBLIC_KEY_PEM=publicKey.export({type:'spki',format:'pem'});
 const evidencePolicy=createAttendanceReleaseEvidencePolicy({
@@ -26,7 +28,9 @@ function signGate(name,gate){
     candidateSha:String(gate.candidateSha||''),
     evidenceId:String(gate.evidenceId||''),
     passed:gate.passed===true,
-    skipped:gate.skipped
+    skipped:gate.skipped,
+    issuedAtMs:gate.issuedAtMs,
+    expiresAtMs:gate.expiresAtMs
   };
   if(name==='rollbackAuthority'){
     for(const field of ['realExternalAuthority','signedReceipts','commitmentBoundCas','restartRecoveryProven']) payload[field]=gate[field]===true;
@@ -48,7 +52,9 @@ function signProvider(proof){
     passed:proof.passed===true,
     skipped:proof.skipped,
     candidateSha:String(proof.candidateSha||''),
-    evidenceId:String(proof.evidenceId||'')
+    evidenceId:String(proof.evidenceId||''),
+    issuedAtMs:proof.issuedAtMs,
+    expiresAtMs:proof.expiresAtMs
   };
   proof.policyId=POLICY_ID;
   proof.issuerId='test-release-attestor';
@@ -56,7 +62,7 @@ function signProvider(proof){
   return proof;
 }
 function greenGates(){
-  const gates=Object.fromEntries(REQUIRED_GATES.map(name=>[name,{passed:true,skipped:0,candidateSha:SHA,evidenceId:`proof/${name}/001`} ]));
+  const gates=Object.fromEntries(REQUIRED_GATES.map(name=>[name,{passed:true,skipped:0,candidateSha:SHA,evidenceId:`proof/${name}/001`,issuedAtMs:NOW-1000,expiresAtMs:EXP} ]));
   gates.rollbackAuthority={
     ...gates.rollbackAuthority,
     realExternalAuthority:true,
@@ -69,12 +75,12 @@ function greenGates(){
 }
 function providers(){
   return [
-    signProvider({domain:'physical_access',providerSystemId:'salto-nebula:test-tenant',realProvider:true,passed:true,skipped:0,candidateSha:SHA,evidenceId:'provider/access/001'}),
-    signProvider({domain:'network_auth',providerSystemId:'radius:test-site',realProvider:true,passed:true,skipped:0,candidateSha:SHA,evidenceId:'provider/network/001'})
+    signProvider({domain:'physical_access',providerSystemId:'salto-nebula:test-tenant',realProvider:true,passed:true,skipped:0,candidateSha:SHA,evidenceId:'provider/access/001',issuedAtMs:NOW-1000,expiresAtMs:EXP}),
+    signProvider({domain:'network_auth',providerSystemId:'radius:test-site',realProvider:true,passed:true,skipped:0,candidateSha:SHA,evidenceId:'provider/network/001',issuedAtMs:NOW-1000,expiresAtMs:EXP})
   ];
 }
-function assess({gates=greenGates(),providerProofs=providers(),policy=evidencePolicy}={}){
-  return assessAttendanceRelease({candidateSha:SHA,gates,providerProofs,evidencePolicy:policy});
+function assess({gates=greenGates(),providerProofs=providers(),policy=evidencePolicy,nowMs=NOW}={}){
+  return assessAttendanceRelease({candidateSha:SHA,gates,providerProofs,evidencePolicy:policy,nowMs});
 }
 function releaseSwitch({expectedCandidateSha=SHA,policy=evidencePolicy}={}){
   return new AttendanceReleaseSwitch({expectedCandidateSha,evidencePolicy:policy});
@@ -122,6 +128,24 @@ test('evidence proven on another commit cannot green the candidate',()=>{
   assert(a.blockers.includes('durabilityRestart'));
 });
 
+test('expired or future-dated signed gate evidence cannot satisfy release',()=>{
+  const expired=greenGates();
+  expired.deterministic.issuedAtMs=NOW-10_000;
+  expired.deterministic.expiresAtMs=NOW-1;
+  signGate('deterministic',expired.deterministic);
+  let a=assess({gates:expired});
+  assert.equal(a.ready,false);
+  assert(a.blockers.includes('deterministic'));
+
+  const future=greenGates();
+  future.ci.issuedAtMs=NOW+1;
+  future.ci.expiresAtMs=EXP;
+  signGate('ci',future.ci);
+  a=assess({gates:future});
+  assert.equal(a.ready,false);
+  assert(a.blockers.includes('ci'));
+});
+
 test('two distinct real provider domains are mandatory',()=>{
   const p=providers();
   p[1]={...p[1],domain:'physical_access'};
@@ -142,6 +166,16 @@ test('provider-domain aliases, skipped proof, reused system identity or reused e
     assert.equal(a.ready,false);
     assert(a.blockers.includes('twoRealProviderDomains'));
   }
+});
+
+test('expired real-provider proof cannot satisfy the two-domain gate',()=>{
+  const p=providers();
+  p[1].issuedAtMs=NOW-10_000;
+  p[1].expiresAtMs=NOW-1;
+  signProvider(p[1]);
+  const a=assess({providerProofs:p});
+  assert.equal(a.ready,false);
+  assert(a.blockers.includes('twoRealProviderDomains'));
 });
 
 test('caller-constructed gate booleans cannot manufacture a green assessment',()=>{
@@ -184,6 +218,8 @@ test('synthetic or merely signed local rollback proof cannot satisfy the release
     skipped:0,
     candidateSha:SHA,
     evidenceId:'proof/rollbackAuthority/synthetic',
+    issuedAtMs:NOW-1000,
+    expiresAtMs:EXP,
     realExternalAuthority:false,
     signedReceipts:true,
     commitmentBoundCas:true,
@@ -211,9 +247,10 @@ test('all signed gates plus two signed real provider domains allow an explicit e
   const a=assess();
   assert.equal(a.ready,true);
   const control=releaseSwitch();
-  const state=control.reconcile({assessment:a,requestedEnabled:true,actorId:'release-controller'});
+  const state=control.reconcile({assessment:a,requestedEnabled:true,actorId:'release-controller',nowMs:NOW});
   assert.equal(state.enabled,true);
   assert.equal(state.candidateSha,SHA);
+  assert.equal(state.validUntilMs,EXP);
   assert.equal(a.evidencePolicyId,POLICY_ID);
 });
 
@@ -221,7 +258,7 @@ test('release switch rejects a trusted green assessment bound to another candida
   const genuine=assess();
   const wrongCandidateControl=releaseSwitch({expectedCandidateSha:'0'.repeat(40)});
   assert.throws(
-    ()=>wrongCandidateControl.reconcile({assessment:genuine,requestedEnabled:true,actorId:'release-controller'}),
+    ()=>wrongCandidateControl.reconcile({assessment:genuine,requestedEnabled:true,actorId:'release-controller',nowMs:NOW}),
     /bound runtime candidate/
   );
   assert.equal(wrongCandidateControl.state().enabled,false);
@@ -233,7 +270,7 @@ test('release switch rejects a trusted green assessment bound to another candida
   });
   const wrongPolicyControl=releaseSwitch({policy:otherPolicy});
   assert.throws(
-    ()=>wrongPolicyControl.reconcile({assessment:genuine,requestedEnabled:true,actorId:'release-controller'}),
+    ()=>wrongPolicyControl.reconcile({assessment:genuine,requestedEnabled:true,actorId:'release-controller',nowMs:NOW}),
     /bound release policy/
   );
   assert.equal(wrongPolicyControl.state().enabled,false);
@@ -241,24 +278,36 @@ test('release switch rejects a trusted green assessment bound to another candida
 
 test('forged or serialized green assessment cannot bypass mandatory gate evaluation',()=>{
   const control=releaseSwitch();
-  const forged={ready:true,candidateSha:SHA,blockers:[],accepted:{},providerDomains:['physical_access','network_auth']};
-  assert.throws(()=>control.reconcile({assessment:forged,requestedEnabled:true,actorId:'release-controller'}),/Trusted release assessment/);
+  const forged={ready:true,candidateSha:SHA,blockers:[],accepted:{},providerDomains:['physical_access','network_auth'],validUntilMs:EXP};
+  assert.throws(()=>control.reconcile({assessment:forged,requestedEnabled:true,actorId:'release-controller',nowMs:NOW}),/Trusted release assessment/);
 
   const genuine=assess();
   const replayed=JSON.parse(JSON.stringify(genuine));
-  assert.throws(()=>control.reconcile({assessment:replayed,requestedEnabled:true,actorId:'release-controller'}),/Trusted release assessment/);
+  assert.throws(()=>control.reconcile({assessment:replayed,requestedEnabled:true,actorId:'release-controller',nowMs:NOW}),/Trusted release assessment/);
   assert.equal(control.state().enabled,false);
+});
+
+test('a previously trusted green assessment cannot be reused after its signed evidence expires',()=>{
+  const control=releaseSwitch();
+  const green=assess();
+  let state=control.reconcile({assessment:green,requestedEnabled:true,actorId:'release-controller',nowMs:NOW});
+  assert.equal(state.enabled,true);
+  state=control.reconcile({assessment:green,requestedEnabled:true,actorId:'release-controller',nowMs:EXP+1});
+  assert.equal(state.enabled,false);
+  assert.equal(state.audit.action,'rolled_back');
+  assert.equal(state.audit.reason,'evidence-expired');
+  assert.deepEqual(state.audit.blockers,['evidenceExpired']);
 });
 
 test('gate regression immediately fails closed when release control reconciles again',()=>{
   const control=releaseSwitch();
   const green=assess();
-  control.reconcile({assessment:green,requestedEnabled:true,actorId:'release-controller'});
+  control.reconcile({assessment:green,requestedEnabled:true,actorId:'release-controller',nowMs:NOW});
   const gates=greenGates();
   gates.regression.passed=false;
   signGate('regression',gates.regression);
   const red=assess({gates});
-  const state=control.reconcile({assessment:red,requestedEnabled:true,actorId:'release-controller'});
+  const state=control.reconcile({assessment:red,requestedEnabled:true,actorId:'release-controller',nowMs:NOW});
   assert.equal(state.enabled,false);
   assert.equal(state.audit.action,'rolled_back');
 });
@@ -266,7 +315,7 @@ test('gate regression immediately fails closed when release control reconciles a
 test('manual rollback disables immediately without weakening or rewriting gate evidence',()=>{
   const control=releaseSwitch();
   const green=assess();
-  control.reconcile({assessment:green,requestedEnabled:true,actorId:'release-controller'});
+  control.reconcile({assessment:green,requestedEnabled:true,actorId:'release-controller',nowMs:NOW});
   const state=control.rollback({actorId:'release-controller',reason:'operator-request'});
   assert.equal(state.enabled,false);
   assert.equal(state.audit.action,'rolled_back');
