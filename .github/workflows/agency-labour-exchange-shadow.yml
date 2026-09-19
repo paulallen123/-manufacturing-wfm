@@ -16,6 +16,7 @@ on:
       - 'src/frontier/agency-schedule-preflight.mjs'
       - 'src/frontier/agency-schedule-authority-guard.mjs'
       - 'src/frontier/agency-schedule-command-permit.mjs'
+      - 'src/frontier/agency-schedule-ingress-shadow.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
@@ -38,6 +39,7 @@ on:
       - 'test/frontier/agency-schedule-preflight.test.mjs'
       - 'test/frontier/agency-schedule-authority-guard.test.mjs'
       - 'test/frontier/agency-schedule-command-permit.test.mjs'
+      - 'test/frontier/agency-schedule-ingress-shadow.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
@@ -97,6 +99,7 @@ jobs:
               test/frontier/agency-schedule-preflight.test.mjs \
               test/frontier/agency-schedule-authority-guard.test.mjs \
               test/frontier/agency-schedule-command-permit.test.mjs \
+              test/frontier/agency-schedule-ingress-shadow.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
