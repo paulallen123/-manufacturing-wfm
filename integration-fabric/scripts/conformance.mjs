@@ -11,7 +11,12 @@ const p0=catalog.systems.filter(x=>x.priority==='P0');
 const uncovered=p0.filter(x=>!x.protocols.some(p=>matches.has(p)));
 assert.deepEqual(uncovered.map(x=>x.id),[], 'Every P0 system must map to at least one reusable protocol/vendor profile.');
 const uncoveredAll=catalog.systems.filter(x=>!x.protocols.some(p=>matches.has(p)));
-assert.deepEqual(uncoveredAll.map(x=>x.id),[], 'Every catalogued system must map to at least one reusable protocol/vendor profile.');
+for(const system of uncoveredAll){
+  assert.equal(system.testLevel,'discovery-queued','A system without a verified protocol path must remain discovery-queued: '+system.id);
+  assert.equal(system.protocols.length,0,'Unverified interface gaps must not carry guessed protocol labels: '+system.id);
+  assert.ok(String(system.researchStatus||'').includes('interface-unverified'),'A protocol-less system must explicitly declare the external interface unresolved: '+system.id);
+  assert.notEqual(system.priority,'P0','P0 integrations may not remain without a verified reusable route: '+system.id);
+}
 
 const highConfidence=new Set(['tenant-authenticated','read-roundtrip-proven','write-roundtrip-proven','production-certified']);
 for(const s of catalog.systems){
@@ -56,11 +61,14 @@ const intelex=catalog.systems.find(x=>x.id==='intelex');
 assert.ok(intelex.category.includes('ehs'),'Intelex must retain EHS opportunity coverage.');
 const insightsHub=catalog.systems.find(x=>x.id==='siemens-insights-hub');
 assert.equal(insightsHub.testLevel,'spec-verified','Siemens Insights Hub must retain spec-level evidence until an authorised tenant is proven.');
-assert.ok(insightsHub.protocols.includes('REST'),'Siemens Insights Hub must retain its documented REST data path.');
+assert.deepEqual(insightsHub.protocols,['REST'],'Siemens Insights Hub must retain only its evidenced REST integration path.');
 assert.equal(insightsHub.writeEnabled,false,'Siemens Insights Hub writes must remain disabled.');
-const schneider=catalog.systems.find(x=>x.id==='schneider-ecostruxure');
-assert.equal(schneider.testLevel,'discovery-queued','Schneider EcoStruxure must not be promoted until a product-specific external interface is evidenced.');
-assert.ok(schneider.valueReview?.dataGaps?.some(x=>x.includes('public product documentation')),'Schneider EcoStruxure must retain the Resource Advisor external-interface evidence gap.');
+const resourceAdvisor=catalog.systems.find(x=>x.id==='schneider-resource-advisor');
+assert.ok(resourceAdvisor,'Schneider Resource Advisor must remain catalogued as a distinct product integration target.');
+assert.equal(resourceAdvisor.testLevel,'discovery-queued','Resource Advisor must remain discovery-queued until a customer integration interface is evidenced.');
+assert.deepEqual(resourceAdvisor.protocols,[],'Resource Advisor must not inherit generic EcoStruxure/BMS protocols without product-specific evidence.');
+assert.ok(resourceAdvisor.valueReview?.dataGaps?.some(x=>x.includes('public product documentation')),'Resource Advisor must retain the external-interface evidence gap.');
+assert.equal(resourceAdvisor.writeEnabled,false,'Resource Advisor writes must remain disabled.');
 
 console.log(JSON.stringify({
   ok:true,
@@ -68,6 +76,7 @@ console.log(JSON.stringify({
   profiles:protocols.profiles.length,
   uncoveredP0:uncovered.length,
   uncoveredAll:uncoveredAll.length,
+  explicitInterfaceGaps:uncoveredAll.map(x=>x.id),
   ipaasTargets:ipaas.length,
   tenantAuthenticated:catalog.systems.filter(x=>x.testLevel==='tenant-authenticated').length,
   opportunityProfiles:opportunities.profiles.length,
