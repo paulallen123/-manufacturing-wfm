@@ -47,6 +47,8 @@ else {
   if(!vector.includes('VECTOR_REVIEW_NEUTRAL_V1')) violations.push({type:'missing-review-governance',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('VECTOR_PLANNING_NEUTRAL_V1')) violations.push({type:'missing-planning-governance',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('VECTOR_KPI_EVIDENCE_V1')) violations.push({type:'missing-kpi-evidence-governance',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('VECTOR_IDENTITY_SOURCE_BOUND_V1')) violations.push({type:'missing-identity-source-governance',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('VECTOR_LEAVE_SOURCE_BOUND_V1')) violations.push({type:'missing-leave-source-governance',path:'ux-overlay/vector-shell.js'});
   if(vector.includes("tone:i===0?'red':i<3?'amber':'blue'")) violations.push({type:'presentation-inferred-urgency',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes("tone:'blue',action:'Review',status:'Needs review'")) violations.push({type:'review-state-not-neutral',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('Review source evidence before acting.')||!vector.includes('aria-label="Review ${esc(r.title)}"')) violations.push({type:'review-accessibility-contract-missing',path:'ux-overlay/vector-shell.js'});
@@ -56,13 +58,20 @@ else {
   if(!vector.includes("status:'Open source planning',tone:'grey',width:null")) violations.push({type:'planning-state-not-neutral',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('Status and coverage shown only when verified by the source workflow')) violations.push({type:'planning-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('background:none;border-left:0')||!vector.includes('background:#eef1f5;box-shadow:none;color:#43546d')) violations.push({type:'planning-neutral-visual-contract-missing',path:'ux-overlay/vector-shell.js'});
-
   if(vector.includes('progress:cost==null?null:68')) violations.push({type:'labour-cost-progress-invented',path:'ux-overlay/vector-shell.js'});
   if(vector.includes('function sparkline(')||/points:\[[0-9]/.test(vector)) violations.push({type:'synthetic-kpi-trend-present',path:'ux-overlay/vector-shell.js'});
   if(vector.includes("tone:'red',icon:'clock'")||vector.includes("tone:'green',icon:'cost'")) violations.push({type:'kpi-severity-without-structured-status',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes("tone:'blue',icon:'clock'")||!vector.includes("tone:'blue',icon:'cost'")) violations.push({type:'kpi-neutral-tone-contract-missing',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes("label:'Labour cost (today)',detail:cost==null?'Connect verified cost data':'Verified cost total',progress:null")) violations.push({type:'labour-cost-progress-not-neutral',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('data-vector-kpi-evidence="${KPI_MARKER}"')||!vector.includes('Trend graphics are shown only when verified source history is available.')) violations.push({type:'kpi-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
+  if(vector.includes("const displayName=()=> 'Paul Allen'")||vector.includes("const siteName=()=> 'Rugby Plant'")) violations.push({type:'hard-coded-user-or-site-context',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("function sourceIdentity(){try{if(typeof me!=='function')return {}")) violations.push({type:'identity-not-source-bound',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("displayName=()=>sourceIdentity().name||'Signed-in user'")||!vector.includes("siteName=()=>sourceIdentity().site||'Current workspace'")) violations.push({type:'identity-neutral-fallback-missing',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('data-vector-identity="${IDENTITY_MARKER}"')) violations.push({type:'identity-evidence-marker-missing',path:'ux-overlay/vector-shell.js'});
+  if(vector.includes("filter(x=>x.status==='pending')")) violations.push({type:'pending-request-presented-as-upcoming-leave',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("String(r.status||'').toLowerCase()==='approved'")) violations.push({type:'leave-approval-boundary-missing',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('x.date>=start&&x.date<end')) violations.push({type:'leave-seven-day-window-missing',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('Only approved source requests dated within the next seven days are shown.')) violations.push({type:'leave-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
 }
 
 if(violations.length){
@@ -74,3 +83,5 @@ console.log('VECTOR_ONLY_REPOSITORY_GUARD=PASS');
 console.log('VECTOR_NEUTRAL_REVIEW_CONTRACT=PASS');
 console.log('VECTOR_NEUTRAL_PLANNING_CONTRACT=PASS');
 console.log('VECTOR_KPI_EVIDENCE_CONTRACT=PASS');
+console.log('VECTOR_IDENTITY_SOURCE_CONTRACT=PASS');
+console.log('VECTOR_LEAVE_SOURCE_CONTRACT=PASS');
