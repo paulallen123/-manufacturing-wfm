@@ -48,7 +48,15 @@ function verifyShadowEvidence(simulation, verification) {
   if (simulation.customerMutation !== false || simulation.productionMutation !== false || simulation.productionAuthorityGranted !== false || simulation.modelAuthorityGranted !== false || simulation.automaticExecutionEligible !== false || simulation.graduatedAutomaticAction !== false) {
     deny('WFM_T3_AUTH_BOUNDARY', 'Simulation exceeded the non-mutating authority boundary.');
   }
-  if (verification.customerMutation !== false || verification.productionMutation !== false || verification.productionAuthorityGranted !== false || verification.verifierRole !== 'independent-read-only-t3-shadow-verifier') {
+  if (
+    verification.customerMutation !== false ||
+    verification.productionMutation !== false ||
+    verification.productionAuthorityGranted !== false ||
+    verification.modelAuthorityGranted !== false ||
+    verification.executionAuthority !== false ||
+    verification.automaticExecutionEligible !== false ||
+    verification.verifierRole !== 'independent-read-only-t3-shadow-verifier'
+  ) {
     deny('WFM_T3_AUTH_BOUNDARY', 'Verification exceeded the independent non-mutating boundary.');
   }
   if (!policy.allowedActions.includes(simulation.proposedAction)) {
@@ -96,6 +104,9 @@ function verifyShadowEvidence(simulation, verification) {
     customerMutation: false,
     productionMutation: false,
     productionAuthorityGranted: false,
+    modelAuthorityGranted: false,
+    executionAuthority: false,
+    automaticExecutionEligible: false,
   };
   if (verification.verificationDigest !== digest(verificationCore)) deny('WFM_T3_AUTH_VERIFICATION_DIGEST', 'T3 verification digest is invalid.');
   return policy;
