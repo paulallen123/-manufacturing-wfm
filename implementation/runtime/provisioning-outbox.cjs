@@ -53,6 +53,26 @@ function validateIntent(intent, contractReceiptKey) {
     fail('WFM_OUTBOX_UNSAFE_INTENT', 'Provisioning intent is missing sealed scope/build/fresh-isolated plan evidence.', 400);
   }
 
+  const semanticIntent = {
+    schemaVersion: intent.schemaVersion,
+    contract: intent.contract,
+    scope: intent.scope,
+    build: intent.build,
+    plan: intent.plan
+  };
+  if (sha256(semanticIntent) !== intentDigest) {
+    fail('WFM_OUTBOX_INTENT_DIGEST_MISMATCH', 'Contract, scope, build or provisioning plan changed after the launch intent was sealed.', 409);
+  }
+  const expectedQueueKey = 'wfm-provision:v1:' + sha256({
+    provider: intent.contract && intent.contract.provider,
+    contractId: intent.contract && intent.contract.contractId,
+    contractVersion: intent.contract && intent.contract.contractVersion,
+    tenantId: intent.contract && intent.contract.tenantId
+  });
+  if (queueKey !== expectedQueueKey) {
+    fail('WFM_OUTBOX_QUEUE_KEY_MISMATCH', 'Provisioning queue identity does not match the completed contract identity.', 409);
+  }
+
   const evidence = intent.completionEvidence;
   const eventId = requireString(evidence.eventId, 'WFM_OUTBOX_CONTRACT_EVENT_ID_REQUIRED', 'Authenticated contract event id is required.');
   const receiptSha256 = requireString(evidence.receiptSha256, 'WFM_OUTBOX_CONTRACT_RECEIPT_DIGEST_REQUIRED', 'Contract completion receipt digest is required.').toLowerCase();
