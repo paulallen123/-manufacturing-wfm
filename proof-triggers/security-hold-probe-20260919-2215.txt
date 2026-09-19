@@ -1,0 +1,1 @@
+Harmless security containment probe. Expected result: Railway auto-deploy is skipped because the credential-bearing proof harness is held behind an inert watch path. No secrets are accessed by this file.
