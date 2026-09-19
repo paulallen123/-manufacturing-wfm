@@ -1,6 +1,7 @@
 'use strict';
 
 const http = require('node:http');
+const fs = require('node:fs');
 const { createHash, randomBytes, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
@@ -65,6 +66,34 @@ function lifecyclePath(req) {
 
 function stagingAccessPath(req) {
   return requestPath(req) === '/api/staging-access';
+}
+
+function handleVectorAsset(req, res) {
+  if (String(req.method || 'GET').toUpperCase() !== 'GET') return false;
+  const path = requestPath(req);
+  const map = {
+    '/vector-shell.js': ['/app/vector-ui/vector-shell.js', 'text/javascript; charset=utf-8'],
+    '/vector-shell.css': ['/app/vector-ui/vector-shell.css', 'text/css; charset=utf-8']
+  };
+  const item = map[path];
+  if (!item) return false;
+  try {
+    const body = fs.readFileSync(item[0]);
+    res.statusCode = 200;
+    res.setHeader('Content-Type', item[1]);
+    res.setHeader('Cache-Control', 'no-store, max-age=0, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-WFM-UI', 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1');
+    res.end(body);
+  } catch {
+    res.statusCode = 503;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    res.end('Vector UI asset unavailable.');
+  }
+  return true;
 }
 
 function uiPresentationPath(req) {
@@ -285,6 +314,7 @@ http.createServer = function guardedCreateServer(listener) {
 
   return originalCreateServer.call(http, async (req, res) => {
     forceVectorUiFreshness(req, res);
+    if (handleVectorAsset(req, res)) return;
     if (handleStagingAccess(req, res)) return;
     restoreStagingSession(req, res);
 
