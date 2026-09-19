@@ -9,6 +9,18 @@ function sha(value) {
   return createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
 }
 
+function stable(value) {
+  if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function bindingSha(value) {
+  return createHash('sha256').update(stable(value)).digest('hex');
+}
+
 function validDigest(value) {
   return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 }
@@ -80,8 +92,58 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
     incrementalCostZero: true,
   }, 'WFM_CANARY_RECORDER_UNSAFE');
 
+  const componentBinding = Object.freeze({
+    canaryRun: canaryExecutor.run,
+    canaryCapabilities: canaryExecutor.capabilities,
+    rollbackRun: rollbackExecutor.run,
+    rollbackCapabilities: rollbackExecutor.capabilities,
+    attestorVerify: knownGoodAttestor.verify,
+    attestorCapabilities: knownGoodAttestor.capabilities,
+    recorderRecord: outcomeRecorder.record,
+    recorderCapabilities: outcomeRecorder.capabilities,
+    canaryCapabilityDigest: bindingSha(canaryCaps),
+    rollbackCapabilityDigest: bindingSha(rollbackCaps),
+    attestorCapabilityDigest: bindingSha(attestorCaps),
+    recorderCapabilityDigest: bindingSha(recorderCaps),
+  });
+
+  function assertRuntimeComponentBinding() {
+    if (canaryExecutor.run !== componentBinding.canaryRun
+      || canaryExecutor.capabilities !== componentBinding.canaryCapabilities
+      || rollbackExecutor.run !== componentBinding.rollbackRun
+      || rollbackExecutor.capabilities !== componentBinding.rollbackCapabilities
+      || knownGoodAttestor.verify !== componentBinding.attestorVerify
+      || knownGoodAttestor.capabilities !== componentBinding.attestorCapabilities
+      || outcomeRecorder.record !== componentBinding.recorderRecord
+      || outcomeRecorder.capabilities !== componentBinding.recorderCapabilities) {
+      deny('WFM_CANARY_COMPONENT_DRIFT', 'canary/rollback component method identity changed after trust establishment');
+    }
+
+    let currentCanaryCaps;
+    let currentRollbackCaps;
+    let currentAttestorCaps;
+    let currentRecorderCaps;
+    try {
+      currentCanaryCaps = canaryExecutor.capabilities();
+      currentRollbackCaps = rollbackExecutor.capabilities();
+      currentAttestorCaps = knownGoodAttestor.capabilities();
+      currentRecorderCaps = outcomeRecorder.capabilities();
+    } catch {
+      deny('WFM_CANARY_COMPONENT_DRIFT', 'canary/rollback component capability evidence became unreadable');
+    }
+
+    if (bindingSha(currentCanaryCaps) !== componentBinding.canaryCapabilityDigest
+      || bindingSha(currentRollbackCaps) !== componentBinding.rollbackCapabilityDigest
+      || bindingSha(currentAttestorCaps) !== componentBinding.attestorCapabilityDigest
+      || bindingSha(currentRecorderCaps) !== componentBinding.recorderCapabilityDigest) {
+      deny('WFM_CANARY_COMPONENT_DRIFT', 'canary/rollback component capability contract changed after trust establishment');
+    }
+  }
+
   async function record(payload) {
+    assertRuntimeComponentBinding();
     const out = await outcomeRecorder.record(Object.freeze({ ...payload }));
+    assertRuntimeComponentBinding();
     if (!out || !validDigest(out.receiptDigest)) deny('WFM_CANARY_RECORDER_RESULT', 'durable terminal receipt required');
     return out.receiptDigest;
   }
@@ -108,6 +170,7 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
   }
 
   async function rollback(base, canaryEvidenceDigest, reason) {
+    assertRuntimeComponentBinding();
     let result;
     try {
       result = await rollbackExecutor.run(Object.freeze({
@@ -126,7 +189,10 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
         customerMutation: false,
         rollbackExecutorCapabilityDigest: sha(rollbackCaps),
       }));
-    } catch (_error) {
+      assertRuntimeComponentBinding();
+    } catch (error) {
+      if (error?.code === 'WFM_CANARY_COMPONENT_DRIFT') throw error;
+      assertRuntimeComponentBinding();
       return terminal(base, 'contained', 'known-good-rollback-executor-failure', { canaryEvidenceDigest, rollbackVerified: false });
     }
     if (!result || result.status !== 'rolled-back') {
@@ -150,6 +216,7 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
   }
 
   async function run(input = {}) {
+    assertRuntimeComponentBinding();
     const incidentId = safeId(input.incidentId);
     const canaryControllerId = safeId(input.canaryControllerId);
     const rollbackControllerId = safeId(input.rollbackControllerId);
@@ -194,7 +261,10 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
         customerMutation: false,
         attestorCapabilityDigest: sha(attestorCaps),
       }));
-    } catch (_error) {
+      assertRuntimeComponentBinding();
+    } catch (error) {
+      if (error?.code === 'WFM_CANARY_COMPONENT_DRIFT') throw error;
+      assertRuntimeComponentBinding();
       return terminal(base, 'contained', 'known-good-attestation-failure', { canaryStarted: false });
     }
     if (!attestation || attestation.verified !== true || attestation.schemaCompatible !== true || attestation.signatureVerified !== true || attestation.provenanceVerified !== true || !validDigest(attestation.attestationDigest)) {
@@ -222,7 +292,10 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
     let result;
     try {
       result = await canaryExecutor.run(structuredClone(job));
-    } catch (_error) {
+      assertRuntimeComponentBinding();
+    } catch (error) {
+      if (error?.code === 'WFM_CANARY_COMPONENT_DRIFT') throw error;
+      assertRuntimeComponentBinding();
       return rollback(base, sha({ incidentId, reason: 'canary-executor-failure' }), 'canary-executor-failure');
     }
     if (!result || !['healthy', 'unhealthy', 'indeterminate'].includes(result.status)) {
