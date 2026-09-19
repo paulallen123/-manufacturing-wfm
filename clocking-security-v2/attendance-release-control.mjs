@@ -28,6 +28,7 @@ const ROLLBACK_AUTHORITY_REQUIREMENTS=Object.freeze([
 // Keep their provenance in-process and non-serialisable so a forged, stale or
 // JSON-replayed assessment cannot bypass the mandatory gate evaluation path.
 const TRUSTED_ASSESSMENTS=new WeakSet();
+const ASSESSMENT_EVIDENCE_POLICIES=new WeakMap();
 const TRUSTED_EVIDENCE_POLICIES=new WeakSet();
 
 function clone(value){ return JSON.parse(JSON.stringify(value)); }
@@ -176,18 +177,25 @@ export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[]
     evidencePolicyId:evidencePolicy.policyId
   });
   TRUSTED_ASSESSMENTS.add(assessment);
+  ASSESSMENT_EVIDENCE_POLICIES.set(assessment,evidencePolicy);
   return assessment;
 }
 
 export class AttendanceReleaseSwitch {
-  constructor(){
+  constructor({expectedCandidateSha,evidencePolicy}={}){
+    if(!validSha(expectedCandidateSha)) throw new Error('Exact release candidate SHA required.');
+    if(!evidencePolicy || !TRUSTED_EVIDENCE_POLICIES.has(evidencePolicy)) throw new Error('Trusted release evidence policy required.');
     this.enabled=false;
     this.candidateSha=null;
+    this.expectedCandidateSha=expectedCandidateSha;
+    this.evidencePolicy=evidencePolicy;
     this.audit=[];
   }
 
   reconcile({assessment,requestedEnabled=false,actorId='release-controller',reason='gate-reconcile'}={}){
     if(!assessment || typeof assessment.ready!=='boolean' || !validSha(assessment.candidateSha) || !TRUSTED_ASSESSMENTS.has(assessment)) throw new Error('Trusted release assessment required.');
+    if(assessment.candidateSha!==this.expectedCandidateSha) throw new Error('Release assessment candidate does not match the bound runtime candidate.');
+    if(ASSESSMENT_EVIDENCE_POLICIES.get(assessment)!==this.evidencePolicy) throw new Error('Release assessment evidence policy does not match the bound release policy.');
     if(!validEvidenceId(actorId)) throw new Error('Valid release actor required.');
     const shouldEnable=Boolean(requestedEnabled && assessment.ready);
     const action=shouldEnable?'enabled':(this.enabled?'rolled_back':'disabled');
@@ -224,7 +232,7 @@ export class AttendanceReleaseSwitch {
     return clone({enabled:false,candidateSha:null,audit:row});
   }
 
-  state(){ return clone({enabled:this.enabled,candidateSha:this.candidateSha,audit:this.audit}); }
+  state(){ return clone({enabled:this.enabled,candidateSha:this.candidateSha,expectedCandidateSha:this.expectedCandidateSha,evidencePolicyId:this.evidencePolicy.policyId,audit:this.audit}); }
 }
 
 export { REQUIRED_GATES, ROLLBACK_AUTHORITY_REQUIREMENTS };
