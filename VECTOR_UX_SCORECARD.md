@@ -2,72 +2,69 @@
 
 This is the single canonical scorecard for the approved Vector role-first NEW-UI lineage. Historical cycle detail remains in Git history; this file keeps the current evidence boundary, validated deltas and one dependency-ordered next action without repeating old research.
 
-## 2026-09-19 — Vector r10: contract-backed Time Review action consumer
+## 2026-09-19 — Vector r11: source-bound Time Review return context
 
 ### Journey reviewed
-Factory/operations manager Vector Home → `Items to review` / notification count → Time Review. The bounded question was whether the existing Vector action surface could consume the already-built `WFM_WORKFLOW_ACTION_EVIDENCE_V1` bridge without creating a second queue, second lifecycle implementation or presentation-owned freshness/urgency logic.
+Factory/operations manager Vector Home → contract-backed `Items to review` action → authoritative Time Review → return to the originating Home action surface. The bounded question was whether the manager can preserve enough context to move into the source workflow and come back without creating UI-owned business state or optimistically clearing the action.
 
 ### NEW-UI lineage confirmation
-All mutation is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired overlay, staging, production or customer-proof surface was changed.
+All product and test mutation is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired overlay, customer-proof runtime, staging or production presentation was changed.
 
 ### Reuse / duplicate-work decision
-- Reused the existing `structuredReviewRows()`, alert card, notification badge and return-to-Time-Review route.
-- Reused the existing read-only `GET /api/workforce/lifecycle/action-evidence/time-review` bridge and shared `WFM_WORKFLOW_ACTION_EVIDENCE_V1` vocabulary.
-- Extended the existing Vector-only repository guard rather than adding a second test harness.
-- Kept the existing local Time Review summary only as a neutral fail-safe for each open item not covered by an admissible contract record; weekly sign-off and Absence logic were intentionally left unchanged.
-- No competitor/general UX research was repeated because the unresolved dependency was internal source binding, not an interaction-pattern question.
+- Reused the existing Vector `Items to review` alert row, existing route/navigation primitive and existing `WFM_WORKFLOW_ACTION_EVIDENCE_V1` Time Review consumer.
+- Reused and extended the already source-controlled `scripts/current-candidate-role-browser-proof.mjs` instead of creating a new browser harness.
+- Reused existing Vector card/header styling for the return-context control; no one-screen CSS fork or replacement component was created.
+- Did not copy the same browser proof into the historical inline Railway proof service and did not weaken the security-contained `wfm-test-runner` merely to obtain a green result.
+- No competitor/general UX research was repeated because the unresolved dependency was an internal interaction/proof gap, not an unanswered market-pattern question.
 
 ### Hypothesis
-If Vector reads the authoritative Time Review evidence contract once per page session, validates every returned record fail-closed, shows only source-owned confirmation/freshness state and retains every uncovered local open item as neutral review work, managers gain a more explainable action queue without moving authority, SLA or urgency calculation into presentation code or silently hiding consequential work.
+If a contract-backed Time Review action carries only its stable source identity into the authoritative workflow, presents a clear return path, and restores keyboard focus to `Items to review`, managers should spend less effort re-orienting after investigation while the source workflow remains the sole owner of action state, confirmation and resolution.
 
 ### Exact implementation / design delta
-- Vector now performs a same-origin, no-store, GET-only read of `/api/workforce/lifecycle/action-evidence/time-review`; no polling/retry loop was added.
-- Response and item contract version/workflow are validated before use. Stable source ID, structured reason code, observation timestamp, authority, freshness state and confirmation state are required client-side as defence in depth.
-- `current` freshness is accepted only with source policy + valid-until evidence. `decision_sent`, `confirming_source` and `needs_verification` require source decision/SLA evidence; `Needs verification` requires source `slaExpired`; `confirming_source` is rejected if already marked expired. Vector compares none of these timestamps to wall-clock time.
-- `Resolved` requires decision ID, source confirmation time and audit reference and is not shown as work still requiring action.
-- Active contract rows reuse the existing alert component and remain visually neutral. Visible status is the source lifecycle (`Action required`, `Decision sent`, `Confirming source`, `Needs verification`); detail exposes source `whyNow`, source freshness wording and `authorityRequired`.
-- Contract coverage is matched per source ID. Open Time Review items not represented by an admissible active contract record remain visible as neutral `Needs review`; one valid contract item cannot suppress unrelated or incomplete open work.
-- Existing weekly sign-off states and pending Absence requests remain on their previous neutral source-bound paths. No Absence/sign-off contract consumer was built in parallel.
-- When contract evidence arrives after initial render, only the existing review list and notification count are refreshed; the page is not rebuilt.
+- Added one presentation-only same-tab return-context key, `VECTOR_ACTION_RETURN_CONTEXT_V1`. It stores only `workflow`, `route`, stable `sourceId` and bounded display title; it stores no pay, authority, freshness, approval, SLA or resolution state.
+- Only admitted contract-backed Time Review rows receive `sourceId` / `workflow` context attributes. Neutral fallback rows, weekly-signoff summaries and leave requests do not inherit false source identity.
+- Clicking a contract-backed action records that minimal context and navigates through the existing authoritative Time Review route. No write occurs and no action is cleared on navigation.
+- Time Review reuses the existing Vector card/header primitive to show `Back to Items to review` plus the originating title. Invalid, malformed or wrong-route stored context fails closed and is discarded.
+- Returning Home clears the stored context and restores keyboard focus to the existing `.vector-alerts` review region; the action list itself remains source-driven.
+- The existing source-controlled role-browser proof was extended with a manager journey that requires a real active contract item, verifies the rendered action source ID against authoritative evidence, opens Time Review, verifies the source action still exists after opening, returns Home, verifies focus restoration and verifies the context record was cleared.
+- The same proof now asserts that an employee receives `403` from the manager action-evidence endpoint. It will fail rather than manufacture an interaction receipt when no active contract-backed manager item exists.
 
 ### Serious-idea decision
 | Idea | Evidence | Decision |
 | --- | --- | --- |
-| Consume the existing read-only Time Review action-evidence bridge | Bridge and shared producer already exist on the same canonical branch | **BUILD NOW** |
-| Create a new Vector queue/service for Time Review | Would duplicate the existing action surface and source contract | **REJECT** |
-| Calculate freshness, urgency or SLA state in Vector | Violates the source-owned contract boundary | **REJECT** |
-| Suppress all local Time Review fallback as soon as any contract item exists | Could hide unrelated/incomplete consequential work | **REJECT** |
-| Match contract coverage per stable source ID and retain uncovered neutral work | Preserves source trust without silent hiding | **BUILD NOW** |
-| Build Absence/sign-off consumers in the same increment | First end-to-end Time Review path still lacks hosted execution proof | **BUILD NEXT, AFTER PROOF** |
+| Preserve only stable source identity for return context | Existing contract already provides a stable source ID; no business state needs duplication | **BUILD NOW** |
+| Store action lifecycle/freshness/authority in browser context | Would duplicate authoritative source state and risk stale decisions | **REJECT** |
+| Add a new drawer/queue just to preserve context | Existing route, alert list and card primitive are sufficient | **REJECT** |
+| Duplicate the updated proof inside the inline Railway service | Would create two browser-test owners and repeated maintenance | **REJECT** |
+| Prove `Decision sent → Confirming source` with an authoritative fixture transition | Required before claiming the full lifecycle interaction | **BUILD NEXT** |
 
 ### Focused / affected validation
-Final product-code commit for this increment is `88d77befe85fea42b1cf808be64ff183de961d14`; guard commit is `8c1743cc8bd793ac6b56949736e260d6f575ac97`.
+Product-code commit for the return-context delta is `64c6c36cd0b0a4a58b072f730683916498b9b534`; its exact Vector blob is `ccae9be28e65e43ce22b046c30265ba9cacf8ba7`. The existing source-controlled browser proof was then extended at commit `e4837cd3b4f3e40c14918eeafad129caddd24e29`; its exact script blob is `3f9909bc5a5cfac546b6bb7be4480c7f2f0fc12d`. Both exact blobs passed `node --check` locally.
 
-A focused deterministic consumer harness using the exact r10 admission and coverage logic passed **9/9, zero skipped**. It covers unknown-freshness admission without UI freshness calculation, missing source ID/non-structured reason rejection, source policy + validity requirements for `current`, decision/SLA evidence requirements, confirming-source expiry rejection, source-owned Needs-verification, resolved confirmation/audit requirements, partial contract coverage retaining uncovered local items, and complete neutral fallback when contract evidence is unavailable.
+The affected Vector-only GitHub run `35457073415` for exact product head `64c6c36cd0b0a4a58b072f730683916498b9b534` did not execute repository, build or browser work: its only job contained `steps=[]` and `runner_id=0`. This remains an unavailable hosted runner, not a product-test failure and not a product-test pass; it was checked once and not retried.
 
-The existing Vector-only guard was extended—not replaced—to protect the exact bridge path, same-origin/no-store read, response/item contract validation, decision/SLA evidence boundary, source-owned Needs-verification, resolved-item suppression, per-source-ID neutral fallback and absence of a retry loop.
-
-Affected Vector-only run `35454108624` triggered for guard head `8c1743cc8bd793ac6b56949736e260d6f575ac97`, but GitHub again allocated no runner: job `105926255788` has `steps=[]` and `runner_id=0`. Therefore the repository guard, full-file Node syntax check, Docker build, browser and accessibility steps did not execute. This is unavailable hosted test infrastructure, not a claimed product-test pass or product-test failure. The unchanged runner blocker was verified once for this meaningful state change and was not retried.
+The isolated Railway test-project service that follows this canonical branch was still serving candidate `9e703d3ae5dcfd6e0dcb79be294e8e8ba9827f40` when inspected, so the new source-controlled journey could not yet be executed against its exact candidate. No manual customer-proof, staging or production redeploy was used to force proof.
 
 ### UX scorecard impact
-- Calm by default: strengthened — source lifecycle is shown without presentation severity; incomplete/unavailable evidence stays neutral.
-- Dense on demand: improved — why-now, authority and source freshness meaning fit inside the existing row rather than another screen.
-- Explainability: strengthened — contract-backed actions disclose source lifecycle and authority; uncovered work is explicitly identified as needing source verification.
-- Accessibility: structurally preserved by reusing the existing labelled alert row/button, but real screen-reader behaviour remains unverified.
-- Authority/auditability: strengthened — presentation validates and displays source contract state but does not calculate authority, freshness, SLA or resolution.
-- Safety/capability preservation: strengthened — partial contract adoption cannot silently hide unrelated open Time Review work.
-- Development efficiency: improved — one existing consumer, one existing endpoint, one existing guard; no duplicate queue/service/test harness.
+- Calm by default: preserved — no new urgency/severity and no optimistic action clearing.
+- Dense on demand: improved — the manager gets one small contextual return control only after intentionally opening a source-bound action.
+- Explainability: improved — the Time Review screen records which source action brought the manager there without copying business-state authority.
+- Accessibility: structurally improved — the return control is a semantic button/navigation region and Home return restores programmatic focus to the review region; real screen-reader behaviour remains unverified.
+- Authority/auditability: preserved — session context carries navigation identity only; all workflow state continues to come from the authoritative source contract.
+- Safety/capability preservation: strengthened — opening an action does not clear it, and malformed context fails closed.
+- Development efficiency: improved — one existing alert primitive, one existing route, one existing browser harness; no second queue, service, CSS variant or browser-test owner.
 
 ### Still unverified
-The changed Vector source and new repository guard have not executed in CI because the affected GitHub job received no runner. Authenticated hosted rendering of contract-backed rows, browser return-to-context after opening Time Review, real source transitions through `Decision sent` / `Confirming source`, responsive behaviour, real screen-reader behaviour and measured first-click/time-on-task/error rate remain unverified. The local focused harness validates the bounded admission/coverage logic but is not exact hosted/browser proof.
+The updated browser journey has not executed against the exact new candidate because the isolated Railway source service has not yet advanced to this head and the GitHub hosted runner received no runner. Therefore real manager browser rendering, existence of an active fixture contract item, responsive behaviour of the context bar, real screen-reader behaviour, measured first-click/time-on-task/error rate, and the authoritative `Decision sent → Confirming source` transition remain unverified. The current evidence proves source/code composition and executable test design, not that lifecycle transition in a running exact candidate.
 
 ### Single next highest-value NEW-UI action
-Validate the first end-to-end Time Review path in an executable environment: contract-backed action appears → opens authoritative Time Review → return-to-context remains stable → source decision moves through `Decision sent` / `Confirming source` without optimistic clearing. If the hosted runner remains unavailable, add no parallel implementation; advance only deterministic browser/test design against this same Vector owner. Do not start the Absence or weekly-signoff contract consumer until this path has executable proof.
+Execute the source-controlled current-candidate browser proof against an isolated exact-head deployment when that canonical branch is available, without touching customer-proof/staging/production. Require the manager action journey to pass exactly as written, then extend the same authoritative fixture path to prove a source-owned `Decision sent → Confirming source` transition without UI timers or optimistic clearing. Do not start the Absence or weekly-signoff contract consumer until this first Time Review lifecycle path has executable proof.
 
 ## Validated prior Vector increments
 
 | Increment | Bounded delta | Exact evidence |
 | --- | --- | --- |
+| r10 | Bound `Items to review` to the read-only Time Review evidence bridge with per-source neutral fallback | Focused consumer harness 9/9; hosted runner unavailable |
 | r9 | Added the read-only role/tenant-scoped Time Review action-evidence runtime bridge | Bridge tests 5/5 + router smoke 1/1; hosted runner unavailable |
 | r8 | Added the first fail-closed Time Review producer inside the shared action-evidence contract | Contract suite 14/14; hosted runner unavailable |
 | r7 | Established one shared source-owned freshness/confirmation evidence contract across Time Review, Absence and weekly sign-off | Focused contract suite 10/10; hosted runner unavailable |
