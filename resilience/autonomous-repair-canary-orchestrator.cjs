@@ -2,7 +2,9 @@
 
 const { createHash } = require('node:crypto');
 const {
+  T2_COORDINATOR_CAPABILITY_CONTRACT,
   computeRepairEvidenceChainDigest,
+  computeT2CoordinatorCapabilityDigest,
   computePostStagingDecisionDigest,
 } = require('./autonomous-repair-pipeline.cjs');
 
@@ -79,6 +81,12 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
     incrementalCostZero: true,
   })) {
     if (recorderCaps?.[key] !== expected) deny('WFM_POSTSTAGING_RECORDER', `unsafe outcome recorder capability: ${key}`);
+  }
+
+  const coordinatorCaps = Object.freeze({ ...T2_COORDINATOR_CAPABILITY_CONTRACT });
+  const coordinatorCapabilityDigest = computeT2CoordinatorCapabilityDigest(coordinatorCaps);
+  if (!validDigest(coordinatorCapabilityDigest)) {
+    deny('WFM_POSTSTAGING_COORDINATOR_CAPABILITY', 'invalid coordinator capability contract');
   }
 
   async function record(payload) {
@@ -203,7 +211,7 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
 
     const postStagingActorSetDigest = sha(Object.values(actorIds));
     const payload = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       incidentId,
       tenantDigest: base.tenantDigest,
       status: canary.status,
@@ -229,6 +237,8 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
       repairChainDigest: repair.repairChainDigest,
       canaryEvidenceDigest: canary.canaryEvidenceDigest,
       rollbackEvidenceDigest: validDigest(canary.rollbackEvidenceDigest) ? canary.rollbackEvidenceDigest : null,
+      coordinatorCapabilities: { ...coordinatorCaps },
+      coordinatorCapabilityDigest,
       productionAuthorityGranted: false,
       promotionAuthorityGranted: false,
       productionMutation: false,
@@ -243,21 +253,7 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
 
   return {
     run,
-    capabilities: () => ({
-      endToEndRepairToCanaryDecision: true,
-      repairEvidenceChainRequired: true,
-      signedProvenanceRequired: true,
-      postStagingDecisionChainRequired: true,
-      sixActorSeparationRequired: true,
-      canaryMaxInstances: 1,
-      canaryMaxTrafficPercent: 5,
-      simulationOnly: true,
-      productionAuthority: false,
-      promotionAuthority: false,
-      productionMutation: false,
-      customerMutation: false,
-      incrementalCostZero: true,
-    }),
+    capabilities: () => ({ ...coordinatorCaps }),
   };
 }
 
