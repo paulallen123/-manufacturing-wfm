@@ -127,6 +127,7 @@ const SAFE_FAILOVER_CAPABILITY = Object.freeze({
   productionWriteAuthority: false,
   modelVisibleReusableSecrets: false,
   createsResources: false,
+  eligibilityEvidenceDigest: d('explicit-preexisting-zero-cost-isolated-forensic-lane-evidence'),
 });
 
 const root = mkdtempSync(join(tmpdir(), 'wfm-t4-forensic-failover-'));
@@ -205,6 +206,33 @@ try {
   assert.equal(ineligibleTerminal.safeTerminal, false);
   assert.equal(ineligibleTerminal.containedErrorCode, 'WFM_T4_FORENSICS_FAILOVER_EXHAUSTED');
   assert.equal(ineligibleLoop.verifyReceipt(ineligibleTerminal), true);
+
+  let missingEvidenceCalls = 0;
+  const missingEvidenceStore = {
+    preserve: async (...args) => {
+      missingEvidenceCalls += 1;
+      return secondaryStore.preserve(...args);
+    },
+    verify: secondaryStore.verify,
+  };
+  const missingEvidenceFailover = createT4ForensicFailoverStore({
+    stores: [{
+      id: 'zero-cost-assertion-without-evidence',
+      capability: { ...SAFE_FAILOVER_CAPABILITY, eligibilityEvidenceDigest: undefined },
+      store: missingEvidenceStore,
+    }],
+  });
+  await assert.rejects(
+    () => missingEvidenceFailover.preserve({
+      incidentId: 'inc-missing-eligibility-evidence',
+      tenant: 'tenant-a',
+      scenarioId: 'data-integrity-mismatch',
+      evidenceDigest: d('missing-eligibility-evidence'),
+      eventHeadDigest: d('missing-eligibility-event'),
+    }),
+    (error) => error?.code === 'WFM_T4_FORENSICS_NO_ELIGIBLE_STORE',
+  );
+  assert.equal(missingEvidenceCalls, 0, 'A bare zero-cost assertion without an eligibility evidence digest must never be executable.');
 
   const tenantDriftStore = {
     preserve: async () => ({
@@ -310,6 +338,7 @@ console.log(JSON.stringify({
   verifiedZeroCostForensicFailoverRestoresSafeTerminal: true,
   blindPrimaryRetriesDenied: true,
   unattestedCostLaneNeverInvoked: true,
+  explicitEligibilityEvidenceRequired: true,
   crossTenantForensicReceiptRejected: true,
   independentReadbackFailureTriggersBoundedFailover: true,
   postConstructionStoreMethodSubstitutionDenied: true,
