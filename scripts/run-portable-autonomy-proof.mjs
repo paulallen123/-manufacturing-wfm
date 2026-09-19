@@ -9,6 +9,8 @@ const baseline = JSON.parse(fs.readFileSync(path.join(ROOT, 'resilience/security
 const expectedNode = String(baseline?.node?.minimum || '22.23.2');
 const actualNode = process.version.replace(/^v/, '');
 const exactRuntime = actualNode === expectedNode;
+const corpusSnapshotPath = path.resolve(process.env.WFM_INCIDENT_CORPUS_OUTPUT || path.join(ROOT, 'incident-regression-corpus.snapshot.json'));
+const corpusContinuityPath = path.resolve(process.env.WFM_INCIDENT_CORPUS_CONTINUITY_OUTPUT || path.join(ROOT, 'incident-regression-corpus-continuity.json'));
 
 function sha256(value) {
   return createHash('sha256').update(String(value ?? '')).digest('hex');
@@ -64,6 +66,7 @@ const checks = [
   ['incident-learning-and-never-automate-boundary', 'scripts/validate-incident-learning-planner.mjs', true],
   ['historical-incident-replay-and-learning', 'scripts/validate-historical-incident-replay.mjs', true],
   ['append-only-incident-regression-corpus', 'scripts/validate-incident-regression-corpus.mjs', true],
+  ['persistent-incident-regression-corpus-continuity', 'scripts/validate-persistent-incident-corpus.mjs', true],
 ];
 
 const results = [];
@@ -128,6 +131,8 @@ for (const [id, rel, required] of checks) {
       ...process.env,
       NODE_ENV: process.env.NODE_ENV || 'test',
       WFM_PORTABLE_PROOF: '1',
+      WFM_INCIDENT_CORPUS_OUTPUT: corpusSnapshotPath,
+      WFM_INCIDENT_CORPUS_CONTINUITY_OUTPUT: corpusContinuityPath,
     },
     maxBuffer: 8 * 1024 * 1024,
   });
@@ -153,6 +158,60 @@ for (const [id, rel, required] of checks) {
   if (exitCode !== 0) failed = true;
 }
 
+let incidentRegressionCorpus = null;
+try {
+  const snapshotRaw = fs.readFileSync(corpusSnapshotPath, 'utf8');
+  const continuityRaw = fs.readFileSync(corpusContinuityPath, 'utf8');
+  const snapshot = JSON.parse(snapshotRaw);
+  const continuity = JSON.parse(continuityRaw);
+  const continuityCore = { ...continuity };
+  delete continuityCore.continuityDigest;
+  const continuityDigestValid = /^[a-f0-9]{64}$/.test(String(continuity.continuityDigest || ''))
+    && sha256(JSON.stringify(continuityCore)) === continuity.continuityDigest;
+  const snapshotDigestValid = /^[a-f0-9]{64}$/.test(String(snapshot.corpusDigest || ''))
+    && snapshot.corpusDigest === continuity.outputCorpusDigest
+    && sha256(snapshotRaw) === continuity.outputSnapshotSha256;
+  const authoritySafe = continuity.actionAuthorityGranted === false
+    && continuity.productionAuthorityGranted === false
+    && continuity.releaseAuthorityGranted === false
+    && continuity.crossTenantMutation === false
+    && continuity.productionMutation === false
+    && continuity.customerMutation === false;
+  const valid = continuity.status === 'PASS'
+    && continuity.proof === 'provider-neutral-incident-regression-corpus-continuity'
+    && continuityDigestValid
+    && snapshotDigestValid
+    && authoritySafe
+    && Number.isSafeInteger(snapshot.entryCount)
+    && snapshot.entryCount >= continuity.currentScenarioClasses;
+  if (!valid) throw new Error('Persistent incident corpus continuity evidence failed verification.');
+  incidentRegressionCorpus = {
+    schemaVersion: snapshot.schemaVersion,
+    priorSnapshotLoaded: continuity.priorSnapshotLoaded === true,
+    priorSnapshotSha256: continuity.priorSnapshotSha256,
+    priorCorpusDigest: continuity.priorCorpusDigest,
+    entryCount: snapshot.entryCount,
+    corpusDigest: snapshot.corpusDigest,
+    snapshotSha256: sha256(snapshotRaw),
+    continuityDigest: continuity.continuityDigest,
+  };
+  results.push({
+    id: 'persistent-incident-corpus-artifact-binding',
+    status: 'PASS',
+    priorSnapshotLoaded: incidentRegressionCorpus.priorSnapshotLoaded,
+    entryCount: incidentRegressionCorpus.entryCount,
+    corpusDigest: incidentRegressionCorpus.corpusDigest,
+    snapshotSha256: incidentRegressionCorpus.snapshotSha256,
+  });
+} catch (error) {
+  failed = true;
+  results.push({
+    id: 'persistent-incident-corpus-artifact-binding',
+    status: 'FAIL',
+    reason: String(error?.message || error),
+  });
+}
+
 let releaseEvidenceStatus = 'FAIL_CLOSED_CI_EVIDENCE_UNAVAILABLE';
 if (!releaseBindingComplete) {
   releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_RELEASE_EVIDENCE_INCOMPLETE';
@@ -172,7 +231,7 @@ const proofScope = releaseClaimAllowed
   : exactRuntime ? 'EXACT_RUNTIME_LOGIC_ONLY' : 'NON_EXACT_LOGIC_ONLY';
 
 const receipt = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   proof: 'portable-zero-engineer-autonomy-gate',
   status: failed ? 'FAIL' : 'PASS',
   proofScope,
@@ -187,6 +246,7 @@ const receipt = {
   canonicalTrustAnchorProtected,
   canonicalReleaseEvidenceBound: releaseClaimAllowed,
   releaseBinding,
+  incidentRegressionCorpus,
   productionMutation: false,
   customerMutation: false,
   checks: results,
