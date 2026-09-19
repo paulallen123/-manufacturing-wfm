@@ -40,7 +40,7 @@ If the canonical Vector guard explicitly prevents observation timestamps from be
 | Add authoritative `observedAt` + `freshnessState`/expiry + confirmation state at the source boundary | Needed to support explainable stale/confirming/needs-verification UI | **BUILD NEXT** |
 
 ### Focused / affected validation
-The guard-only commit is `8a200ded8d11ad7bf0d034623b018588d144f4a0`. Diff inspection confirms the change is limited to `scripts/validate-vector-only-ui.mjs`; no Vector presentation or source workflow was mutated. Exact-head Vector-only run `35439251475` was created for this commit. Record its final result before claiming this increment fully green; queued/no-runner state is not a pass.
+The guard-only commit is `8a200ded8d11ad7bf0d034623b018588d144f4a0`. Diff inspection confirms the change is limited to `scripts/validate-vector-only-ui.mjs`; no Vector presentation or source workflow was mutated. Exact-head Vector-only run `35439251475` completed successfully: the retired-UI refusal/source guard passed, the exact Docker runtime build passed, and the built-runtime proof confirmed Vector remains the only active presentation. This validates the new freshness-neutral regression at the same risk level as the existing Vector source/build gate; it does not claim real-user or hosted authenticated-role proof.
 
 ### UX scorecard impact
 - Calm by default: strengthened — source observation time cannot manufacture urgency/freshness.
