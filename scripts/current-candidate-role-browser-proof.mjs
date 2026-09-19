@@ -107,12 +107,12 @@ try {
 
     if (spec.slug === 'manager') {
       const previous = page.viewportSize();
-      await page.setViewportSize({ width: 1000, height: 700 });
+      await page.setViewportSize({ width: 700, height: 490 });
       await page.waitForTimeout(150);
       const compact = await page.screenshot({
         type: 'jpeg',
-        quality: 22,
-        clip: { x: 0, y: 0, width: 1000, height: 700 }
+        quality: 12,
+        clip: { x: 0, y: 0, width: 700, height: 490 }
       });
       managerAlignmentEvidence = {
         base64: compact.toString('base64'),
@@ -286,12 +286,8 @@ try {
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
   assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
-  const alignmentChunkSize = 12000;
-  const alignmentTotal = Math.ceil(managerAlignmentEvidence.base64.length / alignmentChunkSize);
-  console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|chunks=${alignmentTotal}|sha=${managerAlignmentEvidence.sha256}`);
-  for (let i = 0; i < alignmentTotal; i += 1) {
-    console.log(`CURRENT_MANAGER_SCREENSHOT_CHUNK|${i + 1}/${alignmentTotal}|${managerAlignmentEvidence.base64.slice(i * alignmentChunkSize, (i + 1) * alignmentChunkSize)}`);
-  }
+  console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|sha=${managerAlignmentEvidence.sha256}`);
+  console.log(`CURRENT_MANAGER_SCREENSHOT_B64|${managerAlignmentEvidence.base64}`);
   console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|activeActionJourneys=${timeReviewActionJourneys}|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
 } finally {
   await browser.close();
