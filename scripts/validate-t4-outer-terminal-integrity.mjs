@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { createAutonomyControlLoop, digest } = require('../resilience/autonomy-control-loop.cjs');
+const { createT4ContainmentController, createWriteOnceForensicStore } = require('../resilience/t4-containment-controller.cjs');
+const { createT4ForensicFailoverStore } = require('../resilience/t4-forensic-failover-store.cjs');
 
 const d = (value) => createHash('sha256').update(String(value)).digest('hex');
 const contract = {
@@ -112,8 +117,164 @@ delete forgedCore.receiptDigest;
 forged.receiptDigest = digest(forgedCore);
 assert.equal(missingControllerLoop.verifyReceipt(forged), false, 'Semantic verification must reject a recomputed T4 safe-terminal claim without a verified inner T4 receipt.');
 
+const SAFE_FAILOVER_CAPABILITY = Object.freeze({
+  preExisting: true,
+  sameTenantOnly: true,
+  isolated: true,
+  writeOnce: true,
+  independentlyVerifiable: true,
+  incrementalCostZero: true,
+  productionWriteAuthority: false,
+  modelVisibleReusableSecrets: false,
+  createsResources: false,
+});
+
+const root = mkdtempSync(join(tmpdir(), 'wfm-t4-forensic-failover-'));
+try {
+  const primaryStore = createWriteOnceForensicStore({ rootDir: join(root, 'primary') });
+  const secondaryStore = createWriteOnceForensicStore({ rootDir: join(root, 'secondary') });
+  let primaryAttempts = 0;
+  const failingPrimary = {
+    preserve: async () => {
+      primaryAttempts += 1;
+      const error = new Error('synthetic primary forensic store outage');
+      error.code = 'WFM_T4_FORENSICS_SYNTHETIC_PRIMARY_OUTAGE';
+      throw error;
+    },
+    verify: primaryStore.verify,
+  };
+  const failoverStore = createT4ForensicFailoverStore({
+    maxAttempts: 2,
+    stores: [
+      { id: 'primary-preexisting', capability: SAFE_FAILOVER_CAPABILITY, store: failingPrimary },
+      { id: 'secondary-preexisting', capability: SAFE_FAILOVER_CAPABILITY, store: secondaryStore },
+    ],
+  });
+  const actualT4Controller = createT4ContainmentController({ forensicStore: failoverStore, now: () => ++tick });
+  const failoverLoop = createAutonomyControlLoop({
+    contract,
+    failureScenarios,
+    t4ContainmentController: actualT4Controller,
+    now: () => ++tick,
+  });
+  const failoverTerminal = await failoverLoop.run({ ...base, incidentId: 'inc-t4-primary-forensics-outage' });
+  assert.equal(primaryAttempts, 1, 'Primary forensic store must be attempted once; no blind retry loop is permitted.');
+  assert.equal(failoverTerminal.outcome, 'contained');
+  assert.equal(failoverTerminal.safeTerminal, true, 'A verified pre-existing zero-cost secondary forensic store must restore a safe T4 terminal.');
+  assert.equal(failoverTerminal.productionAuthorityGranted, false);
+  assert.equal(failoverTerminal.customerMutation, false);
+  assert.equal(failoverTerminal.crossTenantMutation, false);
+  assert.equal(failoverTerminal.modelAuthorityGranted, false);
+  assert.equal(failoverTerminal.t4Receipt?.forensicReceipt?.verified, true);
+  assert.equal(failoverTerminal.t4Receipt?.forensicReceipt?.immutable, true);
+  assert.equal(failoverTerminal.t4Receipt?.forensicReceipt?.storageMode, 'write-once-failover:secondary-preexisting');
+  assert.equal(failoverLoop.verifyReceipt(failoverTerminal), true);
+
+  let unsafeSecondaryCalls = 0;
+  const unsafeSecondary = {
+    preserve: async () => {
+      unsafeSecondaryCalls += 1;
+      return secondaryStore.preserve({
+        incidentId: 'must-not-run',
+        tenant: 'tenant-a',
+        scenarioId: 'data-integrity-mismatch',
+        evidenceDigest: d('unsafe-secondary'),
+        eventHeadDigest: d('unsafe-secondary-event'),
+      });
+    },
+    verify: secondaryStore.verify,
+  };
+  const ineligibleStore = createT4ForensicFailoverStore({
+    maxAttempts: 2,
+    stores: [
+      { id: 'primary-preexisting', capability: SAFE_FAILOVER_CAPABILITY, store: failingPrimary },
+      { id: 'secondary-cost-unverified', capability: { ...SAFE_FAILOVER_CAPABILITY, incrementalCostZero: false }, store: unsafeSecondary },
+    ],
+  });
+  const ineligibleController = createT4ContainmentController({ forensicStore: ineligibleStore, now: () => ++tick });
+  const ineligibleLoop = createAutonomyControlLoop({
+    contract,
+    failureScenarios,
+    t4ContainmentController: ineligibleController,
+    now: () => ++tick,
+  });
+  const ineligibleTerminal = await ineligibleLoop.run({ ...base, incidentId: 'inc-t4-cost-unverified-secondary' });
+  assert.equal(unsafeSecondaryCalls, 0, 'A secondary store without explicit zero-incremental-cost evidence must never be invoked.');
+  assert.equal(ineligibleTerminal.safeTerminal, false);
+  assert.equal(ineligibleTerminal.containedErrorCode, 'WFM_T4_FORENSICS_FAILOVER_EXHAUSTED');
+  assert.equal(ineligibleLoop.verifyReceipt(ineligibleTerminal), true);
+
+  const tenantDriftStore = {
+    preserve: async () => ({
+      verified: true,
+      immutable: true,
+      forensicDigest: d('tenant-drift-forensic'),
+      tenantDigest: d('tenant:other-tenant'),
+      storageKey: d('tenant-drift-storage'),
+      storageMode: 'synthetic-write-once',
+    }),
+    verify: async () => true,
+  };
+  const tenantDriftFailover = createT4ForensicFailoverStore({
+    stores: [{ id: 'hostile-tenant-drift', capability: SAFE_FAILOVER_CAPABILITY, store: tenantDriftStore }],
+  });
+  await assert.rejects(
+    () => tenantDriftFailover.preserve({
+      incidentId: 'inc-t4-tenant-drift',
+      tenant: 'tenant-a',
+      scenarioId: 'data-integrity-mismatch',
+      evidenceDigest: d('tenant-drift-evidence'),
+      eventHeadDigest: d('tenant-drift-event'),
+    }),
+    (error) => error?.code === 'WFM_T4_FORENSICS_FAILOVER_EXHAUSTED',
+    'Cross-tenant forensic receipt drift must fail closed.',
+  );
+
+  const verifyFalsePrimary = {
+    preserve: primaryStore.preserve,
+    verify: async () => false,
+  };
+  const verificationFailover = createT4ForensicFailoverStore({
+    maxAttempts: 2,
+    stores: [
+      { id: 'primary-verification-fails', capability: SAFE_FAILOVER_CAPABILITY, store: verifyFalsePrimary },
+      { id: 'secondary-after-verification-failure', capability: SAFE_FAILOVER_CAPABILITY, store: secondaryStore },
+    ],
+  });
+  const verificationReceipt = await verificationFailover.preserve({
+    incidentId: 'inc-t4-primary-verification-failure',
+    tenant: 'tenant-a',
+    scenarioId: 'data-integrity-mismatch',
+    evidenceDigest: d('verification-failure-evidence'),
+    eventHeadDigest: d('verification-failure-event'),
+  });
+  assert.equal(verificationReceipt.selectedStoreId, 'secondary-after-verification-failure');
+  assert.equal(verificationReceipt.failoverUsed, true);
+  assert.equal(verificationReceipt.attemptCount, 2);
+  assert.equal(await verificationFailover.verify(verificationReceipt), true);
+
+  assert.throws(
+    () => createT4ForensicFailoverStore({
+      stores: [{
+        id: 'paid-or-unattested-only',
+        capability: { ...SAFE_FAILOVER_CAPABILITY, incrementalCostZero: false },
+        store: secondaryStore,
+      }],
+    }).preserve({
+      incidentId: 'inc-no-eligible-store',
+      tenant: 'tenant-a',
+      scenarioId: 'data-integrity-mismatch',
+      evidenceDigest: d('no-eligible-evidence'),
+      eventHeadDigest: d('no-eligible-event'),
+    }),
+    undefined,
+  );
+} finally {
+  rmSync(root, { recursive: true, force: true });
+}
+
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 't4-outer-terminal-integrity',
   status: 'PASS',
   verifiedT4MayClaimSafeTerminal: true,
@@ -121,6 +282,11 @@ console.log(JSON.stringify({
   missingControllerCannotClaimSafeTerminal: true,
   authorityEscapeCannotClaimSafeTerminal: true,
   recomputedSemanticForgeryRejected: true,
+  verifiedZeroCostForensicFailoverRestoresSafeTerminal: true,
+  blindPrimaryRetriesDenied: true,
+  unattestedCostLaneNeverInvoked: true,
+  crossTenantForensicReceiptRejected: true,
+  independentReadbackFailureTriggersBoundedFailover: true,
   productionMutation: false,
   customerMutation: false,
 }, null, 2));
