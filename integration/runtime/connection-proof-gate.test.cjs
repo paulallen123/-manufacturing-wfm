@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const {
   reviewConnection,
   approvalFor,
+  activationEvidenceDigest,
   evaluateActivation,
   evaluateRuntimeHealth,
   buildSafeConnectionTestPlan
@@ -26,10 +27,10 @@ function config(overrides = {}) {
   };
 }
 
-function passEvidence(review, overrides = {}) {
-  const t = new Date(Date.now() - 1000).toISOString();
+function proofEvidence(review, overrides = {}) {
+  const t = new Date(Date.now() - 2000).toISOString();
+  const t2 = new Date(Date.now() - 1000).toISOString();
   return {
-    approval: approvalFor(review, { approvedBy: 'owner@example.test', role: 'integration-owner' }),
     connectionTest: {
       status: 'PASS', reviewedDigest: review.reviewedDigest, nonMutating: true,
       measuredLatencyMs: 120, observedAt: t,
@@ -43,10 +44,16 @@ function passEvidence(review, overrides = {}) {
         containsSensitiveData: false
       }
     },
-    mappingReview: { status: 'APPROVED', reviewedDigest: review.reviewedDigest, mappingVersion: review.mapping.version },
-    reconciliation: { status: 'PASS', reviewedDigest: review.reviewedDigest, mappingVersion: review.mapping.version, observedAt: new Date().toISOString() },
+    mappingReview: { status: 'APPROVED', reviewedDigest: review.reviewedDigest, mappingVersion: review.mapping.version, observedAt: t },
+    reconciliation: { status: 'PASS', reviewedDigest: review.reviewedDigest, mappingVersion: review.mapping.version, observedAt: t2 },
     ...overrides
   };
+}
+
+function passEvidence(review, overrides = {}) {
+  const evidence = proofEvidence(review, overrides);
+  evidence.approval = approvalFor(review, { approvedBy: 'owner@example.test', role: 'integration-owner' }, evidence);
+  return evidence;
 }
 
 test('raw credentials are rejected and protected references are accepted', () => {
@@ -71,20 +78,46 @@ test('activation requires explicit approval, exact target proof, current mapping
   assert.equal(result.state, 'APPROVED_FOR_ACTIVATION');
 });
 
+test('approval is bound to the exact proof bundle and must follow the latest evidence', () => {
+  const review = reviewConnection(config());
+  const evidence = passEvidence(review);
+  assert.equal(evidence.approval.evidenceDigest, activationEvidenceDigest(review, evidence));
+
+  const replaced = {
+    ...evidence,
+    reconciliation: { ...evidence.reconciliation, observedAt: new Date(Date.now() + 10_000).toISOString() }
+  };
+  const result = evaluateActivation(review, replaced, config());
+  assert.equal(result.canActivate, false);
+  assert.match(result.blockers.join(' '), /does not match the exact evidence|predates the latest proof/i);
+});
+
+test('approval cannot be minted from incomplete or failing evidence', () => {
+  const review = reviewConnection(config());
+  const evidence = proofEvidence(review);
+  delete evidence.mappingReview.observedAt;
+  assert.throws(
+    () => approvalFor(review, { approvedBy: 'owner@example.test', role: 'integration-owner' }, evidence),
+    /not ready for approval|timestamps are incomplete/i
+  );
+});
+
 test('boolean-only or mismatched target identity proof cannot activate a connection', () => {
   const review = reviewConnection(config());
-  const booleanOnly = passEvidence(review, {
+  const booleanOnlyProof = proofEvidence(review, {
     connectionTest: {
       status: 'PASS', reviewedDigest: review.reviewedDigest, nonMutating: true,
       targetIdentityVerified: true, measuredLatencyMs: 120, observedAt: new Date().toISOString()
     }
   });
+  const booleanOnly = { ...booleanOnlyProof, approval: { decision: 'APPROVED', reviewedDigest: review.reviewedDigest, approvedAt: new Date().toISOString(), evidenceDigest: activationEvidenceDigest(review, booleanOnlyProof) } };
   const missing = evaluateActivation(review, booleanOnly, config());
   assert.equal(missing.canActivate, false);
   assert.match(missing.blockers.join(' '), /target-system evidence is missing/i);
 
-  const mismatched = passEvidence(review);
-  mismatched.connectionTest.targetProof = { ...mismatched.connectionTest.targetProof, targetIdentity: 'sf-sandbox-beta' };
+  const mismatchedProof = proofEvidence(review);
+  mismatchedProof.connectionTest.targetProof = { ...mismatchedProof.connectionTest.targetProof, targetIdentity: 'sf-sandbox-beta' };
+  const mismatched = { ...mismatchedProof, approval: { decision: 'APPROVED', reviewedDigest: review.reviewedDigest, approvedAt: new Date().toISOString(), evidenceDigest: activationEvidenceDigest(review, mismatchedProof) } };
   const wrongTarget = evaluateActivation(review, mismatched, config());
   assert.equal(wrongTarget.canActivate, false);
   assert.match(wrongTarget.blockers.join(' '), /does not match the reviewed target/i);
@@ -92,12 +125,13 @@ test('boolean-only or mismatched target identity proof cannot activate a connect
 
 test('target proof must be metadata-only and explicitly free of employee/payroll data', () => {
   const review = reviewConnection(config());
-  const evidence = passEvidence(review);
-  evidence.connectionTest.targetProof = {
-    ...evidence.connectionTest.targetProof,
+  const proof = proofEvidence(review);
+  proof.connectionTest.targetProof = {
+    ...proof.connectionTest.targetProof,
     boundedMetadataOnly: false,
     containsSensitiveData: true
   };
+  const evidence = { ...proof, approval: { decision: 'APPROVED', reviewedDigest: review.reviewedDigest, approvedAt: new Date().toISOString(), evidenceDigest: activationEvidenceDigest(review, proof) } };
   const result = evaluateActivation(review, evidence, config());
   assert.equal(result.canActivate, false);
   assert.match(result.blockers.join(' '), /bounded metadata only/i);
@@ -112,20 +146,23 @@ test('any reviewed connection change invalidates stale activation approval', () 
   assert.match(result.blockers.join(' '), /changed after approval/);
 });
 
-test('queue transport requires observed failure recovery proof before activation', () => {
+test('queue transport requires observed failure recovery proof before approval and activation', () => {
   const queueConfig = config({
     transport: 'queue-stream',
     auth: { method: 'managed-identity', credentialRef: 'managed://tenant-alpha/event-stream' }
   });
   const review = reviewConnection(queueConfig);
-  const missing = evaluateActivation(review, passEvidence(review), queueConfig);
-  assert.equal(missing.canActivate, false);
-  assert.match(missing.blockers.join(' '), /Recovery proof is required/);
+  const missingProof = proofEvidence(review);
+  assert.throws(
+    () => approvalFor(review, { approvedBy: 'owner@example.test', role: 'integration-owner' }, missingProof),
+    /Recovery proof is required/
+  );
 
+  const observedAt = new Date(Date.now() - 500).toISOString();
   const evidence = passEvidence(review, {
     recoveryProof: {
       status: 'PASS', reviewedDigest: review.reviewedDigest,
-      observedFailure: true, recovered: true, reconciliationStatus: 'PASS'
+      observedFailure: true, recovered: true, reconciliationStatus: 'PASS', observedAt
     }
   });
   const passed = evaluateActivation(review, evidence, queueConfig);
