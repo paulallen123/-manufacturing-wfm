@@ -30,7 +30,19 @@ function passEvidence(review, overrides = {}) {
   const t = new Date(Date.now() - 1000).toISOString();
   return {
     approval: approvalFor(review, { approvedBy: 'owner@example.test', role: 'integration-owner' }),
-    connectionTest: { status: 'PASS', reviewedDigest: review.reviewedDigest, nonMutating: true, targetIdentityVerified: true, measuredLatencyMs: 120, observedAt: t },
+    connectionTest: {
+      status: 'PASS', reviewedDigest: review.reviewedDigest, nonMutating: true,
+      measuredLatencyMs: 120, observedAt: t,
+      targetProof: {
+        providerKey: review.providerKey,
+        targetIdentity: review.targetIdentity,
+        environment: review.environment,
+        method: 'provider-metadata',
+        observedAt: t,
+        boundedMetadataOnly: true,
+        containsSensitiveData: false
+      }
+    },
     mappingReview: { status: 'APPROVED', reviewedDigest: review.reviewedDigest, mappingVersion: review.mapping.version },
     reconciliation: { status: 'PASS', reviewedDigest: review.reviewedDigest, mappingVersion: review.mapping.version, observedAt: new Date().toISOString() },
     ...overrides
@@ -52,11 +64,44 @@ test('read-only database transport fails closed unless both read-only controls a
   assert.equal(reviewed.transportOptions.readOnly, true);
 });
 
-test('activation requires explicit approval, safe target proof, current mapping and reconciliation', () => {
+test('activation requires explicit approval, exact target proof, current mapping and reconciliation', () => {
   const review = reviewConnection(config());
   const result = evaluateActivation(review, passEvidence(review), config());
   assert.equal(result.canActivate, true);
   assert.equal(result.state, 'APPROVED_FOR_ACTIVATION');
+});
+
+test('boolean-only or mismatched target identity proof cannot activate a connection', () => {
+  const review = reviewConnection(config());
+  const booleanOnly = passEvidence(review, {
+    connectionTest: {
+      status: 'PASS', reviewedDigest: review.reviewedDigest, nonMutating: true,
+      targetIdentityVerified: true, measuredLatencyMs: 120, observedAt: new Date().toISOString()
+    }
+  });
+  const missing = evaluateActivation(review, booleanOnly, config());
+  assert.equal(missing.canActivate, false);
+  assert.match(missing.blockers.join(' '), /target-system evidence is missing/i);
+
+  const mismatched = passEvidence(review);
+  mismatched.connectionTest.targetProof = { ...mismatched.connectionTest.targetProof, targetIdentity: 'sf-sandbox-beta' };
+  const wrongTarget = evaluateActivation(review, mismatched, config());
+  assert.equal(wrongTarget.canActivate, false);
+  assert.match(wrongTarget.blockers.join(' '), /does not match the reviewed target/i);
+});
+
+test('target proof must be metadata-only and explicitly free of employee/payroll data', () => {
+  const review = reviewConnection(config());
+  const evidence = passEvidence(review);
+  evidence.connectionTest.targetProof = {
+    ...evidence.connectionTest.targetProof,
+    boundedMetadataOnly: false,
+    containsSensitiveData: true
+  };
+  const result = evaluateActivation(review, evidence, config());
+  assert.equal(result.canActivate, false);
+  assert.match(result.blockers.join(' '), /bounded metadata only/i);
+  assert.match(result.blockers.join(' '), /no employee or payroll data/i);
 });
 
 test('any reviewed connection change invalidates stale activation approval', () => {
@@ -119,4 +164,5 @@ test('safe test plan is non-mutating and adds transport-specific recovery/read-o
   assert.equal(plan.requiresExplicitActivationApproval, true);
   assert.ok(plan.steps.some(x => x.includes('read-only database session')));
   assert.ok(plan.steps.some(x => x.includes('controlled transient failure')));
+  assert.ok(plan.steps.some(x => x.includes('provider-reported metadata')));
 });
