@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor evidence delta adding Parsec TrakSYS at spec-verified and L2L Connected Manufacturing Operations at discovery-queued. Reuses existing REST, OPC UA, MQTT/Sparkplug B and file protocol layers for TrakSYS, records L2L as deliberately adapter-less until an authoritative customer/API contract is available, and does not enable writes or claim sandbox/tenant evidence.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "parsec-traksys",
+      "name": "Parsec TrakSYS",
+      "category": "mes-industrial-connectivity",
+      "priority": "P1",
+      "protocols": [
+        "REST",
+        "OPC UA",
+        "MQTT",
+        "Sparkplug B",
+        "files"
+      ],
+      "auth": "vendor-rbac-authenticated-endpoint",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.parsec-corp.com/traksys-connect",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://www.parsec-corp.com/traksys-connect",
+      "evidenceNote": "Parsec's current TrakSYS Connect documentation explicitly lists native OPC UA, MQTT, REST and SQL support, open APIs, role-based access, encrypted/authenticated connections, multi-site normalization and on-prem/cloud/hybrid deployment. Parsec's integrations documentation also documents CSV/XML and other file-based ingestion, configurable mapping/transformation and standardized error handling/recovery. TrakSYS 14 is generally available from 17 February 2026 and adds native Sparkplug B MQTT support. WFM reuses its existing protocol adapters; because the same product can sit close to plant networks and its integration surfaces can support bidirectional automation, the normal WFM connector remains read-only and conservatively routes industrial access through the customer/site edge until the exact tenant topology and endpoint are evidenced. No TrakSYS tenant or credentials were used.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.parsec-corp.com/integrations",
+        "requiredPermissions": [
+          "dedicated TrakSYS integration identity with the minimum role-based read visibility required for approved production, quality, maintenance and equipment data",
+          "read/subscription-only OPC UA or MQTT identity where plant telemetry is required; no process-control or publish authority in the normal WFM connector",
+          "read-only REST endpoints or customer-approved export/file locations where available",
+          "customer/site edge for plant-network protocols unless an exact vendor-managed cloud endpoint and tenant routing boundary are separately proven"
+        ],
+        "dataAvailableOrExpected": [
+          "contextualized equipment and machine-state data",
+          "production actuals, orders, work-centre and execution context exposed by the customer's TrakSYS model",
+          "downtime, OEE and shift-handoff evidence",
+          "quality and laboratory/compliance context when configured in TrakSYS",
+          "maintenance and IoT/edge signals where integrated into TrakSYS",
+          "site, line and equipment hierarchy plus normalized multi-site context",
+          "file/API integration data configured by the customer, including ERP, historian, LIMS and other connected-system context"
+        ],
+        "wfmObjects": [
+          "production-demand",
+          "work-centre",
+          "production-event",
+          "machine-state",
+          "downtime-event",
+          "maintenance-event",
+          "quality-event",
+          "shift-outcome",
+          "site",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "refresh labour demand from current production state and order execution rather than static schedules alone",
+          "redeploy labour when machines or lines stop while preserving source/event time and stale-data handling",
+          "join downtime, quality and maintenance evidence to staffing, skills mix and overtime for root-cause analysis",
+          "reuse TrakSYS site/line/equipment hierarchy during implementation to reduce manual work-centre mapping",
+          "attribute paid labour to actual output, downtime and quality outcomes for finance and executive reporting",
+          "after separate write certification, consider tightly scoped event/workflow hand-offs without granting industrial-control authority"
+        ],
+        "customerValue": [
+          "labour-cost reduction",
+          "overtime reduction",
+          "scheduling efficiency",
+          "production throughput",
+          "downtime reduction",
+          "maintenance coordination",
+          "quality/rework reduction",
+          "faster implementation",
+          "reduced administration",
+          "forecasting",
+          "finance attribution",
+          "executive reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce paid idle time by matching staffing decisions to live and historical line state",
+          "reduce avoidable overtime by detecting production disruption and recovery earlier",
+          "reduce integration and implementation effort by reusing TrakSYS' normalized multi-site manufacturing model instead of building machine-specific mappings",
+          "improve labour-cost-per-unit and downtime-cost attribution by joining WFM paid time with TrakSYS execution evidence",
+          "reduce quality and maintenance disruption cost by correlating the worker/skill mix with repeat operational outcomes"
+        ],
+        "dataGaps": [
+          "public documentation does not define a universal TrakSYS REST authentication mechanism or least-privilege API role for every deployment",
+          "worker identity, payroll, absence, agency labour and authoritative qualifications normally remain in HCM/WFM/LMS rather than TrakSYS",
+          "the customer TrakSYS object model, tags, work-centre identifiers and custom integrations are configuration-specific",
+          "cloud, private-cloud, centralized and plant-local deployments can expose different reachable endpoints and network boundaries",
+          "vendor public material confirms SQL connectivity but does not establish a single portable database driver/read schema for WFM"
+        ],
+        "constraintsRisks": [
+          "OPC UA and MQTT surfaces can be bidirectional, so read/subscription authority must be independently constrained and industrial writes remain disabled",
+          "TrakSYS can be on-prem, cloud or hybrid; topology must be discovered before selecting direct-cloud versus site-edge routing",
+          "multi-site templates still allow local configuration, so site-specific schema drift and identifier reconciliation must be fingerprinted",
+          "Sparkplug B birth/death, retained state and reconnect semantics can make replayed state look current unless source time and freshness are preserved",
+          "file and API exchanges can contain duplicated or partial production data and must use idempotency, quarantine and reconciliation controls"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST, OPC UA, MQTT/Sparkplug B and file adapters. In an authorised TrakSYS sandbox or customer tenant, identify the exact deployment topology and supported endpoint versions, create a dedicated least-privilege read identity, prove representative production/work-centre/machine-state reads or subscriptions through the correct edge boundary, test reconnect/replay/rate-limit/pagination/error behaviour as applicable, fingerprint customer models and custom fields, reconcile site/line/work-centre identities, and normalise representative records before promotion beyond spec verification."
+      }
+    },
+    {
+      "id": "l2l-connected-manufacturing-operations",
+      "name": "L2L Connected Manufacturing Operations Platform",
+      "category": "frontline-operations-mes-cmms-learning-skills",
+      "priority": "P1",
+      "protocols": [],
+      "auth": "vendor-assisted-interface-not-publicly-specified",
+      "researchStatus": "research-queued",
+      "docsUrl": "https://www.l2l.com/platform/integrations",
+      "testLevel": "discovery-queued",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://www.l2l.com/platform/integrations",
+      "evidenceNote": "L2L's current vendor material documents integration with ERP, MES, EAM/CMMS, scheduling, SCADA/OPC, IIoT, BI, QMS, LMS and EHS systems, and documents production actuals, scrap, downtime, minor stops, predictive maintenance, orders and spare-parts data. L2L also describes an API-first approach and Technical Services-managed integrations, plus machine-data and application-sync packages. However, the public material reviewed does not expose a sufficiently authoritative reusable API/protocol/authentication contract for WFM to choose a connector safely. The system is therefore deliberately catalogued with no adapter and remains discovery-queued rather than receiving a guessed REST, OPC or file route. No L2L tenant or credentials were used.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.l2l.com/platform/integrations",
+        "requiredPermissions": [
+          "customer/vendor-approved integration interface documentation identifying the actual protocol, endpoint, authentication and scope model before any connector is selected",
+          "least-privilege read access to approved production, maintenance, worker/training or machine data once an interface is evidenced",
+          "no FlowEngine, shop-floor workflow, maintenance work-order or production-control action authority in the normal WFM read connector",
+          "site-edge boundary for any PLC/SCADA/IIoT route unless L2L provides a separately evidenced managed cloud integration endpoint"
+        ],
+        "dataAvailableOrExpected": [
+          "platform-level production actuals, scrap, downtime, minor stops and production-order context documented by L2L",
+          "maintenance and predictive-maintenance context plus spare-parts information",
+          "digital work instructions, frontline workflow and training/upskilling information present in the L2L platform",
+          "machine-level data used for OEE and downtime tracking where L2L machine-data integrations are deployed",
+          "real-time operational alerts and shop-floor execution context"
+        ],
+        "wfmObjects": [
+          "production-demand",
+          "production-event",
+          "work-centre",
+          "downtime-event",
+          "maintenance-event",
+          "training-completion",
+          "shift-outcome",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "use production/downtime context to refresh staffing and recovery recommendations once a supported read interface is proven",
+          "join training/upskilling evidence to scheduling-readiness checks while keeping customer qualification policy authoritative",
+          "use maintenance and machine-health context to anticipate technician demand and reduce emergency overtime",
+          "reuse production orders and shop-floor execution context to reduce manual administration and improve labour-to-output attribution",
+          "after separate write certification, evaluate narrow workflow hand-offs without granting broad FlowEngine or production-control authority"
+        ],
+        "customerValue": [
+          "labour-cost reduction",
+          "overtime reduction",
+          "scheduling efficiency",
+          "skills deployment",
+          "production throughput",
+          "downtime reduction",
+          "maintenance coordination",
+          "faster implementation",
+          "reduced administration",
+          "forecasting",
+          "finance attribution",
+          "executive reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce manual shop-floor and planning data re-entry if L2L production/order data can be reused through a supported interface",
+          "reduce paid idle time and emergency overtime by joining downtime and maintenance events to WFM labour decisions",
+          "reduce training-administration effort by reusing frontline training/upskilling evidence where the supported interface exposes it",
+          "improve labour productivity and cost attribution by correlating L2L execution outcomes with WFM paid time"
+        ],
+        "dataGaps": [
+          "the public vendor material reviewed does not publish the reusable API endpoint/authentication/scope contract needed for safe autonomous integration",
+          "it is not established publicly which platform data is exposed through customer APIs versus vendor Technical Services integrations",
+          "training content/progress does not automatically establish a legal qualification or work-eligibility decision",
+          "authoritative payroll, employment, absence and agency-worker records normally remain outside L2L",
+          "customer site/line/machine/worker identifiers require deterministic reconciliation with HCM, MES, ERP and WFM masters"
+        ],
+        "constraintsRisks": [
+          "marketing-level 'API-first' and integration claims are not sufficient evidence to select REST or another adapter",
+          "machine connectivity can touch PLC/SCADA/IIoT networks, so direct cloud discovery must never be inferred from general integration claims",
+          "L2L supports automation and shop-floor actions, making read versus action authority a material security boundary",
+          "vendor-assisted/custom integration routes may vary by customer package and region",
+          "without a published contract, rate limits, pagination, webhook delivery semantics, schema versioning and retry/idempotency behaviour remain unverified"
+        ],
+        "nextDevelopmentAction": "Do not guess an adapter. Obtain authoritative L2L customer/developer documentation or an authorised tenant/integration package that identifies the supported protocol, endpoints, authentication, scopes, versioning and read semantics. Then map that contract onto an existing reusable protocol profile where possible, prove read-only effective permissions and representative production/maintenance/training reads, and only then promote beyond discovery-queued."
+      }
+    }
+  ]
+}
