@@ -3,12 +3,6 @@ name: Invisible Attendance Safety
 on:
   push:
     branches:
-      - feature/invisible-attendance-v1
-    paths:
-      - 'clocking-security-v2/**'
-      - '.github/workflows/invisible-attendance-safety.yml'
-  pull_request:
-    branches:
       - main
       - feature/invisible-attendance-v1
     paths:
@@ -25,8 +19,8 @@ concurrency:
 
 jobs:
   node-safety:
-    if: (github.event_name == 'workflow_dispatch' && github.actor == github.repository_owner) || (github.event_name == 'push' && github.actor == github.repository_owner) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: ubuntu-latest
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Checkout trusted owner push
