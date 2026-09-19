@@ -11,6 +11,8 @@ const KPI_MARKER='VECTOR_KPI_EVIDENCE_V1';
 const IDENTITY_MARKER='VECTOR_IDENTITY_SOURCE_BOUND_V1';
 const LEAVE_MARKER='VECTOR_LEAVE_SOURCE_BOUND_V1';
 const ACTION_MARKER='VECTOR_ACTION_SOURCE_BOUND_V1';
+const ACTION_EVIDENCE_CONTRACT='WFM_WORKFLOW_ACTION_EVIDENCE_V1';
+const TIME_REVIEW_EVIDENCE_PATH='/api/workforce/lifecycle/action-evidence/time-review';
 const NAV=[
   {label:'Home', icon:'home', routes:['overview']},
   {label:'People', icon:'people', routes:['org-admin','organisation','resources']},
@@ -26,7 +28,7 @@ const NAV=[
   {label:'Admin', icon:'settings', routes:['onboarding','org-admin','company-settings','op-settings']}
 ];
 const RETIRED_ROUTE_REDIRECTS=Object.freeze({'weekly-review':'time-review','savings-decisions':'costs'});
-const state={queued:false};
+const state={queued:false,timeReviewEvidence:{status:'idle',items:[]}};
 const observerConfig={subtree:true,childList:true};
 let shellObserver=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -96,12 +98,40 @@ function scopedReportTeams(report){
   return teams.filter(t=>[t?.id,t?.name,t?.team,t?.site,t?.siteId].filter(Boolean).some(v=>tokens.has(String(v))));
 }
 function teamLabel(team){return String(team?.name||team?.team||team?.site||team?.id||'Team');}
+const ACTION_CONFIRMATION_STATES=new Set(['action_required','decision_sent','confirming_source','needs_verification','resolved']);
+const ACTION_FRESHNESS_STATES=new Set(['current','stale','unknown']);
+function acceptTimeReviewEvidenceItem(item){
+  if(!item||typeof item!=='object'||Array.isArray(item))return null;
+  if(item.contractVersion!==ACTION_EVIDENCE_CONTRACT||item.workflow!=='time-review')return null;
+  if(!String(item.sourceId||'').trim()||!/^[A-Z0-9_]+$/.test(String(item.reasonCode||''))||!String(item.authorityRequired||'').trim())return null;
+  if(!Number.isFinite(Date.parse(String(item.observedAt||''))))return null;
+  const freshness=item.freshness,confirmation=item.confirmation;
+  if(!freshness||typeof freshness!=='object'||!ACTION_FRESHNESS_STATES.has(String(freshness.state||'').toLowerCase()))return null;
+  const freshnessState=String(freshness.state||'').toLowerCase();
+  if(freshnessState!=='unknown'&&!String(freshness.policyRef||'').trim())return null;
+  if(freshnessState==='current'&&!Number.isFinite(Date.parse(String(freshness.validUntil||''))))return null;
+  if(!confirmation||typeof confirmation!=='object'||!ACTION_CONFIRMATION_STATES.has(String(confirmation.state||'').toLowerCase()))return null;
+  const confirmationState=String(confirmation.state||'').toLowerCase();
+  if(confirmationState==='needs_verification'&&confirmation.slaExpired!==true)return null;
+  if(confirmationState==='resolved'&&(!Number.isFinite(Date.parse(String(confirmation.confirmedAt||'')))||!String(confirmation.auditRef||'').trim()))return null;
+  return item;
+}
+function actionStatus(value){return ({action_required:'Action required',decision_sent:'Decision sent',confirming_source:'Confirming source',needs_verification:'Needs verification',resolved:'Resolved'})[String(value||'').toLowerCase()]||'Needs review';}
+function actionFreshness(value){return value==='current'?'Source reports current evidence':value==='stale'?'Source reports stale evidence':'Freshness not asserted by source';}
+function timeReviewEvidenceRows(){
+  if(state.timeReviewEvidence.status!=='ready')return [];
+  return state.timeReviewEvidence.items.filter(item=>String(item?.confirmation?.state||'').toLowerCase()!=='resolved').map(item=>({
+    title:String(item.title||item.reasonCode||'Time Review item'),
+    detail:`${String(item.whyNow||'Review source workflow evidence.')} ${actionFreshness(String(item.freshness?.state||'unknown').toLowerCase())}. Authority: ${String(item.authorityRequired)}.`,
+    route:'time-review',tone:'blue',action:'Review',status:actionStatus(item.confirmation?.state)
+  }));
+}
 function structuredReviewRows(){
   if(employee())return [];
-  const rows=[],report=payrollReport();
+  const contractRows=timeReviewEvidenceRows(),rows=[...contractRows],report=payrollReport(),hasContractTimeReview=contractRows.length>0;
   for(const team of scopedReportTeams(report)){
     const open=(Array.isArray(team?.issues)?team.issues:[]).filter(issue=>String(issue?.status||'').toLowerCase()==='open');
-    if(open.length)rows.push({title:`${teamLabel(team)} · ${open.length} time ${open.length===1?'exception needs':'exceptions need'} review`,detail:'Open time evidence is reported by the source workflow.',route:'time-review',tone:'blue',action:'Review',status:'Needs review'});
+    if(!hasContractTimeReview&&open.length)rows.push({title:`${teamLabel(team)} · ${open.length} time ${open.length===1?'exception needs':'exceptions need'} review`,detail:'Open time evidence is reported by the source workflow.',route:'time-review',tone:'blue',action:'Review',status:'Needs review'});
     const status=String(team?.status||'').toLowerCase();
     if(status==='stale')rows.push({title:`${teamLabel(team)} · signed week changed`,detail:'The source workflow reports that signed evidence changed.',route:'time-review',tone:'blue',action:'Review',status:'Needs review'});
     else if(status==='returned')rows.push({title:`${teamLabel(team)} · week returned for review`,detail:'The source workflow reports that this week was returned.',route:'time-review',tone:'blue',action:'Review',status:'Needs review'});
@@ -115,6 +145,25 @@ function structuredReviewRows(){
     rows.push({title:`${p?.name||request.employeeName||'Employee'} · leave request`,detail:'Pending leave request requires a manager decision in Absence & Leave.',route:'leave',tone:'blue',action:'Review',status:'Needs review'});
   }}catch{}
   return rows;
+}
+function refreshActionSurfaces(){
+  const rows=structuredReviewRows();
+  const current=document.querySelector('.vector-alerts');if(current)current.outerHTML=alertsMarkup(rows);
+  const badge=document.querySelector('.vector-notification-count');if(badge){badge.textContent=String(rows.length);badge.hidden=!rows.length;}
+}
+async function loadTimeReviewEvidence(){
+  if(employee()||state.timeReviewEvidence.status!=='idle')return;
+  state.timeReviewEvidence={status:'loading',items:[]};
+  try{
+    const response=await fetch(TIME_REVIEW_EVIDENCE_PATH,{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
+    if(!response.ok)throw new Error('time-review evidence unavailable');
+    const body=await response.json();
+    if(!body||body.contractVersion!==ACTION_EVIDENCE_CONTRACT||body.workflow!=='time-review'||!Array.isArray(body.items))throw new Error('time-review evidence contract mismatch');
+    state.timeReviewEvidence={status:'ready',items:body.items.map(acceptTimeReviewEvidenceItem).filter(Boolean)};
+  }catch{
+    state.timeReviewEvidence={status:'unavailable',items:[]};
+  }
+  refreshActionSurfaces();
 }
 function leaveDate(value){const d=new Date(value);return Number.isFinite(d.getTime())?d:null;}
 function leaveWhen(value){const d=leaveDate(value);return d?new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'2-digit',month:'short'}).format(d):'Date unavailable';}
@@ -141,7 +190,7 @@ function leaveMarkup(rows){const body=rows.length?rows.slice(0,4).map((r,i)=>`<b
 function promoMarkup(){return '<aside class="vector-promo"><div><h2>A more productive<br>tomorrow starts today.</h2><p>Empowered people.<br>Stronger manufacturers.</p></div><div class="vector-promo-brand"><span class="vector-mark small"><i></i><i></i><i></i></span><b>Vector.</b></div></aside>';}
 function renderHome(content){if(content.dataset.vectorHome==='1')return;const source=document.createElement('div');source.className='vector-home-source';while(content.firstChild)source.appendChild(content.firstChild);content.appendChild(source);const m=metrics(source),departments=departmentRows(source),actions=structuredReviewRows(),leaves=leaveRows(),d=currentDate();const home=document.createElement('div');home.className='vector-home';home.innerHTML=`<section class="vector-welcome" data-vector-identity="${IDENTITY_MARKER}"><div><h1>${esc(greeting())}, ${esc(firstName())}</h1><p>${esc(siteSentence())}</p></div><div class="vector-date"><b>${esc(d.date)}</b><span>Week ${esc(d.week)}</span></div></section><div class="vector-home-top"><div class="vector-home-main"><section class="vector-kpi-grid" data-vector-kpi-evidence="${KPI_MARKER}">${kpiMarkup(m)}</section>${shiftsMarkup(departments)}</div>${buildAssistant()}</div>${secondaryKpis(m)}<div class="vector-bottom-grid">${alertsMarkup(actions)}${leaveMarkup(leaves)}${promoMarkup()}</div>`;content.prepend(home);content.dataset.vectorHome='1';document.title='Vector · Workforce Operations';}
 function generalPage(content){if(content.dataset.vectorHome==='1')return;content.classList.add('vector-page-content');}
-function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi='approved-reference-v1';app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(page()==='overview')renderHome(content);else generalPage(content);updateNav();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
+function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi='approved-reference-v1';app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(page()==='overview')renderHome(content);else generalPage(content);updateNav();void loadTimeReviewEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
 document.addEventListener('click',e=>{const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec)go(firstRoute(spec.routes));return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('time-review');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askWorkforce(input.value.trim());}});
 const previousRender=window.render;
