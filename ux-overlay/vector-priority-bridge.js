@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const MARKER='VECTOR_PRIORITY_BRIDGE_V1';
-const state={queued:false};
+const state={queued:false,focusToken:0};
 const page=()=>{try{return String(ui?.page||'overview');}catch{return 'overview';}};
 
 function content(){return document.querySelector('.content');}
@@ -41,6 +41,28 @@ function newestSourceQueue(){
   return rows.length?rows[rows.length-1]:null;
 }
 
+function restoreProjectedFocus(queue){
+  const marker=window.WFMUXCycle11?.returnMarker?.();
+  if(!marker?.id||!queue)return false;
+  const token=++state.focusToken;
+  const focus=(attempt=0)=>{
+    if(token!==state.focusToken)return;
+    const currentMarker=window.WFMUXCycle11?.returnMarker?.();
+    if(!currentMarker||currentMarker.id!==marker.id)return;
+    const byId=`.ux11-open[data-ux11-id="${CSS.escape(marker.id)}"]`;
+    const byRoute=marker.route&&marker.sourceId?`.ux11-open[data-ux11-route="${CSS.escape(marker.route)}"][data-ux11-source-id="${CSS.escape(marker.sourceId)}"]`:null;
+    const target=queue.querySelector(byId)||(byRoute?queue.querySelector(byRoute):null);
+    const visible=Boolean(target?.isConnected&&!target.closest('[hidden]')&&target.getClientRects().length);
+    if(visible){
+      try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}
+      if(document.activeElement===target){try{sessionStorage.removeItem('wfmUx11Return');}catch{}return;}
+    }
+    if(attempt<20)setTimeout(()=>focus(attempt+1),40);
+  };
+  focus();
+  return true;
+}
+
 function project(){
   repairVectorPageState();
   if(page()!=='overview')return false;
@@ -54,7 +76,7 @@ function project(){
   }
   const active=slot.querySelector(':scope > .ux11-queue');
   slot.hidden=!active;
-  if(active&&!slot.hidden&&window.WFMUXCycle11?.returnMarker?.())window.WFMUXCycle11.restoreFocus?.(active);
+  if(active&&!slot.hidden)restoreProjectedFocus(active);
   return Boolean(active);
 }
 
