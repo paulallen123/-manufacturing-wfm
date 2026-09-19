@@ -24,12 +24,13 @@ test('ADP WorkForce Suite compiles REST SOAP and file routes',()=>{
   assert.ok(c.adapters.some(x=>x.id==='files-sftp'));
 });
 
-test('Siemens Insights Hub reuses read-only REST event and file profiles',()=>{
+test('Siemens Insights Hub stays on the proven read-only REST route',()=>{
   const c=connectorById('siemens-insights-hub');
   assert.equal(c.evidenceLevel,'spec-verified');
+  assert.deepEqual(c.protocols,['REST']);
   assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
-  assert.ok(c.adapters.some(x=>x.id==='webhooks-events'));
-  assert.ok(c.adapters.some(x=>x.id==='files-sftp'));
+  assert.equal(c.adapters.some(x=>x.id==='webhooks-events'),false);
+  assert.equal(c.adapters.some(x=>x.id==='files-sftp'),false);
   assert.ok(c.canonicalTargets.includes('machine-state'));
   assert.ok(c.canonicalTargets.includes('downtime-event'));
   assert.equal(c.security.writeEnabled,false);
