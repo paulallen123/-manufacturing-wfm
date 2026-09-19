@@ -1,5 +1,5 @@
 function iso(ms){ return ms==null?null:new Date(ms).toISOString(); }
-function keyOf(tenant,sourceId){ return `${tenant}:${sourceId}`; }
+function keyOf(tenant,sourceId){ return JSON.stringify([String(tenant),String(sourceId)]); }
 
 /**
  * Provider-neutral 24/7 continuity supervisor for all attendance evidence feeds.
@@ -165,7 +165,7 @@ export class AttendanceSourceSupervisor {
   #queueBackfill(c,details){
     if(!c.supportsBackfill) return;
     const windowId=c.window.id;
-    const signature=`${c.tenant}:${c.sourceId}:${windowId||'no-window'}:${details.reason}:${details.fromMs??'start'}:${details.toMs??'now'}`;
+    const signature=JSON.stringify([String(c.tenant),String(c.sourceId),String(windowId||'no-window'),String(details.reason),String(details.fromMs??'start'),String(details.toMs??'now')]);
     if(this.recovery.some(j=>j.signature===signature&&j.status==='pending')) return;
     const sequenceEvidence=details.reason==='SEQUENCE_GAP'&&Number.isSafeInteger(details.expected)&&Number.isSafeInteger(details.received)&&details.received>details.expected
       ? {missingCount:details.received-details.expected,recoveredSequences:[]}
