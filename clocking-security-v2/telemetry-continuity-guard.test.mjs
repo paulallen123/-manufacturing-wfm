@@ -15,8 +15,8 @@ function guard(options={}){
     ...options
   });
 }
-function sign(kind,{stream='http',sequence,canaryId,observedAtMs},key=privateKey,trustDomain=TRUST_DOMAIN){
-  return crypto.sign(null,telemetryObserverPayload({trustDomain,kind,stream,sequence,canaryId,observedAtMs}),key).toString('base64');
+function sign(kind,{stream='http',sequence,canaryId,emittedAtMs,observedAtMs},key=privateKey,trustDomain=TRUST_DOMAIN){
+  return crypto.sign(null,telemetryObserverPayload({trustDomain,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}),key).toString('base64');
 }
 function heartbeat(g,{stream='http',sequence,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
   return g.observeHeartbeat({stream,sequence,observedAtMs,receivedAtMs,observerId,signature:sign('heartbeat',{stream,sequence,observedAtMs},key)});
@@ -24,8 +24,9 @@ function heartbeat(g,{stream='http',sequence,observedAtMs,receivedAtMs=observedA
 function backfill(g,{stream='http',sequence,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
   return g.observeBackfillHeartbeat({stream,sequence,observedAtMs,receivedAtMs,observerId,signature:sign('backfill_heartbeat',{stream,sequence,observedAtMs},key)});
 }
-function canary(g,{canaryId,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
-  return g.observeCanary({canaryId,observedAtMs,receivedAtMs,observerId,signature:sign('canary',{stream:'http',canaryId,observedAtMs},key)});
+function canary(g,{canaryId,emittedAtMs,observedAtMs,receivedAtMs=observedAtMs,observerId='observer-a',key=privateKey}={}){
+  const emitted=emittedAtMs ?? g.canaries.get(canaryId)?.emittedAtMs;
+  return g.observeCanary({canaryId,observedAtMs,receivedAtMs,observerId,signature:sign('canary',{stream:'http',canaryId,emittedAtMs:emitted,observedAtMs},key)});
 }
 function healthy(options={}){
   const g=guard(options);
@@ -79,6 +80,19 @@ test('heartbeat signature cannot be repurposed as canary proof',()=>{
   g.emitCanary({canaryId:'c1',emittedAtMs:T,stream:'http'});
   const reused=sign('heartbeat',{sequence:1,observedAtMs:T+1_000});
   assert.throws(()=>g.observeCanary({canaryId:'c1',observedAtMs:T+1_000,receivedAtMs:T+1_000,observerId:'observer-a',signature:reused}),/signature verification/);
+});
+
+test('signed canary proof cannot be replayed after restart against a re-emitted identifier',()=>{
+  const previous=guard();
+  previous.emitCanary({canaryId:'restart-canary',emittedAtMs:T,stream:'http'});
+  const observedAtMs=T+11_000;
+  const oldSignature=sign('canary',{stream:'http',canaryId:'restart-canary',emittedAtMs:T,observedAtMs});
+
+  const restarted=guard();
+  restarted.emitCanary({canaryId:'restart-canary',emittedAtMs:T+10_000,stream:'http'});
+  assert.throws(()=>restarted.observeCanary({
+    canaryId:'restart-canary',observedAtMs,receivedAtMs:observedAtMs,observerId:'observer-a',signature:oldSignature
+  }),/signature verification/);
 });
 
 test('missing canary becomes fail-closed telemetry loss',()=>{
@@ -157,7 +171,7 @@ test('future heartbeat timestamp poisoning is rejected',()=>{
 
 test('unknown or replayed signed canary evidence is rejected',()=>{
   const g=guard();
-  const unknownSignature=sign('canary',{canaryId:'unknown',observedAtMs:T});
+  const unknownSignature=sign('canary',{canaryId:'unknown',emittedAtMs:T,observedAtMs:T});
   assert.throws(()=>g.observeCanary({canaryId:'unknown',observedAtMs:T,observerId:'observer-a',signature:unknownSignature}),/Unknown/);
   g.emitCanary({canaryId:'c1',emittedAtMs:T,stream:'http'});
   canary(g,{canaryId:'c1',observedAtMs:T+1});
