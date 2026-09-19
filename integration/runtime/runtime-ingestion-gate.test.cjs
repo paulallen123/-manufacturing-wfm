@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { reviewConnection, approvalFor } = require('./connection-proof-gate.cjs');
 const { seedAuthorityFence } = require('./source-authority-fence.cjs');
+const { makeApplyIntent, markApplyOutcome } = require('./apply-handoff-ledger.cjs');
 const { makeDurableStageReceipt, validateDurableStageReceipt, gateMappedObservation } = require('./runtime-ingestion-gate.cjs');
 
 const NOW = Date.parse('2026-09-19T13:44:00.000Z');
@@ -86,17 +87,23 @@ function readyInput(review, cfg, first, next) {
     stagedAt: '2026-09-19T13:43:31.000Z',
     durable: true
   }, NOW);
+  const applyLedgerEntry = makeApplyIntent(review, next, stageReceipt, {
+    recordedAt: '2026-09-19T13:43:32.000Z',
+    durable: true,
+    idempotencyEnforced: true
+  }, NOW);
   return {
     currentConfig: cfg,
     activationEvidence: evidence(review),
     circuitState: closedCircuit(review),
     fence,
     observation: next,
-    stageReceipt
+    stageReceipt,
+    applyLedgerEntry
   };
 }
 
-test('approved closed-circuit observation is ready only after durable staging', () => {
+test('approved closed-circuit observation is ready only after durable staging and idempotent apply intent', () => {
   const cfg = config();
   const review = reviewConnection(cfg);
   const first = observation(review);
@@ -117,6 +124,50 @@ test('missing or tampered durable stage proof blocks apply', () => {
   const check = validateDurableStageReceipt(review, next, tampered, NOW);
   assert.equal(check.valid, false);
   assert.ok(check.blockers.some((x) => x.includes('source position')));
+});
+
+test('durable stage without apply intent cannot enter WFM business mutation', () => {
+  const cfg = config();
+  const review = reviewConnection(cfg);
+  const first = observation(review);
+  const next = observation(review, { sourceOrdinal: '11', evidenceDigest: 'c'.repeat(64), observedAt: '2026-09-19T13:43:30.000Z' });
+  const input = readyInput(review, cfg, first, next);
+  const result = gateMappedObservation(review, { ...input, applyLedgerEntry: null }, NOW);
+  assert.equal(result.action, 'BLOCK');
+  assert.equal(result.reason, 'durable-apply-intent-required');
+});
+
+test('already-applied durable outcome advances authority without repeating the WFM mutation', () => {
+  const cfg = config();
+  const review = reviewConnection(cfg);
+  const first = observation(review);
+  const next = observation(review, { sourceOrdinal: '11', evidenceDigest: 'c'.repeat(64), observedAt: '2026-09-19T13:43:30.000Z' });
+  const input = readyInput(review, cfg, first, next);
+  const applied = markApplyOutcome(input.applyLedgerEntry, {
+    status: 'APPLIED',
+    recordedAt: '2026-09-19T13:43:40.000Z',
+    durable: true,
+    effectDigest: 'd'.repeat(64)
+  }, NOW);
+  const result = gateMappedObservation(review, { ...input, applyLedgerEntry: applied }, NOW);
+  assert.equal(result.action, 'ADVANCE_FENCE_NO_APPLY');
+  assert.equal(result.nextFence.sourceOrdinal, '11');
+});
+
+test('ambiguous prior WFM apply outcome must reconcile before any retry', () => {
+  const cfg = config();
+  const review = reviewConnection(cfg);
+  const first = observation(review);
+  const next = observation(review, { sourceOrdinal: '11', evidenceDigest: 'c'.repeat(64), observedAt: '2026-09-19T13:43:30.000Z' });
+  const input = readyInput(review, cfg, first, next);
+  const ambiguous = markApplyOutcome(input.applyLedgerEntry, {
+    status: 'AMBIGUOUS',
+    recordedAt: '2026-09-19T13:43:40.000Z',
+    durable: true
+  }, NOW);
+  const result = gateMappedObservation(review, { ...input, applyLedgerEntry: ambiguous }, NOW);
+  assert.equal(result.action, 'RECONCILE_BEFORE_APPLY');
+  assert.equal(result.nextFence, null);
 });
 
 test('changed current configuration invalidates historic activation before data admission', () => {
@@ -151,14 +202,14 @@ test('duplicate, stale and generation-reset observations preserve authority deci
   const first = observation(review);
   const base = readyInput(review, cfg, first, observation(review, { sourceOrdinal: '11', evidenceDigest: 'c'.repeat(64), observedAt: '2026-09-19T13:43:30.000Z' }));
 
-  const duplicate = gateMappedObservation(review, { ...base, observation: first, stageReceipt: null }, NOW);
+  const duplicate = gateMappedObservation(review, { ...base, observation: first, stageReceipt: null, applyLedgerEntry: null }, NOW);
   assert.equal(duplicate.action, 'NOOP');
 
   const stale = observation(review, { sourceOrdinal: '9', evidenceDigest: 'd'.repeat(64) });
-  assert.equal(gateMappedObservation(review, { ...base, observation: stale, stageReceipt: null }, NOW).action, 'QUARANTINE');
+  assert.equal(gateMappedObservation(review, { ...base, observation: stale, stageReceipt: null, applyLedgerEntry: null }, NOW).action, 'QUARANTINE');
 
   const reset = observation(review, { sourceEpoch: 'suiteql-watermark-v2', sourceOrdinal: '1', evidenceDigest: 'e'.repeat(64) });
-  assert.equal(gateMappedObservation(review, { ...base, observation: reset, stageReceipt: null }, NOW).action, 'RECONCILE_BEFORE_APPLY');
+  assert.equal(gateMappedObservation(review, { ...base, observation: reset, stageReceipt: null, applyLedgerEntry: null }, NOW).action, 'RECONCILE_BEFORE_APPLY');
 });
 
 test('future-dated observation cannot mint a durable apply receipt', () => {
