@@ -4,7 +4,7 @@ import {buildConnectorRegistry,connectorById} from './connector-registry.mjs';
 
 test('effective catalogue compiles safely and preserves explicit interface gaps',()=>{
   const registry=buildConnectorRegistry();
-  assert.equal(registry.connectors.length,163);
+  assert.equal(registry.connectors.length,165);
   assert.deepEqual(registry.connectors.filter(x=>x.adapters.length===0).map(x=>x.id),['schneider-resource-advisor']);
   for(const c of registry.connectors){
     assert.equal(c.security.readOnlyDefault,true,c.id);
@@ -47,6 +47,24 @@ test('Resource Advisor is an explicit value source with no invented connector ro
   assert.ok(c.canonicalTargets.includes('energy-event'));
   assert.ok(c.canonicalTargets.includes('cost-driver'));
   assert.equal(c.security.writeEnabled,false);
+});
+
+test('external-workforce VMS integrations reuse REST safely and populate contingent labour objects',()=>{
+  for(const id of ['beeline-enterprise','magnit-vms']){
+    const c=connectorById(id);
+    assert.equal(c.evidenceLevel,'spec-verified',id);
+    assert.ok(c.adapters.some(x=>x.id==='rest-openapi'),id);
+    assert.ok(c.canonicalTargets.includes('external-worker'),id);
+    assert.ok(c.canonicalTargets.includes('labour-cost'),id);
+    assert.equal(c.security.writeEnabled,false,id);
+    assert.equal(c.security.arbitraryEndpointAllowed,false,id);
+    assert.equal(c.nextEvidenceGate,'sandbox-authentication',id);
+  }
+  const beeline=connectorById('beeline-enterprise');
+  assert.ok(beeline.adapters.some(x=>x.id==='webhooks-events'));
+  assert.ok(beeline.adapters.some(x=>x.id==='files-sftp'));
+  const magnit=connectorById('magnit-vms');
+  assert.deepEqual(magnit.protocols,['REST']);
 });
 
 test('legacy Oracle manufacturing estates use published service routes',()=>{
