@@ -28,6 +28,8 @@ const jsFiles = [
   'resilience/prior-corpus-evidence-verifier.cjs',
   'resilience/ci-provider-failover.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
+  'scripts/select-prior-corpus-evidence.mjs',
+  'scripts/hydrate-prior-corpus-github.mjs',
   'scripts/validate-autonomy-source-syntax.mjs',
   'scripts/validate-canonical-release-boundary.mjs',
   'scripts/validate-resilience-scenarios.mjs',
@@ -41,6 +43,7 @@ const jsFiles = [
   'scripts/validate-autonomous-repair-pipeline.mjs',
   'scripts/validate-canary-rollback-controller.mjs',
   'scripts/validate-autonomous-repair-canary-orchestrator.mjs',
+  'scripts/validate-ci-provider-failover.mjs',
   'scripts/validate-t3-shadow-support.mjs',
   'scripts/validate-t3-customer-authorisation-gate.mjs',
   'scripts/validate-t3-execution-readiness.mjs',
@@ -53,6 +56,7 @@ const jsFiles = [
   'scripts/validate-incident-regression-corpus.mjs',
   'scripts/validate-persistent-incident-corpus.mjs',
   'scripts/validate-prior-corpus-evidence-verifier.mjs',
+  'scripts/validate-prior-corpus-selection-adapter.mjs',
 ];
 
 const checked = [];
@@ -92,6 +96,11 @@ for (const rel of [
 const workflowRel = '.github/workflows/wfm-zero-engineer-support-contract.yml';
 const workflow = fs.readFileSync(path.join(root, workflowRel), 'utf8');
 assert.equal(workflow.includes('\\n      - '), false, 'Workflow contains a literal escaped newline before a path item.');
+for (const forbiddenPermission of ['contents: write', 'actions: write', 'id-token: write']) {
+  assert.equal(workflow.includes(forbiddenPermission), false, `Autonomy proof workflow must remain read-only: ${forbiddenPermission}`);
+}
+assert.ok(workflow.includes('contents: read'), 'Workflow must retain read-only repository access.');
+assert.ok(workflow.includes('actions: read'), 'Workflow must retain read-only Actions access.');
 
 const requiredWorkflowPaths = [
   "      - 'resilience/autonomous-repair-factory.cjs'",
@@ -113,6 +122,8 @@ const requiredWorkflowPaths = [
   "      - 'resilience/autonomy-control-loop.cjs'",
   "      - 'resilience/incident-learning-planner.cjs'",
   "      - 'resilience/incident-regression-corpus.cjs'",
+  "      - 'resilience/prior-corpus-evidence-verifier.cjs'",
+  "      - 'resilience/ci-provider-failover.cjs'",
   "      - 'scripts/validate-autonomous-repair-factory.mjs'",
   "      - 'scripts/validate-isolated-repair-worker.mjs'",
   "      - 'scripts/validate-independent-repair-verifier.mjs'",
@@ -121,6 +132,7 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-canary-rollback-controller.mjs'",
   "      - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'",
   "      - 'scripts/validate-canonical-release-boundary.mjs'",
+  "      - 'scripts/validate-ci-provider-failover.mjs'",
   "      - 'scripts/validate-t3-shadow-support.mjs'",
   "      - 'scripts/validate-t3-customer-authorisation-gate.mjs'",
   "      - 'scripts/validate-t3-execution-readiness.mjs'",
@@ -132,6 +144,10 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-historical-incident-replay.mjs'",
   "      - 'scripts/validate-incident-regression-corpus.mjs'",
   "      - 'scripts/validate-persistent-incident-corpus.mjs'",
+  "      - 'scripts/validate-prior-corpus-evidence-verifier.mjs'",
+  "      - 'scripts/validate-prior-corpus-selection-adapter.mjs'",
+  "      - 'scripts/select-prior-corpus-evidence.mjs'",
+  "      - 'scripts/hydrate-prior-corpus-github.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
   "      - 'scripts/run-portable-autonomy-proof.mjs'",
 ];
@@ -139,49 +155,77 @@ for (const line of requiredWorkflowPaths) {
   assert.equal(workflow.split('\n').includes(line), true, `Workflow is missing exact path trigger: ${line.trim()}`);
 }
 
+const setupNodeIndex = workflow.indexOf('- name: Set up exact Node runtime');
 const hydrateCorpusIndex = workflow.indexOf('- name: Hydrate prior verified incident regression corpus');
 const classifyAnchorIndex = workflow.indexOf('- name: Classify canonical trust anchor');
 const portableProofIndex = workflow.indexOf('- name: Run canonical portable autonomy proof');
 const revalidateIndex = workflow.indexOf('- name: Revalidate canonical binding at proof completion');
 const receiptIndex = workflow.indexOf('- name: Assert portable proof receipt');
 const releaseFailClosedIndex = workflow.indexOf('- name: Enforce release evidence fail-closed boundary');
-assert.ok(hydrateCorpusIndex >= 0, 'Workflow must attempt to hydrate prior verified incident corpus evidence.');
+assert.ok(setupNodeIndex >= 0 && hydrateCorpusIndex > setupNodeIndex, 'Exact approved Node runtime must be established before prior-corpus hydration.');
 assert.ok(classifyAnchorIndex > hydrateCorpusIndex, 'Canonical trust-anchor classification must follow bounded prior-corpus hydration.');
 assert.ok(portableProofIndex > classifyAnchorIndex, 'Portable proof must execute after canonical trust-anchor classification.');
 assert.ok(revalidateIndex > portableProofIndex, 'Canonical binding must be revalidated after the portable proof.');
 assert.ok(receiptIndex > revalidateIndex, 'Proof receipt assertion must happen after canonical revalidation.');
-assert.ok(releaseFailClosedIndex > receiptIndex, 'Release fail-closed enforcement must happen after the portable logic proof and receipt assertion.');
-assert.ok(workflow.includes('actions: read'), 'Prior corpus hydration must use read-only Actions access.');
-assert.ok(workflow.includes('WFM_INCIDENT_CORPUS_INPUT'), 'Verified prior corpus must be passed to the provider-neutral proof only through its input contract.');
-assert.ok(workflow.includes("portable.get('status') == 'PASS'"), 'Prior corpus hydration must require a previously passing portable proof.');
-assert.ok(workflow.includes("envelope.get('portableProofSha256') == sha(portable_raw)"), 'Prior corpus hydration must verify the workflow envelope binds the prior portable proof bytes.');
-assert.ok(workflow.includes("corpus.get('snapshotSha256') == sha(snapshot_raw)"), 'Prior corpus hydration must verify the prior snapshot bytes against the portable proof.');
-assert.ok(workflow.includes("candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)"), 'Prior corpus hydration must deterministically select the newest eligible artifact rather than depend on API result ordering.');
-assert.ok(workflow.includes("'artifactCreatedAt': artifact.get('created_at')"), 'Selected prior corpus evidence must record the artifact creation time used for deterministic ordering.');
-assert.ok(workflow.includes('/actions/workflows/wfm-zero-engineer-support-contract.yml/runs?branch='), 'Prior corpus hydration must search this exact workflow history rather than unrelated repository artifacts.');
-assert.ok(workflow.includes('per_page=100&page=${PAGE}'), 'Prior corpus hydration must paginate workflow history rather than trust the first API page.');
-assert.ok(workflow.includes('for ROW in "${RUN_ROWS[@]}"'), 'Prior corpus hydration must search backward across completed runs.');
-assert.ok(workflow.includes("verification-failed:${REASON:-unknown}"), 'Invalid newer corpus candidates must be recorded and skipped rather than terminating backward search.');
-assert.ok(workflow.includes("STATUS='FAIL_CLOSED_DURABLE_HISTORY_UNAUTHENTICATED'"), 'Known durable corpus history must fail closed when no predecessor authenticates.');
-assert.ok(workflow.includes("STATUS='FAIL_CLOSED_PRIOR_EVIDENCE_UNAVAILABLE'"), 'Unavailable prior evidence must fail closed instead of silently bootstrapping from zero.');
-assert.ok(workflow.includes("status': 'PASS_SELECTED_VERIFIED_PREDECESSOR'"), 'Successful hydration must explicitly record a verified predecessor terminal.');
-assert.ok(workflow.includes('incident-regression-corpus-hydration.json'), 'Hydration selection/rejection evidence must be preserved with the proof artifact.');
-assert.ok(workflow.includes('hydrationValid ='), 'Proof receipt must independently validate workflow hydration evidence.');
-assert.ok(workflow.includes('incidentCorpusHydrationSha256'), 'Workflow-bound envelope must bind the hydration record bytes.');
-assert.ok(workflow.includes('priorCorpusExpected = Boolean(process.env.WFM_INCIDENT_CORPUS_INPUT)'), 'Proof receipt must independently confirm whether a verified prior corpus was actually injected.');
-assert.ok(workflow.includes('p.incidentRegressionCorpus.priorSnapshotLoaded === priorCorpusExpected'), 'Portable proof must agree with workflow hydration state.');
-assert.ok(workflow.includes('incident-regression-corpus.snapshot.json'), 'Workflow must persist the verified incident regression corpus snapshot.');
-assert.ok(workflow.includes('incident-regression-corpus-continuity.json'), 'Workflow must persist continuity evidence with the corpus snapshot.');
-assert.ok(workflow.includes('WFM_CANONICAL_TRUST_ANCHOR_PROTECTED'), 'Workflow must carry canonical trust-anchor state into the proof.');
-assert.ok(workflow.includes('FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED'), 'Workflow must preserve the explicit unprotected-anchor release blocker.');
+assert.ok(releaseFailClosedIndex > receiptIndex, 'Release fail-closed enforcement must happen after portable logic proof and receipt assertion.');
+
+const hydrationSection = workflow.slice(hydrateCorpusIndex, classifyAnchorIndex);
+assert.ok(hydrationSection.includes('node scripts/hydrate-prior-corpus-github.mjs'), 'Workflow hydration must delegate retrieval to the protected read-only GitHub adapter.');
+for (const duplicatedTrustLogic of [
+  "portable.get('status')",
+  'snapshot_raw',
+  'continuity.get(',
+  'accepted_envelope_states',
+  'workflow-proof-hash-or-authority-binding-failed',
+]) {
+  assert.equal(hydrationSection.includes(duplicatedTrustLogic), false, `Workflow must not duplicate provider-neutral verification semantics: ${duplicatedTrustLogic}`);
+}
+
+const hydratorSource = fs.readFileSync(path.join(root, 'scripts/hydrate-prior-corpus-github.mjs'), 'utf8');
+for (const required of [
+  "import { selectFromManifest } from './select-prior-corpus-evidence.mjs'",
+  "actions/workflows/${WORKFLOW_FILE}/runs",
+  'MAX_RUN_PAGES = 10',
+  'RUNS_PER_PAGE = 100',
+  'portable-autonomy-proof-${run.runId}',
+  "redirect: 'manual'",
+  "target.protocol !== 'https:'",
+  "spawnSync('unzip', ['-p'",
+  "unavailableReason: expired ? 'artifact-expired'",
+  'durableHistoryHint: Boolean(expired)',
+  'selectFromManifest({ manifestPath, receiptPath, selectedSnapshotPath })',
+  "appendEnvironment(githubEnv, 'WFM_INCIDENT_CORPUS_INPUT'",
+  "String(result.receipt.status).startsWith('FAIL_CLOSED_')",
+]) {
+  assert.ok(hydratorSource.includes(required), `GitHub hydration adapter lost required read-only/fail-closed behavior: ${required}`);
+}
+assert.equal(hydratorSource.includes('console.log(context.token)'), false, 'Hydration adapter must not print the ephemeral workflow token.');
+assert.equal(hydratorSource.includes('console.error(context.token)'), false, 'Hydration adapter must not print the ephemeral workflow token.');
+
+const receiptSection = workflow.slice(receiptIndex, releaseFailClosedIndex);
+assert.ok(receiptSection.includes('verifySelectionReceipt'), 'Proof receipt must validate hydration with the shared provider-neutral receipt verifier.');
+assert.ok(receiptSection.includes('hydration.selectedSnapshotSha256'), 'Proof receipt must bind the selected predecessor snapshot bytes.');
+assert.ok(receiptSection.includes('WFM_INCIDENT_CORPUS_INPUT'), 'Proof receipt must independently confirm whether a verified prior corpus was injected.');
+assert.ok(receiptSection.includes('p.incidentRegressionCorpus.priorSnapshotLoaded === priorCorpusExpected'), 'Portable proof must agree with workflow hydration state.');
+assert.ok(workflow.includes('incidentCorpusHydrationSha256'), 'Workflow-bound envelope must bind hydration receipt bytes.');
+assert.ok(workflow.includes('incidentCorpusHydrationSelectionDigest'), 'Workflow-bound envelope must bind shared selection receipt integrity.');
+assert.ok(workflow.includes('incidentCorpusHydrationSelectedEvidenceProofDigest'), 'Workflow-bound envelope must bind the selected predecessor evidence proof digest.');
+assert.ok(workflow.includes('incident-regression-corpus.snapshot.json'), 'Workflow must persist verified incident regression corpus snapshot.');
+assert.ok(workflow.includes('incident-regression-corpus-continuity.json'), 'Workflow must persist continuity evidence with corpus snapshot.');
+assert.ok(workflow.includes('incident-regression-corpus-hydration.json'), 'Workflow must persist provider-neutral hydration/selection evidence.');
+assert.ok(workflow.includes('WFM_CANONICAL_TRUST_ANCHOR_PROTECTED'), 'Workflow must carry canonical trust-anchor state into proof.');
+assert.ok(workflow.includes('FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED'), 'Workflow must preserve explicit unprotected-anchor release blocker.');
 
 const revalidateSection = workflow.slice(revalidateIndex, receiptIndex);
 assert.equal(revalidateSection.includes('git fetch --no-tags origin integration/canonical'), false, 'Revalidation must not depend on unauthenticated git fetch after persist-credentials:false checkout.');
-assert.ok(revalidateSection.includes('GH_TOKEN: ${{ github.token }}'), 'Revalidation must use the read-only workflow token explicitly.');
-assert.ok(revalidateSection.includes('/branches/integration/canonical'), 'Revalidation must query the live canonical branch state.');
-assert.ok(revalidateSection.includes('FINAL_CANONICAL_SHA'), 'Revalidation must compare the live canonical SHA with the proof binding.');
-assert.ok(revalidateSection.includes('$WFM_CANONICAL_BASE_SHA:release/release-policy.json'), 'Revalidation must recompute the policy blob from the immutable bound canonical SHA.');
-assert.ok(revalidateSection.includes('$WFM_CANONICAL_BASE_SHA'), 'Revalidation must recompute the merge tree from the immutable bound canonical SHA.');
+assert.ok(revalidateSection.includes('GH_TOKEN: ${{ github.token }}'), 'Revalidation must use read-only workflow token explicitly.');
+assert.ok(revalidateSection.includes('/branches/integration/canonical'), 'Revalidation must query live canonical branch state.');
+assert.ok(revalidateSection.includes('FINAL_CANONICAL_SHA'), 'Revalidation must compare live canonical SHA with proof binding.');
+assert.ok(revalidateSection.includes('$WFM_CANONICAL_BASE_SHA:release/release-policy.json'), 'Revalidation must recompute policy blob from immutable bound canonical SHA.');
+assert.ok(revalidateSection.includes('$WFM_CANONICAL_BASE_SHA'), 'Revalidation must recompute merge tree from immutable bound canonical SHA.');
+
+const repairFactorySource = fs.readFileSync(path.join(root, 'resilience/autonomous-repair-factory.cjs'), 'utf8');
+assert.ok(repairFactorySource.includes("'scripts/hydrate-prior-corpus-github.mjs'"), 'Autonomous repair worker must not be able to rewrite the prior-corpus retrieval adapter.');
 
 const portableProofSource = fs.readFileSync(path.join(root, 'scripts/run-portable-autonomy-proof.mjs'), 'utf8');
 for (const required of [
@@ -200,51 +244,27 @@ for (const required of [
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 4,
+  schemaVersion: 5,
   proof: 'autonomy-source-syntax-and-workflow-integrity',
   status: 'PASS',
   jsFilesChecked: checked.length,
-  isolatedWorkerDirectNetworkSurfaceDenied: true,
-  isolatedWorkerAmbientEnvironmentDenied: true,
-  independentVerifierDirectNetworkSurfaceDenied: true,
-  independentVerifierAmbientEnvironmentDenied: true,
-  disposableStagingDirectNetworkSurfaceDenied: true,
-  disposableStagingAmbientEnvironmentDenied: true,
-  repairPipelineDirectNetworkSurfaceDenied: true,
-  repairPipelineAmbientEnvironmentDenied: true,
-  canaryRollbackDirectNetworkSurfaceDenied: true,
-  canaryRollbackAmbientEnvironmentDenied: true,
-  repairToCanaryOrchestratorDirectNetworkSurfaceDenied: true,
-  repairToCanaryOrchestratorAmbientEnvironmentDenied: true,
-  canonicalReleaseBoundaryDirectNetworkSurfaceDenied: true,
-  canonicalReleaseBoundaryAmbientEnvironmentDenied: true,
-  t3ShadowDirectNetworkSurfaceDenied: true,
-  t3ShadowAmbientEnvironmentDenied: true,
-  t3CustomerAuthorisationDirectNetworkSurfaceDenied: true,
-  t3ExecutionReadinessDirectNetworkSurfaceDenied: true,
-  t3ExecutionReadinessAmbientEnvironmentDenied: true,
-  t3DeterministicExecutionSandboxDirectNetworkSurfaceDenied: true,
-  t3DeterministicExecutionSandboxAmbientEnvironmentDenied: true,
-  t4ContainmentDirectNetworkSurfaceDenied: true,
-  t4ContainmentAmbientEnvironmentDenied: true,
-  incidentLearningDirectNetworkSurfaceDenied: true,
-  incidentLearningAmbientEnvironmentDenied: true,
-  incidentRegressionCorpusDirectNetworkSurfaceDenied: true,
-  incidentRegressionCorpusAmbientEnvironmentDenied: true,
-  priorCorpusEvidenceVerifierDirectNetworkSurfaceDenied: true,
-  priorCorpusEvidenceVerifierAmbientEnvironmentDenied: true,
-  workflowLiteralEscapeCorruptionDenied: true,
+  authorityModulesDirectNetworkSurfaceDenied: true,
+  authorityModulesAmbientEnvironmentDenied: true,
+  workflowReadOnlyPermissionsRequired: true,
   workflowCriticalPathsPresent: true,
+  exactRuntimeEstablishedBeforeHydration: true,
+  githubHydrationRetrievalOnly: true,
+  providerNeutralSelectionVerifierReusedByWorkflow: true,
+  duplicateInlinePriorCorpusTrustLogicDenied: true,
+  artifactRedirectCredentialSeparationRequired: true,
+  archivePathTraversalSurfaceAvoidedByNamedExtraction: true,
+  expiredPriorEvidenceFailsClosed: true,
+  selectedSnapshotDigestRecheckedByReceipt: true,
+  hydrationEvidencePersistedAndBound: true,
   historicalReplayRequiredByPortableProof: true,
   persistentCorpusContinuityRequiredByPortableProof: true,
   priorCorpusEvidenceVerifierRequiredByPortableProof: true,
-  priorCorpusWorkflowEvidenceBindingRequired: true,
-  newestPriorCorpusArtifactSelectionRequired: true,
-  priorCorpusBackwardSearchRequired: true,
-  durableCorpusHistoryFailClosedRequired: true,
-  priorCorpusEvidenceUnavailableFailClosedRequired: true,
-  hydrationEvidencePersistedAndBound: true,
-  priorCorpusHydrationStateCrossChecked: true,
+  priorCorpusHydratorProtectedFromRepairAgent: true,
   canonicalTrustAnchorClassificationRequired: true,
   exactRuntimeLogicProofContinuesWhenReleaseTrustBlocked: true,
   authenticatedCanonicalRevalidationRequired: true,
