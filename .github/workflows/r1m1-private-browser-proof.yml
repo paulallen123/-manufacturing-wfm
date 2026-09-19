@@ -59,7 +59,7 @@ jobs:
           docker volume create "$volume" >/dev/null
           docker run --rm --network "$network" --user 0:0 -v "$volume:/state" --entrypoint sh wfm-r1m1-private-browser -ec 'chown 1000:1000 /state && chmod 0700 /state'
           docker run -d --name wfm-r1m1-private-browser --network "$network" \
-            -p 127.0.0.1:39119:3000 \
+            -p 127.0.0.1:8443:8443 \
             -v "$volume:/state" \
             -e PORT=3000 \
             -e NODE_ENV=staging \
@@ -83,27 +83,37 @@ jobs:
           const cert=fs.readFileSync(process.env.PROXY_CERT);
           const server=https.createServer({key,cert},(req,res)=>{
             const headers={...req.headers,host:'127.0.0.1:8443','x-forwarded-proto':'https','x-forwarded-host':'127.0.0.1:8443'};
-            const upstream=http.request({hostname:'127.0.0.1',port:39119,path:req.url,method:req.method,headers},r=>{
+            const upstream=http.request({hostname:'127.0.0.1',port:3000,path:req.url,method:req.method,headers},r=>{
               res.writeHead(r.statusCode||502,r.headers); r.pipe(res);
             });
             upstream.on('error',e=>{res.writeHead(502,{'content-type':'text/plain'});res.end(String(e));});
             req.pipe(upstream);
           });
-          server.listen(8443,'127.0.0.1',()=>console.log('private-https-proxy=READY'));
+          server.listen(8443,'0.0.0.0',()=>console.log('private-https-proxy=READY'));
           NODE
-          PROXY_KEY="$RUNNER_TEMP/wfm-private-browser/key.pem" PROXY_CERT="$RUNNER_TEMP/wfm-private-browser/cert.pem" \
-            node "$RUNNER_TEMP/wfm-private-browser/proxy.mjs" > "$RUNNER_TEMP/wfm-private-browser/proxy.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/wfm-private-browser/proxy.pid"
+          docker cp "$RUNNER_TEMP/wfm-private-browser/key.pem" wfm-r1m1-private-browser:/tmp/key.pem
+          docker cp "$RUNNER_TEMP/wfm-private-browser/cert.pem" wfm-r1m1-private-browser:/tmp/cert.pem
+          docker cp "$RUNNER_TEMP/wfm-private-browser/proxy.mjs" wfm-r1m1-private-browser:/tmp/proxy.mjs
+          docker exec --user 0:0 wfm-r1m1-private-browser sh -ec 'chmod 0444 /tmp/key.pem /tmp/cert.pem /tmp/proxy.mjs'
+          docker exec -d \
+            -e PROXY_KEY=/tmp/key.pem \
+            -e PROXY_CERT=/tmp/cert.pem \
+            wfm-r1m1-private-browser sh -c 'node /tmp/proxy.mjs > /tmp/proxy.log 2>&1'
 
           ready=0
           for _ in $(seq 1 80); do
             if curl -ksSf https://127.0.0.1:8443/api/health >/tmp/health.json; then ready=1; break; fi
             sleep 0.25
           done
-          test "$ready" = '1'
+          if [ "$ready" != '1' ]; then
+            docker logs wfm-r1m1-private-browser || true
+            docker exec wfm-r1m1-private-browser cat /tmp/proxy.log || true
+            exit 1
+          fi
           cat /tmp/health.json
-          ss -ltn '( sport = :8443 or sport = :39119 )' | tee "$RUNNER_TEMP/wfm-private-browser/listeners.txt"
-          ! grep -Eq '(^|[[:space:]])(0\.0\.0\.0|\[::\]):(8443|39119)' "$RUNNER_TEMP/wfm-private-browser/listeners.txt"
+          ss -ltn '( sport = :8443 )' | tee "$RUNNER_TEMP/wfm-private-browser/listeners.txt"
+          grep -Eq '127\.0\.0\.1:8443' "$RUNNER_TEMP/wfm-private-browser/listeners.txt"
+          ! grep -Eq '(^|[[:space:]])(0\.0\.0\.0|\[::\]):8443' "$RUNNER_TEMP/wfm-private-browser/listeners.txt"
           echo 'private-loopback-only=PASS'
 
       - name: Install pinned browser proof tools
@@ -197,6 +207,15 @@ jobs:
           })().catch(e=>{recordError(e);fs.writeFileSync('private-browser-proof.json',JSON.stringify(evidence,null,2));console.error(e);process.exit(1);});
           NODE
 
+      - name: Collect private proxy evidence
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          mkdir -p "$RUNNER_TEMP/wfm-private-browser"
+          docker cp wfm-r1m1-private-browser:/tmp/proxy.log "$RUNNER_TEMP/wfm-private-browser/proxy.log" 2>/dev/null
+          docker logs wfm-r1m1-private-browser > "$RUNNER_TEMP/wfm-private-browser/candidate.log" 2>&1
+
       - name: Upload private browser evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -206,6 +225,7 @@ jobs:
             ${{ runner.temp }}/wfm-private-browser/private-browser-proof.json
             ${{ runner.temp }}/wfm-private-browser/listeners.txt
             ${{ runner.temp }}/wfm-private-browser/proxy.log
+            ${{ runner.temp }}/wfm-private-browser/candidate.log
           if-no-files-found: warn
           retention-days: 7
 
@@ -214,7 +234,6 @@ jobs:
         shell: bash
         run: |
           set +e
-          if [ -f "$RUNNER_TEMP/wfm-private-browser/proxy.pid" ]; then kill "$(cat "$RUNNER_TEMP/wfm-private-browser/proxy.pid")" 2>/dev/null; fi
           docker rm -f wfm-r1m1-private-browser >/dev/null 2>&1
           docker volume rm "${WFM_PRIVATE_VOLUME:-}" >/dev/null 2>&1
           docker network rm "${WFM_PRIVATE_NETWORK:-}" >/dev/null 2>&1
