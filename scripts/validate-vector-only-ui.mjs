@@ -38,9 +38,22 @@ function walk(dir){
   }
 }
 walk(root);
+
+const vectorPath=path.join(root,'ux-overlay/vector-shell.js');
+if(!fs.existsSync(vectorPath)) violations.push({type:'missing-vector-owner',path:'ux-overlay/vector-shell.js'});
+else {
+  const vector=fs.readFileSync(vectorPath,'utf8');
+  if(!vector.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')) violations.push({type:'missing-vector-marker',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('VECTOR_REVIEW_NEUTRAL_V1')) violations.push({type:'missing-review-governance',path:'ux-overlay/vector-shell.js'});
+  if(vector.includes("tone:i===0?'red':i<3?'amber':'blue'")) violations.push({type:'presentation-inferred-urgency',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("tone:'blue',action:'Review',status:'Needs review'")) violations.push({type:'review-state-not-neutral',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('Review source evidence before acting.')||!vector.includes('aria-label="Review ${esc(r.title)}"')) violations.push({type:'review-accessibility-contract-missing',path:'ux-overlay/vector-shell.js'});
+}
+
 if(violations.length){
   console.error('VECTOR_ONLY_REPOSITORY_GUARD=FAIL');
   console.error(JSON.stringify(violations,null,2));
   process.exit(1);
 }
 console.log('VECTOR_ONLY_REPOSITORY_GUARD=PASS');
+console.log('VECTOR_NEUTRAL_REVIEW_CONTRACT=PASS');
