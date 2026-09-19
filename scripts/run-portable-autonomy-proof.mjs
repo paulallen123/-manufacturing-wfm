@@ -244,6 +244,7 @@ const receipt = {
   actualNode,
   providerNeutral: true,
   requiresGitHubHostedRunner: false,
+  priorCorpusEvidenceContinuityDigestRequired: true,
   canonicalTrustAnchorProtected,
   canonicalReleaseEvidenceBound: releaseClaimAllowed,
   releaseBinding,
