@@ -15,6 +15,7 @@ const TRANSPORTS = Object.freeze({
 
 const CREDENTIAL_REF = /^(vault|secret|managed|railway|keyvault|awssecrets|gcpsecrets):\/\/[A-Za-z0-9._:/-]{3,240}$/;
 const CAPABILITY = /^[a-z0-9][a-z0-9.-]{1,79}$/;
+const TARGET_PROOF_METHODS = new Set(['provider-metadata', 'provider-account-identity', 'tenant-metadata', 'connection-metadata']);
 
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
@@ -128,6 +129,28 @@ function newerOrEqual(left, right) {
   return Number.isFinite(a) && Number.isFinite(b) && a >= b;
 }
 
+function targetProofBlockers(test, review) {
+  const blockers = [];
+  const proof = test?.targetProof;
+  if (!proof || typeof proof !== 'object') return ['Verified target-system evidence is missing.'];
+
+  const providerKey = String(proof.providerKey || '').trim().toLowerCase();
+  const targetIdentity = String(proof.targetIdentity || '').trim();
+  const environment = String(proof.environment || '').trim().toLowerCase();
+  const method = String(proof.method || '').trim().toLowerCase();
+  const observedAt = Date.parse(String(proof.observedAt || ''));
+
+  if (providerKey !== review.providerKey) blockers.push('Verified provider identity does not match the reviewed provider.');
+  if (targetIdentity !== review.targetIdentity) blockers.push('Verified target identity does not match the reviewed target.');
+  if (environment !== review.environment) blockers.push('Verified target environment does not match the reviewed environment.');
+  if (!TARGET_PROOF_METHODS.has(method)) blockers.push('Target identity proof method is not reviewable provider metadata.');
+  if (!Number.isFinite(observedAt)) blockers.push('Target identity proof has no valid observation time.');
+  if (proof.boundedMetadataOnly !== true) blockers.push('Target identity proof must use bounded metadata only.');
+  if (proof.containsSensitiveData !== false) blockers.push('Target identity proof must explicitly contain no employee or payroll data.');
+
+  return blockers;
+}
+
 function evaluateActivation(review, evidence = {}, currentConfig) {
   const blockers = [];
   let currentReview;
@@ -145,7 +168,7 @@ function evaluateActivation(review, evidence = {}, currentConfig) {
   if (!test || test.status !== 'PASS' || !sameReview(test, review)) blockers.push('Safe connection test for this exact review has not passed.');
   else {
     if (test.nonMutating !== true) blockers.push('Connection test was not proven non-mutating.');
-    if (test.targetIdentityVerified !== true) blockers.push('Target system identity was not verified.');
+    blockers.push(...targetProofBlockers(test, review));
     if (!asPositiveInt(test.measuredLatencyMs)) blockers.push('Connection latency was not measured.');
     else if (test.measuredLatencyMs > review.monitoring.maxLatencyMs) blockers.push('Measured connection latency exceeds the reviewed limit.');
   }
@@ -209,7 +232,7 @@ function buildSafeConnectionTestPlan(review) {
   const base = [
     'Resolve the protected authentication reference inside the trusted integration executor.',
     'Authenticate with the minimum approved read scope.',
-    'Verify the exact target system identity before reading any business data.',
+    'Verify the exact provider, target system and environment from provider-reported metadata; do not accept a boolean-only identity result.',
     'Read only bounded metadata or a synthetic/non-sensitive sample.',
     'Measure end-to-end latency and record freshness evidence.',
     'Reconcile source and staged counts/digests without storing raw employee or payroll values.'
