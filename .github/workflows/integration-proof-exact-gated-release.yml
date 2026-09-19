@@ -1,4 +1,5 @@
 name: Integration proof exact gated release
+# Release-only refresh: obtain a verified merge authority without changing product runtime.
 
 on:
   push:
