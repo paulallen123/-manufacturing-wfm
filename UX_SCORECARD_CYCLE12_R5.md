@@ -107,3 +107,40 @@ The same gate completed the exact Docker composition build after browser executi
 
 ## Evidence boundary
 This clears the deterministic composed-browser regression blocker. It does not yet constitute an authenticated role journey against the deployed Railway origin, an authenticated external-provider sandbox connection, or a real zero-human customer provisioning event. Those remain separate sell-readiness gates.
+
+---
+
+# Cycle 12 r9 validation update — tablet return context
+
+## Journey reviewed
+Approved Vector manager Home → governed Integrations priority → Integrations workflow → Back to priority queue → exact originating Decision Card at desktop, 768×1024 tablet and 390×844 mobile widths.
+
+## NEW-UI lineage confirmation
+All research-free validation, test extension and product fixes remained exclusively on `feature/one-day-enterprise-implementation-v1`, the canonical approved Vector NEW-UI lineage. No legacy/0.6.139 UI, superseded presentation branch, customer-proof runtime, staging or production environment was mutated.
+
+## Reuse / duplicate-work decision
+The existing Cycle 11 browser harness, Universal Action Queue, shared return marker, `focusNode` helper, Vector projection bridge and existing governed-priority workflow remained the single owners. Tablet validation was added as another parameter to the existing responsive browser routine; no tablet-only harness, navigation lifecycle, focus helper, renderer, branch or workflow was created.
+
+## Research delta
+No competitor or generic UX research was repeated. The unresolved question was measurable responsive return-context behavior and was answerable directly from the current implementation and browser gate.
+
+## Hypothesis
+At tablet width the governed Vector queue should have zero page-wide horizontal overflow, remain contained and operable, and a manager returning from an owning workflow should regain exact keyboard focus on the originating priority with that focused control visibly inside the viewport.
+
+## Finding and exact implementation delta
+The new 768×1024 check found a real defect: the exact Integrations button regained keyboard focus but remained outside the viewport after return. Investigation found two overlapping focus loops: Cycle 11 owned generic return focus while the Vector bridge separately re-focused projected content. The fix generalized the existing Cycle 11 `focusNode` primitive with optional scroll behavior/delay, reused that same primitive from both Cycle 11 and the Vector bridge, and retained the bridge's captured return context through the projection-settle window before clearing it. No business rule, evidence classification, permission, payroll/compliance calculation, source write authority or audit behavior changed.
+
+## Focused and affected regression evidence
+Exact-head GitHub Actions run `35423347730` completed successfully. All existing Cycle 11/12 deterministic contract checks passed, including signal governance, provider-route binding, integration-source binding, shared Decision Card reuse, specialist return context, model stress and human/automation separation. Real headless Chromium then reported: tablet overflow `0`, four projected actions, queue contained, Integrations action height `36`, not aria-hidden, and return focus `integrations` with `inViewport:true`; the 390×844 mobile run reported the same zero-overflow/contained/exact-visible-return result. Desktop Integrations, Absence, Time Review and Weekly Sign-off round trips remained green. The same run also passed Vector governed-priority asset composition and confirmed the sealed base runtime/server contract was unchanged.
+
+## Blockers not retried
+The prior zero-runner state was not retried after runner allocation had already recovered. Once the tablet defect was reproduced, work stayed on that bounded failure instead of re-running unrelated broad suites or repeating research.
+
+## UX scorecard impact
+Responsive containment and keyboard return-context evidence are now green for desktop, tablet and mobile in the composed browser harness. Navigation predictability and accessibility evidence improve because exact restored focus is now also visibly located for the user. No real-user time-on-task or first-click improvement is claimed from synthetic browser evidence alone.
+
+## Still unverified
+Screen-reader announcement quality with real assistive technology, authenticated role behavior against the deployed hosted origin, real user first-click/time-on-task/error-rate performance, authenticated external-provider sandbox behavior, and Cycle 10's separate source-bound hosted promotion proof remain unverified.
+
+## Single next highest-value NEW-UI action
+Validate screen-reader/semantic lifecycle behavior for the shared Vector priority lane — especially Action required → Confirming source → Resolved and the collapsed Handled automatically receipts — by extending the existing accessibility/browser evidence rather than adding a new interaction or presentation layer.
