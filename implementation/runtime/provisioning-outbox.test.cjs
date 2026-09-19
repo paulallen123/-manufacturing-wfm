@@ -2,7 +2,11 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createProvisioningOutbox } = require('./provisioning-outbox.cjs');
+const { createHash, createHmac } = require('node:crypto');
+const { createProvisioningOutbox: createProvisioningOutboxBase } = require('./provisioning-outbox.cjs');
+const { stable } = require('./contract-completion-ingress.cjs');
+
+const RECEIPT_KEY = 'internal-receipt-key-0123456789abcdef0123456789abcdef';
 
 function makeStore(seed) {
   const data = new Map(seed ? seed.map(([k, v]) => [k, structuredClone(v)]) : []);
@@ -24,6 +28,30 @@ function makeStore(seed) {
   };
 }
 
+function createProvisioningOutbox(store, options = {}) {
+  return createProvisioningOutboxBase(store, { ...options, contractReceiptKey: RECEIPT_KEY });
+}
+
+function makeEvidence(eventId = 'evt-1') {
+  const core = {
+    schemaVersion: 1,
+    provider: 'contract-provider',
+    eventId,
+    contractId: 'ctr-1',
+    contractVersion: '1',
+    tenantId: 'tenant-a',
+    completedAt: '2026-09-19T04:00:00Z',
+    attemptTimestamp: Date.parse('2026-09-19T04:01:00Z'),
+    payloadSha256: 'f'.repeat(64),
+    verifierKeyId: 'test-provider-key-v1',
+    receivedAt: Date.parse('2026-09-19T04:01:01Z')
+  };
+  const mac = createHmac('sha256', Buffer.from(RECEIPT_KEY, 'utf8')).update(stable(core)).digest('hex');
+  const verificationReceipt = { ...core, mac };
+  const receiptSha256 = createHash('sha256').update(stable(verificationReceipt)).digest('hex');
+  return { authenticated: true, eventId, receiptSha256, verificationReceipt };
+}
+
 function intent(overrides = {}) {
   return {
     schemaVersion: 1,
@@ -31,7 +59,7 @@ function intent(overrides = {}) {
     scope: { graphVersion: '2026-09-19.1', graphFingerprint: 'd'.repeat(64), revision: 'scope-a', purchasedScope: ['time'], operationsDigest: 'b'.repeat(64) },
     build: { sourceRevision: 'abc', artifactSha256: 'c'.repeat(64), approvalId: 'approved-1' },
     plan: { provider: 'railway', region: 'eu-west', creationMode: 'fresh-provider-create', isolated: true, networkPolicy: 'private-until-ready', secretsPolicy: 'server-managed-per-tenant' },
-    completionEvidence: { authenticated: true, eventId: 'evt-1' },
+    completionEvidence: makeEvidence(),
     intentDigest: 'a'.repeat(64),
     queueKey: 'wfm-provision:v1:queue-1',
     ...overrides
@@ -50,18 +78,33 @@ function verifiedSubject(record) {
   return structuredClone(record.verificationSubject);
 }
 
-test('requires durable transactional storage', () => {
-  assert.throws(() => createProvisioningOutbox({ transaction() {} }), /durable transactional store/);
+test('requires durable transactional storage and a trusted contract receipt key', () => {
+  assert.throws(() => createProvisioningOutboxBase({ transaction() {} }, { contractReceiptKey: RECEIPT_KEY }), /durable transactional store/);
+  assert.throws(() => createProvisioningOutboxBase(makeStore()), /trusted contract receipt verification key/);
 });
 
-test('duplicate completed-contract deliveries create one durable queue item', () => {
+test('duplicate authenticated completed-contract deliveries create one durable queue item', () => {
   const store = makeStore();
   const outbox = createProvisioningOutbox(store, { now: () => 1000 });
   const first = outbox.enqueue(intent());
-  const duplicate = outbox.enqueue(intent({ completionEvidence: { authenticated: true, eventId: 'evt-redelivery' } }));
+  const duplicate = outbox.enqueue(intent({ completionEvidence: makeEvidence('evt-redelivery') }));
   assert.equal(first.duplicate, false);
   assert.equal(duplicate.duplicate, true);
   assert.equal(store.snapshot().length, 1);
+});
+
+test('tampered or detached completion evidence is rejected before durable queue admission', () => {
+  const store = makeStore();
+  const outbox = createProvisioningOutbox(store, { now: () => 1000 });
+  const tampered = intent();
+  tampered.completionEvidence.verificationReceipt.mac = '0'.repeat(64);
+  expectCode(() => outbox.enqueue(tampered), 'WFM_CONTRACT_RECEIPT_INVALID');
+  assert.equal(store.snapshot().length, 0);
+
+  const detached = intent();
+  detached.completionEvidence.eventId = 'evt-other';
+  expectCode(() => outbox.enqueue(detached), 'WFM_CONTRACT_RECEIPT_SUBJECT_MISMATCH');
+  assert.equal(store.snapshot().length, 0);
 });
 
 test('same business queue identity cannot be reused for a changed sealed intent', () => {
