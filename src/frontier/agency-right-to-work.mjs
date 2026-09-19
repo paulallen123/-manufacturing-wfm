@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { evaluateAgencyRightToWorkLifecycle } from './agency-right-to-work-lifecycle.mjs';
 
-export const AGENCY_RIGHT_TO_WORK_ASSURANCE_VERSION = 'agency-right-to-work-assurance-v0.2.1';
+export const AGENCY_RIGHT_TO_WORK_ASSURANCE_VERSION = 'agency-right-to-work-assurance-v0.3.0';
 export const UK_RIGHT_TO_WORK_2026_EFFECTIVE_AT = '2026-10-01T00:00:00.000Z';
 export const UK_RIGHT_TO_WORK_DVSP_SUPPLEMENTARY_CODE_VERSION = '1.1';
 export const UK_RIGHT_TO_WORK_DVSP_VALID_SUPPLEMENTARY_CODE_VERSIONS = Object.freeze(['0.4','1.1']);
@@ -28,7 +28,7 @@ function baseRightToWorkFailures(rightToWork) {
   return failures;
 }
 
-function evaluateDvspPolicyEvidence({ rightToWork, scheme, checkedAt, now }) {
+function evaluateDvspPolicyEvidence({ rightToWork, scheme, agency, checkedAt, now, requireVersionedEvidence, expectedTenantId }) {
   const failures = [];
   const configured = scheme?.rtwDvsp && typeof scheme.rtwDvsp === 'object' ? scheme.rtwDvsp : {};
   const providerId = text(configured.providerId, 120);
@@ -37,6 +37,13 @@ function evaluateDvspPolicyEvidence({ rightToWork, scheme, checkedAt, now }) {
   const supplementaryCodeVersion = text(configured.rightToWorkSupplementaryCodeVersion, 20);
   const registryEvidenceRef = text(configured.registryEvidenceRef, 200);
   const registryVerifiedAt = ms(configured.registryVerifiedAt);
+  const evidenceVersionId = text(configured.evidenceVersionId, 32);
+  const evidenceTenantId = text(configured.evidenceTenantId, 100);
+  const evidenceAgencyId = text(configured.evidenceAgencyId, 100);
+  const evidenceEffectiveAt = ms(configured.evidenceEffectiveAt);
+  const evidenceExpiresAt = configured.evidenceExpiresAt == null ? null : ms(configured.evidenceExpiresAt);
+  const evidenceSource = text(configured.evidenceSource, 120);
+  const storedFingerprint = text(configured.registryEvidenceFingerprint, 24);
 
   if (!providerId) failures.push('right_to_work_dvsp_provider_configuration_missing');
   if (configured.trustFrameworkCertified !== true) failures.push('right_to_work_dvsp_trust_framework_certification_not_confirmed');
@@ -45,13 +52,26 @@ function evaluateDvspPolicyEvidence({ rightToWork, scheme, checkedAt, now }) {
   if (!UK_RIGHT_TO_WORK_DVSP_VALID_SUPPLEMENTARY_CODE_VERSIONS.includes(supplementaryCodeVersion)) {
     failures.push('right_to_work_dvsp_supplementary_code_version_not_current');
   }
-  if (!registryEvidenceRef) failures.push('right_to_work_dvsp_registry_evidence_ref_missing');
+  if (!registryEvidenceRef && !storedFingerprint) failures.push('right_to_work_dvsp_registry_evidence_ref_missing');
   if (registryVerifiedAt === null) failures.push('right_to_work_dvsp_registry_verification_time_missing');
   if (registryVerifiedAt !== null && now !== null && registryVerifiedAt > now) {
     failures.push('right_to_work_dvsp_registry_verification_in_future');
   }
   if (registryVerifiedAt !== null && checkedAt !== null && registryVerifiedAt > checkedAt) {
     failures.push('right_to_work_dvsp_registry_evidence_after_worker_check');
+  }
+
+  if (requireVersionedEvidence === true) {
+    if (!/^[0-9a-f]{32}$/i.test(evidenceVersionId)) failures.push('right_to_work_dvsp_provider_evidence_version_missing');
+    if (!expectedTenantId) failures.push('right_to_work_dvsp_provider_evidence_tenant_context_missing');
+    if (!evidenceTenantId || (expectedTenantId && evidenceTenantId !== expectedTenantId)) failures.push('right_to_work_dvsp_provider_evidence_tenant_mismatch');
+    if (!evidenceAgencyId || evidenceAgencyId !== String(agency?.agencyId ?? '')) failures.push('right_to_work_dvsp_provider_evidence_agency_mismatch');
+    if (!/^[0-9a-f]{24}$/i.test(storedFingerprint)) failures.push('right_to_work_dvsp_registry_evidence_fingerprint_missing');
+    if (!evidenceSource) failures.push('right_to_work_dvsp_provider_evidence_source_missing');
+    if (evidenceEffectiveAt === null || (checkedAt !== null && evidenceEffectiveAt > checkedAt)) failures.push('right_to_work_dvsp_provider_evidence_not_effective_at_worker_check');
+    if (configured.evidenceExpiresAt != null && (evidenceExpiresAt === null || (checkedAt !== null && evidenceExpiresAt <= checkedAt))) {
+      failures.push('right_to_work_dvsp_provider_evidence_expired_at_worker_check');
+    }
   }
 
   if (workerProviderId) {
@@ -72,9 +92,18 @@ function evaluateDvspPolicyEvidence({ rightToWork, scheme, checkedAt, now }) {
       supplementaryCodeVersionCurrent: supplementaryCodeVersion === UK_RIGHT_TO_WORK_DVSP_SUPPLEMENTARY_CODE_VERSION,
       supplementaryCodeVersionTransitional: supplementaryCodeVersion === '0.4',
       registryVerifiedAt: configured.registryVerifiedAt ?? null,
-      registryEvidenceFingerprint: fingerprint(registryEvidenceRef),
+      registryEvidenceFingerprint: storedFingerprint || fingerprint(registryEvidenceRef),
+      providerEvidenceVersionId: evidenceVersionId || null,
+      providerEvidenceTenantScoped: !!evidenceTenantId && (!expectedTenantId || evidenceTenantId === expectedTenantId),
+      providerEvidenceAgencyId: evidenceAgencyId || null,
+      providerEvidenceEffectiveAt: configured.evidenceEffectiveAt ?? null,
+      providerEvidenceExpiresAt: configured.evidenceExpiresAt ?? null,
+      providerEvidenceSource: evidenceSource || null,
+      versionedProviderEvidenceRequiredForRanking: requireVersionedEvidence === true,
       rawRegistryEvidenceReturned: false,
-      evidenceRule: 'rtw_dvsp_requires_server_authoritative_registered_and_certified_provider_evidence_for_a_current_or_transitionally_valid_right_to_work_supplementary_code',
+      evidenceRule: requireVersionedEvidence === true
+        ? 'rtw_dvsp_requires_durable_versioned_provider_evidence_resolved_for_the_worker_check_before_candidate_ranking'
+        : 'rtw_dvsp_policy_evaluator_accepts_static_provider_policy_only_outside_the_candidate_ranking_path',
     },
   };
 }
@@ -187,7 +216,15 @@ export function evaluateAgencyRightToWork(worker, request = {}, agency = {}, opt
 
   let dvspEvidence = null;
   if (method === 'rtw_dvsp') {
-    const dvsp = evaluateDvspPolicyEvidence({ rightToWork, scheme, checkedAt, now });
+    const dvsp = evaluateDvspPolicyEvidence({
+      rightToWork,
+      scheme,
+      agency,
+      checkedAt,
+      now,
+      requireVersionedEvidence:options.requireVersionedDvspEvidence === true,
+      expectedTenantId:text(options.tenantId, 100),
+    });
     failures.push(...dvsp.failures);
     dvspEvidence = dvsp.evidence;
   }
