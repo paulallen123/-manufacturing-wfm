@@ -113,27 +113,37 @@ RUN WFM_PROOF_ONESHOT=true \
     node /app/proof-runtime/cloud-scale-proof-runner.cjs
 
 # Vector-only presentation composition.
-# Legacy/retired shells remain completely unloaded.
-# Vector is the only active presentation shell; governed routes/APIs remain underneath.
+# The active image has one presentation entry point only: vector-ui.css + vector-ui.js.
+# Retired shell entry points are physically removed from the runtime image, not hidden.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
 RUN node --check /app/security-runtime/bootstrap.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
- && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/factory-control-ui.css \
- && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/factory-control-ui.css \
- && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-implementation-ui/implementation-journey.js >> /app/public/value-cockpit-ui.js \
- && cp /tmp/wfm-ux-overlay/vector-shell.js /app/public/vector-shell.js \
- && node -e "const fs=require('fs');const css=fs.readFileSync('/app/public/factory-control-ui.css','utf8');const legacy=fs.readFileSync('/app/public/value-cockpit-ui.js','utf8');const vector=fs.readFileSync('/app/public/vector-shell.js','utf8');for(const marker of ['WFM_UX_RESET_CYCLE11_BEGIN','WFM_UX_RESET_CYCLE12_BEGIN','VECTOR_PRIORITY_BRIDGE_V1']){if(css.includes(marker)||legacy.includes(marker)||vector.includes(marker))throw new Error('Retired presentation marker loaded: '+marker)}if(!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!vector.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'))throw new Error('Approved Vector shell missing');console.log('VECTOR_ONLY_PRESENTATION_ADMISSION=PASS')" \
- && node --check /app/public/value-cockpit-ui.js \
- && node --check /app/public/vector-shell.js \
- && node -e "const fs=require('fs');const p='/app/public/index.html';let h=fs.readFileSync(p,'utf8');if(!h.includes('vector-shell.js')){h=h.replace('</body>','<script src=\"vector-shell.js\"></script></body>');fs.writeFileSync(p,h)}" \
+ && printf '/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' > /app/public/vector-ui.css \
+ && cat /app/public/factory-control-ui.css >> /app/public/vector-ui.css \
+ && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/vector-ui.css \
+ && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/vector-ui.css \
+ && printf '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/vector-ui.css \
+ && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/vector-ui.css \
+ && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/vector-ui.css \
+ && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/vector-ui.css \
+ && printf "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" > /app/public/vector-ui.js \
+ && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/vector-ui.js \
+ && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/vector-ui.js \
+ && printf '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/vector-ui.js \
+ && cat /tmp/wfm-implementation-ui/implementation-journey.js >> /app/public/vector-ui.js \
+ && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/vector-ui.js \
+ && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/vector-ui.js \
+ && node --check /app/public/vector-ui.js \
+ && node -e "const fs=require('fs');const p='/app/public/index.html';let h=fs.readFileSync(p,'utf8');const retired=['factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of retired){const safe=name.replace(/[.*+?^\${}()|[\]\\]/g,'\\$&');h=h.replace(new RegExp('<link\\\\b[^>]*href=[\\\"\\\'][^\\\"\\\']*'+safe+'[^\\\"\\\']*[\\\"\\\'][^>]*>','gi'),'');h=h.replace(new RegExp('<script\\\\b[^>]*src=[\\\"\\\'][^\\\"\\\']*'+safe+'[^\\\"\\\']*[\\\"\\\'][^>]*>\\\\s*</script>','gi'),'');}if(!h.includes('vector-ui.css'))h=h.replace('</head>','<link rel=\\\"stylesheet\\\" href=\\\"/vector-ui.css\\\"></head>');if(!h.includes('vector-ui.js'))h=h.replace('</body>','<script src=\\\"/vector-ui.js\\\"></script></body>');fs.writeFileSync(p,h)" \
+ && rm -f /app/public/factory-control-ui.css \
+          /app/public/value-cockpit-ui.js \
+          /app/public/value-cockpit-ui.css \
+          /app/public/review-ui.js \
+          /app/public/review-ui.css \
+          /app/public/ui-evolution.css \
+          /app/public/vector-shell.js \
+ && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS')" \
  && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
