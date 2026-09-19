@@ -7,12 +7,14 @@ import {
 } from '../../src/frontier/agency-identity-db-boundary.mjs';
 
 test('least-privilege identity boundary exposes only controlled functions and keeps runtime evidence DML denied',()=>{
-  assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_VERSION,'agency-identity-db-boundary-v0.3.0');
+  assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_VERSION,'agency-identity-db-boundary-v0.4.0');
   assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.writerDirectTableDmlAllowed,false);
   assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.readerFunctionExecuteAllowed,false);
   assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.scopeLockVerifiedServerSide,true);
   assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.databaseOwnedCanonicalScopeLock,true);
-  assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.legacyCallerScopeLockKeyOptional,true);
+  assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.callerSuppliedScopeLockKeyAccepted,false);
+  assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.legacyCallerScopeLockKeyOptional,false);
+  assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.runtimeScopeFingerprintAuthority,'database_returned');
   assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.scheduleWriteAuthorized,false);
   assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.clockingWriteAuthorized,false);
   assert.equal(AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY.payrollWriteAuthorized,false);
@@ -41,17 +43,18 @@ test('database-owned assignment lock canonicalises full scope, derives signed 64
   assert.match(ddl,/SECURITY DEFINER\s+SET search_path = pg_catalog/i);
 });
 
-test('controlled append delegates locking to database primitive before either evidence write and legacy caller key cannot choose the lock',()=>{
+test('migration removes the legacy caller-key overload and controlled append delegates locking to DB primitive before writes',()=>{
   const ddl=AGENCY_IDENTITY_DB_BOUNDARY_DDL;
-  const append=ddl.indexOf('CREATE OR REPLACE FUNCTION public.wfm_append_agency_identity_observation_v1');
+  const legacyDrop=ddl.indexOf('DROP FUNCTION IF EXISTS public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz,bigint)');
+  const append=ddl.indexOf('CREATE OR REPLACE FUNCTION public.wfm_append_agency_identity_observation_v1',legacyDrop);
   const sharedLock=ddl.indexOf('FROM public.wfm_lock_agency_identity_assignment_scope_v1',append);
-  const legacyCheck=ddl.indexOf('p_scope_lock_key IS NOT NULL',sharedLock);
-  const mismatch=ddl.indexOf("RAISE EXCEPTION 'identity_observation_scope_lock_mismatch'",legacyCheck);
-  const receiptInsert=ddl.indexOf('INSERT INTO public.wfm_agency_identity_observation_ingress_receipts',mismatch);
+  const receiptInsert=ddl.indexOf('INSERT INTO public.wfm_agency_identity_observation_ingress_receipts',sharedLock);
   const observationInsert=ddl.indexOf('INSERT INTO public.wfm_agency_identity_continuity_observations',receiptInsert);
-  assert.ok(append>0&&sharedLock>append&&legacyCheck>sharedLock&&mismatch>legacyCheck&&receiptInsert>mismatch&&observationInsert>receiptInsert);
-  assert.doesNotMatch(ddl.slice(append),/PERFORM pg_catalog\.pg_advisory_xact_lock\(p_scope_lock_key\)/i);
-  assert.match(ddl.slice(append),/RETURN QUERY SELECT v_observation_count=0, v_receipt_count=0, v_scope_fingerprint/i);
+  assert.ok(legacyDrop>0&&append>legacyDrop&&sharedLock>append&&receiptInsert>sharedLock&&observationInsert>receiptInsert);
+  const appendDefinition=ddl.slice(append,ddl.indexOf('ALTER FUNCTION public.wfm_append_agency_identity_observation_v1',append));
+  assert.doesNotMatch(appendDefinition,/p_scope_lock_key/i);
+  assert.doesNotMatch(appendDefinition,/identity_observation_scope_lock_mismatch/i);
+  assert.match(appendDefinition,/RETURN QUERY SELECT v_observation_count=0, v_receipt_count=0, v_scope_fingerprint/i);
 });
 
 test('controlled append function is security-definer, search-path pinned, append-only and conflict-safe',()=>{
