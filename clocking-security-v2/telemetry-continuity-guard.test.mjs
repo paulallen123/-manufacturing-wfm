@@ -29,6 +29,22 @@ test('missing canary becomes fail-closed telemetry loss',()=>{
   assert.ok(r.reasons.some(x=>x.code==='CANARY_NOT_OBSERVED'));
 });
 
+test('a fresh later canary can recover a prior missed-canary incident',()=>{
+  const g=new TelemetryContinuityGuard({maxCanaryLagMs:30_000,maxCanaryAgeMs:60_000,maxHeartbeatAgeMs:60_000});
+  g.observeHeartbeat({stream:'http',sequence:1,observedAtMs:T,receivedAtMs:T});
+  g.emitCanary({canaryId:'missed',emittedAtMs:T,stream:'http'});
+  let r=g.assess({nowMs:T+30_001,requiredStreams:['http']});
+  assert.equal(r.releaseEligible,false);
+  assert.ok(r.reasons.some(x=>x.code==='CANARY_NOT_OBSERVED'));
+
+  g.observeHeartbeat({stream:'http',sequence:2,observedAtMs:T+40_000,receivedAtMs:T+40_000});
+  g.emitCanary({canaryId:'recovery',emittedAtMs:T+40_000,stream:'http'});
+  g.observeCanary({canaryId:'recovery',observedAtMs:T+40_500,receivedAtMs:T+40_500});
+  r=g.assess({nowMs:T+41_000,requiredStreams:['http']});
+  assert.equal(r.releaseEligible,true);
+  assert.equal(r.reasons.some(x=>x.code==='CANARY_NOT_OBSERVED'),false);
+});
+
 test('quiet traffic alone cannot prove telemetry continuity',()=>{
   const g=new TelemetryContinuityGuard();
   const r=g.assess({nowMs:T,requiredStreams:['http'],serviceExpectedLive:true});
