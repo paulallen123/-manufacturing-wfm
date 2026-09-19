@@ -1,4 +1,4 @@
-name: Browser context diagnostic - bounded cleanup
+name: Browser context diagnostic - bounded transport
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
           node --check .github/scripts/ux-cycle11-context-browser.mjs
           node .github/scripts/ux-cycle12-signal-contract.mjs
           echo 'EXACT_CANDIDATE_ANCESTRY=PASS'
-      - name: Run unchanged browser assertions with bounded cleanup only
+      - name: Run unchanged browser assertions with bounded diagnostic transport
         shell: bash
         run: |
           set -euo pipefail
@@ -37,11 +37,18 @@ jobs:
           import sys
           p=Path(sys.argv[1])
           s=p.read_text()
-          old="""} finally {\n  try { ws?.close(); } catch {}\n  try { chrome.kill('SIGTERM'); } catch {}\n  await new Promise(resolve=>server.close(resolve));\n  rmSync(temp,{recursive:true,force:true});\n}\n"""
-          new="""} finally {\n  try { ws?.close(); } catch {}\n  try { chrome.kill('SIGTERM'); } catch {}\n  try { server.closeIdleConnections?.(); } catch {}\n  try { server.closeAllConnections?.(); } catch {}\n  await Promise.race([new Promise(resolve=>server.close(()=>resolve())), sleep(1500)]);\n  try { chrome.kill('SIGKILL'); } catch {}\n  rmSync(temp,{recursive:true,force:true});\n}\n"""
-          if old not in s:
-              raise SystemExit('cleanup contract not found; refusing diagnostic rewrite')
-          p.write_text(s.replace(old,new,1))
+          replacements=[
+          ("""  await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=()=>reject(new Error('CDP open failed'));});\n""",
+           """  await Promise.race([new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=()=>reject(new Error('CDP open failed'));}),sleep(3000).then(()=>{throw new Error('CDP open timeout')})]);\n  console.log('CDP_OPEN=PASS');\n"""),
+          ("""  const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}));});\n""",
+           """  const send=(method,params={})=>new Promise((resolve,reject)=>{const n=id++;const timer=setTimeout(()=>{pending.delete(n);reject(new Error('CDP command timeout: '+method));},3000);pending.set(n,{resolve:v=>{clearTimeout(timer);resolve(v);},reject:e=>{clearTimeout(timer);reject(e);}});ws.send(JSON.stringify({id:n,method,params}));});\n"""),
+          ("""} finally {\n  try { ws?.close(); } catch {}\n  try { chrome.kill('SIGTERM'); } catch {}\n  await new Promise(resolve=>server.close(resolve));\n  rmSync(temp,{recursive:true,force:true});\n}\n""",
+           """} finally {\n  try { ws?.close(); } catch {}\n  try { chrome.kill('SIGTERM'); } catch {}\n  try { server.closeIdleConnections?.(); } catch {}\n  try { server.closeAllConnections?.(); } catch {}\n  await Promise.race([new Promise(resolve=>server.close(()=>resolve())), sleep(1500)]);\n  try { chrome.kill('SIGKILL'); } catch {}\n  rmSync(temp,{recursive:true,force:true});\n}\n""")]
+          for old,new in replacements:
+              if old not in s:
+                  raise SystemExit('diagnostic contract not found; refusing rewrite')
+              s=s.replace(old,new,1)
+          p.write_text(s)
           PY
           node --check "$RUNNER_TEMP/ux-cycle11-context-browser-diagnostic.mjs"
           timeout 45s node "$RUNNER_TEMP/ux-cycle11-context-browser-diagnostic.mjs"
