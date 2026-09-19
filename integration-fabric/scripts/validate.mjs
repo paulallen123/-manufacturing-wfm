@@ -112,9 +112,11 @@ for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','s
 }
 
 assert.match(contract, /^openapi: 3\.0\.3/m);
-for (const path of ['/connectors','/workers','/shifts','/time-events','/production-events','/access-events','/events','/webhooks/{connectorId}']) {
+for (const path of ['/connectors','/workers','/shifts','/time-events','/production-events','/access-events','/qualifications','/training-completions','/worker-restrictions','/safety-signals','/events','/webhooks/{connectorId}']) {
   assert.ok(contract.includes('  ' + path + ':'), 'OpenAPI path missing: ' + path);
 }
+for (const schema of ['Qualification','TrainingCompletion','WorkerRestriction','SafetySignal']) assert.ok(contract.includes('    '+schema+':'), 'Canonical schema missing: '+schema);
+assert.ok(!/\n\s+(?:medicalDetail|medicalRecord|incidentNarrative|investigationNarrative):/i.test(contract), 'Canonical contract must not add raw medical or investigation narrative fields.');
 const inlineVendorReviews=catalog.systems.filter(system=>system.valueReview?.basis==='vendor-docs').length;
 console.log(JSON.stringify({
   ok:true,
