@@ -55,6 +55,26 @@ const REPAIR_CHAIN_FIELDS = Object.freeze([
   'stagingReceiptDigest',
 ]);
 
+const T2_COORDINATOR_CAPABILITY_CONTRACT = Object.freeze({
+  endToEndRepairToCanaryDecision: true,
+  repairEvidenceChainRequired: true,
+  signedProvenanceRequired: true,
+  postStagingDecisionChainRequired: true,
+  sixActorSeparationRequired: true,
+  canaryMaxInstances: 1,
+  canaryMaxTrafficPercent: 5,
+  simulationOnly: true,
+  productionAuthority: false,
+  productionWriteAuthority: false,
+  promotionAuthority: false,
+  productionMutation: false,
+  customerWriteAuthority: false,
+  customerMutation: false,
+  modelCanGrantAuthority: false,
+  reusableCredentialsVisible: false,
+  incrementalCostZero: true,
+});
+
 const POST_STAGING_REQUIRED_DIGEST_FIELDS = Object.freeze([
   'tenantDigest',
   'postStagingActorSetDigest',
@@ -65,6 +85,7 @@ const POST_STAGING_REQUIRED_DIGEST_FIELDS = Object.freeze([
   'stagingReceiptDigest',
   'canaryOutcomeReceiptDigest',
   'canaryEvidenceDigest',
+  'coordinatorCapabilityDigest',
 ]);
 
 function computeRepairEvidenceChainDigest(source = {}) {
@@ -72,10 +93,24 @@ function computeRepairEvidenceChainDigest(source = {}) {
   return sha(REPAIR_CHAIN_FIELDS.map((key) => [key, source[key]]));
 }
 
+function computeT2CoordinatorCapabilityDigest(source = {}) {
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
+  const expectedKeys = Object.keys(T2_COORDINATOR_CAPABILITY_CONTRACT).sort();
+  const actualKeys = Object.keys(source).sort();
+  if (actualKeys.length !== expectedKeys.length) return null;
+  if (actualKeys.some((key, index) => key !== expectedKeys[index])) return null;
+  for (const [key, expected] of Object.entries(T2_COORDINATOR_CAPABILITY_CONTRACT)) {
+    if (source[key] !== expected) return null;
+  }
+  return sha(expectedKeys.map((key) => [key, source[key]]));
+}
+
 function computePostStagingDecisionDigest(source = {}) {
   const status = String(source.status || '');
   if (!['canary_proven', 'rolled_back_to_known_good'].includes(status)) return null;
   if (!POST_STAGING_REQUIRED_DIGEST_FIELDS.every((key) => dig(source[key]))) return null;
+  const coordinatorCapabilityDigest = computeT2CoordinatorCapabilityDigest(source.coordinatorCapabilities);
+  if (!coordinatorCapabilityDigest || source.coordinatorCapabilityDigest !== coordinatorCapabilityDigest) return null;
   const rollbackEvidenceDigest = source.rollbackEvidenceDigest == null ? null : source.rollbackEvidenceDigest;
   if (status === 'rolled_back_to_known_good' && !dig(rollbackEvidenceDigest)) return null;
   if (status === 'canary_proven' && rollbackEvidenceDigest !== null && !dig(rollbackEvidenceDigest)) return null;
@@ -383,6 +418,8 @@ module.exports = {
   createAutonomousRepairPipeline,
   PIPELINE_PROTECTED_PATHS: PROTECTED,
   REPAIR_CHAIN_FIELDS,
+  T2_COORDINATOR_CAPABILITY_CONTRACT,
   computeRepairEvidenceChainDigest,
+  computeT2CoordinatorCapabilityDigest,
   computePostStagingDecisionDigest,
 };
