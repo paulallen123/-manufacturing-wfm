@@ -68,6 +68,21 @@ const verification = verifier.verify(simulation, {
   evidenceDigest: d('evidence'),
 });
 assert.equal(verification.verified, true);
+assert.equal(verification.modelAuthorityGranted, false);
+assert.equal(verification.executionAuthority, false);
+assert.equal(verification.automaticExecutionEligible, false);
+
+await expectCode(async () => gate.issue({
+  simulation,
+  verification: { ...verification, modelAuthorityGranted: true },
+  approver: { actorType: 'customer-authorised-approver', actorId: 'payroll-model-authority', role: 'payroll', tenant: 'tenant-a' },
+}), 'WFM_T3_AUTH_BOUNDARY');
+
+await expectCode(async () => gate.issue({
+  simulation,
+  verification: { ...verification, executionAuthority: true },
+  approver: { actorType: 'customer-authorised-approver', actorId: 'payroll-execution-authority', role: 'payroll', tenant: 'tenant-a' },
+}), 'WFM_T3_AUTH_BOUNDARY');
 
 const issued = gate.issue({
   simulation,
@@ -100,6 +115,7 @@ assert.equal(consumed.actionPolicyDigest, simulation.actionPolicyDigest);
 assert.equal(consumed.executionAuthority, false);
 assert.equal(consumed.automaticExecutionEligible, false);
 assert.equal(consumed.productionAuthorityGranted, false);
+assert.equal(consumed.modelAuthorityGranted, false);
 assert.equal(consumed.customerMutation, false);
 assert.equal(consumed.productionMutation, false);
 
@@ -207,13 +223,15 @@ await expectCode(() => unavailableStoreGate.consume({
 }), 'WFM_T3_AUTH_REPLAY_STORE');
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'tier3-customer-authorisation-consent-only-gate',
   status: 'PASS',
   verifiedShadowRequired: true,
   exactActionAllowlistBound: true,
   actionPolicyDigestBoundIntoConsent: true,
   samePrefixHostileActionDenied: true,
+  verifierModelAuthorityDenied: true,
+  verifierExecutionAuthorityDenied: true,
   customerRoleBound: true,
   sameTenantBound: true,
   durableAtomicReplayStoreRequired: true,
