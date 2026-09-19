@@ -13,6 +13,10 @@ body.vector-ui-active .app{display:block!important;min-height:100vh!important;ba
 body.vector-ui-active .app>.sidebar{display:none!important}
 body.vector-ui-active .app>.workspace,body.vector-ui-active .app>main{margin-left:244px!important;min-width:0!important;background:var(--vector-bg)!important}
 body.vector-ui-active .app>.workspace>.topbar,body.vector-ui-active .app>main>.topbar{display:none!important}
+
+/* Vector owns all primary chrome. Suppress sealed/retired workspace bars once Vector is active. */
+body.vector-ui-active .app>.workspace>:not(.vector-topbar):not(.content),
+body.vector-ui-active .app>main>:not(.vector-topbar):not(.content){display:none!important}
 body.vector-ui-active .content{min-width:0!important;max-width:none!important;margin:0!important;padding:25px 28px 24px!important;background:var(--vector-bg)!important;overflow-x:clip!important}
 body.vector-ui-active #wfm-bot-launch{display:none!important}
 body.vector-ui-active #wfm-bot{z-index:2200!important}
