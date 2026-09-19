@@ -54,7 +54,7 @@ async function sendResendReport({
     }
     const id=compact(body?.id,160);
     if(!id)throw new Error('Vector email provider returned no delivery id.');
-    return {provider:'RESEND',id,to:recipients};
+    return {provider:'RESEND',id};
   }catch(error){
     if(error?.name==='AbortError')throw new Error('Vector email provider timed out.');
     const message=String(error?.message||error||'Vector email failed.').replaceAll(secret,'[REDACTED]');
