@@ -64,15 +64,16 @@ function restoreProjectedFocus(queue){
       const rect=target.getBoundingClientRect();
       const inViewport=rect.top>=0&&rect.bottom<=innerHeight&&rect.left>=0&&rect.right<=innerWidth;
       if(document.activeElement!==target||!inViewport)window.WFMUXCycle11?.focusNode?.(target,{behavior:'auto',delay:0});
-      const after=target.getBoundingClientRect();
-      const settled=document.activeElement===target&&after.top>=0&&after.bottom<=innerHeight&&after.left>=0&&after.right<=innerWidth;
-      if(settled){
+    }
+    if(attempt<12){setTimeout(()=>focus(attempt+1),40);return;}
+    if(visible&&document.activeElement===target){
+      const rect=target.getBoundingClientRect();
+      const inViewport=rect.top>=0&&rect.bottom<=innerHeight&&rect.left>=0&&rect.right<=innerWidth;
+      if(inViewport){
         try{if(window.WFMUXCycle11?.returnMarker?.()?.id===marker.id)sessionStorage.removeItem('wfmUx11Return');}catch{}
         state.returnMarker=null;
-        return;
       }
     }
-    if(attempt<12)setTimeout(()=>focus(attempt+1),40);
   };
   focus();
   return true;
