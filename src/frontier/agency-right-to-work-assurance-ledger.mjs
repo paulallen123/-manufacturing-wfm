@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { evaluateAgencyRightToWork } from './agency-right-to-work.mjs';
 
 export const AGENCY_RIGHT_TO_WORK_ASSURANCE_LEDGER_VERSION = 'agency-right-to-work-assurance-ledger-v0.1.0';
-export const AGENCY_RIGHT_TO_WORK_ASSURANCE_STORE_VERSION = 'agency-right-to-work-assurance-store-v0.1.0';
+export const AGENCY_RIGHT_TO_WORK_ASSURANCE_STORE_VERSION = 'agency-right-to-work-assurance-store-v0.1.1';
 
 export const AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL = `
 CREATE TABLE IF NOT EXISTS wfm_agency_rtw_assurance_history (
@@ -124,6 +124,15 @@ WITH candidate (
 SELECT * FROM current_upsert
 UNION ALL
 SELECT * FROM current_existing
+LIMIT 1;
+`;
+
+const SELECT_CURRENT_SQL = `
+SELECT tenant_id, agency_id, worker_id, assurance_version_id, site_id, request_id,
+       assignment_fingerprint, evidence_fingerprint, check_method, checked_at,
+       coverage_until, promoted_at, conflicted
+FROM wfm_agency_rtw_assurance_current
+WHERE tenant_id = $1 AND agency_id = $2 AND worker_id = $3
 LIMIT 1;
 `;
 
@@ -342,7 +351,11 @@ export function createPostgresAgencyRightToWorkAssuranceStore({ query }) {
         promotedAt,
       ];
       const result = await query(PROMOTE_SQL, values);
-      const rows = Array.isArray(result?.rows) ? result.rows : [];
+      let rows = Array.isArray(result?.rows) ? result.rows : [];
+      if (rows.length === 0) {
+        const fresh = await query(SELECT_CURRENT_SQL, values.slice(0, 3));
+        rows = Array.isArray(fresh?.rows) ? fresh.rows : [];
+      }
       if (rows.length !== 1) throw new Error('unexpected_right_to_work_assurance_store_result');
       return { current:safeCurrent(rows[0]) };
     },
