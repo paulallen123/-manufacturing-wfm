@@ -8,7 +8,6 @@ const {
   computePostStagingDecisionDigest,
 } = require('./autonomous-repair-pipeline.cjs');
 
-const TRUSTED_COORDINATORS = new WeakSet();
 const sha = (value) => createHash('sha256')
   .update(typeof value === 'string' ? value : JSON.stringify(value))
   .digest('hex');
@@ -24,10 +23,6 @@ const deny = (code, message) => {
   error.code = code;
   throw error;
 };
-
-function isTrustedAutonomousRepairCanaryOrchestrator(value) {
-  return Boolean(value && TRUSTED_COORDINATORS.has(value));
-}
 
 function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryController, outcomeRecorder } = {}) {
   if (!repairPipeline || typeof repairPipeline.process !== 'function' || typeof repairPipeline.capabilities !== 'function') {
@@ -256,15 +251,10 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
     return { ...finalPayload, compositionReceiptDigest };
   }
 
-  const api = Object.freeze({
+  return {
     run,
     capabilities: () => ({ ...coordinatorCaps }),
-  });
-  TRUSTED_COORDINATORS.add(api);
-  return api;
+  };
 }
 
-module.exports = {
-  createAutonomousRepairCanaryOrchestrator,
-  isTrustedAutonomousRepairCanaryOrchestrator,
-};
+module.exports = { createAutonomousRepairCanaryOrchestrator };
