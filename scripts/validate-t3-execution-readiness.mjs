@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { createT3ExecutionPreflightVerifier, digest } = require('../resilience/t3-execution-preflight-verifier.cjs');
 const { createT3ExecutionReadinessGate } = require('../resilience/t3-execution-readiness-gate.cjs');
+const { policyDigest } = require('../resilience/t3-shadow-simulator.cjs');
 const { createFactory } = require('../resilience/autonomous-repair-factory.cjs');
 const d = (value) => createHash('sha256').update(String(value)).digest('hex');
 
@@ -34,6 +35,7 @@ const consent = {
   proposedAction: 'payroll.correct-export',
   affectedRecords: 12,
   evidenceDigest: d('evidence'),
+  actionPolicyDigest: policyDigest('payroll-calculation-or-export-anomaly'),
   proposalDigest: d('proposal'),
   simulationDigest: d('simulation'),
   verificationDigest: d('shadow-verification'),
@@ -64,6 +66,7 @@ function makeDryRun(overrides = {}) {
     scenarioId: consent.scenarioId,
     proposalDigest: consent.proposalDigest,
     proposedAction: consent.proposedAction,
+    actionPolicyDigest: consent.actionPolicyDigest,
     affectedRecords: consent.affectedRecords,
     beforeStateDigest: consent.beforeStateDigest,
     currentStateDigest: consent.beforeStateDigest,
@@ -124,6 +127,8 @@ const ready = await gate.evaluate({
 });
 assert.equal(ready.status, 'execution-ready-awaiting-external-authority');
 assert.equal(ready.executionReady, true);
+assert.equal(ready.currentActionPolicyVerified, true);
+assert.equal(ready.actionPolicyDigest, consent.actionPolicyDigest);
 assert.equal(ready.externalExecutionAuthorityRequired, true);
 assert.equal(ready.deterministicExecutorRequired, true);
 assert.equal(ready.executionAuthority, false);
@@ -188,17 +193,87 @@ const secret = await secretGate.evaluate({
 assert.equal(secret.status, 'contained');
 assert.equal(secret.reason, 'reusable-secret-surface-detected');
 
+const policyMismatchGate = createT3ExecutionReadinessGate({
+  authorisationGate: createOneShotAuthorisationGate(consent),
+  preflightVerifier: verifier,
+  now: () => ++now,
+});
+const policyMismatch = await policyMismatchGate.evaluate({
+  token: 'opaque-consent-token-5',
+  tenant: consent.tenant,
+  scenarioId: consent.scenarioId,
+  proposalDigest: consent.proposalDigest,
+  approverId: consent.approverId,
+  currentStateDigest: consent.beforeStateDigest,
+  dryRun: makeDryRun({ actionPolicyDigest: d('forged-policy') }),
+});
+assert.equal(policyMismatch.status, 'contained');
+assert.equal(policyMismatch.reason, 'dry-run-actionPolicyDigest-mismatch');
+assert.equal(policyMismatch.executionReady, false);
+
+const revokedConsent = structuredClone(consent);
+revokedConsent.actionPolicyDigest = d('retired-policy-version');
+{
+  const core = { ...revokedConsent };
+  delete core.authorisationReceiptDigest;
+  revokedConsent.authorisationReceiptDigest = digest(core);
+}
+const revokedGate = createT3ExecutionReadinessGate({
+  authorisationGate: createOneShotAuthorisationGate(revokedConsent),
+  preflightVerifier: verifier,
+  now: () => ++now,
+});
+const revoked = await revokedGate.evaluate({
+  token: 'opaque-consent-token-6',
+  tenant: revokedConsent.tenant,
+  scenarioId: revokedConsent.scenarioId,
+  proposalDigest: revokedConsent.proposalDigest,
+  approverId: revokedConsent.approverId,
+  currentStateDigest: revokedConsent.beforeStateDigest,
+  dryRun: makeDryRun({ actionPolicyDigest: revokedConsent.actionPolicyDigest }),
+});
+assert.equal(revoked.status, 'contained');
+assert.equal(revoked.reason, 'action-policy-revoked-or-drifted');
+assert.equal(revoked.executionReady, false);
+
 const tampered = structuredClone(ready);
 tampered.expectedAfterStateDigest = d('tampered-after');
 assert.equal(gate.verifyReceipt(tampered), false);
 
+// Simulate an old but internally well-formed readiness receipt reaching the deterministic
+// sandbox after policy revocation. The sandbox calls readinessGate.verifyReceipt before
+// reading or mutating sandbox state, so this must fail even if an attacker recomputes the
+// outer receipt digest.
+const stalePolicyReceipt = structuredClone(ready);
+stalePolicyReceipt.actionPolicyDigest = d('superseded-policy');
+{
+  const core = { ...stalePolicyReceipt };
+  delete core.readinessReceiptDigest;
+  stalePolicyReceipt.readinessReceiptDigest = digest(core);
+}
+assert.equal(gate.verifyReceipt(stalePolicyReceipt), false);
+
+const substitutedActionReceipt = structuredClone(ready);
+substitutedActionReceipt.proposedAction = 'payroll.delete-all';
+{
+  const core = { ...substitutedActionReceipt };
+  delete core.readinessReceiptDigest;
+  substitutedActionReceipt.readinessReceiptDigest = digest(core);
+}
+assert.equal(gate.verifyReceipt(substitutedActionReceipt), false);
+
 console.log(JSON.stringify({
-  schemaVersion: 1,
-  proof: 'tier3-execution-readiness-without-execution-authority',
+  schemaVersion: 2,
+  proof: 'tier3-execution-readiness-with-policy-continuity-and-no-execution-authority',
   status: 'PASS',
   repairAgentCannotRewriteReadinessAuthority: true,
   consumedCustomerConsentRequired: true,
   exactCurrentStateBound: true,
+  exactActionPolicyBound: true,
+  actionPolicyRevalidatedAtPreflight: true,
+  actionPolicyRevalidatedAtReadinessReceiptVerification: true,
+  staleOrRevokedPolicyContained: true,
+  samePrefixActionSubstitutionContained: true,
   staleConsentContained: true,
   independentPreflightVerified: true,
   businessInvariantRequired: true,
