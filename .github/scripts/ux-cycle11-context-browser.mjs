@@ -165,20 +165,26 @@ try {
     targetCheck:`(()=>({ready:ui.page==='weekly-review'&&document.getElementById('review-team')?.value==='team-b'&&document.activeElement?.classList.contains('ux-signoff-desk'),team:document.getElementById('review-team')?.value||null,target:document.querySelector('.ux-signoff-desk b')?.textContent?.trim()||null,back:!!document.querySelector('.ux11-back')}))()`
   });
 
-  await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
-  await sleep(250);
-  const mobile=await evalx(`(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,actions:document.querySelectorAll('.vector-priority-slot .ux11-open').length,queue:!!document.querySelector('.vector-priority-slot .ux11-queue'),vectorMenu:!!document.querySelector('.vector-mobile-menu')}))()`);
-  console.log('UX11_CONTEXT_MOBILE='+JSON.stringify(mobile));
-  assert(mobile.queue&&mobile.actions>=4&&mobile.overflow<=2,'390px Vector queue containment failed');
+  async function exerciseResponsiveViewport(label,width,height){
+    await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
+    await sleep(250);
+    const state=await evalx(`(()=>{const q=document.querySelector('.vector-priority-slot .ux11-queue');const b=document.querySelector('.vector-priority-slot .ux11-open[data-ux11-route="integrations"]');const qr=q?.getBoundingClientRect();const br=b?.getBoundingClientRect();return {overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,actions:document.querySelectorAll('.vector-priority-slot .ux11-open').length,queue:!!q,projected:q?.dataset.vectorProjected||null,contained:!!(qr&&qr.left>=-1&&qr.right<=innerWidth+1),actionHeight:br?.height||0,actionName:(b?.innerText||b?.getAttribute('aria-label')||'').trim()};})()`);
+    console.log(`UX11_CONTEXT_${label}=`+JSON.stringify(state));
+    assert(state.queue&&state.actions>=4&&state.projected==='true'&&state.overflow<=2&&state.contained,`${label} Vector queue containment failed`);
+    assert(state.actionHeight>=36&&state.actionName.length>0,`${label} Vector priority action is not clearly operable`);
 
-  const mobileOrigin=await evalx(`(()=>{const b=document.querySelector('.vector-priority-slot .ux11-open[data-ux11-route="integrations"]');const id=b?.dataset.ux11Id||null;b?.click();return id})()`);
-  assert(mobileOrigin,'Mobile Integrations action missing');
-  await retry(async()=>{const ok=await evalx("ui.page==='integrations'&&!!document.querySelector('.ux11-back')");if(!ok)throw new Error('Mobile Integrations route not ready');return true;});
-  await evalx("document.querySelector('.ux11-back').click()");
-  await retry(async()=>{const ok=await evalx(`ui.page==='overview'&&document.querySelector('.vector-home')&&document.activeElement?.dataset?.ux11Id==='${mobileOrigin}'&&document.activeElement?.closest('.vector-priority-slot')`);if(!ok)throw new Error('Mobile Vector origin focus not restored');return true;});
-  const mobileReturn=await evalx("({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,focused:document.activeElement?.dataset?.ux11Route||null,projected:document.querySelector('.vector-priority-slot .ux11-queue')?.dataset.vectorProjected||null})");
-  console.log('UX11_CONTEXT_MOBILE_RETURN='+JSON.stringify(mobileReturn));
-  assert(mobileReturn.overflow<=2&&mobileReturn.focused==='integrations'&&mobileReturn.projected==='true','390px Vector return-focus regression failed');
+    const origin=await evalx(`(()=>{const b=document.querySelector('.vector-priority-slot .ux11-open[data-ux11-route="integrations"]');const id=b?.dataset.ux11Id||null;b?.click();return id})()`);
+    assert(origin,`${label} Integrations action missing`);
+    await retry(async()=>{const state=await evalx("(()=>{const b=document.querySelector('.ux11-back');return {ready:ui.page==='integrations'&&!!b,name:(b?.innerText||b?.getAttribute('aria-label')||'').trim()}})()");if(!state?.ready||!state.name)throw new Error(`${label} Integrations route/back control not ready`);return true;});
+    await evalx("document.querySelector('.ux11-back').click()");
+    await retry(async()=>{const ok=await evalx(`ui.page==='overview'&&document.querySelector('.vector-home')&&document.activeElement?.dataset?.ux11Id==='${origin}'&&document.activeElement?.closest('.vector-priority-slot')`);if(!ok)throw new Error(`${label} Vector origin focus not restored`);return true;});
+    const returned=await evalx("(()=>{const a=document.activeElement;const r=a?.getBoundingClientRect();return {overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,focused:a?.dataset?.ux11Route||null,projected:document.querySelector('.vector-priority-slot .ux11-queue')?.dataset.vectorProjected||null,inViewport:!!(r&&r.top>=-1&&r.bottom<=innerHeight+1&&r.left>=-1&&r.right<=innerWidth+1)};})()");
+    console.log(`UX11_CONTEXT_${label}_RETURN=`+JSON.stringify(returned));
+    assert(returned.overflow<=2&&returned.focused==='integrations'&&returned.projected==='true'&&returned.inViewport,`${label} Vector return-focus regression failed`);
+  }
+
+  await exerciseResponsiveViewport('TABLET',768,1024);
+  await exerciseResponsiveViewport('MOBILE',390,844);
   console.log('UX11_CONTEXT_BROWSER_REGRESSION=PASS');
 } finally {
   try { ws?.close(); } catch {}
