@@ -5,6 +5,7 @@ import { selectAasxEnvironment } from '../../src/frontier/aasx-package-selector.
 const rootRels = `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="r1" Type="http://admin-shell.io/aasx/relationships/aasx-origin" Target="aasx/aasx-origin"/></Relationships>`;
 const originRels = (targets) => `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${targets.map((t,i)=>`<Relationship Id="s${i}" Type="http://admin-shell.io/aasx/relationships/aas-spec" Target="${t}"/>`).join('')}</Relationships>`;
 const env = { assetAdministrationShells: [], submodels: [{ id: 'urn:sm:1', submodelElements: [] }], conceptDescriptions: [] };
+const xmlEnv = `<environment xmlns="https://admin-shell.io/aas/3/2"><submodels><submodel><id>urn:sm:1</id></submodel></submodels></environment>`;
 const entry = (path, content, extra={}) => ({ path, content, size: Buffer.byteLength(String(content)), ...extra });
 const packageWith = (targets, payloads) => [
   entry('_rels/.rels', rootRels),
@@ -20,21 +21,30 @@ test('selects relationship-targeted JSON without assuming the filename', () => {
   assert.equal(result.environment.submodels[0].id, 'urn:sm:1');
 });
 
-test('accepts duplicate JSON serializations only when they are semantically equivalent', () => {
-  const envReordered = { conceptDescriptions: [], submodels: [{ submodelElements: [], id: 'urn:sm:1' }], assetAdministrationShells: [] };
-  const result = selectAasxEnvironment(packageWith(['data.json','copy.json'], [
-    entry('aasx/data.json', JSON.stringify(env)),
-    entry('aasx/copy.json', JSON.stringify(envReordered)),
-  ]));
+test('accepts relationship-targeted AAS 3.x XML and decodes it into the same environment contract', () => {
+  const result = selectAasxEnvironment(packageWith(['../models/site-a.aas.xml'], [entry('models/site-a.aas.xml', xmlEnv)]));
   assert.equal(result.status, 'accepted');
-  assert.equal(result.equivalentJsonSerializations, 2);
+  assert.equal(result.format, 'xml');
+  assert.equal(result.environment.submodels[0].id, 'urn:sm:1');
+  assert.equal(result.xmlNamespace, 'https://admin-shell.io/aas/3/2');
 });
 
-test('fails closed when two AAS JSON serializations disagree', () => {
-  const other = { ...env, submodels: [{ id: 'urn:sm:other', submodelElements: [] }] };
-  const result = selectAasxEnvironment(packageWith(['data.json','copy.json'], [
-    entry('aasx/data.json', JSON.stringify(env)),
-    entry('aasx/copy.json', JSON.stringify(other)),
+test('accepts JSON and XML serializations only when their decoded environments agree', () => {
+  const result = selectAasxEnvironment(packageWith(['../models/data.json','../models/data.xml'], [
+    entry('models/data.json', JSON.stringify(env)),
+    entry('models/data.xml', xmlEnv),
+  ]));
+  assert.equal(result.status, 'accepted');
+  assert.equal(result.equivalentSerializations, 2);
+  assert.equal(result.jsonSerializations, 1);
+  assert.equal(result.xmlSerializations, 1);
+});
+
+test('fails closed when JSON and XML serializations disagree', () => {
+  const otherXml = `<environment xmlns="https://admin-shell.io/aas/3/2"><submodels><submodel><id>urn:sm:other</id></submodel></submodels></environment>`;
+  const result = selectAasxEnvironment(packageWith(['../models/data.json','../models/data.xml'], [
+    entry('models/data.json', JSON.stringify(env)),
+    entry('models/data.xml', otherXml),
   ]));
   assert.equal(result.status, 'review_required');
   assert.equal(result.reason, 'conflicting_aas_serializations');
@@ -61,8 +71,9 @@ test('rejects suspicious compression ratios before parsing content', () => {
   assert.equal(result.reason, 'aasx_compression_ratio_limit_exceeded');
 });
 
-test('does not pretend XML ingestion is complete', () => {
-  const result = selectAasxEnvironment(packageWith(['data.xml'], [entry('aasx/data.xml', '<environment/>')]));
-  assert.equal(result.status, 'review_required');
-  assert.equal(result.reason, 'xml_aas_spec_not_supported_yet');
+test('rejects unsafe XML constructs instead of attempting entity expansion', () => {
+  const xml = `<!DOCTYPE x [<!ENTITY a "b">]><environment xmlns="https://admin-shell.io/aas/3/2"><submodels/></environment>`;
+  const result = selectAasxEnvironment(packageWith(['../models/data.xml'], [entry('models/data.xml', xml)]));
+  assert.equal(result.status, 'rejected');
+  assert.equal(result.reason, 'xml_dtd_or_entity_forbidden');
 });
