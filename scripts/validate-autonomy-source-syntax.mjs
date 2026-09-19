@@ -155,6 +155,16 @@ assert.ok(workflow.includes("envelope.get('portableProofSha256') == sha(portable
 assert.ok(workflow.includes("corpus.get('snapshotSha256') == sha(snapshot_raw)"), 'Prior corpus hydration must verify the prior snapshot bytes against the portable proof.');
 assert.ok(workflow.includes("candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)"), 'Prior corpus hydration must deterministically select the newest eligible artifact rather than depend on API result ordering.');
 assert.ok(workflow.includes("'artifactCreatedAt': artifact.get('created_at')"), 'Selected prior corpus evidence must record the artifact creation time used for deterministic ordering.');
+assert.ok(workflow.includes('/actions/workflows/wfm-zero-engineer-support-contract.yml/runs?branch='), 'Prior corpus hydration must search this exact workflow history rather than unrelated repository artifacts.');
+assert.ok(workflow.includes('per_page=100&page=${PAGE}'), 'Prior corpus hydration must paginate workflow history rather than trust the first API page.');
+assert.ok(workflow.includes('for ROW in "${RUN_ROWS[@]}"'), 'Prior corpus hydration must search backward across completed runs.');
+assert.ok(workflow.includes("verification-failed:${REASON:-unknown}"), 'Invalid newer corpus candidates must be recorded and skipped rather than terminating backward search.');
+assert.ok(workflow.includes("STATUS='FAIL_CLOSED_DURABLE_HISTORY_UNAUTHENTICATED'"), 'Known durable corpus history must fail closed when no predecessor authenticates.');
+assert.ok(workflow.includes("STATUS='FAIL_CLOSED_PRIOR_EVIDENCE_UNAVAILABLE'"), 'Unavailable prior evidence must fail closed instead of silently bootstrapping from zero.');
+assert.ok(workflow.includes("status': 'PASS_SELECTED_VERIFIED_PREDECESSOR'"), 'Successful hydration must explicitly record a verified predecessor terminal.');
+assert.ok(workflow.includes('incident-regression-corpus-hydration.json'), 'Hydration selection/rejection evidence must be preserved with the proof artifact.');
+assert.ok(workflow.includes('hydrationValid ='), 'Proof receipt must independently validate workflow hydration evidence.');
+assert.ok(workflow.includes('incidentCorpusHydrationSha256'), 'Workflow-bound envelope must bind the hydration record bytes.');
 assert.ok(workflow.includes('priorCorpusExpected = Boolean(process.env.WFM_INCIDENT_CORPUS_INPUT)'), 'Proof receipt must independently confirm whether a verified prior corpus was actually injected.');
 assert.ok(workflow.includes('p.incidentRegressionCorpus.priorSnapshotLoaded === priorCorpusExpected'), 'Portable proof must agree with workflow hydration state.');
 assert.ok(workflow.includes('incident-regression-corpus.snapshot.json'), 'Workflow must persist the verified incident regression corpus snapshot.');
@@ -186,7 +196,7 @@ for (const required of [
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 3,
+  schemaVersion: 4,
   proof: 'autonomy-source-syntax-and-workflow-integrity',
   status: 'PASS',
   jsFilesChecked: checked.length,
@@ -223,6 +233,10 @@ console.log(JSON.stringify({
   persistentCorpusContinuityRequiredByPortableProof: true,
   priorCorpusWorkflowEvidenceBindingRequired: true,
   newestPriorCorpusArtifactSelectionRequired: true,
+  priorCorpusBackwardSearchRequired: true,
+  durableCorpusHistoryFailClosedRequired: true,
+  priorCorpusEvidenceUnavailableFailClosedRequired: true,
+  hydrationEvidencePersistedAndBound: true,
   priorCorpusHydrationStateCrossChecked: true,
   canonicalTrustAnchorClassificationRequired: true,
   exactRuntimeLogicProofContinuesWhenReleaseTrustBlocked: true,
