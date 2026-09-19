@@ -115,14 +115,22 @@ export class TelemetryContinuityGuard {
       }
 
       const streamCanaries=[...this.canaries.values()].filter(c=>c.stream===stream);
+      const validCanaries=streamCanaries
+        .filter(c=>c.observedAtMs!==null && c.observedAtMs-c.emittedAtMs<=this.maxCanaryLagMs)
+        .sort((a,b)=>b.observedAtMs-a.observedAtMs);
+      const latestValid=validCanaries[0]||null;
+
+      // A missed expected canary is fail-closed until a later independent canary
+      // succeeds. This preserves detection while still allowing evidence-based
+      // recovery instead of permanently bricking promotion after one outage.
       for(const canary of streamCanaries){
-        if(canary.observedAtMs===null && now-canary.emittedAtMs>this.maxCanaryLagMs){
+        if(canary.observedAtMs!==null || now-canary.emittedAtMs<=this.maxCanaryLagMs) continue;
+        const recoveredByLaterCanary=Boolean(latestValid && latestValid.emittedAtMs>canary.emittedAtMs);
+        if(!recoveredByLaterCanary){
           reasons.push({code:'CANARY_NOT_OBSERVED',stream,canaryId:canary.canaryId,ageMs:now-canary.emittedAtMs});
         }
       }
-      const latestValid=streamCanaries
-        .filter(c=>c.observedAtMs!==null && c.observedAtMs-c.emittedAtMs<=this.maxCanaryLagMs)
-        .sort((a,b)=>b.observedAtMs-a.observedAtMs)[0]||null;
+
       if(!latestValid){
         reasons.push({code:'NO_VALID_CANARY',stream});
       }else{
