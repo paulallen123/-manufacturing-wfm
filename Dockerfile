@@ -54,7 +54,7 @@ COPY implementation/ui/ /tmp/wfm-implementation-ui/
 RUN mkdir -p /app/proof-runtime
 COPY implementation/proof/cloud-scale-proof-runner.cjs /app/proof-runtime/cloud-scale-proof-runner.cjs
 
-# Deterministic build admission for the new implementation and learning control planes.
+# Deterministic build admission for implementation, learning and Vector intelligence control planes.
 # Tests execute against the exact files copied into this image; test sources are removed
 # afterwards so they do not expand the runtime attack surface.
 RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime /tmp/wfm-tests/security/runtime /tmp/wfm-tests/integration/runtime /tmp/wfm-tests/integration/worker /tmp/wfm-tests/operations/runtime
