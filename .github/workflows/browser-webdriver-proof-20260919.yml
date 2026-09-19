@@ -5,6 +5,8 @@ on:
     branches:
       - 'fix/browser-webdriver-proof-20260919'
     paths:
+      - 'ux-overlay/vector-shell.js'
+      - '.github/scripts/ux-cycle11-context-browser.mjs'
       - '.github/scripts/ux-cycle11-context-webdriver-proof.mjs'
       - '.github/workflows/browser-webdriver-proof-20260919.yml'
   workflow_dispatch:
@@ -35,8 +37,15 @@ jobs:
           node --check ux-overlay/ux-reset-cycle12.js
           node --check ux-overlay/vector-shell.js
           node --check ux-overlay/vector-priority-bridge.js
+          grep -q "if(alerts.textContent!==next)alerts.textContent=next" ux-overlay/vector-shell.js
+          echo 'VECTOR_NOTIFICATION_IDEMPOTENCE_GUARD=PASS'
           echo 'ISOLATED_FIX_EXACT_BASE_ANCESTRY=PASS'
-      - name: ChromeDriver transport and unchanged journey assertions
+      - name: Original raw-CDP browser journey gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 60s node .github/scripts/ux-cycle11-context-browser.mjs
+      - name: Independent ChromeDriver transport and unchanged journey assertions
         shell: bash
         run: |
           set -euo pipefail
@@ -56,6 +65,7 @@ jobs:
           docker cp "$cid:/app/public/vector-shell.js" /tmp/wfm-vector-proof/vector-shell.js
           node --check /tmp/wfm-vector-proof/value-cockpit-ui.js
           node --check /tmp/wfm-vector-proof/vector-shell.js
+          grep -q "if(alerts.textContent!==next)alerts.textContent=next" /tmp/wfm-vector-proof/vector-shell.js
           node <<'NODE'
           const fs=require('node:fs');
           const js=fs.readFileSync('/tmp/wfm-vector-proof/value-cockpit-ui.js','utf8');
