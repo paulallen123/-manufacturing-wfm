@@ -41,25 +41,25 @@ function newestSourceQueue(){
   return rows.length?rows[rows.length-1]:null;
 }
 
+function projectedTarget(queue,marker){
+  const buttons=[...queue.querySelectorAll('.ux11-open')];
+  return buttons.find(button=>button.dataset.ux11Id===String(marker.id))||buttons.find(button=>button.dataset.ux11Route===String(marker.route||'')&&button.dataset.ux11SourceId===String(marker.sourceId||''))||null;
+}
+
 function restoreProjectedFocus(queue){
   const marker=window.WFMUXCycle11?.returnMarker?.();
   if(!marker?.id||!queue)return false;
   const token=++state.focusToken;
-  window.__vectorPriorityFocus={markerId:marker.id,token,attempts:0,targetFound:false,visible:false,focused:false,lastActive:null};
   const focus=(attempt=0)=>{
     if(token!==state.focusToken)return;
     const currentMarker=window.WFMUXCycle11?.returnMarker?.();
     if(!currentMarker||currentMarker.id!==marker.id)return;
-    const byId=`.ux11-open[data-ux11-id="${CSS.escape(marker.id)}"]`;
-    const byRoute=marker.route&&marker.sourceId?`.ux11-open[data-ux11-route="${CSS.escape(marker.route)}"][data-ux11-source-id="${CSS.escape(marker.sourceId)}"]`:null;
-    const target=queue.querySelector(byId)||(byRoute?queue.querySelector(byRoute):null);
+    const target=projectedTarget(queue,marker);
+    const lane=target?.closest('details');if(lane&&!lane.open)lane.open=true;
     const visible=Boolean(target?.isConnected&&!target.closest('[hidden]')&&target.getClientRects().length);
-    window.__vectorPriorityFocus={markerId:marker.id,token,attempts:attempt+1,targetFound:Boolean(target),visible,focused:false,lastActive:document.activeElement?.tagName||null,disabled:Boolean(target?.disabled),tabIndex:target?.tabIndex??null};
     if(visible){
       try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}
-      const focused=document.activeElement===target;
-      window.__vectorPriorityFocus={...window.__vectorPriorityFocus,focused,lastActive:document.activeElement?.tagName||null,activeId:document.activeElement?.dataset?.ux11Id||null};
-      if(focused){try{sessionStorage.removeItem('wfmUx11Return');}catch{}return;}
+      if(document.activeElement===target){try{sessionStorage.removeItem('wfmUx11Return');}catch{}return;}
     }
     if(attempt<20)setTimeout(()=>focus(attempt+1),40);
   };
