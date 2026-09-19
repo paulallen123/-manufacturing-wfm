@@ -1,4 +1,8 @@
 /* Vector Workforce Operations — approved screenshot shell. */
+/* Fail closed visually: the retired shell must never be exposed while Vector boots. */
+body:not(.vector-ui-active) .app>.sidebar:not(.vector-sidebar){visibility:hidden!important}
+body:not(.vector-ui-active) .app>.workspace>.content,
+body:not(.vector-ui-active) .app>main>.content{visibility:hidden!important}
 :root{
   --vector-sidebar:#101b29;--vector-sidebar-2:#0b1623;--vector-nav-active:#173e70;--vector-bg:#f7f9fc;--vector-card:#fff;--vector-line:#e4e9f0;--vector-ink:#0c1727;--vector-muted:#60708a;--vector-blue:#1675f8;--vector-green:#20b675;--vector-red:#ff4d56;--vector-cyan:#08b6dd;--vector-purple:#8f7cf7;--vector-orange:#ffa12c;--vector-shadow:0 4px 14px rgba(29,50,77,.055);--vector-radius:11px;
 }
