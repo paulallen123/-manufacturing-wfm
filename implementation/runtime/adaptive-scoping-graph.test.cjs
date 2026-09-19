@@ -129,6 +129,34 @@ test('a hidden question cannot be answered from a stale client', () => {
   }), error => error.code === 'QUESTION_NOT_ACTIONABLE' && error.statusCode === 409);
 });
 
+test('same version label cannot silently change the decision graph underneath an active scoping session', () => {
+  const original = compileGraph({
+    version: 'pinned.1',
+    questions: [{
+      id: 'mode',
+      prompt: 'Select mode',
+      options: [{ value: 'api', effects: [{ type: 'CONFIG', key: 'integration.mode', value: 'api' }] }]
+    }]
+  });
+  const changedWithoutVersionBump = compileGraph({
+    version: 'pinned.1',
+    questions: [{
+      id: 'mode',
+      prompt: 'Select mode',
+      options: [{ value: 'api', effects: [{ type: 'CONFIG', key: 'integration.mode', value: 'file' }] }]
+    }]
+  });
+
+  const started = evaluateGraph(original, {});
+  assert.notEqual(original.graphFingerprint, changedWithoutVersionBump.graphFingerprint);
+  assert.equal(started.graphFingerprint, original.graphFingerprint);
+  assert.throws(() => applyAnswer(changedWithoutVersionBump, started, {
+    expectedRevision: started.revision,
+    questionId: 'mode',
+    value: 'api'
+  }), error => error.code === 'STALE_GRAPH_DEFINITION' && error.statusCode === 412);
+});
+
 test('every reachable purchased-scope path terminates in machine-actionable effects or explicit no-ops', () => {
   assert.equal(assertEveryReachablePathActionable(graph, [
     ['time'],
@@ -140,6 +168,7 @@ test('every reachable purchased-scope path terminates in machine-actionable effe
   assert.ok(paths.length > 0);
   assert.ok(paths.every(path => path.questions.length === 0));
   assert.ok(paths.every(path => path.operations.every(op => ['CONFIG', 'TEST', 'DEPENDENCY', 'RISK', 'DECISION', 'NO_OP'].includes(op.type))));
+  assert.ok(paths.every(path => path.graphFingerprint === graph.graphFingerprint));
 });
 
 test('graph compilation rejects questions without machine effects', () => {
