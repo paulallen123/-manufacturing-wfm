@@ -17,7 +17,7 @@ concurrency:
 jobs:
   release:
     if: github.actor == github.repository_owner
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     env:
       RAILWAY_NO_AUTO_UPDATE: '1'
