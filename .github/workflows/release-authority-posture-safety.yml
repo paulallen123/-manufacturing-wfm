@@ -32,7 +32,9 @@ jobs:
           package-manager-cache: false
 
       - name: Prove fail-closed release-authority logic
-        run: node --test scripts/verify-github-release-authority.test.mjs
+        run: |
+          node --test scripts/verify-github-release-authority.test.mjs
+          node --test scripts/assess-source-bound-deployment.test.mjs
 
       - name: Verify live GitHub release authority posture
         env:
