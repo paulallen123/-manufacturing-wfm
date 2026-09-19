@@ -18,9 +18,16 @@ function baseProfile() {
     authority: { entityOwners: { employee: 'hcm', worked_time: 'wfm', payroll_result: 'payroll' } },
     recovery: { maxAttempts: 3, idempotencyKey: 'sourceEventId' },
     monitoring: { freshnessSeconds: 300, reconciliationRequired: true },
-    connectionTest: { status: 'passed', mode: 'bounded_non_mutating' },
-    recoveryProof: { status: 'passed' },
-    reconciliation: { status: 'passed' },
+    connectionTest: {
+      status: 'passed', mode: 'bounded_non_mutating', observedBy: 'trusted_executor',
+      evidenceRef: 'evidence://connection/test-1', mutationObserved: false, rawSensitiveDataPersisted: false
+    },
+    recoveryProof: {
+      status: 'passed', observedBy: 'trusted_executor', evidenceRef: 'evidence://connection/recovery-1',
+      transientFailureObserved: true, successfulRecoveryObserved: true,
+      reconciliationPassed: true, mutationObserved: false
+    },
+    reconciliation: { status: 'passed', observedBy: 'trusted_executor', evidenceRef: 'evidence://connection/reconciliation-1' },
     activation: { approved: true, approvedByRole: 'integration_admin', fingerprint: '' }
   };
   profile.activation.fingerprint = approvalFingerprint(profile);
@@ -127,6 +134,22 @@ test('fails activation when recovery is unproven', () => {
   profile.activation.fingerprint = approvalFingerprint(profile);
   assert.equal(activationReadiness(profile).ready, false);
   assert.match(activationReadiness(profile).reasons.join('\n'), /retry\/recovery must be proven/);
+});
+
+test('fails activation when recovery claims pass without an observed failure', () => {
+  const profile = baseProfile();
+  profile.recoveryProof.transientFailureObserved = false;
+  profile.activation.fingerprint = approvalFingerprint(profile);
+  assert.equal(activationReadiness(profile).ready, false);
+  assert.match(activationReadiness(profile).reasons.join('\n'), /observed transient failure/);
+});
+
+test('fails activation when connection proof is not trusted-executor evidence', () => {
+  const profile = baseProfile();
+  profile.connectionTest.observedBy = 'browser';
+  profile.activation.fingerprint = approvalFingerprint(profile);
+  assert.equal(activationReadiness(profile).ready, false);
+  assert.match(activationReadiness(profile).reasons.join('\n'), /trusted executor/);
 });
 
 test('fails activation when the mapping has not been reviewed', () => {
