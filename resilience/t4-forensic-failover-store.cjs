@@ -39,11 +39,17 @@ const REQUIRED_CAPABILITY = Object.freeze({
 });
 
 function capabilityEligible(capability = {}) {
-  return Object.entries(REQUIRED_CAPABILITY).every(([key, expected]) => capability?.[key] === expected);
+  return Object.entries(REQUIRED_CAPABILITY).every(([key, expected]) => capability?.[key] === expected)
+    && validDigest(capability?.eligibilityEvidenceDigest);
 }
 
 function capabilityDigest(capability = {}) {
-  return digest(Object.fromEntries(Object.keys(REQUIRED_CAPABILITY).sort().map((key) => [key, capability?.[key]])));
+  return digest({
+    ...Object.fromEntries(Object.keys(REQUIRED_CAPABILITY).sort().map((key) => [key, capability?.[key]])),
+    eligibilityEvidenceDigest: validDigest(capability?.eligibilityEvidenceDigest)
+      ? String(capability.eligibilityEvidenceDigest).toLowerCase()
+      : null,
+  });
 }
 
 function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
@@ -56,7 +62,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
 
   const seenIds = new Set();
   const configured = stores.map((entry, index) => {
-    const id = clean(entry?.id || `store-${index + 1}`, 80);
+    const id = clean(entry?.id || `store-${index + 1}`, 48);
     if (!id || seenIds.has(id)) {
       throw fail('WFM_T4_FORENSICS_FAILOVER_CONFIG', 'Forensic store IDs must be unique and non-empty.');
     }
@@ -90,7 +96,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
     const tenant = clean(input.tenant, 100);
     if (!tenant) throw fail('WFM_T4_FORENSICS_INPUT', 'Forensic failover requires an explicit tenant.');
     if (eligible.length === 0) {
-      throw fail('WFM_T4_FORENSICS_NO_ELIGIBLE_STORE', 'No pre-existing zero-incremental-cost forensic store satisfies the safety contract.', {
+      throw fail('WFM_T4_FORENSICS_NO_ELIGIBLE_STORE', 'No pre-existing zero-incremental-cost forensic store has explicit eligibility evidence satisfying the safety contract.', {
         contractDigest,
       });
     }
