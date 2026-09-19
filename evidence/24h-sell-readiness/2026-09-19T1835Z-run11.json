@@ -1,0 +1,78 @@
+{
+  "recorded_at_utc": "2026-09-19T18:35:00Z",
+  "claim_boundary": {
+    "sell_readiness": "CONDITIONAL",
+    "production_approved": false,
+    "provider_live_claim": false,
+    "zero_human_customer_provisioning_proven": false,
+    "frozen_customer_proof_changed": false,
+    "new_paid_resource_created": false
+  },
+  "feature_head": {
+    "sha": "31f4203c2cb3a7c3130350c0bc74839e090c39da",
+    "verified": true,
+    "runtime_change_from_18be0c40d47b58bef7b472cfce28946f30228b55": false,
+    "release_only_change": ".github/workflows/integration-proof-exact-gated-release.yml",
+    "pr": 176
+  },
+  "one_day_enterprise": {
+    "service": "wfm-one-day-enterprise-v1",
+    "runtime_sha": "18be0c40d47b58bef7b472cfce28946f30228b55",
+    "deployment_id": "d5a80c72-1199-4438-9d4a-b52f589552cb",
+    "deployment_status": "SUCCESS",
+    "tests": {"passed": 96, "failed": 0},
+    "t0_t4_autonomy_admission": "PASS",
+    "vector_only_presentation_admission": "PASS",
+    "scale_proof": {
+      "employees": 10000,
+      "sites": 50,
+      "clockings": 100000,
+      "timecards": 40000
+    },
+    "payroll_reconciliation": {
+      "expected": 15180000,
+      "calculated": 15180000,
+      "unexplained_variance": 0,
+      "deliberate_corruption_detected": 20
+    },
+    "runtime_statement": "Fixture/demo data only. Production approved: false."
+  },
+  "hosted_browser": {
+    "service": "wfm-built-ui-audit",
+    "deployment_id": "08db2d85-8693-4066-85f1-440d81252a68",
+    "runtime_sha": "18be0c40d47b58bef7b472cfce28946f30228b55",
+    "matrix": "PASS",
+    "roles": ["manager", "employee", "payroll_admin", "director", "isolation-test manager"],
+    "role_count": 5,
+    "navigation_clicks": 4,
+    "time_review_state": "authoritative empty state",
+    "invented_actions": 0
+  },
+  "integration_proof": {
+    "service": "wfm-integration-fabric-v1-proof",
+    "root_directory_hold": "/__security_hold_7b6f9d22e1__",
+    "hold_preserved": true,
+    "latest_success_sha": "2dbe3913e50941f90c8e8d73f8c4ff14517e3d24",
+    "latest_success_deployment_id": "6a625a13-ba37-4203-8f84-a816a6fc4081",
+    "current_exact_head_deployed": false,
+    "manual_exact_release_control": {
+      "workflow": ".github/workflows/integration-proof-exact-gated-release.yml",
+      "verified_head_required": true,
+      "release_only_diff_required": true,
+      "hold_path_preserved": true,
+      "predeploy_exact_sha_check": true
+    },
+    "workflow_run": {
+      "run_id": 35461430347,
+      "attempt_1": "FAILED_BEFORE_RUNNER_STEPS",
+      "attempt_2": "FAILED_BEFORE_RUNNER_STEPS",
+      "product_runtime_failure": false
+    }
+  },
+  "remaining_hard_gates": [
+    "Run exact gated integration-proof release when a GitHub Actions runner is allocated, or use an equally strong immutable commit deployment mechanism.",
+    "Prove a genuinely authorised non-fixture external provider sandbox/test API connection.",
+    "Prove a real zero-human customer/environment provisioning execution; SYNTHETIC_THEORY_ONLY timing remains non-customer evidence.",
+    "Bring both required Railway services onto the same admitted candidate before changing sell-readiness status."
+  ]
+}
