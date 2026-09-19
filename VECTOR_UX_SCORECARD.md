@@ -30,7 +30,7 @@ If Vector removes text-derived risk, invented timeline widths and implied shift 
 - Extended the existing Vector-only guard to fail if text-inferred risk, fixed planning widths/times, or the neutral evidence/visual contract regress.
 
 ### Focused / affected validation
-On exact product-code head `cbcec55fb2b542fe960a80e7e87e94519efb003e`, Vector-only run `35428391626` allocated a runner and the focused `Refuse retired UI source` step passed, which exercises the extended neutral-review/planning contract. The exact Docker build was still running when this scorecard revision was recorded; built-asset proof, hosted role behavior, real browser layout and assistive-technology behavior therefore remain unclaimed until observed.
+Exact product-code head `cbcec55fb2b542fe960a80e7e87e94519efb003e` is green in Vector-only run `35428391626`. The extended repository guard passed, the exact Docker runtime build passed, and built-asset proof passed that Vector remains the only active presentation. This validates the neutral planning contract at source/build-composition level. It does not claim authenticated hosted-role, real browser task, screen-reader or user-performance evidence.
 
 ### UX scorecard impact
 - Calm by default: improved — planning no longer manufactures risk/severity from copy or decorative widths.
@@ -41,7 +41,7 @@ On exact product-code head `cbcec55fb2b542fe960a80e7e87e94519efb003e`, Vector-on
 - Development efficiency: improved — one Vector owner, one guard, and the redundant PR #141 is closed.
 
 ### Still unverified
-Exact built-asset result for `cbcec55f…`, authenticated hosted-role rendering, real screen-reader behavior, measured first-click/time-on-task/error rate, and a structured source-specific planning freshness/status contract that could safely replace the neutral state.
+Authenticated hosted-role rendering, real screen-reader behavior, measured first-click/time-on-task/error rate, and a structured source-specific planning freshness/status contract that could safely replace the neutral state.
 
 ### Single next highest-value NEW-UI action
 Audit the remaining Vector Home KPI/trend presentation for the same evidence problem, starting with hard-coded labour-cost progress and decorative sparklines. Bind only authoritative structured series/targets; otherwise remove the implied trend/progress while preserving the underlying KPI and route.
