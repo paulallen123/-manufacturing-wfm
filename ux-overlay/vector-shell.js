@@ -22,7 +22,7 @@ const NAV=[
 const state={queued:false};
 const observerConfig={subtree:true,childList:true};
 let shellObserver=null;
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=n=>(n?.textContent||'').replace(/\s+/g,' ').trim();
 const page=()=>{try{return String(ui?.page||'overview')}catch{return 'overview'}};
 const vectorHomeRequested=()=>{try{return new URL(window.location.href).searchParams.get('vector_home')==='1';}catch{return false;}};
