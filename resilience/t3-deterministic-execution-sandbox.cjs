@@ -401,9 +401,31 @@ function createT3ExternalExecutionReconciler({
     throw new Error('T3 external execution reconciliation requires independent execution and observation provenance verifiers.');
   }
 
+  const trustedReconciliationComponents = Object.freeze({
+    readinessVerifyReceipt: readinessGate.verifyReceipt,
+    executionVerifyReceipt: executionProvenanceVerifier.verifyExecutionReceipt,
+    observationVerifyObservation: observationProvenanceVerifier.verifyObservation,
+    executionCapabilityDigest: digest(executionProvenanceVerifier.capability),
+    observationCapabilityDigest: digest(observationProvenanceVerifier.capability),
+  });
+  const reconciliationComponentBindingDigest = digest({
+    executionVerifierId,
+    observationVerifierId,
+    executionCapabilityDigest: trustedReconciliationComponents.executionCapabilityDigest,
+    observationCapabilityDigest: trustedReconciliationComponents.observationCapabilityDigest,
+  });
+
+  function reconciliationComponentsIntact() {
+    return readinessGate.verifyReceipt === trustedReconciliationComponents.readinessVerifyReceipt
+      && executionProvenanceVerifier.verifyExecutionReceipt === trustedReconciliationComponents.executionVerifyReceipt
+      && observationProvenanceVerifier.verifyObservation === trustedReconciliationComponents.observationVerifyObservation
+      && digest(executionProvenanceVerifier.capability) === trustedReconciliationComponents.executionCapabilityDigest
+      && digest(observationProvenanceVerifier.capability) === trustedReconciliationComponents.observationCapabilityDigest;
+  }
+
   function terminal(base, detail = {}) {
     const core = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       ...base,
       ...detail,
       executionAuthority: false,
@@ -450,6 +472,8 @@ function createT3ExternalExecutionReconciler({
       expectedAfterStateDigest: readinessReceipt?.expectedAfterStateDigest || null,
       rollbackDigest: readinessReceipt?.rollbackDigest || null,
       compensationPlanDigest: readinessReceipt?.compensationPlanDigest || null,
+      reconciliationComponentBindingDigest,
+      trustedComponentBindingVerified: false,
       reconciledAt: at,
       executionObserved: false,
       externalMutationObserved: false,
@@ -459,7 +483,20 @@ function createT3ExternalExecutionReconciler({
       observationProvenanceVerified: false,
     };
 
-    if (!readinessGate.verifyReceipt(readinessReceipt)) return terminal(base);
+    if (!reconciliationComponentsIntact()) {
+      return terminal(base, { reason: 'trusted-reconciliation-component-drift-before-reconcile' });
+    }
+
+    let readinessValid = false;
+    try {
+      readinessValid = trustedReconciliationComponents.readinessVerifyReceipt.call(readinessGate, readinessReceipt) === true;
+    } catch {
+      readinessValid = false;
+    }
+    if (!reconciliationComponentsIntact()) {
+      return terminal(base, { reason: 'trusted-reconciliation-component-drift-during-readiness-verification' });
+    }
+    if (!readinessValid) return terminal(base);
     if (
       readinessReceipt.status !== 'execution-ready-awaiting-external-authority'
       || readinessReceipt.executionReady !== true
@@ -485,12 +522,15 @@ function createT3ExternalExecutionReconciler({
 
     let executionAttestation;
     try {
-      executionAttestation = executionProvenanceVerifier.verifyExecutionReceipt({
+      executionAttestation = trustedReconciliationComponents.executionVerifyReceipt.call(executionProvenanceVerifier, {
         readinessReceipt,
         executionReceipt,
       });
     } catch {
       executionAttestation = null;
+    }
+    if (!reconciliationComponentsIntact()) {
+      return terminal(base, { reason: 'trusted-reconciliation-component-drift-during-execution-provenance-verification' });
     }
 
     const executionProvenanceValid = attestationDigestValid(executionAttestation)
@@ -541,6 +581,7 @@ function createT3ExternalExecutionReconciler({
     if (!executionBindingValid) {
       return terminal(base, {
         reason: 'external-execution-binding-invalid',
+        trustedComponentBindingVerified: true,
         executionProvenanceVerified: true,
         executionProvenanceAttestationDigest: executionAttestation.attestationDigest,
       });
@@ -548,6 +589,7 @@ function createT3ExternalExecutionReconciler({
 
     const executionBase = {
       ...base,
+      trustedComponentBindingVerified: true,
       executionObserved: true,
       externalMutationObserved: true,
       executorId,
@@ -573,13 +615,22 @@ function createT3ExternalExecutionReconciler({
 
     let observationAttestation;
     try {
-      observationAttestation = observationProvenanceVerifier.verifyObservation({
+      observationAttestation = trustedReconciliationComponents.observationVerifyObservation.call(observationProvenanceVerifier, {
         readinessReceipt,
         executionReceipt,
         observation,
       });
     } catch {
       observationAttestation = null;
+    }
+    if (!reconciliationComponentsIntact()) {
+      return rollbackRequired(
+        executionBase,
+        'trusted-reconciliation-component-drift-during-observation-provenance-verification',
+        executionReceipt,
+        observation,
+        { trustedComponentBindingVerified: false },
+      );
     }
 
     const observerId = clean(observation.observerId, 120);
@@ -726,6 +777,10 @@ function createT3ExternalExecutionReconciler({
       || receipt.modelAuthorityGranted !== false
       || receipt.customerMutation !== false
       || receipt.productionMutation !== false
+    ) return false;
+    if (
+      receipt.status === 'externally-executed-reconciled'
+      && (receipt.trustedComponentBindingVerified !== true || !isDigest(receipt.reconciliationComponentBindingDigest))
     ) return false;
     const core = { ...receipt };
     const expected = core.reconciliationReceiptDigest;
