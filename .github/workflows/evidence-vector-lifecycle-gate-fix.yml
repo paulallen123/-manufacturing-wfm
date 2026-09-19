@@ -89,8 +89,15 @@ jobs:
           docker cp "$cid:/app/public/value-cockpit-ui.js" "$RUNNER_TEMP/vector-proof/value-cockpit-ui.js"
           docker cp "$cid:/app/public/vector-shell.js" "$RUNNER_TEMP/vector-proof/vector-shell.js"
           docker cp "$cid:/app/public/factory-control-ui.css" "$RUNNER_TEMP/vector-proof/factory-control-ui.css"
-          grep -F 'WFM_UX_RESET_CYCLE12_BEGIN' "$RUNNER_TEMP/vector-proof/value-cockpit-ui.js"
           grep -F 'WFM_ADAPTIVE_COACH_BEGIN' "$RUNNER_TEMP/vector-proof/value-cockpit-ui.js"
+          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' "$RUNNER_TEMP/vector-proof/value-cockpit-ui.js"
           grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/vector-proof/vector-shell.js"
+          for marker in WFM_UX_RESET_CYCLE11_BEGIN WFM_UX_RESET_CYCLE12_BEGIN VECTOR_PRIORITY_BRIDGE_V1; do
+            if grep -Fq "$marker" "$RUNNER_TEMP/vector-proof/value-cockpit-ui.js" "$RUNNER_TEMP/vector-proof/vector-shell.js" "$RUNNER_TEMP/vector-proof/factory-control-ui.css"; then
+              echo "Retired presentation marker unexpectedly present: $marker" >&2
+              exit 1
+            fi
+          done
+          echo 'VECTOR_ONLY_PRESENTATION_ADMISSION=PASS'
           echo 'ISOLATED_LIFECYCLE_GATE_FIX_REGRESSION=PASS'
           echo 'CLAIM_BOUNDARY=test-harness correction only; no runtime/customer/provider/readiness mutation'
