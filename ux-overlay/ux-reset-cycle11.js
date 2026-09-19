@@ -174,9 +174,21 @@ function addBackLink(){
 }
 function restoreFocus(section){
  const marker=returnMarker();if(!marker||marker.from!=='overview'||!marker.id)return;
- let target=section.querySelector(`[data-ux11-id="${CSS.escape(marker.id)}"] .ux11-open`);
- if(!target&&marker.route&&marker.sourceId)target=section.querySelector(`.ux11-open[data-ux11-route="${CSS.escape(marker.route)}"][data-ux11-source-id="${CSS.escape(marker.sourceId)}"]`);
- if(target){setTimeout(()=>target.focus(),40);clearReturnMarker();return;}
+ const byId=`[data-ux11-id="${CSS.escape(marker.id)}"] .ux11-open`;
+ const byRoute=marker.route&&marker.sourceId?`.ux11-open[data-ux11-route="${CSS.escape(marker.route)}"][data-ux11-source-id="${CSS.escape(marker.sourceId)}"]`:null;
+ let target=section.querySelector(byId)|| (byRoute?section.querySelector(byRoute):null);
+ if(target){
+   const focusProjected=(attempt=0)=>{
+     const current=document.querySelector(byId)||(byRoute?document.querySelector(byRoute):null)||target;
+     const visible=Boolean(current?.isConnected&&!current.closest('[hidden]')&&current.getClientRects().length);
+     if(visible){
+       try{current.focus({preventScroll:true});}catch{try{current.focus();}catch{}}
+       if(document.activeElement===current){clearReturnMarker();return;}
+     }
+     if(attempt<20&&returnMarker()?.id===marker.id)setTimeout(()=>focusProjected(attempt+1),40);
+   };
+   setTimeout(()=>focusProjected(),20);return;
+ }
  const confirmed=section.querySelector(`.ux11-resolved [data-ux11-id="${CSS.escape(marker.id)}"]`);
  if(confirmed){const lane=confirmed.closest('details');if(lane)lane.open=true;focusNode(confirmed);const live=section.querySelector('.ux11-live');if(live)live.textContent='The source workflow confirmed the decision.';clearReturnMarker();}
 }
