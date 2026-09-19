@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Fail-safe route refinement for Octave Tempo Operations Management: reuse only the existing vendor-thin connector scaffold that current/legacy vendor material supports, without claiming a REST/OData/database contract or raising evidence above discovery-queued.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "octave-tempo-operations-management",
+      "patch": {
+        "protocols": ["connectors"],
+        "evidenceNote": "Current vendor pages identify Octave Tempo Operations Management as the product formerly known as j5 Operations Management. The platform covers operations management, shift execution, procedures, safety/compliance, maintenance coordination and contextual operational data. Legacy Hexagon j5 product URLs now redirect to the Octave domain, while vendor material documents j5/Tempo-style connectors to operational systems. WFM therefore reuses only the generic vendor-thin connector scaffold at discovery stage; this is not evidence of a stable outward REST/OData/database interface. No authentication, pagination, rate-limit or supported outward object contract has been verified for a WFM client. The cross-host product migration is documentation/identity evidence only and does not permit customer-data requests to follow redirects automatically."
+      }
+    }
+  ],
+  "systems": []
+}
