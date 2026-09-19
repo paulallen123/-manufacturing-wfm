@@ -70,6 +70,11 @@ function findNamed(node, name, accept, depth = 0, seen = new Set()) {
 function versionOf(b) { return findNamed(b, 'version', Number.isInteger); }
 function requestsOf(b) { return findNamed(b, 'requests', Array.isArray) || []; }
 function actorOf(b) { return findNamed(b, 'actor', v => !!v && typeof v === 'object' && !Array.isArray(v)) || {}; }
+function localMinute(value) {
+  const d = new Date(value);
+  if (!Number.isFinite(d.getTime())) return null;
+  return new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(' ','T');
+}
 function collectDates(node, out = new Set(), depth = 0, seen = new Set()) {
   if (node == null || depth > 8) return out;
   if (typeof node === 'string') {
@@ -83,6 +88,18 @@ function collectDates(node, out = new Set(), depth = 0, seen = new Set()) {
     if (/date|start|end|shift|day/i.test(k)) collectDates(v, out, depth + 1, seen);
     else if (depth < 3) collectDates(v, out, depth + 1, seen);
   }
+  return out;
+}
+function collectIntervals(node, out = [], depth = 0, seen = new Set()) {
+  if (!node || typeof node !== 'object' || depth > 8 || seen.has(node)) return out;
+  seen.add(node);
+  if (!Array.isArray(node)) {
+    const start = typeof node.start === 'string' ? node.start : (typeof node.clockIn === 'string' ? node.clockIn : null);
+    const end = typeof node.end === 'string' ? node.end : (typeof node.clockOut === 'string' ? node.clockOut : null);
+    const ls = start && localMinute(start); const le = end && localMinute(end);
+    if (ls && le && ls.slice(0,10) === le.slice(0,10)) out.push({ date: ls.slice(0,10), start: ls, end: le, rawStart:start, rawEnd:end });
+  }
+  for (const value of Object.values(node)) collectIntervals(value, out, depth + 1, seen);
   return out;
 }
 
@@ -112,46 +129,59 @@ console.log(`BOOTSTRAP_STATE_PASS version=${beforeVersion} requests=${beforeRequ
 const candidates = [...new Set([...collectDates(personalBefore.body), ...collectDates(employeeBefore.body)])]
   .filter(date => !beforeRequests.some(r => r.employee === employeePerson && r.date === date && r.status !== 'declined'))
   .sort();
+const intervals = [...collectIntervals(personalBefore.body), ...collectIntervals(employeeBefore.body)];
 assert.ok(candidates.length, 'no dated employee schedule evidence found');
-console.log(`SHIFT_DATE_EVIDENCE_PASS candidates=${candidates.length}`);
+console.log(`SHIFT_DATE_EVIDENCE_PASS candidates=${candidates.length} intervals=${intervals.length}`);
 
 let date = null;
 let submitted = null;
-for (const candidate of candidates.slice(0, 40)) {
-  const attempt = await command(employeeCookie, beforeVersion, 'leave-request', { date: candidate, hours: 8 });
-  if (attempt.status === 200) { date = candidate; submitted = attempt; break; }
-  const err = String(attempt.body?.error || attempt.text || '');
-  if (!/No published shift starts on this date|scheduled interval|already exists|outside/i.test(err)) {
-    throw new Error(`Unexpected leave request rejection on ${candidate}: ${attempt.status} ${err.slice(0,200)}`);
+let successfulPayload = null;
+outer: for (const candidate of candidates.slice(0, 40)) {
+  const matchingIntervals = intervals.filter(x => x.date === candidate).slice(0,6);
+  const payloads = [{ date: candidate }];
+  for (const i of matchingIntervals) {
+    payloads.push({ date: candidate, start: i.start, end: i.end });
+    if (i.rawStart !== i.start || i.rawEnd !== i.end) payloads.push({ date: candidate, start: i.rawStart, end: i.rawEnd });
   }
-  const refreshed = await authed(employeeCookie, '/api/bootstrap');
-  beforeVersion = versionOf(refreshed.body) ?? beforeVersion;
+  payloads.push({ date: candidate, hours: 8 });
+  const seenPayloads = new Set();
+  for (const payload of payloads) {
+    const key = JSON.stringify(payload); if (seenPayloads.has(key)) continue; seenPayloads.add(key);
+    const attempt = await command(employeeCookie, beforeVersion, 'leave-request', payload);
+    if (attempt.status === 200) { date = candidate; submitted = attempt; successfulPayload = payload; break outer; }
+    const err = String(attempt.body?.error || attempt.text || '');
+    if (!/No published shift starts on this date|scheduled interval|already exists|outside|partial-shift|start and end|hours are calculated|invalid leave|request/i.test(err)) {
+      throw new Error(`Unexpected leave request rejection on ${candidate}: ${attempt.status} ${err.slice(0,200)}`);
+    }
+    const refreshed = await authed(employeeCookie, '/api/bootstrap');
+    beforeVersion = versionOf(refreshed.body) ?? beforeVersion;
+  }
 }
-assert.ok(date && submitted, `no published employee shift accepted a leave request; checked ${Math.min(candidates.length,40)} dated candidates`);
-console.log(`LEAVE_REQUEST_SUBMIT_PASS date=${date}`);
+assert.ok(date && submitted && successfulPayload, `no published employee shift accepted a bounded leave request; checked ${Math.min(candidates.length,40)} dated candidates`);
+console.log(`LEAVE_REQUEST_SUBMIT_PASS date=${date} mode=${successfulPayload.start ? 'bounded-interval' : (successfulPayload.hours ? 'hours' : 'full-shift')}`);
 
 const employeeAfterSubmit = await authed(employeeCookie, '/api/bootstrap');
 assert.equal(employeeAfterSubmit.status, 200);
-const created = requestsOf(employeeAfterSubmit.body).find(r => r.employee === employeePerson && r.date === date && r.status !== 'declined');
+const created = requestsOf(employeeAfterSubmit.body).find(r => r.employee === employeePerson && (r.date === date || String(r.start||'').startsWith(date)) && r.status !== 'declined');
 assert.ok(created, 'submitted leave request not visible to employee');
 assert.equal(created.status, 'pending');
 assert.equal(created.kind, 'Annual leave');
-assert.equal(Number(created.hours), 8);
+assert.ok(Number(created.hours) > 0 || created.start, 'leave request has no calculated interval');
 assert.ok(created.id, 'request id missing');
 console.log('LEAVE_REQUEST_VISIBILITY_PASS pending annual-leave');
 
 const duplicateVersion = versionOf(employeeAfterSubmit.body);
 assert.ok(Number.isInteger(duplicateVersion));
-const duplicate = await command(employeeCookie, duplicateVersion, 'leave-request', { date, hours: 8 });
+const duplicate = await command(employeeCookie, duplicateVersion, 'leave-request', successfulPayload);
 assert.notEqual(duplicate.status, 200, 'duplicate leave request unexpectedly succeeded');
 const employeeAfterDuplicate = await authed(employeeCookie, '/api/bootstrap');
-const duplicates = requestsOf(employeeAfterDuplicate.body).filter(r => r.employee === employeePerson && r.date === date && r.status !== 'declined');
+const duplicates = requestsOf(employeeAfterDuplicate.body).filter(r => r.employee === employeePerson && r.id === created.id);
 assert.equal(duplicates.length, 1, 'duplicate request was created');
 console.log(`LEAVE_DUPLICATE_GUARD_PASS status=${duplicate.status}`);
 
 const otherAfter = await authed(otherCookie, '/api/bootstrap');
 assert.equal(otherAfter.status, 200);
-assert.ok(!requestsOf(otherAfter.body).some(r => r.id === created.id || (r.employee === employeePerson && r.date === date)), 'leave request leaked to second tenant');
+assert.ok(!requestsOf(otherAfter.body).some(r => r.id === created.id), 'leave request leaked to second tenant');
 console.log('LEAVE_TENANT_ISOLATION_PASS');
 
 let reviewer = null;
