@@ -52,6 +52,25 @@ function sapProfile() {
   return profile;
 }
 
+function genuineEvidence(profile, overrides = {}) {
+  return {
+    authorised: true,
+    nonProductionTargetVerified: true,
+    observedBy: 'trusted_executor',
+    evidenceRef: 'evidence://sap/genuine-provider-proof',
+    configurationFingerprint: configurationFingerprint(profile),
+    providerCallObserved: true,
+    providerIdentityVerified: true,
+    authenticationObserved: true,
+    boundedSampleObserved: true,
+    mutationObserved: false,
+    rawSensitiveDataPersisted: false,
+    schemaEvidenceRef: 'evidence://sap/schema-reviewed',
+    reconciliationPassed: true,
+    ...overrides
+  };
+}
+
 const cases = [];
 function test(name, fn) { cases.push([name, fn]); }
 
@@ -92,35 +111,26 @@ test('untrusted proof is not shown as a completed safe test', () => {
 });
 
 test('genuine provider proof cannot be claimed from metadata or synthetic evidence alone', () => {
-  const result = evaluateGenuineProviderProof(sapProfile(), SAP_SUCCESSFACTORS, {
-    authorised: true,
-    nonProductionTargetVerified: true,
-    providerCallObserved: false,
-    providerIdentityVerified: true,
-    authenticationObserved: true,
-    boundedSampleObserved: true,
-    mutationObserved: false,
-    rawSensitiveDataPersisted: false,
-    schemaEvidenceRef: 'evidence://sap/schema-reviewed',
-    reconciliationPassed: true
-  });
+  const profile = sapProfile();
+  const result = evaluateGenuineProviderProof(profile, SAP_SUCCESSFACTORS, genuineEvidence(profile, {
+    providerCallObserved: false
+  }));
   assert.equal(result.achieved, false);
   assert.match(result.blockers.join('\n'), /no genuine provider call/);
 });
 
+test('genuine provider proof cannot be reused after the reviewed connection changes', () => {
+  const profile = sapProfile();
+  const evidence = genuineEvidence(profile);
+  profile.monitoring.freshnessSeconds = 120;
+  const result = evaluateGenuineProviderProof(profile, SAP_SUCCESSFACTORS, evidence);
+  assert.equal(result.achieved, false);
+  assert.match(result.blockers.join('\n'), /current reviewed connection configuration/);
+});
+
 test('genuine provider proof is achieved only when every non-mutating evidence gate is present', () => {
-  const result = evaluateGenuineProviderProof(sapProfile(), SAP_SUCCESSFACTORS, {
-    authorised: true,
-    nonProductionTargetVerified: true,
-    providerCallObserved: true,
-    providerIdentityVerified: true,
-    authenticationObserved: true,
-    boundedSampleObserved: true,
-    mutationObserved: false,
-    rawSensitiveDataPersisted: false,
-    schemaEvidenceRef: 'evidence://sap/schema-reviewed',
-    reconciliationPassed: true
-  });
+  const profile = sapProfile();
+  const result = evaluateGenuineProviderProof(profile, SAP_SUCCESSFACTORS, genuineEvidence(profile));
   assert.equal(result.achieved, true);
   assert.equal(result.claim, 'genuine_authorised_non_mutating_provider_proof');
 });
