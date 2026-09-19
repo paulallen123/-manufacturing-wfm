@@ -219,13 +219,61 @@ const continuityDigestRecomputedResult = verifyCandidateEvidence(continuityDiges
 assert.equal(continuityDigestRecomputedResult.ok, false);
 assert.equal(continuityDigestRecomputedResult.reason, 'verification-failed:portableBindsContinuityDigest');
 
+const envelopeCorpusDigestTampered = validCandidate({
+  runId: 702,
+  artifactId: 9702,
+  createdAt: '2026-09-19T06:32:00Z',
+  headChar: 'a',
+  corpusChar: 'c',
+});
+envelopeCorpusDigestTampered.envelopeRaw = JSON.stringify({
+  ...JSON.parse(envelopeCorpusDigestTampered.envelopeRaw),
+  incidentRegressionCorpusDigest: '0'.repeat(64),
+});
+const envelopeCorpusDigestTamperedResult = verifyCandidateEvidence(envelopeCorpusDigestTampered);
+assert.equal(envelopeCorpusDigestTamperedResult.ok, false);
+assert.equal(envelopeCorpusDigestTamperedResult.reason, 'verification-failed:envelopeBindsCorpusDigest');
+
+const envelopeSnapshotBindingTampered = validCandidate({
+  runId: 703,
+  artifactId: 9703,
+  createdAt: '2026-09-19T06:33:00Z',
+  headChar: 'b',
+  corpusChar: 'd',
+});
+envelopeSnapshotBindingTampered.envelopeRaw = JSON.stringify({
+  ...JSON.parse(envelopeSnapshotBindingTampered.envelopeRaw),
+  incidentRegressionCorpusSnapshotSha256: '0'.repeat(64),
+});
+const envelopeSnapshotBindingTamperedResult = verifyCandidateEvidence(envelopeSnapshotBindingTampered);
+assert.equal(envelopeSnapshotBindingTamperedResult.ok, false);
+assert.equal(envelopeSnapshotBindingTamperedResult.reason, 'verification-failed:envelopeBindsSnapshotBytes');
+
+const portableEntryCountTampered = validCandidate({
+  runId: 704,
+  artifactId: 9704,
+  createdAt: '2026-09-19T06:34:00Z',
+  headChar: 'c',
+  corpusChar: 'e',
+});
+const portableWithWrongEntryCount = JSON.parse(portableEntryCountTampered.portableProofRaw);
+portableWithWrongEntryCount.incidentRegressionCorpus.entryCount = 34;
+portableEntryCountTampered.portableProofRaw = JSON.stringify(portableWithWrongEntryCount);
+portableEntryCountTampered.envelopeRaw = JSON.stringify({
+  ...JSON.parse(portableEntryCountTampered.envelopeRaw),
+  portableProofSha256: sha256(portableEntryCountTampered.portableProofRaw),
+});
+const portableEntryCountTamperedResult = verifyCandidateEvidence(portableEntryCountTampered);
+assert.equal(portableEntryCountTamperedResult.ok, false);
+assert.equal(portableEntryCountTamperedResult.reason, 'verification-failed:corpusEntryCountMatchesSnapshot');
+
 const tamperedReceipt = { ...fallback, selectedRunId: 999 };
 assert.equal(verifySelectionReceipt(tamperedReceipt), false);
 const continuityReceiptTampered = { ...fallback, selectedContinuityDigest: '0'.repeat(64) };
 assert.equal(verifySelectionReceipt(continuityReceiptTampered), false);
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'provider-neutral-prior-corpus-evidence-verifier',
   status: 'PASS',
   newestTamperedOlderVerifiedSelected: true,
@@ -235,6 +283,9 @@ console.log(JSON.stringify({
   deterministicNewestFirstSelection: true,
   continuityBytesTamperRejected: true,
   recomputedContinuityDigestWithoutPortableBindingRejected: true,
+  envelopeCorpusDigestTamperRejected: true,
+  envelopeSnapshotBindingTamperRejected: true,
+  portableEntryCountMismatchRejected: true,
   selectionReceiptBindsContinuityDigest: true,
   tamperedSelectionReceiptRejected: true,
   actionAuthorityGranted: false,
