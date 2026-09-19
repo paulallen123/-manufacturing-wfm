@@ -117,6 +117,21 @@ assert.equal(t0.tier, 'T0');
 assert.equal(t0.outcome, 'answered');
 assert.equal(loop.verifyReceipt(t0), true);
 
+const crossT0 = await loop.run({
+  ...base,
+  incidentId: 'inc-t0-cross-tenant',
+  scenarioId: 'support-guidance',
+  targetTenant: 'tenant-b',
+  question: 'Tell me how to change another tenant.',
+  role: 'manager',
+});
+assert.equal(crossT0.tier, 'T0');
+assert.equal(crossT0.outcome, 'safe_abstention');
+assert.equal(crossT0.actionCount, 0);
+assert.equal(crossT0.answer, undefined);
+assert.equal(crossT0.safeTerminal, true);
+assert.equal(loop.verifyReceipt(crossT0), true);
+
 const t1 = await loop.run({ ...base, incidentId: 'inc-t1', scenarioId: 'integration-transient-failure' });
 assert.equal(t1.tier, 'T1');
 assert.equal(t1.outcome, 'recovered');
@@ -366,6 +381,7 @@ console.log(JSON.stringify({
   t4ScenarioClasses: t4ScenarioIds.length,
   everyExplicitT4ScenarioRoutedThroughDedicatedController: true,
   unknownFailsSafeThroughDedicatedT4Controller: true,
+  crossTenantT0SafelyAbstains: true,
   crossTenantT4ContainedInsideDedicatedController: true,
   t4ForensicsAndContainmentVerified: true,
   t4KnownGoodRollbackBounded: true,
