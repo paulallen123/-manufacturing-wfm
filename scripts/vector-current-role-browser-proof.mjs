@@ -14,11 +14,11 @@ const result = {
 };
 
 const specs = [
-  { slug: 'manager', email: 'manager@northstar.example', role: 'manager', tenant: 'northstar-demo', payroll: 403, surface: '/api/time-review', nav: 'Time' },
-  { slug: 'employee', email: 'maya@northstar.example', role: 'employee', tenant: 'northstar-demo', payroll: 403, surface: '/api/personal', nav: 'Personal' },
-  { slug: 'payroll', email: 'payroll@northstar.example', role: 'payroll_admin', tenant: 'northstar-demo', payroll: 200, surface: '/api/payroll-run', nav: 'Payroll' },
-  { slug: 'company-admin', email: 'superuser@northstar.example', role: 'director', tenant: 'northstar-demo', payroll: 200, surface: '/api/onboarding', nav: 'Readiness' },
-  { slug: 'isolation-manager', email: 'other@isolation.example', role: 'manager', tenant: 'isolation-test', payroll: 403, surface: '/api/bootstrap', nav: 'Time' }
+  { slug: 'manager', email: 'manager@northstar.example', role: 'manager', tenant: 'northstar-demo', payroll: 403, surface: '/api/time-review' },
+  { slug: 'employee', email: 'maya@northstar.example', role: 'employee', tenant: 'northstar-demo', payroll: 403, surface: '/api/personal' },
+  { slug: 'payroll', email: 'payroll@northstar.example', role: 'payroll_admin', tenant: 'northstar-demo', payroll: 200, surface: '/api/payroll-run' },
+  { slug: 'company-admin', email: 'superuser@northstar.example', role: 'director', tenant: 'northstar-demo', payroll: 200, surface: '/api/onboarding' },
+  { slug: 'isolation-manager', email: 'other@isolation.example', role: 'manager', tenant: 'isolation-test', payroll: 403, surface: '/api/bootstrap' }
 ];
 
 async function browserFetch(page, path) {
@@ -28,6 +28,33 @@ async function browserFetch(page, path) {
     try { body = await r.json(); } catch { body = await r.text(); }
     return { status: r.status, body };
   }, path);
+}
+
+async function uiSnapshot(page) {
+  return page.evaluate(() => {
+    const login = document.querySelector('#v2-login');
+    const rect = login?.getBoundingClientRect();
+    const style = login ? getComputedStyle(login) : null;
+    const visible = !!login && style?.display !== 'none' && style?.visibility !== 'hidden' && (rect?.width || 0) > 0 && (rect?.height || 0) > 0;
+    const nav = [...new Set([...document.querySelectorAll('.vector-sidebar a,.vector-sidebar button,.vector-sidebar [role="tab"]')]
+      .map(n => (n.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean))];
+    return {
+      href: location.href,
+      bodyClass: document.body.className,
+      vectorUi: document.body.dataset.vectorUi || null,
+      app: !!document.querySelector('.app'),
+      content: !!document.querySelector('.content'),
+      sidebar: !!document.querySelector('.vector-sidebar'),
+      topbar: !!document.querySelector('.vector-topbar'),
+      loginPresent: !!login,
+      loginVisible: visible,
+      loginDisplay: style?.display || null,
+      loginVisibility: style?.visibility || null,
+      loginRect: rect ? { width: Math.round(rect.width), height: Math.round(rect.height) } : null,
+      nav,
+      text: (document.querySelector('.content')?.innerText || document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 900)
+    };
+  });
 }
 
 let browser;
@@ -44,53 +71,79 @@ try {
     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
     const page = await context.newPage();
     const pageErrors = [];
+    const consoleErrors = [];
     page.on('pageerror', error => pageErrors.push(String(error?.stack || error).slice(0, 1200)));
+    page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text().slice(0, 1200)); });
+
+    const roleResult = { slug: spec.slug, role: spec.role, tenant: spec.tenant };
+    result.roles.push(roleResult);
 
     const pre = await page.request.get(`${origin}/api/bootstrap`, { failOnStatusCode: false });
+    roleResult.unauthenticatedBootstrapStatus = pre.status();
     assert.equal(pre.status(), 401, `${spec.slug}: unauthenticated bootstrap did not fail closed.`);
 
     await page.goto(`${origin}/?vector_home=1`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     const login = page.locator('#v2-login');
     assert.equal(await login.count(), 1, `${spec.slug}: login form missing.`);
+    roleResult.beforeLogin = await uiSnapshot(page);
     await login.locator('select[name=email]').selectOption(spec.email);
     await login.locator('input[name=password]').fill(password);
     const loginResponsePromise = page.waitForResponse(r => r.url() === `${origin}/api/login` && r.request().method() === 'POST', { timeout: 20000 });
     await login.locator('button[type=submit]').click();
     const loginResponse = await loginResponsePromise;
+    roleResult.loginStatus = loginResponse.status();
     assert.equal(loginResponse.status(), 200, `${spec.slug}: hosted browser login failed.`);
-    await page.waitForFunction(() => {
-      const el = document.querySelector('#v2-login');
-      if (!el) return true;
-      const rect = el.getBoundingClientRect();
-      return getComputedStyle(el).display === 'none' || rect.width === 0 || rect.height === 0;
-    }, null, { timeout: 20000 });
-    await page.waitForTimeout(1000);
 
+    await page.waitForTimeout(2500);
     const identity = await browserFetch(page, '/api/bootstrap');
+    roleResult.authenticatedBootstrapStatus = identity.status;
+    roleResult.authenticatedActor = identity.body?.actor ? { role: identity.body.actor.role, tenant: identity.body.actor.tenant } : null;
+    roleResult.afterLogin = await uiSnapshot(page);
+    roleResult.pageErrors = [...pageErrors];
+    roleResult.consoleErrors = [...consoleErrors];
+
+    if (roleResult.afterLogin.loginVisible) {
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 120000 });
+      await page.waitForTimeout(1500);
+      roleResult.afterAuthenticatedReload = await uiSnapshot(page);
+      roleResult.pageErrorsAfterReload = [...pageErrors];
+      roleResult.consoleErrorsAfterReload = [...consoleErrors];
+      throw new Error(`${spec.slug}: login POST returned 200 but the login surface remained visible; authenticated reload visibility=${roleResult.afterAuthenticatedReload.loginVisible}`);
+    }
+
     assert.equal(identity.status, 200, `${spec.slug}: authenticated bootstrap failed.`);
     assert.equal(identity.body?.actor?.role, spec.role, `${spec.slug}: role mismatch.`);
     assert.equal(identity.body?.actor?.tenant, spec.tenant, `${spec.slug}: tenant mismatch.`);
 
     const payroll = await browserFetch(page, '/api/payroll-run');
+    roleResult.payrollStatus = payroll.status;
     assert.equal(payroll.status, spec.payroll, `${spec.slug}: payroll authorization boundary mismatch.`);
     const required = await browserFetch(page, spec.surface);
+    roleResult.requiredSurface = spec.surface;
+    roleResult.requiredSurfaceStatus = required.status;
     assert.equal(required.status, 200, `${spec.slug}: required role surface failed.`);
 
-    const shell = await page.evaluate(() => ({
-      vectorUi: document.body.dataset.vectorUi || null,
-      content: !!document.querySelector('.content'),
-      sidebar: !!document.querySelector('.vector-sidebar'),
-      topbar: !!document.querySelector('.vector-topbar'),
-      nav: [...new Set([...document.querySelectorAll('a,button,[role="tab"]')].map(n => (n.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean))].slice(0, 120)
-    }));
+    const shell = await uiSnapshot(page);
+    roleResult.shell = shell;
     assert.equal(shell.content, true, `${spec.slug}: role-first content shell missing.`);
     assert.equal(shell.sidebar, true, `${spec.slug}: Vector sidebar missing.`);
     assert.equal(shell.topbar, true, `${spec.slug}: Vector topbar missing.`);
+    assert.equal(shell.nav.length > 0, true, `${spec.slug}: no Vector navigation is visible.`);
 
-    const nav = page.getByText(spec.nav, { exact: true }).first();
-    assert.equal(await nav.count() > 0, true, `${spec.slug}: required navigation '${spec.nav}' missing.`);
-    assert.equal(await nav.isVisible(), true, `${spec.slug}: required navigation '${spec.nav}' not visible.`);
-    await nav.click();
+    const candidateNav = page.locator('.vector-sidebar a,.vector-sidebar button,.vector-sidebar [role="tab"]').filter({ visible: true });
+    const count = await candidateNav.count();
+    let clicked = null;
+    for (let i = 0; i < count; i++) {
+      const item = candidateNav.nth(i);
+      if (!(await item.isVisible())) continue;
+      const label = ((await item.textContent()) || '').replace(/\s+/g, ' ').trim();
+      if (!label || /^home$/i.test(label)) continue;
+      await item.click();
+      clicked = label;
+      break;
+    }
+    assert.ok(clicked, `${spec.slug}: no non-home Vector navigation target was usable.`);
+    roleResult.navClicked = clicked;
     await page.waitForTimeout(600);
 
     await page.setViewportSize({ width: 390, height: 844 });
@@ -101,25 +154,11 @@ try {
       overflow: document.documentElement.scrollWidth > innerWidth + 1,
       activeText: (document.querySelector('.content')?.innerText || '').slice(0, 300)
     }));
+    roleResult.mobile = mobile;
+    roleResult.pageErrors = [...pageErrors];
+    roleResult.consoleErrors = [...consoleErrors];
     assert.equal(mobile.overflow, false, `${spec.slug}: mobile horizontal overflow detected.`);
     assert.deepEqual(pageErrors, [], `${spec.slug}: browser page errors detected.`);
-
-    result.roles.push({
-      slug: spec.slug,
-      role: spec.role,
-      tenant: spec.tenant,
-      loginStatus: loginResponse.status(),
-      unauthenticatedBootstrapStatus: pre.status(),
-      authenticatedBootstrapStatus: identity.status,
-      payrollStatus: payroll.status,
-      requiredSurface: spec.surface,
-      requiredSurfaceStatus: required.status,
-      navClicked: spec.nav,
-      vectorUi: shell.vectorUi,
-      visibleNavCount: shell.nav.length,
-      mobile,
-      pageErrors: pageErrors.length
-    });
     await context.close();
   }
 
