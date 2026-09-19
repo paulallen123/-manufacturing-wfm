@@ -36,15 +36,28 @@ test('approved absence is policy input only and never fabricated as worked time'
   assert.equal(p.payrollReady,true); assert.equal(p.attendanceInputs.length,0); assert.equal(p.policyInputs.length,1); assert.equal(p.policyInputs[0].interval,null);
 });
 
-test('shift cannot close payroll before attendance window is closed',()=>{
+test('shift cannot close payroll or emit attendance input before attendance window is closed',()=>{
   const g=harness(); const p=g.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T,shiftWindowClosed:false});
+  assert.equal(p.payrollReady,false); assert.equal(p.attendanceInputs.length,0);
+});
+
+test('one unresolved worker blocks partial attendance export for otherwise verified workers',()=>{
+  const g=harness({rows:[
+    {employee:'e1',workerType:'employee',status:'complete',openAt:'2026-09-18T06:00:00.000Z',closeAt:'2026-09-18T14:00:00.000Z'},
+    {employee:'e2',workerType:'employee',status:'missing_out',openAt:'2026-09-18T06:00:00.000Z'}
+  ]});
+  const p=g.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T,shiftWindowClosed:true});
   assert.equal(p.payrollReady,false);
+  assert.equal(p.reviewRequired.length,1);
+  assert.equal(p.attendanceInputs.length,0);
+  assert.equal(p.rows.find(r=>r.employee==='e1').eligibleForPayrollInput,true);
 });
 
 test('unmapped or unexpected people block payroll even when scheduled rows are complete',()=>{
   const a=harness({unexpectedCount:1}).projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T,shiftWindowClosed:true});
   const b=harness({unmappedSignalCount:1}).projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T,shiftWindowClosed:true});
   assert.equal(a.payrollReady,false); assert.equal(b.payrollReady,false);
+  assert.equal(a.attendanceInputs.length,0); assert.equal(b.attendanceInputs.length,0);
 });
 
 test('correction cannot be written for an employee outside the scheduled shift',()=>{
