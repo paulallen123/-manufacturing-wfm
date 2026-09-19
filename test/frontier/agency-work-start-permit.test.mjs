@@ -68,11 +68,13 @@ test('missing dependencies, locked-readiness failures and unconsumed permits fai
   const unconsumed=await evaluateAgencyWorkStartPermit(input({shadowWorkStartCommand:async()=>{}}));assert.equal(unconsumed.reason,'work_start_permit_not_consumed');
 });
 
-test('PostgreSQL permit store locks exact current RTW and accepted-response scope with SELECT-only SQL',async()=>{
-  let captured=null;let transactionActive=false;
-  const store=createPostgresAgencyWorkStartPermitStore({withTransaction:async evaluate=>{transactionActive=true;try{return await evaluate({query:async(sql,values)=>{captured={sql,values};return {rows:[{assurance_version_id:ASSURANCE,assignment_fingerprint:ASSIGNMENT,conflicted:false,token_fingerprint:'1'.repeat(16),action:'confirm_preferred_worker',consumed_at:'2026-10-04T12:00:00Z'}]};}});}finally{transactionActive=false;}}});
-  const result=await store.withLockedSnapshot({tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',now:NOW},async()=>{assert.equal(transactionActive,true);return 'ok';});
-  assert.equal(result,'ok');assert.equal(transactionActive,false);assert.ok(captured.sql.trim().startsWith('SELECT current.assurance_version_id'));assert.match(captured.sql,/FOR SHARE/g);assert.doesNotMatch(captured.sql,/\bINSERT\b|\bUPDATE\b|\bDELETE\b/i);assert.match(captured.sql,/wfm_agency_rtw_assurance_current/);assert.match(captured.sql,/wfm_agency_portal_token_consumptions/);assert.deepEqual(captured.values,['T1','S1','R1','A1','W1',NOW]);assert.doesNotMatch(captured.sql,/badge|photo|biometric|date_of_birth|share_code|document_number|raw_payload|signature/i);
+test('PostgreSQL permit store acquires one assignment-scoped advisory lock before exact current RTW and accepted-response SELECT locks',async()=>{
+  const calls=[];let transactionActive=false;
+  const store=createPostgresAgencyWorkStartPermitStore({withTransaction:async evaluate=>{transactionActive=true;try{return await evaluate({query:async(sql,values)=>{calls.push({sql,values});if(calls.length===1)return {rows:[{locked:null}]};return {rows:[{assurance_version_id:ASSURANCE,assignment_fingerprint:ASSIGNMENT,conflicted:false,token_fingerprint:'1'.repeat(16),action:'confirm_preferred_worker',consumed_at:'2026-10-04T12:00:00Z'}]};}});}finally{transactionActive=false;}}});
+  const result=await store.withLockedSnapshot({tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:ASSIGNMENT,now:NOW},async()=>{assert.equal(transactionActive,true);return 'ok';});
+  assert.equal(result,'ok');assert.equal(transactionActive,false);assert.equal(store.concurrencyBoundary,'assignment_scoped_transaction_lock');assert.equal(calls.length,2);
+  assert.match(calls[0].sql,/pg_advisory_xact_lock/i);assert.equal(calls[0].values.length,1);assert.match(String(calls[0].values[0]),/^-?\d+$/);
+  assert.ok(calls[1].sql.trim().startsWith('SELECT current.assurance_version_id'));assert.match(calls[1].sql,/FOR SHARE/g);assert.doesNotMatch(calls[1].sql,/\bINSERT\b|\bUPDATE\b|\bDELETE\b/i);assert.match(calls[1].sql,/wfm_agency_rtw_assurance_current/);assert.match(calls[1].sql,/wfm_agency_portal_token_consumptions/);assert.deepEqual(calls[1].values,['T1','S1','R1','A1','W1',NOW]);assert.doesNotMatch(calls[1].sql,/badge|photo|biometric|date_of_birth|share_code|document_number|raw_payload|signature/i);
 });
 
 test('5,000 fabricated direct-ingress capabilities produce zero shadow work-start admissions',async()=>{
