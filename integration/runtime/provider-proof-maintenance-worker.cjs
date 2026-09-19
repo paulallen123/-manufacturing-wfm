@@ -35,6 +35,19 @@ function safeErrorClass(error, fallback) {
   return ERROR_CLASS.test(candidate) ? candidate : fallback;
 }
 
+function elapsedNow(startedAt, wallStarted, wallClock = Date.now) {
+  const wallCurrent = Number(wallClock());
+  const elapsed = Number.isFinite(wallCurrent) && Number.isFinite(Number(wallStarted))
+    ? Math.max(0, wallCurrent - Number(wallStarted))
+    : 0;
+  return Number(startedAt) + elapsed;
+}
+
+function claimExpired(claim, now) {
+  const expiresAtMs = Date.parse(text(claim?.claimExpiresAt));
+  return Number.isFinite(expiresAtMs) && expiresAtMs <= Number(now);
+}
+
 function assertClaimMatchesReview(claim, review) {
   const task = claim?.task;
   if (!claim?.taskKey || !claim?.claimToken || !task || !review) throw new Error('Claim, safe task and reviewed connection are required.');
@@ -98,6 +111,8 @@ function safeProofSummary(proof) {
 
 async function executeProviderProofClaim(input = {}, now = Date.now()) {
   const { claim, review, target, priorLease, leaseOptions, executeProof, reconcileControlPlane } = input;
+  const wallClock = typeof input.wallClock === 'function' ? input.wallClock : Date.now;
+  const wallStarted = Number(wallClock());
   assertClaimMatchesReview(claim, review);
   if (typeof executeProof !== 'function') throw new Error('Trusted provider proof executor is required.');
 
@@ -112,29 +127,31 @@ async function executeProviderProofClaim(input = {}, now = Date.now()) {
     recoveryProbe: claim.task.recoveryProbe === true,
     reconciliationRequired: claim.task.reconciliationRequired === true
   }));
-  const verifiedProof = verifyProviderProofResponse(plan, response, now);
-  const completion = completeProviderProofMaintenance(review, priorLease || {}, verifiedProof, leaseOptions || {}, now);
+  const proofNow = elapsedNow(now, wallStarted, wallClock);
+  const verifiedProof = verifyProviderProofResponse(plan, response, proofNow);
+  const completion = completeProviderProofMaintenance(review, priorLease || {}, verifiedProof, leaseOptions || {}, proofNow);
 
   let reconciliation = null;
   if (claim.task.reconciliationRequired === true) {
     if (typeof reconcileControlPlane !== 'function') {
       throw Object.assign(new Error('Recovery proof requires safe reconciliation before completion.'), { errorClass: 'reconciliation-required' });
     }
+    const reconciliationResult = await reconcileControlPlane(Object.freeze({
+      taskKey: claim.taskKey,
+      review: Object.freeze({
+        reviewedDigest: review.reviewedDigest,
+        connectionId: review.connectionId,
+        providerKey: review.providerKey,
+        targetIdentity: review.targetIdentity,
+        environment: review.environment || 'non-production'
+      }),
+      verifiedProof: safeProofSummary(verifiedProof),
+      nextLeaseDigest: completion.lease.leaseDigest
+    }));
     reconciliation = validateControlPlaneReconciliation(
       review,
-      await reconcileControlPlane(Object.freeze({
-        taskKey: claim.taskKey,
-        review: Object.freeze({
-          reviewedDigest: review.reviewedDigest,
-          connectionId: review.connectionId,
-          providerKey: review.providerKey,
-          targetIdentity: review.targetIdentity,
-          environment: review.environment || 'non-production'
-        }),
-        verifiedProof: safeProofSummary(verifiedProof),
-        nextLeaseDigest: completion.lease.leaseDigest
-      })),
-      now
+      reconciliationResult,
+      elapsedNow(now, wallStarted, wallClock)
     );
   }
 
@@ -170,6 +187,8 @@ async function executeProviderProofClaim(input = {}, now = Date.now()) {
 
 async function processNextProviderProofMaintenance(input = {}, now = Date.now()) {
   const { ledger, workerId, loadContext } = input;
+  const wallClock = typeof input.wallClock === 'function' ? input.wallClock : Date.now;
+  const wallStarted = Number(wallClock());
   if (!ledger || typeof ledger.claimNext !== 'function' || typeof ledger.complete !== 'function') {
     throw new Error('Durable provider proof maintenance ledger is required.');
   }
@@ -178,38 +197,60 @@ async function processNextProviderProofMaintenance(input = {}, now = Date.now())
   const claim = ledger.claimNext(workerId, input.claimOptions || {}, now);
   if (!claim) return Object.freeze({ state: 'IDLE' });
 
+  let execution;
   try {
     const context = await loadContext(claim.task);
-    const execution = await executeProviderProofClaim({
+    execution = await executeProviderProofClaim({
       claim,
       review: context?.review,
       target: context?.target,
       priorLease: context?.priorLease,
       leaseOptions: context?.leaseOptions,
       executeProof: input.executeProof,
-      reconcileControlPlane: input.reconcileControlPlane
+      reconcileControlPlane: input.reconcileControlPlane,
+      wallClock
     }, now);
+  } catch (error) {
+    const failureNow = elapsedNow(now, wallStarted, wallClock);
+    if (claimExpired(claim, failureNow)) {
+      return Object.freeze({ state: 'CLAIM_EXPIRED', errorClass: 'maintenance-claim-expired' });
+    }
+    const retry = error?.retryable === true;
+    const errorClass = safeErrorClass(error, retry ? 'provider-temporary-unavailable' : 'provider-proof-execution-blocked');
+    try {
+      const durable = ledger.complete(claim.taskKey, claim.claimToken, retry ? {
+        status: 'RETRY',
+        errorClass,
+        retryAfterMs: Number.isInteger(error?.retryAfterMs) && error.retryAfterMs > 0 ? error.retryAfterMs : 5000
+      } : {
+        status: 'BLOCK',
+        errorClass
+      }, failureNow);
+      return Object.freeze({ state: durable.status, durable, errorClass });
+    } catch {
+      return Object.freeze({ state: 'COMPLETION_UNCERTAIN', errorClass: 'maintenance-completion-not-confirmed' });
+    }
+  }
+
+  const completionNow = elapsedNow(now, wallStarted, wallClock);
+  if (claimExpired(claim, completionNow)) {
+    return Object.freeze({ state: 'CLAIM_EXPIRED', errorClass: 'maintenance-claim-expired' });
+  }
+
+  try {
     const durable = ledger.complete(claim.taskKey, claim.claimToken, {
       status: 'SUCCESS',
       outcomeDigest: execution.outcomeDigest
-    }, now);
+    }, completionNow);
     return Object.freeze({ state: 'SUCCEEDED', durable, result: execution.result, lease: execution.lease });
-  } catch (error) {
-    const retry = error?.retryable === true;
-    const errorClass = safeErrorClass(error, retry ? 'provider-temporary-unavailable' : 'provider-proof-execution-blocked');
-    const durable = ledger.complete(claim.taskKey, claim.claimToken, retry ? {
-      status: 'RETRY',
-      errorClass,
-      retryAfterMs: Number.isInteger(error?.retryAfterMs) && error.retryAfterMs > 0 ? error.retryAfterMs : 5000
-    } : {
-      status: 'BLOCK',
-      errorClass
-    }, now);
-    return Object.freeze({ state: durable.status, durable, errorClass });
+  } catch {
+    return Object.freeze({ state: 'COMPLETION_UNCERTAIN', errorClass: 'maintenance-completion-not-confirmed' });
   }
 }
 
 module.exports = {
+  elapsedNow,
+  claimExpired,
   assertClaimMatchesReview,
   validateControlPlaneReconciliation,
   executeProviderProofClaim,
