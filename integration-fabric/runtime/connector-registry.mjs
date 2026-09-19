@@ -101,6 +101,7 @@ export function buildConnectorRegistry(){
         agentActionEnabled:false,
         crossScopeReadEnabled:false,
         unauthenticatedDataSurfaceEnabled:false,
+        rawSensitiveHealthDataAllowed:false,
         superAdminCredentialAllowed:false,
         oauthPasswordGrantEnabled:false,
         oauthImplicitGrantEnabled:false
