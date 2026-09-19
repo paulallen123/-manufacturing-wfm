@@ -1,0 +1,44 @@
+name: Integration evolution gate
+
+on:
+  push:
+    branches:
+      - 'integration-evolution-*'
+      - 'integration/**'
+    paths:
+      - 'integration-runtime/**'
+      - '.github/workflows/integration-evolution-gate.yml'
+  pull_request:
+    paths:
+      - 'integration-runtime/**'
+      - '.github/workflows/integration-evolution-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-evolution-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Validate connection safety and activation evidence
+        run: node --test integration-runtime/connection-contract.test.mjs
+      - name: Validate metadata-driven provider setup
+        run: node --test integration-runtime/connection-setup-plan.test.mjs
+      - name: Validate bounded provider and recovery proof runner
+        run: node --test integration-runtime/connection-test-runner.test.mjs
+      - name: Validate runtime freshness and reconciliation health
+        run: node --test integration-runtime/connection-runtime-health.test.mjs
