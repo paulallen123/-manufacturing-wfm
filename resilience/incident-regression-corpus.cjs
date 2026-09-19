@@ -4,6 +4,7 @@ const { createHash } = require('node:crypto');
 
 const HEX64 = /^[a-f0-9]{64}$/;
 const ALLOWED_DECISIONS = new Set(['NEVER_AUTOMATE', 'SAFE_RUNBOOK_CANDIDATE']);
+const CORPUS_SCHEMA_VERSION = 2;
 
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -73,6 +74,7 @@ function validateTerminalReceipt(receipt) {
   const outcome = clean(receipt.outcome, 120);
   const receiptDigest = clean(receipt.receiptDigest, 64).toLowerCase();
   const evidenceDigest = clean(receipt.evidenceDigest, 64).toLowerCase();
+  const safeTerminal = receipt.safeTerminal === true;
   if (!incidentId || !tenant || !scenarioId || !tier || !outcome) deny('WFM_CORPUS_RECEIPT', 'Receipt identity and terminal fields are required.');
   if (!HEX64.test(receiptDigest) || !HEX64.test(evidenceDigest)) deny('WFM_CORPUS_RECEIPT', 'Receipt and evidence digests must be SHA-256.');
   if (receipt.productionMutation === true || receipt.productionAuthorityGranted === true || receipt.customerMutation === true) {
@@ -82,14 +84,32 @@ function validateTerminalReceipt(receipt) {
   if (receipt.learning.sourceReceiptDigest !== receiptDigest || receipt.learning.sourceEvidenceDigest !== evidenceDigest) {
     deny('WFM_CORPUS_BINDING', 'Learning record is not bound to this terminal receipt.');
   }
+  if (receipt.learning.incidentId !== incidentId || receipt.learning.tenant !== tenant) {
+    deny('WFM_CORPUS_BINDING', 'Learning incident/tenant identity does not match terminal receipt.');
+  }
   if (receipt.learning.scenarioId !== scenarioId || receipt.learning.tier !== tier || receipt.learning.outcome !== outcome) {
     deny('WFM_CORPUS_BINDING', 'Learning identity does not match terminal receipt.');
   }
-  return { incidentId, tenant, scenarioId, tier, outcome, receiptDigest, evidenceDigest };
+  if (receipt.learning.safeTerminal !== safeTerminal) {
+    deny('WFM_CORPUS_BINDING', 'Learning terminal-safety state does not match terminal receipt.');
+  }
+  return { incidentId, tenant, scenarioId, tier, outcome, safeTerminal, receiptDigest, evidenceDigest };
 }
 
 function genesisDigest() {
-  return digest({ schemaVersion: 1, corpus: 'wfm-incident-regression-corpus', mode: 'append-only' });
+  return digest({ schemaVersion: CORPUS_SCHEMA_VERSION, corpus: 'wfm-incident-regression-corpus', mode: 'append-only', tenantIsolation: 'digest-scoped' });
+}
+
+function expectedCaseKey(entry) {
+  return digest({
+    tenantScopeDigest: entry.tenantScopeDigest,
+    tier: entry.tier,
+    scenarioId: entry.scenarioId,
+    outcome: entry.expectedOutcome,
+    safeTerminal: entry.safeTerminalObserved,
+    detectionSignalDigest: entry.detectionSignalDigest,
+    runbookDecision: entry.runbookDecision,
+  });
 }
 
 function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 10000 } = {}) {
@@ -102,12 +122,13 @@ function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 1
   let tipDigest = genesisDigest();
 
   function verifyEntry(entry, expectedSequence, expectedPrevious) {
-    if (!entry || entry.sequence !== expectedSequence) return false;
+    if (!entry || entry.schemaVersion !== CORPUS_SCHEMA_VERSION || entry.sequence !== expectedSequence) return false;
     if (entry.previousEntryDigest !== expectedPrevious) return false;
     if (!HEX64.test(String(entry.entryDigest || '')) || !HEX64.test(String(entry.caseKeyDigest || ''))) return false;
     if (!HEX64.test(String(entry.regressionFixtureDigest || '')) || !HEX64.test(String(entry.learningDigest || ''))) return false;
     if (!HEX64.test(String(entry.sourceReceiptDigest || '')) || !HEX64.test(String(entry.sourceEvidenceDigest || ''))) return false;
     if (!HEX64.test(String(entry.tenantScopeDigest || ''))) return false;
+    if (entry.caseKeyDigest !== expectedCaseKey(entry)) return false;
     if (entry.mandatoryReplay !== true || entry.containsCustomerText !== false || entry.containsReusableSecret !== false) return false;
     if (entry.authority?.actionAuthority !== false
       || entry.authority?.productionAuthority !== false
@@ -122,7 +143,7 @@ function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 1
   }
 
   function verifySnapshot(snapshot) {
-    if (!snapshot || snapshot.schemaVersion !== 1 || snapshot.mode !== 'append-only') return false;
+    if (!snapshot || snapshot.schemaVersion !== CORPUS_SCHEMA_VERSION || snapshot.mode !== 'append-only' || snapshot.tenantIsolation !== 'digest-scoped') return false;
     if (!Array.isArray(snapshot.entries) || !HEX64.test(String(snapshot.tipDigest || '')) || !HEX64.test(String(snapshot.corpusDigest || ''))) return false;
     let previous = genesisDigest();
     const seen = new Set();
@@ -135,8 +156,9 @@ function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 1
     }
     if (snapshot.tipDigest !== previous) return false;
     const core = {
-      schemaVersion: 1,
+      schemaVersion: CORPUS_SCHEMA_VERSION,
       mode: 'append-only',
+      tenantIsolation: 'digest-scoped',
       entryCount: snapshot.entries.length,
       tipDigest: snapshot.tipDigest,
       entries: snapshot.entries,
@@ -164,11 +186,13 @@ function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 1
   function record(receipt) {
     const base = validateTerminalReceipt(receipt);
     const learning = receipt.learning;
+    const tenantScopeDigest = digest(base.tenant);
     const caseKeyDigest = digest({
+      tenantScopeDigest,
       tier: base.tier,
       scenarioId: base.scenarioId,
       outcome: base.outcome,
-      safeTerminal: receipt.safeTerminal === true,
+      safeTerminal: base.safeTerminal,
       detectionSignalDigest: learning.detectionRuleProposal.signalDigest,
       runbookDecision: learning.runbookDecision.decision,
     });
@@ -187,7 +211,7 @@ function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 1
     if (entries.length >= maxEntries) deny('WFM_CORPUS_CAPACITY', 'Regression corpus append limit reached.');
 
     const core = {
-      schemaVersion: 1,
+      schemaVersion: CORPUS_SCHEMA_VERSION,
       sequence: entries.length + 1,
       previousEntryDigest: tipDigest,
       caseKeyDigest,
@@ -195,11 +219,11 @@ function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 1
       learningDigest: learning.learningDigest,
       sourceReceiptDigest: base.receiptDigest,
       sourceEvidenceDigest: base.evidenceDigest,
-      tenantScopeDigest: digest(base.tenant),
+      tenantScopeDigest,
       tier: base.tier,
       scenarioId: base.scenarioId,
       expectedOutcome: base.outcome,
-      safeTerminalObserved: receipt.safeTerminal === true,
+      safeTerminalObserved: base.safeTerminal,
       detectionSignalDigest: learning.detectionRuleProposal.signalDigest,
       runbookDecision: learning.runbookDecision.decision,
       mandatoryReplay: true,
@@ -230,8 +254,9 @@ function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 1
 
   function snapshot() {
     const core = {
-      schemaVersion: 1,
+      schemaVersion: CORPUS_SCHEMA_VERSION,
       mode: 'append-only',
+      tenantIsolation: 'digest-scoped',
       entryCount: entries.length,
       tipDigest,
       entries: structuredClone(entries),
@@ -255,9 +280,11 @@ function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 1
     verifySnapshot,
     mandatoryCases: () => entries.map((entry) => ({
       caseKeyDigest: entry.caseKeyDigest,
+      tenantScopeDigest: entry.tenantScopeDigest,
       scenarioId: entry.scenarioId,
       tier: entry.tier,
       expectedOutcome: entry.expectedOutcome,
+      safeTerminalObserved: entry.safeTerminalObserved,
       detectionSignalDigest: entry.detectionSignalDigest,
       runbookDecision: entry.runbookDecision,
       mandatoryReplay: true,

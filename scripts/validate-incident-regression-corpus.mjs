@@ -62,16 +62,70 @@ for (const [index, scenario] of failureScenarios.scenarios.entries()) {
 }
 
 const seeded = corpus.snapshot();
+assert.equal(seeded.schemaVersion, 2, 'Tenant-isolated regression corpus must use schema v2.');
+assert.equal(seeded.tenantIsolation, 'digest-scoped', 'Corpus must declare digest-scoped tenant isolation.');
 assert.equal(seeded.entryCount, failureScenarios.scenarios.length, 'Every current failure class must enter the mandatory corpus exactly once.');
 assert.equal(corpus.verifySnapshot(seeded), true, 'Seeded corpus snapshot must verify.');
 assert.equal(corpus.mandatoryCases().every((item) => item.mandatoryReplay === true), true, 'Every corpus entry must remain mandatory replay evidence.');
+assert.equal(corpus.mandatoryCases().every((item) => /^[a-f0-9]{64}$/.test(item.tenantScopeDigest)), true, 'Every mandatory case must carry only a digest-scoped tenant binding.');
 assert.equal(new Set(corpus.mandatoryCases().map((item) => item.caseKeyDigest)).size, seeded.entryCount, 'Mandatory case keys must be unique.');
 
 const firstScenario = failureScenarios.scenarios[0];
 const duplicate = learnedReceipt({ incidentId: 'corpus-duplicate-observation', scenarioId: firstScenario.id, tier: tierFor(firstScenario) });
 const duplicateResult = corpus.record(duplicate);
-assert.equal(duplicateResult.status, 'DEDUPLICATED_EXISTING_MANDATORY_CASE', 'Equivalent incident class must deduplicate without weakening mandatory replay.');
-assert.equal(corpus.snapshot().entryCount, seeded.entryCount, 'Deduplication must not append a second logical case.');
+assert.equal(duplicateResult.status, 'DEDUPLICATED_EXISTING_MANDATORY_CASE', 'Equivalent incident class in the same tenant must deduplicate without weakening mandatory replay.');
+assert.equal(corpus.snapshot().entryCount, seeded.entryCount, 'Same-tenant deduplication must not append a second logical case.');
+
+const crossTenantEquivalent = learnedReceipt({
+  incidentId: 'corpus-cross-tenant-observation',
+  tenant: 'corpus-tenant-b',
+  scenarioId: firstScenario.id,
+  tier: tierFor(firstScenario),
+});
+const crossTenantResult = corpus.record(crossTenantEquivalent);
+assert.equal(crossTenantResult.status, 'APPENDED_MANDATORY_CASE', 'Equivalent failures from different tenants must remain isolated mandatory cases.');
+assert.notEqual(crossTenantResult.caseKeyDigest, duplicateResult.caseKeyDigest, 'Tenant-isolated failures must not share a case key.');
+assert.equal(corpus.snapshot().entryCount, seeded.entryCount + 1, 'Cross-tenant evidence must not be silently deduplicated.');
+
+const tenantABinding = learnedReceipt({
+  incidentId: 'corpus-binding-tenant-a',
+  tenant: 'corpus-tenant-a',
+  scenarioId: firstScenario.id,
+  tier: tierFor(firstScenario),
+});
+const tenantBForgedBinding = learnedReceipt({
+  incidentId: 'corpus-binding-tenant-b',
+  tenant: 'corpus-tenant-b',
+  scenarioId: firstScenario.id,
+  tier: tierFor(firstScenario),
+});
+tenantBForgedBinding.receiptDigest = tenantABinding.receiptDigest;
+tenantBForgedBinding.evidenceDigest = tenantABinding.evidenceDigest;
+tenantBForgedBinding.learning = structuredClone(tenantABinding.learning);
+let crossTenantBindingCode = null;
+try {
+  corpus.record(tenantBForgedBinding);
+} catch (error) {
+  crossTenantBindingCode = error.code;
+}
+assert.equal(crossTenantBindingCode, 'WFM_CORPUS_BINDING', 'A valid learning record from one tenant must never bind to another tenant receipt.');
+
+const safeBinding = learnedReceipt({
+  incidentId: 'corpus-terminal-safety-binding',
+  tenant: 'corpus-tenant-a',
+  scenarioId: 'terminal-safety-binding',
+  tier: 'T0',
+  outcome: 'contained',
+  safeTerminal: true,
+});
+const forgedUnsafeReceipt = { ...structuredClone(safeBinding), safeTerminal: false };
+let terminalSafetyBindingCode = null;
+try {
+  corpus.record(forgedUnsafeReceipt);
+} catch (error) {
+  terminalSafetyBindingCode = error.code;
+}
+assert.equal(terminalSafetyBindingCode, 'WFM_CORPUS_BINDING', 'Safe-terminal learning must not be reusable for an unsafe terminal receipt.');
 
 const failedEvidenceReceipt = learnedReceipt({
   incidentId: 'corpus-false-green-001',
@@ -94,9 +148,16 @@ assert.equal(corpus.verifySnapshot(tampered), false, 'Entry tamper must invalida
 const chainTampered = structuredClone(afterFalseGreen);
 chainTampered.entries[1].previousEntryDigest = sha('forged-previous-entry');
 assert.equal(corpus.verifySnapshot(chainTampered), false, 'Hash-chain tamper must be rejected.');
+const caseKeyTampered = structuredClone(afterFalseGreen);
+caseKeyTampered.entries[0].caseKeyDigest = sha('forged-cross-tenant-case-key');
+assert.equal(corpus.verifySnapshot(caseKeyTampered), false, 'Tenant-scoped case-key tamper must be rejected.');
 const authorityTampered = structuredClone(afterFalseGreen);
 authorityTampered.entries[0].authority.productionAuthority = true;
 assert.equal(corpus.verifySnapshot(authorityTampered), false, 'Corpus entries must never acquire production authority.');
+
+const legacySnapshot = structuredClone(afterFalseGreen);
+legacySnapshot.schemaVersion = 1;
+assert.equal(corpus.verifySnapshot(legacySnapshot), false, 'Pre-tenant-isolation corpus schema must fail closed instead of loading with ambiguous case-key semantics.');
 
 const restored = createIncidentRegressionCorpus({ initialSnapshot: afterFalseGreen });
 assert.equal(restored.verifySnapshot(restored.snapshot()), true, 'Verified corpus snapshot must restore without mutation.');
@@ -141,15 +202,20 @@ assert.equal(finalSnapshot.entries.some((entry) => entry.tenantScopeDigest === s
 assert.equal(finalSnapshot.entries.some((entry) => Object.hasOwn(entry, 'tenant')), false, 'Raw tenant identifiers must not be persisted in corpus entries.');
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'append-only-incident-regression-corpus',
   status: 'PASS',
   historicalScenarioClassesSeeded: failureScenarios.scenarios.length,
   falseGreenEvidencePreserved: true,
-  equivalentIncidentsDeduplicated: true,
+  sameTenantEquivalentIncidentsDeduplicated: true,
+  crossTenantEquivalentIncidentsIsolated: true,
+  crossTenantLearningBindingRejected: true,
+  terminalSafetyBindingRejected: true,
+  legacyAmbiguousCorpusRejected: true,
   appendOnlyHashChainVerified: true,
   entryTamperRejected: true,
   chainTamperRejected: true,
+  tenantCaseKeyTamperRejected: true,
   authorityTamperRejected: true,
   verifiedTerminalAutomaticallyRecorded: true,
   unverifiedTerminalRejected: true,
