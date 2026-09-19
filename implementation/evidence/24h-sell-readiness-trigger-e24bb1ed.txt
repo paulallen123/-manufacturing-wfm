@@ -1,0 +1,3 @@
+Sell-readiness deployment trigger only.
+Runtime candidate source: feature/one-day-enterprise-implementation-v1 @ e24bb1ed54c6fbf1a48d1121654f8addd3331fa1
+No runtime, configuration, security, readiness, customer-proof, or infrastructure behaviour is changed by this file.
