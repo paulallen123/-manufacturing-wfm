@@ -8,6 +8,7 @@ function fixture() {
   return {
     scope: {
       graphVersion: '2026-09-19.1',
+      graphFingerprint: '1'.repeat(64),
       revision: 'scope-revision-a',
       purchasedScope: ['attendance', 'time'],
       questions: [],
@@ -62,6 +63,7 @@ test('seals final scope, completed contract, exact build and isolated fresh-crea
   assert.equal(first.intentDigest, second.intentDigest);
   assert.equal(first.queueKey, second.queueKey);
   assert.equal(first.scope.operationsDigest, second.scope.operationsDigest);
+  assert.equal(first.scope.graphFingerprint, input.scope.graphFingerprint);
   assert.equal(verifyLaunchIntent(first, input).ok, true);
 });
 
@@ -78,7 +80,7 @@ test('duplicate authenticated completion events for the same contract version re
   assert.equal(verifyLaunchIntent(first, b).ok, true);
 });
 
-test('scope revision or machine-action drift blocks a previously sealed provisioning intent', () => {
+test('scope revision, graph definition or machine-action drift blocks a previously sealed provisioning intent', () => {
   const input = fixture();
   const intent = createLaunchIntent(input);
 
@@ -86,9 +88,23 @@ test('scope revision or machine-action drift blocks a previously sealed provisio
   revised.scope.revision = 'scope-revision-b';
   expectCode(() => verifyLaunchIntent(intent, revised), 'WFM_LAUNCH_INTENT_DRIFT');
 
+  const redefined = fixture();
+  redefined.scope.graphFingerprint = '2'.repeat(64);
+  expectCode(() => verifyLaunchIntent(intent, redefined), 'WFM_LAUNCH_INTENT_DRIFT');
+
   const operationChanged = fixture();
   operationChanged.scope.operations[0] = { type: 'TEST', key: 'different-test' };
   expectCode(() => verifyLaunchIntent(intent, operationChanged), 'WFM_LAUNCH_INTENT_DRIFT');
+});
+
+test('scope graph fingerprint is mandatory and must be a SHA-256 value', () => {
+  const missing = fixture();
+  delete missing.scope.graphFingerprint;
+  expectCode(() => createLaunchIntent(missing), 'WFM_SCOPE_FINGERPRINT_REQUIRED');
+
+  const malformed = fixture();
+  malformed.scope.graphFingerprint = 'not-a-digest';
+  expectCode(() => createLaunchIntent(malformed), 'WFM_SCOPE_FINGERPRINT_INVALID');
 });
 
 test('approved build drift blocks the intent even when contract and scope are unchanged', () => {
