@@ -85,7 +85,7 @@ export class AttendanceSourceSupervisor {
     else if(lastLag!=null && lastLag>this.lagWarningMs){ state='degraded'; action=c.supportsBackfill?'backfill':'observe'; }
     else if(pending.length){ state='reconciling'; action='backfill'; }
     return {
-      sourceId:c.sourceId,state,action,provider:c.provider,domain:c.domain,site:c.site,
+      tenant:c.tenant,sourceId:c.sourceId,state,action,provider:c.provider,domain:c.domain,site:c.site,
       lastHeartbeatAt:iso(c.lastHeartbeatMs),heartbeatAgeMs:Number.isFinite(heartbeatAge)?heartbeatAge:null,
       lastEventObservedAt:iso(c.lastEventObservedMs),lastEventReceivedAt:iso(c.lastEventReceivedMs),lastLagMs:lastLag,
       duplicates:c.duplicates,gaps:c.gaps,reconnects:c.reconnects,authExpiresAt:iso(c.authExpiresAtMs),
