@@ -84,6 +84,7 @@ try {
 
     await page.goto(`${origin}/?vector_home=1`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     const login = page.locator('#v2-login');
+    await login.waitFor({ state: 'visible', timeout: 15000 });
     assert.equal(await login.count(), 1, `${spec.slug}: login form missing.`);
     roleResult.beforeLogin = await uiSnapshot(page);
     await login.locator('select[name=email]').selectOption(spec.email);
