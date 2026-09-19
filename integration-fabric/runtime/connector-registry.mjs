@@ -97,7 +97,10 @@ export function buildConnectorRegistry(){
         remoteProvisioningEnabled:false,
         agentActionEnabled:false,
         crossScopeReadEnabled:false,
-        unauthenticatedDataSurfaceEnabled:false
+        unauthenticatedDataSurfaceEnabled:false,
+        superAdminCredentialAllowed:false,
+        oauthPasswordGrantEnabled:false,
+        oauthImplicitGrantEnabled:false
       }
     };
   });
