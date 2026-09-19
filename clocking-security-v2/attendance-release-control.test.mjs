@@ -16,8 +16,8 @@ function greenGates(){
 }
 function providers(){
   return [
-    {domain:'physical_access',realProvider:true,passed:true,candidateSha:SHA,evidenceId:'provider/access/001'},
-    {domain:'network_auth',realProvider:true,passed:true,candidateSha:SHA,evidenceId:'provider/network/001'}
+    {domain:'physical_access',providerSystemId:'salto-nebula:test-tenant',realProvider:true,passed:true,skipped:0,candidateSha:SHA,evidenceId:'provider/access/001'},
+    {domain:'network_auth',providerSystemId:'radius:test-site',realProvider:true,passed:true,skipped:0,candidateSha:SHA,evidenceId:'provider/network/001'}
   ];
 }
 
@@ -66,6 +66,20 @@ test('two distinct real provider domains are mandatory',()=>{
   const a=assessAttendanceRelease({candidateSha:SHA,gates:greenGates(),providerProofs:p});
   assert.equal(a.ready,false);
   assert(a.blockers.includes('twoRealProviderDomains'));
+});
+
+test('provider-domain aliases, skipped proof, reused system identity or reused evidence cannot manufacture two-domain proof',()=>{
+  const cases=[
+    (()=>{ const p=providers(); p[1]={...p[1],domain:' PHYSICAL_ACCESS '}; return p; })(),
+    (()=>{ const p=providers(); p[1]={...p[1],skipped:1}; return p; })(),
+    (()=>{ const p=providers(); p[1]={...p[1],providerSystemId:p[0].providerSystemId}; return p; })(),
+    (()=>{ const p=providers(); p[1]={...p[1],evidenceId:p[0].evidenceId}; return p; })()
+  ];
+  for(const p of cases){
+    const a=assessAttendanceRelease({candidateSha:SHA,gates:greenGates(),providerProofs:p});
+    assert.equal(a.ready,false);
+    assert(a.blockers.includes('twoRealProviderDomains'));
+  }
 });
 
 test('synthetic or merely signed local rollback proof cannot satisfy the release gate',()=>{
