@@ -9,16 +9,21 @@ const REQUEST={requestId:'R1',roleId:'PACK-OP',location:'Plant 1, Birmingham',st
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
 const digest=(v,n=32)=>crypto.createHash('sha256').update(String(v??'')).digest('hex').slice(0,n);
 const assignmentFp=()=>digest(JSON.stringify(stable({roleId:'PACK-OP',location:'Plant 1, Birmingham',startAt:'2026-10-05T06:00:00.000Z',endAt:'2026-10-05T14:00:00.000Z'})),24);
+const bindingFp=row=>digest(JSON.stringify(stable({tenantId:row.tenantId,siteId:row.siteId,requestId:row.requestId,sourceSystemId:row.sourceSystemId,agencyId:row.agencyId,workerId:row.workerId,assignmentFingerprint:row.assignmentFingerprint,assuranceVersionId:row.assuranceVersionId,subjectFingerprint:row.subjectFingerprint})));
 const policy=(overrides={})=>({policyId:'S1-PACK-OP-v1',siteId:'S1',roleId:'PACK-OP',minutesBeforeStart:60,minutesAfterStart:90,minIndependentSources:1,requireDirectIdentity:false,allowedSources:{turnstile:['access_pass'],clocking:['attendance_clock_in'],supervisor:['supervised_identity_check'],dvsp:['rtw_dvsp_holder_check']},...overrides});
-const observation=(overrides={})=>({tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:assignmentFp(),assuranceVersionId:ASSURANCE,sourceSystemId:'turnstile',sourceEventFingerprint:digest(`event-${Math.random()}`),subjectFingerprint:SUBJECT,signalType:'access_pass',observedAt:'2026-10-05T05:58:00.000Z',rawBadgeNumber:'BADGE-123',photo:'raw-image',dateOfBirth:'1990-01-01',...overrides});
+const observation=(overrides={})=>{
+  const row={tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:assignmentFp(),assuranceVersionId:ASSURANCE,sourceSystemId:'turnstile',sourceEventFingerprint:digest(`event-${Math.random()}`),subjectFingerprint:SUBJECT,signalType:'access_pass',observedAt:'2026-10-05T05:58:00.000Z',rawBadgeNumber:'BADGE-123',photo:'raw-image',dateOfBirth:'1990-01-01',...overrides};
+  if(!Object.hasOwn(overrides,'provenanceBindingFingerprints'))row.provenanceBindingFingerprints=[bindingFp(row)];
+  return row;
+};
 const store=rows=>({async readObservations(){return {rows:structuredClone(rows)};}});
 const input=(rows=[observation()],overrides={})=>({tenantId:'T1',siteId:'S1',agencyId:'A1',request:structuredClone(REQUEST),workerBinding:{workerId:'W1',assuranceVersionId:ASSURANCE},now:NOW,policy:policy(),continuityStore:store(rows),...overrides});
 
-test('standard role/site policy accepts fresh trusted shift-start evidence without granting mutation or ranking authority',async()=>{
+test('standard role/site policy accepts fresh trusted shift-start evidence with matching authenticated provenance and no mutation/ranking authority',async()=>{
   const result=await evaluateAgencyIdentityContinuity(input());
   assert.equal(result.continuityPassed,true);assert.equal(result.rankingImpact,'none');assert.equal(result.scheduleWriteAuthorized,false);assert.equal(result.payrollWriteAuthorized,false);assert.equal(result.clockingWriteAuthorized,false);
   assert.equal(result.independentSourceCount,1);assert.equal(result.directIdentityObserved,false);assert.match(result.continuityFingerprint,/^[0-9a-f]{32}$/);
-  const serialized=JSON.stringify(result);assert.doesNotMatch(serialized,/BADGE-123|raw-image|1990-01-01/);assert.equal(serialized.includes(SUBJECT),false);
+  const serialized=JSON.stringify(result);assert.doesNotMatch(serialized,/BADGE-123|raw-image|1990-01-01/);assert.equal(serialized.includes(SUBJECT),false);assert.doesNotMatch(serialized,/provenanceBindingFingerprint/);
 });
 
 test('elevated role/site policy requires independent evidence including a direct identity observation',async()=>{
@@ -49,6 +54,17 @@ test('untrusted source, stale/future evidence, duplicate events and assurance or
   for(const [rows,reason] of cases){const result=await evaluateAgencyIdentityContinuity(input(rows));assert.equal(result.continuityPassed,false,reason);assert.ok(result.failures.includes(reason),JSON.stringify(result));}
 });
 
+test('missing or mismatched authenticated ingress provenance cannot satisfy continuity',async()=>{
+  const missing=observation({sourceEventFingerprint:'9'.repeat(32),provenanceBindingFingerprints:[]});
+  const bad=observation({sourceEventFingerprint:'a'.repeat(32),provenanceBindingFingerprints:['f'.repeat(32)]});
+  for(const row of [missing,bad]){
+    const result=await evaluateAgencyIdentityContinuity(input([row]));
+    assert.equal(result.continuityPassed,false);
+    assert.ok(result.failures.includes('identity_continuity_authenticated_provenance_missing_or_mismatched'));
+    assert.equal(result.observations.length,0);
+  }
+});
+
 test('policy must be explicitly role/site scoped and unavailable evidence store fails closed',async()=>{
   const badPolicy=await evaluateAgencyIdentityContinuity(input([observation()],{policy:policy({siteId:'OTHER'})}));
   assert.equal(badPolicy.continuityPassed,false);assert.equal(badPolicy.reason,'identity_continuity_policy_invalid');
@@ -56,19 +72,28 @@ test('policy must be explicitly role/site scoped and unavailable evidence store 
   assert.equal(unavailable.continuityPassed,false);assert.equal(unavailable.reason,'identity_continuity_store_unavailable');
 });
 
-test('PostgreSQL reader is SELECT-only, exactly scoped and never requests raw identity payloads',async()=>{
+test('PostgreSQL reader is SELECT-only, exactly scoped, and retrieves only binding fingerprints needed to prove authenticated provenance',async()=>{
   let captured=null;
-  const pg=createPostgresAgencyIdentityContinuityStore({query:async(sql,values)=>{captured={sql,values};return {rows:[{tenant_id:'T1',site_id:'S1',request_id:'R1',agency_id:'A1',worker_id:'W1',assignment_fingerprint:assignmentFp(),assurance_version_id:ASSURANCE,source_system_id:'turnstile',source_event_fingerprint:'6'.repeat(32),subject_fingerprint:SUBJECT,signal_type:'access_pass',observed_at:'2026-10-05T05:58:00Z'}]};}});
+  const base={tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:assignmentFp(),assuranceVersionId:ASSURANCE,sourceSystemId:'turnstile',sourceEventFingerprint:'6'.repeat(32),subjectFingerprint:SUBJECT,signalType:'access_pass',observedAt:'2026-10-05T05:58:00Z'};
+  const pg=createPostgresAgencyIdentityContinuityStore({query:async(sql,values)=>{captured={sql,values};return {rows:[{tenant_id:base.tenantId,site_id:base.siteId,request_id:base.requestId,agency_id:base.agencyId,worker_id:base.workerId,assignment_fingerprint:base.assignmentFingerprint,assurance_version_id:base.assuranceVersionId,source_system_id:base.sourceSystemId,source_event_fingerprint:base.sourceEventFingerprint,subject_fingerprint:base.subjectFingerprint,signal_type:base.signalType,observed_at:base.observedAt,provenance_binding_fingerprints:[bindingFp(base)]}]};}});
   const result=await evaluateAgencyIdentityContinuity({...input([]),continuityStore:pg});
   assert.equal(result.continuityPassed,true);assert.ok(captured.sql.trim().startsWith('SELECT'));assert.doesNotMatch(captured.sql,/INSERT|UPDATE|DELETE/i);
-  assert.match(captured.sql,/tenant_id = \$1/);assert.match(captured.sql,/site_id = \$2/);assert.match(captured.sql,/request_id = \$3/);assert.match(captured.sql,/agency_id = \$4/);assert.match(captured.sql,/worker_id = \$5/);assert.match(captured.sql,/assignment_fingerprint = \$6/);assert.match(captured.sql,/assurance_version_id = \$7/);
-  assert.doesNotMatch(captured.sql,/badge|photo|biometric|date_of_birth|share_code|document/i);
+  assert.match(captured.sql,/o\.tenant_id = \$1/);assert.match(captured.sql,/o\.site_id = \$2/);assert.match(captured.sql,/o\.request_id = \$3/);assert.match(captured.sql,/o\.agency_id = \$4/);assert.match(captured.sql,/o\.worker_id = \$5/);assert.match(captured.sql,/o\.assignment_fingerprint = \$6/);assert.match(captured.sql,/o\.assurance_version_id = \$7/);
+  assert.match(captured.sql,/wfm_agency_identity_observation_ingress_receipts/);assert.match(captured.sql,/binding_fingerprint/);
+  assert.doesNotMatch(captured.sql,/source_auth_fingerprint|badge|photo|biometric|date_of_birth|share_code|document/i);
 });
 
 test('5,000 replayed single-source observations cannot satisfy a two-source continuity policy',async()=>{
   const repeated=observation({sourceSystemId:'clocking',signalType:'attendance_clock_in',sourceEventFingerprint:'7'.repeat(32)});
   let passes=0;
   for(let i=0;i<5000;i+=1){const result=await evaluateAgencyIdentityContinuity(input([repeated],{policy:policy({minIndependentSources:2,requireDirectIdentity:false})}));if(result.continuityPassed)passes+=1;}
+  assert.equal(passes,0);
+});
+
+test('5,000 direct-ledger observations without authenticated provenance produce zero continuity passes',async()=>{
+  const row=observation({sourceEventFingerprint:'c'.repeat(32),provenanceBindingFingerprints:[]});
+  let passes=0;
+  for(let i=0;i<5000;i+=1){const result=await evaluateAgencyIdentityContinuity(input([row]));if(result.continuityPassed)passes+=1;}
   assert.equal(passes,0);
 });
 
