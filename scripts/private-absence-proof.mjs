@@ -57,10 +57,19 @@ async function command(cookie, version, name, payload) {
 async function post(cookie, path, payload) {
   return request(path, { method: 'POST', headers: { ...hostedHeaders, cookie, accept: 'application/json', 'content-type': 'application/json', origin: browserOrigin, referer: `${browserOrigin}/` }, body: JSON.stringify(payload) });
 }
-function stateOf(b) { return b?.data && typeof b.data === 'object' ? b.data : b; }
-function versionOf(b) { return Number.isInteger(b?.version) ? b.version : Number.isInteger(b?.data?.version) ? b.data.version : null; }
-function requestsOf(b) { const s = stateOf(b); return Array.isArray(s?.requests) ? s.requests : []; }
-function actorOf(b) { return b?.actor || stateOf(b)?.actor || {}; }
+function findNamed(node, name, accept, depth = 0, seen = new Set()) {
+  if (!node || typeof node !== 'object' || depth > 5 || seen.has(node)) return null;
+  seen.add(node);
+  if (Object.prototype.hasOwnProperty.call(node, name) && accept(node[name])) return node[name];
+  for (const value of Object.values(node)) {
+    const found = findNamed(value, name, accept, depth + 1, seen);
+    if (found !== null) return found;
+  }
+  return null;
+}
+function versionOf(b) { return findNamed(b, 'version', Number.isInteger); }
+function requestsOf(b) { return findNamed(b, 'requests', Array.isArray) || []; }
+function actorOf(b) { return findNamed(b, 'actor', v => !!v && typeof v === 'object' && !Array.isArray(v)) || {}; }
 function isoDatePlus(days) { const d = new Date(Date.now() + days * 86400000); return d.toISOString().slice(0,10); }
 
 const health = await request('/api/health', { headers: hostedHeaders });
@@ -81,8 +90,9 @@ assert.notEqual(actorOf(employeeBefore.body)?.tenant, actorOf(otherBefore.body)?
 const employeePerson = actorOf(employeeBefore.body)?.personId;
 assert.ok(employeePerson, 'employee personId missing');
 const beforeVersion = versionOf(employeeBefore.body);
-assert.ok(Number.isInteger(beforeVersion), 'bootstrap version missing');
+assert.ok(Number.isInteger(beforeVersion), `bootstrap version missing; top-level keys=${Object.keys(employeeBefore.body || {}).join(',')}`);
 const beforeRequests = requestsOf(employeeBefore.body);
+console.log(`BOOTSTRAP_STATE_PASS version=${beforeVersion} requests=${beforeRequests.length}`);
 
 let date = null;
 for (const days of [35,42,49,56,63,70,77,84]) {
@@ -105,8 +115,8 @@ assert.equal(Number(created.hours), 8);
 assert.ok(created.id, 'request id missing');
 console.log('LEAVE_REQUEST_VISIBILITY_PASS pending annual-leave');
 
-// Failure mode: a second request for the same employee/date must not create a duplicate.
 const duplicateVersion = versionOf(employeeAfterSubmit.body);
+assert.ok(Number.isInteger(duplicateVersion));
 const duplicate = await command(employeeCookie, duplicateVersion, 'leave-request', { date, hours: 8 });
 assert.notEqual(duplicate.status, 200, 'duplicate leave request unexpectedly succeeded');
 const employeeAfterDuplicate = await authed(employeeCookie, '/api/bootstrap');
@@ -114,13 +124,11 @@ const duplicates = requestsOf(employeeAfterDuplicate.body).filter(r => r.employe
 assert.equal(duplicates.length, 1, 'duplicate request was created');
 console.log(`LEAVE_DUPLICATE_GUARD_PASS status=${duplicate.status}`);
 
-// Cross-tenant user must never see the request.
 const otherAfter = await authed(otherCookie, '/api/bootstrap');
 assert.equal(otherAfter.status, 200);
 assert.ok(!requestsOf(otherAfter.body).some(r => r.id === created.id || (r.employee === employeePerson && r.date === date)), 'leave request leaked to second tenant');
 console.log('LEAVE_TENANT_ISOLATION_PASS');
 
-// Find an authorised reviewer who can run the server-side capacity check and decline the synthetic request.
 let reviewer = null;
 for (const email of managerCandidates) {
   const cookie = await login(email);
