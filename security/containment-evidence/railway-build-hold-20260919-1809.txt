@@ -1,0 +1,4 @@
+Railway staging-proof containment probe.
+Purpose: verify the private proof harness does not auto-deploy source changes outside the pre-authorised manual release gate watch path.
+Expected result: no new Railway deployment for wfm-private-proof-harness-1308 from this commit.
+No credentials, customer data, payroll data, or production state are touched.
