@@ -67,6 +67,22 @@ function stagingAccessPath(req) {
   return requestPath(req) === '/api/staging-access';
 }
 
+function uiPresentationPath(req) {
+  const path = requestPath(req);
+  return path === '/' ||
+    path === '/index.html' ||
+    path === '/factory-control-ui.css' ||
+    path === '/value-cockpit-ui.js';
+}
+
+function forceVectorUiFreshness(req, res) {
+  if (!uiPresentationPath(req) || res.headersSent || res.writableEnded) return;
+  res.setHeader('Cache-Control', 'no-store, max-age=0, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('X-WFM-UI', 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1');
+}
+
 function cookieValue(req, name) {
   const raw = String(req?.headers?.cookie || '');
   const prefix = name + '=';
@@ -268,6 +284,7 @@ http.createServer = function guardedCreateServer(listener) {
   }
 
   return originalCreateServer.call(http, async (req, res) => {
+    forceVectorUiFreshness(req, res);
     if (handleStagingAccess(req, res)) return;
     restoreStagingSession(req, res);
 
