@@ -40,3 +40,31 @@ test('release switch candidate and evidence-policy bindings are immutable after 
   assert.equal(state.evidencePolicyId,'attendance-release/immutable-v1');
   assert.equal(state.enabled,false);
 });
+
+test('caller cannot manufacture enabled release state or erase fail-closed/audit state by assigning implementation fields',()=>{
+  const originalPolicy=policy('attendance-release/private-state-v1','private-state-attestor');
+  const control=new AttendanceReleaseSwitch({expectedCandidateSha:SHA,evidencePolicy:originalPolicy});
+
+  assert.equal(Object.isExtensible(control),false);
+  for(const [name,value] of [
+    ['_enabled',true],
+    ['_candidateSha',SHA],
+    ['_validUntilMs',Number.MAX_SAFE_INTEGER],
+    ['_lastWallClockMs',1],
+    ['_failClosedReason',null],
+    ['audit',[]]
+  ]){
+    assert.throws(()=>{ control[name]=value; },TypeError,name);
+    assert.equal(Object.prototype.hasOwnProperty.call(control,name),false,name);
+  }
+
+  assert.deepEqual(control.state(),{
+    enabled:false,
+    candidateSha:null,
+    validUntilMs:null,
+    expectedCandidateSha:SHA,
+    evidencePolicyId:'attendance-release/private-state-v1',
+    audit:[],
+    failClosedReason:null
+  });
+});
