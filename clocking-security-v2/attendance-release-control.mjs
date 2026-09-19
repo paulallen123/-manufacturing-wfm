@@ -213,45 +213,108 @@ export class AttendanceReleaseSwitch {
   constructor({expectedCandidateSha,evidencePolicy}={}){
     if(!validSha(expectedCandidateSha)) throw new Error('Exact release candidate SHA required.');
     if(!evidencePolicy || !TRUSTED_EVIDENCE_POLICIES.has(evidencePolicy)) throw new Error('Trusted release evidence policy required.');
-    this.enabled=false;
-    this.candidateSha=null;
-    this.validUntilMs=null;
+    this._enabled=false;
+    this._candidateSha=null;
+    this._validUntilMs=null;
+    this._lastWallClockMs=Date.now();
+    this._failClosedReason=null;
     this.expectedCandidateSha=expectedCandidateSha;
     this.evidencePolicy=evidencePolicy;
     this.audit=[];
   }
 
-  reconcile({assessment,requestedEnabled=false,actorId='release-controller',reason='gate-reconcile',nowMs=Date.now()}={}){
+  _recordAutomaticRollback({reason,blocker,nowMs}){
+    const previousCandidateSha=this._candidateSha;
+    this._enabled=false;
+    this._candidateSha=null;
+    this._validUntilMs=null;
+    const row=Object.freeze({
+      sequence:this.audit.length+1,
+      action:'rolled_back',
+      actorId:'release-controller',
+      reason,
+      candidateSha:previousCandidateSha,
+      ready:false,
+      blockers:[blocker],
+      observedAtMs:nowMs
+    });
+    this.audit.push(row);
+    return row;
+  }
+
+  _refreshTemporalState(nowMs=Date.now()){
+    if(!validTime(nowMs)){
+      if(this._enabled) this._recordAutomaticRollback({reason:'release-clock-invalid',blocker:'releaseClockInvalid',nowMs:Date.now()});
+      this._failClosedReason='release-clock-invalid';
+      return;
+    }
+    if(nowMs<this._lastWallClockMs){
+      if(this._enabled) this._recordAutomaticRollback({reason:'release-clock-rollback',blocker:'releaseClockRollback',nowMs});
+      this._failClosedReason='release-clock-rollback';
+      return;
+    }
+    this._lastWallClockMs=nowMs;
+    if(this._failClosedReason) return;
+    if(this._enabled && (!validTime(this._validUntilMs) || this._validUntilMs<=nowMs)){
+      this._recordAutomaticRollback({reason:'evidence-expired',blocker:'evidenceExpired',nowMs});
+    }
+  }
+
+  get enabled(){
+    this._refreshTemporalState();
+    return this._enabled;
+  }
+
+  get candidateSha(){
+    this._refreshTemporalState();
+    return this._enabled?this._candidateSha:null;
+  }
+
+  get validUntilMs(){
+    this._refreshTemporalState();
+    return this._enabled?this._validUntilMs:null;
+  }
+
+  reconcile({assessment,requestedEnabled=false,actorId='release-controller',reason='gate-reconcile'}={}){
+    const nowMs=Date.now();
+    this._refreshTemporalState(nowMs);
+    if(this._failClosedReason) throw new Error(`Release switch is fail-closed: ${this._failClosedReason}. Construct a fresh switch only after trusted clock recovery.`);
     if(!assessment || typeof assessment.ready!=='boolean' || !validSha(assessment.candidateSha) || !TRUSTED_ASSESSMENTS.has(assessment)) throw new Error('Trusted release assessment required.');
     if(assessment.candidateSha!==this.expectedCandidateSha) throw new Error('Release assessment candidate does not match the bound runtime candidate.');
     if(ASSESSMENT_EVIDENCE_POLICIES.get(assessment)!==this.evidencePolicy) throw new Error('Release assessment evidence policy does not match the bound release policy.');
-    if(!validTime(nowMs)) throw new Error('Valid release reconciliation time required.');
     if(!validEvidenceId(actorId)) throw new Error('Valid release actor required.');
-    const assessmentFresh=assessment.ready===true && validTime(assessment.validUntilMs) && assessment.validUntilMs>nowMs;
+    const assessmentTimeValid=validTime(assessment.evaluatedAtMs) && assessment.evaluatedAtMs<=nowMs;
+    const assessmentFresh=assessment.ready===true && assessmentTimeValid && validTime(assessment.validUntilMs) && assessment.validUntilMs>nowMs;
     const shouldEnable=Boolean(requestedEnabled && assessmentFresh);
-    const action=shouldEnable?'enabled':(this.enabled?'rolled_back':'disabled');
-    this.enabled=shouldEnable;
-    this.candidateSha=shouldEnable?assessment.candidateSha:null;
-    this.validUntilMs=shouldEnable?assessment.validUntilMs:null;
+    const wasEnabled=this._enabled;
+    const action=shouldEnable?'enabled':(wasEnabled?'rolled_back':'disabled');
+    this._enabled=shouldEnable;
+    this._candidateSha=shouldEnable?assessment.candidateSha:null;
+    this._validUntilMs=shouldEnable?assessment.validUntilMs:null;
+    const temporalFailure=assessment.ready && !assessmentFresh;
+    const temporalReason=!assessmentTimeValid?'assessment-in-future':'evidence-expired';
+    const temporalBlocker=!assessmentTimeValid?'assessmentTimeInvalid':'evidenceExpired';
     const row=Object.freeze({
       sequence:this.audit.length+1,
       action,
       actorId,
-      reason:assessment.ready && !assessmentFresh?'evidence-expired':String(reason||'gate-reconcile').slice(0,240),
+      reason:temporalFailure?temporalReason:String(reason||'gate-reconcile').slice(0,240),
       candidateSha:assessment.candidateSha,
       ready:assessment.ready && assessmentFresh,
-      blockers:assessment.ready && !assessmentFresh?['evidenceExpired']:[...assessment.blockers]
+      blockers:temporalFailure?[temporalBlocker]:[...assessment.blockers],
+      observedAtMs:nowMs
     });
     this.audit.push(row);
-    return clone({enabled:this.enabled,candidateSha:this.candidateSha,validUntilMs:this.validUntilMs,audit:row});
+    return clone({enabled:this._enabled,candidateSha:this._candidateSha,validUntilMs:this._validUntilMs,audit:row});
   }
 
   rollback({actorId='release-controller',reason='manual-rollback'}={}){
+    this._refreshTemporalState();
     if(!validEvidenceId(actorId)) throw new Error('Valid release actor required.');
-    const previousCandidateSha=this.candidateSha;
-    this.enabled=false;
-    this.candidateSha=null;
-    this.validUntilMs=null;
+    const previousCandidateSha=this._candidateSha;
+    this._enabled=false;
+    this._candidateSha=null;
+    this._validUntilMs=null;
     const row=Object.freeze({
       sequence:this.audit.length+1,
       action:'rolled_back',
@@ -265,7 +328,10 @@ export class AttendanceReleaseSwitch {
     return clone({enabled:false,candidateSha:null,validUntilMs:null,audit:row});
   }
 
-  state(){ return clone({enabled:this.enabled,candidateSha:this.candidateSha,validUntilMs:this.validUntilMs,expectedCandidateSha:this.expectedCandidateSha,evidencePolicyId:this.evidencePolicy.policyId,audit:this.audit}); }
+  state(){
+    this._refreshTemporalState();
+    return clone({enabled:this._enabled,candidateSha:this._enabled?this._candidateSha:null,validUntilMs:this._enabled?this._validUntilMs:null,expectedCandidateSha:this.expectedCandidateSha,evidencePolicyId:this.evidencePolicy.policyId,audit:this.audit,failClosedReason:this._failClosedReason});
+  }
 }
 
 export { REQUIRED_GATES, ROLLBACK_AUTHORITY_REQUIREMENTS };
