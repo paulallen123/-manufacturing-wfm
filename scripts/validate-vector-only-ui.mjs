@@ -78,6 +78,15 @@ else {
   if(!vector.includes('if(employee())return [];')||!vector.includes('if(!tokens.size)return [];')) violations.push({type:'action-scope-fail-closed-missing',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('const count=structuredReviewRows().length')) violations.push({type:'notification-count-not-source-bound',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('data-vector-action-evidence="${ACTION_MARKER}"')||!vector.includes('No source-confirmed items need review.')) violations.push({type:'action-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
+
+  // A source observation timestamp is evidence provenance, not a freshness verdict. Until an
+  // authoritative workflow SLA is exposed, the shared Vector review lane must remain neutral.
+  const reviewStart=vector.indexOf('function structuredReviewRows(){');
+  const reviewEnd=vector.indexOf('function leaveDate(',reviewStart);
+  const reviewSource=reviewStart>=0&&reviewEnd>reviewStart?vector.slice(reviewStart,reviewEnd):'';
+  if(!reviewSource) violations.push({type:'review-source-slice-missing',path:'ux-overlay/vector-shell.js'});
+  if(/evidenceState\s*:\s*['"]current['"]/.test(reviewSource)||/status\s*:\s*['"](?:Current|Fresh|Verified current)['"]/.test(reviewSource)) violations.push({type:'review-freshness-invented-without-source-sla',path:'ux-overlay/vector-shell.js'});
+  if(/Date\.now\(\).*?(?:generatedAt|updatedAt)|(?:generatedAt|updatedAt).*?Date\.now\(\)/s.test(reviewSource)) violations.push({type:'review-age-threshold-invented-without-source-sla',path:'ux-overlay/vector-shell.js'});
 }
 
 if(violations.length){
@@ -92,3 +101,4 @@ console.log('VECTOR_KPI_EVIDENCE_CONTRACT=PASS');
 console.log('VECTOR_IDENTITY_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_LEAVE_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_ACTION_SOURCE_CONTRACT=PASS');
+console.log('VECTOR_ACTION_FRESHNESS_NEUTRAL_CONTRACT=PASS');
