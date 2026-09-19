@@ -8,6 +8,8 @@ function cleanStrings(values) {
   return [...new Set((Array.isArray(values) ? values : []).filter((value) => typeof value === 'string' && value.trim()).map((value) => value.trim()))];
 }
 
+const REQUIRED_SAFE_TEST_EVIDENCE = ['provider_identity', 'authentication', 'schema', 'bounded_sample', 'reconciliation'];
+
 export function validateProviderManifest(manifest) {
   const errors = [];
   if (!isObject(manifest)) return { ok: false, errors: ['provider manifest must be an object'] };
@@ -26,6 +28,19 @@ export function validateProviderManifest(manifest) {
   if (!Array.isArray(manifest.requiredConfigRefs)) errors.push('requiredConfigRefs must be an array');
   if (cleanStrings(manifest.requiredConfigRefs).some((name) => !/^[a-z][A-Za-z0-9]*Ref$/.test(name))) {
     errors.push('requiredConfigRefs entries must use *Ref names');
+  }
+  if (!isObject(manifest.safeTest)) {
+    errors.push('safeTest policy is required');
+  } else {
+    const safe = manifest.safeTest;
+    if (safe.policyVersion !== 1) errors.push('safeTest.policyVersion must be 1');
+    if (!Number.isInteger(safe.maxRecords) || safe.maxRecords < 1 || safe.maxRecords > 100) errors.push('safeTest.maxRecords must be between 1 and 100');
+    if (!Number.isInteger(safe.maxBytes) || safe.maxBytes < 1 || safe.maxBytes > 1048576) errors.push('safeTest.maxBytes must be between 1 and 1048576');
+    if (!Number.isInteger(safe.timeoutMs) || safe.timeoutMs < 100 || safe.timeoutMs > 30000) errors.push('safeTest.timeoutMs must be between 100 and 30000');
+    const evidence = cleanStrings(safe.requiredEvidence);
+    for (const required of REQUIRED_SAFE_TEST_EVIDENCE) {
+      if (!evidence.includes(required)) errors.push(`safeTest.requiredEvidence must include ${required}`);
+    }
   }
   return { ok: errors.length === 0, errors };
 }
@@ -53,6 +68,10 @@ function step(id, title, owner, status, detail, blockers = []) {
   return { id, title, owner, status, detail, blockers };
 }
 
+function trustedPassed(evidence) {
+  return evidence?.status === 'passed' && evidence?.observedBy === 'trusted_executor' && isOpaqueReference(evidence?.evidenceRef);
+}
+
 export function planConnectionSetup(profile, manifest) {
   const profileValidation = validateConnectionProfile(profile);
   const compatibility = providerCompatibility(profile, manifest);
@@ -68,8 +87,8 @@ export function planConnectionSetup(profile, manifest) {
   ));
   steps.push(step(
     'safe_test', 'Test connection', 'wfm',
-    profile?.connectionTest?.status === 'passed' && profile?.connectionTest?.mode === 'bounded_non_mutating' ? 'complete' : 'ready',
-    'Run a bounded, non-mutating check that proves provider identity, authentication and a small schema/sample path without applying workforce changes.'
+    trustedPassed(profile?.connectionTest) && profile?.connectionTest?.mode === 'bounded_non_mutating' ? 'complete' : 'ready',
+    'Run a bounded, non-mutating check from the trusted executor that proves provider identity, authentication and a small schema/sample path without applying workforce changes.'
   ));
   steps.push(step(
     'mapping', 'Review mapping', 'customer',
@@ -77,10 +96,16 @@ export function planConnectionSetup(profile, manifest) {
     'Review provider-to-WFM field mapping separately from transport and authentication.'
   ));
   const recoveryRequired = (profile?.recovery?.maxAttempts || 1) > 1;
+  const recoveryComplete = !recoveryRequired || (
+    trustedPassed(profile?.recoveryProof) &&
+    profile?.recoveryProof?.transientFailureObserved === true &&
+    profile?.recoveryProof?.successfulRecoveryObserved === true &&
+    profile?.recoveryProof?.reconciliationPassed === true
+  );
   steps.push(step(
     'resilience', 'Prove recovery and reconciliation', 'wfm',
-    (!recoveryRequired || profile?.recoveryProof?.status === 'passed') && profile?.reconciliation?.status === 'passed' ? 'complete' : 'ready',
-    'Exercise recovery when retries are enabled, then reconcile staged counts before activation.'
+    recoveryComplete && trustedPassed(profile?.reconciliation) ? 'complete' : 'ready',
+    'Exercise a real transient failure when retries are enabled, prove the same operation recovers, then reconcile staged counts before activation.'
   ));
   steps.push(step(
     'authority', 'Confirm data authority', 'customer',
