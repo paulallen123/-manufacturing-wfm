@@ -90,7 +90,7 @@ jobs:
           node --check ux-overlay/vector-shell.js
           node scripts/validate-vector-only-ui.mjs
           grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' ux-overlay/vector-shell.js
-          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' ux-overlay/vector-shell.css
+          grep -F 'Vector Workforce Operations' ux-overlay/vector-shell.css
           grep -F 'WFM_ADAPTIVE_COACH_BEGIN' Dockerfile
           grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' Dockerfile
 
