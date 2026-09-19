@@ -49,6 +49,7 @@ else {
   if(!vector.includes('VECTOR_KPI_EVIDENCE_V1')) violations.push({type:'missing-kpi-evidence-governance',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('VECTOR_IDENTITY_SOURCE_BOUND_V1')) violations.push({type:'missing-identity-source-governance',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('VECTOR_LEAVE_SOURCE_BOUND_V1')) violations.push({type:'missing-leave-source-governance',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('VECTOR_ACTION_SOURCE_BOUND_V1')) violations.push({type:'missing-action-source-governance',path:'ux-overlay/vector-shell.js'});
   if(vector.includes("tone:i===0?'red':i<3?'amber':'blue'")) violations.push({type:'presentation-inferred-urgency',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes("tone:'blue',action:'Review',status:'Needs review'")) violations.push({type:'review-state-not-neutral',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('Review source evidence before acting.')||!vector.includes('aria-label="Review ${esc(r.title)}"')) violations.push({type:'review-accessibility-contract-missing',path:'ux-overlay/vector-shell.js'});
@@ -72,6 +73,11 @@ else {
   if(!vector.includes("String(r.status||'').toLowerCase()==='approved'")) violations.push({type:'leave-approval-boundary-missing',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('x.date>=start&&x.date<end')) violations.push({type:'leave-seven-day-window-missing',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('Only approved source requests dated within the next seven days are shown.')) violations.push({type:'leave-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
+  if(vector.includes('function actionRows(')||vector.includes('.vector-home-source .fcc-action')||vector.includes('.vector-home-source .ux-approved-decision-card')) violations.push({type:'action-state-derived-from-hidden-presentation',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('function structuredReviewRows(){')||!vector.includes("String(issue?.status||'').toLowerCase()==='open'")||!vector.includes("String(request?.status||'').toLowerCase()!=='pending'")) violations.push({type:'structured-action-source-contract-missing',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('if(employee())return [];')||!vector.includes('if(!tokens.size)return [];')) violations.push({type:'action-scope-fail-closed-missing',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('const count=structuredReviewRows().length')) violations.push({type:'notification-count-not-source-bound',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('data-vector-action-evidence="${ACTION_MARKER}"')||!vector.includes('No source-confirmed items need review.')) violations.push({type:'action-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
 }
 
 if(violations.length){
@@ -85,3 +91,4 @@ console.log('VECTOR_NEUTRAL_PLANNING_CONTRACT=PASS');
 console.log('VECTOR_KPI_EVIDENCE_CONTRACT=PASS');
 console.log('VECTOR_IDENTITY_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_LEAVE_SOURCE_CONTRACT=PASS');
+console.log('VECTOR_ACTION_SOURCE_CONTRACT=PASS');
