@@ -145,6 +145,8 @@ function createIncidentRegressionCorpus({ initialSnapshot = null, maxEntries = 1
   function verifySnapshot(snapshot) {
     if (!snapshot || snapshot.schemaVersion !== CORPUS_SCHEMA_VERSION || snapshot.mode !== 'append-only' || snapshot.tenantIsolation !== 'digest-scoped') return false;
     if (!Array.isArray(snapshot.entries) || !HEX64.test(String(snapshot.tipDigest || '')) || !HEX64.test(String(snapshot.corpusDigest || ''))) return false;
+    if (!Number.isSafeInteger(snapshot.entryCount) || snapshot.entryCount !== snapshot.entries.length) return false;
+    if (snapshot.entries.length > maxEntries) return false;
     let previous = genesisDigest();
     const seen = new Set();
     for (let index = 0; index < snapshot.entries.length; index += 1) {
