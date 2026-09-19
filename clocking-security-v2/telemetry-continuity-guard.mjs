@@ -16,21 +16,22 @@ function signatureBytes(value){
   return Buffer.from(value,'base64');
 }
 
-const OBSERVATION_KINDS=new Set(['heartbeat','backfill_heartbeat','canary']);
+const OBSERVATION_KINDS=new Set(['session_handoff','heartbeat','backfill_heartbeat','canary']);
 
-export function telemetryObserverPayload({trustDomain,observerSessionId,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}){
+export function telemetryObserverPayload({trustDomain,observerSessionId,kind,stream,sequence,continuityId,canaryId,emittedAtMs,observedAtMs}){
   const domain=id(trustDomain,'trustDomain');
   const session=id(observerSessionId,'observerSessionId');
   const observationKind=id(kind,'kind');
   if(!OBSERVATION_KINDS.has(observationKind)) throw new Error('Telemetry observation kind is invalid.');
   const name=id(stream,'stream');
   const observed=int(observedAtMs,'observedAtMs');
-  const payload={v:2,trustDomain:domain,observerSessionId:session,kind:observationKind,stream:name,observedAtMs:observed};
+  const payload={v:3,trustDomain:domain,observerSessionId:session,kind:observationKind,stream:name,observedAtMs:observed};
   if(observationKind==='canary'){
     payload.canaryId=id(canaryId,'canaryId');
     payload.emittedAtMs=int(emittedAtMs,'emittedAtMs');
   }else{
     payload.sequence=int(sequence,'sequence');
+    if(observationKind==='session_handoff') payload.continuityId=id(continuityId,'continuityId');
   }
   return Buffer.from(JSON.stringify(payload));
 }
@@ -38,13 +39,17 @@ export function telemetryObserverPayload({trustDomain,observerSessionId,kind,str
 /**
  * Independent hosted-telemetry continuity guard.
  *
- * Promotion evidence needs a fresh sequenced heartbeat plus a recent independently
- * expected canary on each required telemetry stream. All observations must be
- * signed by an allow-listed independent observer and are bound to one trust domain
- * plus a fresh per-process observer session, so signed evidence from a previous
- * process cannot be replayed after restart even if sequence numbers, canary IDs or
- * timestamps are reused. Sequence gaps remain unresolved until every missing
- * sequence is explicitly observed through the signed backfill path.
+ * Promotion evidence needs a fresh observer-signed session handoff, a fresh
+ * sequenced heartbeat and a recent independently expected canary on each
+ * required telemetry stream. The handoff is bound to the fresh per-process
+ * observer session and carries the independent observer's last durable sequence,
+ * so a WFM process restart cannot silently reset sequence history and green a
+ * stream that lost telemetry while the process was down.
+ *
+ * All observations are signed by an allow-listed independent observer and are
+ * bound to one trust domain plus the current observer session. Sequence gaps
+ * remain unresolved until every missing sequence is explicitly observed through
+ * the signed backfill path.
  */
 export class TelemetryContinuityGuard {
   #observerSessionId;
@@ -66,6 +71,7 @@ export class TelemetryContinuityGuard {
       if(this.trustedObservers.has(observerId)) throw new Error('Duplicate trusted telemetry observer.');
       if(!Array.isArray(entry?.streams) || entry.streams.length<1) throw new Error('Trusted telemetry observer must be scoped to at least one stream.');
       const streams=new Set(entry.streams.map(stream=>id(stream,'observer stream')));
+      const continuityId=id(entry?.continuityId||observerId,'observer continuityId');
       let publicKey;
       try{
         publicKey=(entry.publicKey && entry.publicKey.type==='public' && entry.publicKey.asymmetricKeyType)
@@ -73,7 +79,7 @@ export class TelemetryContinuityGuard {
           : crypto.createPublicKey(entry.publicKey);
       }catch{ throw new Error('Trusted telemetry observer public key is invalid.'); }
       if(publicKey.asymmetricKeyType!=='ed25519') throw new Error('Trusted telemetry observer key must use Ed25519.');
-      this.trustedObservers.set(observerId,{publicKey,streams});
+      this.trustedObservers.set(observerId,{publicKey,streams,continuityId});
     }
     this.maxCanaryLagMs=int(maxCanaryLagMs,'maxCanaryLagMs');
     this.maxCanaryAgeMs=int(maxCanaryAgeMs,'maxCanaryAgeMs');
@@ -82,6 +88,7 @@ export class TelemetryContinuityGuard {
     this.maxCanaryHistory=int(maxCanaryHistory,'maxCanaryHistory');
     if(this.maxCanaryHistory<1) throw new Error('maxCanaryHistory must be at least 1.');
     this.#observerSessionId=crypto.randomUUID();
+    this.sessionBaselines=new Map();
     this.streams=new Map();
     this.canaries=new Map();
   }
@@ -90,15 +97,32 @@ export class TelemetryContinuityGuard {
     return Object.freeze({trustDomain:this.trustDomain,observerSessionId:this.#observerSessionId});
   }
 
-  _verifyObserver({observerId,signature,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}){
+  _verifyObserver({observerId,signature,kind,stream,sequence,continuityId,canaryId,emittedAtMs,observedAtMs}){
     const oid=id(observerId,'observerId');
     const observer=this.trustedObservers.get(oid);
     if(!observer) throw new Error('Telemetry observation is not from a trusted observer.');
     const name=id(stream,'stream');
     if(!observer.streams.has(name)) throw new Error('Telemetry observer is not authorised for this stream.');
-    const payload=telemetryObserverPayload({trustDomain:this.trustDomain,observerSessionId:this.#observerSessionId,kind,stream:name,sequence,canaryId,emittedAtMs,observedAtMs});
+    let cid;
+    if(kind==='session_handoff'){
+      cid=id(continuityId,'continuityId');
+      if(cid!==observer.continuityId) throw new Error('Telemetry session handoff continuity identity mismatch.');
+    }
+    const payload=telemetryObserverPayload({trustDomain:this.trustDomain,observerSessionId:this.#observerSessionId,kind,stream:name,sequence,continuityId:cid,canaryId,emittedAtMs,observedAtMs});
     if(!crypto.verify(null,payload,observer.publicKey,signatureBytes(signature))) throw new Error('Telemetry observer signature verification failed.');
-    return oid;
+    return {observerId:oid,continuityId:observer.continuityId};
+  }
+
+  observeSessionHandoff({stream,lastSequence,observedAtMs,receivedAtMs=observedAtMs,observerId,continuityId,signature}){
+    const name=id(stream,'stream');
+    const seq=int(lastSequence,'lastSequence');
+    const observed=int(observedAtMs,'observedAtMs');
+    const received=int(receivedAtMs,'receivedAtMs');
+    if(observed>received+this.maxClockSkewMs) throw new Error('Telemetry session handoff timestamp is too far in the future.');
+    if(this.sessionBaselines.has(name)) throw new Error('Telemetry session handoff replay detected.');
+    const verified=this._verifyObserver({observerId,signature,kind:'session_handoff',stream:name,sequence:seq,continuityId,observedAtMs:observed});
+    this.sessionBaselines.set(name,{sequence:seq,observedAtMs:observed,receivedAtMs:received,observerId:verified.observerId,continuityId:verified.continuityId});
+    return true;
   }
 
   observeHeartbeat({stream,sequence,observedAtMs,receivedAtMs=observedAtMs,observerId,signature}){
@@ -109,9 +133,15 @@ export class TelemetryContinuityGuard {
     if(observed>received+this.maxClockSkewMs) throw new Error('Telemetry heartbeat timestamp is too far in the future.');
     this._verifyObserver({observerId,signature,kind:'heartbeat',stream:name,sequence:seq,observedAtMs:observed});
 
+    const baseline=this.sessionBaselines.get(name);
+    if(!baseline) throw new Error('Telemetry session handoff is required before live heartbeat evidence.');
     const prev=this.streams.get(name);
     if(!prev){
-      this.streams.set(name,{sequence:seq,observedAtMs:observed,receivedAtMs:received,gaps:[],observerId:id(observerId,'observerId')});
+      if(seq<=baseline.sequence) throw new Error('Telemetry live heartbeat replay or sequence rollback detected against session handoff.');
+      if(observed<baseline.observedAtMs) throw new Error('Telemetry heartbeat time rollback detected against session handoff.');
+      const gaps=[];
+      if(seq>baseline.sequence+1) gaps.push({expected:baseline.sequence+1,received:seq,recovered:new Set()});
+      this.streams.set(name,{sequence:seq,observedAtMs:observed,receivedAtMs:received,gaps,observerId:id(observerId,'observerId')});
       return true;
     }
     if(seq<=prev.sequence) throw new Error('Telemetry live heartbeat replay or sequence rollback detected.');
@@ -161,10 +191,10 @@ export class TelemetryContinuityGuard {
     if(canary.observedAtMs!==null) throw new Error('Telemetry canary replay detected.');
     if(observed<canary.emittedAtMs-this.maxClockSkewMs) throw new Error('Telemetry canary was observed before emission.');
     if(observed>received+this.maxClockSkewMs) throw new Error('Telemetry canary observation timestamp is too far in the future.');
-    const oid=this._verifyObserver({observerId,signature,kind:'canary',stream:canary.stream,canaryId:cid,emittedAtMs:canary.emittedAtMs,observedAtMs:observed});
+    const verified=this._verifyObserver({observerId,signature,kind:'canary',stream:canary.stream,canaryId:cid,emittedAtMs:canary.emittedAtMs,observedAtMs:observed});
     canary.observedAtMs=observed;
     canary.receivedAtMs=received;
-    canary.observerId=oid;
+    canary.observerId=verified.observerId;
     return observed-canary.emittedAtMs<=this.maxCanaryLagMs;
   }
 
@@ -174,6 +204,9 @@ export class TelemetryContinuityGuard {
     const reasons=[];
 
     for(const stream of required){
+      const baseline=this.sessionBaselines.get(stream);
+      if(!baseline) reasons.push({code:'MISSING_SESSION_HANDOFF',stream});
+
       const beat=this.streams.get(stream);
       if(!beat){
         reasons.push({code:'MISSING_HEARTBEAT',stream});
