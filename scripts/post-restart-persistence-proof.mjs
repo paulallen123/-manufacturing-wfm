@@ -1,3 +1,4 @@
+// Triggered only in the DEVELOPMENT proof harness; the frozen release candidate remains untouched.
 import assert from 'node:assert/strict';
 import { createServer, request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
