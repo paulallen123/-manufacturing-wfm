@@ -26,6 +26,36 @@ const NAV=[
   {label:'Admin', icon:'settings', routes:['onboarding','org-admin','company-settings','op-settings']}
 ];
 const RETIRED_ROUTE_REDIRECTS=Object.freeze({'weekly-review':'time-review','savings-decisions':'costs'});
+function navForRole(){
+  const key=roleContext().key;
+  if(key==='EMPLOYEE')return [
+    {label:'Home',icon:'home',routes:['overview']},
+    {label:'My Schedule',icon:'calendar',routes:['shifts','schedule-publication']},
+    {label:'Holiday',icon:'leave',routes:['leave']},
+    {label:'Attendance',icon:'clock',routes:['attendance','time-review']},
+    {label:'Skills & Training',icon:'training',routes:['resources','readiness']}
+  ];
+  if(key==='OPS_MANAGER')return [
+    {label:'Operations',icon:'home',routes:['overview']},
+    {label:'Sites',icon:'report',routes:['insights']},
+    {label:'People',icon:'people',routes:['org-admin','organisation','resources']},
+    {label:'Workforce Plan',icon:'planning',routes:['demand','readiness','schedule-publication','shifts']},
+    {label:'Labour & Agency',icon:'people',routes:['cover','time-review']},
+    {label:'Value & Savings',icon:'cost',routes:['costs']},
+    {label:'Improve',icon:'sparkle',routes:['insights','readiness']},
+    {label:'Reports',icon:'report',routes:['forecast','payroll-intelligence','payroll-run']},
+    {label:'Integrations',icon:'integrations',routes:['integrations']},
+    {label:'Admin',icon:'settings',routes:['onboarding','org-admin','company-settings','op-settings']}
+  ];
+  if(key==='DIRECTOR')return [
+    {label:'Executive',icon:'home',routes:['overview']},
+    {label:'Value & Savings',icon:'cost',routes:['costs']},
+    {label:'Risk & Resilience',icon:'shield',routes:['insights','readiness','compliance']},
+    {label:'Sites',icon:'report',routes:['insights','forecast']},
+    {label:'Reports',icon:'report',routes:['forecast','payroll-intelligence','payroll-run']}
+  ];
+  return NAV;
+}
 const state={queued:false};
 const observerConfig={subtree:true,childList:true};
 let shellObserver=null;
@@ -113,13 +143,13 @@ function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<1
 
 function ensureSidebar(app){let sidebar=app.querySelector(':scope > .vector-sidebar');if(sidebar)return sidebar;sidebar=document.createElement('aside');sidebar.className='vector-sidebar';sidebar.setAttribute('aria-label','Vector primary navigation');sidebar.innerHTML=`
  <div class="vector-brand"><span class="vector-mark" aria-hidden="true"><i></i><i></i><i></i></span><div><strong>Vector</strong><small>People. Productivity. Possibility.</small></div></div>
- <nav class="vector-nav">${NAV.map((n,i)=>`<button type="button" class="vector-nav-item" data-vector-nav="${i}" aria-label="${esc(n.label)}">${icon(n.icon)}<span>${esc(n.label)}</span></button>`).join('')}</nav>
+ <nav class="vector-nav">${navForRole().map((n,i)=>`<button type="button" class="vector-nav-item" data-vector-nav="${i}" aria-label="${esc(n.label)}">${icon(n.icon)}<span>${esc(n.label)}</span></button>`).join('')}</nav>
  <button type="button" class="vector-site-card" data-vector-route="overview" data-vector-identity="${IDENTITY_MARKER}"><span class="vector-site-icon">▧</span><span><b>Manufacturing</b><small>${esc(siteName())}</small></span>${icon('chevron')}</button>`;app.prepend(sidebar);return sidebar;}
 function ensureTopbar(app){const content=app.querySelector('.content');if(!content)return null;const parent=content.parentElement;let bar=parent.querySelector(':scope > .vector-topbar');if(bar)return bar;bar=document.createElement('header');bar.className='vector-topbar';bar.innerHTML=`
  <button type="button" class="vector-mobile-menu" data-vector-menu aria-label="Open menu">${icon('menu')}</button>
  <label class="vector-global-search">${icon('search')}<input type="search" placeholder='Ask anything... (e.g. "who’s off next week?" or "show overtime this month")' aria-label="Ask Vector"/></label>
  <div class="vector-top-actions"><button type="button" class="vector-icon-button" data-vector-alerts aria-label="Notifications">${icon('bell')}<span class="vector-notification-count" hidden>0</span></button><button type="button" class="vector-icon-button" data-vector-help aria-label="Help">${icon('help')}</button><button type="button" class="vector-user-button" data-vector-identity="${IDENTITY_MARKER}"><span class="vector-avatar">${esc(initials())}</span><span class="vector-user-copy"><b>${esc(displayName())}</b><small>${esc(siteName())}</small></span><span class="vector-user-chevron">⌄</span></button></div>`;parent.insertBefore(bar,content);return bar;}
-function updateNav(){const sidebar=document.querySelector('.vector-sidebar');if(!sidebar)return;sidebar.querySelectorAll('[data-vector-nav]').forEach((b,i)=>b.classList.toggle('active',activeFor(NAV[i])));const alerts=document.querySelector('.vector-notification-count');const count=document.querySelectorAll('.vector-home-source .fcc-action,.vector-home-source .ux-approved-decision-card').length;if(alerts){alerts.textContent=String(count);alerts.hidden=!count}}
+function updateNav(){const sidebar=document.querySelector('.vector-sidebar');if(!sidebar)return;const items=navForRole();sidebar.querySelectorAll('[data-vector-nav]').forEach((b,i)=>b.classList.toggle('active',Boolean(items[i]&&activeFor(items[i]))));const alerts=document.querySelector('.vector-notification-count');const count=document.querySelectorAll('.vector-home-source .fcc-action,.vector-home-source .ux-approved-decision-card').length;if(alerts){alerts.textContent=String(count);alerts.hidden=!count}}
 function askWorkforce(message){const launch=document.getElementById('wfm-bot-launch');if(launch&&document.getElementById('wfm-bot')?.hidden)launch.click();setTimeout(()=>{const box=document.getElementById('bot-message');if(box){box.value=String(message||'').slice(0,2000);box.dispatchEvent(new Event('input',{bubbles:true}));box.focus();}},180);}
 function assistantSnapshot(){
   const role=roleContext(),identity=sourceIdentity(),stats=scopedStats(),cost=labourCost();
@@ -278,7 +308,7 @@ function screenLens(){
 }
 function generalPage(content){if(content.dataset.vectorHome==='1')return;content.classList.add('vector-page-content');if(!content.querySelector('.vector-screen-lens')){const lens=document.createElement('div');lens.innerHTML=screenLens();const node=lens.firstElementChild;const heading=content.querySelector(':scope > .heading');if(heading?.nextSibling)content.insertBefore(node,heading.nextSibling);else content.prepend(node);}}
 function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi='approved-reference-v1';app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);ensureCommandDrawer();if(page()==='overview')renderHome(content);else generalPage(content);updateNav();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
-document.addEventListener('click',e=>{const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec)go(firstRoute(spec.routes));return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('time-review');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askVector(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askVector(box.value.trim());return;}if(e.target.closest('[data-vector-analyse-screen]')){askVector('Analyse this screen. Explain what matters, why, the financial or operational impact, the root cause, and the next best actions.');return;}const listKind=e.target.closest('[data-vector-list]')?.dataset.vectorList;if(listKind){openIntelligenceList(listKind);return;}if(e.target.closest('[data-vector-command-close]')){const drawer=document.querySelector('.vector-command-drawer');if(drawer)drawer.hidden=true;return;}});
+document.addEventListener('click',e=>{const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=navForRole()[Number(navButton.dataset.vectorNav)];if(spec)go(firstRoute(spec.routes));return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('time-review');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askVector(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askVector(box.value.trim());return;}if(e.target.closest('[data-vector-analyse-screen]')){askVector('Analyse this screen. Explain what matters, why, the financial or operational impact, the root cause, and the next best actions.');return;}const listKind=e.target.closest('[data-vector-list]')?.dataset.vectorList;if(listKind){openIntelligenceList(listKind);return;}if(e.target.closest('[data-vector-command-close]')){const drawer=document.querySelector('.vector-command-drawer');if(drawer)drawer.hidden=true;return;}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askVector(input.value.trim());}});
 const previousRender=window.render;
 if(typeof previousRender==='function')window.render=async function(...args){const result=await previousRender.apply(this,args);document.body.classList.remove('vector-menu-open');queueMicrotask(apply);return result;};
