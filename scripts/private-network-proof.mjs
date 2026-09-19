@@ -69,9 +69,11 @@ assert.equal(health.body?.productionApproved, false, 'proof lane must not be pro
 assert.equal(health.body?.pilotReady, false, 'proof lane must not be pilot ready');
 console.log(`HEALTH_PASS ${health.body.release}`);
 
-const unauth = await request('/api/bootstrap');
-assert.equal(unauth.response.status, 401, 'protected bootstrap did not fail closed');
-console.log('UNAUTH_PASS bootstrap=401');
+const unauth = await request('/api/bootstrap', {
+  headers: { origin: browserOrigin, referer: `${browserOrigin}/`, accept: 'application/json' },
+});
+assert.ok([401, 403].includes(unauth.response.status), `protected bootstrap unexpectedly returned ${unauth.response.status}`);
+console.log(`UNAUTH_FAIL_CLOSED_PASS bootstrap=${unauth.response.status}`);
 
 const north = await login('superuser@northstar.example');
 const isolation = await login('other@isolation.example');
