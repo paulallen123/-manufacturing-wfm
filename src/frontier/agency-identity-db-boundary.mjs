@@ -1,4 +1,4 @@
-export const AGENCY_IDENTITY_DB_BOUNDARY_VERSION='agency-identity-db-boundary-v0.3.0';
+export const AGENCY_IDENTITY_DB_BOUNDARY_VERSION='agency-identity-db-boundary-v0.4.0';
 
 export const AGENCY_IDENTITY_DB_BOUNDARY_DDL=`
 DO $roles$
@@ -78,6 +78,11 @@ ALTER FUNCTION public.wfm_lock_agency_identity_assignment_scope_v1(text,text,tex
 REVOKE ALL ON FUNCTION public.wfm_lock_agency_identity_assignment_scope_v1(text,text,text,text,text,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.wfm_lock_agency_identity_assignment_scope_v1(text,text,text,text,text,text) TO wfm_agency_identity_ingress_writer, wfm_agency_identity_reader;
 
+-- Migration hard-stop: remove the legacy overload that accepted a caller-chosen
+-- advisory key. Leaving it callable would preserve an unnecessary concurrency
+-- authority surface even after the runtime moved to database-owned locking.
+DROP FUNCTION IF EXISTS public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz,bigint);
+
 CREATE OR REPLACE FUNCTION public.wfm_append_agency_identity_observation_v1(
   p_tenant_id text,
   p_site_id text,
@@ -94,8 +99,7 @@ CREATE OR REPLACE FUNCTION public.wfm_append_agency_identity_observation_v1(
   p_source_auth_fingerprint text,
   p_binding_fingerprint text,
   p_ingress_version text,
-  p_received_at timestamptz,
-  p_scope_lock_key bigint
+  p_received_at timestamptz
 )
 RETURNS TABLE(observation_duplicate boolean, receipt_duplicate boolean, scope_fingerprint text)
 LANGUAGE plpgsql
@@ -133,13 +137,6 @@ BEGIN
     FROM public.wfm_lock_agency_identity_assignment_scope_v1(
       p_tenant_id,p_site_id,p_request_id,p_agency_id,p_worker_id,p_assignment_fingerprint
     ) AS lock_result;
-
-  -- Transitional compatibility only: older callers may still send the mirror
-  -- key. It can never choose the lock; the database-owned primitive already
-  -- acquired the canonical lock. A mismatching legacy value fails closed.
-  IF p_scope_lock_key IS NOT NULL AND p_scope_lock_key IS DISTINCT FROM v_database_scope_lock_key THEN
-    RAISE EXCEPTION 'identity_observation_scope_lock_mismatch';
-  END IF;
 
   INSERT INTO public.wfm_agency_identity_observation_ingress_receipts
     (tenant_id,source_system_id,source_event_fingerprint,source_auth_fingerprint,binding_fingerprint,ingress_version,received_at)
@@ -194,12 +191,12 @@ BEGIN
 END
 $function$;
 
-ALTER FUNCTION public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz,bigint)
+ALTER FUNCTION public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz)
   OWNER TO wfm_agency_identity_ingress_owner;
 REVOKE CREATE ON SCHEMA public FROM wfm_agency_identity_ingress_owner;
-REVOKE ALL ON FUNCTION public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz,bigint) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz,bigint) FROM wfm_agency_identity_reader;
-GRANT EXECUTE ON FUNCTION public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz,bigint) TO wfm_agency_identity_ingress_writer;
+REVOKE ALL ON FUNCTION public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz) FROM wfm_agency_identity_reader;
+GRANT EXECUTE ON FUNCTION public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz) TO wfm_agency_identity_ingress_writer;
 `;
 
 export const AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY=Object.freeze({
@@ -214,7 +211,9 @@ export const AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY=Object.freeze({
   readerFunctionExecuteAllowed:false,
   scopeLockVerifiedServerSide:true,
   databaseOwnedCanonicalScopeLock:true,
-  legacyCallerScopeLockKeyOptional:true,
+  callerSuppliedScopeLockKeyAccepted:false,
+  legacyCallerScopeLockKeyOptional:false,
+  runtimeScopeFingerprintAuthority:'database_returned',
   scopeLockDerivation:'database_owned_sha256_first_signed_64_bits_of_canonical_tenant_site_request_agency_worker_assignment_scope',
   rankingImpact:'none',
   scheduleWriteAuthorized:false,
