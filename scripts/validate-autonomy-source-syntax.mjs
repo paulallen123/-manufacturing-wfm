@@ -153,6 +153,10 @@ assert.ok(workflow.includes('WFM_INCIDENT_CORPUS_INPUT'), 'Verified prior corpus
 assert.ok(workflow.includes("portable.get('status') == 'PASS'"), 'Prior corpus hydration must require a previously passing portable proof.');
 assert.ok(workflow.includes("envelope.get('portableProofSha256') == sha(portable_raw)"), 'Prior corpus hydration must verify the workflow envelope binds the prior portable proof bytes.');
 assert.ok(workflow.includes("corpus.get('snapshotSha256') == sha(snapshot_raw)"), 'Prior corpus hydration must verify the prior snapshot bytes against the portable proof.');
+assert.ok(workflow.includes("candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)"), 'Prior corpus hydration must deterministically select the newest eligible artifact rather than depend on API result ordering.');
+assert.ok(workflow.includes("'artifactCreatedAt': artifact.get('created_at')"), 'Selected prior corpus evidence must record the artifact creation time used for deterministic ordering.');
+assert.ok(workflow.includes('priorCorpusExpected = Boolean(process.env.WFM_INCIDENT_CORPUS_INPUT)'), 'Proof receipt must independently confirm whether a verified prior corpus was actually injected.');
+assert.ok(workflow.includes('p.incidentRegressionCorpus.priorSnapshotLoaded === priorCorpusExpected'), 'Portable proof must agree with workflow hydration state.');
 assert.ok(workflow.includes('incident-regression-corpus.snapshot.json'), 'Workflow must persist the verified incident regression corpus snapshot.');
 assert.ok(workflow.includes('incident-regression-corpus-continuity.json'), 'Workflow must persist continuity evidence with the corpus snapshot.');
 assert.ok(workflow.includes('WFM_CANONICAL_TRUST_ANCHOR_PROTECTED'), 'Workflow must carry canonical trust-anchor state into the proof.');
@@ -182,7 +186,7 @@ for (const required of [
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'autonomy-source-syntax-and-workflow-integrity',
   status: 'PASS',
   jsFilesChecked: checked.length,
@@ -218,6 +222,8 @@ console.log(JSON.stringify({
   historicalReplayRequiredByPortableProof: true,
   persistentCorpusContinuityRequiredByPortableProof: true,
   priorCorpusWorkflowEvidenceBindingRequired: true,
+  newestPriorCorpusArtifactSelectionRequired: true,
+  priorCorpusHydrationStateCrossChecked: true,
   canonicalTrustAnchorClassificationRequired: true,
   exactRuntimeLogicProofContinuesWhenReleaseTrustBlocked: true,
   authenticatedCanonicalRevalidationRequired: true,
