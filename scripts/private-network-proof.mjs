@@ -10,8 +10,14 @@ assert.ok(targetBase.startsWith('http://') || targetBase.startsWith('https://'),
 assert.ok(targetBase.includes('.railway.internal'), 'Proof target must stay on Railway private networking');
 assert.ok(browserOrigin.startsWith('https://'), 'PROOF_BROWSER_ORIGIN missing');
 assert.ok(password && password.length >= 20, 'WFM_STAGING_PASSWORD missing');
+const browserHost = new URL(browserOrigin).host;
 
 const timeoutMs = 20_000;
+const hostedHeaders = {
+  host: browserHost,
+  'x-forwarded-host': browserHost,
+  'x-forwarded-proto': 'https',
+};
 
 async function request(path, init = {}) {
   const response = await fetch(`${targetBase}${path}`, {
@@ -36,6 +42,7 @@ async function login(email) {
   const { response, text } = await request('/api/login', {
     method: 'POST',
     headers: {
+      ...hostedHeaders,
       'content-type': 'application/json',
       'origin': browserOrigin,
       'referer': `${browserOrigin}/`,
@@ -53,6 +60,7 @@ async function login(email) {
 async function authed(cookie, path, extraHeaders = {}) {
   return request(path, {
     headers: {
+      ...hostedHeaders,
       cookie,
       accept: 'application/json',
       referer: `${browserOrigin}/`,
@@ -61,7 +69,7 @@ async function authed(cookie, path, extraHeaders = {}) {
   });
 }
 
-const health = await request('/api/health');
+const health = await request('/api/health', { headers: hostedHeaders });
 assert.equal(health.response.status, 200, 'private health failed');
 assert.equal(health.body?.release, expectedRelease, 'release identity mismatch');
 assert.equal(health.body?.fixtureOnly, true, 'proof lane must be fixture-only');
@@ -70,7 +78,7 @@ assert.equal(health.body?.pilotReady, false, 'proof lane must not be pilot ready
 console.log(`HEALTH_PASS ${health.body.release}`);
 
 const unauth = await request('/api/bootstrap', {
-  headers: { origin: browserOrigin, referer: `${browserOrigin}/`, accept: 'application/json' },
+  headers: { ...hostedHeaders, origin: browserOrigin, referer: `${browserOrigin}/`, accept: 'application/json' },
 });
 assert.ok([401, 403].includes(unauth.response.status), `protected bootstrap unexpectedly returned ${unauth.response.status}`);
 console.log(`UNAUTH_FAIL_CLOSED_PASS bootstrap=${unauth.response.status}`);
