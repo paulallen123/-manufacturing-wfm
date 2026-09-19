@@ -4,6 +4,7 @@ const { createHash } = require('node:crypto');
 const { evaluateActivation } = require('./connection-proof-gate.cjs');
 const { gateCircuit } = require('./provider-circuit-breaker.cjs');
 const { evaluateAuthorityObservation } = require('./source-authority-fence.cjs');
+const { evaluateApplyHandoff } = require('./apply-handoff-ledger.cjs');
 
 const DIGEST = /^[a-f0-9]{32,128}$/i;
 const OPERATION_KEY = /^[A-Za-z0-9._:/-]{1,200}$/;
@@ -123,11 +124,22 @@ function gateMappedObservation(review, input = {}, now = Date.now()) {
     return Object.freeze({ action: 'BLOCK', reason: 'durable-stage-proof-invalid', blockers: stageCheck.blockers, nextFence: null });
   }
 
+  const applyHandoff = evaluateApplyHandoff(review, input.observation || {}, input.stageReceipt, input.applyLedgerEntry, now);
+  if (applyHandoff.action === 'BLOCK') {
+    return Object.freeze({ action: 'BLOCK', reason: applyHandoff.reason, blockers: applyHandoff.blockers || [], nextFence: null });
+  }
+  if (applyHandoff.action === 'RECONCILE_BEFORE_APPLY') {
+    return Object.freeze({ action: 'RECONCILE_BEFORE_APPLY', reason: applyHandoff.reason, blockers: applyHandoff.blockers || [], operationKey: applyHandoff.operationKey, nextFence: null });
+  }
+  if (applyHandoff.action === 'ADVANCE_FENCE_NO_APPLY') {
+    return Object.freeze({ action: 'ADVANCE_FENCE_NO_APPLY', reason: applyHandoff.reason, blockers: [], operationKey: applyHandoff.operationKey, nextFence: authority.nextFence });
+  }
+
   return Object.freeze({
     action: 'READY_TO_APPLY',
-    reason: 'approved-authoritative-durably-staged-observation',
+    reason: 'approved-authoritative-durably-staged-idempotent-observation',
     blockers: [],
-    operationKey: input.stageReceipt.operationKey,
+    operationKey: applyHandoff.operationKey,
     nextFence: authority.nextFence
   });
 }
