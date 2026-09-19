@@ -106,13 +106,13 @@ function createVectorIntelligenceControlPlane(options={}){
   function roleContext(c,body={}){
     return {
       role:c.role,
-      jobTitle:body.jobTitle||c.role,
-      siteCount:body.siteCount,
-      siteIds:Array.isArray(body.siteIds)?body.siteIds:[],
+      jobTitle:c.role,
+      siteCount:null,
+      siteIds:[],
       currentScreen:body.currentScreen||'overview'
     };
   }
-  function persistAction(c,envelope,snapshotInput={}){
+  function persistAction(c,envelope,snapshotInput={},clientAuthority={}){
     const id='vai-'+randomUUID();
     const created=nowIso();
     const snapshot=sanitizeSnapshot({
@@ -120,7 +120,7 @@ function createVectorIntelligenceControlPlane(options={}){
       role:envelope.role,
       scope:envelope.scope,
       currentScreen:envelope.currentScreen,
-      generatedAt:snapshotInput?.generatedAt||created
+      generatedAt:created
     });
     const cadence=parseCadence(envelope.command.text,new Date(created));
     const detail={
@@ -129,6 +129,13 @@ function createVectorIntelligenceControlPlane(options={}){
       requestedAt:envelope.requestedAt,
       snapshot,
       cadence,
+      security:{
+        evidenceAuthority:'SERVER_ONLY',
+        clientSnapshotAccepted:false,
+        clientSnapshotDiscarded:Boolean(clientAuthority.snapshot),
+        clientSiteScopeAccepted:false,
+        clientSiteScopeDiscarded:Boolean(clientAuthority.siteIds)
+      },
       execution:{
         analysisEngine:'CLIENT_ASSISTANT',
         reportEngine:'VECTOR_REPORT_ENGINE_V1',
@@ -138,10 +145,10 @@ function createVectorIntelligenceControlPlane(options={}){
     };
     let status='ACCEPTED';
     if(envelope.policy.mode==='BLOCK')status='BLOCKED';
-    if(envelope.policy.mode==='EXPLICIT_CONFIRMATION')status='AWAITING_CONFIRMATION';
-    if(envelope.command.intent==='CREATE_REPORT')status='READY';
-    if(envelope.command.intent==='EMAIL_REPORT')status=process.env.WFM_VECTOR_EMAIL_PROVIDER?'READY_FOR_DELIVERY':'READY_NOT_SENT';
-    if(envelope.command.intent==='CREATE_AUTOMATION')status='CONFIGURED_PENDING_WORKER';
+    else if(envelope.policy.mode==='EXPLICIT_CONFIRMATION')status='AWAITING_CONFIRMATION';
+    else if(envelope.command.intent==='CREATE_REPORT')status='READY';
+    else if(envelope.command.intent==='EMAIL_REPORT')status=process.env.WFM_VECTOR_EMAIL_PROVIDER?'READY_FOR_DELIVERY':'READY_NOT_SENT';
+    else if(envelope.command.intent==='CREATE_AUTOMATION')status='CONFIGURED_PENDING_WORKER';
     insertRequest.run(
       id,c.tenant,c.email,envelope.command.intent,status,commandTitle(envelope.command.text),
       envelope.command.text,envelope.role,envelope.scope,envelope.currentScreen,
@@ -221,8 +228,14 @@ function createVectorIntelligenceControlPlane(options={}){
     const text=compact(body.text,2000);
     if(!text)return writeJson(res,400,{error:'text is required.'});
     const context=roleContext(c,body);
-    const envelope=assistantEnvelope(text,context);
-    let persisted=persistAction(c,envelope,body.snapshot||{});
+    let envelope=assistantEnvelope(text,context);
+    if(envelope.command.intent==='CREATE_AUTOMATION'&&envelope.scope!=='ENTERPRISE'){
+      envelope={...envelope,policy:{mode:'BLOCK',reason:'SERVER_SCOPE_AUTHORITY_REQUIRED'}};
+    }
+    let persisted=persistAction(c,envelope,{}, {
+      snapshot:body.snapshot&&typeof body.snapshot==='object',
+      siteIds:Array.isArray(body.siteIds)&&body.siteIds.length>0
+    });
     if(envelope.command.intent==='EMAIL_REPORT')persisted=await deliverEmailReport(c,persisted);
     return writeJson(res,persisted.status==='BLOCKED'?403:202,{
       requestId:persisted.id,
