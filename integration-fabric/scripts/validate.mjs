@@ -10,8 +10,8 @@ const opportunities = JSON.parse(fs.readFileSync(new URL('../opportunity-profile
 assert.equal(catalog.schemaVersion, 1);
 assert.equal(research.schemaVersion, 1);
 assert.equal(opportunities.schemaVersion, 1);
-assert.ok(Array.isArray(catalog.systems) && catalog.systems.length >= 154, 'Expected >=154 effective systems after research overlays.');
-assert.ok(Array.isArray(catalog.protocolFamilies) && catalog.protocolFamilies.length >= 21);
+assert.ok(Array.isArray(catalog.systems) && catalog.systems.length >= 155, 'Expected >=155 effective systems after research overlays.');
+assert.ok(Array.isArray(catalog.protocolFamilies) && catalog.protocolFamilies.length >= 22);
 assert.equal(catalog.researchOverlay.newSystems, research.systems.length);
 assert.equal(catalog.researchOverlay.overrides, research.overrides.length);
 assert.ok(Array.isArray(research.sources) && research.sources.includes('systems-research.json'));
@@ -49,10 +49,10 @@ for (const must of [
   'google-cloud-application-integration','azure-service-bus','confluent-cloud',
   'jitterbit-harmony','ifs-ultimo','beckhoff-twincat-opcua','onelogin',
   'axway-b2bi','veeva-vault-quality','ibm-mq','jumpcloud','sap-fieldglass',
-  'siemens-industrial-edge'
+  'siemens-industrial-edge','highbyte-intelligence-hub','tulip','cognite-data-fusion'
 ]) assert.ok(ids.has(must), 'Required seed missing: ' + must);
 
-for (const family of ['AMQP','Protobuf RPC/HTTP2','Schema Registry','JSON-2','JMS']) {
+for (const family of ['AMQP','Protobuf RPC/HTTP2','Schema Registry','JSON-2','JMS','Sparkplug B']) {
   assert.ok(catalog.protocolFamilies.includes(family), 'Research protocol family missing: ' + family);
 }
 
@@ -76,12 +76,16 @@ assert.equal(byId.get('epicor-kinetic').testLevel,'spec-verified');
 assert.equal(byId.get('inductive-automation-ignition').testLevel,'spec-verified');
 assert.equal(byId.get('siemens-industrial-edge').testLevel,'spec-verified');
 assert.ok(byId.get('siemens-industrial-edge').protocols.includes('Protobuf RPC/HTTP2'));
+assert.equal(byId.get('highbyte-intelligence-hub').testLevel,'spec-verified');
+assert.ok(byId.get('highbyte-intelligence-hub').protocols.includes('Sparkplug B'));
+assert.equal(byId.get('tulip').testLevel,'spec-verified');
+assert.equal(byId.get('cognite-data-fusion').testLevel,'spec-verified');
 assert.equal(byId.get('sap-fieldglass').testLevel,'discovery-queued');
 
 for(const id of ['sap-digital-manufacturing','ptc-windchill','aws-iot-sitewise','azure-iot-operations','jumpcloud','ibm-mq','sap-fieldglass']){
   assert.ok(opportunities.systemOverrides[id], 'System-specific value/data review missing: '+id);
 }
-for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge']){
+for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion']){
   const review=byId.get(id).valueReview;
   assert.equal(review?.basis,'vendor-docs','Inline vendor value/data review missing vendor-doc basis: '+id);
   assert.ok(Array.isArray(review.customerValue)&&review.customerValue.length>0,'Inline customer value review missing: '+id);
