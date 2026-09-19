@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const MARKER='VECTOR_PRIORITY_BRIDGE_V1';
-const state={queued:false,focusToken:0};
+const state={queued:false,focusToken:0,returnMarker:null};
 const page=()=>{try{return String(ui?.page||'overview');}catch{return 'overview';}};
 
 function content(){return document.querySelector('.content');}
@@ -47,20 +47,25 @@ function projectedTarget(queue,marker){
 }
 
 function restoreProjectedFocus(queue){
-  const marker=window.WFMUXCycle11?.returnMarker?.();
+  const liveMarker=window.WFMUXCycle11?.returnMarker?.();
+  if(liveMarker?.id)state.returnMarker=liveMarker;
+  const marker=state.returnMarker;
   if(!marker?.id||!queue)return false;
   const token=++state.focusToken;
   const focus=(attempt=0)=>{
     if(token!==state.focusToken)return;
     const currentMarker=window.WFMUXCycle11?.returnMarker?.();
-    if(!currentMarker||currentMarker.id!==marker.id)return;
+    if(currentMarker?.id&&currentMarker.id!==marker.id){state.returnMarker=currentMarker;return;}
     const currentQueue=document.querySelector('.vector-priority-slot > .ux11-queue')||queue;
     const target=projectedTarget(currentQueue,marker);
     const lane=target?.closest('details');if(lane&&!lane.open)lane.open=true;
     const visible=Boolean(target?.isConnected&&!target.closest('[hidden]')&&target.getClientRects().length);
     if(visible&&document.activeElement!==target){try{target.focus({preventScroll:true});}catch{try{target.focus();}catch{}}}
     if(attempt<12){setTimeout(()=>focus(attempt+1),40);return;}
-    if(visible&&document.activeElement===target){try{sessionStorage.removeItem('wfmUx11Return');}catch{}}
+    if(visible&&document.activeElement===target){
+      try{if(window.WFMUXCycle11?.returnMarker?.()?.id===marker.id)sessionStorage.removeItem('wfmUx11Return');}catch{}
+      state.returnMarker=null;
+    }
   };
   focus();
   return true;
