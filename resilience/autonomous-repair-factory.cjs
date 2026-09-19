@@ -40,6 +40,7 @@ const PROTECTED_PATHS = Object.freeze([
   'resilience/t3-execution-readiness-gate.cjs',
   'resilience/t3-deterministic-execution-sandbox.cjs',
   'resilience/t4-containment-controller.cjs',
+  'resilience/t4-forensic-failover-store.cjs',
   'scripts/run-portable-autonomy-proof.mjs',
   'scripts/select-prior-corpus-evidence.mjs',
   'scripts/hydrate-prior-corpus-github.mjs',
