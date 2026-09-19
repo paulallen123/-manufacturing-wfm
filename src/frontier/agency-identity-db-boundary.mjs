@@ -1,4 +1,4 @@
-export const AGENCY_IDENTITY_DB_BOUNDARY_VERSION='agency-identity-db-boundary-v0.1.0';
+export const AGENCY_IDENTITY_DB_BOUNDARY_VERSION='agency-identity-db-boundary-v0.2.0';
 
 export const AGENCY_IDENTITY_DB_BOUNDARY_DDL=`
 DO $roles$
@@ -58,14 +58,17 @@ DECLARE
   v_observation_count integer := 0;
   v_receipt record;
   v_observation record;
+  v_scope_canonical text;
+  v_expected_scope_lock_hex text;
+  v_supplied_scope_lock_hex text;
 BEGIN
-  IF p_tenant_id IS NULL OR btrim(p_tenant_id)='' OR
-     p_site_id IS NULL OR btrim(p_site_id)='' OR
-     p_request_id IS NULL OR btrim(p_request_id)='' OR
-     p_agency_id IS NULL OR btrim(p_agency_id)='' OR
-     p_worker_id IS NULL OR btrim(p_worker_id)='' OR
-     p_source_system_id IS NULL OR btrim(p_source_system_id)='' OR
-     p_ingress_version IS NULL OR btrim(p_ingress_version)='' OR
+  IF p_tenant_id IS NULL OR btrim(p_tenant_id)='' OR char_length(p_tenant_id)>100 OR p_tenant_id<>btrim(p_tenant_id) OR
+     p_site_id IS NULL OR btrim(p_site_id)='' OR char_length(p_site_id)>100 OR p_site_id<>btrim(p_site_id) OR
+     p_request_id IS NULL OR btrim(p_request_id)='' OR char_length(p_request_id)>100 OR p_request_id<>btrim(p_request_id) OR
+     p_agency_id IS NULL OR btrim(p_agency_id)='' OR char_length(p_agency_id)>100 OR p_agency_id<>btrim(p_agency_id) OR
+     p_worker_id IS NULL OR btrim(p_worker_id)='' OR char_length(p_worker_id)>100 OR p_worker_id<>btrim(p_worker_id) OR
+     p_source_system_id IS NULL OR btrim(p_source_system_id)='' OR char_length(p_source_system_id)>100 OR p_source_system_id<>btrim(p_source_system_id) OR
+     p_ingress_version IS NULL OR btrim(p_ingress_version)='' OR char_length(p_ingress_version)>100 OR p_ingress_version<>btrim(p_ingress_version) OR
      p_assignment_fingerprint !~ '^[0-9a-f]{24}$' OR
      p_assurance_version_id !~ '^[0-9a-f]{32}$' OR
      p_source_event_fingerprint !~ '^[0-9a-f]{32}$' OR
@@ -75,6 +78,31 @@ BEGIN
      p_signal_type NOT IN ('access_pass','attendance_clock_in','supervised_identity_check','rtw_dvsp_holder_check') OR
      p_observed_at IS NULL OR p_received_at IS NULL OR p_scope_lock_key IS NULL THEN
     RAISE EXCEPTION 'identity_observation_boundary_invalid';
+  END IF;
+
+  -- The runtime still supplies the advisory key for compatibility with the
+  -- work-start path, but the security-definer boundary no longer trusts it.
+  -- Rebuild the exact Node JSON.stringify([tenant,site,request,agency,worker,assignment])
+  -- canonical string, SHA-256 it, and compare the first signed 64 bits in
+  -- two's-complement hex form before taking the lock.
+  v_scope_canonical := '[' ||
+    pg_catalog.to_json(p_tenant_id)::text || ',' ||
+    pg_catalog.to_json(p_site_id)::text || ',' ||
+    pg_catalog.to_json(p_request_id)::text || ',' ||
+    pg_catalog.to_json(p_agency_id)::text || ',' ||
+    pg_catalog.to_json(p_worker_id)::text || ',' ||
+    pg_catalog.to_json(p_assignment_fingerprint)::text || ']';
+  v_expected_scope_lock_hex := pg_catalog.encode(
+    pg_catalog.substr(
+      pg_catalog.sha256(pg_catalog.convert_to(v_scope_canonical,'UTF8')),
+      1,
+      8
+    ),
+    'hex'
+  );
+  v_supplied_scope_lock_hex := pg_catalog.lpad(pg_catalog.to_hex(p_scope_lock_key),16,'0');
+  IF v_supplied_scope_lock_hex IS DISTINCT FROM v_expected_scope_lock_hex THEN
+    RAISE EXCEPTION 'identity_observation_scope_lock_mismatch';
   END IF;
 
   PERFORM pg_catalog.pg_advisory_xact_lock(p_scope_lock_key);
@@ -149,6 +177,8 @@ export const AGENCY_IDENTITY_DB_BOUNDARY_AUTHORITY=Object.freeze({
   writerDirectTableDmlAllowed:false,
   writerFunctionExecuteAllowed:true,
   readerFunctionExecuteAllowed:false,
+  scopeLockVerifiedServerSide:true,
+  scopeLockDerivation:'sha256_first_64_bits_of_canonical_tenant_site_request_agency_worker_assignment_scope',
   rankingImpact:'none',
   scheduleWriteAuthorized:false,
   clockingWriteAuthorized:false,
