@@ -76,9 +76,15 @@ function providers(){
 function assess({gates=greenGates(),providerProofs=providers(),policy=evidencePolicy}={}){
   return assessAttendanceRelease({candidateSha:SHA,gates,providerProofs,evidencePolicy:policy});
 }
+function releaseSwitch({expectedCandidateSha=SHA,policy=evidencePolicy}={}){
+  return new AttendanceReleaseSwitch({expectedCandidateSha,evidencePolicy:policy});
+}
 
 test('feature remains disabled by default even when no release assessment exists',()=>{
-  assert.equal(new AttendanceReleaseSwitch().state().enabled,false);
+  const control=releaseSwitch();
+  assert.equal(control.state().enabled,false);
+  assert.equal(control.state().expectedCandidateSha,SHA);
+  assert.equal(control.state().evidencePolicyId,POLICY_ID);
 });
 
 test('missing or skipped mandatory gate blocks promotion',()=>{
@@ -204,15 +210,37 @@ test('rollback authority proof must cover signed receipts, commitment CAS and re
 test('all signed gates plus two signed real provider domains allow an explicit enable request',()=>{
   const a=assess();
   assert.equal(a.ready,true);
-  const control=new AttendanceReleaseSwitch();
+  const control=releaseSwitch();
   const state=control.reconcile({assessment:a,requestedEnabled:true,actorId:'release-controller'});
   assert.equal(state.enabled,true);
   assert.equal(state.candidateSha,SHA);
   assert.equal(a.evidencePolicyId,POLICY_ID);
 });
 
+test('release switch rejects a trusted green assessment bound to another candidate or another evidence policy',()=>{
+  const genuine=assess();
+  const wrongCandidateControl=releaseSwitch({expectedCandidateSha:'0'.repeat(40)});
+  assert.throws(
+    ()=>wrongCandidateControl.reconcile({assessment:genuine,requestedEnabled:true,actorId:'release-controller'}),
+    /bound runtime candidate/
+  );
+  assert.equal(wrongCandidateControl.state().enabled,false);
+
+  const otherKeys=generateKeyPairSync('ed25519');
+  const otherPolicy=createAttendanceReleaseEvidencePolicy({
+    policyId:'attendance-release/alternate-v1',
+    issuers:[{issuerId:'alternate-attestor',publicKeyPem:otherKeys.publicKey.export({type:'spki',format:'pem'}),allowedGates:['*'],allowedProviderDomains:['physical_access','network_auth']}]
+  });
+  const wrongPolicyControl=releaseSwitch({policy:otherPolicy});
+  assert.throws(
+    ()=>wrongPolicyControl.reconcile({assessment:genuine,requestedEnabled:true,actorId:'release-controller'}),
+    /bound release policy/
+  );
+  assert.equal(wrongPolicyControl.state().enabled,false);
+});
+
 test('forged or serialized green assessment cannot bypass mandatory gate evaluation',()=>{
-  const control=new AttendanceReleaseSwitch();
+  const control=releaseSwitch();
   const forged={ready:true,candidateSha:SHA,blockers:[],accepted:{},providerDomains:['physical_access','network_auth']};
   assert.throws(()=>control.reconcile({assessment:forged,requestedEnabled:true,actorId:'release-controller'}),/Trusted release assessment/);
 
@@ -223,7 +251,7 @@ test('forged or serialized green assessment cannot bypass mandatory gate evaluat
 });
 
 test('gate regression immediately fails closed when release control reconciles again',()=>{
-  const control=new AttendanceReleaseSwitch();
+  const control=releaseSwitch();
   const green=assess();
   control.reconcile({assessment:green,requestedEnabled:true,actorId:'release-controller'});
   const gates=greenGates();
@@ -236,7 +264,7 @@ test('gate regression immediately fails closed when release control reconciles a
 });
 
 test('manual rollback disables immediately without weakening or rewriting gate evidence',()=>{
-  const control=new AttendanceReleaseSwitch();
+  const control=releaseSwitch();
   const green=assess();
   control.reconcile({assessment:green,requestedEnabled:true,actorId:'release-controller'});
   const state=control.rollback({actorId:'release-controller',reason:'operator-request'});
