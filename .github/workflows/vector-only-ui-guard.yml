@@ -9,6 +9,8 @@ on:
     paths:
       - 'ux-overlay/**'
       - 'Dockerfile'
+      - 'operations/runtime/vector-intelligence-*.cjs'
+      - 'security/runtime/bootstrap.cjs'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
   pull_request:
@@ -32,6 +34,8 @@ jobs:
           persist-credentials: false
       - name: Refuse retired UI source
         run: node scripts/validate-vector-only-ui.mjs
+      - name: Prove Vector intelligence contract
+        run: node --test operations/runtime/vector-intelligence-layer.test.cjs operations/runtime/vector-intelligence-control-plane.test.cjs
       - name: Build exact runtime
         run: docker build --pull=false -t wfm-vector-only .
       - name: Prove Vector is the only active presentation
