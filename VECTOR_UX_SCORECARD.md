@@ -2,74 +2,67 @@
 
 This is the single canonical scorecard for the approved Vector role-first NEW-UI lineage. Historical cycle detail remains in Git history; this file keeps the current evidence boundary, validated deltas and one dependency-ordered next action without repeating old research.
 
-## 2026-09-19 — Vector r9: source-bound Time Review runtime bridge
+## 2026-09-19 — Vector r10: contract-backed Time Review action consumer
 
 ### Journey reviewed
-Factory/operations manager Vector Home → `Items to review` → Time Review, specifically the missing read-only path between the already-tested `WFM_WORKFLOW_ACTION_EVIDENCE_V1` producer and the existing Vector review consumer.
+Factory/operations manager Vector Home → `Items to review` / notification count → Time Review. The bounded question was whether the existing Vector action surface could consume the already-built `WFM_WORKFLOW_ACTION_EVIDENCE_V1` bridge without creating a second queue, second lifecycle implementation or presentation-owned freshness/urgency logic.
 
 ### NEW-UI lineage confirmation
-Work remains owned only by the approved Vector Workforce Operations lineage on `feature/one-day-enterprise-implementation-v1` / PR #79. No legacy/0.6.139 presentation, retired overlay, staging, production, customer-proof surface, replacement branch or parallel queue implementation was changed.
+All mutation is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired overlay, staging, production or customer-proof surface was changed.
 
 ### Reuse / duplicate-work decision
-- Reused the existing authoritative `/api/time-review` source instead of creating a second Time Review calculation or report.
-- Reused `produceTimeReviewActionEvidence()` and the shared validator; the bridge contains no duplicate freshness, consequence or confirmation rules.
-- Reused the existing workforce runtime route owner through a thin composition router rather than changing the sealed server or creating another control plane.
-- Reused the existing session database and source endpoint's session cookie; client-supplied tenant/role headers are not trusted or forwarded.
-- Extended the existing Docker build-admission test stage instead of creating a second CI harness.
-- Did not bind Vector yet and did not build Absence/sign-off producers in parallel; those remain dependency-ordered behind exact runtime proof of this first bridge.
-
-### Research delta
-No competitor/general UX research was repeated. Fresh read-only Railway HTTP evidence resolved the previously unanswered platform question: the hosted application uses authenticated `GET /api/time-review`; before login `/api/bootstrap` was 401, login succeeded, authenticated bootstrap returned 200 and `/api/time-review` returned 200. That changed the implementation decision from designing a speculative source endpoint to reusing the real sealed Time Review source.
+- Reused the existing `structuredReviewRows()`, alert card, notification badge and return-to-Time-Review route.
+- Reused the existing read-only `GET /api/workforce/lifecycle/action-evidence/time-review` bridge and shared `WFM_WORKFLOW_ACTION_EVIDENCE_V1` vocabulary.
+- Extended the existing Vector-only repository guard rather than adding a second test harness.
+- Kept the existing local Time Review summary only as a neutral fail-safe when no admissible contract row is available; weekly sign-off and Absence logic were intentionally left unchanged.
+- No competitor/general UX research was repeated because the unresolved dependency was internal source binding, not an interaction-pattern question.
 
 ### Hypothesis
-If the manager-facing action path reads the already-authoritative Time Review report under the same signed-in session, admits only records that pass the shared evidence producer, and fails closed on source/scope errors, Vector can consume one trustworthy action contract without acquiring calculation, permission, freshness or confirmation authority.
+If Vector reads the authoritative Time Review evidence contract once per page session, validates every returned record fail-closed, shows only source-owned confirmation/freshness state and retains the existing neutral fallback when evidence is unavailable/incomplete, managers gain a more explainable action queue without moving authority, SLA or urgency calculation into presentation code.
 
 ### Exact implementation / design delta
-- Added `operations/runtime/workflow-action-evidence-bridge.cjs` as a read-only adapter over the existing `/api/time-review` source.
-- The bridge independently resolves the signed-in session to tenant/role, rejects employee-role access, forwards only the existing session cookie plus bounded safe request headers, and never accepts client tenant/role identity headers.
-- Source reads are bounded to 3 seconds and 512 KiB and fail closed; non-200/invalid source responses do not create a synthetic action fallback.
-- If the source explicitly returns a tenant identifier that disagrees with the authenticated session, the bridge fails closed.
-- The only admitted team IDs are those returned by the authenticated Time Review source response; the shared producer then performs the existing stable-ID/reason/observation/authority/freshness/confirmation admission checks.
-- The route is `GET /api/workforce/lifecycle/action-evidence/time-review`, deliberately composed through the existing workforce runtime owner. Non-GET access is refused.
-- Added `workforce-lifecycle-router.cjs` as a thin composition layer: action-evidence routes go to the shared bridge; every other workforce-lifecycle request delegates unchanged to the existing core implementation.
-- Docker build composition now packages the existing lifecycle core, shared contract, bridge and router separately, and runs the existing contract suite, bridge suite and lifecycle suite together in the same deterministic build-admission stage.
-- Visible Vector presentation was deliberately left unchanged in this increment. No card, badge, urgency state or confirmation lifecycle is shown from the bridge until exact runtime proof and consumer binding are complete.
+- Vector now performs a same-origin, no-store, GET-only read of `/api/workforce/lifecycle/action-evidence/time-review`; no polling/retry loop was added.
+- Response and item contract version/workflow are validated before use. Stable source ID, structured reason code, observation timestamp, authority, freshness state and confirmation state are required client-side as a defence-in-depth admission boundary.
+- `current` freshness is accepted only when the source also provides a policy reference and valid-until timestamp; Vector compares no timestamp to wall-clock time and calculates no freshness/SLA state.
+- `Needs verification` is accepted only when the source says the SLA expired; `Resolved` requires source confirmation/audit evidence and is not shown as work still requiring action.
+- Active contract rows reuse the existing alert component and remain visually neutral. The visible status is the source lifecycle (`Action required`, `Decision sent`, `Confirming source`, `Needs verification`), while detail exposes source `whyNow`, source freshness wording and `authorityRequired`.
+- If the bridge is unavailable, malformed, contract-mismatched or yields no admissible active records, the existing local open-Time-Review summary remains as `Needs review` so consequential work is not silently hidden.
+- Existing weekly sign-off states and pending Absence requests remain on their previous neutral source-bound paths. No Absence/sign-off contract consumer was built in parallel.
+- When contract evidence arrives after initial render, only the existing review list and notification count are refreshed; the page is not rebuilt.
 
 ### Serious-idea decision
 | Idea | Evidence | Decision |
 | --- | --- | --- |
-| Reuse authenticated `/api/time-review` as the source | Fresh hosted HTTP evidence confirms the real endpoint | **BUILD NOW** |
-| Add a second Time Review calculation/API | Would duplicate source truth | **REJECT** |
-| Let Vector calculate freshness/SLA/authority | Violates shared evidence boundary | **REJECT** |
-| Route through existing workforce runtime owner | Smallest additive change; sealed server remains untouched | **BUILD NOW** |
-| Bind visible Vector rows before exact runtime build proof | Would outrun evidence | **BUILD NEXT** |
-| Build Absence/sign-off bridges now | First bridge pattern is not yet exact-runtime proven | **DEFER** |
+| Consume the existing read-only Time Review action-evidence bridge | Bridge and shared producer already exist on the same canonical branch | **BUILD NOW** |
+| Create a new Vector queue/service for Time Review | Would duplicate the existing action surface and source contract | **REJECT** |
+| Calculate freshness, urgency or SLA state in Vector | Violates the source-owned contract boundary | **REJECT** |
+| Remove local neutral fallback immediately | Could hide consequential work when source evidence is incomplete/unavailable | **REJECT** |
+| Build Absence/sign-off consumers in the same increment | First end-to-end Time Review path still lacks hosted execution proof | **BUILD NEXT, AFTER PROOF** |
 
 ### Focused / affected validation
-Current product-code head is `ffb1e35aa3e39606571ba1915e2c90b293c60b57`. Exact committed blobs used in focused validation: contract `472ff24ec4129c23d06849ebc69b9985a02becc3`, bridge `38afc93eec1ba83f88980a2f28a06df86cf10d11`, bridge tests `30a13c061ab2fea5ba57a6d16a5c3d2ee6199ae0`, lifecycle router `646b5730e298ea5e10792a829d863864bdc990ee`, Dockerfile `58d3982985d6761e6e2cfbac66e61c1c2b6005a4`.
+Product-code commit `4a188477e3abb20f16bc00fe751a0ad6fec35a93` binds the consumer. Guard commit `d154333591515cd3ad153a2a2fa4e737547482ab` extends the existing Vector-only validator with distinct checks for the exact bridge path, same-origin/no-store read, response/item contract validation, source-owned Needs-verification semantics, resolved-item suppression, neutral fallback and absence of a retry loop.
 
-Local Git blob hashes for the shared contract, bridge, bridge test and lifecycle router matched the committed blobs exactly. `node --test workflow-action-evidence-bridge.test.cjs` passed **5/5**, zero skipped, covering manager/session context, employee fail-closed behaviour, explicit tenant mismatch, incomplete evidence remaining absent and source/write failure. A focused composition smoke test using the exact committed contract/bridge/router passed **1/1**, proving action-evidence routing is separated from unchanged lifecycle delegation; that smoke used a stub lifecycle core and is not claimed as exact-runtime proof.
-
-Affected Vector-only run `35451354525` was triggered for exact product head `ffb1e35aa3e39606571ba1915e2c90b293c60b57` but again received no runner: job `105918950473` exposes `steps=[]` and `runner_id=0`. No product test executed, so this is unavailable hosted evidence rather than a product-test failure. The unchanged runner blocker was verified once and was not retried.
+The affected Vector-only run `35453869407` was triggered for `d154333591515cd3ad153a2a2fa4e737547482ab`, but GitHub allocated no runner: job `105925622720` completed with `steps=[]` and `runner_id=0`. Therefore no repository guard, Node syntax check, Docker build, browser or accessibility step executed. This is unavailable hosted test infrastructure, not a claimed product-test pass or product-test failure. The unchanged runner blocker was verified once and was not retried.
 
 ### UX scorecard impact
-- Calm by default: strengthened — bridge/source failures emit no synthetic workload or urgency.
-- Dense on demand: unchanged — no new visible surface was added.
-- Explainability: strengthened — one source route now feeds one shared evidence admission contract.
-- Accessibility: unchanged this run; no new presentation interaction was added.
-- Authority/auditability: strengthened — signed-in session scope remains authoritative and Vector still has no write/freshness/permission authority.
-- Development efficiency: improved — existing source, contract, workforce route owner and build harness were reused; no second report or queue implementation was created.
+- Calm by default: strengthened — source lifecycle can be shown without severity colour; unavailable/incomplete evidence stays neutral.
+- Dense on demand: improved — authority and source freshness meaning are carried in the existing action row without adding a new screen.
+- Explainability: strengthened — each admitted Time Review action can expose why it exists, authority and source lifecycle/freshness state.
+- Accessibility: structurally preserved by reusing the existing labelled alert row/button, but real screen-reader behaviour remains unverified.
+- Authority/auditability: strengthened — presentation validates and displays source contract state but does not calculate authority, freshness, SLA or resolution.
+- Development efficiency: improved — one existing consumer, one existing endpoint, one existing guard; no duplicate queue/service/test harness.
 
 ### Still unverified
-The exact Docker runtime composition has not executed because the affected GitHub job received no runner. The bridge therefore is committed and focused-tested but is not yet claimed as hosted. The sealed Time Review response is known to exist and authenticate successfully, but its live record-level completeness for stable issue IDs, structured reason codes, authority, freshness and later confirmation states remains unverified; incomplete records intentionally emit nothing. Vector `structuredReviewRows()` still uses its current neutral pre-contract path. Authenticated hosted Vector rendering of bridge-backed rows, real screen-reader behaviour and measured first-click/time-on-task/error rate remain unverified.
+The changed Vector source and new guard have not executed in CI because the affected GitHub job received no runner. Authenticated hosted rendering of contract-backed rows, malformed/empty bridge behaviour in the real browser, responsive behaviour, real screen-reader behaviour and measured first-click/time-on-task/error rate remain unverified. The bridge producer still depends on real Time Review records supplying stable IDs, structured reasons, authority and observation evidence; incomplete records intentionally fall back to neutral review rather than becoming trusted contract actions.
 
 ### Single next highest-value NEW-UI action
-Bind only the Time Review portion of the existing Vector `structuredReviewRows()` consumer to `GET /api/workforce/lifecycle/action-evidence/time-review`, accepting only `WFM_WORKFLOW_ACTION_EVIDENCE_V1` items and mapping source confirmation/freshness fields without calculating them. Preserve the current neutral fallback when bridge evidence is absent or incomplete, leave Absence and weekly sign-off on their existing source-bound neutral paths, and run focused consumer tests before any broader browser/accessibility gate.
+Validate the first end-to-end Time Review path in an executable environment: contract-backed action appears → opens authoritative Time Review → return-to-context remains stable → source decision moves through `Decision sent` / `Confirming source` without optimistic clearing. If the hosted runner remains unavailable, add no parallel implementation; advance only deterministic browser/test design against this same Vector owner. Do not start the Absence or weekly-signoff contract consumer until this path has executable proof.
 
 ## Validated prior Vector increments
 
 | Increment | Bounded delta | Exact evidence |
 | --- | --- | --- |
+| r9 | Added the read-only role/tenant-scoped Time Review action-evidence runtime bridge | Bridge tests 5/5 + router smoke 1/1; hosted runner unavailable |
 | r8 | Added the first fail-closed Time Review producer inside the shared action-evidence contract | Contract suite 14/14; hosted runner unavailable |
 | r7 | Established one shared source-owned freshness/confirmation evidence contract across Time Review, Absence and weekly sign-off | Focused contract suite 10/10; hosted runner unavailable |
 | r6 | Prevented observation timestamps becoming presentation-owned freshness/urgency | Vector-only run `35439251475` green |
@@ -82,5 +75,5 @@ Bind only the Time Review portion of the existing Vector `structuredReviewRows()
 ## Standing release / evidence boundary
 - Cycle 10 schedule-publication promotion remains separately gated by exact source-bound hosted proof.
 - Vector is the only active NEW-UI presentation owner in this lineage; retired overlays and legacy/0.6.139 presentation remain non-owners.
-- No scorecard entry treats a green source/build gate or local deterministic test as real-user, hosted authenticated-role, accessibility-device or production proof.
+- No scorecard entry treats a source/build guard or deterministic local test as real-user, hosted authenticated-role, accessibility-device or production proof.
 - Missing or stale evidence remains neutral; no presentation wording may manufacture urgency, cost, qualification, compliance, authority or confirmation.
