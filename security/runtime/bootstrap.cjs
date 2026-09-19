@@ -12,8 +12,8 @@ const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workf
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
-  { key: 'vector-ui-access-20260919', tokenHash: '4d79994b1c66f552d89901120851535018189ca75c92eb437b66bce73bd4c788' },
-  { key: 'vector-ui-probe-20260919', tokenHash: 'a1a70f9319430281482a623d3453756ef8c0f279a243d9fe8d67fafcb5fc1c16' }
+  { key: 'vector-ui-access-restore-20260919', tokenHash: '2a1b1a5377b8daa4acd23316e7bf4e2a2b1f850d2a3771a30ecea05af7b8572a', restore: true },
+  { key: 'vector-ui-probe-restore-20260919', tokenHash: '6c751b6dc79c27468e248e71e491f86fe3e203adedf565319390dc46b9c061dd', restore: false }
 ]);
 const STAGING_ACCESS_EXPIRES_AT = Date.parse('2026-09-19T04:30:00.000Z');
 const STAGING_ACCESS_EMAIL = 'superuser@northstar.example';
@@ -67,6 +67,50 @@ function stagingAccessPath(req) {
   return requestPath(req) === '/api/staging-access';
 }
 
+function cookieValue(req, name) {
+  const raw = String(req?.headers?.cookie || '');
+  const prefix = name + '=';
+  for (const part of raw.split(';')) {
+    const item = part.trim();
+    if (item.startsWith(prefix)) return item.slice(prefix.length);
+  }
+  return '';
+}
+
+function issueStagingSession(db, res) {
+  const account = db.prepare('SELECT email FROM users WHERE email=?').get(STAGING_ACCESS_EMAIL);
+  if (!account) return '';
+  const sessionToken = randomBytes(32).toString('base64url');
+  const sessionExpires = Math.min(Date.now() + 4 * 60 * 60 * 1000, STAGING_ACCESS_EXPIRES_AT + 4 * 60 * 60 * 1000);
+  db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)')
+    .run(sha256(sessionToken), STAGING_ACCESS_EMAIL, sessionExpires);
+  if (res) res.setHeader('Set-Cookie', 'wfm_session=' + sessionToken + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=14400');
+  return sessionToken;
+}
+
+function restoreStagingSession(req, res) {
+  if (!hosted || process.env.NODE_ENV !== 'staging') return false;
+  if (cookieValue(req, 'wfm_session')) return false;
+  const rawRestore = cookieValue(req, 'wfm_staging_restore');
+  if (!rawRestore || Date.now() > STAGING_ACCESS_EXPIRES_AT) return false;
+  const restoreHash = sha256(rawRestore);
+  const grant = STAGING_ACCESS_GRANTS.find(item => item.restore === true && secureEqualHex(restoreHash, item.tokenHash));
+  if (!grant) return false;
+  const path = requestPath(req);
+  if (!path.startsWith('/api/') || path === '/api/login' || path === '/api/logout' || path === '/api/staging-access') return false;
+
+  const db = new DatabaseSync(process.env.WFM_DB);
+  try {
+    const sessionToken = issueStagingSession(db, res);
+    if (!sessionToken) return false;
+    const existing = String(req.headers.cookie || '');
+    req.headers.cookie = (existing ? existing + '; ' : '') + 'wfm_session=' + sessionToken;
+    return true;
+  } finally {
+    try { db.close(); } catch {}
+  }
+}
+
 function handleStagingAccess(req, res) {
   if (!hosted || process.env.NODE_ENV !== 'staging') return false;
   if (!stagingAccessPath(req)) return false;
@@ -109,34 +153,36 @@ function handleStagingAccess(req, res) {
       return true;
     }
 
-    const account = db.prepare('SELECT email FROM users WHERE email=?').get(STAGING_ACCESS_EMAIL);
-    if (!account) {
-      res.statusCode = 503;
-      res.setHeader('Cache-Control', 'no-store');
-      res.end('Staging account is unavailable.');
-      return true;
-    }
-
-    const sessionToken = randomBytes(32).toString('base64url');
-    const sessionExpires = Math.min(Date.now() + 4 * 60 * 60 * 1000, STAGING_ACCESS_EXPIRES_AT + 4 * 60 * 60 * 1000);
     try {
       db.exec('BEGIN IMMEDIATE;');
-      db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)')
-        .run(sha256(sessionToken), STAGING_ACCESS_EMAIL, sessionExpires);
+      const sessionToken = issueStagingSession(db, null);
+      if (!sessionToken) {
+        db.exec('ROLLBACK;');
+        res.statusCode = 503;
+        res.setHeader('Cache-Control', 'no-store');
+        res.end('Staging account is unavailable.');
+        return true;
+      }
       db.prepare('INSERT INTO staging_access_grants(grant_key,used_at) VALUES(?,?)')
         .run(grant.key, new Date().toISOString());
       db.exec('COMMIT;');
+
+      res.statusCode = 302;
+      res.setHeader('Cache-Control', 'no-store');
+      const cookies = [
+        'wfm_session=' + sessionToken + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=14400'
+      ];
+      if (grant.restore === true) {
+        cookies.push('wfm_staging_restore=' + rawToken + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=14400');
+      }
+      res.setHeader('Set-Cookie', cookies);
+      res.setHeader('Location', '/');
+      res.end();
+      return true;
     } catch (error) {
       try { db.exec('ROLLBACK;'); } catch {}
       throw error;
     }
-
-    res.statusCode = 302;
-    res.setHeader('Cache-Control', 'no-store');
-    res.setHeader('Set-Cookie', 'wfm_session=' + sessionToken + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=14400');
-    res.setHeader('Location', '/');
-    res.end();
-    return true;
   } finally {
     try { db.close(); } catch {}
   }
@@ -221,6 +267,7 @@ http.createServer = function guardedCreateServer(listener) {
 
   return originalCreateServer.call(http, async (req, res) => {
     if (handleStagingAccess(req, res)) return;
+    restoreStagingSession(req, res);
 
     if (guard) {
       try {
