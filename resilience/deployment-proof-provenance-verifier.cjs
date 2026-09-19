@@ -137,7 +137,7 @@ function verifyDeploymentProofEvidence({ evidence, expected } = {}) {
 }
 
 function sealDeploymentEvidence(evidence) {
-  const core = { ...evidence };
+  const core = structuredClone(evidence);
   delete core.evidenceDigest;
   return { ...core, evidenceDigest: sha256(core) };
 }
