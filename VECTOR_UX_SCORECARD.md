@@ -2,64 +2,67 @@
 
 This is the single canonical scorecard for the approved Vector role-first NEW-UI lineage. Historical cycle detail remains in Git history; this file keeps the current evidence boundary, validated deltas and one dependency-ordered next action without repeating old research.
 
-## 2026-09-19 — Vector r6: fail-closed freshness contract
+## 2026-09-19 — Vector r7: source-owned action evidence contract
 
 ### Journey reviewed
-Factory/operations manager Vector Home → notification badge / `Items to review` → Time Review or Absence & Leave source workflow, specifically whether source observation timestamps can safely drive “current”, “fresh” or urgency state.
+Factory/operations manager Vector Home → `Items to review` → Time Review / Absence & Leave / weekly sign-off source workflows, specifically the missing shared contract needed to represent freshness and the confirmation lifecycle without presentation-owned inference.
 
 ### NEW-UI lineage confirmation
-Work remains owned only by the approved Vector Workforce Operations presentation on `feature/one-day-enterprise-implementation-v1` / PR #79. The retired Cycle 11 implementation was inspected only as prior source-contract/proof evidence. No legacy/0.6.139 presentation, retired overlay, staging/prod surface, replacement branch, duplicate queue or duplicate browser harness was changed or loaded.
+Work remains owned only by the approved Vector Workforce Operations lineage on `feature/one-day-enterprise-implementation-v1` / PR #79. PR #90 is explicitly closed/superseded and remains logic/source material only. The open Cycle 11 predecessor is not a forward presentation owner and was not mutated. No legacy/0.6.139 presentation, retired overlay, staging, production, customer-proof surface, replacement branch or parallel queue implementation was changed.
 
 ### Reuse / duplicate-work decision
-- Reused the existing `structuredReviewRows()` source adapter and the existing `scripts/validate-vector-only-ui.mjs` Vector guard; no new component, service, PR, branch or test workflow was created.
-- Reused prior source-bound contract evidence only to answer the unresolved dependency question. That evidence shows report-shaped Time Review data can carry an observation timestamp (`generatedAt`, with team-level `updatedAt` where supplied) and that terminal source state can confirm outcomes; it does **not** define a freshness SLA.
-- Preserved the current Vector behaviour: source-confirmed open/pending work remains visible and neutral `Needs review`; no item is hidden merely because freshness is unknown.
+- Reused the already validated Cycle 11 lifecycle vocabulary only: `action_required → decision_sent → confirming_source → needs_verification → resolved`.
+- Rejected the retired presentation's old assumption that report-shaped timestamps automatically mean `evidenceState: current`; Vector r6 already proved that no authoritative freshness SLA exists yet.
+- Reused the existing `scripts/validate-vector-only-ui.mjs` guard and existing Vector-only workflow; no second validator, PR, branch, queue renderer or browser harness was created.
+- Added one shared contract owner for Time Review, Absence and weekly sign-off instead of separate per-screen freshness/confirmation helpers.
 
 ### Research delta
-No competitor/general UX research was repeated. The unresolved issue was internal and contractual. Inspection found no trustworthy authoritative freshness/SLA rule that would let Vector convert an observation timestamp into `current`, `fresh`, urgent or overdue state. A timestamp proves when evidence was observed; it does not by itself prove how long that evidence remains decision-safe.
-
-Prior source-contract evidence also confirms useful terminal semantics without moving authority into presentation: Absence is resolved only when the source request reports an explicit terminal state such as approved/rejected/declined/cancelled/withdrawn; Time Review is resolved only when the source report confirms zero open exceptions for the scoped team; weekly sign-off is resolved only when the source reports the team as signed. These confirmation rules are not a freshness SLA and are not being reimplemented as presentation-side business logic.
+No competitor/general UX research was repeated. This cycle answered an internal source-authority dependency. Existing evidence was sufficient: source observation timestamps and terminal workflow states exist, but source-owned freshness policy/expiry and confirmation-SLA semantics were missing from the reusable contract boundary.
 
 ### Hypothesis
-If the canonical Vector guard explicitly prevents observation timestamps from being promoted into `current`/`fresh` status or an invented age threshold before the authoritative source exposes an SLA, future UX work is less likely to manufacture urgency while managers still retain all source-confirmed work that needs judgment.
+If all three workflows emit one validated contract containing source identity, `observedAt`, explicit source-owned freshness policy/state/validity, structured reason, authority description and explicit confirmation state/SLA evidence, Vector can later show freshness and `Decision sent → Confirming source → Resolved / Needs verification` without calculating workflow truth in the UI or hiding consequential work.
 
 ### Exact implementation / design delta
-- Extended the existing Vector-only repository guard on the same canonical branch.
-- The guard now isolates the `structuredReviewRows()` source adapter and fails if it introduces `evidenceState: current`, `Current`/`Fresh`/`Verified current` row status, or a `Date.now()` age calculation against `generatedAt`/`updatedAt` without an upstream SLA contract.
-- Added `VECTOR_ACTION_FRESHNESS_NEUTRAL_CONTRACT=PASS` as a distinct regression outcome.
-- No product presentation was restyled or expanded this run because the missing dependency is authoritative source semantics, not layout.
-- No pending approval/time/sign-off work is suppressed because doing so would silently hide consequential work.
+- Added `operations/runtime/workflow-action-evidence-contract.cjs` as the single shared contract for `time-review`, `absence` and `weekly-signoff`.
+- `current` freshness is accepted only when the source supplies a policy reference and explicit `validUntil`; an observation timestamp by itself is insufficient. `unknown` remains valid and neutral.
+- The contract never calls `Date.now()` and does not advance lifecycle state from wall-clock time. `needs_verification` requires explicit source-owned SLA-expired state; `resolved` requires source confirmation time plus audit reference.
+- Consequence copy is admitted only when the source explicitly marks it verified and provides the supporting evidence reference where available.
+- Added one focused deterministic contract suite with ten distinct failure/success modes.
+- Extended the existing Vector-only workflow to execute that same contract suite and extended the existing Vector repository guard to reject wall-clock-derived freshness/confirmation semantics. No visual UI, write path, permissions, payroll calculation, approval logic or audit authority changed.
 
 ### Serious-idea decision
 | Idea | Evidence | Decision |
 | --- | --- | --- |
-| Treat `generatedAt` / `updatedAt` as proof the item is currently safe to act on | Observation timestamp only; no SLA | **REJECT** |
-| Invent a UI age threshold such as 5/15/30 minutes | No authoritative workflow contract | **REJECT** |
-| Hide pending/open work when freshness is unknown | Would silently hide judgment/payroll/approval work | **REJECT** |
-| Protect neutral behaviour with the existing Vector guard | Distinct regression risk, no duplicated runtime logic | **BUILD NOW** |
-| Add authoritative `observedAt` + `freshnessState`/expiry + confirmation state at the source boundary | Needed to support explainable stale/confirming/needs-verification UI | **BUILD NEXT** |
+| Reuse Cycle 11 lifecycle names as a cross-domain vocabulary | Previously validated and matches required confirmation semantics | **BUILD NOW** |
+| Reuse Cycle 11 `evidenceState: current` inference from report/timestamp presence | No source freshness SLA | **REJECT** |
+| One shared source contract across Time Review, Absence and sign-off | Prevents three divergent UI implementations | **BUILD NOW** |
+| Let Vector calculate `Needs verification` when `slaExpiresAt < Date.now()` | Would move source workflow truth into presentation | **REJECT** |
+| Bind the new contract into visible Vector cards before a source producer emits it | Would create a presentation-only simulation of authority | **BUILD NEXT**, after one real source producer is wired |
 
 ### Focused / affected validation
-The guard-only commit is `8a200ded8d11ad7bf0d034623b018588d144f4a0`. Diff inspection confirms the change is limited to `scripts/validate-vector-only-ui.mjs`; no Vector presentation or source workflow was mutated. Exact-head Vector-only run `35439251475` completed successfully: the retired-UI refusal/source guard passed, the exact Docker runtime build passed, and the built-runtime proof confirmed Vector remains the only active presentation. This validates the new freshness-neutral regression at the same risk level as the existing Vector source/build gate; it does not claim real-user or hosted authenticated-role proof.
+The committed contract blob SHA is `820490a258a4ec1bb1919db46f3b410c8e405cf4` and the committed focused-test blob SHA is `eb0e6321703ce517e1c8ba3743245008872f25cb`. Those exact Git blob hashes were reproduced from the locally executed files before testing. `node --test operations/runtime/workflow-action-evidence-contract.test.cjs` passed **10/10**, zero skipped, covering timestamp-only freshness refusal, explicit current/unknown states, source-owned SLA expiry, confirmation-state consistency, resolution evidence, verified consequences and unsupported-workflow fail-closed behaviour.
+
+The previously current PR head `0d48ae57281fc40aceac48732523e845a24a2b1a` completed Vector-only run `35439333386` successfully before this delta. For the new source-contract/guard delta, GitHub run `35442049102` failed before checkout or any test step: `steps=[]`, `runner_id=0`. That is unavailable hosted evidence, not a product/test failure. The blocker was verified once after the meaningful state change and was not retried again this cycle.
 
 ### UX scorecard impact
-- Calm by default: strengthened — source observation time cannot manufacture urgency/freshness.
-- Dense on demand: unchanged — no additional surface was added.
-- Explainability: strengthened — observation provenance and freshness authority remain distinct concepts.
+- Calm by default: strengthened — missing freshness remains neutral and cannot be promoted by time arithmetic in Vector.
+- Dense on demand: unchanged — no additional visible surface was added.
+- Explainability: strengthened — source freshness policy, confirmation state, authority and verified consequence now have one explicit contract boundary.
 - Accessibility: unchanged this run; no new interaction was added.
-- Authority/auditability: strengthened — terminal source state remains authoritative and presentation cannot create a freshness SLA.
-- Development efficiency: improved — one existing guard protects the shared adapter; no duplicate component, model or workflow was introduced.
+- Authority/auditability: strengthened — `Needs verification` and `Resolved` require source-owned evidence; presentation cannot manufacture them.
+- Development efficiency: improved — one contract/test owner is reusable across three workflows and one existing guard/workflow protects it.
 
 ### Still unverified
-An authoritative Time Review/Absence freshness SLA, exact source-side `observedAt`/expiry semantics, source-side confirmation timing for `Decision sent → Confirming source → Needs verification`, authenticated hosted rendering for each role, real screen-reader behaviour, and measured first-click/time-on-task/error rate.
+No current source producer yet emits `WFM_WORKFLOW_ACTION_EVIDENCE_V1`, so visible Vector cards still correctly remain on the r6 neutral source-state path. The new guard's hosted execution is unverified because GitHub allocated no runner. Authenticated hosted rendering, real screen-reader behaviour and measured first-click/time-on-task/error rate also remain unverified.
 
 ### Single next highest-value NEW-UI action
-Define and verify the smallest authoritative source contract required by the shared Vector review adapter: source-owned `observedAt`, an explicit freshness state or expiry derived by the owning workflow, confirmation state, and confirmation-SLA expiry. Reuse that one contract across Time Review, Absence and Sign-off. Do not calculate freshness or SLA in Vector. Once source-side proof exists, bind it once to the shared review rows so missing/stale remains neutral, confirming work stays visible, and `Needs verification` appears only after the source-defined confirmation SLA expires.
+Wire **one authoritative source producer first — Time Review** — to emit `WFM_WORKFLOW_ACTION_EVIDENCE_V1` from its existing report/decision state, including source-owned freshness policy/validity and confirmation state. Prove that producer deterministically, then bind the shared Vector review adapter to the validated contract without changing write authority. Only after that proof should Absence and weekly sign-off reuse the same producer contract.
 
 ## Validated prior Vector increments
 
 | Increment | Bounded delta | Exact evidence |
 | --- | --- | --- |
+| r6 | Prevented observation timestamps becoming presentation-owned freshness/urgency | Vector-only run `35439251475` green |
 | r5 | Source-bound manager review rows and notification count; removed hidden presentation-card counting | Vector-only run `35436525530` green |
 | r4 | Source-bound signed-in identity/site context and approved next-seven-day leave only | Vector-only run `35433767094` green |
 | r3 | Removed synthetic KPI trends, invented labour-cost target progress and unsupported KPI severity | Vector-only run `35431023141` green |
@@ -69,5 +72,5 @@ Define and verify the smallest authoritative source contract required by the sha
 ## Standing release / evidence boundary
 - Cycle 10 schedule-publication promotion remains separately gated by exact source-bound hosted proof.
 - Vector is the only active NEW-UI presentation owner in this lineage; retired overlays and legacy/0.6.139 presentation remain non-owners.
-- No scorecard entry treats a green source/build gate as real-user, hosted authenticated-role, accessibility-device or production proof.
+- No scorecard entry treats a green source/build gate or local deterministic test as real-user, hosted authenticated-role, accessibility-device or production proof.
 - Missing or stale evidence remains neutral; no presentation wording may manufacture urgency, cost, qualification, compliance, authority or confirmation.
