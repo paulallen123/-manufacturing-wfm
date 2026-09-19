@@ -1,7 +1,7 @@
 import { assessCapabilityCoverage } from './factory-capability-graph.mjs';
-import { evaluateCapabilityRequirement } from './factory-capability-envelope.mjs';
+import { evaluatePublicInstanceCapabilityRequirement } from './factory-capability-envelope-public-instance.mjs';
 
-export const PROCESS_CAPABILITY_READINESS_VERSION = 'factory-capability-process-readiness-v0.1.1';
+export const PROCESS_CAPABILITY_READINESS_VERSION = 'factory-capability-process-readiness-v0.1.2';
 
 function minimumQualifiedPeople(step) {
   const value = Number(step?.minimumQualifiedPeople ?? 1);
@@ -23,7 +23,7 @@ function bestTechnicalAssessment(asset, requirement, capabilityHierarchy, maxHie
     if (!capability?.capabilityId || capability?.role === 'required') continue;
     assessments.push({
       capabilityId: capability.capabilityId,
-      ...evaluateCapabilityRequirement(
+      ...evaluatePublicInstanceCapabilityRequirement(
         {
           assetId: asset.assetId,
           capabilityId: capability.capabilityId,
