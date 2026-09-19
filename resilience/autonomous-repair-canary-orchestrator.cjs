@@ -11,6 +11,14 @@ const {
 const sha = (value) => createHash('sha256')
   .update(typeof value === 'string' ? value : JSON.stringify(value))
   .digest('hex');
+const stable = (value) => {
+  if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+};
+const bindingSha = (value) => createHash('sha256').update(stable(value)).digest('hex');
 const validDigest = (value) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 const safeId = (value) => {
   const normalized = String(value || '').trim();
@@ -83,6 +91,52 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
     if (recorderCaps?.[key] !== expected) deny('WFM_POSTSTAGING_RECORDER', `unsafe outcome recorder capability: ${key}`);
   }
 
+  const componentBinding = Object.freeze({
+    repairProcess: repairPipeline.process,
+    repairCapabilities: repairPipeline.capabilities,
+    canaryRun: canaryController.run,
+    canaryLimits: canaryController.limits,
+    canaryCapabilities: canaryController.capabilities,
+    recorderRecord: outcomeRecorder.record,
+    recorderCapabilities: outcomeRecorder.capabilities,
+    pipelineCapabilityDigest: bindingSha(pipelineCaps),
+    canaryLimitDigest: bindingSha(limits),
+    canaryCapabilityDigest: bindingSha(canaryCaps),
+    recorderCapabilityDigest: bindingSha(recorderCaps),
+  });
+
+  function assertRuntimeComponentBinding() {
+    if (repairPipeline.process !== componentBinding.repairProcess
+      || repairPipeline.capabilities !== componentBinding.repairCapabilities
+      || canaryController.run !== componentBinding.canaryRun
+      || canaryController.limits !== componentBinding.canaryLimits
+      || canaryController.capabilities !== componentBinding.canaryCapabilities
+      || outcomeRecorder.record !== componentBinding.recorderRecord
+      || outcomeRecorder.capabilities !== componentBinding.recorderCapabilities) {
+      deny('WFM_POSTSTAGING_COMPONENT_DRIFT', 'Tier 2 component method identity changed after trust establishment.');
+    }
+
+    let currentPipelineCaps;
+    let currentLimits;
+    let currentCanaryCaps;
+    let currentRecorderCaps;
+    try {
+      currentPipelineCaps = repairPipeline.capabilities();
+      currentLimits = canaryController.limits();
+      currentCanaryCaps = canaryController.capabilities();
+      currentRecorderCaps = outcomeRecorder.capabilities();
+    } catch {
+      deny('WFM_POSTSTAGING_COMPONENT_DRIFT', 'Tier 2 component capability evidence became unreadable.');
+    }
+
+    if (bindingSha(currentPipelineCaps) !== componentBinding.pipelineCapabilityDigest
+      || bindingSha(currentLimits) !== componentBinding.canaryLimitDigest
+      || bindingSha(currentCanaryCaps) !== componentBinding.canaryCapabilityDigest
+      || bindingSha(currentRecorderCaps) !== componentBinding.recorderCapabilityDigest) {
+      deny('WFM_POSTSTAGING_COMPONENT_DRIFT', 'Tier 2 component capability or blast-radius contract changed after trust establishment.');
+    }
+  }
+
   const coordinatorCaps = Object.freeze({ ...T2_COORDINATOR_CAPABILITY_CONTRACT });
   const coordinatorCapabilityDigest = computeT2CoordinatorCapabilityDigest(coordinatorCaps);
   if (!validDigest(coordinatorCapabilityDigest)) {
@@ -90,7 +144,9 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
   }
 
   async function record(payload) {
+    assertRuntimeComponentBinding();
     const result = await outcomeRecorder.record(Object.freeze({ ...payload }));
+    assertRuntimeComponentBinding();
     if (!result || !validDigest(result.receiptDigest)) {
       deny('WFM_POSTSTAGING_RECORDER_RESULT', 'durable composition receipt required');
     }
@@ -116,6 +172,7 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
   }
 
   async function run(input = {}) {
+    assertRuntimeComponentBinding();
     const incidentId = safeId(input.incidentId);
     const tenant = String(input.tenant || '').trim();
     const targetTenant = String(input.targetTenant || tenant).trim();
@@ -136,6 +193,7 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
     if (tenant !== targetTenant) deny('WFM_POSTSTAGING_CROSS_TENANT', 'cross-tenant post-staging decision denied');
 
     const repair = await repairPipeline.process({ ...input, targetTenant });
+    assertRuntimeComponentBinding();
     if (!repair || repair.status !== 'verified_candidate_staged') {
       return repair || contained({ incidentId, tenantDigest: sha(tenant) }, 'repair-pipeline-no-terminal-result');
     }
@@ -181,6 +239,7 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
       maxInstances: 1,
       trafficPercent: 5,
     }));
+    assertRuntimeComponentBinding();
 
     if (!canary || !['canary_proven', 'rolled_back_to_known_good', 'contained'].includes(canary.status)) {
       return contained(base, 'canary-result-invalid');
