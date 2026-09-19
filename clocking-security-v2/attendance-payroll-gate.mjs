@@ -36,10 +36,17 @@ export class AttendancePayrollGate {
   #reviews=[];
   #reviewById=new Map();
   #latestByWorkerShift=new Map();
+  #evaluateShift;
+  #certifyShift;
 
   constructor({coverage,certifier}={}){
     if(!coverage?.evaluateShift) throw new Error('AttendanceCoverageAssurance required.');
     if(!certifier?.certifyShift) throw new Error('AttendanceClaimCertifier required.');
+    // Bind the exact dependency methods used for payroll authority. External code may
+    // legitimately retain the live coverage/certifier objects, but replacing their
+    // method properties after construction must not swap the gate's decision logic.
+    this.#evaluateShift=coverage.evaluateShift.bind(coverage);
+    this.#certifyShift=certifier.certifyShift.bind(certifier);
     Object.defineProperty(this,'coverage',{value:coverage,writable:false,configurable:false,enumerable:false});
     Object.defineProperty(this,'certifier',{value:certifier,writable:false,configurable:false,enumerable:false});
     // Public audit mirror is intentionally non-authoritative. Existing diagnostics may
@@ -65,7 +72,7 @@ export class AttendancePayrollGate {
       return {...clone(priorById),replayed:true};
     }
 
-    const evaluation=this.coverage.evaluateShift({tenant,site,shiftId,nowMs:reviewedAt});
+    const evaluation=this.#evaluateShift({tenant,site,shiftId,nowMs:reviewedAt});
     const current=evaluation.rows.find(r=>r.employee===employee);
     if(!current) throw Object.assign(new Error('Employee is not assigned to this shift.'),{status:403});
     if(!REVIEWABLE.has(current.status)) throw Object.assign(new Error(`Attendance status ${current.status} cannot be corrected through the payroll attendance review path.`),{status:409});
@@ -89,8 +96,8 @@ export class AttendancePayrollGate {
   projectShift({tenant,site,shiftId,nowMs=Date.now(),expectedSourceIds=[],sourceHealth=[],shiftWindowClosed=false}={}){
     tenant=asId(tenant,'tenant'); site=asId(site,'site'); shiftId=asId(shiftId,'shift');
     if(!Number.isSafeInteger(nowMs)||nowMs<0) throw new Error('Valid nowMs required.');
-    const evaluation=this.coverage.evaluateShift({tenant,site,shiftId,nowMs});
-    const certification=this.certifier.certifyShift({tenant,site,shiftId,nowMs,expectedSourceIds,sourceHealth});
+    const evaluation=this.#evaluateShift({tenant,site,shiftId,nowMs});
+    const certification=this.#certifyShift({tenant,site,shiftId,nowMs,expectedSourceIds,sourceHealth});
     const sourcePeriodVerified=certification?.certification?.sourceContinuityPeriod===true;
     const afterClose=evaluation.payrollReady===true || shiftWindowClosed===true;
     const auditChainValid=this.verifyAuditChain();
