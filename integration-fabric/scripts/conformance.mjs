@@ -27,7 +27,7 @@ for(const s of catalog.systems){
 const ipaas=['mulesoft-anypoint','boomi','workato','sap-integration-suite','azure-logic-apps-power-automate','oracle-integration-cloud','google-cloud-application-integration','jitterbit-harmony'];
 for(const id of ipaas) assert.ok(catalog.systems.some(x=>x.id===id),'iPaaS target missing: '+id);
 
-for(const id of ['salto-nebula','azure-service-bus','confluent-cloud','ibm-mq','jumpcloud','highbyte-intelligence-hub','tulip','cognite-data-fusion','sap-fieldglass','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex']){
+for(const id of ['salto-nebula','azure-service-bus','confluent-cloud','ibm-mq','jumpcloud','highbyte-intelligence-hub','tulip','cognite-data-fusion','sap-fieldglass','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex','siemens-insights-hub']){
   const system=catalog.systems.find(x=>x.id===id);
   assert.ok(system,'Research target missing: '+id);
   assert.ok(system.protocols.some(p=>matches.has(p)),'Research target has no reusable protocol mapping: '+id);
@@ -54,6 +54,13 @@ assert.equal(adpSuite.testLevel,'spec-verified','ADP WorkForce Suite must retain
 assert.ok(adpSuite.protocols.includes('REST')&&adpSuite.protocols.includes('SOAP')&&adpSuite.protocols.includes('files'),'ADP WorkForce Suite must retain REST, SOAP and file integration paths.');
 const intelex=catalog.systems.find(x=>x.id==='intelex');
 assert.ok(intelex.category.includes('ehs'),'Intelex must retain EHS opportunity coverage.');
+const insightsHub=catalog.systems.find(x=>x.id==='siemens-insights-hub');
+assert.equal(insightsHub.testLevel,'spec-verified','Siemens Insights Hub must retain spec-level evidence until an authorised tenant is proven.');
+assert.ok(insightsHub.protocols.includes('REST'),'Siemens Insights Hub must retain its documented REST data path.');
+assert.equal(insightsHub.writeEnabled,false,'Siemens Insights Hub writes must remain disabled.');
+const schneider=catalog.systems.find(x=>x.id==='schneider-ecostruxure');
+assert.equal(schneider.testLevel,'discovery-queued','Schneider EcoStruxure must not be promoted until a product-specific external interface is evidenced.');
+assert.ok(schneider.valueReview?.dataGaps?.some(x=>x.includes('public product documentation')),'Schneider EcoStruxure must retain the Resource Advisor external-interface evidence gap.');
 
 console.log(JSON.stringify({
   ok:true,
