@@ -101,8 +101,9 @@ RUN node --check /app/security-runtime/bootstrap.cjs \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
  && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-learning-ui/adaptive-coach.css >> /app/public/factory-control-ui.css \
- && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.js \
- && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/factory-control-ui.js \
+ && cp /tmp/wfm-ux-overlay/vector-shell.js /app/public/vector-shell.js \
+ && node --check /app/public/vector-shell.js \
+ && node -e "const fs=require('fs');const p='/app/public/index.html';let h=fs.readFileSync(p,'utf8');if(!h.includes('vector-shell.js')){h=h.replace('</body>','<script src=\"vector-shell.js\"></script></body>');fs.writeFileSync(p,h)}" \
  && printf '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/factory-control-ui.css \
  && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
