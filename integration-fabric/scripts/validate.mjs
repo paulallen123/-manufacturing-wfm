@@ -52,7 +52,8 @@ for (const must of [
   'axway-b2bi','veeva-vault-quality','ibm-mq','jumpcloud','sap-fieldglass',
   'siemens-industrial-edge','highbyte-intelligence-hub','tulip','cognite-data-fusion',
   'oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex',
-  'rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x','seeq','canary-historian'
+  'rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x','seeq','canary-historian',
+  'trendminer','honeywell-uniformance-phd'
 ]) assert.ok(ids.has(must), 'Required seed missing: ' + must);
 
 for (const family of ['AMQP','Protobuf RPC/HTTP2','Schema Registry','JSON-2','JMS','Sparkplug B']) {
@@ -114,11 +115,18 @@ assert.deepEqual(byId.get('seeq').protocols,['REST','OData']);
 assert.equal(byId.get('canary-historian').testLevel,'spec-verified');
 assert.deepEqual(byId.get('canary-historian').protocols,['REST','Protobuf RPC/HTTP2']);
 assert.equal(byId.get('canary-historian').customerEdgeRequired,true);
+assert.equal(byId.get('trendminer').testLevel,'spec-verified');
+assert.deepEqual(byId.get('trendminer').protocols,['REST']);
+assert.equal(byId.get('honeywell-uniformance-phd').testLevel,'spec-verified');
+assert.ok(byId.get('honeywell-uniformance-phd').protocols.includes('REST'));
+assert.ok(byId.get('honeywell-uniformance-phd').protocols.includes('OPC UA'));
+assert.ok(byId.get('honeywell-uniformance-phd').protocols.includes('JDBC/ODBC'));
+assert.equal(byId.get('honeywell-uniformance-phd').customerEdgeRequired,true);
 
 for(const id of ['sap-digital-manufacturing','ptc-windchill','aws-iot-sitewise','azure-iot-operations','jumpcloud','ibm-mq','sap-fieldglass']){
   assert.ok(opportunities.systemOverrides[id], 'System-specific value/data review missing: '+id);
 }
-for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion','sap-fieldglass','sap-business-one','microsoft-dynamics-365-business-central','deputy','sap-successfactors','infor-workforce-management','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex','adp-workforce-suite','rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x','seeq','canary-historian']){
+for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion','sap-fieldglass','sap-business-one','microsoft-dynamics-365-business-central','deputy','sap-successfactors','infor-workforce-management','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex','adp-workforce-suite','rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x','seeq','canary-historian','trendminer','honeywell-uniformance-phd']){
   const review=byId.get(id).valueReview;
   assert.equal(review?.basis,'vendor-docs','Inline vendor value/data review missing vendor-doc basis: '+id);
   assert.ok(Array.isArray(review.customerValue)&&review.customerValue.length>0,'Inline customer value review missing: '+id);
