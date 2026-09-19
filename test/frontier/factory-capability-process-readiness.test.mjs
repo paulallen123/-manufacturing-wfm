@@ -116,3 +116,30 @@ test('synthetic candidate mask clears the 50% pruning threshold without losing t
   assert.ok(result.metrics.technicalPruningPct >= 0.5);
   assert.equal(result.metrics.technicalPruningPct, 0.9);
 });
+
+test('public HC10-HC40-style discrete stirring capabilities prune the 200 rpm step to HC10 only', () => {
+  const assets = [
+    { ...scope, assetId: 'HC10', source, capabilities: [{ capabilityId: 'stirring', properties: [{ semanticId: 'urn:prop:rpm', kind: 'set', value: [100, 200], unit: 'rpm' }] }] },
+    { ...scope, assetId: 'HC20', source, capabilities: [{ capabilityId: 'stirring', properties: [{ semanticId: 'urn:prop:rpm', kind: 'set', value: [150, 300], unit: 'rpm' }] }] },
+    { ...scope, assetId: 'HC30', source, capabilities: [{ capabilityId: 'stirring', properties: [{ semanticId: 'urn:prop:rpm', kind: 'set', value: [100, 150], unit: 'rpm' }] }] },
+    { ...scope, assetId: 'HC40', source, capabilities: [{ capabilityId: 'filling', properties: [] }] },
+  ];
+  const graph = buildCapabilityGraph({
+    ...scope,
+    assets,
+    capabilityRequirements: [{ ...scope, capabilityId: 'stirring', label: 'Stirring', requiredSkills: ['stir-operator'], minimumQualifiedPeople: 1 }],
+    people: [{ ...scope, personId: 'operator-1', availableNow: true, qualifications: [{ skillId: 'stir-operator', status: 'valid', authoritative: true }] }],
+    now: '2026-09-19T03:10:00Z',
+  });
+  const result = buildProcessCapabilityReadinessMask({
+    graph,
+    steps: [{
+      stepId: 'stir-200',
+      requirement: { capabilityId: 'stirring', constraints: [{ semanticId: 'urn:prop:rpm', operator: 'contains', value: 200, unit: 'rpm' }] },
+    }],
+  });
+  assert.equal(result.planStatus, 'ready');
+  assert.deepEqual(result.steps[0].eligibleAssetIds, ['HC10']);
+  assert.equal(result.metrics.technicallyFeasibleAssignments, 1);
+  assert.equal(result.metrics.technicalPruningPct, 0.75);
+});
