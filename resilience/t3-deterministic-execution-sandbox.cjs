@@ -22,6 +22,14 @@ function clean(value, max = 160) {
   return String(value ?? '').trim().replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').slice(0, max);
 }
 
+function verifyBoundReceipt(receipt, digestField) {
+  if (!receipt || !isDigest(receipt[digestField])) return false;
+  const core = { ...receipt };
+  const expected = core[digestField];
+  delete core[digestField];
+  return expected === digest(core);
+}
+
 function assertSandboxAdapter(adapter) {
   const capability = adapter?.capability || {};
   const safe = capability.scope === 'isolated-t3-sandbox-only'
@@ -130,7 +138,10 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
       incidentId: readinessReceipt.incidentId,
     });
     if (!isDigest(observedBefore) || observedBefore !== readinessReceipt.currentStateDigest) {
-      return terminal(base, { reason: 'sandbox-state-drift-before-execution', observedBeforeStateDigest: isDigest(observedBefore) ? observedBefore : null });
+      return terminal(base, {
+        reason: 'sandbox-state-drift-before-execution',
+        observedBeforeStateDigest: isDigest(observedBefore) ? observedBefore : null,
+      });
     }
 
     let authority;
@@ -303,15 +314,32 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
   return { execute, verifyReceipt };
 }
 
-function verifyBoundReceipt(receipt, digestField) {
-  if (!receipt || !isDigest(receipt[digestField])) return false;
-  const core = { ...receipt };
-  const expected = core[digestField];
-  delete core[digestField];
-  return expected === digest(core);
+function assertProvenanceVerifier(verifier, expectedScope, methodName) {
+  const capability = verifier?.capability || {};
+  const verifierId = clean(capability.verifierId, 120);
+  const safe = Boolean(verifierId)
+    && capability.scope === expectedScope
+    && capability.readOnly === true
+    && capability.writeAuthority === false
+    && capability.modelAuthority === false
+    && capability.customerMutation === false
+    && capability.productionMutation === false
+    && typeof verifier?.[methodName] === 'function';
+  if (!safe) throw new Error(`T3 external execution reconciliation requires a safe ${expectedScope} verifier.`);
+  return verifierId;
 }
 
-function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, maxObservationAgeMs = 2 * 60_000 } = {}) {
+function attestationDigestValid(attestation) {
+  return verifyBoundReceipt(attestation, 'attestationDigest');
+}
+
+function createT3ExternalExecutionReconciler({
+  readinessGate,
+  executionProvenanceVerifier,
+  observationProvenanceVerifier,
+  now = Date.now,
+  maxObservationAgeMs = 2 * 60_000,
+} = {}) {
   if (!readinessGate || typeof readinessGate.verifyReceipt !== 'function') {
     throw new Error('T3 external execution reconciliation requires the execution-readiness verifier.');
   }
@@ -319,9 +347,23 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
     throw new Error('T3 external execution reconciliation maxObservationAgeMs must be between 1 second and 10 minutes.');
   }
 
+  const executionVerifierId = assertProvenanceVerifier(
+    executionProvenanceVerifier,
+    'external-execution-receipt-provenance-only',
+    'verifyExecutionReceipt',
+  );
+  const observationVerifierId = assertProvenanceVerifier(
+    observationProvenanceVerifier,
+    'external-observation-provenance-only',
+    'verifyObservation',
+  );
+  if (executionVerifierId === observationVerifierId) {
+    throw new Error('T3 external execution reconciliation requires independent execution and observation provenance verifiers.');
+  }
+
   function terminal(base, detail = {}) {
     const core = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       ...base,
       ...detail,
       executionAuthority: false,
@@ -335,7 +377,7 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
     return { ...core, reconciliationReceiptDigest: digest(core) };
   }
 
-  function rollbackRequired(base, reason, executionReceipt, observation = null) {
+  function rollbackRequired(base, reason, executionReceipt, observation = null, extra = {}) {
     return terminal(base, {
       status: 'rollback-required-awaiting-external-authority',
       reason,
@@ -348,6 +390,7 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
       observationDigest: observation?.observationDigest || null,
       observedAfterStateDigest: isDigest(observation?.observedStateDigest) ? observation.observedStateDigest : null,
       postconditionReconciled: false,
+      ...extra,
     });
   }
 
@@ -372,6 +415,8 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
       externalMutationObserved: false,
       rollbackRequired: false,
       postconditionReconciled: false,
+      executionProvenanceVerified: false,
+      observationProvenanceVerified: false,
     };
 
     if (!readinessGate.verifyReceipt(readinessReceipt)) return terminal(base);
@@ -398,6 +443,41 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
       return terminal(base, { reason: 'external-execution-receipt-invalid' });
     }
 
+    let executionAttestation;
+    try {
+      executionAttestation = executionProvenanceVerifier.verifyExecutionReceipt({
+        readinessReceipt,
+        executionReceipt,
+      });
+    } catch {
+      executionAttestation = null;
+    }
+
+    const executionProvenanceValid = attestationDigestValid(executionAttestation)
+      && executionAttestation.verified === true
+      && executionAttestation.verifierId === executionVerifierId
+      && executionAttestation.scope === 'external-execution-receipt-provenance-only'
+      && executionAttestation.readOnly === true
+      && executionAttestation.writeAuthority === false
+      && executionAttestation.modelAuthorityUsed === false
+      && executionAttestation.customerMutation === false
+      && executionAttestation.productionMutation === false
+      && executionAttestation.tenant === readinessReceipt.tenant
+      && executionAttestation.scenarioId === readinessReceipt.scenarioId
+      && executionAttestation.incidentId === readinessReceipt.incidentId
+      && executionAttestation.proposalDigest === readinessReceipt.proposalDigest
+      && executionAttestation.readinessReceiptDigest === readinessReceipt.readinessReceiptDigest
+      && executionAttestation.executionReceiptDigest === executionReceipt.executionReceiptDigest
+      && executionAttestation.externalAuthorityReceiptDigest === executionReceipt.externalAuthorityReceiptDigest
+      && isDigest(executionAttestation.trustRootDigest)
+      && Number.isSafeInteger(executionAttestation.attestedAt)
+      && executionAttestation.attestedAt >= executionReceipt.executedAt
+      && executionAttestation.attestedAt <= at;
+
+    if (!executionProvenanceValid) {
+      return terminal(base, { reason: 'external-execution-provenance-unverified' });
+    }
+
     const executorId = clean(executionReceipt.executorId, 120);
     const executionBindingValid = executionReceipt.status === 'executed'
       && executionReceipt.executorType === 'deterministic-external-executor'
@@ -419,7 +499,11 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
       && Number.isSafeInteger(executionReceipt.executedAt);
 
     if (!executionBindingValid) {
-      return terminal(base, { reason: 'external-execution-binding-invalid' });
+      return terminal(base, {
+        reason: 'external-execution-binding-invalid',
+        executionProvenanceVerified: true,
+        executionProvenanceAttestationDigest: executionAttestation.attestationDigest,
+      });
     }
 
     const executionBase = {
@@ -429,6 +513,10 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
       executorId,
       executionReceiptDigest: executionReceipt.executionReceiptDigest,
       observedExecutionAfterStateDigest: executionReceipt.afterStateDigest,
+      executionProvenanceVerified: true,
+      executionProvenanceVerifierId: executionVerifierId,
+      executionProvenanceAttestationDigest: executionAttestation.attestationDigest,
+      executionTrustRootDigest: executionAttestation.trustRootDigest,
     };
 
     if (executionReceipt.modelAuthorityUsed !== false || executionReceipt.llmDecisionAuthorityUsed !== false) {
@@ -443,10 +531,55 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
       return rollbackRequired(executionBase, 'independent-post-execution-observation-invalid', executionReceipt, observation);
     }
 
+    let observationAttestation;
+    try {
+      observationAttestation = observationProvenanceVerifier.verifyObservation({
+        readinessReceipt,
+        executionReceipt,
+        observation,
+      });
+    } catch {
+      observationAttestation = null;
+    }
+
     const observerId = clean(observation.observerId, 120);
+    const observationProvenanceValid = attestationDigestValid(observationAttestation)
+      && observationAttestation.verified === true
+      && observationAttestation.verifierId === observationVerifierId
+      && observationAttestation.scope === 'external-observation-provenance-only'
+      && observationAttestation.readOnly === true
+      && observationAttestation.writeAuthority === false
+      && observationAttestation.modelAuthorityUsed === false
+      && observationAttestation.customerMutation === false
+      && observationAttestation.productionMutation === false
+      && observationAttestation.tenant === readinessReceipt.tenant
+      && observationAttestation.scenarioId === readinessReceipt.scenarioId
+      && observationAttestation.incidentId === readinessReceipt.incidentId
+      && observationAttestation.proposalDigest === readinessReceipt.proposalDigest
+      && observationAttestation.readinessReceiptDigest === readinessReceipt.readinessReceiptDigest
+      && observationAttestation.executionReceiptDigest === executionReceipt.executionReceiptDigest
+      && observationAttestation.observationDigest === observation.observationDigest
+      && isDigest(observationAttestation.trustRootDigest)
+      && Number.isSafeInteger(observationAttestation.attestedAt)
+      && observationAttestation.attestedAt >= observation.observedAt
+      && observationAttestation.attestedAt <= at;
+
+    if (!observationProvenanceValid) {
+      return rollbackRequired(
+        executionBase,
+        'independent-post-execution-observation-provenance-unverified',
+        executionReceipt,
+        observation,
+      );
+    }
+
     const observationBindingValid = observation.observerType === 'independent-read-only-reconciler'
       && Boolean(observerId)
       && observerId !== executorId
+      && observerId !== executionVerifierId
+      && observerId !== observationVerifierId
+      && observationVerifierId !== executorId
+      && observationVerifierId !== executionVerifierId
       && observation.readOnly === true
       && observation.writeAuthority === false
       && observation.modelAuthorityUsed === false
@@ -461,11 +594,31 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
       && observation.observedAt >= executionReceipt.executedAt;
 
     if (!observationBindingValid) {
-      return rollbackRequired(executionBase, 'independent-post-execution-observation-boundary-invalid', executionReceipt, observation);
+      return rollbackRequired(
+        executionBase,
+        'independent-post-execution-observation-boundary-invalid',
+        executionReceipt,
+        observation,
+        {
+          observationProvenanceVerified: true,
+          observationProvenanceVerifierId: observationVerifierId,
+          observationProvenanceAttestationDigest: observationAttestation.attestationDigest,
+        },
+      );
     }
 
     if (at < observation.observedAt || at - observation.observedAt > maxObservationAgeMs) {
-      return rollbackRequired(executionBase, 'independent-post-execution-observation-stale', executionReceipt, observation);
+      return rollbackRequired(
+        executionBase,
+        'independent-post-execution-observation-stale',
+        executionReceipt,
+        observation,
+        {
+          observationProvenanceVerified: true,
+          observationProvenanceVerifierId: observationVerifierId,
+          observationProvenanceAttestationDigest: observationAttestation.attestationDigest,
+        },
+      );
     }
 
     const exactPostState = executionReceipt.afterStateDigest === readinessReceipt.expectedAfterStateDigest
@@ -476,10 +629,30 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
       && observation.tenantIsolationPassed === true;
 
     if (!exactPostState) {
-      return rollbackRequired(executionBase, 'post-execution-state-mismatch', executionReceipt, observation);
+      return rollbackRequired(
+        executionBase,
+        'post-execution-state-mismatch',
+        executionReceipt,
+        observation,
+        {
+          observationProvenanceVerified: true,
+          observationProvenanceVerifierId: observationVerifierId,
+          observationProvenanceAttestationDigest: observationAttestation.attestationDigest,
+        },
+      );
     }
     if (!invariantsGreen) {
-      return rollbackRequired(executionBase, 'post-execution-invariant-failure', executionReceipt, observation);
+      return rollbackRequired(
+        executionBase,
+        'post-execution-invariant-failure',
+        executionReceipt,
+        observation,
+        {
+          observationProvenanceVerified: true,
+          observationProvenanceVerifierId: observationVerifierId,
+          observationProvenanceAttestationDigest: observationAttestation.attestationDigest,
+        },
+      );
     }
 
     return terminal(executionBase, {
@@ -487,6 +660,10 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
       reason: null,
       observerId,
       observationDigest: observation.observationDigest,
+      observationProvenanceVerified: true,
+      observationProvenanceVerifierId: observationVerifierId,
+      observationProvenanceAttestationDigest: observationAttestation.attestationDigest,
+      observationTrustRootDigest: observationAttestation.trustRootDigest,
       observedAfterStateDigest: observation.observedStateDigest,
       rollbackRequired: false,
       postconditionReconciled: true,
@@ -519,4 +696,9 @@ function createT3ExternalExecutionReconciler({ readinessGate, now = Date.now, ma
   return { reconcile, verifyReceipt };
 }
 
-module.exports = { createT3DeterministicExecutionSandbox, createT3ExternalExecutionReconciler, canonical, digest };
+module.exports = {
+  createT3DeterministicExecutionSandbox,
+  createT3ExternalExecutionReconciler,
+  canonical,
+  digest,
+};

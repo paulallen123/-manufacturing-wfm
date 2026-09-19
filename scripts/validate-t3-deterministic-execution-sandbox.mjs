@@ -3,10 +3,20 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { createT3DeterministicExecutionSandbox, createT3ExternalExecutionReconciler, digest } = require('../resilience/t3-deterministic-execution-sandbox.cjs');
-const d = (value) => createHash('sha256').update(String(value)).digest('hex');
+const {
+  createT3DeterministicExecutionSandbox,
+  createT3ExternalExecutionReconciler,
+  digest,
+} = require('../resilience/t3-deterministic-execution-sandbox.cjs');
 
-const readinessReceipt = {
+const d = (value) => createHash('sha256').update(String(value)).digest('hex');
+const seal = (value, field) => {
+  const core = { ...value };
+  delete core[field];
+  return { ...core, [field]: digest(core) };
+};
+
+const readinessReceipt = seal({
   schemaVersion: 1,
   status: 'execution-ready-awaiting-external-authority',
   tenant: 'tenant-a',
@@ -38,11 +48,7 @@ const readinessReceipt = {
   productionMutation: false,
   evaluatedAt: 1000,
   validUntil: 100000,
-};
-{
-  const core = { ...readinessReceipt };
-  readinessReceipt.readinessReceiptDigest = digest(core);
-}
+}, 'readinessReceiptDigest');
 
 const readinessGate = {
   verifyReceipt(receipt) {
@@ -166,9 +172,17 @@ function createAdapter({ failPostcondition = false, failRollback = false, initia
 
 let now = 5000;
 const successAdapter = createAdapter();
-const successGate = createAuthorityGate();
-const successSandbox = createT3DeterministicExecutionSandbox({ readinessGate, authorityGate: successGate, sandboxAdapter: successAdapter, now: () => ++now });
-const success = await successSandbox.execute({ readinessReceipt, authorityToken: 'sandbox-authority-1', executorId: 'deterministic-executor-1' });
+const successSandbox = createT3DeterministicExecutionSandbox({
+  readinessGate,
+  authorityGate: createAuthorityGate(),
+  sandboxAdapter: successAdapter,
+  now: () => ++now,
+});
+const success = await successSandbox.execute({
+  readinessReceipt,
+  authorityToken: 'sandbox-authority-1',
+  executorId: 'deterministic-executor-1',
+});
 assert.equal(success.status, 'sandbox-execution-verified');
 assert.equal(success.postconditionReconciled, true);
 assert.equal(success.automaticKnownGoodRollbackUsed, false);
@@ -180,8 +194,17 @@ assert.equal(successSandbox.verifyReceipt(success), true);
 assert.equal(successAdapter.state, readinessReceipt.expectedAfterStateDigest);
 
 const rollbackAdapter = createAdapter({ failPostcondition: true });
-const rollbackSandbox = createT3DeterministicExecutionSandbox({ readinessGate, authorityGate: createAuthorityGate(), sandboxAdapter: rollbackAdapter, now: () => ++now });
-const rolledBack = await rollbackSandbox.execute({ readinessReceipt, authorityToken: 'sandbox-authority-2', executorId: 'deterministic-executor-2' });
+const rollbackSandbox = createT3DeterministicExecutionSandbox({
+  readinessGate,
+  authorityGate: createAuthorityGate(),
+  sandboxAdapter: rollbackAdapter,
+  now: () => ++now,
+});
+const rolledBack = await rollbackSandbox.execute({
+  readinessReceipt,
+  authorityToken: 'sandbox-authority-2',
+  executorId: 'deterministic-executor-2',
+});
 assert.equal(rolledBack.status, 'sandbox-rolled-back-known-good');
 assert.equal(rolledBack.automaticKnownGoodRollbackUsed, true);
 assert.equal(rolledBack.restoredStateDigest, readinessReceipt.currentStateDigest);
@@ -189,53 +212,94 @@ assert.equal(rollbackAdapter.state, readinessReceipt.currentStateDigest);
 assert.equal(rollbackSandbox.verifyReceipt(rolledBack), true);
 
 const driftAdapter = createAdapter({ initialState: d('drifted-before') });
-const driftSandbox = createT3DeterministicExecutionSandbox({ readinessGate, authorityGate: createAuthorityGate(), sandboxAdapter: driftAdapter, now: () => ++now });
-const drift = await driftSandbox.execute({ readinessReceipt, authorityToken: 'sandbox-authority-3', executorId: 'deterministic-executor-3' });
+const driftSandbox = createT3DeterministicExecutionSandbox({
+  readinessGate,
+  authorityGate: createAuthorityGate(),
+  sandboxAdapter: driftAdapter,
+  now: () => ++now,
+});
+const drift = await driftSandbox.execute({
+  readinessReceipt,
+  authorityToken: 'sandbox-authority-3',
+  executorId: 'deterministic-executor-3',
+});
 assert.equal(drift.status, 'contained');
 assert.equal(drift.reason, 'sandbox-state-drift-before-execution');
 assert.equal(driftAdapter.applyCount, 0);
-assert.equal(drift.customerMutation, false);
-assert.equal(drift.productionMutation, false);
 
 const hostileAdapter = createAdapter();
-const hostileSandbox = createT3DeterministicExecutionSandbox({ readinessGate, authorityGate: createAuthorityGate({ hostile: true }), sandboxAdapter: hostileAdapter, now: () => ++now });
-const hostile = await hostileSandbox.execute({ readinessReceipt, authorityToken: 'sandbox-authority-4', executorId: 'deterministic-executor-4' });
+const hostileSandbox = createT3DeterministicExecutionSandbox({
+  readinessGate,
+  authorityGate: createAuthorityGate({ hostile: true }),
+  sandboxAdapter: hostileAdapter,
+  now: () => ++now,
+});
+const hostile = await hostileSandbox.execute({
+  readinessReceipt,
+  authorityToken: 'sandbox-authority-4',
+  executorId: 'deterministic-executor-4',
+});
 assert.equal(hostile.status, 'contained');
 assert.equal(hostile.reason, 'external-execution-authority-invalid');
 assert.equal(hostileAdapter.applyCount, 0);
 
 const replayAdapter = createAdapter();
 const replayAuthority = createAuthorityGate();
-const replaySandbox = createT3DeterministicExecutionSandbox({ readinessGate, authorityGate: replayAuthority, sandboxAdapter: replayAdapter, now: () => ++now });
-const first = await replaySandbox.execute({ readinessReceipt, authorityToken: 'sandbox-authority-5', executorId: 'deterministic-executor-5' });
+const replaySandbox = createT3DeterministicExecutionSandbox({
+  readinessGate,
+  authorityGate: replayAuthority,
+  sandboxAdapter: replayAdapter,
+  now: () => ++now,
+});
+const first = await replaySandbox.execute({
+  readinessReceipt,
+  authorityToken: 'sandbox-authority-5',
+  executorId: 'deterministic-executor-5',
+});
 assert.equal(first.status, 'sandbox-execution-verified');
-const secondReadiness = { ...readinessReceipt, currentStateDigest: readinessReceipt.expectedAfterStateDigest, expectedAfterStateDigest: d('after-2') };
-{
-  const core = { ...secondReadiness };
-  delete core.readinessReceiptDigest;
-  secondReadiness.readinessReceiptDigest = digest(core);
-}
-const second = await replaySandbox.execute({ readinessReceipt: secondReadiness, authorityToken: 'sandbox-authority-5', executorId: 'deterministic-executor-5' });
+const secondReadiness = seal({
+  ...readinessReceipt,
+  currentStateDigest: readinessReceipt.expectedAfterStateDigest,
+  expectedAfterStateDigest: d('after-2'),
+}, 'readinessReceiptDigest');
+const second = await replaySandbox.execute({
+  readinessReceipt: secondReadiness,
+  authorityToken: 'sandbox-authority-5',
+  executorId: 'deterministic-executor-5',
+});
 assert.equal(second.status, 'contained');
 assert.equal(second.reason, 'external-execution-authority-unavailable-or-replayed');
 
 const resetAdapter = createAdapter({ failPostcondition: true, failRollback: true });
-const resetSandbox = createT3DeterministicExecutionSandbox({ readinessGate, authorityGate: createAuthorityGate(), sandboxAdapter: resetAdapter, now: () => ++now });
-const reset = await resetSandbox.execute({ readinessReceipt, authorityToken: 'sandbox-authority-6', executorId: 'deterministic-executor-6' });
+const resetSandbox = createT3DeterministicExecutionSandbox({
+  readinessGate,
+  authorityGate: createAuthorityGate(),
+  sandboxAdapter: resetAdapter,
+  now: () => ++now,
+});
+const reset = await resetSandbox.execute({
+  readinessReceipt,
+  authorityToken: 'sandbox-authority-6',
+  executorId: 'deterministic-executor-6',
+});
 assert.equal(reset.status, 'sandbox-contained-reset-required');
 assert.equal(reset.isolatedResetRequired, true);
 assert.equal(reset.productionMutation, false);
 assert.equal(reset.customerMutation, false);
 
-const expiredReceipt = { ...readinessReceipt, validUntil: 1 };
-{
-  const core = { ...expiredReceipt };
-  delete core.readinessReceiptDigest;
-  expiredReceipt.readinessReceiptDigest = digest(core);
-}
+const expiredReceipt = seal({ ...readinessReceipt, validUntil: 1 }, 'readinessReceiptDigest');
 const expiredAdapter = createAdapter();
-const expiredSandbox = createT3DeterministicExecutionSandbox({ readinessGate, authorityGate: createAuthorityGate(), sandboxAdapter: expiredAdapter, now: () => 5000 });
-const expired = await expiredSandbox.execute({ readinessReceipt: expiredReceipt, authorityToken: 'sandbox-authority-7', executorId: 'deterministic-executor-7' });
+const expiredSandbox = createT3DeterministicExecutionSandbox({
+  readinessGate,
+  authorityGate: createAuthorityGate(),
+  sandboxAdapter: expiredAdapter,
+  now: () => 5000,
+});
+const expired = await expiredSandbox.execute({
+  readinessReceipt: expiredReceipt,
+  authorityToken: 'sandbox-authority-7',
+  executorId: 'deterministic-executor-7',
+});
 assert.equal(expired.status, 'contained');
 assert.equal(expired.reason, 'readiness-receipt-expired');
 assert.equal(expiredAdapter.applyCount, 0);
@@ -249,15 +313,11 @@ assert.throws(() => createT3DeterministicExecutionSandbox({
   authorityGate: createAuthorityGate(),
   sandboxAdapter: {
     capability: { scope: 'isolated-t3-sandbox-only', isolated: true, zeroIncrementalCost: false },
-    readStateDigest() {}, applyExactPlan() {}, rollbackKnownGood() {},
+    readStateDigest() {},
+    applyExactPlan() {},
+    rollbackKnownGood() {},
   },
 }), /zero-cost isolated/);
-
-function seal(value, field) {
-  const core = { ...value };
-  delete core[field];
-  return { ...core, [field]: digest(core) };
-}
 
 function externalExecution(overrides = {}) {
   return seal({
@@ -309,15 +369,102 @@ function externalObservation(executionReceipt, overrides = {}) {
   }, 'observationDigest');
 }
 
-let reconcileNow = 7000;
-const reconciler = createT3ExternalExecutionReconciler({ readinessGate, now: () => reconcileNow, maxObservationAgeMs: 60_000 });
+function makeExecutionVerifier({ verified = true, hostileCapability = false, attestationOverrides = {} } = {}) {
+  return {
+    capability: {
+      verifierId: 'execution-provenance-verifier-1',
+      scope: 'external-execution-receipt-provenance-only',
+      readOnly: true,
+      writeAuthority: hostileCapability,
+      modelAuthority: false,
+      customerMutation: false,
+      productionMutation: false,
+    },
+    verifyExecutionReceipt({ readinessReceipt: rr, executionReceipt }) {
+      return seal({
+        schemaVersion: 1,
+        verified,
+        verifierId: 'execution-provenance-verifier-1',
+        scope: 'external-execution-receipt-provenance-only',
+        readOnly: true,
+        writeAuthority: false,
+        modelAuthorityUsed: false,
+        customerMutation: false,
+        productionMutation: false,
+        tenant: rr.tenant,
+        scenarioId: rr.scenarioId,
+        incidentId: rr.incidentId,
+        proposalDigest: rr.proposalDigest,
+        readinessReceiptDigest: rr.readinessReceiptDigest,
+        executionReceiptDigest: executionReceipt.executionReceiptDigest,
+        externalAuthorityReceiptDigest: executionReceipt.externalAuthorityReceiptDigest,
+        trustRootDigest: d('customer-controlled-execution-trust-root'),
+        attestedAt: 5500,
+        ...attestationOverrides,
+      }, 'attestationDigest');
+    },
+  };
+}
 
+function makeObservationVerifier({ verified = true, sameVerifierId = false, attestationOverrides = {} } = {}) {
+  const verifierId = sameVerifierId ? 'execution-provenance-verifier-1' : 'observation-provenance-verifier-1';
+  return {
+    capability: {
+      verifierId,
+      scope: 'external-observation-provenance-only',
+      readOnly: true,
+      writeAuthority: false,
+      modelAuthority: false,
+      customerMutation: false,
+      productionMutation: false,
+    },
+    verifyObservation({ readinessReceipt: rr, executionReceipt, observation }) {
+      return seal({
+        schemaVersion: 1,
+        verified,
+        verifierId,
+        scope: 'external-observation-provenance-only',
+        readOnly: true,
+        writeAuthority: false,
+        modelAuthorityUsed: false,
+        customerMutation: false,
+        productionMutation: false,
+        tenant: rr.tenant,
+        scenarioId: rr.scenarioId,
+        incidentId: rr.incidentId,
+        proposalDigest: rr.proposalDigest,
+        readinessReceiptDigest: rr.readinessReceiptDigest,
+        executionReceiptDigest: executionReceipt.executionReceiptDigest,
+        observationDigest: observation.observationDigest,
+        trustRootDigest: d('independent-observation-trust-root'),
+        attestedAt: 6500,
+        ...attestationOverrides,
+      }, 'attestationDigest');
+    },
+  };
+}
+
+const createReconciler = (opts = {}) => createT3ExternalExecutionReconciler({
+  readinessGate,
+  executionProvenanceVerifier: opts.executionProvenanceVerifier || makeExecutionVerifier(),
+  observationProvenanceVerifier: opts.observationProvenanceVerifier || makeObservationVerifier(),
+  now: opts.now || (() => 7000),
+  maxObservationAgeMs: opts.maxObservationAgeMs || 60_000,
+});
+
+const reconciler = createReconciler();
 const externalGoodExecution = externalExecution();
 const externalGoodObservation = externalObservation(externalGoodExecution);
-const externalGood = reconciler.reconcile({ readinessReceipt, executionReceipt: externalGoodExecution, observation: externalGoodObservation });
+const externalGood = reconciler.reconcile({
+  readinessReceipt,
+  executionReceipt: externalGoodExecution,
+  observation: externalGoodObservation,
+});
 assert.equal(externalGood.status, 'externally-executed-reconciled');
 assert.equal(externalGood.postconditionReconciled, true);
 assert.equal(externalGood.rollbackRequired, false);
+assert.equal(externalGood.executionProvenanceVerified, true);
+assert.equal(externalGood.observationProvenanceVerified, true);
 assert.equal(externalGood.executionAuthority, false);
 assert.equal(externalGood.rollbackAuthority, false);
 assert.equal(externalGood.productionAuthorityGranted, false);
@@ -325,6 +472,52 @@ assert.equal(externalGood.modelAuthorityGranted, false);
 assert.equal(externalGood.customerMutation, false);
 assert.equal(externalGood.productionMutation, false);
 assert.equal(reconciler.verifyReceipt(externalGood), true);
+
+const selfHashedForgery = externalExecution({ executorId: 'forged-executor' });
+const forgedObservation = externalObservation(selfHashedForgery);
+const untrustedExecutionReconciler = createReconciler({ executionProvenanceVerifier: makeExecutionVerifier({ verified: false }) });
+const forged = untrustedExecutionReconciler.reconcile({
+  readinessReceipt,
+  executionReceipt: selfHashedForgery,
+  observation: forgedObservation,
+});
+assert.equal(forged.status, 'contained');
+assert.equal(forged.reason, 'external-execution-provenance-unverified');
+assert.equal(forged.executionObserved, false);
+assert.equal(forged.rollbackRequired, false);
+
+const observationUntrustedReconciler = createReconciler({ observationProvenanceVerifier: makeObservationVerifier({ verified: false }) });
+const observationUntrusted = observationUntrustedReconciler.reconcile({
+  readinessReceipt,
+  executionReceipt: externalGoodExecution,
+  observation: externalGoodObservation,
+});
+assert.equal(observationUntrusted.status, 'rollback-required-awaiting-external-authority');
+assert.equal(observationUntrusted.reason, 'independent-post-execution-observation-provenance-unverified');
+assert.equal(observationUntrusted.executionObserved, true);
+assert.equal(observationUntrusted.rollbackAuthority, false);
+
+const executionAttestationTamperReconciler = createReconciler({
+  executionProvenanceVerifier: makeExecutionVerifier({ attestationOverrides: { externalAuthorityReceiptDigest: d('wrong-authority') } }),
+});
+const executionAttestationTamper = executionAttestationTamperReconciler.reconcile({
+  readinessReceipt,
+  executionReceipt: externalGoodExecution,
+  observation: externalGoodObservation,
+});
+assert.equal(executionAttestationTamper.status, 'contained');
+assert.equal(executionAttestationTamper.reason, 'external-execution-provenance-unverified');
+
+const observationAttestationTamperReconciler = createReconciler({
+  observationProvenanceVerifier: makeObservationVerifier({ attestationOverrides: { observationDigest: d('wrong-observation') } }),
+});
+const observationAttestationTamper = observationAttestationTamperReconciler.reconcile({
+  readinessReceipt,
+  executionReceipt: externalGoodExecution,
+  observation: externalGoodObservation,
+});
+assert.equal(observationAttestationTamper.status, 'rollback-required-awaiting-external-authority');
+assert.equal(observationAttestationTamper.reason, 'independent-post-execution-observation-provenance-unverified');
 
 const mismatchExecution = externalExecution({ afterStateDigest: d('unexpected-after') });
 const mismatchObservation = externalObservation(mismatchExecution, { observedStateDigest: d('unexpected-after') });
@@ -349,44 +542,77 @@ assert.equal(model.rollbackAuthority, false);
 
 const hostileObserverExecution = externalExecution();
 const hostileObserver = externalObservation(hostileObserverExecution, { writeAuthority: true });
-const hostileObservationResult = reconciler.reconcile({ readinessReceipt, executionReceipt: hostileObserverExecution, observation: hostileObserver });
+const hostileObservationResult = reconciler.reconcile({
+  readinessReceipt,
+  executionReceipt: hostileObserverExecution,
+  observation: hostileObserver,
+});
 assert.equal(hostileObservationResult.status, 'rollback-required-awaiting-external-authority');
 assert.equal(hostileObservationResult.reason, 'independent-post-execution-observation-boundary-invalid');
 
+const staleReconciler = createReconciler({ now: () => 70000 });
 const staleExecution = externalExecution();
 const staleObservation = externalObservation(staleExecution, { observedAt: 6000 });
-reconcileNow = 70000;
-const stale = reconciler.reconcile({ readinessReceipt, executionReceipt: staleExecution, observation: staleObservation });
+const stale = staleReconciler.reconcile({ readinessReceipt, executionReceipt: staleExecution, observation: staleObservation });
 assert.equal(stale.status, 'rollback-required-awaiting-external-authority');
 assert.equal(stale.reason, 'independent-post-execution-observation-stale');
-reconcileNow = 7000;
 
 const crossTenantExecution = externalExecution({ tenant: 'tenant-b' });
 const crossTenantObservation = externalObservation(crossTenantExecution, { tenant: 'tenant-b' });
-const crossTenant = reconciler.reconcile({ readinessReceipt, executionReceipt: crossTenantExecution, observation: crossTenantObservation });
+const crossTenant = reconciler.reconcile({
+  readinessReceipt,
+  executionReceipt: crossTenantExecution,
+  observation: crossTenantObservation,
+});
 assert.equal(crossTenant.status, 'contained');
 assert.equal(crossTenant.reason, 'external-execution-binding-invalid');
 assert.equal(crossTenant.executionObserved, false);
 
 const outOfWindowExecution = externalExecution({ executedAt: 100001 });
 const outOfWindowObservation = externalObservation(outOfWindowExecution, { observedAt: 100002 });
-const outOfWindow = reconciler.reconcile({ readinessReceipt, executionReceipt: outOfWindowExecution, observation: outOfWindowObservation });
-assert.equal(outOfWindow.status, 'rollback-required-awaiting-external-authority');
-assert.equal(outOfWindow.reason, 'external-execution-outside-readiness-window');
+const outOfWindow = reconciler.reconcile({
+  readinessReceipt,
+  executionReceipt: outOfWindowExecution,
+  observation: outOfWindowObservation,
+});
+assert.equal(outOfWindow.status, 'contained');
+assert.equal(outOfWindow.reason, 'external-execution-provenance-unverified');
+assert.equal(outOfWindow.executionObserved, false);
 
 const externalTampered = { ...externalGood, rollbackAuthority: true };
 assert.equal(reconciler.verifyReceipt(externalTampered), false);
 
 const tamperedExternalExecution = { ...externalGoodExecution, afterStateDigest: d('tampered') };
-const invalidExternalExecution = reconciler.reconcile({ readinessReceipt, executionReceipt: tamperedExternalExecution, observation: externalGoodObservation });
+const invalidExternalExecution = reconciler.reconcile({
+  readinessReceipt,
+  executionReceipt: tamperedExternalExecution,
+  observation: externalGoodObservation,
+});
 assert.equal(invalidExternalExecution.status, 'contained');
 assert.equal(invalidExternalExecution.reason, 'external-execution-receipt-invalid');
 
-assert.throws(() => createT3ExternalExecutionReconciler({ readinessGate, maxObservationAgeMs: 999 }), /between 1 second and 10 minutes/);
+assert.throws(() => createT3ExternalExecutionReconciler({
+  readinessGate,
+  executionProvenanceVerifier: makeExecutionVerifier({ hostileCapability: true }),
+  observationProvenanceVerifier: makeObservationVerifier(),
+}), /safe external-execution-receipt-provenance-only verifier/);
+
+assert.throws(() => createT3ExternalExecutionReconciler({
+  readinessGate,
+  executionProvenanceVerifier: makeExecutionVerifier(),
+  observationProvenanceVerifier: makeObservationVerifier({ sameVerifierId: true }),
+}), /independent execution and observation provenance verifiers/);
+
+assert.throws(() => createT3ExternalExecutionReconciler({
+  readinessGate,
+  executionProvenanceVerifier: makeExecutionVerifier(),
+  observationProvenanceVerifier: makeObservationVerifier(),
+  maxObservationAgeMs: 999,
+}), /between 1 second and 10 minutes/);
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
-  proof: 'tier3-deterministic-execution-sandbox-with-reconciliation-and-known-good-rollback',
+  schemaVersion: 3,
+  proof: 'tier3-deterministic-execution-sandbox-with-authenticated-external-reconciliation',
   status: 'PASS',
   exactReadinessReceiptRequired: true,
   separateOneShotAuthorityRequired: true,
@@ -401,15 +627,20 @@ console.log(JSON.stringify({
   zeroIncrementalCostAdapterRequired: true,
   customerDataVisible: false,
   productionDataVisible: false,
-  externalExecutionPostChangeReconciliationAdded: true,
   customerControlledExternalAuthorityRequired: true,
   independentReadOnlyObserverRequired: true,
   executorObserverSeparationRequired: true,
+  executionReceiptIndependentProvenanceRequired: true,
+  observationIndependentProvenanceRequired: true,
+  selfHashedExternalReceiptNotTrustedAsAuthenticity: true,
+  executionAndObservationProvenanceVerifierSeparationRequired: true,
+  hostileProvenanceVerifierCapabilityRejected: true,
+  provenanceAttestationBindingRequired: true,
   exactExpectedPostStateRequired: true,
   businessSecurityTenantInvariantRequired: true,
   staleObservationFailsSafeToRollbackRequired: true,
-  crossTenantExternalExecutionContained: true,
-  outOfWindowExternalExecutionFailsSafeToRollbackRequired: true,
+  crossTenantExternalExecutionContainedBeforeTrustedObservation: true,
+  outOfWindowUntrustedExecutionNotPromotedToObservedFact: true,
   modelExecutionAuthorityFailsSafeToRollbackRequired: true,
   rollbackRecommendationDoesNotGrantAuthority: true,
   customerMutation: false,
