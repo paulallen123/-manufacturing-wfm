@@ -90,6 +90,7 @@ function createAutonomyControlLoop({
   failureScenarios,
   selfHelp,
   recoveryExecutor,
+  recoveryVerifier,
   repairCoordinator,
   t3ShadowSimulator,
   t3ShadowVerifier,
@@ -164,23 +165,67 @@ function createAutonomyControlLoop({
         const action = scenario?.autonomous_action || null;
         const allowed = contract?.tiers?.T1?.allowlisted_action_prefixes || [];
         const actionAllowed = typeof action === 'string' && allowed.some((p) => action === p || action.startsWith(p + '.'));
+        const executorId = clean(recoveryExecutor?.executorId, 120);
+        const verifierId = clean(recoveryVerifier?.verifierId, 120);
 
-        if (!action || !actionAllowed || !recoveryExecutor?.execute) {
+        if (!action || !actionAllowed || !recoveryExecutor?.execute || !recoveryVerifier?.verify) {
           outcome = scenarioId === 'provider-credential-expiry'
             ? 'external_provider_authorisation_required'
             : 'contained';
-          append('t1-contained', { action, actionAllowed, executorAvailable: Boolean(recoveryExecutor?.execute) });
+          append('t1-contained', {
+            action,
+            actionAllowed,
+            executorAvailable: Boolean(recoveryExecutor?.execute),
+            verifierAvailable: Boolean(recoveryVerifier?.verify),
+          });
         } else {
+          if (!executorId || !verifierId || executorId === verifierId) {
+            deny('WFM_AUTONOMY_T1_SEPARATION', 'Tier 1 executor and verifier must be distinct identified principals.');
+          }
           consumeAction(action);
           const recovery = await recoveryExecutor.execute({ incidentId, tenant, scenario, action, evidenceDigest, input });
           if (recovery?.productionAuthorityGranted === true || recovery?.customerMutation === true) {
             deny('WFM_AUTONOMY_T1_AUTHORITY', 'Tier 1 recovery exceeded authority.');
           }
-          if (recovery?.verified !== true) deny('WFM_AUTONOMY_T1_VERIFY', 'Tier 1 recovery must be independently verified.');
+          if (clean(recovery?.executorId, 120) !== executorId || !/^[a-f0-9]{64}$/.test(String(recovery?.executionDigest || ''))) {
+            deny('WFM_AUTONOMY_T1_EXECUTION_EVIDENCE', 'Tier 1 recovery requires executor-bound execution evidence.');
+          }
           if (!isAllowedTerminal(contract, tier, recovery?.status)) deny('WFM_AUTONOMY_TERMINAL', 'Invalid Tier 1 terminal outcome.');
+
+          const recoveryVerification = await recoveryVerifier.verify(recovery, {
+            incidentId,
+            tenant,
+            scenarioId,
+            action,
+            evidenceDigest,
+          });
+          if (
+            recoveryVerification?.verified !== true
+            || clean(recoveryVerification?.verifierId, 120) !== verifierId
+            || clean(recoveryVerification?.verifierId, 120) === executorId
+            || recoveryVerification?.executionDigest !== recovery.executionDigest
+            || !/^[a-f0-9]{64}$/.test(String(recoveryVerification?.verificationDigest || ''))
+          ) {
+            deny('WFM_AUTONOMY_T1_VERIFY', 'Tier 1 recovery must be independently bound to the exact execution evidence.');
+          }
+          if (
+            recoveryVerification?.productionAuthorityGranted !== false
+            || recoveryVerification?.customerMutation !== false
+            || recoveryVerification?.modelAuthorityGranted !== false
+            || recoveryVerification?.actionAuthorityGranted !== false
+          ) {
+            deny('WFM_AUTONOMY_T1_VERIFIER_AUTHORITY', 'Tier 1 verifier must remain read-only and non-authoritative.');
+          }
           outcome = recovery.status;
-          result = { recovery };
-          append('t1-verified', { action, status: outcome, verificationDigest: recovery.verificationDigest || null });
+          result = { recovery, recoveryVerification };
+          append('t1-verified', {
+            action,
+            status: outcome,
+            executorId,
+            verifierId,
+            executionDigest: recovery.executionDigest,
+            verificationDigest: recoveryVerification.verificationDigest,
+          });
         }
       } else if (tier === 'T2') {
         if (!repairCoordinator?.process) {
@@ -395,12 +440,12 @@ function createAutonomyControlLoop({
       if (!t4ContainmentController?.verifyReceipt || t4ContainmentController.verifyReceipt(receipt.t4) !== true) return false;
     }
     const result = {};
-    for (const key of ['answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode']) {
+    for (const key of ['answer', 'recovery', 'recoveryVerification', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode']) {
       if (Object.prototype.hasOwnProperty.call(receipt, key)) result[key] = receipt[key];
     }
     if (receipt.resultDigest !== digest(result)) return false;
     const core = { ...receipt };
-    for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode', 'learning']) delete core[key];
+    for (const key of ['receiptDigest', 'answer', 'recovery', 'recoveryVerification', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode', 'learning']) delete core[key];
     if (receipt.receiptDigest !== digest(core)) return false;
 
     if (!receipt.learning || receipt.learning.sourceReceiptDigest !== receipt.receiptDigest) return false;
