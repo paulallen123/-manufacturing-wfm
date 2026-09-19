@@ -1,0 +1,67 @@
+{
+  "program": "Manufacturing WFM 24-hour sell-readiness",
+  "captured_at": "2026-09-20T00:54:00+01:00",
+  "candidate_branch": "feature/one-day-enterprise-implementation-v1",
+  "candidate_sha": "5a585c333d79008cf1b9694017e3cfc466c3ef28",
+  "candidate_verified": true,
+  "candidate_release_refresh_pr": 183,
+  "candidate_release_refresh_change": ".github/workflows/integration-proof-exact-gated-release.yml comment-only",
+  "railway": {
+    "one_day_service": {
+      "project_id": "9cd73309-0ece-4b9a-891f-7daa13d94f0d",
+      "service_id": "8cadddc3-15e9-4c38-a93f-0af829054f29",
+      "service_name": "wfm-one-day-enterprise-v1",
+      "redeploy_attempt_id": "97fec179-7169-484f-84d9-22d01de71b46",
+      "redeploy_result": "FAILED",
+      "redeploy_commit_sha": "c0750bbdd165ec21d3197f2ecc39cc4a8ce8d06f",
+      "last_success_sha": "c9878364b02dffb77c21702d58af35c344e5ff68",
+      "note": "Railway redeploy re-ran the latest deployment snapshot rather than fetching the current GitHub branch head. Existing root-directory security hold remained unchanged."
+    },
+    "integration_proof_service": {
+      "project_id": "9a774359-37fa-47e8-bde0-932420c32923",
+      "service_id": "2631d462-61bf-4c01-ac4b-e106a562feeb",
+      "service_name": "wfm-integration-fabric-v1-proof",
+      "redeploy_attempt_id": "77f69a39-a528-4578-9fa4-b6415661040c",
+      "redeploy_result": "FAILED",
+      "redeploy_commit_sha": "18be0c40d47b58bef7b472cfce28946f30228b55",
+      "last_success_sha": "2dbe3913e50941f90c8e8d73f8c4ff14517e3d24",
+      "note": "Existing immutable security hold and exact-SHA pre-deploy control remained unchanged."
+    }
+  },
+  "github_actions": {
+    "integration_exact_release_run_id": 35477456926,
+    "head_sha": "5a585c333d79008cf1b9694017e3cfc466c3ef28",
+    "attempts_observed": 2,
+    "result": "FAILURE_BEFORE_STEPS",
+    "job_steps": null,
+    "note": "The release job was not allocated an executable runner; checkout, verification, Railway token use, exact-source upload and application code were never reached."
+  },
+  "current_exact_candidate_delta_vs_last_green_cloud_sha": {
+    "base_sha": "c9878364b02dffb77c21702d58af35c344e5ff68",
+    "files_changed": [
+      ".github/workflows/integration-proof-exact-gated-release.yml",
+      ".github/workflows/vector-only-ui-guard.yml",
+      "Dockerfile",
+      "scripts/current-candidate-role-browser-proof.mjs",
+      "ux-overlay/vector-action-queue.test.cjs",
+      "ux-overlay/vector-shell.js"
+    ],
+    "implication": "The exact current candidate contains runtime/UI changes beyond the last green Railway deployment, so prior cloud/browser proof cannot be treated as exact-head proof."
+  },
+  "controls": {
+    "new_paid_resources_created": false,
+    "new_railway_resources_created": false,
+    "frozen_customer_proof_changed": false,
+    "security_holds_weakened": false,
+    "production_approval_forced": false,
+    "readiness_flags_forced": false
+  },
+  "sell_readiness": "CONDITIONAL",
+  "blocking_gates": [
+    "Exact current candidate has not been deployed to both existing Railway proof services.",
+    "GitHub Actions exact-release job still fails before runner execution.",
+    "Exact current runtime/browser regression proof remains outstanding because the current head includes Dockerfile and Vector runtime changes since the last green cloud SHA.",
+    "Authorised non-fixture external-provider sandbox/API evidence remains outstanding.",
+    "Genuine zero-human environment/customer provisioning evidence remains outstanding."
+  ]
+}
