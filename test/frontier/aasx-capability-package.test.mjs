@@ -4,9 +4,11 @@ import { selectAasxEnvironment } from '../../src/frontier/aasx-package-selector.
 
 const rootRels = `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="r1" Type="http://admin-shell.io/aasx/relationships/aasx-origin" Target="aasx/aasx-origin"/></Relationships>`;
 const originRels = (targets) => `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${targets.map((t,i)=>`<Relationship Id="s${i}" Type="http://admin-shell.io/aasx/relationships/aas-spec" Target="${t}"/>`).join('')}</Relationships>`;
+const supplementaryRels = (relationships) => `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relationships.map((rel,i)=>`<Relationship Id="${rel.id ?? `f${i}`}" Type="http://admin-shell.io/aasx/relationships/aas-suppl" Target="${rel.target}"${rel.targetMode ? ` TargetMode="${rel.targetMode}"` : ''}/>`).join('')}</Relationships>`;
 const env = { assetAdministrationShells: [], submodels: [{ id: 'urn:sm:1', submodelElements: [] }], conceptDescriptions: [] };
 const xmlEnv = `<environment xmlns="https://admin-shell.io/aas/3/2"><submodels><submodel><id>urn:sm:1</id></submodel></submodels></environment>`;
 const entry = (path, content, extra={}) => ({ path, content, size: Buffer.byteLength(String(content)), ...extra });
+const binaryEntry = (path, size, extra={}) => ({ path, size, ...extra });
 const packageWith = (targets, payloads) => [
   entry('_rels/.rels', rootRels),
   entry('aasx/aasx-origin', 'Intentionally empty'),
@@ -19,6 +21,7 @@ test('selects relationship-targeted JSON without assuming the filename', () => {
   assert.equal(result.status, 'accepted');
   assert.equal(result.selectedPath, 'models/site-a.aas.json');
   assert.equal(result.environment.submodels[0].id, 'urn:sm:1');
+  assert.equal(result.supplementaryArtifactCount, 0);
 });
 
 test('accepts relationship-targeted AAS 3.x XML and decodes it into the same environment contract', () => {
@@ -48,6 +51,62 @@ test('fails closed when JSON and XML serializations disagree', () => {
   ]));
   assert.equal(result.status, 'review_required');
   assert.equal(result.reason, 'conflicting_aas_serializations');
+});
+
+test('inventories declared supplementary FMU assets as metadata without reading or executing binary content', () => {
+  const result = selectAasxEnvironment(packageWith(['../models/site-a.aas.xml'], [
+    entry('models/site-a.aas.xml', xmlEnv),
+    entry('models/_rels/site-a.aas.xml.rels', supplementaryRels([{ id: 'fmu1', target: '../files/cell-model.fmu' }])),
+    binaryEntry('files/cell-model.fmu', 4096, { compressedSize: 2048, contentType: 'application/octet-stream' }),
+  ]));
+  assert.equal(result.status, 'accepted');
+  assert.equal(result.supplementaryArtifactCount, 1);
+  assert.equal(result.fmuArtifactCount, 1);
+  assert.equal(result.supplementaryArtifacts[0].path, 'files/cell-model.fmu');
+  assert.equal(result.supplementaryArtifacts[0].kind, 'fmu');
+  assert.equal(result.supplementaryArtifacts[0].size, 4096);
+  assert.equal(Object.hasOwn(result.supplementaryArtifacts[0], 'content'), false);
+  assert.equal(result.supplementaryExecutionPolicy, 'metadata_only_never_execute');
+});
+
+test('rejects external supplementary simulation relationships', () => {
+  const result = selectAasxEnvironment(packageWith(['../models/site-a.aas.xml'], [
+    entry('models/site-a.aas.xml', xmlEnv),
+    entry('models/_rels/site-a.aas.xml.rels', supplementaryRels([{ target: 'https://example.invalid/model.fmu', targetMode: 'External' }])),
+  ]));
+  assert.equal(result.status, 'rejected');
+  assert.equal(result.reason, 'external_aas_supplementary_forbidden');
+});
+
+test('rejects supplementary relationship traversal outside the package', () => {
+  const result = selectAasxEnvironment(packageWith(['../models/site-a.aas.xml'], [
+    entry('models/site-a.aas.xml', xmlEnv),
+    entry('models/_rels/site-a.aas.xml.rels', supplementaryRels([{ target: '../../../escape.fmu' }])),
+  ]));
+  assert.equal(result.status, 'rejected');
+  assert.equal(result.reason, 'unsafe_aas_supplementary_target');
+});
+
+test('requires review when a declared supplementary target is missing', () => {
+  const result = selectAasxEnvironment(packageWith(['../models/site-a.aas.xml'], [
+    entry('models/site-a.aas.xml', xmlEnv),
+    entry('models/_rels/site-a.aas.xml.rels', supplementaryRels([{ target: '../files/missing.fmu' }])),
+  ]));
+  assert.equal(result.status, 'review_required');
+  assert.equal(result.reason, 'aas_supplementary_target_missing');
+  assert.equal(result.path, 'files/missing.fmu');
+});
+
+test('rejects duplicate relationship identifiers rather than accepting ambiguous package metadata', () => {
+  const duplicate = `<?xml version="1.0"?><Relationships><Relationship Id="dup" Type="http://admin-shell.io/aasx/relationships/aas-suppl" Target="../files/a.fmu"/><Relationship Id="dup" Type="http://admin-shell.io/aasx/relationships/aas-suppl" Target="../files/b.fmu"/></Relationships>`;
+  const result = selectAasxEnvironment(packageWith(['../models/site-a.aas.xml'], [
+    entry('models/site-a.aas.xml', xmlEnv),
+    entry('models/_rels/site-a.aas.xml.rels', duplicate),
+    binaryEntry('files/a.fmu', 100),
+    binaryEntry('files/b.fmu', 100),
+  ]));
+  assert.equal(result.status, 'rejected');
+  assert.equal(result.reason, 'duplicate_relationship_id');
 });
 
 test('rejects traversal in relationship targets', () => {
