@@ -35,6 +35,12 @@ const PROFILES = Object.freeze({
   })
 });
 
+function canonicalProviderKey(value) {
+  const key = String(value || '').trim().toLowerCase();
+  if (key === 'oracle-netsuite') return 'netsuite';
+  return key;
+}
+
 function normalizeHostname(value) {
   const host = String(value || '').trim().toLowerCase().replace(/\.$/, '');
   if (!host || host.includes('://') || /[\\/?#@\s:]/.test(host) || !HOSTNAME.test(host)) {
@@ -49,7 +55,8 @@ function normalizeNetSuiteAccountId(value) {
 
 function buildProviderProofPlan(review, target = {}) {
   const providerKey = String(review?.providerKey || '').trim().toLowerCase();
-  const profile = PROFILES[providerKey];
+  const providerFamily = canonicalProviderKey(providerKey);
+  const profile = PROFILES[providerFamily];
   if (!profile) throw new Error('No bounded provider proof profile is available.');
   if (String(review?.transport || '').trim().toLowerCase() !== profile.transport) {
     throw new Error('Provider proof profile does not match the reviewed transport.');
@@ -64,22 +71,34 @@ function buildProviderProofPlan(review, target = {}) {
   if (missing.length) throw new Error('Provider target metadata is incomplete: ' + missing.join(', '));
 
   let targetHost;
-  if (providerKey === 'sap-successfactors') {
+  let providerTargetIdentity;
+  if (providerFamily === 'sap-successfactors') {
     targetHost = normalizeHostname(target.apiServer);
-  } else if (providerKey === 'netsuite') {
+    providerTargetIdentity = String(target.companyId || '').trim();
+    if (review?.targetIdentity && String(review.targetIdentity).trim() !== providerTargetIdentity) {
+      throw new Error('SuccessFactors company identity does not match the reviewed target identity.');
+    }
+  } else if (providerFamily === 'netsuite') {
     const account = normalizeNetSuiteAccountId(target.accountId);
     targetHost = normalizeHostname(target.accountSpecificDomain);
     if (!account || targetHost !== `${account}.suitetalk.api.netsuite.com`) {
       throw new Error('NetSuite account-specific REST domain does not match the supplied account ID.');
     }
+    providerTargetIdentity = String(target.accountId || '').trim();
+    if (review?.targetIdentity && normalizeNetSuiteAccountId(review.targetIdentity) !== account) {
+      throw new Error('NetSuite account identity does not match the reviewed target identity.');
+    }
   }
 
   return Object.freeze({
     providerKey,
+    providerFamily,
+    reviewedDigest: String(review?.reviewedDigest || '').trim() || null,
+    targetIdentity: String(review?.targetIdentity || providerTargetIdentity || '').trim(),
     transport: profile.transport,
     authMethod,
     credentialRef: String(review.auth?.credentialRef || ''),
-    targetMetadata: Object.freeze({ ...target, ...(providerKey === 'sap-successfactors' ? { apiServer: targetHost } : { accountSpecificDomain: targetHost }) }),
+    targetMetadata: Object.freeze({ ...target, ...(providerFamily === 'sap-successfactors' ? { apiServer: targetHost } : { accountSpecificDomain: targetHost }) }),
     targetOrigin: `https://${targetHost}`,
     pinnedHost: targetHost,
     request: profile.proofRequest,
@@ -94,6 +113,7 @@ function buildProviderProofPlan(review, target = {}) {
 
 module.exports = {
   PROFILES,
+  canonicalProviderKey,
   normalizeHostname,
   normalizeNetSuiteAccountId,
   buildProviderProofPlan
