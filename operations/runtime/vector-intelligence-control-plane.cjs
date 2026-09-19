@@ -158,8 +158,8 @@ function createVectorIntelligenceControlPlane(options={}){
       createdEntity={kind:'TASK',id:entityId,status:'OPEN'};
     }else if(envelope.command.intent==='CREATE_AUTOMATION'){
       const entityId='vauto-'+randomUUID();
-      const entityStatus=process.env.WFM_VECTOR_AUTOMATION_RUNNER&&cadence.parsed?'ACTIVE':'PENDING_RUNNER';
-      insertAutomation.run(entityId,common[0],common[1],common[2],entityStatus,common[3],JSON.stringify({request:envelope.command.text,cadence,snapshot}),common[4],common[5]);
+      const entityStatus=!cadence.parsed?'NEEDS_SCHEDULE':(process.env.WFM_VECTOR_AUTOMATION_RUNNER?'ACTIVE':'PENDING_RUNNER');
+      insertAutomation.run(entityId,common[0],common[1],common[2],entityStatus,common[3],JSON.stringify({request:envelope.command.text,cadence,snapshot,siteIds:envelope.siteIds,role:envelope.role,scope:envelope.scope}),common[4],common[5]);
       createdEntity={kind:'AUTOMATION',id:entityId,status:entityStatus,cadence};
     }else if(envelope.command.intent==='CREATE_REPORT'||envelope.command.intent==='EMAIL_REPORT'){
       const entityId='vreport-'+randomUUID();
