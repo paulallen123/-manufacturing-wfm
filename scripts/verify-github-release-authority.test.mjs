@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 import { assessReleaseAuthority, verifyReleaseAuthority } from './verify-github-release-authority.mjs';
 
@@ -17,6 +18,16 @@ function snapshot({ protectedBranch = true, verified = true } = {}) {
 
 function allSafe() {
   return Object.fromEntries(BRANCHES.map((branch) => [branch, snapshot()]));
+}
+
+function assertDeploymentWorkflowGuarded(workflow) {
+  const gate = workflow.indexOf('node scripts/verify-github-release-authority.mjs');
+  const credential = workflow.indexOf('RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}');
+  const deploy = workflow.indexOf('"$RAILWAY_BIN" up');
+
+  if (gate < 0) throw new Error('release-authority gate is missing');
+  if (credential >= 0 && gate > credential) throw new Error('release-authority gate must run before deployment credentials are exposed');
+  if (deploy >= 0 && gate > deploy) throw new Error('release-authority gate must run before deployment starts');
 }
 
 test('accepts only protected branches with verified heads', () => {
@@ -70,5 +81,22 @@ test('network verifier rejects unsafe repository posture', async () => {
       fetchImpl: fakeFetch
     }),
     /main: branch is not protected/
+  );
+});
+
+test('canonical staging deployment proves release authority before any Railway credential or deploy action', () => {
+  const workflow = fs.readFileSync('.github/workflows/canonical-staging-release.yml', 'utf8');
+  assert.doesNotThrow(() => assertDeploymentWorkflowGuarded(workflow));
+});
+
+test('deployment guard rejects a workflow that exposes deployment credentials before trust is proven', () => {
+  const unsafeWorkflow = [
+    'RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}',
+    'node scripts/verify-github-release-authority.mjs',
+    '"$RAILWAY_BIN" up'
+  ].join('\n');
+  assert.throws(
+    () => assertDeploymentWorkflowGuarded(unsafeWorkflow),
+    /must run before deployment credentials/
   );
 });
