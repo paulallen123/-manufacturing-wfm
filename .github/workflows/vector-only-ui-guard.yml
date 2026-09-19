@@ -11,12 +11,6 @@ on:
       - 'Dockerfile'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
-  pull_request:
-    paths:
-      - 'ux-overlay/**'
-      - 'Dockerfile'
-      - 'scripts/validate-vector-only-ui.mjs'
-      - '.github/workflows/vector-only-ui-guard.yml'
   workflow_dispatch:
 
 permissions:
@@ -24,6 +18,7 @@ permissions:
 
 jobs:
   vector-only:
+    if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
