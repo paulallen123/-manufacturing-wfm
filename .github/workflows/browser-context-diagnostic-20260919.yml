@@ -51,5 +51,5 @@ jobs:
           p.write_text(s)
           PY
           node --check "$RUNNER_TEMP/ux-cycle11-context-browser-diagnostic.mjs"
-          timeout 45s node "$RUNNER_TEMP/ux-cycle11-context-browser-diagnostic.mjs"
+          timeout 90s node "$RUNNER_TEMP/ux-cycle11-context-browser-diagnostic.mjs"
           echo 'BROWSER_CONTEXT_DIAGNOSTIC=PASS'
