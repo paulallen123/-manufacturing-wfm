@@ -5,6 +5,7 @@ const { DatabaseSync } = require('node:sqlite');
 const {
   normalizeRole,classifyCommand,executionPolicy,assistantEnvelope
 }=require('./vector-intelligence-layer.cjs');
+const {sanitizeSnapshot,createReport,parseCadence}=require('./vector-report-engine.cjs');
 
 const PREFIX='/api/intelligence/vector';
 
@@ -85,6 +86,10 @@ function createVectorIntelligenceControlPlane(options={}){
   const insertAutomation=db.prepare('INSERT INTO vector_automations(id,tenant,owner_email,title,status,source_request_id,detail_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)');
   const insertReport=db.prepare('INSERT INTO vector_reports(id,tenant,owner_email,title,status,source_request_id,detail_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)');
   const insertPreference=db.prepare('INSERT INTO vector_dashboard_preferences(id,tenant,owner_email,kind,status,source_request_id,detail_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)');
+  const listTasks=db.prepare('SELECT * FROM vector_tasks WHERE tenant=? ORDER BY created_at DESC LIMIT ?');
+  const listAutomations=db.prepare('SELECT * FROM vector_automations WHERE tenant=? ORDER BY created_at DESC LIMIT ?');
+  const listReports=db.prepare('SELECT * FROM vector_reports WHERE tenant=? ORDER BY created_at DESC LIMIT ?');
+  const listPreferences=db.prepare('SELECT * FROM vector_dashboard_preferences WHERE tenant=? ORDER BY created_at DESC LIMIT ?');
 
   function ctx(req){
     const token=cookieToken(req);
@@ -104,15 +109,26 @@ function createVectorIntelligenceControlPlane(options={}){
       currentScreen:body.currentScreen||'overview'
     };
   }
-  function persistAction(c,envelope){
+  function persistAction(c,envelope,snapshotInput={}){
     const id='vai-'+randomUUID();
     const created=nowIso();
+    const snapshot=sanitizeSnapshot({
+      ...snapshotInput,
+      role:envelope.role,
+      scope:envelope.scope,
+      currentScreen:envelope.currentScreen,
+      generatedAt:snapshotInput?.generatedAt||created
+    });
+    const cadence=parseCadence(envelope.command.text,new Date(created));
     const detail={
       policy:envelope.policy,
       siteIds:envelope.siteIds,
       requestedAt:envelope.requestedAt,
+      snapshot,
+      cadence,
       execution:{
         analysisEngine:'CLIENT_ASSISTANT',
+        reportEngine:'VECTOR_REPORT_ENGINE_V1',
         deliveryProviderConfigured:Boolean(process.env.WFM_VECTOR_EMAIL_PROVIDER),
         schedulerConfigured:Boolean(process.env.WFM_VECTOR_AUTOMATION_RUNNER)
       }
@@ -120,34 +136,44 @@ function createVectorIntelligenceControlPlane(options={}){
     let status='ACCEPTED';
     if(envelope.policy.mode==='BLOCK')status='BLOCKED';
     if(envelope.policy.mode==='EXPLICIT_CONFIRMATION')status='AWAITING_CONFIRMATION';
-    if(['CREATE_REPORT','EMAIL_REPORT','CREATE_AUTOMATION'].includes(envelope.command.intent))status='CONFIGURED_PENDING_WORKER';
+    if(envelope.command.intent==='CREATE_REPORT')status='READY';
+    if(envelope.command.intent==='EMAIL_REPORT')status=process.env.WFM_VECTOR_EMAIL_PROVIDER?'READY_FOR_DELIVERY':'READY_NOT_SENT';
+    if(envelope.command.intent==='CREATE_AUTOMATION')status='CONFIGURED_PENDING_WORKER';
     insertRequest.run(
       id,c.tenant,c.email,envelope.command.intent,status,commandTitle(envelope.command.text),
       envelope.command.text,envelope.role,envelope.scope,envelope.currentScreen,
       JSON.stringify(detail),created,created
     );
 
-    if(status==='BLOCKED'||status==='AWAITING_CONFIRMATION') return {id,status,detail};
+    if(status==='BLOCKED'||status==='AWAITING_CONFIRMATION') return {id,status,detail,created:null};
 
     const common=[c.tenant,c.email,commandTitle(envelope.command.text),id,created,created];
+    let createdEntity=null;
     if(envelope.command.intent==='CREATE_TASK'){
-      insertTask.run('vtask-'+randomUUID(),common[0],common[1],common[2],'OPEN',common[3],JSON.stringify({request:envelope.command.text}),common[4],common[5]);
+      const entityId='vtask-'+randomUUID();
+      insertTask.run(entityId,common[0],common[1],common[2],'OPEN',common[3],JSON.stringify({request:envelope.command.text,snapshot}),common[4],common[5]);
+      createdEntity={kind:'TASK',id:entityId,status:'OPEN'};
     }else if(envelope.command.intent==='CREATE_AUTOMATION'){
-      insertAutomation.run('vauto-'+randomUUID(),common[0],common[1],common[2],
-        process.env.WFM_VECTOR_AUTOMATION_RUNNER?'ACTIVE':'PENDING_RUNNER',
-        common[3],JSON.stringify({request:envelope.command.text}),common[4],common[5]);
+      const entityId='vauto-'+randomUUID();
+      const entityStatus=process.env.WFM_VECTOR_AUTOMATION_RUNNER&&cadence.parsed?'ACTIVE':'PENDING_RUNNER';
+      insertAutomation.run(entityId,common[0],common[1],common[2],entityStatus,common[3],JSON.stringify({request:envelope.command.text,cadence,snapshot}),common[4],common[5]);
+      createdEntity={kind:'AUTOMATION',id:entityId,status:entityStatus,cadence};
     }else if(envelope.command.intent==='CREATE_REPORT'||envelope.command.intent==='EMAIL_REPORT'){
-      insertReport.run('vreport-'+randomUUID(),common[0],common[1],common[2],
-        'PENDING_GENERATION',common[3],JSON.stringify({
-          request:envelope.command.text,
-          delivery:envelope.command.intent==='EMAIL_REPORT'?'EMAIL':'IN_APP',
-          emailProviderReady:Boolean(process.env.WFM_VECTOR_EMAIL_PROVIDER)
-        }),common[4],common[5]);
+      const entityId='vreport-'+randomUUID();
+      const report=createReport({title:common[2],request:envelope.command.text,snapshot});
+      const delivery=envelope.command.intent==='EMAIL_REPORT'?'EMAIL':'IN_APP';
+      const entityStatus=delivery==='EMAIL'?(process.env.WFM_VECTOR_EMAIL_PROVIDER?'READY_FOR_DELIVERY':'READY_NOT_SENT'):'READY';
+      insertReport.run(entityId,common[0],common[1],report.title,entityStatus,common[3],JSON.stringify({
+        request:envelope.command.text,delivery,emailProviderReady:Boolean(process.env.WFM_VECTOR_EMAIL_PROVIDER),report
+      }),common[4],common[5]);
+      createdEntity={kind:'REPORT',id:entityId,status:entityStatus,delivery,report:{title:report.title,markdown:report.markdown}};
     }else if(envelope.command.intent==='CHANGE_WIDGET'||envelope.command.intent==='CHANGE_CHART'){
-      insertPreference.run('vpref-'+randomUUID(),common[0],common[1],envelope.command.intent,
-        'ACTIVE',common[3],JSON.stringify({request:envelope.command.text,currentScreen:envelope.currentScreen}),common[4],common[5]);
+      const entityId='vpref-'+randomUUID();
+      insertPreference.run(entityId,common[0],common[1],envelope.command.intent,
+        'ACTIVE',common[3],JSON.stringify({request:envelope.command.text,currentScreen:envelope.currentScreen,snapshot}),common[4],common[5]);
+      createdEntity={kind:'PREFERENCE',id:entityId,status:'ACTIVE'};
     }
-    return {id,status,detail};
+    return {id,status,detail,created:createdEntity};
   }
 
   async function command(req,res,c){
@@ -156,10 +182,11 @@ function createVectorIntelligenceControlPlane(options={}){
     if(!text)return writeJson(res,400,{error:'text is required.'});
     const context=roleContext(c,body);
     const envelope=assistantEnvelope(text,context);
-    const persisted=persistAction(c,envelope);
+    const persisted=persistAction(c,envelope,body.snapshot||{});
     return writeJson(res,persisted.status==='BLOCKED'?403:202,{
       requestId:persisted.id,
       status:persisted.status,
+      created:persisted.created,
       envelope,
       handoff: envelope.command.intent==='ANALYSE'||envelope.command.intent==='NAVIGATE'
         ? {target:'CLIENT_ASSISTANT',ready:true}
@@ -167,6 +194,7 @@ function createVectorIntelligenceControlPlane(options={}){
       capabilities:{
         analysis:true,
         reports:true,
+        reportGeneration:true,
         tasks:true,
         automations:true,
         dashboardPreferences:true,
@@ -183,6 +211,7 @@ function createVectorIntelligenceControlPlane(options={}){
       capabilities:{
         analysis:true,
         reports:true,
+        reportGeneration:true,
         tasks:true,
         automations:true,
         dashboardPreferences:true,
@@ -197,6 +226,17 @@ function createVectorIntelligenceControlPlane(options={}){
     return writeJson(res,200,{requests:rows});
   }
 
+  function publicEntity(row){
+    return {
+      id:row.id,title:row.title,status:row.status,createdAt:row.created_at,updatedAt:row.updated_at,
+      detail:safeJson(row.detail_json,{})
+    };
+  }
+  function tasks(req,res,c){return writeJson(res,200,{tasks:listTasks.all(c.tenant,100).map(publicEntity)});}
+  function automations(req,res,c){return writeJson(res,200,{automations:listAutomations.all(c.tenant,100).map(publicEntity)});}
+  function reports(req,res,c){return writeJson(res,200,{reports:listReports.all(c.tenant,100).map(publicEntity)});}
+  function preferences(req,res,c){return writeJson(res,200,{preferences:listPreferences.all(c.tenant,100).map(publicEntity)});}
+
   async function handleRequest(req,res){
     const path=pathOf(req);
     if(!path.startsWith(PREFIX))return false;
@@ -205,6 +245,10 @@ function createVectorIntelligenceControlPlane(options={}){
     try{
       if(path===PREFIX+'/status'&&method==='GET')return status(req,res,c);
       if(path===PREFIX+'/requests'&&method==='GET')return requests(req,res,c);
+      if(path===PREFIX+'/tasks'&&method==='GET')return tasks(req,res,c);
+      if(path===PREFIX+'/automations'&&method==='GET')return automations(req,res,c);
+      if(path===PREFIX+'/reports'&&method==='GET')return reports(req,res,c);
+      if(path===PREFIX+'/preferences'&&method==='GET')return preferences(req,res,c);
       if(path===PREFIX+'/command'&&method==='POST')return await command(req,res,c);
       return writeJson(res,404,{error:'Unknown Vector intelligence endpoint.'});
     }catch(error){
