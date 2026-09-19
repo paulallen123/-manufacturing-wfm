@@ -42,6 +42,7 @@ const PROTECTED_PATHS = Object.freeze([
   'scripts/validate-provider-recovery-handoff.mjs',
   'scripts/validate-autonomy-control-loop.mjs',
   'scripts/validate-incident-learning-planner.mjs',
+  'scripts/validate-historical-incident-replay.mjs',
   'scripts/validate-support-selfhelp.mjs',
   'scripts/validate-t3-shadow-support.mjs',
   'scripts/validate-t3-customer-authorisation-gate.mjs',
