@@ -5,7 +5,9 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const {
   createAutonomousRepairPipeline,
+  T2_COORDINATOR_CAPABILITY_CONTRACT,
   computeRepairEvidenceChainDigest,
+  computeT2CoordinatorCapabilityDigest,
 } = require('../resilience/autonomous-repair-pipeline.cjs');
 const d = (v) => createHash('sha256').update(String(v)).digest('hex');
 const expect = async (fn, code) => {
@@ -86,6 +88,11 @@ assert.deepEqual(p.capabilities(), {
   customerMutation: false,
   incrementalCostZero: true,
 });
+const coordinatorCapabilityDigest = computeT2CoordinatorCapabilityDigest(T2_COORDINATOR_CAPABILITY_CONTRACT);
+assert.match(coordinatorCapabilityDigest || '', /^[a-f0-9]{64}$/);
+assert.equal(computeT2CoordinatorCapabilityDigest({ ...T2_COORDINATOR_CAPABILITY_CONTRACT, canaryMaxInstances: 2 }), null);
+assert.equal(computeT2CoordinatorCapabilityDigest({ ...T2_COORDINATOR_CAPABILITY_CONTRACT, customerWriteAuthority: true }), null);
+assert.equal(computeT2CoordinatorCapabilityDigest({ ...T2_COORDINATOR_CAPABILITY_CONTRACT, hiddenExtraAuthority: true }), null);
 await expect(() => p.process({ ...base, incidentId: 'sep', verifierId: ids.workerId }), 'WFM_PIPELINE_SEPARATION');
 
 const rf = factory(), ro = recorder();
@@ -102,7 +109,7 @@ const hp = createAutonomousRepairPipeline({ factory: hf, ...parts(hf), signer: h
 await expect(() => hp.process({ ...base, incidentId: 'hostile' }), 'WFM_PIPELINE_SIGNER_AUTHORITY');
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'tier2-autonomous-repair-pipeline-composition',
   status: 'PASS',
   actorSeparationRequired: true,
@@ -115,6 +122,8 @@ console.log(JSON.stringify({
   repairEvidenceChainTamperDetected: true,
   exactRollbackBindingExposedForPostStagingDecision: true,
   repairPipelineCapabilityContractPinned: true,
+  t2CoordinatorCapabilityContractPinned: true,
+  t2CoordinatorCapabilityTamperDetected: true,
   rejectedStagingDurablyRecordedContained: true,
   authorityAndProofSurfaceSelfProtection: true,
   postStagingAuthoritySurfaceSelfProtection: true,
