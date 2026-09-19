@@ -108,6 +108,9 @@ if (priorSnapshotLoaded) {
     const preserved = finalSnapshot.entries.find((entry) => entry.entryDigest === priorEntry.entryDigest);
     assert.ok(preserved, `Prior append-only entry ${priorEntry.entryDigest} must survive continuity replay.`);
   }
+  assert.equal(appendedCurrentClasses, 0, 'A verified prior corpus must already contain every current catalog class; replay may not silently fork those cases.');
+  assert.equal(deduplicatedCurrentClasses, failureScenarios.scenarios.length, 'Every current scenario class must resolve to the exact prior mandatory case on continuity replay.');
+  assert.equal(finalSnapshot.entryCount, priorSnapshot.entryCount, 'Replaying an unchanged scenario catalog over a verified prior corpus must be a zero-growth exact continuity operation.');
 }
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
@@ -117,8 +120,13 @@ const reloaded = createIncidentRegressionCorpus({ initialSnapshot: JSON.parse(fs
 assert.equal(reloaded.snapshot().corpusDigest, finalSnapshot.corpusDigest, 'Written corpus must reload to the exact verified corpus digest.');
 assert.equal(reloaded.snapshot().entryCount, finalSnapshot.entryCount, 'Written corpus must reload without entry loss.');
 
+const exactPriorCatalogReplay = priorSnapshotLoaded
+  ? appendedCurrentClasses === 0
+    && deduplicatedCurrentClasses === failureScenarios.scenarios.length
+    && finalSnapshot.entryCount === priorSnapshot.entryCount
+  : null;
 const continuityCore = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'provider-neutral-incident-regression-corpus-continuity',
   status: 'PASS',
   priorSnapshotLoaded,
@@ -128,6 +136,7 @@ const continuityCore = {
   currentScenarioClasses: failureScenarios.scenarios.length,
   appendedCurrentClasses,
   deduplicatedCurrentClasses,
+  exactPriorCatalogReplay,
   outputSnapshotSha256: sha256(outputRaw),
   outputCorpusDigest: finalSnapshot.corpusDigest,
   outputEntryCount: finalSnapshot.entryCount,
