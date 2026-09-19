@@ -100,7 +100,7 @@ export function createAttendanceReleaseEvidencePolicy({policyId,issuers=[]}={}){
   if(!Array.isArray(issuers) || issuers.length===0) throw new Error('At least one trusted evidence issuer is required.');
   const trustedIssuers=new Map();
   for(const issuer of issuers){
-    if(!issuer || !validIssuerId(issuer.issuerId) || trustedIssers?.has?.(issuer.issuerId)) throw new Error('Unique valid evidence issuerId required.');
+    if(!issuer || !validIssuerId(issuer.issuerId) || trustedIssuers.has(issuer.issuerId)) throw new Error('Unique valid evidence issuerId required.');
     let publicKey;
     try { publicKey=createPublicKey(issuer.publicKeyPem); } catch { throw new Error(`Invalid public key for issuer ${issuer.issuerId}.`); }
     if(publicKey.asymmetricKeyType!=='ed25519') throw new Error(`Issuer ${issuer.issuerId} must use Ed25519.`);
