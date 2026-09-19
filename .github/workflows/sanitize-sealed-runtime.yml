@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/sanitize-sealed-runtime.yml'
       - 'scripts/retire-legacy-presentation.mjs'
+      - 'scripts/retire-legacy-presentation.mjs'
       - 'Dockerfile'
   push:
     branches:
