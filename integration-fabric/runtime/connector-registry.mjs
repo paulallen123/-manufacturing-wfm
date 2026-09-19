@@ -88,7 +88,11 @@ export function buildConnectorRegistry(){
         arbitraryEndpointAllowed:false,
         directPlantNetworkAccess:false,
         customerEdgeRequired:edgeRequired,
-        destructiveMessageDiscoveryAllowed:false
+        destructiveMessageDiscoveryAllowed:false,
+        managementPlaneEnabled:false,
+        industrialControlEnabled:false,
+        remoteProvisioningEnabled:false,
+        agentActionEnabled:false
       }
     };
   });
