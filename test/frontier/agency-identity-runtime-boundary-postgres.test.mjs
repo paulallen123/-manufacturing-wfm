@@ -45,27 +45,29 @@ async function executeBoundary(sql,values){
  const out=await psql(`SET ROLE wfm_agency_identity_ingress_writer; ${interpolate(sql,values)}`,{timeout:10000});
  const line=out.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).at(-1);
  if(!line)throw new Error('missing boundary result');
- const [observationDuplicate,receiptDuplicate]=line.split('|');
- return {rows:[{observation_duplicate:observationDuplicate==='t',receipt_duplicate:receiptDuplicate==='t'}]};
+ const [observationDuplicate,receiptDuplicate,scopeFingerprint]=line.split('|');
+ return {rows:[{observation_duplicate:observationDuplicate==='t',receipt_duplicate:receiptDuplicate==='t',scope_fingerprint:scopeFingerprint}]};
 }
 const store=()=>createPostgresAgencyIdentityObservationIngressStore({executeBoundary});
 
-pgTest('runtime store writes through the function-only ingress credential and exact replay is idempotent',async()=>{
+pgTest('runtime store writes through the function-only ingress credential, returns DB scope evidence and exact replay is idempotent',async()=>{
  await reset();
  const first=await store().appendObservation(observation());
- assert.equal(first.duplicate,false);assert.equal(first.receiptDuplicate,false);
+ assert.equal(first.duplicate,false);assert.equal(first.receiptDuplicate,false);assert.match(first.scopeFingerprint,/^[0-9a-f]{24}$/);
  const replay=await store().appendObservation(observation());
- assert.equal(replay.duplicate,true);assert.equal(replay.receiptDuplicate,true);
+ assert.equal(replay.duplicate,true);assert.equal(replay.receiptDuplicate,true);assert.equal(replay.scopeFingerprint,first.scopeFingerprint);
  assert.equal(await scalar('SELECT count(*) FROM public.wfm_agency_identity_continuity_observations;'),'1');
  assert.equal(await scalar('SELECT count(*) FROM public.wfm_agency_identity_observation_ingress_receipts;'),'1');
  await assert.rejects(()=>psql(`SET ROLE wfm_agency_identity_ingress_writer; INSERT INTO public.wfm_agency_identity_continuity_observations (tenant_id,site_id,request_id,agency_id,worker_id,assignment_fingerprint,assurance_version_id,source_system_id,source_event_fingerprint,subject_fingerprint,signal_type,observed_at) VALUES ('T1','S1','R1','A1','W9','${ASSIGNMENT}','${ASSURANCE}','turnstile','${'9'.repeat(32)}','${SUBJECT}','access_pass',now());`),/permission denied/i);
 });
 
-pgTest('32 concurrent runtime-store replays converge to one durable identity without direct table DML',async()=>{
+pgTest('32 concurrent runtime-store replays converge to one durable identity and one DB-owned scope fingerprint',async()=>{
  await reset();
  const results=await Promise.all(Array.from({length:32},()=>store().appendObservation(observation())));
  assert.equal(results.filter(x=>x.duplicate===false).length,1);
  assert.equal(results.filter(x=>x.duplicate===true).length,31);
+ assert.equal(new Set(results.map(x=>x.scopeFingerprint)).size,1);
+ assert.match(results[0].scopeFingerprint,/^[0-9a-f]{24}$/);
  assert.equal(await scalar('SELECT count(*) FROM public.wfm_agency_identity_continuity_observations;'),'1');
  assert.equal(await scalar('SELECT count(*) FROM public.wfm_agency_identity_observation_ingress_receipts;'),'1');
 });
