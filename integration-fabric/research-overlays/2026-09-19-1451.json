@@ -111,7 +111,6 @@
       "docsUrl": "https://www.l2l.com/platform/integrations",
       "testLevel": "discovery-queued",
       "writeEnabled": false,
-      "customerEdgeRequired": false,
       "evidenceUrl": "https://www.l2l.com/platform/integrations",
       "evidenceNote": "L2L's current vendor material documents integration with ERP, MES, EAM/CMMS, scheduling, SCADA/OPC, IIoT, BI, QMS, LMS and EHS systems, and documents production actuals, scrap, downtime, minor stops, predictive maintenance, orders and spare-parts data. L2L also describes an API-first approach and Technical Services-managed integrations, plus machine-data and application-sync packages. However, the public material reviewed does not expose a sufficiently authoritative reusable API/protocol/authentication contract for WFM to choose a connector safely. The system is therefore deliberately catalogued with no adapter and remains discovery-queued rather than receiving a guessed REST, OPC or file route. No L2L tenant or credentials were used.",
       "valueReview": {
