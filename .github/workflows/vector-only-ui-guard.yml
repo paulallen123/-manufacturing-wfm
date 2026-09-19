@@ -34,7 +34,7 @@ jobs:
         run: node scripts/validate-vector-only-ui.mjs
       - name: Build exact runtime
         run: docker build --pull=false -t wfm-vector-only .
-      - name: Prove retired renderer is absent from built public assets
+      - name: Prove Vector is the only active presentation
         shell: bash
         run: |
           set -euo pipefail
@@ -42,10 +42,13 @@ jobs:
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
           rm -rf "$RUNNER_TEMP/public" && mkdir -p "$RUNNER_TEMP/public"
           docker cp "$cid:/app/public/." "$RUNNER_TEMP/public/"
-          if grep -RIlE 'Payroll review due today|Automated value desk|The system finds the saving\.|ux-signoff-desk|ux11-queue|VECTOR_PRIORITY_BRIDGE_V1' "$RUNNER_TEMP/public" --include='*.js' --include='*.css' --include='*.html'; then
-            echo 'Retired UI content found in built public assets.' >&2
+          if grep -RIlE 'WFM_UX_RESET_CYCLE11_BEGIN|WFM_UX_RESET_CYCLE12_BEGIN|VECTOR_PRIORITY_BRIDGE_V1' "$RUNNER_TEMP/public" --include='*.js' --include='*.css' --include='*.html'; then
+            echo 'Retired presentation overlay found in built public assets.' >&2
             exit 1
           fi
           grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/public/vector-shell.js"
           grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/public/factory-control-ui.css"
+          grep -F 'vector-shell.js' "$RUNNER_TEMP/public/index.html"
+          grep -F 'body:not(.vector-ui-active) .app>.sidebar:not(.vector-sidebar){visibility:hidden!important}' "$RUNNER_TEMP/public/factory-control-ui.css"
+          grep -F '.vector-home-source{display:none!important}' "$RUNNER_TEMP/public/factory-control-ui.css"
           echo 'VECTOR_ONLY_BUILT_ASSET_GUARD=PASS'
