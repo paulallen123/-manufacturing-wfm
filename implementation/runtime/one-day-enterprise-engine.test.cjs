@@ -128,6 +128,24 @@ async function createInvitation(f, tenant = 'alpha', contractRef = 'contract-001
   return { result, token };
 }
 
+function scopeFixture(tenant = 'alpha') {
+  return {
+    companyName: tenant === 'bravo' ? 'Bravo Manufacturing' : 'Alpha Manufacturing',
+    countries: ['United Kingdom'],
+    sites: ['Plant 1'],
+    employeeCount: 10000,
+    sourceSystems: ['ERP', 'Payroll', 'HCM'],
+    features: ['Scheduling', 'Time & attendance', 'Absence', 'Payroll output'],
+    workPatterns: ['24/7 rotating shifts'],
+    clockingMethods: ['Existing access control', 'Mobile fallback'],
+    payrollSystem: 'Payroll provider',
+    hcmSystem: 'HCM provider',
+    erpSystem: 'ERP provider',
+    agencyLabour: true,
+    priorities: 'Accurate payroll, safe automation and simple manager workflows'
+  };
+}
+
 async function startRun(f, tenant = 'alpha', contractRef = 'contract-001', targetHours = 8) {
   const invitation = await createInvitation(f, tenant, contractRef, targetHours);
   assert.ok(invitation.token);
@@ -137,7 +155,13 @@ async function startRun(f, tenant = 'alpha', contractRef = 'contract-001', targe
     { token: invitation.token }
   );
   assert.ok([200, 201].includes(started.status));
-  return started.body;
+  const scoped = await call(
+    f.engine, token, 'POST', '/api/implementation/autonomous/scope',
+    scopeFixture(tenant)
+  );
+  assert.ok([200, 201].includes(scoped.status));
+  assert.equal(scoped.body.scopeCaptured, true);
+  return scoped.body;
 }
 
 async function passAllEvidence(f, runId) {
@@ -444,6 +468,82 @@ test('implementation runs and decisions are tenant isolated', async () => {
       }
     );
     assert.equal(crossTenant.status, 404);
+  } finally {
+    f.close();
+  }
+});
+
+
+test('customer configuration scope is required, persisted and tenant scoped', async () => {
+  const f = fixture();
+  try {
+    const invitation = await createInvitation(f, 'alpha', 'scope-required');
+    const started = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',
+      { token: invitation.token }
+    );
+    assert.equal(started.status, 201);
+    assert.equal(started.body.scopeCaptured, false);
+    assert.equal(started.body.requirements.find(x => x.key === 'configuration-scope').satisfied, false);
+
+    const denied = await call(
+      f.engine, f.tokens.employee, 'POST', '/api/implementation/autonomous/scope',
+      scopeFixture('alpha')
+    );
+    assert.equal(denied.status, 403);
+
+    const invalid = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',
+      { companyName: 'Alpha Manufacturing', countries: [], sites: [], employeeCount: 0 }
+    );
+    assert.equal(invalid.status, 400);
+
+    const saved = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',
+      scopeFixture('alpha')
+    );
+    assert.equal(saved.status, 201);
+    assert.equal(saved.body.scopeCaptured, true);
+    assert.equal(saved.body.customerScope.employeeCount, 10000);
+    assert.equal(saved.body.requirements.find(x => x.key === 'configuration-scope').satisfied, true);
+
+    const fetched = await call(
+      f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/scope'
+    );
+    assert.equal(fetched.status, 200);
+    assert.equal(fetched.body.scopeCaptured, true);
+    assert.equal(fetched.body.scope.companyName, 'Alpha Manufacturing');
+
+    const crossTenant = await call(
+      f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/scope'
+    );
+    assert.equal(crossTenant.status, 409);
+  } finally {
+    f.close();
+  }
+});
+
+test('trusted evidence cannot bypass missing customer scope', async () => {
+  const f = fixture();
+  try {
+    const invitation = await createInvitation(f, 'alpha', 'scope-readiness-gate');
+    const started = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',
+      { token: invitation.token }
+    );
+    const evidenceReady = await passAllEvidence(f, started.body.runId);
+    assert.equal(evidenceReady.scopeCaptured, false);
+    assert.equal(evidenceReady.operationalReady, false);
+    assert.equal(evidenceReady.state, 'BUILDING');
+
+    const scoped = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',
+      scopeFixture('alpha')
+    );
+    assert.equal(scoped.status, 201);
+    assert.equal(scoped.body.scopeCaptured, true);
+    assert.equal(scoped.body.operationalReady, true);
+    assert.equal(scoped.body.state, 'READY');
   } finally {
     f.close();
   }
