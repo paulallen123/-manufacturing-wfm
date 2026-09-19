@@ -8,12 +8,16 @@ on:
       - 'ux/**'
     paths:
       - 'ux-overlay/**'
+      - 'operations/runtime/workflow-action-evidence-contract.cjs'
+      - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
       - 'Dockerfile'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
   pull_request:
     paths:
       - 'ux-overlay/**'
+      - 'operations/runtime/workflow-action-evidence-contract.cjs'
+      - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
       - 'Dockerfile'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
@@ -30,6 +34,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Prove source-owned action evidence semantics
+        run: node --test operations/runtime/workflow-action-evidence-contract.test.cjs
       - name: Refuse retired UI source
         run: node scripts/validate-vector-only-ui.mjs
       - name: Build exact runtime
