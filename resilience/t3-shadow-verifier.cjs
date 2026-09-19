@@ -16,7 +16,16 @@ function digest(value) {
 }
 
 function fail(reason) {
-  return { verified: false, reason, customerMutation: false, productionMutation: false, productionAuthorityGranted: false };
+  return {
+    verified: false,
+    reason,
+    customerMutation: false,
+    productionMutation: false,
+    productionAuthorityGranted: false,
+    modelAuthorityGranted: false,
+    executionAuthority: false,
+    automaticExecutionEligible: false,
+  };
 }
 
 function containsReusableSecretSurface(value) {
@@ -85,6 +94,9 @@ function createT3ShadowVerifier() {
       customerMutation: false,
       productionMutation: false,
       productionAuthorityGranted: false,
+      modelAuthorityGranted: false,
+      executionAuthority: false,
+      automaticExecutionEligible: false,
     };
     return { ...verificationCore, verificationDigest: digest(verificationCore) };
   }
