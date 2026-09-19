@@ -36,9 +36,21 @@ jobs:
           package-manager-cache: false
 
       - name: Run invisible-attendance regression suite
-        run: node --test clocking-security-v2/*.test.mjs
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="$RUNNER_TEMP/invisible-attendance.tap"
+          node --test --test-reporter=tap clocking-security-v2/*.test.mjs | tee "$report"
+          grep -Fxq '# fail 0' "$report" || { echo '::error::Invisible-attendance suite did not report zero failures.'; exit 1; }
+          grep -Fxq '# skipped 0' "$report" || { echo '::error::Invisible-attendance suite did not report zero skipped tests.'; exit 1; }
 
       - name: Run explicit release-grade rollback-authority suite
+        shell: bash
         env:
           WFM_RELEASE_GRADE_SECURITY: '1'
-        run: node --test clocking-security-v2/release-grade-rollback-authority.test.mjs clocking-security-v2/release-grade-anchor-provenance.security.test.mjs clocking-security-v2/signed-crash-recovery.test.mjs clocking-security-v2/signed-rollback-store-integration.test.mjs
+        run: |
+          set -euo pipefail
+          report="$RUNNER_TEMP/release-grade-rollback.tap"
+          node --test --test-reporter=tap clocking-security-v2/release-grade-rollback-authority.test.mjs clocking-security-v2/release-grade-anchor-provenance.security.test.mjs clocking-security-v2/signed-crash-recovery.test.mjs clocking-security-v2/signed-rollback-store-integration.test.mjs | tee "$report"
+          grep -Fxq '# fail 0' "$report" || { echo '::error::Release-grade rollback suite did not report zero failures.'; exit 1; }
+          grep -Fxq '# skipped 0' "$report" || { echo '::error::Release-grade rollback suite did not report zero skipped tests.'; exit 1; }
