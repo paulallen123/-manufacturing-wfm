@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { guardAgencyScheduleAuthority } from './agency-schedule-authority-guard.mjs';
 
-export const AGENCY_SCHEDULE_COMMAND_PERMIT_VERSION='agency-schedule-command-permit-v0.1.0';
+export const AGENCY_SCHEDULE_COMMAND_PERMIT_VERSION='agency-schedule-command-permit-v0.1.1';
 
 const text=(value,max=200)=>typeof value==='string'?value.trim().slice(0,max):'';
 const ms=value=>{const parsed=typeof value==='number'?value:Date.parse(value);return Number.isFinite(parsed)?parsed:null;};
@@ -67,6 +67,25 @@ function validateCommand(command,expected){
   return {ok:true,bindings};
 }
 
+// Module-private capability registry: a structurally similar object cannot impersonate a permit.
+const issuedPermits=new WeakMap();
+
+export function consumeAgencyScheduleCommandPermitAtIngress(permit,command={}){
+  const state=permit&&typeof permit==='object'?issuedPermits.get(permit):null;
+  if(!state)throw makeError('schedule_command_permit_untrusted');
+  if(!state.active)throw makeError('schedule_command_permit_expired');
+  if(state.consumed)throw makeError('schedule_command_permit_already_consumed');
+  const checked=validateCommand(command,state.expected);
+  if(!checked.ok){state.onFailure(checked.reason);throw makeError(checked.reason);}
+  state.consumed=true;
+  const expected=state.expected;
+  const evidence={type:'shadow_schedule_assignment',tenantId:expected.tenantId,siteId:expected.siteId,requestId:expected.requestId,agencyId:expected.agencyId,roleId:expected.roleId,location:expected.location,startAt:expected.startAt,endAt:expected.endAt,assignmentFingerprint:expected.assignmentFingerprint,scheduleHandoffFingerprint:expected.scheduleHandoffFingerprint,workerAssuranceBindings:checked.bindings};
+  const shadowCommandFingerprint=digest(JSON.stringify(stable(evidence)),32);
+  const envelope=Object.freeze({version:AGENCY_SCHEDULE_COMMAND_PERMIT_VERSION,acceptedForShadow:true,scheduleWriteAuthorized:false,requestId:expected.requestId,siteId:expected.siteId,agencyId:expected.agencyId,assignmentFingerprint:expected.assignmentFingerprint,scheduleHandoffFingerprint:expected.scheduleHandoffFingerprint,workerAssuranceBindings:checked.bindings,shadowCommandFingerprint,authorityBoundary:'shadow_command_envelope_only_no_live_schedule_mutation'});
+  state.onEnvelope(envelope);
+  return envelope;
+}
+
 export async function evaluateAgencyScheduleCommandPermit({tenantId,siteId,agencyId,tokenId,request,now,preflight,authorityStore,shadowScheduleCommand}={}){
   if(typeof shadowScheduleCommand!=='function')return fail('shadow_schedule_command_required',{request,siteId,agencyId});
   let requestScope;
@@ -83,25 +102,18 @@ export async function evaluateAgencyScheduleCommandPermit({tenantId,siteId,agenc
     const expectedBindings=normalizeBindings(guardContext.workerAssuranceBindings);
     if(!expectedBindings){permitFailure='schedule_command_guard_bindings_invalid';throw makeError(permitFailure);}
     const expected=Object.freeze({...requestScope,scheduleHandoffFingerprint:text(guardContext.scheduleHandoffFingerprint,32).toLowerCase(),workerAssuranceBindings:expectedBindings});
-    let active=true;let consumed=false;permitIssued=true;
-    const permit=Object.freeze({
+    const state={active:true,consumed:false,expected,onFailure:reason=>{permitFailure=reason;},onEnvelope:envelope=>{shadowEnvelope=envelope;}};
+    permitIssued=true;
+    let permit;
+    permit=Object.freeze({
       version:AGENCY_SCHEDULE_COMMAND_PERMIT_VERSION,
-      consume(command={}){
-        if(!active)throw makeError('schedule_command_permit_expired');
-        if(consumed)throw makeError('schedule_command_permit_already_consumed');
-        const checked=validateCommand(command,expected);
-        if(!checked.ok){permitFailure=checked.reason;throw makeError(checked.reason);}
-        consumed=true;
-        const evidence={type:'shadow_schedule_assignment',tenantId:expected.tenantId,siteId:expected.siteId,requestId:expected.requestId,agencyId:expected.agencyId,roleId:expected.roleId,location:expected.location,startAt:expected.startAt,endAt:expected.endAt,assignmentFingerprint:expected.assignmentFingerprint,scheduleHandoffFingerprint:expected.scheduleHandoffFingerprint,workerAssuranceBindings:checked.bindings};
-        const shadowCommandFingerprint=digest(JSON.stringify(stable(evidence)),32);
-        shadowEnvelope=Object.freeze({version:AGENCY_SCHEDULE_COMMAND_PERMIT_VERSION,acceptedForShadow:true,scheduleWriteAuthorized:false,requestId:expected.requestId,siteId:expected.siteId,agencyId:expected.agencyId,assignmentFingerprint:expected.assignmentFingerprint,scheduleHandoffFingerprint:expected.scheduleHandoffFingerprint,workerAssuranceBindings:checked.bindings,shadowCommandFingerprint,authorityBoundary:'shadow_command_envelope_only_no_live_schedule_mutation'});
-        return shadowEnvelope;
-      },
+      consume(command={}){return consumeAgencyScheduleCommandPermitAtIngress(permit,command);},
     });
+    issuedPermits.set(permit,state);
     try{
       await shadowScheduleCommand(permit);
-      if(!consumed){permitFailure='schedule_command_permit_not_consumed';throw makeError(permitFailure);}
-    }finally{active=false;}
+      if(!state.consumed){permitFailure='schedule_command_permit_not_consumed';throw makeError(permitFailure);}
+    }finally{state.active=false;}
   }});
 
   if(!guard?.guardPassed)return fail(permitFailure??guard?.reason??'schedule_command_guard_failed',{guard,request,siteId,agencyId,shadowCommandFingerprint:shadowEnvelope?.shadowCommandFingerprint??null});
