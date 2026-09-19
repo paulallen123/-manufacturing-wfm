@@ -88,6 +88,7 @@ export function buildConnectorRegistry(){
         writeEnabled:false,
         credentialInjection:'executor-boundary-only',
         arbitraryEndpointAllowed:false,
+        crossHostRedirectAllowed:false,
         directPlantNetworkAccess:false,
         customerEdgeRequired:edgeRequired,
         destructiveMessageDiscoveryAllowed:false,
