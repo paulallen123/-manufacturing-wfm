@@ -14,9 +14,12 @@ function profilesFor(system){
   return unique(out);
 }
 function routeFor(system,profiles){
+  const explicitEdge=typeof system.customerEdgeRequired==='boolean';
   if(system.customerEdgeRequired===true) return 'site-edge-gateway';
   if(system.category==='ipaas') return 'northbound-openapi-and-events';
-  if(profiles.some(x=>['opcua','mqtt','bacnet','modbus'].includes(x))) return 'site-edge-gateway';
+  // MQTT and other industrial profiles often imply a plant edge, but vendor evidence may explicitly identify a
+  // cloud-managed endpoint. In that case customerEdgeRequired:false overrides heuristic protocol routing.
+  if(!explicitEdge && profiles.some(x=>['opcua','mqtt','bacnet','modbus'].includes(x))) return 'site-edge-gateway';
   if(profiles.some(x=>['kafka','amqp','jms','schema-registry'].includes(x))) return 'event-stream-adapter';
   if(profiles.includes('files-sftp')) return 'batch-ingestion';
   if(profiles.some(x=>['rest-openapi','odata','soap','graphql','scim','webhooks-events','protobuf-rpc-http2','legacy-rpc'].includes(x))) return 'direct-cloud-adapter';

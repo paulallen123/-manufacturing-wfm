@@ -66,9 +66,11 @@ export function buildConnectorRegistry(){
   const connectors=catalog.systems.map(system=>{
     const adapters=profilesFor(system);
     const profileIds=adapters.map(x=>x.id);
-    // Some on-prem/plant systems expose only HTTPS/gRPC but still sit behind a plant-network boundary.
-    // Allow vendor evidence to require an edge without inventing an industrial protocol solely to trigger the guardrail.
-    const edgeRequired=system.customerEdgeRequired===true || profileIds.some(id=>EDGE_PROFILES.has(id));
+    // Vendor/system evidence can explicitly require an edge for protected on-prem services or explicitly waive
+    // protocol inference for vendor-managed cloud endpoints (for example cloud MQTT). Only infer when unset.
+    const edgeRequired=typeof system.customerEdgeRequired==='boolean'
+      ? system.customerEdgeRequired
+      : profileIds.some(id=>EDGE_PROFILES.has(id));
     return {
       id:system.id,
       name:system.name,
