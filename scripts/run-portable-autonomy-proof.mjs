@@ -43,7 +43,7 @@ const releaseBinding = releaseBindingComplete ? {
 } : null;
 
 const checks = [
-  ['source-syntax-and-workflow-integrity', 'scripts/validate-autonomy-source-syntax.mjs', true],
+  ['source-syntax-and-workflow-integrity', 'scripts/validate-autonomy-source-syntax.mjs', true],\n  ['proof-surface-coverage', 'scripts/validate-autonomy-proof-coverage.mjs', true],
   ['docker-build-secret-boundary', 'scripts/validate-build-secret-boundary.mjs', true],
   ['canonical-release-boundary-compatibility', 'scripts/validate-canonical-release-boundary.mjs', true],
   ['ci-provider-failover', 'scripts/validate-ci-provider-failover.mjs', true],
@@ -54,7 +54,7 @@ const checks = [
   ['support-tier-contract', 'scripts/validate-support-tier-contract.mjs', true],
   ['tier0-selfhelp', 'scripts/validate-support-selfhelp.mjs', true],
   ['tier1-provider-recovery-handoff', 'scripts/validate-provider-recovery-handoff.mjs', true],
-  ['tier2-repair-authority-separation', 'scripts/validate-autonomous-repair-factory.mjs', true],
+  ['tier2-repair-authority-separation', 'scripts/validate-autonomous-repair-factory.mjs', true],\n  ['tier2-repair-path-canonicalization', 'scripts/validate-repair-path-canonicalization.mjs', true],
   ['tier2-isolated-repair-worker', 'scripts/validate-isolated-repair-worker.mjs', true],
   ['tier2-independent-repair-verifier', 'scripts/validate-independent-repair-verifier.mjs', true],
   ['tier2-exact-artifact-disposable-staging', 'scripts/validate-disposable-staging-gate.mjs', true],
