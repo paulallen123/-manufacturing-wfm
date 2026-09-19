@@ -55,6 +55,24 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
   }
   assertSandboxAdapter(sandboxAdapter);
 
+  const trustedComponents = Object.freeze({
+    readinessVerifyReceipt: readinessGate.verifyReceipt,
+    authorityConsume: authorityGate.consume,
+    readStateDigest: sandboxAdapter.readStateDigest,
+    applyExactPlan: sandboxAdapter.applyExactPlan,
+    rollbackKnownGood: sandboxAdapter.rollbackKnownGood,
+    capabilityDigest: digest(sandboxAdapter.capability),
+  });
+
+  function runtimeComponentsIntact() {
+    return readinessGate.verifyReceipt === trustedComponents.readinessVerifyReceipt
+      && authorityGate.consume === trustedComponents.authorityConsume
+      && sandboxAdapter.readStateDigest === trustedComponents.readStateDigest
+      && sandboxAdapter.applyExactPlan === trustedComponents.applyExactPlan
+      && sandboxAdapter.rollbackKnownGood === trustedComponents.rollbackKnownGood
+      && digest(sandboxAdapter.capability) === trustedComponents.capabilityDigest;
+  }
+
   function terminal(base, detail = {}) {
     const core = {
       schemaVersion: 1,
@@ -110,7 +128,16 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
     };
 
     if (!actor) return terminal(base, { reason: 'deterministic-executor-identity-required' });
-    if (!readinessGate.verifyReceipt(readinessReceipt)) return terminal(base);
+    if (!runtimeComponentsIntact()) return terminal(base, { reason: 'trusted-component-drift-before-execution' });
+
+    let readinessValid = false;
+    try {
+      readinessValid = trustedComponents.readinessVerifyReceipt.call(readinessGate, readinessReceipt) === true;
+    } catch {
+      readinessValid = false;
+    }
+    if (!runtimeComponentsIntact()) return terminal(base, { reason: 'trusted-component-drift-before-execution' });
+    if (!readinessValid) return terminal(base);
     if (
       readinessReceipt.status !== 'execution-ready-awaiting-external-authority'
       || readinessReceipt.executionReady !== true
@@ -132,11 +159,17 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
       if (!isDigest(readinessReceipt[key])) return terminal(base, { reason: `readiness-${key}-invalid` });
     }
 
-    const observedBefore = await sandboxAdapter.readStateDigest({
-      tenant: readinessReceipt.tenant,
-      scenarioId: readinessReceipt.scenarioId,
-      incidentId: readinessReceipt.incidentId,
-    });
+    let observedBefore = null;
+    try {
+      observedBefore = await trustedComponents.readStateDigest.call(sandboxAdapter, {
+        tenant: readinessReceipt.tenant,
+        scenarioId: readinessReceipt.scenarioId,
+        incidentId: readinessReceipt.incidentId,
+      });
+    } catch {
+      observedBefore = null;
+    }
+    if (!runtimeComponentsIntact()) return terminal(base, { reason: 'trusted-component-drift-before-execution' });
     if (!isDigest(observedBefore) || observedBefore !== readinessReceipt.currentStateDigest) {
       return terminal(base, {
         reason: 'sandbox-state-drift-before-execution',
@@ -146,7 +179,7 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
 
     let authority;
     try {
-      authority = await authorityGate.consume({
+      authority = await trustedComponents.authorityConsume.call(authorityGate, {
         token: authorityToken,
         executorId: actor,
         tenant: readinessReceipt.tenant,
@@ -159,6 +192,7 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
     } catch {
       return terminal(base, { reason: 'external-execution-authority-unavailable-or-replayed' });
     }
+    if (!runtimeComponentsIntact()) return terminal(base, { reason: 'trusted-component-drift-before-execution' });
 
     const authorityValid = authority
       && authority.authorised === true
@@ -184,7 +218,7 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
 
     let applied;
     try {
-      applied = await sandboxAdapter.applyExactPlan({
+      applied = await trustedComponents.applyExactPlan.call(sandboxAdapter, {
         tenant: readinessReceipt.tenant,
         scenarioId: readinessReceipt.scenarioId,
         incidentId: readinessReceipt.incidentId,
@@ -199,8 +233,10 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
     } catch {
       applied = null;
     }
+    const componentDriftAfterApply = !runtimeComponentsIntact();
 
-    const appliedSafe = applied
+    const appliedSafe = !componentDriftAfterApply
+      && applied
       && applied.accepted === true
       && applied.tenant === readinessReceipt.tenant
       && applied.scenarioId === readinessReceipt.scenarioId
@@ -240,7 +276,7 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
 
     let currentAfterFailure = null;
     try {
-      currentAfterFailure = await sandboxAdapter.readStateDigest({
+      currentAfterFailure = await trustedComponents.readStateDigest.call(sandboxAdapter, {
         tenant: readinessReceipt.tenant,
         scenarioId: readinessReceipt.scenarioId,
         incidentId: readinessReceipt.incidentId,
@@ -251,7 +287,7 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
 
     let rollback;
     try {
-      rollback = await sandboxAdapter.rollbackKnownGood({
+      rollback = await trustedComponents.rollbackKnownGood.call(sandboxAdapter, {
         tenant: readinessReceipt.tenant,
         scenarioId: readinessReceipt.scenarioId,
         incidentId: readinessReceipt.incidentId,
@@ -281,7 +317,9 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
     if (rollbackGreen) {
       return terminal(base, {
         status: 'sandbox-rolled-back-known-good',
-        reason: appliedSafe ? 'sandbox-postcondition-mismatch' : 'sandbox-apply-result-invalid',
+        reason: componentDriftAfterApply
+          ? 'trusted-component-drift-after-sandbox-apply'
+          : appliedSafe ? 'sandbox-postcondition-mismatch' : 'sandbox-apply-result-invalid',
         sandboxMutation: true,
         observedBeforeStateDigest: observedBefore,
         observedAfterStateDigest: isDigest(currentAfterFailure) ? currentAfterFailure : null,
@@ -297,8 +335,10 @@ function createT3DeterministicExecutionSandbox({ readinessGate, authorityGate, s
 
     return terminal(base, {
       status: 'sandbox-contained-reset-required',
-      reason: appliedSafe ? 'sandbox-postcondition-and-rollback-verification-failed' : 'sandbox-apply-and-rollback-verification-failed',
-      sandboxMutation: Boolean(appliedSafe || rollback),
+      reason: componentDriftAfterApply
+        ? 'trusted-component-drift-and-rollback-verification-failed'
+        : appliedSafe ? 'sandbox-postcondition-and-rollback-verification-failed' : 'sandbox-apply-and-rollback-verification-failed',
+      sandboxMutation: Boolean(appliedSafe || applied || rollback),
       observedBeforeStateDigest: observedBefore,
       observedAfterStateDigest: isDigest(currentAfterFailure) ? currentAfterFailure : null,
       authorityReceiptDigest: authority.authorityReceiptDigest,
