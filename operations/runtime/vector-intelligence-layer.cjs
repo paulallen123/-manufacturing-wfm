@@ -45,8 +45,12 @@ function compact(v,max=400){ return String(v??'').trim().replace(/\s+/g,' ').sli
 function numberOrNull(v){ const n=Number(v); return Number.isFinite(n)?n:null; }
 
 function normalizeRole(input={}){
-  const raw=compact(input.role||input.roleName||input.title||input.jobTitle||'',100).toLowerCase();
-  const siteCount=numberOrNull(input.siteCount)??(Array.isArray(input.siteIds)?input.siteIds.length:null);
+  const authoritativeRaw=compact(input.role||'',100).toLowerCase();
+  const inferredRaw=compact(input.roleName||input.title||input.jobTitle||'',100).toLowerCase();
+  const raw=authoritativeRaw||inferredRaw;
+  const siteCount=authoritativeRaw
+    ? null
+    : (numberOrNull(input.siteCount)??(Array.isArray(input.siteIds)?input.siteIds.length:null));
   if(/director|chief|\bmd\b|executive|vp|vice president/.test(raw)) return ROLE_PROFILES.DIRECTOR;
   if(/ops|operations|regional|area|group|multi.?site/.test(raw)||(siteCount!==null&&siteCount>1)) return ROLE_PROFILES.OPS_MANAGER;
   if(/manager|supervisor|team leader|shift leader|planner/.test(raw)) return ROLE_PROFILES.SITE_MANAGER;
