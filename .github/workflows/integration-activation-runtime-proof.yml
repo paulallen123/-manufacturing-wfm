@@ -3,7 +3,7 @@ name: Integration Activation Runtime Proof
 on:
   push:
     branches:
-      - 'automation/integration-activation-gate-20260919-r11'
+      - 'automation/integration-proof-worker-20260919-r12'
     paths:
       - 'integration/runtime/**'
       - '.github/workflows/integration-activation-runtime-proof.yml'
@@ -45,6 +45,7 @@ jobs:
           node --test integration/runtime/provider-proof-lifecycle.test.cjs
           node --test integration/runtime/provider-proof-maintenance.test.cjs
           node --test integration/runtime/provider-proof-maintenance-ledger.test.cjs
+          node --test integration/runtime/provider-proof-maintenance-worker.test.cjs
           node --test integration/runtime/apply-handoff-ledger.test.cjs
           node --test integration/runtime/runtime-ingestion-gate.test.cjs
           node --test integration/runtime/connection-health-summary.test.cjs
