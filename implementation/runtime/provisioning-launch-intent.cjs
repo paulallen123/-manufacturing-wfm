@@ -81,7 +81,8 @@ function normaliseContract(contract, contractReceiptKey) {
     tenantId: requiredString(contract.tenantId, 'WFM_TENANT_REQUIRED', 'Tenant id is required.'),
     completedAt: requiredString(contract.completedAt, 'WFM_CONTRACT_COMPLETED_AT_REQUIRED', 'Contract completion time is required.'),
     eventId: requiredString(contract.eventId, 'WFM_CONTRACT_EVENT_ID_REQUIRED', 'Contract event id is required.'),
-    receiptSha256: receipt.receiptSha256
+    receiptSha256: receipt.receiptSha256,
+    verificationReceipt: clone(receipt.receipt)
   };
 }
 
@@ -149,7 +150,8 @@ function createLaunchIntent({ scope, contract, build, plan }, { contractReceiptK
     completionEvidence: {
       authenticated: true,
       eventId: completedContract.eventId,
-      receiptSha256: completedContract.receiptSha256
+      receiptSha256: completedContract.receiptSha256,
+      verificationReceipt: completedContract.verificationReceipt
     },
     intentDigest,
     queueKey
