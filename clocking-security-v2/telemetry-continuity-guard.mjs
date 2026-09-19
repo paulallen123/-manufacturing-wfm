@@ -18,13 +18,14 @@ function signatureBytes(value){
 
 const OBSERVATION_KINDS=new Set(['heartbeat','backfill_heartbeat','canary']);
 
-export function telemetryObserverPayload({trustDomain,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}){
+export function telemetryObserverPayload({trustDomain,observerSessionId,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}){
   const domain=id(trustDomain,'trustDomain');
+  const session=id(observerSessionId,'observerSessionId');
   const observationKind=id(kind,'kind');
   if(!OBSERVATION_KINDS.has(observationKind)) throw new Error('Telemetry observation kind is invalid.');
   const name=id(stream,'stream');
   const observed=int(observedAtMs,'observedAtMs');
-  const payload={v:1,trustDomain:domain,kind:observationKind,stream:name,observedAtMs:observed};
+  const payload={v:2,trustDomain:domain,observerSessionId:session,kind:observationKind,stream:name,observedAtMs:observed};
   if(observationKind==='canary'){
     payload.canaryId=id(canaryId,'canaryId');
     payload.emittedAtMs=int(emittedAtMs,'emittedAtMs');
@@ -39,14 +40,15 @@ export function telemetryObserverPayload({trustDomain,kind,stream,sequence,canar
  *
  * Promotion evidence needs a fresh sequenced heartbeat plus a recent independently
  * expected canary on each required telemetry stream. All observations must be
- * signed by an allow-listed independent observer and are bound to one trust domain,
- * so a monitored workload cannot manufacture healthy telemetry or replay another
- * customer's/site's signed evidence. Canary proof is also bound to the exact
- * emission instance so a valid observation from a previous process cannot be
- * replayed if an identifier is reused after restart. Sequence gaps remain unresolved
- * until every missing sequence is explicitly observed through the signed backfill path.
+ * signed by an allow-listed independent observer and are bound to one trust domain
+ * plus a fresh per-process observer session, so signed evidence from a previous
+ * process cannot be replayed after restart even if sequence numbers, canary IDs or
+ * timestamps are reused. Sequence gaps remain unresolved until every missing
+ * sequence is explicitly observed through the signed backfill path.
  */
 export class TelemetryContinuityGuard {
+  #observerSessionId;
+
   constructor({
     trustDomain,
     trustedObservers,
@@ -79,8 +81,13 @@ export class TelemetryContinuityGuard {
     this.maxClockSkewMs=int(maxClockSkewMs,'maxClockSkewMs');
     this.maxCanaryHistory=int(maxCanaryHistory,'maxCanaryHistory');
     if(this.maxCanaryHistory<1) throw new Error('maxCanaryHistory must be at least 1.');
+    this.#observerSessionId=crypto.randomUUID();
     this.streams=new Map();
     this.canaries=new Map();
+  }
+
+  observerChallenge(){
+    return Object.freeze({trustDomain:this.trustDomain,observerSessionId:this.#observerSessionId});
   }
 
   _verifyObserver({observerId,signature,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}){
@@ -89,7 +96,7 @@ export class TelemetryContinuityGuard {
     if(!observer) throw new Error('Telemetry observation is not from a trusted observer.');
     const name=id(stream,'stream');
     if(!observer.streams.has(name)) throw new Error('Telemetry observer is not authorised for this stream.');
-    const payload=telemetryObserverPayload({trustDomain:this.trustDomain,kind,stream:name,sequence,canaryId,emittedAtMs,observedAtMs});
+    const payload=telemetryObserverPayload({trustDomain:this.trustDomain,observerSessionId:this.#observerSessionId,kind,stream:name,sequence,canaryId,emittedAtMs,observedAtMs});
     if(!crypto.verify(null,payload,observer.publicKey,signatureBytes(signature))) throw new Error('Telemetry observer signature verification failed.');
     return oid;
   }
