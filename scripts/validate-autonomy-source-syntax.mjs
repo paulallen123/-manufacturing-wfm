@@ -47,6 +47,7 @@ const jsFiles = [
   'scripts/validate-t4-outer-terminal-integrity.mjs',
   'scripts/validate-autonomy-control-loop.mjs',
   'scripts/validate-incident-learning-planner.mjs',
+  'scripts/validate-historical-incident-replay.mjs',
 ];
 
 const checked = [];
@@ -120,6 +121,7 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-t4-outer-terminal-integrity.mjs'",
   "      - 'scripts/validate-autonomy-control-loop.mjs'",
   "      - 'scripts/validate-incident-learning-planner.mjs'",
+  "      - 'scripts/validate-historical-incident-replay.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
   "      - 'scripts/run-portable-autonomy-proof.mjs'",
 ];
@@ -155,8 +157,9 @@ for (const required of [
   "? 'EXACT_RUNTIME_RELEASE_ELIGIBLE'",
   ": exactRuntime ? 'EXACT_RUNTIME_LOGIC_ONLY' : 'NON_EXACT_LOGIC_ONLY'",
   'canonicalReleaseEvidenceBound: releaseClaimAllowed',
+  "['historical-incident-replay-and-learning', 'scripts/validate-historical-incident-replay.mjs', true]",
 ]) {
-  assert.ok(portableProofSource.includes(required), `Portable proof lost release-trust regression guard: ${required}`);
+  assert.ok(portableProofSource.includes(required), `Portable proof lost release-trust/regression guard: ${required}`);
 }
 
 console.log(JSON.stringify({
@@ -191,6 +194,7 @@ console.log(JSON.stringify({
   incidentLearningAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
   workflowCriticalPathsPresent: true,
+  historicalReplayRequiredByPortableProof: true,
   canonicalTrustAnchorClassificationRequired: true,
   exactRuntimeLogicProofContinuesWhenReleaseTrustBlocked: true,
   authenticatedCanonicalRevalidationRequired: true,
