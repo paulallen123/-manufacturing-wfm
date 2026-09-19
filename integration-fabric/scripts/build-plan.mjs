@@ -14,6 +14,7 @@ function profilesFor(system){
   return unique(out);
 }
 function routeFor(system,profiles){
+  if(system.customerEdgeRequired===true) return 'site-edge-gateway';
   if(system.category==='ipaas') return 'northbound-openapi-and-events';
   if(profiles.some(x=>['opcua','mqtt','bacnet','modbus'].includes(x))) return 'site-edge-gateway';
   if(profiles.some(x=>['kafka','amqp','jms','schema-registry'].includes(x))) return 'event-stream-adapter';
