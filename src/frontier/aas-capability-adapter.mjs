@@ -1,9 +1,10 @@
 import { extractIdta02020CapabilityProfile, isIdta02020CapabilitySubmodel } from './idta-02020-capability-profile.mjs';
 import { normalizeIdta02020InstanceSubmodels } from './idta-02020-instance-compat.mjs';
+import { enrichIdta02020ProfileFromPublicInstances } from './idta-02020-public-instance.mjs';
 
 const CONTAINER_KEYS = ['submodelElements', 'value', 'statements', 'annotations'];
 
-export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.5.0';
+export const AAS_CAPABILITY_ADAPTER_VERSION = 'aas-capability-adapter-v0.6.0';
 
 function canonicalReference(reference) {
   const keys = Array.isArray(reference?.keys) ? reference.keys.filter((key) => key?.value) : [];
@@ -26,8 +27,9 @@ function pushChildren(node, depth, stack) {
 export function extractAasCapabilities(submodels = [], { maxElements = 10_000, maxDepth = 12, conceptDescriptions = [] } = {}) {
   const normalized = normalizeIdta02020InstanceSubmodels(submodels);
   const normalizedSubmodels = normalized.submodels;
-  const profile = extractIdta02020CapabilityProfile(normalizedSubmodels, { maxElements, maxDepth, conceptDescriptions });
-  if (profile.status !== 'accepted') return { status: 'rejected', reason: profile.reason, capabilities: [] };
+  const baseProfile = extractIdta02020CapabilityProfile(normalizedSubmodels, { maxElements, maxDepth, conceptDescriptions });
+  if (baseProfile.status !== 'accepted') return { status: 'rejected', reason: baseProfile.reason, capabilities: [] };
+  const profile = enrichIdta02020ProfileFromPublicInstances(baseProfile, normalizedSubmodels);
 
   const capabilities = [...profile.offered];
   const requiredCapabilities = [...profile.required];
@@ -85,6 +87,7 @@ export function extractAasCapabilities(submodels = [], { maxElements = 10_000, m
       reviewRequiredCount: reviewRequired.length,
       normalizedInstanceProperties: normalized.normalizedProperties,
       normalizedSemanticAliases: normalized.normalizedAliases,
+      publicInstanceEnrichment: profile.publicInstanceEnrichment,
       sourceMutation: normalized.sourceMutation,
     },
   };
