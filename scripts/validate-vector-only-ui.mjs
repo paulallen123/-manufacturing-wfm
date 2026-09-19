@@ -54,6 +54,7 @@ else {
   if(vector.includes("const times=['06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00']")) violations.push({type:'planning-timeline-invented',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes("status:'Open source planning',tone:'grey',width:null")) violations.push({type:'planning-state-not-neutral',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('Status and coverage shown only when verified by the source workflow')) violations.push({type:'planning-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('background:none;border-left:0')||!vector.includes('background:#eef1f5;box-shadow:none;color:#43546d')) violations.push({type:'planning-neutral-visual-contract-missing',path:'ux-overlay/vector-shell.js'});
 }
 
 if(violations.length){
