@@ -1,5 +1,6 @@
 import { isOpaqueReference, validateConnectionProfile } from './connection-contract.mjs';
 import { missingProviderConfigRefs, providerCompatibility, validateProviderManifest } from './connection-setup-plan.mjs';
+import { transportSafetyRequirements, validateTransportSafetyEvidence } from './transport-safety.mjs';
 
 const FORBIDDEN_RESULT_KEYS = new Set([
   'records', 'rows', 'items', 'payload', 'body', 'rawPayload', 'rawRecords', 'rawRows',
@@ -50,7 +51,11 @@ function buildBaseRequest(profile, manifest, policy) {
     scope: profile.scope,
     providerKey: manifest.providerKey,
     direction: profile.direction || 'inbound',
-    transport: { kind: profile.transport.kind, endpointRef: profile.transport.endpointRef },
+    transport: {
+      kind: profile.transport.kind,
+      endpointRef: profile.transport.endpointRef,
+      requiredSafetyEvidence: transportSafetyRequirements(profile.transport.kind)
+    },
     authentication: {
       method: profile.authentication.method,
       credentialRef: profile.authentication.credentialRef,
@@ -71,6 +76,9 @@ function basicReadiness(profile, manifest, executor) {
   const policy = safePolicy(manifest);
   errors.push(...policy.errors);
   errors.push(...validateExecutor(executor));
+  if (profile?.transport?.kind && transportSafetyRequirements(profile.transport.kind).length === 0) {
+    errors.push(`transport safety policy is not defined for ${profile.transport.kind}`);
+  }
   return { errors, policy: policy.policy || null };
 }
 
@@ -94,6 +102,7 @@ function validateProbeResult(result, profile, manifest, policy) {
   if (!isObject(result)) return ['trusted executor returned an invalid result'];
   const forbidden = findForbiddenResultKeys(result);
   if (forbidden.length) errors.push(`trusted executor returned raw/sensitive payload fields: ${forbidden.join(', ')}`);
+  if (!isOpaqueReference(result.evidenceRef)) errors.push('reviewable connection-test evidence reference is missing');
   if (result.providerCallObserved !== true) errors.push('provider call was not observed');
   if (result.providerIdentity?.verified !== true || result.providerIdentity?.providerKey !== manifest.providerKey) {
     errors.push('provider identity was not verified against the requested provider');
@@ -109,6 +118,7 @@ function validateProbeResult(result, profile, manifest, policy) {
   if (result.mutationObserved !== false) errors.push('connection test did not prove absence of provider/workforce mutation');
   if (result.rawSensitiveDataPersisted !== false) errors.push('connection test did not prove raw sensitive data was not persisted');
   if (result.workforceApplyObserved !== false) errors.push('connection test did not prove workforce apply was disabled');
+  errors.push(...validateTransportSafetyEvidence(profile, result));
   if (result.reconciliation?.status !== 'passed') errors.push('bounded source/staging reconciliation did not pass');
   if (!Number.isInteger(result.reconciliation?.sourceCount) || !Number.isInteger(result.reconciliation?.stagedCount)) {
     errors.push('reconciliation counts are missing');
@@ -138,7 +148,7 @@ export async function runSafeConnectionTest(profile, manifest, executor) {
     providerCallObserved: true, providerIdentityVerified: true, authenticationObserved: true,
     boundedSampleObserved: true, mutationObserved: false, rawSensitiveDataPersisted: false,
     schemaEvidenceRef: result.schemaEvidenceRef, sampleRecordCount: result.sampleRecordCount,
-    sampleBytes: result.sampleBytes,
+    sampleBytes: result.sampleBytes, transportSafety: result.transportSafety,
     reconciliation: {
       status: 'passed', observedBy: 'trusted_executor', evidenceRef: result.reconciliation.evidenceRef,
       sourceCount: result.reconciliation.sourceCount, stagedCount: result.reconciliation.stagedCount
