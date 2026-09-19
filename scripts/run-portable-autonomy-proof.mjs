@@ -63,6 +63,7 @@ const checks = [
   ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
   ['incident-learning-and-never-automate-boundary', 'scripts/validate-incident-learning-planner.mjs', true],
   ['historical-incident-replay-and-learning', 'scripts/validate-historical-incident-replay.mjs', true],
+  ['append-only-incident-regression-corpus', 'scripts/validate-incident-regression-corpus.mjs', true],
 ];
 
 const results = [];
