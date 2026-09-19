@@ -14,209 +14,887 @@
   "profiles": [
     {
       "id": "platform",
-      "categoryIncludes": ["dev-platform", "cloud-platform", "collaboration"],
-      "requiredPermissions": ["service metadata/read scope", "tenant-scoped read access only"],
-      "dataAvailableOrExpected": ["service/resource metadata", "deployment or document metadata", "audit/change timestamps"],
-      "wfmObjects": ["integration-health", "implementation-evidence", "audit-event"],
-      "writeBackAutomation": ["implementation evidence collection", "connector health and release evidence"],
-      "customerValue": ["faster implementation", "reduced support administration", "better auditability"],
-      "savingsHypotheses": ["reduce implementation and support handling time", "reduce manual evidence gathering"],
-      "dataGaps": ["business workforce data normally remains in upstream operational systems"]
+      "categoryIncludes": [
+        "dev-platform",
+        "cloud-platform",
+        "collaboration"
+      ],
+      "requiredPermissions": [
+        "service metadata/read scope",
+        "tenant-scoped read access only"
+      ],
+      "dataAvailableOrExpected": [
+        "service/resource metadata",
+        "deployment or document metadata",
+        "audit/change timestamps"
+      ],
+      "wfmObjects": [
+        "integration-health",
+        "implementation-evidence",
+        "audit-event"
+      ],
+      "writeBackAutomation": [
+        "implementation evidence collection",
+        "connector health and release evidence"
+      ],
+      "customerValue": [
+        "faster implementation",
+        "reduced support administration",
+        "better auditability"
+      ],
+      "savingsHypotheses": [
+        "reduce implementation and support handling time",
+        "reduce manual evidence gathering"
+      ],
+      "dataGaps": [
+        "business workforce data normally remains in upstream operational systems"
+      ]
     },
     {
       "id": "erp-finance",
-      "categoryIncludes": ["erp", "finance"],
-      "requiredPermissions": ["read workers/cost centres where available", "read production/order/cost data where available", "read financial dimensions needed for labour attribution"],
-      "dataAvailableOrExpected": ["employees or resources", "cost centres and legal entities", "production/work orders", "actual and standard costs", "purchase/vendor data", "financial dimensions"],
-      "wfmObjects": ["worker", "organisation-unit", "production-demand", "labour-cost", "cost-centre", "site"],
-      "writeBackAutomation": ["approved time or labour-cost export", "cost-centre and organisation synchronisation", "production-demand driven staffing triggers"],
-      "customerValue": ["finance attribution", "labour-cost visibility", "better staffing forecasts", "reduced reconciliation administration"],
-      "savingsHypotheses": ["reduce manual payroll-to-GL reconciliation", "identify labour-cost variance by order/site/shift", "avoid overstaffing against production demand"],
-      "dataGaps": ["worker-level labour detail may live in HCM/WFM rather than ERP", "production granularity varies by ERP and module"]
+      "categoryIncludes": [
+        "erp",
+        "finance"
+      ],
+      "requiredPermissions": [
+        "read workers/cost centres where available",
+        "read production/order/cost data where available",
+        "read financial dimensions needed for labour attribution"
+      ],
+      "dataAvailableOrExpected": [
+        "employees or resources",
+        "cost centres and legal entities",
+        "production/work orders",
+        "actual and standard costs",
+        "purchase/vendor data",
+        "financial dimensions"
+      ],
+      "wfmObjects": [
+        "worker",
+        "organisation-unit",
+        "production-demand",
+        "labour-cost",
+        "cost-centre",
+        "site"
+      ],
+      "writeBackAutomation": [
+        "approved time or labour-cost export",
+        "cost-centre and organisation synchronisation",
+        "production-demand driven staffing triggers"
+      ],
+      "customerValue": [
+        "finance attribution",
+        "labour-cost visibility",
+        "better staffing forecasts",
+        "reduced reconciliation administration"
+      ],
+      "savingsHypotheses": [
+        "reduce manual payroll-to-GL reconciliation",
+        "identify labour-cost variance by order/site/shift",
+        "avoid overstaffing against production demand"
+      ],
+      "dataGaps": [
+        "worker-level labour detail may live in HCM/WFM rather than ERP",
+        "production granularity varies by ERP and module"
+      ]
     },
     {
       "id": "people-workforce",
-      "categoryIncludes": ["hcm", "payroll", "wfm", "external-workforce"],
-      "requiredPermissions": ["least-privilege worker read", "employment/organisation read", "time/payroll read only when required", "PII minimisation"],
-      "dataAvailableOrExpected": ["worker identity", "employment status", "organisation and manager", "contract or pay attributes", "absence/leave", "time and schedule data", "skills or qualifications where supported"],
-      "wfmObjects": ["worker", "employment", "absence", "shift", "time-event", "skill", "pay-rule", "organisation-unit"],
-      "writeBackAutomation": ["joiner/mover/leaver synchronisation", "approved time export", "absence and schedule synchronisation", "payroll exception workflow"],
-      "customerValue": ["single worker source of truth", "payroll accuracy", "overtime reduction", "absence optimisation", "faster onboarding/offboarding", "agency-labour reduction"],
-      "savingsHypotheses": ["reduce duplicate employee administration", "prevent payroll leakage and missed exceptions", "reduce avoidable overtime and agency spend", "shorten new-starter readiness time"],
-      "dataGaps": ["pay detail is highly sensitive and jurisdiction-specific", "skills/training may be held in LMS or QMS rather than HCM"]
+      "categoryIncludes": [
+        "hcm",
+        "payroll",
+        "wfm",
+        "external-workforce"
+      ],
+      "requiredPermissions": [
+        "least-privilege worker read",
+        "employment/organisation read",
+        "time/payroll read only when required",
+        "PII minimisation"
+      ],
+      "dataAvailableOrExpected": [
+        "worker identity",
+        "employment status",
+        "organisation and manager",
+        "contract or pay attributes",
+        "absence/leave",
+        "time and schedule data",
+        "skills or qualifications where supported"
+      ],
+      "wfmObjects": [
+        "worker",
+        "employment",
+        "absence",
+        "shift",
+        "time-event",
+        "skill",
+        "pay-rule",
+        "organisation-unit"
+      ],
+      "writeBackAutomation": [
+        "joiner/mover/leaver synchronisation",
+        "approved time export",
+        "absence and schedule synchronisation",
+        "payroll exception workflow"
+      ],
+      "customerValue": [
+        "single worker source of truth",
+        "payroll accuracy",
+        "overtime reduction",
+        "absence optimisation",
+        "faster onboarding/offboarding",
+        "agency-labour reduction"
+      ],
+      "savingsHypotheses": [
+        "reduce duplicate employee administration",
+        "prevent payroll leakage and missed exceptions",
+        "reduce avoidable overtime and agency spend",
+        "shorten new-starter readiness time"
+      ],
+      "dataGaps": [
+        "pay detail is highly sensitive and jurisdiction-specific",
+        "skills/training may be held in LMS or QMS rather than HCM"
+      ]
     },
     {
       "id": "production",
-      "categoryIncludes": ["mes", "frontline-operations"],
-      "requiredPermissions": ["read production orders/operations", "read execution events", "read work-centre/resource state"],
-      "dataAvailableOrExpected": ["production orders", "operations and routing", "work centres", "quantities and scrap", "cycle/operation timestamps", "operator or labour confirmations where available"],
-      "wfmObjects": ["production-demand", "work-centre", "production-event", "labour-requirement", "shift-outcome"],
-      "writeBackAutomation": ["demand-driven labour-plan refresh", "disruption/recovery workflow", "approved labour confirmation where supported"],
-      "customerValue": ["production throughput", "schedule efficiency", "labour-to-output visibility", "downtime response", "better shift planning"],
-      "savingsHypotheses": ["reduce idle labour during production disruption", "reduce understaffing-related throughput loss", "measure labour cost per unit/order", "improve recovery from line stoppages"],
-      "dataGaps": ["operator identity may be pseudonymous or absent", "machine state may require SCADA/IIoT integration"]
+      "categoryIncludes": [
+        "mes",
+        "frontline-operations"
+      ],
+      "requiredPermissions": [
+        "read production orders/operations",
+        "read execution events",
+        "read work-centre/resource state"
+      ],
+      "dataAvailableOrExpected": [
+        "production orders",
+        "operations and routing",
+        "work centres",
+        "quantities and scrap",
+        "cycle/operation timestamps",
+        "operator or labour confirmations where available"
+      ],
+      "wfmObjects": [
+        "production-demand",
+        "work-centre",
+        "production-event",
+        "labour-requirement",
+        "shift-outcome"
+      ],
+      "writeBackAutomation": [
+        "demand-driven labour-plan refresh",
+        "disruption/recovery workflow",
+        "approved labour confirmation where supported"
+      ],
+      "customerValue": [
+        "production throughput",
+        "schedule efficiency",
+        "labour-to-output visibility",
+        "downtime response",
+        "better shift planning"
+      ],
+      "savingsHypotheses": [
+        "reduce idle labour during production disruption",
+        "reduce understaffing-related throughput loss",
+        "measure labour cost per unit/order",
+        "improve recovery from line stoppages"
+      ],
+      "dataGaps": [
+        "operator identity may be pseudonymous or absent",
+        "machine state may require SCADA/IIoT integration"
+      ]
     },
     {
       "id": "maintenance",
-      "categoryIncludes": ["eam", "cmms"],
-      "requiredPermissions": ["read assets", "read work orders", "read maintenance plans and status"],
-      "dataAvailableOrExpected": ["assets and locations", "work orders", "failure/priority/status", "planned maintenance", "technician assignment where available", "parts requirements where available"],
-      "wfmObjects": ["asset", "maintenance-work", "skill-demand", "labour-requirement", "disruption-event"],
-      "writeBackAutomation": ["maintenance staffing demand", "skills-qualified technician matching", "production/maintenance conflict alerting"],
-      "customerValue": ["downtime reduction", "maintenance coordination", "skills deployment", "reduced emergency overtime"],
-      "savingsHypotheses": ["reduce maintenance-related production loss", "reduce emergency callout/overtime", "avoid assigning unqualified labour"],
-      "dataGaps": ["work-order labour standards and technician skills may be incomplete"]
+      "categoryIncludes": [
+        "eam",
+        "cmms"
+      ],
+      "requiredPermissions": [
+        "read assets",
+        "read work orders",
+        "read maintenance plans and status"
+      ],
+      "dataAvailableOrExpected": [
+        "assets and locations",
+        "work orders",
+        "failure/priority/status",
+        "planned maintenance",
+        "technician assignment where available",
+        "parts requirements where available"
+      ],
+      "wfmObjects": [
+        "asset",
+        "maintenance-work",
+        "skill-demand",
+        "labour-requirement",
+        "disruption-event"
+      ],
+      "writeBackAutomation": [
+        "maintenance staffing demand",
+        "skills-qualified technician matching",
+        "production/maintenance conflict alerting"
+      ],
+      "customerValue": [
+        "downtime reduction",
+        "maintenance coordination",
+        "skills deployment",
+        "reduced emergency overtime"
+      ],
+      "savingsHypotheses": [
+        "reduce maintenance-related production loss",
+        "reduce emergency callout/overtime",
+        "avoid assigning unqualified labour"
+      ],
+      "dataGaps": [
+        "work-order labour standards and technician skills may be incomplete"
+      ]
     },
     {
       "id": "supply-chain",
-      "categoryIncludes": ["wms", "supply-chain", "planning", "logistics"],
-      "requiredPermissions": ["read demand/order/inventory events", "read location and shipment status"],
-      "dataAvailableOrExpected": ["inventory and warehouse workload", "receipts/picks/shipments", "orders and demand", "transport milestones", "forecast/planning signals"],
-      "wfmObjects": ["warehouse-demand", "labour-requirement", "site", "shift-outcome", "logistics-event"],
-      "writeBackAutomation": ["warehouse labour demand refresh", "late shipment staffing response", "peak-volume schedule recommendation"],
-      "customerValue": ["inventory/logistics efficiency", "reduced agency labour", "better peak staffing", "improved service levels"],
-      "savingsHypotheses": ["reduce warehouse overstaffing and agency spend", "reduce missed dispatches caused by labour mismatch"],
-      "dataGaps": ["labour standards may need engineered standards or historical learning rather than WMS data alone"]
+      "categoryIncludes": [
+        "wms",
+        "supply-chain",
+        "planning",
+        "logistics"
+      ],
+      "requiredPermissions": [
+        "read demand/order/inventory events",
+        "read location and shipment status"
+      ],
+      "dataAvailableOrExpected": [
+        "inventory and warehouse workload",
+        "receipts/picks/shipments",
+        "orders and demand",
+        "transport milestones",
+        "forecast/planning signals"
+      ],
+      "wfmObjects": [
+        "warehouse-demand",
+        "labour-requirement",
+        "site",
+        "shift-outcome",
+        "logistics-event"
+      ],
+      "writeBackAutomation": [
+        "warehouse labour demand refresh",
+        "late shipment staffing response",
+        "peak-volume schedule recommendation"
+      ],
+      "customerValue": [
+        "inventory/logistics efficiency",
+        "reduced agency labour",
+        "better peak staffing",
+        "improved service levels"
+      ],
+      "savingsHypotheses": [
+        "reduce warehouse overstaffing and agency spend",
+        "reduce missed dispatches caused by labour mismatch"
+      ],
+      "dataGaps": [
+        "labour standards may need engineered standards or historical learning rather than WMS data alone"
+      ]
     },
     {
       "id": "quality-engineering",
-      "categoryIncludes": ["qms", "plm"],
-      "requiredPermissions": ["read change/quality records", "read controlled-document metadata", "read product/BOM context where applicable"],
-      "dataAvailableOrExpected": ["quality events", "non-conformance/CAPA context", "engineering changes", "BOM/product revisions", "controlled document and training context"],
-      "wfmObjects": ["qualification-requirement", "skill", "production-risk", "change-event", "compliance-event"],
-      "writeBackAutomation": ["retraining/acknowledgement workflow", "skill eligibility refresh", "quality-risk staffing restriction"],
-      "customerValue": ["compliance", "skills deployment", "quality-cost reduction", "faster engineering-change readiness"],
-      "savingsHypotheses": ["avoid assigning workers whose qualification is stale after a change", "reduce quality escapes and retraining administration"],
-      "dataGaps": ["training completion may be stored in LMS/QMS rather than PLM"]
+      "categoryIncludes": [
+        "qms",
+        "plm"
+      ],
+      "requiredPermissions": [
+        "read change/quality records",
+        "read controlled-document metadata",
+        "read product/BOM context where applicable"
+      ],
+      "dataAvailableOrExpected": [
+        "quality events",
+        "non-conformance/CAPA context",
+        "engineering changes",
+        "BOM/product revisions",
+        "controlled document and training context"
+      ],
+      "wfmObjects": [
+        "qualification-requirement",
+        "skill",
+        "production-risk",
+        "change-event",
+        "compliance-event"
+      ],
+      "writeBackAutomation": [
+        "retraining/acknowledgement workflow",
+        "skill eligibility refresh",
+        "quality-risk staffing restriction"
+      ],
+      "customerValue": [
+        "compliance",
+        "skills deployment",
+        "quality-cost reduction",
+        "faster engineering-change readiness"
+      ],
+      "savingsHypotheses": [
+        "avoid assigning workers whose qualification is stale after a change",
+        "reduce quality escapes and retraining administration"
+      ],
+      "dataGaps": [
+        "training completion may be stored in LMS/QMS rather than PLM"
+      ]
     },
     {
       "id": "access-control",
-      "categoryIncludes": ["access-control"],
-      "requiredPermissions": ["read access events only", "read credential/person reference only when required", "no door-control permission by default"],
-      "dataAvailableOrExpected": ["badge/access events", "reader/door/location", "credential/person reference", "access result and timestamp"],
-      "wfmObjects": ["access-event", "presence-evidence", "site", "worker-identity-link"],
-      "writeBackAutomation": ["clocking exception corroboration", "site-presence anomaly workflow", "emergency muster evidence where authorised"],
-      "customerValue": ["attendance accuracy", "access-control intelligence", "reduced time fraud investigation", "better safety evidence"],
-      "savingsHypotheses": ["reduce manual clocking disputes", "identify impossible or inconsistent attendance/access patterns"],
-      "dataGaps": ["access event is evidence of presence, not automatically payable time"]
+      "categoryIncludes": [
+        "access-control"
+      ],
+      "requiredPermissions": [
+        "read access events only",
+        "read credential/person reference only when required",
+        "no door-control permission by default"
+      ],
+      "dataAvailableOrExpected": [
+        "badge/access events",
+        "reader/door/location",
+        "credential/person reference",
+        "access result and timestamp"
+      ],
+      "wfmObjects": [
+        "access-event",
+        "presence-evidence",
+        "site",
+        "worker-identity-link"
+      ],
+      "writeBackAutomation": [
+        "clocking exception corroboration",
+        "site-presence anomaly workflow",
+        "emergency muster evidence where authorised"
+      ],
+      "customerValue": [
+        "attendance accuracy",
+        "access-control intelligence",
+        "reduced time fraud investigation",
+        "better safety evidence"
+      ],
+      "savingsHypotheses": [
+        "reduce manual clocking disputes",
+        "identify impossible or inconsistent attendance/access patterns"
+      ],
+      "dataGaps": [
+        "access event is evidence of presence, not automatically payable time"
+      ]
     },
     {
       "id": "identity",
-      "categoryIncludes": ["identity"],
-      "requiredPermissions": ["read users/groups", "read lifecycle/authentication events only where needed", "no broad directory admin by default"],
-      "dataAvailableOrExpected": ["users", "groups", "account status", "authentication/audit events", "device or application assignment where supported"],
-      "wfmObjects": ["worker-identity-link", "employment-access-state", "audit-event"],
-      "writeBackAutomation": ["joiner/mover/leaver access workflow", "role/group alignment", "orphan-account detection"],
-      "customerValue": ["faster onboarding/offboarding", "reduced security administration", "identity consistency"],
-      "savingsHypotheses": ["reduce manual account provisioning", "reduce access retained after termination or transfer"],
-      "dataGaps": ["directory identities need deterministic reconciliation to HR worker IDs"]
+      "categoryIncludes": [
+        "identity"
+      ],
+      "requiredPermissions": [
+        "read users/groups",
+        "read lifecycle/authentication events only where needed",
+        "no broad directory admin by default"
+      ],
+      "dataAvailableOrExpected": [
+        "users",
+        "groups",
+        "account status",
+        "authentication/audit events",
+        "device or application assignment where supported"
+      ],
+      "wfmObjects": [
+        "worker-identity-link",
+        "employment-access-state",
+        "audit-event"
+      ],
+      "writeBackAutomation": [
+        "joiner/mover/leaver access workflow",
+        "role/group alignment",
+        "orphan-account detection"
+      ],
+      "customerValue": [
+        "faster onboarding/offboarding",
+        "reduced security administration",
+        "identity consistency"
+      ],
+      "savingsHypotheses": [
+        "reduce manual account provisioning",
+        "reduce access retained after termination or transfer"
+      ],
+      "dataGaps": [
+        "directory identities need deterministic reconciliation to HR worker IDs"
+      ]
     },
     {
       "id": "industrial-telemetry",
-      "categoryIncludes": ["scada", "historian", "industrial-connectivity", "iiot", "mqtt-broker"],
-      "requiredPermissions": ["site-edge read/subscription", "certificate or broker read identity", "no PLC/process write by default"],
-      "dataAvailableOrExpected": ["asset tags and values", "machine state", "alarms/events", "cycle counters", "downtime signals", "historical telemetry"],
-      "wfmObjects": ["machine-state", "production-event", "downtime-event", "work-centre", "shift-outcome"],
-      "writeBackAutomation": ["machine-state driven labour recovery", "downtime-triggered redeployment suggestion", "production evidence correlation"],
-      "customerValue": ["downtime reduction", "production throughput", "labour efficiency", "root-cause visibility"],
-      "savingsHypotheses": ["reduce paid idle time during machine stops", "identify labour/machine mismatch", "quantify output loss by staffing condition"],
-      "dataGaps": ["tag semantics and asset models are site-specific", "edge connectivity and timestamp quality require validation"]
+      "categoryIncludes": [
+        "scada",
+        "historian",
+        "industrial-connectivity",
+        "iiot",
+        "mqtt-broker"
+      ],
+      "requiredPermissions": [
+        "site-edge read/subscription",
+        "certificate or broker read identity",
+        "no PLC/process write by default"
+      ],
+      "dataAvailableOrExpected": [
+        "asset tags and values",
+        "machine state",
+        "alarms/events",
+        "cycle counters",
+        "downtime signals",
+        "historical telemetry"
+      ],
+      "wfmObjects": [
+        "machine-state",
+        "production-event",
+        "downtime-event",
+        "work-centre",
+        "shift-outcome"
+      ],
+      "writeBackAutomation": [
+        "machine-state driven labour recovery",
+        "downtime-triggered redeployment suggestion",
+        "production evidence correlation"
+      ],
+      "customerValue": [
+        "downtime reduction",
+        "production throughput",
+        "labour efficiency",
+        "root-cause visibility"
+      ],
+      "savingsHypotheses": [
+        "reduce paid idle time during machine stops",
+        "identify labour/machine mismatch",
+        "quantify output loss by staffing condition"
+      ],
+      "dataGaps": [
+        "tag semantics and asset models are site-specific",
+        "edge connectivity and timestamp quality require validation"
+      ]
     },
     {
       "id": "energy",
-      "categoryIncludes": ["energy"],
-      "requiredPermissions": ["read meter/BMS telemetry", "site-scoped read identity", "no control writes by default"],
-      "dataAvailableOrExpected": ["energy consumption", "meter/zone/asset context", "BMS state", "environmental telemetry"],
-      "wfmObjects": ["energy-event", "site", "shift-outcome", "cost-driver"],
-      "writeBackAutomation": ["shift-energy cost attribution", "idle-site energy anomaly", "labour/production/energy optimisation recommendation"],
-      "customerValue": ["energy reduction", "true shift/product cost", "sustainability reporting"],
-      "savingsHypotheses": ["identify energy consumed during non-productive staffed periods", "optimise start-up/shutdown staffing around energy demand"],
-      "dataGaps": ["energy tariffs and allocation rules may come from finance/utility systems"]
+      "categoryIncludes": [
+        "energy"
+      ],
+      "requiredPermissions": [
+        "read meter/BMS telemetry",
+        "site-scoped read identity",
+        "no control writes by default"
+      ],
+      "dataAvailableOrExpected": [
+        "energy consumption",
+        "meter/zone/asset context",
+        "BMS state",
+        "environmental telemetry"
+      ],
+      "wfmObjects": [
+        "energy-event",
+        "site",
+        "shift-outcome",
+        "cost-driver"
+      ],
+      "writeBackAutomation": [
+        "shift-energy cost attribution",
+        "idle-site energy anomaly",
+        "labour/production/energy optimisation recommendation"
+      ],
+      "customerValue": [
+        "energy reduction",
+        "true shift/product cost",
+        "sustainability reporting"
+      ],
+      "savingsHypotheses": [
+        "identify energy consumed during non-productive staffed periods",
+        "optimise start-up/shutdown staffing around energy demand"
+      ],
+      "dataGaps": [
+        "energy tariffs and allocation rules may come from finance/utility systems"
+      ]
     },
     {
       "id": "integration",
-      "categoryIncludes": ["ipaas", "integration-framework", "event-streaming", "middleware", "edi-b2b"],
-      "requiredPermissions": ["consume/browse/read where possible", "non-destructive message access", "publish only after explicit write approval"],
-      "dataAvailableOrExpected": ["cross-system business events", "integration metadata", "message schemas", "delivery/error status"],
-      "wfmObjects": ["integration-event", "canonical-event", "connector-health"],
-      "writeBackAutomation": ["real-time event fan-in/fan-out", "schema translation", "replay/dead-letter workflow", "customer middleware reuse"],
-      "customerValue": ["faster implementation", "reduced point-to-point integration cost", "real-time automation", "higher resilience"],
-      "savingsHypotheses": ["reuse customer integration investments", "reduce bespoke connector maintenance", "reduce batch latency and manual handoffs"],
-      "dataGaps": ["business semantics depend on upstream message contracts", "message consumption must not disrupt existing consumers"]
+      "categoryIncludes": [
+        "ipaas",
+        "integration-framework",
+        "event-streaming",
+        "middleware",
+        "edi-b2b"
+      ],
+      "requiredPermissions": [
+        "consume/browse/read where possible",
+        "non-destructive message access",
+        "publish only after explicit write approval"
+      ],
+      "dataAvailableOrExpected": [
+        "cross-system business events",
+        "integration metadata",
+        "message schemas",
+        "delivery/error status"
+      ],
+      "wfmObjects": [
+        "integration-event",
+        "canonical-event",
+        "connector-health"
+      ],
+      "writeBackAutomation": [
+        "real-time event fan-in/fan-out",
+        "schema translation",
+        "replay/dead-letter workflow",
+        "customer middleware reuse"
+      ],
+      "customerValue": [
+        "faster implementation",
+        "reduced point-to-point integration cost",
+        "real-time automation",
+        "higher resilience"
+      ],
+      "savingsHypotheses": [
+        "reuse customer integration investments",
+        "reduce bespoke connector maintenance",
+        "reduce batch latency and manual handoffs"
+      ],
+      "dataGaps": [
+        "business semantics depend on upstream message contracts",
+        "message consumption must not disrupt existing consumers"
+      ]
+    },
+    {
+      "id": "learning-skills",
+      "categoryIncludes": [
+        "lms",
+        "learning"
+      ],
+      "requiredPermissions": [
+        "read learner/user identity and learning status",
+        "read skills/certifications only where required",
+        "no learning assignment/completion writes by default"
+      ],
+      "dataAvailableOrExpected": [
+        "learning assignments",
+        "completion/transcript history",
+        "courses/items and revisions",
+        "certifications",
+        "skills/competencies where supported"
+      ],
+      "wfmObjects": [
+        "training-completion",
+        "qualification",
+        "skill",
+        "competency",
+        "eligibility-rule",
+        "worker"
+      ],
+      "writeBackAutomation": [
+        "assign required training after separate sandbox write proof",
+        "notify/trigger retraining workflow",
+        "reinstate scheduling eligibility after verified completion"
+      ],
+      "customerValue": [
+        "skills-based scheduling",
+        "compliance automation",
+        "faster onboarding",
+        "reduced training administration",
+        "fewer unqualified assignments"
+      ],
+      "savingsHypotheses": [
+        "reduce manager time checking training records",
+        "avoid downtime caused by missing qualifications",
+        "reduce compliance/audit administration",
+        "reduce training duplication"
+      ],
+      "dataGaps": [
+        "course completion does not automatically equal job qualification without customer policy mapping",
+        "custom fields and certification rules vary by LMS/tenant"
+      ]
+    },
+    {
+      "id": "safety-ehs",
+      "categoryIncludes": [
+        "ehs",
+        "safety"
+      ],
+      "requiredPermissions": [
+        "read only the minimum safety/compliance records needed for workforce decisions",
+        "site/worker reference access only where necessary",
+        "exclude medical/special-category data unless explicitly required and authorised"
+      ],
+      "dataAvailableOrExpected": [
+        "safety incidents/events",
+        "hazards/actions",
+        "compliance records",
+        "worker/site references",
+        "restrictions or competency evidence where customer system exposes them"
+      ],
+      "wfmObjects": [
+        "safety-event",
+        "risk-signal",
+        "worker-restriction",
+        "compliance-event",
+        "qualification",
+        "site"
+      ],
+      "writeBackAutomation": [
+        "trigger review/training workflow",
+        "temporarily restrict assignment where customer policy explicitly authorises it",
+        "close/reconcile workforce follow-up only after write certification"
+      ],
+      "customerValue": [
+        "safer workforce deployment",
+        "faster incident response",
+        "compliance",
+        "repeat-incident reduction",
+        "shift/site safety intelligence"
+      ],
+      "savingsHypotheses": [
+        "reduce manual EHS/WFM reconciliation",
+        "reduce repeat incidents and associated downtime",
+        "reduce safety/compliance administration"
+      ],
+      "dataGaps": [
+        "incident taxonomies differ widely",
+        "medical and investigation data may be too sensitive for WFM and should normally remain source-side"
+      ]
     }
   ],
   "systemOverrides": {
     "sap-digital-manufacturing": {
       "basis": "vendor-docs",
       "evidenceUrl": "https://help.sap.com/docs/sap-digital-manufacturing/integration-guide/transferring-direct-labor-confirmations-for-production-orders-92f0277104964e9fb2bfa57a2f7f7fa2",
-      "dataAvailableOrExpected": ["production orders", "plant", "operations", "work centres", "direct-labour time records", "labour duration", "material/components", "custom order fields"],
-      "wfmObjects": ["production-demand", "work-centre", "time-event", "direct-labour-confirmation", "shift-outcome"],
-      "customerValue": ["direct labour-to-order attribution", "labour variance by operation", "production-driven staffing", "less manual ERP labour confirmation"],
-      "automationOpportunities": ["approved direct-labour time transfer", "order release/demand triggers", "staffing recalculation when production order state changes"],
-      "constraintsRisks": ["write operations exist and must remain gated", "deprecated Order v1 list endpoint should not be used for new work"]
+      "dataAvailableOrExpected": [
+        "production orders",
+        "plant",
+        "operations",
+        "work centres",
+        "direct-labour time records",
+        "labour duration",
+        "material/components",
+        "custom order fields"
+      ],
+      "wfmObjects": [
+        "production-demand",
+        "work-centre",
+        "time-event",
+        "direct-labour-confirmation",
+        "shift-outcome"
+      ],
+      "customerValue": [
+        "direct labour-to-order attribution",
+        "labour variance by operation",
+        "production-driven staffing",
+        "less manual ERP labour confirmation"
+      ],
+      "automationOpportunities": [
+        "approved direct-labour time transfer",
+        "order release/demand triggers",
+        "staffing recalculation when production order state changes"
+      ],
+      "constraintsRisks": [
+        "write operations exist and must remain gated",
+        "deprecated Order v1 list endpoint should not be used for new work"
+      ]
     },
     "ptc-windchill": {
       "basis": "vendor-docs",
       "evidenceUrl": "https://support.ptc.com/help/windchill_rest_services/r2.7/en/windchill_rest_services/restapi/",
-      "dataAvailableOrExpected": ["parts and BOM", "documents/content metadata", "change requests/notices", "problem reports and variances", "product revisions"],
-      "wfmObjects": ["change-event", "qualification-requirement", "production-risk", "skill-demand"],
-      "customerValue": ["engineering-change workforce readiness", "automatic retraining/qualification review", "fewer production errors after revision changes"],
-      "automationOpportunities": ["trigger skill/training review on relevant engineering change", "block or warn against stale qualification mappings"],
-      "constraintsRisks": ["Windchill version/domain exposure varies by deployment", "controlled document content may require additional permissions"]
+      "dataAvailableOrExpected": [
+        "parts and BOM",
+        "documents/content metadata",
+        "change requests/notices",
+        "problem reports and variances",
+        "product revisions"
+      ],
+      "wfmObjects": [
+        "change-event",
+        "qualification-requirement",
+        "production-risk",
+        "skill-demand"
+      ],
+      "customerValue": [
+        "engineering-change workforce readiness",
+        "automatic retraining/qualification review",
+        "fewer production errors after revision changes"
+      ],
+      "automationOpportunities": [
+        "trigger skill/training review on relevant engineering change",
+        "block or warn against stale qualification mappings"
+      ],
+      "constraintsRisks": [
+        "Windchill version/domain exposure varies by deployment",
+        "controlled document content may require additional permissions"
+      ]
     },
     "aws-iot-sitewise": {
       "basis": "vendor-docs",
       "evidenceUrl": "https://docs.aws.amazon.com/iot-sitewise/latest/userguide/configure-sources.html",
-      "dataAvailableOrExpected": ["OPC UA asset measurements", "asset hierarchy/context", "time-series telemetry", "gateway/source status"],
-      "wfmObjects": ["machine-state", "production-event", "downtime-event", "shift-outcome"],
-      "customerValue": ["labour/machine correlation", "downtime-driven redeployment", "better shift productivity evidence"],
-      "automationOpportunities": ["trigger staffing recovery when equipment state changes", "calculate staffed idle loss from telemetry and time data"],
-      "constraintsRisks": ["editing an OPC UA source restarts the gateway and pauses ingestion temporarily", "node filters and site tag models are customer-specific"]
+      "dataAvailableOrExpected": [
+        "OPC UA asset measurements",
+        "asset hierarchy/context",
+        "time-series telemetry",
+        "gateway/source status"
+      ],
+      "wfmObjects": [
+        "machine-state",
+        "production-event",
+        "downtime-event",
+        "shift-outcome"
+      ],
+      "customerValue": [
+        "labour/machine correlation",
+        "downtime-driven redeployment",
+        "better shift productivity evidence"
+      ],
+      "automationOpportunities": [
+        "trigger staffing recovery when equipment state changes",
+        "calculate staffed idle loss from telemetry and time data"
+      ],
+      "constraintsRisks": [
+        "editing an OPC UA source restarts the gateway and pauses ingestion temporarily",
+        "node filters and site tag models are customer-specific"
+      ]
     },
     "azure-iot-operations": {
       "basis": "vendor-docs",
       "evidenceUrl": "https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/howto-configure-opc-ua",
-      "dataAvailableOrExpected": ["asset definitions", "OPC UA data points", "events", "streams", "MQTT telemetry", "device/inbound endpoint metadata"],
-      "wfmObjects": ["machine-state", "production-event", "downtime-event", "work-centre", "shift-outcome"],
-      "customerValue": ["real-time shop-floor labour optimisation", "downtime response", "labour-to-machine utilisation analysis"],
-      "automationOpportunities": ["MQTT-triggered labour recovery", "asset-state staffing alerts", "model-change aware telemetry mapping"],
-      "constraintsRisks": ["OPC UA user auth and application certificate trust are separate controls", "write/control operations exist and must stay disabled until separately authorised"]
+      "dataAvailableOrExpected": [
+        "asset definitions",
+        "OPC UA data points",
+        "events",
+        "streams",
+        "MQTT telemetry",
+        "device/inbound endpoint metadata"
+      ],
+      "wfmObjects": [
+        "machine-state",
+        "production-event",
+        "downtime-event",
+        "work-centre",
+        "shift-outcome"
+      ],
+      "customerValue": [
+        "real-time shop-floor labour optimisation",
+        "downtime response",
+        "labour-to-machine utilisation analysis"
+      ],
+      "automationOpportunities": [
+        "MQTT-triggered labour recovery",
+        "asset-state staffing alerts",
+        "model-change aware telemetry mapping"
+      ],
+      "constraintsRisks": [
+        "OPC UA user auth and application certificate trust are separate controls",
+        "write/control operations exist and must stay disabled until separately authorised"
+      ]
     },
     "jumpcloud": {
       "basis": "vendor-docs",
       "evidenceUrl": "https://jumpcloud.com/support/directory-insights-api",
-      "dataAvailableOrExpected": ["users and groups", "directory activity", "device login/authentication events", "SAML/RADIUS/LDAP authentication events", "SCIM lifecycle state"],
-      "wfmObjects": ["worker-identity-link", "presence-evidence", "audit-event", "employment-access-state"],
-      "customerValue": ["automated joiner/mover/leaver", "identity/access anomaly evidence", "less account administration"],
-      "automationOpportunities": ["sync lifecycle state via SCIM", "flag account activity after worker termination", "correlate device login evidence with attendance exceptions"],
-      "constraintsRisks": ["admin API keys can expose broad directory data", "regional endpoints differ", "Directory Insights has query limits and retention constraints"]
+      "dataAvailableOrExpected": [
+        "users and groups",
+        "directory activity",
+        "device login/authentication events",
+        "SAML/RADIUS/LDAP authentication events",
+        "SCIM lifecycle state"
+      ],
+      "wfmObjects": [
+        "worker-identity-link",
+        "presence-evidence",
+        "audit-event",
+        "employment-access-state"
+      ],
+      "customerValue": [
+        "automated joiner/mover/leaver",
+        "identity/access anomaly evidence",
+        "less account administration"
+      ],
+      "automationOpportunities": [
+        "sync lifecycle state via SCIM",
+        "flag account activity after worker termination",
+        "correlate device login evidence with attendance exceptions"
+      ],
+      "constraintsRisks": [
+        "admin API keys can expose broad directory data",
+        "regional endpoints differ",
+        "Directory Insights has query limits and retention constraints"
+      ]
     },
     "ibm-mq": {
       "basis": "vendor-docs",
       "evidenceUrl": "https://www.ibm.com/docs/en/ibm-mq/9.4.x?topic=api-rest-messaging",
-      "dataAvailableOrExpected": ["customer-defined business messages", "queue/message metadata", "delivery status depending on deployment"],
-      "wfmObjects": ["canonical-event", "integration-event", "connector-health"],
-      "customerValue": ["reuse existing enterprise messaging", "real-time WFM event exchange", "reduced bespoke point-to-point integration"],
-      "automationOpportunities": ["consume workforce/production events from existing queues", "publish approved canonical events after write certification"],
-      "constraintsRisks": ["destructive GET must never be used for passive discovery", "AMQP/JMS capability differs by client and queue-manager configuration", "transaction semantics must be verified before write use"]
+      "dataAvailableOrExpected": [
+        "customer-defined business messages",
+        "queue/message metadata",
+        "delivery status depending on deployment"
+      ],
+      "wfmObjects": [
+        "canonical-event",
+        "integration-event",
+        "connector-health"
+      ],
+      "customerValue": [
+        "reuse existing enterprise messaging",
+        "real-time WFM event exchange",
+        "reduced bespoke point-to-point integration"
+      ],
+      "automationOpportunities": [
+        "consume workforce/production events from existing queues",
+        "publish approved canonical events after write certification"
+      ],
+      "constraintsRisks": [
+        "destructive GET must never be used for passive discovery",
+        "AMQP/JMS capability differs by client and queue-manager configuration",
+        "transaction semantics must be verified before write use"
+      ]
     },
     "sap-fieldglass": {
       "basis": "vendor-product-docs-integration-detail-pending",
       "evidenceUrl": "https://www.sap.com/products/spend-management/fieldglass-external-workforce-management.html",
-      "dataAvailableOrExpected": ["external worker profiles", "assignment/program context", "contingent workforce information; exact API fields require technical verification"],
-      "wfmObjects": ["external-worker", "assignment", "labour-supply"],
-      "customerValue": ["agency-labour visibility", "contingent workforce optimisation", "faster external-worker onboarding", "compliance"],
-      "automationOpportunities": ["external labour demand/supply reconciliation once a supported integration surface is verified"],
-      "constraintsRisks": ["public product evidence confirms integration capability but protocol-level API evidence remains pending; keep discovery-queued"]
+      "dataAvailableOrExpected": [
+        "external worker profiles",
+        "assignment/program context",
+        "contingent workforce information; exact API fields require technical verification"
+      ],
+      "wfmObjects": [
+        "external-worker",
+        "assignment",
+        "labour-supply"
+      ],
+      "customerValue": [
+        "agency-labour visibility",
+        "contingent workforce optimisation",
+        "faster external-worker onboarding",
+        "compliance"
+      ],
+      "automationOpportunities": [
+        "external labour demand/supply reconciliation once a supported integration surface is verified"
+      ],
+      "constraintsRisks": [
+        "public product evidence confirms integration capability but protocol-level API evidence remains pending; keep discovery-queued"
+      ]
     },
     "salto-nebula": {
       "basis": "vendor-docs",
       "evidenceUrl": "https://developer.saltosystems.com/nebula/api/",
-      "dataAvailableOrExpected": ["access events", "access point/door context", "credential/person references exposed by authorised APIs"],
-      "wfmObjects": ["access-event", "presence-evidence", "site"],
-      "customerValue": ["attendance exception evidence", "site-presence intelligence", "reduced manual investigation"],
-      "automationOpportunities": ["ingest access events to corroborate clocking anomalies"],
-      "constraintsRisks": ["physical access events must not be treated automatically as payable time"]
+      "dataAvailableOrExpected": [
+        "access events",
+        "access point/door context",
+        "credential/person references exposed by authorised APIs"
+      ],
+      "wfmObjects": [
+        "access-event",
+        "presence-evidence",
+        "site"
+      ],
+      "customerValue": [
+        "attendance exception evidence",
+        "site-presence intelligence",
+        "reduced manual investigation"
+      ],
+      "automationOpportunities": [
+        "ingest access events to corroborate clocking anomalies"
+      ],
+      "constraintsRisks": [
+        "physical access events must not be treated automatically as payable time"
+      ]
     }
   }
 }
