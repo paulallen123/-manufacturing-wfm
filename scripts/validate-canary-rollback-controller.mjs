@@ -147,8 +147,77 @@ assert.throws(() => createCanaryRollbackController({
   rollbackExecutor: rollback(async job => rollbackResult(job)), knownGoodAttestor: attestor(), outcomeRecorder: recorder(),
 }), err => err.code === 'WFM_CANARY_EXECUTOR_UNSAFE');
 
+const replacedCanary = canary(async job => healthyResult(job));
+const stableRollback = rollback(async job => rollbackResult(job));
+const stableAttestor = attestor();
+rec = recorder();
+ctl = createCanaryRollbackController({ canaryExecutor: replacedCanary, rollbackExecutor: stableRollback, knownGoodAttestor: stableAttestor, outcomeRecorder: rec });
+let replacementCanaryCalls = 0;
+replacedCanary.run = async job => { replacementCanaryCalls += 1; return healthyResult(job); };
+await assert.rejects(() => ctl.run(base), err => err.code === 'WFM_CANARY_COMPONENT_DRIFT');
+assert.equal(replacementCanaryCalls, 0);
+assert.equal(rec.records.length, 0);
+
+const mutableCanaryCaps = canary(async job => healthyResult(job));
+const originalCanaryCaps = mutableCanaryCaps.capabilities;
+let authorityEscalated = false;
+mutableCanaryCaps.capabilities = () => ({ ...originalCanaryCaps(), productionWriteAuthority: authorityEscalated });
+rec = recorder();
+ctl = createCanaryRollbackController({ canaryExecutor: mutableCanaryCaps, rollbackExecutor: rollback(async job => rollbackResult(job)), knownGoodAttestor: attestor(), outcomeRecorder: rec });
+authorityEscalated = true;
+await assert.rejects(() => ctl.run(base), err => err.code === 'WFM_CANARY_COMPONENT_DRIFT');
+assert.equal(rec.records.length, 0);
+
+const midRunRollback = rollback(async job => rollbackResult(job));
+let replacementRollbackCalls = 0;
+const mutatingAttestor = attestor();
+const originalVerify = mutatingAttestor.verify;
+mutatingAttestor.verify = async input => {
+  const result = await originalVerify(input);
+  midRunRollback.run = async job => { replacementRollbackCalls += 1; return rollbackResult(job); };
+  return result;
+};
+rec = recorder();
+ctl = createCanaryRollbackController({
+  canaryExecutor: canary(async job => healthyResult(job, { status: 'unhealthy' })),
+  rollbackExecutor: midRunRollback,
+  knownGoodAttestor: mutatingAttestor,
+  outcomeRecorder: rec,
+});
+await assert.rejects(() => ctl.run(base), err => err.code === 'WFM_CANARY_COMPONENT_DRIFT');
+assert.equal(replacementRollbackCalls, 0);
+assert.equal(rec.records.length, 0);
+
+const driftRecorder = recorder();
+const driftCanary = canary(async job => {
+  driftRecorder.record = async () => ({ receiptDigest: D('forged-terminal-receipt') });
+  return healthyResult(job);
+});
+ctl = createCanaryRollbackController({
+  canaryExecutor: driftCanary,
+  rollbackExecutor: rollback(async job => rollbackResult(job)),
+  knownGoodAttestor: attestor(),
+  outcomeRecorder: driftRecorder,
+});
+await assert.rejects(() => ctl.run(base), err => err.code === 'WFM_CANARY_COMPONENT_DRIFT');
+assert.equal(driftRecorder.records.length, 0);
+
+const driftRollback = rollback(async job => {
+  driftRollback.capabilities = () => ({ sameTenantEnforced: true, knownGoodOnly: true, schemaCompatibilityRequired: true, networkMode: 'none', reusableCredentialsVisible: false, modelCanGrantAuthority: false, customerDataVisible: false, incrementalCostZero: true, simulationOnly: true, productionWriteAuthority: true, customerWriteAuthority: false });
+  return rollbackResult(job);
+});
+rec = recorder();
+ctl = createCanaryRollbackController({
+  canaryExecutor: canary(async job => healthyResult(job, { status: 'unhealthy' })),
+  rollbackExecutor: driftRollback,
+  knownGoodAttestor: attestor(),
+  outcomeRecorder: rec,
+});
+await assert.rejects(() => ctl.run(base), err => err.code === 'WFM_CANARY_COMPONENT_DRIFT');
+assert.equal(rec.records.length, 0);
+
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'tier2-canary-blast-radius-and-known-good-rollback',
   status: 'PASS',
   maxCanaryInstances: MAX_CANARY_INSTANCES,
@@ -159,6 +228,11 @@ console.log(JSON.stringify({
   overBlastRadiusDeniedOrRolledBack: true,
   knownGoodAttestationRequiredBeforeCanary: true,
   rollbackMustBeIndependentlyVerified: true,
+  runtimeComponentMethodIdentityPinned: true,
+  runtimeComponentCapabilityDriftFailsClosed: true,
+  runtimeMidExecutionDependencyDriftFailsClosed: true,
+  runtimeRecorderDriftFailsClosed: true,
+  runtimeRollbackCapabilityDriftFailsClosed: true,
   modelCannotGrantAuthority: true,
   simulationOnly: true,
   productionMutation: false,
