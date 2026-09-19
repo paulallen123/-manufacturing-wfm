@@ -1,0 +1,96 @@
+name: Evidence - Vector lifecycle gate fix
+
+on:
+  push:
+    branches:
+      - fix/24h-vector-lifecycle-gate-20260919-0715
+    paths:
+      - '.github/workflows/evidence-vector-lifecycle-gate-fix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-isolated-fix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Apply minimal test-harness correction in runner workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+          p=Path('.github/scripts/ux-cycle11-context-browser.mjs')
+          s=p.read_text()
+          old="const ok='${state}'==='resolved'?snapshot.resolved&&snapshot.live.includes('${label}'):snapshot.state==='Status: ${label}'&&snapshot.live.includes('${label}');if(!ok)throw new Error('Lifecycle ${state} semantic update not ready :: '+JSON.stringify(snapshot));return true;});"
+          new="const ok=state==='resolved'?snapshot.resolved&&snapshot.live.includes(label):snapshot.state===`Status: ${label}`&&snapshot.live.includes(label);if(!ok)throw new Error(`Lifecycle ${state} semantic update not ready :: ${JSON.stringify(snapshot)}`);return true;});"
+          if old not in s:
+              raise SystemExit('expected broken lifecycle assertion not found; refuse broad patch')
+          s=s.replace(old,new,1)
+          old_cleanup="  rmSync(temp,{recursive:true,force:true});"
+          new_cleanup="  for(let attempt=0;attempt<4;attempt++){try{rmSync(temp,{recursive:true,force:true});break;}catch(error){if(error?.code!=='ENOTEMPTY'||attempt===3)throw error;await sleep(200);}}"
+          if old_cleanup not in s:
+              raise SystemExit('expected cleanup line not found; refuse broad patch')
+          s=s.replace(old_cleanup,new_cleanup,1)
+          p.write_text(s)
+          PY
+          node --check .github/scripts/ux-cycle11-context-browser.mjs
+          git diff --check
+          git diff -- .github/scripts/ux-cycle11-context-browser.mjs
+
+      - name: Re-run affected real-browser gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 60s node .github/scripts/ux-cycle11-context-browser.mjs
+
+      - name: Re-run deterministic UX regression gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/ux-reset-cycle11-model.js
+          node --check ux-overlay/ux-reset-cycle11.js
+          node --check ux-overlay/ux-reset-cycle12-model.js
+          node --check ux-overlay/ux-reset-cycle12.js
+          node --check ux-overlay/vector-shell.js
+          node --check ux-overlay/vector-priority-bridge.js
+          node .github/scripts/ux-cycle12-signal-contract.mjs
+
+      - name: Re-run implementation integration learning and support regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test \
+            implementation/runtime/one-day-enterprise-engine.test.cjs \
+            implementation/runtime/configuration-inference-engine.test.cjs \
+            implementation/runtime/implementation-learning-integration.test.cjs \
+            learning/runtime/adaptive-learning-engine.test.cjs \
+            integration/runtime/autonomous-integration-hub.test.cjs \
+            integration/runtime/directory-oauth-broker.test.cjs \
+            integration/worker/directory-discovery-worker.test.cjs
+          node implementation/simulation/one-day-enterprise-simulation.mjs --assert-target
+          node scripts/run-portable-autonomy-proof.mjs --strict-runtime
+
+      - name: Build exact candidate composition with harness fix only
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false -t wfm-vector-lifecycle-fix:${{ github.sha }} .
+          cid="$(docker create wfm-vector-lifecycle-fix:${{ github.sha }})"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          mkdir -p "$RUNNER_TEMP/vector-proof"
+          docker cp "$cid:/app/public/value-cockpit-ui.js" "$RUNNER_TEMP/vector-proof/value-cockpit-ui.js"
+          docker cp "$cid:/app/public/vector-shell.js" "$RUNNER_TEMP/vector-proof/vector-shell.js"
+          docker cp "$cid:/app/public/factory-control-ui.css" "$RUNNER_TEMP/vector-proof/factory-control-ui.css"
+          grep -F 'WFM_UX_RESET_CYCLE12_BEGIN' "$RUNNER_TEMP/vector-proof/value-cockpit-ui.js"
+          grep -F 'WFM_ADAPTIVE_COACH_BEGIN' "$RUNNER_TEMP/vector-proof/value-cockpit-ui.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/vector-proof/vector-shell.js"
+          echo 'ISOLATED_LIFECYCLE_GATE_FIX_REGRESSION=PASS'
+          echo 'CLAIM_BOUNDARY=test-harness correction only; no runtime/customer/provider/readiness mutation'
