@@ -32,9 +32,16 @@ function sapProfile() {
     authority: { entityOwners: { employee: 'sap_successfactors', worked_time: 'wfm' } },
     recovery: { maxAttempts: 3, idempotencyKey: 'sourceRevision' },
     monitoring: { freshnessSeconds: 300, reconciliationRequired: true },
-    connectionTest: { status: 'passed', mode: 'bounded_non_mutating' },
-    recoveryProof: { status: 'passed' },
-    reconciliation: { status: 'passed' },
+    connectionTest: {
+      status: 'passed', mode: 'bounded_non_mutating', observedBy: 'trusted_executor',
+      evidenceRef: 'evidence://sap/connection-test', mutationObserved: false, rawSensitiveDataPersisted: false
+    },
+    recoveryProof: {
+      status: 'passed', observedBy: 'trusted_executor', evidenceRef: 'evidence://sap/recovery',
+      transientFailureObserved: true, successfulRecoveryObserved: true,
+      reconciliationPassed: true, mutationObserved: false
+    },
+    reconciliation: { status: 'passed', observedBy: 'trusted_executor', evidenceRef: 'evidence://sap/reconciliation' },
     activation: { approved: true, approvedByRole: 'integration_admin', fingerprint: '' }
   };
   profile.activation.fingerprint = approvalFingerprint(profile);
@@ -44,9 +51,11 @@ function sapProfile() {
 const cases = [];
 function test(name, fn) { cases.push([name, fn]); }
 
-test('provider manifest is metadata-only and valid', () => {
+test('provider manifests carry bounded safe-test policies', () => {
   assert.equal(validateProviderManifest(SAP_SUCCESSFACTORS).ok, true);
   assert.equal(validateProviderManifest(ORACLE_NETSUITE).ok, true);
+  assert.ok(SAP_SUCCESSFACTORS.safeTest.maxRecords <= 100);
+  assert.ok(ORACLE_NETSUITE.safeTest.maxBytes <= 1048576);
 });
 
 test('provider compatibility keeps provider rules separate from transport implementation', () => {
@@ -62,21 +71,20 @@ test('missing provider config is explicit instead of accepting raw inline values
   assert.deepEqual(missingProviderConfigRefs(profile, SAP_SUCCESSFACTORS), ['companyIdRef']);
 });
 
-test('setup plan reduces connection onboarding to deterministic reviewable steps', () => {
+test('setup plan reduces onboarding to deterministic reviewable steps', () => {
   const plan = planConnectionSetup(sapProfile(), SAP_SUCCESSFACTORS);
   assert.equal(plan.status, 'activation_ready');
   assert.equal(plan.steps.length, 6);
   assert.equal(plan.steps.every((item) => item.status === 'complete'), true);
 });
 
-test('mapping drift makes activation the customer-visible blocker', () => {
+test('untrusted proof is not shown as a completed safe test', () => {
   const profile = sapProfile();
-  profile.mapping.status = 'draft';
+  profile.connectionTest.observedBy = 'browser';
   profile.activation.fingerprint = approvalFingerprint(profile);
   const plan = planConnectionSetup(profile, SAP_SUCCESSFACTORS);
+  assert.equal(plan.steps.find((item) => item.id === 'safe_test').status, 'ready');
   assert.equal(plan.status, 'blocked');
-  assert.equal(plan.nextStep, 'mapping');
-  assert.match(plan.steps.at(-1).blockers.join('\n'), /mapping must be reviewed/);
 });
 
 test('genuine provider proof cannot be claimed from metadata or synthetic evidence alone', () => {
