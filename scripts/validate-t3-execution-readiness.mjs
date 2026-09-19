@@ -14,6 +14,11 @@ const expectCode = (fn, code) => {
   assert.fail(`Expected ${code}`);
 };
 
+const expectAsyncCode = async (fn, code) => {
+  try { await fn(); } catch (error) { assert.equal(error.code, code); return; }
+  assert.fail(`Expected ${code}`);
+};
+
 const policyFactory = createFactory();
 policyFactory.openIncident({ incidentId: 'inc-t3-protect', tenant: 'tenant-a', evidenceDigest: d('protect-evidence') });
 policyFactory.registerReproducer({ incidentId: 'inc-t3-protect', tenant: 'tenant-a', failingTestDigest: d('protect-test'), observedFailureDigest: d('protect-observed') });
@@ -262,9 +267,87 @@ substitutedActionReceipt.proposedAction = 'payroll.delete-all';
 }
 assert.equal(gate.verifyReceipt(substitutedActionReceipt), false);
 
+// Runtime trust binding: a verifier swapped after the gate establishes trust must not run.
+const postConstructionAuth = createOneShotAuthorisationGate(consent);
+const postConstructionVerifier = createT3ExecutionPreflightVerifier();
+const postConstructionGate = createT3ExecutionReadinessGate({
+  authorisationGate: postConstructionAuth,
+  preflightVerifier: postConstructionVerifier,
+  now: () => ++now,
+});
+let postConstructionForgeryCalled = false;
+postConstructionVerifier.verify = () => {
+  postConstructionForgeryCalled = true;
+  return { verified: true };
+};
+await expectAsyncCode(() => postConstructionGate.evaluate({
+  token: 'opaque-consent-token-component-drift-1',
+  tenant: consent.tenant,
+  scenarioId: consent.scenarioId,
+  proposalDigest: consent.proposalDigest,
+  approverId: consent.approverId,
+  currentStateDigest: consent.beforeStateDigest,
+  dryRun: makeDryRun(),
+}), 'WFM_T3_READINESS_COMPONENT_DRIFT');
+assert.equal(postConstructionForgeryCalled, false);
+
+// A trusted consent component must not be able to swap the independent verifier mid-flight.
+const midConsentVerifier = createT3ExecutionPreflightVerifier();
+let midConsentForgeryCalled = false;
+const midConsentAuth = {
+  async consume() {
+    midConsentVerifier.verify = () => {
+      midConsentForgeryCalled = true;
+      return { verified: true };
+    };
+    return structuredClone(consent);
+  },
+};
+const midConsentGate = createT3ExecutionReadinessGate({
+  authorisationGate: midConsentAuth,
+  preflightVerifier: midConsentVerifier,
+  now: () => ++now,
+});
+await expectAsyncCode(() => midConsentGate.evaluate({
+  token: 'opaque-consent-token-component-drift-2',
+  tenant: consent.tenant,
+  scenarioId: consent.scenarioId,
+  proposalDigest: consent.proposalDigest,
+  approverId: consent.approverId,
+  currentStateDigest: consent.beforeStateDigest,
+  dryRun: makeDryRun(),
+}), 'WFM_T3_READINESS_COMPONENT_DRIFT');
+assert.equal(midConsentForgeryCalled, false);
+
+// Likewise, a trusted preflight component cannot replace consent authority for the next call
+// while returning an otherwise valid verification result.
+const midPreflightAuth = createOneShotAuthorisationGate(consent);
+const honestPreflightVerifier = createT3ExecutionPreflightVerifier();
+const midPreflightVerifier = {
+  verify(...args) {
+    const result = honestPreflightVerifier.verify(...args);
+    midPreflightAuth.consume = async () => structuredClone(consent);
+    return result;
+  },
+};
+const midPreflightGate = createT3ExecutionReadinessGate({
+  authorisationGate: midPreflightAuth,
+  preflightVerifier: midPreflightVerifier,
+  now: () => ++now,
+});
+await expectAsyncCode(() => midPreflightGate.evaluate({
+  token: 'opaque-consent-token-component-drift-3',
+  tenant: consent.tenant,
+  scenarioId: consent.scenarioId,
+  proposalDigest: consent.proposalDigest,
+  approverId: consent.approverId,
+  currentStateDigest: consent.beforeStateDigest,
+  dryRun: makeDryRun(),
+}), 'WFM_T3_READINESS_COMPONENT_DRIFT');
+
 console.log(JSON.stringify({
-  schemaVersion: 2,
-  proof: 'tier3-execution-readiness-with-policy-continuity-and-no-execution-authority',
+  schemaVersion: 3,
+  proof: 'tier3-execution-readiness-with-policy-continuity-runtime-trust-binding-and-no-execution-authority',
   status: 'PASS',
   repairAgentCannotRewriteReadinessAuthority: true,
   consumedCustomerConsentRequired: true,
@@ -276,6 +359,10 @@ console.log(JSON.stringify({
   samePrefixActionSubstitutionContained: true,
   staleConsentContained: true,
   independentPreflightVerified: true,
+  trustedComponentMethodBindingRequired: true,
+  postConstructionPreflightSubstitutionRejected: true,
+  midConsentVerifierSubstitutionRejected: true,
+  midPreflightAuthorisationSubstitutionRejected: true,
   businessInvariantRequired: true,
   securityRequired: true,
   tenantIsolationRequired: true,
