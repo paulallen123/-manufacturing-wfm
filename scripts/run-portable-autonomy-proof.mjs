@@ -67,6 +67,7 @@ const checks = [
   ['historical-incident-replay-and-learning', 'scripts/validate-historical-incident-replay.mjs', true],
   ['append-only-incident-regression-corpus', 'scripts/validate-incident-regression-corpus.mjs', true],
   ['persistent-incident-regression-corpus-continuity', 'scripts/validate-persistent-incident-corpus.mjs', true],
+  ['provider-neutral-prior-corpus-evidence-selection', 'scripts/validate-prior-corpus-evidence-verifier.mjs', true],
 ];
 
 const results = [];
