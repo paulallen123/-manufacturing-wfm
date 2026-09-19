@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {AGENCY_IDENTITY_DB_BOUNDARY_DDL} from '../../src/frontier/agency-identity-db-boundary.mjs';
-import {deriveAgencyIdentityScopeLock} from '../../src/frontier/agency-identity-scope-lock.mjs';
 
 const execFileAsync=promisify(execFile);
 const POSTGRES_IMAGE='postgres:16.10-bookworm@sha256:38471f330eb885e04de130b768d6db4e10469e2311879c7e5c699f6d2d8a1c74';
@@ -39,10 +38,8 @@ function pgTest(name,fn){test(name,{skip:!REQUIRED},fn);}
 
 const ASSIGNMENT='a'.repeat(24),ASSURANCE='b'.repeat(32),EVENT='c'.repeat(32),SUBJECT='d'.repeat(32),AUTH='e'.repeat(32),BINDING='f'.repeat(32);
 function appendCall(overrides={}){
- const x={tenant:'T1',site:'S1',request:'R1',agency:'A1',worker:'W1',assignment:ASSIGNMENT,assurance:ASSURANCE,source:'turnstile',event:EVENT,subject:SUBJECT,signal:'access_pass',observed:'2026-10-05T05:58:00Z',auth:AUTH,binding:BINDING,version:'agency-identity-observation-ingress-v0.2.0',received:'2026-10-05T05:58:10Z',lock:null,...overrides};
- const derivedLock=deriveAgencyIdentityScopeLock({tenantId:x.tenant,siteId:x.site,requestId:x.request,agencyId:x.agency,workerId:x.worker,assignmentFingerprint:x.assignment}).advisoryKey;
- const lock=x.lock??derivedLock;
- return `SELECT observation_duplicate,receipt_duplicate FROM public.wfm_append_agency_identity_observation_v1('${x.tenant}','${x.site}','${x.request}','${x.agency}','${x.worker}','${x.assignment}','${x.assurance}','${x.source}','${x.event}','${x.subject}','${x.signal}','${x.observed}'::timestamptz,'${x.auth}','${x.binding}','${x.version}','${x.received}'::timestamptz,${lock}::bigint);`;
+ const x={tenant:'T1',site:'S1',request:'R1',agency:'A1',worker:'W1',assignment:ASSIGNMENT,assurance:ASSURANCE,source:'turnstile',event:EVENT,subject:SUBJECT,signal:'access_pass',observed:'2026-10-05T05:58:00Z',auth:AUTH,binding:BINDING,version:'agency-identity-observation-ingress-v0.2.0',received:'2026-10-05T05:58:10Z',...overrides};
+ return `SELECT observation_duplicate,receipt_duplicate,scope_fingerprint FROM public.wfm_append_agency_identity_observation_v1('${x.tenant}','${x.site}','${x.request}','${x.agency}','${x.worker}','${x.assignment}','${x.assurance}','${x.source}','${x.event}','${x.subject}','${x.signal}','${x.observed}'::timestamptz,'${x.auth}','${x.binding}','${x.version}','${x.received}'::timestamptz);`;
 }
 
 before(async()=>{if(!REQUIRED)return;try{await docker(['version','--format','{{.Server.Version}}'],{timeout:10000});}catch(error){throw new Error(`Docker is required for identity DB boundary PostgreSQL proof: ${error.message}`);}await docker(['run','-d','--rm','--name',CONTAINER,'-e',`POSTGRES_PASSWORD=${DB_PASSWORD}`,POSTGRES_IMAGE],{timeout:120000});started=true;await waitForPostgres();await psql(`${BASE_DDL}\n${AGENCY_IDENTITY_DB_BOUNDARY_DDL}`);});
@@ -50,7 +47,7 @@ after(async()=>{await stop();});
 
 pgTest('ingress writer can execute the controlled append function but cannot read or directly mutate evidence tables',async()=>{
  const first=await psql(`BEGIN; SET ROLE wfm_agency_identity_ingress_writer; ${appendCall()} COMMIT;`);
- assert.match(first,/f\|f|false\|false/i);
+ assert.match(first,/(f\|f|false\|false)\|[0-9a-f]{24}/i);
  assert.equal(await scalar('SELECT count(*) FROM public.wfm_agency_identity_continuity_observations;'),'1');
  await assert.rejects(()=>psql('SET ROLE wfm_agency_identity_ingress_writer; SELECT count(*) FROM public.wfm_agency_identity_continuity_observations;'),/permission denied/i);
  await assert.rejects(()=>psql(`SET ROLE wfm_agency_identity_ingress_writer; INSERT INTO public.wfm_agency_identity_continuity_observations (tenant_id,site_id,request_id,agency_id,worker_id,assignment_fingerprint,assurance_version_id,source_system_id,source_event_fingerprint,subject_fingerprint,signal_type,observed_at) VALUES ('T1','S1','R1','A1','W9','${ASSIGNMENT}','${ASSURANCE}','turnstile','${'9'.repeat(32)}','${SUBJECT}','access_pass',now());`),/permission denied/i);
@@ -64,19 +61,19 @@ pgTest('reader can evaluate persisted evidence but cannot execute the ingress wr
 
 pgTest('controlled function is idempotent for exact replay and fails closed for conflicting identity replay',async()=>{
  const exact=await psql(`BEGIN; SET ROLE wfm_agency_identity_ingress_writer; ${appendCall()} COMMIT;`);
- assert.match(exact,/t\|t|true\|true/i);
+ assert.match(exact,/(t\|t|true\|true)\|[0-9a-f]{24}/i);
  await assert.rejects(()=>psql(`BEGIN; SET ROLE wfm_agency_identity_ingress_writer; ${appendCall({worker:'W2'})} COMMIT;`),/identity_observation_replay_conflict/i);
  assert.equal(await scalar('SELECT count(*) FROM public.wfm_agency_identity_continuity_observations;'),'1');
  assert.equal(await scalar('SELECT count(*) FROM public.wfm_agency_identity_observation_ingress_receipts;'),'1');
 });
 
-pgTest('caller-supplied advisory key cannot bypass canonical tenant/site/request/agency/worker/assignment serialization',async()=>{
- const beforeObservations=await scalar('SELECT count(*) FROM public.wfm_agency_identity_continuity_observations;');
- const beforeReceipts=await scalar('SELECT count(*) FROM public.wfm_agency_identity_observation_ingress_receipts;');
- const wrongScopeKey=deriveAgencyIdentityScopeLock({tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:ASSIGNMENT}).advisoryKey;
- await assert.rejects(()=>psql(`BEGIN; SET ROLE wfm_agency_identity_ingress_writer; ${appendCall({worker:'W-CROSS-SCOPE',event:'2'.repeat(32),auth:'3'.repeat(32),binding:'4'.repeat(32),lock:wrongScopeKey})} COMMIT;`),/identity_observation_scope_lock_mismatch/i);
- assert.equal(await scalar('SELECT count(*) FROM public.wfm_agency_identity_continuity_observations;'),beforeObservations);
- assert.equal(await scalar('SELECT count(*) FROM public.wfm_agency_identity_observation_ingress_receipts;'),beforeReceipts);
+pgTest('legacy caller-key append overload is absent and database is the sole assignment-lock authority',async()=>{
+ const oldSignature="public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz,bigint)";
+ const newSignature="public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz)";
+ assert.equal(await scalar(`SELECT pg_catalog.to_regprocedure('${oldSignature}') IS NULL;`),'t');
+ assert.equal(await scalar(`SELECT pg_catalog.to_regprocedure('${newSignature}') IS NOT NULL;`),'t');
+ const lockEvidence=await scalar("SET ROLE wfm_agency_identity_ingress_writer; SELECT scope_fingerprint FROM public.wfm_lock_agency_identity_assignment_scope_v1('T1','S1','R1','A1','W1','aaaaaaaaaaaaaaaaaaaaaaaa');");
+ assert.match(lockEvidence,/^[0-9a-f]{24}$/);
 });
 
 pgTest('least-privilege roles are NOLOGIN/NOSUPERUSER and only the reader has table SELECT',async()=>{
