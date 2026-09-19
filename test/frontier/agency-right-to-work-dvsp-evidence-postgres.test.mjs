@@ -90,7 +90,8 @@ const base = (overrides={}) => ({
   ...overrides,
 });
 
-test('32 concurrent appends of one evidence version produce one durable row', { skip:!started }, async () => {
+test('32 concurrent appends of one evidence version produce one durable row', async (t) => {
+  if (!started) return t.skip('Docker unavailable and PostgreSQL proof is not required in this environment');
   const record = createAgencyRightToWorkDvspEvidenceVersion(base());
   const results = await Promise.all(Array.from({ length:32 }, () => createPostgresAgencyRightToWorkDvspEvidenceStore({ query }).recordOnce(record)));
   assert.equal(results.filter(r => r.recorded).length, 1);
@@ -101,7 +102,8 @@ test('32 concurrent appends of one evidence version produce one durable row', { 
   assert.equal(rows.rows[0].registry_evidence_fingerprint, record.registryEvidenceFingerprint);
 });
 
-test('check-time resolution selects the latest evidence known and effective at that exact check', { skip:!started }, async () => {
+test('check-time resolution selects the latest evidence known and effective at that exact check', async (t) => {
+  if (!started) return t.skip('Docker unavailable and PostgreSQL proof is not required in this environment');
   const store = createPostgresAgencyRightToWorkDvspEvidenceStore({ query });
   const old = createAgencyRightToWorkDvspEvidenceVersion(base({
     providerId:'DVSP-2', registryEvidenceRef:'old-register-record', registryVerifiedAt:'2026-09-10T08:00:00.000Z', recordedAt:'2026-09-10T08:01:00.000Z',
