@@ -19,6 +19,14 @@ function isDigest(value) {
   return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 }
 
+function boundReceiptValid(receipt, digestField) {
+  if (!receipt || typeof receipt !== 'object' || !isDigest(receipt[digestField])) return false;
+  const core = { ...receipt };
+  const expected = core[digestField];
+  delete core[digestField];
+  return expected === digest(core);
+}
+
 function deny(code, message) {
   const error = new Error(message);
   error.code = code;
@@ -70,6 +78,10 @@ function createT3ExecutionReadinessGate({ authorisationGate, preflightVerifier, 
     assertRuntimeComponentBinding();
     const consent = await authorisationGate.consume({ token, tenant, scenarioId, proposalDigest, approverId });
     assertRuntimeComponentBinding();
+    if (!boundReceiptValid(consent, 'authorisationReceiptDigest')) {
+      deny('WFM_T3_READINESS_CONSENT_EVIDENCE', 'Consumed customer consent receipt failed its cryptographic binding.');
+    }
+    const consumedConsentReceiptDigest = consent.authorisationReceiptDigest;
     if (
       consent.customerConsentRecorded !== true
       || consent.durableReplayProtection !== true
@@ -106,6 +118,12 @@ function createT3ExecutionReadinessGate({ authorisationGate, preflightVerifier, 
     assertRuntimeComponentBinding();
     const preflight = preflightVerifier.verify(consent, currentStateDigest, dryRun);
     assertRuntimeComponentBinding();
+    if (
+      consent.authorisationReceiptDigest !== consumedConsentReceiptDigest
+      || !boundReceiptValid(consent, 'authorisationReceiptDigest')
+    ) {
+      deny('WFM_T3_READINESS_CONSENT_DRIFT', 'Consumed customer consent changed during independent preflight verification.');
+    }
     if (!preflight || preflight.verified !== true) {
       const containedCore = {
         schemaVersion: 2,
