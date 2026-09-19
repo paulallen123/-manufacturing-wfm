@@ -75,7 +75,7 @@ jobs:
             wfm-r1m1-private-browser >/dev/null
 
           app_ready=0
-          for _ in $(seq 1 240); do
+          for _ in $(seq 1 600); do
             if curl -fsS http://127.0.0.1:39119/api/health > "$proofdir/internal-health.json"; then app_ready=1; break; fi
             sleep 0.25
           done
