@@ -147,7 +147,7 @@ const forgedNorth = await request('/api/bootstrap?tenant=isolation-test', {
 assert.equal(forgedNorth.status, 200, 'Forged-tenant resistance request failed unexpectedly.');
 assert.equal(forgedNorth.body?.actor?.tenant, 'northstar-demo', 'Client-supplied tenant selector changed session tenant.');
 
-for (const path of ['/api/onboarding', '/api/schedule-publication', '/api/readiness', '/api/availability']) {
+for (const path of ['/api/onboarding', '/api/schedule-publication', '/api/readiness', '/api/resources']) {
   const r = await authed(north.cookie, path);
   assert.equal(r.status, 200, `Core read-only proof surface failed: ${path}`);
 }
@@ -159,6 +159,6 @@ console.log(JSON.stringify({
   roles: ['manager', 'employee', 'payroll_admin', 'director'],
   tenants: ['northstar-demo', 'isolation-test'],
   boundaries: ['unauthenticated-fail-closed', 'wrong-password-rejected', 'manager-payroll-denied', 'tenant-override-resisted'],
-  surfaces: ['onboarding', 'schedule-publication', 'weekly-review', 'time-review', 'attendance-corrections', 'availability', 'payroll-run', 'payroll-outcomes', 'payroll-intelligence'],
+  surfaces: ['onboarding', 'schedule-publication', 'weekly-review', 'time-review', 'attendance-corrections', 'resources', 'payroll-run', 'payroll-outcomes', 'payroll-intelligence'],
   claimBoundary: 'Private loopback synthetic self-verification only; no external deployment, real employee data, communications, payments or production integrations.'
 }, null, 2));
