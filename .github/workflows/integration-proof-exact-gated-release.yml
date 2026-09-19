@@ -1,0 +1,124 @@
+name: Integration proof exact gated release
+
+on:
+  push:
+    branches: ['feature/one-day-enterprise-implementation-v1']
+    paths:
+      - '.github/workflows/integration-proof-exact-gated-release.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-integration-proof-exact-gated-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      RAILWAY_NO_AUTO_UPDATE: '1'
+      RAILWAY_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'
+      RAILWAY_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'
+      RAILWAY_SERVICE_ID: '2631d462-61bf-4c01-ac4b-e106a562feeb'
+      WFM_PUBLIC_ORIGIN: 'https://wfm-integration-fabric-v1-proof-production.up.railway.app'
+      SECURITY_HOLD_DIR: '__security_hold_7b6f9d22e1__'
+
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Verify exact and cryptographically verified release authority
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          verification="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA" \
+            | jq -r '.commit.verification.verified')"
+          test "$verification" = 'true' || { echo 'RELEASE_AUTHORITY=FAIL unverified_commit' >&2; exit 1; }
+          echo "RELEASE_AUTHORITY=PASS sha=$GITHUB_SHA"
+
+      - name: Prove release-only change
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$GITHUB_SHA^1" "$GITHUB_SHA")
+          printf 'RELEASE_CHANGE=%s\n' "${changed[@]}"
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = '.github/workflows/integration-proof-exact-gated-release.yml'
+
+      - name: Prepare exact source behind immutable hold path
+        shell: bash
+        run: |
+          set -euo pipefail
+          upload="$RUNNER_TEMP/wfm-exact-release"
+          gated="$upload/$SECURITY_HOLD_DIR"
+          mkdir -p "$gated"
+          git archive --format=tar "$GITHUB_SHA" | tar -xf - -C "$gated"
+          test -f "$gated/Dockerfile"
+          test -f "$gated/DEPLOYMENT_MANIFEST.json"
+          grep -F '"production_approved": false' "$gated/DEPLOYMENT_MANIFEST.json"
+          grep -F '"staging_only": true' "$gated/DEPLOYMENT_MANIFEST.json"
+          echo "UPLOAD_ROOT=$upload" >> "$GITHUB_ENV"
+          echo "GATED_SOURCE_SHA=$GITHUB_SHA"
+
+      - name: Install pinned Railway CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
+          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
+          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
+          echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/railway-cli"
+          tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
+          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)"
+          test -n "$CLI_BIN"
+          echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
+          "$CLI_BIN" --version
+
+      - name: Upload exact candidate through existing hold
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
+          "$RAILWAY_BIN" up "$UPLOAD_ROOT" \
+            --path-as-root \
+            --project "$RAILWAY_PROJECT_ID" \
+            --service "$RAILWAY_SERVICE_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --message "exact-gated-release:$GITHUB_SHA" \
+            --ci
+          echo "INTEGRATION_EXACT_GATED_UPLOAD=SUBMITTED sha=$GITHUB_SHA"
+
+      - name: Verify integration proof health remains non-production
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --show-error "$WFM_PUBLIC_ORIGIN/api/health" > "$RUNNER_TEMP/health.json"; then
+              node --input-type=module - "$RUNNER_TEMP/health.json" <<'NODE'
+          import fs from 'node:fs';
+          const health=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          if(health.productionApproved!==false) throw new Error('Integration proof unexpectedly has production authority.');
+          console.log('INTEGRATION_PROOF_HEALTH=PASS');
+          NODE
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Integration proof health did not become available.' >&2
+          exit 1
