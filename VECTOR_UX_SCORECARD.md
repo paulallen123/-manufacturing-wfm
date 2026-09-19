@@ -2,6 +2,66 @@
 
 This is the single canonical scorecard for the approved Vector role-first NEW-UI lineage. Historical cycle detail remains in Git history; this file keeps the current evidence boundary, validated deltas and one dependency-ordered next action without repeating old research.
 
+## 2026-09-19 — Vector r13: visible authoritative action lifecycle
+
+### Journey reviewed
+Factory/operations manager Vector Home → `Items to review` → contract-backed Time Review action. The bounded friction was that Vector already consumed authoritative confirmation state and exposed it in the row accessibility label, but a sighted user still saw only the issue/detail plus a generic `Review` button. That made `Action required`, `Decision sent`, `Confirming source` and `Needs verification` visually indistinguishable.
+
+### NEW-UI lineage confirmation
+All product/test mutation is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired overlay, customer-proof runtime, staging or production presentation was changed.
+
+### Reuse / duplicate-work decision
+- Reused the existing Universal Action row, `actionStatus()` mapping, `structuredReviewRows()` consumer, authoritative `WFM_WORKFLOW_ACTION_EVIDENCE_V1` state and current-candidate role browser proof.
+- Did not add another badge component, queue, lifecycle mapper, timer, workflow, branch or CSS fork. The status is rendered inside the existing title column so it remains in the compact row and is not removed by the existing mobile rule that hides only the detail column.
+- Extended the existing repository Vector guard and existing five-role browser oracle for this distinct visual-state failure mode rather than creating another harness.
+- No competitor/general UX research was repeated because no unresolved external design question remained; the defect was directly observable in the current NEW UI source.
+
+### Evidence-backed finding
+Before r13, the source-owned lifecycle value was already mapped into each Time Review row and included in `aria-label`, but `alertsMarkup()` did not render `r.status` as visible text. This meant a manager could not visually tell whether an item still needed a decision, had been sent, was confirming upstream or required verification without opening the source workflow.
+
+The smallest safe improvement is therefore presentation-only: surface the already-admitted `r.status` beside the existing action title. It does not infer urgency or colour, does not calculate SLA/freshness, and does not move write authority into Vector.
+
+### Hypothesis
+If the existing source-owned lifecycle is visible directly inside each compact action row, managers can distinguish outstanding versus in-flight work without another click or screen while preserving the same authoritative workflow, neutral fallback and mobile containment.
+
+### Exact implementation / design delta
+- Commit `b313af4bab95a5a10c67baa86d02f83b9dc50d3d` extends the existing `alertsMarkup()` row only. The already-existing `r.status` is now visibly rendered beside the action title through `data-vector-action-status`, while the row's existing accessible status label remains authoritative.
+- The visible lifecycle is marked `aria-hidden` because the row's group `aria-label` already announces the same status; this avoids duplicate screen-reader speech rather than removing accessibility information.
+- No lifecycle colour was introduced. Missing/incomplete source evidence continues to show neutral `Needs review`.
+- Commit `542d8e3cd56ee434d6a98132a5dc309116993b03` extends the existing source-controlled browser oracle to compare visible status with the authoritative evidence item and require it to remain visible at desktop (1440), tablet (760) and mobile (390) widths before the Time Review navigation assertion proceeds.
+- Commit `f687a3d35db038b18a97ec97a3ec81c8868dde0f` extends the existing Vector repository guard so future changes cannot silently return lifecycle state to accessibility-only presentation.
+
+### Serious-idea decision
+| Idea | Evidence | Decision |
+| --- | --- | --- |
+| Render the already-source-owned lifecycle inline in the existing action title | Current NEW-UI source proved sighted lifecycle was absent while accessibility label already contained it | **BUILD NOW** |
+| Add colour/severity per lifecycle state | Would imply urgency/severity not provided by the source contract | **REJECT** |
+| Add another lifecycle/badge component | Existing action row and status mapper are sufficient | **REJECT** |
+| Begin Absence/sign-off lifecycle consumers before Time Review executable proof | Would duplicate an interaction pattern before the first domain is hosted-proven | **REJECT** |
+| Prove source-owned `Decision sent → Confirming source` after this row/browser proof executes | Next missing end-to-end lifecycle evidence | **BUILD NEXT** |
+
+### Focused / affected validation
+- A deterministic focused local delta check reproduced the exact revised `alertsMarkup()` status fragment across five states (`Action required`, `Decision sent`, `Confirming source`, `Needs verification`, `Needs review`) and passed attribute/text/accessibility consistency plus escaping: `VECTOR_ACTION_LIFECYCLE_DELTA_FOCUSED=PASS|cases=5|escaped=pass`.
+- The exact browser-oracle delta was syntax-checked locally: `VECTOR_BROWSER_LIFECYCLE_DELTA_SYNTAX=PASS`.
+- Source re-fetch at exact product/test head `f687a3d35db038b18a97ec97a3ec81c8868dde0f` confirms the visible lifecycle marker is in the canonical Vector row and the browser oracle compares it to the authoritative item across desktop/tablet/mobile before navigation.
+- Affected GitHub run `35466287202` again received no executable steps (`runner_id=0`, `steps=[]`) and therefore did not execute the repository guard, Docker build or browser suite. This unchanged runner-allocation blocker was observed once after the new head and not retried.
+- No customer-proof/staging/production environment was mutated to manufacture proof.
+
+### UX scorecard impact
+- Calm by default: preserved — no added urgency colour, countdown, synthetic priority or UI-owned SLA.
+- Dense on demand: improved — lifecycle meaning is available inside the existing row with no extra screen, drawer or interaction.
+- Explainability: strengthened — a manager can now see whether authoritative work is awaiting action, sent, confirming or needing verification before opening it.
+- Accessibility: preserved by design — the pre-existing row accessibility label still announces status; the new duplicate visual text is hidden from assistive technology. Full browser/screen-reader execution remains unverified.
+- Responsive containment: strengthened in test design — the existing browser oracle now explicitly requires lifecycle visibility at 1440/760/390 widths; executable hosted result is still pending.
+- Authority/auditability: preserved — lifecycle still comes from the validated source contract; Vector neither writes it nor advances it.
+- Development efficiency: improved — one existing row, one existing browser oracle and one existing guard were extended; no replacement implementation was created.
+
+### Still unverified
+The exact-head hosted/browser suite has not executed because the GitHub job again received no runner. Therefore real DOM visibility at the three widths, actual browser accessibility behaviour, task-time improvement, and source-owned transition through `Decision sent → Confirming source` remain unverified. The current evidence proves the bounded source change, focused markup behaviour and strengthened executable oracle — not hosted success.
+
+### Single next highest-value NEW-UI action
+Execute the existing exact-current-candidate browser proof when an executable runner or isolated canonical candidate becomes available. Require visible lifecycle text to equal the authoritative Time Review confirmation state at desktop/tablet/mobile, then preserve the existing source-ID/open/return-focus/no-optimistic-clear assertions. If green, advance only the same Time Review path to a deterministic source-owned `Decision sent → Confirming source` transition before reusing the pattern for Absence or weekly sign-off.
+
 ## 2026-09-19 — Vector r12: hosted Time Review evidence replay repair
 
 ### Journey reviewed
