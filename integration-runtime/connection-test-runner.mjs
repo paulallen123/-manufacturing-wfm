@@ -1,4 +1,4 @@
-import { isOpaqueReference, validateConnectionProfile } from './connection-contract.mjs';
+import { configurationFingerprint, isOpaqueReference, validateConnectionProfile } from './connection-contract.mjs';
 import { missingProviderConfigRefs, providerCompatibility, validateProviderManifest } from './connection-setup-plan.mjs';
 import { transportSafetyRequirements, validateTransportSafetyEvidence } from './transport-safety.mjs';
 
@@ -51,6 +51,7 @@ function buildBaseRequest(profile, manifest, policy) {
     scope: profile.scope,
     providerKey: manifest.providerKey,
     direction: profile.direction || 'inbound',
+    configurationFingerprint: configurationFingerprint(profile),
     transport: {
       kind: profile.transport.kind,
       endpointRef: profile.transport.endpointRef,
@@ -142,15 +143,18 @@ export async function runSafeConnectionTest(profile, manifest, executor) {
   }
   const errors = validateProbeResult(result, profile, manifest, readiness.policy);
   if (errors.length) return { status: 'failed', mode: 'bounded_non_mutating', errors };
+  const fingerprint = configurationFingerprint(profile);
   return {
     status: 'passed', mode: 'bounded_non_mutating', observedBy: 'trusted_executor',
     executorIdentityRef: executor.identityRef, evidenceRef: result.evidenceRef,
+    configurationFingerprint: fingerprint,
     providerCallObserved: true, providerIdentityVerified: true, authenticationObserved: true,
     boundedSampleObserved: true, mutationObserved: false, rawSensitiveDataPersisted: false,
     schemaEvidenceRef: result.schemaEvidenceRef, sampleRecordCount: result.sampleRecordCount,
     sampleBytes: result.sampleBytes, transportSafety: result.transportSafety,
     reconciliation: {
       status: 'passed', observedBy: 'trusted_executor', evidenceRef: result.reconciliation.evidenceRef,
+      configurationFingerprint: fingerprint,
       sourceCount: result.reconciliation.sourceCount, stagedCount: result.reconciliation.stagedCount
     }
   };
@@ -195,7 +199,8 @@ export async function runRecoveryProof(profile, manifest, executor) {
   if (errors.length) return { status: 'failed', errors };
   return {
     status: 'passed', observedBy: 'trusted_executor', executorIdentityRef: executor.identityRef,
-    evidenceRef: result.evidenceRef, transientFailureObserved: true, successfulRecoveryObserved: true,
+    evidenceRef: result.evidenceRef, configurationFingerprint: configurationFingerprint(profile),
+    transientFailureObserved: true, successfulRecoveryObserved: true,
     sameOperationRecovered: true, attempts: result.attempts, duplicateApplicationCount: 0,
     reconciliationPassed: true, reconciliationEvidenceRef: result.reconciliation.evidenceRef,
     mutationObserved: false, rawSensitiveDataPersisted: false
