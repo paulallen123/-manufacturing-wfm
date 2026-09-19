@@ -54,6 +54,47 @@ function validateIntent(intent) {
   return { queueKey, intentDigest };
 }
 
+function verificationSubject(record, providerResourceId = record.providerResourceId) {
+  const resourceId = requireString(providerResourceId, 'WFM_OUTBOX_PROVIDER_RESOURCE_REQUIRED', 'Verification requires the exact provider resource identity.');
+  const artifactSha256 = requireString(record.payload && record.payload.build && record.payload.build.artifactSha256, 'WFM_OUTBOX_BUILD_DIGEST_REQUIRED', 'Verification requires the approved build digest.').toLowerCase();
+  const graphFingerprint = requireString(record.payload && record.payload.scope && record.payload.scope.graphFingerprint, 'WFM_OUTBOX_SCOPE_FINGERPRINT_REQUIRED', 'Verification requires the exact scoping graph fingerprint.').toLowerCase();
+  return {
+    queueKey: record.queueKey,
+    intentDigest: record.intentDigest,
+    providerResourceId: resourceId,
+    artifactSha256,
+    graphFingerprint
+  };
+}
+
+function withVerificationSubject(record, providerResourceId) {
+  const subject = verificationSubject(record, providerResourceId);
+  return {
+    ...record,
+    providerResourceId: subject.providerResourceId,
+    verificationSubject: subject,
+    verificationSubjectDigest: sha256(subject)
+  };
+}
+
+function assertVerificationSubject(record, supplied) {
+  if (!supplied || typeof supplied !== 'object') {
+    fail('WFM_OUTBOX_VERIFICATION_SUBJECT_REQUIRED', 'Independent verification must identify the exact environment, approved build and scoping definition.', 400);
+  }
+  const expected = record.verificationSubject || verificationSubject(record);
+  const actual = {
+    queueKey: String(supplied.queueKey || ''),
+    intentDigest: String(supplied.intentDigest || '').toLowerCase(),
+    providerResourceId: String(supplied.providerResourceId || ''),
+    artifactSha256: String(supplied.artifactSha256 || '').toLowerCase(),
+    graphFingerprint: String(supplied.graphFingerprint || '').toLowerCase()
+  };
+  if (canonical(actual) !== canonical(expected) || sha256(actual) !== record.verificationSubjectDigest) {
+    fail('WFM_OUTBOX_VERIFICATION_SUBJECT_MISMATCH', 'Independent verification does not match the exact provisioned environment, sealed scope and approved build.', 409);
+  }
+  return expected;
+}
+
 function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {}) {
   if (!store || store.durability !== 'DURABLE_TRANSACTIONAL' || typeof store.transaction !== 'function') {
     throw new Error('Provisioning outbox requires a durable transactional store.');
@@ -95,8 +136,11 @@ function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {
         updatedAt: createdAt,
         leaseOwner: null,
         leaseUntil: null,
+        mutationWorkerId: null,
         providerRequestId: null,
         providerResourceId: null,
+        verificationSubject: null,
+        verificationSubjectDigest: null,
         lastDecision: 'ENQUEUED'
       };
       tx.insert(queueKey, clone(record));
@@ -170,6 +214,7 @@ function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {
         state: OUTBOX_STATES.MUTATION_STARTED,
         version: Number(record.version || 0) + 1,
         updatedAt: nowMs,
+        mutationWorkerId: token.workerId,
         providerRequestId,
         lastDecision: 'PROVIDER_MUTATION_INTENT_COMMITTED'
       };
@@ -205,7 +250,7 @@ function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {
       }
 
       const nowMs = stamp();
-      const next = {
+      let next = {
         ...record,
         state,
         version: Number(record.version || 0) + 1,
@@ -214,6 +259,7 @@ function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {
         leaseUntil: null,
         lastDecision
       };
+      if (state === OUTBOX_STATES.VERIFY_REQUIRED) next = withVerificationSubject(next, outcome.providerResourceId);
       tx.replace(record.queueKey, clone(next));
       return clone(next);
     });
@@ -232,7 +278,7 @@ function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {
       let next;
       if (status === 'FOUND') {
         if (!result.providerResourceId) fail('WFM_OUTBOX_PROVIDER_RESOURCE_REQUIRED', 'Reconciliation found an environment but no resource identity.', 400);
-        next = { ...record, state: OUTBOX_STATES.VERIFY_REQUIRED, providerResourceId: result.providerResourceId, lastDecision: 'RECONCILED_FOUND_VERIFY', version: record.version + 1, updatedAt: nowMs, leaseUntil: null };
+        next = withVerificationSubject({ ...record, state: OUTBOX_STATES.VERIFY_REQUIRED, lastDecision: 'RECONCILED_FOUND_VERIFY', version: record.version + 1, updatedAt: nowMs, leaseUntil: null }, result.providerResourceId);
       } else if (status === 'NOT_FOUND') {
         // Safe default: absence does not authorize another create. Provider-specific retry authority is required.
         next = { ...record, state: OUTBOX_STATES.QUARANTINED, lastDecision: 'RECONCILED_NOT_FOUND_NO_BLIND_RETRY', version: record.version + 1, updatedAt: nowMs, leaseUntil: null };
@@ -250,7 +296,11 @@ function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {
       const record = tx.get(key);
       if (!record) fail('WFM_OUTBOX_NOT_FOUND', 'Provisioning queue item was not found.', 404);
       if (record.state !== OUTBOX_STATES.VERIFY_REQUIRED) fail('WFM_OUTBOX_VERIFY_NOT_REQUIRED', 'Independent readiness verification is not required for this item.');
-      if (verification.independent !== true || !verification.verifierId) fail('WFM_OUTBOX_VERIFIER_NOT_INDEPENDENT', 'An independent verifier identity is required.', 403);
+      const verifierId = requireString(verification.verifierId, 'WFM_OUTBOX_VERIFIER_NOT_INDEPENDENT', 'An independent verifier identity is required.');
+      if (verification.independent !== true || verifierId === record.mutationWorkerId) {
+        fail('WFM_OUTBOX_VERIFIER_NOT_INDEPENDENT', 'Readiness verification must be performed by a different identity from the cloud mutation worker.', 403);
+      }
+      const subject = assertVerificationSubject(record, verification.subject);
       const checks = verification.checks || {};
       const required = ['health', 'security', 'isolation', 'approvedBuild', 'secrets', 'network', 'readiness'];
       const passed = required.every(name => checks[name] === true);
@@ -263,7 +313,7 @@ function createProvisioningOutbox(store, { now = Date.now, leaseMs = 30000 } = {
         leaseOwner: null,
         leaseUntil: null,
         lastDecision: passed ? 'INDEPENDENTLY_VERIFIED_READY' : 'READINESS_CHECK_FAILED',
-        verificationDigest: sha256({ providerResourceId: record.providerResourceId, verifierId: verification.verifierId, checks })
+        verificationDigest: sha256({ subject, verifierId, checks })
       };
       tx.replace(key, clone(next));
       return clone(next);

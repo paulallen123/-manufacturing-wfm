@@ -28,7 +28,7 @@ function intent(overrides = {}) {
   return {
     schemaVersion: 1,
     contract: { provider: 'contract-provider', contractId: 'ctr-1', contractVersion: '1', tenantId: 'tenant-a', completedAt: '2026-09-19T04:00:00Z' },
-    scope: { graphVersion: '2026-09-19.1', revision: 'scope-a', purchasedScope: ['time'], operationsDigest: 'b'.repeat(64) },
+    scope: { graphVersion: '2026-09-19.1', graphFingerprint: 'd'.repeat(64), revision: 'scope-a', purchasedScope: ['time'], operationsDigest: 'b'.repeat(64) },
     build: { sourceRevision: 'abc', artifactSha256: 'c'.repeat(64), approvalId: 'approved-1' },
     plan: { provider: 'railway', region: 'eu-west', creationMode: 'fresh-provider-create', isolated: true, networkPolicy: 'private-until-ready', secretsPolicy: 'server-managed-per-tenant' },
     completionEvidence: { authenticated: true, eventId: 'evt-1' },
@@ -40,6 +40,14 @@ function intent(overrides = {}) {
 
 function expectCode(fn, code) {
   assert.throws(fn, error => error && error.code === code);
+}
+
+function allChecks(overrides = {}) {
+  return { health: true, security: true, isolation: true, approvedBuild: true, secrets: true, network: true, readiness: true, ...overrides };
+}
+
+function verifiedSubject(record) {
+  return structuredClone(record.verificationSubject);
 }
 
 test('requires durable transactional storage', () => {
@@ -60,7 +68,7 @@ test('same business queue identity cannot be reused for a changed sealed intent'
   const store = makeStore();
   const outbox = createProvisioningOutbox(store, { now: () => 1000 });
   outbox.enqueue(intent());
-  expectCode(() => outbox.enqueue(intent({ intentDigest: 'd'.repeat(64) })), 'WFM_OUTBOX_IDENTITY_DRIFT');
+  expectCode(() => outbox.enqueue(intent({ intentDigest: 'e'.repeat(64) })), 'WFM_OUTBOX_IDENTITY_DRIFT');
 });
 
 test('crash after claim but before mutation is recoverable with a higher generation', () => {
@@ -87,6 +95,7 @@ test('provider mutation intent is committed before the cloud call and survives a
   const claim = outbox.claim(intent().queueKey, 'worker-a');
   const started = outbox.beginMutation(claim.token);
   assert.match(started.providerRequestId, /^wfm-create-/);
+  assert.equal(started.record.mutationWorkerId, 'worker-a');
 
   const restartedStore = makeStore(store.snapshot());
   outbox = createProvisioningOutbox(restartedStore, { now: () => 999999 });
@@ -109,7 +118,7 @@ test('ambiguous create can never become a blind second create', () => {
   assert.equal(notFound.lastDecision, 'RECONCILED_NOT_FOUND_NO_BLIND_RETRY');
 });
 
-test('confirmed fresh creation still requires independent readiness verification', () => {
+test('confirmed fresh creation seals an exact verification subject before readiness checks', () => {
   const store = makeStore();
   const outbox = createProvisioningOutbox(store, { now: () => 1000 });
   outbox.enqueue(intent());
@@ -117,12 +126,72 @@ test('confirmed fresh creation still requires independent readiness verification
   outbox.beginMutation(claim.token);
   const created = outbox.recordProviderOutcome(claim.token, { result: 'CONFIRMED_CREATED', providerResourceId: 'project-123' });
   assert.equal(created.state, 'VERIFY_REQUIRED');
-  assert.equal(outbox.claim(intent().queueKey, 'worker-b').action, 'VERIFY_ONLY');
+  assert.equal(created.verificationSubject.queueKey, intent().queueKey);
+  assert.equal(created.verificationSubject.intentDigest, intent().intentDigest);
+  assert.equal(created.verificationSubject.providerResourceId, 'project-123');
+  assert.equal(created.verificationSubject.artifactSha256, intent().build.artifactSha256);
+  assert.equal(created.verificationSubject.graphFingerprint, intent().scope.graphFingerprint);
+  assert.match(created.verificationSubjectDigest, /^[a-f0-9]{64}$/);
 
   const ready = outbox.recordIndependentVerification(intent().queueKey, {
     independent: true,
     verifierId: 'readiness-verifier',
-    checks: { health: true, security: true, isolation: true, approvedBuild: true, secrets: true, network: true, readiness: true }
+    subject: verifiedSubject(created),
+    checks: allChecks()
+  });
+  assert.equal(ready.state, 'COMPLETED');
+});
+
+test('the cloud mutation worker cannot self-verify readiness', () => {
+  const store = makeStore();
+  const outbox = createProvisioningOutbox(store, { now: () => 1000 });
+  outbox.enqueue(intent());
+  const claim = outbox.claim(intent().queueKey, 'worker-a');
+  outbox.beginMutation(claim.token);
+  const created = outbox.recordProviderOutcome(claim.token, { result: 'CONFIRMED_CREATED', providerResourceId: 'project-123' });
+
+  expectCode(() => outbox.recordIndependentVerification(intent().queueKey, {
+    independent: true,
+    verifierId: 'worker-a',
+    subject: verifiedSubject(created),
+    checks: allChecks()
+  }), 'WFM_OUTBOX_VERIFIER_NOT_INDEPENDENT');
+});
+
+test('stale or wrong-environment verification evidence is rejected', () => {
+  const store = makeStore();
+  const outbox = createProvisioningOutbox(store, { now: () => 1000 });
+  outbox.enqueue(intent());
+  const claim = outbox.claim(intent().queueKey, 'worker-a');
+  outbox.beginMutation(claim.token);
+  const created = outbox.recordProviderOutcome(claim.token, { result: 'CONFIRMED_CREATED', providerResourceId: 'project-123' });
+  const wrongSubject = verifiedSubject(created);
+  wrongSubject.providerResourceId = 'project-old';
+
+  expectCode(() => outbox.recordIndependentVerification(intent().queueKey, {
+    independent: true,
+    verifierId: 'readiness-verifier',
+    subject: wrongSubject,
+    checks: allChecks()
+  }), 'WFM_OUTBOX_VERIFICATION_SUBJECT_MISMATCH');
+});
+
+test('reconciled creation uses the found environment as the only verifiable subject', () => {
+  const store = makeStore();
+  const outbox = createProvisioningOutbox(store, { now: () => 1000 });
+  outbox.enqueue(intent());
+  const claim = outbox.claim(intent().queueKey, 'worker-a');
+  outbox.beginMutation(claim.token);
+  outbox.recordProviderOutcome(claim.token, { result: 'AMBIGUOUS' });
+  const reconciled = outbox.recordReconciliation(intent().queueKey, { status: 'FOUND', providerResourceId: 'project-recovered' });
+  assert.equal(reconciled.state, 'VERIFY_REQUIRED');
+  assert.equal(reconciled.verificationSubject.providerResourceId, 'project-recovered');
+
+  const ready = outbox.recordIndependentVerification(intent().queueKey, {
+    independent: true,
+    verifierId: 'readiness-verifier',
+    subject: verifiedSubject(reconciled),
+    checks: allChecks()
   });
   assert.equal(ready.state, 'COMPLETED');
 });
@@ -133,11 +202,12 @@ test('failed readiness check quarantines rather than launching', () => {
   outbox.enqueue(intent());
   const claim = outbox.claim(intent().queueKey, 'worker-a');
   outbox.beginMutation(claim.token);
-  outbox.recordProviderOutcome(claim.token, { result: 'CONFIRMED_CREATED', providerResourceId: 'project-123' });
+  const created = outbox.recordProviderOutcome(claim.token, { result: 'CONFIRMED_CREATED', providerResourceId: 'project-123' });
   const result = outbox.recordIndependentVerification(intent().queueKey, {
     independent: true,
     verifierId: 'readiness-verifier',
-    checks: { health: true, security: true, isolation: true, approvedBuild: true, secrets: true, network: false, readiness: true }
+    subject: verifiedSubject(created),
+    checks: allChecks({ network: false })
   });
   assert.equal(result.state, 'QUARANTINED');
 });
