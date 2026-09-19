@@ -1,47 +1,53 @@
-# UX scorecard — Cycle 12 r5
+# UX scorecard — Cycle 12 r6 / Vector priority projection
 
 ## Journey reviewed
-Specialist/system priority on the approved Vector NEW-UI lineage → existing owning workflow → return to the originating priority.
+Approved Vector manager Home → governed Universal Action Queue priority → Integrations owning workflow → Back to priority queue → exact originating Decision Card focus.
 
 ## NEW-UI lineage confirmation
-All work in this cycle was applied only to `feature/one-day-enterprise-implementation-v1`, the approved Vector Workforce Operations presentation lineage. The superseded Cycle 12 concept branch and legacy/0.6.139 presentation lineage were not mutated.
+All work in this cycle was applied only to `feature/one-day-enterprise-implementation-v1`, the approved Vector Workforce Operations NEW-UI lineage. No legacy/0.6.139 presentation surface, superseded concept shell, customer-proof runtime, staging or production environment was mutated.
 
-## Reuse / duplicate-work check
-- Reused the existing Cycle 11 Decision Card renderer, `.ux11-open` route action, `openRoute`, return marker and focus-restoration lifecycle.
-- Reused the existing Cycle 12 provider registry, source poller, provider-route binding and specialist queue container.
-- Removed the Cycle 12 duplicate card renderer and duplicate `.ux12-open` click/navigation path instead of maintaining a second specialist interaction grammar.
-- No new branch, PR, queue model, route, permission path, source calculation or business rule was created.
+## Fast reuse / dependency decision
+- Reused the existing Cycle 11 Decision Card renderer, ranking, evidence/authority rows, source marker, route hand-off, return control and focus restoration.
+- Reused the existing Cycle 12 provider registry, integration source adapter and shared source poller.
+- Reused and extended the existing Cycle 11 composed-browser harness and existing UX gate instead of creating another harness/workflow.
+- Repository inspection found the critical dependency first: Vector's current Docker composition loaded only `vector-shell.js`; the validated Cycle 11/12 governed action primitives were present on the branch but not composed into the served Vector runtime.
+- Vector Home also deliberately hides `.vector-home-source`, so a newly composed queue would still have been invisible unless projected into the approved Vector hierarchy.
 
 ## Research delta
-No external research was repeated. The unresolved issue was implementation drift inside the current NEW UI, and repository evidence was sufficient to decide the change.
+No external competitor/general UX research was repeated. The unresolved question was implementation/runtime composition and could be answered directly from current repository evidence.
 
 ## Hypothesis
-If managers and specialist/system roles render the same authoritative Decision Card and use one return-to-context lifecycle, interaction behaviour should remain more predictable and cheaper to maintain without adding visible density or moving source authority into presentation.
+If the already-validated Cycle 11/12 governed priority primitives are composed beneath Vector and the single existing queue DOM is projected into the visible Vector Home, managers should receive the intended exception-first experience without a second renderer, duplicate cards, copied business logic or a return-context fork.
 
 ## Exact implementation delta
-- Cycle 11 now exports `renderCard`, `returnMarker`, `restoreFocus`, `addBackLink` and `focusNode` as shared presentation primitives.
-- Return-to-context is no longer artificially limited to manager roles; any role that entered an owning workflow from an authenticated priority marker can receive the existing `Back to priority queue` continuation.
-- Cycle 12 specialist queues now render via `WFMUXCycle11.renderCard` and restore origin focus via `WFMUXCycle11.restoreFocus`.
-- The Cycle 12 specialist-specific card function, source/state label duplication and `.ux12-open` click handler were removed.
-- Existing source-owned writes, permissions, payroll/compliance calculations, audit behaviour and route ownership remain unchanged.
+- Added `vector-priority-bridge.js`, a presentation-only projector that moves the existing governed `.ux11-queue` from Vector's hidden source container into one visible `vector-priority-slot`; it does not clone or re-render cards.
+- The bridge replaces an older projected queue only when the authoritative source queue re-renders, preventing parallel DOM owners.
+- The bridge also clears stale `data-vector-home` state when moving away from Home so the approved Vector home can rebuild correctly on return.
+- Added a small Vector-specific CSS containment layer for the shared queue; the Cycle 11 card/evidence grammar remains authoritative.
+- Updated Docker composition so Cycle 11 model/UI, Cycle 12 model/UI, their existing CSS, Vector shell and the bridge are served in dependency order. Legacy/retired shells remain unloaded.
+- Extended the existing Cycle 11 browser harness with the real Vector shell, Cycle 12 integration adapter, an authoritative `AUTHORIZATION_REQUIRED` integration fixture, Vector projection proof, Integrations round-trip, exact originating focus restoration and 390px containment.
+- Updated the existing UX gate to execute on the canonical Vector branch and verify exact served-asset composition; no new CI workflow was created.
 
-## Focused validation
-- The existing Cycle 12 signal-contract regression was extended rather than replaced.
-- New guards fail if Cycle 12 reintroduces its own card renderer or `.ux12-open` route path.
-- New guards require Cycle 12 to use the shared Cycle 11 card and return-focus primitive and require return-context observation to remain available outside manager-only workflows.
-- GitHub reports PR #79 as `mergeable_state: clean` at the changed head after recomputation.
-- No executable GitHub workflow run was exposed for the changed head, so hosted browser, screen-reader, mobile/tablet and real time-on-task proof are not claimed green.
+## Focused validation / evidence boundary
+- New bridge and composition source were added on the canonical Vector branch and GitHub accepted all commits without branch conflict.
+- The browser gate now fails unless an Integrations priority is inside the visible Vector priority slot rather than hidden in `.vector-home-source`.
+- It also fails unless `Integrations priority → Integrations workflow → Back → exact original Decision Card` succeeds, including a 390px return-focus check.
+- The build gate now fails unless Cycle 11 → Cycle 12 → approved Vector → priority bridge are present in served assets in that order while the sealed base runtime hash/server contract remains unchanged.
+- Exact workflow/browser execution remains pending until GitHub Actions actually allocates a runner for the changed head; no browser, accessibility or hosted pass is claimed before that evidence exists.
 
 ## UX scorecard impact
-- Calm by default: unchanged; no additional permanent surface or control was added.
-- Dense on demand: unchanged visually; specialist actions now inherit the same disclosure grammar as manager actions.
-- Explainability: improved structurally through one evidence/authority card contract.
-- Navigation predictability: improved structurally because manager and specialist roles now use the same open/return lifecycle.
-- Development efficiency: improved materially by deleting a parallel card/navigation implementation and protecting against its return.
-- Capability preservation: green by design; presentation only.
+- Calm by default: improved; the approved Vector dashboard remains the visible shell and reuses one governed priority lane rather than exposing the hidden source UI.
+- Dense on demand: preserved; cards retain existing progressive evidence disclosure and only the governed queue is projected.
+- Explainability: preserved/improved; source, reason, evidence state and authority remain the same structured Decision Card contract.
+- Navigation predictability: materially improved by making the intended Vector priority journey actually reachable and preserving exact return focus.
+- Development efficiency: materially improved; no duplicate card renderer, provider adapter, route lifecycle, browser harness or workflow was created.
+- Capability preservation: green by design; no server-side calculation, permission, integration credential/write action, payroll/compliance authority or audit ownership moved into presentation.
 
 ## Serious-idea decision
-**BUILD NOW** — one shared Decision Card + one return-context lifecycle across roles. Evidence strength: high repository-level implementation evidence. Main residual risk: composed runtime focus behaviour is not executable in the currently blocked hosted CI path.
+**BUILD NOW** — compose and visibly project the existing governed action queue under Vector. Evidence strength: high repository-level implementation evidence. Risk controlled by reusing the single queue DOM and keeping all source writes in owning workflows.
+
+## Still unverified
+Actual headless Chromium result on the changed exact head, screen-reader announcement quality, tablet widths, real user first-click/time-on-task/error-rate improvement, and hosted source-bound runtime proof.
 
 ## Single next highest-value NEW-UI action
-Inspect the approved Vector shell's actual heading/navigation containers for specialist-owned routes and add a focused rendered-DOM regression for `Integrations priority → Integrations workflow → Back to priority queue → exact originating card focus`, reusing the existing Cycle 11 browser harness if executable. Do not create another harness or navigation primitive.
+Consume the exact gate result for the new Vector composition once the changed head receives a runner. If browser composition is green, inspect the visible Vector priority hierarchy at tablet width and then bind the next authoritative source only where freshness/authority is already structured. If CI again fails before execution with the known zero-step signature, do not retry repeatedly; advance the next non-blocked Vector-only validation/design dependency instead.
