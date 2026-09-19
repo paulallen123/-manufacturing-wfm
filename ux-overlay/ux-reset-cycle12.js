@@ -2,25 +2,30 @@
 (function(){
 'use strict';
 const registry=new Map();
-let implementationCache=[],implementationLast=0,implementationBusy=false;
+const sourceState=new Map([
+  ['implementation',{cache:[],last:0,busy:false,path:'/api/implementation/autonomous/status',mapper:'implementationSignals'}],
+  ['integrations',{cache:[],last:0,busy:false,path:'/api/integrations/autonomous/status',mapper:'integrationSignals'}]
+]);
 const M=()=>window.WFMUXCycle12Model;
 const page=()=>{try{return ui?.page||null;}catch{return null;}};
 const role=()=>{try{return (typeof F!=='undefined'&&F.actor?.role)||ui?.role||null;}catch{return null;}};
 const employee=()=>{try{return typeof isEmployee==='function'&&isEmployee();}catch{return false;}};
 const manager=()=>!employee()&&['manager','director','supervisor'].includes(role());
 function signals(){return M()?.collect(registry)||[];}
-async function refreshImplementation(force=false){
-  if(employee()||implementationBusy)return;
-  const now=Date.now();if(!force&&now-implementationLast<15000)return;
-  implementationLast=now;implementationBusy=true;
+async function refreshSource(providerId,force=false){
+  const source=sourceState.get(providerId);if(!source||employee()||source.busy)return;
+  const now=Date.now();if(!force&&now-source.last<15000)return;
+  source.last=now;source.busy=true;
   try{
-    const res=await fetch('/api/implementation/autonomous/status',{credentials:'same-origin',headers:{Accept:'application/json'}});
-    if(res.status===404||res.status===401||res.status===403){implementationCache=[];return;}
-    if(!res.ok){implementationCache=[];return;}
-    const status=await res.json();implementationCache=M()?.implementationSignals?.(status)||[];
-  }catch{implementationCache=[];}
-  finally{implementationBusy=false;setTimeout(apply,0);}
+    const res=await fetch(source.path,{credentials:'same-origin',headers:{Accept:'application/json'}});
+    if(res.status===404||res.status===401||res.status===403){source.cache=[];return;}
+    if(!res.ok){source.cache=[];return;}
+    const status=await res.json();source.cache=M()?.[source.mapper]?.(status)||[];
+  }catch{source.cache=[];}
+  finally{source.busy=false;setTimeout(apply,0);}
 }
+const refreshImplementation=force=>refreshSource('implementation',force);
+const refreshIntegrations=force=>refreshSource('integrations',force);
 function register(providerId,getter){
   if(!M()?.PROVIDERS?.[providerId])throw new Error('Unknown UX signal provider');
   if(typeof getter!=='function')throw new TypeError('Provider getter must be a function');
@@ -49,7 +54,7 @@ function relabelTools(){
   });
 }
 function apply(){
-  refreshImplementation();
+  refreshImplementation();refreshIntegrations();
   const rows=signals();
   if(manager()&&page()==='overview'&&window.WFMUXCycle11?.renderQueue)window.WFMUXCycle11.renderQueue(rows);
   else renderSpecialistQueue(rows);
@@ -57,9 +62,10 @@ function apply(){
 }
 const priorRender=window.render;if(typeof priorRender==='function')window.render=async function(...args){const out=await priorRender.apply(this,args);apply();return out;};
 const observer=new MutationObserver(()=>{try{relabelTools();}catch{}});observer.observe(document.documentElement,{subtree:true,childList:true});
-registry.set('implementation',()=>implementationCache);
+registry.set('implementation',()=>sourceState.get('implementation')?.cache||[]);
+registry.set('integrations',()=>sourceState.get('integrations')?.cache||[]);
 setTimeout(apply,0);setTimeout(apply,450);
-window.WFMUXSignals=Object.freeze({register,list:()=>signals(),providers:()=>Object.keys(M()?.PROVIDERS||{}),refreshImplementation:()=>refreshImplementation(true)});
+window.WFMUXSignals=Object.freeze({register,list:()=>signals(),providers:()=>Object.keys(M()?.PROVIDERS||{}),refreshImplementation:()=>refreshImplementation(true),refreshIntegrations:()=>refreshIntegrations(true)});
 })();
 
 ;/* WFM_CANONICAL_CONCEPT_SHELL_BEGIN */
