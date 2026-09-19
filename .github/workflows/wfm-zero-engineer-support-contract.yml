@@ -51,6 +51,7 @@ on:
       - 'scripts/validate-t4-outer-terminal-integrity.mjs'
       - 'scripts/validate-autonomy-control-loop.mjs'
       - 'scripts/validate-incident-learning-planner.mjs'
+      - 'scripts/validate-historical-incident-replay.mjs'
       - 'scripts/validate-autonomy-source-syntax.mjs'
       - 'scripts/run-portable-autonomy-proof.mjs'
       - '.github/workflows/wfm-zero-engineer-support-contract.yml'
