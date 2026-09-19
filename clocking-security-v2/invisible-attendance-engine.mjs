@@ -31,6 +31,7 @@ function clone(x){ return JSON.parse(JSON.stringify(x)); }
 function digest(x){ return crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex'); }
 function iso(ms){ return new Date(ms).toISOString(); }
 function err(message,status=400){ return Object.assign(new Error(message),{status}); }
+function key(...parts){ return JSON.stringify(parts.map(String)); }
 
 /**
  * AutomaticAttendanceEvidenceEngine
@@ -56,26 +57,26 @@ export class AutomaticAttendanceEvidenceEngine {
 
   registerPerson({tenant,employee,sites=[]}){
     if(!ID.test(String(tenant||'')) || !ID.test(String(employee||'')) || !Array.isArray(sites) || sites.some(x=>!ID.test(String(x)))) throw err('Valid tenant, employee and sites required.');
-    this.people.set(`${tenant}:${employee}`,{tenant,employee,sites:[...new Set(sites)]});
+    this.people.set(key(tenant,employee),{tenant,employee,sites:[...new Set(sites)]});
   }
 
   registerSource({tenant,sourceId,site,type,directAttendanceAuthority=false,timestampMode='source',active=true}){
     if(!ID.test(String(tenant||'')) || !ID.test(String(sourceId||'')) || !ID.test(String(site||'')) || !ID.test(String(type||''))) throw err('Valid source registration required.');
     if(!['source','server'].includes(timestampMode)) throw err('timestampMode must be source or server.');
-    this.sources.set(`${tenant}:${sourceId}`,{tenant,sourceId,site,type,directAttendanceAuthority:Boolean(directAttendanceAuthority),timestampMode,active:Boolean(active)});
+    this.sources.set(key(tenant,sourceId),{tenant,sourceId,site,type,directAttendanceAuthority:Boolean(directAttendanceAuthority),timestampMode,active:Boolean(active)});
   }
 
   revokeSource({tenant,sourceId}){
-    const s=this.sources.get(`${tenant}:${sourceId}`); if(!s) return false; s.active=false; return true;
+    const s=this.sources.get(key(tenant,sourceId)); if(!s) return false; s.active=false; return true;
   }
 
   ingest({tenant,sourceId,eventId,employee,kind,observedAt,receivedAtMs=Date.now(),metadata={}}){
     if(!EVENT_ID.test(String(eventId||''))) throw err('Invalid evidence event ID.');
     if(!VALID_KINDS.has(kind)) throw err('Unsupported attendance evidence kind.');
     if(!Number.isSafeInteger(receivedAtMs) || receivedAtMs<0) throw err('Invalid server receive time.');
-    const source=this.sources.get(`${tenant}:${sourceId}`);
+    const source=this.sources.get(key(tenant,sourceId));
     if(!source || !source.active) throw err('Attendance evidence source is not active.',401);
-    const person=this.people.get(`${tenant}:${employee}`);
+    const person=this.people.get(key(tenant,employee));
     if(!person) throw err('Employee is not registered for attendance evidence.',404);
     if(!person.sites.includes(source.site)) throw err('Employee is not assigned to this source site.',403);
 
@@ -85,10 +86,10 @@ export class AutomaticAttendanceEvidenceEngine {
     if(observedMs<receivedAtMs-this.maxOfflineAgeMs) throw err('Evidence is outside the supported offline window.',409);
 
     const safeMetadata=this.#minimiseMetadata(metadata);
-    const key=`${tenant}:${sourceId}:${eventId}`;
+    const eventKey=key(tenant,sourceId,eventId);
     const content={tenant,sourceId,eventId,employee,kind,observedMs,site:source.site,metadata:safeMetadata};
     const d=digest(content);
-    const prior=this.events.get(key);
+    const prior=this.events.get(eventKey);
     if(prior){
       if(prior.digest!==d) throw err('Evidence event ID was reused for different content.',409);
       return {...clone(prior.receipt),replayed:true};
@@ -96,8 +97,8 @@ export class AutomaticAttendanceEvidenceEngine {
 
     const spec=KIND[kind];
     const event={...content,domain:spec.domain,polarity:spec.polarity,anchorIn:spec.anchorIn,anchorOut:spec.anchorOut,location:spec.location,identity:spec.identity,receivedAtMs,digest:d,directAttendanceAuthority:source.directAttendanceAuthority,sourceType:source.type};
-    this.events.set(key,event);
-    const employeeKey=`${tenant}:${employee}:${source.site}`;
+    this.events.set(eventKey,event);
+    const employeeKey=key(tenant,employee,source.site);
     const list=this.employeeEvents.get(employeeKey) ?? [];
     list.push(event);
     list.sort((a,b)=>a.observedMs-b.observedMs || a.receivedAtMs-b.receivedAtMs || a.eventId.localeCompare(b.eventId));
@@ -105,19 +106,19 @@ export class AutomaticAttendanceEvidenceEngine {
 
     const evaluation=this.#evaluate({tenant,employee,site:source.site,trigger:event,employeeKey});
     const receipt={status:'recorded',tenant,employee,site:source.site,eventId,sourceId,kind,observedAt:iso(observedMs),receivedAt:iso(receivedAtMs),decision:evaluation};
-    this.events.set(key,{...event,receipt:clone(receipt)});
+    this.events.set(eventKey,{...event,receipt:clone(receipt)});
     this.audit.push({tenant,employee,site:source.site,sourceId,eventId,action:'attendance-evidence-recorded',kind,at:receivedAtMs,decision:evaluation.status});
     return {...receipt,replayed:false};
   }
 
   getState({tenant,employee,site}){
-    const key=`${tenant}:${employee}:${site}`;
-    return clone(this.sessions.get(key) ?? {status:'outside',openAt:null,closeAt:null,lastDecision:null});
+    const stateKey=key(tenant,employee,site);
+    return clone(this.sessions.get(stateKey) ?? {status:'outside',openAt:null,closeAt:null,lastDecision:null});
   }
 
   getEvidence({tenant,employee,site}){
-    const key=`${tenant}:${employee}:${site}`;
-    return clone((this.employeeEvents.get(key)??[]).map(x=>({sourceId:x.sourceId,eventId:x.eventId,kind:x.kind,observedAt:iso(x.observedMs),receivedAt:iso(x.receivedAtMs),domain:x.domain,metadata:x.metadata})));
+    const employeeKey=key(tenant,employee,site);
+    return clone((this.employeeEvents.get(employeeKey)??[]).map(x=>({sourceId:x.sourceId,eventId:x.eventId,kind:x.kind,observedAt:iso(x.observedMs),receivedAt:iso(x.receivedAtMs),domain:x.domain,metadata:x.metadata})));
   }
 
   #evaluate({tenant,employee,site,trigger,employeeKey}){
@@ -137,7 +138,7 @@ export class AutomaticAttendanceEvidenceEngine {
     // was revoked may remain in the immutable audit record, but it cannot complete a
     // still-pending quorum after the source loses authority.
     const all=(this.employeeEvents.get(employeeKey)??[]).filter(e=>{
-      const registered=this.sources.get(`${tenant}:${e.sourceId}`);
+      const registered=this.sources.get(key(tenant,e.sourceId));
       return Boolean(registered?.active) && registered.site===site;
     });
     const cluster=all.filter(e=>Math.abs(e.observedMs-trigger.observedMs)<=this.corroborationWindowMs);
@@ -162,7 +163,7 @@ export class AutomaticAttendanceEvidenceEngine {
   }
 
   #commit({employeeKey,state,tenant,employee,site,direction,at,reason,evidence}){
-    const fingerprint=digest({tenant,employee,site,direction,at,reason,evidence:evidence.map(e=>`${e.sourceId}:${e.eventId}`)});
+    const fingerprint=digest({tenant,employee,site,direction,at,reason,evidence:evidence.map(e=>({sourceId:e.sourceId,eventId:e.eventId}))});
     const existing=this.decisions.get(fingerprint);
     if(existing) return clone(existing);
     if(direction==='in' && state.status!=='outside') return {status:'evidence_only',direction,reason:'ALREADY_PRESENT'};
