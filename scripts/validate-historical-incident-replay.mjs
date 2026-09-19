@@ -7,7 +7,9 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { createAutonomyControlLoop } = require('../resilience/autonomy-control-loop.cjs');
 const {
+  T2_COORDINATOR_CAPABILITY_CONTRACT,
   computeRepairEvidenceChainDigest,
+  computeT2CoordinatorCapabilityDigest,
   computePostStagingDecisionDigest,
 } = require('../resilience/autonomous-repair-pipeline.cjs');
 const { createT3ShadowSimulator } = require('../resilience/t3-shadow-simulator.cjs');
@@ -19,6 +21,9 @@ const root = process.cwd();
 const contract = JSON.parse(fs.readFileSync(path.join(root, 'resilience/support-tier-contract.json'), 'utf8'));
 const failureScenarios = JSON.parse(fs.readFileSync(path.join(root, 'resilience/failure-scenarios.json'), 'utf8'));
 const sha = (value) => createHash('sha256').update(String(value)).digest('hex');
+const t2CoordinatorCapabilities = () => ({ ...T2_COORDINATOR_CAPABILITY_CONTRACT });
+const t2CoordinatorCapabilityDigest = computeT2CoordinatorCapabilityDigest(T2_COORDINATOR_CAPABILITY_CONTRACT);
+assert.match(t2CoordinatorCapabilityDigest || '', /^[a-f0-9]{64}$/);
 
 assert.ok(Array.isArray(failureScenarios.scenarios) && failureScenarios.scenarios.length > 0, 'Historical scenario catalog must not be empty.');
 assert.equal(new Set(failureScenarios.scenarios.map((item) => item.id)).size, failureScenarios.scenarios.length, 'Historical scenario IDs must be unique.');
@@ -80,7 +85,7 @@ function historicalT2Decision({ incidentId, tenant, scenario, evidenceDigest }) 
   const repairChainDigest = computeRepairEvidenceChainDigest(repairEvidence);
   assert.match(repairChainDigest || '', /^[a-f0-9]{64}$/);
   const payload = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     status: 'canary_proven',
     ...repairEvidence,
     repairChainDigest,
@@ -89,6 +94,8 @@ function historicalT2Decision({ incidentId, tenant, scenario, evidenceDigest }) 
     canaryOutcomeReceiptDigest: sha(`historical-t2-canary-receipt:${incidentId}`),
     canaryEvidenceDigest: sha(`historical-t2-canary-evidence:${incidentId}`),
     rollbackEvidenceDigest: null,
+    coordinatorCapabilities: t2CoordinatorCapabilities(),
+    coordinatorCapabilityDigest: t2CoordinatorCapabilityDigest,
     productionAuthorityGranted: false,
     promotionAuthorityGranted: false,
     productionMutation: false,
@@ -102,6 +109,7 @@ function historicalT2Decision({ incidentId, tenant, scenario, evidenceDigest }) 
 
 const repairInvocations = new Map();
 const repairCoordinator = {
+  capabilities: t2CoordinatorCapabilities,
   run: async ({ incidentId, tenant, scenario, evidenceDigest }) => {
     repairInvocations.set(incidentId, (repairInvocations.get(incidentId) || 0) + 1);
     return historicalT2Decision({ incidentId, tenant, scenario, evidenceDigest });
@@ -246,6 +254,8 @@ for (const [index, scenario] of failureScenarios.scenarios.entries()) {
     assert.equal(receipt.repair?.status, 'canary_proven', `${scenario.id} did not carry canary proof into the central controller.`);
     assert.equal(receipt.repair?.repairChainDigest, computeRepairEvidenceChainDigest(receipt.repair), `${scenario.id} repair chain failed replay recomputation.`);
     assert.equal(receipt.repair?.decisionChainDigest, computePostStagingDecisionDigest(receipt.repair), `${scenario.id} post-staging decision failed replay recomputation.`);
+    assert.equal(receipt.repair?.coordinatorCapabilityDigest, t2CoordinatorCapabilityDigest, `${scenario.id} repair decision was not bound to the pinned T2 coordinator capability contract.`);
+    assert.equal(receipt.repairCoordinatorCapabilityDigest, t2CoordinatorCapabilityDigest, `${scenario.id} central terminal receipt was not bound to the executing T2 coordinator capability contract.`);
   }
 
   replay.push({ scenarioId: scenario.id, tier, outcome: receipt.outcome, learningDecision: receipt.learning.runbookDecision?.decision || null });
@@ -275,7 +285,7 @@ const tierCounts = replay.reduce((acc, item) => {
 }, {});
 
 console.log(JSON.stringify({
-  schemaVersion: 3,
+  schemaVersion: 4,
   proof: 'historical-incident-replay-and-learning',
   status: 'PASS',
   scenarioClassesReplayed: replay.length,
@@ -289,6 +299,8 @@ console.log(JSON.stringify({
   t1ExecutorVerifierSeparationReplayed: true,
   t2RepairEvidenceChainReplayed: true,
   t2CanaryDecisionChainReplayed: true,
+  t2CoordinatorCapabilityContractReplayed: true,
+  t2CoordinatorCapabilityBoundToCentralReceipt: true,
   t2BareStagedSelfAssertionNotUsed: true,
   duplicateBusinessOutcomes: 0,
   unknownFutureClassContainedAndLearned: true,
