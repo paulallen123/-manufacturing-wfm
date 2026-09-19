@@ -97,6 +97,17 @@ test('all gates plus two real provider domains allow an explicit enable request'
   assert.equal(state.candidateSha,SHA);
 });
 
+test('forged or serialized green assessment cannot bypass mandatory gate evaluation',()=>{
+  const control=new AttendanceReleaseSwitch();
+  const forged={ready:true,candidateSha:SHA,blockers:[],accepted:{},providerDomains:['physical_access','network_auth']};
+  assert.throws(()=>control.reconcile({assessment:forged,requestedEnabled:true,actorId:'release-controller'}),/Trusted release assessment/);
+
+  const genuine=assessAttendanceRelease({candidateSha:SHA,gates:greenGates(),providerProofs:providers()});
+  const replayed=JSON.parse(JSON.stringify(genuine));
+  assert.throws(()=>control.reconcile({assessment:replayed,requestedEnabled:true,actorId:'release-controller'}),/Trusted release assessment/);
+  assert.equal(control.state().enabled,false);
+});
+
 test('gate regression immediately fails closed when release control reconciles again',()=>{
   const control=new AttendanceReleaseSwitch();
   const green=assessAttendanceRelease({candidateSha:SHA,gates:greenGates(),providerProofs:providers()});
