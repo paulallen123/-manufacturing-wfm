@@ -97,16 +97,32 @@ async function scalar(sql) {
 
 async function waitForPostgres() {
   let lastError = null;
-  for (let attempt = 0; attempt < 40; attempt += 1) {
+  let lastLogs = '';
+  let initComplete = false;
+
+  for (let attempt = 0; attempt < 80; attempt += 1) {
     try {
-      await docker(['exec', CONTAINER, 'pg_isready', '-U', DB_USER, '-d', DB_NAME], { timeout: 5000 });
-      return;
+      const logs = await docker(['logs', CONTAINER], { timeout: 5000 });
+      lastLogs = `${logs.stdout ?? ''}\n${logs.stderr ?? ''}`;
+      initComplete ||= lastLogs.includes('PostgreSQL init process complete; ready for start up.');
+
+      if (initComplete) {
+        const { stdout } = await docker([
+          'exec', CONTAINER,
+          'psql', '-X', '-q', '-A', '-t',
+          '-U', DB_USER, '-d', DB_NAME,
+          '-c', 'SELECT 1;',
+        ], { timeout: 5000 });
+        if (stdout.trim() === '1') return;
+      }
     } catch (error) {
       lastError = error;
-      await new Promise(resolve => setTimeout(resolve, 250));
     }
+    await new Promise(resolve => setTimeout(resolve, 250));
   }
-  throw lastError ?? new Error('postgres did not become ready');
+
+  const diagnostic = lastLogs.split(/\r?\n/).filter(Boolean).slice(-12).join('\n');
+  throw new Error(`postgres final server did not become ready after init: ${lastError?.message ?? 'no psql success'}${diagnostic ? `\n${diagnostic}` : ''}`);
 }
 
 async function stopContainer() {
