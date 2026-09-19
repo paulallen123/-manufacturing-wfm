@@ -1,8 +1,7 @@
 'use strict';
 
 const { evaluateActivation, evaluateRuntimeHealth } = require('./connection-proof-gate.cjs');
-const { gateCircuit } = require('./provider-circuit-breaker.cjs');
-const { evaluateProviderProofLease } = require('./provider-proof-lifecycle.cjs');
+const { planProviderProofMaintenance } = require('./provider-proof-maintenance.cjs');
 
 function sameReview(item, review) {
   return item && item.reviewedDigest === review?.reviewedDigest;
@@ -63,39 +62,44 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
     });
   }
 
-  const providerProof = evaluateProviderProofLease(review, input.providerProofLease || {}, now);
-  if (!providerProof.canUseForBusinessTraffic) {
-    return Object.freeze({
-      state: 'RECOVERING',
-      canSync: false,
-      customerMessage: 'The connection is approved, but its provider identity proof must be refreshed before new WFM data is trusted.',
-      nextAction: providerProof.nextAction,
-      setupProgress: progress,
-      signals: Object.freeze({ activation: 'APPROVED', provider: providerProof.state, runtime: 'PAUSED' })
-    });
-  }
+  const maintenance = planProviderProofMaintenance(review, {
+    providerProofLease: input.providerProofLease || {},
+    circuitState: input.circuitState || {}
+  }, now);
 
-  const circuit = gateCircuit(review, input.circuitState || {}, now);
-  if (circuit.action === 'BLOCK') {
+  if (maintenance.action === 'REPAIR_RECOVERY_STATE') {
     return Object.freeze({
       state: 'BLOCKED',
       canSync: false,
       customerMessage: 'The connection is paused because its provider recovery state cannot be trusted.',
-      nextAction: 'Repair the provider recovery state, then run a safe connection check.',
+      nextAction: maintenance.nextAction,
       setupProgress: progress,
+      automation: maintenance,
       signals: Object.freeze({ activation: 'APPROVED', provider: 'BLOCKED', runtime: 'NOT_EVALUATED' })
     });
   }
-  if (circuit.action === 'PAUSE' || circuit.action === 'SAFE_PROBE_ONLY') {
+
+  if (maintenance.action === 'WAIT_FOR_RECOVERY_WINDOW' || maintenance.action === 'RUN_SAFE_RECOVERY_PROBE') {
     return Object.freeze({
       state: 'RECOVERING',
       canSync: false,
       customerMessage: 'The provider is temporarily paused while WFM protects the connection from repeated failures.',
-      nextAction: circuit.action === 'SAFE_PROBE_ONLY'
-        ? 'Run the bounded non-mutating recovery check and reconcile before resuming.'
-        : 'Wait for the safe recovery window; normal traffic remains paused.',
+      nextAction: maintenance.nextAction,
       setupProgress: progress,
+      automation: maintenance,
       signals: Object.freeze({ activation: 'APPROVED', provider: 'RECOVERING', runtime: 'PAUSED' })
+    });
+  }
+
+  if (maintenance.action === 'RUN_SAFE_PROVIDER_PROOF' && maintenance.canUseForBusinessTraffic === false) {
+    return Object.freeze({
+      state: 'RECOVERING',
+      canSync: false,
+      customerMessage: 'The connection is approved, but its provider identity proof must be refreshed before new WFM data is trusted.',
+      nextAction: maintenance.nextAction,
+      setupProgress: progress,
+      automation: maintenance,
+      signals: Object.freeze({ activation: 'APPROVED', provider: maintenance.proofState, runtime: 'PAUSED' })
     });
   }
 
@@ -107,7 +111,8 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
       customerMessage: 'The provider is reachable, but WFM cannot yet trust the latest integration state.',
       nextAction: 'Resolve reconciliation, authority or exhausted-recovery issues before trusting new data.',
       setupProgress: progress,
-      signals: Object.freeze({ activation: 'APPROVED', provider: providerProof.state === 'REPROOF_DUE' ? 'REPROOF_DUE' : 'AVAILABLE', runtime: 'BLOCKED' })
+      automation: maintenance,
+      signals: Object.freeze({ activation: 'APPROVED', provider: maintenance.proofState === 'REPROOF_DUE' ? 'REPROOF_DUE' : 'AVAILABLE', runtime: 'BLOCKED' })
     });
   }
   if (runtime.state === 'DEGRADED') {
@@ -115,21 +120,23 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
       state: 'DEGRADED',
       canSync: true,
       customerMessage: 'The connection is running, but freshness, latency or retry performance is below its reviewed target.',
-      nextAction: providerProof.state === 'REPROOF_DUE'
-        ? 'Keep syncing and refresh the bounded provider identity proof before it expires.'
+      nextAction: maintenance.action === 'RUN_SAFE_PROVIDER_PROOF'
+        ? maintenance.nextAction
         : 'Keep syncing while WFM monitors recovery; investigate if the condition persists.',
       setupProgress: progress,
-      signals: Object.freeze({ activation: 'APPROVED', provider: providerProof.state === 'REPROOF_DUE' ? 'REPROOF_DUE' : 'AVAILABLE', runtime: 'DEGRADED' })
+      automation: maintenance,
+      signals: Object.freeze({ activation: 'APPROVED', provider: maintenance.proofState === 'REPROOF_DUE' ? 'REPROOF_DUE' : 'AVAILABLE', runtime: 'DEGRADED' })
     });
   }
 
-  if (providerProof.state === 'REPROOF_DUE') {
+  if (maintenance.action === 'RUN_SAFE_PROVIDER_PROOF') {
     return Object.freeze({
       state: 'DEGRADED',
       canSync: true,
-      customerMessage: 'Connected and healthy; the safe provider identity check is due to refresh before it expires.',
-      nextAction: providerProof.nextAction,
+      customerMessage: 'Connected and healthy; WFM has scheduled the safe provider identity refresh before it expires.',
+      nextAction: maintenance.nextAction,
       setupProgress: progress,
+      automation: maintenance,
       signals: Object.freeze({ activation: 'APPROVED', provider: 'REPROOF_DUE', runtime: 'HEALTHY' })
     });
   }
@@ -140,6 +147,7 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
     customerMessage: 'Connected, approved, current and reconciled.',
     nextAction: 'No action required.',
     setupProgress: progress,
+    automation: maintenance,
     signals: Object.freeze({ activation: 'APPROVED', provider: 'AVAILABLE', runtime: 'HEALTHY' })
   });
 }
