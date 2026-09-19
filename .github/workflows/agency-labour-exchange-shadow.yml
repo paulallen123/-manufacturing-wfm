@@ -60,6 +60,7 @@ on:
       - 'test/frontier/agency-work-start-readiness-postgres.test.mjs'
       - 'test/frontier/agency-work-start-permit.test.mjs'
       - 'test/frontier/agency-postgres-work-start-permit-race.test.mjs'
+      - 'test/frontier/agency-postgres-work-start-runtime-race.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
@@ -159,3 +160,4 @@ jobs:
           node --test test/frontier/agency-identity-db-boundary-postgres.test.mjs
           node --test test/frontier/agency-work-start-readiness-postgres.test.mjs
           node --test test/frontier/agency-postgres-work-start-permit-race.test.mjs
+          node --test test/frontier/agency-postgres-work-start-runtime-race.test.mjs
