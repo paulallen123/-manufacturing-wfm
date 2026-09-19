@@ -41,6 +41,13 @@ function tryParse(raw) {
   }
 }
 
+function continuityDigest(continuity) {
+  if (!continuity || typeof continuity !== 'object' || Array.isArray(continuity)) return null;
+  const core = { ...continuity };
+  delete core.continuityDigest;
+  return sha256(JSON.stringify(core));
+}
+
 function normalizedCandidate(candidate) {
   return {
     runId: Number(candidate?.runId || 0),
@@ -68,10 +75,12 @@ function signalsDurableHistory(candidate) {
   const corpus = portable?.incidentRegressionCorpus;
   if (corpus && (Number(corpus.entryCount) > 0
     || HEX64.test(String(corpus.corpusDigest || ''))
-    || HEX64.test(String(corpus.snapshotSha256 || '')))) return true;
+    || HEX64.test(String(corpus.snapshotSha256 || ''))
+    || HEX64.test(String(corpus.continuityDigest || '')))) return true;
 
   const continuity = tryParse(candidate?.continuityRaw);
   if (continuity?.proof === 'provider-neutral-incident-regression-corpus-continuity'
+    || HEX64.test(String(continuity?.continuityDigest || ''))
     || HEX64.test(String(continuity?.outputCorpusDigest || ''))
     || HEX64.test(String(continuity?.outputSnapshotSha256 || ''))) return true;
 
@@ -115,6 +124,7 @@ function verifyCandidateEvidence(candidate) {
     const snapshot = safeParse(snapshotRaw, 'incident-corpus-snapshot');
     const continuity = safeParse(candidate.continuityRaw, 'incident-corpus-continuity');
     const corpus = portable?.incidentRegressionCorpus || {};
+    const computedContinuityDigest = continuityDigest(continuity);
 
     const authoritySafe = continuity?.actionAuthorityGranted === false
       && continuity?.productionAuthorityGranted === false
@@ -141,6 +151,10 @@ function verifyCandidateEvidence(candidate) {
       continuityProofIdentity: continuity?.proof === 'provider-neutral-incident-regression-corpus-continuity',
       continuityCorpusDigestMatches: continuity?.outputCorpusDigest === snapshot?.corpusDigest,
       continuitySnapshotShaMatches: continuity?.outputSnapshotSha256 === sha256(snapshotRaw),
+      continuityDigestValid: HEX64.test(String(continuity?.continuityDigest || ''))
+        && computedContinuityDigest === continuity?.continuityDigest,
+      portableBindsContinuityDigest: HEX64.test(String(corpus?.continuityDigest || ''))
+        && corpus?.continuityDigest === continuity?.continuityDigest,
       authoritySafe,
     };
 
@@ -155,12 +169,14 @@ function verifyCandidateEvidence(candidate) {
       snapshotSha256: sha256(snapshotRaw),
       corpusDigest: snapshot.corpusDigest,
       entryCount: snapshot.entryCount,
+      continuityDigest: continuity.continuityDigest,
       proofDigest: sha256(canonical({
         meta,
         portableProofSha256: sha256(portableRaw),
         snapshotSha256: sha256(snapshotRaw),
         corpusDigest: snapshot.corpusDigest,
         entryCount: snapshot.entryCount,
+        continuityDigest: continuity.continuityDigest,
       })),
     };
   } catch (error) {
@@ -214,6 +230,7 @@ function selectVerifiedPredecessor({ candidates = [] } = {}) {
         selectedSnapshotSha256: verification.snapshotSha256,
         selectedCorpusDigest: verification.corpusDigest,
         selectedEntryCount: verification.entryCount,
+        selectedContinuityDigest: verification.continuityDigest,
         rejectedCandidateCount: rejectedCandidates.length,
         rejectedCandidates,
         actionAuthorityGranted: false,
@@ -252,6 +269,7 @@ function selectVerifiedPredecessor({ candidates = [] } = {}) {
     selectedSnapshotSha256: null,
     selectedCorpusDigest: null,
     selectedEntryCount: 0,
+    selectedContinuityDigest: null,
     rejectedCandidateCount: rejectedCandidates.length,
     rejectedCandidates,
     actionAuthorityGranted: false,
@@ -277,11 +295,13 @@ function verifySelectionReceipt(receipt) {
     || receipt.customerMutation !== false) return false;
   if (receipt.priorSnapshotLoaded === true) {
     return receipt.status === 'PASS_SELECTED_VERIFIED_PREDECESSOR'
+      && receipt.durableHistoryKnown === true
       && Number.isSafeInteger(receipt.selectedRunId) && receipt.selectedRunId > 0
       && Number.isSafeInteger(receipt.selectedArtifactId) && receipt.selectedArtifactId > 0
       && HEX40.test(String(receipt.selectedHeadSha || ''))
       && HEX64.test(String(receipt.selectedSnapshotSha256 || ''))
       && HEX64.test(String(receipt.selectedCorpusDigest || ''))
+      && HEX64.test(String(receipt.selectedContinuityDigest || ''))
       && Number.isSafeInteger(receipt.selectedEntryCount) && receipt.selectedEntryCount > 0;
   }
   return new Set([
