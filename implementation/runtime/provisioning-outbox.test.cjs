@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createHash, createHmac } = require('node:crypto');
-const { createProvisioningOutbox: createProvisioningOutboxBase } = require('./provisioning-outbox.cjs');
+const { createProvisioningOutbox: createProvisioningOutboxBase, sha256 } = require('./provisioning-outbox.cjs');
 const { stable } = require('./contract-completion-ingress.cjs');
 
 const RECEIPT_KEY = 'internal-receipt-key-0123456789abcdef0123456789abcdef';
@@ -53,17 +53,27 @@ function makeEvidence(eventId = 'evt-1') {
 }
 
 function intent(overrides = {}) {
-  return {
+  const value = {
     schemaVersion: 1,
     contract: { provider: 'contract-provider', contractId: 'ctr-1', contractVersion: '1', tenantId: 'tenant-a', completedAt: '2026-09-19T04:00:00Z' },
     scope: { graphVersion: '2026-09-19.1', graphFingerprint: 'd'.repeat(64), revision: 'scope-a', purchasedScope: ['time'], operationsDigest: 'b'.repeat(64) },
     build: { sourceRevision: 'abc', artifactSha256: 'c'.repeat(64), approvalId: 'approved-1' },
     plan: { provider: 'railway', region: 'eu-west', creationMode: 'fresh-provider-create', isolated: true, networkPolicy: 'private-until-ready', secretsPolicy: 'server-managed-per-tenant' },
     completionEvidence: makeEvidence(),
-    intentDigest: 'a'.repeat(64),
-    queueKey: 'wfm-provision:v1:queue-1',
     ...overrides
   };
+  if (!Object.prototype.hasOwnProperty.call(overrides, 'intentDigest')) {
+    value.intentDigest = sha256({ schemaVersion: value.schemaVersion, contract: value.contract, scope: value.scope, build: value.build, plan: value.plan });
+  }
+  if (!Object.prototype.hasOwnProperty.call(overrides, 'queueKey')) {
+    value.queueKey = 'wfm-provision:v1:' + sha256({
+      provider: value.contract.provider,
+      contractId: value.contract.contractId,
+      contractVersion: value.contract.contractVersion,
+      tenantId: value.contract.tenantId
+    });
+  }
+  return value;
 }
 
 function expectCode(fn, code) {
@@ -107,11 +117,24 @@ test('tampered or detached completion evidence is rejected before durable queue 
   assert.equal(store.snapshot().length, 0);
 });
 
-test('same business queue identity cannot be reused for a changed sealed intent', () => {
+test('tampered sealed payload or queue identity is rejected before durable queue admission', () => {
+  const store = makeStore();
+  const outbox = createProvisioningOutbox(store, { now: () => 1000 });
+  const changedBuild = intent();
+  changedBuild.build.artifactSha256 = 'e'.repeat(64);
+  expectCode(() => outbox.enqueue(changedBuild), 'WFM_OUTBOX_INTENT_DIGEST_MISMATCH');
+
+  const wrongQueue = intent({ queueKey: 'wfm-provision:v1:not-the-contract' });
+  expectCode(() => outbox.enqueue(wrongQueue), 'WFM_OUTBOX_QUEUE_KEY_MISMATCH');
+  assert.equal(store.snapshot().length, 0);
+});
+
+test('same business queue identity cannot be reused for a changed valid sealed intent', () => {
   const store = makeStore();
   const outbox = createProvisioningOutbox(store, { now: () => 1000 });
   outbox.enqueue(intent());
-  expectCode(() => outbox.enqueue(intent({ intentDigest: 'e'.repeat(64) })), 'WFM_OUTBOX_IDENTITY_DRIFT');
+  const changed = intent({ build: { sourceRevision: 'abc', artifactSha256: 'e'.repeat(64), approvalId: 'approved-1' } });
+  expectCode(() => outbox.enqueue(changed), 'WFM_OUTBOX_IDENTITY_DRIFT');
 });
 
 test('crash after claim but before mutation is recoverable with a higher generation', () => {
