@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-export const AGENCY_SUPPLIER_DELIVERY_VERSION = 'agency-supplier-delivery-v0.1.1';
+export const AGENCY_SUPPLIER_DELIVERY_VERSION = 'agency-supplier-delivery-v0.1.2';
 
 export const AGENCY_SUPPLIER_DELIVERY_DDL = `
 CREATE TABLE IF NOT EXISTS wfm_agency_supplier_deliveries (
@@ -24,21 +24,19 @@ CREATE TABLE IF NOT EXISTS wfm_agency_supplier_deliveries (
 `;
 
 const CLAIM_SQL = `
-WITH inserted AS (
-  INSERT INTO wfm_agency_supplier_deliveries
-    (tenant_id, idempotency_key, delivery_id, site_id, request_id, agency_id, channel,
-     delivery_revision, destination_fingerprint, portal_fingerprint, status, attempt_count,
-     provider_message_ref, created_at, updated_at)
-  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'dispatching',1,NULL,$11,$11)
-  ON CONFLICT (tenant_id, idempotency_key) DO NOTHING
-  RETURNING status, attempt_count, true AS claimed
-)
-SELECT status, attempt_count, claimed FROM inserted
-UNION ALL
+INSERT INTO wfm_agency_supplier_deliveries
+  (tenant_id, idempotency_key, delivery_id, site_id, request_id, agency_id, channel,
+   delivery_revision, destination_fingerprint, portal_fingerprint, status, attempt_count,
+   provider_message_ref, created_at, updated_at)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'dispatching',1,NULL,$11,$11)
+ON CONFLICT (tenant_id, idempotency_key) DO NOTHING
+RETURNING status, attempt_count, true AS claimed;
+`;
+
+const CLAIM_EXISTING_SQL = `
 SELECT status, attempt_count, false AS claimed
 FROM wfm_agency_supplier_deliveries
-WHERE tenant_id=$1 AND idempotency_key=$2 AND NOT EXISTS (SELECT 1 FROM inserted)
-LIMIT 1;
+WHERE tenant_id=$1 AND idempotency_key=$2;
 `;
 
 const RETRY_SQL = `
@@ -283,8 +281,12 @@ export function createPostgresAgencySupplierDeliveryStore({query}) {
         requiredIso(record.at, 'at'),
       ];
       if (!Number.isInteger(values[7]) || values[7] < 1) throw new TypeError('deliveryRevision must be a positive integer');
-      const result=await query(CLAIM_SQL,values);
-      const row=result?.rows?.[0];
+      const inserted=await query(CLAIM_SQL,values);
+      let row=inserted?.rows?.[0];
+      if(!row){
+        const existing=await query(CLAIM_EXISTING_SQL,values.slice(0,2));
+        row=existing?.rows?.[0];
+      }
       if(!row)throw new Error('unexpected_delivery_store_result');
       return {claimed:row.claimed===true,status:row.status,attemptCount:Number(row.attempt_count??row.attemptCount??1)};
     },
