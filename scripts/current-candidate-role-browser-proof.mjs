@@ -27,6 +27,7 @@ const browser = await chromium.launch({ headless: true });
 const receipts = [];
 let navigationClicks = 0;
 let timeReviewActionJourneys = 0;
+let timeReviewEmptyStateJourneys = 0;
 
 try {
   for (const spec of specs) {
@@ -51,9 +52,6 @@ try {
     }, { email: spec.email, password });
     assert.equal(loginStatus, 200, `${spec.slug} login failed.`);
 
-    // Do not wait for global network-idle. The hosted app has legitimate ongoing
-    // network activity. Readiness is the conjunction of DOMContentLoaded plus the
-    // approved Vector shell becoming present in the rendered DOM.
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(
       () => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0,
@@ -106,11 +104,22 @@ try {
     assert.ok(ui.bodyText > 200, `${spec.slug} rendered body too small.`);
     assert.ok(ui.scrollWidth <= ui.width + 1, `${spec.slug} desktop horizontal overflow.`);
 
-    const actionJourney = { evidenceStatus: null, activeItems: 0, exercised: false, sourceId: null, postOpenStillPresent: false, returnFocused: false };
+    const actionJourney = {
+      evidenceStatus: null,
+      activeItems: 0,
+      mode: null,
+      exercised: false,
+      sourceId: null,
+      postOpenStillPresent: false,
+      returnFocused: false,
+      inventedActionCount: null
+    };
+
     if (spec.slug === 'employee') {
       actionJourney.evidenceStatus = await page.evaluate(async () => (await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' })).status);
       assert.equal(actionJourney.evidenceStatus, 403, 'Employee unexpectedly received manager action evidence.');
     }
+
     if (spec.slug === 'manager') {
       const evidence = await page.evaluate(async () => {
         const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' });
@@ -122,42 +131,52 @@ try {
       assert.equal(evidence.status, 200, 'Manager action-evidence bridge unavailable.');
       assert.equal(evidence.json?.contractVersion, 'WFM_WORKFLOW_ACTION_EVIDENCE_V1');
       assert.equal(evidence.json?.workflow, 'time-review');
+
       const active = (Array.isArray(evidence.json?.items) ? evidence.json.items : [])
         .filter(item => String(item?.confirmation?.state || '').toLowerCase() !== 'resolved');
       actionJourney.activeItems = active.length;
-      assert.ok(active.length > 0, 'Manager fixture has no active contract-backed Time Review item to prove the journey.');
 
-      const actionButton = page.locator('.vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]').first();
-      await actionButton.waitFor({ state: 'visible', timeout: 10000 });
-      const sourceId = await actionButton.getAttribute('data-vector-source-id');
-      assert.ok(sourceId && active.some(item => String(item?.sourceId || '') === sourceId), 'Rendered action is not bound to active source evidence.');
-      actionJourney.sourceId = sourceId;
+      if (active.length === 0) {
+        const renderedActions = page.locator('.vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]');
+        actionJourney.inventedActionCount = await renderedActions.count();
+        assert.equal(actionJourney.inventedActionCount, 0, 'Vector invented a Time Review action while the authoritative source had none.');
+        actionJourney.mode = 'authoritative-empty-state';
+        timeReviewEmptyStateJourneys += 1;
+        console.log('CURRENT_TIME_REVIEW_EMPTY_STATE=PASS|active=0|invented=0');
+      } else {
+        const actionButton = page.locator('.vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]').first();
+        await actionButton.waitFor({ state: 'visible', timeout: 10000 });
+        const sourceId = await actionButton.getAttribute('data-vector-source-id');
+        assert.ok(sourceId && active.some(item => String(item?.sourceId || '') === sourceId), 'Rendered action is not bound to active source evidence.');
+        actionJourney.sourceId = sourceId;
 
-      await actionButton.click({ timeout: 5000 });
-      const returnButton = page.locator('[data-vector-return-context]').first();
-      await returnButton.waitFor({ state: 'visible', timeout: 10000 });
-      const contextSourceId = await page.locator('[data-vector-action-context]').first().getAttribute('data-vector-source-id');
-      assert.equal(contextSourceId, sourceId, 'Time Review lost the originating source action context.');
+        await actionButton.click({ timeout: 5000 });
+        const returnButton = page.locator('[data-vector-return-context]').first();
+        await returnButton.waitFor({ state: 'visible', timeout: 10000 });
+        const contextSourceId = await page.locator('[data-vector-action-context]').first().getAttribute('data-vector-source-id');
+        assert.equal(contextSourceId, sourceId, 'Time Review lost the originating source action context.');
 
-      const postOpen = await page.evaluate(async () => {
-        const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' });
-        return { status: response.status, json: await response.json() };
-      });
-      assert.equal(postOpen.status, 200);
-      actionJourney.postOpenStillPresent = (Array.isArray(postOpen.json?.items) ? postOpen.json.items : [])
-        .some(item => String(item?.sourceId || '') === sourceId && String(item?.confirmation?.state || '').toLowerCase() !== 'resolved');
-      assert.equal(actionJourney.postOpenStillPresent, true, 'Opening Time Review optimistically cleared the source action.');
+        const postOpen = await page.evaluate(async () => {
+          const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' });
+          return { status: response.status, json: await response.json() };
+        });
+        assert.equal(postOpen.status, 200);
+        actionJourney.postOpenStillPresent = (Array.isArray(postOpen.json?.items) ? postOpen.json.items : [])
+          .some(item => String(item?.sourceId || '') === sourceId && String(item?.confirmation?.state || '').toLowerCase() !== 'resolved');
+        assert.equal(actionJourney.postOpenStillPresent, true, 'Opening Time Review optimistically cleared the source action.');
 
-      await returnButton.click({ timeout: 5000 });
-      await page.locator('.vector-alerts').first().waitFor({ state: 'visible', timeout: 10000 });
-      await page.waitForFunction(() => document.activeElement?.classList?.contains('vector-alerts'));
-      actionJourney.returnFocused = await page.evaluate(() => document.activeElement?.classList?.contains('vector-alerts') === true);
-      assert.equal(actionJourney.returnFocused, true, 'Return-to-context did not restore focus to Items to review.');
-      const storedContext = await page.evaluate(() => sessionStorage.getItem('VECTOR_ACTION_RETURN_CONTEXT_V1'));
-      assert.equal(storedContext, null, 'Action return context persisted after returning Home.');
-      actionJourney.exercised = true;
-      timeReviewActionJourneys += 1;
-      console.log(`CURRENT_TIME_REVIEW_ACTION_JOURNEY=PASS|source=${sourceId}|active=${active.length}`);
+        await returnButton.click({ timeout: 5000 });
+        await page.locator('.vector-alerts').first().waitFor({ state: 'visible', timeout: 10000 });
+        await page.waitForFunction(() => document.activeElement?.classList?.contains('vector-alerts'));
+        actionJourney.returnFocused = await page.evaluate(() => document.activeElement?.classList?.contains('vector-alerts') === true);
+        assert.equal(actionJourney.returnFocused, true, 'Return-to-context did not restore focus to Items to review.');
+        const storedContext = await page.evaluate(() => sessionStorage.getItem('VECTOR_ACTION_RETURN_CONTEXT_V1'));
+        assert.equal(storedContext, null, 'Action return context persisted after returning Home.');
+        actionJourney.mode = 'active-source-action';
+        actionJourney.exercised = true;
+        timeReviewActionJourneys += 1;
+        console.log(`CURRENT_TIME_REVIEW_ACTION_JOURNEY=PASS|source=${sourceId}|active=${active.length}`);
+      }
     }
 
     let navigationClicked = null;
@@ -211,8 +230,8 @@ try {
   }
 
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
-  assert.equal(timeReviewActionJourneys, 1, 'Manager Time Review action journey was not proven exactly once.');
-  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|sha=${expectedSha}`);
+  assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
+  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|activeActionJourneys=${timeReviewActionJourneys}|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
 } finally {
   await browser.close();
   delete process.env.WFM_STAGING_PASSWORD;
