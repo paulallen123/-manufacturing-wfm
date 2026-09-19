@@ -14,6 +14,34 @@ for(const [name,body] of Object.entries(retired)){
   if(fs.existsSync(file)) fs.writeFileSync(file,body,'utf8');
 }
 
+function replaceRequired(name,before,after){
+  const file=path.join(publicDir,name);
+  if(!fs.existsSync(file)) throw new Error('Required runtime presentation asset missing: '+name);
+  const text=fs.readFileSync(file,'utf8');
+  const occurrences=text.split(before).length-1;
+  if(occurrences!==1) throw new Error('Expected exactly one runtime repair signature in '+name+'; found '+occurrences);
+  fs.writeFileSync(file,text.replace(before,after),'utf8');
+}
+
+// The sealed 0.6.76 presentation still contained two strict-mode globals that were
+// previously supplied by retired presentation ownership. Repair the ownership boundary
+// without inventing payroll data or changing server-side payroll authority.
+replaceRequired(
+  'company-ui.js',
+  'payrollShell=content=>shell(content);',
+  'globalThis.payrollShell=content=>shell(content);'
+);
+replaceRequired(
+  'payroll-intelligence-ui.js',
+  'const pciOldPayrollReport=payrollReport;',
+  "const pciOldPayrollReport=typeof globalThis.payrollReport==='function'?globalThis.payrollReport:async()=>{};"
+);
+replaceRequired(
+  'payroll-intelligence-ui.js',
+  'payrollReport=async function(){await pciOldPayrollReport();',
+  'globalThis.payrollReport=async function(){await pciOldPayrollReport();'
+);
+
 const timeReviewCss=path.join(publicDir,'time-review-ui.css');
 if(fs.existsSync(timeReviewCss)){
   let css=fs.readFileSync(timeReviewCss,'utf8');
@@ -40,6 +68,8 @@ function walk(dir){
     if(!/\.(?:js|css|html)$/i.test(name)) continue;
     const text=fs.readFileSync(file,'utf8');
     for(const token of forbidden) if(text.includes(token)) violations.push({file:path.relative(publicDir,file),token});
+    if(name==='company-ui.js'&&text.includes('payrollShell=content=>shell(content);')&&!text.includes('globalThis.payrollShell=content=>shell(content);')) violations.push({file:path.relative(publicDir,file),token:'unguarded-payrollShell'});
+    if(name==='payroll-intelligence-ui.js'&&text.includes('const pciOldPayrollReport=payrollReport;')) violations.push({file:path.relative(publicDir,file),token:'unguarded-payrollReport-read'});
   }
 }
 walk(publicDir);
@@ -48,4 +78,5 @@ if(violations.length){
   console.error(JSON.stringify(violations,null,2));
   process.exit(1);
 }
+console.log('SEALED_RUNTIME_PRESENTATION_REPAIR=PASS');
 console.log('RETIRED_PRESENTATION_PURGE=PASS');
