@@ -17,12 +17,29 @@ const failureScenarios = JSON.parse(fs.readFileSync(path.join(root, 'resilience/
 const d = (v) => createHash('sha256').update(String(v)).digest('hex');
 
 const recoveryExecutor = {
-  execute: async () => ({
+  executorId: 't1-recovery-executor',
+  execute: async ({ incidentId, tenant, action, evidenceDigest }) => ({
     status: 'recovered',
+    executorId: 't1-recovery-executor',
+    executionDigest: d(`execution:${incidentId}:${tenant}:${action}:${evidenceDigest}`),
     verified: true,
-    verificationDigest: d('independent-recovery-verification'),
+    verificationDigest: d('self-asserted-recovery-verification-must-not-suffice'),
     productionAuthorityGranted: false,
     customerMutation: false,
+  }),
+};
+
+const recoveryVerifier = {
+  verifierId: 't1-readonly-recovery-verifier',
+  verify: async (recovery) => ({
+    verified: true,
+    verifierId: 't1-readonly-recovery-verifier',
+    executionDigest: recovery.executionDigest,
+    verificationDigest: d(`independent:${recovery.executionDigest}`),
+    productionAuthorityGranted: false,
+    customerMutation: false,
+    modelAuthorityGranted: false,
+    actionAuthorityGranted: false,
   }),
 };
 
@@ -80,6 +97,7 @@ const loop = createAutonomyControlLoop({
   failureScenarios,
   selfHelp: SelfHelp,
   recoveryExecutor,
+  recoveryVerifier,
   repairCoordinator,
   t3ShadowSimulator,
   t3ShadowVerifier,
@@ -136,7 +154,92 @@ const t1 = await loop.run({ ...base, incidentId: 'inc-t1', scenarioId: 'integrat
 assert.equal(t1.tier, 'T1');
 assert.equal(t1.outcome, 'recovered');
 assert.equal(t1.actionCount, 1);
+assert.equal(t1.recovery.executorId, recoveryExecutor.executorId);
+assert.equal(t1.recoveryVerification.verifierId, recoveryVerifier.verifierId);
+assert.notEqual(t1.recovery.executorId, t1.recoveryVerification.verifierId);
+assert.equal(t1.recoveryVerification.executionDigest, t1.recovery.executionDigest);
+assert.equal(t1.recoveryVerification.actionAuthorityGranted, false);
 assert.equal(loop.verifyReceipt(t1), true);
+
+const selfOnlyLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  recoveryExecutor,
+  now: () => ++tick,
+  maxActions: 2,
+});
+const selfOnly = await selfOnlyLoop.run({ ...base, incidentId: 'inc-t1-self-only', scenarioId: 'integration-transient-failure' });
+assert.equal(selfOnly.outcome, 'contained');
+assert.equal(selfOnly.actionCount, 0);
+assert.equal(selfOnly.recovery, undefined);
+assert.equal(selfOnlyLoop.verifyReceipt(selfOnly), true);
+
+const samePrincipalLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  recoveryExecutor,
+  recoveryVerifier: {
+    verifierId: recoveryExecutor.executorId,
+    verify: recoveryVerifier.verify,
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const samePrincipal = await samePrincipalLoop.run({ ...base, incidentId: 'inc-t1-same-principal', scenarioId: 'integration-transient-failure' });
+assert.equal(samePrincipal.outcome, 'contained');
+assert.equal(samePrincipal.containedErrorCode, 'WFM_AUTONOMY_T1_SEPARATION');
+assert.equal(samePrincipal.actionCount, 0);
+assert.equal(samePrincipalLoop.verifyReceipt(samePrincipal), true);
+
+const mismatchedVerifierLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  recoveryExecutor,
+  recoveryVerifier: {
+    verifierId: 't1-mismatched-verifier',
+    verify: async () => ({
+      verified: true,
+      verifierId: 't1-mismatched-verifier',
+      executionDigest: d('different-execution'),
+      verificationDigest: d('mismatched-verification'),
+      productionAuthorityGranted: false,
+      customerMutation: false,
+      modelAuthorityGranted: false,
+      actionAuthorityGranted: false,
+    }),
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const mismatchedVerifier = await mismatchedVerifierLoop.run({ ...base, incidentId: 'inc-t1-mismatch', scenarioId: 'integration-transient-failure' });
+assert.equal(mismatchedVerifier.outcome, 'contained');
+assert.equal(mismatchedVerifier.containedErrorCode, 'WFM_AUTONOMY_T1_VERIFY');
+assert.equal(mismatchedVerifierLoop.verifyReceipt(mismatchedVerifier), true);
+
+const authorityVerifierLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  recoveryExecutor,
+  recoveryVerifier: {
+    verifierId: 't1-hostile-verifier',
+    verify: async (recovery) => ({
+      verified: true,
+      verifierId: 't1-hostile-verifier',
+      executionDigest: recovery.executionDigest,
+      verificationDigest: d('hostile-verifier'),
+      productionAuthorityGranted: false,
+      customerMutation: false,
+      modelAuthorityGranted: false,
+      actionAuthorityGranted: true,
+    }),
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const authorityVerifier = await authorityVerifierLoop.run({ ...base, incidentId: 'inc-t1-verifier-authority', scenarioId: 'integration-transient-failure' });
+assert.equal(authorityVerifier.outcome, 'contained');
+assert.equal(authorityVerifier.containedErrorCode, 'WFM_AUTONOMY_T1_VERIFIER_AUTHORITY');
+assert.equal(authorityVerifierLoop.verifyReceipt(authorityVerifier), true);
 
 const cross = await loop.run({
   ...base,
@@ -261,6 +364,7 @@ const hostileLoop = createAutonomyControlLoop({
   failureScenarios,
   selfHelp: SelfHelp,
   recoveryExecutor,
+  recoveryVerifier,
   repairCoordinator: hostileRepair,
   t3ShadowSimulator,
   t3ShadowVerifier,
@@ -279,6 +383,7 @@ const hostileT3Loop = createAutonomyControlLoop({
   failureScenarios,
   selfHelp: SelfHelp,
   recoveryExecutor,
+  recoveryVerifier,
   repairCoordinator,
   t3ShadowSimulator,
   t3ShadowVerifier: {
@@ -366,6 +471,10 @@ const resultTampered = structuredClone(t1);
 resultTampered.recovery.status = 'contained';
 assert.equal(loop.verifyReceipt(resultTampered), false);
 
+const t1VerificationTampered = structuredClone(t1);
+t1VerificationTampered.recoveryVerification.executionDigest = d('tampered-execution-binding');
+assert.equal(loop.verifyReceipt(t1VerificationTampered), false);
+
 const t3ResultTampered = structuredClone(t3);
 t3ResultTampered.t3Shadow.afterStateDigest = d('tampered-t3-state');
 assert.equal(loop.verifyReceipt(t3ResultTampered), false);
@@ -375,7 +484,7 @@ t4ResultTampered.t4.outcome = 'contained';
 assert.equal(loop.verifyReceipt(t4ResultTampered), false);
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'closed-loop-autonomy-controller',
   status: 'PASS',
   t4ScenarioClasses: t4ScenarioIds.length,
@@ -389,6 +498,10 @@ console.log(JSON.stringify({
   t4UnverifiableReceiptContained: true,
   t0GroundedOnly: true,
   t1IndependentVerificationRequired: true,
+  t1ExecutorVerifierDistinctPrincipalsRequired: true,
+  t1SelfAttestationInsufficient: true,
+  t1VerifierExactExecutionBindingRequired: true,
+  t1VerifierReadOnlyAuthorityRequired: true,
   t2ProductionAuthorityDenied: true,
   t3ShadowSimulationConnected: true,
   t3IndependentShadowVerificationRequired: true,
@@ -396,6 +509,7 @@ console.log(JSON.stringify({
   t3CustomerAuthorityBoundary: true,
   tamperEvidence: true,
   resultTamperEvidence: true,
+  t1VerificationTamperEvidence: true,
   t3ResultTamperEvidence: true,
   t4ResultTamperEvidence: true,
   productionMutation: false,
