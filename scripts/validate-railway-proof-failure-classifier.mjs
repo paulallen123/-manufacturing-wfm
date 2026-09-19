@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const {
+  EXPECTED_BROWSER_ROLES,
   classifyRailwayProofFailure,
   verifyDiagnosisReceipt,
   digest,
@@ -33,6 +34,7 @@ assert.equal(snapshot.classification, 'provider-snapshot-integrity-blocker');
 assert.equal(snapshot.phase, 'provider-build-snapshot');
 assert.equal(snapshot.productRuntimeExecuted, false);
 assert.equal(snapshot.productStateDurabilityProven, null);
+assert.equal(snapshot.browserRoleMatrixProven, null);
 assert.equal(snapshot.autonomyPromotionAllowed, false);
 assert.equal(snapshot.automaticRedeployAllowed, false);
 assert.equal(snapshot.releaseClaimAllowed, false);
@@ -48,6 +50,7 @@ assert.equal(auth.classification, 'proof-auth-contract-mismatch');
 assert.equal(auth.productRuntimeExecuted, true);
 assert.equal(auth.productFailureProven, false);
 assert.equal(auth.productStateDurabilityProven, null);
+assert.equal(auth.browserRoleMatrixProven, null);
 assert.equal(auth.automaticRedeployAllowed, false);
 assert.equal(verifyDiagnosisReceipt(auth), true);
 
@@ -100,6 +103,61 @@ assert.equal(weakPersistenceSignal.classification, 'unclassified-proof-failure')
 assert.equal(weakPersistenceSignal.productStateDurabilityProven, null);
 assert.equal(verifyDiagnosisReceipt(weakPersistenceSignal), true);
 
+const browserMatrix = classifyRailwayProofFailure({
+  deploymentId: '384b45a2-f30a-4757-ab73-3d4b60212370',
+  deploymentStatus: 'FAILED',
+  buildLogs: [
+    'containerimage.digest: sha256:08bf54c1fe8e46d6bda656c16995b6c26b5b9d84d2a17ea4be6dc657ca78b2e0',
+    'image push complete',
+  ],
+  deployLogs: [
+    'PRIVATE_BROWSER_ROLE_PASS=manager|role=manager|tenant=northstar-demo|requests=163',
+    'PRIVATE_BROWSER_ROLE_FAIL=employee|fetch /api/payroll-run timeout',
+    'PRIVATE_BROWSER_ROLE_FAIL=payroll|payroll rendered body too small',
+    'PRIVATE_BROWSER_ROLE_FAIL=company-admin|company-admin rendered body too small',
+    'PRIVATE_BROWSER_ROLE_PASS=isolation-manager|role=manager|tenant=isolation-test|requests=163',
+    'AssertionError [ERR_ASSERTION]: browser matrix failures: employee: fetch /api/payroll-run timeout || payroll: payroll rendered body too small || company-admin: company-admin rendered body too small',
+    'actual: 2',
+    'expected: 5',
+    'Node.js v24.20.0',
+  ],
+});
+assert.equal(browserMatrix.classification, 'partial-role-browser-proof-blocker');
+assert.equal(browserMatrix.phase, 'proof-harness-role-matrix');
+assert.equal(browserMatrix.confidence, 'high');
+assert.equal(browserMatrix.productRuntimeExecuted, true);
+assert.equal(browserMatrix.productFailureProven, false);
+assert.equal(browserMatrix.browserRoleEvidenceRequired, true);
+assert.equal(browserMatrix.browserRoleMatrixProven, false);
+assert.deepEqual(browserMatrix.expectedBrowserRoles, EXPECTED_BROWSER_ROLES);
+assert.deepEqual(browserMatrix.passedBrowserRoles, ['manager', 'isolation-manager']);
+assert.deepEqual(browserMatrix.failedBrowserRoles, [
+  { role: 'employee', reason: 'fetch /api/payroll-run timeout' },
+  { role: 'payroll', reason: 'payroll rendered body too small' },
+  { role: 'company-admin', reason: 'company-admin rendered body too small' },
+]);
+assert.equal(browserMatrix.releaseClaimAllowed, false);
+assert.equal(browserMatrix.autonomyPromotionAllowed, false);
+assert.equal(browserMatrix.automaticRedeployAllowed, false);
+assert.equal(browserMatrix.modelAuthorityGranted, false);
+assert.equal(browserMatrix.executionAuthorityGranted, false);
+assert.equal(verifyDiagnosisReceipt(browserMatrix), true);
+
+const incompleteBrowserMatrix = classifyRailwayProofFailure({
+  deploymentId: 'railway-incomplete-browser-matrix',
+  deploymentStatus: 'FAILED',
+  buildLogs: ['build complete'],
+  deployLogs: [
+    'PRIVATE_BROWSER_ROLE_PASS=manager|role=manager',
+    'PRIVATE_BROWSER_ROLE_FAIL=employee|timeout',
+    'PRIVATE_BROWSER_ROLE_PASS=attacker-defined-role|role=manager',
+    'AssertionError [ERR_ASSERTION]: browser matrix failures: employee: timeout',
+  ],
+});
+assert.equal(incompleteBrowserMatrix.classification, 'unclassified-proof-failure');
+assert.equal(incompleteBrowserMatrix.browserRoleMatrixProven, null);
+assert.equal(verifyDiagnosisReceipt(incompleteBrowserMatrix), true);
+
 const unknown = classifyRailwayProofFailure({
   deploymentId: 'railway-unknown-proof',
   deploymentStatus: 'FAILED',
@@ -129,10 +187,24 @@ assert.equal(verifyDiagnosisReceipt(tampered), false);
 
 const resealedDurabilityEscalation = structuredClone(persistence);
 resealedDurabilityEscalation.productStateDurabilityProven = true;
-const forgedCore = { ...resealedDurabilityEscalation };
-delete forgedCore.diagnosisReceiptDigest;
-resealedDurabilityEscalation.diagnosisReceiptDigest = digest(forgedCore);
+const forgedDurabilityCore = { ...resealedDurabilityEscalation };
+delete forgedDurabilityCore.diagnosisReceiptDigest;
+resealedDurabilityEscalation.diagnosisReceiptDigest = digest(forgedDurabilityCore);
 assert.equal(verifyDiagnosisReceipt(resealedDurabilityEscalation), false);
+
+const resealedBrowserEscalation = structuredClone(browserMatrix);
+resealedBrowserEscalation.browserRoleMatrixProven = true;
+const forgedBrowserCore = { ...resealedBrowserEscalation };
+delete forgedBrowserCore.diagnosisReceiptDigest;
+resealedBrowserEscalation.diagnosisReceiptDigest = digest(forgedBrowserCore);
+assert.equal(verifyDiagnosisReceipt(resealedBrowserEscalation), false);
+
+const resealedBrowserRoleInjection = structuredClone(browserMatrix);
+resealedBrowserRoleInjection.passedBrowserRoles.push('super-admin');
+const forgedRoleCore = { ...resealedBrowserRoleInjection };
+delete forgedRoleCore.diagnosisReceiptDigest;
+resealedBrowserRoleInjection.diagnosisReceiptDigest = digest(forgedRoleCore);
+assert.equal(verifyDiagnosisReceipt(resealedBrowserRoleInjection), false);
 
 assert.throws(
   () => classifyRailwayProofFailure({ deploymentStatus: 'SUCCESS', buildLogs: [], deployLogs: [] }),
@@ -165,20 +237,23 @@ expectCode(() => factory.proposeCandidate({
 console.log(JSON.stringify({
   validator: 'railway-proof-failure-classifier',
   result: 'PASS',
-  cases: 12,
+  cases: 16,
   classifications: [
     snapshot.classification,
     auth.classification,
     host.classification,
     persistence.classification,
     weakPersistenceSignal.classification,
+    browserMatrix.classification,
+    incompleteBrowserMatrix.classification,
     unknown.classification,
   ],
   latestRailwayEvidenceBound: {
-    deploymentId: persistence.deploymentId,
-    classification: persistence.classification,
-    failedDurabilityChecks: persistence.failedDurabilityChecks,
-    productStateDurabilityProven: persistence.productStateDurabilityProven,
+    deploymentId: browserMatrix.deploymentId,
+    classification: browserMatrix.classification,
+    passedBrowserRoles: browserMatrix.passedBrowserRoles,
+    failedBrowserRoles: browserMatrix.failedBrowserRoles,
+    browserRoleMatrixProven: browserMatrix.browserRoleMatrixProven,
   },
   repairAuthoritySurfaceProtected: true,
   authority: {
