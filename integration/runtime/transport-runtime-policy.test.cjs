@@ -7,6 +7,7 @@ const {
   classifyFailure,
   nextRetryDecision,
   reconciliationCheckpoint,
+  validateReconciliationCheckpoint,
   evaluateRecoveryCompletion
 } = require('./transport-runtime-policy.cjs');
 
@@ -63,13 +64,39 @@ test('exhausted retries quarantine instead of looping forever', () => {
   assert.equal(decision.exhausted, true);
 });
 
-test('recovery completion is bound to reviewed connection, same operation and reconciliation', () => {
+test('reconciliation checkpoint is integrity bound and proves canonical source/staged equality', () => {
   const r = review('webhook');
   const checkpoint = reconciliationCheckpoint(r, {
     mappingVersion: 3,
     sourceCursor: 'cursor-9',
     sourceDigest: 'b'.repeat(64),
+    stagedDigest: 'b'.repeat(64),
+    operationKey: 'event-9'
+  });
+  assert.equal(validateReconciliationCheckpoint(r, checkpoint).valid, true);
+
+  const tampered = { ...checkpoint, sourceCursor: 'cursor-tampered' };
+  const tamperedValidation = validateReconciliationCheckpoint(r, tampered);
+  assert.equal(tamperedValidation.valid, false);
+  assert.ok(tamperedValidation.blockers.some(x => x.includes('integrity')));
+
+  const mismatched = reconciliationCheckpoint(r, {
+    mappingVersion: 3,
+    sourceCursor: 'cursor-10',
+    sourceDigest: 'b'.repeat(64),
     stagedDigest: 'c'.repeat(64),
+    operationKey: 'event-10'
+  });
+  assert.equal(validateReconciliationCheckpoint(r, mismatched).valid, false);
+});
+
+test('recovery completion is bound to reviewed connection, same operation and verified reconciliation', () => {
+  const r = review('webhook');
+  const checkpoint = reconciliationCheckpoint(r, {
+    mappingVersion: 3,
+    sourceCursor: 'cursor-9',
+    sourceDigest: 'b'.repeat(64),
+    stagedDigest: 'b'.repeat(64),
     operationKey: 'event-9'
   });
   const passed = evaluateRecoveryCompletion(r, {
@@ -93,4 +120,24 @@ test('recovery completion is bound to reviewed connection, same operation and re
     observedAt: new Date().toISOString()
   });
   assert.equal(replayedAsDifferentOperation.ready, false);
+
+  const mismatchedCheckpoint = reconciliationCheckpoint(r, {
+    mappingVersion: 3,
+    sourceCursor: 'cursor-11',
+    sourceDigest: 'd'.repeat(64),
+    stagedDigest: 'e'.repeat(64),
+    operationKey: 'event-11'
+  });
+  const falsePass = evaluateRecoveryCompletion(r, {
+    checkpoint: mismatchedCheckpoint,
+    observedFailure: true,
+    recovered: true,
+    reconciliationStatus: 'PASS',
+    authorityConflict: false,
+    quarantined: 0,
+    operationKey: 'event-11',
+    observedAt: new Date().toISOString()
+  });
+  assert.equal(falsePass.ready, false);
+  assert.ok(falsePass.blockers.some(x => x.includes('reconciled')));
 });
