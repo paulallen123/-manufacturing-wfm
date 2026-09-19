@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { evaluateAgencySupplierEligibility } from './agency-supplier-compliance.mjs';
 import { evaluateAgencyRightToWork } from './agency-right-to-work.mjs';
 
-export const AGENCY_LABOUR_ENGINE_VERSION = 'agency-labour-exchange-v0.2.1';
+export const AGENCY_LABOUR_ENGINE_VERSION = 'agency-labour-exchange-v0.2.2';
 
 const ms = value => {
   const parsed = typeof value === 'number' ? value : Date.parse(value);
@@ -93,7 +93,11 @@ export function evaluateAgencyCandidate(worker, request, agency, policy = {}) {
   if (ms(worker.availability?.endAt) === null || ms(worker.availability.endAt) < end) failures.push('availability_does_not_cover_shift_end');
   if (worker.inductionNoExpiry !== true && (ms(worker.inductionValidUntil) === null || ms(worker.inductionValidUntil) < end)) failures.push('site_induction_expired_or_missing');
 
-  const rightToWorkEligibility = evaluateAgencyRightToWork(worker, request, agency, { now: policy.now });
+  const rightToWorkEligibility = evaluateAgencyRightToWork(worker, request, agency, {
+    now: policy.now,
+    requireVersionedDvspEvidence: true,
+    tenantId: policy.tenantId,
+  });
   failures.push(...rightToWorkEligibility.failures);
   warnings.push(...rightToWorkEligibility.warnings.map(warning => 'right_to_work:' + warning));
 
@@ -181,7 +185,7 @@ export function planAgencyLabourFulfilment(input) {
   }
 
   const byAgency = new Map(agencies.map(agency => [agency.agencyId, agency]));
-  const candidatePolicy = { ...policy, now: input.now ?? policy.now ?? null };
+  const candidatePolicy = { ...policy, now: input.now ?? policy.now ?? null, tenantId: input.tenantId };
   const evaluations = candidates.map(worker => evaluateAgencyCandidate(worker, request, byAgency.get(worker.agencyId), candidatePolicy));
   const workerById = new Map(candidates.map(worker => [worker.workerId, worker]));
   const supplierEligibility = agencies
