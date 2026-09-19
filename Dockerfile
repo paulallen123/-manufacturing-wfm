@@ -49,6 +49,8 @@ COPY operations/runtime/vector-intelligence-layer.cjs /app/operations-runtime/ve
 COPY operations/runtime/vector-intelligence-control-plane.cjs /app/operations-runtime/vector-intelligence-control-plane.cjs
 COPY operations/runtime/vector-report-engine.cjs /app/operations-runtime/vector-report-engine.cjs
 COPY operations/runtime/vector-email-delivery.cjs /app/operations-runtime/vector-email-delivery.cjs
+COPY operations/runtime/vector-context-engine.cjs /app/operations-runtime/vector-context-engine.cjs
+COPY operations/runtime/vector-automation-worker.cjs /app/operations-runtime/vector-automation-worker.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 COPY implementation/ui/ /tmp/wfm-implementation-ui/
 
@@ -85,6 +87,10 @@ COPY operations/runtime/vector-report-engine.cjs /tmp/wfm-tests/operations/runti
 COPY operations/runtime/vector-report-engine.test.cjs /tmp/wfm-tests/operations/runtime/vector-report-engine.test.cjs
 COPY operations/runtime/vector-email-delivery.cjs /tmp/wfm-tests/operations/runtime/vector-email-delivery.cjs
 COPY operations/runtime/vector-email-delivery.test.cjs /tmp/wfm-tests/operations/runtime/vector-email-delivery.test.cjs
+COPY operations/runtime/vector-context-engine.cjs /tmp/wfm-tests/operations/runtime/vector-context-engine.cjs
+COPY operations/runtime/vector-context-engine.test.cjs /tmp/wfm-tests/operations/runtime/vector-context-engine.test.cjs
+COPY operations/runtime/vector-automation-worker.cjs /tmp/wfm-tests/operations/runtime/vector-automation-worker.cjs
+COPY operations/runtime/vector-automation-worker.test.cjs /tmp/wfm-tests/operations/runtime/vector-automation-worker.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
@@ -101,6 +107,8 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/vector-intelligence-control-plane.test.cjs \
       /tmp/wfm-tests/operations/runtime/vector-report-engine.test.cjs \
       /tmp/wfm-tests/operations/runtime/vector-email-delivery.test.cjs \
+      /tmp/wfm-tests/operations/runtime/vector-context-engine.test.cjs \
+      /tmp/wfm-tests/operations/runtime/vector-automation-worker.test.cjs \
  && rm -rf /tmp/wfm-tests
 
 # Railway cloud-build admission: execute the exact 10,000-employee / 50-site
