@@ -98,7 +98,7 @@ jobs:
           import json, sys
           meta, current_run, branch, output = sys.argv[1:]
           data = json.load(open(meta, encoding='utf-8'))
-          chosen = None
+          candidates = []
           for artifact in data.get('artifacts', []):
               if artifact.get('expired'):
                   continue
@@ -109,13 +109,19 @@ jobs:
                   continue
               if run.get('head_branch') != branch:
                   continue
+              candidates.append((str(artifact.get('created_at') or ''), int(artifact.get('id') or 0), artifact))
+          candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
+          chosen = None
+          if candidates:
+              artifact = candidates[0][2]
+              run = artifact.get('workflow_run') or {}
               chosen = {
                   'artifactId': artifact.get('id'),
                   'artifactName': artifact.get('name'),
+                  'artifactCreatedAt': artifact.get('created_at'),
                   'workflowRunId': run.get('id'),
                   'headSha': run.get('head_sha'),
               }
-              break
           if chosen:
               with open(output, 'w', encoding='utf-8') as handle:
                   json.dump(chosen, handle)
@@ -262,6 +268,7 @@ jobs:
           const corpusSha = createHash('sha256').update(corpusRaw).digest('hex');
           const b = p.releaseBinding;
           const protectedAnchor = process.env.WFM_CANONICAL_TRUST_ANCHOR_PROTECTED === 'true';
+          const priorCorpusExpected = Boolean(process.env.WFM_INCIDENT_CORPUS_INPUT);
           const common = p.status === 'PASS'
             && p.providerNeutral === true
             && p.requiresGitHubHostedRunner === false
@@ -270,6 +277,7 @@ jobs:
             && p.customerMutation === false
             && p.canonicalTrustAnchorProtected === protectedAnchor
             && p.incidentRegressionCorpus
+            && p.incidentRegressionCorpus.priorSnapshotLoaded === priorCorpusExpected
             && p.incidentRegressionCorpus.corpusDigest === corpus.corpusDigest
             && p.incidentRegressionCorpus.snapshotSha256 === corpusSha
             && p.incidentRegressionCorpus.entryCount === corpus.entryCount
