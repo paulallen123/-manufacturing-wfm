@@ -163,11 +163,13 @@ try {
   assert.equal(failoverTerminal.safeTerminal, true, 'A verified pre-existing zero-cost secondary forensic store must restore a safe T4 terminal.');
   assert.equal(failoverTerminal.productionAuthorityGranted, false);
   assert.equal(failoverTerminal.customerMutation, false);
-  assert.equal(failoverTerminal.crossTenantMutation, false);
-  assert.equal(failoverTerminal.modelAuthorityGranted, false);
-  assert.equal(failoverTerminal.t4Receipt?.forensicReceipt?.verified, true);
-  assert.equal(failoverTerminal.t4Receipt?.forensicReceipt?.immutable, true);
-  assert.equal(failoverTerminal.t4Receipt?.forensicReceipt?.storageMode, 'write-once-failover:secondary-preexisting');
+  assert.equal(failoverTerminal.t4?.productionAuthorityGranted, false);
+  assert.equal(failoverTerminal.t4?.customerMutation, false);
+  assert.equal(failoverTerminal.t4?.crossTenantMutation, false);
+  assert.equal(failoverTerminal.t4?.modelAuthorityGranted, false);
+  assert.equal(failoverTerminal.t4?.forensicReceipt?.verified, true);
+  assert.equal(failoverTerminal.t4?.forensicReceipt?.immutable, true);
+  assert.equal(failoverTerminal.t4?.forensicReceipt?.storageMode, 'write-once-failover:secondary-preexisting');
   assert.equal(failoverLoop.verifyReceipt(failoverTerminal), true);
 
   let unsafeSecondaryCalls = 0;
@@ -253,21 +255,23 @@ try {
   assert.equal(verificationReceipt.attemptCount, 2);
   assert.equal(await verificationFailover.verify(verificationReceipt), true);
 
-  assert.throws(
-    () => createT4ForensicFailoverStore({
-      stores: [{
-        id: 'paid-or-unattested-only',
-        capability: { ...SAFE_FAILOVER_CAPABILITY, incrementalCostZero: false },
-        store: secondaryStore,
-      }],
-    }).preserve({
+  const noEligibleStore = createT4ForensicFailoverStore({
+    stores: [{
+      id: 'paid-or-unattested-only',
+      capability: { ...SAFE_FAILOVER_CAPABILITY, incrementalCostZero: false },
+      store: secondaryStore,
+    }],
+  });
+  await assert.rejects(
+    () => noEligibleStore.preserve({
       incidentId: 'inc-no-eligible-store',
       tenant: 'tenant-a',
       scenarioId: 'data-integrity-mismatch',
       evidenceDigest: d('no-eligible-evidence'),
       eventHeadDigest: d('no-eligible-event'),
     }),
-    undefined,
+    (error) => error?.code === 'WFM_T4_FORENSICS_NO_ELIGIBLE_STORE',
+    'No explicitly eligible pre-existing zero-cost store must fail closed without attempting an unsafe lane.',
   );
 } finally {
   rmSync(root, { recursive: true, force: true });
