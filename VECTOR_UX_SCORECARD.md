@@ -30,7 +30,7 @@ If Vector keeps review items neutral unless a structured source contract proves 
 - Corrected the exact-runtime guard so hidden authoritative source behaviour may remain underneath while retired presentation overlays remain forbidden and Vector remains the only visible shell.
 
 ### Focused / affected validation
-Repository-level Vector-only validation passes on the current code: retired presentation source is refused and the new neutral-review contract is required. Exact Docker runtime build also passes. The final built-asset presentation assertion is executing on the latest workflow run and is not yet claimed green in this scorecard revision.
+Exact workflow run `35426218781` is green. The repository guard passed, the exact Docker runtime build passed, and the built-asset proof passed that retired presentation overlays are absent while Vector is loaded as the only active presentation shell. This verifies the current neutral-review contract at source/build-composition level; it does not claim real assistive-technology or hosted-user evidence.
 
 ### UX scorecard impact
 - Calm by default: improved — review ordering no longer manufactures severity.
