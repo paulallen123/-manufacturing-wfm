@@ -54,22 +54,51 @@ function validatePredicate(predicate, questionIds, context) {
   }
 }
 
+function predicateDependencies(predicate, out = new Set()) {
+  if (predicate == null || typeof predicate !== 'object') return out;
+  if (Array.isArray(predicate.all)) {
+    for (const item of predicate.all) predicateDependencies(item, out);
+    return out;
+  }
+  if (Array.isArray(predicate.any)) {
+    for (const item of predicate.any) predicateDependencies(item, out);
+    return out;
+  }
+  if (predicate.not) return predicateDependencies(predicate.not, out);
+  if (predicate.question) out.add(predicate.question);
+  return out;
+}
+
+function validateDependencyOrder(question, predicate, positions, context) {
+  const questionIndex = positions.get(question.id);
+  for (const dependencyId of predicateDependencies(predicate)) {
+    const dependencyIndex = positions.get(dependencyId);
+    if (dependencyIndex >= questionIndex) {
+      throw new Error(context + ' predicate must reference an earlier question so the controlling answer is valid before this question is evaluated.');
+    }
+  }
+}
+
 function compileGraph(graph) {
   if (!graph || typeof graph !== 'object') throw new Error('Scoping graph is required.');
   if (!/^[A-Za-z0-9._-]+$/.test(String(graph.version || ''))) throw new Error('Scoping graph requires a version.');
   if (!Array.isArray(graph.questions) || graph.questions.length === 0) throw new Error('Scoping graph requires questions.');
 
   const ids = new Set();
-  for (const q of graph.questions) {
+  const positions = new Map();
+  graph.questions.forEach((q, index) => {
     if (!q.id || ids.has(q.id)) throw new Error('Scoping question ids must be unique and non-empty.');
     ids.add(q.id);
-  }
+    positions.set(q.id, index);
+  });
 
   for (const q of graph.questions) {
     if (!q.prompt) throw new Error('Question ' + q.id + ' requires a prompt.');
     if (!Array.isArray(q.options) || q.options.length === 0) throw new Error('Question ' + q.id + ' requires options.');
     validatePredicate(q.when, ids, 'Question ' + q.id);
+    validateDependencyOrder(q, q.when, positions, 'Question ' + q.id);
     validatePredicate(q.scopeWhen, ids, 'Question ' + q.id + ' scope');
+    validateDependencyOrder(q, q.scopeWhen, positions, 'Question ' + q.id + ' scope');
     if (q.suppressedEffect) validateEffect(q.suppressedEffect, 'Question ' + q.id + ' suppressedEffect');
     for (const option of q.options) {
       if (!Object.prototype.hasOwnProperty.call(option, 'value')) throw new Error('Question ' + q.id + ' option requires a value.');
