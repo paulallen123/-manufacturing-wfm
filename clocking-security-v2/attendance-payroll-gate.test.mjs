@@ -26,6 +26,30 @@ test('missing OUT is excluded from payroll until explicitly reviewed',()=>{
   assert.equal(p.certification.claimLevel,'VERIFIED_100_ONLY');
 });
 
+test('manager correction cannot bypass a source-continuity regression after review',()=>{
+  const rows=[{employee:'e1',workerType:'employee',status:'missing_out',openAt:'2026-09-18T06:00:00.000Z'}];
+  let sourceContinuityPeriod=true;
+  const coverage={evaluateShift(){return {rows,payrollReady:false,unexpectedCount:0,unmappedSignalCount:0};}};
+  const certifier={certifyShift(){return {claimLevel:sourceContinuityPeriod?'VERIFIED_100_ONLY':'NOT_CERTIFIED',claim:null,certification:{sourceContinuityPeriod,verifiedPeriodCertified:sourceContinuityPeriod}};}};
+  const g=new AttendancePayrollGate({coverage,certifier});
+  g.recordCorrection({tenant:'acme',site:'s1',shiftId:'shift1',employee:'e1',reviewId:'r1',actorId:'mgr1',reasonCode:'CONFIRMED_EXIT',correctedInAt:'2026-09-18T06:00:00Z',correctedOutAt:'2026-09-18T14:00:00Z',reviewedAt:T});
+
+  let p=g.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T,shiftWindowClosed:true});
+  assert.equal(p.payrollReady,true); assert.equal(p.attendanceInputs.length,1); assert.equal(p.attendanceInputs[0].provenance.basis,'manager_correction');
+
+  sourceContinuityPeriod=false;
+  p=g.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T+1,shiftWindowClosed:true});
+  assert.equal(p.payrollReady,false); assert.equal(p.attendanceInputs.length,0); assert.equal(p.reviewRequired.length,1);
+  assert.equal(p.reviewRequired[0].provenance.basis,'manager_correction_source_continuity_not_verified');
+  assert.equal(p.reviewRequired[0].provenance.reviewId,'r1');
+  assert.equal(p.certification.sourceContinuityPeriod,false);
+  assert.equal(g.verifyAuditChain(),true);
+
+  sourceContinuityPeriod=true;
+  p=g.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T+2,shiftWindowClosed:true});
+  assert.equal(p.payrollReady,true); assert.equal(p.attendanceInputs.length,1); assert.equal(p.attendanceInputs[0].provenance.reviewId,'r1');
+});
+
 test('source continuity gap excludes otherwise complete automatic interval',()=>{
   const g=harness({sourceContinuityPeriod:false}); const p=g.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:T,shiftWindowClosed:true});
   assert.equal(p.payrollReady,false); assert.equal(p.attendanceInputs.length,0); assert.equal(p.reviewRequired[0].provenance.basis,'source_continuity_not_verified');
