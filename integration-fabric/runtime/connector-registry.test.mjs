@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildConnectorRegistry,connectorById} from './connector-registry.mjs';
 
-test('every effective catalogue system compiles to a reusable adapter plan',()=>{
+test('effective catalogue compiles safely and preserves explicit interface gaps',()=>{
   const registry=buildConnectorRegistry();
-  assert.equal(registry.connectors.length,162);
-  assert.deepEqual(registry.connectors.filter(x=>x.adapters.length===0).map(x=>x.id),[]);
+  assert.equal(registry.connectors.length,163);
+  assert.deepEqual(registry.connectors.filter(x=>x.adapters.length===0).map(x=>x.id),['schneider-resource-advisor']);
   for(const c of registry.connectors){
     assert.equal(c.security.readOnlyDefault,true,c.id);
     assert.equal(c.security.writeEnabled,false,c.id);
@@ -35,6 +35,18 @@ test('Siemens Insights Hub stays on the proven read-only REST route',()=>{
   assert.ok(c.canonicalTargets.includes('downtime-event'));
   assert.equal(c.security.writeEnabled,false);
   assert.equal(c.security.directPlantNetworkAccess,false);
+});
+
+test('Resource Advisor is an explicit value source with no invented connector route',()=>{
+  const c=connectorById('schneider-resource-advisor');
+  assert.equal(c.evidenceLevel,'discovery-queued');
+  assert.deepEqual(c.protocols,[]);
+  assert.deepEqual(c.adapters,[]);
+  assert.equal(c.discoveryStrategy,'vendor-specific-discovery');
+  assert.equal(c.nextEvidenceGate,'spec-verification');
+  assert.ok(c.canonicalTargets.includes('energy-event'));
+  assert.ok(c.canonicalTargets.includes('cost-driver'));
+  assert.equal(c.security.writeEnabled,false);
 });
 
 test('legacy Oracle manufacturing estates use published service routes',()=>{
