@@ -10,7 +10,7 @@ function stable(value){
   return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stable(value[k])).join(',')+'}';
 }
 function digest(value){ return crypto.createHash('sha256').update(stable(value)).digest('hex'); }
-function eventKey(event){ return `${event?.tenant??''}:${event?.sourceId??''}:${event?.eventId??''}`; }
+function eventKey(event){ return JSON.stringify([String(event?.tenant??''),String(event?.sourceId??''),String(event?.eventId??'')]); }
 function failure(message,status=500){ return Object.assign(new Error(message),{status}); }
 function mapSnapshot(map){ return [...map.entries()].map(([k,v])=>[k,clone(v)]); }
 function mapRestore(rows,name){
