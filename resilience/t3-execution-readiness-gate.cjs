@@ -46,10 +46,30 @@ function createT3ExecutionReadinessGate({ authorisationGate, preflightVerifier, 
     throw new Error('T3 execution readiness maxValidityMs must be between 1 second and 5 minutes.');
   }
 
+  const componentBinding = Object.freeze({
+    authorisationConsume: authorisationGate.consume,
+    preflightVerify: preflightVerifier.verify,
+  });
+
+  function assertRuntimeComponentBinding() {
+    if (
+      authorisationGate.consume !== componentBinding.authorisationConsume
+      || preflightVerifier.verify !== componentBinding.preflightVerify
+    ) {
+      deny(
+        'WFM_T3_READINESS_COMPONENT_DRIFT',
+        'T3 execution-readiness trusted component method identity changed after trust establishment.',
+      );
+    }
+  }
+
   async function evaluate({ token, tenant, scenarioId, proposalDigest, approverId, currentStateDigest, dryRun } = {}) {
+    assertRuntimeComponentBinding();
     if (!isDigest(currentStateDigest)) deny('WFM_T3_READINESS_STATE', 'Current state digest is required.');
 
+    assertRuntimeComponentBinding();
     const consent = await authorisationGate.consume({ token, tenant, scenarioId, proposalDigest, approverId });
+    assertRuntimeComponentBinding();
     if (
       consent.customerConsentRecorded !== true
       || consent.durableReplayProtection !== true
@@ -83,7 +103,9 @@ function createT3ExecutionReadinessGate({ authorisationGate, preflightVerifier, 
       return { ...containedCore, readinessReceiptDigest: digest(containedCore) };
     }
 
+    assertRuntimeComponentBinding();
     const preflight = preflightVerifier.verify(consent, currentStateDigest, dryRun);
+    assertRuntimeComponentBinding();
     if (!preflight || preflight.verified !== true) {
       const containedCore = {
         schemaVersion: 2,
