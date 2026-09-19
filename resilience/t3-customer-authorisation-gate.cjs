@@ -1,11 +1,9 @@
 'use strict';
 
 const { createHmac, randomUUID, timingSafeEqual, createHash } = require('node:crypto');
+const { T3_SCENARIO_POLICY, policyDigest } = require('./t3-shadow-simulator.cjs');
 
-const SCENARIO_POLICY = Object.freeze({
-  'payroll-calculation-or-export-anomaly': Object.freeze({ actionPrefix: 'payroll.', maxAffectedRecords: 5000, approverRoles: Object.freeze(['payroll', 'company-admin']) }),
-  'timezone-dst-or-clock-skew': Object.freeze({ actionPrefix: 'time.', maxAffectedRecords: 5000, approverRoles: Object.freeze(['manager', 'payroll', 'company-admin']) }),
-});
+const SCENARIO_POLICY = T3_SCENARIO_POLICY;
 
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -53,11 +51,14 @@ function verifyShadowEvidence(simulation, verification) {
   if (verification.customerMutation !== false || verification.productionMutation !== false || verification.productionAuthorityGranted !== false || verification.verifierRole !== 'independent-read-only-t3-shadow-verifier') {
     deny('WFM_T3_AUTH_BOUNDARY', 'Verification exceeded the independent non-mutating boundary.');
   }
+  if (!policy.allowedActions.includes(simulation.proposedAction)) {
+    deny('WFM_T3_AUTH_ACTION', 'Proposed action is not explicitly allowlisted for this scenario.');
+  }
+  if (simulation.actionPolicyDigest !== policyDigest(simulation.scenarioId) || simulation.exactActionAllowlistBound !== true) {
+    deny('WFM_T3_AUTH_ACTION_POLICY', 'T3 simulation is not bound to the exact action policy.');
+  }
   if (verification.tenant !== simulation.tenant || verification.scenarioId !== simulation.scenarioId || verification.evidenceDigest !== simulation.evidenceDigest || verification.proposalDigest !== simulation.proposalDigest || verification.simulationDigest !== simulation.simulationDigest) {
     deny('WFM_T3_AUTH_BINDING', 'T3 verification does not bind to the exact simulation.');
-  }
-  if (typeof simulation.proposedAction !== 'string' || !simulation.proposedAction.startsWith(policy.actionPrefix)) {
-    deny('WFM_T3_AUTH_ACTION', 'Proposed action is outside the scenario action family.');
   }
   if (!Number.isSafeInteger(simulation.affectedRecords) || simulation.affectedRecords < 1 || simulation.affectedRecords > policy.maxAffectedRecords || simulation.maxAffectedRecords !== policy.maxAffectedRecords) {
     deny('WFM_T3_AUTH_CARDINALITY', 'Affected-record bound is invalid.');
@@ -155,7 +156,7 @@ function createT3CustomerAuthorisationGate({ key, replayStore, now = Date.now, m
     if (!Number.isFinite(requestedTtl) || requestedTtl < 1000) deny('WFM_T3_AUTH_TTL', 'Authorisation TTL is invalid.');
     const expiresAt = issuedAt + Math.min(Math.floor(requestedTtl), maxTtlMs);
     const claims = {
-      v: 1,
+      v: 2,
       jti: randomUUID(),
       scope: 'customer-consent-record-only',
       tenant: simulation.tenant,
@@ -164,6 +165,7 @@ function createT3CustomerAuthorisationGate({ key, replayStore, now = Date.now, m
       proposedAction: simulation.proposedAction,
       affectedRecords: simulation.affectedRecords,
       evidenceDigest: simulation.evidenceDigest,
+      actionPolicyDigest: simulation.actionPolicyDigest,
       proposalDigest: simulation.proposalDigest,
       simulationDigest: simulation.simulationDigest,
       verificationDigest: verification.verificationDigest,
@@ -187,6 +189,7 @@ function createT3CustomerAuthorisationGate({ key, replayStore, now = Date.now, m
         authorisationId: claims.jti,
         tenant: claims.tenant,
         scenarioId: claims.scenarioId,
+        actionPolicyDigest: claims.actionPolicyDigest,
         proposalDigest: claims.proposalDigest,
         verificationDigest: claims.verificationDigest,
         approverRole: role,
@@ -200,6 +203,7 @@ function createT3CustomerAuthorisationGate({ key, replayStore, now = Date.now, m
           jti: claims.jti,
           tenant: claims.tenant,
           scenarioId: claims.scenarioId,
+          actionPolicyDigest: claims.actionPolicyDigest,
           proposalDigest: claims.proposalDigest,
           verificationDigest: claims.verificationDigest,
           approverId: claims.approverId,
@@ -217,6 +221,10 @@ function createT3CustomerAuthorisationGate({ key, replayStore, now = Date.now, m
     if (claims.scope !== 'customer-consent-record-only') deny('WFM_T3_AUTH_SCOPE', 'Customer authorisation scope is invalid.');
     if (claims.executionAuthority !== false || claims.productionAuthorityGranted !== false || claims.modelAuthorityGranted !== false || claims.customerMutation !== false || claims.productionMutation !== false) {
       deny('WFM_T3_AUTH_BOUNDARY', 'Customer authorisation token contains forbidden authority.');
+    }
+    const policy = SCENARIO_POLICY[claims.scenarioId];
+    if (!policy || !policy.allowedActions.includes(claims.proposedAction) || claims.actionPolicyDigest !== policyDigest(claims.scenarioId)) {
+      deny('WFM_T3_AUTH_ACTION_POLICY', 'Customer authorisation token is outside the exact T3 action policy.');
     }
     if (claims.tenant !== clean(tenant, 100) || claims.scenarioId !== clean(scenarioId, 120) || claims.proposalDigest !== clean(proposalDigest, 64).toLowerCase()) {
       deny('WFM_T3_AUTH_BINDING', 'Customer authorisation token does not match the expected proposal.');
@@ -248,6 +256,7 @@ function createT3CustomerAuthorisationGate({ key, replayStore, now = Date.now, m
       proposedAction: claims.proposedAction,
       affectedRecords: claims.affectedRecords,
       evidenceDigest: claims.evidenceDigest,
+      actionPolicyDigest: claims.actionPolicyDigest,
       proposalDigest: claims.proposalDigest,
       simulationDigest: claims.simulationDigest,
       verificationDigest: claims.verificationDigest,
