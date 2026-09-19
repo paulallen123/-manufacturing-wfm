@@ -105,7 +105,7 @@ function planProviderProofMaintenance(review, input = {}, now = Date.now()) {
         mayResumeBusinessTrafficAfterSuccess: false
       }),
       nextAction: refreshProviderProof
-        ? 'Run one bounded recovery check that also refreshes provider identity proof, then reconcile before resuming.'
+        ? 'Run one bounded recovery check that also refreshes the metadata proof, then reconcile before resuming.'
         : 'Run the bounded recovery check and reconcile before resuming normal sync.'
     });
   }
@@ -146,7 +146,7 @@ function planProviderProofMaintenance(review, input = {}, now = Date.now()) {
         refreshProviderProof: true,
         mayResumeBusinessTrafficAfterSuccess: true
       }),
-      nextAction: 'Refresh provider identity automatically while normal sync continues.'
+      nextAction: 'Refresh the bounded metadata proof automatically while normal sync continues.'
     });
   }
 
@@ -163,8 +163,8 @@ function planProviderProofMaintenance(review, input = {}, now = Date.now()) {
       mayResumeBusinessTrafficAfterSuccess: false
     }),
     nextAction: proof.state === 'BLOCKED'
-      ? 'Re-run the bounded provider identity proof; keep sync paused and require review because the prior proof anchor is invalid.'
-      : 'Refresh provider identity automatically before allowing new business sync.'
+      ? 'Re-run the bounded metadata proof; keep sync paused and require review because the prior proof anchor is invalid.'
+      : 'Refresh the bounded metadata proof automatically before allowing new business sync.'
   });
 }
 
