@@ -1,0 +1,42 @@
+version: 2.1
+
+jobs:
+  core_validation:
+    docker:
+      - image: cimg/node:22.23
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Consolidated core validation
+          command: node scripts/run-zero-cost-ci.mjs
+
+  release_runtime_validation:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: medium
+    steps:
+      - checkout
+      - run:
+          name: Consolidated core validation
+          command: node scripts/run-zero-cost-ci.mjs
+      - run:
+          name: Exact runtime build
+          command: docker build --pull=false -t wfm-zero-cost-ci:candidate .
+      - run:
+          name: Vector presentation invariant
+          command: node scripts/validate-vector-only-ui.mjs
+
+workflows:
+  zero_cost_ci:
+    jobs:
+      - core_validation
+      - release_runtime_validation:
+          requires:
+            - core_validation
+          filters:
+            branches:
+              only:
+                - main
+                - /release\/.*/
+                - /staging\/.*/
