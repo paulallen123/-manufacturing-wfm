@@ -104,21 +104,6 @@ function reviewConnection(input = {}) {
   });
 }
 
-function approvalFor(review, actor = {}) {
-  const approvedBy = String(actor.approvedBy || '').trim();
-  const role = String(actor.role || '').trim().toLowerCase();
-  if (!approvedBy || !['authorized-admin', 'integration-owner'].includes(role)) {
-    throw new Error('Explicit approval requires an authorised administrator or integration owner.');
-  }
-  return Object.freeze({
-    decision: 'APPROVED',
-    approvedBy,
-    role,
-    approvedAt: new Date().toISOString(),
-    reviewedDigest: review.reviewedDigest
-  });
-}
-
 function sameReview(evidence, review) {
   return evidence && evidence.reviewedDigest === review.reviewedDigest;
 }
@@ -151,6 +136,120 @@ function targetProofBlockers(test, review) {
   return blockers;
 }
 
+function activationEvidenceSnapshot(review, evidence = {}) {
+  const test = evidence.connectionTest || {};
+  const mapping = evidence.mappingReview || {};
+  const recon = evidence.reconciliation || {};
+  const recovery = evidence.recoveryProof || {};
+  return {
+    reviewedDigest: review.reviewedDigest,
+    connectionTest: {
+      status: test.status || null,
+      reviewedDigest: test.reviewedDigest || null,
+      nonMutating: test.nonMutating === true,
+      measuredLatencyMs: Number.isFinite(Number(test.measuredLatencyMs)) ? Number(test.measuredLatencyMs) : null,
+      observedAt: test.observedAt || null,
+      targetProof: test.targetProof ? stable(test.targetProof) : null
+    },
+    mappingReview: {
+      status: mapping.status || null,
+      reviewedDigest: mapping.reviewedDigest || null,
+      mappingVersion: Number.isFinite(Number(mapping.mappingVersion)) ? Number(mapping.mappingVersion) : null,
+      observedAt: mapping.observedAt || null
+    },
+    reconciliation: {
+      status: recon.status || null,
+      reviewedDigest: recon.reviewedDigest || null,
+      mappingVersion: Number.isFinite(Number(recon.mappingVersion)) ? Number(recon.mappingVersion) : null,
+      observedAt: recon.observedAt || null
+    },
+    recoveryProof: review.recoveryProofRequired ? {
+      status: recovery.status || null,
+      reviewedDigest: recovery.reviewedDigest || null,
+      observedFailure: recovery.observedFailure === true,
+      recovered: recovery.recovered === true,
+      reconciliationStatus: recovery.reconciliationStatus || null,
+      observedAt: recovery.observedAt || null
+    } : null
+  };
+}
+
+function activationEvidenceDigest(review, evidence = {}) {
+  return digest(activationEvidenceSnapshot(review, evidence));
+}
+
+function evidenceBlockers(review, evidence = {}) {
+  const blockers = [];
+  const test = evidence.connectionTest;
+  if (!test || test.status !== 'PASS' || !sameReview(test, review)) blockers.push('Safe connection test for this exact review has not passed.');
+  else {
+    if (test.nonMutating !== true) blockers.push('Connection test was not proven non-mutating.');
+    if (!Number.isFinite(Date.parse(String(test.observedAt || '')))) blockers.push('Connection test has no valid observation time.');
+    blockers.push(...targetProofBlockers(test, review));
+    if (!asPositiveInt(test.measuredLatencyMs)) blockers.push('Connection latency was not measured.');
+    else if (test.measuredLatencyMs > review.monitoring.maxLatencyMs) blockers.push('Measured connection latency exceeds the reviewed limit.');
+  }
+
+  const mapping = evidence.mappingReview;
+  if (!mapping || mapping.status !== 'APPROVED' || !sameReview(mapping, review) || Number(mapping.mappingVersion) !== review.mapping.version) {
+    blockers.push('Mapping review does not match the current reviewed mapping.');
+  } else if (!Number.isFinite(Date.parse(String(mapping.observedAt || '')))) {
+    blockers.push('Mapping review has no valid observation time.');
+  }
+
+  const recon = evidence.reconciliation;
+  if (!recon || recon.status !== 'PASS' || !sameReview(recon, review) || Number(recon.mappingVersion) !== review.mapping.version) {
+    blockers.push('Reconciliation has not passed for the current mapping.');
+  } else {
+    if (!Number.isFinite(Date.parse(String(recon.observedAt || '')))) blockers.push('Reconciliation has no valid observation time.');
+    else if (test?.observedAt && !newerOrEqual(recon.observedAt, test.observedAt)) blockers.push('Reconciliation is older than the latest connection proof.');
+  }
+
+  if (review.recoveryProofRequired) {
+    const recovery = evidence.recoveryProof;
+    if (!recovery || recovery.status !== 'PASS' || !sameReview(recovery, review)) blockers.push('Recovery proof is required for this transport.');
+    else {
+      if (recovery.observedFailure !== true || recovery.recovered !== true) blockers.push('Recovery proof must include an observed failure and successful recovery.');
+      if (recovery.reconciliationStatus !== 'PASS') blockers.push('Recovery proof must finish with reconciliation passing.');
+      if (!Number.isFinite(Date.parse(String(recovery.observedAt || '')))) blockers.push('Recovery proof has no valid observation time.');
+    }
+  }
+
+  return blockers;
+}
+
+function latestEvidenceAtMs(review, evidence = {}) {
+  const times = [
+    evidence.connectionTest?.observedAt,
+    evidence.mappingReview?.observedAt,
+    evidence.reconciliation?.observedAt
+  ];
+  if (review.recoveryProofRequired) times.push(evidence.recoveryProof?.observedAt);
+  const parsed = times.map((value) => Date.parse(String(value || '')));
+  return parsed.every(Number.isFinite) ? Math.max(...parsed) : null;
+}
+
+function approvalFor(review, actor = {}, evidence = {}, now = Date.now()) {
+  const approvedBy = String(actor.approvedBy || '').trim();
+  const role = String(actor.role || '').trim().toLowerCase();
+  if (!approvedBy || !['authorized-admin', 'integration-owner'].includes(role)) {
+    throw new Error('Explicit approval requires an authorised administrator or integration owner.');
+  }
+  const blockers = evidenceBlockers(review, evidence);
+  if (blockers.length) throw new Error('Activation evidence is not ready for approval: ' + blockers.join(' '));
+  const latestEvidence = latestEvidenceAtMs(review, evidence);
+  if (!Number.isFinite(latestEvidence)) throw new Error('Activation evidence timestamps are incomplete.');
+  if (latestEvidence > now + 5000) throw new Error('Activation evidence cannot be approved before it is observed.');
+  return Object.freeze({
+    decision: 'APPROVED',
+    approvedBy,
+    role,
+    approvedAt: new Date(now).toISOString(),
+    reviewedDigest: review.reviewedDigest,
+    evidenceDigest: activationEvidenceDigest(review, evidence)
+  });
+}
+
 function evaluateActivation(review, evidence = {}, currentConfig) {
   const blockers = [];
   let currentReview;
@@ -161,37 +260,20 @@ function evaluateActivation(review, evidence = {}, currentConfig) {
   }
   if (currentReview && currentReview.reviewedDigest !== review.reviewedDigest) blockers.push('Reviewed connection changed after approval; review again.');
 
+  blockers.push(...evidenceBlockers(review, evidence));
+
   const approval = evidence.approval;
-  if (!approval || approval.decision !== 'APPROVED' || !sameReview(approval, review)) blockers.push('Explicit activation approval for this exact reviewed connection is missing.');
-
-  const test = evidence.connectionTest;
-  if (!test || test.status !== 'PASS' || !sameReview(test, review)) blockers.push('Safe connection test for this exact review has not passed.');
-  else {
-    if (test.nonMutating !== true) blockers.push('Connection test was not proven non-mutating.');
-    blockers.push(...targetProofBlockers(test, review));
-    if (!asPositiveInt(test.measuredLatencyMs)) blockers.push('Connection latency was not measured.');
-    else if (test.measuredLatencyMs > review.monitoring.maxLatencyMs) blockers.push('Measured connection latency exceeds the reviewed limit.');
-  }
-
-  const mapping = evidence.mappingReview;
-  if (!mapping || mapping.status !== 'APPROVED' || !sameReview(mapping, review) || Number(mapping.mappingVersion) !== review.mapping.version) {
-    blockers.push('Mapping review does not match the current reviewed mapping.');
-  }
-
-  const recon = evidence.reconciliation;
-  if (!recon || recon.status !== 'PASS' || !sameReview(recon, review) || Number(recon.mappingVersion) !== review.mapping.version) {
-    blockers.push('Reconciliation has not passed for the current mapping.');
-  } else if (test?.observedAt && !newerOrEqual(recon.observedAt, test.observedAt)) {
-    blockers.push('Reconciliation is older than the latest connection proof.');
-  }
-
-  if (review.recoveryProofRequired) {
-    const recovery = evidence.recoveryProof;
-    if (!recovery || recovery.status !== 'PASS' || !sameReview(recovery, review)) blockers.push('Recovery proof is required for this transport.');
-    else {
-      if (recovery.observedFailure !== true || recovery.recovered !== true) blockers.push('Recovery proof must include an observed failure and successful recovery.');
-      if (recovery.reconciliationStatus !== 'PASS') blockers.push('Recovery proof must finish with reconciliation passing.');
+  if (!approval || approval.decision !== 'APPROVED' || !sameReview(approval, review)) {
+    blockers.push('Explicit activation approval for this exact reviewed connection is missing.');
+  } else {
+    const approvedAtMs = Date.parse(String(approval.approvedAt || ''));
+    const latestEvidence = latestEvidenceAtMs(review, evidence);
+    if (!Number.isFinite(approvedAtMs)) blockers.push('Activation approval has no valid approval time.');
+    if (!approval.evidenceDigest || approval.evidenceDigest !== activationEvidenceDigest(review, evidence)) {
+      blockers.push('Activation approval does not match the exact evidence being activated; approve again.');
     }
+    if (!Number.isFinite(latestEvidence)) blockers.push('Activation evidence timestamps are incomplete.');
+    else if (Number.isFinite(approvedAtMs) && approvedAtMs < latestEvidence) blockers.push('Activation approval predates the latest proof; approve again.');
   }
 
   return Object.freeze({
@@ -252,6 +334,7 @@ module.exports = {
   validCredentialRef,
   reviewConnection,
   approvalFor,
+  activationEvidenceDigest,
   evaluateActivation,
   evaluateRuntimeHealth,
   buildSafeConnectionTestPlan
