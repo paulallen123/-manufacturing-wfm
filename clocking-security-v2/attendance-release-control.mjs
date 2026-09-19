@@ -20,6 +20,12 @@ const ROLLBACK_AUTHORITY_REQUIREMENTS=Object.freeze([
   'restartRecoveryProven'
 ]);
 
+// A release switch must never trust a caller-created object that merely says
+// `ready: true`. Assessments are executable authority, not presentation data.
+// Keep their provenance in-process and non-serialisable so a forged, stale or
+// JSON-replayed assessment cannot bypass the mandatory gate evaluation path.
+const TRUSTED_ASSESSMENTS=new WeakSet();
+
 function clone(value){ return JSON.parse(JSON.stringify(value)); }
 function validSha(value){ return /^[a-f0-9]{40}$/i.test(String(value||'')); }
 function validEvidenceId(value){ return /^[A-Za-z0-9._:/-]{4,240}$/.test(String(value||'')); }
@@ -60,13 +66,15 @@ export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[]
   }
   if(providerDomains.size<2) blockers.push('twoRealProviderDomains');
 
-  return Object.freeze({
+  const assessment=Object.freeze({
     candidateSha,
     ready:blockers.length===0,
     blockers:Object.freeze([...blockers]),
     accepted:Object.freeze({...accepted}),
     providerDomains:Object.freeze([...providerDomains.keys()].sort())
   });
+  TRUSTED_ASSESSMENTS.add(assessment);
+  return assessment;
 }
 
 export class AttendanceReleaseSwitch {
@@ -77,7 +85,7 @@ export class AttendanceReleaseSwitch {
   }
 
   reconcile({assessment,requestedEnabled=false,actorId='release-controller',reason='gate-reconcile'}={}){
-    if(!assessment || typeof assessment.ready!=='boolean' || !validSha(assessment.candidateSha)) throw new Error('Valid release assessment required.');
+    if(!assessment || typeof assessment.ready!=='boolean' || !validSha(assessment.candidateSha) || !TRUSTED_ASSESSMENTS.has(assessment)) throw new Error('Trusted release assessment required.');
     if(!validEvidenceId(actorId)) throw new Error('Valid release actor required.');
     const shouldEnable=Boolean(requestedEnabled && assessment.ready);
     const action=shouldEnable?'enabled':(this.enabled?'rolled_back':'disabled');
