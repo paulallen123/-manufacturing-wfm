@@ -7,7 +7,9 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { createAutonomyControlLoop } = require('../resilience/autonomy-control-loop.cjs');
 const {
+  T2_COORDINATOR_CAPABILITY_CONTRACT,
   computeRepairEvidenceChainDigest,
+  computeT2CoordinatorCapabilityDigest,
   computePostStagingDecisionDigest,
 } = require('../resilience/autonomous-repair-pipeline.cjs');
 const { createT3ShadowSimulator } = require('../resilience/t3-shadow-simulator.cjs');
@@ -19,6 +21,9 @@ const root = process.cwd();
 const contract = JSON.parse(fs.readFileSync(path.join(root, 'resilience/support-tier-contract.json'), 'utf8'));
 const failureScenarios = JSON.parse(fs.readFileSync(path.join(root, 'resilience/failure-scenarios.json'), 'utf8'));
 const d = (v) => createHash('sha256').update(String(v)).digest('hex');
+const t2CoordinatorCapabilities = () => ({ ...T2_COORDINATOR_CAPABILITY_CONTRACT });
+const t2CoordinatorCapabilityDigest = computeT2CoordinatorCapabilityDigest(T2_COORDINATOR_CAPABILITY_CONTRACT);
+assert.match(t2CoordinatorCapabilityDigest || '', /^[a-f0-9]{64}$/);
 
 function createT2Decision({ tenant = 'tenant-a', evidenceDigest = d('evidence'), status = 'canary_proven', suffix = 'default' } = {}) {
   const repairEvidence = {
@@ -42,7 +47,7 @@ function createT2Decision({ tenant = 'tenant-a', evidenceDigest = d('evidence'),
   const repairChainDigest = computeRepairEvidenceChainDigest(repairEvidence);
   assert.match(repairChainDigest || '', /^[a-f0-9]{64}$/);
   const payload = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     status,
     ...repairEvidence,
     repairChainDigest,
@@ -51,6 +56,8 @@ function createT2Decision({ tenant = 'tenant-a', evidenceDigest = d('evidence'),
     canaryOutcomeReceiptDigest: d(`t2-canary-receipt:${suffix}`),
     canaryEvidenceDigest: d(`t2-canary-evidence:${suffix}`),
     rollbackEvidenceDigest: status === 'rolled_back_to_known_good' ? d(`t2-rollback-evidence:${suffix}`) : null,
+    coordinatorCapabilities: t2CoordinatorCapabilities(),
+    coordinatorCapabilityDigest: t2CoordinatorCapabilityDigest,
     productionAuthorityGranted: false,
     promotionAuthorityGranted: false,
     productionMutation: false,
@@ -90,6 +97,7 @@ const recoveryVerifier = {
 };
 
 const repairCoordinator = {
+  capabilities: t2CoordinatorCapabilities,
   run: async ({ tenant, evidenceDigest }) => createT2Decision({ tenant, evidenceDigest }),
 };
 
@@ -298,13 +306,47 @@ assert.equal(t2.outcome, 'verified_candidate_staged');
 assert.equal(t2.repair.status, 'canary_proven');
 assert.equal(t2.repair.repairChainDigest, computeRepairEvidenceChainDigest(t2.repair));
 assert.equal(t2.repair.decisionChainDigest, computePostStagingDecisionDigest(t2.repair));
+assert.equal(t2.repair.coordinatorCapabilityDigest, t2CoordinatorCapabilityDigest);
+assert.equal(t2.repairCoordinatorCapabilityDigest, t2CoordinatorCapabilityDigest);
 assert.equal(t2.productionAuthorityGranted, false);
 assert.equal(loop.verifyReceipt(t2), true);
+
+const selfAttestedButUntrustedLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  repairCoordinator: {
+    run: async ({ tenant, evidenceDigest }) => createT2Decision({ tenant, evidenceDigest, suffix: 'self-attested-no-runtime-capability' }),
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const selfAttestedButUntrusted = await selfAttestedButUntrustedLoop.run({ ...base, incidentId: 'inc-t2-self-attested-only', scenarioId: 'unknown-customer-reported-issue' });
+assert.equal(selfAttestedButUntrusted.outcome, 'contained');
+assert.equal(selfAttestedButUntrusted.containedErrorCode, 'WFM_AUTONOMY_T2_COORDINATOR_CAPABILITY');
+assert.equal(selfAttestedButUntrusted.actionCount, 0);
+assert.equal(selfAttestedButUntrustedLoop.verifyReceipt(selfAttestedButUntrusted), true);
+
+const unsafeCapabilityLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  repairCoordinator: {
+    capabilities: () => ({ ...t2CoordinatorCapabilities(), canaryMaxInstances: 2 }),
+    run: async ({ tenant, evidenceDigest }) => createT2Decision({ tenant, evidenceDigest, suffix: 'unsafe-capability' }),
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const unsafeCapability = await unsafeCapabilityLoop.run({ ...base, incidentId: 'inc-t2-unsafe-capability', scenarioId: 'unknown-customer-reported-issue' });
+assert.equal(unsafeCapability.outcome, 'contained');
+assert.equal(unsafeCapability.containedErrorCode, 'WFM_AUTONOMY_T2_COORDINATOR_CAPABILITY');
+assert.equal(unsafeCapability.actionCount, 0);
+assert.equal(unsafeCapabilityLoop.verifyReceipt(unsafeCapability), true);
 
 const bareStagedLoop = createAutonomyControlLoop({
   contract,
   failureScenarios,
   repairCoordinator: {
+    capabilities: t2CoordinatorCapabilities,
     process: async () => ({
       status: 'verified_candidate_staged',
       independentlyVerified: true,
@@ -324,6 +366,7 @@ const badRepairChainLoop = createAutonomyControlLoop({
   contract,
   failureScenarios,
   repairCoordinator: {
+    capabilities: t2CoordinatorCapabilities,
     run: async ({ tenant, evidenceDigest }) => {
       const decision = createT2Decision({ tenant, evidenceDigest, suffix: 'bad-repair-chain' });
       decision.patchDigest = d('tampered-after-repair-chain-created');
@@ -342,6 +385,7 @@ const badDecisionChainLoop = createAutonomyControlLoop({
   contract,
   failureScenarios,
   repairCoordinator: {
+    capabilities: t2CoordinatorCapabilities,
     run: async ({ tenant, evidenceDigest }) => {
       const decision = createT2Decision({ tenant, evidenceDigest, suffix: 'bad-decision-chain' });
       decision.decisionChainDigest = d('forged-post-staging-decision');
@@ -356,10 +400,30 @@ assert.equal(badDecisionChain.outcome, 'contained');
 assert.equal(badDecisionChain.containedErrorCode, 'WFM_AUTONOMY_T2_DECISION_CHAIN');
 assert.equal(badDecisionChainLoop.verifyReceipt(badDecisionChain), true);
 
+const mismatchedCapabilityBindingLoop = createAutonomyControlLoop({
+  contract,
+  failureScenarios,
+  repairCoordinator: {
+    capabilities: t2CoordinatorCapabilities,
+    run: async ({ tenant, evidenceDigest }) => {
+      const decision = createT2Decision({ tenant, evidenceDigest, suffix: 'bad-capability-binding' });
+      decision.coordinatorCapabilityDigest = d('forged-capability-binding');
+      return decision;
+    },
+  },
+  now: () => ++tick,
+  maxActions: 2,
+});
+const mismatchedCapabilityBinding = await mismatchedCapabilityBindingLoop.run({ ...base, incidentId: 'inc-t2-bad-capability-binding', scenarioId: 'unknown-customer-reported-issue' });
+assert.equal(mismatchedCapabilityBinding.outcome, 'contained');
+assert.equal(mismatchedCapabilityBinding.containedErrorCode, 'WFM_AUTONOMY_T2_COORDINATOR_BINDING');
+assert.equal(mismatchedCapabilityBindingLoop.verifyReceipt(mismatchedCapabilityBinding), true);
+
 const t2RollbackLoop = createAutonomyControlLoop({
   contract,
   failureScenarios,
   repairCoordinator: {
+    capabilities: t2CoordinatorCapabilities,
     run: async ({ tenant, evidenceDigest }) => createT2Decision({
       tenant,
       evidenceDigest,
@@ -375,6 +439,7 @@ assert.equal(t2Rollback.outcome, 'contained');
 assert.equal(t2Rollback.repair.status, 'rolled_back_to_known_good');
 assert.match(t2Rollback.repair.rollbackEvidenceDigest, /^[a-f0-9]{64}$/);
 assert.equal(t2Rollback.containedErrorCode, undefined);
+assert.equal(t2Rollback.repairCoordinatorCapabilityDigest, t2CoordinatorCapabilityDigest);
 assert.equal(t2RollbackLoop.verifyReceipt(t2Rollback), true);
 
 const t3 = await loop.run({
@@ -473,6 +538,7 @@ assert.ok(unknown.t4.plannedContainmentActions.includes('unknown-fault-isolation
 assert.equal(loop.verifyReceipt(unknown), true);
 
 const hostileRepair = {
+  capabilities: t2CoordinatorCapabilities,
   process: async () => ({
     status: 'verified_candidate_staged',
     independentlyVerified: true,
@@ -599,6 +665,10 @@ const t2ChainTampered = structuredClone(t2);
 t2ChainTampered.repair.patchDigest = d('tampered-t2-patch');
 assert.equal(loop.verifyReceipt(t2ChainTampered), false);
 
+const t2CapabilityReceiptTampered = structuredClone(t2);
+t2CapabilityReceiptTampered.repairCoordinatorCapabilityDigest = d('tampered-controller-capability-receipt');
+assert.equal(loop.verifyReceipt(t2CapabilityReceiptTampered), false);
+
 const t3ResultTampered = structuredClone(t3);
 t3ResultTampered.t3Shadow.afterStateDigest = d('tampered-t3-state');
 assert.equal(loop.verifyReceipt(t3ResultTampered), false);
@@ -608,7 +678,7 @@ t4ResultTampered.t4.outcome = 'contained';
 assert.equal(loop.verifyReceipt(t4ResultTampered), false);
 
 console.log(JSON.stringify({
-  schemaVersion: 3,
+  schemaVersion: 4,
   proof: 'closed-loop-autonomy-controller',
   status: 'PASS',
   t4ScenarioClasses: t4ScenarioIds.length,
@@ -627,6 +697,10 @@ console.log(JSON.stringify({
   t1VerifierExactExecutionBindingRequired: true,
   t1VerifierReadOnlyAuthorityRequired: true,
   t2ProductionAuthorityDenied: true,
+  t2CoordinatorCapabilityContractRequiredBeforeAction: true,
+  t2CoordinatorSelfAttestationAloneRejected: true,
+  t2UnsafeCoordinatorCapabilityRejectedBeforeAction: true,
+  t2CoordinatorCapabilityBoundToTerminalReceipt: true,
   t2BareStagedFlagRejected: true,
   t2RepairChainRecomputed: true,
   t2PostStagingDecisionChainRecomputed: true,
@@ -640,6 +714,7 @@ console.log(JSON.stringify({
   tamperEvidence: true,
   resultTamperEvidence: true,
   t1VerificationTamperEvidence: true,
+  t2CoordinatorCapabilityTamperEvidence: true,
   t3ResultTamperEvidence: true,
   t4ResultTamperEvidence: true,
   productionMutation: false,
