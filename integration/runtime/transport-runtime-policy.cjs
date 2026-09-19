@@ -221,17 +221,49 @@ function reconciliationCheckpoint(review, input = {}) {
     sourceCursor,
     sourceDigest,
     stagedDigest,
-    operationKey: operationKey || null
+    operationKey: operationKey || null,
+    reconciled: sourceDigest === stagedDigest
   };
   return Object.freeze({ ...payload, checkpointDigest: sha256(JSON.stringify(payload)) });
+}
+
+function validateReconciliationCheckpoint(review, checkpoint = {}) {
+  reviewTransport(review);
+  const blockers = [];
+  const payload = {
+    reviewedDigest: checkpoint.reviewedDigest,
+    mappingVersion: checkpoint.mappingVersion,
+    sourceCursor: checkpoint.sourceCursor,
+    sourceDigest: checkpoint.sourceDigest,
+    stagedDigest: checkpoint.stagedDigest,
+    operationKey: checkpoint.operationKey || null,
+    reconciled: checkpoint.reconciled === true
+  };
+  if (checkpoint.reviewedDigest !== review.reviewedDigest) blockers.push('Recovery checkpoint does not match the exact reviewed connection.');
+  if (!positiveInt(checkpoint.mappingVersion)) blockers.push('Recovery checkpoint mapping version is invalid.');
+  if (!String(checkpoint.sourceCursor || '').trim()) blockers.push('Recovery checkpoint source cursor is missing.');
+  if (!/^[a-f0-9]{32,128}$/.test(String(checkpoint.sourceDigest || '').trim().toLowerCase()) ||
+      !/^[a-f0-9]{32,128}$/.test(String(checkpoint.stagedDigest || '').trim().toLowerCase())) {
+    blockers.push('Recovery checkpoint reconciliation digests are invalid.');
+  }
+  if (!checkpoint.checkpointDigest || checkpoint.checkpointDigest !== sha256(JSON.stringify(payload))) {
+    blockers.push('Recovery checkpoint integrity verification failed.');
+  }
+  if (checkpoint.reconciled !== true || checkpoint.sourceDigest !== checkpoint.stagedDigest) {
+    blockers.push('Recovery checkpoint does not prove source and staged data reconciled.');
+  }
+  return Object.freeze({ valid: blockers.length === 0, blockers });
 }
 
 function evaluateRecoveryCompletion(review, input = {}) {
   reviewTransport(review);
   const blockers = [];
   const checkpoint = input.checkpoint;
-  if (!checkpoint || checkpoint.reviewedDigest !== review.reviewedDigest) blockers.push('Recovery checkpoint does not match the exact reviewed connection.');
-  if (!checkpoint?.checkpointDigest) blockers.push('Recovery checkpoint digest is missing.');
+  if (!checkpoint) {
+    blockers.push('Recovery checkpoint is missing.');
+  } else {
+    blockers.push(...validateReconciliationCheckpoint(review, checkpoint).blockers);
+  }
   if (input.observedFailure !== true) blockers.push('No real transient failure was observed.');
   if (input.recovered !== true) blockers.push('Recovery did not complete successfully.');
   if (String(input.reconciliationStatus || '') !== 'PASS') blockers.push('Recovery did not finish with reconciliation passing.');
@@ -254,5 +286,6 @@ module.exports = {
   parseRetryAfterMs,
   nextRetryDecision,
   reconciliationCheckpoint,
+  validateReconciliationCheckpoint,
   evaluateRecoveryCompletion
 };
