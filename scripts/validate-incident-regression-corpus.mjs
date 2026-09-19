@@ -154,6 +154,11 @@ assert.equal(corpus.verifySnapshot(caseKeyTampered), false, 'Tenant-scoped case-
 const authorityTampered = structuredClone(afterFalseGreen);
 authorityTampered.entries[0].authority.productionAuthority = true;
 assert.equal(corpus.verifySnapshot(authorityTampered), false, 'Corpus entries must never acquire production authority.');
+const entryCountTampered = structuredClone(afterFalseGreen);
+entryCountTampered.entryCount += 1;
+assert.equal(corpus.verifySnapshot(entryCountTampered), false, 'Declared corpus entry count must exactly match the verified append-only entries.');
+const boundedVerifier = createIncidentRegressionCorpus({ maxEntries: afterFalseGreen.entryCount - 1 });
+assert.equal(boundedVerifier.verifySnapshot(afterFalseGreen), false, 'Snapshot verification must reject oversized durable history before accepting it for restore.');
 
 const legacySnapshot = structuredClone(afterFalseGreen);
 legacySnapshot.schemaVersion = 1;
@@ -202,7 +207,7 @@ assert.equal(finalSnapshot.entries.some((entry) => entry.tenantScopeDigest === s
 assert.equal(finalSnapshot.entries.some((entry) => Object.hasOwn(entry, 'tenant')), false, 'Raw tenant identifiers must not be persisted in corpus entries.');
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'append-only-incident-regression-corpus',
   status: 'PASS',
   historicalScenarioClassesSeeded: failureScenarios.scenarios.length,
@@ -217,6 +222,8 @@ console.log(JSON.stringify({
   chainTamperRejected: true,
   tenantCaseKeyTamperRejected: true,
   authorityTamperRejected: true,
+  declaredEntryCountTamperRejected: true,
+  oversizedSnapshotRejected: true,
   verifiedTerminalAutomaticallyRecorded: true,
   unverifiedTerminalRejected: true,
   mandatoryFutureReplayCases: finalSnapshot.entryCount,
