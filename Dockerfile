@@ -12,47 +12,15 @@ RUN mkdir -p /app/security-runtime
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 
-# Preserve the sealed server/security contract. Compose the reviewable UX layers only
-# through existing presentation assets that are already in the server's static allow-list.
-# factory-control-ui.css and value-cockpit-ui.js are the final approved CSS/JS assets in
-# the base page, so appending here keeps the UX ordering deterministic without adding routes.
+# Vector-only presentation composition.
+# Retired UX-reset/Cycle renderers are not present in the repository and cannot be rebuilt.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
-RUN printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle2.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE3_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle3.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE4_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle4.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE5_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle5.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE6_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle6.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE7_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle7.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE8_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle8.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_CYCLE9_BEGIN */\n' >> /app/public/factory-control-ui.css \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle9.css >> /app/public/factory-control-ui.css \
- && printf '\n/* WFM_UX_RESET_BASE_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE2_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle2.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE3_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle3.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE4_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle4.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE5_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle5.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE6_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle6.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE7_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle7.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE8_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle8.js >> /app/public/value-cockpit-ui.js \
- && printf '\n;/* WFM_UX_RESET_CYCLE9_BEGIN */\n' >> /app/public/value-cockpit-ui.js \
- && cat /tmp/wfm-ux-overlay/ux-reset-cycle9.js >> /app/public/value-cockpit-ui.js \
+RUN node --check /tmp/wfm-ux-overlay/vector-shell.js \
+ && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.css \
+ && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/factory-control-ui.css \
+ && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/value-cockpit-ui.js \
+ && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/value-cockpit-ui.js \
+ && test "$(find /tmp/wfm-ux-overlay -maxdepth 1 -type f -printf '%f\n' | sort | tr '\n' ' ')" = "vector-shell.css vector-shell.js " \
  && rm -rf /tmp/wfm-ux-overlay
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
