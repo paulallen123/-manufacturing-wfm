@@ -127,6 +127,26 @@ for (const line of requiredWorkflowPaths) {
   assert.equal(workflow.split('\n').includes(line), true, `Workflow is missing exact path trigger: ${line.trim()}`);
 }
 
+const classifyAnchorIndex = workflow.indexOf('- name: Classify canonical trust anchor');
+const portableProofIndex = workflow.indexOf('- name: Run canonical portable autonomy proof');
+const releaseFailClosedIndex = workflow.indexOf('- name: Enforce release evidence fail-closed boundary');
+assert.ok(classifyAnchorIndex >= 0, 'Workflow must classify the canonical trust anchor.');
+assert.ok(portableProofIndex > classifyAnchorIndex, 'Portable proof must execute after canonical trust-anchor classification.');
+assert.ok(releaseFailClosedIndex > portableProofIndex, 'Release fail-closed enforcement must happen after the portable logic proof.');
+assert.ok(workflow.includes('WFM_CANONICAL_TRUST_ANCHOR_PROTECTED'), 'Workflow must carry canonical trust-anchor state into the proof.');
+assert.ok(workflow.includes('FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED'), 'Workflow must preserve the explicit unprotected-anchor release blocker.');
+
+const portableProofSource = fs.readFileSync(path.join(root, 'scripts/run-portable-autonomy-proof.mjs'), 'utf8');
+for (const required of [
+  "releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED'",
+  "releaseEvidenceStatus = 'ELIGIBLE_EXACT_RELEASE_EVIDENCE'",
+  "? 'EXACT_RUNTIME_RELEASE_ELIGIBLE'",
+  ": exactRuntime ? 'EXACT_RUNTIME_LOGIC_ONLY' : 'NON_EXACT_LOGIC_ONLY'",
+  'canonicalReleaseEvidenceBound: releaseClaimAllowed',
+]) {
+  assert.ok(portableProofSource.includes(required), `Portable proof lost release-trust regression guard: ${required}`);
+}
+
 console.log(JSON.stringify({
   schemaVersion: 1,
   proof: 'autonomy-source-syntax-and-workflow-integrity',
@@ -149,7 +169,6 @@ console.log(JSON.stringify({
   t3ShadowDirectNetworkSurfaceDenied: true,
   t3ShadowAmbientEnvironmentDenied: true,
   t3CustomerAuthorisationDirectNetworkSurfaceDenied: true,
-  t3CustomerAuthorisationAmbientEnvironmentDenied: true,
   t3ExecutionReadinessDirectNetworkSurfaceDenied: true,
   t3ExecutionReadinessAmbientEnvironmentDenied: true,
   t3DeterministicExecutionSandboxDirectNetworkSurfaceDenied: true,
@@ -160,6 +179,9 @@ console.log(JSON.stringify({
   incidentLearningAmbientEnvironmentDenied: true,
   workflowLiteralEscapeCorruptionDenied: true,
   workflowCriticalPathsPresent: true,
+  canonicalTrustAnchorClassificationRequired: true,
+  exactRuntimeLogicProofContinuesWhenReleaseTrustBlocked: true,
+  unprotectedCanonicalReleaseEvidenceFailsClosed: true,
   productionMutation: false,
   customerMutation: false,
 }, null, 2));
