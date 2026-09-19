@@ -119,18 +119,28 @@ function evaluateGraph(compiled, input = {}) {
 
   for (const question of compiled.questions) {
     const scopeEligible = !Array.isArray(question.scope) || question.scope.length === 0 || question.scope.some(item => purchasedScope.has(item));
+    const scopeConditionEligible = predicateMatches(question.scopeWhen, values);
     const branchEligible = predicateMatches(question.when, values);
-    const visible = scopeEligible && branchEligible;
+    const visible = scopeEligible && scopeConditionEligible && branchEligible;
 
     if (!visible) {
+      const hiddenReason = !scopeEligible
+        ? 'OUTSIDE_PURCHASED_SCOPE'
+        : !scopeConditionEligible
+          ? 'SCOPE_CONDITION_HIDDEN'
+          : 'BRANCH_HIDDEN';
       if (Object.prototype.hasOwnProperty.call(priorAnswers, question.id) || Object.prototype.hasOwnProperty.call(providedAnswers, question.id)) {
-        invalidated.push({ questionId: question.id, reason: scopeEligible ? 'BRANCH_HIDDEN' : 'OUTSIDE_PURCHASED_SCOPE' });
+        invalidated.push({ questionId: question.id, reason: hiddenReason });
       }
       suppressed.push(question.id);
       operations.push(clone(question.suppressedEffect || {
         type: 'NO_OP',
         key: question.id,
-        reason: scopeEligible ? 'branch-not-reachable' : 'outside-purchased-scope'
+        reason: hiddenReason === 'OUTSIDE_PURCHASED_SCOPE'
+          ? 'outside-purchased-scope'
+          : hiddenReason === 'SCOPE_CONDITION_HIDDEN'
+            ? 'scope-condition-not-reachable'
+            : 'branch-not-reachable'
       }));
       continue;
     }
