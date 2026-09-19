@@ -32,6 +32,7 @@ const releaseEvidence = {
 const releaseBindingComplete = Object.values(releaseEvidence).every(validGitSha);
 const actualHeadSha = gitHeadSha();
 const releaseHeadMatchesCheckout = releaseBindingComplete && actualHeadSha === releaseEvidence.headSha;
+const canonicalTrustAnchorProtected = process.env.WFM_CANONICAL_TRUST_ANCHOR_PROTECTED === 'true';
 const releaseBinding = releaseBindingComplete ? {
   ...releaseEvidence,
   bindingDigest: sha256(JSON.stringify(releaseEvidence)),
@@ -102,6 +103,13 @@ if (strictRuntime && (!releaseBindingComplete || !releaseHeadMatchesCheckout)) {
   });
 }
 
+results.push({
+  id: 'canonical-trust-anchor',
+  status: canonicalTrustAnchorProtected ? 'PASS' : 'RELEASE_BLOCKED',
+  reason: canonicalTrustAnchorProtected ? 'protected-canonical-trust-anchor' : 'canonical-trust-anchor-unprotected',
+  releaseAuthorityGranted: false,
+});
+
 for (const [id, rel, required] of checks) {
   const file = path.join(ROOT, rel);
   if (!fs.existsSync(file)) {
@@ -143,17 +151,39 @@ for (const [id, rel, required] of checks) {
   if (exitCode !== 0) failed = true;
 }
 
+let releaseEvidenceStatus = 'FAIL_CLOSED_CI_EVIDENCE_UNAVAILABLE';
+if (!releaseBindingComplete) {
+  releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_RELEASE_EVIDENCE_INCOMPLETE';
+} else if (!releaseHeadMatchesCheckout) {
+  releaseEvidenceStatus = 'FAIL_CLOSED_PROOF_HEAD_MISMATCH';
+} else if (!canonicalTrustAnchorProtected) {
+  releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED';
+} else if (!exactRuntime) {
+  releaseEvidenceStatus = 'FAIL_CLOSED_EXACT_RUNTIME_REQUIRED';
+} else {
+  releaseEvidenceStatus = 'ELIGIBLE_EXACT_RELEASE_EVIDENCE';
+}
+
+const releaseClaimAllowed = !failed && releaseEvidenceStatus === 'ELIGIBLE_EXACT_RELEASE_EVIDENCE';
+const proofScope = releaseClaimAllowed
+  ? 'EXACT_RUNTIME_RELEASE_ELIGIBLE'
+  : exactRuntime ? 'EXACT_RUNTIME_LOGIC_ONLY' : 'NON_EXACT_LOGIC_ONLY';
+
 const receipt = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'portable-zero-engineer-autonomy-gate',
   status: failed ? 'FAIL' : 'PASS',
+  proofScope,
+  releaseEvidenceStatus,
+  releaseClaimAllowed,
   strictRuntime,
   exactRuntime,
   expectedNode,
   actualNode,
   providerNeutral: true,
   requiresGitHubHostedRunner: false,
-  canonicalReleaseEvidenceBound: releaseBindingComplete && releaseHeadMatchesCheckout,
+  canonicalTrustAnchorProtected,
+  canonicalReleaseEvidenceBound: releaseClaimAllowed,
   releaseBinding,
   productionMutation: false,
   customerMutation: false,
