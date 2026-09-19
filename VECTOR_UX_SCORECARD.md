@@ -31,7 +31,7 @@ If Vector shows only current verified KPI values/ratios and removes synthetic tr
 - Extended the existing Vector-only guard to fail if the synthetic labour-cost progress, synthetic sparkline points/helper, unsupported red/green KPI severity, or the KPI evidence marker regress.
 
 ### Focused / affected validation
-Pending exact-head Vector-only workflow result after this product-code delta. Source-level guard coverage has been extended, but this scorecard does not claim the exact runtime green until the workflow run completes. Real authenticated-role browser behaviour, screen-reader behaviour and measured user task time/error rate remain unverified.
+Exact product/scorecard head `fabe2f612441ad28dd50b53947e99fe4bef19c73` is green in Vector-only run `35431023141`. The focused repository guard passed first, the exact Docker runtime build passed, and built-asset proof passed that Vector remains the only active presentation. This validates the KPI evidence contract at source/build-composition level. It does not claim authenticated hosted-role browser behaviour, real screen-reader behaviour or measured user performance.
 
 ### UX scorecard impact
 - Calm by default: improved — Home no longer manufactures trend, target progress or unsupported KPI severity.
@@ -42,7 +42,7 @@ Pending exact-head Vector-only workflow result after this product-code delta. So
 - Development efficiency: improved — one Vector owner and one existing guard/workflow were extended rather than forking dashboard logic or tests.
 
 ### Still unverified
-Exact-runtime workflow result for this head, authenticated hosted-role rendering, real screen-reader behaviour, measured first-click/time-on-task/error rate, and any future authoritative historical-series/target contracts that could safely re-enable trend or target-progress visuals.
+Authenticated hosted-role rendering, real screen-reader behaviour, measured first-click/time-on-task/error rate, and any future authoritative historical-series/target contracts that could safely re-enable trend or target-progress visuals.
 
 ### Single next highest-value NEW-UI action
 Audit Vector Home identity/site and upcoming-leave summaries for the same source-boundary discipline. Prioritise any hard-coded identity/site context or presentation-derived leave detail that could misstate who/where the user is or what entitlement/coverage evidence is actually authoritative; bind structured source values where available and otherwise fail neutral.
