@@ -13,6 +13,16 @@ function stable(value){
 }
 function digest(value){ return crypto.createHash('sha256').update(stable(value)).digest('hex'); }
 function rowKey({tenant,site,shiftId,employee}){ return `${tenant}:${site}:${shiftId}:${employee}`; }
+function correctionBasis(row){
+  return {
+    status:String(row?.status||''),
+    openAt:row?.openAt??null,
+    closeAt:row?.closeAt??null,
+    reasonCode:row?.reasonCode??null,
+    evidenceCount:Number.isSafeInteger(row?.evidenceCount)?row.evidenceCount:null
+  };
+}
+function correctionBasisDigest(row){ return digest(correctionBasis(row)); }
 
 /**
  * AttendancePayrollGate
@@ -59,7 +69,7 @@ export class AttendancePayrollGate {
     if(!latest && proposed.supersedesReviewId) throw Object.assign(new Error('Superseded review does not exist for this worker shift.'),{status:409});
 
     const previousAuditHash=this.reviews.length?this.reviews.at(-1).auditHash:null;
-    const body={...proposed,originalStatus:current.status,previousAuditHash};
+    const body={...proposed,originalStatus:current.status,attendanceBasisDigest:correctionBasisDigest(current),previousAuditHash};
     const entry={...body,contentDigest:proposedDigest,auditHash:digest(body)};
     this.reviews.push(entry);
     this.reviewById.set(reviewScopeKey,entry);
@@ -77,6 +87,13 @@ export class AttendancePayrollGate {
 
     const rows=evaluation.rows.map(row=>{
       const latest=this.latestByWorkerShift.get(rowKey({tenant,site,shiftId,employee:row.employee}))||null;
+      if(latest && latest.attendanceBasisDigest!==correctionBasisDigest(row)){
+        return {
+          employee:row.employee,workerType:row.workerType,status:'review_required',eligibleForPayrollInput:false,interval:null,
+          provenance:{basis:'manager_correction_stale_after_attendance_change',reviewId:latest.reviewId,actorId:latest.actorId,reasonCode:latest.reasonCode,auditHash:latest.auditHash},
+          originalAttendanceStatus:row.status,priorReviewedAttendanceStatus:latest.originalStatus
+        };
+      }
       if(latest){
         return {
           employee:row.employee,workerType:row.workerType,status:'reviewed_correction',eligibleForPayrollInput:true,
