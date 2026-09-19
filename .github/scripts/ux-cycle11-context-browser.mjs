@@ -143,7 +143,7 @@ try {
     console.log(`UX11_${route.toUpperCase().replaceAll('-','_')}_DESTINATION=`+JSON.stringify(destination));
     const back=await evalx("(()=>{const b=document.querySelector('.ux11-back');if(!b)return false;b.click();return true})()");
     assert(back, `${route} return control missing`);
-    await retry(async()=>{const ok=await evalx(`ui.page==='overview'&&document.querySelector('.vector-home')&&document.activeElement?.dataset?.ux11Id==='${origin.id}'&&document.activeElement?.closest('.vector-priority-slot')`);if(!ok)throw new Error(`${route} origin focus not restored in Vector priority slot`);return true;});
+    await retry(async()=>{const state=await evalx(`(()=>{const target=[...document.querySelectorAll('.vector-priority-slot .ux11-open')].find(x=>x.dataset.ux11Id==='${origin.id}');const active=document.activeElement;return {ok:ui.page==='overview'&&!!document.querySelector('.vector-home')&&active?.dataset?.ux11Id==='${origin.id}'&&!!active?.closest('.vector-priority-slot'),page:ui.page,activeTag:active?.tagName||null,activeId:active?.dataset?.ux11Id||null,activeRoute:active?.dataset?.ux11Route||null,targetPresent:!!target,targetVisible:!!(target&&target.getClientRects().length),marker:sessionStorage.getItem('wfmUx11Return'),queueCount:document.querySelectorAll('.ux11-queue').length,projected:document.querySelector('.vector-priority-slot .ux11-queue')?.dataset.vectorProjected||null};})()`);if(!state?.ok)throw new Error(`${route} origin focus not restored in Vector priority slot :: ${JSON.stringify(state)}`);return true;});
   }
 
   await exercise({
