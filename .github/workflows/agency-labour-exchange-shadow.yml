@@ -26,6 +26,7 @@ on:
       - 'test/frontier/agency-right-to-work-lifecycle.test.mjs'
       - 'test/frontier/agency-right-to-work-integration.test.mjs'
       - 'test/frontier/agency-right-to-work-refresh.test.mjs'
+      - 'test/frontier/agency-dvsp-planner-gate.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
@@ -73,6 +74,7 @@ jobs:
               test/frontier/agency-right-to-work-lifecycle.test.mjs \
               test/frontier/agency-right-to-work-integration.test.mjs \
               test/frontier/agency-right-to-work-refresh.test.mjs \
+              test/frontier/agency-dvsp-planner-gate.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
