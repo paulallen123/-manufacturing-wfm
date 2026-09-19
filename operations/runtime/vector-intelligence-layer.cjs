@@ -39,6 +39,7 @@ const COMMANDS = Object.freeze([
 ]);
 
 const WRITE_INTENTS = new Set(['EMAIL_REPORT','CREATE_TASK','CREATE_AUTOMATION','CHANGE_WIDGET','CHANGE_CHART']);
+const HIGH_IMPACT_TERMS = /\\b(payroll|pay rate|publish rota|publish schedule|change contract|approve absence|decline absence|payment)\\b/i;
 
 function compact(v,max=400){ return String(v??'').trim().replace(/\s+/g,' ').slice(0,max); }
 function numberOrNull(v){ const n=Number(v); return Number.isFinite(n)?n:null; }
@@ -61,6 +62,7 @@ function classifyCommand(text){
 function executionPolicy(command={},context={}){
   const role=normalizeRole(context);
   if(!role.allowedCommands.includes(command.intent)) return {mode:'BLOCK',reason:'ROLE_NOT_AUTHORISED'};
+  if(HIGH_IMPACT_TERMS.test(compact(command.text,2000))) return {mode:'EXPLICIT_CONFIRMATION',reason:'HIGH_IMPACT_OPERATION'};
   if(WRITE_INTENTS.has(command.intent)) return {mode:'USER_SCOPED_WRITE',reason:'USER_REQUESTED_ACTION'};
   return {mode:'READ_ONLY',reason:'ANALYSIS_ONLY'};
 }
