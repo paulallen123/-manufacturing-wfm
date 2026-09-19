@@ -39,6 +39,24 @@ function walk(dir){
 }
 walk(root);
 
+const contractPath=path.join(root,'operations/runtime/workflow-action-evidence-contract.cjs');
+if(!fs.existsSync(contractPath)) violations.push({type:'missing-workflow-action-evidence-contract',path:'operations/runtime/workflow-action-evidence-contract.cjs'});
+else {
+  const contract=fs.readFileSync(contractPath,'utf8');
+  if(!contract.includes("WFM_WORKFLOW_ACTION_EVIDENCE_V1")) violations.push({type:'workflow-action-contract-version-missing',path:'operations/runtime/workflow-action-evidence-contract.cjs'});
+  for(const workflow of ["'time-review'","'absence'","'weekly-signoff'"]){
+    if(!contract.includes(workflow)) violations.push({type:'workflow-action-source-missing',path:'operations/runtime/workflow-action-evidence-contract.cjs',workflow});
+  }
+  for(const lifecycle of ["'action_required'","'decision_sent'","'confirming_source'","'needs_verification'","'resolved'"]){
+    if(!contract.includes(lifecycle)) violations.push({type:'workflow-action-lifecycle-missing',path:'operations/runtime/workflow-action-evidence-contract.cjs',lifecycle});
+  }
+  if(!contract.includes("'current','stale','unknown'")) violations.push({type:'workflow-action-freshness-states-missing',path:'operations/runtime/workflow-action-evidence-contract.cjs'});
+  if(contract.includes('Date.now(')) violations.push({type:'workflow-action-contract-derives-state-from-wall-clock',path:'operations/runtime/workflow-action-evidence-contract.cjs'});
+  if(!contract.includes("confirmationState==='needs_verification'&&!slaExpired")) violations.push({type:'needs-verification-not-source-owned',path:'operations/runtime/workflow-action-evidence-contract.cjs'});
+  if(!contract.includes("confirmationState==='resolved'&&(!confirmedAt||!auditRef)")) violations.push({type:'resolved-state-evidence-not-required',path:'operations/runtime/workflow-action-evidence-contract.cjs'});
+  if(!contract.includes("input.consequence.verified!==true")) violations.push({type:'verified-consequence-boundary-missing',path:'operations/runtime/workflow-action-evidence-contract.cjs'});
+}
+
 const vectorPath=path.join(root,'ux-overlay/vector-shell.js');
 if(!fs.existsSync(vectorPath)) violations.push({type:'missing-vector-owner',path:'ux-overlay/vector-shell.js'});
 else {
@@ -79,14 +97,14 @@ else {
   if(!vector.includes('const count=structuredReviewRows().length')) violations.push({type:'notification-count-not-source-bound',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('data-vector-action-evidence="${ACTION_MARKER}"')||!vector.includes('No source-confirmed items need review.')) violations.push({type:'action-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
 
-  // A source observation timestamp is evidence provenance, not a freshness verdict. Until an
-  // authoritative workflow SLA is exposed, the shared Vector review lane must remain neutral.
+  // Source observation times are provenance, not a freshness verdict. Vector may display
+  // source-owned lifecycle/freshness fields in future, but it must never calculate them.
   const reviewStart=vector.indexOf('function structuredReviewRows(){');
   const reviewEnd=vector.indexOf('function leaveDate(',reviewStart);
   const reviewSource=reviewStart>=0&&reviewEnd>reviewStart?vector.slice(reviewStart,reviewEnd):'';
   if(!reviewSource) violations.push({type:'review-source-slice-missing',path:'ux-overlay/vector-shell.js'});
   if(/evidenceState\s*:\s*['"]current['"]/.test(reviewSource)||/status\s*:\s*['"](?:Current|Fresh|Verified current)['"]/.test(reviewSource)) violations.push({type:'review-freshness-invented-without-source-sla',path:'ux-overlay/vector-shell.js'});
-  if(/Date\.now\(\).*?(?:generatedAt|updatedAt)|(?:generatedAt|updatedAt).*?Date\.now\(\)/s.test(reviewSource)) violations.push({type:'review-age-threshold-invented-without-source-sla',path:'ux-overlay/vector-shell.js'});
+  if(/Date\.now\(\).*?(?:generatedAt|updatedAt|observedAt|validUntil|slaExpiresAt)|(?:generatedAt|updatedAt|observedAt|validUntil|slaExpiresAt).*?Date\.now\(\)/s.test(reviewSource)) violations.push({type:'review-state-derived-from-wall-clock',path:'ux-overlay/vector-shell.js'});
 }
 
 if(violations.length){
@@ -102,3 +120,4 @@ console.log('VECTOR_IDENTITY_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_LEAVE_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_ACTION_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_ACTION_FRESHNESS_NEUTRAL_CONTRACT=PASS');
+console.log('VECTOR_ACTION_CONFIRMATION_SOURCE_CONTRACT=PASS');
