@@ -1,7 +1,7 @@
 {
   "programme": "Manufacturing WFM 24-hour sell-readiness",
   "date": "2026-09-19",
-  "baseCommit": "9e703d3ae5dcfd6e0dcb79be294e8e8ba9827f40",
+  "baseCommit": "64c6c36cd0b0a4a58b072f730683916498b9b534",
   "status": "REPAIR_CANDIDATE_NOT_PROMOTED",
   "finding": {
     "severity": "MATERIAL",
@@ -21,12 +21,14 @@
       "live-data-import"
     ],
     "claimBoundaries": [
+      "tenant environment requires non-fixture cloud-runtime provisioning with explicit zero-human, zero-intervention, health and isolation evidence",
+      "source-system readiness requires completed zero-human discovery, verified authorisation and connected non-fixture provider receipts",
       "fixture-only providers cannot satisfy source-system readiness",
       "live provider status requires explicit live verification",
-      "historical payroll replay requires an independent calculation and zero unexplained variance",
-      "tenant environment requires non-fixture cloud-runtime provisioning, health and tenant-isolation receipts",
-      "scenario validation requires non-fixture cloud runtime execution",
-      "live import requires an authoritative source receipt"
+      "historical payroll replay must label its evidence data class and requires an independent calculation with zero unexplained variance",
+      "security controls require cloud-runtime tenant-isolation negative tests with zero critical failures",
+      "scenario validation requires cloud-runtime execution and an explicit test-data class so synthetic edge tests are not presented as production evidence",
+      "live import requires zero-human execution and an authoritative non-fixture source receipt"
     ],
     "nonPassDiagnosticEvidenceStillAccepted": true,
     "readinessFlagsChanged": false,
@@ -39,7 +41,12 @@
     "passed": 5,
     "failed": 0,
     "wrapperSyntax": "PASS",
-    "weakTenantEnvironmentPassRejected": true
+    "weakTenantEnvironmentPassRejected": true,
+    "humanAssistedTenantEnvironmentPassRejected": true,
+    "fixtureProviderPassRejected": true,
+    "unverifiedLiveProviderClaimRejected": true,
+    "payrollVarianceRejected": true,
+    "syntheticScenarioEvidenceAllowedOnlyWhenExplicitlyLabelled": true
   },
   "requiredBeforePromotion": [
     "build the exact repair candidate image",
@@ -52,6 +59,7 @@
   "releaseControl": {
     "integrationProofSecurityHold": "UNCHANGED",
     "featureBranchProtection": "UNPROTECTED_AT_TIME_OF_FINDING",
+    "baseCommitVerified": false,
     "exactCommitDeploymentToHeldIntegrationService": "NOT_ATTEMPTED_BY_BYPASS"
   }
 }
