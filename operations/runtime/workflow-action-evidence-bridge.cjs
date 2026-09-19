@@ -22,6 +22,11 @@ function compact(value, max = 240) {
   return String(value ?? '').trim().slice(0, max);
 }
 
+function forwardedProto(req) {
+  const raw = compact(req?.headers?.['x-forwarded-proto'], 64).split(',')[0].trim().toLowerCase();
+  return raw === 'http' || raw === 'https' ? raw : '';
+}
+
 function cookieSessionToken(req) {
   const raw = String(req?.headers?.cookie || '');
   for (const part of raw.split(';')) {
@@ -70,6 +75,15 @@ function fetchAuthoritativeTimeReview(req, options = {}) {
     return Promise.reject(sourceError('Authoritative Time Review source port is unavailable.'));
   }
 
+  const sourceHeaders = {
+    accept: 'application/json',
+    cookie: String(req?.headers?.cookie || ''),
+    host: compact(req?.headers?.host, 255) || 'localhost',
+    'user-agent': 'wfm-workflow-action-evidence-bridge/1'
+  };
+  const proxyProto = forwardedProto(req);
+  if (proxyProto) sourceHeaders['x-forwarded-proto'] = proxyProto;
+
   return new Promise((resolve, reject) => {
     let settled = false;
     const finish = (fn, value) => {
@@ -82,12 +96,7 @@ function fetchAuthoritativeTimeReview(req, options = {}) {
       port,
       path: SOURCE_TIME_REVIEW_PATH,
       method: 'GET',
-      headers: {
-        accept: 'application/json',
-        cookie: String(req?.headers?.cookie || ''),
-        host: compact(req?.headers?.host, 255) || 'localhost',
-        'user-agent': 'wfm-workflow-action-evidence-bridge/1'
-      }
+      headers: sourceHeaders
     }, sourceRes => {
       let size = 0;
       const chunks = [];
