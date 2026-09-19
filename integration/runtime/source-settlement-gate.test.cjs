@@ -65,26 +65,30 @@ test('tampered durable stage proof cannot acknowledge the source', () => {
   assert.match(result.reason, /durable-stage/);
 });
 
-test('secure file cannot be marked processed without completeness and exact digest proof', () => {
+test('secure file cannot be marked processed without complete matching source and staged artifacts', () => {
   const review = makeReview('secure-file', 'sftp-key-ref');
   const item = observation('c'.repeat(64));
   const receipt = staged(review, item);
+  const artifactDigest = 'e'.repeat(64);
 
   const incomplete = evaluateSourceSettlement(review, item, receipt, {
     fileCompletenessVerified: false,
-    sourceArtifactDigest: item.evidenceDigest
+    sourceArtifactDigest: artifactDigest,
+    stagedArtifactDigest: artifactDigest
   }, NOW);
   assert.equal(incomplete.action, 'BLOCK');
 
   const wrongDigest = evaluateSourceSettlement(review, item, receipt, {
     fileCompletenessVerified: true,
-    sourceArtifactDigest: 'd'.repeat(64)
+    sourceArtifactDigest: artifactDigest,
+    stagedArtifactDigest: 'd'.repeat(64)
   }, NOW);
   assert.equal(wrongDigest.action, 'BLOCK');
 
   const allowed = evaluateSourceSettlement(review, item, receipt, {
     fileCompletenessVerified: true,
-    sourceArtifactDigest: item.evidenceDigest
+    sourceArtifactDigest: artifactDigest,
+    stagedArtifactDigest: artifactDigest
   }, NOW);
   assert.equal(allowed.action, 'MARK_PROCESSED');
   assert.equal(allowed.safe, true);
