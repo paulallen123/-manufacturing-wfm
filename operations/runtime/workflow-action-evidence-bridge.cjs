@@ -8,7 +8,7 @@ const {
   produceTimeReviewActionEvidence
 } = require('./workflow-action-evidence-contract.cjs');
 
-const PREFIX = '/api/workflow-actions';
+const PREFIX = '/api/workforce/lifecycle/action-evidence';
 const TIME_REVIEW_PATH = PREFIX + '/time-review';
 const SOURCE_TIME_REVIEW_PATH = '/api/time-review';
 const MAX_SOURCE_BYTES = 512 * 1024;
