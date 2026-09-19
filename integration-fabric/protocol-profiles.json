@@ -138,6 +138,14 @@
       "notes": "Generate or use vendor-supported clients from Protocol Buffers definitions where available; preserve vendor status/error semantics and default to read-only methods."
     },
     {
+      "id": "http-rpc-json",
+      "matches": ["HTTP RPC/JSON"],
+      "transport": "HTTPS",
+      "adapter": "http-rpc-json",
+      "supports": ["read-via-post", "query", "mutation-gated"],
+      "notes": "For versioned vendor RPC APIs carried over HTTPS with JSON request/response bodies. Preserve required version headers, method semantics and vendor error envelopes. HTTP POST transport alone must never be treated as write authority; mutation is determined by the RPC method and remains gated."
+    },
+    {
       "id": "schema-registry",
       "matches": ["Schema Registry"],
       "transport": "HTTPS",
