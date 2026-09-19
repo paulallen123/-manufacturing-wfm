@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { createIncidentLearningPlanner } = require('./incident-learning-planner.cjs');
 
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -43,6 +44,47 @@ function classify(contract, scenarios, scenarioId) {
   };
 }
 
+function createLearningFailureRecord(receipt, errorCode) {
+  const core = {
+    schemaVersion: 1,
+    status: 'LEARNING_FAILED_CLOSED',
+    sourceReceiptDigest: receipt.receiptDigest,
+    sourceEvidenceDigest: receipt.evidenceDigest,
+    tier: receipt.tier,
+    scenarioId: receipt.scenarioId,
+    errorCode: clean(errorCode || 'WFM_AUTONOMY_LEARNING_INTERNAL', 120),
+    requiresIncidentLearningRecovery: true,
+    authority: {
+      actionAuthority: false,
+      productionAuthority: false,
+      releaseAuthority: false,
+      credentialAuthority: false,
+      customerMutation: false,
+      crossTenantMutation: false,
+      writeScope: 'proposal-only',
+    },
+  };
+  return { ...core, learningDigest: digest(core) };
+}
+
+function verifyLearningFailureRecord(record) {
+  if (!record || record.status !== 'LEARNING_FAILED_CLOSED') return false;
+  if (!/^[a-f0-9]{64}$/.test(String(record.sourceReceiptDigest || ''))) return false;
+  if (!/^[a-f0-9]{64}$/.test(String(record.sourceEvidenceDigest || ''))) return false;
+  if (!/^[a-f0-9]{64}$/.test(String(record.learningDigest || ''))) return false;
+  if (record.requiresIncidentLearningRecovery !== true) return false;
+  if (record.authority?.actionAuthority !== false
+    || record.authority?.productionAuthority !== false
+    || record.authority?.releaseAuthority !== false
+    || record.authority?.credentialAuthority !== false
+    || record.authority?.customerMutation !== false
+    || record.authority?.crossTenantMutation !== false
+    || record.authority?.writeScope !== 'proposal-only') return false;
+  const copy = { ...record };
+  delete copy.learningDigest;
+  return digest(copy) === record.learningDigest;
+}
+
 function createAutonomyControlLoop({
   contract,
   failureScenarios,
@@ -53,6 +95,7 @@ function createAutonomyControlLoop({
   t3ShadowVerifier,
   t4ContainmentController,
   rollbackExecutor,
+  incidentLearningPlanner = createIncidentLearningPlanner(),
   now = Date.now,
   maxActions = 3,
 } = {}) {
@@ -303,7 +346,28 @@ function createAutonomyControlLoop({
       traceHeadDigest: prev,
       resultDigest: digest(result),
     };
-    return { ...core, receiptDigest: digest(core), ...result };
+    const terminalReceipt = { ...core, receiptDigest: digest(core), ...result };
+
+    let learning;
+    try {
+      if (!incidentLearningPlanner?.plan || !incidentLearningPlanner?.verify) {
+        deny('WFM_AUTONOMY_LEARNING_UNAVAILABLE', 'Incident learning planner is unavailable.');
+      }
+      learning = incidentLearningPlanner.plan(terminalReceipt, {
+        defectDetected: Boolean(terminalReceipt.containedErrorCode) || outcome === 'contained',
+        falseGreenDetected: input.falseGreenDetected === true,
+        historicalRegression: input.historicalRegression === true,
+        novelFailure: reason === 'unknown-scenario-fail-safe',
+        errorCode: terminalReceipt.containedErrorCode,
+      });
+      if (learning?.sourceReceiptDigest !== terminalReceipt.receiptDigest || incidentLearningPlanner.verify(learning) !== true) {
+        deny('WFM_AUTONOMY_LEARNING_VERIFY', 'Incident learning record failed deterministic verification.');
+      }
+    } catch (error) {
+      learning = createLearningFailureRecord(terminalReceipt, error.code || 'WFM_AUTONOMY_LEARNING_INTERNAL');
+    }
+
+    return { ...terminalReceipt, learning };
   }
 
   function verifyReceipt(receipt) {
@@ -336,8 +400,18 @@ function createAutonomyControlLoop({
     }
     if (receipt.resultDigest !== digest(result)) return false;
     const core = { ...receipt };
-    for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode']) delete core[key];
-    return receipt.receiptDigest === digest(core);
+    for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode', 'learning']) delete core[key];
+    if (receipt.receiptDigest !== digest(core)) return false;
+
+    if (!receipt.learning || receipt.learning.sourceReceiptDigest !== receipt.receiptDigest) return false;
+    if (receipt.learning.status === 'LEARNING_FAILED_CLOSED') {
+      return verifyLearningFailureRecord(receipt.learning);
+    }
+    try {
+      return Boolean(incidentLearningPlanner?.verify && incidentLearningPlanner.verify(receipt.learning) === true);
+    } catch {
+      return false;
+    }
   }
 
   return { run, verifyReceipt, classify: (scenarioId) => classify(contract, scenarios, scenarioId) };
