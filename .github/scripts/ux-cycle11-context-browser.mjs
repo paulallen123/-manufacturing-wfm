@@ -114,7 +114,7 @@ const chrome = spawn(chromePath(), [
   '--window-size=1440,1000',`http://127.0.0.1:${PORT}/`
 ], {stdio:'ignore'});
 
-async function retry(fn, attempts=100){let error;for(let i=0;i<attempts;i++){try{return await fn();}catch(e){error=e;await sleep(150);}}throw error;}
+async function retry(fn, attempts=100){let error;for(let i=0;i<attempts;i++){try{return await fn();}catch(e){error=e;await sleep(150);}}console.error('UX11_BROWSER_RETRY_EXHAUSTED='+(error?.message||'unknown'));throw error;}
 let ws;
 try {
   const targets = await retry(async()=>{const r=await fetch(`http://127.0.0.1:${CDP_PORT}/json/list`);const x=await r.json();if(!x.find(v=>v.type==='page'))throw new Error('No browser page');return x;});
@@ -127,6 +127,7 @@ try {
   const evalx=async expression=>(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result?.value;
   await send('Runtime.enable');
   await send('Page.enable');
+  console.log('UX11_BROWSER_STAGE=CDP_READY');
   await retry(async()=>{const ready=await evalx(`(()=>{const b=document.querySelector('.vector-priority-slot .ux11-open[data-ux11-route="integrations"]');const q=b?.closest('.ux11-queue');return document.body.classList.contains('vector-ui-active')&&!!document.querySelector('.vector-home')&&!!b&&q?.dataset.vectorProjected==='true'&&getComputedStyle(q).display!=='none';})()`);if(!ready)throw new Error('Vector governed action queue not ready');return true;});
 
   const projection=await evalx(`(()=>({vector:document.body.dataset.vectorUi||null,slot:!!document.querySelector('.vector-priority-slot'),projected:document.querySelector('.vector-priority-slot .ux11-queue')?.dataset.vectorProjected||null,hiddenSource:getComputedStyle(document.querySelector('.vector-home-source')).display}))()`);
@@ -182,6 +183,9 @@ try {
 } finally {
   try { ws?.close(); } catch {}
   try { chrome.kill('SIGTERM'); } catch {}
-  await new Promise(resolve=>server.close(resolve));
+  try { server.closeIdleConnections?.(); } catch {}
+  try { server.closeAllConnections?.(); } catch {}
+  await Promise.race([new Promise(resolve=>server.close(resolve)),sleep(1000)]);
+  try { chrome.kill('SIGKILL'); } catch {}
   rmSync(temp,{recursive:true,force:true});
 }
