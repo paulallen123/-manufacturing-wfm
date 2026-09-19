@@ -8,6 +8,7 @@ on:
       - 'resilience/autonomous-repair-pipeline.cjs'
       - 'scripts/validate-autonomous-repair-pipeline.mjs'
       - 'resilience/autonomous-repair-factory.cjs'
+      - 'scripts/validate-repair-path-canonicalization.mjs'
       - 'resilience/isolated-repair-worker.cjs'
       - 'resilience/independent-repair-verifier.cjs'
       - 'resilience/disposable-staging-gate.cjs'
@@ -45,12 +46,17 @@ jobs:
 
       - name: Syntax gate
         run: |
+          node --check resilience/autonomous-repair-factory.cjs
+          node --check scripts/validate-repair-path-canonicalization.mjs
           node --check resilience/autonomous-repair-pipeline.cjs
           node --check scripts/validate-autonomous-repair-pipeline.mjs
           node --check resilience/canary-rollback-controller.cjs
           node --check scripts/validate-canary-rollback-controller.mjs
           node --check resilience/autonomous-repair-canary-orchestrator.cjs
           node --check scripts/validate-autonomous-repair-canary-orchestrator.mjs
+
+      - name: Prove canonical repair path boundary
+        run: node scripts/validate-repair-path-canonicalization.mjs
 
       - name: Prove autonomous repair composition
         run: node scripts/validate-autonomous-repair-pipeline.mjs
