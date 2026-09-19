@@ -2,8 +2,10 @@ import crypto from 'node:crypto';
 import {createPostgresAgencyIdentityContinuityStore} from './agency-identity-continuity.mjs';
 import {createPostgresAgencyWorkStartAuthorityStore,evaluateAgencyWorkStartReadiness} from './agency-work-start-readiness.mjs';
 
-export const AGENCY_WORK_START_PERMIT_VERSION='agency-work-start-permit-v0.1.0';
-export const AGENCY_WORK_START_PERMIT_STORE_VERSION='agency-work-start-permit-store-v0.1.0';
+export const AGENCY_WORK_START_PERMIT_VERSION='agency-work-start-permit-v0.1.1';
+export const AGENCY_WORK_START_PERMIT_STORE_VERSION='agency-work-start-permit-store-v0.1.1';
+export const AGENCY_WORK_START_IDENTITY_RECEIPT_BARRIER_SQL=`LOCK TABLE wfm_agency_identity_observation_ingress_receipts IN SHARE MODE;`;
+export const AGENCY_WORK_START_IDENTITY_OBSERVATION_BARRIER_SQL=`LOCK TABLE wfm_agency_identity_continuity_observations IN SHARE MODE;`;
 
 export const AGENCY_WORK_START_PERMIT_LOCK_SQL=`
 SELECT current.assurance_version_id,
@@ -69,6 +71,8 @@ export function createPostgresAgencyWorkStartPermitStore({withTransaction}={}){
       const values=[required(scope.tenantId,'tenantId',100),required(scope.siteId,'siteId',100),required(scope.requestId,'requestId',100),required(scope.agencyId,'agencyId',100),required(scope.workerId,'workerId',100),now];
       return withTransaction(async transaction=>{
         if(!transaction||typeof transaction.query!=='function')throw new TypeError('transaction.query function is required');
+        await transaction.query(AGENCY_WORK_START_IDENTITY_RECEIPT_BARRIER_SQL);
+        await transaction.query(AGENCY_WORK_START_IDENTITY_OBSERVATION_BARRIER_SQL);
         const locked=await transaction.query(AGENCY_WORK_START_PERMIT_LOCK_SQL,values);
         const rows=Array.isArray(locked?.rows)?locked.rows:[];
         if(rows.length!==1)throw new Error(rows.length===0?'work_start_permit_authority_missing':'work_start_permit_authority_ambiguous');
@@ -189,7 +193,7 @@ export async function evaluateAgencyWorkStartPermit({tenantId,siteId,agencyId,re
         rankingImpact:'none',scheduleWriteAuthorized:false,payrollWriteAuthorized:false,clockingWriteAuthorized:false,workStartWriteAuthorized:false,
         authorityBoundary:'transaction_scoped_shadow_work_start_permit_only_no_live_schedule_clocking_payroll_invoice_or_worker_master_mutation',
         privacyBoundary:'no_raw_badge_provider_subject_signature_photo_biometric_date_of_birth_document_number_share_code_portal_token_or_raw_right_to_work_evidence_in_permit_output',
-        atomicityRule:'current_right_to_work_accepted_response_and_authenticated_identity_continuity_are_revalidated_and_the_one_shot_shadow_work_start_command_is_consumed_inside_the_same_locked_database_transaction',
+        atomicityRule:'current_right_to_work_accepted_response_and_authenticated_identity_continuity_are_revalidated_while_identity_observation_and_provenance_writes_are_blocked_and_the_one_shot_shadow_work_start_command_is_consumed_inside_the_same_database_transaction',
       });
     });
   }catch{return fail('work_start_permit_store_unavailable',{scope});}
