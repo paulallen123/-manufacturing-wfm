@@ -1,71 +1,9 @@
 {
   "schemaVersion": 1,
   "generatedAt": "2026-09-19",
-  "purpose": "Hourly authoritative-vendor integration/value delta. Adds Siemens Insights Hub as a distinct industrial-IoT source and records Schneider EcoStruxure Resource Advisor energy-cost value plus the unresolved external-interface evidence gap. No vendor tenant credentials were used and connector writes remain disabled.",
+  "purpose": "Hourly authoritative-vendor integration/value delta. Adds Siemens Insights Hub as a distinct industrial-IoT source and Schneider EcoStruxure Resource Advisor as a distinct energy-cost source whose customer integration transport is not yet evidenced. No vendor tenant credentials were used and connector writes remain disabled.",
   "protocolFamilies": [],
-  "overrides": [
-    {
-      "id": "schneider-ecostruxure",
-      "patch": {
-        "evidenceUrl": "https://www.se.com/ww/en/work/services/se-advisory-services/intelligent-software/resource-advisor/",
-        "evidenceNote": "Schneider Electric documents EcoStruxure Resource Advisor as a cloud platform aggregating enterprise energy and sustainability data, including utility-bill validation, energy cost/budget analysis, interval consumption and site-level benchmarking. This verifies a high-value energy-cost data opportunity but does not verify a public customer API, authentication method or export transport for Resource Advisor. The connector therefore remains discovery-queued and must not be represented as tenant-connectable until customer/vendor interface documentation or an authorised tenant is available.",
-        "valueReview": {
-          "basis": "vendor-product-docs-capability-only",
-          "evidenceUrl": "https://www.se.com/ww/en/work/services/se-advisory-services/intelligent-software/resource-advisor/",
-          "requiredPermissions": [
-            "customer-authorised read access to energy/resource data only after an interface is identified",
-            "site/entity scope limited to WFM cost and optimisation use cases",
-            "no BMS/control permission and no procurement mutation authority"
-          ],
-          "dataAvailableOrExpected": [
-            "enterprise and site energy consumption",
-            "interval consumption profiles",
-            "utility bill and invoice-validation data",
-            "energy spend and budget context",
-            "procurement/contract outcome context where licensed",
-            "facility benchmarking and performance-drift signals"
-          ],
-          "wfmObjects": [
-            "energy-event",
-            "site",
-            "shift-outcome",
-            "cost-driver"
-          ],
-          "automationOpportunities": [
-            "attribute verified energy spend and consumption to site/shift alongside labour and production",
-            "identify staffed non-productive periods with abnormal energy consumption",
-            "alert on energy-cost or consumption drift before shift-cost variance becomes material",
-            "combine tariff/cost context with staffing and production forecasts when customer-authorised data is available"
-          ],
-          "customerValue": [
-            "true labour-plus-energy shift cost",
-            "energy reduction",
-            "better budget variance analysis",
-            "less manual utility-bill and energy-data reconciliation",
-            "executive site-level cost and sustainability reporting"
-          ],
-          "savingsHypotheses": [
-            "identify energy consumed during paid but non-productive time",
-            "reduce spreadsheet effort reconciling utility bills, sites and shift outcomes",
-            "improve start-up/shutdown staffing decisions using interval energy profiles",
-            "surface tariff/budget exposure alongside labour-cost forecasts"
-          ],
-          "dataGaps": [
-            "public product documentation reviewed does not establish a supported external API, webhook, SFTP or file-export contract for customer integration",
-            "tariff, invoice and procurement fields depend on customer licensing, geography and configured data services",
-            "workforce identity and production-order detail must come from other systems"
-          ],
-          "constraintsRisks": [
-            "do not infer API availability from the platform's ability to aggregate data",
-            "the existing generic EcoStruxure protocol assumptions remain unproven for Resource Advisor until a specific product interface is evidenced",
-            "energy and procurement data can cross legal entities/countries and requires explicit site/entity/data-residency scoping",
-            "any BMS/control surface must remain segregated from the WFM read path"
-          ],
-          "nextDevelopmentAction": "Obtain Schneider/customer Resource Advisor interface documentation or an authorised tenant/export sample; only then select the existing REST/file/BMS adapter path and prove a read round-trip. Until then, treat Resource Advisor as a verified value source with an unresolved transport boundary, not as an available connector."
-        }
-      }
-    }
-  ],
+  "overrides": [],
   "systems": [
     {
       "id": "siemens-insights-hub",
@@ -85,6 +23,9 @@
       "valueReview": {
         "basis": "vendor-docs",
         "evidenceUrl": "https://developer.siemens.com/insights-hub/docs/apis/iot-iottimeseries/api-iottimeseries-overview.html",
+        "replaceProfileFields": [
+          "requiredPermissions"
+        ],
         "requiredPermissions": [
           "tenant/application technical identity limited to required read APIs",
           "read Asset Management metadata needed for asset/work-centre mapping",
@@ -145,6 +86,77 @@
           "direct plant-network access remains prohibited; WFM reads the governed cloud/edge data layer rather than scanning PLC networks"
         ],
         "nextDevelopmentAction": "Build an Insights Hub thin adapter on the existing REST profile with service/version capability discovery, Link-header pagination, quota-aware retries, timestamp/order normalization and canonical asset/aspect mapping. Then obtain an authorised Siemens development/customer tenant for least-privilege authentication and a read round-trip before any write path is considered."
+      }
+    },
+    {
+      "id": "schneider-resource-advisor",
+      "name": "Schneider Electric EcoStruxure Resource Advisor",
+      "category": "energy",
+      "priority": "P1",
+      "protocols": [],
+      "auth": "interface-not-yet-evidenced",
+      "researchStatus": "product-docs-verified-interface-unverified",
+      "docsUrl": "https://www.se.com/ww/en/work/services/se-advisory-services/intelligent-software/resource-advisor/",
+      "testLevel": "discovery-queued",
+      "writeEnabled": false,
+      "evidenceUrl": "https://www.se.com/ww/en/work/services/se-advisory-services/intelligent-software/resource-advisor/",
+      "evidenceNote": "Schneider Electric documents Resource Advisor as a cloud platform aggregating enterprise energy and sustainability data, including utility-bill validation, energy cost/budget analysis, interval consumption and site-level benchmarking. This verifies a high-value data opportunity but the public product documentation reviewed does not establish a supported customer API, authentication method, webhook, SFTP or file-export contract. The system intentionally has no protocol assigned until an authoritative integration interface or authorised tenant/export sample is available; this is an explicit integration gap rather than an inferred connector path.",
+      "valueReview": {
+        "basis": "vendor-product-docs-capability-only",
+        "evidenceUrl": "https://www.se.com/ww/en/work/services/se-advisory-services/intelligent-software/resource-advisor/",
+        "replaceProfileFields": [
+          "requiredPermissions"
+        ],
+        "requiredPermissions": [
+          "customer-authorised read access to energy/resource data only after an interface is identified",
+          "site/entity scope limited to WFM cost and optimisation use cases",
+          "no BMS/control permission and no procurement mutation authority"
+        ],
+        "dataAvailableOrExpected": [
+          "enterprise and site energy consumption",
+          "interval consumption profiles",
+          "utility bill and invoice-validation data",
+          "energy spend and budget context",
+          "procurement/contract outcome context where licensed",
+          "facility benchmarking and performance-drift signals"
+        ],
+        "wfmObjects": [
+          "energy-event",
+          "site",
+          "shift-outcome",
+          "cost-driver"
+        ],
+        "automationOpportunities": [
+          "attribute verified energy spend and consumption to site/shift alongside labour and production",
+          "identify staffed non-productive periods with abnormal energy consumption",
+          "alert on energy-cost or consumption drift before shift-cost variance becomes material",
+          "combine tariff/cost context with staffing and production forecasts when customer-authorised data is available"
+        ],
+        "customerValue": [
+          "true labour-plus-energy shift cost",
+          "energy reduction",
+          "better budget variance analysis",
+          "less manual utility-bill and energy-data reconciliation",
+          "executive site-level cost and sustainability reporting"
+        ],
+        "savingsHypotheses": [
+          "identify energy consumed during paid but non-productive time",
+          "reduce spreadsheet effort reconciling utility bills, sites and shift outcomes",
+          "improve start-up/shutdown staffing decisions using interval energy profiles",
+          "surface tariff/budget exposure alongside labour-cost forecasts"
+        ],
+        "dataGaps": [
+          "public product documentation reviewed does not establish a supported external API, webhook, SFTP or file-export contract for customer integration",
+          "tariff, invoice and procurement fields depend on customer licensing, geography and configured data services",
+          "workforce identity and production-order detail must come from other systems"
+        ],
+        "constraintsRisks": [
+          "do not infer API availability from the platform's ability to aggregate data",
+          "energy and procurement data can cross legal entities/countries and requires explicit site/entity/data-residency scoping",
+          "any BMS/control surface must remain segregated from the Resource Advisor WFM read path",
+          "do not reuse generic EcoStruxure BMS protocols as evidence for the separate Resource Advisor cloud product"
+        ],
+        "nextDevelopmentAction": "Obtain Schneider/customer Resource Advisor interface documentation or an authorised tenant/export sample; only then assign an existing REST/file/middleware protocol path and prove a read round-trip. Until then, treat Resource Advisor as a verified value source with an unresolved transport boundary, not as an available connector."
       }
     }
   ]
