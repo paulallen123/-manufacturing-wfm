@@ -1,130 +1,21 @@
-name: Railway first deploy - customer proof 0.6.76
+name: Railway customer-proof access - contained
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/railway-first-deploy.yml'
-      - 'scripts/live-auth-proof.mjs'
-      - 'scripts/live-isolation-kiosk-proof.mjs'
-      - 'scripts/live-correction-proof.mjs'
-      - 'scripts/live-browser-screenshot-proof.mjs'
-      - 'scripts/live-role-browser-context-proof.mjs'
-      - 'scripts/live-employee-overlay-isolation.mjs'
-      - 'scripts/live-role-accessibility-diagnostic.mjs'
-      - 'scripts/live-visual-evidence.mjs'
-      - 'artifact/customer-proof-0676-railway.trigger'
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: railway-auth-proof-wfm-customer-proof-0676-v6
-  cancel-in-progress: true
-
 jobs:
-  first-deploy:
-    if: github.actor == github.repository_owner
+  contained:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    env:
-      RAILWAY_NO_AUTO_UPDATE: '1'
-      RAILWAY_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'
-      RAILWAY_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'
-      RAILWAY_SERVICE_ID: 'ddd54fb9-3564-4251-9959-28cf3308c272'
-      EXPECTED_RUNTIME_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'
+    timeout-minutes: 2
     steps:
-      - name: Checkout sealed proof repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          fetch-depth: 1
-
-      - name: Re-verify frozen runtime before upload
+      - name: Enforce temporary credential containment
         shell: bash
         run: |
           set -euo pipefail
-          echo "$EXPECTED_RUNTIME_SHA256  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz" | sha256sum -c -
-          grep -F '"production_approved": false' DEPLOYMENT_MANIFEST.json
-          grep -F '"pilot_ready": false' DEPLOYMENT_MANIFEST.json
-          grep -F '"staging_only": true' DEPLOYMENT_MANIFEST.json
-
-      - name: Install pinned Railway CLI with published digest verification
-        shell: bash
-        run: |
-          set -euo pipefail
-          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
-          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
-          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
-          echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
-          mkdir -p "$RUNNER_TEMP/railway-cli"
-          tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
-          CLI_BIN=$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)
-          test -n "$CLI_BIN"
-          echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
-          "$CLI_BIN" --version
-
-      - name: Bootstrap exact existing Railway customer-proof service
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
-
-          "$RAILWAY_BIN" variable list \
-            --service "$RAILWAY_SERVICE_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --json > "$RUNNER_TEMP/railway-vars.json"
-
-          node --input-type=module - "$RUNNER_TEMP/railway-vars.json" <<'NODE'
-          import fs from 'node:fs';
-          import path from 'node:path';
-          import { spawnSync } from 'node:child_process';
-          const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-          const password = vars.WFM_STAGING_PASSWORD;
-          if (!password || !vars.WFM_PUBLIC_ORIGIN) throw new Error('Required canonical staging variables are unavailable to the proof runner.');
-          delete process.env.RAILWAY_TOKEN;
-          process.env.WFM_STAGING_PASSWORD = password;
-          process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
-          await import('./scripts/live-auth-proof.mjs');
-          await import('./scripts/live-isolation-kiosk-proof.mjs');
-          await import('./scripts/live-correction-proof.mjs');
-          await import('./scripts/live-browser-screenshot-proof.mjs');
-
-          process.env.WFM_STAGING_PASSWORD = password;
-          await import('./scripts/live-role-browser-context-proof.mjs');
-          process.env.WFM_STAGING_PASSWORD = password;
-          await import('./scripts/live-employee-overlay-isolation.mjs');
-          process.env.WFM_STAGING_PASSWORD = password;
-          await import('./scripts/live-role-accessibility-diagnostic.mjs');
-
-          const ffmpeg = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' });
-          if (ffmpeg.status === 0 && ffmpeg.stdout.trim()) {
-            process.env.WFM_STAGING_PASSWORD = password;
-            await import('./scripts/live-visual-evidence.mjs');
-          } else {
-            const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
-            fs.mkdirSync(outDir, { recursive: true });
-            fs.writeFileSync(path.join(outDir, 'visual-recording-status.json'), JSON.stringify({
-              capturedAt: new Date().toISOString(), release: '0.6.76-hosted-staging-rc1', status: 'BLOCKED',
-              reason: 'ffmpeg unavailable on pinned runner',
-              claimBoundary: 'authenticated browser screenshots, separate role browser contexts and API/tenant/kiosk/correction proof passed separately; walkthrough video not claimed'
-            }, null, 2));
-            console.log('LIVE_VISUAL_EVIDENCE_CAPTURE=BLOCKED_FFMPEG_UNAVAILABLE');
-          }
-          delete process.env.WFM_STAGING_PASSWORD;
-          NODE
-
-          rm -f "$RUNNER_TEMP/railway-vars.json"
-
-      - name: Upload live evidence package even when a new proof gate fails
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: wfm-customer-proof-0676-live-evidence
-          path: ${{ runner.temp }}/wfm-evidence-output
-          if-no-files-found: warn
-          retention-days: 14
-          compression-level: 6
+          echo 'RAILWAY_CUSTOMER_PROOF_ACCESS=CONTAINED'
+          echo 'Reason: release branches are not yet protected by server-side rules and verified-commit enforcement.'
+          echo 'No Railway credential is exposed by this workflow while the hold is active.'
+          exit 1
