@@ -270,3 +270,6 @@ const receipt = {
 };
 
 fs.writeFileSync(path.join(ROOT, 'portable-autonomy-proof.json'), JSON.stringify(receipt, null, 2) + '\n');
+console.log('\n' + JSON.stringify(receipt, null, 2));
+
+if (failed) process.exit(1);
