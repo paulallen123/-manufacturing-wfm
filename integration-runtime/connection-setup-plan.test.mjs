@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { approvalFingerprint } from './connection-contract.mjs';
+import { approvalFingerprint, configurationFingerprint } from './connection-contract.mjs';
 import {
   evaluateGenuineProviderProof,
   missingProviderConfigRefs,
@@ -44,6 +44,10 @@ function sapProfile() {
     reconciliation: { status: 'passed', observedBy: 'trusted_executor', evidenceRef: 'evidence://sap/reconciliation' },
     activation: { approved: true, approvedByRole: 'integration_admin', fingerprint: '' }
   };
+  const evidenceFingerprint = configurationFingerprint(profile);
+  profile.connectionTest.configurationFingerprint = evidenceFingerprint;
+  profile.recoveryProof.configurationFingerprint = evidenceFingerprint;
+  profile.reconciliation.configurationFingerprint = evidenceFingerprint;
   profile.activation.fingerprint = approvalFingerprint(profile);
   return profile;
 }
