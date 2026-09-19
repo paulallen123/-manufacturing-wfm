@@ -25,8 +25,8 @@ function setup(){
   return {engine,payroll:new AttendancePayrollGate({coverage,certifier})};
 }
 
-function event(sourceId,eventId,kind,at){
-  return {tenant:'acme',sourceId,eventId,employee:'e1',kind,observedAt:new Date(at).toISOString(),receivedAtMs:at+1000};
+function event(sourceId,eventId,kind,at,receivedAtMs=at+1000){
+  return {tenant:'acme',sourceId,eventId,employee:'e1',kind,observedAt:new Date(at).toISOString(),receivedAtMs};
 }
 function health(){
   return [
@@ -34,8 +34,8 @@ function health(){
     {sourceId:'wifi',state:'healthy',pendingRecovery:false,periodCoverageComplete:true}
   ];
 }
-function project(payroll){
-  return payroll.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:REVIEWED,shiftWindowClosed:true,expectedSourceIds:['door','wifi'],sourceHealth:health()});
+function project(payroll,nowMs=REVIEWED){
+  return payroll.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs,shiftWindowClosed:true,expectedSourceIds:['door','wifi'],sourceHealth:health()});
 }
 
 test('late authoritative evidence invalidates an older manager correction until explicitly re-reviewed',()=>{
@@ -55,13 +55,13 @@ test('late authoritative evidence invalidates an older manager correction until 
   assert.equal(p.payrollReady,true);
   assert.equal(p.attendanceInputs[0].provenance.reviewId,'review-1');
 
-  // A delayed provider backfill changes the underlying attendance decision after
-  // the manager reviewed it. The old correction must not silently remain payroll
-  // authority; ambiguity returns to review until a manager sees the new evidence.
-  engine.ingest(event('wifi','wifi-out-late-1','wifi_disconnected',END-5000));
-  engine.ingest(event('door','door-out-late-1','access_exit',END));
+  // A delayed provider backfill is received after the manager's review and changes
+  // the underlying attendance decision. The old correction must not silently remain
+  // payroll authority; ambiguity returns to review until the new evidence is seen.
+  engine.ingest(event('wifi','wifi-out-late-1','wifi_disconnected',END-5000,REVIEWED+1000));
+  engine.ingest(event('door','door-out-late-1','access_exit',END,REVIEWED+2000));
 
-  p=project(payroll);
+  p=project(payroll,REVIEWED+2500);
   assert.equal(p.payrollReady,false);
   assert.equal(p.attendanceInputs.length,0);
   assert.equal(p.reviewRequired.length,1);
@@ -72,9 +72,9 @@ test('late authoritative evidence invalidates an older manager correction until 
 
   payroll.recordCorrection({
     tenant:'acme',site:'s1',shiftId:'shift1',employee:'e1',reviewId:'review-2',actorId:'manager-1',reasonCode:'RECONFIRMED_AFTER_BACKFILL',
-    correctedInAt:START,correctedOutAt:END,reviewedAt:REVIEWED+1,supersedesReviewId:'review-1'
+    correctedInAt:START,correctedOutAt:END,reviewedAt:REVIEWED+3000,supersedesReviewId:'review-1'
   });
-  p=payroll.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:REVIEWED+1,shiftWindowClosed:true,expectedSourceIds:['door','wifi'],sourceHealth:health()});
+  p=project(payroll,REVIEWED+3000);
   assert.equal(p.payrollReady,true);
   assert.equal(p.attendanceInputs.length,1);
   assert.equal(p.attendanceInputs[0].provenance.basis,'manager_correction');
