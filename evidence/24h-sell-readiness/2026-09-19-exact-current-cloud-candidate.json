@@ -1,0 +1,74 @@
+{
+  "evidenceType": "exact-current-cloud-candidate",
+  "candidateSha": "9e703d3ae5dcfd6e0dcb79be294e8e8ba9827f40",
+  "candidateBranch": "feature/one-day-enterprise-implementation-v1",
+  "commitVerified": true,
+  "service": "wfm-one-day-enterprise-v1",
+  "railwayDeploymentId": "3091e341-7ab4-444d-935a-369f8c381ba7",
+  "deploymentStatus": "SUCCESS",
+  "runtime": {
+    "origin": "https://wfm-one-day-enterprise-v1-production.up.railway.app",
+    "healthcheck": "/api/health",
+    "healthcheckPassedFirstAttempt": true,
+    "fixtureDemoOnly": true,
+    "productionApproved": false,
+    "sealedRuntimePresentationRepair": "PASS",
+    "retiredPresentationPurge": "PASS",
+    "vectorOnlyPresentationAdmission": "PASS"
+  },
+  "assembledImageTests": {
+    "tests": 87,
+    "passed": 87,
+    "failed": 0
+  },
+  "scalePayrollProof": {
+    "status": "PASS",
+    "employees": 10000,
+    "sites": 50,
+    "punches": 100000,
+    "timecards": 40000,
+    "cleanPayroll": {
+      "expectedTotal": 15180000,
+      "projectedTotal": 15180000,
+      "unexplainedVariance": 0,
+      "varianceCount": 0
+    },
+    "deliberateCorruption": {
+      "expectedTotal": 15180000,
+      "projectedTotal": 15180020,
+      "detectedVariance": 20,
+      "varianceCount": 1
+    },
+    "hostileDataRejected": [
+      "duplicate employee identifiers",
+      "orphan manager",
+      "missing organisational structure",
+      "malformed clock data"
+    ]
+  },
+  "coveredControls": [
+    "clocking",
+    "absence",
+    "overtime",
+    "agency labour",
+    "starter",
+    "transfer",
+    "leaver",
+    "retro change",
+    "integration outage recovery",
+    "tenant isolation",
+    "source-system discovery",
+    "credential containment",
+    "OAuth/PKCE",
+    "role learning/mastery",
+    "append-only evidence"
+  ],
+  "claimBoundary": {
+    "oneDayTimingModel": "SYNTHETIC_THEORY_ONLY",
+    "livePayrollHcmErpProviderConnectionProven": false,
+    "customerProductionImplementationProven": false,
+    "zeroHumanCustomerProvisioningProven": false,
+    "frozenCustomerProofModified": false,
+    "newPaidInfrastructureCreated": false
+  }
+}
