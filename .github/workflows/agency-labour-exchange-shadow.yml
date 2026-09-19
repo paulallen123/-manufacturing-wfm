@@ -20,6 +20,7 @@ on:
       - 'src/frontier/agency-identity-continuity.mjs'
       - 'src/frontier/agency-identity-observation-ingress.mjs'
       - 'src/frontier/agency-identity-authoritative-binding.mjs'
+      - 'src/frontier/agency-work-start-readiness.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
@@ -49,6 +50,8 @@ on:
       - 'test/frontier/agency-identity-observation-ingress-postgres.test.mjs'
       - 'test/frontier/agency-identity-authoritative-binding.test.mjs'
       - 'test/frontier/agency-identity-authoritative-binding-postgres.test.mjs'
+      - 'test/frontier/agency-work-start-readiness.test.mjs'
+      - 'test/frontier/agency-work-start-readiness-postgres.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
@@ -72,6 +75,7 @@ on:
       - 'docs/AGENCY_RIGHT_TO_WORK_REFRESH_V1.md'
       - 'docs/AGENCY_IDENTITY_CONTINUITY_V1.md'
       - 'docs/AGENCY_IDENTITY_OBSERVATION_INGRESS_V1.md'
+      - 'docs/AGENCY_WORK_START_READINESS_V1.md'
   workflow_dispatch:
 
 permissions:
@@ -114,6 +118,7 @@ jobs:
               test/frontier/agency-identity-continuity.test.mjs \
               test/frontier/agency-identity-observation-ingress.test.mjs \
               test/frontier/agency-identity-authoritative-binding.test.mjs \
+              test/frontier/agency-work-start-readiness.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
@@ -140,3 +145,4 @@ jobs:
           node --test test/frontier/agency-identity-continuity-postgres.test.mjs
           node --test test/frontier/agency-identity-observation-ingress-postgres.test.mjs
           node --test test/frontier/agency-identity-authoritative-binding-postgres.test.mjs
+          node --test test/frontier/agency-work-start-readiness-postgres.test.mjs
