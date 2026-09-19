@@ -1,5 +1,52 @@
 # Vector UX/CX scorecard
 
+## 2026-09-19 — Vector r3: source-backed KPI evidence boundary
+
+### Journey reviewed
+Factory/operations manager Vector Home → primary KPI summary → secondary KPI summary → owning attendance/leave/time/cost/productivity workflows.
+
+### NEW-UI lineage confirmation
+Work remains owned only by the approved Vector Workforce Operations presentation on `feature/one-day-enterprise-implementation-v1` / PR #79. The retired/legacy presentation was not modified and no new branch, PR, renderer or KPI surface was created.
+
+### Reuse / duplicate-work decision
+- Reused the existing `metrics()`, `kpiMarkup()` and `secondaryKpis()` ownership in `ux-overlay/vector-shell.js`; no replacement dashboard component was created.
+- Reused existing authoritative current-value sources (`WFM.scopedStaff` / `WFM.stats` and `VCU.report()` where present) and existing source routes; no cost, attendance, payroll, productivity or target calculation was copied into Vector.
+- Extended the existing `scripts/validate-vector-only-ui.mjs` repository guard; no second test harness or workflow was added.
+- Reused the existing Vector-only exact-runtime workflow for affected regression/build validation.
+
+### Research delta
+No competitor or generic UX research was repeated. The unresolved question was answered from current product code. Vector had a hard-coded `68%` labour-cost progress bar and four decorative sparkline arrays that were not bound to any structured historical series. The current Vector adapter exposes a verified current labour-cost total when `VCU.report()` supplies one, but no verified target or historical-series contract is present in this surface. Overtime and labour-cost cards also used red/green semantic tones despite no structured status/threshold contract.
+
+### Hypothesis
+If Vector shows only current verified KPI values/ratios and removes synthetic trend, target-progress and unsupported positive/negative severity cues, managers should be less likely to infer performance direction or risk that the source system has not actually proven, while retaining the same one-click routes to authoritative workflows.
+
+### Exact implementation delta
+- Added `VECTOR_KPI_EVIDENCE_V1` to the canonical Vector shell.
+- Removed the hard-coded labour-cost `68%` progress value. Labour cost now has no progress bar unless a future authoritative target contract is explicitly added.
+- Removed all decorative synthetic sparkline point arrays and the fallback sparkline generator from the secondary KPI cards.
+- Kept the evidence-backed on-site current-workforce proportion because it is directly derived from current scoped workforce counts, not a target or trend.
+- Changed unsupported overtime red and labour-cost green semantic tones to neutral informational blue; no urgency or positive-performance meaning is now implied without structured status.
+- Added a semantic KPI evidence marker and accessibility boundary stating that trend graphics are shown only when verified source history is available.
+- Preserved the existing KPI values, routes and owning source workflows.
+- Extended the existing Vector-only guard to fail if the synthetic labour-cost progress, synthetic sparkline points/helper, unsupported red/green KPI severity, or the KPI evidence marker regress.
+
+### Focused / affected validation
+Pending exact-head Vector-only workflow result after this product-code delta. Source-level guard coverage has been extended, but this scorecard does not claim the exact runtime green until the workflow run completes. Real authenticated-role browser behaviour, screen-reader behaviour and measured user task time/error rate remain unverified.
+
+### UX scorecard impact
+- Calm by default: improved — Home no longer manufactures trend, target progress or unsupported KPI severity.
+- Dense on demand: improved — decorative trend noise is removed while source detail remains one click away.
+- Explainability: improved — current values remain, while unsupported historical/target meaning is explicitly withheld.
+- Accessibility: structurally improved through an explicit evidence boundary; real assistive-technology behaviour remains unverified.
+- Authority/auditability: preserved — all KPI truth, thresholds, targets and writes remain source-owned.
+- Development efficiency: improved — one Vector owner and one existing guard/workflow were extended rather than forking dashboard logic or tests.
+
+### Still unverified
+Exact-runtime workflow result for this head, authenticated hosted-role rendering, real screen-reader behaviour, measured first-click/time-on-task/error rate, and any future authoritative historical-series/target contracts that could safely re-enable trend or target-progress visuals.
+
+### Single next highest-value NEW-UI action
+Audit Vector Home identity/site and upcoming-leave summaries for the same source-boundary discipline. Prioritise any hard-coded identity/site context or presentation-derived leave detail that could misstate who/where the user is or what entitlement/coverage evidence is actually authoritative; bind structured source values where available and otherwise fail neutral.
+
 ## 2026-09-19 — Vector r2: neutral department-planning evidence boundary
 
 ### Journey reviewed
