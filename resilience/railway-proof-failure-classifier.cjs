@@ -2,6 +2,14 @@
 
 const { createHash } = require('node:crypto');
 
+const EXPECTED_BROWSER_ROLES = Object.freeze([
+  'manager',
+  'employee',
+  'payroll',
+  'company-admin',
+  'isolation-manager',
+]);
+
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   if (value && typeof value === 'object') {
@@ -39,12 +47,60 @@ function restartDurabilityFailures(deployLogs) {
   return failures;
 }
 
+function browserRoleMatrixEvidence(deployLogs) {
+  const expected = new Set(EXPECTED_BROWSER_ROLES);
+  const passed = new Set();
+  const failed = new Map();
+
+  for (const line of deployLogs) {
+    const pass = line.match(/^PRIVATE_BROWSER_ROLE_PASS=([a-z0-9-]+)\|/i);
+    if (pass) {
+      const role = clean(pass[1], 40).toLowerCase();
+      if (expected.has(role)) passed.add(role);
+      continue;
+    }
+
+    const fail = line.match(/^PRIVATE_BROWSER_ROLE_FAIL=([a-z0-9-]+)\|(.+)$/i);
+    if (fail) {
+      const role = clean(fail[1], 40).toLowerCase();
+      if (expected.has(role)) failed.set(role, clean(fail[2], 240));
+    }
+  }
+
+  const overlaps = [...passed].filter((role) => failed.has(role));
+  const accounted = new Set([...passed, ...failed.keys()]);
+  const completeAccounting = EXPECTED_BROWSER_ROLES.every((role) => accounted.has(role))
+    && accounted.size === EXPECTED_BROWSER_ROLES.length
+    && overlaps.length === 0;
+
+  return {
+    completeAccounting,
+    passedBrowserRoles: EXPECTED_BROWSER_ROLES.filter((role) => passed.has(role)),
+    failedBrowserRoles: EXPECTED_BROWSER_ROLES
+      .filter((role) => failed.has(role))
+      .map((role) => ({ role, reason: failed.get(role) })),
+  };
+}
+
 function terminal(input, detail) {
   const failedDurabilityChecks = Array.isArray(detail.failedDurabilityChecks)
     ? detail.failedDurabilityChecks.map((value) => clean(value, 80)).filter(Boolean)
     : [];
+  const passedBrowserRoles = Array.isArray(detail.passedBrowserRoles)
+    ? detail.passedBrowserRoles.map((value) => clean(value, 40).toLowerCase()).filter(Boolean)
+    : [];
+  const failedBrowserRoles = Array.isArray(detail.failedBrowserRoles)
+    ? detail.failedBrowserRoles.map((entry) => ({
+      role: clean(entry?.role, 40).toLowerCase(),
+      reason: clean(entry?.reason, 240),
+    })).filter((entry) => entry.role && entry.reason)
+    : [];
+  const expectedBrowserRoles = detail.browserRoleEvidenceRequired === true
+    ? [...EXPECTED_BROWSER_ROLES]
+    : [];
+
   const core = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     provider: 'railway',
     scope: 'proof-infrastructure-diagnosis-only',
     deploymentId: clean(input.deploymentId, 160) || null,
@@ -58,6 +114,11 @@ function terminal(input, detail) {
     productStateDurabilityProven: detail.productStateDurabilityProven ?? null,
     durableStateEvidenceRequired: detail.durableStateEvidenceRequired === true,
     failedDurabilityChecks,
+    browserRoleEvidenceRequired: detail.browserRoleEvidenceRequired === true,
+    browserRoleMatrixProven: detail.browserRoleMatrixProven ?? null,
+    expectedBrowserRoles,
+    passedBrowserRoles,
+    failedBrowserRoles,
     releaseClaimAllowed: false,
     autonomyPromotionAllowed: false,
     automaticRedeployAllowed: false,
@@ -83,6 +144,7 @@ function classifyRailwayProofFailure(input = {}) {
   const deployLogs = normaliseLogs(input.deployLogs);
   const evidenceFingerprint = digest({ status, buildLogs, deployLogs });
   const failedDurabilityChecks = restartDurabilityFailures(deployLogs);
+  const browserMatrix = browserRoleMatrixEvidence(deployLogs);
 
   if (
     failedDurabilityChecks.length > 0
@@ -101,6 +163,26 @@ function classifyRailwayProofFailure(input = {}) {
       durableStateEvidenceRequired: true,
       failedDurabilityChecks,
       recommendedAction: 'block-autonomy-promotion-and-release-claims-until-consequential-state-survives-a-clean-restart',
+    });
+  }
+
+  if (
+    browserMatrix.completeAccounting
+    && browserMatrix.passedBrowserRoles.length > 0
+    && browserMatrix.failedBrowserRoles.length > 0
+    && contains(deployLogs, /AssertionError.*browser matrix failures:/i)
+  ) {
+    return terminal(input, {
+      phase: 'proof-harness-role-matrix',
+      classification: 'partial-role-browser-proof-blocker',
+      confidence: 'high',
+      evidenceFingerprint,
+      productRuntimeExecuted: true,
+      browserRoleEvidenceRequired: true,
+      browserRoleMatrixProven: false,
+      passedBrowserRoles: browserMatrix.passedBrowserRoles,
+      failedBrowserRoles: browserMatrix.failedBrowserRoles,
+      recommendedAction: 'preserve-passing-role-evidence-and-require-isolated-fix-plus-full-five-role-rerun-before-any-autonomy-or-release-claim',
     });
   }
 
@@ -176,6 +258,7 @@ function verifyDiagnosisReceipt(receipt) {
     || receipt.scope !== 'proof-infrastructure-diagnosis-only'
     || receipt.productFailureProven !== false
     || receipt.productStateDurabilityProven === true
+    || receipt.browserRoleMatrixProven === true
     || receipt.releaseClaimAllowed !== false
     || receipt.autonomyPromotionAllowed !== false
     || receipt.automaticRedeployAllowed !== false
@@ -187,10 +270,21 @@ function verifyDiagnosisReceipt(receipt) {
     || receipt.modelAuthorityGranted !== false
     || receipt.executionAuthorityGranted !== false
     || !Array.isArray(receipt.failedDurabilityChecks)
+    || !Array.isArray(receipt.expectedBrowserRoles)
+    || !Array.isArray(receipt.passedBrowserRoles)
+    || !Array.isArray(receipt.failedBrowserRoles)
   ) return false;
 
   const allowedDurabilityChecks = new Set(['approved-leave', 'rejected-correction', 'revoked-kiosk']);
   if (receipt.failedDurabilityChecks.some((value) => !allowedDurabilityChecks.has(value))) return false;
+
+  const allowedBrowserRoles = new Set(EXPECTED_BROWSER_ROLES);
+  if (receipt.expectedBrowserRoles.some((value) => !allowedBrowserRoles.has(value))) return false;
+  if (receipt.passedBrowserRoles.some((value) => !allowedBrowserRoles.has(value))) return false;
+  if (receipt.failedBrowserRoles.some((entry) => !entry || !allowedBrowserRoles.has(entry.role) || !clean(entry.reason, 240))) return false;
+  if (new Set(receipt.expectedBrowserRoles).size !== receipt.expectedBrowserRoles.length) return false;
+  if (new Set(receipt.passedBrowserRoles).size !== receipt.passedBrowserRoles.length) return false;
+  if (new Set(receipt.failedBrowserRoles.map((entry) => entry.role)).size !== receipt.failedBrowserRoles.length) return false;
 
   if (receipt.classification === 'consequential-state-durability-proof-blocker') {
     if (
@@ -208,10 +302,43 @@ function verifyDiagnosisReceipt(receipt) {
     return false;
   }
 
+  if (receipt.classification === 'partial-role-browser-proof-blocker') {
+    const failedRoles = receipt.failedBrowserRoles.map((entry) => entry.role);
+    const overlap = receipt.passedBrowserRoles.some((role) => failedRoles.includes(role));
+    const accounted = new Set([...receipt.passedBrowserRoles, ...failedRoles]);
+    if (
+      receipt.phase !== 'proof-harness-role-matrix'
+      || receipt.productRuntimeExecuted !== true
+      || receipt.browserRoleMatrixProven !== false
+      || receipt.browserRoleEvidenceRequired !== true
+      || receipt.expectedBrowserRoles.length !== EXPECTED_BROWSER_ROLES.length
+      || !EXPECTED_BROWSER_ROLES.every((role, index) => receipt.expectedBrowserRoles[index] === role)
+      || receipt.passedBrowserRoles.length === 0
+      || receipt.failedBrowserRoles.length === 0
+      || overlap
+      || accounted.size !== EXPECTED_BROWSER_ROLES.length
+      || !EXPECTED_BROWSER_ROLES.every((role) => accounted.has(role))
+    ) return false;
+  } else if (
+    receipt.browserRoleMatrixProven !== null
+    || receipt.browserRoleEvidenceRequired !== false
+    || receipt.expectedBrowserRoles.length !== 0
+    || receipt.passedBrowserRoles.length !== 0
+    || receipt.failedBrowserRoles.length !== 0
+  ) {
+    return false;
+  }
+
   const core = { ...receipt };
   const expected = core.diagnosisReceiptDigest;
   delete core.diagnosisReceiptDigest;
   return expected === digest(core);
 }
 
-module.exports = { classifyRailwayProofFailure, verifyDiagnosisReceipt, digest };
+module.exports = {
+  EXPECTED_BROWSER_ROLES,
+  browserRoleMatrixEvidence,
+  classifyRailwayProofFailure,
+  verifyDiagnosisReceipt,
+  digest,
+};
