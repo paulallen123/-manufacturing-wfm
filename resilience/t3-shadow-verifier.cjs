@@ -1,11 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
-
-const POLICY_PREFIX = Object.freeze({
-  'payroll-calculation-or-export-anomaly': 'payroll.',
-  'timezone-dst-or-clock-skew': 'time.',
-});
+const { T3_SCENARIO_POLICY, policyDigest } = require('./t3-shadow-simulator.cjs');
 
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -47,11 +43,13 @@ function createT3ShadowVerifier() {
     if (expected.evidenceDigest && simulation.evidenceDigest !== expected.evidenceDigest) return fail('evidence-mismatch');
     if (containsReusableSecretSurface(simulation)) return fail('reusable-secret-surface-detected');
 
-    const actionPrefix = POLICY_PREFIX[simulation.scenarioId];
-    if (!actionPrefix || typeof simulation.proposedAction !== 'string' || !simulation.proposedAction.startsWith(actionPrefix)) {
+    const policy = T3_SCENARIO_POLICY[simulation.scenarioId];
+    if (!policy || typeof simulation.proposedAction !== 'string' || !policy.allowedActions.includes(simulation.proposedAction)) {
       return fail('scenario-action-family-mismatch');
     }
-    if (!Number.isSafeInteger(simulation.affectedRecords) || simulation.affectedRecords < 1 || simulation.affectedRecords > simulation.maxAffectedRecords) {
+    if (simulation.actionPolicyDigest !== policyDigest(simulation.scenarioId)) return fail('action-policy-digest-mismatch');
+    if (simulation.exactActionAllowlistBound !== true) return fail('exact-action-allowlist-binding-missing');
+    if (!Number.isSafeInteger(simulation.affectedRecords) || simulation.affectedRecords < 1 || simulation.affectedRecords > policy.maxAffectedRecords || simulation.maxAffectedRecords !== policy.maxAffectedRecords) {
       return fail('affected-record-cap-invalid');
     }
 
@@ -65,7 +63,7 @@ function createT3ShadowVerifier() {
       afterStateDigest: simulation.afterStateDigest,
       compensationPlanDigest: simulation.compensationPlanDigest,
       affectedRecords: simulation.affectedRecords,
-      actionPrefix,
+      actionPrefix: policy.actionPrefix,
       maxAffectedRecords: simulation.maxAffectedRecords,
     };
     if (simulation.proposalDigest !== digest(proposal)) return fail('proposal-digest-mismatch');
