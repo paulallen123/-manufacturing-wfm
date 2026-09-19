@@ -37,6 +37,13 @@ export class AttendanceClaimCertifier {
     // duplicate could otherwise overwrite a degraded/pending-recovery row.
     const healthById=new Map(healthRows.map(({sourceId,health})=>[sourceId,health]));
     const missingHealth=expected.filter(id=>!healthById.has(id));
+    // Continuity evidence is meaningful only for the exact tenant/site/window being
+    // certified. Source IDs can legitimately repeat across tenants and deployments,
+    // so a healthy row from another scope must never satisfy this shift's quorum.
+    const scopeMismatch=expected.filter(id=>{
+      const h=healthById.get(id); if(!h) return false;
+      return String(h.tenant||'')!==String(tenant||'') || String(h.site||'')!==String(site||'') || String(h.certificationWindowId||'')!==String(shiftId||'');
+    });
     const unhealthy=expected.filter(id=>{
       const h=healthById.get(id); if(!h) return false;
       return !['healthy','reconciled'].includes(String(h.state||'')) || h.pendingRecovery===true;
@@ -44,7 +51,7 @@ export class AttendanceClaimCertifier {
     const incompletePeriod=expected.filter(id=>{
       const h=healthById.get(id); return h && h.periodCoverageComplete!==true;
     });
-    const sourceContinuityLive=duplicateHealth.length===0&&missingHealth.length===0&&unhealthy.length===0;
+    const sourceContinuityLive=duplicateHealth.length===0&&missingHealth.length===0&&scopeMismatch.length===0&&unhealthy.length===0;
     const sourceContinuityPeriod=sourceContinuityLive&&incompletePeriod.length===0;
 
     const workingRows=evaluation.rows.filter(r=>r.status!=='excused');
@@ -63,6 +70,7 @@ export class AttendanceClaimCertifier {
     if(underdeclared.length) blockers.push({code:'SOURCE_EXPECTATION_UNDERDECLARED',sourceIds:underdeclared});
     if(duplicateHealth.length) blockers.push({code:'SOURCE_HEALTH_DUPLICATE',sourceIds:duplicateHealth});
     if(missingHealth.length) blockers.push({code:'SOURCE_HEALTH_MISSING',sourceIds:missingHealth});
+    if(scopeMismatch.length) blockers.push({code:'SOURCE_HEALTH_SCOPE_MISMATCH',sourceIds:scopeMismatch});
     if(unhealthy.length) blockers.push({code:'SOURCE_NOT_HEALTHY',sourceIds:unhealthy});
     if(incompletePeriod.length) blockers.push({code:'SOURCE_PERIOD_NOT_RECONCILED',sourceIds:incompletePeriod});
     if(evaluation.unresolved) blockers.push({code:'UNRESOLVED_WORKERS',count:evaluation.unresolved});
