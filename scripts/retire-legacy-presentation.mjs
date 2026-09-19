@@ -18,6 +18,7 @@ function replaceRequired(name,before,after){
   const file=path.join(publicDir,name);
   if(!fs.existsSync(file)) throw new Error('Required runtime presentation asset missing: '+name);
   const text=fs.readFileSync(file,'utf8');
+  if(text.includes(after)) return;
   const occurrences=text.split(before).length-1;
   if(occurrences!==1) throw new Error('Expected exactly one runtime repair signature in '+name+'; found '+occurrences);
   fs.writeFileSync(file,text.replace(before,after),'utf8');
