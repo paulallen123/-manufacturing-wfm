@@ -3,10 +3,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { buildProviderProofPlan } = require('./provider-proof-profiles.cjs');
-const { verifyProviderProofResponse } = require('./provider-proof-response-verifier.cjs');
+const { verifyProviderProofResponse, toActivationTargetProof } = require('./provider-proof-response-verifier.cjs');
 
-function review(providerKey) {
-  return { providerKey, transport: 'api', auth: { method: 'oauth2', credentialRef: `vault://tenant/${providerKey}` } };
+function review(providerKey, overrides = {}) {
+  return { providerKey, transport: 'api', auth: { method: 'oauth2', credentialRef: `vault://tenant/${providerKey}` }, ...overrides };
 }
 
 function at(now) { return new Date(now - 250).toISOString(); }
@@ -66,6 +66,34 @@ test('NetSuite proof verifies exact account-specific host and bounded OpenAPI me
   assert.equal(result.status, 'PASS');
   assert.equal(result.providerIdentity.accountId, '123456_SB1');
   assert.equal(result.providerIdentity.accountSpecificDomain, '123456-sb1.suitetalk.api.netsuite.com');
+});
+
+test('verified NetSuite response converts directly into review-bound activation target proof', () => {
+  const now = Date.now();
+  const reviewed = review('oracle-netsuite', {
+    reviewedDigest: 'a'.repeat(64),
+    targetIdentity: '1234567-sb1',
+    environment: 'sandbox'
+  });
+  const plan = buildProviderProofPlan(reviewed, {
+    accountId: '1234567_SB1',
+    accountSpecificDomain: '1234567-sb1.suitetalk.api.netsuite.com'
+  });
+  const verified = verifyProviderProofResponse(plan, {
+    status: 200,
+    finalUrl: 'https://1234567-sb1.suitetalk.api.netsuite.com/services/rest/record/v1/metadata-catalog/?select=customer',
+    headers: { 'content-type': 'application/swagger+json' },
+    body: JSON.stringify({ openapi: '3.0.1', paths: { '/customer': { get: {} } } }),
+    observedAt: at(now), elapsedMs: 72
+  }, now);
+  const targetProof = toActivationTargetProof(reviewed, verified);
+  assert.equal(targetProof.providerKey, 'oracle-netsuite');
+  assert.equal(targetProof.targetIdentity, '1234567-sb1');
+  assert.equal(targetProof.environment, 'sandbox');
+  assert.equal(targetProof.method, 'provider-metadata');
+  assert.match(targetProof.metadataDigest, /^[a-f0-9]{64}$/);
+
+  assert.throws(() => toActivationTargetProof({ ...reviewed, targetIdentity: 'other-sb1' }, verified), /reviewed target identity/);
 });
 
 test('proof rejects host drift, redirects and oversized responses', () => {
