@@ -2,6 +2,10 @@
 
 const { createHash } = require('node:crypto');
 const { createIncidentLearningPlanner } = require('./incident-learning-planner.cjs');
+const {
+  computeRepairEvidenceChainDigest,
+  computePostStagingDecisionDigest,
+} = require('./autonomous-repair-pipeline.cjs');
 
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -17,6 +21,10 @@ function digest(value) {
 
 function clean(value, max = 160) {
   return String(value ?? '').trim().replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').slice(0, max);
+}
+
+function isDigest(value) {
+  return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 }
 
 function deny(code, message) {
@@ -85,6 +93,53 @@ function verifyLearningFailureRecord(record) {
   return digest(copy) === record.learningDigest;
 }
 
+function verifyT2Decision({ repair, tenant, evidenceDigest }) {
+  if (!repair || typeof repair !== 'object') {
+    deny('WFM_AUTONOMY_T2_RESULT', 'Tier 2 coordinator must return bounded evidence.');
+  }
+  if (repair.productionAuthorityGranted === true
+    || repair.promotionAuthorityGranted === true
+    || repair.productionMutation === true
+    || repair.customerMutation === true) {
+    deny('WFM_AUTONOMY_T2_PRODUCTION', 'Tier 2 repair cannot grant production, promotion or customer mutation authority.');
+  }
+
+  if (repair.status === 'verified_candidate_staged') {
+    deny('WFM_AUTONOMY_T2_CHAIN_REQUIRED', 'Tier 2 staged candidate requires verified post-staging canary or known-good rollback evidence.');
+  }
+  if (repair.status === 'contained' || repair.status === 'safe_abstention') {
+    return { outcome: repair.status, chainVerified: false, postStagingStatus: repair.status };
+  }
+  if (!['canary_proven', 'rolled_back_to_known_good'].includes(repair.status)) {
+    deny('WFM_AUTONOMY_TERMINAL', 'Invalid Tier 2 coordinator terminal outcome.');
+  }
+
+  if (repair.tenantDigest !== digest(tenant) || repair.evidenceDigest !== evidenceDigest) {
+    deny('WFM_AUTONOMY_T2_BINDING', 'Tier 2 decision is not bound to the exact tenant and source evidence.');
+  }
+  const repairChainDigest = computeRepairEvidenceChainDigest(repair);
+  if (!repairChainDigest || repair.repairChainDigest !== repairChainDigest) {
+    deny('WFM_AUTONOMY_T2_REPAIR_CHAIN', 'Tier 2 repair evidence chain failed recomputation.');
+  }
+  const decisionChainDigest = computePostStagingDecisionDigest(repair);
+  if (!decisionChainDigest || repair.decisionChainDigest !== decisionChainDigest) {
+    deny('WFM_AUTONOMY_T2_DECISION_CHAIN', 'Tier 2 post-staging decision chain failed recomputation.');
+  }
+  if (!isDigest(repair.repairOutcomeReceiptDigest)
+    || !isDigest(repair.canaryOutcomeReceiptDigest)
+    || !isDigest(repair.compositionReceiptDigest)) {
+    deny('WFM_AUTONOMY_T2_RECEIPT', 'Tier 2 chain requires durable repair, canary and composition receipts.');
+  }
+
+  return {
+    outcome: repair.status === 'canary_proven' ? 'verified_candidate_staged' : 'contained',
+    chainVerified: true,
+    postStagingStatus: repair.status,
+    repairChainDigest,
+    decisionChainDigest,
+  };
+}
+
 function createAutonomyControlLoop({
   contract,
   failureScenarios,
@@ -141,9 +196,6 @@ function createAutonomyControlLoop({
 
     let outcome = 'contained';
     let result = {};
-    // T4 is fail-closed: the outer receipt may only claim a safe terminal after
-    // the dedicated containment controller has completed and its receipt has
-    // independently verified. Other tiers retain their existing contained/abstain semantics.
     let safeTerminalEstablished = tier !== 'T4';
 
     try {
@@ -228,21 +280,35 @@ function createAutonomyControlLoop({
           });
         }
       } else if (tier === 'T2') {
-        if (!repairCoordinator?.process) {
+        const coordinator = typeof repairCoordinator?.run === 'function'
+          ? repairCoordinator.run.bind(repairCoordinator)
+          : typeof repairCoordinator?.process === 'function'
+            ? repairCoordinator.process.bind(repairCoordinator)
+            : null;
+        if (!coordinator) {
           append('t2-contained', { coordinatorAvailable: false });
         } else {
           consumeAction('repair.process');
-          const repair = await repairCoordinator.process({ incidentId, tenant, scenario, evidenceDigest, input });
-          if (repair?.productionAuthorityGranted === true || repair?.productionMutation === true) {
-            deny('WFM_AUTONOMY_T2_PRODUCTION', 'Tier 2 repair cannot grant production authority.');
-          }
-          if (!isAllowedTerminal(contract, tier, repair?.status)) deny('WFM_AUTONOMY_TERMINAL', 'Invalid Tier 2 terminal outcome.');
-          if (repair.status === 'verified_candidate_staged' && repair.independentlyVerified !== true) {
-            deny('WFM_AUTONOMY_T2_VERIFY', 'Staged repair candidate must be independently verified.');
-          }
-          outcome = repair.status;
+          const repair = await coordinator({
+            ...input,
+            incidentId,
+            tenant,
+            targetTenant,
+            scenario,
+            scenarioId,
+            evidenceDigest,
+          });
+          const t2Decision = verifyT2Decision({ repair, tenant, evidenceDigest });
+          outcome = t2Decision.outcome;
+          if (!isAllowedTerminal(contract, tier, outcome)) deny('WFM_AUTONOMY_TERMINAL', 'Invalid Tier 2 mapped terminal outcome.');
           result = { repair };
-          append('t2-result', { status: outcome, independentlyVerified: repair.independentlyVerified === true });
+          append('t2-result', {
+            status: outcome,
+            postStagingStatus: t2Decision.postStagingStatus,
+            chainVerified: t2Decision.chainVerified,
+            repairChainDigest: t2Decision.repairChainDigest || null,
+            decisionChainDigest: t2Decision.decisionChainDigest || null,
+          });
         }
       } else if (tier === 'T3') {
         if (!t3ShadowSimulator?.simulate || !t3ShadowVerifier?.verify) {
@@ -438,6 +504,18 @@ function createAutonomyControlLoop({
     if (receipt.tier === 'T4' && receipt.safeTerminal === true) {
       if (!receipt.t4 || receipt.t4.safeTerminal !== true) return false;
       if (!t4ContainmentController?.verifyReceipt || t4ContainmentController.verifyReceipt(receipt.t4) !== true) return false;
+    }
+    if (receipt.tier === 'T2' && receipt.repair && ['canary_proven', 'rolled_back_to_known_good'].includes(receipt.repair.status)) {
+      try {
+        const verified = verifyT2Decision({
+          repair: receipt.repair,
+          tenant: receipt.tenant,
+          evidenceDigest: receipt.evidenceDigest,
+        });
+        if (verified.outcome !== receipt.outcome || verified.chainVerified !== true) return false;
+      } catch {
+        return false;
+      }
     }
     const result = {};
     for (const key of ['answer', 'recovery', 'recoveryVerification', 'repair', 't3Shadow', 't3Verification', 't4', 'rollback', 'containedErrorCode']) {
