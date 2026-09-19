@@ -1,5 +1,7 @@
 'use strict';
 
+const { deriveProvisioningEnvironmentBinding } = require('./provisioning-environment-binding.cjs');
+
 const RAILWAY_ENVIRONMENTS_QUERY = `query WfmReadOnlyEnvironments($projectId: String!, $isEphemeral: Boolean) {
   environments(projectId: $projectId, isEphemeral: $isEphemeral) {
     edges {
@@ -36,26 +38,34 @@ function validateLookup(lookup) {
   if (String(lookup.provider || '').toLowerCase() !== 'railway') {
     fail('WFM_RAILWAY_PROVIDER_MISMATCH', 'Railway adapter received a lookup for a different provider.', 400);
   }
-  return Object.freeze({
+  const normalized = {
     queueKey: requireString(lookup.queueKey, 'WFM_RAILWAY_QUEUE_KEY_REQUIRED', 'Provisioning queue identity is required.'),
     intentDigest: requireString(lookup.intentDigest, 'WFM_RAILWAY_INTENT_REQUIRED', 'Provisioning intent digest is required.').toLowerCase(),
     providerRequestId: requireString(lookup.providerRequestId, 'WFM_RAILWAY_REQUEST_REQUIRED', 'Provider request identity is required.'),
     provider: 'railway',
     region: requireString(lookup.region, 'WFM_RAILWAY_REGION_REQUIRED', 'Cloud region is required.'),
     tenantId: requireString(lookup.tenantId, 'WFM_RAILWAY_TENANT_REQUIRED', 'Tenant identity is required.')
+  };
+  const binding = deriveProvisioningEnvironmentBinding({
+    queueKey: normalized.queueKey,
+    intentDigest: normalized.intentDigest,
+    providerRequestId: normalized.providerRequestId,
+    payload: {
+      plan: { provider: normalized.provider, region: normalized.region },
+      contract: { tenantId: normalized.tenantId }
+    }
   });
+  return Object.freeze({ ...normalized, ...binding });
 }
 
 function createRailwayReadOnlyEnvironmentAdapter({
   projectId,
   executeGraphQL,
-  environmentNameForLookup,
   creationProofForLookup,
   now = Date.now
 } = {}) {
   const railwayProjectId = requireString(projectId, 'WFM_RAILWAY_PROJECT_REQUIRED', 'Railway project id is required.');
   if (typeof executeGraphQL !== 'function') throw new Error('Railway read-only adapter requires an injected GraphQL query executor.');
-  if (typeof environmentNameForLookup !== 'function') throw new Error('Railway read-only adapter requires a deterministic environment-name resolver.');
   if (typeof creationProofForLookup !== 'function') throw new Error('Railway read-only adapter requires the durable fresh-create proof resolver.');
 
   const capabilities = Object.freeze({
@@ -67,11 +77,7 @@ function createRailwayReadOnlyEnvironmentAdapter({
 
   async function lookupEnvironment(rawLookup) {
     const lookup = validateLookup(rawLookup);
-    const expectedName = requireString(
-      await environmentNameForLookup(lookup),
-      'WFM_RAILWAY_ENVIRONMENT_NAME_REQUIRED',
-      'Railway reconciliation requires the exact expected environment name.'
-    );
+    const expectedName = lookup.environmentName;
 
     const response = await executeGraphQL({
       query: RAILWAY_ENVIRONMENTS_QUERY,
@@ -123,6 +129,9 @@ function createRailwayReadOnlyEnvironmentAdapter({
       provider: 'railway',
       region: lookup.region,
       tenantId: lookup.tenantId,
+      environmentName: lookup.environmentName,
+      bindingVersion: lookup.bindingVersion,
+      bindingDigest: lookup.bindingDigest,
       createdAt: toMillis(environment.createdAt),
       creationProof
     });
