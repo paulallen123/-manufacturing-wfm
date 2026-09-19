@@ -11,8 +11,10 @@ function worst(a, b) {
 
 function actionFor(reasons) {
   if (reasons.some((r) => r.code === 'authority_conflict')) return 'Resolve data ownership conflict before accepting more records.';
+  if (reasons.some((r) => r.code === 'missing_reconciliation_evidence' || r.code === 'invalid_reconciliation_evidence' || r.code === 'reconciliation_stale')) return 'Run reconciliation for the latest successful sync and keep the connection blocked until current evidence is recorded.';
   if (reasons.some((r) => r.code === 'reconciliation_failed')) return 'Reconcile staged and source records before resuming normal operation.';
   if (reasons.some((r) => r.code === 'recovery_exhausted' || r.code === 'quarantined')) return 'Review the failed item, correct the cause, then use the controlled replay path.';
+  if (reasons.some((r) => r.code === 'missing_latency_evidence' || r.code === 'invalid_latency_evidence')) return 'Collect end-to-end latency evidence before treating the connection as healthy.';
   if (reasons.some((r) => r.code === 'freshness_breached')) return 'Check provider reachability and recovery; keep the connection marked stale until a successful refresh completes.';
   if (reasons.some((r) => r.code === 'latency_breached')) return 'Check transport backlog and provider response time before widening the latency target.';
   if (reasons.some((r) => r.code === 'retrying' || r.code === 'recent_failure')) return 'Allow bounded recovery to continue and confirm reconciliation after success.';
@@ -24,13 +26,14 @@ export function evaluateConnectionRuntimeHealth(profile, runtime, now = Date.now
   let state = 'healthy';
   const freshnessSeconds = profile?.monitoring?.freshnessSeconds;
   const latencyBudgetMs = profile?.monitoring?.latencyBudgetMs;
+  const reconciliationRequired = profile?.monitoring?.reconciliationRequired === true;
 
   if (typeof freshnessSeconds !== 'number' || !Number.isFinite(freshnessSeconds) || freshnessSeconds <= 0) {
     return {
       state: 'blocked',
       reasons: [{ code: 'invalid_monitoring_policy', message: 'Freshness monitoring is not configured safely.' }],
       nextAction: 'Configure a positive freshness target before relying on runtime health.',
-      metrics: { freshnessAgeMs: null, observedLagMs: null }
+      metrics: { freshnessAgeMs: null, observedLagMs: null, reconciliationAgeMs: null }
     };
   }
 
@@ -54,10 +57,13 @@ export function evaluateConnectionRuntimeHealth(profile, runtime, now = Date.now
   }
 
   const observedLagMs = runtime?.observedEndToEndLagMs;
-  if (observedLagMs !== undefined && (typeof observedLagMs !== 'number' || !Number.isFinite(observedLagMs) || observedLagMs < 0)) {
+  if (latencyBudgetMs !== undefined && observedLagMs === undefined) {
+    reasons.push({ code: 'missing_latency_evidence', message: 'The approved latency target has no current end-to-end measurement.' });
+    state = 'blocked';
+  } else if (observedLagMs !== undefined && (typeof observedLagMs !== 'number' || !Number.isFinite(observedLagMs) || observedLagMs < 0)) {
     reasons.push({ code: 'invalid_latency_evidence', message: 'Observed end-to-end lag is invalid.' });
     state = 'blocked';
-  } else if (latencyBudgetMs !== undefined && observedLagMs !== undefined && observedLagMs > latencyBudgetMs) {
+  } else if (latencyBudgetMs !== undefined && observedLagMs > latencyBudgetMs) {
     reasons.push({ code: 'latency_breached', message: 'Observed connection lag is above the approved latency target.' });
     state = worst(state, 'degraded');
   }
@@ -89,8 +95,29 @@ export function evaluateConnectionRuntimeHealth(profile, runtime, now = Date.now
     }
   }
 
-  const reconciliationStatus = runtime?.reconciliation?.status;
-  if (reconciliationStatus && reconciliationStatus !== 'passed') {
+  const reconciliation = runtime?.reconciliation;
+  let reconciliationAgeMs = null;
+  if (reconciliationRequired) {
+    if (!reconciliation || typeof reconciliation !== 'object' || reconciliation.status === undefined) {
+      reasons.push({ code: 'missing_reconciliation_evidence', message: 'Required reconciliation evidence is missing.' });
+      state = 'blocked';
+    } else if (reconciliation.status !== 'passed') {
+      reasons.push({ code: 'reconciliation_failed', message: 'Source and staged records have not reconciled cleanly.' });
+      state = 'blocked';
+    } else {
+      const reconciledAt = asEpoch(reconciliation.observedAt);
+      if (!Number.isFinite(reconciledAt) || !Number.isFinite(nowEpoch) || reconciledAt > nowEpoch) {
+        reasons.push({ code: 'invalid_reconciliation_evidence', message: 'Reconciliation time is missing or invalid.' });
+        state = 'blocked';
+      } else {
+        reconciliationAgeMs = nowEpoch - reconciledAt;
+        if (Number.isFinite(lastSuccess) && reconciledAt < lastSuccess) {
+          reasons.push({ code: 'reconciliation_stale', message: 'The latest successful sync is newer than the recorded reconciliation.' });
+          state = 'blocked';
+        }
+      }
+    }
+  } else if (reconciliation?.status && reconciliation.status !== 'passed') {
     reasons.push({ code: 'reconciliation_failed', message: 'Source and staged records have not reconciled cleanly.' });
     state = 'blocked';
   }
@@ -117,7 +144,8 @@ export function evaluateConnectionRuntimeHealth(profile, runtime, now = Date.now
     metrics: {
       freshnessAgeMs,
       observedLagMs: observedLagMs ?? null,
-      latencyBudgetMs: latencyBudgetMs ?? null
+      latencyBudgetMs: latencyBudgetMs ?? null,
+      reconciliationAgeMs
     }
   };
 }
