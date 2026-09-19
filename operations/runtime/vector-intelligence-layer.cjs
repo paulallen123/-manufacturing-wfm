@@ -28,9 +28,9 @@ const ROLE_PROFILES = Object.freeze({
 });
 
 const COMMANDS = Object.freeze([
+  ['CREATE_AUTOMATION',/\b(every|each|automate|automation|recurring|monitor)\b/i],
   ['EMAIL_REPORT',/\b(email|send|mail)\b.*\b(report|summary|pack|dashboard|analysis|update)\b/i],
   ['CREATE_REPORT',/\b(create|build|generate|make)\b.*\b(report|summary|pack|analysis)\b/i],
-  ['CREATE_AUTOMATION',/\b(every|each|automate|automation|recurring|monitor)\b/i],
   ['CREATE_TASK',/\b(create|set|add|assign)\b.*\b(task|reminder|action)\b/i],
   ['CHANGE_WIDGET',/\b(add|remove|move|resize|replace|change)\b.*\b(widget|tile|card|dashboard)\b/i],
   ['CHANGE_CHART',/\b(change|show|switch|make|turn)\b.*\b(chart|graph|trend|bar|line|pie)\b/i],
