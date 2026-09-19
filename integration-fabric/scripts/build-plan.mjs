@@ -31,11 +31,13 @@ function mergeVendorReviews(inline={},registered={}){
   for(const key of ['requiredPermissions','dataAvailableOrExpected','wfmObjects','writeBackAutomation','automationOpportunities','customerValue','savingsHypotheses','dataGaps','constraintsRisks']){
     out[key]=unique([...(inline[key]||[]),...(registered[key]||[])]);
   }
+  out.replaceProfileFields=unique([...(inline.replaceProfileFields||[]),...(registered.replaceProfileFields||[])]);
   return out;
 }
 function mergedField(profiles,override,key,fallback=[]){
+  const includeProfileDefaults=!(override.replaceProfileFields||[]).includes(key);
   return unique([
-    ...profiles.flatMap(profile=>profile[key]||[]),
+    ...(includeProfileDefaults ? profiles.flatMap(profile=>profile[key]||[]) : []),
     ...(override[key]||[]),
     ...fallback
   ]);
