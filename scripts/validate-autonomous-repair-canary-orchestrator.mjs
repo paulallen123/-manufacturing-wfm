@@ -4,21 +4,43 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 
 const require = createRequire(import.meta.url);
-const { createAutonomousRepairCanaryOrchestrator } = require(path.join(process.cwd(), 'resilience/autonomous-repair-canary-orchestrator.cjs'));
-const d = (v) => createHash('sha256').update(String(v)).digest('hex');
+const {
+  createAutonomousRepairCanaryOrchestrator,
+} = require(path.join(process.cwd(), 'resilience/autonomous-repair-canary-orchestrator.cjs'));
+const {
+  computeRepairEvidenceChainDigest,
+  computePostStagingDecisionDigest,
+} = require(path.join(process.cwd(), 'resilience/autonomous-repair-pipeline.cjs'));
+
+const sha = (value) => createHash('sha256')
+  .update(typeof value === 'string' ? value : JSON.stringify(value))
+  .digest('hex');
 
 function recorder() {
   const records = [];
   return {
     records,
-    capabilities: () => ({ appendOnly: true, durable: true, tamperEvident: true, customerDataStored: false, productionAuthority: false, customerWriteAuthority: false, incrementalCostZero: true }),
-    async record(payload) { records.push(structuredClone(payload)); return { receiptDigest: d(JSON.stringify(payload)) }; },
+    capabilities: () => ({
+      appendOnly: true,
+      durable: true,
+      tamperEvident: true,
+      customerDataStored: false,
+      productionAuthority: false,
+      customerWriteAuthority: false,
+      incrementalCostZero: true,
+    }),
+    async record(payload) {
+      records.push(structuredClone(payload));
+      return { receiptDigest: sha(payload) };
+    },
   };
 }
 
 const pipelineCaps = Object.freeze({
   independentVerificationRequired: true,
   exactArtifactStagingRequired: true,
+  signedProvenanceRequired: true,
+  repairEvidenceChainRequired: true,
   isolatedStagingOnly: true,
   productionAuthority: false,
   productionMutation: false,
@@ -26,29 +48,84 @@ const pipelineCaps = Object.freeze({
   incrementalCostZero: true,
 });
 
-const repairResult = Object.freeze({
-  status: 'verified_candidate_staged',
-  independentlyVerified: true,
-  exactArtifactStaged: true,
-  artifactDigest: d('artifact'),
-  rollbackDigest: d('rollback'),
-  stagingReceiptDigest: d('staging'),
-  verificationDigest: d('verification'),
-  outcomeReceiptDigest: d('repair-outcome'),
-  productionAuthorityGranted: false,
-  productionMutation: false,
-  customerMutation: false,
-});
+const base = {
+  incidentId: 'inc-1',
+  tenant: 'tenant-a',
+  targetTenant: 'tenant-a',
+  workerId: 'repair-worker',
+  verifierId: 'independent-verifier',
+  releaseAuthorityId: 'release-authority',
+  stagingControllerId: 'staging-controller',
+  canaryControllerId: 'canary-controller',
+  rollbackControllerId: 'rollback-controller',
+};
 
-const repairPipeline = (result = repairResult, caps = pipelineCaps) => ({
+function makeRepairResult(overrides = {}) {
+  const evidence = {
+    tenantDigest: sha(base.tenant),
+    actorSetDigest: sha([
+      base.workerId,
+      base.verifierId,
+      base.releaseAuthorityId,
+      base.stagingControllerId,
+    ]),
+    evidenceDigest: sha('source-evidence'),
+    failingTestDigest: sha('failing-test'),
+    observedFailureDigest: sha('observed-failure'),
+    sourceSnapshotDigest: sha('source-snapshot'),
+    repairIntentDigest: sha('repair-intent'),
+    patchDigest: sha('patch'),
+    candidateDigest: sha('candidate'),
+    artifactDigest: sha('artifact'),
+    provenanceDigest: sha('provenance'),
+    rollbackDigest: sha('rollback'),
+    verificationDigest: sha('verification'),
+    permitDigest: sha('permit'),
+    signatureDigest: sha('signature'),
+    stagingReceiptDigest: sha('staging'),
+  };
+  const repairChainDigest = computeRepairEvidenceChainDigest(evidence);
+  assert.match(repairChainDigest, /^[a-f0-9]{64}$/);
+  return Object.freeze({
+    status: 'verified_candidate_staged',
+    phase: 'complete',
+    ...evidence,
+    repairChainDigest,
+    outcomeReceiptDigest: sha('repair-outcome'),
+    independentlyVerified: true,
+    exactArtifactStaged: true,
+    productionAuthorityGranted: false,
+    productionMutation: false,
+    customerMutation: false,
+    ...overrides,
+  });
+}
+
+const repairPipeline = (result = makeRepairResult(), caps = pipelineCaps) => ({
   capabilities: () => ({ ...caps }),
   process: async () => structuredClone(result),
 });
 
 const canaryCaps = () => ({
-  canary: { simulationOnly: true, productionWriteAuthority: false, customerWriteAuthority: false, incrementalCostZero: true, modelCanGrantAuthority: false },
-  rollback: { simulationOnly: true, productionWriteAuthority: false, customerWriteAuthority: false, incrementalCostZero: true, modelCanGrantAuthority: false },
-  attestor: { productionAuthority: false, customerWriteAuthority: false, modelCanGrantAuthority: false },
+  canary: {
+    simulationOnly: true,
+    productionWriteAuthority: false,
+    customerWriteAuthority: false,
+    incrementalCostZero: true,
+    modelCanGrantAuthority: false,
+  },
+  rollback: {
+    simulationOnly: true,
+    productionWriteAuthority: false,
+    customerWriteAuthority: false,
+    incrementalCostZero: true,
+    modelCanGrantAuthority: false,
+  },
+  attestor: {
+    productionAuthority: false,
+    customerWriteAuthority: false,
+    modelCanGrantAuthority: false,
+  },
 });
 
 function canaryController(resultFactory, caps = canaryCaps()) {
@@ -65,33 +142,28 @@ function proven(input) {
     artifactDigest: input.artifactDigest,
     rollbackDigest: input.rollbackDigest,
     stagingReceiptDigest: input.stagingReceiptDigest,
-    canaryEvidenceDigest: d('canary'),
-    outcomeReceiptDigest: d('canary-outcome'),
-    productionAuthority: false,
-    productionMutation: false,
-    customerMutation: false,
-  };
-}
-function rolledBack(input) {
-  return {
-    status: 'rolled_back_to_known_good',
-    artifactDigest: input.artifactDigest,
-    rollbackDigest: input.rollbackDigest,
-    stagingReceiptDigest: input.stagingReceiptDigest,
-    canaryEvidenceDigest: d('canary-bad'),
-    rollbackEvidenceDigest: d('rollback-evidence'),
-    outcomeReceiptDigest: d('rollback-outcome'),
+    canaryEvidenceDigest: sha('canary'),
+    outcomeReceiptDigest: sha('canary-outcome'),
     productionAuthority: false,
     productionMutation: false,
     customerMutation: false,
   };
 }
 
-const base = {
-  incidentId: 'inc-1', tenant: 'tenant-a', targetTenant: 'tenant-a',
-  workerId: 'repair-worker', verifierId: 'independent-verifier', releaseAuthorityId: 'release-authority', stagingControllerId: 'staging-controller',
-  canaryControllerId: 'canary-controller', rollbackControllerId: 'rollback-controller',
-};
+function rolledBack(input) {
+  return {
+    status: 'rolled_back_to_known_good',
+    artifactDigest: input.artifactDigest,
+    rollbackDigest: input.rollbackDigest,
+    stagingReceiptDigest: input.stagingReceiptDigest,
+    canaryEvidenceDigest: sha('canary-bad'),
+    rollbackEvidenceDigest: sha('rollback-evidence'),
+    outcomeReceiptDigest: sha('rollback-outcome'),
+    productionAuthority: false,
+    productionMutation: false,
+    customerMutation: false,
+  };
+}
 
 let outRec = recorder();
 let orchestrator = createAutonomousRepairCanaryOrchestrator({
@@ -105,29 +177,79 @@ assert.equal(out.promotionAuthorityGranted, false);
 assert.equal(out.productionAuthorityGranted, false);
 assert.equal(outRec.records.at(-1).status, 'canary_proven');
 assert.match(out.compositionReceiptDigest, /^[a-f0-9]{64}$/);
+assert.equal(computeRepairEvidenceChainDigest(out), out.repairChainDigest);
+assert.equal(computePostStagingDecisionDigest(out), out.decisionChainDigest);
+assert.equal(out.tenantDigest, sha(base.tenant));
+assert.equal(out.actorSetDigest, sha([base.workerId, base.verifierId, base.releaseAuthorityId, base.stagingControllerId]));
+assert.equal(out.postStagingActorSetDigest, sha(Object.values({
+  workerId: base.workerId,
+  verifierId: base.verifierId,
+  releaseAuthorityId: base.releaseAuthorityId,
+  stagingControllerId: base.stagingControllerId,
+  canaryControllerId: base.canaryControllerId,
+  rollbackControllerId: base.rollbackControllerId,
+})));
+assert.equal(outRec.records.at(-1).repairChainDigest, out.repairChainDigest);
+assert.equal(outRec.records.at(-1).decisionChainDigest, out.decisionChainDigest);
 
 outRec = recorder();
-orchestrator = createAutonomousRepairCanaryOrchestrator({ repairPipeline: repairPipeline(), canaryController: canaryController(rolledBack), outcomeRecorder: outRec });
+orchestrator = createAutonomousRepairCanaryOrchestrator({
+  repairPipeline: repairPipeline(),
+  canaryController: canaryController(rolledBack),
+  outcomeRecorder: outRec,
+});
 out = await orchestrator.run(base);
 assert.equal(out.status, 'rolled_back_to_known_good');
 assert.match(out.rollbackEvidenceDigest, /^[a-f0-9]{64}$/);
+assert.equal(computeRepairEvidenceChainDigest(out), out.repairChainDigest);
+assert.equal(computePostStagingDecisionDigest(out), out.decisionChainDigest);
 assert.equal(out.promotionAuthorityGranted, false);
 
-await assert.rejects(() => orchestrator.run({ ...base, rollbackControllerId: base.canaryControllerId }), (err) => err.code === 'WFM_POSTSTAGING_SEPARATION');
-await assert.rejects(() => orchestrator.run({ ...base, targetTenant: 'tenant-b' }), (err) => err.code === 'WFM_POSTSTAGING_CROSS_TENANT');
+await assert.rejects(
+  () => orchestrator.run({ ...base, rollbackControllerId: base.canaryControllerId }),
+  (error) => error.code === 'WFM_POSTSTAGING_SEPARATION',
+);
+await assert.rejects(
+  () => orchestrator.run({ ...base, targetTenant: 'tenant-b' }),
+  (error) => error.code === 'WFM_POSTSTAGING_CROSS_TENANT',
+);
 
 outRec = recorder();
-const containedPipelineResult = { status: 'contained', phase: 'independent-verifier', reason: 'security-failed', productionAuthorityGranted: false, productionMutation: false, customerMutation: false };
-orchestrator = createAutonomousRepairCanaryOrchestrator({ repairPipeline: repairPipeline(containedPipelineResult), canaryController: canaryController(() => { throw new Error('must not run'); }), outcomeRecorder: outRec });
+const containedPipelineResult = {
+  status: 'contained',
+  phase: 'independent-verifier',
+  reason: 'security-failed',
+  productionAuthorityGranted: false,
+  productionMutation: false,
+  customerMutation: false,
+};
+orchestrator = createAutonomousRepairCanaryOrchestrator({
+  repairPipeline: repairPipeline(containedPipelineResult),
+  canaryController: canaryController(() => { throw new Error('must not run'); }),
+  outcomeRecorder: outRec,
+});
 out = await orchestrator.run(base);
 assert.equal(out.status, 'contained');
 assert.equal(out.phase, 'independent-verifier');
 assert.equal(outRec.records.length, 0);
 
 outRec = recorder();
+const tamperedRepair = structuredClone(makeRepairResult());
+tamperedRepair.signatureDigest = sha('tampered-signature');
+orchestrator = createAutonomousRepairCanaryOrchestrator({
+  repairPipeline: repairPipeline(tamperedRepair),
+  canaryController: canaryController(() => { throw new Error('must not run'); }),
+  outcomeRecorder: outRec,
+});
+out = await orchestrator.run(base);
+assert.equal(out.status, 'contained');
+assert.equal(out.reason, 'repair-pipeline-evidence-chain-invalid');
+assert.equal(outRec.records.at(-1).reason, 'repair-pipeline-evidence-chain-invalid');
+
+outRec = recorder();
 orchestrator = createAutonomousRepairCanaryOrchestrator({
   repairPipeline: repairPipeline(),
-  canaryController: canaryController((input) => ({ ...proven(input), artifactDigest: d('drifted') })),
+  canaryController: canaryController((input) => ({ ...proven(input), artifactDigest: sha('drifted') })),
   outcomeRecorder: outRec,
 });
 out = await orchestrator.run(base);
@@ -145,21 +267,50 @@ assert.equal(out.status, 'contained');
 assert.equal(out.reason, 'canary-authority-violation');
 
 assert.throws(() => createAutonomousRepairCanaryOrchestrator({
-  repairPipeline: repairPipeline(repairResult, { ...pipelineCaps, exactArtifactStagingRequired: false }),
-  canaryController: canaryController(proven), outcomeRecorder: recorder(),
-}), (err) => err.code === 'WFM_POSTSTAGING_PIPELINE');
+  repairPipeline: repairPipeline(makeRepairResult(), { ...pipelineCaps, repairEvidenceChainRequired: false }),
+  canaryController: canaryController(proven),
+  outcomeRecorder: recorder(),
+}), (error) => error.code === 'WFM_POSTSTAGING_PIPELINE');
 
 assert.throws(() => createAutonomousRepairCanaryOrchestrator({
   repairPipeline: repairPipeline(),
   canaryController: { ...canaryController(proven), limits: () => ({ maxInstances: 2, maxTrafficPercent: 5 }) },
   outcomeRecorder: recorder(),
-}), (err) => err.code === 'WFM_POSTSTAGING_CANARY');
+}), (error) => error.code === 'WFM_POSTSTAGING_CANARY');
+
+const caps = createAutonomousRepairCanaryOrchestrator({
+  repairPipeline: repairPipeline(),
+  canaryController: canaryController(proven),
+  outcomeRecorder: recorder(),
+}).capabilities();
+assert.deepEqual(caps, {
+  endToEndRepairToCanaryDecision: true,
+  repairEvidenceChainRequired: true,
+  signedProvenanceRequired: true,
+  postStagingDecisionChainRequired: true,
+  sixActorSeparationRequired: true,
+  canaryMaxInstances: 1,
+  canaryMaxTrafficPercent: 5,
+  simulationOnly: true,
+  productionAuthority: false,
+  promotionAuthority: false,
+  productionMutation: false,
+  customerMutation: false,
+  incrementalCostZero: true,
+});
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'tier2-repair-to-canary-decision-composition',
   status: 'PASS',
   exactStagedArtifactFeedsCanary: true,
+  fullRepairEvidenceChainBound: true,
+  reproducibleFailureBound: true,
+  patchEvidenceBound: true,
+  signedProvenanceBound: true,
+  repairEvidenceTamperContained: true,
+  postStagingDecisionDigestRequired: true,
+  postStagingDecisionDigestVerified: true,
   exactRollbackArtifactBound: true,
   sixActorSeparationRequired: true,
   repairContainmentStopsCanary: true,
