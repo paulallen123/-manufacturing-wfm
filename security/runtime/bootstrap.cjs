@@ -194,7 +194,7 @@ function handleStagingAccess(req, res) {
         cookies.push('wfm_staging_restore=' + rawToken + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=14400');
       }
       res.setHeader('Set-Cookie', cookies);
-      res.setHeader('Location', '/');
+      res.setHeader('Location', '/?vector_home=1');
       res.end();
       return true;
     } catch (error) {
