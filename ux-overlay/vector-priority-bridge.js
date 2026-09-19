@@ -54,6 +54,7 @@ function project(){
   }
   const active=slot.querySelector(':scope > .ux11-queue');
   slot.hidden=!active;
+  if(active&&!slot.hidden&&window.WFMUXCycle11?.returnMarker?.())window.WFMUXCycle11.restoreFocus?.(active);
   return Boolean(active);
 }
 
