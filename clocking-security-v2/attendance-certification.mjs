@@ -18,7 +18,13 @@ export class AttendanceClaimCertifier {
   certifyShift({tenant,site,shiftId,nowMs=Date.now(),expectedSourceIds=[],sourceHealth=[]}={}){
     const preflight=this.coverage.preflight({tenant,site,shiftId});
     const evaluation=this.coverage.evaluateShift({tenant,site,shiftId,nowMs});
-    const expected=[...new Set((expectedSourceIds||[]).map(String))].sort();
+    const declared=[...new Set((expectedSourceIds||[]).map(String))].sort();
+    // The coverage plan is the canonical source inventory. A caller may require
+    // additional sources, but it cannot omit a planned attendance source to make
+    // a degraded provider disappear from the continuity quorum.
+    const planned=[...new Set((preflight.rows||[]).flatMap(row=>Array.isArray(row.sourceIds)?row.sourceIds.map(String):[]))].sort();
+    const underdeclared=planned.filter(id=>!declared.includes(id));
+    const expected=[...new Set([...planned,...declared])].sort();
     const healthById=new Map((sourceHealth||[]).map(x=>[String(x.sourceId),x]));
     const missingHealth=expected.filter(id=>!healthById.has(id));
     const unhealthy=expected.filter(id=>{
@@ -44,6 +50,7 @@ export class AttendanceClaimCertifier {
     const claimLevel=passivePeriodCertified?'PASSIVE_AND_VERIFIED_100':verifiedPeriodCertified?'VERIFIED_100_ONLY':passiveLiveCertified?'PASSIVE_LIVE_100':'NOT_CERTIFIED';
     const blockers=[];
     if(!preflight.releaseTargetMet) blockers.push({code:'AUTOMATIC_COVERAGE_BELOW_100',employees:preflight.partial.length+preflight.uncovered.length});
+    if(underdeclared.length) blockers.push({code:'SOURCE_EXPECTATION_UNDERDECLARED',sourceIds:underdeclared});
     if(missingHealth.length) blockers.push({code:'SOURCE_HEALTH_MISSING',sourceIds:missingHealth});
     if(unhealthy.length) blockers.push({code:'SOURCE_NOT_HEALTHY',sourceIds:unhealthy});
     if(incompletePeriod.length) blockers.push({code:'SOURCE_PERIOD_NOT_RECONCILED',sourceIds:incompletePeriod});
