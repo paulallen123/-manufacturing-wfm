@@ -83,10 +83,29 @@ function externalSignals(){try{const rows=window.WFMUXSignals?.list?.();return A
 function tone(item){return item.urgent?'urgent':item.evidenceState==='current'?'normal':'review';}
 function sourceName(source){return ({'time-review':'Time Review','weekly-review':'Weekly Sign-off','absence':'Absence','schedule-publication':'Schedule','today':'Today','automation':'Automation','implementation':'Implementation','integrations':'Integrations','attendance':'Attendance','agency':'Agency labour','manufacturing-cost':'Cost','energy':'Energy','support':'Support','learning':'Learning','handover':'Shift handover','documents':'Documents','payroll':'Payroll'})[source]||source;}
 function stateText(item){return ({action_required:'Action required',decision_sent:'Decision sent',confirming_source:'Confirming source',needs_verification:'Needs verification',resolved:'Resolved'})[item.lifecycle]||'Action required';}
+const lifecycleSeen=new Map();
 function card(item){
- return `<article class="ux11-card ${tone(item)}" data-ux11-id="${safe(item.id)}" data-ux11-reason="${safe(item.reasonCode)}" data-ux11-source="${safe(item.source)}" data-ux11-evidence="${safe(item.evidenceState)}" data-ux11-priority="${safe(item.priority)}"><div class="ux11-card-top"><span class="ux11-source">${safe(sourceName(item.source))}</span><span class="ux11-state">${safe(stateText(item))}</span></div><h3>${safe(item.title)}</h3><p class="ux11-why"><b>Why now:</b> ${safe(item.whyNow)}</p>${item.consequence?`<p class="ux11-consequence">${safe(item.consequence)}</p>`:''}<details class="ux11-trust"><summary>Why this priority</summary><div><span><b>Reason</b>${safe(item.reasonLabel)}</span><span><b>Evidence</b>${safe(item.evidenceLabel)}</span><span><b>Authority</b>${safe(item.authority)}</span></div></details><button type="button" class="btn small primary ux11-open" data-ux11-route="${safe(item.route)}" data-ux11-id="${safe(item.id)}" data-ux11-source-id="${safe(item.sourceId)}" data-ux11-source="${safe(item.source)}" data-ux11-reason="${safe(item.reasonCode)}" data-ux11-title="${safe(item.title)}">Open ${safe(sourceName(item.source))}</button></article>`;
+ const key=`ux11-card-${encodeURIComponent(String(item.id)).replaceAll('%','_')}`;
+ const source=sourceName(item.source),state=stateText(item);
+ return `<article class="ux11-card ${tone(item)}" aria-labelledby="${safe(key)}-title" data-ux11-id="${safe(item.id)}" data-ux11-reason="${safe(item.reasonCode)}" data-ux11-source="${safe(item.source)}" data-ux11-evidence="${safe(item.evidenceState)}" data-ux11-priority="${safe(item.priority)}"><div class="ux11-card-top"><span class="ux11-source" aria-label="Source: ${safe(source)}">${safe(source)}</span><span class="ux11-state" aria-label="Status: ${safe(state)}">${safe(state)}</span></div><h3 id="${safe(key)}-title">${safe(item.title)}</h3><p class="ux11-why"><b>Why now:</b> ${safe(item.whyNow)}</p>${item.consequence?`<p class="ux11-consequence">${safe(item.consequence)}</p>`:''}<details class="ux11-trust"><summary>Why this priority</summary><div><span><b>Reason</b>${safe(item.reasonLabel)}</span><span><b>Evidence</b>${safe(item.evidenceLabel)}</span><span><b>Authority</b>${safe(item.authority)}</span></div></details><button type="button" class="btn small primary ux11-open" aria-label="Open ${safe(source)}: ${safe(item.title)}" data-ux11-route="${safe(item.route)}" data-ux11-id="${safe(item.id)}" data-ux11-source-id="${safe(item.sourceId)}" data-ux11-source="${safe(item.source)}" data-ux11-reason="${safe(item.reasonCode)}" data-ux11-title="${safe(item.title)}">Open ${safe(source)}</button></article>`;
 }
 function receipt(r){return `<li data-ux11-id="${safe(r.id)}"><b>${safe(r.title)}</b><span>${safe(r.whyNow)}</span><small>${safe(r.auditRef||r.evidenceLabel)}</small></li>`;}
+function announceLifecycle(bundle,section){
+ const live=section?.querySelector?.('.ux11-live');if(!live)return;
+ const items=[...(bundle?.actions||[]),...(bundle?.resolved||[])];
+ const next=new Map(),changes=[];
+ for(const item of items){
+   next.set(item.id,item.lifecycle);
+   const prior=lifecycleSeen.get(item.id);
+   if(prior&&prior!==item.lifecycle){
+     let message=`${item.title}. ${stateText(item)}.`;
+     if(item.lifecycle==='resolved')message+=' Confirmed by source workflow.';
+     changes.push(message);
+   }
+ }
+ lifecycleSeen.clear();for(const [id,state] of next)lifecycleSeen.set(id,state);
+ if(changes.length)setTimeout(()=>{if(live.isConnected)live.textContent=changes.slice(0,2).join(' ');},0);
+}
 function sourceResolution(marker){
  if(!marker?.id||!marker?.sourceId)return null;
  const base={
@@ -122,13 +141,14 @@ function renderQueue(extra=[]){
  const bundle=M()?.build([...collectSignals(),...(Array.isArray(extra)?extra:[]),...(confirmed?[confirmed]:[])])||{actions:[],receipts:[],resolved:[],information:[]};
  const section=document.createElement('section');section.className='ux11-queue';section.setAttribute('aria-label','Manager action queue');
  const visible=bundle.actions.slice(0,3),rest=bundle.actions.slice(3);
- section.innerHTML=`<div class="ux11-head"><div><span class="eyebrow">NEEDS MY ACTION</span><h2>${bundle.actions.length?'${COUNT} priorities':'You are clear for now'}</h2><p>${bundle.actions.length?'The most important verified decisions across absence, time and sign-off.':'No verified cross-workflow manager decisions are waiting.'}</p></div><span class="ux11-count">${bundle.actions.length}</span></div><div class="ux11-live" aria-live="polite"></div><div class="ux11-cards"></div>`.replace('${COUNT}',String(bundle.actions.length));
+ section.innerHTML=`<div class="ux11-head"><div><span class="eyebrow">NEEDS MY ACTION</span><h2>${bundle.actions.length?'${COUNT} priorities':'You are clear for now'}</h2><p>${bundle.actions.length?'The most important verified decisions across absence, time and sign-off.':'No verified cross-workflow manager decisions are waiting.'}</p></div><span class="ux11-count">${bundle.actions.length}</span></div><div class="ux11-live" role="status" aria-live="polite" aria-atomic="true"></div><div class="ux11-cards"></div>`.replace('${COUNT}',String(bundle.actions.length));
  const cards=section.querySelector('.ux11-cards');visible.forEach(x=>cards.insertAdjacentHTML('beforeend',card(x)));
  if(rest.length){const d=document.createElement('details');d.className='ux11-more';d.innerHTML=`<summary>${rest.length} more action${rest.length===1?'':'s'}</summary><div class="ux11-more-grid">${rest.map(card).join('')}</div>`;section.appendChild(d);}
  if(bundle.resolved.length){const d=document.createElement('details');d.className='ux11-receipts ux11-resolved';d.innerHTML=`<summary>Recently confirmed · ${bundle.resolved.length}</summary><ul>${bundle.resolved.map(receipt).join('')}</ul>`;section.appendChild(d);}
  if(bundle.receipts.length){const d=document.createElement('details');d.className='ux11-receipts';d.innerHTML=`<summary>Handled automatically · ${bundle.receipts.length}</summary><ul>${bundle.receipts.map(receipt).join('')}</ul>`;section.appendChild(d);}
  if(bundle.information.length){const d=document.createElement('details');d.className='ux11-information';d.innerHTML=`<summary>Information · ${bundle.information.length}</summary><ul>${bundle.information.map(receipt).join('')}</ul>`;section.appendChild(d);}
  host.prepend(section);
+ announceLifecycle(bundle,section);
  restoreFocus(section);
  return bundle;
 }
@@ -209,5 +229,5 @@ const previousRender=window.render;if(typeof previousRender==='function')window.
 const observer=new MutationObserver(()=>{try{if(manager()&&page()==='overview'&&!document.querySelector('.ux11-queue'))apply();else if(page()!=='overview'&&!document.querySelector('.ux11-back')&&returnMarker())addBackLink();}catch{}});
 observer.observe(document.documentElement,{subtree:true,childList:true});
 setTimeout(apply,0);setTimeout(apply,400);
-window.WFMUXCycle11={apply,collectSignals,renderQueue,renderCard:card,openRoute,returnMarker,restoreFocus,addBackLink,focusSourceTarget,selectSourceScope,focusNode,sourceResolution};
+window.WFMUXCycle11={apply,collectSignals,renderQueue,renderCard:card,openRoute,returnMarker,restoreFocus,addBackLink,focusSourceTarget,selectSourceScope,focusNode,sourceResolution,announceLifecycle};
 })();
