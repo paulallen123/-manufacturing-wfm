@@ -106,10 +106,11 @@ async function runVectorAutomationCycle(options={}){
           results.push({id:row.id,status:'BLOCKED_PROVIDER'});continue;
         }
         try{
-          deliveryResult=await sendEmail({
+          const rawDelivery=await sendEmail({
             token:env.WFM_VECTOR_RESEND_TOKEN,from:env.WFM_VECTOR_EMAIL_FROM,to:row.owner_email,
             subject:report.title,html:report.html,text:report.markdown,idempotencyKey:'vector-automation/'+row.id+'/'+localParts(now,fresh.timezone).ymd
           });
+          deliveryResult={provider:compact(rawDelivery?.provider,40)||'EMAIL_PROVIDER',id:compact(rawDelivery?.id,160)};
           reportStatus='SENT';
         }catch(error){reportStatus='DELIVERY_FAILED';deliveryError=compact(error?.message||error,300);}
       }
