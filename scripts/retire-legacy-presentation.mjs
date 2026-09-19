@@ -26,13 +26,15 @@ function replaceRequired(name,before,after){
 
 // The sealed 0.6.76 presentation still contained shared authenticated helpers that were
 // previously declared by the retired weekly-review presentation. Move only the shared
-// actor semantics to the surviving company shell so role-first consumers keep using the
-// authenticated server actor; offline preview behaviour remains byte-for-byte equivalent
-// to the retired helper. This does not grant permissions or change server-side authority.
+// actor and payroll-permission semantics to the surviving company shell so role-first
+// consumers keep using the authenticated server actor and the existing WFMPayroll
+// permission evaluator. This restores the original permission check; it does not grant
+// permissions or change server-side authority. Offline preview behaviour remains
+// byte-for-byte equivalent to the retired helper.
 replaceRequired(
   'company-ui.js',
   "'use strict';\nconst WR=WFMWorkRules;",
-  "'use strict';\nglobalThis.payrollActor=function(){if(!OFFLINE)return F.actor;const a=sampleActor();return {...a,role:ui.role==='payrollviewer'?'payroll_admin':a.role,permissions:me().permissions||[]};};\nconst WR=WFMWorkRules;"
+  "'use strict';\nconst PR=WFMPayroll;\nglobalThis.payrollActor=function(){if(!OFFLINE)return F.actor;const a=sampleActor();return {...a,role:ui.role==='payrollviewer'?'payroll_admin':a.role,permissions:me().permissions||[]};};\nconst WR=WFMWorkRules;"
 );
 
 // The sealed 0.6.76 presentation still contained strict-mode globals that were
@@ -90,6 +92,7 @@ function walk(dir){
     if(!/\.(?:js|css|html)$/i.test(name)) continue;
     const text=fs.readFileSync(file,'utf8');
     for(const token of forbidden) if(text.includes(token)) violations.push({file:path.relative(publicDir,file),token});
+    if(name==='company-ui.js'&&!text.includes('const PR=WFMPayroll;')) violations.push({file:path.relative(publicDir,file),token:'missing-shared-payroll-permission-evaluator'});
     if(name==='company-ui.js'&&!text.includes('globalThis.payrollActor=function(){if(!OFFLINE)return F.actor;')) violations.push({file:path.relative(publicDir,file),token:'missing-shared-authenticated-actor'});
     if(name==='company-ui.js'&&text.includes('payrollShell=content=>shell(content);')&&!text.includes('globalThis.payrollShell=content=>shell(content);')) violations.push({file:path.relative(publicDir,file),token:'unguarded-payrollShell'});
     if(name==='payroll-intelligence-ui.js'&&text.includes('const pciOldPayrollReport=payrollReport;')) violations.push({file:path.relative(publicDir,file),token:'unguarded-payrollReport-read'});
