@@ -4,11 +4,12 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { buildProviderProofPlan } = require('./provider-proof-profiles.cjs');
 
-function review(providerKey, authMethod = 'oauth2') {
+function review(providerKey, authMethod = 'oauth2', overrides = {}) {
   return {
     providerKey,
     transport: 'api',
-    auth: { method: authMethod, credentialRef: `vault://tenant/${providerKey}` }
+    auth: { method: authMethod, credentialRef: `vault://tenant/${providerKey}` },
+    ...overrides
   };
 }
 
@@ -42,6 +43,27 @@ test('NetSuite proof binds account id to the account-specific REST domain', () =
     accountId: '123456_SB1',
     accountSpecificDomain: 'other.suitetalk.api.netsuite.com'
   }), /does not match/);
+});
+
+test('Oracle NetSuite alias remains bound to the exact reviewed connection identity', () => {
+  const plan = buildProviderProofPlan(review('oracle-netsuite', 'oauth2', {
+    reviewedDigest: 'a'.repeat(64),
+    targetIdentity: '1234567-sb1'
+  }), {
+    accountId: '1234567_SB1',
+    accountSpecificDomain: '1234567-sb1.suitetalk.api.netsuite.com'
+  });
+  assert.equal(plan.providerKey, 'oracle-netsuite');
+  assert.equal(plan.providerFamily, 'netsuite');
+  assert.equal(plan.reviewedDigest, 'a'.repeat(64));
+  assert.equal(plan.targetIdentity, '1234567-sb1');
+
+  assert.throws(() => buildProviderProofPlan(review('oracle-netsuite', 'oauth2', {
+    targetIdentity: 'different-sb1'
+  }), {
+    accountId: '1234567_SB1',
+    accountSpecificDomain: '1234567-sb1.suitetalk.api.netsuite.com'
+  }), /reviewed target identity/);
 });
 
 test('provider proof refuses redirect-prone or ambiguous target strings', () => {
