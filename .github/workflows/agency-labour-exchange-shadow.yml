@@ -51,6 +51,7 @@ on:
       - 'test/frontier/agency-identity-continuity-postgres.test.mjs'
       - 'test/frontier/agency-identity-observation-ingress.test.mjs'
       - 'test/frontier/agency-identity-observation-ingress-postgres.test.mjs'
+      - 'test/frontier/agency-identity-runtime-boundary-postgres.test.mjs'
       - 'test/frontier/agency-identity-authoritative-binding.test.mjs'
       - 'test/frontier/agency-identity-authoritative-binding-postgres.test.mjs'
       - 'test/frontier/agency-identity-db-boundary.test.mjs'
@@ -153,6 +154,7 @@ jobs:
           node --test test/frontier/agency-right-to-work-assurance-ledger-postgres.test.mjs
           node --test test/frontier/agency-identity-continuity-postgres.test.mjs
           node --test test/frontier/agency-identity-observation-ingress-postgres.test.mjs
+          node --test test/frontier/agency-identity-runtime-boundary-postgres.test.mjs
           node --test test/frontier/agency-identity-authoritative-binding-postgres.test.mjs
           node --test test/frontier/agency-identity-db-boundary-postgres.test.mjs
           node --test test/frontier/agency-work-start-readiness-postgres.test.mjs
