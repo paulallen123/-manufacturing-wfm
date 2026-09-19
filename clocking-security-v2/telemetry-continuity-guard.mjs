@@ -18,15 +18,19 @@ function signatureBytes(value){
 
 const OBSERVATION_KINDS=new Set(['heartbeat','backfill_heartbeat','canary']);
 
-export function telemetryObserverPayload({trustDomain,kind,stream,sequence,canaryId,observedAtMs}){
+export function telemetryObserverPayload({trustDomain,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}){
   const domain=id(trustDomain,'trustDomain');
   const observationKind=id(kind,'kind');
   if(!OBSERVATION_KINDS.has(observationKind)) throw new Error('Telemetry observation kind is invalid.');
   const name=id(stream,'stream');
   const observed=int(observedAtMs,'observedAtMs');
   const payload={v:1,trustDomain:domain,kind:observationKind,stream:name,observedAtMs:observed};
-  if(observationKind==='canary') payload.canaryId=id(canaryId,'canaryId');
-  else payload.sequence=int(sequence,'sequence');
+  if(observationKind==='canary'){
+    payload.canaryId=id(canaryId,'canaryId');
+    payload.emittedAtMs=int(emittedAtMs,'emittedAtMs');
+  }else{
+    payload.sequence=int(sequence,'sequence');
+  }
   return Buffer.from(JSON.stringify(payload));
 }
 
@@ -37,8 +41,10 @@ export function telemetryObserverPayload({trustDomain,kind,stream,sequence,canar
  * expected canary on each required telemetry stream. All observations must be
  * signed by an allow-listed independent observer and are bound to one trust domain,
  * so a monitored workload cannot manufacture healthy telemetry or replay another
- * customer's/site's signed evidence. Sequence gaps remain unresolved until every
- * missing sequence is explicitly observed through the signed backfill path.
+ * customer's/site's signed evidence. Canary proof is also bound to the exact
+ * emission instance so a valid observation from a previous process cannot be
+ * replayed if an identifier is reused after restart. Sequence gaps remain unresolved
+ * until every missing sequence is explicitly observed through the signed backfill path.
  */
 export class TelemetryContinuityGuard {
   constructor({
@@ -77,13 +83,13 @@ export class TelemetryContinuityGuard {
     this.canaries=new Map();
   }
 
-  _verifyObserver({observerId,signature,kind,stream,sequence,canaryId,observedAtMs}){
+  _verifyObserver({observerId,signature,kind,stream,sequence,canaryId,emittedAtMs,observedAtMs}){
     const oid=id(observerId,'observerId');
     const observer=this.trustedObservers.get(oid);
     if(!observer) throw new Error('Telemetry observation is not from a trusted observer.');
     const name=id(stream,'stream');
     if(!observer.streams.has(name)) throw new Error('Telemetry observer is not authorised for this stream.');
-    const payload=telemetryObserverPayload({trustDomain:this.trustDomain,kind,stream:name,sequence,canaryId,observedAtMs});
+    const payload=telemetryObserverPayload({trustDomain:this.trustDomain,kind,stream:name,sequence,canaryId,emittedAtMs,observedAtMs});
     if(!crypto.verify(null,payload,observer.publicKey,signatureBytes(signature))) throw new Error('Telemetry observer signature verification failed.');
     return oid;
   }
@@ -148,7 +154,7 @@ export class TelemetryContinuityGuard {
     if(canary.observedAtMs!==null) throw new Error('Telemetry canary replay detected.');
     if(observed<canary.emittedAtMs-this.maxClockSkewMs) throw new Error('Telemetry canary was observed before emission.');
     if(observed>received+this.maxClockSkewMs) throw new Error('Telemetry canary observation timestamp is too far in the future.');
-    const oid=this._verifyObserver({observerId,signature,kind:'canary',stream:canary.stream,canaryId:cid,observedAtMs:observed});
+    const oid=this._verifyObserver({observerId,signature,kind:'canary',stream:canary.stream,canaryId:cid,emittedAtMs:canary.emittedAtMs,observedAtMs:observed});
     canary.observedAtMs=observed;
     canary.receivedAtMs=received;
     canary.observerId=oid;
