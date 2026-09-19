@@ -1,0 +1,10 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+USER root
+RUN mkdir -p /app/proof
+COPY proof/self-verify.mjs /app/proof/self-verify.mjs
+RUN chown root:root /app/proof/self-verify.mjs \
+ && chmod 0555 /app/proof \
+ && chmod 0444 /app/proof/self-verify.mjs
+USER node
