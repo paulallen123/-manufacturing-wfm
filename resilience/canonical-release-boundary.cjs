@@ -41,6 +41,46 @@ const REQUIRED_TRUE_RULES = Object.freeze([
   'mainPromotionRequiresReleasePr',
 ]);
 
+function validateCanonicalTrustAnchorGovernance(governance) {
+  if (!governance || typeof governance !== 'object' || Array.isArray(governance)) {
+    deny('WFM_CANONICAL_TRUST_ANCHOR_INPUT', 'Canonical trust-anchor governance evidence object is required.');
+  }
+
+  const required = {
+    protected: governance.protected === true,
+    pullRequestRequired: governance.pullRequestRequired === true,
+    requiredApprovingReviewCount: Number.isInteger(governance.requiredApprovingReviewCount) && governance.requiredApprovingReviewCount >= 1,
+    dismissStaleReviews: governance.dismissStaleReviews === true,
+    requiredStatusChecksEnforced: governance.requiredStatusChecksEnforced === true,
+    requiredStatusChecksStrict: governance.requiredStatusChecksStrict === true,
+    requiredStatusCheckCount: Number.isInteger(governance.requiredStatusCheckCount) && governance.requiredStatusCheckCount >= 1,
+    enforceAdmins: governance.enforceAdmins === true,
+    allowForcePushes: governance.allowForcePushes === false,
+    allowDeletions: governance.allowDeletions === false,
+    bypassActorCount: governance.bypassActorCount === 0,
+  };
+
+  const failed = Object.entries(required).filter(([, passed]) => !passed).map(([key]) => key);
+  if (failed.length) {
+    deny('WFM_CANONICAL_TRUST_ANCHOR_GOVERNANCE', `Canonical trust anchor is not release-grade: ${failed.join(', ')}`);
+  }
+
+  const core = {
+    schemaVersion: 1,
+    proof: 'canonical-trust-anchor-governance',
+    governanceVerified: true,
+    requiredApprovingReviewCount: governance.requiredApprovingReviewCount,
+    requiredStatusCheckCount: governance.requiredStatusCheckCount,
+    releaseAuthorityGranted: false,
+    deploymentAuthorityGranted: false,
+    productionAuthorityGranted: false,
+    modelAuthorityGranted: false,
+    customerMutation: false,
+    productionMutation: false,
+  };
+  return { ...core, governanceDigest: digest(core) };
+}
+
 function validateCanonicalReleasePolicy(policy) {
   if (!policy || typeof policy !== 'object' || Array.isArray(policy)) deny('WFM_RELEASE_POLICY_INPUT', 'Canonical release policy object is required.');
   if (policy.schemaVersion !== 1) deny('WFM_RELEASE_POLICY_SCHEMA', 'Unsupported canonical release policy schema.');
@@ -194,6 +234,7 @@ function createCanonicalReleaseBoundary({ policy, sourceRef, sourceBaseSha, sour
 module.exports = {
   canonical,
   digest,
+  validateCanonicalTrustAnchorGovernance,
   validateCanonicalReleasePolicy,
   createCanonicalReleaseBoundary,
 };

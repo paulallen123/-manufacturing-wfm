@@ -5,7 +5,11 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { createCanonicalReleaseBoundary, validateCanonicalReleasePolicy } = require('../resilience/canonical-release-boundary.cjs');
+const {
+  createCanonicalReleaseBoundary,
+  validateCanonicalReleasePolicy,
+  validateCanonicalTrustAnchorGovernance,
+} = require('../resilience/canonical-release-boundary.cjs');
 const root = process.cwd();
 const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'resilience/canonical-release-policy-snapshot.json'), 'utf8'));
 
@@ -42,6 +46,45 @@ function loadPolicyEvidence() {
 const evidence = loadPolicyEvidence();
 const policyCheck = validateCanonicalReleasePolicy(evidence.policy);
 assert.equal(policyCheck.valid, true);
+
+const strongGovernance = {
+  protected: true,
+  pullRequestRequired: true,
+  requiredApprovingReviewCount: 1,
+  dismissStaleReviews: true,
+  requiredStatusChecksEnforced: true,
+  requiredStatusChecksStrict: true,
+  requiredStatusCheckCount: 3,
+  enforceAdmins: true,
+  allowForcePushes: false,
+  allowDeletions: false,
+  bypassActorCount: 0,
+};
+const governanceReceipt = validateCanonicalTrustAnchorGovernance(strongGovernance);
+assert.equal(governanceReceipt.governanceVerified, true);
+assert.equal(governanceReceipt.releaseAuthorityGranted, false);
+assert.equal(governanceReceipt.productionAuthorityGranted, false);
+assert.match(governanceReceipt.governanceDigest, /^[a-f0-9]{64}$/);
+
+for (const [field, unsafeValue] of [
+  ['protected', false],
+  ['pullRequestRequired', false],
+  ['requiredApprovingReviewCount', 0],
+  ['dismissStaleReviews', false],
+  ['requiredStatusChecksEnforced', false],
+  ['requiredStatusChecksStrict', false],
+  ['requiredStatusCheckCount', 0],
+  ['enforceAdmins', false],
+  ['allowForcePushes', true],
+  ['allowDeletions', true],
+  ['bypassActorCount', 1],
+]) {
+  assert.throws(
+    () => validateCanonicalTrustAnchorGovernance({ ...strongGovernance, [field]: unsafeValue }),
+    (error) => error?.code === 'WFM_CANONICAL_TRUST_ANCHOR_GOVERNANCE',
+    `Governance downgrade must fail closed: ${field}`,
+  );
+}
 
 const boundary = createCanonicalReleaseBoundary(evidence);
 const featureBranch = 'autonomy/zero-engineer-support-sprint-20260918';
@@ -136,7 +179,7 @@ tampered.reason = 'forged';
 assert.equal(boundary.verifyReceipt(tampered), false);
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'canonical-release-boundary-compatibility',
   status: 'PASS',
   liveCanonicalEvidence: evidence.live,
@@ -145,6 +188,13 @@ console.log(JSON.stringify({
   sourceBaseSha: evidence.sourceBaseSha,
   sourcePolicyBlobSha: evidence.sourcePolicyBlobSha,
   policyDigest: policyCheck.policyDigest,
+  releaseGradeTrustAnchorRequiresPrGate: true,
+  releaseGradeTrustAnchorRequiresApprovals: true,
+  releaseGradeTrustAnchorRequiresStrictStatusChecks: true,
+  releaseGradeTrustAnchorRequiresAdminEnforcement: true,
+  releaseGradeTrustAnchorRejectsForcePushes: true,
+  releaseGradeTrustAnchorRejectsDeletions: true,
+  releaseGradeTrustAnchorRejectsBypassActors: true,
   featureBranchCanonicalDeployDenied: true,
   disposablePreviewOnlyForFeatureBranch: true,
   canonicalStagingRequiresDedicatedReleaseWorkflow: true,

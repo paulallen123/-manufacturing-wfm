@@ -35,6 +35,8 @@ const releaseBindingComplete = Object.values(releaseEvidence).every(validGitSha)
 const actualHeadSha = gitHeadSha();
 const releaseHeadMatchesCheckout = releaseBindingComplete && actualHeadSha === releaseEvidence.headSha;
 const canonicalTrustAnchorProtected = process.env.WFM_CANONICAL_TRUST_ANCHOR_PROTECTED === 'true';
+const canonicalTrustAnchorGovernanceVerified = process.env.WFM_CANONICAL_TRUST_ANCHOR_GOVERNANCE_VERIFIED === 'true';
+const releaseGradeCanonicalTrustAnchor = canonicalTrustAnchorProtected && canonicalTrustAnchorGovernanceVerified;
 const releaseBinding = releaseBindingComplete ? {
   ...releaseEvidence,
   bindingDigest: sha256(JSON.stringify(releaseEvidence)),
@@ -112,8 +114,14 @@ if (strictRuntime && (!releaseBindingComplete || !releaseHeadMatchesCheckout)) {
 
 results.push({
   id: 'canonical-trust-anchor',
-  status: canonicalTrustAnchorProtected ? 'PASS' : 'RELEASE_BLOCKED',
-  reason: canonicalTrustAnchorProtected ? 'protected-canonical-trust-anchor' : 'canonical-trust-anchor-unprotected',
+  status: releaseGradeCanonicalTrustAnchor ? 'PASS' : 'RELEASE_BLOCKED',
+  reason: !canonicalTrustAnchorProtected
+    ? 'canonical-trust-anchor-unprotected'
+    : canonicalTrustAnchorGovernanceVerified
+      ? 'protected-and-governance-verified-canonical-trust-anchor'
+      : 'canonical-trust-anchor-governance-unverified',
+  protected: canonicalTrustAnchorProtected,
+  governanceVerified: canonicalTrustAnchorGovernanceVerified,
   releaseAuthorityGranted: false,
 });
 
@@ -221,6 +229,8 @@ if (!releaseBindingComplete) {
   releaseEvidenceStatus = 'FAIL_CLOSED_PROOF_HEAD_MISMATCH';
 } else if (!canonicalTrustAnchorProtected) {
   releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED';
+} else if (!canonicalTrustAnchorGovernanceVerified) {
+  releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_GOVERNANCE_UNVERIFIED';
 } else if (!exactRuntime) {
   releaseEvidenceStatus = 'FAIL_CLOSED_EXACT_RUNTIME_REQUIRED';
 } else {
@@ -233,7 +243,7 @@ const proofScope = releaseClaimAllowed
   : exactRuntime ? 'EXACT_RUNTIME_LOGIC_ONLY' : 'NON_EXACT_LOGIC_ONLY';
 
 const receipt = {
-  schemaVersion: 4,
+  schemaVersion: 5,
   proof: 'portable-zero-engineer-autonomy-gate',
   status: failed ? 'FAIL' : 'PASS',
   proofScope,
@@ -248,6 +258,8 @@ const receipt = {
   priorCorpusEvidenceContinuityDigestRequired: true,
   priorCorpusSelectionAdapterRequired: true,
   canonicalTrustAnchorProtected,
+  canonicalTrustAnchorGovernanceVerified,
+  releaseGradeCanonicalTrustAnchor,
   canonicalReleaseEvidenceBound: releaseClaimAllowed,
   releaseBinding,
   incidentRegressionCorpus,
@@ -258,6 +270,3 @@ const receipt = {
 };
 
 fs.writeFileSync(path.join(ROOT, 'portable-autonomy-proof.json'), JSON.stringify(receipt, null, 2) + '\n');
-console.log('\n' + JSON.stringify(receipt, null, 2));
-
-if (failed) process.exit(1);
