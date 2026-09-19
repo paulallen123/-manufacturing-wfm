@@ -104,7 +104,8 @@ function createAutonomyControlLoop({
 
     try {
       if (targetTenant !== tenant && tier !== 'T4') {
-        append('cross-tenant-denied', { tenant, targetTenant });
+        outcome = tier === 'T0' ? 'safe_abstention' : 'contained';
+        append('cross-tenant-denied', { tenant, targetTenant, outcome });
       } else if (tier === 'T0') {
         if (!selfHelp?.answer) {
           outcome = 'safe_abstention';
@@ -271,10 +272,13 @@ function createAutonomyControlLoop({
     }
 
     if (!isAllowedTerminal(contract, tier, outcome)) {
-      append('terminal-coerced-to-containment', { rejectedOutcome: outcome, tier });
-      outcome = isAllowedTerminal(contract, tier, 'contained')
+      const allowed = contract?.tiers?.[tier]?.allowed_terminal_outcomes || [];
+      const fallback = allowed.includes('contained')
         ? 'contained'
-        : (contract.tiers[tier].allowed_terminal_outcomes || [])[0];
+        : allowed.includes('safe_abstention') ? 'safe_abstention' : (allowed[0] || outcome);
+      if (fallback !== 'contained' && fallback !== 'safe_abstention') safeTerminalEstablished = false;
+      append('terminal-coerced-to-safe-fallback', { rejectedOutcome: outcome, tier, fallback });
+      outcome = fallback;
     }
 
     append('terminal', { tier, outcome, actionCount, safeTerminal: safeTerminalEstablished });
