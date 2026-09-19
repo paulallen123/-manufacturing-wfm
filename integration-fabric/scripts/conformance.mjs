@@ -10,6 +10,8 @@ const matches=new Set(protocols.profiles.flatMap(p=>p.matches));
 const p0=catalog.systems.filter(x=>x.priority==='P0');
 const uncovered=p0.filter(x=>!x.protocols.some(p=>matches.has(p)));
 assert.deepEqual(uncovered.map(x=>x.id),[], 'Every P0 system must map to at least one reusable protocol/vendor profile.');
+const uncoveredAll=catalog.systems.filter(x=>!x.protocols.some(p=>matches.has(p)));
+assert.deepEqual(uncoveredAll.map(x=>x.id),[], 'Every catalogued system must map to at least one reusable protocol/vendor profile.');
 
 const highConfidence=new Set(['tenant-authenticated','read-roundtrip-proven','write-roundtrip-proven','production-certified']);
 for(const s of catalog.systems){
@@ -47,6 +49,9 @@ for (const id of ['cornerstone-ondemand','docebo','moodle']) {
   const system=catalog.systems.find(x=>x.id===id);
   assert.ok(system.category.includes('lms')||system.category.includes('learning'),'Learning platform category missing: '+id);
 }
+const adpSuite=catalog.systems.find(x=>x.id==='adp-workforce-suite');
+assert.equal(adpSuite.testLevel,'spec-verified','ADP WorkForce Suite must retain product-specific protocol evidence.');
+assert.ok(adpSuite.protocols.includes('REST')&&adpSuite.protocols.includes('SOAP')&&adpSuite.protocols.includes('files'),'ADP WorkForce Suite must retain REST, SOAP and file integration paths.');
 const intelex=catalog.systems.find(x=>x.id==='intelex');
 assert.ok(intelex.category.includes('ehs'),'Intelex must retain EHS opportunity coverage.');
 
@@ -55,6 +60,7 @@ console.log(JSON.stringify({
   p0:p0.length,
   profiles:protocols.profiles.length,
   uncoveredP0:uncovered.length,
+  uncoveredAll:uncoveredAll.length,
   ipaasTargets:ipaas.length,
   tenantAuthenticated:catalog.systems.filter(x=>x.testLevel==='tenant-authenticated').length,
   opportunityProfiles:opportunities.profiles.length,
