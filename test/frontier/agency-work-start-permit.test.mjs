@@ -68,12 +68,12 @@ test('missing dependencies, locked-readiness failures and unconsumed permits fai
   const unconsumed=await evaluateAgencyWorkStartPermit(input({shadowWorkStartCommand:async()=>{}}));assert.equal(unconsumed.reason,'work_start_permit_not_consumed');
 });
 
-test('PostgreSQL permit store acquires one assignment-scoped advisory lock before exact current RTW and accepted-response SELECT locks',async()=>{
+test('PostgreSQL permit store acquires database-owned canonical assignment lock before exact current RTW and accepted-response SELECT locks',async()=>{
   const calls=[];let transactionActive=false;
-  const store=createPostgresAgencyWorkStartPermitStore({withTransaction:async evaluate=>{transactionActive=true;try{return await evaluate({query:async(sql,values)=>{calls.push({sql,values});if(calls.length===1)return {rows:[{locked:null}]};return {rows:[{assurance_version_id:ASSURANCE,assignment_fingerprint:ASSIGNMENT,conflicted:false,token_fingerprint:'1'.repeat(16),action:'confirm_preferred_worker',consumed_at:'2026-10-04T12:00:00Z'}]};}});}finally{transactionActive=false;}}});
+  const store=createPostgresAgencyWorkStartPermitStore({withTransaction:async evaluate=>{transactionActive=true;try{return await evaluate({query:async(sql,values)=>{calls.push({sql,values});if(calls.length===1)return {rows:[{scope_lock_key:'-42',scope_fingerprint:'6'.repeat(24)}]};return {rows:[{assurance_version_id:ASSURANCE,assignment_fingerprint:ASSIGNMENT,conflicted:false,token_fingerprint:'1'.repeat(16),action:'confirm_preferred_worker',consumed_at:'2026-10-04T12:00:00Z'}]};}});}finally{transactionActive=false;}}});
   const result=await store.withLockedSnapshot({tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:ASSIGNMENT,now:NOW},async()=>{assert.equal(transactionActive,true);return 'ok';});
   assert.equal(result,'ok');assert.equal(transactionActive,false);assert.equal(store.concurrencyBoundary,'assignment_scoped_transaction_lock');assert.equal(calls.length,2);
-  assert.match(calls[0].sql,/pg_advisory_xact_lock/i);assert.equal(calls[0].values.length,1);assert.match(String(calls[0].values[0]),/^-?\d+$/);
+  assert.match(calls[0].sql,/wfm_lock_agency_identity_assignment_scope_v1/i);assert.doesNotMatch(calls[0].sql,/pg_advisory_xact_lock\(\$1::bigint\)/i);assert.deepEqual(calls[0].values,['T1','S1','R1','A1','W1',ASSIGNMENT]);
   assert.ok(calls[1].sql.trim().startsWith('SELECT current.assurance_version_id'));assert.match(calls[1].sql,/FOR SHARE/g);assert.doesNotMatch(calls[1].sql,/\bINSERT\b|\bUPDATE\b|\bDELETE\b/i);assert.match(calls[1].sql,/wfm_agency_rtw_assurance_current/);assert.match(calls[1].sql,/wfm_agency_portal_token_consumptions/);assert.deepEqual(calls[1].values,['T1','S1','R1','A1','W1',NOW]);assert.doesNotMatch(calls[1].sql,/badge|photo|biometric|date_of_birth|share_code|document_number|raw_payload|signature/i);
 });
 
