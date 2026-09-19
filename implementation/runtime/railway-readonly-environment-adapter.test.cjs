@@ -4,7 +4,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   RAILWAY_ENVIRONMENTS_QUERY,
-  createRailwayReadOnlyEnvironmentAdapter
+  createRailwayReadOnlyEnvironmentAdapter,
+  validateLookup
 } = require('./railway-readonly-environment-adapter.cjs');
 
 function lookup(overrides = {}) {
@@ -19,14 +20,14 @@ function lookup(overrides = {}) {
   };
 }
 
+function expectedName(overrides = {}) {
+  return validateLookup(lookup(overrides)).environmentName;
+}
+
 function adapter(response, hooks = {}) {
   return createRailwayReadOnlyEnvironmentAdapter({
     projectId: 'project-1',
     now: () => 1_000_000,
-    environmentNameForLookup: async value => {
-      hooks.seenLookup = value;
-      return 'wfm-tenant-42-proof';
-    },
     creationProofForLookup: async value => {
       hooks.proofLookup = value;
       return { schemaVersion: 1, mac: 'proof' };
@@ -50,14 +51,15 @@ test('adapter is explicitly read-only and its fixed Railway operation is a query
   assert.doesNotMatch(RAILWAY_ENVIRONMENTS_QUERY, /\bmutation\b/i);
 });
 
-test('queries only non-ephemeral environments and maps one exact match to fresh-create evidence', async () => {
+test('queries only non-ephemeral environments and maps one exact durable-name match to fresh-create evidence', async () => {
   const hooks = {};
+  const name = expectedName();
   const value = adapter({
     data: {
       environments: {
         edges: [
           { node: { id: 'env-other', name: 'other', createdAt: '1970-01-01T00:16:39.000Z' } },
-          { node: { id: 'env-1', name: 'wfm-tenant-42-proof', createdAt: '1970-01-01T00:16:39.900Z' } }
+          { node: { id: 'env-1', name, createdAt: '1970-01-01T00:16:39.900Z' } }
         ]
       }
     }
@@ -67,28 +69,20 @@ test('queries only non-ephemeral environments and maps one exact match to fresh-
   assert.equal(hooks.request.query, RAILWAY_ENVIRONMENTS_QUERY);
   assert.deepEqual(hooks.request.variables, { projectId: 'project-1', isEphemeral: false });
   assert.equal(Object.isFrozen(hooks.request.variables), true);
-  assert.deepEqual(result, {
-    status: 'FOUND',
-    readOnly: true,
-    observedAt: 1_000_000,
-    providerResourceId: 'env-1',
-    providerRequestId: 'wfm-create-123',
-    provider: 'railway',
-    region: 'eu-west',
-    tenantId: 'tenant-42',
-    createdAt: 999_900,
-    creationProof: { schemaVersion: 1, mac: 'proof' }
-  });
-  assert.equal(Object.isFrozen(hooks.seenLookup), true);
+  assert.equal(result.status, 'FOUND');
+  assert.equal(result.providerResourceId, 'env-1');
+  assert.equal(result.environmentName, name);
+  assert.match(result.bindingDigest, /^[a-f0-9]{64}$/);
+  assert.equal(result.creationProof.mac, 'proof');
   assert.equal(hooks.proofLookup.queueKey, 'wfm-provision:v1:abc');
+  assert.equal(hooks.proofLookup.environmentName, name);
 });
 
-test('returns NOT_FOUND without asking for proof when the expected environment does not exist', async () => {
+test('returns NOT_FOUND without asking for proof when the exact bound environment does not exist', async () => {
   let proofCalls = 0;
   const value = createRailwayReadOnlyEnvironmentAdapter({
     projectId: 'project-1',
     now: () => 1_000_000,
-    environmentNameForLookup: async () => 'expected',
     creationProofForLookup: async () => {
       proofCalls += 1;
       return { mac: 'unused' };
@@ -112,12 +106,13 @@ test('fails closed as AMBIGUOUS when Railway returns GraphQL errors even with a 
 });
 
 test('fails closed as AMBIGUOUS when duplicate exact-name environments are returned', async () => {
+  const name = expectedName();
   const value = adapter({
     data: {
       environments: {
         edges: [
-          { node: { id: 'env-1', name: 'wfm-tenant-42-proof', createdAt: '1970-01-01T00:16:39.900Z' } },
-          { node: { id: 'env-2', name: 'wfm-tenant-42-proof', createdAt: '1970-01-01T00:16:39.950Z' } }
+          { node: { id: 'env-1', name, createdAt: '1970-01-01T00:16:39.900Z' } },
+          { node: { id: 'env-2', name, createdAt: '1970-01-01T00:16:39.950Z' } }
         ]
       }
     }
@@ -128,13 +123,13 @@ test('fails closed as AMBIGUOUS when duplicate exact-name environments are retur
 });
 
 test('rejects a matched environment when its durable autonomous proof is unavailable', async () => {
+  const name = expectedName();
   const value = createRailwayReadOnlyEnvironmentAdapter({
     projectId: 'project-1',
     now: () => 1_000_000,
-    environmentNameForLookup: async () => 'expected',
     creationProofForLookup: async () => null,
     executeGraphQL: async () => ({
-      data: { environments: { edges: [{ node: { id: 'env-1', name: 'expected', createdAt: '1970-01-01T00:16:39.900Z' } }] } }
+      data: { environments: { edges: [{ node: { id: 'env-1', name, createdAt: '1970-01-01T00:16:39.900Z' } }] } }
     })
   });
   await assert.rejects(
@@ -147,7 +142,6 @@ test('rejects lookups for another provider before any Railway query occurs', asy
   let calls = 0;
   const value = createRailwayReadOnlyEnvironmentAdapter({
     projectId: 'project-1',
-    environmentNameForLookup: async () => 'expected',
     creationProofForLookup: async () => ({ mac: 'proof' }),
     executeGraphQL: async () => {
       calls += 1;
@@ -159,4 +153,11 @@ test('rejects lookups for another provider before any Railway query occurs', asy
     error => error.code === 'WFM_RAILWAY_PROVIDER_MISMATCH'
   );
   assert.equal(calls, 0);
+});
+
+test('a different sealed request derives a different lookup name, blocking stale or manually redirected recovery', () => {
+  const original = validateLookup(lookup());
+  const changed = validateLookup(lookup({ providerRequestId: 'wfm-create-456' }));
+  assert.notEqual(changed.environmentName, original.environmentName);
+  assert.notEqual(changed.bindingDigest, original.bindingDigest);
 });
