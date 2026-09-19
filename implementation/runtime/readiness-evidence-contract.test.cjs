@@ -4,10 +4,17 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { validateStrictReadinessEvidence } = require('./readiness-evidence-contract.cjs');
 
-test('tenant environment refuses checked-only and fixture evidence', () => {
+test('tenant environment refuses weak, fixture or human-assisted evidence', () => {
   assert.match(validateStrictReadinessEvidence('tenant-environment', 'PASS', { checked: true }), /non-fixture/);
+  assert.match(validateStrictReadinessEvidence('tenant-environment', 'PASS', {
+    fixtureOnly: false,
+    zeroHuman: false,
+    humanInterventions: 1
+  }), /zero-human/);
   assert.equal(validateStrictReadinessEvidence('tenant-environment', 'PASS', {
     fixtureOnly: false,
+    zeroHuman: true,
+    humanInterventions: 0,
     provisioned: true,
     environmentId: 'railway-runtime/tenant-alpha',
     provisioningMode: 'cloud-runtime',
@@ -16,7 +23,7 @@ test('tenant environment refuses checked-only and fixture evidence', () => {
   }), null);
 });
 
-test('source systems refuse fixture providers and unverified live claims', () => {
+test('source systems require zero-human discovery, authorisation and a real provider receipt', () => {
   assert.match(validateStrictReadinessEvidence('source-systems', 'PASS', {
     fixtureOnly: true,
     authorizationVerified: true,
@@ -24,26 +31,38 @@ test('source systems refuse fixture providers and unverified live claims', () =>
   }), /fixtures/);
   assert.match(validateStrictReadinessEvidence('source-systems', 'PASS', {
     fixtureOnly: false,
+    zeroHuman: true,
+    humanInterventions: 0,
+    discoveryCompleted: true,
     authorizationVerified: true,
-    providers: [{ provider: 'Example', authorized: true, connected: true, mode: 'live' }]
+    providers: [{ provider: 'Example', discovered: true, authorized: true, connected: true, mode: 'live' }]
   }), /live verification/);
   assert.equal(validateStrictReadinessEvidence('source-systems', 'PASS', {
     fixtureOnly: false,
+    zeroHuman: true,
+    humanInterventions: 0,
+    discoveryCompleted: true,
     authorizationVerified: true,
-    providers: [{ provider: 'Example Sandbox', authorized: true, connected: true, mode: 'sandbox' }]
+    providers: [{ provider: 'Example Sandbox', discovered: true, authorized: true, connected: true, mode: 'sandbox' }]
   }), null);
 });
 
-test('historical replay requires independent exact payroll reconciliation', () => {
+test('historical replay labels its data class and requires independent exact payroll reconciliation', () => {
   assert.match(validateStrictReadinessEvidence('historical-replay', 'PASS', {
-    fixtureOnly: false,
+    independentCalculation: true,
+    expectedTotal: 15180000,
+    calculatedTotal: 15180020,
+    unexplainedVariance: 20
+  }), /declare/);
+  assert.match(validateStrictReadinessEvidence('historical-replay', 'PASS', {
+    dataClass: 'synthetic-scale',
     independentCalculation: true,
     expectedTotal: 15180000,
     calculatedTotal: 15180020,
     unexplainedVariance: 20
   }), /match exactly/);
   assert.equal(validateStrictReadinessEvidence('historical-replay', 'PASS', {
-    fixtureOnly: false,
+    dataClass: 'synthetic-scale',
     independentCalculation: true,
     expectedTotal: 15180000,
     calculatedTotal: 15180000,
@@ -51,18 +70,25 @@ test('historical replay requires independent exact payroll reconciliation', () =
   }), null);
 });
 
-test('security, scenario and live import evidence are fail-closed', () => {
+test('security, scenario and live import evidence are fail-closed without overstating synthetic tests', () => {
   assert.match(validateStrictReadinessEvidence('security-controls', 'PASS', {
+    cloudRuntime: true,
     tenantIsolationVerified: true,
     crossTenantNegativeTests: 0,
     criticalFailures: 0
   }), /cross-tenant/);
   assert.match(validateStrictReadinessEvidence('scenario-validation', 'PASS', {
-    fixtureOnly: false,
-    cloudRuntime: false
+    cloudRuntime: false,
+    testDataClass: 'synthetic-edge-suite'
   }), /cloud runtime/);
+  assert.equal(validateStrictReadinessEvidence('scenario-validation', 'PASS', {
+    cloudRuntime: true,
+    testDataClass: 'synthetic-edge-suite'
+  }), null);
   assert.match(validateStrictReadinessEvidence('live-data-import', 'PASS', {
     fixtureOnly: false,
+    zeroHuman: true,
+    humanInterventions: 0,
     sourceAuthoritative: false
   }), /authoritative/);
 });
