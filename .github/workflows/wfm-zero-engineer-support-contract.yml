@@ -118,12 +118,24 @@ jobs:
           package-manager-cache: false
 
       - name: Run canonical portable autonomy proof
-        run: node scripts/run-portable-autonomy-proof.mjs --strict-runtime
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/run-portable-autonomy-proof.mjs --strict-runtime 2>&1 | tee portable-autonomy-proof.log
+
+      - name: Preserve portable proof evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portable-autonomy-proof-${{ github.run_id }}
+          path: |
+            portable-autonomy-proof.json
+            portable-autonomy-proof.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Revalidate canonical binding at proof completion
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           BRANCH_JSON="$(curl --fail-with-body --silent --show-error \
@@ -140,6 +152,8 @@ jobs:
             echo '::error::Canonical trust anchor moved during proof execution. Discarding stale proof; rerun against the new canonical state.' >&2
             exit 1
           fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Assert portable proof receipt
         shell: bash
