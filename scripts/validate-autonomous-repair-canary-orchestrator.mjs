@@ -8,7 +8,9 @@ const {
   createAutonomousRepairCanaryOrchestrator,
 } = require(path.join(process.cwd(), 'resilience/autonomous-repair-canary-orchestrator.cjs'));
 const {
+  T2_COORDINATOR_CAPABILITY_CONTRACT,
   computeRepairEvidenceChainDigest,
+  computeT2CoordinatorCapabilityDigest,
   computePostStagingDecisionDigest,
 } = require(path.join(process.cwd(), 'resilience/autonomous-repair-pipeline.cjs'));
 
@@ -189,8 +191,17 @@ assert.equal(out.postStagingActorSetDigest, sha(Object.values({
   canaryControllerId: base.canaryControllerId,
   rollbackControllerId: base.rollbackControllerId,
 })));
+assert.deepEqual(out.coordinatorCapabilities, T2_COORDINATOR_CAPABILITY_CONTRACT);
+assert.equal(out.coordinatorCapabilityDigest, computeT2CoordinatorCapabilityDigest(T2_COORDINATOR_CAPABILITY_CONTRACT));
+assert.equal(outRec.records.at(-1).coordinatorCapabilityDigest, out.coordinatorCapabilityDigest);
 assert.equal(outRec.records.at(-1).repairChainDigest, out.repairChainDigest);
 assert.equal(outRec.records.at(-1).decisionChainDigest, out.decisionChainDigest);
+const tamperedCapabilities = structuredClone(out);
+tamperedCapabilities.coordinatorCapabilities.canaryMaxInstances = 2;
+assert.equal(computePostStagingDecisionDigest(tamperedCapabilities), null);
+const tamperedCapabilityDigest = structuredClone(out);
+tamperedCapabilityDigest.coordinatorCapabilityDigest = sha('forged-capability-digest');
+assert.equal(computePostStagingDecisionDigest(tamperedCapabilityDigest), null);
 
 outRec = recorder();
 orchestrator = createAutonomousRepairCanaryOrchestrator({
@@ -283,24 +294,14 @@ const caps = createAutonomousRepairCanaryOrchestrator({
   canaryController: canaryController(proven),
   outcomeRecorder: recorder(),
 }).capabilities();
-assert.deepEqual(caps, {
-  endToEndRepairToCanaryDecision: true,
-  repairEvidenceChainRequired: true,
-  signedProvenanceRequired: true,
-  postStagingDecisionChainRequired: true,
-  sixActorSeparationRequired: true,
-  canaryMaxInstances: 1,
-  canaryMaxTrafficPercent: 5,
-  simulationOnly: true,
-  productionAuthority: false,
-  promotionAuthority: false,
-  productionMutation: false,
-  customerMutation: false,
-  incrementalCostZero: true,
-});
+assert.deepEqual(caps, T2_COORDINATOR_CAPABILITY_CONTRACT);
+assert.match(computeT2CoordinatorCapabilityDigest(caps), /^[a-f0-9]{64}$/);
+assert.equal(computeT2CoordinatorCapabilityDigest({ ...caps, canaryMaxInstances: 2 }), null);
+assert.equal(computeT2CoordinatorCapabilityDigest({ ...caps, productionWriteAuthority: true }), null);
+assert.equal(computeT2CoordinatorCapabilityDigest({ ...caps, hiddenExtraAuthority: true }), null);
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'tier2-repair-to-canary-decision-composition',
   status: 'PASS',
   exactStagedArtifactFeedsCanary: true,
@@ -311,6 +312,9 @@ console.log(JSON.stringify({
   repairEvidenceTamperContained: true,
   postStagingDecisionDigestRequired: true,
   postStagingDecisionDigestVerified: true,
+  coordinatorCapabilityContractPinned: true,
+  coordinatorCapabilityDigestBound: true,
+  coordinatorCapabilityTamperDetected: true,
   exactRollbackArtifactBound: true,
   sixActorSeparationRequired: true,
   repairContainmentStopsCanary: true,
