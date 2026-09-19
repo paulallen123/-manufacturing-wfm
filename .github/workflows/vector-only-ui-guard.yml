@@ -11,6 +11,7 @@ on:
       - 'Dockerfile'
       - 'operations/runtime/vector-intelligence-*.cjs'
       - 'operations/runtime/vector-report-*.cjs'
+      - 'operations/runtime/vector-email-*.cjs'
       - 'security/runtime/bootstrap.cjs'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
@@ -20,6 +21,7 @@ on:
       - 'Dockerfile'
       - 'operations/runtime/vector-intelligence-*.cjs'
       - 'operations/runtime/vector-report-*.cjs'
+      - 'operations/runtime/vector-email-*.cjs'
       - 'security/runtime/bootstrap.cjs'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
@@ -52,7 +54,7 @@ jobs:
           node-version: '22.23.2'
           package-manager-cache: false
       - name: Prove Vector intelligence contract
-        run: node --test operations/runtime/vector-intelligence-layer.test.cjs operations/runtime/vector-intelligence-control-plane.test.cjs operations/runtime/vector-report-engine.test.cjs
+        run: node --test operations/runtime/vector-intelligence-layer.test.cjs operations/runtime/vector-intelligence-control-plane.test.cjs operations/runtime/vector-report-engine.test.cjs operations/runtime/vector-email-delivery.test.cjs
 
   image-build:
     needs: [ui-source-contract, intelligence-contract]
