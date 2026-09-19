@@ -173,7 +173,36 @@ function secondaryKpis(m){const s=scopedStats(),vals=[{label:'Absence today',val
 function alertsMarkup(rows){return `<section class="vector-card vector-alerts" data-vector-review="${REVIEW_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><h2 id="vector-review-title"><span class="vector-alert-bell">${icon('bell')}</span>Items to review <em>${rows.length}</em></h2><button type="button" data-vector-route="time-review">View all items ${icon('arrow')}</button></div><div class="vector-alert-list">${rows.length?rows.map((r,i)=>`<div class="vector-alert-row" role="group" aria-label="${esc(r.title)}. Status: ${esc(r.status)}. Review source evidence before acting."><i class="${r.tone}" aria-hidden="true"></i><b>${esc(r.title)}</b><span>${esc(r.detail||'Review source evidence')}</span><button type="button" data-vector-route="${esc(r.route)}" aria-label="Review ${esc(r.title)}">${esc(r.action)}</button></div>`).join(''):'<div class="vector-empty">No current items need review.</div>'}</div></section>`;}
 function leaveMarkup(rows){const body=rows.length?rows.slice(0,4).map((r,i)=>`<button type="button" class="vector-leave-row" data-vector-route="leave"><span class="vector-person-badge b${i}">${esc(r.name.split(/\s+/).map(x=>x[0]).join('').slice(0,2))}</span><span><b>${esc(r.name)}</b><small>${esc(r.area)}</small></span><em>${esc(r.when)}</em><strong>${esc(r.type)}</strong>${icon('chevron')}</button>`).join(''):`<button type="button" class="vector-leave-row" data-vector-route="leave" aria-label="Open Absence & Leave to review upcoming leave evidence"><span class="vector-person-badge" aria-hidden="true">i</span><span><b>Open Absence & Leave</b><small>No approved leave is available to this summary.</small></span><em>Source check</em><strong>Review</strong>${icon('chevron')}</button>`;return `<section class="vector-card vector-leave" data-vector-leave-evidence="${LEAVE_MARKER}" aria-label="Upcoming leave. Only approved source requests dated within the next seven days are shown."><div class="vector-card-head"><h2>Upcoming leave (next 7 days)</h2><button type="button" data-vector-route="leave">View calendar ${icon('arrow')}</button></div><div class="vector-leave-list">${body}</div></section>`;}
 function promoMarkup(){return '<aside class="vector-promo"><div><h2>A more productive<br>tomorrow starts today.</h2><p>Empowered people.<br>Stronger manufacturers.</p></div><div class="vector-promo-brand"><span class="vector-mark small"><i></i><i></i><i></i></span><b>Vector.</b></div></aside>';}
-function renderHome(content){if(content.dataset.vectorHome==='1')return;const source=document.createElement('div');source.className='vector-home-source';while(content.firstChild)source.appendChild(content.firstChild);content.appendChild(source);const m=metrics(source),departments=departmentRows(source),actions=actionRows(source),leaves=leaveRows(),d=currentDate();const home=document.createElement('div');home.className='vector-home';home.innerHTML=`<section class="vector-welcome" data-vector-identity="${IDENTITY_MARKER}"><div><h1>${esc(greeting())}, ${esc(firstName())}</h1><p>${esc(siteSentence())}</p></div><div class="vector-date"><b>${esc(d.date)}</b><span>Week ${esc(d.week)}</span></div></section><div class="vector-home-top"><div class="vector-home-main"><section class="vector-kpi-grid" data-vector-kpi-evidence="${KPI_MARKER}">${kpiMarkup(m)}</section>${shiftsMarkup(departments)}</div>${buildAssistant()}</div>${secondaryKpis(m)}<div class="vector-bottom-grid">${alertsMarkup(actions)}${leaveMarkup(leaves)}${promoMarkup()}</div>`;content.prepend(home);content.dataset.vectorHome='1';document.title='Vector · Workforce Operations';}
+function roleOverviewMarkup(){
+  const r=roleContext(),rv=roleViewCopy();
+  let items=[];
+  if(r.key==='OPS_MANAGER')items=[
+    ['Cross-site variance','Which sites are off plan, and why?','insights'],
+    ['Systemic risk','Find recurring skills, absence and capacity risks.','readiness'],
+    ['Value delivered','Track verified savings and avoidable cost.','costs'],
+    ['Agency & energy','See external labour and energy optimisation opportunities.','costs']
+  ];
+  else if(r.key==='DIRECTOR')items=[
+    ['Enterprise value','What value has been realised and evidenced?','costs'],
+    ['Margin exposure','What operational issues can affect margin?','insights'],
+    ['Resilience','Where are capacity and critical skills fragile?','readiness'],
+    ['Strategic outlook','What needs a leadership decision next?','forecast']
+  ];
+  else if(r.key==='EMPLOYEE')items=[
+    ['My shift','What am I working next?','shifts'],
+    ['My leave','Book or review time away.','leave'],
+    ['My attendance','Check today’s attendance record.','attendance'],
+    ['My development','See skills and training actions.','resources']
+  ];
+  else items=[
+    ['Today’s exceptions','Only items that need your judgement.','time-review'],
+    ['Coverage at risk','Where people or skills threaten output.','readiness'],
+    ['Avoidable cost','Overtime, agency and labour variance to act on.','costs'],
+    ['Improve next','Recurring causes and opportunities to remove work.','insights']
+  ];
+  return `<section class="vector-role-overview" data-vector-intelligence="${INTELLIGENCE_MARKER}"><div class="vector-role-overview-head"><span><b>${esc(rv.label)} view</b><small>${esc(rv.principle)}</small></span><em>${esc(rv.scope)} · ${esc(rv.horizon)}</em></div><div class="vector-role-overview-grid">${items.map(([title,detail,route])=>`<button type="button" data-vector-route="${esc(route)}"><b>${esc(title)}</b><span>${esc(detail)}</span>${icon('arrow')}</button>`).join('')}</div></section>`;
+}
+function renderHome(content){if(content.dataset.vectorHome==='1')return;const source=document.createElement('div');source.className='vector-home-source';while(content.firstChild)source.appendChild(content.firstChild);content.appendChild(source);const m=metrics(source),departments=departmentRows(source),actions=actionRows(source),leaves=leaveRows(),d=currentDate();const home=document.createElement('div');home.className='vector-home';home.innerHTML=`<section class="vector-welcome" data-vector-identity="${IDENTITY_MARKER}"><div><h1>${esc(greeting())}, ${esc(firstName())}</h1><p>${esc(siteSentence())}</p></div><div class="vector-date"><b>${esc(d.date)}</b><span>Week ${esc(d.week)}</span></div></section>${roleOverviewMarkup()}<div class="vector-home-top"><div class="vector-home-main"><section class="vector-kpi-grid" data-vector-kpi-evidence="${KPI_MARKER}">${kpiMarkup(m)}</section>${shiftsMarkup(departments)}</div>${buildAssistant()}</div>${secondaryKpis(m)}<div class="vector-bottom-grid">${alertsMarkup(actions)}${leaveMarkup(leaves)}${promoMarkup()}</div>`;content.prepend(home);content.dataset.vectorHome='1';document.title='Vector · Workforce Operations';}
 function screenLens(){
   const current=page(),rv=roleViewCopy();
   const map={
