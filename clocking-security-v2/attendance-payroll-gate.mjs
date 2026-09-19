@@ -100,10 +100,15 @@ export class AttendancePayrollGate {
     const unresolved=rows.filter(r=>r.status==='review_required');
     const externalExceptions=(evaluation.unexpectedCount||0)+(evaluation.unmappedSignalCount||0);
     const payrollReady=afterClose&&unresolved.length===0&&externalExceptions===0;
-    const attendanceInputs=rows.filter(r=>r.eligibleForPayrollInput).map(r=>({
+    const candidateAttendanceInputs=rows.filter(r=>r.eligibleForPayrollInput).map(r=>({
       tenant,site,shiftId,employee:r.employee,workerType:r.workerType,inAt:r.interval.inAt,outAt:r.interval.outAt,
       provenance:clone(r.provenance)
     }));
+    // Fail closed at the export boundary. Row-level verified/corrected intervals remain
+    // reviewable above, but no downstream attendance input is emitted until the entire
+    // shift-level payroll gate is ready. This prevents a caller from accidentally
+    // consuming a partial or pre-close export while ignoring payrollReady=false.
+    const attendanceInputs=payrollReady?candidateAttendanceInputs:[];
 
     return clone({
       tenant,site,shiftId,payrollReady,afterClose,
