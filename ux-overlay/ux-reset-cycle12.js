@@ -42,8 +42,9 @@ function renderSpecialistQueue(rows){
   const items=model.actions.slice(0,3);if(!items.length)return;
   const host=document.querySelector('.fcc-main')||document.querySelector('.content');if(!host)return;
   const section=document.createElement('section');section.className='ux11-queue ux12-system-queue';section.setAttribute('aria-label','System action queue');
-  section.innerHTML=`<div class="ux11-head"><div><span class="eyebrow">NEEDS MY ACTION</span><h2>${model.actions.length} system ${model.actions.length===1?'priority':'priorities'}</h2><p>Implementation, integrations and operating controls use the same evidence-backed decision pattern.</p></div><span class="ux11-count">${model.actions.length}</span></div><div class="ux11-live" aria-live="polite"></div><div class="ux11-cards">${items.map(shared.renderCard).join('')}</div>${model.actions.length>3?`<details class="ux11-more"><summary>${model.actions.length-3} more actions</summary><div class="ux11-more-grid">${model.actions.slice(3).map(shared.renderCard).join('')}</div></details>`:''}`;
+  section.innerHTML=`<div class="ux11-head"><div><span class="eyebrow">NEEDS MY ACTION</span><h2>${model.actions.length} system ${model.actions.length===1?'priority':'priorities'}</h2><p>Implementation, integrations and operating controls use the same evidence-backed decision pattern.</p></div><span class="ux11-count">${model.actions.length}</span></div><div class="ux11-live" role="status" aria-live="polite" aria-atomic="true"></div><div class="ux11-cards">${items.map(shared.renderCard).join('')}</div>${model.actions.length>3?`<details class="ux11-more"><summary>${model.actions.length-3} more actions</summary><div class="ux11-more-grid">${model.actions.slice(3).map(shared.renderCard).join('')}</div></details>`:''}`;
   host.prepend(section);
+  shared.announceLifecycle?.(model,section);
   shared.restoreFocus?.(section);
 }
 function relabelTools(){
