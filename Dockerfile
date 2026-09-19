@@ -44,7 +44,10 @@ RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-r
 COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-runtime/one-day-enterprise-engine.cjs
 COPY implementation/runtime/configuration-inference-engine.cjs /app/implementation-runtime/configuration-inference-engine.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
-COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
+COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/workforce-lifecycle-core.cjs
+COPY operations/runtime/workflow-action-evidence-contract.cjs /app/operations-runtime/workflow-action-evidence-contract.cjs
+COPY operations/runtime/workflow-action-evidence-bridge.cjs /app/operations-runtime/workflow-action-evidence-bridge.cjs
+COPY operations/runtime/workforce-lifecycle-router.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 COPY implementation/ui/ /tmp/wfm-implementation-ui/
 
@@ -71,8 +74,13 @@ COPY integration/runtime/directory-oauth-broker.cjs /tmp/wfm-tests/integration/r
 COPY integration/runtime/directory-oauth-broker.test.cjs /tmp/wfm-tests/integration/runtime/directory-oauth-broker.test.cjs
 COPY integration/worker/directory-discovery-worker.cjs /tmp/wfm-tests/integration/worker/directory-discovery-worker.cjs
 COPY integration/worker/directory-discovery-worker.test.cjs /tmp/wfm-tests/integration/worker/directory-discovery-worker.test.cjs
-COPY operations/runtime/workforce-lifecycle-guard.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.cjs
+COPY operations/runtime/workforce-lifecycle-guard.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-core.cjs
+COPY operations/runtime/workforce-lifecycle-router.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.cjs
 COPY operations/runtime/workforce-lifecycle-guard.test.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.test.cjs
+COPY operations/runtime/workflow-action-evidence-contract.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.cjs
+COPY operations/runtime/workflow-action-evidence-contract.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.test.cjs
+COPY operations/runtime/workflow-action-evidence-bridge.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.cjs
+COPY operations/runtime/workflow-action-evidence-bridge.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
@@ -84,6 +92,8 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/integration/runtime/autonomous-integration-hub.test.cjs \
       /tmp/wfm-tests/integration/runtime/directory-oauth-broker.test.cjs \
       /tmp/wfm-tests/integration/worker/directory-discovery-worker.test.cjs \
+      /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.test.cjs \
+      /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.test.cjs \
       /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.test.cjs \
  && rm -rf /tmp/wfm-tests
 
