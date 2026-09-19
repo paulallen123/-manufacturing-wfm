@@ -1,0 +1,1 @@
+Trigger isolated private five-role browser proof for frozen 0.6.76 candidate. DEVELOPMENT harness only; no release candidate changes.
