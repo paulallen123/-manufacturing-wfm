@@ -97,6 +97,17 @@ else {
   if(!vector.includes('const count=structuredReviewRows().length')) violations.push({type:'notification-count-not-source-bound',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('data-vector-action-evidence="${ACTION_MARKER}"')||!vector.includes('No source-confirmed items need review.')) violations.push({type:'action-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
 
+  // Time Review must consume the authoritative read-only bridge once, validate the
+  // shared contract, and retain the pre-existing neutral fallback when it cannot.
+  if(!vector.includes("const ACTION_EVIDENCE_CONTRACT='WFM_WORKFLOW_ACTION_EVIDENCE_V1'" )||!vector.includes("const TIME_REVIEW_EVIDENCE_PATH='/api/workforce/lifecycle/action-evidence/time-review'")) violations.push({type:'time-review-evidence-endpoint-not-bound',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("fetch(TIME_REVIEW_EVIDENCE_PATH,{method:'GET',credentials:'same-origin',cache:'no-store'")) violations.push({type:'time-review-evidence-read-not-session-bound',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("body.contractVersion!==ACTION_EVIDENCE_CONTRACT||body.workflow!=='time-review'||!Array.isArray(body.items)")) violations.push({type:'time-review-response-contract-not-validated',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("item.contractVersion!==ACTION_EVIDENCE_CONTRACT||item.workflow!=='time-review'")) violations.push({type:'time-review-item-contract-not-validated',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("confirmationState==='needs_verification'&&confirmation.slaExpired!==true")) violations.push({type:'time-review-needs-verification-not-source-owned',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("String(item?.confirmation?.state||'').toLowerCase()!=='resolved'")) violations.push({type:'resolved-time-review-item-not-suppressed-from-action-list',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes("state.timeReviewEvidence={status:'unavailable',items:[]}" )||!vector.includes('if(!hasContractTimeReview&&open.length)')) violations.push({type:'time-review-neutral-fallback-missing',path:'ux-overlay/vector-shell.js'});
+  if(vector.includes('setInterval(loadTimeReviewEvidence')||vector.includes('setTimeout(loadTimeReviewEvidence')) violations.push({type:'time-review-evidence-retry-loop-present',path:'ux-overlay/vector-shell.js'});
+
   // Source observation times are provenance, not a freshness verdict. Vector may display
   // source-owned lifecycle/freshness fields in future, but it must never calculate them.
   const reviewStart=vector.indexOf('function structuredReviewRows(){');
@@ -121,3 +132,4 @@ console.log('VECTOR_LEAVE_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_ACTION_SOURCE_CONTRACT=PASS');
 console.log('VECTOR_ACTION_FRESHNESS_NEUTRAL_CONTRACT=PASS');
 console.log('VECTOR_ACTION_CONFIRMATION_SOURCE_CONTRACT=PASS');
+console.log('VECTOR_TIME_REVIEW_EVIDENCE_CONSUMER=PASS');
