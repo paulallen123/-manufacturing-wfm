@@ -25,7 +25,17 @@ export class AttendanceClaimCertifier {
     const planned=[...new Set((preflight.rows||[]).flatMap(row=>Array.isArray(row.sourceIds)?row.sourceIds.map(String):[]))].sort();
     const underdeclared=planned.filter(id=>!declared.includes(id));
     const expected=[...new Set([...planned,...declared])].sort();
-    const healthById=new Map((sourceHealth||[]).map(x=>[String(x.sourceId),x]));
+    const healthRows=(sourceHealth||[]).map(x=>({sourceId:String(x?.sourceId),health:x}));
+    const healthCounts=new Map();
+    for(const row of healthRows) healthCounts.set(row.sourceId,(healthCounts.get(row.sourceId)||0)+1);
+    const duplicateHealth=[...healthCounts.entries()]
+      .filter(([sourceId,count])=>count>1&&expected.includes(sourceId))
+      .map(([sourceId])=>sourceId)
+      .sort();
+    // A source must have exactly one authoritative health statement for the period.
+    // Map last-write-wins semantics are unsafe here because a stale/forged healthy
+    // duplicate could otherwise overwrite a degraded/pending-recovery row.
+    const healthById=new Map(healthRows.map(({sourceId,health})=>[sourceId,health]));
     const missingHealth=expected.filter(id=>!healthById.has(id));
     const unhealthy=expected.filter(id=>{
       const h=healthById.get(id); if(!h) return false;
@@ -34,7 +44,7 @@ export class AttendanceClaimCertifier {
     const incompletePeriod=expected.filter(id=>{
       const h=healthById.get(id); return h && h.periodCoverageComplete!==true;
     });
-    const sourceContinuityLive=missingHealth.length===0&&unhealthy.length===0;
+    const sourceContinuityLive=duplicateHealth.length===0&&missingHealth.length===0&&unhealthy.length===0;
     const sourceContinuityPeriod=sourceContinuityLive&&incompletePeriod.length===0;
 
     const workingRows=evaluation.rows.filter(r=>r.status!=='excused');
@@ -51,6 +61,7 @@ export class AttendanceClaimCertifier {
     const blockers=[];
     if(!preflight.releaseTargetMet) blockers.push({code:'AUTOMATIC_COVERAGE_BELOW_100',employees:preflight.partial.length+preflight.uncovered.length});
     if(underdeclared.length) blockers.push({code:'SOURCE_EXPECTATION_UNDERDECLARED',sourceIds:underdeclared});
+    if(duplicateHealth.length) blockers.push({code:'SOURCE_HEALTH_DUPLICATE',sourceIds:duplicateHealth});
     if(missingHealth.length) blockers.push({code:'SOURCE_HEALTH_MISSING',sourceIds:missingHealth});
     if(unhealthy.length) blockers.push({code:'SOURCE_NOT_HEALTHY',sourceIds:unhealthy});
     if(incompletePeriod.length) blockers.push({code:'SOURCE_PERIOD_NOT_RECONCILED',sourceIds:incompletePeriod});

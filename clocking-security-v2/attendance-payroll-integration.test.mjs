@@ -63,6 +63,24 @@ test('caller cannot omit a planned source from continuity quorum to force payrol
   assert.equal(p.certification.sourceContinuityPeriod,false);
 });
 
+test('conflicting duplicate health rows cannot overwrite a degraded planned source and release payroll',()=>{
+  const x=setup(); clockIn(x.engine); clockOut(x.engine);
+  const sourceHealth=[
+    {sourceId:'door',state:'healthy',pendingRecovery:false,periodCoverageComplete:true},
+    {sourceId:'wifi',state:'degraded',pendingRecovery:true,periodCoverageComplete:false},
+    // A later duplicate that looks healthy must not win by Map overwrite semantics.
+    {sourceId:'wifi',state:'healthy',pendingRecovery:false,periodCoverageComplete:true}
+  ];
+  const certification=x.certifier.certifyShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:END+301_000,expectedSourceIds:['door','wifi'],sourceHealth});
+  assert.equal(certification.certification.sourceContinuityPeriod,false);
+  assert.equal(certification.blockers.some(x=>x.code==='SOURCE_HEALTH_DUPLICATE'&&x.sourceIds.includes('wifi')),true);
+
+  const p=x.payroll.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:END+301_000,shiftWindowClosed:true,expectedSourceIds:['door','wifi'],sourceHealth});
+  assert.equal(p.payrollReady,false);
+  assert.equal(p.attendanceInputs.length,0);
+  assert.equal(p.certification.sourceContinuityPeriod,false);
+});
+
 test('real missing OUT cannot reach payroll; audited manager correction resolves payroll without upgrading automatic certification',()=>{
   const x=setup(); clockIn(x.engine);
   let p=x.payroll.projectShift({tenant:'acme',site:'s1',shiftId:'shift1',nowMs:END+301_000,shiftWindowClosed:true,expectedSourceIds:['door','wifi'],sourceHealth:health(true)});
