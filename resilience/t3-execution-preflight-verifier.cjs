@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { T3_SCENARIO_POLICY, policyDigest } = require('./t3-shadow-simulator.cjs');
 
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -33,7 +34,7 @@ function containsReusableSecretSurface(value) {
 
 function fail(reason, detail = {}) {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     verified: false,
     reason,
     verifierRole: 'independent-read-only-t3-execution-preflight-verifier',
@@ -44,6 +45,16 @@ function fail(reason, detail = {}) {
     productionMutation: false,
     ...detail,
   };
+}
+
+function currentActionPolicyValid(consent) {
+  const policy = T3_SCENARIO_POLICY[consent?.scenarioId];
+  return Boolean(
+    policy
+    && policy.allowedActions.includes(consent.proposedAction)
+    && isDigest(consent.actionPolicyDigest)
+    && consent.actionPolicyDigest === policyDigest(consent.scenarioId)
+  );
 }
 
 function createT3ExecutionPreflightVerifier() {
@@ -59,6 +70,7 @@ function createT3ExecutionPreflightVerifier() {
       || consent.customerMutation !== false
       || consent.productionMutation !== false
     ) return fail('consent-authority-boundary-invalid');
+    if (!currentActionPolicyValid(consent)) return fail('action-policy-revoked-or-drifted');
     if (!isDigest(consent.authorisationReceiptDigest)) return fail('consent-receipt-digest-invalid');
     if (!isDigest(currentStateDigest)) return fail('current-state-digest-required');
     if (currentStateDigest !== consent.beforeStateDigest) return fail('state-drift-after-consent');
@@ -70,6 +82,7 @@ function createT3ExecutionPreflightVerifier() {
       ['scenarioId', consent.scenarioId],
       ['proposalDigest', consent.proposalDigest],
       ['proposedAction', consent.proposedAction],
+      ['actionPolicyDigest', consent.actionPolicyDigest],
       ['beforeStateDigest', consent.beforeStateDigest],
       ['afterStateDigest', consent.afterStateDigest],
       ['compensationPlanDigest', consent.compensationPlanDigest],
@@ -104,6 +117,7 @@ function createT3ExecutionPreflightVerifier() {
       scenarioId: consent.scenarioId,
       proposalDigest: consent.proposalDigest,
       proposedAction: consent.proposedAction,
+      actionPolicyDigest: consent.actionPolicyDigest,
       affectedRecords: consent.affectedRecords,
       beforeStateDigest: consent.beforeStateDigest,
       currentStateDigest,
@@ -128,11 +142,14 @@ function createT3ExecutionPreflightVerifier() {
     if (dryRun.dryRunDigest !== digest(dryRunCore)) return fail('dry-run-digest-mismatch');
 
     const core = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       tenant: consent.tenant,
       scenarioId: consent.scenarioId,
       incidentId: consent.incidentId,
       proposalDigest: consent.proposalDigest,
+      proposedAction: consent.proposedAction,
+      affectedRecords: consent.affectedRecords,
+      actionPolicyDigest: consent.actionPolicyDigest,
       authorisationReceiptDigest: consent.authorisationReceiptDigest,
       currentStateDigest,
       dryRunDigest: dryRun.dryRunDigest,
@@ -141,6 +158,7 @@ function createT3ExecutionPreflightVerifier() {
       executionPlanDigest: dryRun.executionPlanDigest,
       verifierRole: 'independent-read-only-t3-execution-preflight-verifier',
       verified: true,
+      currentActionPolicyVerified: true,
       compensationVerified: true,
       rollbackReady: true,
       executionAuthority: false,
