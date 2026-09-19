@@ -25,7 +25,7 @@ for(const s of catalog.systems){
 const ipaas=['mulesoft-anypoint','boomi','workato','sap-integration-suite','azure-logic-apps-power-automate','oracle-integration-cloud','google-cloud-application-integration','jitterbit-harmony'];
 for(const id of ipaas) assert.ok(catalog.systems.some(x=>x.id===id),'iPaaS target missing: '+id);
 
-for(const id of ['salto-nebula','azure-service-bus','confluent-cloud','ibm-mq','jumpcloud']){
+for(const id of ['salto-nebula','azure-service-bus','confluent-cloud','ibm-mq','jumpcloud','highbyte-intelligence-hub','tulip','cognite-data-fusion']){
   const system=catalog.systems.find(x=>x.id===id);
   assert.ok(system,'Research target missing: '+id);
   assert.ok(system.protocols.some(p=>matches.has(p)),'Research target has no reusable protocol mapping: '+id);
@@ -37,6 +37,9 @@ for(const id of requiredProfiles) assert.ok(profileIds.has(id),'Reusable protoco
 
 const mq=catalog.systems.find(x=>x.id==='ibm-mq');
 assert.ok(mq.protocols.includes('AMQP 1.0')&&mq.protocols.includes('JMS'),'IBM MQ must retain both standards paths.');
+const highbyte=catalog.systems.find(x=>x.id==='highbyte-intelligence-hub');
+assert.ok(highbyte.protocols.includes('Sparkplug B'),'HighByte must retain the explicit Sparkplug B route.');
+assert.ok(matches.has('Sparkplug B'),'Sparkplug B must map to a reusable MQTT protocol profile.');
 assert.equal(catalog.systems.find(x=>x.id==='sap-fieldglass').testLevel,'discovery-queued','Fieldglass must not be promoted without protocol-level evidence.');
 
 console.log(JSON.stringify({
