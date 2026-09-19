@@ -10,6 +10,7 @@ const PLANNING_MARKER='VECTOR_PLANNING_NEUTRAL_V1';
 const KPI_MARKER='VECTOR_KPI_EVIDENCE_V1';
 const IDENTITY_MARKER='VECTOR_IDENTITY_SOURCE_BOUND_V1';
 const LEAVE_MARKER='VECTOR_LEAVE_SOURCE_BOUND_V1';
+const INTELLIGENCE_MARKER='VECTOR_INTELLIGENCE_COMMAND_LAYER_V1';
 const NAV=[
   {label:'Home', icon:'home', routes:['overview']},
   {label:'People', icon:'people', routes:['org-admin','organisation','resources']},
@@ -69,6 +70,26 @@ const displayName=()=>sourceIdentity().name||'Signed-in user';
 const firstName=()=>{const name=sourceIdentity().name;return name?name.split(/\s+/)[0]:'there';};
 const siteName=()=>sourceIdentity().site||'Current workspace';
 const siteSentence=()=>sourceIdentity().site?`Here’s what’s happening at ${sourceIdentity().site} today.`:'Here’s what’s happening in your current workspace today.';
+function roleContext(){
+  try{
+    const own=typeof me==='function'?(me()||{}):{};
+    const raw=[own.role,own.roleName,own.title,own.jobTitle,own.position].find(v=>typeof v==='string'&&v.trim())||'';
+    const sites=Array.isArray(own.siteIds)?own.siteIds:Array.isArray(own.sites)?own.sites.map(s=>s?.id||s?.name).filter(Boolean):[];
+    const role=String(raw).toLowerCase();
+    let key='EMPLOYEE';
+    if(/director|chief|\\bmd\\b|executive|vp|vice president/.test(role))key='DIRECTOR';
+    else if(/ops|operations|regional|area|group|multi.?site/.test(role)||(sites.length>1&&role!=='employee'))key='OPS_MANAGER';
+    else if(/manager|supervisor|team leader|shift leader|planner|admin/.test(role))key='SITE_MANAGER';
+    return {key,raw:String(raw||''),siteIds:sites,siteCount:sites.length||null};
+  }catch{return {key:employee()?'EMPLOYEE':'SITE_MANAGER',raw:'',siteIds:[],siteCount:null};}
+}
+function roleViewCopy(){
+  const r=roleContext();
+  if(r.key==='OPS_MANAGER')return {label:'Multi-site Operations',scope:'Cross-site',horizon:'Rolling 4 weeks',prompts:['Which site needs attention and why?','Where are we wasting the most money?','Compare agency dependency across sites','Create a Monday operations pack','Email this report weekly'],principle:'Focus on cross-site variance, systemic causes, value and interventions local managers cannot see.'};
+  if(r.key==='DIRECTOR')return {label:'Director / Executive',scope:'Enterprise',horizon:'Quarter',prompts:['Summarise operational performance','What will affect margin this quarter?','Where is our biggest strategic risk?','Create a board pack','Email this to the leadership team'],principle:'Focus on value, margin, resilience and strategic exceptions; hide operational noise.'};
+  if(r.key==='EMPLOYEE')return {label:'Employee',scope:'My work',horizon:'Today',prompts:['What do I need to do today?','How much holiday do I have left?','Why is my shift different tomorrow?'],principle:'Show only personal actions and information.'};
+  return {label:'Site Manager',scope:'Current site',horizon:'Today',prompts:['What needs my attention today?','Why is overtime high?','Where is coverage at risk?','Create my weekly labour report','Set a task to review agency spend'],principle:'Focus on today’s exceptions that affect people, production, compliance or cost.'};
+}
 const initials=()=>{const name=sourceIdentity().name;return name?name.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase():'—';};
 
 function scopedStats(){try{if(typeof data==='undefined'||typeof WFM==='undefined'||typeof me!=='function')return {};const own=me(),rows=WFM.scopedStaff(data,own.id,ui?.root);const s=rows?.length?WFM.stats(rows):{};return {rows,total:rows?.length||0,onsite:s?.onsite??s?.in??0,sick:s?.sick??0,late:s?.late??0,missing:s?.missing??0,sync:s?.sync??0};}catch{return {}}}
@@ -100,7 +121,52 @@ function ensureTopbar(app){const content=app.querySelector('.content');if(!conte
  <div class="vector-top-actions"><button type="button" class="vector-icon-button" data-vector-alerts aria-label="Notifications">${icon('bell')}<span class="vector-notification-count" hidden>0</span></button><button type="button" class="vector-icon-button" data-vector-help aria-label="Help">${icon('help')}</button><button type="button" class="vector-user-button" data-vector-identity="${IDENTITY_MARKER}"><span class="vector-avatar">${esc(initials())}</span><span class="vector-user-copy"><b>${esc(displayName())}</b><small>${esc(siteName())}</small></span><span class="vector-user-chevron">⌄</span></button></div>`;parent.insertBefore(bar,content);return bar;}
 function updateNav(){const sidebar=document.querySelector('.vector-sidebar');if(!sidebar)return;sidebar.querySelectorAll('[data-vector-nav]').forEach((b,i)=>b.classList.toggle('active',activeFor(NAV[i])));const alerts=document.querySelector('.vector-notification-count');const count=document.querySelectorAll('.vector-home-source .fcc-action,.vector-home-source .ux-approved-decision-card').length;if(alerts){alerts.textContent=String(count);alerts.hidden=!count}}
 function askWorkforce(message){const launch=document.getElementById('wfm-bot-launch');if(launch&&document.getElementById('wfm-bot')?.hidden)launch.click();setTimeout(()=>{const box=document.getElementById('bot-message');if(box){box.value=String(message||'').slice(0,2000);box.dispatchEvent(new Event('input',{bubbles:true}));box.focus();}},180);}
-function buildAssistant(){const prompts=['Show me who’s off next week','Am I over my labour budget?','Find available trained staff','Explain this overtime spike','Create a shift for next week'];return `<aside class="vector-assistant"><div class="vector-assistant-title"><span class="vector-ai-glyph">${icon('sparkle')}</span><h2>Vector AI Assistant</h2><span class="vector-beta">Beta</span></div><p>I can help you with anything — from finding data, to fixing issues, to suggesting actions.</p><div class="vector-prompt-list">${prompts.map(p=>`<button type="button" data-vector-prompt="${esc(p)}">${esc(p)}</button>`).join('')}</div><label class="vector-assistant-input"><input type="text" placeholder="Ask a question..." aria-label="Ask Vector AI Assistant"/><button type="button" data-vector-assistant-send aria-label="Ask">${icon('arrow')}</button></label></aside>`;}
+function commandResultCopy(payload){
+  const intent=payload?.envelope?.command?.intent||'ANALYSE';
+  const status=payload?.status||'ACCEPTED';
+  if(intent==='CREATE_TASK')return {title:'Task created',detail:'The task has been saved in your Vector scope and is auditable.'};
+  if(intent==='CHANGE_WIDGET'||intent==='CHANGE_CHART')return {title:'View preference saved',detail:'Vector has stored this dashboard preference for the current screen.'};
+  if(intent==='CREATE_AUTOMATION')return {title:'Automation configured',detail:status==='CONFIGURED_PENDING_WORKER'?'The schedule is saved. Execution remains fail-closed until the automation runner is connected.':'The automation is active.'};
+  if(intent==='EMAIL_REPORT')return {title:'Email report requested',detail:payload?.capabilities?.emailDelivery?'The report can be generated and delivered through the configured email provider.':'The report request is saved; email delivery remains fail-closed until a provider is configured.'};
+  if(intent==='CREATE_REPORT')return {title:'Report requested',detail:'Vector has saved the report request for generation from role-scoped data.'};
+  return {title:'Analysing this now',detail:'Vector is handing the question to the analysis assistant with your current screen and role scope.'};
+}
+function ensureCommandDrawer(){
+  let drawer=document.querySelector('.vector-command-drawer');
+  if(drawer)return drawer;
+  drawer=document.createElement('aside');
+  drawer.className='vector-command-drawer';
+  drawer.hidden=true;
+  drawer.setAttribute('aria-label','Ask Vector');
+  document.body.appendChild(drawer);
+  return drawer;
+}
+function renderCommandDrawer(message,payload,error){
+  const drawer=ensureCommandDrawer(),rv=roleViewCopy();
+  const copy=error?{title:'Vector could not complete that request',detail:error}:commandResultCopy(payload);
+  drawer.innerHTML=`<div class="vector-command-head"><span class="vector-ai-glyph">${icon('sparkle')}</span><div><b>Ask Vector</b><small>${esc(rv.label)} · ${esc(rv.scope)}</small></div><button type="button" data-vector-command-close aria-label="Close">×</button></div><div class="vector-command-body"><span class="vector-command-request">${esc(message)}</span><h3>${esc(copy.title)}</h3><p>${esc(copy.detail)}</p><div class="vector-command-policy"><b>Decision lens</b><span>${esc(rv.principle)}</span></div><div class="vector-command-capabilities"><span>Analyse</span><span>Reports</span><span>Email</span><span>Tasks</span><span>Automations</span><span>Widgets</span></div></div>`;
+  drawer.hidden=false;
+  return drawer;
+}
+async function askVector(message){
+  const textValue=String(message||'').trim().slice(0,2000);
+  if(!textValue)return;
+  const rv=roleContext();
+  renderCommandDrawer(textValue,{envelope:{command:{intent:'ANALYSE'}},status:'ACCEPTED',capabilities:{}});
+  try{
+    const response=await fetch('/api/intelligence/vector/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:textValue,currentScreen:page(),jobTitle:rv.raw,siteIds:rv.siteIds,siteCount:rv.siteCount})});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(payload?.error||'Vector refused the request safely.');
+    renderCommandDrawer(textValue,payload);
+    const intent=payload?.envelope?.command?.intent;
+    if(intent==='ANALYSE'||intent==='NAVIGATE')askWorkforce(textValue);
+    return payload;
+  }catch(error){
+    renderCommandDrawer(textValue,null,String(error?.message||error||'Request failed.'));
+    askWorkforce(textValue);
+  }
+}
+function buildAssistant(){const rv=roleViewCopy(),prompts=rv.prompts;return `<aside class="vector-assistant" data-vector-intelligence="${INTELLIGENCE_MARKER}"><div class="vector-assistant-title"><span class="vector-ai-glyph">${icon('sparkle')}</span><h2>Ask Vector</h2><span class="vector-beta">${esc(rv.label)}</span></div><p>${esc(rv.principle)} Ask questions, create reports, set tasks or automations, and change how this dashboard is presented.</p><div class="vector-prompt-list">${prompts.map(p=>`<button type="button" data-vector-prompt="${esc(p)}">${esc(p)}</button>`).join('')}</div><label class="vector-assistant-input"><input type="text" placeholder="Ask, report, automate or change this view..." aria-label="Ask Vector"/><button type="button" data-vector-assistant-send aria-label="Ask">${icon('arrow')}</button></label></aside>`;}
 function kpiMarkup(items){return items.map((m,i)=>`<button type="button" class="vector-kpi-card ${m.tone}" data-vector-route="${['attendance','leave','time-review','costs'][i]}"><span class="vector-kpi-icon">${icon(m.icon)}</span><span class="vector-kpi-copy"><strong>${esc(m.value)}</strong><b>${esc(m.label)}</b><small>${esc(m.detail)}</small>${m.progress!=null?`<span class="vector-progress"><i style="width:${Math.max(0,Math.min(100,m.progress))}%"></i></span>`:''}</span></button>`).join('');}
 function shiftsMarkup(rows){return `<section class="vector-card vector-shifts" data-vector-planning="${PLANNING_MARKER}"><div class="vector-card-head"><h2>Department planning</h2><button type="button" data-vector-route="schedule-publication">Open schedule planning ${icon('arrow')}</button></div><div class="vector-shift-layout"><div class="vector-shift-chart">${rows.map(r=>`<div class="vector-shift-row"><b>${esc(r.label)}</b><div class="vector-shift-track" style="background:none;border-left:0"><span class="grey" style="width:auto;background:#eef1f5;box-shadow:none;color:#43546d"><em>${esc(r.status)}</em></span></div></div>`).join('')}</div><div class="vector-legend"><span><i class="grey"></i>Status and coverage shown only when verified by the source workflow</span></div></div></section>`;}
 function secondaryKpis(m){const s=scopedStats(),vals=[{label:'Absence today',value:m[1].value==='—'?'—':m[1].value+(s.total?' / '+s.total:''),detail:m[1].detail,route:'leave'},{label:'Overtime',value:m[2].value==='—'?'—':m[2].value+' people',detail:m[2].detail,route:'time-review'},{label:'Labour cost',value:m[3].value,detail:m[3].detail,route:'costs'},{label:'Productivity',value:'—',detail:'Open productivity evidence',route:'insights'}];return `<section class="vector-mini-grid" data-vector-kpi-evidence="${KPI_MARKER}" aria-label="Operational KPI summaries. Trend graphics are shown only when verified source history is available.">${vals.map(v=>`<button type="button" class="vector-mini-card" data-vector-route="${v.route}"><span><b>${esc(v.label)}</b><strong>${esc(v.value)}</strong><small>${esc(v.detail)}</small><em>View details ${icon('arrow')}</em></span></button>`).join('')}</section>`;}
@@ -108,14 +174,36 @@ function alertsMarkup(rows){return `<section class="vector-card vector-alerts" d
 function leaveMarkup(rows){const body=rows.length?rows.slice(0,4).map((r,i)=>`<button type="button" class="vector-leave-row" data-vector-route="leave"><span class="vector-person-badge b${i}">${esc(r.name.split(/\s+/).map(x=>x[0]).join('').slice(0,2))}</span><span><b>${esc(r.name)}</b><small>${esc(r.area)}</small></span><em>${esc(r.when)}</em><strong>${esc(r.type)}</strong>${icon('chevron')}</button>`).join(''):`<button type="button" class="vector-leave-row" data-vector-route="leave" aria-label="Open Absence & Leave to review upcoming leave evidence"><span class="vector-person-badge" aria-hidden="true">i</span><span><b>Open Absence & Leave</b><small>No approved leave is available to this summary.</small></span><em>Source check</em><strong>Review</strong>${icon('chevron')}</button>`;return `<section class="vector-card vector-leave" data-vector-leave-evidence="${LEAVE_MARKER}" aria-label="Upcoming leave. Only approved source requests dated within the next seven days are shown."><div class="vector-card-head"><h2>Upcoming leave (next 7 days)</h2><button type="button" data-vector-route="leave">View calendar ${icon('arrow')}</button></div><div class="vector-leave-list">${body}</div></section>`;}
 function promoMarkup(){return '<aside class="vector-promo"><div><h2>A more productive<br>tomorrow starts today.</h2><p>Empowered people.<br>Stronger manufacturers.</p></div><div class="vector-promo-brand"><span class="vector-mark small"><i></i><i></i><i></i></span><b>Vector.</b></div></aside>';}
 function renderHome(content){if(content.dataset.vectorHome==='1')return;const source=document.createElement('div');source.className='vector-home-source';while(content.firstChild)source.appendChild(content.firstChild);content.appendChild(source);const m=metrics(source),departments=departmentRows(source),actions=actionRows(source),leaves=leaveRows(),d=currentDate();const home=document.createElement('div');home.className='vector-home';home.innerHTML=`<section class="vector-welcome" data-vector-identity="${IDENTITY_MARKER}"><div><h1>${esc(greeting())}, ${esc(firstName())}</h1><p>${esc(siteSentence())}</p></div><div class="vector-date"><b>${esc(d.date)}</b><span>Week ${esc(d.week)}</span></div></section><div class="vector-home-top"><div class="vector-home-main"><section class="vector-kpi-grid" data-vector-kpi-evidence="${KPI_MARKER}">${kpiMarkup(m)}</section>${shiftsMarkup(departments)}</div>${buildAssistant()}</div>${secondaryKpis(m)}<div class="vector-bottom-grid">${alertsMarkup(actions)}${leaveMarkup(leaves)}${promoMarkup()}</div>`;content.prepend(home);content.dataset.vectorHome='1';document.title='Vector · Workforce Operations';}
-function generalPage(content){if(content.dataset.vectorHome==='1')return;content.classList.add('vector-page-content');}
-function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi='approved-reference-v1';app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(page()==='overview')renderHome(content);else generalPage(content);updateNav();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
-document.addEventListener('click',e=>{const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec)go(firstRoute(spec.routes));return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('time-review');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askWorkforce(input.value.trim());}});
+function screenLens(){
+  const current=page(),rv=roleViewCopy();
+  const map={
+    leave:['So what?','Leave only matters operationally when entitlement, skills or production cover changes.','Review exceptions that change coverage; let safe requests flow automatically.'],
+    attendance:['So what?','Attendance data matters when it changes payroll confidence, production coverage or compliance.','Show only mismatches that need judgement; reconcile the rest automatically.'],
+    'time-review':['So what?','Time exceptions matter when they can change pay, fatigue risk or productive hours.','Prioritise financially material or low-confidence exceptions.'],
+    'schedule-publication':['So what?','A schedule is good only if it covers demand, skills and legal constraints at the lowest safe cost.','Highlight gaps and the cheapest compliant fix before publishing.'],
+    shifts:['So what?','A shift change matters when it changes skills, cost, rest or output.','Auto-approve harmless swaps and escalate only consequential changes.'],
+    demand:['So what?','Demand data should tell you where labour will be short before the shift starts.','Resolve future gaps with redeployment, training or overtime before agency labour.'],
+    readiness:['So what?','Readiness exposes where a missing person or skill can interrupt production.','Protect the highest-value capability gaps first.'],
+    cover:['So what?','Cover decisions should compare internal redeployment, overtime and agency by total outcome.','Choose the lowest-cost qualified option without creating a new gap.'],
+    resources:['So what?','People data should explain who is ready, who needs development and where resilience is weak.','Act on expiring skills and capability gaps that affect production.'],
+    compliance:['So what?','Compliance data matters when it can block work, create safety exposure or invalidate a workforce decision.','Prioritise imminent and operationally consequential breaches.'],
+    costs:['So what?','Cost variance is useful only when Vector explains why it moved and what is avoidable.','Prioritise actions with verified £ impact and track realised value afterwards.'],
+    insights:['So what?','Insights should surface recurring causes and opportunities, not just describe history.','Fix structural causes and automate high-confidence repetitive decisions.'],
+    integrations:['So what?','Integration health matters when stale or missing data can make a workforce decision unsafe.','Show which decisions are affected, then fail closed or use verified fallback evidence.'],
+    'payroll-intelligence':['So what?','Payroll intelligence should isolate records that can actually change pay.','Sign off clean records automatically and investigate only material exceptions.'],
+    'payroll-run':['So what?','Payroll is ready only when every material exception has evidence and reconciliation.','Block export where confidence is insufficient.']
+  };
+  const item=map[current]||['So what?','This screen should explain why its data matters to your role, not just display metrics.','Ask Vector to identify the impact, cause, £ consequence and next best action.'];
+  return `<section class="vector-screen-lens" data-vector-intelligence="${INTELLIGENCE_MARKER}"><div><b>${esc(item[0])}</b><p>${esc(item[1])}</p></div><div><b>Next best action</b><p>${esc(item[2])}</p></div><div><b>Your view</b><p>${esc(rv.label)} · ${esc(rv.scope)} · ${esc(rv.horizon)}</p></div><button type="button" data-vector-analyse-screen>Analyse this screen ${icon('sparkle')}</button></section>`;
+}
+function generalPage(content){if(content.dataset.vectorHome==='1')return;content.classList.add('vector-page-content');if(!content.querySelector('.vector-screen-lens')){const lens=document.createElement('div');lens.innerHTML=screenLens();const node=lens.firstElementChild;const heading=content.querySelector(':scope > .heading');if(heading?.nextSibling)content.insertBefore(node,heading.nextSibling);else content.prepend(node);}}
+function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi='approved-reference-v1';app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);ensureCommandDrawer();if(page()==='overview')renderHome(content);else generalPage(content);updateNav();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
+document.addEventListener('click',e=>{const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec)go(firstRoute(spec.routes));return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('time-review');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askVector(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askVector(box.value.trim());return;}if(e.target.closest('[data-vector-analyse-screen]')){askVector('Analyse this screen. Explain what matters, why, the financial or operational impact, the root cause, and the next best actions.');return;}if(e.target.closest('[data-vector-command-close]')){const drawer=document.querySelector('.vector-command-drawer');if(drawer)drawer.hidden=true;return;}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askVector(input.value.trim());}});
 const previousRender=window.render;
 if(typeof previousRender==='function')window.render=async function(...args){const result=await previousRender.apply(this,args);document.body.classList.remove('vector-menu-open');queueMicrotask(apply);return result;};
 shellObserver=new MutationObserver(()=>apply());
 shellObserver.observe(document.documentElement,observerConfig);
 setTimeout(apply,0);setTimeout(apply,350);
-window.VectorWorkforceOperations={marker:MARKER,reviewMarker:REVIEW_MARKER,planningMarker:PLANNING_MARKER,kpiMarker:KPI_MARKER,identityMarker:IDENTITY_MARKER,leaveMarker:LEAVE_MARKER,apply,go,askWorkforce};
+window.VectorWorkforceOperations={marker:MARKER,reviewMarker:REVIEW_MARKER,planningMarker:PLANNING_MARKER,kpiMarker:KPI_MARKER,identityMarker:IDENTITY_MARKER,leaveMarker:LEAVE_MARKER,intelligenceMarker:INTELLIGENCE_MARKER,apply,go,askWorkforce,askVector,roleContext};
 })();
