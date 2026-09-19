@@ -32,7 +32,7 @@ for(const s of catalog.systems){
 const ipaas=['mulesoft-anypoint','boomi','workato','sap-integration-suite','azure-logic-apps-power-automate','oracle-integration-cloud','google-cloud-application-integration','jitterbit-harmony'];
 for(const id of ipaas) assert.ok(catalog.systems.some(x=>x.id===id),'iPaaS target missing: '+id);
 
-for(const id of ['salto-nebula','azure-service-bus','confluent-cloud','ibm-mq','jumpcloud','highbyte-intelligence-hub','tulip','cognite-data-fusion','sap-fieldglass','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex','siemens-insights-hub']){
+for(const id of ['salto-nebula','azure-service-bus','confluent-cloud','ibm-mq','jumpcloud','highbyte-intelligence-hub','tulip','cognite-data-fusion','sap-fieldglass','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex','siemens-insights-hub','rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x']){
   const system=catalog.systems.find(x=>x.id===id);
   assert.ok(system,'Research target missing: '+id);
   assert.ok(system.protocols.some(p=>matches.has(p)),'Research target has no reusable protocol mapping: '+id);
@@ -63,6 +63,18 @@ const insightsHub=catalog.systems.find(x=>x.id==='siemens-insights-hub');
 assert.equal(insightsHub.testLevel,'spec-verified','Siemens Insights Hub must retain spec-level evidence until an authorised tenant is proven.');
 assert.deepEqual(insightsHub.protocols,['REST'],'Siemens Insights Hub must retain only its evidenced REST integration path.');
 assert.equal(insightsHub.writeEnabled,false,'Siemens Insights Hub writes must remain disabled.');
+const dataMosaix=catalog.systems.find(x=>x.id==='rockwell-factorytalk-datamosaix');
+assert.equal(dataMosaix.testLevel,'spec-verified','FactoryTalk DataMosaix must remain spec-verified until an authorised tenant is proven.');
+assert.deepEqual(dataMosaix.protocols,['REST','OpenAPI'],'FactoryTalk DataMosaix must retain only its evidenced API route.');
+assert.equal(dataMosaix.writeEnabled,false,'FactoryTalk DataMosaix writes must remain disabled.');
+const inmation=catalog.systems.find(x=>x.id==='aspentech-inmation');
+assert.equal(inmation.testLevel,'spec-verified','AspenTech Inmation must remain spec-verified until an authorised environment is proven.');
+assert.ok(inmation.protocols.includes('REST')&&inmation.protocols.includes('OPC UA')&&inmation.protocols.includes('MQTT'),'AspenTech Inmation must retain Web API and customer-edge industrial routes.');
+assert.equal(inmation.writeEnabled,false,'AspenTech Inmation writes must remain disabled.');
+const pasx=catalog.systems.find(x=>x.id==='korber-werum-pas-x');
+assert.equal(pasx.testLevel,'spec-verified','Körber PAS-X must remain spec-verified until an authorised environment is proven.');
+assert.ok(pasx.protocols.includes('REST')&&pasx.protocols.includes('industrial-integration'),'Körber PAS-X must retain the evidenced REST and vendor-thin industrial routes.');
+assert.equal(pasx.writeEnabled,false,'Körber PAS-X writes must remain disabled.');
 const resourceAdvisor=catalog.systems.find(x=>x.id==='schneider-resource-advisor');
 assert.ok(resourceAdvisor,'Schneider Resource Advisor must remain catalogued as a distinct product integration target.');
 assert.equal(resourceAdvisor.testLevel,'discovery-queued','Resource Advisor must remain discovery-queued until a customer integration interface is evidenced.');
