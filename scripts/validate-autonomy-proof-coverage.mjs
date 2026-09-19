@@ -9,9 +9,11 @@ const { PROTECTED_PATHS } = require('../resilience/autonomous-repair-factory.cjs
 const root = process.cwd();
 const portablePath = path.join(root, 'scripts/run-portable-autonomy-proof.mjs');
 const workflowPath = path.join(root, '.github/workflows/wfm-zero-engineer-support-contract.yml');
+const repairFactoryPath = path.join(root, 'resilience/autonomous-repair-factory.cjs');
 
 const portableSource = fs.readFileSync(portablePath, 'utf8');
 const workflowSource = fs.readFileSync(workflowPath, 'utf8');
+const repairFactorySource = fs.readFileSync(repairFactoryPath, 'utf8');
 
 const portableChecks = [...portableSource.matchAll(
   /\[\s*['"][^'"]+['"]\s*,\s*['"]([^'"]+\.mjs)['"]\s*,\s*true\s*\]/g,
@@ -29,6 +31,21 @@ const protectedSet = new Set(protectedPaths);
 assert.equal(portableChecks.length, portableSet.size, 'Portable proof contains duplicate required validators.');
 assert.equal(workflowPaths.length, workflowSet.size, 'Exact autonomy workflow contains duplicate trigger entries.');
 assert.equal(protectedPaths.length, protectedSet.size, 'Repair protected-path policy contains duplicate entries.');
+
+// Regression for 2026-09-19: sequential contents-API edits accidentally embedded the
+// two literal characters "\\n" between adjacent line-oriented authority entries. That
+// silently collapsed trigger/protection entries until a later repair. Keep this check in
+// the already-mandatory coverage proof instead of adding another overlapping validator.
+assert.equal(
+  /['"]\s*\\n\s*-\s*['"]/.test(workflowSource),
+  false,
+  'Exact autonomy workflow contains a literal escaped-newline joining path-trigger entries.',
+);
+assert.equal(
+  /,\s*\\n\s*['"]/.test(repairFactorySource),
+  false,
+  'Repair protected-path policy contains a literal escaped-newline joining authority entries.',
+);
 
 const externalCanonicalOnly = new Set([
   'scripts/validate-release-policy.mjs',
@@ -83,7 +100,7 @@ for (const required of [
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'autonomy-proof-surface-coverage',
   status: 'PASS',
   portableRequiredValidatorCount: portableChecks.length,
@@ -94,6 +111,7 @@ console.log(JSON.stringify({
   portableValidatorsProtectedFromRepair: true,
   protectedAuthoritySourcesTriggerExactProof: true,
   protectedValidatorsMandatoryOrCanonicalOnly: true,
+  escapedLineJoinRegressionGuard: true,
   automaticCoverageAudit: true,
   productionMutation: false,
   customerMutation: false,
