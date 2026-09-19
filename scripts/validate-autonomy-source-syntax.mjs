@@ -15,6 +15,7 @@ const jsFiles = [
   'resilience/autonomous-repair-canary-orchestrator.cjs',
   'resilience/provider-recovery-handoff.cjs',
   'resilience/canonical-release-boundary.cjs',
+  'resilience/deployment-proof-provenance-verifier.cjs',
   'resilience/t3-shadow-simulator.cjs',
   'resilience/t3-shadow-verifier.cjs',
   'resilience/t3-customer-authorisation-gate.cjs',
@@ -44,6 +45,7 @@ const jsFiles = [
   'scripts/validate-canary-rollback-controller.mjs',
   'scripts/validate-autonomous-repair-canary-orchestrator.mjs',
   'scripts/validate-ci-provider-failover.mjs',
+  'scripts/validate-deployment-proof-provenance.mjs',
   'scripts/validate-t3-shadow-support.mjs',
   'scripts/validate-t3-customer-authorisation-gate.mjs',
   'scripts/validate-t3-execution-readiness.mjs',
@@ -76,6 +78,7 @@ for (const rel of [
   'resilience/canary-rollback-controller.cjs',
   'resilience/autonomous-repair-canary-orchestrator.cjs',
   'resilience/canonical-release-boundary.cjs',
+  'resilience/deployment-proof-provenance-verifier.cjs',
   'resilience/t3-shadow-simulator.cjs',
   'resilience/t3-shadow-verifier.cjs',
   'resilience/t3-customer-authorisation-gate.cjs',
@@ -112,6 +115,7 @@ const requiredWorkflowPaths = [
   "      - 'resilience/autonomous-repair-canary-orchestrator.cjs'",
   "      - 'resilience/canonical-release-boundary.cjs'",
   "      - 'resilience/canonical-release-policy-snapshot.json'",
+  "      - 'resilience/deployment-proof-provenance-verifier.cjs'",
   "      - 'resilience/t3-shadow-simulator.cjs'",
   "      - 'resilience/t3-shadow-verifier.cjs'",
   "      - 'resilience/t3-customer-authorisation-gate.cjs'",
@@ -133,6 +137,7 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'",
   "      - 'scripts/validate-canonical-release-boundary.mjs'",
   "      - 'scripts/validate-ci-provider-failover.mjs'",
+  "      - 'scripts/validate-deployment-proof-provenance.mjs'",
   "      - 'scripts/validate-t3-shadow-support.mjs'",
   "      - 'scripts/validate-t3-customer-authorisation-gate.mjs'",
   "      - 'scripts/validate-t3-execution-readiness.mjs'",
@@ -226,6 +231,8 @@ assert.ok(revalidateSection.includes('$WFM_CANONICAL_BASE_SHA'), 'Revalidation m
 
 const repairFactorySource = fs.readFileSync(path.join(root, 'resilience/autonomous-repair-factory.cjs'), 'utf8');
 assert.ok(repairFactorySource.includes("'scripts/hydrate-prior-corpus-github.mjs'"), 'Autonomous repair worker must not be able to rewrite the prior-corpus retrieval adapter.');
+assert.ok(repairFactorySource.includes("'resilience/deployment-proof-provenance-verifier.cjs'"), 'Autonomous repair worker must not be able to rewrite deployment proof provenance semantics.');
+assert.ok(repairFactorySource.includes("'scripts/validate-deployment-proof-provenance.mjs'"), 'Autonomous repair worker must not be able to rewrite deployment proof provenance validation.');
 
 const portableProofSource = fs.readFileSync(path.join(root, 'scripts/run-portable-autonomy-proof.mjs'), 'utf8');
 for (const required of [
@@ -234,6 +241,8 @@ for (const required of [
   "? 'EXACT_RUNTIME_RELEASE_ELIGIBLE'",
   ": exactRuntime ? 'EXACT_RUNTIME_LOGIC_ONLY' : 'NON_EXACT_LOGIC_ONLY'",
   'canonicalReleaseEvidenceBound: releaseClaimAllowed',
+  "['deployment-provenance', 'scripts/validate-deployment.mjs', true]",
+  "['external-deployment-proof-provenance', 'scripts/validate-deployment-proof-provenance.mjs', true]",
   "['historical-incident-replay-and-learning', 'scripts/validate-historical-incident-replay.mjs', true]",
   "['persistent-incident-regression-corpus-continuity', 'scripts/validate-persistent-incident-corpus.mjs', true]",
   "['provider-neutral-prior-corpus-evidence-selection', 'scripts/validate-prior-corpus-evidence-verifier.mjs', true]",
@@ -244,7 +253,7 @@ for (const required of [
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 5,
+  schemaVersion: 6,
   proof: 'autonomy-source-syntax-and-workflow-integrity',
   status: 'PASS',
   jsFilesChecked: checked.length,
@@ -264,6 +273,9 @@ console.log(JSON.stringify({
   historicalReplayRequiredByPortableProof: true,
   persistentCorpusContinuityRequiredByPortableProof: true,
   priorCorpusEvidenceVerifierRequiredByPortableProof: true,
+  deploymentProvenanceRequiredByPortableProof: true,
+  externalDeploymentProofProvenanceRequiredByPortableProof: true,
+  deploymentProofVerifierProtectedFromRepairAgent: true,
   priorCorpusHydratorProtectedFromRepairAgent: true,
   canonicalTrustAnchorClassificationRequired: true,
   exactRuntimeLogicProofContinuesWhenReleaseTrustBlocked: true,
