@@ -1,3 +1,5 @@
+import { createPublicKey, verify as verifySignature } from 'node:crypto';
+
 const REQUIRED_GATES=Object.freeze([
   'ci',
   'deterministic',
@@ -26,23 +28,105 @@ const ROLLBACK_AUTHORITY_REQUIREMENTS=Object.freeze([
 // Keep their provenance in-process and non-serialisable so a forged, stale or
 // JSON-replayed assessment cannot bypass the mandatory gate evaluation path.
 const TRUSTED_ASSESSMENTS=new WeakSet();
+const TRUSTED_EVIDENCE_POLICIES=new WeakSet();
 
 function clone(value){ return JSON.parse(JSON.stringify(value)); }
 function validSha(value){ return /^[a-f0-9]{40}$/i.test(String(value||'')); }
 function validEvidenceId(value){ return /^[A-Za-z0-9._:/-]{4,240}$/.test(String(value||'')); }
+function validIssuerId(value){ return /^[A-Za-z0-9][A-Za-z0-9._:-]{1,159}$/.test(String(value||'')); }
+function validPolicyId(value){ return /^[A-Za-z0-9][A-Za-z0-9._:/-]{3,159}$/.test(String(value||'')); }
+function validSignature(value){ return /^[A-Za-z0-9_-]{40,200}$/.test(String(value||'')); }
 function canonicalProviderDomain(value){
   const domain=String(value||'').trim().toLowerCase();
   return /^[a-z0-9][a-z0-9._:-]{1,79}$/.test(domain)?domain:null;
 }
 function validProviderSystemId(value){ return /^[A-Za-z0-9][A-Za-z0-9._:-]{1,159}$/.test(String(value||'')); }
 
-function gateIsValid(name,gate,candidateSha){
+function gateAttestationPayload(policyId,name,gate){
+  const payload={
+    version:1,
+    kind:'attendance-release-gate',
+    policyId,
+    gate:name,
+    candidateSha:String(gate?.candidateSha||''),
+    evidenceId:String(gate?.evidenceId||''),
+    passed:gate?.passed===true,
+    skipped:gate?.skipped
+  };
+  if(name==='rollbackAuthority'){
+    for(const field of ROLLBACK_AUTHORITY_REQUIREMENTS) payload[field]=gate?.[field]===true;
+  }
+  return JSON.stringify(payload);
+}
+
+function providerAttestationPayload(policyId,proof){
+  return JSON.stringify({
+    version:1,
+    kind:'attendance-provider-proof',
+    policyId,
+    domain:canonicalProviderDomain(proof?.domain),
+    providerSystemId:String(proof?.providerSystemId||''),
+    realProvider:proof?.realProvider===true,
+    passed:proof?.passed===true,
+    skipped:proof?.skipped,
+    candidateSha:String(proof?.candidateSha||''),
+    evidenceId:String(proof?.evidenceId||'')
+  });
+}
+
+function decodeSignature(signature){
+  if(!validSignature(signature)) return null;
+  try { return Buffer.from(signature,'base64url'); } catch { return null; }
+}
+
+export function createAttendanceReleaseEvidencePolicy({policyId,issuers=[]}={}){
+  if(!validPolicyId(policyId)) throw new Error('Valid release evidence policyId required.');
+  if(!Array.isArray(issuers) || issuers.length===0) throw new Error('At least one trusted evidence issuer is required.');
+  const trustedIssuers=new Map();
+  for(const issuer of issuers){
+    if(!issuer || !validIssuerId(issuer.issuerId) || trustedIssuers.has(issuer.issuerId)) throw new Error('Unique valid evidence issuerId required.');
+    let publicKey;
+    try { publicKey=createPublicKey(issuer.publicKeyPem); } catch { throw new Error(`Invalid public key for issuer ${issuer.issuerId}.`); }
+    if(publicKey.asymmetricKeyType!=='ed25519') throw new Error(`Issuer ${issuer.issuerId} must use Ed25519.`);
+    const allowedGates=new Set(Array.isArray(issuer.allowedGates)?issuer.allowedGates:[]);
+    const allowedProviderDomains=new Set((Array.isArray(issuer.allowedProviderDomains)?issuer.allowedProviderDomains:[]).map(canonicalProviderDomain).filter(Boolean));
+    if(allowedGates.size===0 && allowedProviderDomains.size===0) throw new Error(`Issuer ${issuer.issuerId} has no evidence authority.`);
+    for(const name of allowedGates){ if(name!=='*' && !REQUIRED_GATES.includes(name)) throw new Error(`Issuer ${issuer.issuerId} has unknown gate authority.`); }
+    trustedIssuers.set(issuer.issuerId,Object.freeze({publicKey,allowedGates,allowedProviderDomains}));
+  }
+
+  const policy=Object.freeze({
+    policyId,
+    verifyGate(name,gate){
+      if(!REQUIRED_GATES.includes(name) || gate?.policyId!==policyId || !validIssuerId(gate?.issuerId)) return false;
+      const issuer=trustedIssuers.get(gate.issuerId);
+      if(!issuer || (!issuer.allowedGates.has('*') && !issuer.allowedGates.has(name))) return false;
+      const signature=decodeSignature(gate.signature);
+      if(!signature) return false;
+      try { return verifySignature(null,Buffer.from(gateAttestationPayload(policyId,name,gate)),issuer.publicKey,signature); } catch { return false; }
+    },
+    verifyProviderProof(proof){
+      const domain=canonicalProviderDomain(proof?.domain);
+      if(!domain || proof?.policyId!==policyId || !validIssuerId(proof?.issuerId)) return false;
+      const issuer=trustedIssuers.get(proof.issuerId);
+      if(!issuer || (!issuer.allowedProviderDomains.has('*') && !issuer.allowedProviderDomains.has(domain))) return false;
+      const signature=decodeSignature(proof.signature);
+      if(!signature) return false;
+      try { return verifySignature(null,Buffer.from(providerAttestationPayload(policyId,proof)),issuer.publicKey,signature); } catch { return false; }
+    }
+  });
+  TRUSTED_EVIDENCE_POLICIES.add(policy);
+  return policy;
+}
+
+function gateIsValid(name,gate,candidateSha,evidencePolicy){
   const common=Boolean(
     gate &&
     gate.passed===true &&
     gate.candidateSha===candidateSha &&
     validEvidenceId(gate.evidenceId) &&
-    gate.skipped===0
+    gate.skipped===0 &&
+    evidencePolicy?.verifyGate(name,gate)===true
   );
   if(!common) return false;
   if(name==='rollbackAuthority'){
@@ -51,26 +135,28 @@ function gateIsValid(name,gate,candidateSha){
   return true;
 }
 
-export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[]}={}){
+export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[],evidencePolicy}={}){
   if(!validSha(candidateSha)) throw new Error('A full candidate commit SHA is required.');
+  if(!evidencePolicy || !TRUSTED_EVIDENCE_POLICIES.has(evidencePolicy)) throw new Error('Trusted release evidence policy required.');
   const blockers=[];
   const accepted={};
 
   for(const name of REQUIRED_GATES){
     const gate=gates[name];
-    const valid=gateIsValid(name,gate,candidateSha);
+    const valid=gateIsValid(name,gate,candidateSha,evidencePolicy);
     accepted[name]=valid;
     if(!valid) blockers.push(name);
   }
 
   // Two real provider domains must be genuinely distinct evidence, not aliases of
-  // one proof. Canonicalise domain names, require zero skipped checks and prevent
-  // the same provider system or evidence artifact from being counted twice.
+  // one proof. Canonicalise domain names, require zero skipped checks, verify the
+  // signed proof against the trusted release-evidence policy, and prevent the same
+  // provider system or evidence artifact from being counted twice.
   const providerDomains=new Map();
   const providerSystems=new Set();
   const providerEvidenceIds=new Set();
   for(const proof of providerProofs){
-    if(!proof || proof.realProvider!==true || proof.passed!==true || proof.skipped!==0 || proof.candidateSha!==candidateSha || !validEvidenceId(proof.evidenceId) || !validProviderSystemId(proof.providerSystemId)) continue;
+    if(!proof || proof.realProvider!==true || proof.passed!==true || proof.skipped!==0 || proof.candidateSha!==candidateSha || !validEvidenceId(proof.evidenceId) || !validProviderSystemId(proof.providerSystemId) || evidencePolicy.verifyProviderProof(proof)!==true) continue;
     const domain=canonicalProviderDomain(proof.domain);
     if(!domain) continue;
     const systemId=String(proof.providerSystemId);
@@ -86,7 +172,8 @@ export function assessAttendanceRelease({candidateSha,gates={},providerProofs=[]
     ready:blockers.length===0,
     blockers:Object.freeze([...blockers]),
     accepted:Object.freeze({...accepted}),
-    providerDomains:Object.freeze([...providerDomains.keys()].sort())
+    providerDomains:Object.freeze([...providerDomains.keys()].sort()),
+    evidencePolicyId:evidencePolicy.policyId
   });
   TRUSTED_ASSESSMENTS.add(assessment);
   return assessment;
