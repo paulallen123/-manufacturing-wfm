@@ -13,6 +13,7 @@ const checks = [
   'scripts/validate-onedrive-sync-guardian.mjs',
   'scripts/validate-factory-decision-kernel.mjs',
   'scripts/validate-engineering-memory.mjs',
+  'scripts/validate-operational-history.mjs',
   'scripts/validate-release-policy.mjs'
 ];
 
