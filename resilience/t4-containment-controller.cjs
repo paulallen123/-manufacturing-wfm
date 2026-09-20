@@ -290,12 +290,9 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
     const plan = [...planned];
     record('containment-plan', { actions: plan });
 
-    if (!forensicPreserve || !forensicVerify) {
-      record('forensics-preservation-required', {
-        preserveAvailable: Boolean(forensicPreserve),
-        independentVerifierAvailable: Boolean(forensicVerify),
-      });
-      throw Object.assign(new Error('T4 cannot claim a safe terminal without independently verifiable forensic preservation.'), { code: 'WFM_T4_FORENSICS_UNAVAILABLE' });
+    if (!forensicPreserve) {
+      record('forensics-preservation-required', { preserveAvailable: false });
+      throw Object.assign(new Error('T4 cannot claim a safe terminal without verified forensic preservation.'), { code: 'WFM_T4_FORENSICS_UNAVAILABLE' });
     }
 
     consume('forensics.preserve');
@@ -339,6 +336,10 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
       selectedStoreId: forensicReceipt.selectedStoreId,
       failoverContractDigest: forensicReceipt.failoverContractDigest,
     });
+    if (!forensicVerify) {
+      record('forensics-independent-verifier-required', { verifierAvailable: false });
+      throw Object.assign(new Error('T4 cannot claim a safe terminal without an independent forensic read-back verifier.'), { code: 'WFM_T4_FORENSICS_UNAVAILABLE' });
+    }
 
     let containmentReceipt = null;
     if (containmentExecutor?.execute) {
