@@ -198,6 +198,12 @@ export class AutomaticAttendanceEvidenceEngine {
     if(direction==='in' && spec.polarity!=='present'){
       return {status:'evidence_only',direction:'in',reason:'ABSENCE_SIGNAL_CANNOT_START_ATTENDANCE'};
     }
+    if(direction==='in' && state.closeAt!==null && trigger.observedMs<=state.closeAt){
+      return {status:'review_required',direction:'in',reason:'IN_NOT_AFTER_PRIOR_CLOSE'};
+    }
+    if(direction==='out' && state.openAt!==null && trigger.observedMs<state.openAt && spec.anchorOut){
+      return {status:'review_required',direction:'out',reason:'OUT_BEFORE_OPEN'};
+    }
 
     // Revocation and employee/site assignment changes are immediate for future
     // decisions. Evidence remains immutable/auditable, but evidence accepted under
