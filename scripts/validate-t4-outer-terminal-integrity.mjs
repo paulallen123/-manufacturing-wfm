@@ -8,7 +8,12 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { createAutonomyControlLoop, digest } = require('../resilience/autonomy-control-loop.cjs');
 const { createT4ContainmentController, createWriteOnceForensicStore } = require('../resilience/t4-containment-controller.cjs');
-const { createT4ForensicFailoverStore, createT4RuntimeForensicStore } = require('../resilience/t4-forensic-failover-store.cjs');
+const {
+  createT4ForensicFailoverStore,
+  createT4RuntimeForensicStore,
+  createT4RuntimeContainmentController,
+  digest: forensicDigest,
+} = require('../resilience/t4-forensic-failover-store.cjs');
 
 const d = (value) => createHash('sha256').update(String(value)).digest('hex');
 const contract = {
@@ -133,6 +138,49 @@ const runtimeCapability = (identity) => Object.freeze({
   ...SAFE_FAILOVER_CAPABILITY,
   storeIdentityDigest: d(`forensic-store-identity:${identity}`),
 });
+const capabilityDigestForTest = (capability) => forensicDigest({
+  ...Object.fromEntries([
+    'preExisting',
+    'sameTenantOnly',
+    'isolated',
+    'writeOnce',
+    'independentlyVerifiable',
+    'incrementalCostZero',
+    'productionWriteAuthority',
+    'modelVisibleReusableSecrets',
+    'createsResources',
+  ].sort().map((key) => [key, capability?.[key]])),
+  eligibilityEvidenceDigest: capability?.eligibilityEvidenceDigest || null,
+  storeIdentityDigest: capability?.storeIdentityDigest || null,
+});
+const recomputeFailoverDigest = (forensicReceipt) => forensicDigest({
+  contractDigest: forensicReceipt.failoverContractDigest,
+  selectedStoreId: forensicReceipt.selectedStoreId,
+  selectedStoreCapabilityDigest: forensicReceipt.selectedStoreCapabilityDigest,
+  attemptCount: forensicReceipt.attemptCount,
+  attemptedStoreIds: forensicReceipt.attemptedStoreIds,
+  attemptDigest: forensicReceipt.attemptDigest,
+  forensicDigest: forensicReceipt.forensicDigest,
+  tenantDigest: forensicReceipt.tenantDigest,
+  storageKey: forensicReceipt.storageKey,
+  finalReadbackRecoveryUsed: forensicReceipt.finalReadbackRecoveryUsed === true,
+  finalReadbackRecoveryFromStoreId: forensicReceipt.finalReadbackRecoveryFromStoreId || null,
+  finalReadbackRecoveryAttemptDigest: forensicReceipt.finalReadbackRecoveryAttemptDigest || null,
+});
+const recomputeFinalReadbackDigest = (forensicReceipt) => forensicDigest({
+  forensicDigest: forensicReceipt.forensicDigest,
+  tenantDigest: forensicReceipt.tenantDigest,
+  storageKey: forensicReceipt.storageKey,
+  selectedStoreId: forensicReceipt.selectedStoreId || null,
+  selectedStoreCapabilityDigest: forensicReceipt.selectedStoreCapabilityDigest || null,
+  attemptedStoreIds: Array.isArray(forensicReceipt.attemptedStoreIds) ? forensicReceipt.attemptedStoreIds : null,
+  attemptDigest: forensicReceipt.attemptDigest || null,
+  failoverContractDigest: forensicReceipt.failoverContractDigest || null,
+  failoverDigest: forensicReceipt.failoverDigest || null,
+  finalReadbackRecoveryUsed: forensicReceipt.finalReadbackRecoveryUsed === true,
+  finalReadbackRecoveryFromStoreId: forensicReceipt.finalReadbackRecoveryFromStoreId || null,
+  finalReadbackRecoveryAttemptDigest: forensicReceipt.finalReadbackRecoveryAttemptDigest || null,
+});
 
 const root = mkdtempSync(join(tmpdir(), 'wfm-t4-forensic-failover-'));
 try {
@@ -220,6 +268,64 @@ try {
   assert.equal(failoverTerminal.t4?.forensicReceipt?.immutable, true);
   assert.equal(failoverTerminal.t4?.forensicReceipt?.storageMode, 'write-once-failover:secondary-preexisting');
   assert.equal(failoverLoop.verifyReceipt(failoverTerminal), true);
+
+  const verifierPrimaryCapability = runtimeCapability('terminal-verifier-primary');
+  const verifierSecondaryCapability = runtimeCapability('terminal-verifier-secondary');
+  const strictRuntimeController = createT4RuntimeContainmentController({
+    maxAttempts: 2,
+    requiredEligibleStores: 2,
+    stores: [
+      { id: 'terminal-verifier-primary', capability: verifierPrimaryCapability, store: primaryStore },
+      { id: 'terminal-verifier-secondary', capability: verifierSecondaryCapability, store: secondaryStore },
+    ],
+    now: () => ++tick,
+  });
+  const strictRuntimeReceipt = await strictRuntimeController.handle({
+    ...base,
+    incidentId: 'inc-t4-runtime-terminal-verifier',
+  });
+  assert.equal(strictRuntimeController.verifyReceipt(strictRuntimeReceipt), true);
+
+  const forgedRuntimeReceipt = structuredClone(strictRuntimeReceipt);
+  forgedRuntimeReceipt.forensicReceipt.attemptedStoreIds = ['terminal-verifier-secondary'];
+  forgedRuntimeReceipt.forensicReceipt.attemptCount = 1;
+  forgedRuntimeReceipt.forensicReceipt.selectedStoreId = 'terminal-verifier-secondary';
+  forgedRuntimeReceipt.forensicReceipt.selectedStoreCapabilityDigest = capabilityDigestForTest(verifierSecondaryCapability);
+  forgedRuntimeReceipt.forensicReceipt.failoverUsed = false;
+  forgedRuntimeReceipt.forensicReceipt.finalReadbackRecoveryUsed = false;
+  forgedRuntimeReceipt.forensicReceipt.finalReadbackRecoveryFromStoreId = null;
+  forgedRuntimeReceipt.forensicReceipt.finalReadbackRecoveryAttemptDigest = null;
+  forgedRuntimeReceipt.forensicReceipt.failoverDigest = recomputeFailoverDigest(forgedRuntimeReceipt.forensicReceipt);
+  forgedRuntimeReceipt.forensicReceipt.finalReadbackDigest = recomputeFinalReadbackDigest(forgedRuntimeReceipt.forensicReceipt);
+
+  const innerForgery = { ...forgedRuntimeReceipt };
+  delete innerForgery.innerContainmentReceiptDigest;
+  delete innerForgery.runtimeForensicReady;
+  delete innerForgery.runtimeForensicReadinessDigest;
+  delete innerForgery.runtimeForensicFailoverContractDigest;
+  delete innerForgery.runtimeRequiredEligibleStores;
+  delete innerForgery.runtimeExecutableStoreCount;
+  delete innerForgery.runtimeFinalReadbackRecoveryMaxAttempts;
+  delete innerForgery.runtimeForensicBindingDigest;
+  delete innerForgery.receiptDigest;
+  forgedRuntimeReceipt.innerContainmentReceiptDigest = forensicDigest(innerForgery);
+  forgedRuntimeReceipt.runtimeForensicBindingDigest = forensicDigest({
+    innerContainmentReceiptDigest: forgedRuntimeReceipt.innerContainmentReceiptDigest,
+    forensicDigest: forgedRuntimeReceipt.forensicReceipt.forensicDigest,
+    runtimeForensicReadinessDigest: forgedRuntimeReceipt.runtimeForensicReadinessDigest,
+    runtimeForensicFailoverContractDigest: forgedRuntimeReceipt.runtimeForensicFailoverContractDigest,
+    requiredEligibleStores: forgedRuntimeReceipt.runtimeRequiredEligibleStores,
+    executableStoreCount: forgedRuntimeReceipt.runtimeExecutableStoreCount,
+    finalReadbackRecoveryMaxAttempts: forgedRuntimeReceipt.runtimeFinalReadbackRecoveryMaxAttempts,
+  });
+  const outerForgery = { ...forgedRuntimeReceipt };
+  delete outerForgery.receiptDigest;
+  forgedRuntimeReceipt.receiptDigest = forensicDigest(outerForgery);
+  assert.equal(
+    strictRuntimeController.verifyReceipt(forgedRuntimeReceipt),
+    false,
+    'Independent runtime verification must reject a recomputed receipt that swaps the attested forensic execution order.',
+  );
 
   let unsafeSecondaryCalls = 0;
   const unsafeSecondary = {
@@ -375,7 +481,7 @@ try {
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 3,
+  schemaVersion: 4,
   proof: 't4-outer-terminal-integrity',
   status: 'PASS',
   verifiedT4MayClaimSafeTerminal: true,
@@ -389,6 +495,7 @@ console.log(JSON.stringify({
   insufficientAttemptBudgetRejected: true,
   unattestedLeadingStoreNeverExecutable: true,
   verifiedZeroCostForensicFailoverRestoresSafeTerminal: true,
+  runtimeAttestedStoreOrderTamperRejectedAfterDigestRecompute: true,
   blindPrimaryRetriesDenied: true,
   unattestedCostLaneNeverInvoked: true,
   explicitEligibilityEvidenceRequired: true,
