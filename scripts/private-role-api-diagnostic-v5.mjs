@@ -3,6 +3,8 @@ import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 
 // DEVELOPMENT-only proof harness. Targets only Railway private networking and synthetic identities.
+// This harness is intentionally bound to the frozen 0.6.76 private proof service so a green
+// matrix cannot be produced by accidentally pointing at another staging service.
 const targetBase=(process.env.PROOF_TARGET_BASE||'').replace(/\/$/,'');
 const browserOrigin=(process.env.PROOF_BROWSER_ORIGIN||'').replace(/\/$/,'');
 const expectedSha=process.env.WFM_EXPECTED_CANDIDATE_SHA;
@@ -12,6 +14,7 @@ assert.ok(browserOrigin.startsWith('https://'),'browser origin required');
 assert.match(expectedSha||'',/^[0-9a-f]{40}$/,'candidate commit required');
 assert.ok(password&&password.length>=20,'staging password required');
 const target=new URL(targetBase);
+assert.equal(target.hostname,'wfm-proof-frozen-0676-private.railway.internal','exact frozen private target required');
 const browserHost=new URL(browserOrigin).host;
 const transport=target.protocol==='https:'?httpsRequest:httpRequest;
 
@@ -55,7 +58,7 @@ assert.equal(health.json?.release,'0.6.76-hosted-staging-rc1','release identity 
 assert.equal(health.json?.fixtureOnly,true,'fixture boundary mismatch');
 assert.equal(health.json?.productionApproved,false,'production boundary mismatch');
 assert.equal((await request('/api/bootstrap',{timeoutMs:4000})).status,401,'unauth bootstrap must fail closed');
-console.log('PRIVATE_API_BASELINE=PASS');
+console.log(`PRIVATE_API_BASELINE=PASS|target=${target.hostname}|release=${health.json?.release}`);
 
 const specs=[
   ['manager','manager@northstar.example','manager','northstar-demo',403,'/api/time-review','isolation-test'],
@@ -98,5 +101,5 @@ for(const [slug,email,role,tenant,payrollExpected,requiredPath,forgedTenant] of 
 }
 
 assert.equal(passed,specs.length,`role API proof incomplete ${passed}/${specs.length}`);
-console.log(`PRIVATE_API_MATRIX=PASS|roles=${passed}|sha=${expectedSha}`);
+console.log(`PRIVATE_API_MATRIX=PASS|roles=${passed}|target=${target.hostname}|sha=${expectedSha}`);
 delete process.env.WFM_STAGING_PASSWORD;
