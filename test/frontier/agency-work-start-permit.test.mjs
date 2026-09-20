@@ -68,13 +68,20 @@ test('missing dependencies, locked-readiness failures and unconsumed permits fai
   const unconsumed=await evaluateAgencyWorkStartPermit(input({shadowWorkStartCommand:async()=>{}}));assert.equal(unconsumed.reason,'work_start_permit_not_consumed');
 });
 
-test('PostgreSQL permit store acquires database-owned canonical assignment lock before exact current RTW and accepted-response SELECT locks',async()=>{
+test('PostgreSQL permit store switches to least-privilege reader and obtains database-owned canonical + row locks through the controlled snapshot function',async()=>{
   const calls=[];let transactionActive=false;
-  const store=createPostgresAgencyWorkStartPermitStore({withTransaction:async evaluate=>{transactionActive=true;try{return await evaluate({query:async(sql,values)=>{calls.push({sql,values});if(calls.length===1)return {rows:[{scope_lock_key:'-42',scope_fingerprint:'6'.repeat(24)}]};return {rows:[{assurance_version_id:ASSURANCE,assignment_fingerprint:ASSIGNMENT,conflicted:false,token_fingerprint:'1'.repeat(16),action:'confirm_preferred_worker',consumed_at:'2026-10-04T12:00:00Z'}]};}});}finally{transactionActive=false;}}});
-  const result=await store.withLockedSnapshot({tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:ASSIGNMENT,now:NOW},async()=>{assert.equal(transactionActive,true);return 'ok';});
-  assert.equal(result,'ok');assert.equal(transactionActive,false);assert.equal(store.concurrencyBoundary,'assignment_scoped_transaction_lock');assert.equal(calls.length,2);
-  assert.match(calls[0].sql,/wfm_lock_agency_identity_assignment_scope_v1/i);assert.doesNotMatch(calls[0].sql,/pg_advisory_xact_lock\(\$1::bigint\)/i);assert.deepEqual(calls[0].values,['T1','S1','R1','A1','W1',ASSIGNMENT]);
-  assert.ok(calls[1].sql.trim().startsWith('SELECT current.assurance_version_id'));assert.match(calls[1].sql,/FOR SHARE/g);assert.doesNotMatch(calls[1].sql,/\bINSERT\b|\bUPDATE\b|\bDELETE\b/i);assert.match(calls[1].sql,/wfm_agency_rtw_assurance_current/);assert.match(calls[1].sql,/wfm_agency_portal_token_consumptions/);assert.deepEqual(calls[1].values,['T1','S1','R1','A1','W1',NOW]);assert.doesNotMatch(calls[1].sql,/badge|photo|biometric|date_of_birth|share_code|document_number|raw_payload|signature/i);
+  const store=createPostgresAgencyWorkStartPermitStore({withTransaction:async evaluate=>{transactionActive=true;try{return await evaluate({query:async(sql,values)=>{calls.push({sql,values});if(/SET LOCAL ROLE/i.test(sql))return {rows:[]};return {rows:[{assurance_version_id:ASSURANCE,assignment_fingerprint:ASSIGNMENT,conflicted:false,token_fingerprint:'1'.repeat(16),action:'confirm_preferred_worker',consumed_at:'2026-10-04T12:00:00Z',scope_fingerprint:'6'.repeat(24)}]};}});}finally{transactionActive=false;}}});
+  const result=await store.withLockedSnapshot({tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:ASSIGNMENT,now:NOW},async({lockRow})=>{assert.equal(transactionActive,true);assert.equal(lockRow.scope_fingerprint,'6'.repeat(24));return 'ok';});
+  assert.equal(result,'ok');assert.equal(transactionActive,false);assert.equal(store.concurrencyBoundary,'database_owned_assignment_lock_plus_security_definer_row_locks');assert.equal(store.databaseRoleBoundary,'wfm_agency_work_start_reader');assert.equal(calls.length,2);
+  assert.match(calls[0].sql,/^SET LOCAL ROLE wfm_agency_work_start_reader;/i);assert.deepEqual(calls[0].values,[]);
+  assert.match(calls[1].sql,/wfm_read_agency_work_start_locked_snapshot_v1/i);assert.deepEqual(calls[1].values,['T1','S1','R1','A1','W1',ASSIGNMENT,NOW]);assert.doesNotMatch(calls[1].sql,/\bINSERT\b|\bUPDATE\b|\bDELETE\b|pg_advisory_xact_lock\(\$1::bigint\)/i);assert.doesNotMatch(calls[1].sql,/badge|photo|biometric|date_of_birth|share_code|document_number|raw_payload|signature/i);
+});
+
+test('malformed database scope fingerprint fails closed before evaluation',async()=>{
+  let evaluated=false;
+  const store=createPostgresAgencyWorkStartPermitStore({withTransaction:async evaluate=>evaluate({query:async sql=>/SET LOCAL ROLE/i.test(sql)?{rows:[]}:{rows:[{scope_fingerprint:'not-a-fingerprint'}]}})});
+  await assert.rejects(()=>store.withLockedSnapshot({tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:ASSIGNMENT,now:NOW},async()=>{evaluated=true;}),/work_start_permit_scope_lock_invalid/);
+  assert.equal(evaluated,false);
 });
 
 test('5,000 fabricated direct-ingress capabilities produce zero shadow work-start admissions',async()=>{
