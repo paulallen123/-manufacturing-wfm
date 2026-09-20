@@ -69,6 +69,14 @@ export function buildFactoryGraph({ entities = [], relations = [], events = [] }
       return normalizedRelations
         .filter((r) => r.from === fromId && (!relationType || r.type === relationType))
         .map((r) => entityMap.get(r.to));
+    },
+    relatedAt(fromId, relationType, at) {
+      assert(isIsoDate(at), 'relatedAt.at must be ISO date-time');
+      const t = Date.parse(at);
+      return normalizedRelations
+        .filter((r) => r.from === fromId && (!relationType || r.type === relationType))
+        .filter((r) => (!r.validFrom || Date.parse(r.validFrom) <= t) && (!r.validTo || t <= Date.parse(r.validTo)))
+        .map((r) => entityMap.get(r.to));
     }
   });
 }
