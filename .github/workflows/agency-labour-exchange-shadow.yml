@@ -1,0 +1,183 @@
+name: Agency Labour Exchange Shadow Gate
+
+on:
+  push:
+    branches:
+      - 'frontier/agency-labour-exchange-v1'
+    paths:
+      - 'src/frontier/agency-labour-exchange.mjs'
+      - 'src/frontier/agency-labour-performance.mjs'
+      - 'src/frontier/agency-right-to-work.mjs'
+      - 'src/frontier/agency-right-to-work-dvsp-evidence.mjs'
+      - 'src/frontier/agency-right-to-work-lifecycle.mjs'
+      - 'src/frontier/agency-right-to-work-refresh.mjs'
+      - 'src/frontier/agency-right-to-work-assurance-ledger.mjs'
+      - 'src/frontier/agency-right-to-work-authoritative-planner.mjs'
+      - 'src/frontier/agency-schedule-preflight.mjs'
+      - 'src/frontier/agency-schedule-authority-guard.mjs'
+      - 'src/frontier/agency-schedule-command-permit.mjs'
+      - 'src/frontier/agency-schedule-ingress-shadow.mjs'
+      - 'src/frontier/agency-identity-scope-lock.mjs'
+      - 'src/frontier/agency-identity-continuity.mjs'
+      - 'src/frontier/agency-identity-observation-ingress.mjs'
+      - 'src/frontier/agency-identity-authoritative-binding.mjs'
+      - 'src/frontier/agency-identity-db-boundary.mjs'
+      - 'src/frontier/agency-work-start-readiness.mjs'
+      - 'src/frontier/agency-work-start-permit.mjs'
+      - 'src/frontier/agency-work-start-db-boundary.mjs'
+      - 'src/frontier/agency-work-start-principal-lifecycle.mjs'
+      - 'src/frontier/agency-work-start-precheck.mjs'
+      - 'src/frontier/agency-work-start-runtime.mjs'
+      - 'src/frontier/agency-supplier-compliance.mjs'
+      - 'src/frontier/agency-supplier-portal.mjs'
+      - 'src/frontier/agency-portal-token-store.mjs'
+      - 'src/frontier/agency-supplier-delivery.mjs'
+      - 'src/frontier/agency-supplier-delivery-receipt.mjs'
+      - 'src/frontier/agency-provider-twilio-sms.mjs'
+      - 'test/frontier/agency-labour-exchange.test.mjs'
+      - 'test/frontier/agency-labour-performance.test.mjs'
+      - 'test/frontier/agency-right-to-work.test.mjs'
+      - 'test/frontier/agency-right-to-work-dvsp-transition.test.mjs'
+      - 'test/frontier/agency-right-to-work-dvsp-evidence.test.mjs'
+      - 'test/frontier/agency-right-to-work-dvsp-evidence-postgres.test.mjs'
+      - 'test/frontier/agency-right-to-work-lifecycle.test.mjs'
+      - 'test/frontier/agency-right-to-work-integration.test.mjs'
+      - 'test/frontier/agency-right-to-work-refresh.test.mjs'
+      - 'test/frontier/agency-right-to-work-assurance-ledger.test.mjs'
+      - 'test/frontier/agency-right-to-work-assurance-ledger-postgres.test.mjs'
+      - 'test/frontier/agency-right-to-work-authoritative-planner.test.mjs'
+      - 'test/frontier/agency-dvsp-planner-gate.test.mjs'
+      - 'test/frontier/agency-schedule-preflight.test.mjs'
+      - 'test/frontier/agency-schedule-authority-guard.test.mjs'
+      - 'test/frontier/agency-schedule-command-permit.test.mjs'
+      - 'test/frontier/agency-schedule-ingress-shadow.test.mjs'
+      - 'test/frontier/agency-identity-continuity.test.mjs'
+      - 'test/frontier/agency-identity-continuity-postgres.test.mjs'
+      - 'test/frontier/agency-identity-observation-ingress.test.mjs'
+      - 'test/frontier/agency-identity-observation-ingress-postgres.test.mjs'
+      - 'test/frontier/agency-identity-runtime-boundary-postgres.test.mjs'
+      - 'test/frontier/agency-identity-authoritative-binding.test.mjs'
+      - 'test/frontier/agency-identity-authoritative-binding-postgres.test.mjs'
+      - 'test/frontier/agency-identity-db-boundary.test.mjs'
+      - 'test/frontier/agency-identity-db-boundary-postgres.test.mjs'
+      - 'test/frontier/agency-work-start-readiness.test.mjs'
+      - 'test/frontier/agency-work-start-readiness-postgres.test.mjs'
+      - 'test/frontier/agency-work-start-permit.test.mjs'
+      - 'test/frontier/agency-work-start-db-boundary.test.mjs'
+      - 'test/frontier/agency-work-start-db-boundary-postgres.test.mjs'
+      - 'test/frontier/agency-work-start-principal-lifecycle.test.mjs'
+      - 'test/frontier/agency-work-start-principal-lifecycle-postgres.test.mjs'
+      - 'test/frontier/agency-work-start-precheck.test.mjs'
+      - 'test/frontier/agency-work-start-precheck-postgres.test.mjs'
+      - 'test/frontier/agency-work-start-runtime.test.mjs'
+      - 'test/frontier/agency-postgres-work-start-permit-race.test.mjs'
+      - 'test/frontier/agency-postgres-work-start-runtime-race.test.mjs'
+      - 'test/frontier/agency-work-start-runtime-rotation-postgres.test.mjs'
+      - 'test/frontier/agency-supplier-compliance.test.mjs'
+      - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
+      - 'test/frontier/agency-supplier-portal.test.mjs'
+      - 'test/frontier/agency-supplier-delivery.test.mjs'
+      - 'test/frontier/agency-supplier-delivery-claim.test.mjs'
+      - 'test/frontier/agency-supplier-delivery-receipt.test.mjs'
+      - 'test/frontier/agency-provider-twilio-sms.test.mjs'
+      - 'test/frontier/agency-postgres-integration.test.mjs'
+      - 'test/frontier/agency-postgres-delivery-claim-race.test.mjs'
+      - 'test/frontier/agency-postgres-send-receipt-race.test.mjs'
+      - 'test/frontier/agency-postgres-portal-assurance-race.test.mjs'
+      - 'test/frontier/agency-postgres-schedule-preflight-race.test.mjs'
+      - 'test/frontier/agency-postgres-schedule-authority-guard-race.test.mjs'
+      - 'test/frontier/agency-postgres-schedule-command-permit-race.test.mjs'
+      - '.github/workflows/agency-labour-exchange-shadow.yml'
+      - 'docs/AGENCY_LABOUR_EXCHANGE_V1.md'
+      - 'docs/AGENCY_SUPPLIER_DELIVERY_V1.md'
+      - 'docs/AGENCY_POSTGRES_INTEGRATION_PROOF_V1.md'
+      - 'docs/AGENCY_RIGHT_TO_WORK_ASSURANCE_V1.md'
+      - 'docs/AGENCY_RIGHT_TO_WORK_LIFECYCLE_V1.md'
+      - 'docs/AGENCY_RIGHT_TO_WORK_REFRESH_V1.md'
+      - 'docs/AGENCY_IDENTITY_CONTINUITY_V1.md'
+      - 'docs/AGENCY_IDENTITY_OBSERVATION_INGRESS_V1.md'
+      - 'docs/AGENCY_WORK_START_READINESS_V1.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agency-labour-exchange-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  agency-labour-shadow:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Run deterministic agency-labour tests on pinned Node runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "$PWD:/repo:ro" \
+            -w /repo \
+            node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 \
+            node --test \
+              test/frontier/agency-labour-exchange.test.mjs \
+              test/frontier/agency-labour-performance.test.mjs \
+              test/frontier/agency-right-to-work.test.mjs \
+              test/frontier/agency-right-to-work-dvsp-transition.test.mjs \
+              test/frontier/agency-right-to-work-dvsp-evidence.test.mjs \
+              test/frontier/agency-right-to-work-lifecycle.test.mjs \
+              test/frontier/agency-right-to-work-integration.test.mjs \
+              test/frontier/agency-right-to-work-refresh.test.mjs \
+              test/frontier/agency-right-to-work-assurance-ledger.test.mjs \
+              test/frontier/agency-right-to-work-authoritative-planner.test.mjs \
+              test/frontier/agency-dvsp-planner-gate.test.mjs \
+              test/frontier/agency-schedule-preflight.test.mjs \
+              test/frontier/agency-schedule-authority-guard.test.mjs \
+              test/frontier/agency-schedule-command-permit.test.mjs \
+              test/frontier/agency-schedule-ingress-shadow.test.mjs \
+              test/frontier/agency-identity-continuity.test.mjs \
+              test/frontier/agency-identity-observation-ingress.test.mjs \
+              test/frontier/agency-identity-authoritative-binding.test.mjs \
+              test/frontier/agency-identity-db-boundary.test.mjs \
+              test/frontier/agency-work-start-readiness.test.mjs \
+              test/frontier/agency-work-start-permit.test.mjs \
+              test/frontier/agency-work-start-db-boundary.test.mjs \
+              test/frontier/agency-work-start-principal-lifecycle.test.mjs \
+              test/frontier/agency-work-start-precheck.test.mjs \
+              test/frontier/agency-work-start-runtime.test.mjs \
+              test/frontier/agency-supplier-compliance.test.mjs \
+              test/frontier/agency-supplier-compliance-integration.test.mjs \
+              test/frontier/agency-supplier-portal.test.mjs \
+              test/frontier/agency-supplier-delivery.test.mjs \
+              test/frontier/agency-supplier-delivery-claim.test.mjs \
+              test/frontier/agency-supplier-delivery-receipt.test.mjs \
+              test/frontier/agency-provider-twilio-sms.test.mjs
+      - name: Run real PostgreSQL agency-store race proof
+        shell: bash
+        env:
+          AGENCY_POSTGRES_PROOF_REQUIRED: '1'
+        run: |
+          set -euo pipefail
+          node --version
+          node --test test/frontier/agency-postgres-integration.test.mjs
+          node --test test/frontier/agency-postgres-delivery-claim-race.test.mjs
+          node --test test/frontier/agency-postgres-send-receipt-race.test.mjs
+          node --test test/frontier/agency-postgres-portal-assurance-race.test.mjs
+          node --test test/frontier/agency-postgres-schedule-preflight-race.test.mjs
+          node --test test/frontier/agency-postgres-schedule-authority-guard-race.test.mjs
+          node --test test/frontier/agency-postgres-schedule-command-permit-race.test.mjs
+          node --test test/frontier/agency-right-to-work-dvsp-evidence-postgres.test.mjs
+          node --test test/frontier/agency-right-to-work-assurance-ledger-postgres.test.mjs
+          node --test test/frontier/agency-identity-continuity-postgres.test.mjs
+          node --test test/frontier/agency-identity-observation-ingress-postgres.test.mjs
+          node --test test/frontier/agency-identity-runtime-boundary-postgres.test.mjs
+          node --test test/frontier/agency-identity-authoritative-binding-postgres.test.mjs
+          node --test test/frontier/agency-identity-db-boundary-postgres.test.mjs
+          node --test test/frontier/agency-work-start-readiness-postgres.test.mjs
+          node --test test/frontier/agency-work-start-db-boundary-postgres.test.mjs
+          node --test test/frontier/agency-work-start-principal-lifecycle-postgres.test.mjs
+          node --test test/frontier/agency-work-start-precheck-postgres.test.mjs
+          node --test test/frontier/agency-postgres-work-start-permit-race.test.mjs
+          node --test test/frontier/agency-postgres-work-start-runtime-race.test.mjs
+          node --test test/frontier/agency-work-start-runtime-rotation-postgres.test.mjs
