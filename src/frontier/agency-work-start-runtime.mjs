@@ -51,12 +51,15 @@ export function createPostgresAgencyWorkStartRuntime({withTransaction}={}){
     credentialBoundary:'same_tenant_bound_session_user_transaction_factory_for_precheck_and_permit',
     evidenceBoundary:'exact_scope_security_definer_functions_only',
     precheckTrustBoundary:'same_runtime_instance_object_identity_one_use',
+    eligibilityBeforeRanking:true,
+    directTableSelectAllowed:false,
     rankingImpact:'none',
     scheduleWriteAuthorized:false,
     clockingWriteAuthorized:false,
     payrollWriteAuthorized:false,
     invoiceWriteAuthorized:false,
     workerMasterWriteAuthorized:false,
+    workStartWriteAuthorized:false,
     async evaluateReadiness(input={}){
       const readiness=await precheckBoundary.evaluate(canonicalInput(input));
       if(readiness&&typeof readiness==='object')issuedReadiness.add(readiness);
