@@ -14,6 +14,7 @@ on:
       - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
       - 'Dockerfile'
       - 'scripts/compose-vector-presentation.mjs'
+      - 'scripts/compose-vector-presentation.regression.test.mjs'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
   pull_request:
@@ -25,6 +26,7 @@ on:
       - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
       - 'Dockerfile'
       - 'scripts/compose-vector-presentation.mjs'
+      - 'scripts/compose-vector-presentation.regression.test.mjs'
       - 'scripts/validate-vector-only-ui.mjs'
       - '.github/workflows/vector-only-ui-guard.yml'
   workflow_dispatch:
@@ -42,6 +44,8 @@ jobs:
           persist-credentials: false
       - name: Prove source-owned action evidence semantics
         run: node --test operations/runtime/workflow-action-evidence-contract.test.cjs ux-overlay/vector-action-queue.test.cjs
+      - name: Prove retired presentation purge fails closed
+        run: node --test scripts/compose-vector-presentation.regression.test.mjs
       - name: Refuse retired UI source
         run: node scripts/validate-vector-only-ui.mjs
       - name: Build exact runtime
@@ -66,6 +70,7 @@ jobs:
             vector-shell.js
             review-ui.js
             review-ui.css
+            factory-control-ui.js
             factory-control-ui.css
             value-cockpit-ui.js
             value-cockpit-ui.css
