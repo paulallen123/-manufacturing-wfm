@@ -83,8 +83,9 @@ export class AttendanceCoverageAssurance {
       const domains=new Set(routes.map(r=>r.domain));
       const sourceIds=[...new Set(routes.map(r=>r.sourceId))].sort();
       const authoritative=routes.some(r=>r.role==='authoritative');
-      const inReady=authoritative || (routes.some(r=>r.role==='anchor_in') && domains.size>=2);
-      const outReady=authoritative || (routes.some(r=>r.role==='departure_anchor') && domains.size>=2);
+      const independent=domains.size>=2&&sourceIds.length>=2;
+      const inReady=authoritative || (routes.some(r=>r.role==='anchor_in') && independent);
+      const outReady=authoritative || (routes.some(r=>r.role==='departure_anchor') && independent);
       const automaticReady=inReady&&outReady;
       return {employee:a.employee,workerType:a.workerType,automaticReady,inReady,outReady,fallback:plan.fallback,accountabilityReady:automaticReady||Boolean(plan.fallback),domains:[...domains].sort(),sourceIds};
     });

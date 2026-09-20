@@ -57,9 +57,10 @@ export function planAutomaticAttendanceCoverage({workers=[],discoveries=[]}={}){
       for(const o of outAnchors){
         const bases=[i,o];
         const baseDomains=new Set(bases.map(x=>x.domain));
-        const corroborator=options.find(x=>x.corroborates && !baseDomains.has(x.domain));
+        const baseSources=new Set(bases.map(x=>x.sourceId));
+        const corroborator=options.find(x=>x.corroborates && !baseDomains.has(x.domain) && !baseSources.has(x.sourceId));
         if(corroborator){ selected={i,o,c:corroborator}; break outer; }
-        if(baseDomains.size>=2){ selected={i,o,c:null}; break outer; }
+        if(baseDomains.size>=2 && baseSources.size>=2){ selected={i,o,c:null}; break outer; }
       }
     }
 
@@ -77,8 +78,10 @@ export function planAutomaticAttendanceCoverage({workers=[],discoveries=[]}={}){
     if(!inAnchors.length) missing.push('IN_ANCHOR');
     if(!outAnchors.length) missing.push('OUT_ANCHOR');
     const domains=new Set(options.map(x=>x.domain));
+    const sources=new Set(options.map(x=>x.sourceId));
     if(inAnchors.length&&outAnchors.length&&domains.size<2) missing.push('INDEPENDENT_DOMAIN');
-    if(inAnchors.length&&outAnchors.length&&domains.size>=2) missing.push('SAFE_CORROBORATION_COMBINATION');
+    if(inAnchors.length&&outAnchors.length&&sources.size<2) missing.push('INDEPENDENT_SOURCE');
+    if(inAnchors.length&&outAnchors.length&&domains.size>=2&&sources.size>=2) missing.push('SAFE_CORROBORATION_COMBINATION');
     if(!options.length) missing.push('NO_STRONG_PERSON_BOUND_SIGNAL');
     gaps.push({employee,automaticReady:false,missing:[...new Set(missing)],availableSources:options.map(x=>({sourceId:x.sourceId,domain:x.domain,supportsIn:x.supportsIn,supportsOut:x.supportsOut}))});
   }
