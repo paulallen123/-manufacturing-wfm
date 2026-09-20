@@ -25,10 +25,27 @@ function gitHeadSha() {
   return run.status === 0 ? String(run.stdout || '').trim().toLowerCase() : '';
 }
 
+function gitObjectBlobSha(commitSha, repoPath) {
+  if (!validGitSha(commitSha)) return '';
+  const run = spawnSync('git', ['rev-parse', `${commitSha}:${repoPath}`], { cwd: ROOT, encoding: 'utf8' });
+  return run.status === 0 ? String(run.stdout || '').trim().toLowerCase() : '';
+}
+
+const canonicalBaseSha = String(process.env.WFM_CANONICAL_BASE_SHA || '').trim().toLowerCase();
+function resolveCanonicalControlBlob(envName, repoPath) {
+  const supplied = String(process.env[envName] || '').trim().toLowerCase();
+  const derived = gitObjectBlobSha(canonicalBaseSha, repoPath);
+  if (supplied && derived && supplied !== derived) return '';
+  return supplied || derived;
+}
+
 const releaseEvidence = {
   headSha: String(process.env.WFM_AUTONOMY_HEAD_SHA || '').trim().toLowerCase(),
-  canonicalBaseSha: String(process.env.WFM_CANONICAL_BASE_SHA || '').trim().toLowerCase(),
-  canonicalPolicyBlobSha: String(process.env.WFM_CANONICAL_POLICY_BLOB_SHA || '').trim().toLowerCase(),
+  canonicalBaseSha,
+  canonicalPolicyBlobSha: resolveCanonicalControlBlob('WFM_CANONICAL_POLICY_BLOB_SHA', 'release/release-policy.json'),
+  canonicalDeploymentPointerBlobSha: resolveCanonicalControlBlob('WFM_CANONICAL_DEPLOYMENT_POINTER_BLOB_SHA', 'release/deployment-pointer.json'),
+  canonicalStagingWorkflowBlobSha: resolveCanonicalControlBlob('WFM_CANONICAL_STAGING_WORKFLOW_BLOB_SHA', '.github/workflows/canonical-staging-release.yml'),
+  canonicalReleaseValidatorBlobSha: resolveCanonicalControlBlob('WFM_CANONICAL_RELEASE_VALIDATOR_BLOB_SHA', 'scripts/validate-release-policy.mjs'),
   mergeTreeSha: String(process.env.WFM_CANONICAL_MERGE_TREE_SHA || '').trim().toLowerCase(),
 };
 const releaseBindingComplete = Object.values(releaseEvidence).every(validGitSha);
@@ -251,7 +268,7 @@ const proofScope = releaseClaimAllowed
   : exactRuntime ? 'EXACT_RUNTIME_LOGIC_ONLY' : 'NON_EXACT_LOGIC_ONLY';
 
 const receipt = {
-  schemaVersion: 5,
+  schemaVersion: 6,
   proof: 'portable-zero-engineer-autonomy-gate',
   status: failed ? 'FAIL' : 'PASS',
   proofScope,
@@ -269,6 +286,7 @@ const receipt = {
   canonicalTrustAnchorGovernanceVerified,
   releaseGradeCanonicalTrustAnchor,
   canonicalReleaseEvidenceBound: releaseClaimAllowed,
+  canonicalControlBundleReceiptBound: releaseBindingComplete,
   releaseBinding,
   incidentRegressionCorpus,
   productionMutation: false,
