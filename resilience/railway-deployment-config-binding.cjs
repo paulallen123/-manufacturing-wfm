@@ -34,6 +34,37 @@ function validId(value, max = 180) {
   return id && /^[A-Za-z0-9._:-]+$/.test(id) ? id : null;
 }
 
+function validDigest(value) {
+  const candidate = clean(value, 80).toLowerCase();
+  return /^[a-f0-9]{64}$/.test(candidate) ? candidate : null;
+}
+
+function normaliseDeploymentConfig(value = {}) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const source = value.source && typeof value.source === 'object' ? value.source : {};
+  const build = value.build && typeof value.build === 'object' ? value.build : {};
+  const normalized = {
+    builder: clean(build.builder, 40).toUpperCase() || null,
+    rootDirectory: clean(source.rootDirectory, 240) || null,
+    dockerfilePath: clean(build.dockerfilePath, 240) || null,
+    watchPatterns: Array.isArray(build.watchPatterns)
+      ? [...new Set(build.watchPatterns.slice(0, 50).map((entry) => clean(entry, 240)).filter(Boolean))].sort()
+      : [],
+  };
+  const hasPayload = Boolean(
+    normalized.builder
+    || normalized.rootDirectory
+    || normalized.dockerfilePath
+    || normalized.watchPatterns.length > 0
+  );
+  return hasPayload ? normalized : null;
+}
+
+function digestDeploymentConfigSnapshot(value = {}) {
+  const normalized = normaliseDeploymentConfig(value);
+  return normalized ? digest(normalized) : null;
+}
+
 function assessRailwayDeploymentConfigBinding(input = {}) {
   const deploymentId = validId(input.deploymentId);
   const deploymentSnapshotId = validId(input.deploymentSnapshotId);
@@ -46,12 +77,20 @@ function assessRailwayDeploymentConfigBinding(input = {}) {
   const bindingId = validId(evidence.bindingId);
   const providerAttestedImmutable = evidence.providerAttestedImmutable === true;
   const sourceIsImmutableDeploymentSnapshot = source === 'deployment-snapshot';
+  const configSnapshotDigest = digestDeploymentConfigSnapshot(input.configSnapshot);
+  const attestedConfigDigest = validDigest(evidence.attestedConfigDigest);
+  const configPayloadDigestBound = Boolean(
+    configSnapshotDigest
+    && attestedConfigDigest
+    && configSnapshotDigest === attestedConfigDigest
+  );
 
   const identityComplete = Boolean(deploymentId && deploymentSnapshotId && deploymentCreatedAt);
   const immutableBindingMatches = identityComplete
     && sourceIsImmutableDeploymentSnapshot
     && providerAttestedImmutable
-    && bindingId === deploymentSnapshotId;
+    && bindingId === deploymentSnapshotId
+    && configPayloadDigestBound;
 
   let classification = 'invalid-or-missing-config-binding';
   let reason = 'deployment-identity-or-config-binding-evidence-incomplete';
@@ -65,9 +104,25 @@ function assessRailwayDeploymentConfigBinding(input = {}) {
   } else if (sourceIsImmutableDeploymentSnapshot && bindingId !== deploymentSnapshotId) {
     classification = 'config-snapshot-binding-mismatch';
     reason = 'config-binding-id-does-not-match-deployment-snapshot-id';
+  } else if (
+    sourceIsImmutableDeploymentSnapshot
+    && providerAttestedImmutable
+    && bindingId === deploymentSnapshotId
+    && (!configSnapshotDigest || !attestedConfigDigest)
+  ) {
+    classification = 'config-payload-binding-incomplete';
+    reason = 'immutable-deployment-config-evidence-must-bind-an-attested-digest-to-a-non-empty-safe-config-snapshot';
+  } else if (
+    sourceIsImmutableDeploymentSnapshot
+    && providerAttestedImmutable
+    && bindingId === deploymentSnapshotId
+    && !configPayloadDigestBound
+  ) {
+    classification = 'config-payload-digest-mismatch';
+    reason = 'attested-config-digest-does-not-match-the-config-snapshot-being-evaluated';
   } else if (immutableBindingMatches) {
     classification = 'deployment-config-evidence-bound';
-    reason = 'provider-attested-immutable-config-bound-to-deployment-snapshot';
+    reason = 'provider-attested-immutable-config-and-payload-digest-bound-to-deployment-snapshot';
   }
 
   const configAgeMs = deploymentCreatedAt && configObservedAt
@@ -75,7 +130,7 @@ function assessRailwayDeploymentConfigBinding(input = {}) {
     : null;
 
   const core = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     proof: 'railway-deployment-config-evidence-binding',
     provider: 'railway',
     deploymentId,
@@ -85,6 +140,9 @@ function assessRailwayDeploymentConfigBinding(input = {}) {
     configEvidenceSource: source,
     configBindingId: bindingId,
     providerAttestedImmutable,
+    configSnapshotDigest,
+    attestedConfigDigest,
+    configPayloadDigestBound,
     classification,
     reason,
     deploymentConfigEvidenceBound: immutableBindingMatches,
@@ -103,8 +161,8 @@ function assessRailwayDeploymentConfigBinding(input = {}) {
     modelAuthorityGranted: false,
     executionAuthorityGranted: false,
     recommendedAction: immutableBindingMatches
-      ? 'allow-bound-config-evidence-to-inform-diagnosis-without-granting-release-or-execution-authority'
-      : 'treat-service-config-as-current-state-only-and-require-provider-bound-deployment-config-evidence-before-high-confidence-historical-diagnosis',
+      ? 'allow-only-the-digest-bound-config-snapshot-to-inform-diagnosis-without-granting-release-or-execution-authority'
+      : 'treat-unbound-or-mutable-service-config-as-current-state-only-and-require-provider-bound-snapshot-plus-payload-digest-before-high-confidence-historical-diagnosis',
   };
 
   return Object.freeze({
@@ -117,7 +175,8 @@ function verifyRailwayDeploymentConfigBindingReceipt(receipt) {
   if (!receipt || typeof receipt !== 'object') return false;
   if (!/^[a-f0-9]{64}$/.test(String(receipt.receiptDigest || ''))) return false;
   if (
-    receipt.proof !== 'railway-deployment-config-evidence-binding'
+    receipt.schemaVersion !== 2
+    || receipt.proof !== 'railway-deployment-config-evidence-binding'
     || receipt.provider !== 'railway'
     || receipt.productFailureProven !== false
     || receipt.releaseClaimAllowed !== false
@@ -132,6 +191,11 @@ function verifyRailwayDeploymentConfigBindingReceipt(receipt) {
     || receipt.executionAuthorityGranted !== false
   ) return false;
 
+  const snapshotDigest = validDigest(receipt.configSnapshotDigest);
+  const attestedDigest = validDigest(receipt.attestedConfigDigest);
+  const digestBound = Boolean(snapshotDigest && attestedDigest && snapshotDigest === attestedDigest);
+  if (receipt.configPayloadDigestBound !== digestBound) return false;
+
   const bound = receipt.deploymentConfigEvidenceBound === true;
   if (receipt.canElevateDiagnosisConfidence !== bound) return false;
   if (receipt.securityHoldDiagnosisHighConfidenceAllowed !== bound) return false;
@@ -143,6 +207,7 @@ function verifyRailwayDeploymentConfigBindingReceipt(receipt) {
       || receipt.providerAttestedImmutable !== true
       || !receipt.deploymentSnapshotId
       || receipt.configBindingId !== receipt.deploymentSnapshotId
+      || !digestBound
     ) return false;
   } else if (
     receipt.classification === 'deployment-config-evidence-bound'
@@ -161,5 +226,7 @@ function verifyRailwayDeploymentConfigBindingReceipt(receipt) {
 module.exports = {
   assessRailwayDeploymentConfigBinding,
   verifyRailwayDeploymentConfigBindingReceipt,
+  normaliseDeploymentConfig,
+  digestDeploymentConfigSnapshot,
   digest,
 };
