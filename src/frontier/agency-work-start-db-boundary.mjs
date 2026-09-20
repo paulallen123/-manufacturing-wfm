@@ -1,6 +1,7 @@
-export const AGENCY_WORK_START_DB_BOUNDARY_VERSION='agency-work-start-db-boundary-v0.2.0';
+export const AGENCY_WORK_START_DB_BOUNDARY_VERSION='agency-work-start-db-boundary-v0.3.0';
 export const AGENCY_WORK_START_DB_READER_ROLE='wfm_agency_work_start_reader';
 export const AGENCY_WORK_START_DB_OWNER_ROLE='wfm_agency_work_start_owner';
+export const AGENCY_WORK_START_TENANT_BINDING_ADMIN_ROLE='wfm_agency_work_start_tenant_binding_admin';
 
 export const AGENCY_WORK_START_SET_LOCAL_ROLE_SQL=`SET LOCAL ROLE ${AGENCY_WORK_START_DB_READER_ROLE};`;
 
@@ -40,11 +41,81 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='wfm_agency_work_start_reader') THEN
     CREATE ROLE wfm_agency_work_start_reader NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='wfm_agency_work_start_tenant_binding_admin') THEN
+    CREATE ROLE wfm_agency_work_start_tenant_binding_admin NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+  END IF;
 END
 $roles$;
 
-GRANT USAGE ON SCHEMA public TO wfm_agency_work_start_owner, wfm_agency_work_start_reader;
-REVOKE CREATE ON SCHEMA public FROM wfm_agency_work_start_owner, wfm_agency_work_start_reader;
+GRANT USAGE ON SCHEMA public TO wfm_agency_work_start_owner, wfm_agency_work_start_reader, wfm_agency_work_start_tenant_binding_admin;
+REVOKE CREATE ON SCHEMA public FROM wfm_agency_work_start_owner, wfm_agency_work_start_reader, wfm_agency_work_start_tenant_binding_admin;
+
+-- Database-principal -> tenant binding. The runtime role cannot read or mutate this
+-- table. Deployment automation may provision one tenant per LOGIN principal through
+-- the separate binding-admin role. Multiple principals may serve one tenant, but a
+-- principal cannot be bound to more than one tenant because database_principal is
+-- the primary key. SECURITY DEFINER reads verify session_user, which SET ROLE cannot
+-- forge. PostgreSQL superusers are intentionally outside this boundary because they
+-- can bypass all database ACLs already.
+CREATE TABLE IF NOT EXISTS public.wfm_agency_work_start_principal_tenants (
+  database_principal name PRIMARY KEY,
+  tenant_id text NOT NULL CHECK (tenant_id=btrim(tenant_id) AND tenant_id<>'' AND char_length(tenant_id)<=100),
+  binding_fingerprint text NOT NULL CHECK (binding_fingerprint ~ '^[0-9a-f]{24}$'),
+  bound_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.wfm_agency_work_start_principal_tenants OWNER TO wfm_agency_work_start_owner;
+REVOKE ALL ON TABLE public.wfm_agency_work_start_principal_tenants FROM PUBLIC;
+REVOKE ALL ON TABLE public.wfm_agency_work_start_principal_tenants FROM wfm_agency_work_start_reader;
+REVOKE ALL ON TABLE public.wfm_agency_work_start_principal_tenants FROM wfm_agency_identity_ingress_writer, wfm_agency_identity_reader;
+GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE public.wfm_agency_work_start_principal_tenants TO wfm_agency_work_start_tenant_binding_admin;
+
+CREATE OR REPLACE FUNCTION public.wfm_assert_agency_work_start_tenant_principal_v1(
+  p_tenant_id text
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $principal_guard$
+DECLARE
+  v_role record;
+  v_bound_tenant text;
+BEGIN
+  IF p_tenant_id IS NULL OR btrim(p_tenant_id)='' OR char_length(p_tenant_id)>100 OR p_tenant_id<>btrim(p_tenant_id) THEN
+    RAISE EXCEPTION 'work_start_tenant_principal_scope_invalid';
+  END IF;
+
+  SELECT r.rolcanlogin,r.rolsuper,r.rolcreatedb,r.rolcreaterole
+    INTO STRICT v_role
+    FROM pg_catalog.pg_roles AS r
+   WHERE r.rolname=session_user;
+
+  -- Superusers can bypass every PostgreSQL ACL and are therefore explicitly outside
+  -- the runtime-credential threat model. Production work-start credentials must be
+  -- LOGIN, NOSUPERUSER, NOCREATEDB and NOCREATEROLE.
+  IF v_role.rolsuper THEN
+    RETURN;
+  END IF;
+  IF NOT v_role.rolcanlogin OR v_role.rolcreatedb OR v_role.rolcreaterole THEN
+    RAISE EXCEPTION 'work_start_tenant_principal_invalid';
+  END IF;
+
+  SELECT binding.tenant_id
+    INTO v_bound_tenant
+    FROM public.wfm_agency_work_start_principal_tenants AS binding
+   WHERE binding.database_principal=session_user;
+
+  IF NOT FOUND OR v_bound_tenant IS DISTINCT FROM p_tenant_id THEN
+    RAISE EXCEPTION 'work_start_tenant_principal_unauthorized';
+  END IF;
+END
+$principal_guard$;
+
+ALTER FUNCTION public.wfm_assert_agency_work_start_tenant_principal_v1(text)
+  OWNER TO wfm_agency_work_start_owner;
+REVOKE ALL ON FUNCTION public.wfm_assert_agency_work_start_tenant_principal_v1(text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.wfm_assert_agency_work_start_tenant_principal_v1(text)
+  FROM wfm_agency_work_start_reader, wfm_agency_work_start_tenant_binding_admin, wfm_agency_identity_ingress_writer, wfm_agency_identity_reader;
 
 -- Runtime work-start code receives no direct table SELECT or DML capability.
 -- Every evidence read must go through an exact-scope SECURITY DEFINER function.
@@ -112,6 +183,8 @@ BEGIN
     RAISE EXCEPTION 'work_start_locked_snapshot_scope_invalid';
   END IF;
 
+  PERFORM public.wfm_assert_agency_work_start_tenant_principal_v1(p_tenant_id);
+
   SELECT lock_result.scope_fingerprint
     INTO STRICT v_scope_fingerprint
     FROM public.wfm_lock_agency_identity_assignment_scope_v1(
@@ -166,7 +239,7 @@ $function$;
 ALTER FUNCTION public.wfm_read_agency_work_start_locked_snapshot_v1(text,text,text,text,text,text,timestamptz)
   OWNER TO wfm_agency_work_start_owner;
 REVOKE ALL ON FUNCTION public.wfm_read_agency_work_start_locked_snapshot_v1(text,text,text,text,text,text,timestamptz) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.wfm_read_agency_work_start_locked_snapshot_v1(text,text,text,text,text,text,timestamptz) FROM wfm_agency_identity_ingress_writer, wfm_agency_identity_reader;
+REVOKE ALL ON FUNCTION public.wfm_read_agency_work_start_locked_snapshot_v1(text,text,text,text,text,text,timestamptz) FROM wfm_agency_identity_ingress_writer, wfm_agency_identity_reader, wfm_agency_work_start_tenant_binding_admin;
 GRANT EXECUTE ON FUNCTION public.wfm_read_agency_work_start_locked_snapshot_v1(text,text,text,text,text,text,timestamptz)
   TO wfm_agency_work_start_reader;
 
@@ -209,6 +282,8 @@ BEGIN
     RAISE EXCEPTION 'work_start_authority_scope_invalid';
   END IF;
 
+  PERFORM public.wfm_assert_agency_work_start_tenant_principal_v1(p_tenant_id);
+
   RETURN QUERY
   SELECT current.tenant_id,current.agency_id,current.worker_id,current.assurance_version_id,
          current.site_id,current.request_id,current.assignment_fingerprint,current.checked_at,
@@ -249,7 +324,7 @@ $function$;
 ALTER FUNCTION public.wfm_read_agency_work_start_authority_v1(text,text,text,text,text,text,timestamptz)
   OWNER TO wfm_agency_work_start_owner;
 REVOKE ALL ON FUNCTION public.wfm_read_agency_work_start_authority_v1(text,text,text,text,text,text,timestamptz) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.wfm_read_agency_work_start_authority_v1(text,text,text,text,text,text,timestamptz) FROM wfm_agency_identity_ingress_writer, wfm_agency_identity_reader;
+REVOKE ALL ON FUNCTION public.wfm_read_agency_work_start_authority_v1(text,text,text,text,text,text,timestamptz) FROM wfm_agency_identity_ingress_writer, wfm_agency_identity_reader, wfm_agency_work_start_tenant_binding_admin;
 GRANT EXECUTE ON FUNCTION public.wfm_read_agency_work_start_authority_v1(text,text,text,text,text,text,timestamptz)
   TO wfm_agency_work_start_reader;
 
@@ -295,6 +370,8 @@ BEGIN
     RAISE EXCEPTION 'work_start_identity_continuity_scope_invalid';
   END IF;
 
+  PERFORM public.wfm_assert_agency_work_start_tenant_principal_v1(p_tenant_id);
+
   RETURN QUERY
   SELECT o.tenant_id,o.site_id,o.request_id,o.agency_id,o.worker_id,o.assignment_fingerprint,
          o.assurance_version_id,o.source_system_id,o.source_event_fingerprint,o.subject_fingerprint,
@@ -324,7 +401,7 @@ $function$;
 ALTER FUNCTION public.wfm_read_agency_work_start_identity_continuity_v1(text,text,text,text,text,text,text,timestamptz,timestamptz)
   OWNER TO wfm_agency_work_start_owner;
 REVOKE ALL ON FUNCTION public.wfm_read_agency_work_start_identity_continuity_v1(text,text,text,text,text,text,text,timestamptz,timestamptz) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.wfm_read_agency_work_start_identity_continuity_v1(text,text,text,text,text,text,text,timestamptz,timestamptz) FROM wfm_agency_identity_ingress_writer, wfm_agency_identity_reader;
+REVOKE ALL ON FUNCTION public.wfm_read_agency_work_start_identity_continuity_v1(text,text,text,text,text,text,text,timestamptz,timestamptz) FROM wfm_agency_identity_ingress_writer, wfm_agency_identity_reader, wfm_agency_work_start_tenant_binding_admin;
 GRANT EXECUTE ON FUNCTION public.wfm_read_agency_work_start_identity_continuity_v1(text,text,text,text,text,text,text,timestamptz,timestamptz)
   TO wfm_agency_work_start_reader;
 `;
@@ -332,6 +409,9 @@ GRANT EXECUTE ON FUNCTION public.wfm_read_agency_work_start_identity_continuity_
 export const AGENCY_WORK_START_DB_BOUNDARY_AUTHORITY=Object.freeze({
   ownerRole:AGENCY_WORK_START_DB_OWNER_ROLE,
   runtimeRole:AGENCY_WORK_START_DB_READER_ROLE,
+  tenantBindingAdminRole:AGENCY_WORK_START_TENANT_BINDING_ADMIN_ROLE,
+  principalTenantBindingTable:'public.wfm_agency_work_start_principal_tenants',
+  principalTenantGuardFunction:'public.wfm_assert_agency_work_start_tenant_principal_v1',
   lockedSnapshotFunction:'public.wfm_read_agency_work_start_locked_snapshot_v1',
   scopedAuthorityFunction:'public.wfm_read_agency_work_start_authority_v1',
   scopedIdentityContinuityFunction:'public.wfm_read_agency_work_start_identity_continuity_v1',
@@ -343,6 +423,11 @@ export const AGENCY_WORK_START_DB_BOUNDARY_AUTHORITY=Object.freeze({
   scopedReadFunctionsOnly:true,
   canonicalAssignmentLockAuthority:'database_owned',
   rowLockAuthority:'security_definer_no_login_owner_only',
+  tenantAuthorizationAuthority:'database_session_user_principal_binding',
+  oneTenantPerDatabasePrincipal:true,
+  setRoleCannotChangeTenantPrincipal:true,
+  productionPrincipalMustBeLoginNonSuperuser:true,
+  superuserOutsideRuntimeThreatBoundary:true,
   rankingImpact:'none',
   scheduleWriteAuthorized:false,
   clockingWriteAuthorized:false,
