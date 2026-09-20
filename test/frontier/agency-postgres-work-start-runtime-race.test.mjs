@@ -19,6 +19,7 @@ import {
   AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL,
 } from '../../src/frontier/agency-identity-observation-ingress.mjs';
 import {AGENCY_IDENTITY_DB_BOUNDARY_DDL} from '../../src/frontier/agency-identity-db-boundary.mjs';
+import {AGENCY_WORK_START_DB_BOUNDARY_DDL} from '../../src/frontier/agency-work-start-db-boundary.mjs';
 
 const execFileAsync=promisify(execFile);
 const POSTGRES_IMAGE='postgres:16.10-bookworm@sha256:38471f330eb885e04de130b768d6db4e10469e2311879c7e5c699f6d2d8a1c74';
@@ -63,7 +64,7 @@ class PersistentPsqlSession{
   #drain(){if(!this.pending)return;const {marker,resolve}=this.pending;const index=this.stdout.indexOf(marker);if(index<0)return;const before=this.stdout.slice(0,index);let after=this.stdout.slice(index+marker.length);after=after.replace(/^\r?\n/,'');this.stdout=after;this.pending=null;resolve(before.trim());}
   async #command(sql){if(this.closed)throw new Error('persistent_psql_closed');if(this.pending)throw new Error('persistent_psql_concurrent_command');const marker=`__WFM_RUNTIME_${process.pid}_${++markerCounter}__`;return new Promise((resolve,reject)=>{this.pending={marker,resolve,reject};this.proc.stdin.write(`${sql}\n\\echo ${marker}\n`);});}
   async exec(sql){await this.#command(sql);}
-  async query(sql,values=[]){return parseRows(await this.#command(jsonSql(sql,values)));}
+  async query(sql,values=[]){if(/^\s*SET\s+LOCAL\s+ROLE\b/i.test(sql)){await this.exec(interpolate(sql,values));return {rows:[]};}return parseRows(await this.#command(jsonSql(sql,values)));}
   async close(){if(!this.proc||this.closed)return;const exited=new Promise(resolve=>this.proc.once('exit',()=>resolve()));this.proc.stdin.end();await Promise.race([exited,new Promise(resolve=>setTimeout(resolve,2000))]);if(!this.closed)this.proc.kill('SIGTERM');}
 }
 
@@ -96,7 +97,7 @@ async function currentReadiness(){
 function commandFrom(readiness){return {type:'shadow_work_start_admission',tenantId:SCOPE.tenantId,siteId:SCOPE.siteId,requestId:SCOPE.requestId,agencyId:SCOPE.agencyId,workerId:SCOPE.workerId,assuranceVersionId:readiness.assuranceVersionId,assignmentFingerprint:readiness.assignmentFingerprint,acceptedResponseFingerprint:readiness.acceptedResponseFingerprint,authorityFingerprint:readiness.authorityFingerprint,continuityFingerprint:readiness.continuityFingerprint,policyFingerprint:readiness.policyFingerprint,readinessFingerprint:readiness.readinessFingerprint};}
 function evaluateWithStore({readiness,applicationName,shadowWorkStartCommand}){return evaluateAgencyWorkStartPermit({tenantId:SCOPE.tenantId,siteId:SCOPE.siteId,agencyId:SCOPE.agencyId,request:structuredClone(REQUEST),workerId:SCOPE.workerId,now:NOW,policy:structuredClone(POLICY),readiness,permitStore:makePermitStore(applicationName),shadowWorkStartCommand});}
 
-before(async()=>{if(!REQUIRED)return;try{await docker(['version','--format','{{.Server.Version}}'],{timeout:10000});}catch(error){throw new Error(`Docker is required for runtime work-start race proof: ${error.message}`);}await docker(['run','-d','--rm','--name',CONTAINER,'-e',`POSTGRES_PASSWORD=${DB_PASSWORD}`,POSTGRES_IMAGE],{timeout:120000});started=true;await waitForPostgres();await psql(`${AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL}\n${AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL}\n${AGENCY_IDENTITY_CONTINUITY_DDL}\n${AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL}\n${AGENCY_IDENTITY_DB_BOUNDARY_DDL}`);});
+before(async()=>{if(!REQUIRED)return;try{await docker(['version','--format','{{.Server.Version}}'],{timeout:10000});}catch(error){throw new Error(`Docker is required for runtime work-start race proof: ${error.message}`);}await docker(['run','-d','--rm','--name',CONTAINER,'-e',`POSTGRES_PASSWORD=${DB_PASSWORD}`,POSTGRES_IMAGE],{timeout:120000});started=true;await waitForPostgres();await psql(`${AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL}\n${AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL}\n${AGENCY_IDENTITY_CONTINUITY_DDL}\n${AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL}\n${AGENCY_IDENTITY_DB_BOUNDARY_DDL}\n${AGENCY_WORK_START_DB_BOUNDARY_DDL}`);});
 after(async()=>{await stop();});
 
 pgTest('actual readiness + permit runtime is privacy-minimised, one-shot and database-backed',async()=>{
