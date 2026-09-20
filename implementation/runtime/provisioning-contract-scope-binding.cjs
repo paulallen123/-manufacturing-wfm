@@ -187,7 +187,16 @@ function createContractScopeBoundProvisioningOutbox(store, options = {}) {
   keyBuffer(contractScopeBindingKey);
   if (typeof baseOutboxFactory !== 'function') throw new Error('Contract-scope-bound provisioning requires a base outbox factory.');
   const base = baseOutboxFactory(store, baseOptions);
-  if (!base || typeof base.enqueue !== 'function' || typeof base.get !== 'function' || typeof base.claim !== 'function' || typeof base.beginMutation !== 'function' || typeof base.recordIndependentVerification !== 'function') {
+  if (
+    !base ||
+    typeof base.enqueue !== 'function' ||
+    typeof base.get !== 'function' ||
+    typeof base.claim !== 'function' ||
+    typeof base.beginMutation !== 'function' ||
+    typeof base.recordProviderOutcome !== 'function' ||
+    typeof base.recordReconciliation !== 'function' ||
+    typeof base.recordIndependentVerification !== 'function'
+  ) {
     throw new Error('Contract-scope-bound provisioning requires the standard scope-attested outbox interface.');
   }
 
@@ -223,6 +232,15 @@ function createContractScopeBoundProvisioningOutbox(store, options = {}) {
     return { record, verified: verifyIntent(record.payload) };
   }
 
+  function withContractScopeProof(result, verified) {
+    return {
+      ...result,
+      contractScopeBindingDigest: verified.bindingDigest,
+      contractSubjectDigest: verified.contractSubjectDigest,
+      contractBoundIntentDigest: verified.contractBoundIntentDigest
+    };
+  }
+
   function enqueue(intent) {
     const verified = verifyIntent(intent);
     const existing = intent && intent.queueKey ? base.get(intent.queueKey) : null;
@@ -233,12 +251,7 @@ function createContractScopeBoundProvisioningOutbox(store, options = {}) {
       }
     }
     const result = base.enqueue(intent);
-    return {
-      ...result,
-      contractScopeBindingDigest: verified.bindingDigest,
-      contractSubjectDigest: verified.contractSubjectDigest,
-      contractBoundIntentDigest: verified.contractBoundIntentDigest
-    };
+    return withContractScopeProof(result, verified);
   }
 
   function claim(queueKey, workerId) {
@@ -252,6 +265,19 @@ function createContractScopeBoundProvisioningOutbox(store, options = {}) {
     }
     verifyStored(token.queueKey);
     return base.beginMutation(token);
+  }
+
+  function recordProviderOutcome(token, outcome = {}) {
+    if (!token || typeof token !== 'object' || !token.queueKey) {
+      fail('WFM_CONTRACT_SCOPE_TOKEN_REQUIRED', 'Provisioning outcome requires a queue token.', 400);
+    }
+    const { verified } = verifyStored(token.queueKey);
+    return withContractScopeProof(base.recordProviderOutcome(token, outcome), verified);
+  }
+
+  function recordReconciliation(queueKey, result = {}) {
+    const { verified } = verifyStored(queueKey);
+    return withContractScopeProof(base.recordReconciliation(queueKey, result), verified);
   }
 
   function recordIndependentVerification(queueKey, verification = {}) {
@@ -272,12 +298,7 @@ function createContractScopeBoundProvisioningOutbox(store, options = {}) {
       contractBoundIntentDigest: verified.contractBoundIntentDigest
     };
     const result = base.recordIndependentVerification(queueKey, { ...verification, checks });
-    return {
-      ...result,
-      contractScopeBindingDigest: verified.bindingDigest,
-      contractSubjectDigest: verified.contractSubjectDigest,
-      contractBoundIntentDigest: verified.contractBoundIntentDigest
-    };
+    return withContractScopeProof(result, verified);
   }
 
   return {
@@ -285,6 +306,8 @@ function createContractScopeBoundProvisioningOutbox(store, options = {}) {
     enqueue,
     claim,
     beginMutation,
+    recordProviderOutcome,
+    recordReconciliation,
     recordIndependentVerification
   };
 }
