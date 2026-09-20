@@ -1,0 +1,67 @@
+{
+  "observedAtUtc": "2026-09-20T07:03:00Z",
+  "programme": "Manufacturing WFM 24-hour sell-readiness",
+  "candidate": {
+    "branch": "feature/one-day-enterprise-implementation-v1",
+    "sha": "5858a299a9c6d8a7417673eb80c14b495fe2361e",
+    "githubVerification": "verified"
+  },
+  "railwayPrivateGithubAccess": {
+    "status": "RESTORED",
+    "evidence": {
+      "service": "wfm-built-ui-audit",
+      "deploymentId": "ff8e0ae8-1f7a-4075-9f2c-7955c678cdfc",
+      "sourceSha": "5858a299a9c6d8a7417673eb80c14b495fe2361e",
+      "sourceBranch": "feature/one-day-enterprise-implementation-v1",
+      "proofDockerfile": "Dockerfile.current-candidate-role-browser-proof",
+      "imageBuildAndPush": "PASS"
+    }
+  },
+  "exactOneDayReleaseLane": {
+    "workflowRunId": 35493433317,
+    "attempt": 2,
+    "status": "BLOCKED",
+    "failureBoundary": "before any workflow step executed",
+    "jobStepsObserved": null,
+    "controlDecision": "security hold preserved; no bypass attempted"
+  },
+  "hostedBrowserProof": {
+    "service": "wfm-built-ui-audit",
+    "deploymentId": "ff8e0ae8-1f7a-4075-9f2c-7955c678cdfc",
+    "runner": "Playwright Chromium in Railway cloud",
+    "status": "FAIL",
+    "failure": "manager login returned HTTP 401 instead of 200",
+    "targetObservedFromRailwayHttpLogs": "wfm-one-day-enterprise-v1-production.up.railway.app",
+    "targetRuntimeStatus": "previous successful runtime, not exact current candidate",
+    "claimBoundary": "This is not exact-current browser proof and must not be represented as such. Fixture/demo evidence only; no real-provider or production approval claim."
+  },
+  "targetServices": {
+    "wfm-one-day-enterprise-v1": {
+      "existingResourceOnly": true,
+      "lastSuccessfulSourceShaObserved": "c9878364b02dffb77c21702d58af35c344e5ff68",
+      "exactCurrentDeployment": false,
+      "securityHoldPreserved": true
+    },
+    "wfm-integration-fabric-v1-proof": {
+      "existingResourceOnly": true,
+      "exactCurrentDeployment": false,
+      "securityHoldPreserved": true
+    }
+  },
+  "readiness": {
+    "status": "CONDITIONAL",
+    "hardGatesRemaining": [
+      "safe exact-current deployment to both protected target services",
+      "SHA-bound hosted browser journeys against the exact-current runtime",
+      "authorised non-fixture external-provider integration proof",
+      "genuine zero-human customer/environment provisioning proof"
+    ]
+  },
+  "safety": {
+    "newPaidInfrastructureCreated": false,
+    "newRailwayResourcesCreated": false,
+    "securityControlsWeakened": false,
+    "readinessFlagsChangedToPass": false,
+    "frozenCustomerProofReleaseChanged": false
+  }
+}
