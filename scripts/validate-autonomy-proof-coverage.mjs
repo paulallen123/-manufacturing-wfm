@@ -81,6 +81,7 @@ for (const required of [
   'scripts/validate-deployment.mjs',
   'scripts/validate-repair-path-canonicalization.mjs',
   'scripts/validate-build-secret-boundary.mjs',
+  'scripts/validate-railway-deployment-config-binding.mjs',
   'scripts/validate-railway-proof-failure-classifier.mjs',
   'scripts/validate-t3-sandbox-component-binding.mjs',
   'scripts/validate-t3-capability-poisoning.mjs',
@@ -92,6 +93,7 @@ for (const required of [
 
 for (const required of [
   'resilience/build-secret-boundary.cjs',
+  'resilience/railway-deployment-config-binding.cjs',
   'resilience/railway-proof-failure-classifier.cjs',
   'resilience/t4-forensic-failover-store.cjs',
 ]) {
@@ -100,7 +102,7 @@ for (const required of [
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'autonomy-proof-surface-coverage',
   status: 'PASS',
   portableRequiredValidatorCount: portableChecks.length,
@@ -111,6 +113,7 @@ console.log(JSON.stringify({
   portableValidatorsProtectedFromRepair: true,
   protectedAuthoritySourcesTriggerExactProof: true,
   protectedValidatorsMandatoryOrCanonicalOnly: true,
+  railwayDeploymentConfigBindingPinned: true,
   escapedLineJoinRegressionGuard: true,
   automaticCoverageAudit: true,
   productionMutation: false,
