@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import {buildSourceScope,assertCheckpointScope} from './scope-partition.mjs';
-import {missingRecordDisposition} from './dataset-coverage.mjs';
+import {missingRecordDisposition,normalizeDatasetCoverage} from './dataset-coverage.mjs';
 
 const WATERMARK_KINDS=new Set(['opaque','iso8601','unsigned-integer','lexical']);
 
@@ -18,8 +18,20 @@ function canonicalJson(value){
 }
 
 function compareWatermarks(current,previous,kind){
-  if(current===null||previous===null) return Object.freeze({comparable:false,regressed:false});
   if(!WATERMARK_KINDS.has(kind)) throw new Error(`unsupported watermarkKind: ${kind}`);
+
+  const validate=value=>{
+    if(value===null) return;
+    if(kind==='iso8601'){
+      const strictIso=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
+      if(!strictIso.test(String(value))||!Number.isFinite(Date.parse(String(value)))) throw new Error('iso8601 watermarks must be valid timestamps with an explicit offset');
+    }
+    if(kind==='unsigned-integer'&&(typeof value!=='string'||!/^(0|[1-9]\d*)$/.test(value))) throw new Error('unsigned-integer watermarks must be canonical decimal strings');
+    if((kind==='opaque'||kind==='lexical')&&(typeof value!=='string'||!value.length)) throw new Error(`${kind} watermarks must be non-empty strings`);
+  };
+  validate(current);
+  validate(previous);
+  if(current===null||previous===null) return Object.freeze({comparable:false,regressed:false});
 
   if(kind==='opaque'){
     return Object.freeze({comparable:false,regressed:false});
@@ -28,13 +40,10 @@ function compareWatermarks(current,previous,kind){
   if(kind==='iso8601'){
     const currentEpoch=Date.parse(String(current));
     const previousEpoch=Date.parse(String(previous));
-    if(!Number.isFinite(currentEpoch)||!Number.isFinite(previousEpoch)) throw new Error('iso8601 watermarks must be valid timestamps');
     return Object.freeze({comparable:true,regressed:currentEpoch<previousEpoch});
   }
 
   if(kind==='unsigned-integer'){
-    const pattern=/^(0|[1-9]\d*)$/;
-    if(!pattern.test(String(current))||!pattern.test(String(previous))) throw new Error('unsigned-integer watermarks must contain decimal digits only');
     return Object.freeze({comparable:true,regressed:BigInt(current)<BigInt(previous)});
   }
 
@@ -64,6 +73,7 @@ export function assessBatchRun({
   scope={},
   sourceWatermark=null,
   previousCheckpoint=null,
+  previousWatermark:legacyPreviousWatermark=undefined,
   watermarkKind='opaque',
   requiredScopeDimensions=[],
   datasetCoverage=null,
@@ -89,10 +99,15 @@ export function assessBatchRun({
   requiredBoolean(checksumVerified,'checksumVerified');
   requiredBoolean(schemaVerified,'schemaVerified');
   requiredBoolean(sourceDeclaresDelta,'sourceDeclaresDelta');
+  if(legacyPreviousWatermark!==undefined) throw new Error('previousWatermark is unsupported; supply a scope-bound previousCheckpoint');
 
   const sourceScope=buildSourceScope(scope,{requiredDimensions:requiredScopeDimensions});
   if(sourceScope.dimensions.providerId!==provider) throw new Error('batch provider does not match source scope providerId');
-  if(previousCheckpoint!==null) assertCheckpointScope(previousCheckpoint,sourceScope);
+  if(previousCheckpoint!==null){
+    assertCheckpointScope(previousCheckpoint,sourceScope);
+    if(!Object.hasOwn(previousCheckpoint,'watermark')) throw new Error('previous checkpoint is missing its watermark precondition');
+    if(previousCheckpoint.watermarkKind!==watermarkKind) throw new Error('checkpoint watermark kind mismatch; start a new checkpoint namespace and reconcile');
+  }
   const previousWatermark=previousCheckpoint?.watermark??null;
 
   const watermarkComparison=compareWatermarks(sourceWatermark,previousWatermark,watermarkKind);
@@ -108,7 +123,13 @@ export function assessBatchRun({
 
   const safeToCommit=reasons.length===0;
   const safeToAdvanceWatermark=safeToCommit&&sourceWatermark!==null;
-  const absenceDisposition=datasetCoverage===null?'do-not-delete':missingRecordDisposition(datasetCoverage);
+  const normalizedCoverage=datasetCoverage===null?null:normalizeDatasetCoverage(datasetCoverage);
+  if(normalizedCoverage!==null){
+    if(!sourceScope.dimensions.dataset) throw new Error('dataset coverage requires a dataset-bound source scope');
+    if(normalizedCoverage.dataset!==sourceScope.dimensions.dataset) throw new Error('dataset coverage does not match source scope dataset');
+    if(datasetCoverage.scopeNamespace!==sourceScope.checkpointNamespace) throw new Error('dataset coverage is not bound to the current source scope namespace');
+  }
+  const absenceDisposition=normalizedCoverage===null?'do-not-delete':missingRecordDisposition(normalizedCoverage);
   const tombstoneCandidateAuthority=safeToCommit&&complete&& !sourceDeclaresDelta&&absenceDisposition==='tombstone-candidate';
 
   return Object.freeze({
@@ -128,7 +149,8 @@ export function assessBatchRun({
     watermark:Object.freeze({kind:watermarkKind,...watermarkComparison}),
     checkpointPrecondition:Object.freeze({
       scopeNamespace:sourceScope.checkpointNamespace,
-      expectedPreviousWatermark:previousWatermark
+      expectedPreviousWatermark:previousWatermark,
+      expectedWatermarkKind:watermarkKind
     })
   });
 }
