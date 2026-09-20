@@ -2,6 +2,7 @@
 
 const { createHash } = require('node:crypto');
 const { verifyContractCompletionReceipt } = require('./contract-completion-ingress.cjs');
+const { verifyScopeFinalizationReceipt } = require('./adaptive-scoping-finalization-receipt.cjs');
 
 const ACTION_TYPES = new Set(['CONFIG', 'TEST', 'DEPENDENCY', 'RISK', 'DECISION', 'NO_OP']);
 
@@ -31,6 +32,12 @@ function fail(code, message, statusCode = 409) {
 function requiredString(value, code, message) {
   if (typeof value !== 'string' || value.trim() === '') fail(code, message, 400);
   return value.trim();
+}
+
+function requiredDigest(value, code, message) {
+  const digest = requiredString(value, code, message).toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(digest)) fail(code, message, 400);
+  return digest;
 }
 
 function normaliseOperations(operations) {
@@ -116,11 +123,49 @@ function normalisePlan(plan) {
   };
 }
 
-function createLaunchIntent({ scope, contract, build, plan }, { contractReceiptKey } = {}) {
+function normaliseScopeFinalizationEvidence(scope, evidence, scopeProofKey) {
+  const proofRequested = evidence != null || scopeProofKey != null;
+  if (!proofRequested) return null;
+  if (!scopeProofKey) fail('WFM_SCOPE_PROOF_KEY_REQUIRED', 'Trusted final-scope proof verification key is required.', 500);
+  if (!evidence || typeof evidence !== 'object' || !evidence.verificationReceipt || typeof evidence.verificationReceipt !== 'object') {
+    fail('WFM_SCOPE_FINALIZATION_PROOF_REQUIRED', 'A verified final-scope receipt is required for attested launch.', 403);
+  }
+
+  const finalizationDigest = requiredDigest(
+    evidence.finalizationDigest,
+    'WFM_SCOPE_FINALIZATION_DIGEST_REQUIRED',
+    'Final-scope proof digest must be SHA-256.'
+  );
+  const verified = verifyScopeFinalizationReceipt(evidence.verificationReceipt, scope, scopeProofKey);
+  if (!verified || verified.ok !== true || String(verified.finalizationDigest || '').toLowerCase() !== finalizationDigest) {
+    fail('WFM_SCOPE_FINALIZATION_DIGEST_MISMATCH', 'Final-scope proof does not match the launch scope.', 409);
+  }
+
+  const receiptSha256 = sha256(evidence.verificationReceipt);
+  if (evidence.receiptSha256 != null) {
+    const declaredReceiptSha256 = requiredDigest(
+      evidence.receiptSha256,
+      'WFM_SCOPE_FINALIZATION_RECEIPT_DIGEST_INVALID',
+      'Final-scope receipt digest must be SHA-256.'
+    );
+    if (declaredReceiptSha256 !== receiptSha256) {
+      fail('WFM_SCOPE_FINALIZATION_RECEIPT_DIGEST_MISMATCH', 'Final-scope receipt changed before launch was sealed.', 409);
+    }
+  }
+
+  return {
+    finalizationDigest,
+    receiptSha256,
+    verificationReceipt: clone(evidence.verificationReceipt)
+  };
+}
+
+function createLaunchIntent({ scope, contract, build, plan, scopeFinalizationEvidence }, { contractReceiptKey, scopeProofKey } = {}) {
   const finalScope = normaliseScope(scope);
   const completedContract = normaliseContract(contract, contractReceiptKey);
   const approvedBuild = normaliseBuild(build);
   const provisioningPlan = normalisePlan(plan);
+  const scopeProof = normaliseScopeFinalizationEvidence(finalScope, scopeFinalizationEvidence, scopeProofKey);
 
   const semanticContract = {
     provider: completedContract.provider,
@@ -138,6 +183,15 @@ function createLaunchIntent({ scope, contract, build, plan }, { contractReceiptK
     plan: provisioningPlan
   };
   const intentDigest = sha256(sealed);
+  const scopeProofBinding = scopeProof ? Object.freeze({
+    finalizationDigest: scopeProof.finalizationDigest,
+    receiptSha256: scopeProof.receiptSha256,
+    subjectDigest: sha256({
+      launchIntentDigest: intentDigest,
+      finalizationDigest: scopeProof.finalizationDigest,
+      receiptSha256: scopeProof.receiptSha256
+    })
+  }) : null;
   const queueKey = 'wfm-provision:v1:' + sha256({
     provider: semanticContract.provider,
     contractId: semanticContract.contractId,
@@ -153,9 +207,23 @@ function createLaunchIntent({ scope, contract, build, plan }, { contractReceiptK
       receiptSha256: completedContract.receiptSha256,
       verificationReceipt: completedContract.verificationReceipt
     },
+    ...(scopeProof ? {
+      scopeFinalizationEvidence: scopeProof,
+      scopeProofBinding
+    } : {}),
     intentDigest,
     queueKey
   };
+}
+
+function createScopeAttestedLaunchIntent(input, options = {}) {
+  if (!options || !options.scopeProofKey) {
+    fail('WFM_SCOPE_PROOF_KEY_REQUIRED', 'Scope-attested launch requires a trusted final-scope proof verification key.', 500);
+  }
+  if (!input || !input.scopeFinalizationEvidence) {
+    fail('WFM_SCOPE_FINALIZATION_PROOF_REQUIRED', 'Scope-attested launch requires verified final-scope evidence.', 403);
+  }
+  return createLaunchIntent(input, options);
 }
 
 function verifyLaunchIntent(intent, current, options = {}) {
@@ -165,10 +233,17 @@ function verifyLaunchIntent(intent, current, options = {}) {
   if (intent.queueKey !== expected.queueKey) fail('WFM_LAUNCH_QUEUE_KEY_DRIFT', 'Provisioning business identity changed; do not reuse this queue item.');
   if (intent.intentDigest !== expected.intentDigest) fail('WFM_LAUNCH_INTENT_DRIFT', 'Contract, scope, approved build or isolated environment plan changed after provisioning was sealed.');
 
+  const expectedBinding = expected.scopeProofBinding || null;
+  const actualBinding = intent.scopeProofBinding || null;
+  if (stable(actualBinding) !== stable(expectedBinding)) {
+    fail('WFM_SCOPE_FINALIZATION_BINDING_DRIFT', 'Final-scope proof changed after the provisioning launch was sealed.');
+  }
+
   return {
     ok: true,
     queueKey: intent.queueKey,
     intentDigest: intent.intentDigest,
+    scopeProofSubjectDigest: expectedBinding ? expectedBinding.subjectDigest : null,
     eventId: expected.completionEvidence.eventId,
     receiptSha256: expected.completionEvidence.receiptSha256
   };
@@ -177,6 +252,7 @@ function verifyLaunchIntent(intent, current, options = {}) {
 module.exports = {
   ACTION_TYPES,
   createLaunchIntent,
+  createScopeAttestedLaunchIntent,
   verifyLaunchIntent,
   sha256,
   stable
