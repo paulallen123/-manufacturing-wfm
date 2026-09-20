@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import {createPostgresAgencyWorkStartIdentityContinuityStore,createPostgresAgencyWorkStartPermitStore,consumeAgencyWorkStartPermitAtIngress,evaluateAgencyWorkStartPermit} from '../../src/frontier/agency-work-start-permit.mjs';
+import {createPostgresAgencyWorkStartIdentityContinuityStore,createPostgresAgencyWorkStartPermitStore,createPostgresAgencyWorkStartScopedAuthorityStore,consumeAgencyWorkStartPermitAtIngress,evaluateAgencyWorkStartPermit} from '../../src/frontier/agency-work-start-permit.mjs';
 
 const NOW='2026-10-05T06:10:00.000Z';
 const ASSURANCE='a'.repeat(32);
@@ -10,7 +10,7 @@ const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fro
 const digest=(v,n=32)=>crypto.createHash('sha256').update(String(v??'')).digest('hex').slice(0,n);
 const ASSIGNMENT=digest(JSON.stringify(stable({roleId:'PACK-OP',location:'Plant 1, Birmingham',startAt:'2026-10-05T06:00:00.000Z',endAt:'2026-10-05T14:00:00.000Z'})),24);
 const policy={policyId:'S1-PACK-v1',siteId:'S1',roleId:'PACK-OP',minutesBeforeStart:60,minutesAfterStart:90,minIndependentSources:1,requireDirectIdentity:false,allowedSources:{turnstile:['access_pass']}};
-const readiness=(overrides={})=>({version:'agency-work-start-readiness-v0.2.0',workStartReady:true,reason:null,requestId:'R1',siteId:'S1',agencyId:'A1',workerId:'W1',assuranceVersionId:ASSURANCE,assignmentFingerprint:ASSIGNMENT,acceptedResponseFingerprint:'1'.repeat(16),authorityFingerprint:'2'.repeat(32),continuityFingerprint:'3'.repeat(32),policyFingerprint:'4'.repeat(24),readinessFingerprint:'5'.repeat(32),rankingImpact:'none',scheduleWriteAuthorized:false,payrollWriteAuthorized:false,clockingWriteAuthorized:false,workStartWriteAuthorized:false,...overrides});
+const readiness=(overrides={})=>({version:'agency-work-start-readiness-v0.1.0',workStartReady:true,reason:null,requestId:'R1',siteId:'S1',agencyId:'A1',workerId:'W1',assuranceVersionId:ASSURANCE,assignmentFingerprint:ASSIGNMENT,acceptedResponseFingerprint:'1'.repeat(16),authorityFingerprint:'2'.repeat(32),continuityFingerprint:'3'.repeat(32),policyFingerprint:'4'.repeat(24),readinessFingerprint:'5'.repeat(32),rankingImpact:'none',scheduleWriteAuthorized:false,payrollWriteAuthorized:false,clockingWriteAuthorized:false,workStartWriteAuthorized:false,...overrides});
 const command=(r=readiness(),overrides={})=>({type:'shadow_work_start_admission',tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assuranceVersionId:r.assuranceVersionId,assignmentFingerprint:r.assignmentFingerprint,acceptedResponseFingerprint:r.acceptedResponseFingerprint,authorityFingerprint:r.authorityFingerprint,continuityFingerprint:r.continuityFingerprint,policyFingerprint:r.policyFingerprint,readinessFingerprint:r.readinessFingerprint,...overrides});
 function fakeStore(onState=()=>{}){return {async withLockedSnapshot(scope,evaluate){onState(true,scope);try{return await evaluate({query:async()=>({rows:[]}),lockRow:{}});}finally{onState(false,scope);}}};}
 const input=(overrides={})=>{const r=readiness();return {tenantId:'T1',siteId:'S1',agencyId:'A1',request:structuredClone(REQUEST),workerId:'W1',now:NOW,policy:structuredClone(policy),readiness:r,permitStore:fakeStore(),evaluateReadiness:async()=>structuredClone(r),shadowWorkStartCommand:async permit=>permit.consume(command(r)),...overrides};};
@@ -75,6 +75,16 @@ test('PostgreSQL permit store switches to function-only least-privilege reader a
   assert.equal(result,'ok');assert.equal(transactionActive,false);assert.equal(store.concurrencyBoundary,'database_owned_assignment_lock_plus_security_definer_row_locks');assert.equal(store.databaseRoleBoundary,'wfm_agency_work_start_reader_function_only');assert.equal(calls.length,2);
   assert.match(calls[0].sql,/^SET LOCAL ROLE wfm_agency_work_start_reader;/i);assert.deepEqual(calls[0].values,[]);
   assert.match(calls[1].sql,/wfm_read_agency_work_start_locked_snapshot_v1/i);assert.deepEqual(calls[1].values,['T1','S1','R1','A1','W1',ASSIGNMENT,NOW]);assert.doesNotMatch(calls[1].sql,/\bINSERT\b|\bUPDATE\b|\bDELETE\b|pg_advisory_xact_lock\(\$1::bigint\)/i);assert.doesNotMatch(calls[1].sql,/badge|photo|biometric|date_of_birth|share_code|document_number|raw_payload|signature/i);
+});
+
+test('locked authority store uses one exact-scope function and exposes no direct table SELECT surface',async()=>{
+  let captured=null;
+  const store=createPostgresAgencyWorkStartScopedAuthorityStore({query:async(sql,values)=>{captured={sql,values};return {rows:[]};}});
+  const result=await store.readAuthority({tenantId:'T1',siteId:'S1',requestId:'R1',agencyId:'A1',workerId:'W1',assignmentFingerprint:ASSIGNMENT,now:NOW});
+  assert.deepEqual(result,{rows:[]});assert.equal(store.directTableSelectAllowed,false);assert.equal(store.credentialBoundary,'work_start_scoped_authority_function_only');
+  assert.match(captured.sql,/wfm_read_agency_work_start_authority_v1/i);
+  assert.doesNotMatch(captured.sql,/wfm_agency_rtw_assurance_current|wfm_agency_portal_token_consumptions|\bINSERT\b|\bUPDATE\b|\bDELETE\b/i);
+  assert.deepEqual(captured.values,['T1','S1','R1','A1','W1',ASSIGNMENT,NOW]);
 });
 
 test('locked identity-continuity store uses one exact-scope function and exposes no direct table SELECT surface',async()=>{
