@@ -85,14 +85,39 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
   });
 
   const eligible = configured.filter((entry) => entry.eligible);
+  const finalReadbackRecoveryMaxAttempts = 1;
   const contractDigest = digest({
-    schemaVersion: 1,
+    schemaVersion: 2,
     maxAttempts,
+    finalReadbackRecoveryMaxAttempts,
     stores: configured.map((entry) => ({
       id: entry.id,
       eligible: entry.eligible,
       capabilityDigest: entry.capabilityDigest,
     })),
+  });
+
+  const makeFailoverDigest = ({
+    selectedStoreId,
+    selectedStoreCapabilityDigest,
+    attemptDigest,
+    forensicDigest,
+    tenantDigest,
+    storageKey,
+    finalReadbackRecoveryUsed = false,
+    finalReadbackRecoveryFromStoreId = null,
+    finalReadbackRecoveryAttemptDigest = null,
+  }) => digest({
+    contractDigest,
+    selectedStoreId,
+    selectedStoreCapabilityDigest,
+    attemptDigest,
+    forensicDigest,
+    tenantDigest,
+    storageKey,
+    finalReadbackRecoveryUsed: finalReadbackRecoveryUsed === true,
+    finalReadbackRecoveryFromStoreId: finalReadbackRecoveryFromStoreId || null,
+    finalReadbackRecoveryAttemptDigest: finalReadbackRecoveryAttemptDigest || null,
   });
 
   async function preserve(input = {}) {
@@ -131,7 +156,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
         attempt.status = 'verified';
         attempts.push(attempt);
         const attemptDigest = digest(attempts);
-        return {
+        const result = {
           ...receipt,
           storageMode: `write-once-failover:${entry.id}`,
           selectedStoreId: entry.id,
@@ -140,16 +165,12 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
           attemptCount: attempts.length,
           attemptDigest,
           failoverContractDigest: contractDigest,
-          failoverDigest: digest({
-            contractDigest,
-            selectedStoreId: entry.id,
-            selectedStoreCapabilityDigest: entry.capabilityDigest,
-            attemptDigest,
-            forensicDigest: receipt.forensicDigest,
-            tenantDigest: receipt.tenantDigest,
-            storageKey: receipt.storageKey,
-          }),
+          finalReadbackRecoveryUsed: false,
+          finalReadbackRecoveryFromStoreId: null,
+          finalReadbackRecoveryAttemptDigest: null,
         };
+        result.failoverDigest = makeFailoverDigest(result);
+        return result;
       } catch (error) {
         attempt.failureCode = clean(error?.code || 'WFM_T4_FORENSICS_STORE_FAILURE', 100);
         attempts.push(attempt);
@@ -164,6 +185,85 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
     });
   }
 
+  async function recoverAfterFinalReadbackFailure({ priorReceipt = {}, input = {} } = {}) {
+    const tenant = clean(input.tenant, 100);
+    const priorStoreId = clean(priorReceipt?.selectedStoreId, 48);
+    if (!tenant
+      || !priorStoreId
+      || priorReceipt?.failoverContractDigest !== contractDigest
+      || !validDigest(priorReceipt?.forensicDigest)
+      || !validDigest(priorReceipt?.tenantDigest)
+      || !validDigest(priorReceipt?.storageKey)
+      || !validDigest(priorReceipt?.attemptDigest)
+      || !validDigest(priorReceipt?.failoverDigest)) {
+      throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_INPUT', 'Final forensic recovery requires a contract-bound prior receipt and explicit tenant.');
+    }
+
+    const expectedTenantDigest = digest(`tenant:${tenant}`);
+    if (priorReceipt.tenantDigest !== expectedTenantDigest) {
+      throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_TENANT', 'Final forensic recovery cannot cross the original tenant boundary.');
+    }
+
+    const candidate = eligible.find((entry) => entry.id !== priorStoreId);
+    if (!candidate) {
+      throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_UNAVAILABLE', 'No different independently attested forensic sink is available for bounded final read-back recovery.', {
+        contractDigest,
+        priorStoreId,
+      });
+    }
+
+    const recoveryAttempt = {
+      fromStoreId: priorStoreId,
+      toStoreId: candidate.id,
+      capabilityDigest: candidate.capabilityDigest,
+      status: 'failed',
+      failureCode: null,
+    };
+    try {
+      const receipt = await candidate.preserve(input);
+      const independentlyVerified = await candidate.verify(receipt);
+      const receiptValid = receipt?.verified === true
+        && receipt?.immutable === true
+        && validDigest(receipt?.forensicDigest)
+        && validDigest(receipt?.storageKey)
+        && receipt?.tenantDigest === expectedTenantDigest
+        && independentlyVerified === true;
+      if (!receiptValid) {
+        recoveryAttempt.failureCode = 'WFM_T4_FORENSICS_FINAL_RECOVERY_VERIFY';
+        throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_VERIFY', 'Different forensic sink failed independent preservation verification.');
+      }
+
+      recoveryAttempt.status = 'verified';
+      const finalReadbackRecoveryAttemptDigest = digest(recoveryAttempt);
+      const result = {
+        ...receipt,
+        storageMode: `write-once-failover:${candidate.id}`,
+        selectedStoreId: candidate.id,
+        selectedStoreCapabilityDigest: candidate.capabilityDigest,
+        failoverUsed: true,
+        attemptCount: (Number.isSafeInteger(priorReceipt.attemptCount) && priorReceipt.attemptCount >= 1 ? priorReceipt.attemptCount : 1) + 1,
+        attemptDigest: digest({
+          priorAttemptDigest: priorReceipt.attemptDigest,
+          finalReadbackRecoveryAttemptDigest,
+        }),
+        failoverContractDigest: contractDigest,
+        finalReadbackRecoveryUsed: true,
+        finalReadbackRecoveryFromStoreId: priorStoreId,
+        finalReadbackRecoveryAttemptDigest,
+      };
+      result.failoverDigest = makeFailoverDigest(result);
+      return result;
+    } catch (error) {
+      recoveryAttempt.failureCode = recoveryAttempt.failureCode || clean(error?.code || 'WFM_T4_FORENSICS_FINAL_RECOVERY_STORE_FAILURE', 100);
+      throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_EXHAUSTED', 'The single bounded final read-back recovery attempt failed closed.', {
+        contractDigest,
+        priorStoreId,
+        recoveryAttemptDigest: digest(recoveryAttempt),
+        recoveryAttempt,
+      });
+    }
+  }
+
   async function verify(receipt = {}) {
     if (!validDigest(receipt?.forensicDigest)
       || !validDigest(receipt?.storageKey)
@@ -173,17 +273,17 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
       || !validDigest(receipt?.failoverContractDigest)
       || !validDigest(receipt?.failoverDigest)
       || receipt.failoverContractDigest !== contractDigest) return false;
+    const recoveryUsed = receipt.finalReadbackRecoveryUsed === true;
+    if (recoveryUsed) {
+      if (!clean(receipt.finalReadbackRecoveryFromStoreId, 48)
+        || receipt.finalReadbackRecoveryFromStoreId === receipt.selectedStoreId
+        || !validDigest(receipt.finalReadbackRecoveryAttemptDigest)) return false;
+    } else if (receipt.finalReadbackRecoveryFromStoreId != null || receipt.finalReadbackRecoveryAttemptDigest != null) {
+      return false;
+    }
     const entry = configured.find((candidate) => candidate.id === receipt.selectedStoreId);
     if (!entry?.eligible || entry.capabilityDigest !== receipt.selectedStoreCapabilityDigest) return false;
-    const expectedFailoverDigest = digest({
-      contractDigest,
-      selectedStoreId: receipt.selectedStoreId,
-      selectedStoreCapabilityDigest: receipt.selectedStoreCapabilityDigest,
-      attemptDigest: receipt.attemptDigest,
-      forensicDigest: receipt.forensicDigest,
-      tenantDigest: receipt.tenantDigest,
-      storageKey: receipt.storageKey,
-    });
+    const expectedFailoverDigest = makeFailoverDigest(receipt);
     if (expectedFailoverDigest !== receipt.failoverDigest) return false;
     try {
       return await entry.verify(receipt) === true;
@@ -195,10 +295,12 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
   return Object.freeze({
     preserve,
     verify,
+    recoverAfterFinalReadbackFailure,
     contractDigest,
     eligibleStoreCount: eligible.length,
     configuredStoreCount: configured.length,
     maxAttempts,
+    finalReadbackRecoveryMaxAttempts,
     productionWriteAuthority: false,
     modelAuthorityGranted: false,
     createsResources: false,
@@ -280,12 +382,13 @@ function createT4RuntimeForensicStore({ stores = [], maxAttempts = 2, requiredEl
   }
 
   const runtimeReadinessDigest = digest({
-    schemaVersion: 2,
+    schemaVersion: 3,
     failoverContractDigest: failoverStore.contractDigest,
     requiredEligibleStores,
     eligibleStoreCount: failoverStore.eligibleStoreCount,
     executableStoreCount: selected.length,
     maxAttempts,
+    finalReadbackRecoveryMaxAttempts: failoverStore.finalReadbackRecoveryMaxAttempts,
     storeIdentityDigests: selected.map((entry) => entry.storeIdentityDigest),
     attestationBindingDigests: selected.map((entry) => entry.attestationBindingDigest),
     productionWriteAuthority: false,
@@ -318,6 +421,8 @@ function createT4RuntimeContainmentController({
     || forensicStore.zeroEngineerFailoverReady !== true
     || !validDigest(forensicStore.runtimeReadinessDigest)
     || !validDigest(forensicStore.contractDigest)
+    || typeof forensicStore.recoverAfterFinalReadbackFailure !== 'function'
+    || forensicStore.finalReadbackRecoveryMaxAttempts !== 1
     || forensicStore.productionWriteAuthority !== false
     || forensicStore.modelAuthorityGranted !== false
     || forensicStore.createsResources !== false) {
@@ -328,6 +433,7 @@ function createT4RuntimeContainmentController({
   const pinnedFailoverContractDigest = forensicStore.contractDigest;
   const pinnedRequiredEligibleStores = forensicStore.requiredEligibleStores;
   const pinnedExecutableStoreCount = forensicStore.executableStoreCount;
+  const pinnedFinalReadbackRecoveryMaxAttempts = forensicStore.finalReadbackRecoveryMaxAttempts;
   const { createT4ContainmentController } = require('./t4-containment-controller.cjs');
   const innerController = createT4ContainmentController({
     containmentExecutor,
@@ -348,6 +454,7 @@ function createT4RuntimeContainmentController({
     && forensicStore.contractDigest === pinnedFailoverContractDigest
     && forensicStore.requiredEligibleStores === pinnedRequiredEligibleStores
     && forensicStore.executableStoreCount === pinnedExecutableStoreCount
+    && forensicStore.finalReadbackRecoveryMaxAttempts === pinnedFinalReadbackRecoveryMaxAttempts
     && forensicStore.productionWriteAuthority === false
     && forensicStore.modelAuthorityGranted === false
     && forensicStore.createsResources === false;
@@ -372,6 +479,7 @@ function createT4RuntimeContainmentController({
       runtimeForensicFailoverContractDigest: pinnedFailoverContractDigest,
       requiredEligibleStores: pinnedRequiredEligibleStores,
       executableStoreCount: pinnedExecutableStoreCount,
+      finalReadbackRecoveryMaxAttempts: pinnedFinalReadbackRecoveryMaxAttempts,
     });
     const receipt = {
       ...innerReceipt,
@@ -381,6 +489,7 @@ function createT4RuntimeContainmentController({
       runtimeForensicFailoverContractDigest: pinnedFailoverContractDigest,
       runtimeRequiredEligibleStores: pinnedRequiredEligibleStores,
       runtimeExecutableStoreCount: pinnedExecutableStoreCount,
+      runtimeFinalReadbackRecoveryMaxAttempts: pinnedFinalReadbackRecoveryMaxAttempts,
       runtimeForensicBindingDigest,
     };
     delete receipt.receiptDigest;
@@ -395,6 +504,7 @@ function createT4RuntimeContainmentController({
       || receipt.runtimeForensicFailoverContractDigest !== pinnedFailoverContractDigest
       || receipt.runtimeRequiredEligibleStores !== pinnedRequiredEligibleStores
       || receipt.runtimeExecutableStoreCount !== pinnedExecutableStoreCount
+      || receipt.runtimeFinalReadbackRecoveryMaxAttempts !== pinnedFinalReadbackRecoveryMaxAttempts
       || !validDigest(receipt.innerContainmentReceiptDigest)
       || !validDigest(receipt.runtimeForensicBindingDigest)
       || !validDigest(receipt.receiptDigest)) return false;
@@ -406,6 +516,7 @@ function createT4RuntimeContainmentController({
       runtimeForensicFailoverContractDigest: pinnedFailoverContractDigest,
       requiredEligibleStores: pinnedRequiredEligibleStores,
       executableStoreCount: pinnedExecutableStoreCount,
+      finalReadbackRecoveryMaxAttempts: pinnedFinalReadbackRecoveryMaxAttempts,
     });
     if (receipt.runtimeForensicBindingDigest !== expectedBindingDigest) return false;
 
@@ -421,6 +532,7 @@ function createT4RuntimeContainmentController({
     delete inner.runtimeForensicFailoverContractDigest;
     delete inner.runtimeRequiredEligibleStores;
     delete inner.runtimeExecutableStoreCount;
+    delete inner.runtimeFinalReadbackRecoveryMaxAttempts;
     delete inner.runtimeForensicBindingDigest;
     inner.receiptDigest = receipt.innerContainmentReceiptDigest;
     return innerVerifyReceipt(inner) === true;
@@ -434,6 +546,7 @@ function createT4RuntimeContainmentController({
     failoverContractDigest: pinnedFailoverContractDigest,
     requiredEligibleStores: pinnedRequiredEligibleStores,
     executableStoreCount: pinnedExecutableStoreCount,
+    finalReadbackRecoveryMaxAttempts: pinnedFinalReadbackRecoveryMaxAttempts,
     productionWriteAuthority: false,
     modelAuthorityGranted: false,
     createsResources: false,
