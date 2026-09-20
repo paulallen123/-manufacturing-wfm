@@ -143,11 +143,7 @@ export async function evaluateAgencyWorkStartReadiness({tenantId,siteId,agencyId
 
   let scope;
   try{
-    const requestId=required(request?.requestId,'request.requestId',100);
-    const roleId=required(request?.roleId,'request.roleId',100);
-    const startAt=iso(request?.startAt);const endAt=iso(request?.endAt);
-    if(!startAt||!endAt||Date.parse(endAt)<=Date.parse(startAt))throw new TypeError('request assignment window invalid');
-    scope={tenantId:required(tenantId,'tenantId',100),siteId:required(siteId,'siteId',100),requestId,agencyId:required(agencyId,'agencyId',100),workerId:required(workerId,'workerId',100),roleId,startAt,endAt,assignmentFingerprint:assignmentFingerprint(request)};
+    scope={tenantId:required(tenantId,'tenantId',100),siteId:required(siteId,'siteId',100),requestId:required(request?.requestId,'request.requestId',100),agencyId:required(agencyId,'agencyId',100),workerId:required(workerId,'workerId',100),roleId:required(request?.roleId,'request.roleId',100),assignmentFingerprint:assignmentFingerprint(request)};
   }catch{return fail('work_start_scope_invalid');}
   const nowMs=ms(now),assignmentEndMs=ms(request?.endAt);
   if(nowMs===null||assignmentEndMs===null||nowMs>assignmentEndMs)return fail('work_start_time_invalid',{scope});
