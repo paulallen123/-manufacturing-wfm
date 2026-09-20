@@ -62,7 +62,7 @@ test('awaiting confirmation remains present but does not inflate action-needed c
   assert.deepEqual(groups.awaiting.map(row => row.id), ['d', 'e']);
 });
 
-test('rendered action queue keeps source-confirming work collapsed and visible without hiding actionable work', () => {
+test('rendered action queue keeps source-confirming work collapsed, visible and passive without hiding actionable work', () => {
   const vector = loadVectorHelpers();
   const row = (id, title, status, confirmationState) => ({
     id,
@@ -94,8 +94,16 @@ test('rendered action queue keeps source-confirming work collapsed and visible w
   assert.match(needsMarkup, /Verify D/);
   assert.match(needsMarkup, /Loose wording F/);
   assert.doesNotMatch(needsMarkup, /Decision B|Confirming C/);
+  assert.match(needsMarkup, /aria-label="Review Action A">Review<\/button>/);
+  assert.match(needsMarkup, /aria-label="Review Verify D">Review<\/button>/);
+  assert.match(needsMarkup, /aria-label="Review Loose wording F">Review<\/button>/);
+  assert.doesNotMatch(needsMarkup, />View status<\/button>/);
+
   assert.match(awaitingMarkup, /Decision B/);
   assert.match(awaitingMarkup, /Confirming C/);
+  assert.match(awaitingMarkup, /aria-label="View status Decision B">View status<\/button>/);
+  assert.match(awaitingMarkup, /aria-label="View status Confirming C">View status<\/button>/);
+  assert.doesNotMatch(awaitingMarkup, /aria-label="Review (?:Decision B|Confirming C)"/);
 });
 
 test('action ordering cannot create synthetic urgency styling', () => {
