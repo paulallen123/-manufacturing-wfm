@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "recordedAtUtc": "2026-09-20T06:04:00Z",
+  "recordedAtUtc": "2026-09-20T06:06:00Z",
   "purpose": "Correct an evidence-quality defect where hosted browser proof labelled output with WFM_EXPECTED_CANDIDATE_SHA without binding that label to the actual Railway target deployment SHA.",
   "claimBoundary": "This receipt does not claim the current candidate is deployed to either protected target service. It does not claim production approval, zero-human provisioning, or any live external provider integration.",
   "candidate": {
@@ -31,12 +31,21 @@
   },
   "githubActions": {
     "status": "BLOCKED_PRE_STEP",
-    "retestedRunId": 35490505884,
-    "retestedJobId": 106030771400,
-    "jobName": "vector-only",
-    "conclusion": "failure",
-    "steps": null,
-    "interpretation": "A rerun still failed before any executable workflow step. This does not constitute a WFM application failure."
+    "exactRelease": {
+      "runId": 35490504576,
+      "jobId": 106024507669,
+      "jobName": "release",
+      "conclusion": "failure",
+      "steps": null
+    },
+    "independentVectorGuardRerun": {
+      "runId": 35490505884,
+      "jobId": 106030771400,
+      "jobName": "vector-only",
+      "conclusion": "failure",
+      "steps": null
+    },
+    "interpretation": "Both the exact release job and an independent guard fail before any executable workflow step. This does not constitute a WFM application failure."
   },
   "defect": {
     "severity": "material-evidence-risk",
