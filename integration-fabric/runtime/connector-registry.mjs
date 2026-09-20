@@ -119,4 +119,6 @@ export function buildConnectorRegistry(){
   };
 }
 
-export function connectorById(id){return buildConnectorRegistry().connectors.find(x=>x.id===id)||null;}
+export function connectorById(id){
+  return buildConnectorRegistry().connectors.find(x=>x.id===id)||null;
+}
