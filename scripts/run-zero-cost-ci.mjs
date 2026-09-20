@@ -11,6 +11,7 @@ const checks = [
   'scripts/validate-provider-recovery-handoff-prototype.mjs',
   'scripts/validate-vector-only-ui.mjs',
   'scripts/validate-onedrive-sync-guardian.mjs',
+  'scripts/validate-zero-useful-foothold.mjs',
   'scripts/validate-release-policy.mjs'
 ];
 
