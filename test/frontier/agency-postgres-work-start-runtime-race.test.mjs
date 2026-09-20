@@ -3,15 +3,8 @@ import assert from 'node:assert/strict';
 import {execFile,spawn} from 'node:child_process';
 import {promisify} from 'node:util';
 import crypto from 'node:crypto';
-import {
-  createPostgresAgencyWorkStartPermitStore,
-  evaluateAgencyWorkStartPermit,
-} from '../../src/frontier/agency-work-start-permit.mjs';
-import {
-  createPostgresAgencyWorkStartAuthorityStore,
-  evaluateAgencyWorkStartReadiness,
-} from '../../src/frontier/agency-work-start-readiness.mjs';
-import {createPostgresAgencyIdentityContinuityStore,AGENCY_IDENTITY_CONTINUITY_DDL} from '../../src/frontier/agency-identity-continuity.mjs';
+import {createPostgresAgencyWorkStartRuntime} from '../../src/frontier/agency-work-start-runtime.mjs';
+import {AGENCY_IDENTITY_CONTINUITY_DDL} from '../../src/frontier/agency-identity-continuity.mjs';
 import {AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL} from '../../src/frontier/agency-portal-token-store.mjs';
 import {AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL} from '../../src/frontier/agency-right-to-work-assurance-ledger.mjs';
 import {
@@ -49,7 +42,6 @@ function jsonSql(sql,values=[]){const statement=interpolate(sql,values).trim().r
 function parseRows(stdout){const lines=String(stdout??'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);const raw=lines.at(-1)??'[]';const rows=JSON.parse(raw);if(!Array.isArray(rows))throw new Error('postgres_json_result_invalid');return {rows};}
 async function psql(sql,options={}){const {stdout}=await docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-A','-t','-c',sql],options);return stdout;}
 async function runtimeScalar(user,sql){const {stdout}=await docker(['exec','-e',`PGPASSWORD=${RUNTIME_PASSWORD}`,CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-h','127.0.0.1','-U',user,'-d',DB_NAME,'-A','-t','-c',sql]);return stdout.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).at(-1)??null;}
-async function queryOnce(sql,values=[]){return parseRows(await psql(jsonSql(sql,values)));}
 async function scalar(sql){const out=await psql(sql);return out.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).at(-1)??null;}
 async function waitForPostgres(){let init=false;for(let i=0;i<80;i+=1){try{const logs=await docker(['logs',CONTAINER],{timeout:5000});const all=`${logs.stdout??''}\n${logs.stderr??''}`;init||=all.includes('PostgreSQL init process complete; ready for start up.');if(init&&(await psql('SELECT 1;',{timeout:5000})).trim()==='1')return;}catch{}await new Promise(r=>setTimeout(r,250));}throw new Error('postgres final server did not become ready');}
 async function waitForSleep(name){for(let i=0;i<80;i+=1){if(Number(await scalar(`SELECT count(*) FROM pg_stat_activity WHERE application_name=${lit(name)} AND wait_event='PgSleep';`))===1)return;await new Promise(r=>setTimeout(r,50));}throw new Error(`${name} did not reach held sleep`);}
@@ -74,20 +66,21 @@ class PersistentPsqlSession{
   async close(){if(!this.proc||this.closed)return;const exited=new Promise(resolve=>this.proc.once('exit',()=>resolve()));this.proc.stdin.end();await Promise.race([exited,new Promise(resolve=>setTimeout(resolve,2000))]);if(!this.closed)this.proc.kill('SIGTERM');}
 }
 
-function makePermitStore(applicationName,credential={}){
-  return createPostgresAgencyWorkStartPermitStore({withTransaction:async evaluate=>{
+function makeWithTransaction(applicationName,credential={}){
+  return async evaluate=>{
     const session=new PersistentPsqlSession(applicationName,credential);await session.start();
     try{await session.exec('BEGIN;');const value=await evaluate({query:(sql,values)=>session.query(sql,values)});await session.exec('COMMIT;');return value;}
     catch(error){try{await session.exec('ROLLBACK;');}catch{}throw error;}
     finally{await session.close();}
-  }});
+  };
 }
+function makeRuntime(applicationName,credential={}){return createPostgresAgencyWorkStartRuntime({withTransaction:makeWithTransaction(applicationName,credential)});}
 
 function bindingFingerprint({scope=SCOPE,subjectFingerprint=SUBJECT,assignmentFingerprint=ASSIGNMENT}={}){return digest(JSON.stringify(stable({tenantId:scope.tenantId,siteId:scope.siteId,requestId:scope.requestId,sourceSystemId:'turnstile',agencyId:scope.agencyId,workerId:scope.workerId,assignmentFingerprint,assuranceVersionId:ASSURANCE,subjectFingerprint})));}
 function ingressSql({scope=SCOPE,assignmentFingerprint=ASSIGNMENT,eventFingerprint,subjectFingerprint,bindingFingerprint:binding,observedAt,receivedAt}){return interpolate(AGENCY_IDENTITY_OBSERVATION_BOUNDARY_APPEND_SQL,[scope.tenantId,scope.siteId,scope.requestId,scope.agencyId,scope.workerId,assignmentFingerprint,ASSURANCE,'turnstile',eventFingerprint,subjectFingerprint,'access_pass',observedAt,digest(`auth|${binding}`),binding,'agency-identity-observation-ingress-v0.2.0',receivedAt]);}
 function writerIngressSql(args){return `SET LOCAL ROLE wfm_agency_identity_ingress_writer; ${ingressSql(args)} RESET ROLE;`;}
 function adminSql(sql){return `BEGIN; SET LOCAL ROLE wfm_agency_work_start_tenant_binding_admin; ${sql} COMMIT;`;}
-function permitScope(tenantId=SCOPE.tenantId){return {tenantId,siteId:SCOPE.siteId,requestId:SCOPE.requestId,agencyId:SCOPE.agencyId,workerId:SCOPE.workerId,assignmentFingerprint:ASSIGNMENT,now:NOW};}
+function runtimeInput(overrides={}){return {tenantId:SCOPE.tenantId,siteId:SCOPE.siteId,agencyId:SCOPE.agencyId,request:structuredClone(REQUEST),workerId:SCOPE.workerId,now:NOW,policy:structuredClone(POLICY),...overrides};}
 
 async function reset(){
   await psql('TRUNCATE wfm_agency_identity_observation_ingress_receipts, wfm_agency_identity_continuity_observations, wfm_agency_portal_token_consumptions, wfm_agency_rtw_assurance_current, wfm_agency_rtw_assurance_history;');
@@ -98,12 +91,9 @@ async function reset(){
   await psql(`BEGIN; ${writerIngressSql({eventFingerprint:'2'.repeat(32),subjectFingerprint:SUBJECT,bindingFingerprint:binding,observedAt:'2026-10-05T05:58:00Z',receivedAt:'2026-10-05T05:58:10Z'})} COMMIT;`);
 }
 
-async function currentReadiness(){
-  const query=(sql,values)=>queryOnce(sql,values);
-  return evaluateAgencyWorkStartReadiness({tenantId:SCOPE.tenantId,siteId:SCOPE.siteId,agencyId:SCOPE.agencyId,request:structuredClone(REQUEST),workerId:SCOPE.workerId,now:NOW,policy:structuredClone(POLICY),authorityStore:createPostgresAgencyWorkStartAuthorityStore({query}),continuityStore:createPostgresAgencyIdentityContinuityStore({query})});
-}
+async function currentReadiness(runtime){return runtime.evaluateReadiness(runtimeInput());}
 function commandFrom(readiness){return {type:'shadow_work_start_admission',tenantId:SCOPE.tenantId,siteId:SCOPE.siteId,requestId:SCOPE.requestId,agencyId:SCOPE.agencyId,workerId:SCOPE.workerId,assuranceVersionId:readiness.assuranceVersionId,assignmentFingerprint:readiness.assignmentFingerprint,acceptedResponseFingerprint:readiness.acceptedResponseFingerprint,authorityFingerprint:readiness.authorityFingerprint,continuityFingerprint:readiness.continuityFingerprint,policyFingerprint:readiness.policyFingerprint,readinessFingerprint:readiness.readinessFingerprint};}
-function evaluateWithStore({readiness,applicationName,shadowWorkStartCommand,credential={}}){return evaluateAgencyWorkStartPermit({tenantId:SCOPE.tenantId,siteId:SCOPE.siteId,agencyId:SCOPE.agencyId,request:structuredClone(REQUEST),workerId:SCOPE.workerId,now:NOW,policy:structuredClone(POLICY),readiness,permitStore:makePermitStore(applicationName,credential),shadowWorkStartCommand});}
+function evaluateWithRuntime({runtime,readiness,shadowWorkStartCommand}){return runtime.evaluatePermit(runtimeInput({readiness,shadowWorkStartCommand}));}
 
 before(async()=>{
   if(!REQUIRED)return;
@@ -126,40 +116,41 @@ SELECT public.wfm_revoke_agency_work_start_principal_v1('${REVOKED_USER}',${lit(
 });
 after(async()=>{await stop();});
 
-pgTest('actual readiness + permit runtime uses a real bound non-superuser login and remains privacy-minimised and one-shot',async()=>{
+pgTest('canonical readiness + permit runtime uses one bound non-superuser credential and remains privacy-minimised and one-shot',async()=>{
   await reset();
   assert.equal(await runtimeScalar(RUNTIME_USER,"SELECT session_user||','||(SELECT rolsuper::text FROM pg_catalog.pg_roles WHERE rolname=session_user);"),`${RUNTIME_USER},false`);
-  const readiness=await currentReadiness();assert.equal(readiness.workStartReady,true);assert.equal(readiness.rankingImpact,'none');
+  const runtime=makeRuntime(`wfm_runtime_valid_${process.pid}`);
+  assert.equal(runtime.credentialBoundary,'same_tenant_bound_session_user_transaction_factory_for_precheck_and_permit');
+  assert.equal(runtime.evidenceBoundary,'exact_scope_security_definer_functions_only');
+  assert.equal(runtime.eligibilityBeforeRanking,true);assert.equal(runtime.directTableSelectAllowed,false);
+  const readiness=await currentReadiness(runtime);assert.equal(readiness.workStartReady,true);assert.equal(readiness.rankingImpact,'none');
   let secondConsumeCode=null;let envelope=null;
-  const result=await evaluateWithStore({readiness,applicationName:`wfm_runtime_valid_${process.pid}`,shadowWorkStartCommand:async permit=>{envelope=permit.consume(commandFrom(readiness));try{permit.consume(commandFrom(readiness));}catch(error){secondConsumeCode=error.code;}}});
+  const result=await evaluateWithRuntime({runtime,readiness,shadowWorkStartCommand:async permit=>{envelope=permit.consume(commandFrom(readiness));try{permit.consume(commandFrom(readiness));}catch(error){secondConsumeCode=error.code;}}});
   assert.equal(result.permitPassed,true);assert.equal(secondConsumeCode,'work_start_permit_already_consumed');assert.equal(envelope.acceptedForShadow,true);assert.equal(result.rankingImpact,'none');assert.equal(result.scheduleWriteAuthorized,false);assert.equal(result.clockingWriteAuthorized,false);assert.equal(result.payrollWriteAuthorized,false);assert.equal(result.workStartWriteAuthorized,false);assert.doesNotMatch(JSON.stringify(result),/BADGE|photo|biometric|share[-_]?code|document[-_]?number|raw[-_]?payload|portal[-_]?token/i);
 });
 
-pgTest('bound runtime tenant principal rejects wrong-tenant, unbound and revoked production-style credentials before snapshot evaluation',async()=>{
+pgTest('canonical runtime rejects wrong-tenant, unbound and revoked production-style credentials during readiness before any permit path exists',async()=>{
   await reset();
-  let evaluated=0;
-  const run=(user,scope=permitScope())=>makePermitStore(`wfm_runtime_reject_${user}_${process.pid}`,{user,password:RUNTIME_PASSWORD}).withLockedSnapshot(scope,async()=>{evaluated+=1;return true;});
+  const run=async user=>makeRuntime(`wfm_runtime_reject_${user}_${process.pid}`,{user,password:RUNTIME_PASSWORD}).evaluateReadiness(runtimeInput());
   await assert.rejects(()=>run(OTHER_TENANT_USER),/work_start_tenant_principal_unauthorized/i);
   await assert.rejects(()=>run(UNBOUND_USER),/work_start_tenant_principal_unauthorized/i);
   await assert.rejects(()=>run(REVOKED_USER),/work_start_tenant_principal_revoked/i);
-  assert.equal(evaluated,0);
 });
 
-pgTest('identity-first contradictory authenticated evidence serializes before the bound runtime and zero stale permit is exposed',async()=>{
-  await reset();const readiness=await currentReadiness();assert.equal(readiness.workStartReady,true);
+pgTest('identity-first contradictory authenticated evidence serializes before the canonical bound runtime and zero stale permit is exposed',async()=>{
+  await reset();const permitName=`wfm_runtime_permit_wait_${process.pid}`;const runtime=makeRuntime(permitName);const readiness=await currentReadiness(runtime);assert.equal(readiness.workStartReady,true);
   const binding=bindingFingerprint({subjectFingerprint:ALT_SUBJECT});const identityName=`wfm_runtime_identity_first_${process.pid}`;
   const identity=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(identityName)}; BEGIN; ${writerIngressSql({eventFingerprint:'3'.repeat(32),subjectFingerprint:ALT_SUBJECT,bindingFingerprint:binding,observedAt:'2026-10-05T05:59:00Z',receivedAt:'2026-10-05T05:59:10Z'})} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
-  await waitForSleep(identityName);let exposed=0;const permitName=`wfm_runtime_permit_wait_${process.pid}`;
-  const permit=evaluateWithStore({readiness,applicationName:permitName,shadowWorkStartCommand:async()=>{exposed+=1;}});
+  await waitForSleep(identityName);let exposed=0;
+  const permit=evaluateWithRuntime({runtime,readiness,shadowWorkStartCommand:async()=>{exposed+=1;}});
   await waitForLockWait(permitName);const [,result]=await Promise.all([identity,permit]);
   assert.equal(result.permitPassed,false);assert.equal(result.reason,'identity_continuity_subject_mismatch');assert.equal(exposed,0);assert.equal(result.workStartWriteAuthorized,false);
 });
 
-pgTest('work-start-first bound runtime keeps authority transaction-scoped, blocks same assignment ingress and leaves unrelated assignment ingress independent',async()=>{
-  await reset();const readiness=await currentReadiness();assert.equal(readiness.workStartReady,true);
+pgTest('work-start-first canonical bound runtime keeps authority transaction-scoped, blocks same assignment ingress and leaves unrelated assignment ingress independent',async()=>{
+  await reset();const permitName=`wfm_runtime_permit_first_${process.pid}`;const runtime=makeRuntime(permitName);const readiness=await currentReadiness(runtime);assert.equal(readiness.workStartReady,true);
   let enteredResolve,releaseResolve;const entered=new Promise(resolve=>{enteredResolve=resolve;});const release=new Promise(resolve=>{releaseResolve=resolve;});let envelope=null;let secondConsumeCode=null;
-  const permitName=`wfm_runtime_permit_first_${process.pid}`;
-  const permit=evaluateWithStore({readiness,applicationName:permitName,shadowWorkStartCommand:async oneShot=>{envelope=oneShot.consume(commandFrom(readiness));try{oneShot.consume(commandFrom(readiness));}catch(error){secondConsumeCode=error.code;}enteredResolve();await release;}});
+  const permit=evaluateWithRuntime({runtime,readiness,shadowWorkStartCommand:async oneShot=>{envelope=oneShot.consume(commandFrom(readiness));try{oneShot.consume(commandFrom(readiness));}catch(error){secondConsumeCode=error.code;}enteredResolve();await release;}});
   await entered;
   const binding=bindingFingerprint({subjectFingerprint:ALT_SUBJECT});const blockedName=`wfm_runtime_identity_wait_${process.pid}`;
   const blocked=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(blockedName)}; BEGIN; ${writerIngressSql({eventFingerprint:'3'.repeat(32),subjectFingerprint:ALT_SUBJECT,bindingFingerprint:binding,observedAt:'2026-10-05T05:59:00Z',receivedAt:'2026-10-05T05:59:10Z'})} COMMIT;`],{timeout:10000});
@@ -169,5 +160,5 @@ pgTest('work-start-first bound runtime keeps authority transaction-scoped, block
   assert.equal(await scalar(`SELECT count(*) FROM wfm_agency_identity_continuity_observations WHERE tenant_id=${lit(SCOPE.tenantId)} AND request_id='R-OTHER' AND worker_id='W-OTHER';`),'1');
   releaseResolve();const result=await permit;await blocked;
   assert.equal(result.permitPassed,true);assert.equal(envelope.acceptedForShadow,true);assert.equal(secondConsumeCode,'work_start_permit_already_consumed');assert.equal(result.workStartWriteAuthorized,false);
-  const after=await currentReadiness();assert.equal(after.workStartReady,false);assert.equal(after.reason,'identity_continuity_subject_mismatch');
+  const after=await currentReadiness(runtime);assert.equal(after.workStartReady,false);assert.equal(after.reason,'identity_continuity_subject_mismatch');
 });
