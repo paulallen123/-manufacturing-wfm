@@ -187,6 +187,21 @@ delete core.receiptDigest;
 resealed.receiptDigest = rolloutDigest(core);
 assert.equal(verifyGlobalImplementationRollout(resealed), false, 're-sealing must not mint model authority');
 
+const resealedCoverageGap = structuredClone(global);
+resealedCoverageGap.waves[0].siteIds.pop();
+resealedCoverageGap.metrics.scheduledSites -= 1;
+const coverageCore = structuredClone(resealedCoverageGap);
+delete coverageCore.receiptDigest;
+resealedCoverageGap.receiptDigest = rolloutDigest(coverageCore);
+assert.equal(verifyGlobalImplementationRollout(resealedCoverageGap), false, 're-sealing must not hide an unscheduled eligible site');
+
+const resealedWaveAccounting = structuredClone(global);
+resealedWaveAccounting.waves[0].employeeCount += 1;
+const waveCore = structuredClone(resealedWaveAccounting);
+delete waveCore.receiptDigest;
+resealedWaveAccounting.receiptDigest = rolloutDigest(waveCore);
+assert.equal(verifyGlobalImplementationRollout(resealedWaveAccounting), false, 're-sealing must not forge wave employee accounting');
+
 console.log(JSON.stringify({
   schemaVersion: 1,
   proof: 'global-implementation-rollout-planner',
@@ -218,6 +233,8 @@ console.log(JSON.stringify({
   crossRegionDataBoundaryDenied: true,
   nonBoundedOverrideDenied: true,
   authorityEscalationDenied: true,
+  resealedCoverageGapDenied: true,
+  resealedWaveAccountingDenied: true,
   legalCoverageClaim: false,
   productionMutation: false,
   customerMutation: false,
