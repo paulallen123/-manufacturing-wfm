@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 const checks = [
   'scripts/validate-deployment.mjs',
   'scripts/validate-resilience-scenarios.mjs',
+  'scripts/validate-no-blocker-routing.mjs',
   'scripts/validate-autonomous-recovery-proof.mjs',
   'scripts/validate-autonomous-recovery-matrix.mjs',
   'scripts/validate-support-incident-recovery-proof.mjs',
