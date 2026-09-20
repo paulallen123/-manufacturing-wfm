@@ -379,12 +379,29 @@ function verifyGlobalImplementationRollout(receipt) {
   if (!Array.isArray(receipt.sitePlans) || !Array.isArray(receipt.waves) || !Array.isArray(receipt.blockedSiteIds) || !Array.isArray(receipt.blockedItems)) return false;
   const siteIds = new Set(receipt.sitePlans.map((site) => site.siteId));
   if (siteIds.size !== receipt.sitePlans.length) return false;
+  if (receipt.sitePlans.some((site) => !isDigest(site.baseTemplateDigest) || !isDigest(site.templateDigest) || site.legalCoverageClaim !== false || !Number.isSafeInteger(site.employeeCount) || site.employeeCount < 1)) return false;
+  const blockedFromPlans = receipt.sitePlans.filter((site) => site.blocked === true).map((site) => site.siteId).sort();
+  const declaredBlocked = [...receipt.blockedSiteIds].sort();
+  if (JSON.stringify(blockedFromPlans) !== JSON.stringify(declaredBlocked)) return false;
   const scheduled = receipt.waves.flatMap((wave) => wave.siteIds);
   if (new Set(scheduled).size !== scheduled.length) return false;
-  if (scheduled.some((id) => !siteIds.has(id) || receipt.blockedSiteIds.includes(id))) return false;
-  if (receipt.sitePlans.some((site) => !isDigest(site.baseTemplateDigest) || !isDigest(site.templateDigest) || site.legalCoverageClaim !== false)) return false;
-  if (receipt.clonePlans?.some((plan) => plan.identitiesCopied !== false || plan.secretsCopied !== false || plan.payrollStateCopied !== false || plan.productionStateCopied !== false)) return false;
+  if (scheduled.some((id) => !siteIds.has(id) || declaredBlocked.includes(id))) return false;
+  const eligible = receipt.sitePlans.filter((site) => site.blocked !== true).map((site) => site.siteId).sort();
+  if (JSON.stringify([...scheduled].sort()) !== JSON.stringify(eligible)) return false;
+  const siteById = new Map(receipt.sitePlans.map((site) => [site.siteId, site]));
+  for (let index = 0; index < receipt.waves.length; index++) {
+    const wave = receipt.waves[index];
+    if (wave.wave !== index + 1 || !Array.isArray(wave.siteIds) || wave.siteIds.length === 0 || wave.siteIds.length > 10) return false;
+    const employees = wave.siteIds.reduce((sum, id) => sum + siteById.get(id).employeeCount, 0);
+    const riskCeiling = Math.max(...wave.siteIds.map((id) => siteById.get(id).riskScore), 0);
+    if (wave.employeeCount !== employees || wave.riskCeiling !== riskCeiling) return false;
+    if (wave.employeeCount > 2000 && wave.siteIds.length !== 1) return false;
+  }
+  if (receipt.clonePlans?.some((plan) => plan.copyTemplateReferenceOnly !== true || plan.identitiesCopied !== false || plan.secretsCopied !== false || plan.payrollStateCopied !== false || plan.testDataCopied !== false || plan.productionStateCopied !== false)) return false;
+  if (receipt.trainingAssignments?.some((assignment) => !siteById.has(assignment.siteId) || assignment.generatedFromTemplateDigest !== siteById.get(assignment.siteId).templateDigest)) return false;
   if (receipt.metrics?.questionsAskedByRolloutPlanner !== 0 || receipt.metrics?.manualRolloutPlanConstructionRequired !== false) return false;
+  if (receipt.metrics?.eligibleSites !== eligible.length || receipt.metrics?.blockedSites !== declaredBlocked.length || receipt.metrics?.scheduledSites !== scheduled.length || receipt.metrics?.waveCount !== receipt.waves.length) return false;
+  if (receipt.topology?.sites !== receipt.sitePlans.length || receipt.topology?.employees !== receipt.sitePlans.reduce((sum, site) => sum + site.employeeCount, 0)) return false;
   if (receipt.status === 'ROLLOUT_PLANNED' && receipt.blockedSiteIds.length !== 0) return false;
   if (receipt.status === 'PARTIAL_ROLLOUT_BLOCKED' && receipt.blockedSiteIds.length === 0) return false;
   const core = clone(receipt);
