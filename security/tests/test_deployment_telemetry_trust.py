@@ -20,6 +20,10 @@ class TestDeploymentTelemetryTrust(unittest.TestCase):
             "log_query_succeeded": True,
             "repeated_query_count": 2,
             "unexpected_source_execution_observed": False,
+            "prior_successful_runtime_present": False,
+            "prior_runtime_publicly_reachable": False,
+            "prior_runtime_sensitive_secret_present": False,
+            "prior_runtime_access_after_containment_attempt": False,
         }
         base.update(overrides)
         return DeploymentTelemetryEvidence(**base)
@@ -71,6 +75,39 @@ class TestDeploymentTelemetryTrust(unittest.TestCase):
         )
         self.assertFalse(decision.allow_release)
         self.assertTrue(decision.telemetry_incident)
+
+    def test_prior_secret_bearing_runtime_still_public_fails_closed(self):
+        decision = assess_deployment_telemetry(
+            self.evidence(
+                prior_successful_runtime_present=True,
+                prior_runtime_publicly_reachable=True,
+                prior_runtime_sensitive_secret_present=True,
+            )
+        )
+        self.assertFalse(decision.allow_release)
+        self.assertTrue(decision.keep_containment)
+        self.assertFalse(decision.telemetry_incident)
+
+    def test_authenticated_access_after_hold_fails_closed(self):
+        decision = assess_deployment_telemetry(
+            self.evidence(
+                prior_successful_runtime_present=True,
+                prior_runtime_sensitive_secret_present=True,
+                prior_runtime_access_after_containment_attempt=True,
+            )
+        )
+        self.assertFalse(decision.allow_release)
+        self.assertTrue(decision.keep_containment)
+
+    def test_secretless_prior_runtime_does_not_fail_runtime_gate(self):
+        decision = assess_deployment_telemetry(
+            self.evidence(
+                prior_successful_runtime_present=True,
+                prior_runtime_publicly_reachable=True,
+                prior_runtime_sensitive_secret_present=False,
+            )
+        )
+        self.assertTrue(decision.allow_release)
 
     def test_complete_failed_build_evidence_passes_this_gate(self):
         decision = assess_deployment_telemetry(self.evidence())
