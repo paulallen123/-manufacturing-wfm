@@ -133,7 +133,8 @@ try {
       mobileStatusVisible: false,
       postOpenStillPresent: false,
       returnFocused: false,
-      inventedActionCount: null
+      inventedActionCount: null,
+      queueProof: null
     };
 
     if (spec.slug === 'employee') {
@@ -157,6 +158,105 @@ try {
         .filter(item => String(item?.confirmation?.state || '').toLowerCase() !== 'resolved');
       actionJourney.activeItems = active.length;
 
+      const awaitingStates = new Set(['decision_sent', 'confirming_source']);
+      const expectedNeedsIds = active
+        .filter(item => !awaitingStates.has(String(item?.confirmation?.state || '').toLowerCase()))
+        .map(item => String(item?.sourceId || '').trim())
+        .filter(Boolean);
+      const expectedAwaitingIds = active
+        .filter(item => awaitingStates.has(String(item?.confirmation?.state || '').toLowerCase()))
+        .map(item => String(item?.sourceId || '').trim())
+        .filter(Boolean);
+      const expectedVisibleNeedsIds = expectedNeedsIds.slice(0, 4);
+      const expectedVisibleAwaitingIds = expectedAwaitingIds.slice(0, 3);
+
+      if (active.length) {
+        await page.waitForFunction(({ needsIds, awaitingIds }) => {
+          const rendered = [...document.querySelectorAll('button[data-vector-source-id][data-vector-workflow="time-review"]')]
+            .map(node => node.getAttribute('data-vector-source-id'))
+            .filter(Boolean);
+          return [...needsIds, ...awaitingIds].slice(0, 7).every(id => rendered.includes(id));
+        }, { needsIds: expectedVisibleNeedsIds, awaitingIds: expectedVisibleAwaitingIds }, { timeout: 10000 });
+      }
+
+      const queueStates = [];
+      for (const viewport of [
+        { label: 'desktop', width: 1440, height: 1000 },
+        { label: 'tablet', width: 760, height: 900 },
+        { label: 'mobile', width: 390, height: 844 }
+      ]) {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await page.waitForTimeout(120);
+        const queue = await page.evaluate(() => {
+          const card = document.querySelector('.vector-alerts');
+          const needsList = card?.querySelector(':scope > .vector-alert-list');
+          const details = card?.querySelector('details[data-vector-awaiting-confirmation]');
+          const summary = details?.querySelector('summary');
+          const badge = document.querySelector('.vector-notification-count');
+          const headerCount = Number(card?.querySelector('#vector-review-title em')?.textContent || '0');
+          const summaryText = (summary?.textContent || '').replace(/\s+/g, ' ').trim();
+          const awaitingMatch = summaryText.match(/(\d+)\s*$/);
+          const sourceIds = root => [...(root?.querySelectorAll('button[data-vector-source-id][data-vector-workflow="time-review"]') || [])]
+            .map(node => node.getAttribute('data-vector-source-id'))
+            .filter(Boolean);
+          const visible = node => !!node && node.getClientRects().length > 0;
+          return {
+            width: innerWidth,
+            scrollWidth: document.documentElement.scrollWidth,
+            headerCount,
+            badgeHidden: !badge || badge.hidden,
+            badgeCount: badge && !badge.hidden ? Number(badge.textContent || '0') : 0,
+            needsSourceIds: sourceIds(needsList),
+            needsRowsVisible: [...(needsList?.querySelectorAll('.vector-alert-row') || [])].every(visible),
+            detailsPresent: !!details,
+            detailsOpen: details?.open === true,
+            summaryText,
+            summaryVisible: visible(summary),
+            awaitingCount: awaitingMatch ? Number(awaitingMatch[1]) : 0,
+            awaitingSourceIds: sourceIds(details)
+          };
+        });
+
+        assert.equal(queue.width, viewport.width, `${viewport.label} queue viewport mismatch.`);
+        assert.ok(queue.scrollWidth <= viewport.width + 1, `${viewport.label} queue introduced horizontal overflow.`);
+        assert.deepEqual(queue.needsSourceIds, expectedVisibleNeedsIds, `${viewport.label} Needs my action contains the wrong source-bound Time Review rows.`);
+        assert.equal(queue.needsRowsVisible, true, `${viewport.label} actionable queue rows are not visible.`);
+        assert.equal(queue.headerCount >= expectedNeedsIds.length, true, `${viewport.label} Needs my action count dropped source-bound actionable work.`);
+        assert.equal(queue.badgeCount, queue.headerCount, `${viewport.label} notification badge diverged from Needs my action count.`);
+        assert.equal(queue.badgeHidden, queue.headerCount === 0, `${viewport.label} notification badge visibility diverged from actionable work.`);
+        assert.equal(queue.awaitingCount, expectedAwaitingIds.length, `${viewport.label} awaiting-source summary count diverged from authoritative state.`);
+        assert.deepEqual(queue.awaitingSourceIds, expectedVisibleAwaitingIds, `${viewport.label} Awaiting source confirmation contains the wrong source-bound Time Review rows.`);
+        assert.equal(queue.detailsPresent, expectedAwaitingIds.length > 0, `${viewport.label} awaiting-source disclosure presence diverged from authoritative state.`);
+        assert.equal(queue.detailsOpen, false, `${viewport.label} awaiting-source disclosure was not calm-by-default.`);
+        if (expectedAwaitingIds.length > 0) {
+          assert.equal(queue.summaryVisible, true, `${viewport.label} awaiting-source summary is not visible.`);
+          assert.notEqual(queue.badgeCount, queue.headerCount + queue.awaitingCount, `${viewport.label} awaiting-source work inflated the action-needed badge.`);
+          const summary = page.locator('[data-vector-awaiting-confirmation] > summary').first();
+          await summary.focus();
+          await page.keyboard.press('Enter');
+          const opened = await page.locator('[data-vector-awaiting-confirmation]').first().evaluate(node => ({
+            open: node.open === true,
+            buttonsVisible: [...node.querySelectorAll('button[data-vector-source-id][data-vector-workflow="time-review"]')]
+              .every(button => button.getClientRects().length > 0),
+            scrollWidth: document.documentElement.scrollWidth,
+            width: innerWidth
+          }));
+          assert.equal(opened.open, true, `${viewport.label} awaiting-source disclosure did not open from keyboard.`);
+          assert.equal(opened.buttonsVisible, true, `${viewport.label} awaiting-source rows are not visible after disclosure.`);
+          assert.ok(opened.scrollWidth <= opened.width + 1, `${viewport.label} opened awaiting-source disclosure introduced horizontal overflow.`);
+          await page.keyboard.press('Enter');
+          assert.equal(await page.locator('[data-vector-awaiting-confirmation]').first().evaluate(node => node.open === true), false, `${viewport.label} awaiting-source disclosure did not close from keyboard.`);
+        }
+        queueStates.push({ label: viewport.label, ...queue });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      actionJourney.queueProof = {
+        expectedNeeds: expectedNeedsIds.length,
+        expectedAwaiting: expectedAwaitingIds.length,
+        viewports: queueStates.map(({ label, headerCount, badgeCount, awaitingCount, detailsPresent, detailsOpen }) => ({ label, headerCount, badgeCount, awaitingCount, detailsPresent, detailsOpen }))
+      };
+      console.log(`CURRENT_ACTION_QUEUE_GROUPING=PASS|needsSource=${expectedNeedsIds.length}|awaitingSource=${expectedAwaitingIds.length}|viewports=3`);
+
       if (active.length === 0) {
         const renderedActions = page.locator('.vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]');
         actionJourney.inventedActionCount = await renderedActions.count();
@@ -165,7 +265,12 @@ try {
         timeReviewEmptyStateJourneys += 1;
         console.log('CURRENT_TIME_REVIEW_EMPTY_STATE=PASS|active=0|invented=0');
       } else {
-        const actionButton = page.locator('.vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]').first();
+        let actionButton = page.locator('.vector-alerts > .vector-alert-list .vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]').first();
+        if (await actionButton.count() === 0) {
+          const awaiting = page.locator('[data-vector-awaiting-confirmation]').first();
+          await awaiting.locator('summary').click({ timeout: 5000 });
+          actionButton = awaiting.locator('.vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]').first();
+        }
         await actionButton.waitFor({ state: 'visible', timeout: 10000 });
         const sourceId = await actionButton.getAttribute('data-vector-source-id');
         const sourceItem = active.find(item => String(item?.sourceId || '') === sourceId);
