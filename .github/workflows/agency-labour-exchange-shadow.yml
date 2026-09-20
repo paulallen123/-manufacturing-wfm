@@ -72,6 +72,7 @@ on:
       - 'test/frontier/agency-work-start-runtime.test.mjs'
       - 'test/frontier/agency-postgres-work-start-permit-race.test.mjs'
       - 'test/frontier/agency-postgres-work-start-runtime-race.test.mjs'
+      - 'test/frontier/agency-work-start-runtime-rotation-postgres.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
       - 'test/frontier/agency-supplier-compliance-integration.test.mjs'
       - 'test/frontier/agency-supplier-portal.test.mjs'
@@ -179,3 +180,4 @@ jobs:
           node --test test/frontier/agency-work-start-precheck-postgres.test.mjs
           node --test test/frontier/agency-postgres-work-start-permit-race.test.mjs
           node --test test/frontier/agency-postgres-work-start-runtime-race.test.mjs
+          node --test test/frontier/agency-work-start-runtime-rotation-postgres.test.mjs
