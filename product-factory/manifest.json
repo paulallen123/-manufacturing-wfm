@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "name": "Vector Manufacturing Workforce Operations Product Factory",
+  "purpose": "Turn product development from repeated bespoke work into fast, reusable, evidence-driven delivery without lowering security, reliability or UX quality.",
+  "doctrine": "Every change must be valuable, evidence-backed, secure, observable, reversible, reusable and Vector-only.",
+  "nonNegotiables": [
+    "vector-only-ui",
+    "evidence-backed-value",
+    "no-fabricated-savings",
+    "role-specific-outcomes",
+    "security-by-default",
+    "automated-verification",
+    "rollback-ready",
+    "observability-required",
+    "zero-human-implementation-target",
+    "reuse-before-bespoke"
+  ],
+  "requiredFeatureFields": [
+    "slug",
+    "outcome",
+    "primaryRoles",
+    "valueHypothesis",
+    "valueMetric",
+    "evidenceSources",
+    "acceptanceCriteria",
+    "securityControls",
+    "observability",
+    "rollback",
+    "reusePlan",
+    "automationPlan",
+    "claimBoundary"
+  ],
+  "qualityGates": [
+    "syntax",
+    "unit",
+    "contract",
+    "integration",
+    "security",
+    "vector-ui",
+    "value-evidence",
+    "observability",
+    "rollback",
+    "claim-boundary"
+  ],
+  "deliveryMetrics": [
+    "changeLeadTimeSeconds",
+    "validationSeconds",
+    "changeFailRate",
+    "deploymentReworkRate",
+    "rollbackSeconds",
+    "manualTouches",
+    "reuseRatio"
+  ],
+  "strategicCapabilityPillars": [
+    "manufacturing-semantic-layer",
+    "workforce-digital-twin",
+    "decision-to-outcome-learning-loop",
+    "autonomous-implementation-and-training",
+    "autonomous-bounded-support-and-recovery",
+    "global-integration-fabric",
+    "evidence-backed-value-ledger",
+    "role-specific-ai-copilot",
+    "low-friction-clocking",
+    "labour-production-energy-optimization"
+  ]
+}
