@@ -39,6 +39,187 @@ function validDigest(value) {
   return /^[a-f0-9]{64}$/.test(candidate) ? candidate : null;
 }
 
+function normaliseHostedVariableNames(values) {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values
+    .slice(0, 500)
+    .map((value) => clean(value, 120).toUpperCase())
+    .filter((value) => /^[A-Z_][A-Z0-9_]*$/.test(value)))]
+    .sort();
+}
+
+function validateHostedPublicOrigin(value) {
+  const raw = clean(value, 500);
+  if (!raw) return { valid: false, reason: 'value-unavailable-or-empty', origin: null };
+  let url;
+  try {
+    url = new URL(raw);
+  } catch {
+    return { valid: false, reason: 'invalid-url', origin: null };
+  }
+  if (url.protocol !== 'https:') return { valid: false, reason: 'https-required', origin: null };
+  if (url.username || url.password) return { valid: false, reason: 'embedded-credentials-forbidden', origin: null };
+  if (!url.hostname) return { valid: false, reason: 'hostname-required', origin: null };
+  if (url.search || url.hash) return { valid: false, reason: 'query-or-fragment-forbidden', origin: null };
+  if (url.pathname && url.pathname !== '/') return { valid: false, reason: 'origin-must-not-contain-path', origin: null };
+  return { valid: true, reason: 'explicit-https-origin', origin: url.origin };
+}
+
+function evaluateHostedOriginPreflight(input = {}) {
+  const hostedMode = input.hostedMode === true;
+  const variableNames = normaliseHostedVariableNames(input.variableNames);
+  const variableDeclared = variableNames.includes('WFM_PUBLIC_ORIGIN');
+  const origin = validateHostedPublicOrigin(input.publicOrigin);
+  const ready = !hostedMode || (variableDeclared && origin.valid);
+
+  const core = {
+    schemaVersion: 1,
+    proof: 'hosted-public-origin-preflight-protected-boundary',
+    hostedMode,
+    variableNamesDigest: digest(variableNames),
+    publicOriginVariableDeclared: variableDeclared,
+    publicOriginValueValidated: origin.valid,
+    publicOriginValidationReason: origin.reason,
+    validatedOrigin: origin.valid ? origin.origin : null,
+    ready,
+    manualConfigurationRequired: hostedMode && !ready,
+    missingKeys: hostedMode && !variableDeclared ? ['WFM_PUBLIC_ORIGIN'] : [],
+    releaseClaimAllowed: false,
+    autonomyPromotionAllowed: false,
+    automaticRedeployAllowed: false,
+    automaticConfigurationMutationAllowed: false,
+    safetyGateBypassAllowed: false,
+    productionMutation: false,
+    customerMutation: false,
+    payrollMutation: false,
+    identityMutation: false,
+    modelAuthorityGranted: false,
+    executionAuthorityGranted: false,
+  };
+
+  return Object.freeze({ ...core, receiptDigest: digest(core) });
+}
+
+function diagnoseHostedOriginStartupFailure(input = {}) {
+  const status = clean(input.deploymentStatus, 40).toUpperCase();
+  if (!['FAILED', 'CRASHED'].includes(status)) {
+    throw new Error('Hosted-origin startup diagnosis accepts FAILED or CRASHED deployments only.');
+  }
+  const deploymentId = validId(input.deploymentId);
+  const deployLogs = Array.isArray(input.deployLogs)
+    ? input.deployLogs.slice(0, 500).map((entry) => clean(typeof entry === 'string' ? entry : entry?.message, 4000))
+    : [];
+  const exactHostedOriginFailure = deployLogs.some((line) => /Hosted staging requires an explicit HTTPS WFM_PUBLIC_ORIGIN\.?/i.test(line));
+  const runtimeObserved = deployLogs.some((line) => /Node\.js\s+v\d+\.\d+\.\d+/i.test(line));
+
+  const core = {
+    schemaVersion: 1,
+    proof: 'railway-hosted-origin-startup-diagnosis-protected-boundary',
+    provider: 'railway',
+    deploymentId,
+    deploymentStatus: status,
+    classification: exactHostedOriginFailure
+      ? 'hosted-public-origin-configuration-blocker'
+      : 'not-hosted-public-origin-blocker',
+    confidence: exactHostedOriginFailure ? 'high' : 'none',
+    productRuntimeExecuted: deployLogs.length > 0,
+    runtimeIdentityObserved: runtimeObserved,
+    productFailureProven: false,
+    configurationFailureProven: exactHostedOriginFailure,
+    requiredKey: exactHostedOriginFailure ? 'WFM_PUBLIC_ORIGIN' : null,
+    requiredValueContract: exactHostedOriginFailure ? 'explicit-https-origin' : null,
+    deploymentTimeVariableBindingProven: false,
+    evidenceFingerprint: digest({ deploymentId, status, deployLogs }),
+    recommendedAction: exactHostedOriginFailure
+      ? 'require-human-approved-WFM_PUBLIC_ORIGIN-configuration-before-an-isolated-proof-rerun'
+      : 'preserve-evidence-and-use-the-general-proof-failure-classifier',
+    releaseClaimAllowed: false,
+    autonomyPromotionAllowed: false,
+    automaticRedeployAllowed: false,
+    automaticConfigurationMutationAllowed: false,
+    safetyGateBypassAllowed: false,
+    productionMutation: false,
+    customerMutation: false,
+    payrollMutation: false,
+    identityMutation: false,
+    modelAuthorityGranted: false,
+    executionAuthorityGranted: false,
+  };
+
+  return Object.freeze({ ...core, receiptDigest: digest(core) });
+}
+
+function verifyHostedOriginReceipt(receipt) {
+  if (!receipt || typeof receipt !== 'object') return false;
+  if (!/^[a-f0-9]{64}$/.test(String(receipt.receiptDigest || ''))) return false;
+  if (
+    receipt.releaseClaimAllowed !== false
+    || receipt.autonomyPromotionAllowed !== false
+    || receipt.automaticRedeployAllowed !== false
+    || receipt.automaticConfigurationMutationAllowed !== false
+    || receipt.safetyGateBypassAllowed !== false
+    || receipt.productionMutation !== false
+    || receipt.customerMutation !== false
+    || receipt.payrollMutation !== false
+    || receipt.identityMutation !== false
+    || receipt.modelAuthorityGranted !== false
+    || receipt.executionAuthorityGranted !== false
+  ) return false;
+  if (receipt.proof === 'railway-hosted-origin-startup-diagnosis-protected-boundary') {
+    if (receipt.provider !== 'railway' || receipt.deploymentTimeVariableBindingProven !== false) return false;
+    if (receipt.classification === 'hosted-public-origin-configuration-blocker') {
+      if (
+        receipt.configurationFailureProven !== true
+        || receipt.productFailureProven !== false
+        || receipt.requiredKey !== 'WFM_PUBLIC_ORIGIN'
+        || receipt.requiredValueContract !== 'explicit-https-origin'
+      ) return false;
+    }
+  } else if (receipt.proof === 'hosted-public-origin-preflight-protected-boundary') {
+    if (receipt.hostedMode === true && receipt.ready === true) {
+      if (receipt.publicOriginVariableDeclared !== true || receipt.publicOriginValueValidated !== true) return false;
+    }
+  } else {
+    return false;
+  }
+  const core = { ...receipt };
+  const expected = core.receiptDigest;
+  delete core.receiptDigest;
+  return expected === digest(core);
+}
+
+function assertHostedOriginSafetyContract() {
+  const missing = evaluateHostedOriginPreflight({ hostedMode: true, variableNames: ['WFM_HOSTED_STAGING'] });
+  const valid = evaluateHostedOriginPreflight({
+    hostedMode: true,
+    variableNames: ['WFM_PUBLIC_ORIGIN'],
+    publicOrigin: 'https://proof.invalid/',
+  });
+  const observedFailure = diagnoseHostedOriginStartupFailure({
+    deploymentId: 'self-check',
+    deploymentStatus: 'FAILED',
+    deployLogs: ['Node.js v22.23.2', 'Error: Hosted staging requires an explicit HTTPS WFM_PUBLIC_ORIGIN.'],
+  });
+  if (
+    missing.ready !== false
+    || missing.manualConfigurationRequired !== true
+    || missing.missingKeys.length !== 1
+    || missing.missingKeys[0] !== 'WFM_PUBLIC_ORIGIN'
+    || valid.ready !== true
+    || valid.validatedOrigin !== 'https://proof.invalid'
+    || validateHostedPublicOrigin('http://proof.invalid').valid !== false
+    || validateHostedPublicOrigin('https://user:pass@proof.invalid').valid !== false
+    || validateHostedPublicOrigin('https://proof.invalid/path').valid !== false
+    || observedFailure.classification !== 'hosted-public-origin-configuration-blocker'
+    || observedFailure.configurationFailureProven !== true
+    || !verifyHostedOriginReceipt(missing)
+    || !verifyHostedOriginReceipt(valid)
+    || !verifyHostedOriginReceipt(observedFailure)
+  ) {
+    throw new Error('Hosted public-origin safety contract failed closed self-check.');
+  }
+}
+
 function normaliseDeploymentConfig(value = {}) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const source = value.source && typeof value.source === 'object' ? value.source : {};
@@ -338,6 +519,8 @@ function verifyRailwayProofFailureWithBoundConfigReceipt(receipt) {
   return expected === digest(core);
 }
 
+assertHostedOriginSafetyContract();
+
 module.exports = {
   assessRailwayDeploymentConfigBinding,
   verifyRailwayDeploymentConfigBindingReceipt,
@@ -345,5 +528,10 @@ module.exports = {
   verifyRailwayProofFailureWithBoundConfigReceipt,
   normaliseDeploymentConfig,
   digestDeploymentConfigSnapshot,
+  evaluateHostedOriginPreflight,
+  diagnoseHostedOriginStartupFailure,
+  validateHostedPublicOrigin,
+  verifyHostedOriginReceipt,
+  normaliseHostedVariableNames,
   digest,
 };
