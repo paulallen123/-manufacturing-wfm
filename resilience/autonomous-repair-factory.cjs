@@ -18,6 +18,7 @@ const PROTECTED_PATHS = Object.freeze([
   'resilience/canonical-release-boundary.cjs',
   'resilience/canonical-release-policy-snapshot.json',
   'scripts/validate-canonical-release-boundary.mjs',
+  'scripts/collect-canonical-governance-evidence.mjs',
   'resilience/failure-scenarios.json',
   'resilience/ci-provider-failover.cjs',
   'resilience/provider-recovery-handoff.cjs',
