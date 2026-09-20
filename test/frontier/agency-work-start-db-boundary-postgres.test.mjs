@@ -32,6 +32,29 @@ before(async()=>{
   try{await docker(['version','--format','{{.Server.Version}}'],{timeout:10000});}catch(error){throw new Error(`Docker is required for work-start DB boundary proof: ${error.message}`);}
   await docker(['run','-d','--rm','--name',CONTAINER,'-e',`POSTGRES_PASSWORD=${DB_PASSWORD}`,POSTGRES_IMAGE],{timeout:120000});started=true;await waitForPostgres();
   await psql(`${AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL}\n${AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL}\n${AGENCY_IDENTITY_CONTINUITY_DDL}\n${AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL}\n${AGENCY_IDENTITY_DB_BOUNDARY_DDL}\n${AGENCY_WORK_START_DB_BOUNDARY_DDL}`);
+  await psql(`
+DO $roles$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='wfm_work_start_runtime_t1') THEN
+    CREATE ROLE wfm_work_start_runtime_t1 LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='wfm_work_start_runtime_t2') THEN
+    CREATE ROLE wfm_work_start_runtime_t2 LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='wfm_work_start_runtime_unbound') THEN
+    CREATE ROLE wfm_work_start_runtime_unbound LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+  END IF;
+END
+$roles$;
+GRANT wfm_agency_work_start_reader TO wfm_work_start_runtime_t1,wfm_work_start_runtime_t2,wfm_work_start_runtime_unbound;
+BEGIN;
+SET LOCAL ROLE wfm_agency_work_start_tenant_binding_admin;
+INSERT INTO public.wfm_agency_work_start_principal_tenants(database_principal,tenant_id,binding_fingerprint,bound_at) VALUES
+ ('wfm_work_start_runtime_t1','T_BOUND_1','${'1'.repeat(24)}','2026-10-05T05:00:00Z'),
+ ('wfm_work_start_runtime_t2','T_BOUND_2','${'2'.repeat(24)}','2026-10-05T05:00:00Z')
+ON CONFLICT (database_principal) DO UPDATE SET tenant_id=EXCLUDED.tenant_id,binding_fingerprint=EXCLUDED.binding_fingerprint,bound_at=EXCLUDED.bound_at;
+COMMIT;
+`);
 });
 after(async()=>{await stop();});
 
@@ -45,6 +68,7 @@ pgTest('work-start runtime role has no login, superuser, direct table SELECT or 
   assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_reader','public.wfm_read_agency_work_start_authority_v1(text,text,text,text,text,text,timestamptz)','EXECUTE');"),'t');
   assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_reader','public.wfm_read_agency_work_start_identity_continuity_v1(text,text,text,text,text,text,text,timestamptz,timestamptz)','EXECUTE');"),'t');
   assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_reader','public.wfm_lock_agency_identity_assignment_scope_v1(text,text,text,text,text,text)','EXECUTE');"),'f');
+  assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_reader','public.wfm_assert_agency_work_start_tenant_principal_v1(text)','EXECUTE');"),'f');
 });
 
 pgTest('controlled snapshot executes under reader role, returns database scope evidence and does not expose a mutation surface',async()=>{
@@ -73,4 +97,28 @@ pgTest('runtime role cannot enumerate evidence tables and exact-scope functions 
 pgTest('direct mutation attempt under the runtime role is rejected by PostgreSQL',async()=>{
   await assert.rejects(()=>psql("BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; UPDATE public.wfm_agency_rtw_assurance_current SET conflicted=true WHERE tenant_id='T1'; COMMIT;"),/permission denied/i);
   assert.equal(await psql("SELECT conflicted FROM public.wfm_agency_rtw_assurance_current WHERE tenant_id='T1' AND worker_id='W1';"),'f');
+});
+
+pgTest('non-superuser database principals are tenant-bound and cannot substitute another tenant through controlled functions',async()=>{
+  const principalFlags=await psql("SELECT rolname||':'||rolcanlogin||','||rolsuper||','||rolcreatedb||','||rolcreaterole FROM pg_roles WHERE rolname IN ('wfm_work_start_runtime_t1','wfm_work_start_runtime_t2','wfm_work_start_runtime_unbound') ORDER BY rolname;");
+  for(const line of principalFlags.split(/\r?\n/).filter(Boolean))assert.match(line,/:true,false,false,false$/);
+  assert.equal(await psql("SELECT count(*) FROM public.wfm_agency_work_start_principal_tenants WHERE database_principal IN ('wfm_work_start_runtime_t1','wfm_work_start_runtime_t2');"),'2');
+  assert.equal(await psql("SELECT has_table_privilege('wfm_agency_work_start_reader','public.wfm_agency_work_start_principal_tenants','SELECT');"),'f');
+  assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_tenant_binding_admin','public.wfm_read_agency_work_start_authority_v1(text,text,text,text,text,text,timestamptz)','EXECUTE');"),'f');
+
+  await assert.rejects(()=>psql(`BEGIN; SET LOCAL ROLE wfm_agency_work_start_tenant_binding_admin; INSERT INTO public.wfm_agency_work_start_principal_tenants(database_principal,tenant_id,binding_fingerprint,bound_at) VALUES ('wfm_work_start_runtime_t1','T_BOUND_2','${'3'.repeat(24)}','2026-10-05T05:01:00Z'); COMMIT;`),/duplicate key|unique constraint/i);
+
+  for(const [tenant,assuranceValue,token] of [['T_BOUND_1','4'.repeat(32),'4'.repeat(16)],['T_BOUND_2','5'.repeat(32),'5'.repeat(16)]]){
+    await psql(`INSERT INTO wfm_agency_rtw_assurance_current (tenant_id,agency_id,worker_id,assurance_version_id,site_id,request_id,assignment_fingerprint,evidence_fingerprint,check_method,checked_at,coverage_until,promoted_at,conflicted) VALUES ('${tenant}','A_BOUND','W_BOUND','${assuranceValue}','S_BOUND','R_BOUND','${assignment}','${'6'.repeat(24)}','home_office_online','2026-10-04T10:00:00Z','2027-12-31T23:59:59Z','2026-10-04T11:00:00Z',false);`);
+    await psql(`INSERT INTO wfm_agency_portal_token_consumptions (tenant_id,token_id,site_id,request_id,agency_id,token_fingerprint,action,expires_at,consumed_at,assurance_bindings) VALUES ('${tenant}','TOK_${tenant}','S_BOUND','R_BOUND','A_BOUND','${token}','confirm_preferred_worker','2026-10-05T15:00:00Z','2026-10-04T12:00:00Z','[{"workerId":"W_BOUND","assuranceVersionId":"${assuranceValue}"}]'::jsonb);`);
+  }
+
+  const t1=await psql(`SET SESSION AUTHORIZATION wfm_work_start_runtime_t1; BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT tenant_id||','||assurance_version_id FROM public.wfm_read_agency_work_start_authority_v1('T_BOUND_1','S_BOUND','R_BOUND','A_BOUND','W_BOUND','${assignment}','2026-10-05T06:10:00Z'); COMMIT;`);
+  assert.equal(t1,`T_BOUND_1,${'4'.repeat(32)}`);
+  await assert.rejects(()=>psql(`SET SESSION AUTHORIZATION wfm_work_start_runtime_t1; BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT tenant_id FROM public.wfm_read_agency_work_start_authority_v1('T_BOUND_2','S_BOUND','R_BOUND','A_BOUND','W_BOUND','${assignment}','2026-10-05T06:10:00Z'); COMMIT;`),/work_start_tenant_principal_unauthorized/i);
+  await assert.rejects(()=>psql(`SET SESSION AUTHORIZATION wfm_work_start_runtime_unbound; BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT tenant_id FROM public.wfm_read_agency_work_start_authority_v1('T_BOUND_1','S_BOUND','R_BOUND','A_BOUND','W_BOUND','${assignment}','2026-10-05T06:10:00Z'); COMMIT;`),/work_start_tenant_principal_unauthorized/i);
+  const t2=await psql(`SET SESSION AUTHORIZATION wfm_work_start_runtime_t2; BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT tenant_id||','||assurance_version_id FROM public.wfm_read_agency_work_start_authority_v1('T_BOUND_2','S_BOUND','R_BOUND','A_BOUND','W_BOUND','${assignment}','2026-10-05T06:10:00Z'); COMMIT;`);
+  assert.equal(t2,`T_BOUND_2,${'5'.repeat(32)}`);
+
+  await assert.rejects(()=>psql(`SET SESSION AUTHORIZATION wfm_work_start_runtime_t1; BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT tenant_id FROM public.wfm_agency_work_start_principal_tenants; COMMIT;`),/permission denied/i);
 });
