@@ -23,6 +23,15 @@
     "status": "BLOCKED",
     "failureBoundary": "before any workflow step executed",
     "jobStepsObserved": null,
+    "publicGithubStatusAtCheck": "Actions reported operational; no public incident listed",
+    "additionalDefectFound": "The branch workflow uploaded the repository root directly while the existing Railway service rootDirectory remained /__security_hold_one_day_enterprise__. Even with a runner, this path contract could not safely satisfy the immutable hold.",
+    "isolatedSafeFix": {
+      "branch": "fix/one-day-hold-safe-exact-release-r17",
+      "commit": "98d971fcefbc764dc3fc7e1406dea1c1893b9f54",
+      "change": "Package the exact GITHUB_SHA under __security_hold_one_day_enterprise__, preserve staging manifest assertions, then use railway up on the wrapper with --path-as-root. No Railway service configuration or security hold is changed.",
+      "merged": false,
+      "reasonNotMerged": "Execution/regression gate is currently unavailable because GitHub Actions jobs still fail before steps run."
+    },
     "controlDecision": "security hold preserved; no bypass attempted"
   },
   "hostedBrowserProof": {
@@ -33,6 +42,7 @@
     "failure": "manager login returned HTTP 401 instead of 200",
     "targetObservedFromRailwayHttpLogs": "wfm-one-day-enterprise-v1-production.up.railway.app",
     "targetRuntimeStatus": "previous successful runtime, not exact current candidate",
+    "evidenceRisk": "The browser runner accepts WFM_EXPECTED_CANDIDATE_SHA but the current target health contract does not independently bind the live runtime to that SHA. Therefore a pass must not be called exact-current until runtime/deployment identity is independently bound.",
     "claimBoundary": "This is not exact-current browser proof and must not be represented as such. Fixture/demo evidence only; no real-provider or production approval claim."
   },
   "targetServices": {
@@ -45,7 +55,8 @@
     "wfm-integration-fabric-v1-proof": {
       "existingResourceOnly": true,
       "exactCurrentDeployment": false,
-      "securityHoldPreserved": true
+      "securityHoldPreserved": true,
+      "latestObservedFailure": "existing immutable hold path absent from ordinary source snapshot; fail-closed build"
     }
   },
   "readiness": {
