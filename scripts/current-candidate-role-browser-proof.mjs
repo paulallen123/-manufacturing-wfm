@@ -78,19 +78,38 @@ try {
     assert.equal(boundary.surface, 200, `${spec.slug} required surface failed.`);
 
     const ui = await page.evaluate(async () => {
-      const asset = await fetch('/vector-shell.js', { cache: 'no-store' });
-      const text = await asset.text();
-      const resources = performance.getEntriesByType('resource').map(entry => entry.name);
+      const [scriptAsset, styleAsset] = await Promise.all([
+        fetch('/vector-ui.js', { cache: 'no-store' }),
+        fetch('/vector-ui.css', { cache: 'no-store' })
+      ]);
+      const [scriptText, styleText] = await Promise.all([scriptAsset.text(), styleAsset.text()]);
+      const resources = performance.getEntriesByType('resource').map(entry => {
+        try { return new URL(entry.name, location.href).pathname; } catch { return String(entry.name || ''); }
+      });
+      const retiredAssets = [
+        'vector-shell.js',
+        'review-ui.js',
+        'review-ui.css',
+        'factory-control-ui.css',
+        'value-cockpit-ui.js',
+        'value-cockpit-ui.css',
+        'ui-evolution.css'
+      ];
       const nodes = document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length;
       const labels = [...new Set([...document.querySelectorAll('nav a,nav button,.vector-sidebar a,.vector-sidebar button')]
         .filter(node => node.getClientRects().length > 0)
         .map(node => (node.textContent || '').replace(/\s+/g, ' ').trim())
         .filter(Boolean))];
       return {
-        assetStatus: asset.status,
-        approved: text.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'),
-        retired: ['WFM_UX_RESET_CYCLE11_BEGIN', 'WFM_UX_RESET_CYCLE12_BEGIN', 'VECTOR_PRIORITY_BRIDGE_V1'].filter(marker => text.includes(marker)),
-        executed: resources.some(name => name.includes('vector-shell.js')),
+        scriptAssetStatus: scriptAsset.status,
+        styleAssetStatus: styleAsset.status,
+        approvedScript: scriptText.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'),
+        approvedStyle: styleText.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'),
+        retiredMarkers: ['WFM_UX_RESET_CYCLE11_BEGIN', 'WFM_UX_RESET_CYCLE12_BEGIN', 'VECTOR_PRIORITY_BRIDGE_V1']
+          .filter(marker => scriptText.includes(marker) || styleText.includes(marker)),
+        scriptExecuted: resources.includes('/vector-ui.js'),
+        styleExecuted: resources.includes('/vector-ui.css'),
+        retiredExecuted: retiredAssets.filter(name => resources.some(path => path.endsWith(`/${name}`))),
         nodes,
         labels,
         bodyText: (document.body?.innerText || '').length,
@@ -98,10 +117,14 @@ try {
         scrollWidth: document.documentElement.scrollWidth
       };
     });
-    assert.equal(ui.assetStatus, 200);
-    assert.equal(ui.approved, true);
-    assert.deepEqual(ui.retired, []);
-    assert.equal(ui.executed, true, `${spec.slug} Vector shell was not loaded.`);
+    assert.equal(ui.scriptAssetStatus, 200, `${spec.slug} canonical Vector script unavailable.`);
+    assert.equal(ui.styleAssetStatus, 200, `${spec.slug} canonical Vector stylesheet unavailable.`);
+    assert.equal(ui.approvedScript, true, `${spec.slug} canonical Vector script marker missing.`);
+    assert.equal(ui.approvedStyle, true, `${spec.slug} canonical Vector stylesheet marker missing.`);
+    assert.deepEqual(ui.retiredMarkers, [], `${spec.slug} retired presentation marker executed in canonical Vector assets.`);
+    assert.equal(ui.scriptExecuted, true, `${spec.slug} canonical /vector-ui.js entrypoint was not loaded.`);
+    assert.equal(ui.styleExecuted, true, `${spec.slug} canonical /vector-ui.css entrypoint was not loaded.`);
+    assert.deepEqual(ui.retiredExecuted, [], `${spec.slug} retired presentation asset executed: ${ui.retiredExecuted.join(', ')}`);
     assert.ok(ui.nodes > 0, `${spec.slug} Vector DOM missing.`);
     assert.ok(ui.bodyText > 200, `${spec.slug} rendered body too small.`);
     assert.ok(ui.scrollWidth <= ui.width + 1, `${spec.slug} desktop horizontal overflow.`);
@@ -377,7 +400,6 @@ try {
     assert.ok(screenshot.length > 10000, `${spec.slug} screenshot too small.`);
     const screenshotSha256 = crypto.createHash('sha256').update(screenshot).digest('hex');
 
-
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(250);
     const mobile = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth }));
@@ -397,8 +419,9 @@ try {
       payrollStatus: boundary.payroll,
       requiredSurface: spec.surface,
       requiredSurfaceStatus: boundary.surface,
-      vectorApproved: ui.approved,
-      vectorExecuted: ui.executed,
+      vectorApproved: ui.approvedScript && ui.approvedStyle,
+      vectorExecuted: ui.scriptExecuted && ui.styleExecuted,
+      retiredPresentationExecuted: ui.retiredExecuted,
       vectorNodes: ui.nodes,
       visibleNavigation: ui.labels,
       navigationClicked,
