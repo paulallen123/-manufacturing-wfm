@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import {readFile} from 'node:fs/promises';
 import {createPostgresAgencyWorkStartRuntime} from '../../src/frontier/agency-work-start-runtime.mjs';
 
 const NOW='2026-10-05T06:10:00.000Z';
@@ -66,4 +67,12 @@ test('a trusted readiness object is single-use even when its first permit succee
 
 test('runtime dependency absence fails at construction rather than silently falling back to privileged or raw-table reads',()=>{
   assert.throws(()=>createPostgresAgencyWorkStartRuntime(),/withTransaction function is required/);
+});
+
+test('real postgres runtime-race proof is pinned to canonical runtime composition and cannot regress to generic evidence readers',async()=>{
+  const source=await readFile(new URL('./agency-postgres-work-start-runtime-race.test.mjs',import.meta.url),'utf8');
+  assert.match(source,/createPostgresAgencyWorkStartRuntime/);
+  assert.doesNotMatch(source,/createPostgresAgencyWorkStartPermitStore|evaluateAgencyWorkStartPermit|createPostgresAgencyWorkStartAuthorityStore|evaluateAgencyWorkStartReadiness|createPostgresAgencyIdentityContinuityStore/);
+  assert.match(source,/same_tenant_bound_session_user_transaction_factory_for_precheck_and_permit/);
+  assert.match(source,/rejects wrong-tenant, unbound and revoked production-style credentials during readiness before any permit path exists/);
 });
