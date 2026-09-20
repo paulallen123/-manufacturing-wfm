@@ -77,3 +77,21 @@ export function recordRealisedOutcome(projectedDecision, { actualSelectedCost, e
     observedAt
   });
 }
+
+export function createOutcomeLedger() {
+  const outcomes = new Map();
+  return Object.freeze({
+    record(projectedDecision, actual) {
+      const outcome = recordRealisedOutcome(projectedDecision, actual);
+      assert(!outcomes.has(outcome.attributionKey), `duplicate attributionKey: ${outcome.attributionKey}`);
+      outcomes.set(outcome.attributionKey, outcome);
+      return outcome;
+    },
+    get(attributionKey) {
+      return outcomes.get(attributionKey) ?? null;
+    },
+    entries() {
+      return Object.freeze([...outcomes.values()]);
+    }
+  });
+}
