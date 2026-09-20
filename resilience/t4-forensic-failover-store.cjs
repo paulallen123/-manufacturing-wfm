@@ -306,7 +306,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
     }
   }
 
-  async function verify(receipt = {}) {
+  function verifyAuthorityBinding(receipt = {}) {
     const attemptedStoreIds = Array.isArray(receipt?.attemptedStoreIds)
       ? receipt.attemptedStoreIds.map((id) => clean(id, 48)).filter(Boolean)
       : [];
@@ -339,10 +339,15 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
     } else if (receipt.finalReadbackRecoveryFromStoreId != null || receipt.finalReadbackRecoveryAttemptDigest != null) {
       return false;
     }
+
     const entry = configured.find((candidate) => candidate.id === receipt.selectedStoreId);
     if (!entry?.eligible || entry.capabilityDigest !== receipt.selectedStoreCapabilityDigest) return false;
-    const expectedFailoverDigest = makeFailoverDigest(receipt);
-    if (expectedFailoverDigest !== receipt.failoverDigest) return false;
+    return makeFailoverDigest(receipt) === receipt.failoverDigest;
+  }
+
+  async function verify(receipt = {}) {
+    if (!verifyAuthorityBinding(receipt)) return false;
+    const entry = configured.find((candidate) => candidate.id === receipt.selectedStoreId);
     try {
       return await entry.verify(receipt) === true;
     } catch {
@@ -353,6 +358,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
   return Object.freeze({
     preserve,
     verify,
+    verifyAuthorityBinding,
     recoverAfterFinalReadbackFailure,
     contractDigest,
     eligibleStoreCount: eligible.length,
@@ -479,6 +485,7 @@ function createT4RuntimeContainmentController({
     || forensicStore.zeroEngineerFailoverReady !== true
     || !validDigest(forensicStore.runtimeReadinessDigest)
     || !validDigest(forensicStore.contractDigest)
+    || typeof forensicStore.verifyAuthorityBinding !== 'function'
     || typeof forensicStore.recoverAfterFinalReadbackFailure !== 'function'
     || forensicStore.finalReadbackRecoveryMaxAttempts !== 1
     || forensicStore.productionWriteAuthority !== false
@@ -492,6 +499,8 @@ function createT4RuntimeContainmentController({
   const pinnedRequiredEligibleStores = forensicStore.requiredEligibleStores;
   const pinnedExecutableStoreCount = forensicStore.executableStoreCount;
   const pinnedFinalReadbackRecoveryMaxAttempts = forensicStore.finalReadbackRecoveryMaxAttempts;
+  const pinnedVerifyAuthorityBinding = forensicStore.verifyAuthorityBinding;
+  const runtimeVerifyAuthorityBinding = pinnedVerifyAuthorityBinding.bind(forensicStore);
   const { createT4ContainmentController } = require('./t4-containment-controller.cjs');
   const innerController = createT4ContainmentController({
     containmentExecutor,
@@ -513,6 +522,7 @@ function createT4RuntimeContainmentController({
     && forensicStore.requiredEligibleStores === pinnedRequiredEligibleStores
     && forensicStore.executableStoreCount === pinnedExecutableStoreCount
     && forensicStore.finalReadbackRecoveryMaxAttempts === pinnedFinalReadbackRecoveryMaxAttempts
+    && forensicStore.verifyAuthorityBinding === pinnedVerifyAuthorityBinding
     && forensicStore.productionWriteAuthority === false
     && forensicStore.modelAuthorityGranted === false
     && forensicStore.createsResources === false;
@@ -522,8 +532,10 @@ function createT4RuntimeContainmentController({
       throw fail('WFM_T4_RUNTIME_FORENSICS_DRIFT', 'T4 forensic runtime readiness changed before containment execution.');
     }
     const innerReceipt = await innerHandle(input);
-    if (innerReceipt?.safeTerminal !== true || innerVerifyReceipt(innerReceipt) !== true) {
-      throw fail('WFM_T4_RUNTIME_INNER_VERIFY', 'T4 runtime cannot claim a safe terminal without a verified inner containment receipt.');
+    if (innerReceipt?.safeTerminal !== true
+      || innerVerifyReceipt(innerReceipt) !== true
+      || runtimeVerifyAuthorityBinding(innerReceipt?.forensicReceipt) !== true) {
+      throw fail('WFM_T4_RUNTIME_INNER_VERIFY', 'T4 runtime cannot claim a safe terminal without a verified inner containment receipt bound to the attested forensic sink order.');
     }
     if (!runtimeStillReady()) {
       throw fail('WFM_T4_RUNTIME_FORENSICS_DRIFT', 'T4 forensic runtime readiness changed during containment execution.');
@@ -565,7 +577,8 @@ function createT4RuntimeContainmentController({
       || receipt.runtimeFinalReadbackRecoveryMaxAttempts !== pinnedFinalReadbackRecoveryMaxAttempts
       || !validDigest(receipt.innerContainmentReceiptDigest)
       || !validDigest(receipt.runtimeForensicBindingDigest)
-      || !validDigest(receipt.receiptDigest)) return false;
+      || !validDigest(receipt.receiptDigest)
+      || runtimeVerifyAuthorityBinding(receipt?.forensicReceipt) !== true) return false;
 
     const expectedBindingDigest = digest({
       innerContainmentReceiptDigest: receipt.innerContainmentReceiptDigest,
