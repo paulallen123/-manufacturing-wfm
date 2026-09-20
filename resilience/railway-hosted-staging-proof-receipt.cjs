@@ -218,24 +218,42 @@ function verifyHostedStagingProofReceipt(receipt) {
 function assessHostedBrowserProof(input = {}) {
   const deploymentId = validId(input.deploymentId);
   const deploymentSnapshotId = validId(input.deploymentSnapshotId);
-  const sourceCommitSha = validGitCommit(input.sourceCommitSha);
+  const deploymentSourceCommitSha = validGitCommit(input.deploymentSourceCommitSha);
+  const candidateSourceCommitSha = validGitCommit(input.candidateSourceCommitSha);
   const imageDigest = validImageDigest(input.imageDigest);
   const managerScreenshotSha256 = validSha256Hex(input.managerScreenshotSha256);
+  const canonicalJsSha256 = validSha256Hex(input.canonicalJsSha256);
+  const canonicalCssSha256 = validSha256Hex(input.canonicalCssSha256);
+  const expectedCanonicalJsSha256 = validSha256Hex(input.expectedCanonicalJsSha256);
+  const expectedCanonicalCssSha256 = validSha256Hex(input.expectedCanonicalCssSha256);
   const deploymentStatus = clean(input.deploymentStatus, 32).toUpperCase();
   const matrixStatus = clean(input.matrixStatus, 32).toUpperCase();
   const affordanceCoverage = clean(input.affordanceCoverage, 64).toUpperCase();
+  const assetBindingStatus = clean(input.assetBindingStatus, 32).toUpperCase();
 
   const roles = boundedInt(input.roles, 0, 100);
   const navClicks = boundedInt(input.navClicks, 0, 10000);
   const activeActionJourneys = boundedInt(input.activeActionJourneys, 0, 10000);
   const emptyStateJourneys = boundedInt(input.emptyStateJourneys, 0, 10000);
 
+  const assetBindingProven = Boolean(
+    assetBindingStatus === 'BOUND'
+    && input.assetBindingRequired === true
+    && canonicalJsSha256
+    && canonicalCssSha256
+    && expectedCanonicalJsSha256
+    && expectedCanonicalCssSha256
+    && canonicalJsSha256 === expectedCanonicalJsSha256
+    && canonicalCssSha256 === expectedCanonicalCssSha256
+  );
   const identityBound = Boolean(
     deploymentId
     && deploymentSnapshotId
-    && sourceCommitSha
+    && deploymentSourceCommitSha
+    && candidateSourceCommitSha
     && imageDigest
     && managerScreenshotSha256
+    && assetBindingProven
   );
   const roleRenderNavigationProven = Boolean(
     identityBound
@@ -259,14 +277,22 @@ function assessHostedBrowserProof(input = {}) {
   const passiveProofOnly = roleRenderNavigationProven && !activeWorkflowInteractionProven;
 
   const core = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     proof: 'railway-hosted-browser-proof-claim-boundary',
     provider: 'railway',
     deploymentId,
     deploymentSnapshotId,
-    sourceCommitSha,
+    deploymentSourceCommitSha,
+    candidateSourceCommitSha,
     imageDigest,
     managerScreenshotSha256,
+    canonicalJsSha256,
+    canonicalCssSha256,
+    expectedCanonicalJsSha256,
+    expectedCanonicalCssSha256,
+    assetBindingStatus,
+    assetBindingRequired: input.assetBindingRequired === true,
+    assetBindingProven,
     deploymentStatus,
     matrixStatus,
     roles,
@@ -286,9 +312,9 @@ function assessHostedBrowserProof(input = {}) {
     browserFunctionalReadinessProven,
     passiveProofOnly,
     claimBoundary: browserFunctionalReadinessProven
-      ? 'hosted-browser-role-render-navigation-and-active-workflow-interaction'
+      ? 'hosted-browser-exact-asset-role-render-navigation-and-active-workflow-interaction'
       : roleRenderNavigationProven
-        ? 'hosted-browser-role-render-navigation-only'
+        ? 'hosted-browser-exact-asset-role-render-navigation-only'
         : 'insufficient-or-inconsistent-hosted-browser-evidence',
     releaseProven: false,
     releaseClaimAllowed: false,
@@ -311,7 +337,7 @@ function verifyHostedBrowserProofReceipt(receipt) {
   if (!receipt || typeof receipt !== 'object') return false;
   if (!/^[a-f0-9]{64}$/.test(String(receipt.receiptDigest || ''))) return false;
   if (
-    receipt.schemaVersion !== 1
+    receipt.schemaVersion !== 2
     || receipt.proof !== 'railway-hosted-browser-proof-claim-boundary'
     || receipt.provider !== 'railway'
     || receipt.releaseProven !== false
@@ -328,45 +354,64 @@ function verifyHostedBrowserProofReceipt(receipt) {
     || receipt.executionAuthorityGranted !== false
   ) return false;
 
-  if (receipt.roleRenderNavigationProven === true) {
-    if (
-      receipt.identityBound !== true
-      || receipt.deploymentStatus !== 'SUCCESS'
-      || receipt.matrixStatus !== 'PASS'
-      || receipt.proofServerPassed !== true
-      || receipt.healthcheckSucceeded !== true
-      || receipt.layoutOverflowAssertionsPassed !== true
-      || !Number.isSafeInteger(receipt.roles)
-      || receipt.roles < 5
-      || !Number.isSafeInteger(receipt.navClicks)
-      || receipt.navClicks < 4
-      || receipt.tenantIsolationRoleObserved !== true
-    ) return false;
-  }
+  const expectedAssetBindingProven = Boolean(
+    receipt.assetBindingStatus === 'BOUND'
+    && receipt.assetBindingRequired === true
+    && validSha256Hex(receipt.canonicalJsSha256)
+    && validSha256Hex(receipt.canonicalCssSha256)
+    && validSha256Hex(receipt.expectedCanonicalJsSha256)
+    && validSha256Hex(receipt.expectedCanonicalCssSha256)
+    && receipt.canonicalJsSha256 === receipt.expectedCanonicalJsSha256
+    && receipt.canonicalCssSha256 === receipt.expectedCanonicalCssSha256
+  );
+  if (receipt.assetBindingProven !== expectedAssetBindingProven) return false;
 
-  if (receipt.activeWorkflowInteractionProven === true) {
-    if (
-      receipt.roleRenderNavigationProven !== true
-      || !Number.isSafeInteger(receipt.activeActionJourneys)
-      || receipt.activeActionJourneys <= 0
-      || receipt.affordanceCoverage !== 'EXERCISED'
-      || receipt.reviewVerified !== true
-      || receipt.viewStatusVerified !== true
-      || receipt.browserFunctionalReadinessProven !== true
-      || receipt.passiveProofOnly !== false
-      || receipt.claimBoundary !== 'hosted-browser-role-render-navigation-and-active-workflow-interaction'
-    ) return false;
-  } else if (receipt.roleRenderNavigationProven === true) {
-    if (
-      receipt.browserFunctionalReadinessProven !== false
-      || receipt.passiveProofOnly !== true
-      || receipt.claimBoundary !== 'hosted-browser-role-render-navigation-only'
-    ) return false;
-  } else if (
-    receipt.browserFunctionalReadinessProven !== false
-    || receipt.passiveProofOnly !== false
-    || receipt.claimBoundary !== 'insufficient-or-inconsistent-hosted-browser-evidence'
-  ) return false;
+  const expectedIdentityBound = Boolean(
+    validId(receipt.deploymentId)
+    && validId(receipt.deploymentSnapshotId)
+    && validGitCommit(receipt.deploymentSourceCommitSha)
+    && validGitCommit(receipt.candidateSourceCommitSha)
+    && validImageDigest(receipt.imageDigest)
+    && validSha256Hex(receipt.managerScreenshotSha256)
+    && expectedAssetBindingProven
+  );
+  if (receipt.identityBound !== expectedIdentityBound) return false;
+
+  const expectedRoleRenderNavigationProven = Boolean(
+    expectedIdentityBound
+    && receipt.deploymentStatus === 'SUCCESS'
+    && receipt.matrixStatus === 'PASS'
+    && receipt.proofServerPassed === true
+    && receipt.healthcheckSucceeded === true
+    && receipt.layoutOverflowAssertionsPassed === true
+    && Number.isSafeInteger(receipt.roles)
+    && receipt.roles >= 5
+    && Number.isSafeInteger(receipt.navClicks)
+    && receipt.navClicks >= 4
+    && receipt.tenantIsolationRoleObserved === true
+  );
+  if (receipt.roleRenderNavigationProven !== expectedRoleRenderNavigationProven) return false;
+
+  const expectedActiveWorkflowInteractionProven = Boolean(
+    expectedRoleRenderNavigationProven
+    && Number.isSafeInteger(receipt.activeActionJourneys)
+    && receipt.activeActionJourneys > 0
+    && receipt.affordanceCoverage === 'EXERCISED'
+    && receipt.reviewVerified === true
+    && receipt.viewStatusVerified === true
+  );
+  if (receipt.activeWorkflowInteractionProven !== expectedActiveWorkflowInteractionProven) return false;
+  if (receipt.browserFunctionalReadinessProven !== expectedActiveWorkflowInteractionProven) return false;
+
+  const expectedPassiveProofOnly = expectedRoleRenderNavigationProven && !expectedActiveWorkflowInteractionProven;
+  if (receipt.passiveProofOnly !== expectedPassiveProofOnly) return false;
+
+  const expectedClaimBoundary = expectedActiveWorkflowInteractionProven
+    ? 'hosted-browser-exact-asset-role-render-navigation-and-active-workflow-interaction'
+    : expectedRoleRenderNavigationProven
+      ? 'hosted-browser-exact-asset-role-render-navigation-only'
+      : 'insufficient-or-inconsistent-hosted-browser-evidence';
+  if (receipt.claimBoundary !== expectedClaimBoundary) return false;
 
   const core = { ...receipt };
   const expected = core.receiptDigest;
