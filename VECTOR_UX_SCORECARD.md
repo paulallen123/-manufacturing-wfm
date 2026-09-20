@@ -2,62 +2,53 @@
 
 This is the single canonical scorecard for the approved Vector role-first NEW-UI lineage. Historical cycle detail remains in Git history; this file keeps only the current evidence boundary, validated increments and one dependency-ordered next action so documentation does not become a second backlog.
 
-## 2026-09-20 — Vector r15.1 design gate: source-confirming rows must not look like fresh work
+## 2026-09-20 — Vector r16: lifecycle-consistent action affordance
 
 ### Journey reviewed
-Factory/operations manager Vector Home → `Needs my action` / collapsed `Awaiting source confirmation` → Time Review. The review focused on whether a row that has already moved to source confirmation still presents itself as if the manager needs to take another action.
+Factory/operations manager Vector Home → `Needs my action` / collapsed `Awaiting source confirmation` → Time Review. The review focused on whether source-confirming work still looks like fresh work requiring another manager decision.
 
 ### NEW-UI lineage confirmation
-All inspection/design work is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired UI branch, customer-proof runtime, staging or production presentation was changed.
+All product/test work is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired UI branch, customer-proof runtime, staging or production presentation was changed.
 
 ### Reuse / duplicate-work decision
-- Reused the existing `actionDisposition()` / `actionQueueGroups()` lifecycle partition, Universal Action row, source-owned confirmation state, current browser oracle and r15 neutral styling.
+- Reused the existing `actionDisposition()` / `actionQueueGroups()` lifecycle partition, Universal Action row renderer, source-owned confirmation state, neutral action styling and existing action-queue regression file.
 - Did not create another queue, component, lifecycle mapper, branch, issue, prototype or browser harness.
-- Did not repeat external UX/competitor research because the unresolved question is already decided by the product contract: `Decision sent` / `Confirming source` are awaiting-source states, not new action-required states.
-- Did not stack a product-code mutation on top of the still-unexecuted exact-candidate r15 browser proof; doing so would move the proof target before the existing increment is validated.
-
-### Evidence-backed finding
-The current source correctly separates `decision_sent` / `confirming_source` into collapsed `Awaiting source confirmation`, and excludes those rows from the notification badge. However, `timeReviewEvidenceRows()` still assigns `action: 'Review'` to every active Time Review item, and the shared action-row renderer displays that action unchanged. A manager therefore sees a row inside `Awaiting source confirmation` with the same **Review** affordance used for work that genuinely needs action. This does not change authority or lifecycle, but it can falsely imply that another decision is required.
+- Did not repeat competitor/generic UX research because the unresolved question was already answered by authoritative lifecycle semantics.
+- Did not retry unchanged Railway containment or weaken any proof/runtime security hold.
 
 ### Hypothesis
-If awaiting-source rows retain inspectability but use a passive lifecycle-consistent affordance instead of the same `Review` action used for unresolved work, managers should distinguish “I need to act” from “the source is confirming my decision” more quickly without losing access to evidence or audit context.
+If source-confirming rows remain inspectable but use a passive lifecycle-consistent affordance, managers should distinguish “I need to act” from “the source is confirming my decision” faster without losing evidence, recovery or audit context.
 
-### Exact design delta / acceptance criteria
-- **Needs-action rows:** retain the existing `Review` affordance.
-- **Awaiting-source rows (`decision_sent`, `confirming_source`):** retain the same source route and inspection capability, but use a passive `View status` affordance and the existing neutral visual treatment.
-- Affordance selection must derive only from structured `confirmationState` / `actionDisposition()`. Presentation words such as “urgent”, row order, elapsed client time or AI output must never select it.
-- Do not hide awaiting-source rows, remove their route, auto-resolve them, alter authority, or change the badge count.
-- Reuse the existing action-row renderer; extend it generically rather than forking a Time Review-only card.
-- Extend the existing `vector-action-queue.test.cjs` and current-candidate browser oracle only. Browser acceptance must cover desktop/tablet/mobile, keyboard disclosure, unchanged source ID, unchanged lifecycle text, no optimistic clear and return-to-context.
+### Exact implementation delta
+- Added one shared `actionAffordance(row)` helper to the existing Vector renderer.
+- `decision_sent` and `confirming_source` now render **View status**.
+- `action_required`, `needs_verification` and neutral/fallback work retain the existing **Review** affordance.
+- The same route, source ID, workflow binding, lifecycle text, queue grouping, badge count and neutral visual treatment are preserved.
+- The accessible button label now matches the visible affordance (`View status …` or `Review …`).
+- Affordance selection is derived only through structured `confirmationState` → `actionDisposition()`; loose presentation words, row order, elapsed client time and AI output cannot select it.
 
-### Serious-idea decision
-| Idea | Evidence | Decision |
-| --- | --- | --- |
-| Passive `View status` affordance for `decision_sent` / `confirming_source` | Current NEW-UI source groups these as awaiting-source yet renders the same `Review` action as actionable work | **BUILD NEXT** |
-| Hide awaiting-source rows entirely | Would remove audit/confirmation visibility and violate the existing lifecycle requirement | **REJECT** |
-| Remove the route/button from awaiting-source rows | Would reduce inspectability and recovery | **REJECT** |
-| Use colour to distinguish awaiting-source urgency | Source contract does not provide a severity colour authority | **REJECT** |
-| Repeat external pattern research before this change | Existing source-state semantics already answer the question | **REJECT** |
+### Focused validation / regression delta
+- Extended the existing `ux-overlay/vector-action-queue.test.cjs`; no new test harness was created.
+- The regression now protects actionable rows as **Review**, source-confirming rows as **View status**, matching accessible labels, resolved exclusion, collapsed confirmation disclosure and presentation-word independence.
+- Focused deterministic logic smoke passed: `action_required` / `needs_verification` → Review; `decision_sent` / `confirming_source` → View status; loose “Urgent” wording without authoritative confirmation state → Review.
+- The existing responsive browser oracle still owns desktop/tablet/mobile, keyboard disclosure, source-ID binding, lifecycle visibility, no optimistic clear and return-to-context. Its exact-current-head execution remains the release-quality browser gate.
 
-### Validation / blocker discipline this run
-- Exact source inspection confirms lifecycle grouping is structured and the same `Review` action is currently assigned to all active Time Review evidence rows.
-- The current exact-head Vector-only GitHub job still failed before executing any step (`runner_id=0`, `steps=[]`), so the unchanged hosted-runner blocker was checked once and not retried.
-- The isolated Railway `wfm-one-day-enterprise-v1` service remains deliberately rooted at `/__security_hold_one_day_enterprise__`; the latest automatic deployment failed at build scheduling and the containment root was not weakened or bypassed.
-- `wfm-test-runner` and `wfm-vector-mobile-proof` remain explicitly security-contained; neither containment lock was altered to manufacture proof.
+### Blocker discipline
+The pre-change exact-head Vector-only GitHub job again failed before any workflow step executed (`runner_id=0`, `steps=[]`). That was the unchanged hosted-runner allocation blocker rather than a demonstrated source/test failure. No repeated retry or production/staging mutation was used to manufacture evidence.
 
 ### UX scorecard impact
-- Calm by default: design strengthened — confirmation-in-progress will no longer reuse fresh-work wording once implemented.
-- Dense on demand: preserved — no new screen, panel or persistent information is added.
-- Explainability: strengthened — the action verb will match the authoritative lifecycle state.
-- Accessibility: acceptance criteria preserve the same route and disclosure semantics; browser execution remains pending.
-- Authority/auditability: preserved — no source state, approval authority, SLA or resolution logic moves into Vector.
-- Development efficiency: strengthened — one shared renderer/lifecycle path is the intended owner; no parallel implementation.
+- Calm by default: improved — confirmation-in-progress no longer reuses a fresh-work verb.
+- Dense on demand: preserved — no new panel, page or permanent information is added.
+- Explainability: improved — visible and accessible action wording now matches authoritative lifecycle disposition.
+- Accessibility: source-level semantics improved; exact browser/assistive execution remains pending.
+- Authority/auditability: preserved — no source state, approval authority, SLA, resolution logic or write authority moved into Vector.
+- Development efficiency: improved — one generic renderer helper and one existing regression owner cover current and future workflows using the same lifecycle contract.
 
 ### Still unverified
-The exact-current-head browser oracle has not executed because GitHub still has no runner and the isolated Railway candidate remains source-held. Therefore r15 neutral styling and the existing queue/browser assertions are still not hosted-green. No r16 product-code claim is made: this run advanced the dependency-safe interaction/test design only.
+The exact-current-head browser oracle has not yet executed on a safe runner, so responsive DOM behaviour and full authenticated journey proof for r16 are not hosted-green. A genuine source-owned `Action required → Decision sent → Confirming source` transition also remains to be exercised end-to-end.
 
 ### Single next highest-value NEW-UI action
-Execute the already-existing exact-candidate browser oracle for r15 when a safe executor is available. If green, implement the bounded shared-renderer delta above so `decision_sent` / `confirming_source` rows say **View status** while needs-action rows retain **Review**, then extend the existing unit/browser assertions rather than creating a new harness.
+Execute the existing exact-candidate browser oracle on the current r16 head when a safe executor is available, adding the bounded assertion that source-bound needs-action buttons read **Review** and awaiting-source buttons read **View status** at 1440/760/390. If green, drive one real authoritative Time Review item through `Action required → Decision sent → Confirming source` and prove it moves sections/affordance without disappearing, changing authority or inflating the bell count before extending the shared pattern to Absence or weekly sign-off.
 
 ## 2026-09-20 — Vector r15: remove position-inferred action urgency
 
