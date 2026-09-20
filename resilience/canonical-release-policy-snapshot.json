@@ -1,9 +1,12 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "sourceRef": "integration/canonical",
-  "sourceBaseSha": "461a33a06b238dafe91b797039344266c8b2524c",
+  "sourceBaseSha": "7d8117a457f823ddaeb30174cb8cf162c4637067",
   "sourcePolicyBlobSha": "c7ad730d4d7379cf730a3759264ee05ac0b82d04",
-  "observedAt": "2026-09-18T23:24:55Z",
+  "sourceDeploymentPointerBlobSha": "147f6825eb5bee31142a07f9f52e43d5bfbeac98",
+  "sourceStagingWorkflowBlobSha": "2d99a1d7f80df417a2ab12d2f99a96bf3362bed8",
+  "sourceReleaseValidatorBlobSha": "f5863f0fd332f75dacdace1d7ddd72bbe3711003",
+  "observedAt": "2026-09-20T06:43:54Z",
   "policy": {
     "schemaVersion": 1,
     "sourceOfTruth": "github",
@@ -40,5 +43,18 @@
       "canonicalRailwayCliOnlyFromReleaseWorkflow": true,
       "mainPromotionRequiresReleasePr": true
     }
+  },
+  "deploymentPointer": {
+    "schemaVersion": 1,
+    "releaseSequence": 1,
+    "purpose": "canonical-release-path-proof",
+    "integrationBranch": "integration/canonical",
+    "stagingCandidateRef": "release/staging",
+    "stagingDeployMirror": "main",
+    "productionRef": "release/production",
+    "canonicalRailwayServiceId": "3bea5411-cebb-4878-adcc-766f5fd58cc7",
+    "requiresExactShaMatch": true,
+    "customerMutation": false,
+    "productionMutation": false
   }
 }
