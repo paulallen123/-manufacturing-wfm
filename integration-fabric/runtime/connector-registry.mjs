@@ -101,6 +101,10 @@ export function buildConnectorRegistry(){
         agentActionEnabled:false,
         crossScopeReadEnabled:false,
         unauthenticatedDataSurfaceEnabled:false,
+        unauthenticatedWebhookAllowed:false,
+        webhookAuthenticationRequired:true,
+        webhookReplayProtectionRequired:true,
+        webhookSchemaVersionPinRequired:true,
         rawSensitiveHealthDataAllowed:false,
         superAdminCredentialAllowed:false,
         oauthPasswordGrantEnabled:false,
@@ -115,6 +119,4 @@ export function buildConnectorRegistry(){
   };
 }
 
-export function connectorById(id){
-  return buildConnectorRegistry().connectors.find(x=>x.id===id)||null;
-}
+export function connectorById(id){return buildConnectorRegistry().connectors.find(x=>x.id===id)||null;}
