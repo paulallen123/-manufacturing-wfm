@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { createT4ContainmentController, createWriteOnceForensicStore } = require('../resilience/t4-containment-controller.cjs');
-const { createT4RuntimeContainmentController, digest: t4Digest } = require('../resilience/t4-forensic-failover-store.cjs');
+const { createT4ForensicFailoverStore, createT4RuntimeContainmentController, digest: t4Digest } = require('../resilience/t4-forensic-failover-store.cjs');
 const d = (value) => createHash('sha256').update(String(value)).digest('hex');
 const canarySecret = 'executor-only-secret-canary';
 
@@ -258,6 +258,30 @@ const runtimeFailingPrimary = {
   verify: runtimePrimaryBase.verify,
 };
 
+const authorityPrimary = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'authority-primary'), now: () => 1890000000000 });
+const authoritySecondary = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'authority-secondary'), now: () => 1890000000000 });
+const authorityFailover = createT4ForensicFailoverStore({
+  stores: [
+    { id: 'authority-primary', capability: runtimeCapability('authority-primary'), store: authorityPrimary },
+    { id: 'authority-secondary', capability: runtimeCapability('authority-secondary'), store: authoritySecondary },
+  ],
+  maxAttempts: 2,
+});
+const authorityInput = {
+  incidentId: 't4-forged-final-recovery-authority',
+  tenant: 'tenant-a',
+  scenarioId: 'support-system-failure',
+  evidenceDigest: d('authority-evidence'),
+  eventHeadDigest: d('authority-event-head'),
+};
+const authorityPriorReceipt = await authorityFailover.preserve(authorityInput);
+const forgedAuthorityReceipt = { ...authorityPriorReceipt, failoverDigest: d('forged-prior-failover-receipt') };
+await assert.rejects(
+  authorityFailover.recoverAfterFinalReadbackFailure({ priorReceipt: forgedAuthorityReceipt, input: authorityInput }),
+  (error) => error?.code === 'WFM_T4_FORENSICS_FINAL_RECOVERY_AUTHORITY',
+  'Final read-back recovery must reject a prior failover receipt whose digest no longer authenticates its recovery authority fields.',
+);
+
 assert.throws(
   () => createT4RuntimeContainmentController({
     stores: [{ id: 'only-runtime-sink', capability: runtimeCapability('only'), store: runtimeSecondary }],
@@ -302,6 +326,7 @@ assert.equal(runtimeTerminal.runtimeRequiredEligibleStores, 2);
 assert.equal(runtimeTerminal.runtimeExecutableStoreCount, 2);
 assert.equal(runtimeTerminal.runtimeFinalReadbackRecoveryMaxAttempts, 1);
 assert.equal(runtimeTerminal.forensicReceipt.storageMode, 'write-once-failover:runtime-secondary');
+assert.deepEqual(runtimeTerminal.forensicReceipt.attemptedStoreIds, ['runtime-primary', 'runtime-secondary']);
 assert.equal(runtimeTerminal.productionAuthorityGranted, false);
 assert.equal(runtimeTerminal.customerMutation, false);
 assert.equal(runtimeController.verifyReceipt(runtimeTerminal), true);
@@ -354,8 +379,108 @@ assert.equal(recoveredTerminal.safeTerminal, true);
 assert.equal(recoveredTerminal.forensicReceipt.finalReadbackRecoveryUsed, true);
 assert.equal(recoveredTerminal.forensicReceipt.finalReadbackRecoveryFromStoreId, 'recovery-primary');
 assert.equal(recoveredTerminal.forensicReceipt.selectedStoreId, 'recovery-secondary');
+assert.deepEqual(recoveredTerminal.forensicReceipt.attemptedStoreIds, ['recovery-primary', 'recovery-secondary']);
 assert.match(recoveredTerminal.forensicReceipt.finalReadbackRecoveryAttemptDigest, /^[a-f0-9]{64}$/);
 assert.equal(recoveryController.verifyReceipt(recoveredTerminal), true);
+
+const tertiaryPrimaryBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-tertiary-primary'), now: () => 1915000000000 });
+const tertiarySecondaryBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-tertiary-secondary'), now: () => 1915000000000 });
+const tertiaryThirdBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-tertiary-third'), now: () => 1915000000000 });
+let tertiaryPrimaryAttempts = 0;
+let tertiarySecondaryVerifyCalls = 0;
+let tertiaryThirdPreserveCalls = 0;
+const tertiaryPrimary = {
+  preserve: async () => {
+    tertiaryPrimaryAttempts += 1;
+    const error = new Error('synthetic primary outage before secondary selection');
+    error.code = 'WFM_T4_FORENSICS_SYNTHETIC_PRIMARY_OUTAGE';
+    throw error;
+  },
+  verify: tertiaryPrimaryBase.verify,
+};
+const tertiarySecondary = {
+  preserve: tertiarySecondaryBase.preserve,
+  verify: async (receipt) => {
+    tertiarySecondaryVerifyCalls += 1;
+    if (tertiarySecondaryVerifyCalls >= 2) return false;
+    return tertiarySecondaryBase.verify(receipt);
+  },
+};
+const tertiaryThird = {
+  preserve: async (request) => {
+    tertiaryThirdPreserveCalls += 1;
+    return tertiaryThirdBase.preserve(request);
+  },
+  verify: tertiaryThirdBase.verify,
+};
+const tertiaryController = createT4RuntimeContainmentController({
+  stores: [
+    { id: 'tertiary-primary', capability: runtimeCapability('tertiary-primary'), store: tertiaryPrimary },
+    { id: 'tertiary-secondary', capability: runtimeCapability('tertiary-secondary'), store: tertiarySecondary },
+    { id: 'tertiary-third', capability: runtimeCapability('tertiary-third'), store: tertiaryThird },
+  ],
+  maxAttempts: 3,
+  requiredEligibleStores: 2,
+  now: () => ++tick,
+});
+const tertiaryTerminal = await tertiaryController.handle({
+  ...base,
+  incidentId: 't4-final-readback-next-untried-tertiary',
+  scenarioId: 'support-system-failure',
+  supportSystem: { available: false, contextIntegrity: false },
+});
+assert.equal(tertiaryPrimaryAttempts, 1, 'A primary sink that already failed preservation must never be blindly retried during final-readback recovery.');
+assert.equal(tertiarySecondaryVerifyCalls, 2, 'Secondary must pass initial verification and fail exactly once at final read-back.');
+assert.equal(tertiaryThirdPreserveCalls, 1, 'Recovery must move once to the next previously untried independently attested sink.');
+assert.equal(tertiaryTerminal.safeTerminal, true);
+assert.equal(tertiaryTerminal.forensicReceipt.selectedStoreId, 'tertiary-third');
+assert.equal(tertiaryTerminal.forensicReceipt.finalReadbackRecoveryFromStoreId, 'tertiary-secondary');
+assert.deepEqual(tertiaryTerminal.forensicReceipt.attemptedStoreIds, ['tertiary-primary', 'tertiary-secondary', 'tertiary-third']);
+assert.equal(tertiaryController.verifyReceipt(tertiaryTerminal), true);
+
+const noRetryPrimaryBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-no-retry-primary'), now: () => 1917000000000 });
+const noRetrySecondaryBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-no-retry-secondary'), now: () => 1917000000000 });
+let noRetryPrimaryAttempts = 0;
+let noRetrySecondaryVerifyCalls = 0;
+const noRetryPrimary = {
+  preserve: async () => {
+    noRetryPrimaryAttempts += 1;
+    const error = new Error('synthetic already-tried primary outage');
+    error.code = 'WFM_T4_FORENSICS_SYNTHETIC_ALREADY_TRIED_PRIMARY';
+    throw error;
+  },
+  verify: noRetryPrimaryBase.verify,
+};
+const noRetrySecondary = {
+  preserve: noRetrySecondaryBase.preserve,
+  verify: async (receipt) => {
+    noRetrySecondaryVerifyCalls += 1;
+    if (noRetrySecondaryVerifyCalls >= 2) return false;
+    return noRetrySecondaryBase.verify(receipt);
+  },
+};
+const noRetryController = createT4RuntimeContainmentController({
+  stores: [
+    { id: 'no-retry-primary', capability: runtimeCapability('no-retry-primary'), store: noRetryPrimary },
+    { id: 'no-retry-secondary', capability: runtimeCapability('no-retry-secondary'), store: noRetrySecondary },
+  ],
+  maxAttempts: 2,
+  requiredEligibleStores: 2,
+  now: () => ++tick,
+});
+await assert.rejects(
+  noRetryController.handle({
+    ...base,
+    incidentId: 't4-final-readback-no-untried-sink',
+    scenarioId: 'support-system-failure',
+    supportSystem: { available: false, contextIntegrity: false },
+  }),
+  (error) => error?.code === 'WFM_T4_FORENSICS_FINAL_VERIFY'
+    && error?.causeCode === 'WFM_T4_FORENSICS_FINAL_RECOVERY_UNAVAILABLE',
+  'With only two sinks, primary-failed then secondary-final-readback-failed must fail closed instead of retrying primary.',
+);
+assert.equal(noRetryPrimaryAttempts, 1, 'No-untried-sink exhaustion must not blindly retry an already failed primary.');
+assert.equal(noRetrySecondaryVerifyCalls, 2);
 
 const exhaustedPrimaryBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-final-recovery-exhausted-primary'), now: () => 1920000000000 });
 let exhaustedPrimaryVerifyCalls = 0;
@@ -434,10 +559,10 @@ fs.rmSync(tmpRoot, { recursive: true, force: true });
 fs.rmSync(retryStoreRoot, { recursive: true, force: true });
 
 console.log(JSON.stringify({
-  schemaVersion: 3,
+  schemaVersion: 4,
   proof: 'tier4-adversarial-containment-chaos',
   status: 'PASS',
-  cases: 23,
+  cases: 26,
   promptInjectionContained: true,
   memoryPoisoningContained: true,
   credentialExfiltrationContainedWithoutSecretVisibility: true,
@@ -461,6 +586,9 @@ console.log(JSON.stringify({
   finalReadbackCorruptionRecoveredToDistinctSink: true,
   finalReadbackRecoveryExhaustionFailsClosed: true,
   finalReadbackRecoveryDoesNotDuplicateContainment: true,
+  finalReadbackRecoveryPriorReceiptDigestValidated: true,
+  finalReadbackRecoveryUsesOnlyPreviouslyUntriedSink: true,
+  finalReadbackRecoveryNeverRetriesFailedPrimary: true,
   safeTerminalBoundToRuntimeReadinessDigest: true,
   recomputedRuntimeBindingForgeryRejected: true,
   productionAuthorityGranted: false,
