@@ -12,6 +12,7 @@ const checks = [
   'scripts/validate-provider-recovery-handoff-prototype.mjs',
   'scripts/validate-vector-only-ui.mjs',
   'scripts/validate-vector-operating-context.mjs',
+  'scripts/validate-vector-review-contract.mjs',
   'scripts/validate-onedrive-sync-guardian.mjs',
   'scripts/validate-factory-decision-kernel.mjs',
   'scripts/validate-engineering-memory.mjs',

@@ -20,7 +20,7 @@ const NAV=[
   {label:'Integrations', icon:'integrations', routes:['integrations']},
   {label:'Admin', icon:'settings', routes:['onboarding','org-admin','company-settings','op-settings']}
 ];
-const RETIRED_ROUTE_REDIRECTS=Object.freeze({'weekly-review':'time-review','savings-decisions':'costs'});
+const RETIRED_ROUTE_REDIRECTS=Object.freeze({'savings-decisions':'costs'});
 const state={queued:false};
 const observerConfig={subtree:true,childList:true};
 let shellObserver=null;

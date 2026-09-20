@@ -19,13 +19,15 @@ COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 # Retired UX-reset/Cycle renderers are not present in the repository and cannot be rebuilt.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
 RUN node --check /tmp/wfm-ux-overlay/vector-operating-context.js \
+ && node --check /tmp/wfm-ux-overlay/vector-review-contract.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
+ && cp /tmp/wfm-ux-overlay/vector-review-contract.js /app/public/review-ui.js \
  && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/factory-control-ui.css \
  && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/factory-control-ui.css \
  && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/vector-operating-context.js >> /app/public/value-cockpit-ui.js \
  && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/value-cockpit-ui.js \
- && test "$(find /tmp/wfm-ux-overlay -maxdepth 1 -type f -printf '%f\n' | sort | tr '\n' ' ')" = "vector-operating-context.js vector-shell.css vector-shell.js " \
+ && test "$(find /tmp/wfm-ux-overlay -maxdepth 1 -type f -printf '%f\n' | sort | tr '\n' ' ')" = "vector-operating-context.js vector-review-contract.js vector-shell.css vector-shell.js " \
  && rm -rf /tmp/wfm-ux-overlay
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
