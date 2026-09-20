@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
+const fs = require('node:fs');
+const { spawnSync } = require('node:child_process');
 const {
   assessRailwayDeploymentConfigBinding,
   verifyRailwayDeploymentConfigBindingReceipt,
@@ -300,10 +302,33 @@ delete forgedNestedCore.receiptDigest;
 nestedDiagnosisTamper.receiptDigest = digest(forgedNestedCore);
 assert.equal(verifyRailwayProofFailureWithBoundConfigReceipt(nestedDiagnosisTamper), false);
 
+const gitFiles = spawnSync('git', ['ls-files', '-z'], { encoding: 'utf8' });
+assert.equal(gitFiles.status, 0, gitFiles.stderr || 'git ls-files failed');
+const allowedRawClassifierConsumers = new Set([
+  'resilience/railway-deployment-config-binding.cjs',
+  'scripts/validate-railway-deployment-config-binding.mjs',
+  'scripts/validate-railway-proof-failure-classifier.mjs',
+]);
+const directRequirePattern = /require\(\s*['"][^'"]*railway-proof-failure-classifier\.cjs['"]\s*\)/;
+const classifierConsumers = gitFiles.stdout
+  .split('\0')
+  .filter(Boolean)
+  .filter((file) => /\.(?:cjs|mjs|js)$/.test(file))
+  .filter((file) => directRequirePattern.test(fs.readFileSync(file, 'utf8')))
+  .sort();
+const unapprovedClassifierConsumers = classifierConsumers
+  .filter((file) => !allowedRawClassifierConsumers.has(file));
+const runtimeClassifierConsumers = classifierConsumers
+  .filter((file) => !file.startsWith('scripts/validate-'));
+assert.deepEqual(unapprovedClassifierConsumers, [], 'Raw Railway proof classifier gained an unapproved consumer outside the provenance-bound adapter/test boundary.');
+assert.deepEqual(runtimeClassifierConsumers, ['resilience/railway-deployment-config-binding.cjs'], 'Runtime Railway proof classification must flow only through the provenance-bound adapter.');
+const bindingSource = fs.readFileSync('resilience/railway-deployment-config-binding.cjs', 'utf8');
+assert.match(bindingSource, /if\s*\(!binding\.bound\)\s*delete\s+classifierInput\.serviceConfig\s*;/, 'Bound adapter must strip mutable/unbound service config before invoking the raw classifier.');
+
 console.log(JSON.stringify({
   validator: 'railway-deployment-config-binding',
   result: 'PASS',
-  cases: 19,
+  cases: 20,
   latestRailwayEvidence: {
     deploymentId: latestMobile.deploymentId,
     deploymentSnapshotId: latestMobile.deploymentSnapshotId,
@@ -325,6 +350,8 @@ console.log(JSON.stringify({
     deploymentIdentityMismatchDenied: true,
     compositeReceiptEscalationDenied: true,
     nestedDiagnosisTamperDenied: true,
+    rawClassifierRuntimeConsumersRestrictedToBoundAdapter: true,
+    unboundServiceConfigStrippedBeforeClassification: true,
   },
   authority: {
     releaseClaimAllowed: false,
