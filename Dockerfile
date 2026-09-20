@@ -116,6 +116,7 @@ RUN WFM_PROOF_ONESHOT=true \
 # The active image has one presentation entry point only: vector-ui.css + vector-ui.js.
 # Retired shell entry points are physically removed from the runtime image, not hidden.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
+COPY scripts/compose-vector-presentation.mjs /tmp/compose-vector-presentation.mjs
 RUN node --check /app/security-runtime/bootstrap.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
@@ -135,7 +136,7 @@ RUN node --check /app/security-runtime/bootstrap.cjs \
  && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/vector-ui.js \
  && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/vector-ui.js \
  && node --check /app/public/vector-ui.js \
- && node -e "const fs=require('fs');const p='/app/public/index.html';let h=fs.readFileSync(p,'utf8');const retired=['factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of retired){const safe=name.replace(/[.*+?^\${}()|[\]\\]/g,'\\$&');h=h.replace(new RegExp('<link\\\\b[^>]*href=[\\\"\\\'][^\\\"\\\']*'+safe+'[^\\\"\\\']*[\\\"\\\'][^>]*>','gi'),'');h=h.replace(new RegExp('<script\\\\b[^>]*src=[\\\"\\\'][^\\\"\\\']*'+safe+'[^\\\"\\\']*[\\\"\\\'][^>]*>\\\\s*</script>','gi'),'');}if(!h.includes('vector-ui.css'))h=h.replace('</head>','<link rel=\\\"stylesheet\\\" href=\\\"/vector-ui.css\\\"></head>');if(!h.includes('vector-ui.js'))h=h.replace('</body>','<script src=\\\"/vector-ui.js\\\"></script></body>');fs.writeFileSync(p,h)" \
+ && node /tmp/compose-vector-presentation.mjs /app/public \
  && rm -f /app/public/factory-control-ui.css \
           /app/public/value-cockpit-ui.js \
           /app/public/value-cockpit-ui.css \
@@ -144,6 +145,7 @@ RUN node --check /app/security-runtime/bootstrap.cjs \
           /app/public/ui-evolution.css \
           /app/public/vector-shell.js \
  && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS')" \
+ && rm -f /tmp/compose-vector-presentation.mjs \
  && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
