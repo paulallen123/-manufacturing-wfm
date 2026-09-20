@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "candidate": {
+    "branch": "feature/one-day-enterprise-implementation-v1",
+    "sha": "79e29f3989b2ca4ecb9276ef190addcf74aa76c3",
+    "githubCryptographicallyVerified": true
+  },
+  "railwayPrivateGithubAccess": {
+    "status": "RESTORED",
+    "evidence": {
+      "service": "wfm-built-ui-audit",
+      "serviceId": "59d09928-f233-47f4-9a5d-b890a65be08b",
+      "deploymentId": "a73ba9c8-748f-46d7-b15f-f7a12996984b",
+      "sourceCommit": "79e29f3989b2ca4ecb9276ef190addcf74aa76c3",
+      "deploymentStatus": "SUCCESS"
+    },
+    "claimBoundary": "This proves Railway could fetch and build the exact current private GitHub head. It does not by itself prove that either protected target service promoted that SHA."
+  },
+  "protectedTargetAttempts": [
+    {
+      "service": "wfm-one-day-enterprise-v1",
+      "serviceId": "8cadddc3-15e9-4c38-a93f-0af829054f29",
+      "deploymentId": "eb8b7e40-0153-4592-88a8-7027578db5d0",
+      "sourceCommit": "79e29f3989b2ca4ecb9276ef190addcf74aa76c3",
+      "status": "FAILED",
+      "interpretation": "Exact current private-repo source was resolved, but normal source deployment did not pass the existing security-hold path. No hold was removed or weakened."
+    },
+    {
+      "service": "wfm-integration-fabric-v1-proof",
+      "serviceId": "2631d462-61bf-4c01-ac4b-e106a562feeb",
+      "deploymentId": "d38d400a-e32d-4e3c-bb42-1fd3fb1ff0f6",
+      "sourceCommit": "79e29f3989b2ca4ecb9276ef190addcf74aa76c3",
+      "status": "FAILED",
+      "interpretation": "Exact current private-repo source was resolved, but normal source deployment did not pass the immutable integration security hold. No hold was removed or weakened."
+    }
+  ],
+  "githubActionsReleaseLane": {
+    "workflow": "integration-proof-exact-gated-release.yml",
+    "runId": 35480415953,
+    "originalJobId": 105997143963,
+    "rerunJobId": 106003021681,
+    "rerunStatus": "completed",
+    "rerunConclusion": "failure",
+    "steps": null,
+    "interpretation": "The protected exact-upload lane failed before any workflow step executed; checkout, exact-SHA checks, Railway secret use, source upload and application code were not reached. A separate Vector-only workflow at the same exact head also failed with steps=null, consistent with a GitHub Actions runner-allocation/platform blocker rather than a WFM application failure."
+  },
+  "browserEvidence": {
+    "proofService": "wfm-built-ui-audit",
+    "deploymentId": "a73ba9c8-748f-46d7-b15f-f7a12996984b",
+    "sourceCommit": "79e29f3989b2ca4ecb9276ef190addcf74aa76c3",
+    "status": "SUCCESS",
+    "expectedCandidateSha": "79e29f3989b2ca4ecb9276ef190addcf74aa76c3",
+    "claimBoundary": "The exact-current browser-oracle source built and completed successfully against the currently hosted WFM target. Because the protected WFM target itself has not promoted this SHA, this is not exact-current target-runtime proof and is not counted as such."
+  },
+  "controls": {
+    "newRailwayResourcesCreated": false,
+    "paidInfrastructureAdded": false,
+    "securityHoldWeakened": false,
+    "readinessFlagsChangedToForcePass": false,
+    "frozenCustomerProofReleaseChanged": false
+  },
+  "providerClaim": {
+    "authorisedNonFixtureExternalProviderProven": false,
+    "note": "No real provider is claimed live from this run."
+  },
+  "zeroHumanProvisioningClaim": {
+    "genuineCustomerEnvironmentRunProven": false,
+    "note": "Existing simulation/theory evidence is not promoted to real zero-human environment provisioning evidence."
+  },
+  "sellReadiness": "CONDITIONAL",
+  "remainingHardGates": [
+    "Safely promote the exact current SHA to both protected existing Railway target services through an executable immutable release lane.",
+    "Produce authorised non-fixture external-provider sandbox/API evidence.",
+    "Complete a genuine zero-human customer/environment provisioning run.",
+    "Rerun exact-target scale, payroll, lifecycle, T0-T4, isolation/security and hosted browser gates after exact promotion."
+  ]
+}
