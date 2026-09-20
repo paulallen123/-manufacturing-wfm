@@ -47,6 +47,7 @@ const SOURCE_KIND_DEFAULTS = new Map([
   ['proximity',['ranging_near','ranging_away']],
   ['scanner',['scanner_activity']]
 ]);
+const DIRECT_TAA_TYPES = new Set(['legacy','taa','t&a']);
 
 function clone(x){ return JSON.parse(JSON.stringify(x)); }
 function digest(x){ return crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex'); }
@@ -98,8 +99,14 @@ export class AutomaticAttendanceEvidenceEngine {
   registerSource({tenant,sourceId,site,type,directAttendanceAuthority=false,timestampMode='source',active=true,allowedKinds}){
     if(!ID.test(String(tenant||'')) || !ID.test(String(sourceId||'')) || !ID.test(String(site||'')) || !ID.test(String(type||''))) throw err('Valid source registration required.');
     if(!['source','server'].includes(timestampMode)) throw err('timestampMode must be source or server.');
+    const normalizedType=String(type).toLowerCase();
+    const normalizedAllowedKinds=normaliseAllowedKinds(type,allowedKinds);
+    const directAuthority=Boolean(directAttendanceAuthority);
+    if(directAuthority && !DIRECT_TAA_TYPES.has(normalizedType)) throw err('Direct attendance authority is reserved for explicitly recognised existing T&A source types.');
+    if(directAuthority && timestampMode!=='source') throw err('Direct attendance authority requires the source event timestamp.');
+    if(directAuthority && normalizedAllowedKinds.some(kind=>kind!=='legacy_clock_in'&&kind!=='legacy_clock_out')) throw err('Direct attendance authority may emit only existing T&A clock events.');
     const sourceKey=key(tenant,sourceId);
-    const normalized={tenant,sourceId,site,type,directAttendanceAuthority:Boolean(directAttendanceAuthority),timestampMode,active:Boolean(active),allowedKinds:normaliseAllowedKinds(type,allowedKinds)};
+    const normalized={tenant,sourceId,site,type,directAttendanceAuthority:directAuthority,timestampMode,active:Boolean(active),allowedKinds:normalizedAllowedKinds};
     const prior=this.sources.get(sourceKey);
     let authorityGeneration=Number.isSafeInteger(prior?.authorityGeneration) && prior.authorityGeneration>0 ? prior.authorityGeneration : 1;
     if(prior){
