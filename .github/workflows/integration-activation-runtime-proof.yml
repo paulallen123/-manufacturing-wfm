@@ -3,7 +3,7 @@ name: Integration Activation Runtime Proof
 on:
   push:
     branches:
-      - 'automation/integration-claim-expiry-r13'
+      - 'automation/integration-*'
     paths:
       - 'integration/runtime/**'
       - '.github/workflows/integration-activation-runtime-proof.yml'
