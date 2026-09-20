@@ -99,6 +99,7 @@ export function buildConnectorRegistry(){
       canonicalTargets:canonicalTargets(system),
       providerIdentity:providerIdentityFor(system),
       bootstrapAuthority:system.bootstrapAuthority?structuredClone(system.bootstrapAuthority):null,
+      staticCredentialAuthority:system.staticCredentialAuthority?structuredClone(system.staticCredentialAuthority):null,
       discoveryStrategy:discoveryStrategy(profileIds,edgeRequired),
       nextEvidenceGate:nextEvidence(system.testLevel,evidenceBlockers),
       evidenceBlockers,
