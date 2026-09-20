@@ -154,7 +154,13 @@ function createContractCompletionIngress(store, {
     return Math.trunc(value);
   }
 
-  function receive({ provider, eventId, attemptTimestamp, rawBody, headers = {} }) {
+  function assertTransaction(tx) {
+    if (!tx || typeof tx.get !== 'function' || typeof tx.insert !== 'function') {
+      throw new Error('Contract completion ingress transaction must support get/insert.');
+    }
+  }
+
+  function prepare({ provider, eventId, attemptTimestamp, rawBody, headers = {} }) {
     const source = requireString(provider, 'WFM_CONTRACT_PROVIDER_REQUIRED', 'Contract provider is required.');
     const deliveryId = requireString(eventId, 'WFM_CONTRACT_EVENT_ID_REQUIRED', 'Contract event id is required.');
     if (!(typeof rawBody === 'string' || Buffer.isBuffer(rawBody))) {
@@ -174,34 +180,49 @@ function createContractCompletionIngress(store, {
     const completed = normaliseCompletedEvent(source, deliveryId, verification);
     const payloadDigest = sha256(body);
     const key = 'wfm-contract-event:v1:' + sha256(stable({ provider: source, eventId: deliveryId }));
-
-    return store.transaction(tx => {
-      const existing = tx.get(key);
-      if (existing) {
-        if (existing.payloadSha256 !== payloadDigest) {
-          fail('WFM_CONTRACT_EVENT_ID_DRIFT', 'The same authenticated contract event id was reused with a different body.', 409);
-        }
-        return { duplicate: true, key, contract: clone(existing.contract) };
-      }
-
-      const receipt = buildReceipt(completed, attemptedAt, payloadDigest, receiptKey, receivedAt);
-      const contract = {
-        authenticated: true,
-        provider: completed.provider,
-        eventId: completed.eventId,
-        contractId: completed.contractId,
-        contractVersion: completed.contractVersion,
-        tenantId: completed.tenantId,
-        completedAt: completed.completedAt,
-        status: completed.status,
-        verificationReceipt: receipt
-      };
-      tx.insert(key, { key, payloadSha256: payloadDigest, contract: clone(contract), receivedAt });
-      return { duplicate: false, key, contract: clone(contract) };
-    });
+    const receipt = buildReceipt(completed, attemptedAt, payloadDigest, receiptKey, receivedAt);
+    const contract = {
+      authenticated: true,
+      provider: completed.provider,
+      eventId: completed.eventId,
+      contractId: completed.contractId,
+      contractVersion: completed.contractVersion,
+      tenantId: completed.tenantId,
+      completedAt: completed.completedAt,
+      status: completed.status,
+      verificationReceipt: receipt
+    };
+    return { key, payloadDigest, receivedAt, contract };
   }
 
-  return { receive };
+  function applyPrepared(tx, prepared) {
+    assertTransaction(tx);
+    const existing = tx.get(prepared.key);
+    if (existing) {
+      if (existing.payloadSha256 !== prepared.payloadDigest) {
+        fail('WFM_CONTRACT_EVENT_ID_DRIFT', 'The same authenticated contract event id was reused with a different body.', 409);
+      }
+      return { duplicate: true, key: prepared.key, contract: clone(existing.contract) };
+    }
+    tx.insert(prepared.key, {
+      key: prepared.key,
+      payloadSha256: prepared.payloadDigest,
+      contract: clone(prepared.contract),
+      receivedAt: prepared.receivedAt
+    });
+    return { duplicate: false, key: prepared.key, contract: clone(prepared.contract) };
+  }
+
+  function receiveWithinTransaction(tx, delivery) {
+    return applyPrepared(tx, prepare(delivery));
+  }
+
+  function receive(delivery) {
+    const prepared = prepare(delivery);
+    return store.transaction(tx => applyPrepared(tx, prepared));
+  }
+
+  return { receive, receiveWithinTransaction };
 }
 
 module.exports = {
