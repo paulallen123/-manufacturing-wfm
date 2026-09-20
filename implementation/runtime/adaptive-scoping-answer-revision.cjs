@@ -55,6 +55,7 @@ function reviseAnswer(compiled, priorEvaluation, input = {}) {
     nowMs,
     purchasedScope: priorEvaluation.purchasedScope,
     priorAnswers,
+    priorProvenance: priorEvaluation.provenance || {},
     answers: { [questionId]: input.value },
     prefills
   });
