@@ -14,14 +14,19 @@ const browserOrigin = (process.env.PROOF_BROWSER_ORIGIN || '').replace(/\/$/, ''
 const expectedSha = process.env.WFM_EXPECTED_CANDIDATE_SHA;
 const password = process.env.WFM_STAGING_PASSWORD;
 const expectedRelease = '0.6.76-hosted-staging-rc1';
+const frozenCommit = '19675a939bfc35b80152e61473462f2fb5eabc3a';
+const expectedTargetHost = 'wfm-proof-frozen-0676-private.railway.internal';
 const virtualOrigin = 'https://wfm-private-proof.invalid';
 
 assert.ok(targetBase.includes('.railway.internal'), 'Private Railway target is required.');
-assert.ok(browserOrigin.startsWith('https://'), 'Configured staging HTTPS origin is required.');
+assert.equal(browserOrigin, virtualOrigin, 'Synthetic browser origin is not the approved frozen-proof origin.');
 assert.match(expectedSha || '', /^[0-9a-f]{40}$/);
+assert.equal(expectedSha, frozenCommit, 'Candidate commit binding mismatch.');
 assert.ok(password && password.length >= 20, 'Staging password unavailable.');
 
 const target = new URL(targetBase);
+assert.equal(target.hostname, expectedTargetHost, 'Proof target is not the frozen private candidate service.');
+assert.ok(['http:', 'https:'].includes(target.protocol), 'Unexpected private target protocol.');
 const browserHost = new URL(browserOrigin).host;
 const transport = target.protocol === 'https:' ? httpsRequest : httpRequest;
 
