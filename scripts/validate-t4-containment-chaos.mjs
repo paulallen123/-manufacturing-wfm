@@ -300,10 +300,113 @@ assert.match(runtimeTerminal.runtimeForensicBindingDigest, /^[a-f0-9]{64}$/);
 assert.match(runtimeTerminal.innerContainmentReceiptDigest, /^[a-f0-9]{64}$/);
 assert.equal(runtimeTerminal.runtimeRequiredEligibleStores, 2);
 assert.equal(runtimeTerminal.runtimeExecutableStoreCount, 2);
+assert.equal(runtimeTerminal.runtimeFinalReadbackRecoveryMaxAttempts, 1);
 assert.equal(runtimeTerminal.forensicReceipt.storageMode, 'write-once-failover:runtime-secondary');
 assert.equal(runtimeTerminal.productionAuthorityGranted, false);
 assert.equal(runtimeTerminal.customerMutation, false);
 assert.equal(runtimeController.verifyReceipt(runtimeTerminal), true);
+
+const recoveryPrimaryBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-final-recovery-primary'), now: () => 1910000000000 });
+const recoverySecondaryBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-final-recovery-secondary'), now: () => 1910000000000 });
+let recoveryPrimaryVerifyCalls = 0;
+let recoverySecondaryPreserveCalls = 0;
+let recoveryContainmentCalls = 0;
+const recoveryPrimary = {
+  preserve: recoveryPrimaryBase.preserve,
+  verify: async (receipt) => {
+    recoveryPrimaryVerifyCalls += 1;
+    if (recoveryPrimaryVerifyCalls >= 2) return false;
+    return recoveryPrimaryBase.verify(receipt);
+  },
+};
+const recoverySecondary = {
+  preserve: async (request) => {
+    recoverySecondaryPreserveCalls += 1;
+    return recoverySecondaryBase.preserve(request);
+  },
+  verify: recoverySecondaryBase.verify,
+};
+const recoveryController = createT4RuntimeContainmentController({
+  stores: [
+    { id: 'recovery-primary', capability: runtimeCapability('recovery-primary'), store: recoveryPrimary },
+    { id: 'recovery-secondary', capability: runtimeCapability('recovery-secondary'), store: recoverySecondary },
+  ],
+  maxAttempts: 2,
+  requiredEligibleStores: 2,
+  containmentExecutor: {
+    execute: async (request) => {
+      recoveryContainmentCalls += 1;
+      return { verified: true, containmentDigest: d(`recovery-containment:${request.incidentId}`), productionAuthorityGranted: false, crossTenantMutation: false };
+    },
+  },
+  now: () => ++tick,
+});
+const recoveredTerminal = await recoveryController.handle({
+  ...base,
+  incidentId: 't4-final-readback-corrupted-after-preservation',
+  scenarioId: 'support-system-failure',
+  supportSystem: { available: false, contextIntegrity: false },
+});
+assert.equal(recoveryPrimaryVerifyCalls, 2, 'Primary sink must pass initial verification then fail the terminal read-back once.');
+assert.equal(recoverySecondaryPreserveCalls, 1, 'Final read-back recovery must make only one bounded re-preservation attempt.');
+assert.equal(recoveryContainmentCalls, 1, 'Forensic recovery must not replay or duplicate the containment business outcome.');
+assert.equal(recoveredTerminal.safeTerminal, true);
+assert.equal(recoveredTerminal.forensicReceipt.finalReadbackRecoveryUsed, true);
+assert.equal(recoveredTerminal.forensicReceipt.finalReadbackRecoveryFromStoreId, 'recovery-primary');
+assert.equal(recoveredTerminal.forensicReceipt.selectedStoreId, 'recovery-secondary');
+assert.match(recoveredTerminal.forensicReceipt.finalReadbackRecoveryAttemptDigest, /^[a-f0-9]{64}$/);
+assert.equal(recoveryController.verifyReceipt(recoveredTerminal), true);
+
+const exhaustedPrimaryBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-final-recovery-exhausted-primary'), now: () => 1920000000000 });
+let exhaustedPrimaryVerifyCalls = 0;
+let exhaustedSecondaryPreserveCalls = 0;
+let exhaustedContainmentCalls = 0;
+const exhaustedPrimary = {
+  preserve: exhaustedPrimaryBase.preserve,
+  verify: async (receipt) => {
+    exhaustedPrimaryVerifyCalls += 1;
+    if (exhaustedPrimaryVerifyCalls >= 2) return false;
+    return exhaustedPrimaryBase.verify(receipt);
+  },
+};
+const exhaustedSecondary = {
+  preserve: async () => {
+    exhaustedSecondaryPreserveCalls += 1;
+    const error = new Error('synthetic final-readback recovery sink outage');
+    error.code = 'WFM_T4_FORENSICS_SYNTHETIC_FINAL_RECOVERY_OUTAGE';
+    throw error;
+  },
+  verify: async () => false,
+};
+const exhaustedRecoveryController = createT4RuntimeContainmentController({
+  stores: [
+    { id: 'exhausted-primary', capability: runtimeCapability('exhausted-primary'), store: exhaustedPrimary },
+    { id: 'exhausted-secondary', capability: runtimeCapability('exhausted-secondary'), store: exhaustedSecondary },
+  ],
+  maxAttempts: 2,
+  requiredEligibleStores: 2,
+  containmentExecutor: {
+    execute: async (request) => {
+      exhaustedContainmentCalls += 1;
+      return { verified: true, containmentDigest: d(`exhausted-containment:${request.incidentId}`), productionAuthorityGranted: false, crossTenantMutation: false };
+    },
+  },
+  now: () => ++tick,
+});
+await assert.rejects(
+  exhaustedRecoveryController.handle({
+    ...base,
+    incidentId: 't4-final-readback-recovery-exhausted',
+    scenarioId: 'support-system-failure',
+    supportSystem: { available: false, contextIntegrity: false },
+  }),
+  (error) => error?.code === 'WFM_T4_FORENSICS_FINAL_VERIFY'
+    && error?.causeCode === 'WFM_T4_FORENSICS_FINAL_RECOVERY_EXHAUSTED',
+  'If the one different-sink recovery attempt fails, T4 must remain fail closed rather than emit safeTerminal:true.',
+);
+assert.equal(exhaustedPrimaryVerifyCalls, 2);
+assert.equal(exhaustedSecondaryPreserveCalls, 1, 'Recovery exhaustion must not retry the failed secondary blindly.');
+assert.equal(exhaustedContainmentCalls, 1, 'Fail-closed forensic recovery must not duplicate the containment outcome.');
 
 const forgedRuntimeBinding = structuredClone(runtimeTerminal);
 forgedRuntimeBinding.runtimeForensicReadinessDigest = d('forged-runtime-readiness');
@@ -314,6 +417,7 @@ forgedRuntimeBinding.runtimeForensicBindingDigest = t4Digest({
   runtimeForensicFailoverContractDigest: forgedRuntimeBinding.runtimeForensicFailoverContractDigest,
   requiredEligibleStores: forgedRuntimeBinding.runtimeRequiredEligibleStores,
   executableStoreCount: forgedRuntimeBinding.runtimeExecutableStoreCount,
+  finalReadbackRecoveryMaxAttempts: forgedRuntimeBinding.runtimeFinalReadbackRecoveryMaxAttempts,
 });
 delete forgedRuntimeBinding.receiptDigest;
 forgedRuntimeBinding.receiptDigest = t4Digest(forgedRuntimeBinding);
@@ -330,10 +434,10 @@ fs.rmSync(tmpRoot, { recursive: true, force: true });
 fs.rmSync(retryStoreRoot, { recursive: true, force: true });
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'tier4-adversarial-containment-chaos',
   status: 'PASS',
-  cases: 21,
+  cases: 23,
   promptInjectionContained: true,
   memoryPoisoningContained: true,
   credentialExfiltrationContainedWithoutSecretVisibility: true,
@@ -354,6 +458,9 @@ console.log(JSON.stringify({
   forensicPostWriteTamperDetected: true,
   strictRuntimeRequiresIndependentForensicSinks: true,
   strictRuntimePrimaryToSecondaryFailoverBounded: true,
+  finalReadbackCorruptionRecoveredToDistinctSink: true,
+  finalReadbackRecoveryExhaustionFailsClosed: true,
+  finalReadbackRecoveryDoesNotDuplicateContainment: true,
   safeTerminalBoundToRuntimeReadinessDigest: true,
   recomputedRuntimeBindingForgeryRejected: true,
   productionAuthorityGranted: false,
