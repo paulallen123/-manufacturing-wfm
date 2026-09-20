@@ -9,6 +9,7 @@ const {
   createScopeFinalizationReceipt,
   normaliseFinalScope
 } = require('./adaptive-scoping-finalization-receipt.cjs');
+const { createScopeAttestedLaunchIntent } = require('./provisioning-launch-intent.cjs');
 const {
   createScopeAttestedProvisioningOutbox,
   sha256: admissionSha256
@@ -72,12 +73,13 @@ function finalizedScope() {
   const finalizationReceipt = createScopeFinalizationReceipt(compiled, evaluation, releaseReceipt, { proofKey: SCOPE_PROOF_KEY });
   const normalised = normaliseFinalScope(evaluation);
   return {
-    scope: {
+    scopeInput: {
       graphVersion: normalised.graphVersion,
       graphFingerprint: normalised.graphFingerprint,
       revision: normalised.revision,
       purchasedScope: normalised.purchasedScope,
-      operationsDigest: normalised.operationsDigest
+      questions: [],
+      operations: structuredClone(normalised.operations)
     },
     evidence: {
       finalizationDigest: finalizationReceipt.finalizationDigest,
@@ -107,19 +109,29 @@ function completionEvidence() {
   return { authenticated: true, eventId: core.eventId, receiptSha256, verificationReceipt };
 }
 
+function completedContract() {
+  const completion = completionEvidence();
+  const receipt = completion.verificationReceipt;
+  return {
+    authenticated: true,
+    status: 'completed',
+    provider: receipt.provider,
+    eventId: receipt.eventId,
+    contractId: receipt.contractId,
+    contractVersion: receipt.contractVersion,
+    tenantId: receipt.tenantId,
+    completedAt: receipt.completedAt,
+    verificationReceipt: structuredClone(receipt)
+  };
+}
+
 function launchIntent() {
   const finalized = finalizedScope();
-  const value = {
-    schemaVersion: 1,
-    contract: {
-      provider: 'contract-provider',
-      contractId: 'ctr-scope-admission',
-      contractVersion: '1',
-      tenantId: 'tenant-a',
-      completedAt: '2026-09-20T00:00:00Z'
-    },
-    scope: finalized.scope,
+  return createScopeAttestedLaunchIntent({
+    scope: finalized.scopeInput,
+    contract: completedContract(),
     build: {
+      approved: true,
       sourceRevision: 'approved-source-revision',
       artifactSha256: 'c'.repeat(64),
       approvalId: 'approved-build-1'
@@ -132,23 +144,11 @@ function launchIntent() {
       networkPolicy: 'private-until-ready',
       secretsPolicy: 'server-managed-per-tenant'
     },
-    completionEvidence: completionEvidence(),
     scopeFinalizationEvidence: finalized.evidence
-  };
-  value.intentDigest = outboxSha256({
-    schemaVersion: value.schemaVersion,
-    contract: value.contract,
-    scope: value.scope,
-    build: value.build,
-    plan: value.plan
+  }, {
+    contractReceiptKey: CONTRACT_RECEIPT_KEY,
+    scopeProofKey: SCOPE_PROOF_KEY
   });
-  value.queueKey = 'wfm-provision:v1:' + outboxSha256({
-    provider: value.contract.provider,
-    contractId: value.contract.contractId,
-    contractVersion: value.contract.contractVersion,
-    tenantId: value.contract.tenantId
-  });
-  return value;
 }
 
 function createOutbox(store, options = {}) {
@@ -175,7 +175,18 @@ function expectCode(fn, code) {
   assert.throws(fn, error => error && error.code === code);
 }
 
-test('durable queue admission rejects missing or tampered final-scope proof before enqueue', () => {
+test('scope-attested launch binds the exact final-scope receipt to the sealed launch subject', () => {
+  const intent = launchIntent();
+  assert.match(intent.scopeProofBinding.finalizationDigest, /^[a-f0-9]{64}$/);
+  assert.match(intent.scopeProofBinding.receiptSha256, /^[a-f0-9]{64}$/);
+  assert.equal(intent.scopeProofBinding.subjectDigest, admissionSha256({
+    launchIntentDigest: intent.intentDigest,
+    finalizationDigest: intent.scopeProofBinding.finalizationDigest,
+    receiptSha256: intent.scopeProofBinding.receiptSha256
+  }));
+});
+
+test('durable queue admission rejects missing, tampered or detached final-scope proof before enqueue', () => {
   const store = makeStore();
   const outbox = createOutbox(store, { now: () => 1000 });
 
@@ -188,6 +199,21 @@ test('durable queue admission rejects missing or tampered final-scope proof befo
   tampered.scopeFinalizationEvidence.verificationReceipt.mac = '0'.repeat(64);
   expectCode(() => outbox.enqueue(tampered), 'WFM_SCOPE_FINALIZATION_PROOF_INVALID');
   assert.equal(store.snapshot().length, 0);
+
+  const unbound = launchIntent();
+  delete unbound.scopeProofBinding;
+  expectCode(() => outbox.enqueue(unbound), 'WFM_SCOPE_FINALIZATION_BINDING_REQUIRED');
+  assert.equal(store.snapshot().length, 0);
+
+  const detached = launchIntent();
+  detached.scopeProofBinding.receiptSha256 = '0'.repeat(64);
+  detached.scopeProofBinding.subjectDigest = admissionSha256({
+    launchIntentDigest: detached.intentDigest,
+    finalizationDigest: detached.scopeProofBinding.finalizationDigest,
+    receiptSha256: detached.scopeProofBinding.receiptSha256
+  });
+  expectCode(() => outbox.enqueue(detached), 'WFM_SCOPE_FINALIZATION_BINDING_MISMATCH');
+  assert.equal(store.snapshot().length, 0);
 });
 
 test('the exact finalized scope is admitted and its proof identity is returned with the queue record', () => {
@@ -199,10 +225,11 @@ test('the exact finalized scope is admitted and its proof identity is returned w
   assert.equal(admitted.duplicate, false);
   assert.equal(admitted.scopeFinalizationDigest, intent.scopeFinalizationEvidence.finalizationDigest);
   assert.equal(admitted.scopeFinalizationReceiptSha256, intent.scopeFinalizationEvidence.receiptSha256);
+  assert.equal(admitted.scopeProofSubjectDigest, intent.scopeProofBinding.subjectDigest);
   assert.equal(store.snapshot().length, 1);
 });
 
-test('scope proof is rechecked immediately before provider mutation so stored proof drift fails closed', () => {
+test('scope proof and launch binding are rechecked immediately before provider mutation so stored drift fails closed', () => {
   const store = makeStore();
   const outbox = createOutbox(store, { now: () => 1000 });
   const intent = launchIntent();
@@ -217,7 +244,7 @@ test('scope proof is rechecked immediately before provider mutation so stored pr
   assert.equal(outbox.get(intent.queueKey).state, 'CLAIMED');
 });
 
-test('independent readiness must name the same final-scope proof and its digest is bound into verification evidence', () => {
+test('independent readiness must name the same final-scope proof and carries the launch-proof binding', () => {
   const store = makeStore();
   const outbox = createOutbox(store, { now: () => 1000 });
   const intent = launchIntent();
@@ -242,7 +269,8 @@ test('independent readiness must name the same final-scope proof and its digest 
     ...allChecks(),
     scopeFinalizationVerified: true,
     scopeFinalizationDigest: intent.scopeFinalizationEvidence.finalizationDigest,
-    scopeFinalizationReceiptSha256: intent.scopeFinalizationEvidence.receiptSha256
+    scopeFinalizationReceiptSha256: intent.scopeFinalizationEvidence.receiptSha256,
+    scopeProofSubjectDigest: intent.scopeProofBinding.subjectDigest
   };
   const ready = outbox.recordIndependentVerification(intent.queueKey, {
     independent: true,
@@ -254,6 +282,7 @@ test('independent readiness must name the same final-scope proof and its digest 
 
   assert.equal(ready.state, 'COMPLETED');
   assert.equal(ready.scopeFinalizationDigest, intent.scopeFinalizationEvidence.finalizationDigest);
+  assert.equal(ready.scopeProofSubjectDigest, intent.scopeProofBinding.subjectDigest);
   assert.equal(ready.verificationDigest, outboxSha256({
     subject: created.verificationSubject,
     verifierId: 'readiness-verifier',
