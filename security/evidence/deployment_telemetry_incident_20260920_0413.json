@@ -1,0 +1,60 @@
+{
+  "observed_at_utc": "2026-09-20T03:13:49Z",
+  "environment_scope": "authorised Railway manufacturing-wfm-test environment only",
+  "service": "wfm-one-day-enterprise-v1",
+  "deployment_id": "eb8b7e40-0153-4592-88a8-7027578db5d0",
+  "finding": {
+    "deployment_status": "FAILED",
+    "credential_variable_names_observed": [
+      "WFM_CONTRACT_WEBHOOK_SECRET",
+      "WFM_IMPLEMENTATION_INTERNAL_TOKEN",
+      "WFM_INTEGRATION_INTERNAL_TOKEN",
+      "WFM_STAGING_PASSWORD"
+    ],
+    "bounded_build_hold_observed": true,
+    "hold_root_directory": "/__security_hold_one_day_enterprise__",
+    "hold_watch_pattern": "__security_hold_one_day_enterprise__/**",
+    "build_log_entries_after_repeated_queries": 1,
+    "only_observed_build_event": "builder scheduling",
+    "terminal_failure_reason_observed": false,
+    "deploy_log_entries": 0,
+    "classification": "TELEMETRY_LOSS_FAIL_CLOSED"
+  },
+  "corroboration": {
+    "comparison_service": "wfm-integration-fabric-v1-proof",
+    "comparison_deployment_id": "d38d400a-e32d-4e3c-bb42-1fd3fb1ff0f6",
+    "same_period_terminal_failure_reason_was_observable": true,
+    "comparison_reason": "missing security-hold root directory was explicitly logged"
+  },
+  "containment": {
+    "existing_narrow_build_hold_preserved": true,
+    "new_production_change_made": false,
+    "customer_payroll_or_workforce_state_changed": false,
+    "release_decision": "KEEP_FAIL_CLOSED"
+  },
+  "adversarial_policy_verification": {
+    "synthetic_cases_executed_locally": 7,
+    "synthetic_cases_passed": 7,
+    "covered_bypasses": [
+      "terminal deployment with no build logs",
+      "terminal deployment with scheduler-only logs after repeated queries",
+      "telemetry query failure",
+      "unexpected source execution while contained",
+      "credential-bearing service without build hold",
+      "successful deployment without runtime logs",
+      "complete failed-build evidence control case"
+    ]
+  },
+  "threat_correlation": {
+    "source": "CrowdStrike PhantomRaven research",
+    "published": "2026-09-15",
+    "url": "https://www.crowdstrike.com/en-us/blog/phantomraven-llm-generated-information-stealer-for-bug-bounty-hunting/",
+    "relevance": "Current malicious npm packages can execute install-time code and target credentials; unexplained build execution around credential-bearing services must not be treated as safe when defender telemetry is incomplete."
+  },
+  "residual_risk": {
+    "cause_of_missing_build_telemetry_not_proven": true,
+    "no_evidence_of_active_compromise_observed": true,
+    "credential_bearing_release_must_remain_blocked_until_terminal_build_reason_is_observable": true
+  },
+  "decision": "PRESERVE_BUILD_HOLD_AND_ESCALATE_TELEMETRY_LOSS"
+}
