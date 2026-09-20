@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AGENCY_WORK_START_BIND_PRINCIPAL_SQL,
+  AGENCY_WORK_START_CANONICAL_MIGRATION_DDL,
+  AGENCY_WORK_START_CANONICAL_MIGRATION_VERSION,
   AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_AUTHORITY,
   AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_DDL,
   AGENCY_WORK_START_REVOKE_PRINCIPAL_SQL,
@@ -43,6 +45,29 @@ test('every controlled read revalidates session_user and serializes against revo
   assert.match(guard,/v_bound_tenant IS DISTINCT FROM p_tenant_id[\s\S]*work_start_tenant_principal_unauthorized/i);
   assert.match(guard,/v_revoked_at IS NOT NULL[\s\S]*work_start_tenant_principal_revoked/i);
   assert.doesNotMatch(guard,/current_setting\(|set_config\(|application_name|client_addr/i);
+});
+
+test('canonical migration is transactional and always leaves lifecycle hardening after the base boundary',()=>{
+  assert.equal(AGENCY_WORK_START_CANONICAL_MIGRATION_VERSION,'agency-work-start-canonical-migration-v0.1.0');
+  const migration=AGENCY_WORK_START_CANONICAL_MIGRATION_DDL;
+  assert.match(migration,/^\s*BEGIN;/i);
+  assert.match(migration,/COMMIT;\s*$/i);
+  const baseGrant=migration.indexOf('GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE public.wfm_agency_work_start_principal_tenants TO wfm_agency_work_start_tenant_binding_admin');
+  const finalRevoke=migration.lastIndexOf('REVOKE ALL ON TABLE public.wfm_agency_work_start_principal_tenants\n  FROM wfm_agency_work_start_tenant_binding_admin');
+  assert.ok(baseGrant>=0&&finalRevoke>baseGrant,'lifecycle ACL hardening must be applied after the base boundary grant');
+  const firstGuard=migration.indexOf('CREATE OR REPLACE FUNCTION public.wfm_assert_agency_work_start_tenant_principal_v1');
+  const finalGuard=migration.lastIndexOf('CREATE OR REPLACE FUNCTION public.wfm_assert_agency_work_start_tenant_principal_v1');
+  assert.ok(firstGuard>=0&&finalGuard>firstGuard,'lifecycle guard must replace the base guard last');
+  const hardenedGuard=migration.slice(finalGuard);
+  assert.match(hardenedGuard,/binding\.tenant_id,binding\.revoked_at/i);
+  assert.match(hardenedGuard,/WHERE binding\.database_principal=session_user[\s\S]*FOR SHARE/i);
+  assert.match(hardenedGuard,/work_start_tenant_principal_revoked/i);
+  const a=AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_AUTHORITY;
+  assert.equal(a.canonicalMigrationOrder,'db_boundary_then_principal_lifecycle');
+  assert.equal(a.canonicalMigrationTransactional,true);
+  assert.equal(a.canonicalMigrationRollbackOnFailure,true);
+  assert.equal(a.canonicalMigrationFinalHardeningRequired,true);
+  assert.equal(a.standaloneDbBoundaryAfterLifecycleAuthorized,false);
 });
 
 test('lifecycle metadata preserves eligibility/ranking separation and grants no live mutation authority',()=>{
