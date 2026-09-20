@@ -141,6 +141,32 @@ test('retry delay prevents hot-looping and preserves the same deterministic task
   }
 });
 
+test('first provider failure time is durable across reopen and does not move on later retries', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'wfm-proof-first-failure-'));
+  const dbPath = join(dir, 'ledger.db');
+  try {
+    const first = createProviderProofMaintenanceLedger({ dbPath });
+    first.schedule(review, maintenance(), NOW);
+    const firstClaim = first.claimNext('worker-a', {}, NOW);
+    first.complete(firstClaim.taskKey, firstClaim.claimToken, {
+      status: 'RETRY', errorClass: 'timeout', retryAfterMs: 1
+    }, NOW + 1000);
+    assert.equal(first.getTask(firstClaim.taskKey).firstFailureAt, new Date(NOW + 1000).toISOString());
+    first.close();
+
+    const second = createProviderProofMaintenanceLedger({ dbPath });
+    assert.equal(second.getTask(firstClaim.taskKey).firstFailureAt, new Date(NOW + 1000).toISOString());
+    const secondClaim = second.claimNext('worker-b', {}, NOW + 1002);
+    second.complete(secondClaim.taskKey, secondClaim.claimToken, {
+      status: 'RETRY', errorClass: 'timeout', retryAfterMs: 1
+    }, NOW + 2000);
+    assert.equal(second.getTask(secondClaim.taskKey).firstFailureAt, new Date(NOW + 1000).toISOString());
+    second.close();
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('retry budget fails closed instead of looping forever', () => {
   const ledger = createProviderProofMaintenanceLedger({ maxAttempts: 2 });
   try {
