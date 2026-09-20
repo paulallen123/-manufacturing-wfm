@@ -42,6 +42,11 @@ function validImageDigest(value) {
   return /^sha256:[a-f0-9]{64}$/.test(candidate) ? candidate : null;
 }
 
+function validSha256Hex(value) {
+  const candidate = clean(value, 80).toLowerCase();
+  return /^[a-f0-9]{64}$/.test(candidate) ? candidate : null;
+}
+
 function boundedInt(value, min, max) {
   return Number.isSafeInteger(value) && value >= min && value <= max ? value : null;
 }
@@ -210,8 +215,169 @@ function verifyHostedStagingProofReceipt(receipt) {
   return expected === digest(core);
 }
 
+function assessHostedBrowserProof(input = {}) {
+  const deploymentId = validId(input.deploymentId);
+  const deploymentSnapshotId = validId(input.deploymentSnapshotId);
+  const sourceCommitSha = validGitCommit(input.sourceCommitSha);
+  const imageDigest = validImageDigest(input.imageDigest);
+  const managerScreenshotSha256 = validSha256Hex(input.managerScreenshotSha256);
+  const deploymentStatus = clean(input.deploymentStatus, 32).toUpperCase();
+  const matrixStatus = clean(input.matrixStatus, 32).toUpperCase();
+  const affordanceCoverage = clean(input.affordanceCoverage, 64).toUpperCase();
+
+  const roles = boundedInt(input.roles, 0, 100);
+  const navClicks = boundedInt(input.navClicks, 0, 10000);
+  const activeActionJourneys = boundedInt(input.activeActionJourneys, 0, 10000);
+  const emptyStateJourneys = boundedInt(input.emptyStateJourneys, 0, 10000);
+
+  const identityBound = Boolean(
+    deploymentId
+    && deploymentSnapshotId
+    && sourceCommitSha
+    && imageDigest
+    && managerScreenshotSha256
+  );
+  const roleRenderNavigationProven = Boolean(
+    identityBound
+    && deploymentStatus === 'SUCCESS'
+    && matrixStatus === 'PASS'
+    && input.proofServerPassed === true
+    && input.healthcheckSucceeded === true
+    && input.layoutOverflowAssertionsPassed === true
+    && roles >= 5
+    && navClicks >= 4
+    && input.tenantIsolationRoleObserved === true
+  );
+  const activeWorkflowInteractionProven = Boolean(
+    roleRenderNavigationProven
+    && activeActionJourneys > 0
+    && affordanceCoverage === 'EXERCISED'
+    && input.reviewVerified === true
+    && input.viewStatusVerified === true
+  );
+  const browserFunctionalReadinessProven = activeWorkflowInteractionProven;
+  const passiveProofOnly = roleRenderNavigationProven && !activeWorkflowInteractionProven;
+
+  const core = {
+    schemaVersion: 1,
+    proof: 'railway-hosted-browser-proof-claim-boundary',
+    provider: 'railway',
+    deploymentId,
+    deploymentSnapshotId,
+    sourceCommitSha,
+    imageDigest,
+    managerScreenshotSha256,
+    deploymentStatus,
+    matrixStatus,
+    roles,
+    navClicks,
+    activeActionJourneys,
+    emptyStateJourneys,
+    affordanceCoverage,
+    reviewVerified: input.reviewVerified === true,
+    viewStatusVerified: input.viewStatusVerified === true,
+    proofServerPassed: input.proofServerPassed === true,
+    healthcheckSucceeded: input.healthcheckSucceeded === true,
+    layoutOverflowAssertionsPassed: input.layoutOverflowAssertionsPassed === true,
+    tenantIsolationRoleObserved: input.tenantIsolationRoleObserved === true,
+    identityBound,
+    roleRenderNavigationProven,
+    activeWorkflowInteractionProven,
+    browserFunctionalReadinessProven,
+    passiveProofOnly,
+    claimBoundary: browserFunctionalReadinessProven
+      ? 'hosted-browser-role-render-navigation-and-active-workflow-interaction'
+      : roleRenderNavigationProven
+        ? 'hosted-browser-role-render-navigation-only'
+        : 'insufficient-or-inconsistent-hosted-browser-evidence',
+    releaseProven: false,
+    releaseClaimAllowed: false,
+    autonomyPromotionAllowed: false,
+    automaticRedeployAllowed: false,
+    automaticConfigurationMutationAllowed: false,
+    safetyGateBypassAllowed: false,
+    productionMutation: false,
+    customerMutation: false,
+    payrollMutation: false,
+    identityMutation: false,
+    modelAuthorityGranted: false,
+    executionAuthorityGranted: false,
+  };
+
+  return Object.freeze({ ...core, receiptDigest: digest(core) });
+}
+
+function verifyHostedBrowserProofReceipt(receipt) {
+  if (!receipt || typeof receipt !== 'object') return false;
+  if (!/^[a-f0-9]{64}$/.test(String(receipt.receiptDigest || ''))) return false;
+  if (
+    receipt.schemaVersion !== 1
+    || receipt.proof !== 'railway-hosted-browser-proof-claim-boundary'
+    || receipt.provider !== 'railway'
+    || receipt.releaseProven !== false
+    || receipt.releaseClaimAllowed !== false
+    || receipt.autonomyPromotionAllowed !== false
+    || receipt.automaticRedeployAllowed !== false
+    || receipt.automaticConfigurationMutationAllowed !== false
+    || receipt.safetyGateBypassAllowed !== false
+    || receipt.productionMutation !== false
+    || receipt.customerMutation !== false
+    || receipt.payrollMutation !== false
+    || receipt.identityMutation !== false
+    || receipt.modelAuthorityGranted !== false
+    || receipt.executionAuthorityGranted !== false
+  ) return false;
+
+  if (receipt.roleRenderNavigationProven === true) {
+    if (
+      receipt.identityBound !== true
+      || receipt.deploymentStatus !== 'SUCCESS'
+      || receipt.matrixStatus !== 'PASS'
+      || receipt.proofServerPassed !== true
+      || receipt.healthcheckSucceeded !== true
+      || receipt.layoutOverflowAssertionsPassed !== true
+      || !Number.isSafeInteger(receipt.roles)
+      || receipt.roles < 5
+      || !Number.isSafeInteger(receipt.navClicks)
+      || receipt.navClicks < 4
+      || receipt.tenantIsolationRoleObserved !== true
+    ) return false;
+  }
+
+  if (receipt.activeWorkflowInteractionProven === true) {
+    if (
+      receipt.roleRenderNavigationProven !== true
+      || !Number.isSafeInteger(receipt.activeActionJourneys)
+      || receipt.activeActionJourneys <= 0
+      || receipt.affordanceCoverage !== 'EXERCISED'
+      || receipt.reviewVerified !== true
+      || receipt.viewStatusVerified !== true
+      || receipt.browserFunctionalReadinessProven !== true
+      || receipt.passiveProofOnly !== false
+      || receipt.claimBoundary !== 'hosted-browser-role-render-navigation-and-active-workflow-interaction'
+    ) return false;
+  } else if (receipt.roleRenderNavigationProven === true) {
+    if (
+      receipt.browserFunctionalReadinessProven !== false
+      || receipt.passiveProofOnly !== true
+      || receipt.claimBoundary !== 'hosted-browser-role-render-navigation-only'
+    ) return false;
+  } else if (
+    receipt.browserFunctionalReadinessProven !== false
+    || receipt.passiveProofOnly !== false
+    || receipt.claimBoundary !== 'insufficient-or-inconsistent-hosted-browser-evidence'
+  ) return false;
+
+  const core = { ...receipt };
+  const expected = core.receiptDigest;
+  delete core.receiptDigest;
+  return expected === digest(core);
+}
+
 module.exports = {
   assessHostedStagingProof,
   verifyHostedStagingProofReceipt,
+  assessHostedBrowserProof,
+  verifyHostedBrowserProofReceipt,
   digest,
 };
