@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "mode": "24h-category-leader-sprint",
+  "principles": {
+    "compress_by_parallelism": true,
+    "reuse_before_build": true,
+    "buy_or_partner_for_commodity_capability": true,
+    "evidence_before_claim": true,
+    "vector_ui_only": true,
+    "single_canonical_model": true,
+    "continuous_improvement_loop": true
+  },
+  "competitor_capability_targets": [
+    "caddi_semantic_manufacturing_intelligence",
+    "tulip_operational_composability",
+    "maintainx_maintenance_depth",
+    "enterprise_wfm_depth"
+  ],
+  "domains": [
+    "workforce",
+    "skills",
+    "attendance",
+    "scheduling",
+    "absence",
+    "agency",
+    "assets",
+    "maintenance",
+    "production",
+    "engineering_data",
+    "bom",
+    "documents",
+    "energy",
+    "cost",
+    "decisions",
+    "actions",
+    "outcomes"
+  ],
+  "loop": [
+    "research",
+    "gap",
+    "design",
+    "theory_test",
+    "build",
+    "integrate",
+    "test",
+    "prove",
+    "review",
+    "improve",
+    "repeat"
+  ],
+  "claim_policy": "unproven capabilities must remain explicitly unproven"
+}
