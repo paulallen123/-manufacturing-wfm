@@ -54,9 +54,18 @@ function iso(ms){ return new Date(ms).toISOString(); }
 function err(message,status=400){ return Object.assign(new Error(message),{status}); }
 function key(...parts){ return JSON.stringify(parts.map(String)); }
 function normaliseAllowedKinds(type,allowedKinds){
-  const raw=allowedKinds===undefined ? SOURCE_KIND_DEFAULTS.get(String(type||'').toLowerCase()) : allowedKinds;
+  const normalizedType=String(type||'').toLowerCase();
+  const defaults=SOURCE_KIND_DEFAULTS.get(normalizedType);
+  const raw=allowedKinds===undefined ? defaults : allowedKinds;
   if(!Array.isArray(raw) || raw.length===0 || raw.some(kind=>!VALID_KINDS.has(String(kind)))) throw err('Attendance source must declare supported evidence kinds.');
-  return [...new Set(raw.map(String))].sort();
+  const kinds=[...new Set(raw.map(String))].sort();
+  // A known physical/provider source type has a fixed trust boundary. Explicit
+  // configuration may narrow that capability, but it must never widen it into a
+  // different evidence domain (for example an access connector claiming Wi-Fi
+  // authentication). Otherwise two logical source IDs from one source family can
+  // manufacture the "independent" domains required for automatic attendance.
+  if(defaults && kinds.some(kind=>!defaults.includes(kind))) throw err('Known attendance source type cannot declare evidence kinds outside its trusted capability.');
+  return kinds;
 }
 
 /**
