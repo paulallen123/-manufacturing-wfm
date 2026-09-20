@@ -63,11 +63,24 @@ export class AutomaticAttendanceEvidenceEngine {
   registerSource({tenant,sourceId,site,type,directAttendanceAuthority=false,timestampMode='source',active=true}){
     if(!ID.test(String(tenant||'')) || !ID.test(String(sourceId||'')) || !ID.test(String(site||'')) || !ID.test(String(type||''))) throw err('Valid source registration required.');
     if(!['source','server'].includes(timestampMode)) throw err('timestampMode must be source or server.');
-    this.sources.set(key(tenant,sourceId),{tenant,sourceId,site,type,directAttendanceAuthority:Boolean(directAttendanceAuthority),timestampMode,active:Boolean(active)});
+    const sourceKey=key(tenant,sourceId);
+    const normalized={tenant,sourceId,site,type,directAttendanceAuthority:Boolean(directAttendanceAuthority),timestampMode,active:Boolean(active)};
+    const prior=this.sources.get(sourceKey);
+    let authorityGeneration=Number.isSafeInteger(prior?.authorityGeneration) && prior.authorityGeneration>0 ? prior.authorityGeneration : 1;
+    if(prior){
+      const changed=prior.site!==normalized.site || prior.type!==normalized.type || prior.directAttendanceAuthority!==normalized.directAttendanceAuthority || prior.timestampMode!==normalized.timestampMode || prior.active!==normalized.active;
+      if(changed) authorityGeneration+=1;
+    }
+    this.sources.set(sourceKey,{...normalized,authorityGeneration});
   }
 
   revokeSource({tenant,sourceId}){
-    const s=this.sources.get(key(tenant,sourceId)); if(!s) return false; s.active=false; return true;
+    const s=this.sources.get(key(tenant,sourceId)); if(!s) return false;
+    if(s.active){
+      s.active=false;
+      s.authorityGeneration=(Number.isSafeInteger(s.authorityGeneration) && s.authorityGeneration>0 ? s.authorityGeneration : 1)+1;
+    }
+    return true;
   }
 
   ingest({tenant,sourceId,eventId,employee,kind,observedAt,receivedAtMs=Date.now(),metadata={}}){
@@ -96,7 +109,7 @@ export class AutomaticAttendanceEvidenceEngine {
     }
 
     const spec=KIND[kind];
-    const event={...content,domain:spec.domain,polarity:spec.polarity,anchorIn:spec.anchorIn,anchorOut:spec.anchorOut,location:spec.location,identity:spec.identity,receivedAtMs,digest:d,directAttendanceAuthority:source.directAttendanceAuthority,sourceType:source.type};
+    const event={...content,domain:spec.domain,polarity:spec.polarity,anchorIn:spec.anchorIn,anchorOut:spec.anchorOut,location:spec.location,identity:spec.identity,receivedAtMs,digest:d,directAttendanceAuthority:source.directAttendanceAuthority,sourceType:source.type,sourceAuthorityGeneration:Number.isSafeInteger(source.authorityGeneration)&&source.authorityGeneration>0?source.authorityGeneration:1};
     this.events.set(eventKey,event);
     const employeeKey=key(tenant,employee,source.site);
     const list=this.employeeEvents.get(employeeKey) ?? [];
@@ -136,10 +149,14 @@ export class AutomaticAttendanceEvidenceEngine {
 
     // Revocation is immediate for future decisions: evidence accepted before a source
     // was revoked may remain in the immutable audit record, but it cannot complete a
-    // still-pending quorum after the source loses authority.
+    // still-pending quorum after the source loses authority. Reactivating/reconfiguring
+    // the same logical source starts a new authority generation, so pre-revocation
+    // evidence cannot become authoritative again later.
     const all=(this.employeeEvents.get(employeeKey)??[]).filter(e=>{
       const registered=this.sources.get(key(tenant,e.sourceId));
-      return Boolean(registered?.active) && registered.site===site;
+      const currentGeneration=Number.isSafeInteger(registered?.authorityGeneration)&&registered.authorityGeneration>0?registered.authorityGeneration:1;
+      const eventGeneration=Number.isSafeInteger(e.sourceAuthorityGeneration)&&e.sourceAuthorityGeneration>0?e.sourceAuthorityGeneration:1;
+      return Boolean(registered?.active) && registered.site===site && eventGeneration===currentGeneration;
     });
     const cluster=all.filter(e=>Math.abs(e.observedMs-trigger.observedMs)<=this.corroborationWindowMs);
     const wanted=cluster.filter(e=>direction==='in'?e.polarity==='present':e.polarity==='absent');
