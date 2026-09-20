@@ -27,11 +27,37 @@ const KIND = {
   scanner_activity:  { polarity:'present', domain:'work_activity',   anchorIn:true,  anchorOut:false, location:true,  identity:true },
 };
 
+const SOURCE_KIND_DEFAULTS = new Map([
+  ['access',['access_entry','access_exit']],
+  ['access-control',['access_entry','access_exit']],
+  ['radius',['wifi_authenticated','wifi_disconnected']],
+  ['wifi',['wifi_authenticated','wifi_disconnected']],
+  ['network',['wifi_authenticated','wifi_disconnected']],
+  ['mes',['hmi_login','hmi_logout']],
+  ['hmi',['hmi_login','hmi_logout']],
+  ['windows',['workstation_login','workstation_logout']],
+  ['workstation',['workstation_login','workstation_logout']],
+  ['wef',['workstation_login','workstation_logout']],
+  ['legacy',['legacy_clock_in','legacy_clock_out']],
+  ['taa',['legacy_clock_in','legacy_clock_out']],
+  ['t&a',['legacy_clock_in','legacy_clock_out']],
+  ['sso',['site_sso_login','site_sso_logout']],
+  ['identity',['site_sso_login','site_sso_logout']],
+  ['ranging',['ranging_near','ranging_away']],
+  ['proximity',['ranging_near','ranging_away']],
+  ['scanner',['scanner_activity']]
+]);
+
 function clone(x){ return JSON.parse(JSON.stringify(x)); }
 function digest(x){ return crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex'); }
 function iso(ms){ return new Date(ms).toISOString(); }
 function err(message,status=400){ return Object.assign(new Error(message),{status}); }
 function key(...parts){ return JSON.stringify(parts.map(String)); }
+function normaliseAllowedKinds(type,allowedKinds){
+  const raw=allowedKinds===undefined ? SOURCE_KIND_DEFAULTS.get(String(type||'').toLowerCase()) : allowedKinds;
+  if(!Array.isArray(raw) || raw.length===0 || raw.some(kind=>!VALID_KINDS.has(String(kind)))) throw err('Attendance source must declare supported evidence kinds.');
+  return [...new Set(raw.map(String))].sort();
+}
 
 /**
  * AutomaticAttendanceEvidenceEngine
@@ -60,15 +86,15 @@ export class AutomaticAttendanceEvidenceEngine {
     this.people.set(key(tenant,employee),{tenant,employee,sites:[...new Set(sites)]});
   }
 
-  registerSource({tenant,sourceId,site,type,directAttendanceAuthority=false,timestampMode='source',active=true}){
+  registerSource({tenant,sourceId,site,type,directAttendanceAuthority=false,timestampMode='source',active=true,allowedKinds}){
     if(!ID.test(String(tenant||'')) || !ID.test(String(sourceId||'')) || !ID.test(String(site||'')) || !ID.test(String(type||''))) throw err('Valid source registration required.');
     if(!['source','server'].includes(timestampMode)) throw err('timestampMode must be source or server.');
     const sourceKey=key(tenant,sourceId);
-    const normalized={tenant,sourceId,site,type,directAttendanceAuthority:Boolean(directAttendanceAuthority),timestampMode,active:Boolean(active)};
+    const normalized={tenant,sourceId,site,type,directAttendanceAuthority:Boolean(directAttendanceAuthority),timestampMode,active:Boolean(active),allowedKinds:normaliseAllowedKinds(type,allowedKinds)};
     const prior=this.sources.get(sourceKey);
     let authorityGeneration=Number.isSafeInteger(prior?.authorityGeneration) && prior.authorityGeneration>0 ? prior.authorityGeneration : 1;
     if(prior){
-      const changed=prior.site!==normalized.site || prior.type!==normalized.type || prior.directAttendanceAuthority!==normalized.directAttendanceAuthority || prior.timestampMode!==normalized.timestampMode || prior.active!==normalized.active;
+      const changed=prior.site!==normalized.site || prior.type!==normalized.type || prior.directAttendanceAuthority!==normalized.directAttendanceAuthority || prior.timestampMode!==normalized.timestampMode || prior.active!==normalized.active || JSON.stringify(prior.allowedKinds)!==JSON.stringify(normalized.allowedKinds);
       if(changed) authorityGeneration+=1;
     }
     this.sources.set(sourceKey,{...normalized,authorityGeneration});
@@ -89,6 +115,7 @@ export class AutomaticAttendanceEvidenceEngine {
     if(!Number.isSafeInteger(receivedAtMs) || receivedAtMs<0) throw err('Invalid server receive time.');
     const source=this.sources.get(key(tenant,sourceId));
     if(!source || !source.active) throw err('Attendance evidence source is not active.',401);
+    if(!Array.isArray(source.allowedKinds) || !source.allowedKinds.includes(kind)) throw err('Attendance evidence kind is not authorised for this source.',403);
     const person=this.people.get(key(tenant,employee));
     if(!person) throw err('Employee is not registered for attendance evidence.',404);
     if(!person.sites.includes(source.site)) throw err('Employee is not assigned to this source site.',403);

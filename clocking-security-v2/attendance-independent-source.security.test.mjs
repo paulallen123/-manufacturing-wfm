@@ -8,7 +8,10 @@ const END=Date.parse('2026-09-20T14:00:00Z');
 function setup(){
   const engine=new AutomaticAttendanceEvidenceEngine({corroborationWindowMs:120_000,maxOfflineAgeMs:24*60*60_000});
   engine.registerPerson({tenant:'acme',employee:'e1',sites:['s1']});
-  engine.registerSource({tenant:'acme',sourceId:'combo-source',site:'s1',type:'misconfigured-multiprotocol'});
+  engine.registerSource({
+    tenant:'acme',sourceId:'combo-source',site:'s1',type:'misconfigured-multiprotocol',
+    allowedKinds:['access_entry','access_exit','wifi_authenticated','wifi_disconnected']
+  });
   engine.registerSource({tenant:'acme',sourceId:'independent-wifi',site:'s1',type:'radius'});
   return engine;
 }
@@ -56,4 +59,19 @@ test('one source cannot impersonate two evidence domains to stop pay',()=>{
   assert.equal(independentOut.decision.status,'authoritative');
   assert.equal(independentOut.decision.direction,'out');
   assert.equal(engine.getState({tenant:'acme',employee:'e1',site:'s1'}).status,'outside');
+});
+
+test('two logical source IDs cannot manufacture independence by emitting kinds outside their registered source capability',()=>{
+  const engine=new AutomaticAttendanceEvidenceEngine({corroborationWindowMs:120_000,maxOfflineAgeMs:24*60*60_000});
+  engine.registerPerson({tenant:'acme',employee:'e1',sites:['s1']});
+  engine.registerSource({tenant:'acme',sourceId:'door-a',site:'s1',type:'access'});
+  engine.registerSource({tenant:'acme',sourceId:'door-b',site:'s1',type:'access'});
+
+  ingest(engine,{sourceId:'door-a',eventId:'alias-access-in-001',kind:'access_entry',at:START});
+  assert.throws(
+    ()=>ingest(engine,{sourceId:'door-b',eventId:'alias-wifi-in-0001',kind:'wifi_authenticated',at:START+5000}),
+    /not authorised for this source/
+  );
+  assert.equal(engine.getState({tenant:'acme',employee:'e1',site:'s1'}).status,'outside');
+  assert.equal(engine.audit.filter(x=>x.action==='attendance-in-authoritative').length,0);
 });
