@@ -8,8 +8,7 @@ import {AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL} from '../../src/frontier/agency-por
 import {AGENCY_IDENTITY_CONTINUITY_DDL} from '../../src/frontier/agency-identity-continuity.mjs';
 import {AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL} from '../../src/frontier/agency-identity-observation-ingress.mjs';
 import {AGENCY_IDENTITY_DB_BOUNDARY_DDL} from '../../src/frontier/agency-identity-db-boundary.mjs';
-import {AGENCY_WORK_START_DB_BOUNDARY_DDL} from '../../src/frontier/agency-work-start-db-boundary.mjs';
-import {AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_DDL} from '../../src/frontier/agency-work-start-principal-lifecycle.mjs';
+import {AGENCY_WORK_START_CANONICAL_MIGRATION_DDL} from '../../src/frontier/agency-work-start-principal-lifecycle.mjs';
 
 const execFileAsync=promisify(execFile);
 const REQUIRED=process.env.AGENCY_POSTGRES_PROOF_REQUIRED==='1';
@@ -32,7 +31,7 @@ before(async()=>{
   if(!REQUIRED)return;
   try{await docker(['version','--format','{{.Server.Version}}'],{timeout:10000});}catch(error){throw new Error(`Docker is required for work-start principal lifecycle proof: ${error.message}`);}
   await docker(['run','-d','--rm','--name',CONTAINER,'-e',`POSTGRES_PASSWORD=${DB_PASSWORD}`,POSTGRES_IMAGE],{timeout:120000});started=true;await waitForPostgres();
-  await psql(`${AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL}\n${AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL}\n${AGENCY_IDENTITY_CONTINUITY_DDL}\n${AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL}\n${AGENCY_IDENTITY_DB_BOUNDARY_DDL}\n${AGENCY_WORK_START_DB_BOUNDARY_DDL}\n${AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_DDL}`);
+  await psql(`${AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL}\n${AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL}\n${AGENCY_IDENTITY_CONTINUITY_DDL}\n${AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL}\n${AGENCY_IDENTITY_DB_BOUNDARY_DDL}\n${AGENCY_WORK_START_CANONICAL_MIGRATION_DDL}`);
   await psql(`
 DO $roles$
 BEGIN
@@ -99,4 +98,24 @@ pgTest('work-start-first race grants authority only for that transaction and rev
   assert.match(inFlightResult,/0/);
   assert.ok(elapsed>=650,`expected revocation to wait for in-flight guarded transaction, elapsed=${elapsed}ms`);
   await assert.rejects(()=>psql(runtimeAuthoritySql('wfm_work_start_runtime_inflight','T_INFLIGHT')),/work_start_tenant_principal_revoked/i);
+});
+
+pgTest('canonical migration replay preserves revocation tombstones and function-only admin authority',async()=>{
+  await psql(`DO $roles$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='wfm_work_start_runtime_reapply') THEN CREATE ROLE wfm_work_start_runtime_reapply LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT; END IF; END $roles$; GRANT wfm_agency_work_start_reader TO wfm_work_start_runtime_reapply;`);
+  await psql(adminSql(`SELECT public.wfm_bind_agency_work_start_principal_v1('wfm_work_start_runtime_reapply','T_REAPPLY','${'9'.repeat(24)}');`));
+  assert.equal(await psql(runtimeAuthoritySql('wfm_work_start_runtime_reapply','T_REAPPLY')),'0');
+  await psql(adminSql(`SELECT public.wfm_revoke_agency_work_start_principal_v1('wfm_work_start_runtime_reapply','T_REAPPLY','${'a'.repeat(24)}');`));
+  await assert.rejects(()=>psql(runtimeAuthoritySql('wfm_work_start_runtime_reapply','T_REAPPLY')),/work_start_tenant_principal_revoked/i);
+  const beforeReplay=await psql("SELECT tenant_id||','||(revoked_at IS NOT NULL)::text||','||revocation_fingerprint FROM public.wfm_agency_work_start_principal_tenants WHERE database_principal='wfm_work_start_runtime_reapply';");
+  assert.equal(beforeReplay,`T_REAPPLY,true,${'a'.repeat(24)}`);
+
+  await psql(AGENCY_WORK_START_CANONICAL_MIGRATION_DDL,{timeout:30000});
+
+  for(const privilege of ['SELECT','INSERT','UPDATE','DELETE','TRUNCATE']){
+    assert.equal(await psql(`SELECT has_table_privilege('wfm_agency_work_start_tenant_binding_admin','public.wfm_agency_work_start_principal_tenants','${privilege}');`),'f');
+  }
+  await assert.rejects(()=>psql(adminSql("UPDATE public.wfm_agency_work_start_principal_tenants SET tenant_id='T_ESCAPED' WHERE database_principal='wfm_work_start_runtime_reapply';")),/permission denied/i);
+  const afterReplay=await psql("SELECT tenant_id||','||(revoked_at IS NOT NULL)::text||','||revocation_fingerprint FROM public.wfm_agency_work_start_principal_tenants WHERE database_principal='wfm_work_start_runtime_reapply';");
+  assert.equal(afterReplay,beforeReplay);
+  await assert.rejects(()=>psql(runtimeAuthoritySql('wfm_work_start_runtime_reapply','T_REAPPLY')),/work_start_tenant_principal_revoked/i);
 });
