@@ -1,10 +1,46 @@
 import crypto from 'node:crypto';
 import { evaluateAgencyIdentityContinuity } from './agency-identity-continuity.mjs';
-import {AGENCY_WORK_START_SCOPED_AUTHORITY_SQL} from './agency-work-start-db-boundary.mjs';
 
-export const AGENCY_WORK_START_READINESS_VERSION='agency-work-start-readiness-v0.2.0';
-export const AGENCY_WORK_START_AUTHORITY_STORE_VERSION='agency-work-start-authority-store-v0.2.0';
-export const AGENCY_WORK_START_AUTHORITY_SQL=AGENCY_WORK_START_SCOPED_AUTHORITY_SQL;
+export const AGENCY_WORK_START_READINESS_VERSION='agency-work-start-readiness-v0.1.0';
+export const AGENCY_WORK_START_AUTHORITY_STORE_VERSION='agency-work-start-authority-store-v0.1.0';
+
+export const AGENCY_WORK_START_AUTHORITY_SQL=`
+WITH current AS MATERIALIZED (
+  SELECT tenant_id, agency_id, worker_id, assurance_version_id, site_id, request_id,
+         assignment_fingerprint, checked_at, coverage_until, promoted_at, conflicted
+  FROM wfm_agency_rtw_assurance_current
+  WHERE tenant_id = $1
+    AND agency_id = $4
+    AND worker_id = $5
+  LIMIT 2
+)
+SELECT current.tenant_id, current.agency_id, current.worker_id,
+       current.assurance_version_id, current.site_id, current.request_id,
+       current.assignment_fingerprint, current.checked_at, current.coverage_until,
+       current.promoted_at, current.conflicted,
+       accepted.token_fingerprint, accepted.action, accepted.consumed_at
+FROM current
+LEFT JOIN LATERAL (
+  SELECT consumption.token_fingerprint, consumption.action, consumption.consumed_at
+  FROM wfm_agency_portal_token_consumptions AS consumption
+  CROSS JOIN LATERAL jsonb_array_elements(
+    CASE WHEN jsonb_typeof(consumption.assurance_bindings)='array'
+      THEN consumption.assurance_bindings ELSE '[]'::jsonb END
+  ) AS entry(binding)
+  WHERE consumption.tenant_id = $1
+    AND consumption.site_id = $2
+    AND consumption.request_id = $3
+    AND consumption.agency_id = $4
+    AND consumption.action IN ('confirm_preferred_worker','partial_fill')
+    AND consumption.consumed_at <= $6::timestamptz
+    AND entry.binding->>'workerId' = current.worker_id
+    AND lower(entry.binding->>'assuranceVersionId') = lower(current.assurance_version_id)
+  ORDER BY consumption.consumed_at DESC, consumption.token_fingerprint DESC
+  LIMIT 1
+) AS accepted ON true
+ORDER BY accepted.consumed_at DESC NULLS LAST, accepted.token_fingerprint DESC NULLS LAST
+LIMIT 3;
+`;
 
 const text=(value,max=200)=>typeof value==='string'?value.trim().slice(0,max):'';
 const ms=value=>{const parsed=typeof value==='number'?value:Date.parse(value);return Number.isFinite(parsed)?parsed:null;};
@@ -44,13 +80,9 @@ export function createPostgresAgencyWorkStartAuthorityStore({query}={}){
   if(typeof query!=='function')throw new TypeError('query function is required');
   return Object.freeze({
     version:AGENCY_WORK_START_AUTHORITY_STORE_VERSION,
-    credentialBoundary:'work_start_scoped_authority_function_only',
-    directTableSelectAllowed:false,
     async readAuthority(scope={}){
       const now=iso(scope.now);if(!now)throw new TypeError('now invalid');
-      const assignment=required(scope.assignmentFingerprint,'assignmentFingerprint',24).toLowerCase();
-      if(!hex(assignment,24))throw new TypeError('assignmentFingerprint invalid');
-      const values=[required(scope.tenantId,'tenantId',100),required(scope.siteId,'siteId',100),required(scope.requestId,'requestId',100),required(scope.agencyId,'agencyId',100),required(scope.workerId,'workerId',100),assignment,now];
+      const values=[required(scope.tenantId,'tenantId',100),required(scope.siteId,'siteId',100),required(scope.requestId,'requestId',100),required(scope.agencyId,'agencyId',100),required(scope.workerId,'workerId',100),now];
       const result=await query(AGENCY_WORK_START_AUTHORITY_SQL,values);
       const rows=Array.isArray(result?.rows)?result.rows.map(safeAuthorityRow):[];
       if(rows.length>2)throw new Error('unexpected_work_start_authority_count');
