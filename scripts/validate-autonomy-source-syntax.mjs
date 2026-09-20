@@ -6,6 +6,10 @@ import { spawnSync } from 'node:child_process';
 const root = process.cwd();
 const jsFiles = [
   'resilience/support-selfhelp.cjs',
+  'resilience/evidence-bound-data-import-plan.cjs',
+  'resilience/isolated-data-import-executor.cjs',
+  'resilience/authorised-staging-import-readiness.cjs',
+  'resilience/authorised-staging-import-executor.cjs',
   'resilience/autonomous-repair-factory.cjs',
   'resilience/isolated-repair-worker.cjs',
   'resilience/independent-repair-verifier.cjs',
@@ -37,6 +41,10 @@ const jsFiles = [
   'scripts/validate-resilience-scenarios.mjs',
   'scripts/validate-support-tier-contract.mjs',
   'scripts/validate-support-selfhelp.mjs',
+  'scripts/validate-evidence-bound-data-import-plan.mjs',
+  'scripts/validate-isolated-data-import-executor.mjs',
+  'scripts/validate-authorised-staging-import-readiness.mjs',
+  'scripts/validate-authorised-staging-import-executor.mjs',
   'scripts/validate-provider-recovery-handoff.mjs',
   'scripts/validate-autonomous-repair-factory.mjs',
   'scripts/validate-isolated-repair-worker.mjs',
@@ -90,6 +98,10 @@ for (const rel of [
   'resilience/incident-learning-planner.cjs',
   'resilience/incident-regression-corpus.cjs',
   'resilience/prior-corpus-evidence-verifier.cjs',
+  'resilience/evidence-bound-data-import-plan.cjs',
+  'resilience/isolated-data-import-executor.cjs',
+  'resilience/authorised-staging-import-readiness.cjs',
+  'resilience/authorised-staging-import-executor.cjs',
 ]) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
   for (const forbidden of ["require('node:http')", "require('node:https')", "require('node:net')", 'process.env', 'fetch(']) {
