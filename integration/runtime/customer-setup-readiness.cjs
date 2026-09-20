@@ -1,11 +1,14 @@
 'use strict';
 
 const { buildSetupDescriptor } = require('./transport-runtime-policy.cjs');
+const { validCredentialRef } = require('./connection-proof-gate.cjs');
 
 const RAW_SECRET_FIELD_PATTERN = /(^|[-_.])(password|passwd|secret|clientsecret|client_secret|token|accesstoken|access_token|apikey|api_key|privatekey|private_key)($|[-_.])/i;
 
 function hasValue(value) {
   if (typeof value === 'string') return value.trim().length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  if (value && typeof value === 'object') return Object.keys(value).length > 0;
   return value !== undefined && value !== null;
 }
 
@@ -17,14 +20,23 @@ function assessCustomerSetup(review, supplied = {}) {
     key !== 'credentialRef' && RAW_SECRET_FIELD_PATTERN.test(key) && hasValue(supplied[key])
   );
   const missingFields = requiredFields.filter((key) => !hasValue(supplied[key]));
+  const invalidProtectedReferenceFields = [];
+  if (requiredFields.includes('credentialRef') && hasValue(supplied.credentialRef) && !validCredentialRef(supplied.credentialRef)) {
+    invalidProtectedReferenceFields.push('credentialRef');
+  }
   const unrecognizedFieldNames = suppliedKeys.filter((key) =>
     !requiredFields.includes(key) && !rejectedRawSecretFields.includes(key)
   );
-  const acceptedFieldNames = requiredFields.filter((key) => hasValue(supplied[key]));
+  const acceptedFieldNames = requiredFields.filter((key) =>
+    hasValue(supplied[key]) && (key !== 'credentialRef' || invalidProtectedReferenceFields.length === 0)
+  );
 
   const blockers = [];
   if (missingFields.length > 0) {
     blockers.push(`Missing required setup metadata: ${missingFields.join(', ')}.`);
+  }
+  if (invalidProtectedReferenceFields.length > 0) {
+    blockers.push('Credential reference is not a supported protected reference; raw or opaque credential values are never accepted.');
   }
   if (rejectedRawSecretFields.length > 0) {
     blockers.push('Raw secret fields are not accepted; use a protected credential reference instead.');
@@ -38,6 +50,7 @@ function assessCustomerSetup(review, supplied = {}) {
     readyForSafeConnectionTest: blockers.length === 0,
     acceptedFieldNames,
     missingFields,
+    invalidProtectedReferenceFields,
     rejectedRawSecretFields,
     unrecognizedFieldNames,
     blockers,
