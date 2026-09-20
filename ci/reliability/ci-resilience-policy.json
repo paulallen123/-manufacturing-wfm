@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "WFM CI provider resilience policy",
+  "releaseProof": {
+    "exactNodeVersion": "22.23.2",
+    "canonicalCommand": "node scripts/validate-zero-useful-foothold.mjs",
+    "minimumIndependentExecutedPasses": 2,
+    "providers": ["github-actions", "circleci"],
+    "sameProviderRerunsDoNotIncreaseQuorum": true,
+    "zeroExecutedStepsClassification": "INFRASTRUCTURE_UNAVAILABLE",
+    "infrastructureUnavailableCountsAsProductFailure": false,
+    "infrastructureUnavailableCountsAsPass": false,
+    "receiptMustBindExactCommit": true,
+    "missingReceiptClassification": "UNPROVEN",
+    "executedFailureBlocksRelease": true
+  },
+  "repositoryGovernance": {
+    "mainProtectionRequired": true,
+    "signedCommitsRequired": true,
+    "pullRequestRequired": true,
+    "forcePushForbidden": true,
+    "branchDeletionForbidden": true,
+    "specificExternalCiAppRequired": true,
+    "expectedExternalCiProvider": "circleci"
+  },
+  "availability": {
+    "githubActionsIsNotSoleProofProvider": true,
+    "providerNeutralProofLogicRequired": true,
+    "proofReceiptPreservationRequired": true,
+    "independentOffGithubEvidenceRequiredForCustomerRelease": true,
+    "automaticPaidRetriesAllowed": false
+  },
+  "recovery": {
+    "offGithubSourceBackupRequiredForCustomerRelease": true,
+    "restoreDrillRequired": true,
+    "backupDoesNotCountUntilRestoreVerified": true
+  }
+}
