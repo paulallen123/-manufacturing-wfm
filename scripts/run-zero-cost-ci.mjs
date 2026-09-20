@@ -12,6 +12,7 @@ const checks = [
   'scripts/validate-vector-only-ui.mjs',
   'scripts/validate-onedrive-sync-guardian.mjs',
   'scripts/validate-zero-useful-foothold.mjs',
+  'scripts/validate-ci-resilience.mjs',
   'scripts/validate-release-policy.mjs'
 ];
 
