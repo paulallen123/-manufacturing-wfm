@@ -7,6 +7,10 @@ const {
   deriveCanonicalTrustAnchorGovernanceEvidence,
   verifyCanonicalTrustAnchorGovernanceEvidence,
 } = require('../resilience/canonical-release-boundary.cjs');
+const {
+  createCanonicalGovernanceObservation,
+  verifyCanonicalGovernanceObservation,
+} = require('../resilience/canonical-governance-observation.cjs');
 
 const apiBase = String(process.env.GITHUB_API_URL || 'https://api.github.com').replace(/\/$/, '');
 const repository = String(process.env.GITHUB_REPOSITORY || '').trim();
@@ -15,6 +19,10 @@ const branchName = 'integration/canonical';
 const outputPath = path.resolve(
   process.env.WFM_CANONICAL_GOVERNANCE_EVIDENCE_OUTPUT
     || path.join(process.cwd(), 'canonical-governance-evidence.json'),
+);
+const observationPath = path.resolve(
+  process.env.WFM_CANONICAL_GOVERNANCE_OBSERVATION_OUTPUT
+    || path.join(path.dirname(outputPath), 'canonical-governance-observation.json'),
 );
 const exportEnv = process.env.WFM_CANONICAL_GOVERNANCE_EXPORT_ENV !== 'false';
 
@@ -67,8 +75,14 @@ const [branchResult, protectionResult, rulesResult] = await Promise.all([
 ]);
 
 const applicableRulesetCount = Array.isArray(rulesResult.body) ? rulesResult.body.length : -1;
+// Preserve the requested canonical branch identity when GitHub cannot return the branch body.
+// This allows a denied/not-found provider read to remain a signed, fail-closed negative observation
+// instead of causing the evidence verifier itself to discard the diagnostic context.
+const branchForEvidence = branchResult.status === 200
+  ? branchResult.body
+  : { name: branchName, protected: false, commit: { sha: null } };
 const evidence = deriveCanonicalTrustAnchorGovernanceEvidence({
-  branch: branchResult.body,
+  branch: branchForEvidence,
   protection: protectionResult.body,
   branchReadStatus: branchResult.status,
   protectionReadStatus: protectionResult.status,
@@ -79,12 +93,22 @@ const evidence = deriveCanonicalTrustAnchorGovernanceEvidence({
 if (!verifyCanonicalTrustAnchorGovernanceEvidence(evidence)) {
   throw new Error('Derived canonical governance evidence failed self-verification.');
 }
+const observation = createCanonicalGovernanceObservation(evidence);
+if (!verifyCanonicalGovernanceObservation(evidence, observation)) {
+  throw new Error('Derived canonical governance observation failed self-verification.');
+}
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+fs.mkdirSync(path.dirname(observationPath), { recursive: true });
 fs.writeFileSync(outputPath, `${JSON.stringify(evidence, null, 2)}\n`);
+fs.writeFileSync(observationPath, `${JSON.stringify(observation, null, 2)}\n`);
 
 appendGithubEnv('WFM_CANONICAL_GOVERNANCE_EVIDENCE_FILE', outputPath);
 appendGithubEnv('WFM_CANONICAL_GOVERNANCE_EVIDENCE_DIGEST', evidence.governanceEvidenceDigest);
+appendGithubEnv('WFM_CANONICAL_GOVERNANCE_OBSERVATION_FILE', observationPath);
+appendGithubEnv('WFM_CANONICAL_GOVERNANCE_OBSERVATION_DIGEST', observation.observationDigest);
+appendGithubEnv('WFM_CANONICAL_GOVERNANCE_ASSESSMENT', observation.assessment);
+appendGithubEnv('WFM_CANONICAL_GOVERNANCE_BLOCKER_CLASS', observation.blockerClass);
 appendGithubEnv('WFM_CANONICAL_TRUST_ANCHOR_PROTECTED', evidence.governance?.protected === true ? 'true' : 'false');
 appendGithubEnv('WFM_CANONICAL_TRUST_ANCHOR_GOVERNANCE_VERIFIED', evidence.governanceVerified === true ? 'true' : 'false');
 
@@ -100,6 +124,12 @@ console.log(JSON.stringify({
   governanceVerified: evidence.governanceVerified === true,
   governanceEvidenceDigest: evidence.governanceEvidenceDigest,
   validationCode: evidence.validationCode,
+  governanceObservation: {
+    assessment: observation.assessment,
+    blockerClass: observation.blockerClass,
+    confidence: observation.confidence,
+    observationDigest: observation.observationDigest,
+  },
   providerErrors: {
     branch: branchResult.error,
     protection: protectionResult.error,
