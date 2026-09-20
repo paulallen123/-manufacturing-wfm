@@ -62,6 +62,20 @@ function nextEvidence(level,evidenceBlockers=[]){
   }
 }
 
+function providerIdentityFor(system){
+  const identity=system.providerIdentity||{};
+  return {
+    canonicalName:identity.canonicalName||system.name,
+    aliases:unique(identity.aliases||[]),
+    rebrandDate:identity.rebrandDate||null,
+    canonicalApiHosts:unique(identity.canonicalApiHosts||[]),
+    transitionalApiHosts:unique(identity.transitionalApiHosts||[]),
+    regionalHostModel:identity.regionalHostModel||null,
+    customerDomainMigration:identity.customerDomainMigration||null,
+    crossHostRedirectApproved:identity.crossHostRedirectApproved===true
+  };
+}
+
 export function buildConnectorRegistry(){
   const catalog=loadCatalog();
   const connectors=catalog.systems.map(system=>{
@@ -83,6 +97,8 @@ export function buildConnectorRegistry(){
       protocols:[...system.protocols],
       adapters,
       canonicalTargets:canonicalTargets(system),
+      providerIdentity:providerIdentityFor(system),
+      bootstrapAuthority:system.bootstrapAuthority?structuredClone(system.bootstrapAuthority):null,
       discoveryStrategy:discoveryStrategy(profileIds,edgeRequired),
       nextEvidenceGate:nextEvidence(system.testLevel,evidenceBlockers),
       evidenceBlockers,
@@ -108,7 +124,10 @@ export function buildConnectorRegistry(){
         rawSensitiveHealthDataAllowed:false,
         superAdminCredentialAllowed:false,
         oauthPasswordGrantEnabled:false,
-        oauthImplicitGrantEnabled:false
+        oauthImplicitGrantEnabled:false,
+        bootstrapCredentialRetentionAllowed:false,
+        bootstrapCredentialReuseAtRuntimeAllowed:false,
+        customerControlledBootstrapAllowed:true
       }
     };
   });
