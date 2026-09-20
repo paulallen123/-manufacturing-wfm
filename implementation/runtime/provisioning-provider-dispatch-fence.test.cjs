@@ -21,6 +21,7 @@ function makeRecord(overrides = {}) {
     generation: 4,
     leaseOwner: 'worker-a',
     leaseUntil: 5000,
+    updatedAt: 1000,
     mutationWorkerId: 'worker-a',
     providerRequestId: 'wfm-create-request-1',
     ...overrides
@@ -78,6 +79,7 @@ test('checks live ownership immediately before provider create and forwards exac
   assert.equal(provider.attempts[0].plan.isolated, true);
   assert.equal(provider.attempts[0].plan.creationMode, 'fresh-provider-create');
   assert.equal(response.permit.generation, 4);
+  assert.equal(response.creationProof.issuedAt, 1000);
   assert.match(response.permit.dispatchDigest, /^[a-f0-9]{64}$/);
   assert.match(response.creationProof.mac, /^[a-f0-9]{64}$/);
   assert.equal(response.creationProof.providerRequestId, 'wfm-create-request-1');
@@ -116,16 +118,27 @@ test('tampered sealed payload is rejected before provider side effects', async (
   assert.equal(provider.attempts.length, 0);
 });
 
-test('duplicate dispatch attempts reuse one downstream idempotency identity and one provider-resident proof subject', async () => {
+test('duplicate retries reuse the same downstream identity and signed creation proof even when retry time changes', async () => {
   const provider = makeProvider();
-  const value = fence(makeRecord(), provider);
+  let current = 4000;
+  const value = fence(makeRecord(), provider, () => current);
   const first = await value.dispatch(token(), 'wfm-create-request-1');
+  current = 4500;
   const second = await value.dispatch(token(), 'wfm-create-request-1');
 
   assert.equal(provider.attempts.length, 2);
   assert.equal(provider.resources.size, 1);
   assert.equal(first.result.providerResourceId, second.result.providerResourceId);
   assert.equal(first.creationProof.mac, second.creationProof.mac);
+  assert.equal(first.creationProof.issuedAt, 1000);
+  assert.equal(second.creationProof.issuedAt, 1000);
+});
+
+test('invalid committed mutation time is fenced before provider side effects', async () => {
+  const provider = makeProvider();
+  const value = fence(makeRecord({ updatedAt: 4501 }), provider, () => 4500);
+  await assert.rejects(() => value.dispatch(token(), 'wfm-create-request-1'), error => error && error.code === 'WFM_PROVIDER_DISPATCH_MUTATION_TIME_INVALID');
+  assert.equal(provider.attempts.length, 0);
 });
 
 test('provider adapters that cannot guarantee idempotency are refused', () => {
