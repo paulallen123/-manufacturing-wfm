@@ -5,6 +5,7 @@ import { chromium } from 'playwright';
 const origin = new URL(process.env.VECTOR_PROOF_URL).origin;
 const expectedSha = process.env.WFM_EXPECTED_CANDIDATE_SHA;
 const password = process.env.WFM_STAGING_PASSWORD;
+const requireActionAffordanceCoverage = process.env.WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE === 'true';
 
 assert.match(expectedSha || '', /^[0-9a-f]{40}$/);
 assert.ok(password && password.length >= 20, 'Staging password unavailable.');
@@ -169,6 +170,12 @@ try {
         .filter(Boolean);
       const expectedVisibleNeedsIds = expectedNeedsIds.slice(0, 4);
       const expectedVisibleAwaitingIds = expectedAwaitingIds.slice(0, 3);
+      const affordanceCoverage = expectedNeedsIds.length > 0 && expectedAwaitingIds.length > 0 ? 'EXERCISED' : 'UNEXERCISED';
+
+      if (requireActionAffordanceCoverage) {
+        assert.ok(expectedNeedsIds.length > 0, 'Strict lifecycle-affordance proof requires at least one authoritative Needs my action row.');
+        assert.ok(expectedAwaitingIds.length > 0, 'Strict lifecycle-affordance proof requires at least one authoritative Awaiting source confirmation row.');
+      }
 
       if (active.length) {
         await page.waitForFunction(({ needsIds, awaitingIds }) => {
@@ -270,9 +277,10 @@ try {
       actionJourney.queueProof = {
         expectedNeeds: expectedNeedsIds.length,
         expectedAwaiting: expectedAwaitingIds.length,
+        affordanceCoverage,
         viewports: queueStates.map(({ label, headerCount, badgeCount, awaitingCount, detailsPresent, detailsOpen }) => ({ label, headerCount, badgeCount, awaitingCount, detailsPresent, detailsOpen }))
       };
-      console.log(`CURRENT_ACTION_QUEUE_GROUPING=PASS|needsSource=${expectedNeedsIds.length}|awaitingSource=${expectedAwaitingIds.length}|viewports=3|affordances=review-vs-view-status`);
+      console.log(`CURRENT_ACTION_QUEUE_GROUPING=PASS|needsSource=${expectedNeedsIds.length}|awaitingSource=${expectedAwaitingIds.length}|viewports=3|affordanceCoverage=${affordanceCoverage}|reviewVerified=${expectedNeedsIds.length > 0}|viewStatusVerified=${expectedAwaitingIds.length > 0}`);
 
       if (active.length === 0) {
         const renderedActions = page.locator('.vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]');
