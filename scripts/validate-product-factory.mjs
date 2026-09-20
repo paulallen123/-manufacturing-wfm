@@ -13,6 +13,15 @@ assert.ok(manifest.nonNegotiables.includes('vector-only-ui'));
 assert.ok(manifest.nonNegotiables.includes('no-fabricated-savings'));
 assert.ok(manifest.nonNegotiables.includes('reuse-before-bespoke'));
 
+
+const benchmark=json('product-factory/world-class-24h-benchmark.json');
+assert.equal(benchmark.schemaVersion,1);
+assert.ok(Array.isArray(benchmark.winningDimensions)&&benchmark.winningDimensions.length>=10,'world-class benchmark needs broad quality dimensions');
+assert.ok(benchmark.winningDimensions.every(x=>x.releaseBlocking===true),'every world-class dimension must be release blocking');
+assert.ok(benchmark.winningDimensions.every(x=>Array.isArray(x.proof)&&x.proof.length>=3),'every world-class dimension needs explicit proof');
+assert.match(benchmark.claimPolicy,/only.*live evidence gate passes/i,'competitive claims must be evidence gated');
+assert.match(benchmark.releaseRule,/Unknown evidence is not a pass/i,'unknown evidence must fail closed');
+
 const template=json('product-factory/feature-template.json');
 for(const field of manifest.requiredFeatureFields) assert.ok(Object.prototype.hasOwnProperty.call(template,field),'template missing '+field);
 
