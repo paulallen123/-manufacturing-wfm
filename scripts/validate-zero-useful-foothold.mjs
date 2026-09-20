@@ -39,6 +39,7 @@ const receipt = {
   },
   scaleProfilesEncoded: ['1/1', 'small', '100', '500', '2000', '10000'],
   securityInvariants: [
+    'one canonical public edge per region; proof/test/retired services cannot be public',
     'explicit public exposure approval',
     'no long-lived runtime/build secrets',
     'no network package install during build',
