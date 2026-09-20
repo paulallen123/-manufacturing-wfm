@@ -1,6 +1,7 @@
 {
   "observed_at_utc": "2026-09-20T03:13:49Z",
-  "environment_scope": "authorised Railway manufacturing-wfm-test environment only",
+  "last_reverified_at_utc": "2026-09-20T04:12:00Z",
+  "environment_scope": "authorised Railway manufacturing-wfm-test and manufacturing-wfm-staging-proof environments only",
   "service": "wfm-one-day-enterprise-v1",
   "deployment_id": "eb8b7e40-0153-4592-88a8-7027578db5d0",
   "finding": {
@@ -26,6 +27,25 @@
     "same_period_terminal_failure_reason_was_observable": true,
     "comparison_reason": "missing security-hold root directory was explicitly logged"
   },
+  "manual_redeploy_verification_20260920_0411_utc": {
+    "environment": "manufacturing-wfm-staging-proof",
+    "service": "wfm-integration-fabric-v1-proof",
+    "deployment_id": "f2b5eb15-dd1c-4c3a-b5af-994b1072afd0",
+    "status": "FAILED",
+    "result": "SECURITY_HOLD_BLOCKED_BEFORE_DOCKER_BUILD_INSTRUCTIONS",
+    "terminal_failure_reason_observed": true,
+    "failure_reason": "configured inert root directory was absent in the fetched snapshot",
+    "deploy_log_entries": 0,
+    "repository_build_or_runtime_output_observed": false,
+    "interpretation": "This directly re-proves the inert-root hold for this staging proof path. It does not prove every historic snapshot or Railway UI redeploy path."
+  },
+  "private_proof_redeploy_check_20260920_0412_utc": {
+    "environment": "manufacturing-wfm-staging-proof",
+    "service": "wfm-private-proof-harness-1308",
+    "result": "API_REDEPLOY_BLOCKED_NO_LATEST_SNAPSHOT",
+    "reason": "the latest deployment is SKIPPED and has no build snapshot to copy",
+    "interpretation": "The current API redeploy path could not start a deployment. This is not evidence that all older-snapshot or UI-mediated redeploy paths are impossible."
+  },
   "containment": {
     "existing_narrow_build_hold_preserved": true,
     "new_production_change_made": false,
@@ -43,7 +63,8 @@
       "credential-bearing service without build hold",
       "successful deployment without runtime logs",
       "complete failed-build evidence control case"
-    ]
+    ],
+    "live_redeploy_case_reverified": true
   },
   "threat_correlation": {
     "source": "CrowdStrike PhantomRaven research",
@@ -53,8 +74,10 @@
   },
   "residual_risk": {
     "cause_of_missing_build_telemetry_not_proven": true,
+    "enterprise_terminal_failure_reason_still_missing_at_20260920_0412_utc": true,
     "no_evidence_of_active_compromise_observed": true,
-    "credential_bearing_release_must_remain_blocked_until_terminal_build_reason_is_observable": true
+    "credential_bearing_release_must_remain_blocked_until_terminal_build_reason_is_observable": true,
+    "historic_snapshot_or_ui_redeploy_bypass_not_fully_excluded": true
   },
   "decision": "PRESERVE_BUILD_HOLD_AND_ESCALATE_TELEMETRY_LOSS"
 }
