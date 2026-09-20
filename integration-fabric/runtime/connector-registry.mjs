@@ -103,6 +103,13 @@ export function buildConnectorRegistry(){
       discoveryStrategy:discoveryStrategy(profileIds,edgeRequired),
       nextEvidenceGate:nextEvidence(system.testLevel,evidenceBlockers),
       evidenceBlockers,
+      schemaNegotiation:{
+        fingerprintRequired:true,
+        preserveOptionalExtensions:true,
+        silentBreakingChangeAllowed:false,
+        credentialLikeExtensionsAllowed:false,
+        historicalFingerprintRetentionRequired:true
+      },
       security:{
         readOnlyDefault:true,
         writeEnabled:false,
