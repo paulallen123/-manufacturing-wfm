@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {
   AGENCY_WORK_START_BIND_PRINCIPAL_SQL,
   AGENCY_WORK_START_CANONICAL_MIGRATION_DDL,
@@ -68,6 +69,14 @@ test('canonical migration is transactional and always leaves lifecycle hardening
   assert.equal(a.canonicalMigrationRollbackOnFailure,true);
   assert.equal(a.canonicalMigrationFinalHardeningRequired,true);
   assert.equal(a.standaloneDbBoundaryAfterLifecycleAuthorized,false);
+});
+
+test('production-like runtime race proof installs the canonical work-start migration, never the raw base boundary',()=>{
+  const runtimeProof=readFileSync(new URL('./agency-postgres-work-start-runtime-race.test.mjs',import.meta.url),'utf8');
+  assert.match(runtimeProof,/import \{AGENCY_WORK_START_CANONICAL_MIGRATION_DDL\} from '\.\.\/\.\.\/src\/frontier\/agency-work-start-principal-lifecycle\.mjs';/);
+  assert.match(runtimeProof,/\$\{AGENCY_WORK_START_CANONICAL_MIGRATION_DDL\}/);
+  assert.doesNotMatch(runtimeProof,/import \{AGENCY_WORK_START_DB_BOUNDARY_DDL\} from '\.\.\/\.\.\/src\/frontier\/agency-work-start-db-boundary\.mjs';/);
+  assert.doesNotMatch(runtimeProof,/\$\{AGENCY_WORK_START_DB_BOUNDARY_DDL\}/);
 });
 
 test('lifecycle metadata preserves eligibility/ranking separation and grants no live mutation authority',()=>{
