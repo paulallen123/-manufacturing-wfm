@@ -93,7 +93,16 @@ export class AutomaticAttendanceEvidenceEngine {
 
   registerPerson({tenant,employee,sites=[]}){
     if(!ID.test(String(tenant||'')) || !ID.test(String(employee||'')) || !Array.isArray(sites) || sites.some(x=>!ID.test(String(x)))) throw err('Valid tenant, employee and sites required.');
-    this.people.set(key(tenant,employee),{tenant,employee,sites:[...new Set(sites)]});
+    const personKey=key(tenant,employee);
+    const normalizedSites=[...new Set(sites.map(String))];
+    const prior=this.people.get(personKey);
+    let assignmentGeneration=Number.isSafeInteger(prior?.assignmentGeneration) && prior.assignmentGeneration>0 ? prior.assignmentGeneration : 1;
+    if(prior){
+      const before=[...new Set((prior.sites??[]).map(String))].sort();
+      const after=[...normalizedSites].sort();
+      if(JSON.stringify(before)!==JSON.stringify(after)) assignmentGeneration+=1;
+    }
+    this.people.set(personKey,{tenant,employee,sites:normalizedSites,assignmentGeneration});
   }
 
   registerSource({tenant,sourceId,site,type,directAttendanceAuthority=false,timestampMode='source',active=true,allowedKinds}){
@@ -152,7 +161,7 @@ export class AutomaticAttendanceEvidenceEngine {
     }
 
     const spec=KIND[kind];
-    const event={...content,domain:spec.domain,polarity:spec.polarity,anchorIn:spec.anchorIn,anchorOut:spec.anchorOut,location:spec.location,identity:spec.identity,receivedAtMs,digest:d,directAttendanceAuthority:source.directAttendanceAuthority,sourceType:source.type,sourceAuthorityGeneration:Number.isSafeInteger(source.authorityGeneration)&&source.authorityGeneration>0?source.authorityGeneration:1};
+    const event={...content,domain:spec.domain,polarity:spec.polarity,anchorIn:spec.anchorIn,anchorOut:spec.anchorOut,location:spec.location,identity:spec.identity,receivedAtMs,digest:d,directAttendanceAuthority:source.directAttendanceAuthority,sourceType:source.type,sourceAuthorityGeneration:Number.isSafeInteger(source.authorityGeneration)&&source.authorityGeneration>0?source.authorityGeneration:1,personAssignmentGeneration:Number.isSafeInteger(person.assignmentGeneration)&&person.assignmentGeneration>0?person.assignmentGeneration:1};
     this.events.set(eventKey,event);
     const employeeKey=key(tenant,employee,source.site);
     const list=this.employeeEvents.get(employeeKey) ?? [];
@@ -190,16 +199,18 @@ export class AutomaticAttendanceEvidenceEngine {
       return {status:'evidence_only',direction:'in',reason:'ABSENCE_SIGNAL_CANNOT_START_ATTENDANCE'};
     }
 
-    // Revocation is immediate for future decisions: evidence accepted before a source
-    // was revoked may remain in the immutable audit record, but it cannot complete a
-    // still-pending quorum after the source loses authority. Reactivating/reconfiguring
-    // the same logical source starts a new authority generation, so pre-revocation
-    // evidence cannot become authoritative again later.
+    // Revocation and employee/site assignment changes are immediate for future
+    // decisions. Evidence remains immutable/auditable, but evidence accepted under
+    // an older authority generation cannot complete a still-pending quorum after
+    // either the source or the employee/site assignment changes.
+    const currentPerson=this.people.get(key(tenant,employee));
+    const currentAssignmentGeneration=Number.isSafeInteger(currentPerson?.assignmentGeneration)&&currentPerson.assignmentGeneration>0?currentPerson.assignmentGeneration:1;
     const all=(this.employeeEvents.get(employeeKey)??[]).filter(e=>{
       const registered=this.sources.get(key(tenant,e.sourceId));
       const currentGeneration=Number.isSafeInteger(registered?.authorityGeneration)&&registered.authorityGeneration>0?registered.authorityGeneration:1;
       const eventGeneration=Number.isSafeInteger(e.sourceAuthorityGeneration)&&e.sourceAuthorityGeneration>0?e.sourceAuthorityGeneration:1;
-      return Boolean(registered?.active) && registered.site===site && eventGeneration===currentGeneration;
+      const eventAssignmentGeneration=Number.isSafeInteger(e.personAssignmentGeneration)&&e.personAssignmentGeneration>0?e.personAssignmentGeneration:1;
+      return Boolean(registered?.active) && registered.site===site && eventGeneration===currentGeneration && eventAssignmentGeneration===currentAssignmentGeneration;
     });
     const cluster=all.filter(e=>Math.abs(e.observedMs-trigger.observedMs)<=this.corroborationWindowMs);
     const wanted=cluster.filter(e=>direction==='in'?e.polarity==='present':e.polarity==='absent');
