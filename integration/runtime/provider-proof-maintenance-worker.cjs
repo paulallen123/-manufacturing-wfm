@@ -109,6 +109,141 @@ function safeProofSummary(proof) {
   });
 }
 
+function reconcileDurableCompletion(ledger, expectation = {}, now = Date.now()) {
+  const taskKey = lower(expectation.taskKey);
+  const intendedStatus = text(expectation.intendedStatus).toUpperCase();
+  if (!DIGEST.test(taskKey)) {
+    return Object.freeze({ state: 'ATTENTION_REQUIRED', reconciled: false, retryAllowed: false, errorClass: 'maintenance-task-key-invalid' });
+  }
+  if (!ledger || typeof ledger.getTask !== 'function') {
+    return Object.freeze({
+      state: 'COMPLETION_UNCERTAIN',
+      reconciled: false,
+      retryAllowed: false,
+      taskKey,
+      errorClass: 'maintenance-completion-not-confirmed'
+    });
+  }
+
+  let durable;
+  try {
+    durable = ledger.getTask(taskKey);
+  } catch {
+    return Object.freeze({
+      state: 'COMPLETION_UNCERTAIN',
+      reconciled: false,
+      retryAllowed: false,
+      taskKey,
+      errorClass: 'maintenance-control-plane-unavailable'
+    });
+  }
+  if (!durable) {
+    return Object.freeze({
+      state: 'ATTENTION_REQUIRED',
+      reconciled: false,
+      retryAllowed: false,
+      taskKey,
+      errorClass: 'maintenance-task-missing'
+    });
+  }
+
+  const durableStatus = text(durable.status).toUpperCase();
+  if (intendedStatus === 'SUCCESS' && durableStatus === 'SUCCEEDED') {
+    const expectedDigest = lower(expectation.outcomeDigest);
+    const durableDigest = lower(durable.outcomeDigest);
+    if (!DIGEST.test(expectedDigest) || !DIGEST.test(durableDigest) || expectedDigest !== durableDigest) {
+      return Object.freeze({
+        state: 'ATTENTION_REQUIRED',
+        reconciled: false,
+        retryAllowed: false,
+        taskKey,
+        errorClass: 'maintenance-outcome-digest-mismatch'
+      });
+    }
+    return Object.freeze({
+      state: 'SUCCEEDED',
+      reconciled: true,
+      retryAllowed: false,
+      taskKey,
+      outcomeDigest: durableDigest
+    });
+  }
+
+  if (intendedStatus === 'RETRY' && durableStatus === 'PENDING') {
+    return Object.freeze({
+      state: 'PENDING',
+      reconciled: true,
+      retryAllowed: true,
+      taskKey,
+      nextAttemptAt: durable.nextAttemptAt || null,
+      errorClass: durable.lastErrorClass || expectation.errorClass || 'provider-temporary-unavailable'
+    });
+  }
+
+  if (intendedStatus === 'BLOCK' && durableStatus === 'BLOCKED') {
+    const expectedErrorClass = text(expectation.errorClass);
+    if (expectedErrorClass && durable.lastErrorClass && expectedErrorClass !== durable.lastErrorClass) {
+      return Object.freeze({
+        state: 'ATTENTION_REQUIRED',
+        reconciled: false,
+        retryAllowed: false,
+        taskKey,
+        errorClass: 'maintenance-block-reason-mismatch'
+      });
+    }
+    return Object.freeze({
+      state: 'BLOCKED',
+      reconciled: true,
+      retryAllowed: false,
+      taskKey,
+      errorClass: durable.lastErrorClass || expectedErrorClass || 'provider-proof-execution-blocked'
+    });
+  }
+
+  if (durableStatus === 'CLAIMED') {
+    const expiryMs = Date.parse(text(durable.claimExpiresAt));
+    return Object.freeze({
+      state: 'COMPLETION_UNCERTAIN',
+      reconciled: false,
+      retryAllowed: false,
+      taskKey,
+      retryNotBefore: Number.isFinite(expiryMs) && expiryMs > Number(now) ? new Date(expiryMs).toISOString() : null,
+      errorClass: 'maintenance-completion-not-confirmed'
+    });
+  }
+
+  if (durableStatus === 'PENDING') {
+    return Object.freeze({
+      state: 'RETRY_REQUIRED',
+      reconciled: false,
+      retryAllowed: true,
+      taskKey,
+      nextAttemptAt: durable.nextAttemptAt || null,
+      errorClass: durable.lastErrorClass || 'maintenance-completion-not-recorded'
+    });
+  }
+
+  if (durableStatus === 'BLOCKED') {
+    return Object.freeze({
+      state: 'BLOCKED',
+      reconciled: true,
+      retryAllowed: false,
+      taskKey,
+      errorClass: durable.lastErrorClass || 'maintenance-blocked'
+    });
+  }
+
+  return Object.freeze({
+    state: 'ATTENTION_REQUIRED',
+    reconciled: false,
+    retryAllowed: false,
+    taskKey,
+    errorClass: durableStatus === 'SUCCEEDED'
+      ? 'maintenance-unexpected-success-state'
+      : 'maintenance-control-plane-state-unknown'
+  });
+}
+
 async function executeProviderProofClaim(input = {}, now = Date.now()) {
   const { claim, review, target, priorLease, leaseOptions, executeProof, reconcileControlPlane } = input;
   const wallClock = typeof input.wallClock === 'function' ? input.wallClock : Date.now;
@@ -217,6 +352,7 @@ async function processNextProviderProofMaintenance(input = {}, now = Date.now())
     }
     const retry = error?.retryable === true;
     const errorClass = safeErrorClass(error, retry ? 'provider-temporary-unavailable' : 'provider-proof-execution-blocked');
+    const intendedStatus = retry ? 'RETRY' : 'BLOCK';
     try {
       const durable = ledger.complete(claim.taskKey, claim.claimToken, retry ? {
         status: 'RETRY',
@@ -228,7 +364,11 @@ async function processNextProviderProofMaintenance(input = {}, now = Date.now())
       }, failureNow);
       return Object.freeze({ state: durable.status, durable, errorClass });
     } catch {
-      return Object.freeze({ state: 'COMPLETION_UNCERTAIN', errorClass: 'maintenance-completion-not-confirmed' });
+      return reconcileDurableCompletion(ledger, {
+        taskKey: claim.taskKey,
+        intendedStatus,
+        errorClass
+      }, failureNow);
     }
   }
 
@@ -244,7 +384,15 @@ async function processNextProviderProofMaintenance(input = {}, now = Date.now())
     }, completionNow);
     return Object.freeze({ state: 'SUCCEEDED', durable, result: execution.result, lease: execution.lease });
   } catch {
-    return Object.freeze({ state: 'COMPLETION_UNCERTAIN', errorClass: 'maintenance-completion-not-confirmed' });
+    const reconciled = reconcileDurableCompletion(ledger, {
+      taskKey: claim.taskKey,
+      intendedStatus: 'SUCCESS',
+      outcomeDigest: execution.outcomeDigest
+    }, completionNow);
+    if (reconciled.state === 'SUCCEEDED') {
+      return Object.freeze({ ...reconciled, result: execution.result, lease: execution.lease });
+    }
+    return reconciled;
   }
 }
 
@@ -253,6 +401,7 @@ module.exports = {
   claimExpired,
   assertClaimMatchesReview,
   validateControlPlaneReconciliation,
+  reconcileDurableCompletion,
   executeProviderProofClaim,
   processNextProviderProofMaintenance
 };
