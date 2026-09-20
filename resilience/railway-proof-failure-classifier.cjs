@@ -39,6 +39,45 @@ function contains(logs, pattern) {
   return logs.some((line) => pattern.test(line));
 }
 
+function normaliseServiceConfig(value = {}) {
+  const source = value?.source && typeof value.source === 'object' ? value.source : {};
+  const build = value?.build && typeof value.build === 'object' ? value.build : {};
+  return {
+    builder: clean(build.builder, 40).toUpperCase() || null,
+    rootDirectory: clean(source.rootDirectory, 240) || null,
+    dockerfilePath: clean(build.dockerfilePath, 240) || null,
+    watchPatterns: Array.isArray(build.watchPatterns)
+      ? build.watchPatterns.slice(0, 50).map((entry) => clean(entry, 240)).filter(Boolean)
+      : [],
+  };
+}
+
+function securityHoldBuildEvidence(serviceConfig, buildLogs, deployLogs) {
+  const config = normaliseServiceConfig(serviceConfig);
+  const rootHeld = /__security_hold_[a-z0-9_-]*__/i.test(config.rootDirectory || '');
+  const dockerfileHeld = /__security_(?:manual_redeploy_)?hold__[a-z0-9_/-]*/i.test(config.dockerfilePath || '')
+    || /__security_manual_redeploy_hold__/i.test(config.dockerfilePath || '');
+  const watchHeld = config.watchPatterns.some((entry) => /__security_hold_[a-z0-9_-]*__/i.test(entry));
+  const holdSignals = [rootHeld, dockerfileHeld, watchHeld].filter(Boolean).length;
+  const observedRailpack = contains(buildLogs, /using build driver railpack(?:-v)?/i)
+    || contains(buildLogs, /Railpack\s+\d+\.\d+\.\d+/i);
+  const railpackDetectionFailed = contains(buildLogs, /Railpack could not determine how to build the app/i)
+    || contains(buildLogs, /Script\s+start\.sh\s+not\s+found/i);
+  const configuredDockerfileBuilder = config.builder === 'DOCKERFILE' && Boolean(config.dockerfilePath);
+  const active = configuredDockerfileBuilder
+    && holdSignals >= 2
+    && observedRailpack
+    && railpackDetectionFailed
+    && deployLogs.length === 0;
+
+  return {
+    active,
+    config,
+    holdSignals,
+    observedBuilder: observedRailpack ? 'RAILPACK' : null,
+  };
+}
+
 function restartDurabilityFailures(deployLogs) {
   const failures = [];
   if (contains(deployLogs, /POST_RESTART_LEAVE_PERSISTENCE_FAIL/i)) failures.push('approved-leave');
@@ -100,7 +139,7 @@ function terminal(input, detail) {
     : [];
 
   const core = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     provider: 'railway',
     scope: 'proof-infrastructure-diagnosis-only',
     deploymentId: clean(input.deploymentId, 160) || null,
@@ -119,10 +158,17 @@ function terminal(input, detail) {
     expectedBrowserRoles,
     passedBrowserRoles,
     failedBrowserRoles,
+    securityContainmentHoldDetected: detail.securityContainmentHoldDetected === true,
+    builderContractProven: detail.builderContractProven ?? null,
+    configuredBuilder: clean(detail.configuredBuilder, 40).toUpperCase() || null,
+    observedBuilder: clean(detail.observedBuilder, 40).toUpperCase() || null,
+    configuredDockerfilePath: clean(detail.configuredDockerfilePath, 240) || null,
+    configuredRootDirectory: clean(detail.configuredRootDirectory, 240) || null,
     releaseClaimAllowed: false,
     autonomyPromotionAllowed: false,
     automaticRedeployAllowed: false,
     automaticProductionMutationAllowed: false,
+    safetyGateBypassAllowed: false,
     customerMutation: false,
     payrollMutation: false,
     identityMutation: false,
@@ -142,9 +188,28 @@ function classifyRailwayProofFailure(input = {}) {
 
   const buildLogs = normaliseLogs(input.buildLogs);
   const deployLogs = normaliseLogs(input.deployLogs);
-  const evidenceFingerprint = digest({ status, buildLogs, deployLogs });
+  const serviceConfig = normaliseServiceConfig(input.serviceConfig);
+  const evidenceFingerprint = digest({ status, buildLogs, deployLogs, serviceConfig });
   const failedDurabilityChecks = restartDurabilityFailures(deployLogs);
   const browserMatrix = browserRoleMatrixEvidence(deployLogs);
+  const securityHold = securityHoldBuildEvidence(input.serviceConfig, buildLogs, deployLogs);
+
+  if (securityHold.active) {
+    return terminal(input, {
+      phase: 'build-pre-runtime-security-hold',
+      classification: 'security-containment-hold-active',
+      confidence: 'high',
+      evidenceFingerprint,
+      productRuntimeExecuted: false,
+      securityContainmentHoldDetected: true,
+      builderContractProven: false,
+      configuredBuilder: securityHold.config.builder,
+      observedBuilder: securityHold.observedBuilder,
+      configuredDockerfilePath: securityHold.config.dockerfilePath,
+      configuredRootDirectory: securityHold.config.rootDirectory,
+      recommendedAction: 'preserve-security-hold-and-require-explicit-human-authorised-hold-removal-before-any-new-proof-deployment',
+    });
+  }
 
   if (
     failedDurabilityChecks.length > 0
@@ -263,6 +328,7 @@ function verifyDiagnosisReceipt(receipt) {
     || receipt.autonomyPromotionAllowed !== false
     || receipt.automaticRedeployAllowed !== false
     || receipt.automaticProductionMutationAllowed !== false
+    || receipt.safetyGateBypassAllowed !== false
     || receipt.customerMutation !== false
     || receipt.payrollMutation !== false
     || receipt.identityMutation !== false
@@ -285,6 +351,28 @@ function verifyDiagnosisReceipt(receipt) {
   if (new Set(receipt.expectedBrowserRoles).size !== receipt.expectedBrowserRoles.length) return false;
   if (new Set(receipt.passedBrowserRoles).size !== receipt.passedBrowserRoles.length) return false;
   if (new Set(receipt.failedBrowserRoles.map((entry) => entry.role)).size !== receipt.failedBrowserRoles.length) return false;
+
+  if (receipt.classification === 'security-containment-hold-active') {
+    if (
+      receipt.phase !== 'build-pre-runtime-security-hold'
+      || receipt.productRuntimeExecuted !== false
+      || receipt.securityContainmentHoldDetected !== true
+      || receipt.builderContractProven !== false
+      || receipt.configuredBuilder !== 'DOCKERFILE'
+      || receipt.observedBuilder !== 'RAILPACK'
+      || !/__security_manual_redeploy_hold__/i.test(receipt.configuredDockerfilePath || '')
+      || !/__security_hold_/i.test(receipt.configuredRootDirectory || '')
+    ) return false;
+  } else if (
+    receipt.securityContainmentHoldDetected !== false
+    || receipt.builderContractProven !== null
+    || receipt.configuredBuilder !== null
+    || receipt.observedBuilder !== null
+    || receipt.configuredDockerfilePath !== null
+    || receipt.configuredRootDirectory !== null
+  ) {
+    return false;
+  }
 
   if (receipt.classification === 'consequential-state-durability-proof-blocker') {
     if (
