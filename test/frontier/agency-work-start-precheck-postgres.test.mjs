@@ -9,6 +9,7 @@ import {AGENCY_IDENTITY_CONTINUITY_DDL} from '../../src/frontier/agency-identity
 import {AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL} from '../../src/frontier/agency-identity-observation-ingress.mjs';
 import {AGENCY_IDENTITY_DB_BOUNDARY_DDL} from '../../src/frontier/agency-identity-db-boundary.mjs';
 import {AGENCY_WORK_START_CANONICAL_MIGRATION_DDL} from '../../src/frontier/agency-work-start-principal-lifecycle.mjs';
+import {AGENCY_WORK_START_SCOPED_AUTHORITY_SQL} from '../../src/frontier/agency-work-start-db-boundary.mjs';
 import {createPostgresAgencyWorkStartPrecheck} from '../../src/frontier/agency-work-start-precheck.mjs';
 
 const execFileAsync=promisify(execFile);
@@ -37,6 +38,7 @@ function interpolate(sql,values=[]){return sql.replace(/\$(\d+)/g,(_,n)=>lit(val
 function jsonSql(sql,values=[]){const statement=interpolate(sql,values).trim().replace(/;\s*$/,'');return `SELECT COALESCE(json_agg(row_to_json(wfm_q)),'[]'::json)::text FROM (${statement}) AS wfm_q;`;}
 function parseRows(stdout){const lines=String(stdout??'').split(/\r?\n/).map(value=>value.trim()).filter(Boolean);const rows=JSON.parse(lines.at(-1)??'[]');if(!Array.isArray(rows))throw new Error('postgres_json_result_invalid');return {rows};}
 async function psql(sql,options={}){const {stdout}=await docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-A','-t','-c',sql],options);return stdout;}
+async function runtimePsql(user,sql){return docker(['exec','-e',`PGPASSWORD=${RUNTIME_PASSWORD}`,CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-h','127.0.0.1','-U',user,'-d',DB_NAME,'-A','-t','-c',sql]);}
 async function scalar(sql){const out=await psql(sql);return out.split(/\r?\n/).map(value=>value.trim()).filter(Boolean).at(-1)??null;}
 async function waitForPostgres(){let initialized=false;for(let i=0;i<80;i+=1){try{const logs=await docker(['logs',CONTAINER],{timeout:5000});const all=`${logs.stdout??''}\n${logs.stderr??''}`;initialized||=all.includes('PostgreSQL init process complete; ready for start up.');if(initialized&&(await psql('SELECT 1;',{timeout:5000})).trim()==='1')return;}catch{}await new Promise(resolve=>setTimeout(resolve,250));}throw new Error('postgres final server did not become ready');}
 async function stop(){if(!started)return;try{await docker(['rm','-f',CONTAINER],{timeout:10000});}catch{}started=false;}
@@ -62,6 +64,7 @@ function makePrecheck(user){return createPostgresAgencyWorkStartPrecheck({withTr
 function input(tenantId=SCOPE.tenantId){return {tenantId,siteId:SCOPE.siteId,agencyId:SCOPE.agencyId,request:structuredClone(REQUEST),workerId:SCOPE.workerId,now:NOW,policy:structuredClone(POLICY)};}
 function adminSql(sql){return `BEGIN; SET LOCAL ROLE wfm_agency_work_start_tenant_binding_admin; ${sql} COMMIT;`;}
 function bindingFingerprint(){return digest(JSON.stringify(stable({tenantId:SCOPE.tenantId,siteId:SCOPE.siteId,requestId:SCOPE.requestId,sourceSystemId:'turnstile',agencyId:SCOPE.agencyId,workerId:SCOPE.workerId,assignmentFingerprint:ASSIGNMENT,assuranceVersionId:ASSURANCE,subjectFingerprint:SUBJECT})));}
+function authoritySql(tenantId){return `BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; ${interpolate(AGENCY_WORK_START_SCOPED_AUTHORITY_SQL,[tenantId,SCOPE.siteId,SCOPE.requestId,SCOPE.agencyId,SCOPE.workerId,ASSIGNMENT,NOW])} COMMIT;`;}
 
 async function reset(){
   await psql('TRUNCATE wfm_agency_identity_observation_ingress_receipts, wfm_agency_identity_continuity_observations, wfm_agency_portal_token_consumptions, wfm_agency_rtw_assurance_current, wfm_agency_rtw_assurance_history;');
@@ -92,15 +95,17 @@ pgTest('bound non-superuser precheck proves readiness through function-only tena
   assert.equal(afterCounts,beforeCounts);
 });
 
-pgTest('wrong-tenant, unbound and revoked database principals fail closed without returning work-start evidence',async()=>{
+pgTest('database guard rejects tenant substitution, other-tenant, unbound and revoked principals before scoped authority evidence can be read',async()=>{
   await reset();
-  for(const [user,tenantId] of [[BOUND_USER,'T-OTHER'],[OTHER_USER,SCOPE.tenantId],[UNBOUND_USER,SCOPE.tenantId],[REVOKED_USER,SCOPE.tenantId]]){
-    const result=await makePrecheck(user).evaluate(input(tenantId));
-    assert.equal(result.workStartReady,false,`${user}:${tenantId}`);assert.equal(result.reason,'work_start_authority_store_unavailable');assert.equal(result.assuranceVersionId,null);assert.equal(result.authorityFingerprint,null);assert.equal(result.readinessFingerprint,null);assert.equal(result.workStartWriteAuthorized,false);
-  }
+  await assert.rejects(()=>runtimePsql(BOUND_USER,authoritySql('T-OTHER')),/work_start_tenant_principal_unauthorized/i);
+  await assert.rejects(()=>runtimePsql(OTHER_USER,authoritySql(SCOPE.tenantId)),/work_start_tenant_principal_unauthorized/i);
+  await assert.rejects(()=>runtimePsql(UNBOUND_USER,authoritySql(SCOPE.tenantId)),/work_start_tenant_principal_unauthorized/i);
+  await assert.rejects(()=>runtimePsql(REVOKED_USER,authoritySql(SCOPE.tenantId)),/work_start_tenant_principal_revoked/i);
 });
 
 pgTest('runtime reader membership cannot fall back to raw evidence-table enumeration',async()=>{
   await reset();
-  await assert.rejects(()=>docker(['exec','-e',`PGPASSWORD=${RUNTIME_PASSWORD}`,CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-h','127.0.0.1','-U',BOUND_USER,'-d',DB_NAME,'-c','BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT count(*) FROM public.wfm_agency_rtw_assurance_current; COMMIT;']),/permission denied/i);
+  await assert.rejects(()=>runtimePsql(BOUND_USER,'BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT count(*) FROM public.wfm_agency_rtw_assurance_current; COMMIT;'),/permission denied/i);
+  await assert.rejects(()=>runtimePsql(BOUND_USER,'BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT count(*) FROM public.wfm_agency_portal_token_consumptions; COMMIT;'),/permission denied/i);
+  await assert.rejects(()=>runtimePsql(BOUND_USER,'BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT count(*) FROM public.wfm_agency_identity_continuity_observations; COMMIT;'),/permission denied/i);
 });
