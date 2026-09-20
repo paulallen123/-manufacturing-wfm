@@ -13,7 +13,10 @@
     "rollback-ready",
     "observability-required",
     "zero-human-implementation-target",
-    "reuse-before-bespoke"
+    "reuse-before-bespoke",
+    "governed-self-evolution",
+    "customer-outcome-learning",
+    "eval-driven-agent-improvement"
   ],
   "requiredFeatureFields": [
     "slug",
@@ -61,6 +64,8 @@
     "evidence-backed-value-ledger",
     "role-specific-ai-copilot",
     "low-friction-clocking",
-    "labour-production-energy-optimization"
+    "labour-production-energy-optimization",
+    "adaptive-intelligence-self-evolution",
+    "continuous-agent-evaluation"
   ]
 }
