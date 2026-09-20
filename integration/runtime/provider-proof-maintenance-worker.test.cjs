@@ -6,6 +6,7 @@ const { createHash } = require('node:crypto');
 const { createProviderProofLease } = require('./provider-proof-lifecycle.cjs');
 const {
   executeProviderProofClaim,
+  reconcileDurableCompletion,
   processNextProviderProofMaintenance
 } = require('./provider-proof-maintenance-worker.cjs');
 
@@ -240,4 +241,89 @@ test('worker never records success after its durable claim lease expired', async
   assert.equal(result.state, 'CLAIM_EXPIRED');
   assert.equal(result.errorClass, 'maintenance-claim-expired');
   assert.equal(completionCalled, false);
+});
+
+test('lost success acknowledgement is reconciled from durable state without a second provider call', async () => {
+  let durableTask = {
+    taskKey: 'a'.repeat(64),
+    status: 'CLAIMED',
+    claimExpiresAt: new Date(NOW + 60_000).toISOString(),
+    outcomeDigest: null,
+    lastErrorClass: null
+  };
+  let providerCalls = 0;
+  const fakeLedger = {
+    claimNext() { return { ...claim(), claimExpiresAt: durableTask.claimExpiresAt }; },
+    complete(taskKey, claimToken, outcome) {
+      durableTask = {
+        ...durableTask,
+        taskKey,
+        status: 'SUCCEEDED',
+        claimExpiresAt: null,
+        outcomeDigest: outcome.outcomeDigest
+      };
+      throw new Error('acknowledgement lost after durable commit');
+    },
+    getTask() { return { ...durableTask }; }
+  };
+
+  const result = await processNextProviderProofMaintenance({
+    ledger: fakeLedger,
+    workerId: 'proof-worker-1',
+    loadContext: async () => ({ review: review(), target: target(), priorLease: priorLease() }),
+    executeProof: async () => {
+      providerCalls += 1;
+      return response();
+    }
+  }, NOW);
+
+  assert.equal(result.state, 'SUCCEEDED');
+  assert.equal(result.reconciled, true);
+  assert.equal(result.retryAllowed, false);
+  assert.equal(providerCalls, 1);
+  assert.match(result.outcomeDigest, /^[a-f0-9]{64}$/);
+});
+
+test('uncertain completion cannot retry while the durable claim is still owned', () => {
+  const result = reconcileDurableCompletion({
+    getTask() {
+      return {
+        taskKey: 'a'.repeat(64),
+        status: 'CLAIMED',
+        claimExpiresAt: new Date(NOW + 30_000).toISOString(),
+        outcomeDigest: null,
+        lastErrorClass: null
+      };
+    }
+  }, {
+    taskKey: 'a'.repeat(64),
+    intendedStatus: 'SUCCESS',
+    outcomeDigest: 'c'.repeat(64)
+  }, NOW);
+
+  assert.equal(result.state, 'COMPLETION_UNCERTAIN');
+  assert.equal(result.retryAllowed, false);
+  assert.equal(result.retryNotBefore, new Date(NOW + 30_000).toISOString());
+});
+
+test('durable success with a different outcome digest fails closed', () => {
+  const result = reconcileDurableCompletion({
+    getTask() {
+      return {
+        taskKey: 'a'.repeat(64),
+        status: 'SUCCEEDED',
+        claimExpiresAt: null,
+        outcomeDigest: 'd'.repeat(64),
+        lastErrorClass: null
+      };
+    }
+  }, {
+    taskKey: 'a'.repeat(64),
+    intendedStatus: 'SUCCESS',
+    outcomeDigest: 'c'.repeat(64)
+  }, NOW);
+
+  assert.equal(result.state, 'ATTENTION_REQUIRED');
+  assert.equal(result.retryAllowed, false);
+  assert.equal(result.errorClass, 'maintenance-outcome-digest-mismatch');
 });
