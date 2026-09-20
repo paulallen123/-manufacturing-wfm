@@ -91,6 +91,12 @@ function versionRoutingFor(system){
   };
 }
 
+function dataCoverageFor(system){
+  return Array.isArray(system.datasetCoverage)
+    ? system.datasetCoverage.map(entry=>structuredClone(entry))
+    : [];
+}
+
 export function buildConnectorRegistry(){
   const catalog=loadCatalog();
   const connectors=catalog.systems.map(system=>{
@@ -116,6 +122,7 @@ export function buildConnectorRegistry(){
       bootstrapAuthority:system.bootstrapAuthority?structuredClone(system.bootstrapAuthority):null,
       staticCredentialAuthority:system.staticCredentialAuthority?structuredClone(system.staticCredentialAuthority):null,
       versionRouting:versionRoutingFor(system),
+      dataCoverage:dataCoverageFor(system),
       discoveryStrategy:discoveryStrategy(profileIds,edgeRequired),
       nextEvidenceGate:nextEvidence(system.testLevel,evidenceBlockers),
       evidenceBlockers,
@@ -124,7 +131,8 @@ export function buildConnectorRegistry(){
         preserveOptionalExtensions:true,
         silentBreakingChangeAllowed:false,
         credentialLikeExtensionsAllowed:false,
-        historicalFingerprintRetentionRequired:true
+        historicalFingerprintRetentionRequired:true,
+        coverageSemanticsRequiredForDeletion:true
       },
       security:{
         readOnlyDefault:true,
@@ -151,7 +159,9 @@ export function buildConnectorRegistry(){
         oauthImplicitGrantEnabled:false,
         bootstrapCredentialRetentionAllowed:false,
         bootstrapCredentialReuseAtRuntimeAllowed:false,
-        customerControlledBootstrapAllowed:true
+        customerControlledBootstrapAllowed:true,
+        missingRecordDeletionRequiresAuthoritativeCoverage:true,
+        partialDatasetMayInferDeletion:false
       }
     };
   });
