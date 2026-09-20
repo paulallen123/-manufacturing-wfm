@@ -127,6 +127,25 @@ function deploymentVariantsFor(system){
   return structuredClone(system.deploymentVariants);
 }
 
+function regionalRoutingFor(system){
+  const regional=system.regionalRouting&&typeof system.regionalRouting==='object'&&!Array.isArray(system.regionalRouting)
+    ? system.regionalRouting
+    : {};
+  return {
+    regionPinningRequired:regional.regionPinningRequired!==false,
+    exactEndpointAuthorityRequired:true,
+    approvedRegions:unique(regional.approvedRegions||[]),
+    customerChosenDataLocation:regional.customerChosenDataLocation===true,
+    residencyEvidence:regional.residencyEvidence||'tenant-contract-or-provider-evidence-required',
+    crossBorderTransferAllowed:regional.crossBorderTransferAllowed===true,
+    customerApprovalRequiredForCrossBorder:true,
+    silentCrossRegionFailoverAllowed:false,
+    checkpointIncludes:['region','dataLocation','routeId'],
+    routeChangeRecovery:'new-checkpoint-namespace-and-overlap-replay',
+    routes:Array.isArray(regional.routes)?structuredClone(regional.routes):[]
+  };
+}
+
 export function buildConnectorRegistry(){
   const catalog=loadCatalog();
   const connectors=catalog.systems.map(system=>{
@@ -150,6 +169,7 @@ export function buildConnectorRegistry(){
       canonicalTargets:canonicalTargets(system),
       providerIdentity:providerIdentityFor(system),
       deploymentVariants:deploymentVariantsFor(system),
+      regionalRouting:regionalRoutingFor(system),
       sourceScope:sourceScopeFor(system),
       bootstrapAuthority:system.bootstrapAuthority?structuredClone(system.bootstrapAuthority):null,
       staticCredentialAuthority:system.staticCredentialAuthority?structuredClone(system.staticCredentialAuthority):null,
@@ -195,7 +215,10 @@ export function buildConnectorRegistry(){
         bootstrapCredentialReuseAtRuntimeAllowed:false,
         customerControlledBootstrapAllowed:true,
         missingRecordDeletionRequiresAuthoritativeCoverage:true,
-        partialDatasetMayInferDeletion:false
+        partialDatasetMayInferDeletion:false,
+        silentCrossRegionFailoverAllowed:false,
+        crossBorderTransferRequiresExplicitApproval:true,
+        dataResidencyOverrideAllowed:false
       }
     };
   });
