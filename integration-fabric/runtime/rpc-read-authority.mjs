@@ -36,24 +36,29 @@ export function createRpcReadPolicy({
   }
   const transports=[...new Set(transportMethods.map(x=>nonEmpty(x,'transportMethods').toUpperCase()))];
   if(transports.length===0) throw new TypeError('transportMethods cannot be empty');
+  const consistentMethods=[...new Set(singleCallConsistentMethods.map(String))];
+  const pattern=credentialLikeFieldPattern instanceof RegExp
+    ? new RegExp(credentialLikeFieldPattern.source,credentialLikeFieldPattern.flags.replace(/[gy]/g,''))
+    : CREDENTIAL_FIELD;
   return Object.freeze({
     provider:providerId,
-    allowedPairs:pairs,
-    transportMethods:new Set(transports),
+    allowedPairs:Object.freeze([...pairs.values()].map(pair=>Object.freeze({...pair}))),
+    allowedPairKeys:Object.freeze([...pairs.keys()]),
+    transportMethods:Object.freeze(transports),
     transactionModel,
-    singleCallConsistentMethods:new Set(singleCallConsistentMethods.map(String)),
-    credentialLikeFieldPattern
+    singleCallConsistentMethods:Object.freeze(consistentMethods),
+    credentialLikeFieldPattern:pattern
   });
 }
 
 export function authorizeRpcRead({policy,model,method,httpMethod='POST',fields=[]}={}){
-  if(!policy?.allowedPairs) throw new TypeError('policy is required');
+  if(!Array.isArray(policy?.allowedPairKeys)) throw new TypeError('policy is required');
   const m=nonEmpty(model,'model');
   const fn=nonEmpty(method,'method');
   const transport=nonEmpty(httpMethod,'httpMethod').toUpperCase();
-  if(!policy.transportMethods.has(transport)) throw new Error(`RPC transport ${transport} is not allowlisted for ${policy.provider}`);
+  if(!policy.transportMethods.includes(transport)) throw new Error(`RPC transport ${transport} is not allowlisted for ${policy.provider}`);
   if(HIGH_RISK_METHOD.test(fn)) throw new Error(`RPC mutation/control method denied: ${m}:${fn}`);
-  if(!policy.allowedPairs.has(pairKey(m,fn))) throw new Error(`RPC model/method not allowlisted: ${m}:${fn}`);
+  if(!policy.allowedPairKeys.includes(pairKey(m,fn))) throw new Error(`RPC model/method not allowlisted: ${m}:${fn}`);
   const requestedFields=[...(fields||[])].map(String);
   const blocked=requestedFields.filter(field=>policy.credentialLikeFieldPattern.test(field));
   if(blocked.length) throw new Error(`credential-like fields are not allowed in generic RPC reads: ${blocked.join(', ')}`);
@@ -63,7 +68,7 @@ export function authorizeRpcRead({policy,model,method,httpMethod='POST',fields=[
     method:fn,
     httpMethod:transport,
     operationClass:'read',
-    singleCallTransactionConsistent:policy.singleCallConsistentMethods.has(fn),
+    singleCallTransactionConsistent:policy.singleCallConsistentMethods.includes(fn),
     transportVerbConfersWriteAuthority:false
   };
 }

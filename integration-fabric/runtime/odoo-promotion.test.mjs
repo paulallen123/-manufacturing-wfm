@@ -18,13 +18,19 @@ test('Odoo is promoted to spec-verified with JSON-2 primary and legacy RPC migra
   assert.ok(system.protocols.includes('XML-RPC'));
   assert.equal(system.apiVersionRouting.preferredVersion,'json-2-v19+');
   assert.equal(system.apiVersionRouting.fallbackVersion,'legacy-rpc-migration-only');
-  assert.equal(system.deploymentVariants.legacyPre19OrMigration.migrationOnly,true);
+  assert.equal(system.deploymentVariants.legacyHostedPre19OrMigration.migrationOnly,true);
+  assert.equal(system.deploymentVariants.legacyHostedPre19OrMigration.customerEdgeRequired,false);
+  assert.equal(system.deploymentVariants.legacyOnPremPre19OrMigration.migrationOnly,true);
+  assert.equal(system.deploymentVariants.legacyOnPremPre19OrMigration.customerEdgeRequired,true);
+  assert.equal(system.deploymentVariants.legacyOnPremPre19OrMigration.directCloudToPrivateNetworkAllowed,false);
 });
 
 test('Odoo deployment/source scopes distinguish hosted databases from private on-prem hosts',()=>{
   const system=odoo();
   assert.deepEqual(system.sourceScope.requiredDimensionsByVariant.odooOnline19Plus,['database']);
   assert.deepEqual(system.sourceScope.requiredDimensionsByVariant.onPrem19Plus,['host','database']);
+  assert.deepEqual(system.sourceScope.requiredDimensionsByVariant.legacyHostedPre19OrMigration,['database']);
+  assert.deepEqual(system.sourceScope.requiredDimensionsByVariant.legacyOnPremPre19OrMigration,['host','database']);
   assert.equal(system.deploymentVariants.odooOnline19Plus.customerEdgeRequired,false);
   assert.equal(system.deploymentVariants.onPrem19Plus.customerEdgeRequired,true);
   assert.equal(system.deploymentVariants.onPrem19Plus.directCloudToPrivateNetworkAllowed,false);

@@ -12,6 +12,7 @@ Some manufacturing/ERP APIs expose reads and mutations through the same HTTP ver
 - Generic projections reject credential-like fields. Provider-specific sensitive business fields require their own reviewed mapping rather than flowing through generic extensions.
 - If a provider commits each API call separately, multiple reads are **not** represented as one atomic snapshot. Preserve the first-start/last-finish observation window, skew, partial-read state and source provenance.
 - Prefer provider methods that perform logically coupled reads in one transaction where available. If cross-resource atomicity cannot be obtained, use bounded observation windows plus overlap/reconciliation and expose freshness/consistency to downstream consumers.
+- Compiled allowlists, transport methods and consistency-method collections are immutable at runtime; callers cannot widen authority by mutating the returned policy object.
 - Authentication failure, throttling, schema drift or unavailable methods never expand the allowlist or trigger a fallback to broader credentials.
 
 ## Odoo reference case
