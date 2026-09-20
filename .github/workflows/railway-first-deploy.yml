@@ -34,6 +34,7 @@ jobs:
       RAILWAY_SERVICE_ID: '8cadddc3-15e9-4c38-a93f-0af829054f29'
       WFM_PUBLIC_ORIGIN: 'https://wfm-one-day-enterprise-v1-production.up.railway.app'
       EXPECTED_RUNTIME_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'
+      SECURITY_HOLD_DIR: '__security_hold_one_day_enterprise__'
 
     steps:
       - name: Checkout exact one-day enterprise candidate
@@ -55,6 +56,21 @@ jobs:
           node --check implementation/ui/implementation-journey.js
           echo "ONE_DAY_EXACT_SOURCE_SHA=$GITHUB_SHA"
 
+      - name: Prepare exact source behind immutable hold path
+        shell: bash
+        run: |
+          set -euo pipefail
+          upload="$RUNNER_TEMP/wfm-one-day-exact-release"
+          gated="$upload/$SECURITY_HOLD_DIR"
+          mkdir -p "$gated"
+          git archive --format=tar "$GITHUB_SHA" | tar -xf - -C "$gated"
+          test -f "$gated/Dockerfile"
+          test -f "$gated/DEPLOYMENT_MANIFEST.json"
+          grep -F '"production_approved": false' "$gated/DEPLOYMENT_MANIFEST.json"
+          grep -F '"staging_only": true' "$gated/DEPLOYMENT_MANIFEST.json"
+          echo "UPLOAD_ROOT=$upload" >> "$GITHUB_ENV"
+          echo "ONE_DAY_GATED_SOURCE_SHA=$GITHUB_SHA"
+
       - name: Install pinned Railway CLI
         shell: bash
         run: |
@@ -70,7 +86,7 @@ jobs:
           echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
           "$CLI_BIN" --version
 
-      - name: Bootstrap exact existing Railway customer-proof service
+      - name: Bootstrap exact existing Railway customer-proof service through hold
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         shell: bash
@@ -78,10 +94,12 @@ jobs:
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
           echo "ONE_DAY_STAGING_UPLOAD_SHA=$GITHUB_SHA"
-          "$RAILWAY_BIN" up \
+          "$RAILWAY_BIN" up "$UPLOAD_ROOT" \
+            --path-as-root \
             --project "$RAILWAY_PROJECT_ID" \
             --service "$RAILWAY_SERVICE_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --message "one-day-exact-gated-release:$GITHUB_SHA" \
             --ci
           echo "ONE_DAY_STAGING_DEPLOY=SUBMITTED SHA=$GITHUB_SHA"
 
