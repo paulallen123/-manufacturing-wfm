@@ -5,7 +5,7 @@ const { createHash } = require('node:crypto');
 
 const SYNTHETIC_CANARY_PATH_PREFIX = 'security/railway-build-secret-canary/';
 const SYNTHETIC_CANARY_ARG = 'SECURITY_BUILD_CANARY';
-const SENSITIVE_ARG = /(?:^|_)(?:SECRET|TOKEN|PASSWORD|PASSWD|PRIVATE_KEY|API_KEY|ACCESS_KEY|CLIENT_SECRET|CREDENTIAL|CREDENTIALS)(?:_|$)/i;
+const SENSITIVE_NAME = /(?:^|_)(?:SECRET|TOKEN|PASSWORD|PASSWD|PRIVATE_KEY|API_KEY|ACCESS_KEY|CLIENT_SECRET|CREDENTIAL|CREDENTIALS)(?:_|$)/i;
 
 function digest(value) {
   return createHash('sha256').update(String(value ?? '')).digest('hex');
@@ -82,7 +82,7 @@ function inspectDockerfile(file = {}) {
       });
       continue;
     }
-    if (!SENSITIVE_ARG.test(arg.name)) continue;
+    if (!SENSITIVE_NAME.test(arg.name)) continue;
     violations.push({
       code: 'WFM_BUILD_SECRET_ARG_FORBIDDEN',
       path: normalizedPath,
@@ -132,6 +132,49 @@ function scanDockerfiles(files = []) {
   });
 }
 
+function normaliseBuildLogLines(entries = []) {
+  if (!Array.isArray(entries)) throw new TypeError('entries must be an array.');
+  return entries.slice(0, 500).map((entry) => String(
+    typeof entry === 'string' ? entry : entry?.message ?? '',
+  ).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 12000));
+}
+
+function inspectRailwayBuildEnvironment(entries = []) {
+  const lines = normaliseBuildLogLines(entries);
+  const observed = new Set();
+
+  for (const line of lines) {
+    for (const match of line.matchAll(/--env\s+([A-Za-z_][A-Za-z0-9_]*)\b/g)) {
+      observed.add(match[1]);
+    }
+  }
+
+  const observedBuildEnvNames = [...observed].sort();
+  const secretLikeBuildEnvNames = observedBuildEnvNames.filter((name) => SENSITIVE_NAME.test(name));
+  const core = {
+    schemaVersion: 1,
+    proof: 'railway-build-secret-scope-boundary',
+    buildSecretScopeRiskDetected: secretLikeBuildEnvNames.length > 0,
+    observedBuildEnvNames,
+    secretLikeBuildEnvNames,
+    credentialValueExposureProven: false,
+    productionMutation: false,
+    customerMutation: false,
+    payrollMutation: false,
+    identityMutation: false,
+    modelAuthorityGranted: false,
+    executionAuthorityGranted: false,
+    releaseClaimAllowed: false,
+    automaticRedeployAllowed: false,
+    createsResources: false,
+  };
+
+  return Object.freeze({
+    ...core,
+    reportDigest: digest(JSON.stringify(core)),
+  });
+}
+
 module.exports = {
   SYNTHETIC_CANARY_ARG,
   SYNTHETIC_CANARY_PATH_PREFIX,
@@ -139,4 +182,5 @@ module.exports = {
   isDockerfilePath,
   parseDockerArgs,
   scanDockerfiles,
+  inspectRailwayBuildEnvironment,
 };
