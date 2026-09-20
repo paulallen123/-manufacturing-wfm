@@ -11,6 +11,13 @@ function governedProviderFailure(error, decision) {
   return governed;
 }
 
+function durableRetryAnchor(claim, durableTask, now = Date.now()) {
+  if (!claim || Number(claim.attemptCount) <= 1 || !durableTask) return null;
+  const notBeforeMs = Date.parse(String(durableTask.notBefore || ''));
+  if (!Number.isFinite(notBeforeMs) || notBeforeMs <= 0 || notBeforeMs > Number(now)) return null;
+  return notBeforeMs;
+}
+
 async function processNextProviderProofMaintenanceWithTransportPolicy(input = {}, now = Date.now()) {
   if (!input.ledger || typeof input.ledger.claimNext !== 'function') {
     throw new Error('Durable provider proof maintenance ledger is required.');
@@ -25,6 +32,11 @@ async function processNextProviderProofMaintenanceWithTransportPolicy(input = {}
   const ledger = Object.freeze({
     claimNext(...args) {
       activeClaim = input.ledger.claimNext(...args);
+      if (activeClaim && typeof input.ledger.getTask === 'function') {
+        const durableTask = input.ledger.getTask(activeClaim.taskKey);
+        const anchor = durableRetryAnchor(activeClaim, durableTask, Number(retryClock()));
+        if (anchor !== null) activeClaim = Object.freeze({ ...activeClaim, firstFailureAt: anchor });
+      }
       return activeClaim;
     },
     complete(...args) {
@@ -64,5 +76,6 @@ async function processNextProviderProofMaintenanceWithTransportPolicy(input = {}
 
 module.exports = {
   governedProviderFailure,
+  durableRetryAnchor,
   processNextProviderProofMaintenanceWithTransportPolicy
 };
