@@ -103,12 +103,21 @@ delete authorityCore.receiptDigest;
 resealedAuthorityEscalation.receiptDigest = digest(authorityCore);
 assert.equal(verifyHostedStagingProofReceipt(resealedAuthorityEscalation), false);
 
+// Latest Railway browser deployment: the proof executed and the role matrix passed,
+// but the server explicitly emitted BROWSER_PROOF_ASSET_BINDING=UNBOUND.
 const observedBrowser = {
-  deploymentId: '73f7d8d2-3b0d-455e-a83d-1fe3e33ebb55',
-  deploymentSnapshotId: 'bbd57a4c-18d8-4b4a-ae36-d71c5fb52338',
-  sourceCommitSha: '338e07b24d3096d30dcc97fe14c33a03261b7e86',
-  imageDigest: 'sha256:593af64338766b65334f0c32a6b7491273a148f6a4dd20b15219a9e1d4e38bf9',
+  deploymentId: '5128957b-cb14-4dc4-86fa-3d284e4d1680',
+  deploymentSnapshotId: '51a169df-143c-4db6-9add-42c07f79852f',
+  deploymentSourceCommitSha: '673c849121bedbba76a95000081169a0df21bee4',
+  candidateSourceCommitSha: '338e07b24d3096d30dcc97fe14c33a03261b7e86',
+  imageDigest: 'sha256:e410039e954c68da95828f94b1b1647f052e785999efb5570b868676fd23d8d1',
   managerScreenshotSha256: '3c1ac1bc81caaef93d6bb05e6a6ad75b6c5a1c6e195a8fd49b4f26bc503cc68c',
+  canonicalJsSha256: null,
+  canonicalCssSha256: null,
+  expectedCanonicalJsSha256: null,
+  expectedCanonicalCssSha256: null,
+  assetBindingStatus: 'UNBOUND',
+  assetBindingRequired: false,
   deploymentStatus: 'SUCCESS',
   matrixStatus: 'PASS',
   roles: 5,
@@ -125,15 +134,39 @@ const observedBrowser = {
 };
 
 const browserReceipt = assessHostedBrowserProof(observedBrowser);
-assert.equal(browserReceipt.roleRenderNavigationProven, true);
+assert.equal(browserReceipt.assetBindingProven, false);
+assert.equal(browserReceipt.identityBound, false);
+assert.equal(browserReceipt.roleRenderNavigationProven, false);
 assert.equal(browserReceipt.activeWorkflowInteractionProven, false);
 assert.equal(browserReceipt.browserFunctionalReadinessProven, false);
-assert.equal(browserReceipt.passiveProofOnly, true);
-assert.equal(browserReceipt.claimBoundary, 'hosted-browser-role-render-navigation-only');
+assert.equal(browserReceipt.passiveProofOnly, false);
+assert.equal(browserReceipt.claimBoundary, 'insufficient-or-inconsistent-hosted-browser-evidence');
 assert.equal(verifyHostedBrowserProofReceipt(browserReceipt), true);
 
-const futureInteractiveFixture = assessHostedBrowserProof({
+const exactJs = '1'.repeat(64);
+const exactCss = '2'.repeat(64);
+const boundBrowserFixture = {
   ...observedBrowser,
+  canonicalJsSha256: exactJs,
+  canonicalCssSha256: exactCss,
+  expectedCanonicalJsSha256: exactJs,
+  expectedCanonicalCssSha256: exactCss,
+  assetBindingStatus: 'BOUND',
+  assetBindingRequired: true,
+};
+
+const boundBrowserReceipt = assessHostedBrowserProof(boundBrowserFixture);
+assert.equal(boundBrowserReceipt.assetBindingProven, true);
+assert.equal(boundBrowserReceipt.identityBound, true);
+assert.equal(boundBrowserReceipt.roleRenderNavigationProven, true);
+assert.equal(boundBrowserReceipt.activeWorkflowInteractionProven, false);
+assert.equal(boundBrowserReceipt.browserFunctionalReadinessProven, false);
+assert.equal(boundBrowserReceipt.passiveProofOnly, true);
+assert.equal(boundBrowserReceipt.claimBoundary, 'hosted-browser-exact-asset-role-render-navigation-only');
+assert.equal(verifyHostedBrowserProofReceipt(boundBrowserReceipt), true);
+
+const futureInteractiveFixture = assessHostedBrowserProof({
+  ...boundBrowserFixture,
   activeActionJourneys: 2,
   affordanceCoverage: 'EXERCISED',
   reviewVerified: true,
@@ -141,28 +174,34 @@ const futureInteractiveFixture = assessHostedBrowserProof({
 });
 assert.equal(futureInteractiveFixture.activeWorkflowInteractionProven, true);
 assert.equal(futureInteractiveFixture.browserFunctionalReadinessProven, true);
-assert.equal(futureInteractiveFixture.claimBoundary, 'hosted-browser-role-render-navigation-and-active-workflow-interaction');
+assert.equal(futureInteractiveFixture.claimBoundary, 'hosted-browser-exact-asset-role-render-navigation-and-active-workflow-interaction');
 assert.equal(verifyHostedBrowserProofReceipt(futureInteractiveFixture), true);
 
-for (const candidate of [
-  assessHostedBrowserProof({ ...observedBrowser, deploymentStatus: 'FAILED' }),
-  assessHostedBrowserProof({ ...observedBrowser, sourceCommitSha: 'bad' }),
-  assessHostedBrowserProof({ ...observedBrowser, managerScreenshotSha256: 'bad' }),
-  assessHostedBrowserProof({ ...observedBrowser, roles: 4 }),
-  assessHostedBrowserProof({ ...observedBrowser, tenantIsolationRoleObserved: false }),
-]) {
-  assert.equal(candidate.roleRenderNavigationProven, false);
-  assert.equal(candidate.browserFunctionalReadinessProven, false);
-  assert.equal(verifyHostedBrowserProofReceipt(candidate), true);
+const negativeCandidates = [
+  ['failed', assessHostedBrowserProof({ ...boundBrowserFixture, deploymentStatus: 'FAILED' })],
+  ['bad-deploy-source', assessHostedBrowserProof({ ...boundBrowserFixture, deploymentSourceCommitSha: 'bad' })],
+  ['bad-candidate-source', assessHostedBrowserProof({ ...boundBrowserFixture, candidateSourceCommitSha: 'bad' })],
+  ['bad-shot', assessHostedBrowserProof({ ...boundBrowserFixture, managerScreenshotSha256: 'bad' })],
+  ['roles', assessHostedBrowserProof({ ...boundBrowserFixture, roles: 4 })],
+  ['tenant', assessHostedBrowserProof({ ...boundBrowserFixture, tenantIsolationRoleObserved: false })],
+  ['unbound', assessHostedBrowserProof({ ...boundBrowserFixture, assetBindingStatus: 'UNBOUND' })],
+  ['not-required', assessHostedBrowserProof({ ...boundBrowserFixture, assetBindingRequired: false })],
+  ['js-mismatch', assessHostedBrowserProof({ ...boundBrowserFixture, canonicalJsSha256: '3'.repeat(64) })],
+  ['css-mismatch', assessHostedBrowserProof({ ...boundBrowserFixture, canonicalCssSha256: '4'.repeat(64) })],
+];
+for (const [name, candidate] of negativeCandidates) {
+  assert.equal(candidate.roleRenderNavigationProven, false, name);
+  assert.equal(candidate.browserFunctionalReadinessProven, false, name);
+  assert.equal(verifyHostedBrowserProofReceipt(candidate), true, name);
 }
 
-const fakeActionCoverage = assessHostedBrowserProof({ ...observedBrowser, activeActionJourneys: 2 });
+const fakeActionCoverage = assessHostedBrowserProof({ ...boundBrowserFixture, activeActionJourneys: 2 });
 assert.equal(fakeActionCoverage.roleRenderNavigationProven, true);
 assert.equal(fakeActionCoverage.activeWorkflowInteractionProven, false);
 assert.equal(fakeActionCoverage.browserFunctionalReadinessProven, false);
 
 const fakeVerification = assessHostedBrowserProof({
-  ...observedBrowser,
+  ...boundBrowserFixture,
   activeActionJourneys: 2,
   affordanceCoverage: 'EXERCISED',
   reviewVerified: true,
@@ -170,24 +209,35 @@ const fakeVerification = assessHostedBrowserProof({
 });
 assert.equal(fakeVerification.activeWorkflowInteractionProven, false);
 
-const resealedBrowserEscalation = structuredClone(browserReceipt);
+const resealedAssetEscalation = structuredClone(browserReceipt);
+resealedAssetEscalation.assetBindingProven = true;
+resealedAssetEscalation.identityBound = true;
+resealedAssetEscalation.roleRenderNavigationProven = true;
+resealedAssetEscalation.passiveProofOnly = true;
+resealedAssetEscalation.claimBoundary = 'hosted-browser-exact-asset-role-render-navigation-only';
+const assetEscalationCore = { ...resealedAssetEscalation };
+delete assetEscalationCore.receiptDigest;
+resealedAssetEscalation.receiptDigest = digest(assetEscalationCore);
+assert.equal(verifyHostedBrowserProofReceipt(resealedAssetEscalation), false);
+
+const resealedBrowserEscalation = structuredClone(boundBrowserReceipt);
 resealedBrowserEscalation.activeWorkflowInteractionProven = true;
 resealedBrowserEscalation.browserFunctionalReadinessProven = true;
 resealedBrowserEscalation.passiveProofOnly = false;
-resealedBrowserEscalation.claimBoundary = 'hosted-browser-role-render-navigation-and-active-workflow-interaction';
+resealedBrowserEscalation.claimBoundary = 'hosted-browser-exact-asset-role-render-navigation-and-active-workflow-interaction';
 const browserEscalationCore = { ...resealedBrowserEscalation };
 delete browserEscalationCore.receiptDigest;
 resealedBrowserEscalation.receiptDigest = digest(browserEscalationCore);
 assert.equal(verifyHostedBrowserProofReceipt(resealedBrowserEscalation), false);
 
-const resealedBrowserRelease = structuredClone(browserReceipt);
+const resealedBrowserRelease = structuredClone(boundBrowserReceipt);
 resealedBrowserRelease.releaseClaimAllowed = true;
 const browserReleaseCore = { ...resealedBrowserRelease };
 delete browserReleaseCore.receiptDigest;
 resealedBrowserRelease.receiptDigest = digest(browserReleaseCore);
 assert.equal(verifyHostedBrowserProofReceipt(resealedBrowserRelease), false);
 
-const resealedBrowserAuthority = structuredClone(browserReceipt);
+const resealedBrowserAuthority = structuredClone(boundBrowserReceipt);
 resealedBrowserAuthority.executionAuthorityGranted = true;
 const browserAuthorityCore = { ...resealedBrowserAuthority };
 delete browserAuthorityCore.receiptDigest;
@@ -198,12 +248,14 @@ console.log(JSON.stringify({
   validator: 'railway-hosted-staging-and-browser-proof-receipt',
   result: 'PASS',
   stagingCases: 10,
-  browserCases: 12,
+  browserCases: 19,
   observedDeploymentId: receipt.deploymentId,
   exactHostedStagingExecutionEvidence: receipt.stagingExecutionEvidenceProven,
   stagingClaimBoundary: receipt.claimBoundary,
   observedBrowserDeploymentId: browserReceipt.deploymentId,
-  browserRoleRenderNavigationProven: browserReceipt.roleRenderNavigationProven,
+  observedBrowserAssetBindingProven: browserReceipt.assetBindingProven,
+  observedBrowserRoleRenderNavigationProven: browserReceipt.roleRenderNavigationProven,
+  exactAssetBoundFixtureRoleRenderNavigationProven: boundBrowserReceipt.roleRenderNavigationProven,
   browserFunctionalReadinessProven: browserReceipt.browserFunctionalReadinessProven,
   browserClaimBoundary: browserReceipt.claimBoundary,
   releaseProven: receipt.releaseProven,
