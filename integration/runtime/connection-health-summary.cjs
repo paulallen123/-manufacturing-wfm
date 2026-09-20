@@ -86,6 +86,36 @@ function maintenanceExecutionDisposition(maintenance = {}, execution = {}) {
     });
   }
 
+  if (state === 'PENDING' || state === 'RETRY_REQUIRED') {
+    return Object.freeze({
+      state: canContinueOnExistingProof ? 'DEGRADED' : 'RECOVERING',
+      canSync: canContinueOnExistingProof,
+      customerMessage: canContinueOnExistingProof
+        ? 'The connection can keep syncing on its current proof; the latest safety check has been safely reconciled and queued for retry.'
+        : 'The connection remains paused while the safely reconciled provider check waits for retry.',
+      nextAction: canContinueOnExistingProof
+        ? 'Retry the bounded provider check at its durable retry time before the current proof expires.'
+        : 'Retry the bounded provider check, then pass reconciliation and runtime gates before resuming.',
+      providerSignal: 'RETRYING',
+      runtimeSignal: canContinueOnExistingProof ? 'HEALTHY' : 'PAUSED',
+      maintenanceExecutionState: state,
+      reconciliationRequiredBeforeResume: !canContinueOnExistingProof
+    });
+  }
+
+  if (state === 'BLOCKED' || state === 'ATTENTION_REQUIRED') {
+    return Object.freeze({
+      state: 'ATTENTION_REQUIRED',
+      canSync: false,
+      customerMessage: 'The connection is paused because WFM reconciled the maintenance outcome to a blocked or conflicting control-plane state.',
+      nextAction: 'Resolve the durable maintenance conflict and re-establish trusted provider proof before allowing new sync.',
+      providerSignal: 'BLOCKED',
+      runtimeSignal: 'PAUSED',
+      maintenanceExecutionState: state,
+      reconciliationRequiredBeforeResume: true
+    });
+  }
+
   return null;
 }
 
