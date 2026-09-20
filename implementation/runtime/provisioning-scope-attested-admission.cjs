@@ -66,10 +66,48 @@ function verifyAttestedScope(intent, scopeProofKey, verifier = verifyScopeFinali
     }
   }
 
+  const binding = intent.scopeProofBinding;
+  if (!binding || typeof binding !== 'object') {
+    fail('WFM_SCOPE_FINALIZATION_BINDING_REQUIRED', 'Provisioning requires the final-scope proof to be bound to the sealed launch intent.', 403);
+  }
+  const boundFinalizationDigest = requireDigest(
+    binding.finalizationDigest,
+    'WFM_SCOPE_FINALIZATION_BINDING_INVALID',
+    'Bound final-scope digest must be SHA-256.'
+  );
+  const boundReceiptSha256 = requireDigest(
+    binding.receiptSha256,
+    'WFM_SCOPE_FINALIZATION_BINDING_INVALID',
+    'Bound final-scope receipt digest must be SHA-256.'
+  );
+  const subjectDigest = requireDigest(
+    binding.subjectDigest,
+    'WFM_SCOPE_FINALIZATION_BINDING_INVALID',
+    'Bound launch subject digest must be SHA-256.'
+  );
+  const launchIntentDigest = requireDigest(
+    intent.intentDigest,
+    'WFM_SCOPE_FINALIZATION_BINDING_INVALID',
+    'Sealed launch intent digest must be SHA-256 before scope proof binding can be checked.'
+  );
+  const expectedSubjectDigest = sha256({
+    launchIntentDigest,
+    finalizationDigest: declaredFinalizationDigest,
+    receiptSha256
+  });
+  if (
+    boundFinalizationDigest !== declaredFinalizationDigest ||
+    boundReceiptSha256 !== receiptSha256 ||
+    subjectDigest !== expectedSubjectDigest
+  ) {
+    fail('WFM_SCOPE_FINALIZATION_BINDING_MISMATCH', 'Final-scope proof is not bound to this exact sealed launch intent.', 409);
+  }
+
   return Object.freeze({
     ok: true,
     finalizationDigest: declaredFinalizationDigest,
     receiptSha256,
+    subjectDigest,
     graphVersion: verified.graphVersion,
     graphFingerprint: verified.graphFingerprint,
     revision: verified.revision,
@@ -106,11 +144,23 @@ function createScopeAttestedProvisioningOutbox(store, options = {}) {
 
   function enqueue(intent) {
     const verifiedScope = verifyIntent(intent);
+    const existing = intent && intent.queueKey ? base.get(intent.queueKey) : null;
+    if (existing && existing.payload) {
+      const storedScope = verifyIntent(existing.payload);
+      if (storedScope.subjectDigest !== verifiedScope.subjectDigest) {
+        fail('WFM_SCOPE_FINALIZATION_BINDING_DRIFT', 'This provisioning identity is already bound to a different finalized scope proof.', 409);
+      }
+    }
+
     const result = base.enqueue(intent);
+    const effectiveScope = result.duplicate && result.record && result.record.payload
+      ? verifyIntent(result.record.payload)
+      : verifiedScope;
     return {
       ...result,
-      scopeFinalizationDigest: verifiedScope.finalizationDigest,
-      scopeFinalizationReceiptSha256: verifiedScope.receiptSha256
+      scopeFinalizationDigest: effectiveScope.finalizationDigest,
+      scopeFinalizationReceiptSha256: effectiveScope.receiptSha256,
+      scopeProofSubjectDigest: effectiveScope.subjectDigest
     };
   }
 
@@ -142,13 +192,15 @@ function createScopeAttestedProvisioningOutbox(store, options = {}) {
       ...(verification.checks || {}),
       scopeFinalizationVerified: true,
       scopeFinalizationDigest: verifiedScope.finalizationDigest,
-      scopeFinalizationReceiptSha256: verifiedScope.receiptSha256
+      scopeFinalizationReceiptSha256: verifiedScope.receiptSha256,
+      scopeProofSubjectDigest: verifiedScope.subjectDigest
     };
     const result = base.recordIndependentVerification(queueKey, { ...verification, checks });
     return {
       ...result,
       scopeFinalizationDigest: verifiedScope.finalizationDigest,
-      scopeFinalizationReceiptSha256: verifiedScope.receiptSha256
+      scopeFinalizationReceiptSha256: verifiedScope.receiptSha256,
+      scopeProofSubjectDigest: verifiedScope.subjectDigest
     };
   }
 
