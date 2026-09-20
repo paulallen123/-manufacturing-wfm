@@ -22,6 +22,9 @@ const DB_USER='postgres',DB_NAME='postgres',DB_PASSWORD='agency-work-start-rotat
 const RUNTIME_PASSWORD='agency-runtime-rotation-proof-only-not-a-secret';
 const OLD_RUNTIME_USER='wfm_work_start_runtime_rotation_old';
 const NEW_RUNTIME_USER='wfm_work_start_runtime_rotation_new';
+const LOAD_OLD_RUNTIME_USER='wfm_work_start_runtime_rotation_load_old';
+const LOAD_NEW_RUNTIME_USER='wfm_work_start_runtime_rotation_load_new';
+const ROTATION_POOL_WIDTH=8;
 const NOW='2026-10-05T06:10:00.000Z';
 const ASSURANCE='a'.repeat(32),SUBJECT='c'.repeat(32);
 const REQUEST=Object.freeze({requestId:'R-START-ROTATE',roleId:'PACK-OP',location:'Plant 1, Birmingham',startAt:'2026-10-05T06:00:00.000Z',endAt:'2026-10-05T14:00:00.000Z'});
@@ -42,7 +45,7 @@ async function psql(sql,options={}){const {stdout}=await docker(['exec',CONTAINE
 async function scalar(sql){const out=await psql(sql);return out.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).at(-1)??null;}
 async function waitForPostgres(){let init=false;for(let i=0;i<80;i+=1){try{const logs=await docker(['logs',CONTAINER],{timeout:5000});const all=`${logs.stdout??''}\n${logs.stderr??''}`;init||=all.includes('PostgreSQL init process complete; ready for start up.');if(init&&(await psql('SELECT 1;',{timeout:5000})).trim()==='1')return;}catch{}await new Promise(r=>setTimeout(r,250));}throw new Error('postgres final server did not become ready');}
 async function stop(){if(!started)return;try{await docker(['rm','-f',CONTAINER],{timeout:10000});}catch{}started=false;}
-function pgTest(name,fn){test(name,{skip:!REQUIRED},fn);}
+function pgTest(name,fn){test(name,{skip:!REQUIRED,concurrency:false},fn);}
 
 class PersistentPsqlSession{
   constructor(applicationName,{user,password}={}){this.applicationName=applicationName;this.user=user;this.password=password;this.proc=null;this.stdout='';this.stderr='';this.pending=null;this.closed=false;}
@@ -110,9 +113,12 @@ before(async()=>{
   await psql(`
 CREATE ROLE ${OLD_RUNTIME_USER} LOGIN PASSWORD ${lit(RUNTIME_PASSWORD)} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
 CREATE ROLE ${NEW_RUNTIME_USER} LOGIN PASSWORD ${lit(RUNTIME_PASSWORD)} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
-GRANT wfm_agency_work_start_reader TO ${OLD_RUNTIME_USER},${NEW_RUNTIME_USER};
+CREATE ROLE ${LOAD_OLD_RUNTIME_USER} LOGIN PASSWORD ${lit(RUNTIME_PASSWORD)} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+CREATE ROLE ${LOAD_NEW_RUNTIME_USER} LOGIN PASSWORD ${lit(RUNTIME_PASSWORD)} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+GRANT wfm_agency_work_start_reader TO ${OLD_RUNTIME_USER},${NEW_RUNTIME_USER},${LOAD_OLD_RUNTIME_USER},${LOAD_NEW_RUNTIME_USER};
 `);
   await psql(adminSql(`SELECT public.wfm_bind_agency_work_start_principal_v1('${OLD_RUNTIME_USER}',${lit(SCOPE.tenantId)},'${'4'.repeat(24)}');`));
+  await psql(adminSql(`SELECT public.wfm_bind_agency_work_start_principal_v1('${LOAD_OLD_RUNTIME_USER}',${lit(SCOPE.tenantId)},'${'5'.repeat(24)}');`));
 });
 after(async()=>{await stop();});
 
@@ -170,5 +176,54 @@ pgTest('mid-flight principal revocation invalidates an already-open pooled sessi
     }
   }finally{
     await oldPool.session.close();
+  }
+});
+
+pgTest('multi-connection pool cutover rejects every stale old-principal permit while fresh-principal traffic continues with bounded local replay behavior',async()=>{
+  await seed();
+  const oldPools=await Promise.all(Array.from({length:ROTATION_POOL_WIDTH},(_,i)=>makePooledRuntime(`wfm_rotation_load_old_${process.pid}_${i}`,LOAD_OLD_RUNTIME_USER)));
+  const freshPools=[];
+  try{
+    const oldReadiness=await Promise.all(oldPools.map(({runtime})=>runtime.evaluateReadiness(runtimeInput())));
+    assert.equal(oldReadiness.length,ROTATION_POOL_WIDTH);
+    assert.ok(oldReadiness.every(readiness=>readiness.workStartReady===true&&readiness.rankingImpact==='none'));
+
+    await psql(adminSql(`SELECT public.wfm_bind_agency_work_start_principal_v1('${LOAD_NEW_RUNTIME_USER}',${lit(SCOPE.tenantId)},'${'9'.repeat(24)}');`));
+    await psql(adminSql(`SELECT public.wfm_revoke_agency_work_start_principal_v1('${LOAD_OLD_RUNTIME_USER}',${lit(SCOPE.tenantId)},'${'a'.repeat(24)}');`));
+    assert.equal(await scalar(`SELECT (revoked_at IS NOT NULL)::text FROM public.wfm_agency_work_start_principal_tenants WHERE database_principal='${LOAD_OLD_RUNTIME_USER}';`),'true');
+    assert.equal(await scalar(`SELECT (revoked_at IS NULL)::text FROM public.wfm_agency_work_start_principal_tenants WHERE database_principal='${LOAD_NEW_RUNTIME_USER}';`),'true');
+
+    freshPools.push(...await Promise.all(Array.from({length:ROTATION_POOL_WIDTH},(_,i)=>makePooledRuntime(`wfm_rotation_load_new_${process.pid}_${i}`,LOAD_NEW_RUNTIME_USER))));
+    let staleExposure=0;
+    const [staleResults,freshReadiness]=await Promise.all([
+      Promise.all(oldPools.map(({runtime},i)=>runtime.evaluatePermit(runtimeInput({readiness:oldReadiness[i],shadowWorkStartCommand:async()=>{staleExposure+=1;}})))),
+      Promise.all(freshPools.map(({runtime})=>runtime.evaluateReadiness(runtimeInput()))),
+    ]);
+
+    assert.equal(staleExposure,0);
+    assert.equal(staleResults.length,ROTATION_POOL_WIDTH);
+    assert.ok(staleResults.every(result=>result.permitPassed===false&&result.reason==='work_start_permit_store_unavailable'));
+    assert.ok(oldPools.every(({session})=>session.closed===true));
+    assert.ok(freshReadiness.every(readiness=>readiness.workStartReady===true&&readiness.rankingImpact==='none'));
+
+    let freshEnvelope=null;
+    const freshResult=await freshPools[0].runtime.evaluatePermit(runtimeInput({
+      readiness:freshReadiness[0],
+      shadowWorkStartCommand:async permit=>{freshEnvelope=permit.consume(commandFrom(freshReadiness[0]));},
+    }));
+    assert.equal(freshResult.permitPassed,true);
+    assert.equal(freshResult.rankingImpact,'none');
+    assert.equal(freshResult.scheduleWriteAuthorized,false);
+    assert.equal(freshResult.clockingWriteAuthorized,false);
+    assert.equal(freshResult.payrollWriteAuthorized,false);
+    assert.equal(freshResult.workStartWriteAuthorized,false);
+    assert.equal(freshEnvelope.acceptedForShadow,true);
+
+    const replayResults=await Promise.all(oldPools.map(({runtime},i)=>runtime.evaluatePermit(runtimeInput({readiness:oldReadiness[i],shadowWorkStartCommand:async()=>{staleExposure+=1;}}))));
+    assert.equal(staleExposure,0);
+    assert.ok(replayResults.every(result=>result.permitPassed===false&&result.reason==='work_start_runtime_precheck_already_used'));
+    assert.doesNotMatch(JSON.stringify({staleResults,freshResult,replayResults}),/photo|biometric|share[-_]?code|document[-_]?number|raw[-_]?payload|portal[-_]?token/i);
+  }finally{
+    await Promise.allSettled([...oldPools,...freshPools].map(({session})=>session.close()));
   }
 });
