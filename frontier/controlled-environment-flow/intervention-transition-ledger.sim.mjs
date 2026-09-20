@@ -21,7 +21,7 @@ function scenario(id){
   const entry=minute-3,exit=minute+duration+3;
   presenceEvents.push({id:'E'+i+'a',siteId,workerId,zone:'B',direction:'enter',observedAt:iso(entry),authoritative:true,ref:'acs:'+i+'a'});
   presenceEvents.push({id:'E'+i+'b',siteId,workerId,zone:'B',direction:'exit',observedAt:iso(exit),authoritative:true,ref:'acs:'+i+'b'});
-  minute+=duration+Math.floor(rnd()*46);
+  minute+=duration+6+Math.floor(rnd()*40);
  }
  return buildInterventionTransitionLedger({policy,tasks,presenceEvents,now:'2026-09-20T22:00:00Z'});
 }
@@ -38,7 +38,9 @@ console.log(JSON.stringify({
  meanObservedEntries:entries/total,
  meanConsolidationCandidates:candidates/total,
  meanPotentialEntryReduction:potentialEntries/total,
+ potentialEntryReductionRate:potentialEntries/entries,
  meanObservedGowningCycles:gowning/total,
  meanPotentialGowningReduction:potentialGowning/total,
+ potentialGowningReductionRate:potentialGowning/gowning,
  claimBoundary:'Synthetic measurement/falsification only. Candidate reductions are not realised savings, contamination reduction or customer proof.'
 },null,2));
