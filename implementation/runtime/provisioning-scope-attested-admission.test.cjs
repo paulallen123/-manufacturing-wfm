@@ -205,7 +205,7 @@ test('durable queue admission rejects missing, tampered or detached final-scope 
   expectCode(() => outbox.enqueue(unbound), 'WFM_SCOPE_FINALIZATION_BINDING_REQUIRED');
   assert.equal(store.snapshot().length, 0);
 
-  const detached = launchIntent();
+  const detached = structuredClone(launchIntent());
   detached.scopeProofBinding.receiptSha256 = '0'.repeat(64);
   detached.scopeProofBinding.subjectDigest = admissionSha256({
     launchIntentDigest: detached.intentDigest,
