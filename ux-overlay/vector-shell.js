@@ -6,6 +6,7 @@
 
 const MARKER='VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1';
 const REVIEW_MARKER='VECTOR_REVIEW_NEUTRAL_V1';
+const VALUE_MARKER='VECTOR_VERIFIED_VALUE_V1';
 const NAV=[
   {label:'Home', icon:'home', routes:['overview']},
   {label:'People', icon:'people', routes:['org-admin','organisation','resources']},
@@ -67,6 +68,38 @@ const initials=()=>displayName().split(/\s+/).map(x=>x[0]).join('').slice(0,2).t
 
 function scopedStats(){try{if(typeof data==='undefined'||typeof WFM==='undefined'||typeof me!=='function')return {};const own=me(),rows=WFM.scopedStaff(data,own.id,ui?.root);const s=rows?.length?WFM.stats(rows):{};return {rows,total:rows?.length||0,onsite:s?.onsite??s?.in??0,sick:s?.sick??0,late:s?.late??0,missing:s?.missing??0,sync:s?.sync??0};}catch{return {}}}
 function labourCost(){try{const report=typeof VCU!=='undefined'&&VCU?.report?VCU.report():null;const p=report?.summary?.labourCostPence??report?.summary?.totalLabourCostPence??report?.insight?.labourCostPence;if(Number.isFinite(Number(p)))return Number(p)/100;}catch{}return null;}
+function valueEvidence(){
+  try{
+    const report=typeof VCU!=='undefined'&&VCU?.report?VCU.report():null;
+    const summary=report?.summary||{},insight=report?.insight||{};
+    const pick=(pairs)=>{for(const [source,value] of pairs){if(Number.isFinite(Number(value)))return {source,value:Number(value)/100};}return null;};
+    const realised=pick([
+      ['summary.verifiedSavingsPence',summary.verifiedSavingsPence],
+      ['summary.realisedSavingsPence',summary.realisedSavingsPence],
+      ['summary.realizedSavingsPence',summary.realizedSavingsPence],
+      ['summary.validatedSavingsPence',summary.validatedSavingsPence],
+      ['insight.verifiedSavingsPence',insight.verifiedSavingsPence]
+    ]);
+    const opportunity=pick([
+      ['summary.identifiedSavingsPence',summary.identifiedSavingsPence],
+      ['summary.potentialSavingsPence',summary.potentialSavingsPence],
+      ['summary.avoidableCostPence',summary.avoidableCostPence],
+      ['summary.avoidableLabourCostPence',summary.avoidableLabourCostPence],
+      ['insight.opportunityPence',insight.opportunityPence],
+      ['insight.avoidableCostPence',insight.avoidableCostPence]
+    ]);
+    const coverage=[summary.evidenceCoveragePct,summary.attributionCoveragePct,insight.evidenceCoveragePct,insight.coveragePct].map(Number).find(Number.isFinite);
+    return {realised,opportunity,coverage:Number.isFinite(coverage)?Math.max(0,Math.min(100,coverage)):null};
+  }catch{return {realised:null,opportunity:null,coverage:null};}
+}
+function valueMarkup(v){
+  const realised=v.realised?money(v.realised.value):'—';
+  const opportunity=v.opportunity?money(v.opportunity.value):'—';
+  const coverage=v.coverage==null?'—':Math.round(v.coverage)+'%';
+  const realisedDetail=v.realised?'Evidence: '+v.realised.source:'No verified saving is claimed without evidence';
+  const opportunityDetail=v.opportunity?'Evidence: '+v.opportunity.source:'No quantified opportunity available';
+  return `<section class="vector-value-strip" data-vector-value="${VALUE_MARKER}" aria-label="Evidence-backed customer value"><div class="vector-value-heading"><span class="vector-value-icon">${icon('cost')}</span><span><b>Verified value</b><small>Financial impact is shown only when backed by existing cost evidence.</small></span></div><div class="vector-value-metrics"><div><small>Verified / realised savings</small><strong>${esc(realised)}</strong><em>${esc(realisedDetail)}</em></div><div><small>Identified opportunity</small><strong>${esc(opportunity)}</strong><em>${esc(opportunityDetail)}</em></div><div><small>Evidence coverage</small><strong>${esc(coverage)}</strong><em>${v.coverage==null?'Connect attribution evidence':'Coverage reported by the value evidence layer'}</em></div></div><button type="button" data-vector-route="costs">Open value evidence ${icon('arrow')}</button></section>`;
+}
 function money(v){if(!Number.isFinite(v))return '—';return new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP',maximumFractionDigits:v>=10000?1:0,notation:v>=10000?'compact':'standard'}).format(v);}
 function findMetric(root,pattern){if(!root)return null;const nodes=[...root.querySelectorAll('small,span,b,strong,p,label,h2,h3')];for(const n of nodes){const t=text(n);if(!t||!pattern.test(t))continue;let p=n.parentElement;for(let i=0;p&&i<4;i++,p=p.parentElement){const candidates=[...p.querySelectorAll('strong,b')].map(text).filter(Boolean);const v=candidates.find(x=>x!==t);if(v)return v;}}return null;}
 function parseNumber(v){const m=String(v||'').replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):null;}
@@ -100,7 +133,7 @@ function secondaryKpis(m){const s=scopedStats(),vals=[{label:'Absence today',val
 function alertsMarkup(rows){return `<section class="vector-card vector-alerts" data-vector-review="${REVIEW_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><h2 id="vector-review-title"><span class="vector-alert-bell">${icon('bell')}</span>Items to review <em>${rows.length}</em></h2><button type="button" data-vector-route="time-review">View all items ${icon('arrow')}</button></div><div class="vector-alert-list">${rows.length?rows.map((r,i)=>`<div class="vector-alert-row" role="group" aria-label="${esc(r.title)}. Status: ${esc(r.status)}. Review source evidence before acting."><i class="${r.tone}" aria-hidden="true"></i><b>${esc(r.title)}</b><span>${esc(r.detail||'Review source evidence')}</span><button type="button" data-vector-route="${esc(r.route)}" aria-label="Review ${esc(r.title)}">${esc(r.action)}</button></div>`).join(''):'<div class="vector-empty">No current items need review.</div>'}</div></section>`;}
 function leaveMarkup(rows){const fallback=[{name:'Open Absence & Leave',area:'Workforce',when:'Review upcoming leave',type:'Leave'}],use=rows.length?rows:fallback;return `<section class="vector-card vector-leave"><div class="vector-card-head"><h2>Upcoming leave (next 7 days)</h2><button type="button" data-vector-route="leave">View calendar ${icon('arrow')}</button></div><div class="vector-leave-list">${use.slice(0,4).map((r,i)=>`<button type="button" class="vector-leave-row" data-vector-route="leave"><span class="vector-person-badge b${i}">${esc(r.name.split(/\s+/).map(x=>x[0]).join('').slice(0,2))}</span><span><b>${esc(r.name)}</b><small>${esc(r.area)}</small></span><em>${esc(r.when)}</em><strong>${esc(r.type)}</strong>${icon('chevron')}</button>`).join('')}</div></section>`;}
 function promoMarkup(){return '<aside class="vector-promo"><div><h2>A more productive<br>tomorrow starts today.</h2><p>Empowered people.<br>Stronger manufacturers.</p></div><div class="vector-promo-brand"><span class="vector-mark small"><i></i><i></i><i></i></span><b>Vector.</b></div></aside>';}
-function renderHome(content){if(content.dataset.vectorHome==='1')return;const source=document.createElement('div');source.className='vector-home-source';while(content.firstChild)source.appendChild(content.firstChild);content.appendChild(source);const m=metrics(source),departments=departmentRows(source),actions=actionRows(source),leaves=leaveRows(),d=currentDate();const home=document.createElement('div');home.className='vector-home';home.innerHTML=`<section class="vector-welcome"><div><h1>${esc(greeting())}, ${esc(firstName())}</h1><p>Here’s what’s happening at ${esc(siteName())} today.</p></div><div class="vector-date"><b>${esc(d.date)}</b><span>Week ${esc(d.week)}</span></div></section><div class="vector-home-top"><div class="vector-home-main"><section class="vector-kpi-grid">${kpiMarkup(m)}</section>${shiftsMarkup(departments)}</div>${buildAssistant()}</div>${secondaryKpis(m)}<div class="vector-bottom-grid">${alertsMarkup(actions)}${leaveMarkup(leaves)}${promoMarkup()}</div>`;content.prepend(home);content.dataset.vectorHome='1';document.title='Vector · Workforce Operations';}
+function renderHome(content){if(content.dataset.vectorHome==='1')return;const source=document.createElement('div');source.className='vector-home-source';while(content.firstChild)source.appendChild(content.firstChild);content.appendChild(source);const m=metrics(source),departments=departmentRows(source),actions=actionRows(source),leaves=leaveRows(),value=valueEvidence(),d=currentDate();const home=document.createElement('div');home.className='vector-home';home.innerHTML=`<section class="vector-welcome"><div><h1>${esc(greeting())}, ${esc(firstName())}</h1><p>Here’s what’s happening at ${esc(siteName())} today.</p></div><div class="vector-date"><b>${esc(d.date)}</b><span>Week ${esc(d.week)}</span></div></section><div class="vector-home-top"><div class="vector-home-main"><section class="vector-kpi-grid">${kpiMarkup(m)}</section>${shiftsMarkup(departments)}</div>${buildAssistant()}</div>${valueMarkup(value)}${secondaryKpis(m)}<div class="vector-bottom-grid">${alertsMarkup(actions)}${leaveMarkup(leaves)}${promoMarkup()}</div>`;content.prepend(home);content.dataset.vectorHome='1';document.title='Vector · Workforce Operations';}
 function generalPage(content){if(content.dataset.vectorHome==='1')return;content.classList.add('vector-page-content');}
 function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi='approved-reference-v1';app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(page()==='overview')renderHome(content);else generalPage(content);updateNav();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
 document.addEventListener('click',e=>{const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec)go(firstRoute(spec.routes));return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('time-review');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
@@ -110,5 +143,5 @@ if(typeof previousRender==='function')window.render=async function(...args){cons
 shellObserver=new MutationObserver(()=>apply());
 shellObserver.observe(document.documentElement,observerConfig);
 setTimeout(apply,0);setTimeout(apply,350);
-window.VectorWorkforceOperations={marker:MARKER,reviewMarker:REVIEW_MARKER,apply,go,askWorkforce};
+window.VectorWorkforceOperations={marker:MARKER,reviewMarker:REVIEW_MARKER,valueMarker:VALUE_MARKER,apply,go,askWorkforce};
 })();
