@@ -1,5 +1,7 @@
 'use strict';
 
+const { proveEveryVisibleQuestionNecessary } = require('./adaptive-scoping-question-necessity-proof.cjs');
+
 const ACTION_TYPES = new Set(['CONFIG', 'TEST', 'DEPENDENCY', 'RISK', 'DECISION', 'NO_OP']);
 
 function stable(value) {
@@ -106,6 +108,7 @@ function proveEveryDeclaredReachablePath(compiled, options = {}) {
   let terminalPathCount = 0;
 
   for (const purchasedScope of scopeVariants) {
+    proveEveryVisibleQuestionNecessary(compiled, purchasedScope, options);
     const paths = enumerateReachablePaths(compiled, purchasedScope);
     if (!Array.isArray(paths) || paths.length === 0) fail('No reachable terminal paths for purchased scope ' + JSON.stringify(purchasedScope) + '.', 'NO_REACHABLE_PATH');
     for (const path of paths) {
