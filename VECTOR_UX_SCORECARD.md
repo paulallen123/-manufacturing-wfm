@@ -5,7 +5,7 @@ This is the single canonical scorecard for the approved Vector role-first NEW-UI
 ## 2026-09-20 — Vector r16: lifecycle-consistent action affordance
 
 ### Journey reviewed
-Factory/operations manager Vector Home → `Needs my action` / collapsed `Awaiting source confirmation` → Time Review. The review focused on whether source-confirming work still looks like fresh work requiring another manager decision.
+Factory/operations manager Vector Home → `Needs my action` / collapsed `Awaiting source confirmation` → Time Review. The review focused on whether source-confirming work still looks like fresh work requiring another manager decision, and whether browser proof actually exercises the lifecycle affordances it claims to cover.
 
 ### NEW-UI lineage confirmation
 All product/test work is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired UI branch, customer-proof runtime, staging or production presentation was changed.
@@ -13,11 +13,11 @@ All product/test work is on `feature/one-day-enterprise-implementation-v1` / PR 
 ### Reuse / duplicate-work decision
 - Reused the existing `actionDisposition()` / `actionQueueGroups()` lifecycle partition, Universal Action row renderer, source-owned confirmation state, neutral action styling, action-queue regression and exact-candidate browser oracle.
 - Did not create another queue, component, lifecycle mapper, branch, issue, prototype or browser harness.
-- Did not repeat competitor/generic UX research because the unresolved question was already answered by authoritative lifecycle semantics.
-- Did not retry unchanged Railway containment or weaken any proof/runtime security hold.
+- Did not repeat competitor/generic UX research because the unresolved question was executable evidence quality, not design theory.
+- Did not retry the unchanged GitHub hosted-runner allocation blocker or weaken any proof/runtime security hold.
 
 ### Hypothesis
-If source-confirming rows remain inspectable but use a passive lifecycle-consistent affordance, managers should distinguish “I need to act” from “the source is confirming my decision” faster without losing evidence, recovery or audit context.
+If source-confirming rows remain inspectable but use a passive lifecycle-consistent affordance, managers should distinguish “I need to act” from “the source is confirming my decision” faster without losing evidence, recovery or audit context. Browser evidence only supports this hypothesis when at least one authoritative row actually exercises each claimed affordance; empty collections must not be counted as affordance proof.
 
 ### Exact implementation delta
 - Added one shared `actionAffordance(row)` helper to the existing Vector renderer.
@@ -26,31 +26,35 @@ If source-confirming rows remain inspectable but use a passive lifecycle-consist
 - The same route, source ID, workflow binding, lifecycle text, queue grouping, badge count and neutral visual treatment are preserved.
 - The accessible button label now matches the visible affordance (`View status …` or `Review …`).
 - Affordance selection is derived only through structured `confirmationState` → `actionDisposition()`; loose presentation words, row order, elapsed client time and AI output cannot select it.
+- Evidence-only correction `77a31b15e5e69f65865bd038dd9d427bbc92e098` keeps the same oracle but adds explicit `affordanceCoverage`, `reviewVerified` and `viewStatusVerified` reporting plus an optional `WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE=true` fail-closed gate. It does not change product UI/runtime behaviour.
 
 ### Focused validation / regression delta
 - Extended the existing `ux-overlay/vector-action-queue.test.cjs`; no new test harness was created.
 - The regression protects actionable rows as **Review**, source-confirming rows as **View status**, matching accessible labels, resolved exclusion, collapsed confirmation disclosure and presentation-word independence.
 - Focused deterministic logic smoke passed: `action_required` / `needs_verification` → Review; `decision_sent` / `confirming_source` → View status; loose “Urgent” wording without authoritative confirmation state → Review.
-- Extended the existing `scripts/current-candidate-role-browser-proof.mjs` in commit `d1a4d681447ac75a17a6f33a31bb63259bc2ff19`; no second oracle was created.
-- The exact-candidate oracle now asserts at 1440/760/390 that visible `Needs my action` buttons read **Review**, their accessible labels begin `Review …`, source-confirming rows remain **View status**, and after keyboard expansion those awaiting-source buttons are visible with matching `View status …` accessible labels.
+- Extended the existing `scripts/current-candidate-role-browser-proof.mjs`; no second oracle was created.
+- The oracle asserts at 1440/760/390 that visible `Needs my action` buttons read **Review**, their accessible labels begin `Review …`, source-confirming rows remain **View status**, and after keyboard expansion those awaiting-source buttons are visible with matching `View status …` accessible labels.
 - Existing source-ID binding, actionable-only badge semantics, collapsed disclosure, keyboard open/close, responsive containment, lifecycle visibility, no optimistic clear and return-to-context assertions remain in the same oracle.
+- Isolated Railway browser deployment `08871cc4-9f37-4299-8782-79c73fc62c39` successfully executed the d1a4 oracle against candidate `e7afae04a114b2a0282211090012eae216147d19`: 5 roles passed, role/tenant boundaries held, three responsive widths were exercised, and authoritative Time Review empty state proved `active=0|invented=0`.
+- That successful run returned `needsSource=0|awaitingSource=0`. Therefore it did **not** exercise either lifecycle affordance with a real row; the previous generic `affordances=review-vs-view-status` PASS marker was evidence-overclaim. The r16 oracle now reports this situation as `affordanceCoverage=UNEXERCISED` instead of treating empty-array assertions as proof.
 
 ### Blocker discipline
-The previous exact-head Vector-only GitHub job failed before any workflow step executed (`runner_id=0`, `steps=[]`). That was the unchanged hosted-runner allocation blocker rather than a demonstrated source/test failure. It is rechecked only after a meaningful candidate-head change; no repeated retry or production/staging mutation is used to manufacture evidence.
+The current-head Vector-only GitHub job again failed before any workflow step executed (`runner_id=0`, `steps=[]`). That remains the unchanged hosted-runner allocation blocker rather than a demonstrated source/test failure, so it is not retried repeatedly. Railway has demonstrated that the existing isolated browser executor itself can run the canonical oracle; no customer-proof, staging or production mutation is used to manufacture lifecycle evidence.
 
 ### UX scorecard impact
 - Calm by default: improved — confirmation-in-progress no longer reuses a fresh-work verb, while its disclosure stays collapsed.
 - Dense on demand: preserved — no new panel, page or permanent information is added.
 - Explainability: improved — visible and accessible action wording matches authoritative lifecycle disposition.
-- Accessibility: stronger source/browser acceptance criteria now cover keyboard disclosure and matching visible/accessibility affordances; exact hosted execution remains pending.
+- Accessibility/responsive evidence: partially advanced — the isolated browser matrix is hosted-green for five roles, responsive containment and authoritative empty state, but **Review** / **View status** lifecycle rows remain unexercised in hosted DOM evidence.
+- Evidence integrity: improved — the oracle can no longer present zero-row lifecycle assertions as exercised affordance proof, and strict coverage can fail closed when lifecycle evidence is required.
 - Authority/auditability: preserved — no source state, approval authority, SLA, resolution logic or write authority moved into Vector.
 - Development efficiency: improved — one generic renderer, one unit-regression owner and one existing exact-candidate browser oracle cover the lifecycle contract without a parallel implementation.
 
 ### Still unverified
-The exact-current-head browser oracle has not yet executed on a safe runner, so responsive DOM/accessibility behaviour and the full authenticated journey are not hosted-green. A genuine source-owned `Action required → Decision sent → Confirming source` transition also remains to be exercised end-to-end.
+A genuine source-owned `Action required → Decision sent → Confirming source` transition remains to be exercised end-to-end in the isolated candidate. Hosted DOM evidence still needs at least one authoritative actionable row and one authoritative source-confirming row so **Review**, **View status**, section movement, badge exclusion, keyboard disclosure, source identity and no optimistic clearing are non-vacuously proven. Exact production/staging readiness is not claimed.
 
 ### Single next highest-value NEW-UI action
-Execute the existing exact-candidate browser oracle on the current r16 head. A green result must prove **Review** versus **View status** at 1440/760/390 alongside source identity, actionable-only badge semantics, keyboard disclosure, no optimistic clear and return-to-context. If green, drive one real authoritative Time Review item through `Action required → Decision sent → Confirming source` and prove it moves sections/affordance without disappearing, changing authority or inflating the bell count before extending the shared pattern to Absence or weekly sign-off.
+Use the existing authoritative Time Review fixture/source transition seam in the isolated test candidate — not synthetic UI state — to create/drive a real item from `Action required` through `Decision sent` / `Confirming source`. Re-run this same oracle with `WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE=true` once the source contains the required lifecycle rows. The proof must show **Needs my action / Review** → **Awaiting source confirmation / View status**, keep the source ID and authority stable, exclude awaiting work from the bell count, preserve keyboard/responsive behaviour and never optimistically clear the item. Only after that should the shared pattern extend to Absence or weekly sign-off.
 
 ## 2026-09-20 — Vector r15: remove position-inferred action urgency
 
@@ -61,14 +65,14 @@ Execute the existing exact-candidate browser oracle on the current r16 head. A g
 - No action ordering, lifecycle grouping, status text, source evidence, permissions, authority, audit or workflow logic changed.
 
 ### Evidence boundary
-Focused source assertions passed. Exact-head browser execution remains pending because the available GitHub job received no runner and the isolated Railway candidate is intentionally source-held. No hosted-green or measured task-time claim is made.
+Focused source assertions passed. Exact lifecycle-row browser execution remains pending; no measured task-time claim is made.
 
 ## Validated prior Vector increments
 
 | Increment | Bounded delta | Evidence boundary |
 | --- | --- | --- |
-| r14 | Separate `Needs my action` from collapsed source-owned `Awaiting source confirmation`; browser oracle extended for 1440/760/390 grouping, badge and keyboard checks | Source/unit/oracle code proven; exact-head browser execution pending |
-| r13 | Render authoritative lifecycle visibly in the existing action row | Focused markup and oracle syntax proven; hosted browser execution pending |
+| r14 | Separate `Needs my action` from collapsed source-owned `Awaiting source confirmation`; browser oracle extended for 1440/760/390 grouping, badge and keyboard checks | Source/unit/oracle code proven; hosted empty-state matrix green, lifecycle rows still unexercised |
+| r13 | Render authoritative lifecycle visibly in the existing action row | Focused markup and oracle syntax proven; hosted active-row lifecycle execution pending |
 | r12 | Preserve normalized hosted proxy protocol in the read-only Time Review evidence bridge | Exact pre-repair 502 isolated; source/test repair committed |
 | r11 | Source-bound Time Review return context, focus restoration and no optimistic-clear oracle | Source composition proven; hosted execution exposed the r12 bridge defect |
 | r10 | Bind `Items to review` to the read-only Time Review evidence bridge with per-source neutral fallback | Focused consumer harness passed |
