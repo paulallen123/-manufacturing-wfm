@@ -1,57 +1,88 @@
 # Frontier experiment: Controlled-Environment Workforce Flow
 
 ## New connection
-Combine authoritative cleanroom / controlled-environment rules with workforce qualifications and candidate task plans so the platform can compare equally valid schedules by personnel entries, zone transitions and gowning/control burden.
+Combine authoritative controlled-environment rules with workforce qualifications, production tasks and authorised presence evidence so the platform can compare already-safe plans by personnel entries, zone transitions, gowning/control burden and exceptional human interventions.
 
-This is not a cleanroom-control system and does not estimate contamination probability. It is a workforce decision primitive that asks whether an already-safe production plan can be staffed with less unnecessary human movement through controlled zones.
+This is not a cleanroom-control system and does not estimate contamination probability. It is a workforce decision primitive that asks whether an already-safe production plan can be completed with fewer unnecessary controlled-zone transitions without changing the validated process.
 
 ## Why this is materially different
-Regulated cleanroom controls normally sit in QMS/CCS, facilities/EMS and SOPs, while WFM assigns qualified people. This experiment joins those layers without moving cleanroom authority into WFM.
+QMS/CCS, facilities/EMS, access control and MES normally govern different pieces of the problem while WFM schedules qualified people. This experiment joins those layers without moving quality, access or process authority into WFM.
 
-## Regulatory / operational rationale checked on 20 September 2026
-- EU GMP Annex 1 (2022 revision, fully applicable) requires only the minimum necessary personnel in cleanrooms, controlled/methodical movement, qualified personnel, documented maximum operators, and contamination-control strategy interactions across systems.
-- A June 25, 2026 FDA warning letter explicitly called for risk assessment of all human interactions, personnel flow and material flow in aseptic operations.
-- ASHRAE describes cleanroom personnel as a prime internal particle source and notes movement can re-entrain particles and create turbulence.
+Research checked on 20 September 2026 supports the broader pattern:
+- sterile pharmaceutical guidance explicitly minimises unnecessary personnel, entries/exits and manual interventions;
+- medical-device manufacturing uses cleanrooms and controlled environments where contamination and environmental conditions matter;
+- NASA spacecraft assembly cleanrooms treat people and human activity as major contamination sources;
+- semiconductor manufacturers increasingly use automation and material-handling systems to reduce repeated human handling;
+- radiation-controlled environments have hard access/training/dose rules, demonstrating that controlled-zone workforce orchestration must sometimes optimise exposure rather than contamination.
 
-These sources justify exploring the connection; they do not prove that reducing modeled transitions reduces contamination incidents.
+These sources justify a reusable Sensitive Zone model. They do not justify hard-coding one industry's rules into another.
 
-## Smallest safe reusable increment
-The engine receives multiple candidate workforce plans from the canonical scheduler and:
+## Intervention & Transition Ledger — implemented
+Before optimisation, the product now measures what actually happened.
+
+The ledger:
+1. accepts only authoritative, site-scoped task and access/presence evidence;
+2. pairs entry/exit events into observed controlled-zone sessions;
+3. links sessions to overlapping authorised task windows without claiming badge evidence proves task execution;
+4. reports unmatched presence as **needs review**, never **unnecessary**;
+5. blocks optimisation when access evidence is inconsistent or an observed movement is not approved by site policy;
+6. finds a consolidation candidate only when two separately observed entries for the same authorised worker/zone could fit one permitted session within the site's own maximum-continuous-time and exit rules;
+7. keeps predicted, accepted and realised outcomes separate.
+
+The ledger never changes access, publishes a schedule, changes an SOP, relaxes a qualification, attributes contamination to an individual, or requires cameras/biometrics.
+
+## Existing plan-comparison engine
+The original engine receives multiple candidate workforce plans from the canonical scheduler and:
 1. rejects stale/non-authoritative site policy;
 2. rejects missing skills/zone qualifications, cross-site evidence, double-booking, missing task coverage and zone occupancy breaches;
 3. rejects transitions not explicitly approved by site policy;
 4. scores only remaining safe candidates on gowning cycles, transition-control time, movements and validated control cost;
 5. returns a ranked advisory result only.
 
-It never publishes a schedule, changes an SOP, changes cleanroom HVAC, removes a required operator, relaxes a qualification, or claims product sterility.
-
 ## Scale inversion
-- 1 employee / 1 site: if there is only one valid plan the engine reports no optimization rather than inventing cover.
-- 10,000+ employees / many sites: evaluate separately per site and authoritative local policy; never treat another site's qualification or zone rules as interchangeable.
+- **1 employee / 1 site:** if only one valid plan exists the engine reports no optimisation rather than inventing capacity. The ledger can still show avoidable repeated entry patterns if site rules allow tasks to be combined.
+- **10,000+ employees / many sites:** calculations remain site-local and policy-local. Enterprise analytics may aggregate de-identified metrics, but no site may silently borrow another site's qualifications, occupancy limits, transition rules or legal policy.
 
 ## Future horizon
-As sterile/clean manufacturing becomes more automated, the same primitive can shift from routine operator routing to minimizing and coordinating exceptional human entries for maintenance, quality and recovery windows. This keeps the concept useful in both labour-intensive and highly automated facilities.
+As factories become more automated, the same primitive changes from routine operator routing to **human-intervention orchestration**:
+- sterile/cleanroom production;
+- semiconductor and precision clean manufacturing;
+- spacecraft/satellite assembly;
+- medical-device controlled environments;
+- dry-room / humidity-controlled manufacturing where validated local rules exist;
+- high-containment or hazardous areas;
+- radiation-controlled areas, where the optimisation objective may be exposure/dose and authorised intervention windows rather than contamination.
+
+Each module must have its own authoritative policy profile. Fewer people is never assumed to be safer.
 
 ## Synthetic falsification
-Local Node 22.16.0 verification:
-- 7/7 deterministic safety/unit tests passed.
-- 2,000 synthetic sequential-task scenarios compared skill-first/least-loaded assignment with a zone-continuity alternative using the same skills, tasks and site policy.
-- both candidate plans remained safe and covered the same tasks in all 2,000 scenarios;
-- mean synthetic gowning-cycle count: 26.9505 baseline vs 8.4395 flow-aware;
-- mean synthetic zone transitions: 35.901 baseline vs 8.455 flow-aware;
-- the flow-aware option had fewer gowning cycles in all generated scenarios.
+Local Node verification:
+- original controlled-environment engine: 7/7 deterministic tests passed;
+- original 2,000-scenario plan comparison: same work/skills/site policy, with mean modelled gowning cycles 26.9505 baseline vs 8.4395 flow-aware and mean zone transitions 35.901 vs 8.455;
+- Intervention & Transition Ledger: 7/7 deterministic tests passed;
+- tightened 5,000-history ledger replay: 4,988 histories were internally consistent and 12 correctly fell to review;
+- valid histories averaged 7.515 observed entries and 4.081 deterministic consolidation candidates;
+- modelled potential entry/gowning reduction was ~54.3% of observed entries in this deliberately bundlable synthetic dataset.
 
-These results are deliberately labelled simulation. They do not demonstrate contamination reduction, customer labour savings, GMP compliance, product-quality improvement or energy savings.
+This is simulation only. It does not prove contamination reduction, customer savings, compliance, yield, quality improvement, lower radiation dose or energy savings.
 
 ## Disproof / stop criteria
-Stop or redesign if real sites cannot provide authoritative zone-transition/qualification rules; if customer-like replay does not reduce unnecessary entries without harming throughput or workload balance; if the logic encourages fewer people where process validation requires more; or if cleanroom/quality authority would need to be moved into WFM.
+Stop or redesign if:
+- authoritative local zone-transition, qualification, occupancy and task rules cannot be obtained;
+- customer-like replay cannot beat simple same-zone task bundling materially;
+- throughput, quality, breaks, workload balance, minimum staffing or safety deteriorate;
+- the engine ever labels unexplained presence as unnecessary without authoritative context;
+- policy authority would need to move into WFM;
+- the integration burden costs more than realised transition/control savings.
 
 ## Learning loop
-Recommendation -> accepted/rejected decision -> approved schedule -> actual authorised access/zone-transition evidence where lawfully available -> operational outcome -> quality/financial outcome -> calibration evidence. Predicted, simulated and realised outcomes remain separate. No individual health, biometric or covert surveillance data is required.
+Recommendation -> accepted/rejected decision -> approved schedule -> authorised presence evidence -> production outcome -> quality/safety outcome -> financial outcome -> confidence/calibration update.
+
+Predicted, simulated and realised outcomes remain separate. Outcome learning can calibrate future advice but cannot automatically rewrite quality, access, qualification, process or safety rules.
 
 ## Handoff
-- Product Evolution: eventual Vector UX and canonical scheduler integration.
-- Integration & Data Fabric: CCS/QMS, LMS/qualification, MES/task, authorised access-control and facilities semantics.
-- Autonomous Implementation & Support: mapping/site-policy onboarding implications.
-- Trust/Proof/Release: policy provenance, site isolation, validation and customer-like evidence.
-- Frontier retains discovery ownership and continues searching.
+- **Product Evolution:** eventual Vector UX and canonical scheduler integration.
+- **Integration & Data Fabric:** QMS/CCS, qualifications, MES/tasks, authorised access/presence, facilities/EMS and sector-specific zone-policy semantics.
+- **Autonomous Implementation & Support:** mapping and site-policy onboarding.
+- **Trust/Proof/Release:** provenance, privacy, site isolation, safe evidence handling and customer-like validation.
+- **Frontier:** retains discovery ownership and continues testing which other manufacturing zones justify this primitive.
