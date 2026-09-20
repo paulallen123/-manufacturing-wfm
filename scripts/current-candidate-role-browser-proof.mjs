@@ -196,9 +196,14 @@ try {
           const headerCount = Number(card?.querySelector('#vector-review-title em')?.textContent || '0');
           const summaryText = (summary?.textContent || '').replace(/\s+/g, ' ').trim();
           const awaitingMatch = summaryText.match(/(\d+)\s*$/);
-          const sourceIds = root => [...(root?.querySelectorAll('button[data-vector-source-id][data-vector-workflow="time-review"]') || [])]
-            .map(node => node.getAttribute('data-vector-source-id'))
-            .filter(Boolean);
+          const actions = root => [...(root?.querySelectorAll('button[data-vector-source-id][data-vector-workflow="time-review"]') || [])]
+            .map(node => ({
+              sourceId: node.getAttribute('data-vector-source-id'),
+              text: (node.textContent || '').replace(/\s+/g, ' ').trim(),
+              ariaLabel: node.getAttribute('aria-label') || ''
+            }))
+            .filter(action => action.sourceId);
+          const sourceIds = root => actions(root).map(action => action.sourceId);
           const visible = node => !!node && node.getClientRects().length > 0;
           return {
             width: innerWidth,
@@ -207,25 +212,31 @@ try {
             badgeHidden: !badge || badge.hidden,
             badgeCount: badge && !badge.hidden ? Number(badge.textContent || '0') : 0,
             needsSourceIds: sourceIds(needsList),
+            needsActions: actions(needsList),
             needsRowsVisible: [...(needsList?.querySelectorAll('.vector-alert-row') || [])].every(visible),
             detailsPresent: !!details,
             detailsOpen: details?.open === true,
             summaryText,
             summaryVisible: visible(summary),
             awaitingCount: awaitingMatch ? Number(awaitingMatch[1]) : 0,
-            awaitingSourceIds: sourceIds(details)
+            awaitingSourceIds: sourceIds(details),
+            awaitingActions: actions(details)
           };
         });
 
         assert.equal(queue.width, viewport.width, `${viewport.label} queue viewport mismatch.`);
         assert.ok(queue.scrollWidth <= viewport.width + 1, `${viewport.label} queue introduced horizontal overflow.`);
         assert.deepEqual(queue.needsSourceIds, expectedVisibleNeedsIds, `${viewport.label} Needs my action contains the wrong source-bound Time Review rows.`);
+        assert.deepEqual(queue.needsActions.map(action => action.text), expectedVisibleNeedsIds.map(() => 'Review'), `${viewport.label} Needs my action did not retain the active Review affordance.`);
+        assert.equal(queue.needsActions.every(action => action.ariaLabel.startsWith('Review ')), true, `${viewport.label} actionable accessible labels diverged from Review.`);
         assert.equal(queue.needsRowsVisible, true, `${viewport.label} actionable queue rows are not visible.`);
         assert.equal(queue.headerCount >= expectedNeedsIds.length, true, `${viewport.label} Needs my action count dropped source-bound actionable work.`);
         assert.equal(queue.badgeCount, queue.headerCount, `${viewport.label} notification badge diverged from Needs my action count.`);
         assert.equal(queue.badgeHidden, queue.headerCount === 0, `${viewport.label} notification badge visibility diverged from actionable work.`);
         assert.equal(queue.awaitingCount, expectedAwaitingIds.length, `${viewport.label} awaiting-source summary count diverged from authoritative state.`);
         assert.deepEqual(queue.awaitingSourceIds, expectedVisibleAwaitingIds, `${viewport.label} Awaiting source confirmation contains the wrong source-bound Time Review rows.`);
+        assert.deepEqual(queue.awaitingActions.map(action => action.text), expectedVisibleAwaitingIds.map(() => 'View status'), `${viewport.label} awaiting-source work did not retain the passive View status affordance.`);
+        assert.equal(queue.awaitingActions.every(action => action.ariaLabel.startsWith('View status ')), true, `${viewport.label} awaiting-source accessible labels diverged from View status.`);
         assert.equal(queue.detailsPresent, expectedAwaitingIds.length > 0, `${viewport.label} awaiting-source disclosure presence diverged from authoritative state.`);
         assert.equal(queue.detailsOpen, false, `${viewport.label} awaiting-source disclosure was not calm-by-default.`);
         if (expectedAwaitingIds.length > 0) {
@@ -236,13 +247,19 @@ try {
           await page.keyboard.press('Enter');
           const opened = await page.locator('[data-vector-awaiting-confirmation]').first().evaluate(node => ({
             open: node.open === true,
-            buttonsVisible: [...node.querySelectorAll('button[data-vector-source-id][data-vector-workflow="time-review"]')]
-              .every(button => button.getClientRects().length > 0),
+            buttons: [...node.querySelectorAll('button[data-vector-source-id][data-vector-workflow="time-review"]')]
+              .map(button => ({
+                visible: button.getClientRects().length > 0,
+                text: (button.textContent || '').replace(/\s+/g, ' ').trim(),
+                ariaLabel: button.getAttribute('aria-label') || ''
+              })),
             scrollWidth: document.documentElement.scrollWidth,
             width: innerWidth
           }));
           assert.equal(opened.open, true, `${viewport.label} awaiting-source disclosure did not open from keyboard.`);
-          assert.equal(opened.buttonsVisible, true, `${viewport.label} awaiting-source rows are not visible after disclosure.`);
+          assert.equal(opened.buttons.every(button => button.visible), true, `${viewport.label} awaiting-source rows are not visible after disclosure.`);
+          assert.equal(opened.buttons.every(button => button.text === 'View status'), true, `${viewport.label} visible awaiting-source buttons did not read View status.`);
+          assert.equal(opened.buttons.every(button => button.ariaLabel.startsWith('View status ')), true, `${viewport.label} visible awaiting-source accessible labels diverged from View status.`);
           assert.ok(opened.scrollWidth <= opened.width + 1, `${viewport.label} opened awaiting-source disclosure introduced horizontal overflow.`);
           await page.keyboard.press('Enter');
           assert.equal(await page.locator('[data-vector-awaiting-confirmation]').first().evaluate(node => node.open === true), false, `${viewport.label} awaiting-source disclosure did not close from keyboard.`);
@@ -255,7 +272,7 @@ try {
         expectedAwaiting: expectedAwaitingIds.length,
         viewports: queueStates.map(({ label, headerCount, badgeCount, awaitingCount, detailsPresent, detailsOpen }) => ({ label, headerCount, badgeCount, awaitingCount, detailsPresent, detailsOpen }))
       };
-      console.log(`CURRENT_ACTION_QUEUE_GROUPING=PASS|needsSource=${expectedNeedsIds.length}|awaitingSource=${expectedAwaitingIds.length}|viewports=3`);
+      console.log(`CURRENT_ACTION_QUEUE_GROUPING=PASS|needsSource=${expectedNeedsIds.length}|awaitingSource=${expectedAwaitingIds.length}|viewports=3|affordances=review-vs-view-status`);
 
       if (active.length === 0) {
         const renderedActions = page.locator('.vector-alert-row button[data-vector-source-id][data-vector-workflow="time-review"]');
