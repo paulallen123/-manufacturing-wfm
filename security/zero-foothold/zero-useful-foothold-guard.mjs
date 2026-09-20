@@ -1,9 +1,9 @@
-export const ZERO_USEFUL_FOOTHOLD_VERSION='zero-useful-foothold-v0.1.0';
+export const ZERO_USEFUL_FOOTHOLD_VERSION='zero-useful-foothold-v0.2.0';
 
 const str=v=>typeof v==='string'?v.trim():'';
 const arr=v=>Array.isArray(v)?v:[];
-const bool=v=>v===true;
 const uniq=a=>[...new Set(a.map(String))];
+const NONCANONICAL_PUBLIC_LIFECYCLES=new Set(['proof','test','test-harness','diagnostic','retired','legacy']);
 
 function fail(code,detail={}){return {ok:false,code,detail};}
 
@@ -51,6 +51,28 @@ function validateService(service,{release,telemetry,recovery}={}){
   return {ok:true};
 }
 
+function validateIngress(input){
+  const publicServices=arr(input.services).filter(s=>s?.public===true);
+  for(const service of publicServices){
+    if(service.ingressRole!=='canonical-edge') return fail('PUBLIC_SERVICE_NOT_CANONICAL_EDGE',{service:service.id});
+    if(!str(service.region)) return fail('PUBLIC_SERVICE_REGION_REQUIRED',{service:service.id});
+    if(NONCANONICAL_PUBLIC_LIFECYCLES.has(String(service.lifecycle||'').toLowerCase())) {
+      return fail('NONCANONICAL_LIFECYCLE_PUBLIC',{service:service.id,lifecycle:service.lifecycle});
+    }
+  }
+  const byRegion=new Map();
+  for(const service of publicServices){
+    const key=String(service.region);
+    const items=byRegion.get(key)||[];
+    items.push(service.id);
+    byRegion.set(key,items);
+  }
+  for(const [region,ids] of byRegion){
+    if(ids.length>1) return fail('MULTIPLE_PUBLIC_EDGES_SAME_REGION',{region,services:ids});
+  }
+  return {ok:true};
+}
+
 function validateTopology(input){
   const cells=arr(input.cells);
   const services=arr(input.services);
@@ -68,6 +90,7 @@ function validateTopology(input){
 
 export function evaluateZeroUsefulFoothold(input={}){
   const topology=validateTopology(input); if(!topology.ok) return {status:'blocked',...topology};
+  const ingress=validateIngress(input); if(!ingress.ok) return {status:'blocked',...ingress};
   for(const service of arr(input.services)){
     const result=validateService(service,input);
     if(!result.ok) return {status:'blocked',...result};
