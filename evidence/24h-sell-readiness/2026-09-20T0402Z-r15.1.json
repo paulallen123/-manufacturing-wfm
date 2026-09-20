@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-09-20T04:02:08Z",
+  "candidateBranch": "feature/one-day-enterprise-implementation-v1",
+  "candidateSha": "a5b1401f2ae222f40deea4dac233f1104959b579",
+  "candidateVerified": true,
+  "releaseAuthorityPr": 187,
+  "releaseAuthorityChange": ".github/workflows/integration-proof-exact-gated-release.yml comment only",
+  "railwayPrivateGithubAccess": {
+    "status": "RESTORED",
+    "evidence": "existing Railway service wfm-built-ui-audit received the exact candidate SHA event and skipped only because its configured watch patterns did not match"
+  },
+  "integrationExactRelease": {
+    "workflowRunId": 35488098172,
+    "jobId": 106018056177,
+    "status": "FAILED_BEFORE_STEP_EXECUTION",
+    "runnerLabel": "ubuntu-22.04",
+    "runnerId": 0,
+    "runnerGroupId": 0,
+    "steps": [],
+    "classification": "GitHub Actions runner allocation failure before checkout, Railway token use, source packaging, upload, or application execution"
+  },
+  "targetServices": {
+    "wfm-one-day-enterprise-v1": {
+      "latestKnownSuccessfulSha": "c9878364b02dffb77c21702d58af35c344e5ff68",
+      "exactCurrentShaDeployed": false,
+      "securityHoldPreserved": true
+    },
+    "wfm-integration-fabric-v1-proof": {
+      "latestKnownSuccessfulSha": "2dbe3913e50941f90c8e8d73f8c4ff14517e3d24",
+      "exactCurrentShaDeployed": false,
+      "securityHoldPreserved": true
+    }
+  },
+  "claimBoundaries": {
+    "productionApproved": false,
+    "providerLiveClaim": false,
+    "zeroHumanProvisioningClaim": false,
+    "exactCurrentHostedCombinedCandidateClaim": false,
+    "frozenCustomerProofMutated": false,
+    "newPaidInfrastructureCreated": false,
+    "securityControlsWeakened": false
+  },
+  "sellReadiness": "CONDITIONAL",
+  "remainingHardGates": [
+    "Obtain an executable release runner or equivalent existing safe exact-upload lane without weakening security holds",
+    "Deploy the exact candidate to both existing target services",
+    "Rerun exact-head scale, payroll, lifecycle, T0-T4, tenant isolation and browser gates",
+    "Produce authorised non-fixture provider evidence",
+    "Produce genuine zero-human environment/customer provisioning evidence"
+  ]
+}
