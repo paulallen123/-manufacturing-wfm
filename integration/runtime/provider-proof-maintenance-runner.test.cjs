@@ -55,11 +55,12 @@ function target() {
   return { apiServer: 'api12.successfactors.eu', companyId: 'ACME-SBX' };
 }
 
-test('durable retry anchor is only used after the first provider attempt', () => {
-  const durable = { notBefore: new Date(NOW - 10_000).toISOString() };
+test('durable retry anchor uses only an exact recorded first failure after the first attempt', () => {
+  const durable = { firstFailureAt: new Date(NOW - 10_000).toISOString() };
   assert.equal(durableRetryAnchor(claim(1), durable, NOW), null);
   assert.equal(durableRetryAnchor(claim(2), durable, NOW), NOW - 10_000);
-  assert.equal(durableRetryAnchor(claim(2), { notBefore: new Date(NOW + 1000).toISOString() }, NOW), null);
+  assert.equal(durableRetryAnchor(claim(2), { firstFailureAt: new Date(NOW + 1000).toISOString() }, NOW), null);
+  assert.equal(durableRetryAnchor(claim(2), { notBefore: new Date(NOW - 300_000).toISOString() }, NOW), null);
 });
 
 test('maintenance runner replaces fixed retry timing with shared transport policy', async () => {
@@ -119,7 +120,7 @@ test('maintenance runner blocks provider calls once shared transport retry count
   assert.equal(completed.outcome.errorClass, 'retry-budget-exhausted');
 });
 
-test('maintenance runner keeps elapsed retry budget after a worker restart', async () => {
+test('maintenance runner keeps exact elapsed retry budget after a worker restart', async () => {
   let completed;
   const ledger = {
     claimNext() { return claim(2); },
@@ -128,7 +129,7 @@ test('maintenance runner keeps elapsed retry budget after a worker restart', asy
       return { taskKey, status: outcome.status === 'BLOCK' ? 'BLOCKED' : 'PENDING', errorClass: outcome.errorClass };
     },
     getTask() {
-      return { notBefore: new Date(NOW - 300_000).toISOString() };
+      return { firstFailureAt: new Date(NOW - 300_000).toISOString() };
     }
   };
 
