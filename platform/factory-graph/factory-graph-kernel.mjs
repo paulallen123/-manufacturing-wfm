@@ -1,12 +1,14 @@
 const ENTITY_TYPES = new Set([
   'worker','skill','certification','shift','site','line','asset','maintenance_task',
-  'part','product','production_order','energy_tariff','cost_center','decision','outcome'
+  'part','product','production_order','energy_tariff','cost_center','decision','outcome',
+  'engineering_document','bom','routing','quality_record','supplier'
 ]);
 
 const RELATION_TYPES = new Set([
   'HAS_SKILL','HAS_CERTIFICATION','WORKS_SHIFT','ASSIGNED_TO','LOCATED_AT','REQUIRES_SKILL',
   'REQUIRES_ASSET','MAINTENANCE_FOR','BLOCKS','USES_PART','PRODUCES','CONSUMES_ENERGY_UNDER',
-  'AFFECTS_COST_CENTER','DECISION_FOR','RESULTED_IN'
+  'AFFECTS_COST_CENTER','DECISION_FOR','RESULTED_IN','DOCUMENTS','REVISION_OF','CONTAINS_PART',
+  'QUALITY_FOR','SUPPLIED_BY'
 ]);
 
 function assert(condition, message) {
