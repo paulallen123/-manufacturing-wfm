@@ -35,18 +35,16 @@ before(async()=>{
 });
 after(async()=>{await stop();});
 
-pgTest('work-start runtime role has no login, superuser or table mutation privilege and cannot see excluded evidence columns',async()=>{
+pgTest('work-start runtime role has no login, superuser, direct table SELECT or mutation privilege',async()=>{
   const flags=await psql("SELECT rolcanlogin||','||rolsuper||','||rolcreatedb||','||rolcreaterole FROM pg_roles WHERE rolname='wfm_agency_work_start_reader';");
   assert.equal(flags,'false,false,false,false');
   for(const table of ['wfm_agency_rtw_assurance_current','wfm_agency_portal_token_consumptions','wfm_agency_identity_continuity_observations','wfm_agency_identity_observation_ingress_receipts']){
-    for(const privilege of ['INSERT','UPDATE','DELETE','TRUNCATE'])assert.equal(await psql(`SELECT has_table_privilege('wfm_agency_work_start_reader','public.${table}','${privilege}');`),'f',`${table} ${privilege}`);
+    for(const privilege of ['SELECT','INSERT','UPDATE','DELETE','TRUNCATE'])assert.equal(await psql(`SELECT has_table_privilege('wfm_agency_work_start_reader','public.${table}','${privilege}');`),'f',`${table} ${privilege}`);
   }
-  assert.equal(await psql("SELECT has_column_privilege('wfm_agency_work_start_reader','public.wfm_agency_rtw_assurance_current','checked_at','SELECT');"),'t');
-  assert.equal(await psql("SELECT has_column_privilege('wfm_agency_work_start_reader','public.wfm_agency_rtw_assurance_current','evidence_fingerprint','SELECT');"),'f');
-  assert.equal(await psql("SELECT has_column_privilege('wfm_agency_work_start_reader','public.wfm_agency_rtw_assurance_current','check_method','SELECT');"),'f');
-  assert.equal(await psql("SELECT has_column_privilege('wfm_agency_work_start_reader','public.wfm_agency_portal_token_consumptions','token_id','SELECT');"),'f');
-  assert.equal(await psql("SELECT has_column_privilege('wfm_agency_work_start_reader','public.wfm_agency_portal_token_consumptions','expires_at','SELECT');"),'f');
-  assert.equal(await psql("SELECT has_column_privilege('wfm_agency_work_start_reader','public.wfm_agency_identity_observation_ingress_receipts','source_auth_fingerprint','SELECT');"),'f');
+  assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_reader','public.wfm_read_agency_work_start_locked_snapshot_v1(text,text,text,text,text,text,timestamptz)','EXECUTE');"),'t');
+  assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_reader','public.wfm_read_agency_work_start_authority_v1(text,text,text,text,text,text,timestamptz)','EXECUTE');"),'t');
+  assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_reader','public.wfm_read_agency_work_start_identity_continuity_v1(text,text,text,text,text,text,text,timestamptz,timestamptz)','EXECUTE');"),'t');
+  assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_reader','public.wfm_lock_agency_identity_assignment_scope_v1(text,text,text,text,text,text)','EXECUTE');"),'f');
 });
 
 pgTest('controlled snapshot executes under reader role, returns database scope evidence and does not expose a mutation surface',async()=>{
@@ -56,6 +54,20 @@ pgTest('controlled snapshot executes under reader role, returns database scope e
   const parts=row.split(',');assert.equal(parts[0],'a'.repeat(32));assert.equal(parts[1],assignment);assert.equal(parts[2],'1'.repeat(16));assert.match(parts[3],/^[0-9a-f]{24}$/);
   assert.equal(await psql("SELECT has_function_privilege('wfm_agency_work_start_reader','public.wfm_append_agency_identity_observation_v1(text,text,text,text,text,text,text,text,text,text,text,timestamptz,text,text,text,timestamptz)','EXECUTE');"),'f');
   assert.equal(await psql("SELECT has_function_privilege('wfm_agency_identity_ingress_writer','public.wfm_read_agency_work_start_locked_snapshot_v1(text,text,text,text,text,text,timestamptz)','EXECUTE');"),'f');
+});
+
+pgTest('runtime role cannot enumerate evidence tables and exact-scope functions return only requested assignment evidence',async()=>{
+  await assert.rejects(()=>psql("BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT tenant_id FROM public.wfm_agency_rtw_assurance_current; COMMIT;"),/permission denied/i);
+  await psql(`INSERT INTO wfm_agency_rtw_assurance_current (tenant_id,agency_id,worker_id,assurance_version_id,site_id,request_id,assignment_fingerprint,evidence_fingerprint,check_method,checked_at,coverage_until,promoted_at,conflicted) VALUES ('T2','A1','W1','${'c'.repeat(32)}','S1','R1','${assignment}','${'d'.repeat(24)}','home_office_online','2026-10-04T10:00:00Z','2027-12-31T23:59:59Z','2026-10-04T11:00:00Z',false);`);
+  const authority=await psql(`BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT tenant_id||','||assurance_version_id FROM public.wfm_read_agency_work_start_authority_v1('T1','S1','R1','A1','W1','${assignment}','2026-10-05T06:10:00Z'); COMMIT;`);
+  assert.equal(authority,`T1,${'a'.repeat(32)}`);
+
+  const event='e'.repeat(32),subject='f'.repeat(32);
+  const binding=digest(JSON.stringify(stable({tenantId:'T1',siteId:'S1',requestId:'R1',sourceSystemId:'turnstile',agencyId:'A1',workerId:'W1',assignmentFingerprint:assignment,assuranceVersionId:'a'.repeat(32),subjectFingerprint:subject})));
+  await psql(`INSERT INTO wfm_agency_identity_continuity_observations (tenant_id,site_id,request_id,agency_id,worker_id,assignment_fingerprint,assurance_version_id,source_system_id,source_event_fingerprint,subject_fingerprint,signal_type,observed_at) VALUES ('T1','S1','R1','A1','W1','${assignment}','${'a'.repeat(32)}','turnstile','${event}','${subject}','access_pass','2026-10-05T05:58:00Z');`);
+  await psql(`INSERT INTO wfm_agency_identity_observation_ingress_receipts (tenant_id,source_system_id,source_event_fingerprint,source_auth_fingerprint,binding_fingerprint,ingress_version,received_at) VALUES ('T1','turnstile','${event}','${'9'.repeat(32)}','${binding}','agency-identity-observation-ingress-v0.2.0','2026-10-05T05:58:10Z');`);
+  const continuity=await psql(`BEGIN; SET LOCAL ROLE wfm_agency_work_start_reader; SELECT tenant_id||','||worker_id||','||source_event_fingerprint FROM public.wfm_read_agency_work_start_identity_continuity_v1('T1','S1','R1','A1','W1','${assignment}','${'a'.repeat(32)}','2026-10-05T05:00:00Z','2026-10-05T06:10:00Z'); COMMIT;`);
+  assert.equal(continuity,`T1,W1,${event}`);
 });
 
 pgTest('direct mutation attempt under the runtime role is rejected by PostgreSQL',async()=>{
