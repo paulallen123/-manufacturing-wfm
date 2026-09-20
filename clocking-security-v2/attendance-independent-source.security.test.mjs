@@ -75,3 +75,23 @@ test('two logical source IDs cannot manufacture independence by emitting kinds o
   assert.equal(engine.getState({tenant:'acme',employee:'e1',site:'s1'}).status,'outside');
   assert.equal(engine.audit.filter(x=>x.action==='attendance-in-authoritative').length,0);
 });
+
+test('known source types cannot widen explicit capabilities into another evidence domain',()=>{
+  const engine=new AutomaticAttendanceEvidenceEngine({corroborationWindowMs:120_000,maxOfflineAgeMs:24*60*60_000});
+  engine.registerPerson({tenant:'acme',employee:'e1',sites:['s1']});
+  engine.registerSource({tenant:'acme',sourceId:'door-a',site:'s1',type:'access'});
+
+  assert.throws(
+    ()=>engine.registerSource({
+      tenant:'acme',sourceId:'door-b',site:'s1',type:'access',
+      allowedKinds:['wifi_authenticated']
+    }),
+    /cannot declare evidence kinds outside its trusted capability/
+  );
+
+  // Explicit capability configuration remains useful for narrowing a known source;
+  // only cross-domain widening is forbidden.
+  engine.registerSource({tenant:'acme',sourceId:'entry-only',site:'s1',type:'access',allowedKinds:['access_entry']});
+  assert.deepEqual(engine.sources.get(JSON.stringify(['acme','entry-only'])).allowedKinds,['access_entry']);
+  assert.equal(engine.sources.has(JSON.stringify(['acme','door-b'])),false);
+});
