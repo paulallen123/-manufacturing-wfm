@@ -4,7 +4,19 @@
   "candidate": {
     "branch": "feature/one-day-enterprise-implementation-v1",
     "sha": "5858a299a9c6d8a7417673eb80c14b495fe2361e",
-    "githubVerification": "verified"
+    "githubVerification": "verified",
+    "evidenceMeaning": "last cryptographically verified candidate exercised in this run"
+  },
+  "branchHeadAtClose": {
+    "sha": "7c26eddcd74ce5429e72a2da3b18d24d5bb5ca31",
+    "githubVerification": "unsigned",
+    "aheadOfVerifiedCandidateBy": 2,
+    "changesObserved": [
+      "scripts/current-candidate-role-browser-proof.mjs: non-vacuous lifecycle affordance proof change",
+      "VECTOR_UX_SCORECARD.md: corrected browser evidence boundary"
+    ],
+    "productRuntimeChangeObserved": false,
+    "releaseDecision": "Do not call this unsigned moving head the verified sell-readiness candidate."
   },
   "railwayPrivateGithubAccess": {
     "status": "RESTORED",
@@ -15,6 +27,13 @@
       "sourceBranch": "feature/one-day-enterprise-implementation-v1",
       "proofDockerfile": "Dockerfile.current-candidate-role-browser-proof",
       "imageBuildAndPush": "PASS"
+    },
+    "newerProofHarnessFetch": {
+      "deploymentId": "01283062-a894-4880-8244-cd9fdd2eda14",
+      "sourceSha": "77a31b15e5e69f65865bd038dd9d427bbc92e098",
+      "proofImageBuildAndPush": "PASS",
+      "runtimeResult": "CRASHED after fail-closed browser proof",
+      "failure": "manager login HTTP 401"
     }
   },
   "exactOneDayReleaseLane": {
@@ -23,11 +42,18 @@
     "status": "BLOCKED",
     "failureBoundary": "before any workflow step executed",
     "jobStepsObserved": null,
+    "newerIndependentVectorRun": {
+      "workflowRunId": 35495841689,
+      "sourceSha": "77a31b15e5e69f65865bd038dd9d427bbc92e098",
+      "status": "failure",
+      "jobStepsObserved": null
+    },
     "publicGithubStatusAtCheck": "Actions reported operational; no public incident listed",
     "additionalDefectFound": "The branch workflow uploaded the repository root directly while the existing Railway service rootDirectory remained /__security_hold_one_day_enterprise__. Even with a runner, this path contract could not safely satisfy the immutable hold.",
     "isolatedSafeFix": {
-      "branch": "fix/one-day-hold-safe-exact-release-r17",
-      "commit": "98d971fcefbc764dc3fc7e1406dea1c1893b9f54",
+      "branch": "fix/one-day-hold-safe-exact-release-r18",
+      "commit": "77af03279fa6fe0dadc70e0aa9f0b20dc8d87f9f",
+      "draftPullRequest": 193,
       "change": "Package the exact GITHUB_SHA under __security_hold_one_day_enterprise__, preserve staging manifest assertions, then use railway up on the wrapper with --path-as-root. No Railway service configuration or security hold is changed.",
       "merged": false,
       "reasonNotMerged": "Execution/regression gate is currently unavailable because GitHub Actions jobs still fail before steps run."
