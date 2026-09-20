@@ -5,6 +5,8 @@ const require = createRequire(import.meta.url);
 const {
   assessHostedStagingProof,
   verifyHostedStagingProofReceipt,
+  assessHostedBrowserProof,
+  verifyHostedBrowserProofReceipt,
   digest,
 } = require('../resilience/railway-hosted-staging-proof-receipt.cjs');
 
@@ -101,14 +103,111 @@ delete authorityCore.receiptDigest;
 resealedAuthorityEscalation.receiptDigest = digest(authorityCore);
 assert.equal(verifyHostedStagingProofReceipt(resealedAuthorityEscalation), false);
 
+const observedBrowser = {
+  deploymentId: '73f7d8d2-3b0d-455e-a83d-1fe3e33ebb55',
+  deploymentSnapshotId: 'bbd57a4c-18d8-4b4a-ae36-d71c5fb52338',
+  sourceCommitSha: '338e07b24d3096d30dcc97fe14c33a03261b7e86',
+  imageDigest: 'sha256:593af64338766b65334f0c32a6b7491273a148f6a4dd20b15219a9e1d4e38bf9',
+  managerScreenshotSha256: '3c1ac1bc81caaef93d6bb05e6a6ad75b6c5a1c6e195a8fd49b4f26bc503cc68c',
+  deploymentStatus: 'SUCCESS',
+  matrixStatus: 'PASS',
+  roles: 5,
+  navClicks: 4,
+  activeActionJourneys: 0,
+  emptyStateJourneys: 1,
+  affordanceCoverage: 'UNEXERCISED',
+  reviewVerified: false,
+  viewStatusVerified: false,
+  proofServerPassed: true,
+  healthcheckSucceeded: true,
+  layoutOverflowAssertionsPassed: true,
+  tenantIsolationRoleObserved: true,
+};
+
+const browserReceipt = assessHostedBrowserProof(observedBrowser);
+assert.equal(browserReceipt.roleRenderNavigationProven, true);
+assert.equal(browserReceipt.activeWorkflowInteractionProven, false);
+assert.equal(browserReceipt.browserFunctionalReadinessProven, false);
+assert.equal(browserReceipt.passiveProofOnly, true);
+assert.equal(browserReceipt.claimBoundary, 'hosted-browser-role-render-navigation-only');
+assert.equal(verifyHostedBrowserProofReceipt(browserReceipt), true);
+
+const futureInteractiveFixture = assessHostedBrowserProof({
+  ...observedBrowser,
+  activeActionJourneys: 2,
+  affordanceCoverage: 'EXERCISED',
+  reviewVerified: true,
+  viewStatusVerified: true,
+});
+assert.equal(futureInteractiveFixture.activeWorkflowInteractionProven, true);
+assert.equal(futureInteractiveFixture.browserFunctionalReadinessProven, true);
+assert.equal(futureInteractiveFixture.claimBoundary, 'hosted-browser-role-render-navigation-and-active-workflow-interaction');
+assert.equal(verifyHostedBrowserProofReceipt(futureInteractiveFixture), true);
+
+for (const candidate of [
+  assessHostedBrowserProof({ ...observedBrowser, deploymentStatus: 'FAILED' }),
+  assessHostedBrowserProof({ ...observedBrowser, sourceCommitSha: 'bad' }),
+  assessHostedBrowserProof({ ...observedBrowser, managerScreenshotSha256: 'bad' }),
+  assessHostedBrowserProof({ ...observedBrowser, roles: 4 }),
+  assessHostedBrowserProof({ ...observedBrowser, tenantIsolationRoleObserved: false }),
+]) {
+  assert.equal(candidate.roleRenderNavigationProven, false);
+  assert.equal(candidate.browserFunctionalReadinessProven, false);
+  assert.equal(verifyHostedBrowserProofReceipt(candidate), true);
+}
+
+const fakeActionCoverage = assessHostedBrowserProof({ ...observedBrowser, activeActionJourneys: 2 });
+assert.equal(fakeActionCoverage.roleRenderNavigationProven, true);
+assert.equal(fakeActionCoverage.activeWorkflowInteractionProven, false);
+assert.equal(fakeActionCoverage.browserFunctionalReadinessProven, false);
+
+const fakeVerification = assessHostedBrowserProof({
+  ...observedBrowser,
+  activeActionJourneys: 2,
+  affordanceCoverage: 'EXERCISED',
+  reviewVerified: true,
+  viewStatusVerified: false,
+});
+assert.equal(fakeVerification.activeWorkflowInteractionProven, false);
+
+const resealedBrowserEscalation = structuredClone(browserReceipt);
+resealedBrowserEscalation.activeWorkflowInteractionProven = true;
+resealedBrowserEscalation.browserFunctionalReadinessProven = true;
+resealedBrowserEscalation.passiveProofOnly = false;
+resealedBrowserEscalation.claimBoundary = 'hosted-browser-role-render-navigation-and-active-workflow-interaction';
+const browserEscalationCore = { ...resealedBrowserEscalation };
+delete browserEscalationCore.receiptDigest;
+resealedBrowserEscalation.receiptDigest = digest(browserEscalationCore);
+assert.equal(verifyHostedBrowserProofReceipt(resealedBrowserEscalation), false);
+
+const resealedBrowserRelease = structuredClone(browserReceipt);
+resealedBrowserRelease.releaseClaimAllowed = true;
+const browserReleaseCore = { ...resealedBrowserRelease };
+delete browserReleaseCore.receiptDigest;
+resealedBrowserRelease.receiptDigest = digest(browserReleaseCore);
+assert.equal(verifyHostedBrowserProofReceipt(resealedBrowserRelease), false);
+
+const resealedBrowserAuthority = structuredClone(browserReceipt);
+resealedBrowserAuthority.executionAuthorityGranted = true;
+const browserAuthorityCore = { ...resealedBrowserAuthority };
+delete browserAuthorityCore.receiptDigest;
+resealedBrowserAuthority.receiptDigest = digest(browserAuthorityCore);
+assert.equal(verifyHostedBrowserProofReceipt(resealedBrowserAuthority), false);
+
 console.log(JSON.stringify({
-  validator: 'railway-hosted-staging-proof-receipt',
+  validator: 'railway-hosted-staging-and-browser-proof-receipt',
   result: 'PASS',
-  cases: 10,
+  stagingCases: 10,
+  browserCases: 12,
   observedDeploymentId: receipt.deploymentId,
   exactHostedStagingExecutionEvidence: receipt.stagingExecutionEvidenceProven,
-  claimBoundary: receipt.claimBoundary,
+  stagingClaimBoundary: receipt.claimBoundary,
+  observedBrowserDeploymentId: browserReceipt.deploymentId,
+  browserRoleRenderNavigationProven: browserReceipt.roleRenderNavigationProven,
+  browserFunctionalReadinessProven: browserReceipt.browserFunctionalReadinessProven,
+  browserClaimBoundary: browserReceipt.claimBoundary,
   releaseProven: receipt.releaseProven,
+  releaseClaimAllowed: browserReceipt.releaseClaimAllowed,
   customerProductionImplementationProven: receipt.customerProductionImplementationProven,
   syntheticTimingModelIsExecutionProof: receipt.syntheticTimingModelIsExecutionProof,
 }, null, 2));
