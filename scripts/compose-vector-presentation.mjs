@@ -7,6 +7,17 @@ if (!process.argv[2]) throw new Error('PUBLIC_ROOT_REQUIRED');
 const indexPath = path.join(publicRoot, 'index.html');
 let html = fs.readFileSync(indexPath, 'utf8');
 
+// Controllers must be available before payroll intelligence captures their callbacks.
+// Keep the retired presentation absent; its workflow ownership now belongs to Vector.
+if (!fs.existsSync(path.join(publicRoot, 'vector-workflows.js'))) {
+  throw new Error('VECTOR_WORKFLOW_CONTROLLER_MISSING');
+}
+if (!html.includes('src="/vector-workflows.js"')) {
+  const consumer = /<script\b[^>]*src=["'][^"']*payroll-intelligence-ui\.js[^"']*["'][^>]*>/i;
+  if (!consumer.test(html)) throw new Error('VECTOR_WORKFLOW_CONSUMER_MISSING');
+  html = html.replace(consumer, match => '<script src="/vector-workflows.js"></script>\n' + match);
+}
+
 const retired = [
   'factory-control-ui.css',
   'value-cockpit-ui.js',

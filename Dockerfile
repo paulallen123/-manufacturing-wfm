@@ -32,6 +32,7 @@ RUN mkdir -p /app/security-runtime
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
 COPY security/runtime/hosted-listen-guard.cjs /app/security-runtime/hosted-listen-guard.cjs
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
+COPY security/runtime/owner-access-recovery.cjs /app/security-runtime/owner-access-recovery.cjs
 
 # Autonomous integration fabric. The control plane is separately reviewable and
 # uses only Node built-ins plus the existing per-tenant SQLite runtime.
@@ -128,6 +129,9 @@ RUN node --check /app/security-runtime/bootstrap.cjs \
  && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/vector-ui.css \
  && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/vector-ui.css \
  && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/vector-ui.css \
+ && cat /tmp/wfm-ux-overlay/vector-workflows.css >> /app/public/vector-ui.css \
+ && cp /tmp/wfm-ux-overlay/vector-workflows.js /app/public/vector-workflows.js \
+ && node --check /app/public/vector-workflows.js \
  && printf "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" > /app/public/vector-ui.js \
  && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/vector-ui.js \
  && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/vector-ui.js \
