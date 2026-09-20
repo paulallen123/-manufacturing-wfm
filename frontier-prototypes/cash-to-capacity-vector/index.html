@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vector · Cash-to-Capacity concept</title>
+<link rel="stylesheet" href="cash-to-capacity.css">
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><span class="mark">V</span><div><strong>Vector</strong><small>Workforce operations</small></div></div>
+  <nav>
+    <button class="active">Home</button><button>People</button><button>Time & Attendance</button><button>Scheduling</button>
+    <button>Labour Planning</button><button>Cost & Productivity</button><button>Reports</button>
+  </nav>
+</aside>
+<main>
+  <header><div><h1>Good afternoon, Alex</h1><p>Here’s what needs attention at Midlands Plant.</p></div><div class="role-switch" aria-label="Demo role"><button data-role="manager" class="active">Manager</button><button data-role="ops">Ops Director</button><button data-role="finance">Finance</button></div></header>
+  <section class="summary-grid">
+    <article><small>On site now</small><strong>184</strong><span>96% of planned workforce</span></article>
+    <article><small>Labour cost today</small><strong>£31.4k</strong><span>Within planned range</span></article>
+    <article><small>Orders at risk</small><strong>2</strong><span>One needs attention</span></article>
+    <article><small>Cash tied in near-complete WIP</small><strong>£126k</strong><span>Synthetic demonstration</span></article>
+  </section>
+
+  <section class="layout">
+    <div>
+      <article class="card opportunity">
+        <div class="eyebrow">Cash & production opportunity · Evidence current</div>
+        <h2>Move 2 qualified operators to Line 3 for 4 hours</h2>
+        <p class="lead">This completes Order 884 today instead of Tuesday without delaying another committed order.</p>
+        <div class="impact-grid">
+          <div><small>Potential cash timing</small><strong>+£68,000</strong><span>3 days earlier</span></div>
+          <div><small>Additional labour</small><strong>£420</strong><span>overtime/premium</span></div>
+          <div><small>Customer delivery</small><strong class="ok">Protected</strong><span>no committed-date change</span></div>
+          <div><small>Skills & safety</small><strong class="ok">Covered</strong><span>qualified people only</span></div>
+        </div>
+        <div class="actions"><button class="primary" data-open>Review option</button><button class="secondary" data-why>Why this?</button></div>
+        <p class="boundary">Potential timing benefit — not realised cash until production, invoice and payment outcomes are confirmed.</p>
+      </article>
+
+      <article class="card queue">
+        <div class="card-head"><h2>Other decisions</h2><span>Normal operational work stays primary</span></div>
+        <div class="queue-row"><b>Line 2 skill coverage</b><span>1 certified operator short for 18:00</span><button>Review</button></div>
+        <div class="queue-row"><b>Weekly sign-off</b><span>3 time exceptions remain</span><button>Review</button></div>
+      </article>
+    </div>
+
+    <aside class="card so-what">
+      <div class="eyebrow">Vector analysis</div>
+      <h2>So what?</h2>
+      <p>You can bring a £68k invoice milestone forward by 3 days for £420 additional labour, with current evidence showing no delivery, qualification or fatigue breach.</p>
+      <button data-open>Show the evidence</button>
+      <hr>
+      <small>AI explains the decision. Deterministic production, workforce and finance rules decide whether it is eligible.</small>
+    </aside>
+  </section>
+</main>
+
+<div class="drawer-backdrop" hidden>
+  <section class="drawer" role="dialog" aria-modal="true" aria-label="Review cash and production option">
+    <header><div><small>Decision review</small><h2>Complete Order 884 today</h2></div><button class="close" aria-label="Close">×</button></header>
+    <div class="compare">
+      <div><small>Current plan</small><b>Finish Tuesday</b><span>Invoice milestone Tuesday</span></div>
+      <div class="recommended"><small>Recommended option</small><b>Finish today</b><span>Invoice milestone today</span></div>
+    </div>
+    <h3>Operational change</h3>
+    <p>Move two already-qualified operators from Line 1 to Line 3 between 14:00–18:00. Line 1 retains minimum skill coverage.</p>
+    <h3>Financial impact</h3>
+    <dl><div><dt>Cash potentially released earlier</dt><dd>£68,000</dd></div><div><dt>Timing improvement</dt><dd>3 days</dd></div><div><dt>Extra labour</dt><dd>£420</dd></div></dl>
+    <h3>Guardrails checked</h3>
+    <ul><li>✓ Delivery commitments protected</li><li>✓ Required qualifications current</li><li>✓ Fatigue/rest rules protected</li><li>✓ No payroll rule is changed</li></ul>
+    <h3>Evidence</h3>
+    <p class="evidence">MES production plan · WFM qualification state · ERP order milestone · AR/payment terms. Each item must be current and authoritative or this recommendation disappears.</p>
+    <div class="drawer-actions"><button class="secondary">Keep current plan</button><button class="primary">Send to planning review</button></div>
+  </section>
+</div>
+<script src="cash-to-capacity.js"></script>
+</body>
+</html>
