@@ -4,6 +4,7 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import crypto from 'node:crypto';
 import {AGENCY_WORK_START_PERMIT_LOCK_SQL} from '../../src/frontier/agency-work-start-permit.mjs';
+import {AGENCY_WORK_START_DB_BOUNDARY_DDL} from '../../src/frontier/agency-work-start-db-boundary.mjs';
 import {AGENCY_IDENTITY_SCOPE_LOCK_DB_SQL} from '../../src/frontier/agency-identity-scope-lock.mjs';
 import {AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL} from '../../src/frontier/agency-portal-token-store.mjs';
 import {AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL} from '../../src/frontier/agency-right-to-work-assurance-ledger.mjs';
@@ -37,7 +38,7 @@ async function waitForLockWait(name){for(let i=0;i<60;i+=1){if(Number(await scal
 async function stop(){if(!started)return;try{await docker(['rm','-f',CONTAINER],{timeout:10000});}catch{}started=false;}
 function pgTest(name,fn){test(name,{skip:!REQUIRED},fn);}
 
-before(async()=>{if(!REQUIRED)return;try{await docker(['version','--format','{{.Server.Version}}'],{timeout:10000});}catch(error){throw new Error(`Docker is required for work-start permit race proof: ${error.message}`);}await docker(['run','-d','--rm','--name',CONTAINER,'-e',`POSTGRES_PASSWORD=${DB_PASSWORD}`,POSTGRES_IMAGE],{timeout:120000});started=true;await waitForPostgres();await psql(`${AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL}\n${AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL}\n${AGENCY_IDENTITY_CONTINUITY_DDL}\n${AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL}\n${AGENCY_IDENTITY_DB_BOUNDARY_DDL}\nCREATE TABLE wfm_agency_work_start_shadow_proof (command_id text PRIMARY KEY, assurance_version_id text NOT NULL, continuity_event_fingerprint text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());`);});
+before(async()=>{if(!REQUIRED)return;try{await docker(['version','--format','{{.Server.Version}}'],{timeout:10000});}catch(error){throw new Error(`Docker is required for work-start permit race proof: ${error.message}`);}await docker(['run','-d','--rm','--name',CONTAINER,'-e',`POSTGRES_PASSWORD=${DB_PASSWORD}`,POSTGRES_IMAGE],{timeout:120000});started=true;await waitForPostgres();await psql(`${AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL}\n${AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL}\n${AGENCY_IDENTITY_CONTINUITY_DDL}\n${AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL}\n${AGENCY_IDENTITY_DB_BOUNDARY_DDL}\n${AGENCY_WORK_START_DB_BOUNDARY_DDL}\nCREATE TABLE wfm_agency_work_start_shadow_proof (command_id text PRIMARY KEY, assurance_version_id text NOT NULL, continuity_event_fingerprint text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());`);});
 after(async()=>{await stop();});
 
 const scopeLockSql=(scope=SCOPE)=>interpolate(AGENCY_IDENTITY_SCOPE_LOCK_DB_SQL,[scope.tenantId,scope.siteId,scope.requestId,scope.agencyId,scope.workerId,scope.assignmentFingerprint]);
@@ -55,7 +56,7 @@ async function reset(){
   await psql(`INSERT INTO wfm_agency_portal_token_consumptions (tenant_id,token_id,site_id,request_id,agency_id,token_fingerprint,action,expires_at,consumed_at,assurance_bindings) VALUES ('T-START-PERMIT','TOK-START-PERMIT','S-START-PERMIT','R-START-PERMIT','A-START-PERMIT','${'1'.repeat(16)}','confirm_preferred_worker','2026-10-05T05:00:00Z','2026-10-04T12:00:00Z','${bindings}'::jsonb);`);
   await psql(`BEGIN; ${writerIngressSql({eventFingerprint:'2'.repeat(32),subjectFingerprint:SUBJECT,bindingFingerprint:BINDING,observedAt:'2026-10-05T05:58:00Z',receivedAt:'2026-10-05T05:58:10Z'})} COMMIT;`);
 }
-const VALUES=['T-START-PERMIT','S-START-PERMIT','R-START-PERMIT','A-START-PERMIT','W-START-PERMIT','2026-10-05T06:10:00Z'];
+const VALUES=['T-START-PERMIT','S-START-PERMIT','R-START-PERMIT','A-START-PERMIT','W-START-PERMIT',ASSIGNMENT,'2026-10-05T06:10:00Z'];
 const lockedSql=()=>interpolate(AGENCY_WORK_START_PERMIT_LOCK_SQL,VALUES);
 const proofInsert=commandId=>`INSERT INTO wfm_agency_work_start_shadow_proof(command_id,assurance_version_id,continuity_event_fingerprint)
 SELECT ${lit(commandId)},current.assurance_version_id,o.source_event_fingerprint
@@ -86,13 +87,13 @@ pgTest('race fixture uses the controlled ingress function and database-owned can
 pgTest('an RTW update already in flight wins before work-start authority locking and zero stale shadow admissions escape',async()=>{
   await reset();const updaterName=`wfm_work_start_permit_first_update_${process.pid}`;
   const updater=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(updaterName)}; BEGIN; UPDATE wfm_agency_rtw_assurance_current SET assurance_version_id='${NEW}',promoted_at='2026-10-05T06:00:00Z' WHERE tenant_id='T-START-PERMIT' AND agency_id='A-START-PERMIT' AND worker_id='W-START-PERMIT'; SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
-  await waitForSleep(updaterName);const permit=psql(`BEGIN; ${scopeLockSql()} ${lockedSql()} ${proofInsert('START-STALE')} COMMIT;`,{timeout:10000});await Promise.all([updater,permit]);
+  await waitForSleep(updaterName);const permit=psql(`BEGIN; ${lockedSql()} ${proofInsert('START-STALE')} COMMIT;`,{timeout:10000});await Promise.all([updater,permit]);
   assert.equal(await scalar("SELECT count(*) FROM wfm_agency_work_start_shadow_proof WHERE command_id='START-STALE';"),'0');assert.equal(await scalar("SELECT assurance_version_id FROM wfm_agency_rtw_assurance_current WHERE tenant_id='T-START-PERMIT' AND agency_id='A-START-PERMIT' AND worker_id='W-START-PERMIT';"),NEW);
 });
 
 pgTest('a valid shadow work-start admission keeps current RTW and accepted-response rows locked in the same transaction',async()=>{
   await reset();const permitName=`wfm_work_start_permit_holder_${process.pid}`;const updaterName=`wfm_work_start_permit_waiting_update_${process.pid}`;
-  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${scopeLockSql()} ${lockedSql()} ${proofInsert('START-VALID')} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
+  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${lockedSql()} ${proofInsert('START-VALID')} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
   await waitForSleep(permitName);const updater=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(updaterName)}; UPDATE wfm_agency_rtw_assurance_current SET assurance_version_id='${NEW}',promoted_at='2026-10-05T06:11:00Z' WHERE tenant_id='T-START-PERMIT' AND agency_id='A-START-PERMIT' AND worker_id='W-START-PERMIT';`],{timeout:10000});
   await waitForLockWait(updaterName);assert.equal(await scalar("SELECT count(*) FROM wfm_agency_work_start_shadow_proof WHERE command_id='START-VALID';"),'0');await permit;await updater;
   assert.equal(await scalar("SELECT assurance_version_id FROM wfm_agency_work_start_shadow_proof WHERE command_id='START-VALID';"),OLD);assert.equal(await scalar("SELECT assurance_version_id FROM wfm_agency_rtw_assurance_current WHERE tenant_id='T-START-PERMIT' AND agency_id='A-START-PERMIT' AND worker_id='W-START-PERMIT';"),NEW);
@@ -102,7 +103,7 @@ pgTest('controlled authenticated contradictory identity ingress owns the canonic
   await reset();const ingressName=`wfm_identity_ingress_first_${process.pid}`;const permitName=`wfm_work_start_scope_wait_${process.pid}`;
   const ingress=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(ingressName)}; BEGIN; ${contradictoryIngressSql()} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
   await waitForSleep(ingressName);
-  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${scopeLockSql()} ${lockedSql()} ${strictProofInsert('START-IDENTITY-CONFLICT')} COMMIT;`],{timeout:10000});
+  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${lockedSql()} ${strictProofInsert('START-IDENTITY-CONFLICT')} COMMIT;`],{timeout:10000});
   await waitForLockWait(permitName);await Promise.all([ingress,permit]);
   assert.equal(await scalar("SELECT count(*) FROM wfm_agency_work_start_shadow_proof WHERE command_id='START-IDENTITY-CONFLICT';"),'0');
   assert.equal(await scalar(`SELECT count(*) FROM wfm_agency_identity_continuity_observations WHERE tenant_id='T-START-PERMIT' AND source_event_fingerprint='${'3'.repeat(32)}';`),'1');
@@ -110,7 +111,7 @@ pgTest('controlled authenticated contradictory identity ingress owns the canonic
 
 pgTest('work-start canonical DB scope lock serializes later controlled ingress without blocking unrelated assignment scopes',async()=>{
   await reset();const permitName=`wfm_work_start_scope_first_${process.pid}`;const ingressName=`wfm_identity_ingress_wait_${process.pid}`;const unrelatedName=`wfm_identity_unrelated_${process.pid}`;
-  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${scopeLockSql()} ${lockedSql()} ${strictProofInsert('START-IDENTITY-SERIALIZED')} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
+  const permit=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(permitName)}; BEGIN; ${lockedSql()} ${strictProofInsert('START-IDENTITY-SERIALIZED')} SELECT pg_sleep(1.2); COMMIT;`],{timeout:10000});
   await waitForSleep(permitName);
   const ingress=docker(['exec',CONTAINER,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U',DB_USER,'-d',DB_NAME,'-c',`SET application_name=${lit(ingressName)}; BEGIN; ${contradictoryIngressSql()} COMMIT;`],{timeout:10000});
   await waitForLockWait(ingressName);
