@@ -14,6 +14,9 @@ const RAILWAY_ENVIRONMENTS_QUERY = `query WfmReadOnlyEnvironments($projectId: St
   }
 }`;
 
+const PROVIDER_PROOF_SOURCE = 'RAILWAY_PROVIDER_READ';
+const MUTATION_METHOD_NAMES = ['createEnvironment', 'updateEnvironment', 'deleteEnvironment', 'create', 'update', 'delete', 'mutate', 'setVariable', 'upsertVariable'];
+
 function fail(code, message, statusCode = 409) {
   const error = new Error(message);
   error.code = code;
@@ -31,6 +34,22 @@ function toMillis(value) {
   const millis = Date.parse(String(value || ''));
   if (!Number.isFinite(millis)) fail('WFM_RAILWAY_CREATED_AT_INVALID', 'Railway environment creation time is invalid.', 502);
   return millis;
+}
+
+function assertReadOnlyCreationProofReader(reader) {
+  if (!reader || typeof reader !== 'object' || typeof reader.readCreationProof !== 'function') {
+    fail('WFM_RAILWAY_PROOF_READER_REQUIRED', 'Railway reconciliation requires a read-only provider creation-proof reader.', 500);
+  }
+  const caps = reader.capabilities || {};
+  if (caps.readOnly !== true || caps.createsResources !== false || caps.updatesResources !== false || caps.deletesResources !== false) {
+    fail('WFM_RAILWAY_PROOF_READER_NOT_READ_ONLY', 'Railway creation-proof reader must explicitly deny create, update and delete capability.', 403);
+  }
+  for (const method of MUTATION_METHOD_NAMES) {
+    if (typeof reader[method] === 'function') {
+      fail('WFM_RAILWAY_PROOF_READER_MUTATION_METHOD_PRESENT', 'Railway creation-proof reader exposes a mutation method.', 403);
+    }
+  }
+  return reader;
 }
 
 function validateLookup(lookup) {
@@ -58,15 +77,34 @@ function validateLookup(lookup) {
   return Object.freeze({ ...normalized, ...binding });
 }
 
+function normalizeProviderProofRead(proofRead, environment, expectedName) {
+  if (!proofRead || typeof proofRead !== 'object') {
+    fail('WFM_RAILWAY_CREATION_PROOF_REQUIRED', 'Matched Railway environment has no provider-resident autonomous creation proof.', 403);
+  }
+  if (proofRead.source !== PROVIDER_PROOF_SOURCE) {
+    fail('WFM_RAILWAY_CREATION_PROOF_SOURCE_INVALID', 'Autonomous creation proof must be read back from Railway, not supplied from internal state.', 403);
+  }
+  if (String(proofRead.environmentId || '') !== String(environment.id || '') || String(proofRead.environmentName || '') !== expectedName) {
+    fail('WFM_RAILWAY_CREATION_PROOF_ENVIRONMENT_MISMATCH', 'Provider-read creation proof does not belong to the exact matched Railway environment.', 409);
+  }
+  if (!proofRead.creationProof || typeof proofRead.creationProof !== 'object') {
+    fail('WFM_RAILWAY_CREATION_PROOF_REQUIRED', 'Matched Railway environment has no provider-resident autonomous creation proof.', 403);
+  }
+  return Object.freeze({
+    source: PROVIDER_PROOF_SOURCE,
+    creationProof: structuredClone(proofRead.creationProof)
+  });
+}
+
 function createRailwayReadOnlyEnvironmentAdapter({
   projectId,
   executeGraphQL,
-  creationProofForLookup,
+  creationProofReader,
   now = Date.now
 } = {}) {
   const railwayProjectId = requireString(projectId, 'WFM_RAILWAY_PROJECT_REQUIRED', 'Railway project id is required.');
   if (typeof executeGraphQL !== 'function') throw new Error('Railway read-only adapter requires an injected GraphQL query executor.');
-  if (typeof creationProofForLookup !== 'function') throw new Error('Railway read-only adapter requires the durable fresh-create proof resolver.');
+  const proofReader = assertReadOnlyCreationProofReader(creationProofReader);
 
   const capabilities = Object.freeze({
     readOnly: true,
@@ -115,10 +153,11 @@ function createRailwayReadOnlyEnvironmentAdapter({
       'WFM_RAILWAY_ENVIRONMENT_ID_REQUIRED',
       'Railway matched environment is missing its provider id.'
     );
-    const creationProof = await creationProofForLookup(lookup);
-    if (!creationProof || typeof creationProof !== 'object') {
-      fail('WFM_RAILWAY_CREATION_PROOF_REQUIRED', 'Matched Railway environment has no durable autonomous fresh-create proof.', 403);
-    }
+    const proofRead = normalizeProviderProofRead(await proofReader.readCreationProof(Object.freeze({
+      projectId: railwayProjectId,
+      environmentId: providerResourceId,
+      environmentName: expectedName
+    })), environment, expectedName);
 
     return Object.freeze({
       status: 'FOUND',
@@ -133,7 +172,8 @@ function createRailwayReadOnlyEnvironmentAdapter({
       bindingVersion: lookup.bindingVersion,
       bindingDigest: lookup.bindingDigest,
       createdAt: toMillis(environment.createdAt),
-      creationProof
+      creationProofSource: proofRead.source,
+      creationProof: proofRead.creationProof
     });
   }
 
@@ -142,7 +182,10 @@ function createRailwayReadOnlyEnvironmentAdapter({
 
 module.exports = {
   RAILWAY_ENVIRONMENTS_QUERY,
+  PROVIDER_PROOF_SOURCE,
   createRailwayReadOnlyEnvironmentAdapter,
+  assertReadOnlyCreationProofReader,
   validateLookup,
+  normalizeProviderProofRead,
   toMillis
 };
