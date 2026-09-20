@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { createT4ContainmentController, createWriteOnceForensicStore } = require('../resilience/t4-containment-controller.cjs');
+const { createT4RuntimeContainmentController, digest: t4Digest } = require('../resilience/t4-forensic-failover-store.cjs');
 const d = (value) => createHash('sha256').update(String(value)).digest('hex');
 const canarySecret = 'executor-only-secret-canary';
 
@@ -230,6 +231,98 @@ fs.chmodSync(forensicFile, 0o600);
 fs.appendFileSync(forensicFile, 'tamper');
 assert.equal(retryStore.verify(firstPreserve), false);
 
+const runtimeEvidenceDigest = d('pre-existing-zero-cost-forensic-runtime-evidence');
+const runtimeCapability = (identity) => Object.freeze({
+  preExisting: true,
+  sameTenantOnly: true,
+  isolated: true,
+  writeOnce: true,
+  independentlyVerifiable: true,
+  incrementalCostZero: true,
+  productionWriteAuthority: false,
+  modelVisibleReusableSecrets: false,
+  createsResources: false,
+  eligibilityEvidenceDigest: runtimeEvidenceDigest,
+  storeIdentityDigest: d(`forensic-runtime-identity:${identity}`),
+});
+const runtimePrimaryBase = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-primary'), now: () => 1900000000000 });
+const runtimeSecondary = createWriteOnceForensicStore({ rootDir: path.join(tmpRoot, 'runtime-secondary'), now: () => 1900000000000 });
+let runtimePrimaryAttempts = 0;
+const runtimeFailingPrimary = {
+  preserve: async () => {
+    runtimePrimaryAttempts += 1;
+    const error = new Error('synthetic strict-runtime primary forensic outage');
+    error.code = 'WFM_T4_FORENSICS_SYNTHETIC_RUNTIME_OUTAGE';
+    throw error;
+  },
+  verify: runtimePrimaryBase.verify,
+};
+
+assert.throws(
+  () => createT4RuntimeContainmentController({
+    stores: [{ id: 'only-runtime-sink', capability: runtimeCapability('only'), store: runtimeSecondary }],
+  }),
+  (error) => error?.code === 'WFM_T4_FORENSICS_RUNTIME_ATTESTATION',
+  'Actual T4 runtime construction must refuse a single forensic sink.',
+);
+assert.throws(
+  () => createT4RuntimeContainmentController({
+    stores: [
+      { id: 'runtime-alias-a', capability: runtimeCapability('same-sink'), store: runtimePrimaryBase },
+      { id: 'runtime-alias-b', capability: runtimeCapability('same-sink'), store: runtimeSecondary },
+    ],
+  }),
+  (error) => error?.code === 'WFM_T4_FORENSICS_RUNTIME_IDENTITY',
+  'Actual T4 runtime construction must refuse duplicate attested forensic identity.',
+);
+
+const runtimeController = createT4RuntimeContainmentController({
+  stores: [
+    { id: 'runtime-primary', capability: runtimeCapability('primary'), store: runtimeFailingPrimary },
+    { id: 'runtime-secondary', capability: runtimeCapability('secondary'), store: runtimeSecondary },
+  ],
+  maxAttempts: 2,
+  requiredEligibleStores: 2,
+  now: () => ++tick,
+});
+const runtimeTerminal = await runtimeController.handle({
+  ...base,
+  incidentId: 't4-runtime-primary-forensic-outage',
+  scenarioId: 'support-system-failure',
+  supportSystem: { available: false, contextIntegrity: false },
+});
+assert.equal(runtimePrimaryAttempts, 1, 'Strict T4 runtime may make only the bounded primary forensic attempt before failover.');
+assert.equal(runtimeTerminal.safeTerminal, true);
+assert.equal(runtimeTerminal.runtimeForensicReady, true);
+assert.match(runtimeTerminal.runtimeForensicReadinessDigest, /^[a-f0-9]{64}$/);
+assert.match(runtimeTerminal.runtimeForensicFailoverContractDigest, /^[a-f0-9]{64}$/);
+assert.match(runtimeTerminal.runtimeForensicBindingDigest, /^[a-f0-9]{64}$/);
+assert.match(runtimeTerminal.innerContainmentReceiptDigest, /^[a-f0-9]{64}$/);
+assert.equal(runtimeTerminal.runtimeRequiredEligibleStores, 2);
+assert.equal(runtimeTerminal.runtimeExecutableStoreCount, 2);
+assert.equal(runtimeTerminal.forensicReceipt.storageMode, 'write-once-failover:runtime-secondary');
+assert.equal(runtimeTerminal.productionAuthorityGranted, false);
+assert.equal(runtimeTerminal.customerMutation, false);
+assert.equal(runtimeController.verifyReceipt(runtimeTerminal), true);
+
+const forgedRuntimeBinding = structuredClone(runtimeTerminal);
+forgedRuntimeBinding.runtimeForensicReadinessDigest = d('forged-runtime-readiness');
+forgedRuntimeBinding.runtimeForensicBindingDigest = t4Digest({
+  innerContainmentReceiptDigest: forgedRuntimeBinding.innerContainmentReceiptDigest,
+  forensicDigest: forgedRuntimeBinding.forensicReceipt?.forensicDigest || null,
+  runtimeForensicReadinessDigest: forgedRuntimeBinding.runtimeForensicReadinessDigest,
+  runtimeForensicFailoverContractDigest: forgedRuntimeBinding.runtimeForensicFailoverContractDigest,
+  requiredEligibleStores: forgedRuntimeBinding.runtimeRequiredEligibleStores,
+  executableStoreCount: forgedRuntimeBinding.runtimeExecutableStoreCount,
+});
+delete forgedRuntimeBinding.receiptDigest;
+forgedRuntimeBinding.receiptDigest = t4Digest(forgedRuntimeBinding);
+assert.equal(
+  runtimeController.verifyReceipt(forgedRuntimeBinding),
+  false,
+  'Recomputed outer receipt digests must not allow a terminal to migrate to a different forensic runtime contract.',
+);
+
 assert.equal(rollbackCalls.length, 1, 'Only the independently verified schema-safe known-good case may roll back.');
 assert.equal(executorCalls.some((call) => call.tenant !== 'tenant-a'), false);
 
@@ -237,10 +330,10 @@ fs.rmSync(tmpRoot, { recursive: true, force: true });
 fs.rmSync(retryStoreRoot, { recursive: true, force: true });
 
 console.log(JSON.stringify({
-  schemaVersion: 1,
+  schemaVersion: 2,
   proof: 'tier4-adversarial-containment-chaos',
   status: 'PASS',
-  cases: 17,
+  cases: 21,
   promptInjectionContained: true,
   memoryPoisoningContained: true,
   credentialExfiltrationContainedWithoutSecretVisibility: true,
@@ -259,6 +352,10 @@ console.log(JSON.stringify({
   missingForensicsRejected: true,
   forensicRetryIdempotent: true,
   forensicPostWriteTamperDetected: true,
+  strictRuntimeRequiresIndependentForensicSinks: true,
+  strictRuntimePrimaryToSecondaryFailoverBounded: true,
+  safeTerminalBoundToRuntimeReadinessDigest: true,
+  recomputedRuntimeBindingForgeryRejected: true,
   productionAuthorityGranted: false,
   customerMutation: false,
 }, null, 2));
