@@ -128,7 +128,16 @@ function createScopeAttestedProvisioningOutbox(store, options = {}) {
   if (typeof baseOutboxFactory !== 'function') throw new Error('Scope-attested provisioning requires a durable outbox factory.');
 
   const base = baseOutboxFactory(store, baseOptions);
-  if (!base || typeof base.enqueue !== 'function' || typeof base.get !== 'function' || typeof base.claim !== 'function' || typeof base.beginMutation !== 'function' || typeof base.recordIndependentVerification !== 'function') {
+  if (
+    !base ||
+    typeof base.enqueue !== 'function' ||
+    typeof base.get !== 'function' ||
+    typeof base.claim !== 'function' ||
+    typeof base.beginMutation !== 'function' ||
+    typeof base.recordProviderOutcome !== 'function' ||
+    typeof base.recordReconciliation !== 'function' ||
+    typeof base.recordIndependentVerification !== 'function'
+  ) {
     throw new Error('Scope-attested provisioning requires the standard durable provisioning outbox interface.');
   }
 
@@ -140,6 +149,15 @@ function createScopeAttestedProvisioningOutbox(store, options = {}) {
     const record = base.get(queueKey);
     if (!record || !record.payload) fail('WFM_SCOPE_ADMISSION_RECORD_REQUIRED', 'Provisioning queue record or sealed payload is missing.', 409);
     return { record, verifiedScope: verifyIntent(record.payload) };
+  }
+
+  function withScopeProof(result, verifiedScope) {
+    return {
+      ...result,
+      scopeFinalizationDigest: verifiedScope.finalizationDigest,
+      scopeFinalizationReceiptSha256: verifiedScope.receiptSha256,
+      scopeProofSubjectDigest: verifiedScope.subjectDigest
+    };
   }
 
   function enqueue(intent) {
@@ -156,12 +174,7 @@ function createScopeAttestedProvisioningOutbox(store, options = {}) {
     const effectiveScope = result.duplicate && result.record && result.record.payload
       ? verifyIntent(result.record.payload)
       : verifiedScope;
-    return {
-      ...result,
-      scopeFinalizationDigest: effectiveScope.finalizationDigest,
-      scopeFinalizationReceiptSha256: effectiveScope.receiptSha256,
-      scopeProofSubjectDigest: effectiveScope.subjectDigest
-    };
+    return withScopeProof(result, effectiveScope);
   }
 
   function claim(queueKey, workerId) {
@@ -175,6 +188,19 @@ function createScopeAttestedProvisioningOutbox(store, options = {}) {
     }
     verifyStored(token.queueKey);
     return base.beginMutation(token);
+  }
+
+  function recordProviderOutcome(token, outcome = {}) {
+    if (!token || typeof token !== 'object' || !token.queueKey) {
+      fail('WFM_SCOPE_ADMISSION_TOKEN_REQUIRED', 'Provisioning outcome requires a queue token.', 400);
+    }
+    const { verifiedScope } = verifyStored(token.queueKey);
+    return withScopeProof(base.recordProviderOutcome(token, outcome), verifiedScope);
+  }
+
+  function recordReconciliation(queueKey, result = {}) {
+    const { verifiedScope } = verifyStored(queueKey);
+    return withScopeProof(base.recordReconciliation(queueKey, result), verifiedScope);
   }
 
   function recordIndependentVerification(queueKey, verification = {}) {
@@ -196,12 +222,7 @@ function createScopeAttestedProvisioningOutbox(store, options = {}) {
       scopeProofSubjectDigest: verifiedScope.subjectDigest
     };
     const result = base.recordIndependentVerification(queueKey, { ...verification, checks });
-    return {
-      ...result,
-      scopeFinalizationDigest: verifiedScope.finalizationDigest,
-      scopeFinalizationReceiptSha256: verifiedScope.receiptSha256,
-      scopeProofSubjectDigest: verifiedScope.subjectDigest
-    };
+    return withScopeProof(result, verifiedScope);
   }
 
   return {
@@ -209,6 +230,8 @@ function createScopeAttestedProvisioningOutbox(store, options = {}) {
     enqueue,
     claim,
     beginMutation,
+    recordProviderOutcome,
+    recordReconciliation,
     recordIndependentVerification
   };
 }
