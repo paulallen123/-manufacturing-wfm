@@ -223,9 +223,126 @@ function verifyRailwayDeploymentConfigBindingReceipt(receipt) {
   return expected === digest(core);
 }
 
+function configBindingCanElevateDiagnosis(input = {}) {
+  const deploymentId = validId(input.deploymentId);
+  const serviceConfigDigest = digestDeploymentConfigSnapshot(input.serviceConfig);
+  const receipt = input.deploymentConfigBindingReceipt;
+  const receiptValid = verifyRailwayDeploymentConfigBindingReceipt(receipt);
+  const bound = Boolean(
+    receiptValid
+    && receipt.deploymentConfigEvidenceBound === true
+    && receipt.canElevateDiagnosisConfidence === true
+    && receipt.securityHoldDiagnosisHighConfidenceAllowed === true
+    && receipt.deploymentId === deploymentId
+    && serviceConfigDigest
+    && receipt.configSnapshotDigest === serviceConfigDigest
+    && receipt.attestedConfigDigest === serviceConfigDigest
+  );
+
+  return {
+    receiptValid,
+    bound,
+    serviceConfigDigest,
+    receipt: receiptValid && (receipt.deploymentConfigEvidenceBound !== true || bound) ? receipt : null,
+  };
+}
+
+function classifyRailwayProofFailureWithBoundConfig(input = {}) {
+  const binding = configBindingCanElevateDiagnosis(input);
+  const classifier = require('./railway-proof-failure-classifier.cjs');
+  const classifierInput = { ...input };
+  delete classifierInput.deploymentConfigBindingReceipt;
+  if (!binding.bound) delete classifierInput.serviceConfig;
+
+  const diagnosis = classifier.classifyRailwayProofFailure(classifierInput);
+  if (!classifier.verifyDiagnosisReceipt(diagnosis)) {
+    throw new Error('Railway proof diagnosis receipt failed verification.');
+  }
+
+  const core = {
+    schemaVersion: 1,
+    proof: 'railway-proof-failure-provenance-bound-classification',
+    provider: 'railway',
+    deploymentId: validId(input.deploymentId),
+    deploymentConfigEvidenceBound: binding.bound,
+    serviceConfigDigest: binding.serviceConfigDigest,
+    configBindingReceipt: binding.receipt,
+    diagnosis,
+    releaseClaimAllowed: false,
+    autonomyPromotionAllowed: false,
+    automaticRedeployAllowed: false,
+    safetyGateBypassAllowed: false,
+    productionMutation: false,
+    customerMutation: false,
+    payrollMutation: false,
+    identityMutation: false,
+    modelAuthorityGranted: false,
+    executionAuthorityGranted: false,
+    recommendedAction: binding.bound
+      ? 'use-only-the-bound-config-backed-diagnosis-without-granting-release-or-execution-authority'
+      : 'treat-service-config-as-current-state-only-and-do-not-elevate-historical-config-diagnosis-confidence',
+  };
+
+  return Object.freeze({
+    ...core,
+    receiptDigest: digest(core),
+  });
+}
+
+function verifyRailwayProofFailureWithBoundConfigReceipt(receipt) {
+  if (!receipt || typeof receipt !== 'object') return false;
+  if (!/^[a-f0-9]{64}$/.test(String(receipt.receiptDigest || ''))) return false;
+  if (
+    receipt.schemaVersion !== 1
+    || receipt.proof !== 'railway-proof-failure-provenance-bound-classification'
+    || receipt.provider !== 'railway'
+    || receipt.releaseClaimAllowed !== false
+    || receipt.autonomyPromotionAllowed !== false
+    || receipt.automaticRedeployAllowed !== false
+    || receipt.safetyGateBypassAllowed !== false
+    || receipt.productionMutation !== false
+    || receipt.customerMutation !== false
+    || receipt.payrollMutation !== false
+    || receipt.identityMutation !== false
+    || receipt.modelAuthorityGranted !== false
+    || receipt.executionAuthorityGranted !== false
+    || !receipt.diagnosis
+  ) return false;
+
+  const classifier = require('./railway-proof-failure-classifier.cjs');
+  if (!classifier.verifyDiagnosisReceipt(receipt.diagnosis)) return false;
+  if (receipt.diagnosis.deploymentId !== receipt.deploymentId) return false;
+
+  const bound = receipt.deploymentConfigEvidenceBound === true;
+  if (bound) {
+    if (
+      !receipt.configBindingReceipt
+      || !verifyRailwayDeploymentConfigBindingReceipt(receipt.configBindingReceipt)
+      || receipt.configBindingReceipt.deploymentConfigEvidenceBound !== true
+      || receipt.configBindingReceipt.deploymentId !== receipt.deploymentId
+      || !validDigest(receipt.serviceConfigDigest)
+      || receipt.configBindingReceipt.configSnapshotDigest !== receipt.serviceConfigDigest
+      || receipt.configBindingReceipt.attestedConfigDigest !== receipt.serviceConfigDigest
+    ) return false;
+  } else {
+    if (receipt.configBindingReceipt) {
+      if (!verifyRailwayDeploymentConfigBindingReceipt(receipt.configBindingReceipt)) return false;
+      if (receipt.configBindingReceipt.deploymentConfigEvidenceBound !== false) return false;
+    }
+    if (receipt.diagnosis.classification === 'security-containment-hold-active') return false;
+  }
+
+  const core = { ...receipt };
+  const expected = core.receiptDigest;
+  delete core.receiptDigest;
+  return expected === digest(core);
+}
+
 module.exports = {
   assessRailwayDeploymentConfigBinding,
   verifyRailwayDeploymentConfigBindingReceipt,
+  classifyRailwayProofFailureWithBoundConfig,
+  verifyRailwayProofFailureWithBoundConfigReceipt,
   normaliseDeploymentConfig,
   digestDeploymentConfigSnapshot,
   digest,
