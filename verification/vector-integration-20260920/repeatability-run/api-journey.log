@@ -1,0 +1,23 @@
+{
+  "checks": 13,
+  "result": "PASS",
+  "observations": [
+    {
+      "name": "approval attempt",
+      "status": 200,
+      "result": {
+        "ok": true,
+        "result": {
+          "id": "r-1789947995675-1",
+          "status": "approved"
+        },
+        "version": 3
+      }
+    },
+    {
+      "name": "payroll holds",
+      "canRelease": false,
+      "blockerCount": 6
+    }
+  ]
+}

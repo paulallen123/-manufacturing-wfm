@@ -1,10 +1,12 @@
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
-import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,rmSync,mkdirSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
+import {verifiedRuntimeProvenance} from './runtime-provenance.mjs';
 const root=resolve(process.env.WFM_PROOF_REPO||process.cwd()),dir=mkdtempSync('/tmp/vector-payroll-proof-');
+const runtime=verifiedRuntimeProvenance(process.env.WFM_LOCAL_RUNTIME || join(root,'candidate-runtime'));
 const origin='http://127.0.0.1:4108',period='2026-09-07',checks=[];let server;
 async function start(){server=spawn(process.execPath,['--require',join(process.env.WFM_LOCAL_RUNTIME || join(root,'candidate-runtime'),'local-paths.cjs'),join(process.env.WFM_LOCAL_RUNTIME || join(root,'candidate-runtime'),'security-runtime/bootstrap.cjs')],{env:{...process.env,PORT:'4108',WFM_DB:join(dir,'state.sqlite'),WFM_HOSTED_STAGING:'false'},stdio:['ignore','pipe','pipe']});await new Promise((resolve,reject)=>{let output='';const timer=setTimeout(()=>reject(Error('Startup timeout')),20000);server.stdout.on('data',s=>{output+=s;if(output.includes(origin)){clearTimeout(timer);resolve()}});server.once('exit',code=>{clearTimeout(timer);reject(Error('Server exited '+code))})});}
 async function stop(){if(server){server.kill('SIGTERM');await once(server,'exit');server=null}}
@@ -42,6 +44,8 @@ try{
  await stop();await start();const fresh=await login('payroll@northstar.example');
  const saved=await request('/api/payroll-run?period='+period,fresh);assert.equal(saved.body.batches.find(b=>b.id===id).status,'sent');
  const again=await request('/api/payroll-export/'+encodeURIComponent(id),fresh);assert.equal(again.status,200);assert.equal(again.body,csv.body);pass('new login after local restart returns same saved batch and CSV bytes');
- const evidence={scope:'LOCAL authenticated API and SQLite only; no deployed or browser proof',synthetic:true,node:process.version,sourceHead:'6667f4217e0c0a8a90cab8d4c7d79f8efd628662',checks,export:{sha256:hash,rows:csv.body.trim().split('\r\n').length-1}};
- writeFileSync(join(root,'verification/vector-repair-20260920/payroll-journey-results.json'),JSON.stringify(evidence,null,2)+'\n');console.log(JSON.stringify(evidence,null,2));
+ const evidence={scope:'LOCAL authenticated API and SQLite only; no deployed or browser proof',synthetic:true,node:process.version,runtime,checks,export:{sha256:hash,rows:csv.body.trim().split('\r\n').length-1}};
+ const output=resolve(process.env.WFM_PROOF_OUTPUT || join(root,'verification/vector-repair-20260920'));
+ mkdirSync(output,{recursive:true});
+ writeFileSync(join(output,'payroll-journey-results.json'),JSON.stringify(evidence,null,2)+'\n');console.log(JSON.stringify(evidence,null,2));
 }finally{await stop();rmSync(dir,{recursive:true,force:true})}

@@ -1,10 +1,12 @@
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
-import {mkdtempSync,writeFileSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,mkdirSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {DatabaseSync} from 'node:sqlite';
 import assert from 'node:assert/strict';
+import {verifiedRuntimeProvenance} from './runtime-provenance.mjs';
 const root=resolve(process.env.WFM_PROOF_REPO || process.cwd());
+const runtime=verifiedRuntimeProvenance(process.env.WFM_LOCAL_RUNTIME || join(root,'candidate-runtime'));
 const dir=mkdtempSync(join(process.env.TMPDIR || '/tmp','vector-api-proof-'));
 const dbPath=join(dir,'state.sqlite'),origin='http://127.0.0.1:4107';
 const checks=[],observations=[];let server;
@@ -56,6 +58,8 @@ try{
  const audit=db.prepare("SELECT action,detail FROM audit_events WHERE tenant='northstar-demo' AND action IN ('leave-request','leave-decision') ORDER BY id").all();
  check('audit has saved decision in same persisted database',()=>assert.ok(audit.some(x=>x.action==='leave-decision')));
  db.close();
- const evidence={scope:'LOCAL composed candidate only; not deployed UI proof',node:process.version,sourceHead:'6667f4217e0c0a8a90cab8d4c7d79f8efd628662',synthetic:true,checks,observations,dbPath};
- writeFileSync(join(root,'verification/vector-repair-20260920/api-journey-results.json'),JSON.stringify(evidence,null,2));console.log(JSON.stringify({checks:checks.length,result:'PASS',observations},null,2));
+ const evidence={scope:'LOCAL composed candidate only; not deployed UI proof',node:process.version,runtime,synthetic:true,checks,observations,dbPath};
+ const output=resolve(process.env.WFM_PROOF_OUTPUT || join(root,'verification/vector-repair-20260920'));
+ mkdirSync(output,{recursive:true});
+ writeFileSync(join(output,'api-journey-results.json'),JSON.stringify(evidence,null,2)+'\n');console.log(JSON.stringify({checks:checks.length,result:'PASS',observations},null,2));
 }finally{await stop()}
