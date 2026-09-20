@@ -1,6 +1,6 @@
 {
   "observed_at_utc": "2026-09-20T03:13:49Z",
-  "last_reverified_at_utc": "2026-09-20T04:12:00Z",
+  "last_reverified_at_utc": "2026-09-20T05:10:00Z",
   "environment_scope": "authorised Railway manufacturing-wfm-test and manufacturing-wfm-staging-proof environments only",
   "service": "wfm-one-day-enterprise-v1",
   "deployment_id": "eb8b7e40-0153-4592-88a8-7027578db5d0",
@@ -23,7 +23,7 @@
   },
   "corroboration": {
     "comparison_service": "wfm-integration-fabric-v1-proof",
-    "comparison_deployment_id": "d38d400a-e32d-4e3c-bb42-1fd3fb1ff0f6",
+    "comparison_deployment_id": "f2b5eb15-dd1c-4c3a-b5af-994b1072afd0",
     "same_period_terminal_failure_reason_was_observable": true,
     "comparison_reason": "missing security-hold root directory was explicitly logged"
   },
@@ -46,15 +46,33 @@
     "reason": "the latest deployment is SKIPPED and has no build snapshot to copy",
     "interpretation": "The current API redeploy path could not start a deployment. This is not evidence that all older-snapshot or UI-mediated redeploy paths are impossible."
   },
+  "surviving_prior_runtime_observation_20260920_0510_utc": {
+    "prior_successful_deployment_id": "b2ae8d64-3a2a-498e-9e95-86fb54c53276",
+    "prior_successful_deployment_created_at_utc": "2026-09-19T22:03:53.605Z",
+    "newer_held_or_failed_deployments_observed": 3,
+    "latest_failed_replacement_id": "eb8b7e40-0153-4592-88a8-7027578db5d0",
+    "public_http_traffic_after_failed_replacement": true,
+    "authenticated_login_200_after_failed_replacement": true,
+    "authenticated_api_200_after_failed_replacement": true,
+    "examples_of_authenticated_api_paths_observed": [
+      "/api/bootstrap",
+      "/api/readiness",
+      "/api/payroll-run",
+      "/api/integrations"
+    ],
+    "runtime_variable_names_include_sensitive_credentials": true,
+    "interpretation": "The inert build hold blocks replacement builds but does not itself terminate or privatise the last successful runtime. Build containment therefore cannot be treated as live-runtime containment. No hostile access was identified from the observed traffic."
+  },
   "containment": {
     "existing_narrow_build_hold_preserved": true,
     "new_production_change_made": false,
     "customer_payroll_or_workforce_state_changed": false,
-    "release_decision": "KEEP_FAIL_CLOSED"
+    "release_decision": "KEEP_FAIL_CLOSED",
+    "live_runtime_containment_proven": false
   },
   "adversarial_policy_verification": {
-    "synthetic_cases_executed_locally": 7,
-    "synthetic_cases_passed": 7,
+    "synthetic_cases_executed_locally": 10,
+    "synthetic_cases_passed": 10,
     "covered_bypasses": [
       "terminal deployment with no build logs",
       "terminal deployment with scheduler-only logs after repeated queries",
@@ -62,22 +80,28 @@
       "unexpected source execution while contained",
       "credential-bearing service without build hold",
       "successful deployment without runtime logs",
+      "prior credential-bearing runtime remains public after failed replacement",
+      "authenticated access continues after containment attempt",
+      "secretless prior runtime control case",
       "complete failed-build evidence control case"
     ],
     "live_redeploy_case_reverified": true
   },
   "threat_correlation": {
-    "source": "CrowdStrike PhantomRaven research",
-    "published": "2026-09-15",
-    "url": "https://www.crowdstrike.com/en-us/blog/phantomraven-llm-generated-information-stealer-for-bug-bounty-hunting/",
-    "relevance": "Current malicious npm packages can execute install-time code and target credentials; unexplained build execution around credential-bearing services must not be treated as safe when defender telemetry is incomplete."
+    "source": "Wiz keyv/cacheable npm supply-chain analysis",
+    "published": "2026-08-04",
+    "url": "https://www.wiz.io/blog/keyv-and-cacheable-npm-supply-chain-attack",
+    "relevance": "Current supply-chain campaigns target cloud and CI/CD credentials, so a still-live credential-bearing runtime must not be assumed contained merely because replacement builds fail."
   },
   "residual_risk": {
     "cause_of_missing_build_telemetry_not_proven": true,
-    "enterprise_terminal_failure_reason_still_missing_at_20260920_0412_utc": true,
+    "enterprise_terminal_failure_reason_still_missing_at_20260920_0510_utc": true,
+    "prior_successful_runtime_survival_after_failed_hold_proven": true,
+    "current_live_reachability_at_20260920_0510_utc_not_proven": true,
     "no_evidence_of_active_compromise_observed": true,
     "credential_bearing_release_must_remain_blocked_until_terminal_build_reason_is_observable": true,
+    "live_runtime_must_be_proven_quiescent_private_or_secretless_before_containment_can_be_claimed": true,
     "historic_snapshot_or_ui_redeploy_bypass_not_fully_excluded": true
   },
-  "decision": "PRESERVE_BUILD_HOLD_AND_ESCALATE_TELEMETRY_LOSS"
+  "decision": "PRESERVE_BUILD_HOLD_FAIL_CLOSED_AND_REQUIRE_LIVE_RUNTIME_CONTAINMENT"
 }
