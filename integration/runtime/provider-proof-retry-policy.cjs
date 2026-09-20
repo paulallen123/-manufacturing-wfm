@@ -53,6 +53,15 @@ function safeRetryHint(error = {}) {
   return Object.freeze({});
 }
 
+function safeFirstFailureAt(claim = {}, now = Date.now()) {
+  const direct = Number(claim.firstFailureAt);
+  if (Number.isFinite(direct) && direct > 0 && direct <= Number(now)) return direct;
+
+  const parsed = Date.parse(text(claim.firstFailureAt));
+  if (Number.isFinite(parsed) && parsed > 0 && parsed <= Number(now)) return parsed;
+  return null;
+}
+
 function maintenanceRetryDecision(review, claim = {}, error = {}, now = Date.now()) {
   const errorClass = safeErrorClass(
     error,
@@ -72,6 +81,7 @@ function maintenanceRetryDecision(review, claim = {}, error = {}, now = Date.now
     : 1;
   const taskKey = text(claim?.taskKey);
   const hint = safeRetryHint(error);
+  const firstFailureAt = safeFirstFailureAt(claim, now);
 
   let decision;
   try {
@@ -81,7 +91,8 @@ function maintenanceRetryDecision(review, claim = {}, error = {}, now = Date.now
       ...hint
     }, {
       attempt: Math.max(0, attemptCount - 1),
-      operationKey: taskKey
+      operationKey: taskKey,
+      ...(firstFailureAt === null ? {} : { firstFailureAt })
     }, now);
   } catch {
     return Object.freeze({
@@ -106,7 +117,8 @@ function maintenanceRetryDecision(review, claim = {}, error = {}, now = Date.now
     errorClass,
     retryAfterMs: decision.delayMs,
     nextAttemptAt: decision.nextAttemptAt,
-    attempt: decision.attempt
+    attempt: decision.attempt,
+    firstFailureAt: decision.firstFailureAt
   });
 }
 
@@ -115,5 +127,6 @@ module.exports = {
   canonicalFailureClass,
   safeFailureStatus,
   safeRetryHint,
+  safeFirstFailureAt,
   maintenanceRetryDecision
 };
