@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   RAILWAY_ENVIRONMENTS_QUERY,
+  PROVIDER_PROOF_SOURCE,
   createRailwayReadOnlyEnvironmentAdapter,
   validateLookup
 } = require('./railway-readonly-environment-adapter.cjs');
@@ -24,14 +25,32 @@ function expectedName(overrides = {}) {
   return validateLookup(lookup(overrides)).environmentName;
 }
 
-function adapter(response, hooks = {}) {
+function readOnlyProofReader(hooks = {}, result = null) {
+  return {
+    capabilities: {
+      readOnly: true,
+      createsResources: false,
+      updatesResources: false,
+      deletesResources: false
+    },
+    async readCreationProof(request) {
+      hooks.proofRead = request;
+      if (result !== null) return result;
+      return {
+        source: PROVIDER_PROOF_SOURCE,
+        environmentId: request.environmentId,
+        environmentName: request.environmentName,
+        creationProof: { schemaVersion: 2, mac: 'proof' }
+      };
+    }
+  };
+}
+
+function adapter(response, hooks = {}, proofResult = null) {
   return createRailwayReadOnlyEnvironmentAdapter({
     projectId: 'project-1',
     now: () => 1_000_000,
-    creationProofForLookup: async value => {
-      hooks.proofLookup = value;
-      return { schemaVersion: 1, mac: 'proof' };
-    },
+    creationProofReader: readOnlyProofReader(hooks, proofResult),
     executeGraphQL: async request => {
       hooks.request = request;
       return response;
@@ -39,7 +58,7 @@ function adapter(response, hooks = {}) {
   });
 }
 
-test('adapter is explicitly read-only and its fixed Railway operation is a query, not a mutation', () => {
+test('adapter and provider proof reader are explicitly read-only', () => {
   const value = adapter({ data: { environments: { edges: [] } } });
   assert.deepEqual(value.capabilities, {
     readOnly: true,
@@ -51,7 +70,7 @@ test('adapter is explicitly read-only and its fixed Railway operation is a query
   assert.doesNotMatch(RAILWAY_ENVIRONMENTS_QUERY, /\bmutation\b/i);
 });
 
-test('queries only non-ephemeral environments and maps one exact durable-name match to fresh-create evidence', async () => {
+test('maps one exact Railway match only after reading its autonomous proof from that provider environment', async () => {
   const hooks = {};
   const name = expectedName();
   const value = adapter({
@@ -74,18 +93,21 @@ test('queries only non-ephemeral environments and maps one exact durable-name ma
   assert.equal(result.environmentName, name);
   assert.match(result.bindingDigest, /^[a-f0-9]{64}$/);
   assert.equal(result.creationProof.mac, 'proof');
-  assert.equal(hooks.proofLookup.queueKey, 'wfm-provision:v1:abc');
-  assert.equal(hooks.proofLookup.environmentName, name);
+  assert.equal(result.creationProofSource, PROVIDER_PROOF_SOURCE);
+  assert.deepEqual(hooks.proofRead, { projectId: 'project-1', environmentId: 'env-1', environmentName: name });
 });
 
-test('returns NOT_FOUND without asking for proof when the exact bound environment does not exist', async () => {
+test('returns NOT_FOUND without reading proof when the exact bound environment does not exist', async () => {
   let proofCalls = 0;
   const value = createRailwayReadOnlyEnvironmentAdapter({
     projectId: 'project-1',
     now: () => 1_000_000,
-    creationProofForLookup: async () => {
-      proofCalls += 1;
-      return { mac: 'unused' };
+    creationProofReader: {
+      capabilities: { readOnly: true, createsResources: false, updatesResources: false, deletesResources: false },
+      async readCreationProof() {
+        proofCalls += 1;
+        return null;
+      }
     },
     executeGraphQL: async () => ({ data: { environments: { edges: [] } } })
   });
@@ -122,27 +144,63 @@ test('fails closed as AMBIGUOUS when duplicate exact-name environments are retur
   });
 });
 
-test('rejects a matched environment when its durable autonomous proof is unavailable', async () => {
+test('a manually named environment cannot qualify using an internal proof copy', async () => {
   const name = expectedName();
-  const value = createRailwayReadOnlyEnvironmentAdapter({
+  const value = adapter({
+    data: { environments: { edges: [{ node: { id: 'env-1', name, createdAt: '1970-01-01T00:16:39.900Z' } }] } }
+  }, {}, {
+    source: 'INTERNAL_DURABLE_STATE',
+    environmentId: 'env-1',
+    environmentName: name,
+    creationProof: { schemaVersion: 2, mac: 'looks-valid-internally' }
+  });
+  await assert.rejects(
+    () => value.lookupEnvironment(lookup()),
+    error => error.code === 'WFM_RAILWAY_CREATION_PROOF_SOURCE_INVALID'
+  );
+});
+
+test('rejects a matched environment when its provider-resident autonomous proof is unavailable', async () => {
+  const name = expectedName();
+  const value = adapter({
+    data: { environments: { edges: [{ node: { id: 'env-1', name, createdAt: '1970-01-01T00:16:39.900Z' } }] } }
+  }, {}, undefined);
+  const missingReader = {
+    capabilities: { readOnly: true, createsResources: false, updatesResources: false, deletesResources: false },
+    async readCreationProof() { return null; }
+  };
+  const direct = createRailwayReadOnlyEnvironmentAdapter({
     projectId: 'project-1',
     now: () => 1_000_000,
-    creationProofForLookup: async () => null,
+    creationProofReader: missingReader,
     executeGraphQL: async () => ({
       data: { environments: { edges: [{ node: { id: 'env-1', name, createdAt: '1970-01-01T00:16:39.900Z' } }] } }
     })
   });
   await assert.rejects(
-    () => value.lookupEnvironment(lookup()),
+    () => direct.lookupEnvironment(lookup()),
     error => error.code === 'WFM_RAILWAY_CREATION_PROOF_REQUIRED'
   );
+  assert.ok(value);
+});
+
+test('rejects a provider proof reader that exposes mutation capability', () => {
+  assert.throws(() => createRailwayReadOnlyEnvironmentAdapter({
+    projectId: 'project-1',
+    creationProofReader: {
+      capabilities: { readOnly: true, createsResources: false, updatesResources: false, deletesResources: false },
+      readCreationProof() {},
+      setVariable() {}
+    },
+    executeGraphQL: async () => ({ data: { environments: { edges: [] } } })
+  }), error => error.code === 'WFM_RAILWAY_PROOF_READER_MUTATION_METHOD_PRESENT');
 });
 
 test('rejects lookups for another provider before any Railway query occurs', async () => {
   let calls = 0;
   const value = createRailwayReadOnlyEnvironmentAdapter({
     projectId: 'project-1',
-    creationProofForLookup: async () => ({ mac: 'proof' }),
+    creationProofReader: readOnlyProofReader(),
     executeGraphQL: async () => {
       calls += 1;
       return { data: { environments: { edges: [] } } };
