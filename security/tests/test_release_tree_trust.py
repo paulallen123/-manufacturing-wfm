@@ -31,6 +31,12 @@ def test_exact_artifact_from_mutable_release_branch_is_blocked():
     assert "unprotected mutable release branch" in result.reason
 
 
+def test_signed_release_authority_is_invalidated_by_later_unsigned_head_commit():
+    result = decision(candidate_commit_verified=False)
+    assert result.allow is False
+    assert "not cryptographically verified" in result.reason
+
+
 def test_artifact_must_match_exact_candidate():
     result = decision(artifact_sha="different")
     assert result.allow is False
