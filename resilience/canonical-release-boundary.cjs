@@ -81,6 +81,133 @@ function validateCanonicalTrustAnchorGovernance(governance) {
   return { ...core, governanceDigest: digest(core) };
 }
 
+function countNamedActors(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  let total = 0;
+  for (const key of ['users', 'teams', 'apps']) {
+    if (!Array.isArray(value[key])) return null;
+    total += value[key].length;
+  }
+  return total;
+}
+
+function deriveCanonicalTrustAnchorGovernanceEvidence({
+  branch,
+  protection,
+  branchReadStatus = 0,
+  protectionReadStatus = 0,
+  rulesetsReadStatus = 0,
+  applicableRulesetCount = 0,
+} = {}) {
+  const branchObject = branch && typeof branch === 'object' && !Array.isArray(branch) ? branch : null;
+  const protectionObject = protection && typeof protection === 'object' && !Array.isArray(protection) ? protection : null;
+  const branchName = clean(branchObject?.name, 160);
+  const branchSha = clean(branchObject?.commit?.sha, 40).toLowerCase();
+  const protectedByBranch = branchObject?.protected === true;
+  const reviews = protectionObject?.required_pull_request_reviews;
+  const checks = protectionObject?.required_status_checks;
+  const bypassActorCount = countNamedActors(reviews?.bypass_pull_request_allowances);
+  const requiredStatusCheckCount = Array.isArray(checks?.checks)
+    ? checks.checks.length
+    : Array.isArray(checks?.contexts)
+      ? checks.contexts.length
+      : null;
+
+  const governance = {
+    protected: protectedByBranch,
+    pullRequestRequired: Boolean(reviews),
+    requiredApprovingReviewCount: Number.isInteger(reviews?.required_approving_review_count)
+      ? reviews.required_approving_review_count
+      : null,
+    dismissStaleReviews: reviews?.dismiss_stale_reviews === true,
+    requiredStatusChecksEnforced: Boolean(checks) && Number.isInteger(requiredStatusCheckCount) && requiredStatusCheckCount >= 1,
+    requiredStatusChecksStrict: checks?.strict === true,
+    requiredStatusCheckCount,
+    enforceAdmins: protectionObject?.enforce_admins?.enabled === true,
+    allowForcePushes: protectionObject?.allow_force_pushes?.enabled === true,
+    allowDeletions: protectionObject?.allow_deletions?.enabled === true,
+    bypassActorCount,
+  };
+
+  let governanceVerified = false;
+  let governanceReceipt = null;
+  let validationCode = null;
+  let validationMessage = null;
+  const completeInputs = Number(branchReadStatus) === 200
+    && branchName === 'integration/canonical'
+    && validGitSha(branchSha)
+    && protectedByBranch
+    && Number(protectionReadStatus) === 200
+    && Number(rulesetsReadStatus) === 200
+    && Number(applicableRulesetCount) === 0
+    && Number.isInteger(bypassActorCount)
+    && Number.isInteger(requiredStatusCheckCount);
+
+  if (completeInputs) {
+    try {
+      governanceReceipt = validateCanonicalTrustAnchorGovernance(governance);
+      governanceVerified = true;
+    } catch (error) {
+      validationCode = clean(error?.code || 'WFM_CANONICAL_TRUST_ANCHOR_GOVERNANCE', 120);
+      validationMessage = clean(error?.message || error, 240);
+    }
+  } else {
+    validationCode = 'WFM_CANONICAL_TRUST_ANCHOR_GOVERNANCE_EVIDENCE_INCOMPLETE';
+    validationMessage = 'Canonical governance evidence is incomplete or inaccessible; release-grade governance must remain unverified.';
+  }
+
+  const core = {
+    schemaVersion: 1,
+    proof: 'canonical-trust-anchor-governance-evidence',
+    source: 'github-rest',
+    branchName,
+    branchSha: validGitSha(branchSha) ? branchSha : null,
+    branchReadStatus: Number(branchReadStatus) || 0,
+    protectionReadStatus: Number(protectionReadStatus) || 0,
+    rulesetsReadStatus: Number(rulesetsReadStatus) || 0,
+    applicableRulesetCount: Number.isInteger(applicableRulesetCount) && applicableRulesetCount >= 0 ? applicableRulesetCount : null,
+    governance,
+    governanceVerified,
+    governanceReceipt,
+    validationCode,
+    validationMessage,
+    releaseAuthorityGranted: false,
+    deploymentAuthorityGranted: false,
+    productionAuthorityGranted: false,
+    modelAuthorityGranted: false,
+    customerMutation: false,
+    productionMutation: false,
+  };
+  return { ...core, governanceEvidenceDigest: digest(core) };
+}
+
+function verifyCanonicalTrustAnchorGovernanceEvidence(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  if (value.schemaVersion !== 1 || value.proof !== 'canonical-trust-anchor-governance-evidence') return false;
+  if (value.source !== 'github-rest' || value.branchName !== 'integration/canonical') return false;
+  if (value.releaseAuthorityGranted !== false || value.deploymentAuthorityGranted !== false || value.productionAuthorityGranted !== false || value.modelAuthorityGranted !== false) return false;
+  if (value.customerMutation !== false || value.productionMutation !== false) return false;
+  if (value.branchSha !== null && !validGitSha(value.branchSha)) return false;
+  if (!/^[a-f0-9]{64}$/.test(String(value.governanceEvidenceDigest || ''))) return false;
+  const core = { ...value };
+  const suppliedDigest = core.governanceEvidenceDigest;
+  delete core.governanceEvidenceDigest;
+  if (digest(core) !== suppliedDigest) return false;
+
+  if (value.governanceVerified === true) {
+    if (value.branchReadStatus !== 200 || value.protectionReadStatus !== 200 || !validGitSha(value.branchSha)) return false;
+    try {
+      const strictReceipt = validateCanonicalTrustAnchorGovernance(value.governance);
+      if (!value.governanceReceipt || value.governanceReceipt.governanceDigest !== strictReceipt.governanceDigest) return false;
+    } catch {
+      return false;
+    }
+    return true;
+  }
+
+  return value.governanceReceipt === null;
+}
+
 function validateCanonicalReleasePolicy(policy) {
   if (!policy || typeof policy !== 'object' || Array.isArray(policy)) deny('WFM_RELEASE_POLICY_INPUT', 'Canonical release policy object is required.');
   if (policy.schemaVersion !== 1) deny('WFM_RELEASE_POLICY_SCHEMA', 'Unsupported canonical release policy schema.');
@@ -235,6 +362,8 @@ module.exports = {
   canonical,
   digest,
   validateCanonicalTrustAnchorGovernance,
+  deriveCanonicalTrustAnchorGovernanceEvidence,
+  verifyCanonicalTrustAnchorGovernanceEvidence,
   validateCanonicalReleasePolicy,
   createCanonicalReleaseBoundary,
 };
