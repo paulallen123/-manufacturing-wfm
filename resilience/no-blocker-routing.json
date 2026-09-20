@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "policy": "blocker-triggers-safe-alternate-route",
+  "invariants": {
+    "deliveryWorkContinues": true,
+    "safetyControlsMayNotBeDisabledToMakeProgress": true,
+    "nonEquivalentFallbackMayNotSatisfyOriginalEvidenceGate": true,
+    "unknownFailuresFailClosedForMutationButContinueDiagnosis": true
+  },
+  "routes": [
+    {
+      "id": "hosted-ci",
+      "primary": "CircleCI zero-cost CI",
+      "fallback": "Railway wfm-hosted-ci-fallback",
+      "equivalentForGate": true,
+      "continuation": "run source-bound hosted consolidated validation",
+      "preserveSafety": true
+    },
+    {
+      "id": "runtime-health",
+      "primary": "candidate service health",
+      "fallback": "Railway wfm-safe-health-canary plus sealed-runtime validation",
+      "equivalentForGate": false,
+      "continuation": "continue diagnostics and validation while runtime-health gate remains explicit",
+      "preserveSafety": true
+    },
+    {
+      "id": "private-browser-proof",
+      "primary": "Railway wfm-private-proof-harness-v2",
+      "fallback": "Vector source/runtime validators plus safe health evidence",
+      "equivalentForGate": false,
+      "continuation": "continue UI, security and source validation without claiming browser-proof PASS",
+      "preserveSafety": true
+    },
+    {
+      "id": "security-canary",
+      "primary": "credential-bearing security canary",
+      "fallback": "zero-secret health canary and isolated security validators",
+      "equivalentForGate": false,
+      "continuation": "keep containment closed and continue safe evidence collection",
+      "preserveSafety": true
+    },
+    {
+      "id": "deployment-provider",
+      "primary": "Railway hosted deployment",
+      "fallback": "sealed runtime artifact and isolated container validation",
+      "equivalentForGate": false,
+      "continuation": "continue build, test and proof while hosted-deployment gate remains explicit",
+      "preserveSafety": true
+    },
+    {
+      "id": "external-provider-integration",
+      "primary": "real tenant/provider authentication",
+      "fallback": "contract/specification harness and synthetic provider emulator",
+      "equivalentForGate": false,
+      "continuation": "continue connector development and negative-path testing without claiming real-provider proof",
+      "preserveSafety": true
+    }
+  ]
+}
