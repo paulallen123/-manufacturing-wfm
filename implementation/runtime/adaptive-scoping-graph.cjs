@@ -197,6 +197,7 @@ function evaluateGraph(compiled, input = {}) {
   const providedAnswers = { ...(input.answers || {}) };
   const prefills = input.prefills || {};
   const priorAnswers = input.priorAnswers || {};
+  const priorProvenance = input.priorProvenance || {};
   const values = {};
   const provenance = {};
   const visibleQuestions = [];
@@ -253,8 +254,12 @@ function evaluateGraph(compiled, input = {}) {
       value = providedAnswers[question.id];
       source = 'ANSWER';
     } else if (Object.prototype.hasOwnProperty.call(priorAnswers, question.id)) {
-      value = priorAnswers[question.id];
-      source = 'PRIOR_ANSWER';
+      if (Object.prototype.hasOwnProperty.call(priorProvenance, question.id)) {
+        invalidated.push({ questionId: question.id, reason: 'PREFILL_EVIDENCE_STALE_OR_UNAVAILABLE' });
+      } else {
+        value = priorAnswers[question.id];
+        source = 'PRIOR_ANSWER';
+      }
     }
 
     const option = optionFor(question, value);
@@ -342,6 +347,7 @@ function applyAnswer(compiled, priorEvaluation, input = {}) {
     nowMs: input.nowMs,
     purchasedScope: priorEvaluation.purchasedScope,
     priorAnswers: priorEvaluation.answers,
+    priorProvenance: priorEvaluation.provenance,
     answers: { [input.questionId]: input.value },
     prefills: input.prefills || {}
   });
