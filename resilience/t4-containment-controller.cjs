@@ -206,6 +206,9 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
 
   const forensicPreserve = typeof forensicStore?.preserve === 'function' ? forensicStore.preserve.bind(forensicStore) : null;
   const forensicVerify = typeof forensicStore?.verify === 'function' ? forensicStore.verify.bind(forensicStore) : null;
+  const forensicRecoverFinalReadback = typeof forensicStore?.recoverAfterFinalReadbackFailure === 'function'
+    ? forensicStore.recoverAfterFinalReadbackFailure.bind(forensicStore)
+    : null;
 
   async function handle(input = {}) {
     const incidentId = clean(input.incidentId, 120);
@@ -321,9 +324,13 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
       selectedStoreCapabilityDigest: validDigest(preserved.selectedStoreCapabilityDigest) ? preserved.selectedStoreCapabilityDigest : null,
       failoverUsed: preserved.failoverUsed === true,
       attemptCount: Number.isSafeInteger(preserved.attemptCount) && preserved.attemptCount >= 1 ? preserved.attemptCount : null,
+      attemptedStoreIds: Array.isArray(preserved.attemptedStoreIds) ? preserved.attemptedStoreIds.map((id) => clean(id, 80)).filter(Boolean) : null,
       attemptDigest: validDigest(preserved.attemptDigest) ? preserved.attemptDigest : null,
       failoverContractDigest: validDigest(preserved.failoverContractDigest) ? preserved.failoverContractDigest : null,
       failoverDigest: validDigest(preserved.failoverDigest) ? preserved.failoverDigest : null,
+      finalReadbackRecoveryUsed: preserved.finalReadbackRecoveryUsed === true,
+      finalReadbackRecoveryFromStoreId: preserved.finalReadbackRecoveryFromStoreId ? clean(preserved.finalReadbackRecoveryFromStoreId, 80) : null,
+      finalReadbackRecoveryAttemptDigest: validDigest(preserved.finalReadbackRecoveryAttemptDigest) ? preserved.finalReadbackRecoveryAttemptDigest : null,
       finalReadbackVerified: false,
       finalReadbackDigest: null,
     };
@@ -402,13 +409,95 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
       });
     }
 
-    const finalReadbackVerified = await forensicVerify(forensicReceipt);
+    let finalReadbackVerified = await forensicVerify(forensicReceipt);
     if (finalReadbackVerified !== true) {
+      const failedStoreId = forensicReceipt.selectedStoreId;
       record('forensics-final-readback-failed', {
         storageKey: forensicReceipt.storageKey,
-        selectedStoreId: forensicReceipt.selectedStoreId,
+        selectedStoreId: failedStoreId,
+        recoveryAvailable: Boolean(forensicRecoverFinalReadback),
       });
-      throw Object.assign(new Error('T4 cannot claim a safe terminal because final forensic read-back verification failed.'), { code: 'WFM_T4_FORENSICS_FINAL_VERIFY' });
+      if (!forensicRecoverFinalReadback) {
+        throw Object.assign(new Error('T4 cannot claim a safe terminal because final forensic read-back verification failed.'), { code: 'WFM_T4_FORENSICS_FINAL_VERIFY' });
+      }
+
+      consume('forensics.recover-final-readback');
+      let recovered;
+      try {
+        recovered = await forensicRecoverFinalReadback({
+          priorReceipt: { ...forensicReceipt },
+          input: {
+            incidentId,
+            tenant,
+            scenarioId,
+            evidenceDigest,
+            eventHeadDigest: previousDigest,
+          },
+        });
+      } catch (error) {
+        record('forensics-final-recovery-failed', {
+          failedStoreId,
+          failureCode: clean(error?.code || 'WFM_T4_FORENSICS_FINAL_RECOVERY_FAILED', 100),
+        });
+        throw Object.assign(new Error('T4 final forensic read-back failed and bounded recovery could not establish a different verified sink.'), {
+          code: 'WFM_T4_FORENSICS_FINAL_VERIFY',
+          causeCode: clean(error?.code || 'WFM_T4_FORENSICS_FINAL_RECOVERY_FAILED', 100),
+        });
+      }
+
+      const recoveredStoreId = recovered?.selectedStoreId ? clean(recovered.selectedStoreId, 80) : null;
+      if (recovered?.verified !== true
+        || recovered?.immutable !== true
+        || !validDigest(recovered?.forensicDigest)
+        || !validDigest(recovered?.tenantDigest)
+        || !validDigest(recovered?.storageKey)
+        || !recoveredStoreId
+        || recoveredStoreId === failedStoreId
+        || recovered?.finalReadbackRecoveryUsed !== true
+        || recovered?.finalReadbackRecoveryFromStoreId !== failedStoreId
+        || !validDigest(recovered?.finalReadbackRecoveryAttemptDigest)) {
+        record('forensics-final-recovery-rejected', {
+          failedStoreId,
+          recoveredStoreId,
+        });
+        throw Object.assign(new Error('T4 bounded forensic recovery did not prove preservation to a different independently verified sink.'), { code: 'WFM_T4_FORENSICS_FINAL_VERIFY' });
+      }
+
+      Object.assign(forensicReceipt, {
+        verified: true,
+        forensicDigest: recovered.forensicDigest,
+        tenantDigest: recovered.tenantDigest,
+        immutable: true,
+        storageMode: clean(recovered.storageMode || 'verified-write-once', 80),
+        storageKey: recovered.storageKey,
+        selectedStoreId: recoveredStoreId,
+        selectedStoreCapabilityDigest: validDigest(recovered.selectedStoreCapabilityDigest) ? recovered.selectedStoreCapabilityDigest : null,
+        failoverUsed: true,
+        attemptCount: Number.isSafeInteger(recovered.attemptCount) && recovered.attemptCount >= 1 ? recovered.attemptCount : null,
+        attemptedStoreIds: Array.isArray(recovered.attemptedStoreIds) ? recovered.attemptedStoreIds.map((id) => clean(id, 80)).filter(Boolean) : null,
+        attemptDigest: validDigest(recovered.attemptDigest) ? recovered.attemptDigest : null,
+        failoverContractDigest: validDigest(recovered.failoverContractDigest) ? recovered.failoverContractDigest : null,
+        failoverDigest: validDigest(recovered.failoverDigest) ? recovered.failoverDigest : null,
+        finalReadbackRecoveryUsed: true,
+        finalReadbackRecoveryFromStoreId: failedStoreId,
+        finalReadbackRecoveryAttemptDigest: recovered.finalReadbackRecoveryAttemptDigest,
+      });
+      record('forensics-final-recovery-preserved', {
+        failedStoreId,
+        recoveredStoreId,
+        recoveryAttemptDigest: forensicReceipt.finalReadbackRecoveryAttemptDigest,
+        forensicDigest: forensicReceipt.forensicDigest,
+      });
+
+      finalReadbackVerified = await forensicVerify(forensicReceipt);
+      if (finalReadbackVerified !== true) {
+        record('forensics-final-recovery-readback-failed', {
+          failedStoreId,
+          recoveredStoreId,
+          storageKey: forensicReceipt.storageKey,
+        });
+        throw Object.assign(new Error('T4 cannot claim a safe terminal because the recovered forensic record failed independent final read-back.'), { code: 'WFM_T4_FORENSICS_FINAL_VERIFY' });
+      }
     }
     forensicReceipt.finalReadbackVerified = true;
     forensicReceipt.finalReadbackDigest = digest({
@@ -417,13 +506,18 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
       storageKey: forensicReceipt.storageKey,
       selectedStoreId: forensicReceipt.selectedStoreId,
       selectedStoreCapabilityDigest: forensicReceipt.selectedStoreCapabilityDigest,
+      attemptedStoreIds: forensicReceipt.attemptedStoreIds,
       attemptDigest: forensicReceipt.attemptDigest,
       failoverContractDigest: forensicReceipt.failoverContractDigest,
       failoverDigest: forensicReceipt.failoverDigest,
+      finalReadbackRecoveryUsed: forensicReceipt.finalReadbackRecoveryUsed,
+      finalReadbackRecoveryFromStoreId: forensicReceipt.finalReadbackRecoveryFromStoreId,
+      finalReadbackRecoveryAttemptDigest: forensicReceipt.finalReadbackRecoveryAttemptDigest,
     });
     record('forensics-final-readback-verified', {
       storageKey: forensicReceipt.storageKey,
       selectedStoreId: forensicReceipt.selectedStoreId,
+      recoveryUsed: forensicReceipt.finalReadbackRecoveryUsed,
       finalReadbackDigest: forensicReceipt.finalReadbackDigest,
     });
 
@@ -433,7 +527,7 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
     record('terminal', { outcome, actionCount });
     const endedAt = Number(now());
     const result = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       incidentId,
       tenant,
       scenarioId,
@@ -478,9 +572,13 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
         storageKey: forensicReceipt.storageKey,
         selectedStoreId: forensicReceipt.selectedStoreId || null,
         selectedStoreCapabilityDigest: forensicReceipt.selectedStoreCapabilityDigest || null,
+        attemptedStoreIds: Array.isArray(forensicReceipt.attemptedStoreIds) ? forensicReceipt.attemptedStoreIds : null,
         attemptDigest: forensicReceipt.attemptDigest || null,
         failoverContractDigest: forensicReceipt.failoverContractDigest || null,
         failoverDigest: forensicReceipt.failoverDigest || null,
+        finalReadbackRecoveryUsed: forensicReceipt.finalReadbackRecoveryUsed === true,
+        finalReadbackRecoveryFromStoreId: forensicReceipt.finalReadbackRecoveryFromStoreId || null,
+        finalReadbackRecoveryAttemptDigest: forensicReceipt.finalReadbackRecoveryAttemptDigest || null,
       });
       if (forensicReceipt.finalReadbackDigest !== expectedReadbackDigest) return false;
     }
