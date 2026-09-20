@@ -1,9 +1,10 @@
 import crypto from 'node:crypto';
-import {createPostgresAgencyWorkStartAuthorityStore,evaluateAgencyWorkStartReadiness} from './agency-work-start-readiness.mjs';
-import {AGENCY_WORK_START_LOCKED_SNAPSHOT_SQL,AGENCY_WORK_START_SCOPED_CONTINUITY_SQL,AGENCY_WORK_START_SET_LOCAL_ROLE_SQL} from './agency-work-start-db-boundary.mjs';
+import {evaluateAgencyWorkStartReadiness} from './agency-work-start-readiness.mjs';
+import {AGENCY_WORK_START_LOCKED_SNAPSHOT_SQL,AGENCY_WORK_START_SCOPED_AUTHORITY_SQL,AGENCY_WORK_START_SCOPED_CONTINUITY_SQL,AGENCY_WORK_START_SET_LOCAL_ROLE_SQL} from './agency-work-start-db-boundary.mjs';
 
 export const AGENCY_WORK_START_PERMIT_VERSION='agency-work-start-permit-v0.4.0';
 export const AGENCY_WORK_START_PERMIT_STORE_VERSION='agency-work-start-permit-store-v0.4.0';
+export const AGENCY_WORK_START_SCOPED_AUTHORITY_STORE_VERSION='agency-work-start-scoped-authority-store-v0.1.0';
 export const AGENCY_WORK_START_IDENTITY_CONTINUITY_STORE_VERSION='agency-work-start-identity-continuity-store-v0.1.0';
 export const AGENCY_WORK_START_PERMIT_LOCK_SQL=AGENCY_WORK_START_LOCKED_SNAPSHOT_SQL;
 
@@ -19,6 +20,25 @@ function assignmentFingerprint(request={}){
   const scope={roleId:required(request.roleId,'request.roleId',100),location:required(request.location,'request.location',200),startAt:iso(request.startAt),endAt:iso(request.endAt)};
   if(!scope.startAt||!scope.endAt||Date.parse(scope.endAt)<=Date.parse(scope.startAt))throw new TypeError('request assignment window invalid');
   return digest(JSON.stringify(stable(scope)),24);
+}
+
+export function createPostgresAgencyWorkStartScopedAuthorityStore({query}={}){
+  if(typeof query!=='function')throw new TypeError('query function is required');
+  return Object.freeze({
+    version:AGENCY_WORK_START_SCOPED_AUTHORITY_STORE_VERSION,
+    credentialBoundary:'work_start_scoped_authority_function_only',
+    directTableSelectAllowed:false,
+    async readAuthority(scope={}){
+      const now=iso(scope.now);if(!now)throw new TypeError('now invalid');
+      const assignment=required(scope.assignmentFingerprint,'assignmentFingerprint',24).toLowerCase();
+      if(!hex(assignment,24))throw new TypeError('assignmentFingerprint invalid');
+      const values=[required(scope.tenantId,'tenantId',100),required(scope.siteId,'siteId',100),required(scope.requestId,'requestId',100),required(scope.agencyId,'agencyId',100),required(scope.workerId,'workerId',100),assignment,now];
+      const result=await query(AGENCY_WORK_START_SCOPED_AUTHORITY_SQL,values);
+      const rows=Array.isArray(result?.rows)?result.rows:[];
+      if(rows.length>2)throw new Error('unexpected_work_start_authority_count');
+      return {rows};
+    },
+  });
 }
 
 export function createPostgresAgencyWorkStartIdentityContinuityStore({query}={}){
@@ -149,7 +169,7 @@ export async function evaluateAgencyWorkStartPermit({tenantId,siteId,agencyId,re
 
   try{
     return await permitStore.withLockedSnapshot(scope,async ({query})=>{
-      const authorityStore=createPostgresAgencyWorkStartAuthorityStore({query});
+      const authorityStore=createPostgresAgencyWorkStartScopedAuthorityStore({query});
       const continuityStore=createPostgresAgencyWorkStartIdentityContinuityStore({query});
       let lockedReadiness;
       try{lockedReadiness=await evaluateReadiness({tenantId:scope.tenantId,siteId:scope.siteId,agencyId:scope.agencyId,request,workerId:scope.workerId,now:scope.now,policy,authorityStore,continuityStore});}
