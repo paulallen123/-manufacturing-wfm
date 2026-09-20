@@ -215,12 +215,13 @@ function resolveGlobalPolicyPacks({ tenantRef, asOfDate, sites, policyPacks = []
     if (site.regionalPolicyRequired && !regionalSelection.selected) siteBlockers.push({ country: site.country, region: site.region, reason: 'verified-regional-policy-pack-required' });
 
     const effectiveRefs = baseSelection.selected ? clone(baseSelection.selected.configRefs) : {};
-    const allowedDataRegions = new Set(baseSelection.selected?.allowedDataRegions || []);
+    let allowedDataRegions = new Set(baseSelection.selected?.allowedDataRegions || []);
     const allowedSiteOverrideKeys = new Set(baseSelection.selected?.allowedSiteOverrideKeys || []);
 
     if (regionalSelection.selected) {
       for (const [key, value] of Object.entries(regionalSelection.selected.configRefs)) effectiveRefs[key] = value;
-      for (const region of regionalSelection.selected.allowedDataRegions) allowedDataRegions.add(region);
+      // A more-specific regional residency boundary may narrow the country boundary; never union it into a broader allowlist.
+      if (regionalSelection.selected.allowedDataRegions.length > 0) allowedDataRegions = new Set(regionalSelection.selected.allowedDataRegions);
       for (const key of regionalSelection.selected.allowedSiteOverrideKeys) allowedSiteOverrideKeys.add(key);
     }
 
