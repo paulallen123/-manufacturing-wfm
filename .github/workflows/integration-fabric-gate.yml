@@ -1,0 +1,73 @@
+name: Integration fabric gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'integration/**'
+    paths:
+      - 'integration-fabric/**'
+      - '.github/workflows/integration-fabric-gate.yml'
+  pull_request:
+    paths:
+      - 'integration-fabric/**'
+      - '.github/workflows/integration-fabric-gate.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '37 3 * * *'
+
+permissions:
+  contents: read
+
+# A branch with an open PR receives both push and pull_request events. Key concurrency to the
+# source branch for both event types so one evidence run survives instead of paying for two
+# identical full gates. This does not remove any gate or allow a PR to merge without validation.
+concurrency:
+  group: integration-fabric-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Validate registry and northbound contract
+        run: node integration-fabric/scripts/validate.mjs
+      - name: Re-run autonomous integration hub tests
+        run: node --test integration/runtime/autonomous-integration-hub.test.cjs
+      - name: Re-run directory OAuth broker tests
+        run: node --test integration/runtime/directory-oauth-broker.test.cjs
+      - name: Re-run directory discovery worker tests
+        run: node --test integration/worker/directory-discovery-worker.test.cjs
+      - name: Validate P0 connector conformance
+        run: node integration-fabric/scripts/conformance.mjs
+      - name: Build reusable-protocol coverage matrix
+        run: node integration-fabric/scripts/build-plan.mjs
+      - name: Test integration-fabric runtime regressions
+        run: node --test integration-fabric/runtime/*.test.mjs
+      - name: Build machine-actionable connector registry
+        run: node integration-fabric/scripts/build-connector-registry.mjs
+      - name: Read-only public integration-surface probes
+        env:
+          PROBE_TIMEOUT_MS: '12000'
+          PROBE_CONCURRENCY: '4'
+        run: node integration-fabric/scripts/probe-public.mjs
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: integration-public-probe-${{ github.sha }}
+          path: |
+            integration-fabric/reports/public-probe.json
+            integration-fabric/reports/coverage-matrix.json
+            integration-fabric/reports/connector-registry.json
+          if-no-files-found: error
+          retention-days: 30

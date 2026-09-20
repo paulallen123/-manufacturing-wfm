@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor manufacturing integration delta. Adds Aspen InfoPlus.21, Yokogawa Exaquantum and Emerson DeltaV Edge Environment as distinct industrial data targets, reusing existing REST/database and OPC UA read profiles. Evidence remains specification/public-documentation level only: no sandbox or customer tenant credentials were used and all writes/control operations remain disabled.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "aspentech-infoplus21",
+      "name": "AspenTech Aspen InfoPlus.21 (IP.21)",
+      "category": "historian",
+      "priority": "P1",
+      "protocols": [
+        "REST",
+        "JDBC/ODBC"
+      ],
+      "auth": "enterprise-service-identity-by-deployment",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.aspentech.com/en/products/msc/aspen-infoplus21",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://www.aspentech.com/en/products/msc/aspen-infoplus21",
+      "evidenceNote": "AspenTech's current product documentation describes IP.21 as a real-time industrial historian for continuous and batch process data and documents standard integration interfaces including REST services and ODBC. It can ingest data from DCS/SCADA/PLC, ERP, MES, LIMS and third-party applications; batch/event context is available through Production Record Manager where deployed. The platform also exposes write-capable interfaces, so Manufacturing WFM reuses only the existing REST/database read profiles behind the customer edge and does not infer control authority. No IP.21 environment was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.aspentech.com/en/products/msc/aspen-infoplus21",
+        "requiredPermissions": [
+          "customer-authorised IP.21 identity limited to required tags, records, events and asset/production context",
+          "REST GET/read operations and/or ODBC read-only views only",
+          "no historian configuration, tag/manual-input writes, calculation changes or process/control writes",
+          "customer-edge routing for on-prem or plant-adjacent deployments",
+          "separate source-system authority retained for workforce, payroll and production master data"
+        ],
+        "dataAvailableOrExpected": [
+          "continuous industrial time-series and historical tag values",
+          "timestamps, units and tag/process metadata exposed by the selected interface",
+          "calculated KPI/SPC/SQC/OEE outputs where the customer has configured them",
+          "event and batch-production context where Production Record Manager is deployed",
+          "context from DCS, SCADA, PLC, ERP, MES, LIMS and other sources already historized by the customer"
+        ],
+        "wfmObjects": [
+          "machine-state",
+          "downtime-event",
+          "production-event",
+          "production-demand",
+          "work-centre",
+          "maintenance-window",
+          "site",
+          "shift-outcome",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "correlate staffed time and labour cost with real production state, throughput and sustained downtime",
+          "use historical stop/recovery patterns to improve labour-demand and redeployment recommendations",
+          "coordinate specialist staffing with maintenance or process windows represented in historian/event context",
+          "reuse an existing enterprise historian rather than deploy duplicate direct machine integrations",
+          "detect tag/schema/version drift and distinguish raw observations from calculated or aggregated values before workforce decisions",
+          "consider any historian-side write only after a separately authorised sandbox/site write-read-back safety case"
+        ],
+        "customerValue": [
+          "downtime reduction",
+          "production throughput",
+          "paid-idle-time reduction",
+          "overtime reduction",
+          "maintenance coordination",
+          "labour-to-output and finance attribution",
+          "faster legacy-plant implementation",
+          "cross-site executive reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce duplicate OT integration engineering by reusing IP.21 as the governed historian layer",
+          "reduce paid idle labour during recurring process stoppages and slow recoveries",
+          "reduce overtime by forecasting specialist coverage from historical production and maintenance patterns",
+          "reduce manual labour-versus-production reconciliation",
+          "extend WFM optimisation to mature process plants without replacing the historian"
+        ],
+        "dataGaps": [
+          "worker identity, employment, absence, pay and qualification truth normally remains outside IP.21",
+          "tag names, custom records, asset structure, calculations and batch models are customer-specific",
+          "exact REST/ODBC authentication and enabled interfaces vary by deployed version and customer architecture",
+          "calculated, aggregated or derived historian values must not be treated as raw live observations",
+          "historian collection quality does not prove upstream sensor or control-system correctness"
+        ],
+        "constraintsRisks": [
+          "many IP.21 estates are on-prem or plant-adjacent and require customer-edge routing rather than direct cloud access",
+          "REST and database interfaces may expose more than the minimum WFM dataset and must be scoped to read-only objects/views",
+          "large history queries need bounded windows, backpressure, deterministic checkpoints and retry controls",
+          "custom records and batch/event models require customer-specific canonical mapping",
+          "timestamps, quality, calculation provenance and aggregation windows must be preserved before real-time WFM automation"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST and database-read profiles for a thin IP.21 adapter with deployed-version/capability discovery, customer-edge enforcement, bounded history reads, tag/record schema fingerprints, source-time/quality/derived-value provenance and customer work-centre mappings. Obtain customer-version interface documentation plus an authorised IP.21 lab or tenant for least-privilege authentication and read-roundtrip proof before considering any write path."
+      }
+    },
+    {
+      "id": "yokogawa-exaquantum",
+      "name": "Yokogawa Exaquantum",
+      "category": "historian",
+      "priority": "P1",
+      "protocols": [
+        "OPC UA"
+      ],
+      "auth": "opcua-certificate-or-user-by-deployment",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.yokogawa.com/kr/solutions/products-and-services/information/production-management/data-historian/plant-information-management-system/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://www.yokogawa.com/uk/solutions/products-and-services/information/production-management/data-historian/batch-data-historian-exaquantum-batch/",
+      "evidenceNote": "Yokogawa's current Exaquantum material describes a plant information/historian platform with dynamic plant hierarchy, current and historical process data and OPC connectivity including OPC UA. Current R3.60 information documents OPC UA A&C client support and OPC UA DA/HDA server capability; Exaquantum/Batch documents ISA-88 batch, equipment, recipe, trend and alarm context. Because OPC UA server capability can also support writes in current releases, Manufacturing WFM uses Browse/Read/Subscribe only through the customer edge. No Exaquantum environment was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.yokogawa.com/uk/solutions/products-and-services/information/production-management/data-historian/batch-data-historian-exaquantum-batch/",
+        "requiredPermissions": [
+          "customer-authorised OPC UA identity limited to approved Exaquantum namespaces and history",
+          "Browse/Read/Subscribe and historical reads only",
+          "alarms/conditions read access only where required for WFM disruption context",
+          "no OPC UA Write/Call, historian configuration, recipe changes or control-system writes",
+          "customer-edge routing with explicit certificate trust and no anonymous production session"
+        ],
+        "dataAvailableOrExpected": [
+          "current and historical process measurements",
+          "plant hierarchy and tag/equipment context where exposed",
+          "OPC UA data/history and alarms/conditions in supported deployments",
+          "batch, equipment, recipe and trend context where Exaquantum/Batch is deployed",
+          "production-loss and process-performance evidence derived from the customer's historian configuration"
+        ],
+        "wfmObjects": [
+          "machine-state",
+          "downtime-event",
+          "production-event",
+          "production-demand",
+          "work-centre",
+          "maintenance-window",
+          "site",
+          "shift-outcome",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "use process and batch state to adjust labour demand to actual execution rather than plan alone",
+          "trigger labour redeployment/recovery recommendations from sustained stoppage and recovery evidence",
+          "align specialist or cleaning/changeover staffing to batch/equipment state",
+          "correlate shift staffing with batch cycle time, production loss and alarms",
+          "reuse the existing Exaquantum hierarchy instead of creating another direct DCS/PLC integration",
+          "gate all OPC UA methods/writes until separately authorised and write-roundtrip certified"
+        ],
+        "customerValue": [
+          "production throughput",
+          "downtime reduction",
+          "batch/changeover staffing efficiency",
+          "paid-idle-time reduction",
+          "overtime reduction",
+          "compliance and batch traceability support",
+          "legacy/process-plant integration",
+          "cross-shift performance reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce idle labour while batches/equipment are blocked or recovering",
+          "reduce overstaffing during delayed batches and understaffing during recovery/changeover",
+          "reduce manual batch-versus-labour performance analysis",
+          "reduce direct DCS/PLC connector engineering by using Exaquantum as the governed read layer",
+          "reduce overtime caused by poor visibility of late-running batches and specialist demand"
+        ],
+        "dataGaps": [
+          "worker identity, payroll, qualifications and roster truth remain in workforce/enterprise systems",
+          "plant hierarchy, tag naming, batch models and alarm semantics are customer-specific",
+          "exact OPC UA namespace/security configuration and history capabilities vary by Exaquantum release and site",
+          "batch product/modules may not be licensed at every site",
+          "historical or recovered data can arrive late and must not masquerade as live state"
+        ],
+        "constraintsRisks": [
+          "Exaquantum is plant-network-adjacent and must remain behind the customer edge",
+          "current OPC UA server capability is write-capable, so method/write permissions must be excluded technically",
+          "redundancy/history-catch-up can replay older observations after connectivity loss",
+          "certificate trust, security policy and endpoint identity must be validated; anonymous production access is prohibited",
+          "quality, source timestamp, replay age and site identity must be preserved before workforce automation"
+        ],
+        "nextDevelopmentAction": "Reuse the existing OPC UA edge profile for a thin Exaquantum adapter with endpoint/certificate validation, Browse/Read/Subscribe-only operation allowlists, namespace and batch/equipment mapping, source-time/quality/replay-age handling and schema fingerprints. Test late history-catch-up and redundant-source replay using fixtures, then obtain an authorised Exaquantum site/lab for least-privilege authentication and read-roundtrip evidence."
+      }
+    },
+    {
+      "id": "emerson-deltav-edge-environment",
+      "name": "Emerson DeltaV Edge Environment",
+      "category": "scada-edge",
+      "priority": "P1",
+      "protocols": [
+        "REST",
+        "OPC UA"
+      ],
+      "auth": "active-directory-rest-or-opcua-user-by-deployment",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.emerson.com/en/automation-systems/distributed-control-systems-dcs/deltav-distributed-control-system/edge-environment",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://www.emerson.com/is/content/emerson/en/systems-and-software/deltav-distributed-control-system-dcs/product-data-sheets/documents/deltav-edge-environment.pdf",
+      "evidenceNote": "Emerson's March 2026 DeltaV Edge Environment documentation describes a one-way encrypted outbound replication path from DeltaV into an enterprise/plant-network edge environment, with contextualized DeltaV configuration/data then available through REST API and OPC UA. The current data sheet documents Active Directory authentication for REST and administrator-defined OPC UA users (with optional anonymous access), TLS for the upstream HTTPS flow and deployment on enterprise or Level 3 plant networks. Manufacturing WFM treats DeltaV Edge as a data projection boundary, not as control authority; anonymous OPC UA is not accepted for production and writes/control remain disabled. No DeltaV Edge environment was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.emerson.com/is/content/emerson/en/systems-and-software/deltav-distributed-control-system-dcs/product-data-sheets/documents/deltav-edge-environment.pdf",
+        "requiredPermissions": [
+          "customer-authorised Active Directory REST identity or named OPC UA user scoped to required DeltaV Edge data",
+          "REST read operations and/or OPC UA Browse/Read/Subscribe only",
+          "validated TLS/certificate trust and endpoint identity",
+          "no anonymous OPC UA for production WFM connectivity",
+          "no DeltaV DCS engineering, control, configuration or process-write authority"
+        ],
+        "dataAvailableOrExpected": [
+          "replicated DeltaV operational data exposed by the Edge Environment",
+          "DeltaV configuration hierarchy and contextual relationships",
+          "near-real-time process values and associated context available through REST or OPC UA",
+          "operational state suitable for analytics, alarms/visibility and shift-performance correlation where exposed",
+          "sandboxed replicated data separated from direct access to the control system"
+        ],
+        "wfmObjects": [
+          "machine-state",
+          "downtime-event",
+          "production-event",
+          "production-demand",
+          "work-centre",
+          "site",
+          "shift-outcome",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "use the replicated DeltaV state to refresh staffing demand and redeployment recommendations without direct DCS access",
+          "correlate staffing, overtime and paid idle time with process state and production interruptions",
+          "use DeltaV configuration hierarchy to accelerate work-centre and site mapping during implementation",
+          "detect stale replication or edge connectivity loss before operational data drives workforce decisions",
+          "support enterprise analytics and executive labour-to-process reporting from the same governed edge projection",
+          "keep any action back toward DeltaV outside this connector and behind a separate industrial-control safety case"
+        ],
+        "customerValue": [
+          "safer and faster process-plant integration",
+          "downtime reduction",
+          "paid-idle-time reduction",
+          "overtime reduction",
+          "production throughput",
+          "reduced OT integration administration",
+          "faster implementation",
+          "cross-site executive reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce bespoke DCS integration engineering by consuming the vendor-supported enterprise edge projection",
+          "reduce paid idle labour through faster response to sustained process disruption",
+          "reduce overtime by improving visibility of recovery timing and specialist demand",
+          "reduce implementation mapping effort by reusing DeltaV hierarchy/context",
+          "reduce OT security overhead versus direct cloud access to the control network"
+        ],
+        "dataGaps": [
+          "worker identity, pay, absence, skills and roster truth remain outside DeltaV Edge",
+          "exact REST resources, OPC UA namespace and exposed DeltaV modules depend on customer configuration/version",
+          "a replicated operational value is not evidence that the underlying instrument or control state is correct",
+          "one-way upstream replication does not itself prove the downstream consumer identity is least privilege",
+          "plant-versus-enterprise placement changes routing, firewall and latency characteristics"
+        ],
+        "constraintsRisks": [
+          "Edge Environment can be deployed on Level 3/plant networks; WFM cloud must not bypass the customer-controlled network boundary",
+          "OPC UA may be configured for anonymous access, which is unsuitable for production WFM and must be rejected",
+          "REST/OPC UA data freshness must be measured separately from the health of the one-way upstream replication",
+          "source time, ingestion time, hierarchy identity and quality/status must be retained to distinguish stale replicated data from live state",
+          "multiple DeltaV sites/areas require deterministic site and work-centre identity mapping"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST and OPC UA edge profiles for a thin DeltaV Edge adapter with AD/OPC UA capability discovery, authenticated-only policy, certificate pin/trust validation, source/ingestion freshness watermarks, configuration-hierarchy fingerprints and customer site/work-centre mappings. Simulate upstream replication interruption and stale-edge reads, then obtain an authorised DeltaV Edge lab/site for least-privilege authentication and read-roundtrip proof."
+      }
+    }
+  ]
+}

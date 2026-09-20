@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor manufacturing integration delta. Adds Seeq and Canary Historian as distinct industrial analytics/historian targets, reusing existing REST/OData and REST/Protobuf RPC over HTTP/2 profiles. Evidence remains specification/public-documentation level only: no sandbox or customer tenant credentials were used and all writes remain disabled.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "seeq",
+      "name": "Seeq",
+      "category": "iiot-analytics",
+      "priority": "P1",
+      "protocols": [
+        "REST",
+        "OData"
+      ],
+      "auth": "oauth-oidc-session-or-access-key-by-deployment",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://support.seeq.com/latest/cloud/seeq-apis-and-sdks",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://support.seeq.com/latest/cloud/seeq-apis-and-sdks",
+      "evidenceNote": "Seeq documents its Server REST API as the interface used by the Seeq web application for the capabilities exposed in Workbench and Organizer, with SDKs derived from that REST API. Seeq also exposes modern OData 4.0 exports for Items, Samples, Capsules and statistics/metadata. Legacy OData is deprecated and, according to current Seeq deprecation guidance, fully removed in July 2026, so Manufacturing WFM must use the modern /odata/{id}.svc route only. Authentication varies by deployment and can include OAuth/OpenID Connect/session authentication or Seeq Access Keys; access keys inherit their owner's permissions and therefore are not intrinsically least privilege. No Seeq sandbox or tenant authentication was attempted.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://support.seeq.com/latest/cloud/seeq-apis-and-sdks",
+        "requiredPermissions": [
+          "customer-authorised Seeq identity limited to the analyses, assets, signals and exports required by WFM",
+          "read-only REST access to required signals, conditions, asset metadata and analytical results",
+          "modern OData 4.0 export read access only where a customer uses an export as the governed hand-off",
+          "no workbook, calculation, asset, user, connector, export-definition or other mutative permission during discovery",
+          "access keys, when unavoidable, must belong to a narrowly scoped non-admin service identity and be vaulted/rotated at the executor boundary"
+        ],
+        "dataAvailableOrExpected": [
+          "time-series signals and sampled values exposed to authorised Seeq users",
+          "conditions/capsules and event-like analytical intervals",
+          "asset paths, item metadata, units and descriptions",
+          "calculated or derived signals and analytics created in Seeq",
+          "modern OData Items, Samples, Capsules and statistical result tables where the customer has configured exports",
+          "workbook/worksheet context and analytical results reachable through the authorised REST surface"
+        ],
+        "wfmObjects": [
+          "machine-state",
+          "downtime-event",
+          "production-event",
+          "production-risk",
+          "maintenance-window",
+          "work-centre",
+          "shift-outcome",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "consume customer-governed downtime, operating-state or anomaly calculations as labour-demand and redeployment signals",
+          "correlate shift staffing and labour cost with contextualised production, equipment and energy analytics",
+          "use conditions/capsules to distinguish sustained disruption from transient telemetry noise before recommending labour moves",
+          "reuse Seeq analytics already approved by operations/engineering instead of recreating calculations inside WFM",
+          "detect stale exports, changed item IDs, changed asset paths and calculation/schema drift before derived signals affect workforce decisions",
+          "consider any Seeq-side creation/update or outward webhook/callback only after a separately authorised write-roundtrip proof"
+        ],
+        "customerValue": [
+          "faster industrial-data implementation",
+          "downtime reduction",
+          "production throughput",
+          "paid-idle-time reduction",
+          "maintenance coordination",
+          "energy/labour correlation",
+          "improved forecasting",
+          "cross-site executive manufacturing reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce duplicate OT analytics engineering by consuming customer-approved Seeq signals and conditions",
+          "reduce paid idle labour by responding to trustworthy sustained downtime/recovery conditions",
+          "reduce overstaffing or understaffing by combining Seeq production analytics with WFM demand and availability",
+          "reduce manual shift-performance analysis by joining labour outcomes to contextualised industrial analytics",
+          "reduce implementation effort where Seeq already normalises multiple historian/OT sources"
+        ],
+        "dataGaps": [
+          "Seeq is not normally the authoritative source for worker identity, employment, payroll, absence or roster truth",
+          "signals, calculations, conditions, asset paths and workbook semantics are customer-specific and require explicit canonical mapping",
+          "a calculated or interpolated Seeq value is not automatically equivalent to a raw machine observation",
+          "available APIs, analytical objects and authentication patterns vary by Seeq release and cloud/on-prem deployment",
+          "modern OData exports expose customer-selected analytical outputs rather than a universal manufacturing object model"
+        ],
+        "constraintsRisks": [
+          "derived/calculated values can be filtered, interpolated, aggregated, delayed or otherwise transformed; WFM must preserve raw-versus-derived lineage, source/event time, calculation identity and quality semantics",
+          "Access Keys inherit the owner's permissions, so using an over-privileged owner would defeat read-only intent",
+          "session-cookie REST authentication can require x-sq-csrf handling; OAuth/CORS flows can retrieve the CSRF token through the documented auth endpoint",
+          "legacy OData must not be selected for new connectors because the vendor removal timeline has passed",
+          "large time-range reads and analytical exports require bounded windows, backpressure and pagination/streaming behaviour appropriate to the selected Seeq endpoint",
+          "on-prem Seeq servers and remote data sources can sit behind plant/network boundaries; WFM must use customer-approved routing and must not scan source historians or PLC networks directly",
+          "Seeq REST capabilities can include mutations; read-only safety must be enforced by identity/operation allowlists, not by HTTP method convention alone"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST and OData profiles for a thin Seeq adapter. Require modern OData 4.0 when OData is selected, add REST capability/version discovery, CSRF/session handling where applicable, least-privilege access-key/OIDC checks, bounded time windows, canonical signal/condition/asset mapping, raw-versus-derived lineage and transformation metadata, quality/timestamp preservation and schema/item fingerprints. Then obtain an authorised Seeq test environment for least-privilege authentication and a representative read round-trip before considering any mutative Seeq operation."
+      }
+    },
+    {
+      "id": "canary-historian",
+      "name": "Canary Historian",
+      "category": "historian",
+      "priority": "P1",
+      "protocols": [
+        "REST",
+        "Protobuf RPC/HTTP2"
+      ],
+      "auth": "canary-api-token-linked-to-read-scoped-user",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://helpcenter.canarylabs.com/t/p8ypl9x/using-the-read-api-version-26",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://helpcenter.canarylabs.com/t/p8ypl9x/using-the-read-api-version-26",
+      "evidenceNote": "Canary documents a Web Read API over HTTPS and a native gRPC Read API over HTTPS, both routed through the Views service. Version 26 documentation maps API tokens to Canary users and permits Tag Security to restrict the user to read access on approved Views. The separate Store and Forward write API requires write permission and is deliberately excluded from the Manufacturing WFM connector. Current documentation also distinguishes secure read endpoints from older compatibility behaviour and documents Views as the governed query/security layer over Historian data. No Canary installation, sandbox or customer historian was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://helpcenter.canarylabs.com/t/p8ypl9x/using-the-read-api-version-26",
+        "requiredPermissions": [
+          "dedicated Canary service user mapped to an API token and limited to Read permission on only the approved View/tag hierarchy",
+          "Views Read API access only; no Store and Forward Write API permission",
+          "TLS-secured Web Read API or native gRPC Read API endpoint exposed through the customer-approved edge/network boundary",
+          "Tag Security enabled where customer policy requires tag/asset-level restriction",
+          "no Historian administration, collector configuration, Store and Forward mutation or write permission"
+        ],
+        "dataAvailableOrExpected": [
+          "historian tags and tag hierarchy visible through approved Views",
+          "historical and current time-series values",
+          "tag metadata and customer-defined asset/virtual-view context",
+          "events and calculations exposed through the customer's Views configuration where available",
+          "quality/status context carried by the customer's historian data and selected query path",
+          "contextualised views over data collected from upstream OPC UA, MQTT/Sparkplug, SQL, CSV and other configured sources"
+        ],
+        "wfmObjects": [
+          "machine-state",
+          "downtime-event",
+          "production-event",
+          "production-demand",
+          "work-centre",
+          "maintenance-window",
+          "site",
+          "shift-outcome",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "use trusted machine-state and downtime history to refresh labour-demand and redeployment recommendations",
+          "correlate staffed time with output, runtime, stoppage and recovery history by work centre",
+          "reuse Canary Views as a governed aggregation boundary for legacy and mixed-protocol plant sources rather than connecting WFM directly to each source",
+          "use historical patterns to forecast labour needs around recurring production, downtime or maintenance conditions",
+          "detect stale Views/tag mappings, historian gaps and quality degradation before operational signals influence live workforce decisions",
+          "consider historian writes only if a future business case exists and after separate Store and Forward sandbox write/read-back certification"
+        ],
+        "customerValue": [
+          "faster legacy-plant integration",
+          "downtime reduction",
+          "production throughput",
+          "paid-idle-time reduction",
+          "maintenance coordination",
+          "better labour-to-machine and labour-to-output attribution",
+          "improved forecasting",
+          "reduced OT integration administration"
+        ],
+        "savingsHypotheses": [
+          "reduce bespoke connector engineering by using the customer's existing historian and Views layer",
+          "reduce paid idle labour by detecting and analysing machine stoppage/recovery earlier",
+          "reduce emergency overtime by correlating recurring historian patterns with maintenance and skills demand",
+          "reduce manual production/labour reconciliation through shift-aligned historical queries",
+          "extend WFM analytics to older plants without replacing their existing collection stack"
+        ],
+        "dataGaps": [
+          "tag names, hierarchy, virtual Views and asset semantics are customer-specific",
+          "historian data does not normally establish worker identity, payroll, qualification or authoritative schedule truth",
+          "upstream collectors can differ by site and may provide different timestamp, quality or engineering-unit semantics",
+          "the exact gRPC schema/documentation is installation/version specific and must be matched to the customer's deployed Canary release",
+          "historical interpolation, aggregation or calculated tags must be distinguished from raw observations"
+        ],
+        "constraintsRisks": [
+          "API tokens are mapped to Canary users; the token is only as least-privileged as that user's Views/Tag Security permissions",
+          "Read and Write APIs coexist in the product but are separate authorities; WFM must technically exclude Store and Forward write access",
+          "large historian ranges require bounded time windows, sampling/downsampling awareness, backpressure and durable checkpoints",
+          "quality, source timestamps and transformation/aggregation metadata must be preserved so historical/processed data cannot masquerade as current raw state",
+          "Canary documentation notes historian files are not encrypted at rest by the product itself, so customers requiring at-rest encryption need encrypted storage/volume controls outside the connector",
+          "on-prem historian endpoints must remain behind a customer-controlled edge/network boundary; WFM cloud must not directly scan plant networks",
+          "virtual Views can rebuild as underlying tags change, so tag/view schema fingerprints and customer mappings need drift detection"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST and Protobuf RPC/HTTP2 profiles for a thin Canary Views Read adapter. Extend the reusable fabric to allow a system to require a customer edge even when its exposed protocol is HTTPS/gRPC, then add Canary version detection, explicit secure Views endpoint binding, read-token permission checks, bounded history windows, tag/view schema fingerprints, source-time/quality/transformation preservation and customer asset/work-centre mappings. Validate web and gRPC fixtures without any write route, then obtain an authorised lab/customer historian for least-privilege authentication and a representative read round-trip."
+      }
+    }
+  ]
+}

@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor industrial-edge and IoT delta. Adds EMQX Neuron, HiveMQ Edge, Cumulocity Platform and Cumulocity Edge at spec-verified only. All reuse existing protocol profiles; no sandbox or tenant credentials were used. Writes, management/control/provisioning/agent actions and broad cross-scope reads remain disabled.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "emqx-neuron",
+      "name": "EMQX Neuron (formerly NeuronEX)",
+      "category": "industrial-connectivity",
+      "priority": "P2",
+      "protocols": ["REST", "OpenAPI 3.1", "MQTT", "Sparkplug B", "OPC UA", "Kafka"],
+      "auth": "jwt-viewer-and-protocol-specific-tls-or-x509",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.emqx.com/en/neuronex/latest/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://docs.emqx.com/en/neuronex/latest/api/api.html",
+      "evidenceNote": "Current EMQX Neuron documentation identifies a plant-floor industrial edge gateway with 100+ southbound industrial protocols, MQTT/Sparkplug B, Kafka, HTTP and OPC UA northbound paths. Its REST API conforms to OpenAPI 3.1 and uses JWT authentication. RBAC provides a Viewer role corresponding to REST GET requests only, while device-control and OPC UA/MQTT paths can also carry writes. Manufacturing WFM therefore uses only Viewer GETs and approved read/subscribe data-plane paths behind the customer edge. No Neuron instance was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://docs.emqx.com/en/neuronex/latest/admin/user.html",
+        "requiredPermissions": [
+          "dedicated EMQX Neuron Viewer identity with authentication enabled and no use of the default administrator credential",
+          "REST GET operations only; no create, modify, delete, configuration or device-control requests",
+          "MQTT/Sparkplug subscribe-only topics over authenticated TLS and OPC UA Browse/Read/Subscribe only with authenticated encrypted sessions",
+          "Kafka consume-only access where used; no producer, rules, sink, plugin or management authority"
+        ],
+        "dataAvailableOrExpected": [
+          "device, node, group and tag metadata for connected PLCs, CNCs, robots, meters and other equipment",
+          "live and buffered industrial tag values with source/device context",
+          "normalized MQTT/Sparkplug streams and OPC UA hierarchy exposed from heterogeneous southbound protocols",
+          "approved data statistics, runtime health and alarm/status context through read-only APIs",
+          "processed or aggregated edge outputs where configured, marked separately from raw observations"
+        ],
+        "wfmObjects": ["machine-state", "downtime-event", "production-event", "production-demand", "work-centre", "site", "maintenance-window", "energy-event", "shift-outcome", "integration-event"],
+        "automationOpportunities": [
+          "reuse one edge abstraction across legacy PLC, CNC, robot and meter estates rather than building machine-specific cloud connectors",
+          "adjust labour demand and redeployment recommendations from actual machine and line state",
+          "correlate downtime, throughput and utility signals with labour cost and shift outcomes",
+          "accelerate site and work-centre mapping from device/group/tag hierarchy",
+          "use locally buffered telemetry for reconciliation after outages without treating replay as live state"
+        ],
+        "customerValue": ["faster brownfield implementation", "downtime reduction", "production throughput", "paid-idle-time reduction", "overtime reduction", "maintenance coordination", "energy-to-labour attribution", "reduced OT integration administration", "multi-site reporting"],
+        "savingsHypotheses": [
+          "reduce bespoke machine connector engineering by consuming Neuron's normalized northbound data",
+          "reduce paid idle labour by matching staffing to actual machine availability",
+          "reduce overtime caused by late recovery visibility",
+          "reduce integration and support effort across mixed legacy protocols",
+          "reduce cloud exposure to low-level plant networks"
+        ],
+        "dataGaps": [
+          "worker, payroll, absence, roster and skills truth normally remains outside Neuron",
+          "tag naming, group hierarchy and semantic meaning are customer-specific",
+          "processed/aggregated values require provenance and cannot be assumed raw",
+          "offline MQTT cache can replay historical values after reconnect",
+          "southbound quality depends on each driver/device configuration"
+        ],
+        "constraintsRisks": [
+          "Neuron is plant-floor infrastructure and remains behind a customer/site edge boundary",
+          "Viewer exposes broad GET visibility, so customer-specific tag/resource allowlists are still required",
+          "authentication can be disabled by deployment configuration and must be verified enabled",
+          "default administrator credentials must never be used by WFM",
+          "MQTT, OPC UA and device-control surfaces are bidirectional-capable and require technical read-only enforcement"
+        ],
+        "nextDevelopmentAction": "Reuse REST/OpenAPI, MQTT/Sparkplug, OPC UA and Kafka profiles for a thin Neuron adapter with version/capability discovery, Viewer-role verification, REST operation allowlists, topic/node filters, TLS/certificate validation, hierarchy fingerprints, source/ingestion timestamps, replay-age watermarks and raw-versus-derived provenance. Obtain an authorised lab or customer edge before promoting beyond spec verification."
+      }
+    },
+    {
+      "id": "hivemq-edge",
+      "name": "HiveMQ Edge",
+      "category": "industrial-connectivity",
+      "priority": "P2",
+      "protocols": ["REST", "MQTT"],
+      "auth": "jwt-rbac-or-oidc-or-ldap-and-mqtt-auth",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.hivemq.com/hivemq-edge/index.html",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://docs.hivemq.com/hivemq-edge/api-configuration.html",
+      "evidenceNote": "HiveMQ Edge documentation describes an industrial MQTT gateway with adapters including OPC UA, Modbus, S7, ADS/TwinCAT, EtherNet/IP, HTTP(S), file and BACnet, plus Unified Namespace topic hierarchies. Admin REST RBAC gives the user role read access to configuration and GET APIs while POST/PUT require higher privilege. Some protocol adapters are bidirectional, including MQTT-to-OPC-UA southbound writes. Manufacturing WFM therefore consumes only read-only REST metadata and approved MQTT subscriptions behind the customer edge. No HiveMQ Edge instance was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://docs.hivemq.com/hivemq-edge/protocol-adapters.html",
+        "requiredPermissions": [
+          "dedicated HiveMQ Edge read-only user role or equivalently constrained OIDC/LDAP-mapped role",
+          "REST GET operations only; no POST, PUT, adapter start/stop, mapping, policy or configuration changes",
+          "MQTT subscribe-only ACLs for approved namespace prefixes over authenticated TLS",
+          "no southbound MQTT-to-OT mappings, OPC UA writes, bridge changes or Data Hub policy mutation"
+        ],
+        "dataAvailableOrExpected": [
+          "MQTT telemetry normalized from OPC UA, Modbus, Siemens S7, ADS/TwinCAT, EtherNet/IP, HTTP, file, BACnet and other adapters",
+          "Unified Namespace topic hierarchy that can represent enterprise, site, area, line and asset context",
+          "source timestamps/status metadata where supplied by industrial adapters",
+          "approved read-only adapter, bridge and mapping metadata for implementation diagnostics",
+          "buffered messages after connectivity interruptions where the licensed capability is configured"
+        ],
+        "wfmObjects": ["machine-state", "downtime-event", "production-event", "production-demand", "work-centre", "site", "maintenance-window", "energy-event", "shift-outcome", "integration-event"],
+        "automationOpportunities": [
+          "use the customer's Unified Namespace to auto-suggest site, line and work-centre mappings",
+          "derive staffing and redeployment recommendations from normalized machine state without direct PLC access",
+          "correlate labour, throughput, downtime and energy across heterogeneous equipment",
+          "reuse existing MQTT topic governance for multi-site implementation",
+          "reconcile buffered data after outages while preventing stale replay from triggering live labour actions"
+        ],
+        "customerValue": ["faster implementation", "brownfield connectivity", "downtime reduction", "production throughput", "paid-idle-time reduction", "overtime reduction", "energy-to-labour correlation", "reduced integration administration", "cross-site standardisation"],
+        "savingsHypotheses": [
+          "reduce bespoke device integration through one governed MQTT projection",
+          "reduce implementation mapping effort by reusing ISA-95-style namespace hierarchy",
+          "reduce paid idle and overtime by aligning labour to actual line state",
+          "reduce support effort through standardized MQTT observability",
+          "reduce direct cloud exposure to industrial protocols"
+        ],
+        "dataGaps": [
+          "workforce/payroll/skills/absence truth remains outside HiveMQ Edge",
+          "topic semantics and namespace quality depend on customer design",
+          "not every protocol adapter exposes identical timestamp or quality metadata",
+          "offline buffering is deployment/licence dependent",
+          "REST configuration visibility is not evidence that a telemetry topic is semantically trustworthy"
+        ],
+        "constraintsRisks": [
+          "HiveMQ Edge remains inside the site/plant security boundary",
+          "read-only REST role still sees broad configuration and requires customer-approved endpoint scope",
+          "MQTT bridge and protocol adapters can be bidirectional, so WFM must never rely on UI-level read-only behavior alone",
+          "OPC UA anonymous mode may exist southbound but production WFM does not accept anonymous OPC UA evidence",
+          "buffered/replayed MQTT data must retain source time and freshness"
+        ],
+        "nextDevelopmentAction": "Reuse REST and MQTT profiles for a thin HiveMQ Edge adapter with RBAC verification, GET-only operation allowlists, topic ACL checks, namespace/ISA-95 mapping fingerprints, MQTT v3/v5 compatibility, source/ingestion timestamps, dedupe and replay-age controls. Keep southbound device/control and configuration surfaces disabled until separately authorised and evidenced."
+      }
+    },
+    {
+      "id": "cumulocity-platform",
+      "name": "Cumulocity Platform",
+      "category": "iiot",
+      "priority": "P2",
+      "protocols": ["REST", "OpenAPI 3", "MQTT"],
+      "auth": "tenant-basic-or-secure-sso-and-mqtt-password-or-x509",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://cumulocity.com/api/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://cumulocity.com/api/core/",
+      "evidenceNote": "Cumulocity publishes OpenAPI-described REST APIs for inventory, measurements, events, alarms and related IoT resources, plus MQTT connectivity. Global and inventory roles can constrain ordinary API access, but current vendor documentation explicitly warns that Notifications 2.0 permissions can receive device data outside assigned inventory roles and that DataHub offloading does not incorporate base collection inventory-role access restrictions. Manufacturing WFM therefore uses only tenant/device-scoped REST reads and approved MQTT subscriptions; broad notification/DataHub read paths are separately disabled pending equivalent scoping evidence. No Cumulocity tenant was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://cumulocity.com/docs/standard-tenant/managing-permissions/",
+        "requiredPermissions": [
+          "tenant identity with READ-only inventory, measurement, event and alarm permissions limited by customer-approved inventory roles/device groups",
+          "MQTT subscribe/read-only device or tenant scope where required, with TLS and customer-approved authentication",
+          "no device operations, command/control, inventory mutation or administration",
+          "no Notifications 2.0 subscription or DataHub access unless a separately reviewed constrained projection proves equivalent tenant/device scope"
+        ],
+        "dataAvailableOrExpected": [
+          "managed objects/digital twins for devices, assets, groups and relationships",
+          "measurements and time-series sensor or production values",
+          "events and alarms with device/asset context",
+          "custom fragments and customer-specific device attributes",
+          "MQTT telemetry and connection metadata where enabled"
+        ],
+        "wfmObjects": ["machine-state", "downtime-event", "production-event", "production-demand", "work-centre", "site", "maintenance-window", "energy-event", "shift-outcome", "integration-event"],
+        "automationOpportunities": [
+          "map device groups and digital-twin relationships to sites, areas and work centres during implementation",
+          "adjust staffing/redeployment from measurements, alarms and production events",
+          "forecast downtime recovery and overtime risk from operational history",
+          "correlate energy/utility measurements with shift staffing and output",
+          "combine multi-site IoT evidence with labour and finance attribution without changing device control"
+        ],
+        "customerValue": ["faster implementation", "downtime reduction", "production throughput", "paid-idle-time reduction", "overtime reduction", "maintenance coordination", "energy reduction", "forecasting", "multi-site executive reporting"],
+        "savingsHypotheses": [
+          "reduce device-by-device integration by reusing the customer's Cumulocity inventory and device model",
+          "reduce idle and overtime cost through earlier production-state visibility",
+          "reduce manual site/asset mapping through device-group hierarchy reuse",
+          "improve labour-to-output and labour-to-energy attribution",
+          "reduce custom reporting joins by normalizing IoT events into WFM objects"
+        ],
+        "dataGaps": [
+          "worker/payroll/absence/skills and authoritative roster data usually remain outside Cumulocity",
+          "custom fragments and device types are tenant-specific",
+          "legacy inventory-role searches may require following pagination even through empty intermediate pages",
+          "device telemetry quality and semantics depend on upstream integrations",
+          "Notifications 2.0 and DataHub security scope differs materially from ordinary inventory-role constrained APIs"
+        ],
+        "constraintsRisks": [
+          "Notifications 2.0 permissions can bypass assigned inventory-role device scope",
+          "DataHub offloading/query access can expose data irrespective of base collection inventory-role restrictions",
+          "MQTT/device APIs can support operations and control; WFM remains subscription/read-only",
+          "tenant, region and custom schema must be bound explicitly and never inferred across customers",
+          "rate limits, pagination and custom-fragment schema drift require resumable cursors and fingerprints"
+        ],
+        "nextDevelopmentAction": "Reuse REST/OpenAPI and MQTT profiles for a thin Cumulocity adapter with tenant/region binding, inventory-role scope verification, device/group traversal, pagination checkpoints including statistics.next behavior, custom-fragment schema fingerprints, read-only MQTT topic mappings and operation allowlists. Keep Notifications 2.0 and DataHub disabled behind the cross-scope-read gate until an authorised tenant proves an equivalent constrained projection."
+      }
+    },
+    {
+      "id": "cumulocity-edge",
+      "name": "Cumulocity Edge",
+      "category": "iiot-edge",
+      "priority": "P2",
+      "protocols": ["REST", "OpenAPI 3", "MQTT", "OPC UA"],
+      "auth": "local-tenant-and-protocol-specific-tls-or-x509",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://cumulocity.com/docs/2026/edge/edge-introduction/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://cumulocity.com/docs/2026/edge/edge-introduction/",
+      "evidenceNote": "Cumulocity Edge 2026 is the single-server on-site variant of the Cumulocity platform and can operate on local networks or in fully offline/air-gapped environments. Vendor documentation lists native REST and MQTT, local operational storage, streaming analytics and OPC UA. The same product also includes Edge Agent remote management, cloud data broker and device-management/control capabilities. Manufacturing WFM therefore treats Edge as a customer-edge data source and consumes only approved local REST/MQTT/OPC UA reads; operator, remote-management and device-control paths remain disabled. No Edge deployment was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://cumulocity.com/docs/2026/edge/connecting-edge-to-cloud/",
+        "requiredPermissions": [
+          "local Edge tenant identity restricted to READ-only inventory, measurement, event and alarm resources for approved device/site scope",
+          "MQTT subscribe-only over authenticated TLS and OPC UA Browse/Read/Subscribe only with named authenticated encrypted sessions",
+          "no Edge Agent remote management, Kubernetes/operator administration, device operations, cloud data-broker writes or OPC UA/MQTT southbound control",
+          "no DataHub or other broad cross-scope read channel unless separately reviewed and constrained"
+        ],
+        "dataAvailableOrExpected": [
+          "local device/asset inventory and relationships",
+          "measurements, events, alarms and streaming-analytics outputs collected while cloud connectivity is unavailable",
+          "native MQTT telemetry and OPC UA-connected industrial data",
+          "local operational history for site resilience and reconciliation",
+          "approved Edge health/connectivity context for data-freshness decisions"
+        ],
+        "wfmObjects": ["machine-state", "downtime-event", "production-event", "production-demand", "work-centre", "site", "maintenance-window", "energy-event", "shift-outcome", "integration-event"],
+        "automationOpportunities": [
+          "keep local workforce intelligence supplied with production state during WAN/cloud outages",
+          "use a common Cumulocity canonical adapter for cloud and Edge while enforcing different network/security boundaries",
+          "adjust staffing/redeployment from low-latency local machine state",
+          "reconcile offline history after reconnect without treating backfill as current state",
+          "reduce data movement by consuming only WFM-relevant local projections"
+        ],
+        "customerValue": ["resilient plant operation", "faster edge implementation", "downtime reduction", "production throughput", "paid-idle-time reduction", "overtime reduction", "data-sovereignty support", "reduced WAN dependency", "energy-to-labour correlation"],
+        "savingsHypotheses": [
+          "reduce disruption and manual reconciliation during WAN outages",
+          "reduce cloud integration engineering by reusing the cloud/Edge API model",
+          "reduce latency in labour redeployment decisions from on-site telemetry",
+          "reduce unnecessary data transfer by normalizing locally",
+          "reduce bespoke OPC UA/MQTT integration where Edge already provides the abstraction"
+        ],
+        "dataGaps": [
+          "authoritative worker, payroll, absence, skills and roster data generally remains external",
+          "local device hierarchy/custom fragments remain customer-specific",
+          "offline history must carry source time, ingestion time and replay age",
+          "cloud/Edge release and optional feature availability can differ",
+          "single-server topology has different availability/scaling characteristics from cloud"
+        ],
+        "constraintsRisks": [
+          "Edge is customer-controlled on-site infrastructure and must never be scanned directly from the WFM cloud",
+          "remote management and cloud data broker can perform actions beyond WFM's data needs",
+          "OPC UA and MQTT are bidirectional-capable and require operation-level read enforcement",
+          "air-gapped deployments require customer-edge execution, local credential handling and deferred evidence upload",
+          "backfilled data after reconnect must never masquerade as live machine state"
+        ],
+        "nextDevelopmentAction": "Reuse the Cumulocity REST/OpenAPI and MQTT mapping logic plus OPC UA edge profile, but bind execution to the customer edge with local version/capability discovery, read-only operation allowlists, authenticated encrypted OPC UA, source/ingestion/replay metadata and offline checkpoints. Exclude Edge Agent/operator/remote-management/device-control paths and obtain an authorised Edge lab/site before promotion."
+      }
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor evidence delta promoting Critical Manufacturing MES and FORCAM from discovery-queued to spec-verified, and adding QAD Redzone Connected Workforce at spec-verified only. Reuses existing REST/OData/MQTT/OPC UA/Kafka/OpenAPI profiles, records least-privilege and customer-value boundaries, and does not enable writes or claim sandbox/tenant evidence.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "critical-manufacturing-mes",
+      "patch": {
+        "protocols": ["REST", "OData", "MQTT"],
+        "auth": "user-access-token-or-public-key-oauth",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.criticalmanufacturing.com/11.1/tutorials/modules/dashboards/opendataprotocol/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://help.criticalmanufacturing.com/11.1/tutorials/modules/dashboards/opendataprotocol/",
+        "evidenceNote": "Critical Manufacturing documents OData endpoints for MES Queries and Data Platform datasets, Data Manager Swagger/REST, ISA-95-oriented Canonical Data Model data and UNS connectivity publishing Light CDM events to MQTT. Security Portal supports OAuth 2.0 and user access tokens; however, the vendor explicitly warns that client-credentials grants provide super-admin privileges and are strongly discouraged outside tightly controlled environments. WFM therefore forbids client-credentials/super-admin authentication for this read connector, prefers a dedicated integration user using an expiring user token or registered public-key flow with constrained roles/data groups, and keeps the connector behind the customer edge by default until the exact deployment/network boundary is proven. No tenant or sandbox credentials were used.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://help.criticalmanufacturing.com/11.1/tutorials/modules/dashboards/opendataprotocol/",
+          "requiredPermissions": [
+            "dedicated Critical Manufacturing integration user with only the MES roles/data groups needed for approved read datasets",
+            "prefer an expiring user access token or registered public-key/JWT bearer flow tied to that constrained user",
+            "do not use OAuth client_credentials for WFM because vendor documentation states that flow grants super-admin privileges",
+            "OData/Data Manager access limited to approved MES Queries or Data Platform datasets; no low-code configuration or query creation authority",
+            "MQTT/UNS consumption limited to approved topics through a customer-controlled edge/broker subscription; no publish/control authority"
+          ],
+          "dataAvailableOrExpected": [
+            "MES Query output exposed through OData",
+            "Data Platform datasets from CDM, ODS, DWH, IoT events and customer-defined datasets where enabled",
+            "production orders, operations, materials, work centres/resources and execution state represented by the customer's MES/CDM model",
+            "quality, maintenance, planning and logistics context where present in the customer's enabled Critical Manufacturing modules",
+            "ISA-95-oriented canonical events and Light CDM events published through the Unified Namespace MQTT connector"
+          ],
+          "wfmObjects": ["site", "work-centre", "production-demand", "production-event", "machine-state", "downtime-event", "maintenance-event", "quality-event", "labour-requirement", "shift-outcome", "integration-event"],
+          "automationOpportunities": [
+            "refresh labour demand from current production order/operation state rather than relying only on static schedules",
+            "redeploy labour when equipment/operation events show downtime or production interruption",
+            "forecast quality/rework and maintenance labour from MES execution events and enabled module data",
+            "reuse ISA-95 CDM/site/resource identifiers to accelerate multi-site WFM mapping and reduce duplicate configuration",
+            "combine production execution, quality and maintenance evidence with WFM time/cost data for labour-to-output and disruption attribution",
+            "after separate write certification, support narrowly approved labour confirmations or workflow responses without granting the read connector configuration/control authority"
+          ],
+          "customerValue": ["production throughput", "downtime reduction", "scheduling efficiency", "overtime reduction", "maintenance coordination", "quality/rework labour optimisation", "faster implementation", "reduced administration", "forecasting", "finance attribution", "executive reporting"],
+          "savingsHypotheses": [
+            "reduce paid idle time and avoidable overtime by aligning staffing with actual operation and equipment state",
+            "reduce implementation effort by reusing the customer's ISA-95-oriented CDM, work-centre and site hierarchy instead of rebuilding it manually",
+            "reduce production/maintenance staffing conflicts by exposing planned and actual maintenance/production state to the workforce planner",
+            "improve labour-cost-per-order/operation reporting by joining MES execution evidence to WFM time and payroll data"
+          ],
+          "dataGaps": [
+            "the exact OData queries, CDM datasets, IoT event schemas and field visibility are customer/configuration specific",
+            "authoritative employment, payroll, absence, agency-worker and broad qualification data normally remain outside the MES",
+            "operator identifiers may not deterministically match HCM/WFM worker identities without customer mapping",
+            "public documentation does not establish a universal rate-limit contract for every OData/Data Manager deployment",
+            "cloud versus customer-managed/on-prem routing must be proven per environment before a direct-cloud path can replace the conservative edge boundary"
+          ],
+          "constraintsRisks": [
+            "OAuth client_credentials is documented as super-admin and must not be used by the WFM read connector",
+            "OData can expose broad Data Platform datasets, so approved-query/dataset allowlisting and effective user permissions are mandatory",
+            "UNS MQTT events can be high-volume, duplicated, delayed or replayed; source time, event identity, ordering and freshness must be preserved",
+            "customer-defined MES Queries and Data Platform schemas can change and require schema fingerprinting/drift detection",
+            "Critical Manufacturing can be deployed in different infrastructure models, so network/edge policy must fail closed until the actual environment is evidenced"
+          ],
+          "nextDevelopmentAction": "Reuse the existing REST/OpenAPI, OData and MQTT profiles. In an authorised Critical Manufacturing environment, identify the deployment boundary, create or select a dedicated constrained integration user, prove an expiring user token or public-key flow (never super-admin client_credentials), enumerate approved OData/Data Manager datasets and UNS topics, test pagination/query limits/schema fingerprints/replay/freshness, reconcile site/resource/operator identities, and normalise representative production/maintenance/quality records before promotion beyond spec verification."
+        }
+      }
+    },
+    {
+      "id": "forcam",
+      "patch": {
+        "protocols": ["REST", "MQTT", "OPC UA", "Kafka"],
+        "auth": "vendor-specific-enterprise",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://forcam.com/app/uploads/2023/03/2023-03_PM-FORCAM-New-Product-Names_Engl_f.pdf",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://forcam.com/app/uploads/2023/03/2023-03_PM-FORCAM-New-Product-Names_Engl_f.pdf",
+        "evidenceNote": "FORCAM's authoritative product material documents FORCE EDGE CONNECT as a brownfield machine-connectivity layer that harmonises heterogeneous machine signals into a semantic machine model and exposes downstream data through OPC UA, REST, MQTT and Kafka. Vendor material also documents real-time/historical machine availability, downtime/fault reasons, OEE, traceability and energy-monitoring use cases across hybrid on-prem/edge/cloud architectures. Public material reviewed does not expose a complete current authentication/scope contract for each interface, so FORCAM advances only to spec-verified and remains customer-edge/read-only by default. No tenant credentials or production interfaces were accessed.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://forcam.com/app/uploads/2023/03/2023-03_PM-FORCAM-New-Product-Names_Engl_f.pdf",
+          "requiredPermissions": [
+            "customer-approved read/subscription identity for the selected REST, MQTT, OPC UA or Kafka projection",
+            "site-edge termination for machine/plant interfaces with no direct WFM cloud scanning of production networks",
+            "topic/node/schema allowlists limited to the machine, line, OEE, downtime and energy evidence required by the WFM use case",
+            "no FORCE EDGE configuration, machine onboarding, broker publish, OPC UA write/method or Kafka produce authority in the read connector"
+          ],
+          "dataAvailableOrExpected": [
+            "harmonised machine/digital-twin signals from heterogeneous and brownfield equipment",
+            "real-time and historical machine availability",
+            "downtime and fault/reason context",
+            "OEE and machine-performance context",
+            "traceability/production context where FORCE MES modules expose it",
+            "energy-monitoring telemetry where enabled",
+            "site/machine semantic context supplied by the FORCE EDGE CONNECT model"
+          ],
+          "wfmObjects": ["site", "work-centre", "machine-state", "production-event", "downtime-event", "shift-outcome", "energy-event", "cost-driver", "integration-event"],
+          "automationOpportunities": [
+            "refresh staffing and redeployment recommendations from actual machine availability and downtime",
+            "identify paid idle labour and avoidable overtime against real production availability",
+            "reuse harmonised brownfield machine semantics rather than creating one WFM connector per machine/vendor",
+            "coordinate maintenance response and qualified labour when recurring fault/downtime patterns emerge",
+            "attribute labour and energy cost to actual productive versus non-productive machine time",
+            "use the edge semantic model to accelerate site/line/machine mapping during autonomous implementation"
+          ],
+          "customerValue": ["faster brownfield integration", "production throughput", "downtime reduction", "labour-cost reduction", "overtime reduction", "maintenance coordination", "energy reduction", "faster implementation", "multi-site standardisation", "finance attribution", "executive reporting"],
+          "savingsHypotheses": [
+            "reduce bespoke machine integration cost by consuming FORCAM's existing harmonised machine model",
+            "reduce paid idle time and avoidable overtime by aligning labour decisions with actual machine availability",
+            "reduce downtime response time by correlating fault/reason signals with available qualified labour",
+            "identify energy consumed during staffed but non-productive periods and support labour/energy optimisation"
+          ],
+          "dataGaps": [
+            "public vendor material does not expose a complete current authentication, role/scope, pagination or rate-limit contract for each REST/MQTT/OPC UA/Kafka interface",
+            "exact semantic model/tag/topic schemas are customer and deployment specific",
+            "worker identity, contracts, payroll, absence, agency labour and authoritative skills normally remain in HCM/WFM/LMS",
+            "write-back semantics and supported command/configuration APIs are not sufficiently evidenced for WFM use and remain disabled"
+          ],
+          "constraintsRisks": [
+            "FORCAM supports hybrid edge/on-prem/cloud architectures, so the selected endpoint and network boundary must be proven per site",
+            "OPC UA/MQTT/Kafka interfaces may expose more plant data than WFM requires and need explicit node/topic/schema allowlists",
+            "historical/replayed edge data must retain source time and freshness so it cannot masquerade as current machine state",
+            "semantic mappings can drift as machines, plugins or customer models change and require fingerprinting/version checks"
+          ],
+          "nextDevelopmentAction": "Reuse the existing REST/OpenAPI, OPC UA, MQTT and Kafka profiles behind the customer edge. In an authorised FORCAM deployment, enumerate the exposed interface versions and authentication model, establish read/subscription-only identities, fingerprint the machine/site semantic model and topic/node schemas, test reconnect/replay/deduplication/freshness and representative machine/OEE/downtime/energy reads, then normalise the data before promotion beyond spec verification."
+        }
+      }
+    }
+  ],
+  "systems": [
+    {
+      "id": "qad-redzone",
+      "name": "QAD Redzone Connected Workforce",
+      "category": "frontline-operations-learning-skills",
+      "priority": "P1",
+      "protocols": ["REST", "OpenAPI"],
+      "auth": "enterprise-idp-rbac",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.qad.com/nl-NL/solutions/qad-redzone-connected-workforce",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://www.qad.com/nl-NL/solutions/qad-redzone-connected-workforce",
+      "evidenceNote": "QAD's current Redzone product documentation identifies a Developer Hub with interactive OpenAPI documentation, identity-provider authentication/RBAC, analytics/data-warehouse connectivity and CLI access. Current product material covers frontline productivity, compliance, reliability and learning across manufacturing and describes AI/automation capabilities. Public pages do not expose enough endpoint-level object, scope, rate-limit or event-delivery detail to claim tenant or round-trip proof, so WFM adds Redzone at spec-verified only and keeps ChampionAI/CLI/action authority behind separate agent/write gates. No Redzone tenant or credentials were used.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.qad.com/nl-NL/solutions/qad-redzone-connected-workforce",
+        "requiredPermissions": [
+          "dedicated Redzone integration identity constrained by the customer's identity provider/RBAC to approved read/reporting data",
+          "read-only API access to the specific Developer Hub resources required by WFM once endpoint scopes are tenant-proven",
+          "analytics/data-warehouse access only through a customer-approved constrained projection when used",
+          "no ChampionAI action execution, CLI mutation, workflow/configuration or cross-system write authority in the normal read connector"
+        ],
+        "dataAvailableOrExpected": [
+          "frontline production/productivity and shift-performance records exposed by the customer's Redzone API/analytics configuration",
+          "production run, OEE/line-performance and improvement context where exposed",
+          "frontline team/user and organisational/site context available to the customer's integration surface",
+          "compliance, reliability, learning/training and skills-related evidence where the relevant Redzone modules expose it",
+          "collaboration/action/improvement records only when required and approved for the WFM workflow"
+        ],
+        "wfmObjects": ["worker", "site", "organisation-unit", "skill", "qualification", "training-completion", "work-centre", "production-event", "production-demand", "shift-outcome", "production-risk", "integration-event"],
+        "automationOpportunities": [
+          "enrich skills-based scheduling with approved Redzone learning/competency evidence while keeping customer qualification policy authoritative",
+          "use actual shift/line productivity context to improve labour standards, staffing forecasts and redeployment recommendations",
+          "correlate reliability/production losses with staffing levels, skills mix and overtime outcomes",
+          "reuse Redzone site/team structures to accelerate workforce implementation and reduce duplicate master-data administration",
+          "surface production/compliance issues into WFM manager workflows without allowing the read connector to execute Redzone AI/actions",
+          "after separate write and agent certification, consider narrowly approved bidirectional workflow hand-offs without expanding read-plane authority"
+        ],
+        "customerValue": ["labour productivity", "production throughput", "skills deployment", "compliance", "faster onboarding", "training administration reduction", "scheduling efficiency", "overtime reduction", "downtime/reliability coordination", "faster implementation", "executive reporting"],
+        "savingsHypotheses": [
+          "reduce supervisor administration by reusing frontline team, learning and production evidence already maintained in Redzone",
+          "reduce unqualified or poorly matched assignments by bringing approved learning/skills evidence into workforce planning",
+          "improve labour demand standards by comparing staffing and skills mix with actual shift/line productivity outcomes",
+          "reduce avoidable overtime and disruption by surfacing reliability and production-loss signals earlier to workforce planners"
+        ],
+        "dataGaps": [
+          "public product material confirms the Developer Hub/OpenAPI integration capability but does not enumerate the complete API object model, endpoint scopes, pagination or rate limits",
+          "exact learning/skills/compliance records available through API versus analytics exports must be tenant-proven",
+          "employment contracts, payroll, absence and agency-worker master data normally remain outside Redzone",
+          "frontline identities, site/team structures and production identifiers require deterministic reconciliation with HCM/WFM/MES masters"
+        ],
+        "constraintsRisks": [
+          "Redzone includes AI and automation capabilities; these are action-capable surfaces and remain disabled behind the global agent/write gates",
+          "identity-provider/RBAC integration does not itself prove that a particular API credential is least privilege; effective endpoint access must be tested",
+          "analytics/data-warehouse exports can be broader than operational UI permissions and therefore remain subject to the cross-scope-read gate",
+          "training completion or learning evidence must not automatically grant job eligibility without customer policy mapping"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST/OpenAPI profile. Obtain authorised Redzone Developer Hub access or sandbox credentials, enumerate the current OpenAPI document and read scopes, prove the identity-provider/RBAC behavior of a dedicated integration identity, test pagination/rate limits/schema drift and representative site/team/production/learning reads, reconcile identities and site/work-centre keys, and keep ChampionAI/CLI/action endpoints disabled before promotion beyond spec verification."
+      }
+    }
+  ]
+}

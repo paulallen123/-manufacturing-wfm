@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor manufacturing integration delta. Promotes Siemens Opcenter from discovery-queued to spec-verified and adds Bosch Nexeed Industrial Application System / Data Publisher plus ABB Genix Industrial IoT and AI Suite at spec-verified only. Reuses existing REST, MQTT, OPC UA, files, Kafka, AMQP 1.0 and GraphQL profiles; keeps WFM read/event-only and does not inherit MES, PLC, edge-control, write-back, agent or management authority. No sandbox/customer credentials, customer data, writes or plant-network probes were used.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "siemens-opcenter",
+      "patch": {
+        "protocols": ["REST", "MQTT", "OPC UA", "files"],
+        "auth": "enterprise-by-deployment",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.siemens.com/de-de/content/architecture-hub/op-center/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://www.siemens.com/de-de/content/architecture-hub/op-center/",
+        "evidenceNote": "Siemens documents Opcenter Connect MOM with REST, MQTT, OPC UA and file-based adapters, high-availability deployment and store-and-forward buffering/replay when Opcenter or the network is temporarily unavailable. The Opcenter Execution Automation Gateway also binds OPC UA nodes to active work-order data collection and can use direct REST calls, but that path writes into Opcenter. WFM therefore reuses only approved read/event surfaces behind the customer edge and does not inherit PLC/tag write, MES transaction, quality-hold, work-order or control authority.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.siemens.com/de-de/content/architecture-hub/op-center/",
+          "requiredPermissions": [
+            "customer-approved least-privilege identity for the specific Opcenter/Connect MOM deployment and site",
+            "read-only REST access or dedicated outbound event/file feed limited to approved work-order, operation, production, quality-state and equipment context",
+            "OPC UA Browse/Read/Subscribe and MQTT subscribe-only access only where the customer explicitly exposes a constrained integration endpoint",
+            "customer/site-edge termination for on-premises MES/automation routes; no direct cloud scan of PLC, automation or production VLANs",
+            "no work-order completion, data-collection write, quality disposition, PLC/tag write, message publish, configuration or management authority"
+          ],
+          "dataAvailableOrExpected": [
+            "work orders, operation context, BOM/production transaction context routed through Connect MOM where configured",
+            "station/operation completion, scrap, batch-release, changeover and genealogy events where exposed by the customer integration model",
+            "machine/process measurements and state already contextualized to active production operations",
+            "quality and production outcomes, external-system messages, files and event/transaction payloads",
+            "source timestamps and buffered/replayed events during temporary MES or network outages"
+          ],
+          "wfmObjects": ["production-demand", "production-event", "machine-state", "downtime-event", "work-centre", "shift-outcome", "maintenance-demand", "production-risk", "site", "integration-event"],
+          "automationOpportunities": [
+            "adjust labour demand and redeployment recommendations when actual operation progress, downtime, scrap or changeover diverges from plan",
+            "surface qualified maintenance or quality coverage when machine/process context indicates intervention demand",
+            "correlate paid hours, overtime and skills mix with work-order completion, scrap, downtime and throughput",
+            "use store-and-forward provenance to reconcile late production evidence without treating replayed events as live triggers",
+            "reuse Opcenter site/work-centre/order context to accelerate implementation and reduce customer-specific duplicate master-data setup"
+          ],
+          "customerValue": ["labour-cost reduction", "payroll accuracy", "overtime reduction", "scheduling efficiency", "skills deployment", "production throughput", "downtime reduction", "maintenance coordination", "quality/compliance", "faster implementation", "reduced administration", "forecasting", "finance attribution", "executive reporting"],
+          "savingsHypotheses": [
+            "reduce paid idle time and avoidable overtime by aligning staffing with actual operation and machine state rather than static schedules",
+            "shorten downtime and changeover recovery by identifying skill/coverage gaps from production context sooner",
+            "reduce manual production-to-labour reconciliation by joining Opcenter execution evidence to WFM time and cost",
+            "improve labour-to-order, labour-to-scrap and labour-to-downtime attribution for operations and finance"
+          ],
+          "dataGaps": [
+            "Opcenter is not normally authoritative for employment terms, payroll, absence, agency commercials or complete worker availability",
+            "exact REST resources, Connect MOM messages, file schemas, MQTT topics and OPC UA namespaces vary by Opcenter product/version and customer configuration",
+            "production/operator events do not by themselves prove payable attendance, qualification or causation",
+            "some documented Opcenter integration paths are bidirectional or write into MES data-collection models and must not be assumed safe for WFM reads"
+          ],
+          "constraintsRisks": [
+            "Opcenter deployments span cloud/on-premises/edge patterns; topology and product/release discovery are required before selecting the route",
+            "store-and-forward replay requires source-event time, ingestion time, sequence/cursor, deduplication and stale-event controls",
+            "OPC UA and MQTT can be write/publish capable; WFM must allow only Browse/Read/Subscribe or subscribe-only semantics and fail closed on changed endpoint identity",
+            "customer-defined production fields, message maps and order/site identifiers require schema fingerprints and versioned canonical mappings",
+            "partial operation data or temporarily unavailable MES services must degrade to advisory recommendations rather than unsafe staffing automation"
+          ],
+          "nextDevelopmentAction": "Keep Opcenter at spec verification. In an authorised Siemens/customer environment, identify the exact Opcenter products/releases and topology, prove a least-privilege read/event identity, enumerate REST/Connect MOM metadata or a dedicated outbound feed, test pagination/rate limits plus store-and-forward replay/deduplication, fingerprint customer mappings, and keep all MES/PLC/write/control operations denied before evidence promotion."
+        }
+      }
+    }
+  ],
+  "systems": [
+    {
+      "id": "bosch-nexeed-industrial-application-system",
+      "name": "Bosch Nexeed Industrial Application System / Data Publisher",
+      "category": "mes-mom",
+      "priority": "P1",
+      "protocols": ["Kafka", "AMQP 1.0"],
+      "auth": "customer-managed-broker-credentials-by-deployment",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.bosch-connected-industry.com/de/en/portfolio/nexeed-industrial-application-system/valuable-extensions/data-publisher",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://www.bosch-connected-industry.com/de/en/portfolio/nexeed-industrial-application-system/valuable-extensions/data-publisher",
+      "evidenceNote": "Bosch documents Nexeed Data Publisher as a central push-based gateway for external systems with a Public API supporting Kafka and AMQP 1.0. Nexeed Ticket Management allocates shop-floor tasks according to qualifications and availability, while Shopfloor Performance Insights exposes real-time machine availability, production status and OEE. Direct Data Link can connect PLC/machine sources through OPC Classic, OPC UA, Siemens S7 and proprietary protocols, but those machine-side protocols are upstream Nexeed ingestion paths and are deliberately not inherited by the WFM connector.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.bosch-connected-industry.com/de/en/portfolio/nexeed-industrial-application-system/valuable-extensions/data-publisher",
+        "requiredPermissions": [
+          "customer-created dedicated outbound Data Publisher stream to a WFM-owned or customer-approved Kafka/AMQP destination",
+          "consume/browse-only broker credentials restricted to approved topic/queue/address and tenant/site data",
+          "no permission to create/modify Nexeed target systems, processing chains, machine connections or module databases",
+          "no direct OPC/S7/proprietary-machine connection and no destructive consumption of an existing production queue"
+        ],
+        "dataAvailableOrExpected": [
+          "customer-selected Nexeed module events and data published outward as JSON/message payloads",
+          "machine availability, production status, OEE and bottleneck/performance signals where Shopfloor Performance data is selected",
+          "maintenance/service tickets, status, escalation and qualification/availability context where Ticket Management data is published",
+          "standardized production/intralogistics data and module-specific events chosen by the customer",
+          "tenant/site identifiers, message type/version and source context where present in configured streams"
+        ],
+        "wfmObjects": ["production-event", "machine-state", "downtime-event", "maintenance-demand", "skill-evidence", "work-centre", "shift-outcome", "production-risk", "site", "integration-event"],
+        "automationOpportunities": [
+          "recommend qualified available workers for maintenance or shop-floor interventions when Nexeed raises a ticket or threshold event",
+          "redeploy labour when machine availability or production status shows a sustained stoppage or bottleneck",
+          "correlate OEE, downtime and ticket resolution with staffing, overtime and skills mix",
+          "use dedicated outward streams to accelerate implementation without direct reads against Nexeed module databases",
+          "reconcile late/duplicate broker messages into shift outcomes while preventing stale events from triggering live staffing actions"
+        ],
+        "customerValue": ["labour-cost reduction", "overtime reduction", "scheduling efficiency", "agency-labour reduction", "skills deployment", "production throughput", "downtime reduction", "maintenance coordination", "faster implementation", "reduced administration", "forecasting", "finance attribution", "executive reporting"],
+        "savingsHypotheses": [
+          "reduce downtime and emergency overtime by routing intervention demand to qualified available labour sooner",
+          "reduce paid idle time by redeploying people against trustworthy machine-availability and bottleneck signals",
+          "reduce integration engineering and database risk by consuming the customer-defined Data Publisher gateway rather than custom database queries",
+          "improve labour-to-OEE/downtime attribution and expose recurring staffing or skills constraints across sites"
+        ],
+        "dataGaps": [
+          "public product material does not define a universal external message schema, broker authentication mechanism, retention policy, rate/throughput limits or every module's publishable objects",
+          "Ticket Management qualification/availability context is not automatically authoritative for WFM legal eligibility, employment status, roster availability or certification policy",
+          "Nexeed is not normally authoritative for payroll, contractual hours, absence or agency commercials",
+          "customer-selected streams may be partial and site/module configurations differ"
+        ],
+        "constraintsRisks": [
+          "Kafka/AMQP streams can be shared with production consumers; WFM must use a dedicated subscription/consumer group or browse/tap pattern and never steal or acknowledge another consumer's messages",
+          "message replay, redelivery and asynchronous buffering require stable event IDs or deterministic dedupe keys, source timestamps and per-site watermarks",
+          "schema/message versions are customer and module specific and require fingerprints plus backward-compatible canonical mapping",
+          "Direct Data Link and machine protocols are upstream Nexeed connectivity and must not become permission for WFM to scan or control PLCs",
+          "broker endpoints may be on-premises or externally hosted; network route, TLS identity and tenant/site scoping must be proven before authentication evidence"
+        ],
+        "nextDevelopmentAction": "Keep Nexeed at spec verification. In an authorised customer/vendor environment, create a dedicated Data Publisher test stream, prove Kafka/AMQP TLS authentication and consume-only scope, capture representative versioned JSON messages, validate redelivery/replay/backpressure/deduplication and multi-site identity, map approved production/ticket/OEE data into canonical WFM objects, and keep Direct Data Link/PLC/control plus Nexeed configuration writes outside the connector."
+      }
+    },
+    {
+      "id": "abb-genix",
+      "name": "ABB Genix Industrial IoT and AI Suite",
+      "category": "iiot-data-platform",
+      "priority": "P1",
+      "protocols": ["REST", "GraphQL"],
+      "auth": "rbac-api-identity-by-deployment",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://new.abb.com/process-automation/genix/genix-architecture",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://new.abb.com/process-automation/genix/genix-architecture",
+      "evidenceNote": "ABB documents Genix as an API-first industrial data platform deployable across cloud, hybrid, edge and on-premises. Industrial DataOps exposes REST/GraphQL API connectors with RBAC, encryption and audit trails; Knowledge Services Hub provides governed Data Access APIs with row-level security. Genix Edge supports OPC UA, MQTT, Modbus and REST ingestion and can perform write-back/control, while Genix Copilot/agentic features can act on operations. WFM therefore integrates only through the governed enterprise REST/GraphQL data plane and deliberately does not inherit edge protocols, write-back, agent, application-deployment or industrial-control authority.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://new.abb.com/process-automation/genix/genix-architecture",
+        "requiredPermissions": [
+          "dedicated Genix API/service identity restricted by RBAC and row-level/data-domain policy to approved sites/assets/data sets",
+          "read/query-only access through Knowledge Services Hub, Data Access API or approved REST/GraphQL application APIs",
+          "customer/site edge or customer-approved enterprise projection for on-premises/hybrid deployments; no direct scan of field/OT protocols",
+          "no Edge DataOps write-back, command/control, application deployment, workflow mutation, Genix Copilot/agent actions or management-plane authority"
+        ],
+        "dataAvailableOrExpected": [
+          "contextualized OT, IT and engineering data linked through the Industry Cognitive Model/digital-twin structures",
+          "time-series and real-time asset/process state, metadata, hierarchy, lineage and quality/governance context",
+          "asset health, predictive-maintenance, anomaly and process-optimization insights where customer-approved analytics are exposed",
+          "energy/resource/sustainability measurements and KPIs where Genix applications provide them",
+          "multi-site asset/process relationships and enterprise data context available through approved governed APIs"
+        ],
+        "wfmObjects": ["machine-state", "production-event", "downtime-event", "maintenance-demand", "work-centre", "shift-outcome", "production-risk", "energy-event", "site", "integration-event"],
+        "automationOpportunities": [
+          "use contextualized equipment state and predictive-maintenance signals to forecast skill/headcount demand and reduce emergency overtime",
+          "redeploy labour when trusted downtime/anomaly evidence shows a constraint while preserving human approval for consequential changes",
+          "join energy/resource signals with shifts, work centres and production outcomes to attribute energy cost and identify labour/energy scheduling opportunities",
+          "reuse Genix contextual hierarchies and governed cross-system mappings to accelerate multi-site implementation",
+          "correlate labour cost, production, reliability and energy data for operations/finance/executive reporting without duplicating OT ingestion"
+        ],
+        "customerValue": ["labour-cost reduction", "overtime reduction", "scheduling efficiency", "skills deployment", "production throughput", "downtime reduction", "maintenance coordination", "energy reduction", "faster implementation", "reduced administration", "forecasting", "finance attribution", "executive reporting"],
+        "savingsHypotheses": [
+          "reduce duplicate integration engineering by consuming contextualized Genix data rather than connecting WFM separately to each OT/IT source",
+          "reduce emergency overtime and downtime through earlier maintenance-demand/constraint detection",
+          "reduce paid idle labour by aligning staffing to contextualized asset/process availability",
+          "improve energy and labour cost attribution by joining shift/work-centre context to governed energy and production data",
+          "accelerate multi-site rollout by reusing Genix hierarchy, digital-twin and master-data context"
+        ],
+        "dataGaps": [
+          "Genix is not normally authoritative for employee contracts, payroll, absence, agency commercials or complete qualification/legal-eligibility truth",
+          "public architecture material does not establish a single universal tenant endpoint, API version, pagination model, rate limit or exact API scope names for every Genix deployment",
+          "AI/predictive signals are derived evidence and must retain model/transformation identity, confidence, source time and quality rather than masquerading as raw machine truth",
+          "deployment and enabled modules differ across edge, on-premises, hybrid and cloud customers"
+        ],
+        "constraintsRisks": [
+          "Genix spans data and action/control capabilities; read intent alone is insufficient if the identity can access write-back, agents, workflows or edge/device management",
+          "cloud, hybrid, edge and on-premises topologies require deployment discovery and conservative customer-edge routing until the exact governed enterprise endpoint is proven",
+          "row-level/RBAC controls must be demonstrated with effective scope; role labels alone are not permission evidence",
+          "GraphQL/REST APIs can expose mutations alongside queries, so operation allowlists and least-privilege identity are required",
+          "contextualized/derived time-series values require raw-versus-derived provenance, event/ingestion time, quality and transformation metadata"
+        ],
+        "nextDevelopmentAction": "Keep Genix at spec verification. In an authorised ABB/customer environment, establish deployment topology/version and the governed KSH/Data Access/API endpoint, prove a dedicated row-level/RBAC-limited query identity, introspect only permitted REST/GraphQL metadata, perform a representative read of asset/time-series/context data, validate pagination/rate limits/schema drift and derived-data lineage, then consider tenant-specific relaxation from customer-edge routing only if a vendor-managed cloud endpoint is explicitly proven; keep all write-back, agent and control operations denied."
+      }
+    }
+  ]
+}
