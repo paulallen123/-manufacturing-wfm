@@ -304,10 +304,147 @@ function createT4RuntimeForensicStore({ stores = [], maxAttempts = 2, requiredEl
   });
 }
 
+function createT4RuntimeContainmentController({
+  stores = [],
+  maxAttempts = 2,
+  requiredEligibleStores = 2,
+  containmentExecutor,
+  rollbackExecutor,
+  now = Date.now,
+  maxActions = 4,
+} = {}) {
+  const forensicStore = createT4RuntimeForensicStore({ stores, maxAttempts, requiredEligibleStores });
+  if (forensicStore.runtimeReady !== true
+    || forensicStore.zeroEngineerFailoverReady !== true
+    || !validDigest(forensicStore.runtimeReadinessDigest)
+    || !validDigest(forensicStore.contractDigest)
+    || forensicStore.productionWriteAuthority !== false
+    || forensicStore.modelAuthorityGranted !== false
+    || forensicStore.createsResources !== false) {
+    throw fail('WFM_T4_RUNTIME_FORENSICS_NOT_READY', 'T4 runtime containment requires a strict, independently attested forensic failover store.');
+  }
+
+  const pinnedRuntimeReadinessDigest = forensicStore.runtimeReadinessDigest;
+  const pinnedFailoverContractDigest = forensicStore.contractDigest;
+  const pinnedRequiredEligibleStores = forensicStore.requiredEligibleStores;
+  const pinnedExecutableStoreCount = forensicStore.executableStoreCount;
+  const { createT4ContainmentController } = require('./t4-containment-controller.cjs');
+  const innerController = createT4ContainmentController({
+    containmentExecutor,
+    rollbackExecutor,
+    forensicStore,
+    now,
+    maxActions,
+  });
+  const innerHandle = innerController?.handle;
+  const innerVerifyReceipt = innerController?.verifyReceipt;
+  if (typeof innerHandle !== 'function' || typeof innerVerifyReceipt !== 'function') {
+    throw fail('WFM_T4_RUNTIME_CONTROLLER_CONFIG', 'T4 runtime containment requires the existing verified containment controller.');
+  }
+
+  const runtimeStillReady = () => forensicStore.runtimeReady === true
+    && forensicStore.zeroEngineerFailoverReady === true
+    && forensicStore.runtimeReadinessDigest === pinnedRuntimeReadinessDigest
+    && forensicStore.contractDigest === pinnedFailoverContractDigest
+    && forensicStore.requiredEligibleStores === pinnedRequiredEligibleStores
+    && forensicStore.executableStoreCount === pinnedExecutableStoreCount
+    && forensicStore.productionWriteAuthority === false
+    && forensicStore.modelAuthorityGranted === false
+    && forensicStore.createsResources === false;
+
+  async function handle(input = {}) {
+    if (!runtimeStillReady()) {
+      throw fail('WFM_T4_RUNTIME_FORENSICS_DRIFT', 'T4 forensic runtime readiness changed before containment execution.');
+    }
+    const innerReceipt = await innerHandle(input);
+    if (innerReceipt?.safeTerminal !== true || innerVerifyReceipt(innerReceipt) !== true) {
+      throw fail('WFM_T4_RUNTIME_INNER_VERIFY', 'T4 runtime cannot claim a safe terminal without a verified inner containment receipt.');
+    }
+    if (!runtimeStillReady()) {
+      throw fail('WFM_T4_RUNTIME_FORENSICS_DRIFT', 'T4 forensic runtime readiness changed during containment execution.');
+    }
+
+    const innerContainmentReceiptDigest = innerReceipt.receiptDigest;
+    const runtimeForensicBindingDigest = digest({
+      innerContainmentReceiptDigest,
+      forensicDigest: innerReceipt.forensicReceipt?.forensicDigest || null,
+      runtimeForensicReadinessDigest: pinnedRuntimeReadinessDigest,
+      runtimeForensicFailoverContractDigest: pinnedFailoverContractDigest,
+      requiredEligibleStores: pinnedRequiredEligibleStores,
+      executableStoreCount: pinnedExecutableStoreCount,
+    });
+    const receipt = {
+      ...innerReceipt,
+      innerContainmentReceiptDigest,
+      runtimeForensicReady: true,
+      runtimeForensicReadinessDigest: pinnedRuntimeReadinessDigest,
+      runtimeForensicFailoverContractDigest: pinnedFailoverContractDigest,
+      runtimeRequiredEligibleStores: pinnedRequiredEligibleStores,
+      runtimeExecutableStoreCount: pinnedExecutableStoreCount,
+      runtimeForensicBindingDigest,
+    };
+    delete receipt.receiptDigest;
+    receipt.receiptDigest = digest(receipt);
+    return receipt;
+  }
+
+  function verifyReceipt(receipt = {}) {
+    if (!runtimeStillReady()
+      || receipt.runtimeForensicReady !== true
+      || receipt.runtimeForensicReadinessDigest !== pinnedRuntimeReadinessDigest
+      || receipt.runtimeForensicFailoverContractDigest !== pinnedFailoverContractDigest
+      || receipt.runtimeRequiredEligibleStores !== pinnedRequiredEligibleStores
+      || receipt.runtimeExecutableStoreCount !== pinnedExecutableStoreCount
+      || !validDigest(receipt.innerContainmentReceiptDigest)
+      || !validDigest(receipt.runtimeForensicBindingDigest)
+      || !validDigest(receipt.receiptDigest)) return false;
+
+    const expectedBindingDigest = digest({
+      innerContainmentReceiptDigest: receipt.innerContainmentReceiptDigest,
+      forensicDigest: receipt.forensicReceipt?.forensicDigest || null,
+      runtimeForensicReadinessDigest: pinnedRuntimeReadinessDigest,
+      runtimeForensicFailoverContractDigest: pinnedFailoverContractDigest,
+      requiredEligibleStores: pinnedRequiredEligibleStores,
+      executableStoreCount: pinnedExecutableStoreCount,
+    });
+    if (receipt.runtimeForensicBindingDigest !== expectedBindingDigest) return false;
+
+    const outer = { ...receipt };
+    const outerDigest = outer.receiptDigest;
+    delete outer.receiptDigest;
+    if (digest(outer) !== outerDigest) return false;
+
+    const inner = { ...receipt };
+    delete inner.innerContainmentReceiptDigest;
+    delete inner.runtimeForensicReady;
+    delete inner.runtimeForensicReadinessDigest;
+    delete inner.runtimeForensicFailoverContractDigest;
+    delete inner.runtimeRequiredEligibleStores;
+    delete inner.runtimeExecutableStoreCount;
+    delete inner.runtimeForensicBindingDigest;
+    inner.receiptDigest = receipt.innerContainmentReceiptDigest;
+    return innerVerifyReceipt(inner) === true;
+  }
+
+  return Object.freeze({
+    handle,
+    verifyReceipt,
+    runtimeForensicReady: true,
+    runtimeReadinessDigest: pinnedRuntimeReadinessDigest,
+    failoverContractDigest: pinnedFailoverContractDigest,
+    requiredEligibleStores: pinnedRequiredEligibleStores,
+    executableStoreCount: pinnedExecutableStoreCount,
+    productionWriteAuthority: false,
+    modelAuthorityGranted: false,
+    createsResources: false,
+  });
+}
+
 module.exports = {
   REQUIRED_CAPABILITY,
   capabilityEligible,
   createT4ForensicFailoverStore,
   createT4RuntimeForensicStore,
+  createT4RuntimeContainmentController,
   digest,
 };
