@@ -1,0 +1,84 @@
+{
+  "generatedAt": "2026-09-20T03:02:00Z",
+  "programme": "24h-sell-readiness",
+  "candidate": {
+    "branch": "feature/one-day-enterprise-implementation-v1",
+    "sha": "3afa102ac42643126f9f061760d6da807d31c555",
+    "cryptographicallyVerified": true,
+    "releaseAuthorityPr": 186,
+    "releaseAuthorityChangeScope": [
+      ".github/workflows/integration-proof-exact-gated-release.yml"
+    ],
+    "releaseAuthorityProductRuntimeChanged": false,
+    "releaseAuthorityReadinessFlagsChanged": false,
+    "releaseAuthorityFrozenCustomerProofChanged": false
+  },
+  "railway": {
+    "githubSourceAccess": {
+      "status": "RESTORED_AND_PREVIOUSLY_PROVEN",
+      "evidenceSha": "79e29f3989b2ca4ecb9276ef190addcf74aa76c3",
+      "service": "wfm-built-ui-audit",
+      "deploymentId": "a73ba9c8-748f-46d7-b15f-f7a12996984b",
+      "deploymentStatus": "SUCCESS"
+    },
+    "oneDayTarget": {
+      "service": "wfm-one-day-enterprise-v1",
+      "securityHold": "__security_hold_one_day_enterprise__",
+      "latestSuccessfulCandidateSha": "c9878364b02dffb77c21702d58af35c344e5ff68",
+      "exactCurrentCandidateDeployed": false
+    },
+    "integrationTarget": {
+      "service": "wfm-integration-fabric-v1-proof",
+      "securityHold": "__security_hold_7b6f9d22e1__",
+      "latestSuccessfulCandidateSha": "2dbe3913e50941f90c8e8d73f8c4ff14517e3d24",
+      "exactCurrentCandidateDeployed": false
+    }
+  },
+  "githubActions": {
+    "exactIntegrationRelease": {
+      "runId": 35485541690,
+      "initialJobId": 106011107957,
+      "initialConclusion": "failure",
+      "initialSteps": null,
+      "retryJobId": 106011175620,
+      "retryConclusion": "failure",
+      "retrySteps": null,
+      "classification": "FAILED_BEFORE_ANY_WORKFLOW_STEP_EXECUTED"
+    },
+    "vectorOnlyGuard": {
+      "runId": 35485543931,
+      "jobId": 106011113600,
+      "conclusion": "failure",
+      "steps": null,
+      "classification": "FAILED_BEFORE_ANY_WORKFLOW_STEP_EXECUTED"
+    }
+  },
+  "browserProof": {
+    "lastExactHostedPassSha": "79e29f3989b2ca4ecb9276ef190addcf74aa76c3",
+    "service": "wfm-built-ui-audit",
+    "deploymentId": "a73ba9c8-748f-46d7-b15f-f7a12996984b",
+    "roles": 5,
+    "matrixStatus": "PASS",
+    "currentCandidateExactHeadClaimed": false,
+    "mobileProofHarnessLatestFailure": {
+      "service": "wfm-vector-mobile-proof",
+      "deploymentId": "ed0b04f8-696c-4a0b-a598-3f12ea4d32ec",
+      "failure": "manager login returned HTTP 401 instead of 200",
+      "classification": "PROOF_HARNESS_OR_CREDENTIAL_DRIFT_UNRESOLVED",
+      "productFailureClaimed": false
+    }
+  },
+  "claimBoundaries": {
+    "sellReadiness": "CONDITIONAL",
+    "realAuthorisedExternalProviderProof": false,
+    "genuineZeroHumanCustomerProvisioningProof": false,
+    "fixtureOnlyProviderMustNotBeClaimedLive": true,
+    "productionApproved": false
+  },
+  "controls": {
+    "newPaidInfrastructureCreated": false,
+    "securityHoldWeakened": false,
+    "frozenCustomerProofModified": false,
+    "readinessFlagsForced": false
+  }
+}
