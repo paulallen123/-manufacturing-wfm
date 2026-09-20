@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/playwright:v1.55.0-noble
+WORKDIR /proof
+COPY proof-emergency/package.json ./
+RUN npm install
+COPY proof-emergency/runner.mjs ./
+CMD ["node","runner.mjs"]
