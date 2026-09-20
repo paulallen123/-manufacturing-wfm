@@ -1,0 +1,1 @@
+Prepare customer-proof staging packaging so Railway-specific non-secret runtime settings can be derived safely while preserving the frozen 0.6.76 artifact and requiring a manually supplied non-derived WFM_STAGING_PASSWORD. This marker does not alter product code or production approval.

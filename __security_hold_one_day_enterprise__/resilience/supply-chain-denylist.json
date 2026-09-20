@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "updated": "2026-09-17",
+  "entries": [
+    {"name":"@cap-js/sqlite","version":"2.2.2","advisory":"GHSA-pvw4-cvr4-97p8"},
+    {"name":"@cap-js/postgres","version":"2.2.2","advisory":"GHSA-pvw4-cvr4-97p8"},
+    {"name":"@cap-js/db-service","version":"2.10.1","advisory":"GHSA-pvw4-cvr4-97p8"},
+    {"name":"axios","version":"1.14.1","advisory":"GHSA-fw8c-xr5c-95f9"},
+    {"name":"axios","version":"0.30.4","advisory":"GHSA-fw8c-xr5c-95f9"},
+    {"name":"plain-crypto-js","version":"4.2.1","advisory":"GHSA-3hfp-gqgh-xc5g"},
+    {"name":"intercom-client","version":"7.0.4","advisory":"GHSA-54pg-9963-v8vg"},
+    {"name":"@bitwarden/cli","version":"2026.4.0","advisory":"CVE-2026-42994"}
+  ]
+}

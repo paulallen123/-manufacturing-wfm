@@ -1,0 +1,62 @@
+name: WFM autonomous repair pipeline proof
+
+on:
+  push:
+    branches:
+      - 'autonomy/zero-engineer-support-sprint-**'
+    paths:
+      - 'resilience/autonomous-repair-pipeline.cjs'
+      - 'scripts/validate-autonomous-repair-pipeline.mjs'
+      - 'resilience/autonomous-repair-factory.cjs'
+      - 'resilience/isolated-repair-worker.cjs'
+      - 'resilience/independent-repair-verifier.cjs'
+      - 'resilience/disposable-staging-gate.cjs'
+      - 'resilience/canary-rollback-controller.cjs'
+      - 'scripts/validate-canary-rollback-controller.mjs'
+      - 'resilience/autonomous-repair-canary-orchestrator.cjs'
+      - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'
+      - '.github/workflows/wfm-autonomous-repair-pipeline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-autonomous-repair-pipeline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prove-composition:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Syntax gate
+        run: |
+          node --check resilience/autonomous-repair-pipeline.cjs
+          node --check scripts/validate-autonomous-repair-pipeline.mjs
+          node --check resilience/canary-rollback-controller.cjs
+          node --check scripts/validate-canary-rollback-controller.mjs
+          node --check resilience/autonomous-repair-canary-orchestrator.cjs
+          node --check scripts/validate-autonomous-repair-canary-orchestrator.mjs
+
+      - name: Prove autonomous repair composition
+        run: node scripts/validate-autonomous-repair-pipeline.mjs
+
+      - name: Prove bounded canary and known-good rollback
+        run: node scripts/validate-canary-rollback-controller.mjs
+
+      - name: Prove repair-to-canary decision composition
+        run: node scripts/validate-autonomous-repair-canary-orchestrator.mjs
