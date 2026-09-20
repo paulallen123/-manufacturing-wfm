@@ -6,6 +6,9 @@ on:
       - security/zero-useful-foothold-v1
     paths:
       - 'security/zero-foothold/**'
+      - 'scripts/validate-zero-useful-foothold.mjs'
+      - 'scripts/run-zero-cost-ci.mjs'
+      - '.circleci/config.yml'
       - '.github/workflows/zero-useful-foothold.yml'
   workflow_dispatch:
 
@@ -39,4 +42,12 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          node --test security/zero-foothold/zero-useful-foothold-guard.test.mjs
+          node scripts/validate-zero-useful-foothold.mjs
+
+      - name: Preserve exact proof receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: zero-useful-foothold-proof-${{ github.sha }}
+          path: zero-useful-foothold-proof.json
+          if-no-files-found: error
+          retention-days: 7
