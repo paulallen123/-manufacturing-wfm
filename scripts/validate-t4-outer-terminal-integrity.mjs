@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { createAutonomyControlLoop, digest } = require('../resilience/autonomy-control-loop.cjs');
 const { createT4ContainmentController, createWriteOnceForensicStore } = require('../resilience/t4-containment-controller.cjs');
-const { createT4ForensicFailoverStore } = require('../resilience/t4-forensic-failover-store.cjs');
+const { createT4ForensicFailoverStore, createT4RuntimeForensicStore } = require('../resilience/t4-forensic-failover-store.cjs');
 
 const d = (value) => createHash('sha256').update(String(value)).digest('hex');
 const contract = {
@@ -129,6 +129,10 @@ const SAFE_FAILOVER_CAPABILITY = Object.freeze({
   createsResources: false,
   eligibilityEvidenceDigest: d('explicit-preexisting-zero-cost-isolated-forensic-lane-evidence'),
 });
+const runtimeCapability = (identity) => Object.freeze({
+  ...SAFE_FAILOVER_CAPABILITY,
+  storeIdentityDigest: d(`forensic-store-identity:${identity}`),
+});
 
 const root = mkdtempSync(join(tmpdir(), 'wfm-t4-forensic-failover-'));
 try {
@@ -144,13 +148,56 @@ try {
     },
     verify: primaryStore.verify,
   };
-  const failoverStore = createT4ForensicFailoverStore({
+
+  assert.throws(
+    () => createT4RuntimeForensicStore({
+      stores: [{ id: 'only-runtime-store', capability: runtimeCapability('only'), store: secondaryStore }],
+    }),
+    (error) => error?.code === 'WFM_T4_FORENSICS_RUNTIME_ATTESTATION',
+    'T4 zero-engineer runtime must refuse a single forensic sink.',
+  );
+  assert.throws(
+    () => createT4RuntimeForensicStore({
+      stores: [
+        { id: 'runtime-a', capability: runtimeCapability('duplicate'), store: primaryStore },
+        { id: 'runtime-b', capability: runtimeCapability('duplicate'), store: secondaryStore },
+      ],
+    }),
+    (error) => error?.code === 'WFM_T4_FORENSICS_RUNTIME_IDENTITY',
+    'Two logical aliases of the same attested forensic sink must not satisfy redundancy.',
+  );
+  assert.throws(
+    () => createT4RuntimeForensicStore({
+      maxAttempts: 1,
+      stores: [
+        { id: 'runtime-primary', capability: runtimeCapability('primary-budget'), store: primaryStore },
+        { id: 'runtime-secondary', capability: runtimeCapability('secondary-budget'), store: secondaryStore },
+      ],
+    }),
+    (error) => error?.code === 'WFM_T4_FORENSICS_RUNTIME_ATTEMPTS',
+    'Runtime attempt budget must be large enough to reach every required forensic failover sink.',
+  );
+
+  let unattestedLeadingCalls = 0;
+  const unattestedLeadingStore = {
+    preserve: async (...args) => {
+      unattestedLeadingCalls += 1;
+      return secondaryStore.preserve(...args);
+    },
+    verify: secondaryStore.verify,
+  };
+  const failoverStore = createT4RuntimeForensicStore({
     maxAttempts: 2,
     stores: [
-      { id: 'primary-preexisting', capability: SAFE_FAILOVER_CAPABILITY, store: failingPrimary },
-      { id: 'secondary-preexisting', capability: SAFE_FAILOVER_CAPABILITY, store: secondaryStore },
+      { id: 'leading-unattested', capability: SAFE_FAILOVER_CAPABILITY, store: unattestedLeadingStore },
+      { id: 'primary-preexisting', capability: runtimeCapability('primary-preexisting'), store: failingPrimary },
+      { id: 'secondary-preexisting', capability: runtimeCapability('secondary-preexisting'), store: secondaryStore },
     ],
   });
+  assert.equal(failoverStore.zeroEngineerFailoverReady, true);
+  assert.equal(failoverStore.requiredEligibleStores, 2);
+  assert.equal(failoverStore.executableStoreCount, 2);
+  assert.equal(failoverStore.runtimeAttestedStoreCount, 2);
   const actualT4Controller = createT4ContainmentController({ forensicStore: failoverStore, now: () => ++tick });
   const failoverLoop = createAutonomyControlLoop({
     contract,
@@ -159,6 +206,7 @@ try {
     now: () => ++tick,
   });
   const failoverTerminal = await failoverLoop.run({ ...base, incidentId: 'inc-t4-primary-forensics-outage' });
+  assert.equal(unattestedLeadingCalls, 0, 'An otherwise eligible store without attested identity must never enter the strict runtime execution set.');
   assert.equal(primaryAttempts, 1, 'Primary forensic store must be attempted once; no blind retry loop is permitted.');
   assert.equal(failoverTerminal.outcome, 'contained');
   assert.equal(failoverTerminal.safeTerminal, true, 'A verified pre-existing zero-cost secondary forensic store must restore a safe T4 terminal.');
@@ -327,7 +375,7 @@ try {
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 't4-outer-terminal-integrity',
   status: 'PASS',
   verifiedT4MayClaimSafeTerminal: true,
@@ -335,6 +383,11 @@ console.log(JSON.stringify({
   missingControllerCannotClaimSafeTerminal: true,
   authorityEscapeCannotClaimSafeTerminal: true,
   recomputedSemanticForgeryRejected: true,
+  strictRuntimeForensicCompositionExercised: true,
+  singleStoreRuntimeRejected: true,
+  duplicateStoreIdentityRejected: true,
+  insufficientAttemptBudgetRejected: true,
+  unattestedLeadingStoreNeverExecutable: true,
   verifiedZeroCostForensicFailoverRestoresSafeTerminal: true,
   blindPrimaryRetriesDenied: true,
   unattestedCostLaneNeverInvoked: true,
