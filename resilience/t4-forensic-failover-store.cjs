@@ -87,7 +87,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
   const eligible = configured.filter((entry) => entry.eligible);
   const finalReadbackRecoveryMaxAttempts = 1;
   const contractDigest = digest({
-    schemaVersion: 2,
+    schemaVersion: 3,
     maxAttempts,
     finalReadbackRecoveryMaxAttempts,
     stores: configured.map((entry) => ({
@@ -100,6 +100,8 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
   const makeFailoverDigest = ({
     selectedStoreId,
     selectedStoreCapabilityDigest,
+    attemptCount,
+    attemptedStoreIds,
     attemptDigest,
     forensicDigest,
     tenantDigest,
@@ -111,6 +113,8 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
     contractDigest,
     selectedStoreId,
     selectedStoreCapabilityDigest,
+    attemptCount: Number.isSafeInteger(attemptCount) ? attemptCount : null,
+    attemptedStoreIds: Array.isArray(attemptedStoreIds) ? attemptedStoreIds.map((id) => clean(id, 48)) : null,
     attemptDigest,
     forensicDigest,
     tenantDigest,
@@ -119,6 +123,44 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
     finalReadbackRecoveryFromStoreId: finalReadbackRecoveryFromStoreId || null,
     finalReadbackRecoveryAttemptDigest: finalReadbackRecoveryAttemptDigest || null,
   });
+
+  function recoveryAuthority(priorReceipt = {}, expectedTenantDigest) {
+    const priorStoreId = clean(priorReceipt?.selectedStoreId, 48);
+    const attemptedStoreIds = Array.isArray(priorReceipt?.attemptedStoreIds)
+      ? priorReceipt.attemptedStoreIds.map((id) => clean(id, 48)).filter(Boolean)
+      : [];
+    const validBase = priorStoreId
+      && priorReceipt?.failoverContractDigest === contractDigest
+      && validDigest(priorReceipt?.forensicDigest)
+      && validDigest(priorReceipt?.tenantDigest)
+      && validDigest(priorReceipt?.storageKey)
+      && validDigest(priorReceipt?.selectedStoreCapabilityDigest)
+      && validDigest(priorReceipt?.attemptDigest)
+      && validDigest(priorReceipt?.failoverDigest)
+      && priorReceipt?.tenantDigest === expectedTenantDigest
+      && priorReceipt?.finalReadbackRecoveryUsed !== true
+      && priorReceipt?.finalReadbackRecoveryFromStoreId == null
+      && priorReceipt?.finalReadbackRecoveryAttemptDigest == null
+      && Number.isSafeInteger(priorReceipt?.attemptCount)
+      && priorReceipt.attemptCount === attemptedStoreIds.length
+      && attemptedStoreIds.length >= 1
+      && attemptedStoreIds.length <= maxAttempts
+      && new Set(attemptedStoreIds).size === attemptedStoreIds.length
+      && attemptedStoreIds.at(-1) === priorStoreId;
+    if (!validBase) return null;
+
+    const expectedPrefix = eligible.slice(0, attemptedStoreIds.length).map((entry) => entry.id);
+    if (expectedPrefix.length !== attemptedStoreIds.length
+      || expectedPrefix.some((id, index) => id !== attemptedStoreIds[index])) return null;
+
+    const priorEntry = eligible[attemptedStoreIds.length - 1];
+    if (!priorEntry
+      || priorEntry.id !== priorStoreId
+      || priorEntry.capabilityDigest !== priorReceipt.selectedStoreCapabilityDigest) return null;
+
+    if (makeFailoverDigest(priorReceipt) !== priorReceipt.failoverDigest) return null;
+    return Object.freeze({ priorStoreId, attemptedStoreIds: Object.freeze([...attemptedStoreIds]), priorEntryIndex: attemptedStoreIds.length - 1 });
+  }
 
   async function preserve(input = {}) {
     const tenant = clean(input.tenant, 100);
@@ -156,6 +198,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
         attempt.status = 'verified';
         attempts.push(attempt);
         const attemptDigest = digest(attempts);
+        const attemptedStoreIds = attempts.map((item) => item.storeId);
         const result = {
           ...receipt,
           storageMode: `write-once-failover:${entry.id}`,
@@ -163,6 +206,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
           selectedStoreCapabilityDigest: entry.capabilityDigest,
           failoverUsed: attempts.length > 1,
           attemptCount: attempts.length,
+          attemptedStoreIds,
           attemptDigest,
           failoverContractDigest: contractDigest,
           finalReadbackRecoveryUsed: false,
@@ -180,6 +224,7 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
     throw fail('WFM_T4_FORENSICS_FAILOVER_EXHAUSTED', 'All eligible bounded forensic preservation attempts failed closed.', {
       contractDigest,
       attemptCount: attempts.length,
+      attemptedStoreIds: attempts.map((item) => item.storeId),
       attemptDigest: digest(attempts),
       attempts,
     });
@@ -187,33 +232,27 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
 
   async function recoverAfterFinalReadbackFailure({ priorReceipt = {}, input = {} } = {}) {
     const tenant = clean(input.tenant, 100);
-    const priorStoreId = clean(priorReceipt?.selectedStoreId, 48);
-    if (!tenant
-      || !priorStoreId
-      || priorReceipt?.failoverContractDigest !== contractDigest
-      || !validDigest(priorReceipt?.forensicDigest)
-      || !validDigest(priorReceipt?.tenantDigest)
-      || !validDigest(priorReceipt?.storageKey)
-      || !validDigest(priorReceipt?.attemptDigest)
-      || !validDigest(priorReceipt?.failoverDigest)) {
+    if (!tenant) {
       throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_INPUT', 'Final forensic recovery requires a contract-bound prior receipt and explicit tenant.');
     }
 
     const expectedTenantDigest = digest(`tenant:${tenant}`);
-    if (priorReceipt.tenantDigest !== expectedTenantDigest) {
-      throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_TENANT', 'Final forensic recovery cannot cross the original tenant boundary.');
+    const authority = recoveryAuthority(priorReceipt, expectedTenantDigest);
+    if (!authority) {
+      throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_AUTHORITY', 'Final forensic recovery refused an unauthenticated, replayed or contract-drifted prior failover receipt.');
     }
 
-    const candidate = eligible.find((entry) => entry.id !== priorStoreId);
-    if (!candidate) {
-      throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_UNAVAILABLE', 'No different independently attested forensic sink is available for bounded final read-back recovery.', {
+    const candidate = eligible[authority.priorEntryIndex + 1];
+    if (!candidate || authority.attemptedStoreIds.includes(candidate.id)) {
+      throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_UNAVAILABLE', 'No previously untried independently attested forensic sink is available for bounded final read-back recovery.', {
         contractDigest,
-        priorStoreId,
+        priorStoreId: authority.priorStoreId,
+        attemptedStoreIds: authority.attemptedStoreIds,
       });
     }
 
     const recoveryAttempt = {
-      fromStoreId: priorStoreId,
+      fromStoreId: authority.priorStoreId,
       toStoreId: candidate.id,
       capabilityDigest: candidate.capabilityDigest,
       status: 'failed',
@@ -235,20 +274,22 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
 
       recoveryAttempt.status = 'verified';
       const finalReadbackRecoveryAttemptDigest = digest(recoveryAttempt);
+      const attemptedStoreIds = [...authority.attemptedStoreIds, candidate.id];
       const result = {
         ...receipt,
         storageMode: `write-once-failover:${candidate.id}`,
         selectedStoreId: candidate.id,
         selectedStoreCapabilityDigest: candidate.capabilityDigest,
         failoverUsed: true,
-        attemptCount: (Number.isSafeInteger(priorReceipt.attemptCount) && priorReceipt.attemptCount >= 1 ? priorReceipt.attemptCount : 1) + 1,
+        attemptCount: attemptedStoreIds.length,
+        attemptedStoreIds,
         attemptDigest: digest({
           priorAttemptDigest: priorReceipt.attemptDigest,
           finalReadbackRecoveryAttemptDigest,
         }),
         failoverContractDigest: contractDigest,
         finalReadbackRecoveryUsed: true,
-        finalReadbackRecoveryFromStoreId: priorStoreId,
+        finalReadbackRecoveryFromStoreId: authority.priorStoreId,
         finalReadbackRecoveryAttemptDigest,
       };
       result.failoverDigest = makeFailoverDigest(result);
@@ -257,7 +298,8 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
       recoveryAttempt.failureCode = recoveryAttempt.failureCode || clean(error?.code || 'WFM_T4_FORENSICS_FINAL_RECOVERY_STORE_FAILURE', 100);
       throw fail('WFM_T4_FORENSICS_FINAL_RECOVERY_EXHAUSTED', 'The single bounded final read-back recovery attempt failed closed.', {
         contractDigest,
-        priorStoreId,
+        priorStoreId: authority.priorStoreId,
+        attemptedStoreIds: authority.attemptedStoreIds,
         recoveryAttemptDigest: digest(recoveryAttempt),
         recoveryAttempt,
       });
@@ -265,6 +307,9 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
   }
 
   async function verify(receipt = {}) {
+    const attemptedStoreIds = Array.isArray(receipt?.attemptedStoreIds)
+      ? receipt.attemptedStoreIds.map((id) => clean(id, 48)).filter(Boolean)
+      : [];
     if (!validDigest(receipt?.forensicDigest)
       || !validDigest(receipt?.storageKey)
       || !validDigest(receipt?.tenantDigest)
@@ -272,10 +317,23 @@ function createT4ForensicFailoverStore({ stores = [], maxAttempts = 2 } = {}) {
       || !validDigest(receipt?.attemptDigest)
       || !validDigest(receipt?.failoverContractDigest)
       || !validDigest(receipt?.failoverDigest)
-      || receipt.failoverContractDigest !== contractDigest) return false;
+      || receipt.failoverContractDigest !== contractDigest
+      || !Number.isSafeInteger(receipt?.attemptCount)
+      || receipt.attemptCount !== attemptedStoreIds.length
+      || attemptedStoreIds.length < 1
+      || attemptedStoreIds.length > maxAttempts + finalReadbackRecoveryMaxAttempts
+      || new Set(attemptedStoreIds).size !== attemptedStoreIds.length
+      || attemptedStoreIds.at(-1) !== receipt.selectedStoreId) return false;
+
+    const expectedPrefix = eligible.slice(0, attemptedStoreIds.length).map((entry) => entry.id);
+    if (expectedPrefix.length !== attemptedStoreIds.length
+      || expectedPrefix.some((id, index) => id !== attemptedStoreIds[index])) return false;
+
     const recoveryUsed = receipt.finalReadbackRecoveryUsed === true;
     if (recoveryUsed) {
       if (!clean(receipt.finalReadbackRecoveryFromStoreId, 48)
+        || attemptedStoreIds.length < 2
+        || receipt.finalReadbackRecoveryFromStoreId !== attemptedStoreIds.at(-2)
         || receipt.finalReadbackRecoveryFromStoreId === receipt.selectedStoreId
         || !validDigest(receipt.finalReadbackRecoveryAttemptDigest)) return false;
     } else if (receipt.finalReadbackRecoveryFromStoreId != null || receipt.finalReadbackRecoveryAttemptDigest != null) {
