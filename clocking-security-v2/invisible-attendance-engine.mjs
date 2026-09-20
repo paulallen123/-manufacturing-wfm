@@ -234,6 +234,7 @@ export class AutomaticAttendanceEvidenceEngine {
     if(existing) return clone(existing);
     if(direction==='in' && state.status!=='outside') return {status:'evidence_only',direction,reason:'ALREADY_PRESENT'};
     if(direction==='out' && state.status!=='present') return {status:'evidence_only',direction,reason:'ALREADY_OUTSIDE'};
+    if(direction==='in' && state.closeAt!==null && at<=state.closeAt) return {status:'review_required',direction,reason:'IN_NOT_AFTER_PRIOR_CLOSE'};
     const decision={status:'authoritative',direction,authoritativeAt:iso(at),reason,assurance:reason==='DIRECT_EXISTING_TAA'?'existing-authoritative-source':'independent-evidence-quorum',evidence:evidence.map(e=>({sourceId:e.sourceId,eventId:e.eventId,kind:e.kind,domain:e.domain,observedAt:iso(e.observedMs)}))};
     if(direction==='in'){
       state.status='present'; state.openAt=at; state.closeAt=null;
