@@ -209,28 +209,32 @@ function createT4RuntimeForensicStore({ stores = [], maxAttempts = 2, requiredEl
   if (!Number.isSafeInteger(requiredEligibleStores) || requiredEligibleStores < 2 || requiredEligibleStores > 4) {
     throw fail('WFM_T4_FORENSICS_RUNTIME_CONFIG', 'Zero-engineer T4 runtime requires between 2 and 4 independently attested eligible forensic stores.');
   }
-
-  const genericEligible = (Array.isArray(stores) ? stores : [])
-    .filter((entry) => capabilityEligible(entry?.capability)
-      && typeof entry?.store?.preserve === 'function'
-      && typeof entry?.store?.verify === 'function')
-    .map((entry) => ({
-      id: clean(entry?.id, 48),
-      eligibilityEvidenceDigest: String(entry.capability.eligibilityEvidenceDigest).toLowerCase(),
-      storeIdentityDigest: validDigest(entry?.capability?.storeIdentityDigest)
-        ? String(entry.capability.storeIdentityDigest).toLowerCase()
-        : null,
-    }));
-
-  if (genericEligible.length < requiredEligibleStores) {
-    throw fail('WFM_T4_FORENSICS_RUNTIME_REDUNDANCY', 'Zero-engineer T4 runtime requires an independently eligible primary and secondary forensic sink at startup.', {
-      eligibleStoreCount: genericEligible.length,
+  if (!Number.isSafeInteger(maxAttempts) || maxAttempts < requiredEligibleStores || maxAttempts > 4) {
+    throw fail('WFM_T4_FORENSICS_RUNTIME_ATTEMPTS', 'Zero-engineer T4 runtime maxAttempts must cover every required forensic sink and remain bounded to four attempts.', {
+      maxAttempts,
       requiredEligibleStores,
     });
   }
 
-  const runtimeAttested = genericEligible
-    .filter((entry) => entry.id && entry.storeIdentityDigest)
+  const runtimeAttested = (Array.isArray(stores) ? stores : [])
+    .map((entry, index) => {
+      const capability = entry?.capability && typeof entry.capability === 'object' ? entry.capability : {};
+      return {
+        source: entry,
+        index,
+        id: clean(entry?.id, 48),
+        eligible: capabilityEligible(capability)
+          && typeof entry?.store?.preserve === 'function'
+          && typeof entry?.store?.verify === 'function',
+        eligibilityEvidenceDigest: validDigest(capability?.eligibilityEvidenceDigest)
+          ? String(capability.eligibilityEvidenceDigest).toLowerCase()
+          : null,
+        storeIdentityDigest: validDigest(capability?.storeIdentityDigest)
+          ? String(capability.storeIdentityDigest).toLowerCase()
+          : null,
+      };
+    })
+    .filter((entry) => entry.eligible && entry.id && entry.storeIdentityDigest)
     .map((entry) => ({
       ...entry,
       attestationBindingDigest: digest({
@@ -240,30 +244,48 @@ function createT4RuntimeForensicStore({ stores = [], maxAttempts = 2, requiredEl
     }));
 
   if (runtimeAttested.length < requiredEligibleStores) {
-    throw fail('WFM_T4_FORENSICS_RUNTIME_ATTESTATION', 'Each zero-engineer runtime forensic sink requires an explicit store identity digest bound to eligibility evidence.', {
+    throw fail('WFM_T4_FORENSICS_RUNTIME_ATTESTATION', 'Zero-engineer T4 runtime requires an independently attested primary and secondary forensic sink at startup.', {
       runtimeAttestedStoreCount: runtimeAttested.length,
       requiredEligibleStores,
     });
   }
 
-  const selected = runtimeAttested.slice(0, requiredEligibleStores);
-  if (new Set(selected.map((entry) => entry.storeIdentityDigest)).size !== selected.length) {
-    throw fail('WFM_T4_FORENSICS_RUNTIME_IDENTITY', 'Primary and secondary forensic sinks must have distinct attested store identities.');
+  const ids = runtimeAttested.map((entry) => entry.id);
+  if (new Set(ids).size !== ids.length) {
+    throw fail('WFM_T4_FORENSICS_RUNTIME_IDENTITY', 'Runtime forensic sink IDs must be unique across every executable sink.');
   }
-  if (new Set(selected.map((entry) => entry.attestationBindingDigest)).size !== selected.length) {
-    throw fail('WFM_T4_FORENSICS_RUNTIME_ATTESTATION', 'Primary and secondary forensic sink attestations must bind to distinct store identities.');
+  const storeIdentityDigests = runtimeAttested.map((entry) => entry.storeIdentityDigest);
+  if (new Set(storeIdentityDigests).size !== storeIdentityDigests.length) {
+    throw fail('WFM_T4_FORENSICS_RUNTIME_IDENTITY', 'Every executable runtime forensic sink must have a distinct attested store identity.');
+  }
+  const attestationBindingDigests = runtimeAttested.map((entry) => entry.attestationBindingDigest);
+  if (new Set(attestationBindingDigests).size !== attestationBindingDigests.length) {
+    throw fail('WFM_T4_FORENSICS_RUNTIME_ATTESTATION', 'Every executable runtime forensic sink attestation must bind to a distinct store identity.');
   }
 
-  const failoverStore = createT4ForensicFailoverStore({ stores, maxAttempts });
+  const selected = runtimeAttested.slice(0, maxAttempts);
+  if (selected.length < requiredEligibleStores) {
+    throw fail('WFM_T4_FORENSICS_RUNTIME_REDUNDANCY', 'Bounded forensic execution set does not contain the required independently attested sinks.', {
+      executableStoreCount: selected.length,
+      requiredEligibleStores,
+    });
+  }
+
+  const failoverStore = createT4ForensicFailoverStore({
+    stores: selected.map((entry) => entry.source),
+    maxAttempts,
+  });
   if (failoverStore.eligibleStoreCount < requiredEligibleStores) {
     throw fail('WFM_T4_FORENSICS_RUNTIME_REDUNDANCY', 'Configured forensic stores do not satisfy the required runtime redundancy contract.');
   }
 
   const runtimeReadinessDigest = digest({
-    schemaVersion: 1,
+    schemaVersion: 2,
     failoverContractDigest: failoverStore.contractDigest,
     requiredEligibleStores,
     eligibleStoreCount: failoverStore.eligibleStoreCount,
+    executableStoreCount: selected.length,
+    maxAttempts,
     storeIdentityDigests: selected.map((entry) => entry.storeIdentityDigest),
     attestationBindingDigests: selected.map((entry) => entry.attestationBindingDigest),
     productionWriteAuthority: false,
@@ -276,6 +298,8 @@ function createT4RuntimeForensicStore({ stores = [], maxAttempts = 2, requiredEl
     runtimeReady: true,
     zeroEngineerFailoverReady: true,
     requiredEligibleStores,
+    runtimeAttestedStoreCount: runtimeAttested.length,
+    executableStoreCount: selected.length,
     runtimeReadinessDigest,
   });
 }
