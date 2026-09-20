@@ -1,4 +1,6 @@
-export const INTERVENTION_TRANSITION_LEDGER_VERSION='intervention-transition-ledger-v0.1.0';
+import {identityKey,transitionKey,validateTransitionPolicy} from './controlled-environment-validation.mjs';
+
+export const INTERVENTION_TRANSITION_LEDGER_VERSION='intervention-transition-ledger-v0.1.1';
 
 const clean=v=>typeof v==='string'?v.trim():'';
 const finite=v=>typeof v==='number'&&Number.isFinite(v);
@@ -21,7 +23,7 @@ function normalizeTask(task,siteId){
   }
   if(task.authoritative!==true)return {ok:false,reason:'task_not_authoritative'};
   if(!clean(task?.ref)||!clean(task?.revision))return {ok:false,reason:'task_provenance_missing'};
-  return {ok:true,value:{...task,startMs:start,endMs:end}};
+  return {ok:true,value:{...task,id:identityKey(task.id),workerId:identityKey(task.workerId),zone:clean(task.zone),startMs:start,endMs:end}};
 }
 
 function normalizeEvent(event,siteId){
@@ -32,14 +34,14 @@ function normalizeEvent(event,siteId){
     return {ok:false,reason:'event_invalid'};
   }
   if(!clean(event?.ref))return {ok:false,reason:'event_provenance_missing'};
-  return {ok:true,value:{...event,atMs:at,direction}};
+  return {ok:true,value:{...event,id:identityKey(event.id),workerId:identityKey(event.workerId),zone:clean(event.zone),atMs:at,direction}};
 }
 
 function pairSessions(events){
   const sorted=events.slice().sort((a,b)=>a.atMs-b.atMs||String(a.id).localeCompare(String(b.id)));
   const open=new Map(),sessions=[],issues=[];
   for(const e of sorted){
-    const key=String(e.workerId)+'|'+String(e.zone);
+    const key=JSON.stringify([String(e.workerId),String(e.zone)]);
     if(e.direction==='enter'){
       if(open.has(key)){
         issues.push({code:'duplicate_enter_without_exit',workerId:e.workerId,zone:e.zone,eventId:e.id});
@@ -70,11 +72,11 @@ function pairSessions(events){
 
 function overlap(aStart,aEnd,bStart,bEnd){return aStart<bEnd&&bStart<aEnd;}
 
-function transitionRule(policy,from,to){
-  return (Array.isArray(policy.transitions)?policy.transitions:[]).find(r=>clean(r?.from)===from&&clean(r?.to)===to)||null;
+function transitionRule(transitions,from,to){
+  return transitions.get(transitionKey(from,to))||null;
 }
 
-function buildMovement(sessions,policy){
+function buildMovement(sessions,policy,transitions){
   const byWorker=new Map();
   for(const s of sessions){
     if(!byWorker.has(s.workerId))byWorker.set(s.workerId,[]);
@@ -85,7 +87,7 @@ function buildMovement(sessions,policy){
     rows.sort((a,b)=>a.enterMs-b.enterMs);
     let from=clean(policy.defaultOutsideZone)||'OUT';
     for(const row of rows){
-      const rule=transitionRule(policy,from,row.zone);
+      const rule=transitionRule(transitions,from,row.zone);
       movement.push({
         workerId,from,to:row.zone,at:row.enterAt,
         approved:rule?.allowed===true,
@@ -94,15 +96,13 @@ function buildMovement(sessions,policy){
         controlCost:finite(Number(rule?.controlCost))?Number(rule.controlCost):null
       });
       from=row.zone;
-      const exitRule=transitionRule(policy,from,clean(policy.defaultOutsideZone)||'OUT');
-      if(exitRule?.allowed===true){
-        movement.push({
-          workerId,from,to:clean(policy.defaultOutsideZone)||'OUT',at:row.exitAt,
-          approved:true,gowningCycle:exitRule.gowningCycle===true,
-          controlMinutes:finite(Number(exitRule.controlMinutes))?Number(exitRule.controlMinutes):null,
-          controlCost:finite(Number(exitRule.controlCost))?Number(exitRule.controlCost):null
-        });
-      }
+      const exitRule=transitionRule(transitions,from,clean(policy.defaultOutsideZone)||'OUT');
+      movement.push({
+        workerId,from,to:clean(policy.defaultOutsideZone)||'OUT',at:row.exitAt,
+        approved:exitRule?.allowed===true,gowningCycle:exitRule?.gowningCycle===true,
+        controlMinutes:finite(Number(exitRule?.controlMinutes))?Number(exitRule.controlMinutes):null,
+        controlCost:finite(Number(exitRule?.controlCost))?Number(exitRule.controlCost):null
+      });
       from=clean(policy.defaultOutsideZone)||'OUT';
     }
   }
@@ -111,17 +111,17 @@ function buildMovement(sessions,policy){
 
 function zoneRule(policy,zone){return policy?.zones?.[zone]??{};}
 
-function candidateBundles(tasks,sessions,policy){
+function candidateBundles(tasks,sessions,policy,transitions){
   const byWorkerZone=new Map();
   for(const task of tasks){
-    const key=String(task.workerId)+'|'+String(task.zone);
+    const key=JSON.stringify([String(task.workerId),String(task.zone)]);
     if(!byWorkerZone.has(key))byWorkerZone.set(key,[]);
     byWorkerZone.get(key).push(task);
   }
   const opportunities=[];
   for(const [key,rows] of byWorkerZone){
     rows.sort((a,b)=>a.startMs-b.startMs);
-    const [workerId,zone]=key.split('|');
+    const [workerId,zone]=JSON.parse(key);
     const z=zoneRule(policy,zone);
     const gapLimit=Number(z.maxBundleGapMinutes??0);
     const maxContinuous=Number(z.maxContinuousMinutes??Infinity);
@@ -136,7 +136,7 @@ function candidateBundles(tasks,sessions,policy){
       const sessionA=sessions.find(s=>s.workerId===workerId&&s.zone===zone&&overlap(s.enterMs,s.exitMs,a.startMs,a.endMs));
       const sessionB=sessions.find(s=>s.workerId===workerId&&s.zone===zone&&overlap(s.enterMs,s.exitMs,b.startMs,b.endMs));
       if(!sessionA||!sessionB||sessionA===sessionB)continue;
-      const entryRule=transitionRule(policy,clean(policy.defaultOutsideZone)||'OUT',zone);
+      const entryRule=transitionRule(transitions,clean(policy.defaultOutsideZone)||'OUT',zone);
       opportunities.push({
         workerId,zone,firstTaskId:a.id,secondTaskId:b.id,gapMinutes:gap,
         observedSeparateEntries:true,
@@ -155,24 +155,31 @@ function candidateBundles(tasks,sessions,policy){
 export function buildInterventionTransitionLedger({policy,tasks=[],presenceEvents=[],now=new Date().toISOString()}={}){
   const gate=policyGate(policy,now);
   if(!gate.ok)return {status:'blocked',reason:gate.reason};
+  const transitionsGate=validateTransitionPolicy(policy);
+  if(!transitionsGate.ok)return {status:'blocked',reason:transitionsGate.reason};
+  if(!Array.isArray(tasks)||!Array.isArray(presenceEvents))return {status:'rejected',reason:'input_collection_invalid'};
   const siteId=clean(policy.siteId);
 
-  const normalizedTasks=[];
+  const normalizedTasks=[],taskIds=new Set();
   for(const task of tasks){
     const r=normalizeTask(task,siteId);
     if(!r.ok)return {status:'rejected',reason:r.reason,taskId:task?.id??null};
+    if(taskIds.has(r.value.id))return {status:'rejected',reason:'duplicate_task_id',taskId:r.value.id};
+    taskIds.add(r.value.id);
     normalizedTasks.push(r.value);
   }
-  const normalizedEvents=[];
+  const normalizedEvents=[],eventIds=new Set();
   for(const event of presenceEvents){
     const r=normalizeEvent(event,siteId);
     if(!r.ok)return {status:'rejected',reason:r.reason,eventId:event?.id??null};
+    if(eventIds.has(r.value.id))return {status:'rejected',reason:'duplicate_event_id',eventId:r.value.id};
+    eventIds.add(r.value.id);
     normalizedEvents.push(r.value);
   }
 
   const paired=pairSessions(normalizedEvents);
   const sessions=paired.sessions;
-  const movement=buildMovement(sessions,policy);
+  const movement=buildMovement(sessions,policy,transitionsGate.index);
   const unapprovedMovement=movement.filter(x=>x.approved!==true);
 
   const sessionRows=sessions.map(session=>{
@@ -189,7 +196,7 @@ export function buildInterventionTransitionLedger({policy,tasks=[],presenceEvent
     };
   });
 
-  const opportunities=paired.issues.length||unapprovedMovement.length?[]:candidateBundles(normalizedTasks,sessions,policy);
+  const opportunities=paired.issues.length||unapprovedMovement.length?[]:candidateBundles(normalizedTasks,sessions,policy,transitionsGate.index);
   const gowningCycles=movement.filter(x=>x.gowningCycle===true&&x.to!==(clean(policy.defaultOutsideZone)||'OUT')).length;
   const controlMinutes=movement.filter(x=>x.to!==(clean(policy.defaultOutsideZone)||'OUT')).reduce((sum,x)=>x.controlMinutes==null?sum:sum+x.controlMinutes,0);
   const controlCostKnown=movement.filter(x=>x.to!==(clean(policy.defaultOutsideZone)||'OUT')).every(x=>x.controlCost!=null);

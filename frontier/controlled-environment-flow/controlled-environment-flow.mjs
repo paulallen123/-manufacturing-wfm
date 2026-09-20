@@ -1,4 +1,6 @@
-export const CONTROLLED_ENVIRONMENT_FLOW_VERSION='controlled-environment-flow-v0.1.0';
+import {identityKey,transitionKey,validateTransitionPolicy} from './controlled-environment-validation.mjs';
+
+export const CONTROLLED_ENVIRONMENT_FLOW_VERSION='controlled-environment-flow-v0.1.1';
 
 const clean=v=>typeof v==='string'?v.trim():'';
 const finite=v=>typeof v==='number'&&Number.isFinite(v);
@@ -14,54 +16,54 @@ function policyGate(policy, now){
   return {ok:true};
 }
 
-function transitionIndex(policy){
-  const map=new Map();
-  for(const row of Array.isArray(policy.transitions)?policy.transitions:[]){
-    const from=clean(row?.from),to=clean(row?.to);
-    if(!from||!to)continue;
-    map.set(from+'>'+to,row);
-  }
-  return map;
-}
-
 export function evaluateControlledEnvironmentPlan({policy,workers=[],tasks=[],plan,now=new Date().toISOString()}={}){
   const gate=policyGate(policy,now);
   if(!gate.ok)return {status:'blocked',reason:gate.reason};
+  const transitionsGate=validateTransitionPolicy(policy);
+  if(!transitionsGate.ok)return {status:'blocked',reason:transitionsGate.reason};
+  if(!Array.isArray(workers)||!Array.isArray(tasks))return {status:'rejected',reason:'input_collection_invalid'};
 
   const siteId=clean(policy.siteId);
   const workerById=new Map();
   for(const worker of workers){
     if(clean(worker?.siteId)!==siteId)return {status:'rejected',reason:'worker_site_mismatch',workerId:worker?.id??null};
-    workerById.set(String(worker.id),worker);
+    const id=identityKey(worker?.id);
+    if(id===null)return {status:'rejected',reason:'worker_id_invalid'};
+    if(workerById.has(id))return {status:'rejected',reason:'duplicate_worker_id',workerId:id};
+    workerById.set(id,worker);
   }
   const taskById=new Map();
   for(const task of tasks){
     if(clean(task?.siteId)!==siteId)return {status:'rejected',reason:'task_site_mismatch',taskId:task?.id??null};
     if(!clean(task?.zone)||!clean(task?.skill)||!Number.isInteger(task?.slot))return {status:'rejected',reason:'task_invalid',taskId:task?.id??null};
-    taskById.set(String(task.id),task);
+    const id=identityKey(task?.id);
+    if(id===null)return {status:'rejected',reason:'task_id_invalid'};
+    if(taskById.has(id))return {status:'rejected',reason:'duplicate_task_id',taskId:id};
+    taskById.set(id,task);
   }
   if(!plan||!clean(plan.id)||!Array.isArray(plan.assignments))return {status:'rejected',reason:'plan_invalid'};
 
-  const required=new Map(tasks.map(t=>[String(t.id),Number(t.requiredHeadcount??1)]));
+  const required=new Map(tasks.map(t=>[identityKey(t.id),Number(t.requiredHeadcount??1)]));
   const covered=new Map([...required.keys()].map(id=>[id,0]));
   const seenWorkerSlot=new Set();
   const zoneSlotCount=new Map();
   const byWorker=new Map();
 
   for(const a of plan.assignments){
-    const task=taskById.get(String(a?.taskId));
-    const worker=workerById.get(String(a?.workerId));
+    const task=taskById.get(identityKey(a?.taskId));
+    const worker=workerById.get(identityKey(a?.workerId));
     if(!task||!worker)return {status:'rejected',reason:'unknown_assignment_reference'};
-    const key=String(worker.id)+'@'+task.slot;
+    const workerId=identityKey(worker.id);
+    const key=JSON.stringify([workerId,task.slot]);
     if(seenWorkerSlot.has(key))return {status:'rejected',reason:'worker_double_booked',workerId:worker.id,slot:task.slot};
     seenWorkerSlot.add(key);
     if(!new Set(worker.skills||[]).has(task.skill))return {status:'rejected',reason:'skill_missing',workerId:worker.id,taskId:task.id};
     if(!new Set(worker.qualifiedZones||[]).has(task.zone))return {status:'rejected',reason:'zone_qualification_missing',workerId:worker.id,taskId:task.id};
-    covered.set(String(task.id),(covered.get(String(task.id))||0)+1);
-    const oz=task.zone+'@'+task.slot;
+    covered.set(identityKey(task.id),(covered.get(identityKey(task.id))||0)+1);
+    const oz=JSON.stringify([task.zone,task.slot]);
     zoneSlotCount.set(oz,(zoneSlotCount.get(oz)||0)+1);
-    if(!byWorker.has(String(worker.id)))byWorker.set(String(worker.id),[]);
-    byWorker.get(String(worker.id)).push(task);
+    if(!byWorker.has(workerId))byWorker.set(workerId,[]);
+    byWorker.get(workerId).push(task);
   }
 
   for(const [taskId,count] of required){
@@ -71,11 +73,11 @@ export function evaluateControlledEnvironmentPlan({policy,workers=[],tasks=[],pl
 
   const zones=policy.zones&&typeof policy.zones==='object'?policy.zones:{};
   for(const [key,count] of zoneSlotCount){
-    const zone=key.split('@')[0],limit=Number(zones?.[zone]?.maxPersonnel);
+    const [zone]=JSON.parse(key),limit=Number(zones?.[zone]?.maxPersonnel);
     if(Number.isFinite(limit)&&count>limit)return {status:'rejected',reason:'zone_occupancy_exceeded',zone,count,limit};
   }
 
-  const tx=transitionIndex(policy);
+  const tx=transitionsGate.index;
   let transitions=0,gowningCycles=0,controlMinutes=0,controlCost=0,costComplete=true;
   const movement=[];
   for(const [workerId,rows] of byWorker){
@@ -85,7 +87,7 @@ export function evaluateControlledEnvironmentPlan({policy,workers=[],tasks=[],pl
     for(const task of rows){
       const to=task.zone;
       if(from!==to){
-        const rule=tx.get(from+'>'+to);
+        const rule=tx.get(transitionKey(from,to));
         if(!rule||rule.allowed!==true)return {status:'rejected',reason:'transition_not_approved',workerId,from,to,taskId:task.id};
         transitions+=1;
         if(rule.gowningCycle===true)gowningCycles+=1;
@@ -108,7 +110,7 @@ export function evaluateControlledEnvironmentPlan({policy,workers=[],tasks=[],pl
       gowningCycles,
       controlMinutes,
       controlCost:costComplete?controlCost:null,
-      assignedPeople:new Set(plan.assignments.map(a=>String(a.workerId))).size
+      assignedPeople:new Set(plan.assignments.map(a=>identityKey(a.workerId))).size
     },
     movement,
     claimBoundary:'This score compares approved workforce plans using authoritative site flow rules. It does not estimate contamination probability, relax cleanroom procedures, or prove product sterility.'
