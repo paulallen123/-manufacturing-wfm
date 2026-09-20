@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-09-20T06:04:00Z",
+  "purpose": "Correct an evidence-quality defect where hosted browser proof labelled output with WFM_EXPECTED_CANDIDATE_SHA without binding that label to the actual Railway target deployment SHA.",
+  "claimBoundary": "This receipt does not claim the current candidate is deployed to either protected target service. It does not claim production approval, zero-human provisioning, or any live external provider integration.",
+  "candidate": {
+    "branch": "feature/one-day-enterprise-implementation-v1",
+    "expectedSha": "e7afae04a114b2a0282211090012eae216147d19"
+  },
+  "railwayPrivateGitHubAccess": {
+    "status": "PASS",
+    "evidenceService": "wfm-built-ui-audit",
+    "deploymentId": "cc0a6699-f530-4129-9f98-c74d92437355",
+    "sourceSha": "e7afae04a114b2a0282211090012eae216147d19",
+    "result": "SUCCESS",
+    "interpretation": "Railway fetched and built the exact current private-repository head on an existing evidence service; this proves private GitHub source access is restored, not that either protected target service is on this SHA."
+  },
+  "protectedTargets": {
+    "oneDayEnterprise": {
+      "service": "wfm-one-day-enterprise-v1",
+      "latestSuccessfulDeploymentId": "b2ae8d64-3a2a-498e-9e95-86fb54c53276",
+      "latestSuccessfulDeploymentSha": "c9878364b02dffb77c21702d58af35c344e5ff68",
+      "exactCurrentShaDeployed": false
+    },
+    "integrationFabricProof": {
+      "service": "wfm-integration-fabric-v1-proof",
+      "latestSuccessfulDeploymentId": "6a625a13-ba37-4203-8f84-a816a6fc4081",
+      "latestSuccessfulDeploymentSha": "2dbe3913e50941f90c8e8d73f8c4ff14517e3d24",
+      "exactCurrentShaDeployed": false
+    }
+  },
+  "githubActions": {
+    "status": "BLOCKED_PRE_STEP",
+    "retestedRunId": 35490505884,
+    "retestedJobId": 106030771400,
+    "jobName": "vector-only",
+    "conclusion": "failure",
+    "steps": null,
+    "interpretation": "A rerun still failed before any executable workflow step. This does not constitute a WFM application failure."
+  },
+  "defect": {
+    "severity": "material-evidence-risk",
+    "file": "scripts/current-candidate-role-browser-proof-server.mjs",
+    "description": "The browser proof could report candidateSha from WFM_EXPECTED_CANDIDATE_SHA while the browser target was an older Railway deployment. The role/browser results were valid for the hosted target, but the SHA label was not target-runtime-attested."
+  },
+  "isolatedFix": {
+    "branch": "fix/browser-proof-target-sha-binding-20260920",
+    "implementationCommit": "3ae6899c1c3b9720dfe588134ae0955de7a90a9c",
+    "pullRequest": 189,
+    "draft": true,
+    "behavior": [
+      "Require a valid WFM_EXPECTED_CANDIDATE_SHA.",
+      "Require an authoritative WFM_TARGET_DEPLOYED_SHA and WFM_TARGET_DEPLOYMENT_ID.",
+      "Fail closed before browser proof if target SHA differs from expected candidate SHA.",
+      "Expose expected and target SHA separately in proof status instead of presenting the expected SHA as target identity."
+    ]
+  },
+  "validation": {
+    "nodeSyntaxCheck": "PASS",
+    "mismatchTest": {
+      "expectedSha": "e7afae04a114b2a0282211090012eae216147d19",
+      "targetSha": "c9878364b02dffb77c21702d58af35c344e5ff68",
+      "deploymentId": "b2ae8d64-3a2a-498e-9e95-86fb54c53276",
+      "expectedResult": "fail closed with TARGET_SHA_MISMATCH",
+      "actualResult": "PASS",
+      "processExitCode": 1
+    },
+    "matchingBindingTest": {
+      "expectedSha": "e7afae04a114b2a0282211090012eae216147d19",
+      "targetSha": "e7afae04a114b2a0282211090012eae216147d19",
+      "expectedResult": "attestation passes and browser module is invoked",
+      "actualResult": "PASS_WITH_STUB_BROWSER_MODULE"
+    },
+    "cloudRegression": {
+      "status": "NOT_EXECUTED",
+      "reason": "The existing Railway connector has no direct source-branch mutation action; the Railway agent path was unavailable because its usage limit was reached. No new service was created and no target security hold was weakened. GitHub Actions also remains blocked before steps execute."
+    }
+  },
+  "readinessImpact": "Sell-readiness remains CONDITIONAL. Prior hosted browser journeys are evidence that the currently hosted target behaves correctly for those journeys, but they must not be represented as exact-e7af target proof until the protected target service itself is on e7af and the SHA-bound harness passes."
+}
