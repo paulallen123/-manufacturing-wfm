@@ -5,76 +5,71 @@ This is the single canonical scorecard for the approved Vector role-first NEW-UI
 ## 2026-09-20 — Vector r16: lifecycle-consistent action affordance
 
 ### Journey reviewed
-Factory/operations manager Vector Home → `Needs my action` / collapsed `Awaiting source confirmation` → Time Review. The review focused on whether source-confirming work still looks like fresh work requiring another manager decision, and whether browser proof actually exercises the lifecycle affordances it claims to cover.
+Factory/operations manager Vector Home → `Needs my action` / collapsed `Awaiting source confirmation` → Time Review, plus the hosted-browser evidence path used to validate that journey.
 
 ### NEW-UI lineage confirmation
-All product/test work is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired UI branch, customer-proof runtime, staging or production presentation was changed.
+All product/test work is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired UI branch, customer-proof runtime, staging or production presentation was changed. The browser oracle itself is now explicitly bound to the canonical composed NEW-UI entrypoints `/vector-ui.js` and `/vector-ui.css` and rejects execution of retired presentation assets.
 
 ### Reuse / duplicate-work decision
-- Reused the existing `actionDisposition()` / `actionQueueGroups()` lifecycle partition, Universal Action row renderer, source-owned confirmation state, neutral action styling, action-queue regression and exact-candidate browser oracle.
+- Reused the existing `actionDisposition()` / `actionQueueGroups()` lifecycle partition, Universal Action row renderer, source-owned confirmation state, neutral action styling, action-queue regression and existing browser oracle.
 - Did not create another queue, component, lifecycle mapper, branch, issue, prototype or browser harness.
-- Did not repeat competitor/generic UX research because the unresolved question was executable evidence quality, not design theory.
-- Did not retry the unchanged GitHub hosted-runner allocation blocker or weaken any proof/runtime security hold.
+- Did not repeat competitor/generic UX research because the unresolved question is evidence integrity and source-owned lifecycle execution, not design theory.
+- Did not retry unchanged hosted-runner or Railway security-hold blockers.
 
 ### Hypothesis
-If source-confirming rows remain inspectable but use a passive lifecycle-consistent affordance, managers should distinguish “I need to act” from “the source is confirming my decision” faster without losing evidence, recovery or audit context. Browser evidence only supports this hypothesis when at least one authoritative row actually exercises each claimed affordance; empty collections must not be counted as affordance proof.
+If source-confirming rows remain inspectable but use a passive lifecycle-consistent affordance, managers should distinguish “I need to act” from “the source is confirming my decision” faster without losing evidence, recovery or audit context. Browser evidence only supports this when it executes the canonical NEW-UI presentation and at least one authoritative row exercises each claimed affordance.
 
-### Exact implementation delta
-- Added one shared `actionAffordance(row)` helper to the existing Vector renderer.
-- `decision_sent` and `confirming_source` now render **View status**.
-- `action_required`, `needs_verification` and neutral/fallback work retain the existing **Review** affordance.
-- The same route, source ID, workflow binding, lifecycle text, queue grouping, badge count and neutral visual treatment are preserved.
-- The accessible button label now matches the visible affordance (`View status …` or `Review …`).
-- Affordance selection is derived only through structured `confirmationState` → `actionDisposition()`; loose presentation words, row order, elapsed client time and AI output cannot select it.
-- Evidence-only correction `77a31b15e5e69f65865bd038dd9d427bbc92e098` keeps the same oracle but adds explicit `affordanceCoverage`, `reviewVerified` and `viewStatusVerified` reporting plus an optional `WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE=true` fail-closed gate. It does not change product UI/runtime behaviour.
+### Exact implementation / test delta
+- Shared `actionAffordance(row)` remains the sole renderer owner: `decision_sent` / `confirming_source` → **View status**; `action_required` / `needs_verification` / neutral fallback → **Review**.
+- Same route, source ID, workflow binding, lifecycle text, queue grouping, badge count, authority and neutral visual treatment remain unchanged.
+- `77a31b15e5e69f65865bd038dd9d427bbc92e098` made lifecycle-affordance coverage non-vacuous: empty authoritative collections report `UNEXERCISED` and strict mode can fail closed.
+- `fdedd7b6f0cf40e44e633132b53d67c5575b24a0` corrected the existing browser oracle to load and verify only `/vector-ui.js` + `/vector-ui.css`, require the approved Vector marker in both, and fail if `vector-shell.js`, `review-ui.*`, `factory-control-ui.css`, `value-cockpit-ui.*` or `ui-evolution.css` execute. No second harness was created.
 
-### Focused validation / regression delta
-- Extended the existing `ux-overlay/vector-action-queue.test.cjs`; no new test harness was created.
-- The regression protects actionable rows as **Review**, source-confirming rows as **View status**, matching accessible labels, resolved exclusion, collapsed confirmation disclosure and presentation-word independence.
-- Focused deterministic logic smoke passed: `action_required` / `needs_verification` → Review; `decision_sent` / `confirming_source` → View status; loose “Urgent” wording without authoritative confirmation state → Review.
-- Extended the existing `scripts/current-candidate-role-browser-proof.mjs`; no second oracle was created.
-- The oracle asserts at 1440/760/390 that visible `Needs my action` buttons read **Review**, their accessible labels begin `Review …`, source-confirming rows remain **View status**, and after keyboard expansion those awaiting-source buttons are visible with matching `View status …` accessible labels.
-- Existing source-ID binding, actionable-only badge semantics, collapsed disclosure, keyboard open/close, responsive containment, lifecycle visibility, no optimistic clear and return-to-context assertions remain in the same oracle.
-- Isolated Railway browser deployment `08871cc4-9f37-4299-8782-79c73fc62c39` successfully executed the d1a4 oracle against candidate `e7afae04a114b2a0282211090012eae216147d19`: 5 roles passed, role/tenant boundaries held, three responsive widths were exercised, and authoritative Time Review empty state proved `active=0|invented=0`.
-- That successful run returned `needsSource=0|awaitingSource=0`. Therefore it did **not** exercise either lifecycle affordance with a real row; the previous generic `affordances=review-vs-view-status` PASS marker was evidence-overclaim. The r16 oracle now reports this situation as `affordanceCoverage=UNEXERCISED` instead of treating empty-array assertions as proof.
+### Evidence correction
+The previously credited Railway browser matrix cannot be counted as proof of the current canonical NEW UI. Railway HTTP logs for the successful 20 September run show the browser executing retired presentation assets including `/vector-shell.js`, `/review-ui.js`, `/review-ui.css`, `/factory-control-ui.js`, `/factory-control-ui.css`, `/value-cockpit-ui.js`, `/value-cockpit-ui.css` and `/ui-evolution.css`. The old oracle explicitly fetched `/vector-shell.js`, so it could pass on that older presentation even while logging a newer expected SHA. That evidence is now reclassified as historical functional/source-behaviour evidence only, not NEW-UI UX proof.
 
-### Blocker discipline
-The current-head Vector-only GitHub job again failed before any workflow step executed (`runner_id=0`, `steps=[]`). That remains the unchanged hosted-runner allocation blocker rather than a demonstrated source/test failure, so it is not retried repeatedly. Railway has demonstrated that the existing isolated browser executor itself can run the canonical oracle; no customer-proof, staging or production mutation is used to manufacture lifecycle evidence.
+A later browser attempt also reached the same hosted candidate but `/api/login` returned `401`, so it did not validate r16. The current Railway proof service skipped the new `fdedd7b6…` commit under its existing security hold. GitHub Vector-only run `35498823285` again received no executable steps, so the unchanged runner-allocation blocker was observed once and not retried.
+
+### Focused validation / regression state
+- Existing deterministic action-queue regression protects **Review** vs **View status**, matching accessible labels, resolved exclusion, collapsed confirmation disclosure and presentation-word independence.
+- Current browser oracle source has been inspected after the lineage correction and now requires canonical `/vector-ui.js` + `/vector-ui.css` and rejects retired presentation resources before role/journey assertions can pass.
+- Existing 1440 / 760 / 390 source-ID, badge, disclosure, keyboard, lifecycle, no-optimistic-clear and return-to-context assertions remain in the same oracle.
+- Hosted execution of the corrected oracle remains blocked; therefore no hosted responsive/accessibility claim is currently made for r16.
 
 ### UX scorecard impact
-- Calm by default: improved — confirmation-in-progress no longer reuses a fresh-work verb, while its disclosure stays collapsed.
-- Dense on demand: preserved — no new panel, page or permanent information is added.
-- Explainability: improved — visible and accessible action wording matches authoritative lifecycle disposition.
-- Accessibility/responsive evidence: partially advanced — the isolated browser matrix is hosted-green for five roles, responsive containment and authoritative empty state, but **Review** / **View status** lifecycle rows remain unexercised in hosted DOM evidence.
-- Evidence integrity: improved — the oracle can no longer present zero-row lifecycle assertions as exercised affordance proof, and strict coverage can fail closed when lifecycle evidence is required.
+- Calm by default: improved in source — confirmation-in-progress uses **View status** and stays collapsed.
+- Dense on demand: preserved — no new page/panel/permanent detail.
+- Explainability: improved in source — visible/accessibility wording follows source lifecycle disposition.
+- Evidence integrity: materially improved — legacy presentation can no longer satisfy the current browser oracle; zero-row lifecycle assertions cannot count as exercised proof.
+- Accessibility/responsive evidence: **unverified on the canonical hosted NEW UI** until the corrected oracle executes.
 - Authority/auditability: preserved — no source state, approval authority, SLA, resolution logic or write authority moved into Vector.
-- Development efficiency: improved — one generic renderer, one unit-regression owner and one existing exact-candidate browser oracle cover the lifecycle contract without a parallel implementation.
+- Development efficiency: preserved — one renderer, one unit-regression owner and one browser oracle remain authoritative.
 
 ### Still unverified
-A genuine source-owned `Action required → Decision sent → Confirming source` transition remains to be exercised end-to-end in the isolated candidate. Hosted DOM evidence still needs at least one authoritative actionable row and one authoritative source-confirming row so **Review**, **View status**, section movement, badge exclusion, keyboard disclosure, source identity and no optimistic clearing are non-vacuously proven. Exact production/staging readiness is not claimed.
+1. A hosted candidate built from the current canonical branch that actually serves `/vector-ui.js` and `/vector-ui.css` without retired presentation resources.
+2. Exact source-bound candidate identity rather than merely logging `WFM_EXPECTED_CANDIDATE_SHA`.
+3. A genuine source-owned `Action required → Decision sent → Confirming source` transition with at least one actionable and one source-confirming row.
+4. Corrected-oracle browser evidence for 1440 / 760 / 390, keyboard disclosure, source identity, bell-count exclusion, no optimistic clearing and return focus.
 
 ### Single next highest-value NEW-UI action
-Use the existing authoritative Time Review fixture/source transition seam in the isolated test candidate — not synthetic UI state — to create/drive a real item from `Action required` through `Decision sent` / `Confirming source`. Re-run this same oracle with `WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE=true` once the source contains the required lifecycle rows. The proof must show **Needs my action / Review** → **Awaiting source confirmation / View status**, keep the source ID and authority stable, exclude awaiting work from the bell count, preserve keyboard/responsive behaviour and never optimistically clear the item. Only after that should the shared pattern extend to Absence or weekly sign-off.
+Strengthen exact source binding for the **existing** corrected browser oracle and execute it only against a safely isolated deployment of the canonical current branch that serves `/vector-ui.js` + `/vector-ui.css` and no retired presentation assets. Once that gate is real, use the existing authoritative Time Review source seam — never synthetic UI state — to drive one item through `Action required → Decision sent → Confirming source` and prove **Needs my action / Review → Awaiting source confirmation / View status** with stable source identity, unchanged authority and no bell-count inflation. Only then extend the shared pattern to Absence or weekly sign-off.
 
 ## 2026-09-20 — Vector r15: remove position-inferred action urgency
 
 ### Validated delta
-- Removed the positional `.vector-alert-row:first-child>button` red/pink override from `ux-overlay/vector-shell.css`.
-- The existing neutral action style remains: `background:#edf3fb; color:#355375`.
-- Extended `ux-overlay/vector-action-queue.test.cjs` with a distinct regression requiring positional urgency styling to remain absent while the neutral default remains present.
-- No action ordering, lifecycle grouping, status text, source evidence, permissions, authority, audit or workflow logic changed.
-
-### Evidence boundary
-Focused source assertions passed. Exact lifecycle-row browser execution remains pending; no measured task-time claim is made.
+- Removed the positional first-row red/pink action override from `ux-overlay/vector-shell.css`.
+- Existing neutral action treatment remains.
+- Existing action-queue regression protects the absence of position-derived urgency.
+- No ordering, lifecycle, source evidence, permission, authority or workflow logic changed.
 
 ## Validated prior Vector increments
 
 | Increment | Bounded delta | Evidence boundary |
 | --- | --- | --- |
-| r14 | Separate `Needs my action` from collapsed source-owned `Awaiting source confirmation`; browser oracle extended for 1440/760/390 grouping, badge and keyboard checks | Source/unit/oracle code proven; hosted empty-state matrix green, lifecycle rows still unexercised |
-| r13 | Render authoritative lifecycle visibly in the existing action row | Focused markup and oracle syntax proven; hosted active-row lifecycle execution pending |
+| r14 | Separate `Needs my action` from collapsed source-owned `Awaiting source confirmation`; responsive/keyboard oracle assertions added | Source/unit/oracle code present; canonical hosted NEW-UI execution now requires re-proof |
+| r13 | Render authoritative lifecycle visibly in the existing action row | Source-level implementation; canonical hosted active-row execution pending |
 | r12 | Preserve normalized hosted proxy protocol in the read-only Time Review evidence bridge | Exact pre-repair 502 isolated; source/test repair committed |
-| r11 | Source-bound Time Review return context, focus restoration and no optimistic-clear oracle | Source composition proven; hosted execution exposed the r12 bridge defect |
+| r11 | Source-bound Time Review return context, focus restoration and no optimistic-clear oracle | Source composition present; canonical hosted re-proof pending |
 | r10 | Bind `Items to review` to the read-only Time Review evidence bridge with per-source neutral fallback | Focused consumer harness passed |
 | r9 | Add read-only role/tenant-scoped Time Review action-evidence bridge | Bridge/router focused tests passed |
 | r8 | Add first fail-closed Time Review producer inside the shared evidence contract | Contract suite passed |
@@ -88,6 +83,6 @@ Focused source assertions passed. Exact lifecycle-row browser execution remains 
 
 ## Standing release / evidence boundary
 - Cycle 10 schedule-publication promotion remains separately gated by exact source-bound hosted proof.
-- Vector is the only active NEW-UI presentation owner in this lineage; retired overlays and legacy/0.6.139 presentation remain non-owners.
-- No scorecard entry treats source/build guards or deterministic tests as real-user, authenticated-role, accessibility-device or production proof.
+- Vector is the only approved NEW-UI presentation owner in this lineage; retired overlays and legacy/0.6.139 presentation are functional/source references only and may never satisfy NEW-UI proof.
+- No scorecard entry treats source/build guards, deterministic tests, an expected-SHA environment value or a browser run on a retired presentation as exact hosted NEW-UI proof.
 - Missing or stale evidence remains neutral; presentation wording, order or styling cannot manufacture urgency, cost, qualification, compliance, authority or confirmation.
