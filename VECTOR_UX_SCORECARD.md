@@ -12,9 +12,9 @@ All product/test work is on `feature/one-day-enterprise-implementation-v1` / PR 
 
 ### Reuse / duplicate-work decision
 - Reused the existing `actionDisposition()` / `actionQueueGroups()` lifecycle partition, Universal Action row renderer, source-owned confirmation state, neutral action styling, action-queue regression, Vector-only guard, 24h sell-readiness gate and existing browser oracle/proof server.
-- Did not create another queue, component, lifecycle mapper, branch, issue, prototype, release workflow or browser harness.
+- Did not create another queue, component, lifecycle mapper, branch, issue, prototype, release workflow, browser harness or Railway proof service.
 - Did not repeat competitor/generic UX research because the unresolved question is evidence integrity and source-owned lifecycle execution, not design theory.
-- The highest-value unblocked dependency was browser-level source identity: the static exact-image/host-byte gate already had canonical asset digests, but the existing browser proof server did not consume them. The existing proof server was extended in place rather than creating another proof path.
+- The highest-value unblocked dependency was the final hand-off between the exact-image digest gate and the existing browser oracle: digest validation existed in the proof server, but the canonical exact-candidate workflow still did not supply the digests and execute that existing oracle against the just-deployed isolated candidate. The existing workflow was extended in place rather than creating another proof lane or mutating the held browser-proof Railway service.
 
 ### Hypothesis
 If source-confirming rows remain inspectable but use a passive lifecycle-consistent affordance, managers should distinguish “I need to act” from “the source is confirming my decision” faster without losing evidence, recovery or audit context. Browser evidence only supports this when it executes the exact canonical NEW-UI bytes and at least one authoritative row exercises each claimed affordance.
@@ -25,13 +25,14 @@ If source-confirming rows remain inspectable but use a passive lifecycle-consist
 - `77a31b15e5e69f65865bd038dd9d427bbc92e098` made lifecycle-affordance coverage non-vacuous: empty authoritative collections report `UNEXERCISED` and strict mode can fail closed.
 - `fdedd7b6f0cf40e44e633132b53d67c5575b24a0` corrected the existing browser oracle to load and verify only `/vector-ui.js` + `/vector-ui.css`, require the approved Vector marker in both, and fail if retired presentation assets execute.
 - `9e444f050a471fe6ad6f0ee41455ca8c35d90faf` corrected the existing Vector-only UI guard to the same canonical runtime contract and emit SHA-256 digests for both canonical assets.
-- `8f2073b58efd41dddaa9cde59660b11a972e38e1` corrected the existing **24h sell-readiness candidate** workflow instead of adding a new release lane. It now builds the exact candidate image, extracts `/app/public/vector-ui.js` + `/app/public/vector-ui.css`, records their SHA-256 digests, deploys the same candidate to the existing isolated services, and fails closed unless the hosted canonical bytes match those exact digests. It also rejects retired presentation references/URLs and now triggers on the shared Vector presentation composer.
+- `8f2073b58efd41dddaa9cde59660b11a972e38e1` corrected the existing **24h sell-readiness candidate** workflow instead of adding a new release lane. It builds the exact candidate image, extracts `/app/public/vector-ui.js` + `/app/public/vector-ui.css`, records their SHA-256 digests, deploys the same candidate to the existing isolated services, and fails closed unless the hosted canonical bytes match those exact digests. It also rejects retired presentation references/URLs and triggers on the shared Vector presentation composer.
 - `673c849121bedbba76a95000081169a0df21bee4` extends the existing browser-proof server to consume the same `VECTOR_CANONICAL_JS_SHA256` / `VECTOR_CANONICAL_CSS_SHA256` contract. When strict mode (`WFM_REQUIRE_VECTOR_ASSET_DIGESTS=true`) is enabled, missing digests fail closed; when digests are supplied, `/vector-ui.js` and `/vector-ui.css` are fetched as bytes and SHA-256 matched before the existing browser oracle runs. The proof server exposes only the resulting binding status/digests, not source authority or secrets.
+- `fe9f92dbccb25b28133211291417c7800ef5d2b8` wires that existing digest-aware browser proof into the existing **24h sell-readiness candidate** workflow after the one-day isolated host has passed exact-byte binding. The step reuses the existing browser-proof Dockerfile/oracle, injects the exact source-built JS/CSS digests, enables `WFM_REQUIRE_VECTOR_ASSET_DIGESTS=true`, and requires `BROWSER_PROOF_ASSET_BINDING=BOUND`, the existing five-role browser matrix and action-queue grouping before crediting browser proof. It deliberately keeps `WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE=false` until authoritative Time Review data contains both lifecycle states; this prevents the workflow inventing data merely to turn the UX gate green. The workflow trigger also now covers the existing browser-proof scripts/Dockerfile so changes to the proof cannot bypass this lane.
 
 ### Evidence correction
 The previously credited Railway browser matrix cannot be counted as proof of the current canonical NEW UI. Railway HTTP logs for the successful 20 September run showed retired presentation assets executing, so that evidence is historical functional/source-behaviour evidence only, not NEW-UI UX proof.
 
-A later browser attempt reached the hosted candidate but `/api/login` returned `401`, so it did not validate r16. GitHub has repeatedly instantiated corrected workflows without allocating a runner (`runner_id=0`, zero steps). The exact-image/host-byte gate and browser digest-binding path are therefore source-controlled but not yet executed hosted evidence; they must not be reported green until a safe executor runs them.
+A later browser attempt reached the hosted candidate but `/api/login` returned `401`, so it did not validate r16. GitHub has repeatedly instantiated corrected workflows without allocating a runner (`runner_id=0`, zero steps). The exact-image/host-byte gate and strict browser binding path are therefore source-controlled but not yet executed hosted evidence; they must not be reported green until a safe executor runs them.
 
 ### Focused validation / regression state
 - Existing deterministic action-queue regression protects **Review** vs **View status**, matching accessible labels, resolved exclusion, collapsed confirmation disclosure and presentation-word independence.
@@ -39,27 +40,27 @@ A later browser attempt reached the hosted candidate but `/api/login` returned `
 - Existing 1440 / 760 / 390 source-ID, badge, disclosure, keyboard, lifecycle, no-optimistic-clear and return-to-context assertions remain in the same oracle.
 - Browser-proof server syntax check passed after the digest-binding delta.
 - Focused two-arm digest validation passed locally against a disposable HTTP fixture: exact expected JS/CSS digests reached `BROWSER_PROOF_ASSET_BINDING=BOUND`; a deliberately wrong JS digest failed closed before the oracle with `Hosted /vector-ui.js bytes do not match the exact source-built candidate digest.`
-- The Vector-only guard proves exact built canonical assets; the 24h gate extends that same contract to hosted static bytes; the browser proof can now consume the same digest contract without another UI/test owner.
+- GitHub accepted the `fe9f92db…` workflow as valid workflow source and instantiated the expected `24h sell-readiness candidate` run, confirming the YAML/trigger path is recognized. That run received no runner (`runner_id=0`, zero steps), so the new exact-source browser execution itself is not yet credited.
+- Railway CLI variable-list syntax used by the bounded step was checked against current Railway CLI documentation; credentials are read only from the isolated test service at run time, masked, never committed, and the held browser-proof Railway service is not mutated.
 - Hosted execution of these corrected gates remains unverified until a safe runner/executor executes them.
 
 ### UX scorecard impact
 - Calm by default: improved in source — confirmation-in-progress uses **View status** and stays collapsed.
 - Dense on demand: preserved — no new page/panel/permanent detail.
 - Explainability: improved in source — visible/accessibility wording follows source lifecycle disposition.
-- Evidence integrity: materially improved — legacy presentation cannot satisfy the current browser oracle; zero-row lifecycle assertions cannot count as exercised proof; exact canonical build/host digests can now be enforced by the browser proof before interaction evidence is credited.
-- Accessibility/responsive evidence: **unverified on the canonical hosted NEW UI** until the corrected strict oracle executes.
+- Evidence integrity: materially improved — legacy presentation cannot satisfy the current browser oracle; zero-row lifecycle assertions cannot count as exercised proof; exact canonical build/host digests are now wired into the same browser proof before role/responsive interaction evidence can be credited.
+- Accessibility/responsive evidence: **unverified on the canonical hosted NEW UI** until the strict corrected oracle executes.
 - Authority/auditability: preserved — no source state, approval authority, SLA, resolution logic or write authority moved into Vector.
-- Development efficiency: improved — the existing proof server was extended to reuse the same digest contract instead of adding another workflow, branch or browser harness.
+- Development efficiency: improved — the existing exact-candidate workflow, proof server, oracle and Dockerfile were extended in place; no second test owner or proof service was created.
 
 ### Still unverified
 1. Actual runner execution of the corrected Vector-only build guard and corrected 24h exact-image/host-byte gate.
-2. Propagation of the exact candidate JS/CSS digests into the existing browser-proof deployment/runtime with `WFM_REQUIRE_VECTOR_ASSET_DIGESTS=true`.
-3. Hosted strict browser execution proving the served canonical bytes match the exact source-built image before responsive/accessibility/journey assertions run.
-4. A genuine source-owned `Action required → Decision sent → Confirming source` transition with at least one actionable and one source-confirming row.
-5. Corrected-oracle browser evidence for 1440 / 760 / 390, keyboard disclosure, source identity, bell-count exclusion, no optimistic clearing and return focus.
+2. Hosted strict browser execution reaching `BROWSER_PROOF_ASSET_BINDING=BOUND` against the exact source-built candidate and completing the existing role/responsive/accessibility matrix.
+3. A genuine source-owned `Action required → Decision sent → Confirming source` transition with at least one actionable and one source-confirming row.
+4. Strict lifecycle-affordance browser evidence for **Review → View status**, stable source identity, bell-count exclusion, no optimistic clearing and return focus once both authoritative states exist.
 
 ### Single next highest-value NEW-UI action
-Wire the existing exact-image digest outputs into the existing browser-proof deployment/runtime and enable `WFM_REQUIRE_VECTOR_ASSET_DIGESTS=true`; do not create another proof path. Execute that same strict oracle when a safe executor is available. Only after browser-level exact asset identity passes should the authoritative Time Review source seam drive one item through `Action required → Decision sent → Confirming source` and prove **Needs my action / Review → Awaiting source confirmation / View status** with stable source identity, unchanged authority and no bell-count inflation.
+Execute the existing `24h sell-readiness candidate` workflow unchanged when a safe runner is allocated and require the newly wired exact-source browser step to reach `BROWSER_PROOF_ASSET_BINDING=BOUND`; do not create another proof path or bypass the held Railway service. Only after browser-level exact asset identity is green should the authoritative Time Review source seam drive one item through `Action required → Decision sent → Confirming source` and run the same oracle with `WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE=true` to prove **Needs my action / Review → Awaiting source confirmation / View status** with stable source identity, unchanged authority and no bell-count inflation.
 
 ## 2026-09-20 — Vector r15: remove position-inferred action urgency
 
