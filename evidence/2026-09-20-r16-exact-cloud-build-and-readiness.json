@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-09-20T06:15:00Z",
+  "programme": "Manufacturing WFM 24-hour sell-readiness",
+  "candidate": {
+    "branch": "feature/one-day-enterprise-implementation-v1",
+    "sha": "5858a299a9c6d8a7417673eb80c14b495fe2361e",
+    "gitHubSignatureVerified": true,
+    "changeBoundary": "PR #190 is an isolated build-composition fix only: Dockerfile composition moved from shell-fragile inline JavaScript into a standalone Node built-ins helper. No business logic, role-first UX source, readiness flag, protected target hold, provider claim or frozen customer-proof release was changed."
+  },
+  "railwayPrivateGitHubAccess": {
+    "status": "PASS",
+    "interpretation": "An existing Railway evidence service fetched the current private feature branch and built exact SHA 5858a299a9c6d8a7417673eb80c14b495fe2361e. Private-repository source access is therefore restored. This is not evidence that either protected target service has been updated."
+  },
+  "exactCandidateCloudBuild": {
+    "service": "wfm-built-ui-audit",
+    "resourcePolicy": "existing service reused; no new service, domain, project, database or paid infrastructure created",
+    "deploymentId": "42a47836-e54c-4c2a-9322-ea011fea9658",
+    "sourceSha": "5858a299a9c6d8a7417673eb80c14b495fe2361e",
+    "buildEnvironment": "Railway Metal cloud builder",
+    "buildAdmission": {
+      "implementationIntegrationLifecycleTests": "96/96 PASS",
+      "t0ToT4AutonomyAdmission": "PASS",
+      "vectorIndexComposition": "PASS",
+      "vectorSinglePresentationEntrypoint": "PASS",
+      "scale": {
+        "sites": 50,
+        "employees": 10000,
+        "clockings": 100000,
+        "timecards": 40000,
+        "result": "PASS"
+      },
+      "payroll": {
+        "expectedMinorUnits": 15180000,
+        "calculatedMinorUnits": 15180000,
+        "unexplainedVarianceMinorUnits": 0,
+        "deliberatePerturbationMinorUnits": 20,
+        "deliberatePerturbationDetected": true,
+        "result": "PASS"
+      },
+      "roleTrainingAndMastery": {
+        "modulesAssigned": 10000,
+        "masteryRecords": 10000,
+        "profiles": {
+          "employee": 5500,
+          "manager": 500,
+          "payroll_admin": 200,
+          "company_admin": 240,
+          "implementation_admin": 300,
+          "integration_admin": 300,
+          "agency_coordinator": 260,
+          "finance": 400,
+          "site_operations": 1300,
+          "support_observer": 1000
+        },
+        "result": "PASS"
+      },
+      "tenantIsolationChecks": {
+        "expectedForbidden": 2,
+        "observedForbidden": 2,
+        "result": "PASS"
+      }
+    },
+    "runtimeAdmission": {
+      "status": "NOT_PROVEN_ON_EVIDENCE_SERVICE",
+      "reason": "The temporarily repurposed evidence service has no existing HTTPS public origin. The exact candidate correctly refused hosted startup with 'Hosted staging requires an explicit HTTPS WFM_PUBLIC_ORIGIN.' The programme did not create a new public domain and did not disable hosted security controls merely to obtain a green healthcheck.",
+      "secondDeploymentId": "71975887-4a45-499f-a965-ef87aaa9222b",
+      "classification": "evidence-lane environment configuration gap, not an application regression",
+      "claimBoundary": "Exact-current cloud build admission is proven; exact-current live target runtime and browser journeys are not."
+    }
+  },
+  "defectAndFix": {
+    "observedOnSha": "f3442a2dd8e7a7f8c59501a9dbbe830b8a7f07a6",
+    "defect": "Late Docker build failure in Vector presentation composition caused by shell escaping of an inline Node regular-expression command after all core tests and scale/payroll proof had already passed.",
+    "isolatedFixPullRequest": 190,
+    "fixedCandidateSha": "5858a299a9c6d8a7417673eb80c14b495fe2361e",
+    "cloudRegressionResult": "PASS through image build and Vector-only admission"
+  },
+  "githubActions": {
+    "currentCandidateVectorGuard": {
+      "runId": 35493434846,
+      "jobId": 106032161388,
+      "conclusion": "failure",
+      "steps": null,
+      "classification": "pre-execution/runner-allocation failure; no WFM workflow step executed"
+    },
+    "impact": "The intended protected exact-release lane remains unavailable. No security hold was bypassed."
+  },
+  "protectedTargets": {
+    "wfm-one-day-enterprise-v1": {
+      "exactCurrentDeployed": false,
+      "latestKnownSuccessfulSha": "c9878364b02dffb77c21702d58af35c344e5ff68",
+      "securityHoldPreserved": true
+    },
+    "wfm-integration-fabric-v1-proof": {
+      "exactCurrentDeployed": false,
+      "latestKnownSuccessfulSha": "2dbe3913e50941f90c8e8d73f8c4ff14517e3d24",
+      "securityHoldPreserved": true
+    }
+  },
+  "browserEvidence": {
+    "exactCurrentTargetJourneysProven": false,
+    "reason": "Protected target services are not on current SHA. A separate material evidence issue was also identified: the prior browser proof labelled WFM_EXPECTED_CANDIDATE_SHA without independently binding it to target deployment metadata. Draft PR #189 contains a fail-closed SHA-binding fix but is behind the current feature head and must not be merged as-is."
+  },
+  "externalProviderEvidence": {
+    "authorisedNonFixtureProviderProven": false,
+    "claimBoundary": "No provider is represented as live from fixture-only evidence."
+  },
+  "zeroHumanProvisioning": {
+    "genuineCustomerEnvironmentProvisioningRunProven": false,
+    "claimBoundary": "Cloud simulation/control-plane evidence is not represented as a completed real customer provisioning run."
+  },
+  "frozenCustomerProofRelease": {
+    "altered": false
+  },
+  "costAndControlBoundary": {
+    "newPaidInfrastructure": false,
+    "newRailwayResources": false,
+    "securityControlsWeakened": false,
+    "readinessFlagsChangedToForcePass": false
+  },
+  "evidenceServiceRestoration": {
+    "service": "wfm-built-ui-audit",
+    "configurationRestoredForNextDeployment": true,
+    "dockerfilePath": "Dockerfile.current-candidate-role-browser-proof",
+    "startCommand": "node current-candidate-role-browser-proof-server.mjs",
+    "healthcheckPath": "/",
+    "deploymentTriggeredByRestore": false
+  },
+  "sellReadiness": {
+    "status": "CONDITIONAL",
+    "remainingHardGates": [
+      "secure exact-current deployment to wfm-one-day-enterprise-v1",
+      "secure exact-current deployment to wfm-integration-fabric-v1-proof",
+      "exact-target browser matrix with authoritative deployment-SHA binding",
+      "authorised non-fixture external-provider sandbox/test API proof",
+      "genuine zero-human customer/environment provisioning proof"
+    ]
+  }
+}
