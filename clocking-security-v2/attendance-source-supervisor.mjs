@@ -175,6 +175,12 @@ export class AttendanceSourceSupervisor {
       if(!this.#reconciliationProofValid(j,reconciliationProof)) return false;
       j.reconciliationProof={
         proofId:String(reconciliationProof.proofId),
+        tenant:String(reconciliationProof.tenant),
+        sourceId:String(reconciliationProof.sourceId),
+        provider:String(reconciliationProof.provider),
+        domain:String(reconciliationProof.domain),
+        site:String(reconciliationProof.site),
+        windowId:String(reconciliationProof.windowId),
         coverageFromMs:reconciliationProof.coverageFromMs,
         coverageToMs:reconciliationProof.coverageToMs,
         completedAtMs:reconciliationProof.completedAtMs
@@ -231,6 +237,12 @@ export class AttendanceSourceSupervisor {
     if(!proof || typeof proof!=='object') return false;
     const proofId=String(proof.proofId||'');
     if(!/^[A-Za-z0-9_.:-]{1,160}$/.test(proofId)) return false;
+    if(String(proof.tenant||'')!==String(j.tenant||'')) return false;
+    if(String(proof.sourceId||'')!==String(j.sourceId||'')) return false;
+    if(String(proof.provider||'')!==String(j.provider||'')) return false;
+    if(String(proof.domain||'')!==String(j.domain||'')) return false;
+    if(String(proof.site||'')!==String(j.site||'')) return false;
+    if(String(proof.windowId||'')!==String(j.windowId||'')) return false;
     const from=proof.coverageFromMs,to=proof.coverageToMs,completed=proof.completedAtMs;
     if(!Number.isSafeInteger(from)||from<0||!Number.isSafeInteger(to)||to<from||!Number.isSafeInteger(completed)||completed<to) return false;
     const requiredFrom=Number.isSafeInteger(j.fromMs)?j.fromMs:null;
