@@ -116,6 +116,19 @@ const missingRegion = resolveGlobalPolicyPacks(missingRegionInputs);
 assert.equal(missingRegion.status, 'POLICY_RESOLUTION_BLOCKED');
 assert.ok(missingRegion.blockers.some((b) => b.reason === 'verified-regional-policy-pack-required'));
 
+const regionalNarrowingInputs = {
+  tenantRef: 'regional-residency-narrowing',
+  asOfDate: '2026-09-20',
+  sites: [site(1, 'US', 'eu', { region: 'CA', regionalPolicyRequired: true })],
+  policyPacks: [
+    pack('US', { allowedDataRegions: ['us', 'eu'] }),
+    pack('US', { region: 'CA', allowedDataRegions: ['us'] }),
+  ],
+};
+const regionalNarrowing = resolveGlobalPolicyPacks(regionalNarrowingInputs);
+assert.equal(regionalNarrowing.status, 'POLICY_RESOLUTION_BLOCKED');
+assert.ok(regionalNarrowing.blockers.some((b) => b.reason === 'data-region-not-authorised-by-policy-evidence'));
+
 const overlapInputs = {
   tenantRef: 'compound-enterprise', asOfDate: '2026-09-20',
   sites: [site(1, 'GB', 'eu'), site(2, 'DE', 'eu')],
@@ -198,6 +211,7 @@ console.log(JSON.stringify({
   effectiveDating: true,
   futureChangeDetection: true,
   regionalInheritanceAndOverride: true,
+  regionalResidencyNarrowingCannotBroadenCountryBoundary: true,
   partialCountryFailureDoesNotBlockSafeCountry: true,
   trustedSiteOverrideEvidenceRequired: true,
   untrustedModelPolicyIgnored: true,
