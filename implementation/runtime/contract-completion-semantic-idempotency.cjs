@@ -64,19 +64,20 @@ function createSemanticContractCompletionIngress(store, options = {}) {
   if (typeof baseFactory !== 'function') throw new Error('Semantic contract idempotency requires a base contract ingress factory.');
   const { baseIngressFactory, ...baseOptions } = options;
   const base = baseFactory(store, baseOptions);
-  if (!base || typeof base.receive !== 'function') throw new Error('Semantic contract idempotency requires the standard contract ingress interface.');
+  if (!base || typeof base.receiveWithinTransaction !== 'function') {
+    throw new Error('Semantic contract idempotency requires transaction-aware contract ingress so receipt and semantic identity commit atomically.');
+  }
 
   function receive(delivery) {
-    const accepted = base.receive(delivery);
-    if (!accepted || !accepted.contract) fail('WFM_CONTRACT_EVENT_REQUIRED', 'Contract ingress did not return a verified completed contract.', 500);
-    verifyContractCompletionReceipt(accepted.contract, options.receiptKey);
-
-    const subject = semanticSubject(accepted.contract);
-    const identity = semanticIdentity(accepted.contract);
-    const semanticDigest = sha256(identity);
-    const key = 'wfm-contract-subject:v1:' + sha256(subject);
-
     return store.transaction(tx => {
+      const accepted = base.receiveWithinTransaction(tx, delivery);
+      if (!accepted || !accepted.contract) fail('WFM_CONTRACT_EVENT_REQUIRED', 'Contract ingress did not return a verified completed contract.', 500);
+      verifyContractCompletionReceipt(accepted.contract, options.receiptKey);
+
+      const subject = semanticSubject(accepted.contract);
+      const identity = semanticIdentity(accepted.contract);
+      const semanticDigest = sha256(identity);
+      const key = 'wfm-contract-subject:v1:' + sha256(subject);
       const existing = tx.get(key);
       if (existing) {
         if (existing.semanticDigest !== semanticDigest) {
