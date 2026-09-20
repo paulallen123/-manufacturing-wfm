@@ -12,6 +12,7 @@ File, SOAP, export-job and scheduled-download integrations may expose a source w
 - Watermark ordering is declared per connector: `iso8601`, `unsigned-integer`, `lexical` or `opaque`.
 - Cursor type and value are validated on the first batch as well as later batches, and the predecessor must carry the same cursor type.
 - ISO timestamps compare their actual instants, including offsets and DST; integer sequences use arbitrary-precision comparison.
+- Timestamp cursors require a real calendar date, explicit `Z`/offset and at most millisecond precision; impossible dates and silently truncated higher precision are rejected.
 - Integer cursors must arrive as canonical decimal strings, preventing precision loss before arbitrary-precision comparison.
 - Opaque cursors are deliberately not ordered. A changed opaque cursor may advance only after a complete verified batch; overlap replay and reconciliation remain responsible for gap detection.
 - Every accepted candidate carries a scope namespace and expected predecessor for a durable compare-and-swap checkpoint write; the helper does not claim that persistence has occurred.

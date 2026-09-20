@@ -23,8 +23,20 @@ function compareWatermarks(current,previous,kind){
   const validate=value=>{
     if(value===null) return;
     if(kind==='iso8601'){
-      const strictIso=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
-      if(!strictIso.test(String(value))||!Number.isFinite(Date.parse(String(value)))) throw new Error('iso8601 watermarks must be valid timestamps with an explicit offset');
+      if(typeof value!=='string') throw new Error('iso8601 watermarks must be timestamp strings');
+      const match=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|([+-])(\d{2}):(\d{2}))$/.exec(value);
+      if(!match) throw new Error('iso8601 watermarks must be valid timestamps with an explicit offset and no more than millisecond precision');
+      const [,yearText,monthText,dayText,hourText,minuteText,secondText,,,offsetSign,offsetHourText,offsetMinuteText]=match;
+      const year=Number(yearText),month=Number(monthText),day=Number(dayText);
+      const hour=Number(hourText),minute=Number(minuteText),second=Number(secondText);
+      const leap=year%4===0&&(year%100!==0||year%400===0);
+      const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+      const offsetHour=offsetSign?Number(offsetHourText):0;
+      const offsetMinute=offsetSign?Number(offsetMinuteText):0;
+      const validCalendar=month>=1&&month<=12&&day>=1&&day<=days[month-1];
+      const validClock=hour<=23&&minute<=59&&second<=59;
+      const validOffset=offsetHour<=14&&offsetMinute<=59&&(offsetHour<14||offsetMinute===0);
+      if(!validCalendar||!validClock||!validOffset||!Number.isFinite(Date.parse(value))) throw new Error('iso8601 watermark contains an invalid calendar date, clock time or offset');
     }
     if(kind==='unsigned-integer'&&(typeof value!=='string'||!/^(0|[1-9]\d*)$/.test(value))) throw new Error('unsigned-integer watermarks must be canonical decimal strings');
     if((kind==='opaque'||kind==='lexical')&&(typeof value!=='string'||!value.length)) throw new Error(`${kind} watermarks must be non-empty strings`);
