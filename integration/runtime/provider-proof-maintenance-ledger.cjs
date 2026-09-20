@@ -148,6 +148,7 @@ function createProviderProofMaintenanceLedger(options = {}) {
       'status TEXT NOT NULL,' +
       'not_before_ms INTEGER NOT NULL,' +
       'next_attempt_ms INTEGER,' +
+      'first_failure_ms INTEGER,' +
       'attempt_count INTEGER NOT NULL DEFAULT 0,' +
       'claimed_by TEXT,' +
       'claim_token_digest TEXT,' +
@@ -159,6 +160,11 @@ function createProviderProofMaintenanceLedger(options = {}) {
     ');' +
     'CREATE INDEX IF NOT EXISTS provider_proof_maintenance_ready_idx ON provider_proof_maintenance_tasks(status,not_before_ms,next_attempt_ms,created_at_ms);'
   );
+
+  const columns = db.prepare('PRAGMA table_info(provider_proof_maintenance_tasks)').all();
+  if (!columns.some((column) => String(column.name) === 'first_failure_ms')) {
+    db.exec('ALTER TABLE provider_proof_maintenance_tasks ADD COLUMN first_failure_ms INTEGER;');
+  }
 
   const insertTask = db.prepare(
     'INSERT OR IGNORE INTO provider_proof_maintenance_tasks(' +
@@ -187,7 +193,7 @@ function createProviderProofMaintenanceLedger(options = {}) {
     "WHERE task_key=? AND status='CLAIMED' AND claim_token_digest=?"
   );
   const retryTask = db.prepare(
-    "UPDATE provider_proof_maintenance_tasks SET status='PENDING',last_error_class=?,next_attempt_ms=?,claimed_by=NULL,claim_token_digest=NULL,claim_expires_ms=NULL,updated_at_ms=? " +
+    "UPDATE provider_proof_maintenance_tasks SET status='PENDING',last_error_class=?,first_failure_ms=COALESCE(first_failure_ms,?),next_attempt_ms=?,claimed_by=NULL,claim_token_digest=NULL,claim_expires_ms=NULL,updated_at_ms=? " +
     "WHERE task_key=? AND status='CLAIMED' AND claim_token_digest=?"
   );
   const blockTask = db.prepare(
@@ -322,7 +328,7 @@ function createProviderProofMaintenanceLedger(options = {}) {
     }
     const retryAfterMs = boundedPositiveInt(outcome.retryAfterMs, 1_000, 1, MAX_RETRY_DELAY_MS, 'Provider proof maintenance retry delay');
     const nextAttemptMs = now + retryAfterMs;
-    const result = retryTask.run(errorClass, nextAttemptMs, now, key, sha256(token));
+    const result = retryTask.run(errorClass, now, nextAttemptMs, now, key, sha256(token));
     if (Number(result.changes || 0) !== 1) throw new Error('Provider proof maintenance retry could not be recorded.');
     return Object.freeze({
       taskKey: key,
@@ -349,6 +355,7 @@ function createProviderProofMaintenanceLedger(options = {}) {
       attemptCount: Number(row.attempt_count),
       notBefore: new Date(Number(row.not_before_ms)).toISOString(),
       nextAttemptAt: row.next_attempt_ms == null ? null : new Date(Number(row.next_attempt_ms)).toISOString(),
+      firstFailureAt: row.first_failure_ms == null ? null : new Date(Number(row.first_failure_ms)).toISOString(),
       claimExpiresAt: row.claim_expires_ms == null ? null : new Date(Number(row.claim_expires_ms)).toISOString(),
       outcomeDigest: row.outcome_digest || null,
       lastErrorClass: row.last_error_class || null
