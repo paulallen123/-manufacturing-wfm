@@ -14,6 +14,7 @@ const checks = [
   'scripts/validate-factory-decision-kernel.mjs',
   'scripts/validate-engineering-memory.mjs',
   'scripts/validate-operational-history.mjs',
+  'scripts/validate-global-operating-context.mjs',
   'scripts/validate-release-policy.mjs'
 ];
 
