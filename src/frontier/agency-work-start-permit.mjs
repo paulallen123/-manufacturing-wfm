@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
-import {createPostgresAgencyIdentityContinuityStore} from './agency-identity-continuity.mjs';
 import {createPostgresAgencyWorkStartAuthorityStore,evaluateAgencyWorkStartReadiness} from './agency-work-start-readiness.mjs';
-import {AGENCY_WORK_START_LOCKED_SNAPSHOT_SQL,AGENCY_WORK_START_SET_LOCAL_ROLE_SQL} from './agency-work-start-db-boundary.mjs';
+import {AGENCY_WORK_START_LOCKED_SNAPSHOT_SQL,AGENCY_WORK_START_SCOPED_CONTINUITY_SQL,AGENCY_WORK_START_SET_LOCAL_ROLE_SQL} from './agency-work-start-db-boundary.mjs';
 
-export const AGENCY_WORK_START_PERMIT_VERSION='agency-work-start-permit-v0.3.0';
-export const AGENCY_WORK_START_PERMIT_STORE_VERSION='agency-work-start-permit-store-v0.3.0';
+export const AGENCY_WORK_START_PERMIT_VERSION='agency-work-start-permit-v0.4.0';
+export const AGENCY_WORK_START_PERMIT_STORE_VERSION='agency-work-start-permit-store-v0.4.0';
+export const AGENCY_WORK_START_IDENTITY_CONTINUITY_STORE_VERSION='agency-work-start-identity-continuity-store-v0.1.0';
 export const AGENCY_WORK_START_PERMIT_LOCK_SQL=AGENCY_WORK_START_LOCKED_SNAPSHOT_SQL;
 
 const text=(value,max=200)=>typeof value==='string'?value.trim().slice(0,max):'';
@@ -21,12 +21,36 @@ function assignmentFingerprint(request={}){
   return digest(JSON.stringify(stable(scope)),24);
 }
 
+export function createPostgresAgencyWorkStartIdentityContinuityStore({query}={}){
+  if(typeof query!=='function')throw new TypeError('query function is required');
+  return Object.freeze({
+    version:AGENCY_WORK_START_IDENTITY_CONTINUITY_STORE_VERSION,
+    credentialBoundary:'work_start_scoped_identity_continuity_function_only',
+    directTableSelectAllowed:false,
+    async readObservations(scope={}){
+      const assignment=required(scope.assignmentFingerprint,'assignmentFingerprint',24).toLowerCase();
+      const assurance=required(scope.assuranceVersionId,'assuranceVersionId',32).toLowerCase();
+      if(!hex(assignment,24)||!hex(assurance,32))throw new TypeError('identity continuity evidence scope invalid');
+      const windowStart=iso(scope.windowStart),windowEnd=iso(scope.windowEnd);
+      if(!windowStart||!windowEnd||Date.parse(windowEnd)<Date.parse(windowStart))throw new TypeError('identity continuity evidence window invalid');
+      const values=[
+        required(scope.tenantId,'tenantId',100),required(scope.siteId,'siteId',100),required(scope.requestId,'requestId',100),required(scope.agencyId,'agencyId',100),required(scope.workerId,'workerId',100),
+        assignment,assurance,windowStart,windowEnd,
+      ];
+      const result=await query(AGENCY_WORK_START_SCOPED_CONTINUITY_SQL,values);
+      const rows=Array.isArray(result?.rows)?result.rows:[];
+      if(rows.length>200)throw new Error('unexpected_identity_continuity_observation_count');
+      return {rows};
+    },
+  });
+}
+
 export function createPostgresAgencyWorkStartPermitStore({withTransaction}={}){
   if(typeof withTransaction!=='function')throw new TypeError('withTransaction function is required');
   return Object.freeze({
     version:AGENCY_WORK_START_PERMIT_STORE_VERSION,
     concurrencyBoundary:'database_owned_assignment_lock_plus_security_definer_row_locks',
-    databaseRoleBoundary:'wfm_agency_work_start_reader',
+    databaseRoleBoundary:'wfm_agency_work_start_reader_function_only',
     async withLockedSnapshot(scope={},evaluate){
       if(typeof evaluate!=='function')throw new TypeError('evaluate function is required');
       const now=iso(scope.now);if(!now)throw new TypeError('now invalid');
@@ -126,7 +150,7 @@ export async function evaluateAgencyWorkStartPermit({tenantId,siteId,agencyId,re
   try{
     return await permitStore.withLockedSnapshot(scope,async ({query})=>{
       const authorityStore=createPostgresAgencyWorkStartAuthorityStore({query});
-      const continuityStore=createPostgresAgencyIdentityContinuityStore({query});
+      const continuityStore=createPostgresAgencyWorkStartIdentityContinuityStore({query});
       let lockedReadiness;
       try{lockedReadiness=await evaluateReadiness({tenantId:scope.tenantId,siteId:scope.siteId,agencyId:scope.agencyId,request,workerId:scope.workerId,now:scope.now,policy,authorityStore,continuityStore});}
       catch{return fail('work_start_permit_locked_readiness_unavailable',{scope});}
@@ -157,7 +181,7 @@ export async function evaluateAgencyWorkStartPermit({tenantId,siteId,agencyId,re
         rankingImpact:'none',scheduleWriteAuthorized:false,payrollWriteAuthorized:false,clockingWriteAuthorized:false,workStartWriteAuthorized:false,
         authorityBoundary:'transaction_scoped_shadow_work_start_permit_only_no_live_schedule_clocking_payroll_invoice_or_worker_master_mutation',
         privacyBoundary:'no_raw_badge_provider_subject_signature_photo_biometric_date_of_birth_document_number_share_code_portal_token_or_raw_right_to_work_evidence_in_permit_output',
-        atomicityRule:'current_right_to_work_accepted_response_and_authenticated_identity_continuity_are_revalidated_under_the_same_database_owned_assignment_scope_lock_used_by_authenticated_identity_observation_ingress_and_under_a_dedicated_read_only_runtime_role_before_the_one_shot_shadow_work_start_command_is_consumed',
+        atomicityRule:'current_right_to_work_accepted_response_and_authenticated_identity_continuity_are_revalidated_under_the_same_database_owned_assignment_scope_lock_used_by_authenticated_identity_observation_ingress_and_through_exact_scope_security_definer_reads_under_a_dedicated_runtime_role_before_the_one_shot_shadow_work_start_command_is_consumed',
       });
     });
   }catch{return fail('work_start_permit_store_unavailable',{scope});}
