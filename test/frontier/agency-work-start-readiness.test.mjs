@@ -59,12 +59,13 @@ test('unavailable authority or continuity dependencies and evaluation failures f
   const evalFailure=await evaluateAgencyWorkStartReadiness(input({evaluateContinuity:async()=>{throw new Error('continuity down');}}));assert.equal(evalFailure.reason,'work_start_identity_continuity_unavailable');
 });
 
-test('PostgreSQL authority reader is SELECT-only, exact-scope, privacy-minimised and joins current assurance to accepted response evidence',async()=>{
+test('PostgreSQL authority reader uses one exact-scope controlled function and exposes no raw table SQL',async()=>{
   let captured=null;
   const pg=createPostgresAgencyWorkStartAuthorityStore({query:async(sql,values)=>{captured={sql,values};return {rows:[{tenant_id:'T1',site_id:'S1',request_id:'R1',agency_id:'A1',worker_id:'W1',assurance_version_id:ASSURANCE,assignment_fingerprint:assignmentFp(),checked_at:'2026-10-04T10:00:00Z',coverage_until:'2027-12-31T23:59:59Z',promoted_at:'2026-10-04T11:00:00Z',conflicted:false,token_fingerprint:'1'.repeat(16),action:'confirm_preferred_worker',consumed_at:'2026-10-04T12:00:00Z'}]};}});
   const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:pg}));assert.equal(result.workStartReady,true);
-  assert.ok(captured.sql.trim().startsWith('WITH current AS MATERIALIZED'));assert.doesNotMatch(captured.sql,/\bINSERT\b|\bUPDATE\b|\bDELETE\b/i);assert.match(captured.sql,/wfm_agency_rtw_assurance_current/);assert.match(captured.sql,/wfm_agency_portal_token_consumptions/);
-  assert.deepEqual(captured.values.slice(0,5),['T1','S1','R1','A1','W1']);assert.equal(captured.values[5],NOW);
+  assert.match(captured.sql,/wfm_read_agency_work_start_authority_v1/i);assert.doesNotMatch(captured.sql,/wfm_agency_rtw_assurance_current|wfm_agency_portal_token_consumptions|\bINSERT\b|\bUPDATE\b|\bDELETE\b/i);
+  assert.deepEqual(captured.values,['T1','S1','R1','A1','W1',assignmentFp(),NOW]);
+  assert.equal(pg.directTableSelectAllowed,false);assert.equal(pg.credentialBoundary,'work_start_scoped_authority_function_only');
   assert.doesNotMatch(captured.sql,/badge|photo|biometric|date_of_birth|share_code|document_number|raw_payload|signature/i);
 });
 
