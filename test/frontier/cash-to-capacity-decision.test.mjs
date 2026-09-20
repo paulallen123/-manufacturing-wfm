@@ -4,23 +4,25 @@ import {buildCashToCapacityPresentation,roleView} from '../../src/frontier/cash-
 
 const good={
   action:{summary:'Move 2 qualified operators to Line 3 for 4 hours'},
-  financial:{cashReleasedEarlier:68000,additionalLabourCost:420,daysEarlier:3},
-  safety:{skillsCovered:true,complianceCovered:true,fatigueSafe:true},
+  currency:'GBP',
+  financial:{invoiceMilestoneAmountAdvanced:68000,additionalLabourCost:420,daysEarlier:3,financingValue:67,liquidityProtectionValue:6000,disruptionCost:0,estimatedEconomicValue:5647},
+  safety:{skillsCovered:true,complianceCovered:true,fatigueSafe:true,qualityProtected:true,safetyProtected:true},
   service:{deliveryCommitmentsProtected:true},
   confidence:'High',
   evidence:{
-    productionPlan:{authoritative:true,ageMinutes:3,ref:'mes:plan:42'},
-    workforceEligibility:{authoritative:true,ageMinutes:2,ref:'wfm:eligibility:19'},
-    customerCommitment:{authoritative:true,ageMinutes:4,ref:'erp:order:88'},
-    financialMilestone:{authoritative:true,ageMinutes:5,ref:'erp:ar:88'}
+    productionPlan:{authoritative:true,ageMinutes:3,ref:'mes:plan:42',revision:'p7'},
+    workforceEligibility:{authoritative:true,ageMinutes:2,ref:'wfm:eligibility:19',revision:'w4'},
+    customerCommitment:{authoritative:true,ageMinutes:4,ref:'erp:order:88',revision:'o8'},
+    financialMilestone:{authoritative:true,ageMinutes:5,ref:'erp:ar:88',revision:'f3'}
   }
 };
 
-test('presents only when all required evidence and operational guards pass',()=>{
+test('presents invoice timing and economic value as separate concepts',()=>{
   const result=buildCashToCapacityPresentation(good);
   assert.equal(result.status,'presentable');
-  assert.equal(result.card.cashReleasedEarlier,68000);
-  assert.equal(result.card.deliveryProtected,true);
+  assert.equal(result.card.invoiceMilestoneAmountAdvanced,68000);
+  assert.equal(result.card.estimatedEconomicValue,5647);
+  assert.notEqual(result.card.invoiceMilestoneAmountAdvanced,result.card.estimatedEconomicValue);
 });
 
 test('fails closed when finance evidence is not authoritative',()=>{
@@ -31,10 +33,13 @@ test('fails closed when finance evidence is not authoritative',()=>{
   assert.deepEqual(result.missing,['financialMilestone']);
 });
 
-test('never presents a cash recommendation through a safety or service breach',()=>{
+test('never presents through safety quality or service breach',()=>{
   const unsafe=structuredClone(good);
   unsafe.safety.skillsCovered=false;
   assert.equal(buildCashToCapacityPresentation(unsafe).status,'blocked');
+  const quality=structuredClone(good);
+  quality.safety.qualityProtected=false;
+  assert.equal(buildCashToCapacityPresentation(quality).status,'blocked');
   const late=structuredClone(good);
   late.service.deliveryCommitmentsProtected=false;
   assert.equal(buildCashToCapacityPresentation(late).reason,'customer_commitment_risk');
@@ -46,9 +51,10 @@ test('stale evidence suppresses the card',()=>{
   assert.equal(buildCashToCapacityPresentation(stale).status,'evidence_incomplete');
 });
 
-test('employee view never exposes finance decision card',()=>{
+test('employee view hides finance decision while manager and finance wording stays explicit',()=>{
   const card=buildCashToCapacityPresentation(good).card;
   assert.equal(roleView(card,'employee'),null);
-  assert.match(roleView(card,'manager').primary,/£68,000/);
-  assert.match(roleView(card,'finance').headline,/3 days earlier/);
+  assert.match(roleView(card,'manager').primary,/invoice milestone/);
+  assert.match(roleView(card,'finance').primary,/Estimated economic value/);
+  assert.match(roleView(card,'finance').secondary,/not realised/);
 });
