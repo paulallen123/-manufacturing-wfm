@@ -244,3 +244,42 @@ test('summary never echoes credentials, raw payloads or provider rows', () => {
   assert.equal(rendered.includes('do-not-echo'), false);
   assert.equal(rendered.includes('vault://integration/provider-a'), false);
 });
+
+test('expired maintenance claim is visible without pausing a still-valid provider proof', () => {
+  const due = providerProofLease({ observedAt: '2026-09-19T15:29:30.000Z' }, { maxAgeSeconds: 660, renewWindowSeconds: 600 });
+  const result = summarizeConnectionHealth(review, {
+    currentConfig: config,
+    activationEvidence: approvedEvidence(),
+    providerProofLease: due,
+    circuitState: closedCircuit(),
+    runtime: healthyRuntime(),
+    maintenanceExecution: { state: 'CLAIM_EXPIRED', claimToken: 'must-not-echo' }
+  }, NOW);
+
+  assert.equal(result.state, 'DEGRADED');
+  assert.equal(result.canSync, true);
+  assert.equal(result.maintenanceExecutionState, 'CLAIM_EXPIRED');
+  assert.equal(result.reconciliationRequiredBeforeResume, false);
+  assert.equal(result.signals.provider, 'RETRYING');
+  assert.equal(JSON.stringify(result).includes('must-not-echo'), false);
+});
+
+test('uncertain maintenance completion blocks an expired proof until control-plane reconciliation', () => {
+  const expired = providerProofLease({ observedAt: '2026-09-19T15:00:00.000Z' }, { maxAgeSeconds: 300, renewWindowSeconds: 60 });
+  const result = summarizeConnectionHealth(review, {
+    currentConfig: config,
+    activationEvidence: approvedEvidence(),
+    providerProofLease: expired,
+    circuitState: closedCircuit(),
+    runtime: healthyRuntime(),
+    maintenanceExecution: { state: 'COMPLETION_UNCERTAIN', rawProviderResponse: 'must-not-echo' }
+  }, NOW);
+
+  assert.equal(result.state, 'ATTENTION_REQUIRED');
+  assert.equal(result.canSync, false);
+  assert.equal(result.maintenanceExecutionState, 'COMPLETION_UNCERTAIN');
+  assert.equal(result.reconciliationRequiredBeforeResume, true);
+  assert.equal(result.signals.provider, 'OUTCOME_UNCERTAIN');
+  assert.match(result.nextAction, /reconcile/i);
+  assert.equal(JSON.stringify(result).includes('must-not-echo'), false);
+});
