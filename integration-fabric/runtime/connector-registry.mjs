@@ -76,6 +76,21 @@ function providerIdentityFor(system){
   };
 }
 
+function versionRoutingFor(system){
+  const provider=system.apiVersionRouting||{};
+  return {
+    strategy:provider.preferredPolicy||'provider-recommended-per-resource',
+    preferredVersion:provider.preferredVersion||null,
+    fallbackVersion:provider.fallbackVersion||null,
+    fallbackRequiresProviderDeclaration:provider.fallbackRequiresProviderDeclaration!==false,
+    authFailureMayTriggerDowngrade:false,
+    rateLimitMayTriggerDowngrade:false,
+    checkpointNamespaceIncludesVersion:true,
+    versionSwitchRequiresReconciliation:true,
+    paginationByVersion:provider.paginationByVersion?structuredClone(provider.paginationByVersion):null
+  };
+}
+
 export function buildConnectorRegistry(){
   const catalog=loadCatalog();
   const connectors=catalog.systems.map(system=>{
@@ -100,6 +115,7 @@ export function buildConnectorRegistry(){
       providerIdentity:providerIdentityFor(system),
       bootstrapAuthority:system.bootstrapAuthority?structuredClone(system.bootstrapAuthority):null,
       staticCredentialAuthority:system.staticCredentialAuthority?structuredClone(system.staticCredentialAuthority):null,
+      versionRouting:versionRoutingFor(system),
       discoveryStrategy:discoveryStrategy(profileIds,edgeRequired),
       nextEvidenceGate:nextEvidence(system.testLevel,evidenceBlockers),
       evidenceBlockers,
