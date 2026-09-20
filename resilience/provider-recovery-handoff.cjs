@@ -386,17 +386,20 @@ function createProviderResumeOrchestrator({ store, adapter }) {
       deny('WFM_PROVIDER_RESUME_RECONCILIATION', 'Provider source count does not reconcile to staged plus held.');
     }
 
-    const terminal = heldCount === 0 ? 'recovered' : 'review-required';
+    const recovered = heldCount === 0;
     const outcome = {
       providerRunId: input.providerRunId,
       action: consumed.action,
-      status: terminal,
+      status: recovered ? 'recovered' : 'contained',
+      safeTerminal: true,
+      terminalReason: recovered ? 'provider-reconciliation-complete' : 'provider-reconciliation-held-records',
       continuationDigest: consumed.continuationDigest,
       sourceCount,
       stagedCount,
       heldCount,
-      providerCompletionGreen: heldCount === 0,
+      providerCompletionGreen: recovered,
       autonomousBusinessApply: false,
+      vendorEngineerRequired: false,
       productionAuthorityGranted: false,
     };
 
