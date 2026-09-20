@@ -97,3 +97,9 @@ test('rendered action queue keeps source-confirming work collapsed and visible w
   assert.match(awaitingMarkup, /Decision B/);
   assert.match(awaitingMarkup, /Confirming C/);
 });
+
+test('action ordering cannot create synthetic urgency styling', () => {
+  const css = fs.readFileSync(path.join(__dirname, 'vector-shell.css'), 'utf8');
+  assert.doesNotMatch(css, /\.vector-alert-row:first-child>button\s*\{/);
+  assert.match(css, /\.vector-alert-row>button\{[^}]*background:#edf3fb;[^}]*color:#355375;/);
+});
