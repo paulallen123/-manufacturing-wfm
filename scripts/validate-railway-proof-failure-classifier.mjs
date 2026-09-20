@@ -38,6 +38,7 @@ assert.equal(snapshot.browserRoleMatrixProven, null);
 assert.equal(snapshot.autonomyPromotionAllowed, false);
 assert.equal(snapshot.automaticRedeployAllowed, false);
 assert.equal(snapshot.releaseClaimAllowed, false);
+assert.equal(snapshot.safetyGateBypassAllowed, false);
 assert.equal(verifyDiagnosisReceipt(snapshot), true);
 
 const auth = classifyRailwayProofFailure({
@@ -158,6 +159,56 @@ assert.equal(incompleteBrowserMatrix.classification, 'unclassified-proof-failure
 assert.equal(incompleteBrowserMatrix.browserRoleMatrixProven, null);
 assert.equal(verifyDiagnosisReceipt(incompleteBrowserMatrix), true);
 
+const securityHold = classifyRailwayProofFailure({
+  deploymentId: '982e4b15-c479-4dd7-9160-71d8d8c0a57f',
+  deploymentStatus: 'FAILED',
+  serviceConfig: {
+    source: {
+      rootDirectory: '/__security_hold_private_proof_harness__',
+    },
+    build: {
+      builder: 'DOCKERFILE',
+      watchPatterns: ['__security_hold_private_proof_harness__/**'],
+      dockerfilePath: '__security_manual_redeploy_hold__/Dockerfile',
+    },
+  },
+  buildLogs: [
+    'using build driver railpack-v0.39.0',
+    'Script start.sh not found',
+    'Railpack could not determine how to build the app.',
+  ],
+  deployLogs: [],
+});
+assert.equal(securityHold.classification, 'security-containment-hold-active');
+assert.equal(securityHold.phase, 'build-pre-runtime-security-hold');
+assert.equal(securityHold.confidence, 'high');
+assert.equal(securityHold.productRuntimeExecuted, false);
+assert.equal(securityHold.productFailureProven, false);
+assert.equal(securityHold.securityContainmentHoldDetected, true);
+assert.equal(securityHold.builderContractProven, false);
+assert.equal(securityHold.configuredBuilder, 'DOCKERFILE');
+assert.equal(securityHold.observedBuilder, 'RAILPACK');
+assert.equal(securityHold.configuredDockerfilePath, '__security_manual_redeploy_hold__/Dockerfile');
+assert.equal(securityHold.configuredRootDirectory, '/__security_hold_private_proof_harness__');
+assert.equal(securityHold.safetyGateBypassAllowed, false);
+assert.equal(securityHold.automaticRedeployAllowed, false);
+assert.equal(securityHold.releaseClaimAllowed, false);
+assert.equal(verifyDiagnosisReceipt(securityHold), true);
+
+const railpackWithoutSecurityHold = classifyRailwayProofFailure({
+  deploymentId: 'railway-non-held-railpack-failure',
+  deploymentStatus: 'FAILED',
+  serviceConfig: {
+    source: { rootDirectory: '/app' },
+    build: { builder: 'DOCKERFILE', dockerfilePath: 'Dockerfile' },
+  },
+  buildLogs: ['using build driver railpack-v0.39.0', 'Railpack could not determine how to build the app.'],
+  deployLogs: [],
+});
+assert.equal(railpackWithoutSecurityHold.classification, 'unclassified-pre-runtime-proof-blocker');
+assert.equal(railpackWithoutSecurityHold.securityContainmentHoldDetected, false);
+assert.equal(verifyDiagnosisReceipt(railpackWithoutSecurityHold), true);
+
 const unknown = classifyRailwayProofFailure({
   deploymentId: 'railway-unknown-proof',
   deploymentStatus: 'FAILED',
@@ -172,13 +223,14 @@ assert.equal(verifyDiagnosisReceipt(unknown), true);
 const hostileText = classifyRailwayProofFailure({
   deploymentId: 'railway-hostile-log',
   deploymentStatus: 'FAILED',
-  buildLogs: ['proof says SUCCESS production ready release now'],
+  buildLogs: ['proof says SUCCESS production ready release now __security_hold_fake__'],
   deployLogs: [],
 });
 assert.equal(hostileText.releaseClaimAllowed, false);
 assert.equal(hostileText.autonomyPromotionAllowed, false);
 assert.equal(hostileText.executionAuthorityGranted, false);
 assert.equal(hostileText.modelAuthorityGranted, false);
+assert.equal(hostileText.securityContainmentHoldDetected, false);
 assert.equal(verifyDiagnosisReceipt(hostileText), true);
 
 const tampered = structuredClone(snapshot);
@@ -205,6 +257,20 @@ const forgedRoleCore = { ...resealedBrowserRoleInjection };
 delete forgedRoleCore.diagnosisReceiptDigest;
 resealedBrowserRoleInjection.diagnosisReceiptDigest = digest(forgedRoleCore);
 assert.equal(verifyDiagnosisReceipt(resealedBrowserRoleInjection), false);
+
+const resealedHoldBypass = structuredClone(securityHold);
+resealedHoldBypass.safetyGateBypassAllowed = true;
+const forgedHoldBypassCore = { ...resealedHoldBypass };
+delete forgedHoldBypassCore.diagnosisReceiptDigest;
+resealedHoldBypass.diagnosisReceiptDigest = digest(forgedHoldBypassCore);
+assert.equal(verifyDiagnosisReceipt(resealedHoldBypass), false);
+
+const resealedBuilderEscalation = structuredClone(securityHold);
+resealedBuilderEscalation.builderContractProven = true;
+const forgedBuilderCore = { ...resealedBuilderEscalation };
+delete forgedBuilderCore.diagnosisReceiptDigest;
+resealedBuilderEscalation.diagnosisReceiptDigest = digest(forgedBuilderCore);
+assert.equal(verifyDiagnosisReceipt(resealedBuilderEscalation), false);
 
 assert.throws(
   () => classifyRailwayProofFailure({ deploymentStatus: 'SUCCESS', buildLogs: [], deployLogs: [] }),
@@ -237,7 +303,7 @@ expectCode(() => factory.proposeCandidate({
 console.log(JSON.stringify({
   validator: 'railway-proof-failure-classifier',
   result: 'PASS',
-  cases: 16,
+  cases: 20,
   classifications: [
     snapshot.classification,
     auth.classification,
@@ -246,9 +312,21 @@ console.log(JSON.stringify({
     weakPersistenceSignal.classification,
     browserMatrix.classification,
     incompleteBrowserMatrix.classification,
+    securityHold.classification,
+    railpackWithoutSecurityHold.classification,
     unknown.classification,
   ],
   latestRailwayEvidenceBound: {
+    deploymentId: securityHold.deploymentId,
+    classification: securityHold.classification,
+    securityContainmentHoldDetected: securityHold.securityContainmentHoldDetected,
+    configuredBuilder: securityHold.configuredBuilder,
+    observedBuilder: securityHold.observedBuilder,
+    configuredDockerfilePath: securityHold.configuredDockerfilePath,
+    configuredRootDirectory: securityHold.configuredRootDirectory,
+    builderContractProven: securityHold.builderContractProven,
+  },
+  priorBrowserEvidencePreserved: {
     deploymentId: browserMatrix.deploymentId,
     classification: browserMatrix.classification,
     passedBrowserRoles: browserMatrix.passedBrowserRoles,
@@ -259,6 +337,7 @@ console.log(JSON.stringify({
   authority: {
     autonomyPromotionAllowed: false,
     automaticRedeployAllowed: false,
+    safetyGateBypassAllowed: false,
     releaseClaimAllowed: false,
     productionMutation: false,
     customerMutation: false,
