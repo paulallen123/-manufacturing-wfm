@@ -3,6 +3,13 @@
 const { nextRetryDecision } = require('./transport-runtime-policy.cjs');
 
 const ERROR_CLASS = /^[A-Za-z0-9._:-]{1,120}$/;
+const FAILURE_ALIASES = Object.freeze({
+  'provider-timeout': 'timeout',
+  'provider-unavailable': 'temporarily-unavailable',
+  'provider-temporary-unavailable': 'temporarily-unavailable',
+  'provider-rate-limited': 'rate-limited',
+  'provider-network-unreachable': 'network-unreachable'
+});
 
 function text(value) {
   return String(value ?? '').trim();
@@ -13,6 +20,20 @@ function safeErrorClass(error, fallback = 'provider-temporary-unavailable') {
     .replace(/[^A-Za-z0-9._:-]/g, '-')
     .slice(0, 120);
   return ERROR_CLASS.test(candidate) ? candidate : fallback;
+}
+
+function canonicalFailureClass(error = {}) {
+  const fallback = error?.retryable === true ? 'temporarily-unavailable' : 'unclassified';
+  const safe = safeErrorClass(error, fallback).toLowerCase();
+  return FAILURE_ALIASES[safe] || safe;
+}
+
+function safeFailureStatus(error = {}) {
+  for (const value of [error.status, error.statusCode, error.httpStatus]) {
+    const status = Number(value);
+    if (Number.isInteger(status) && status >= 100 && status <= 599) return status;
+  }
+  return 0;
 }
 
 function safeRetryHint(error = {}) {
@@ -33,14 +54,10 @@ function safeRetryHint(error = {}) {
 }
 
 function maintenanceRetryDecision(review, claim = {}, error = {}, now = Date.now()) {
-  const errorClass = safeErrorClass(error);
-  if (error?.retryable !== true) {
-    return Object.freeze({
-      action: 'BLOCK',
-      retryable: false,
-      errorClass
-    });
-  }
+  const errorClass = safeErrorClass(
+    error,
+    error?.retryable === true ? 'provider-temporary-unavailable' : 'provider-proof-execution-blocked'
+  );
 
   if (!review?.reviewedDigest || !text(review.transport)) {
     return Object.freeze({
@@ -59,7 +76,8 @@ function maintenanceRetryDecision(review, claim = {}, error = {}, now = Date.now
   let decision;
   try {
     decision = nextRetryDecision(review, {
-      failureClass: 'temporarily-unavailable',
+      failureClass: canonicalFailureClass(error),
+      status: safeFailureStatus(error),
       ...hint
     }, {
       attempt: Math.max(0, attemptCount - 1),
@@ -77,7 +95,7 @@ function maintenanceRetryDecision(review, claim = {}, error = {}, now = Date.now
     return Object.freeze({
       action: 'BLOCK',
       retryable: false,
-      errorClass: text(decision.reason) || 'retry-budget-exhausted',
+      errorClass: text(decision.reason) || errorClass || 'retry-budget-exhausted',
       transportDisposition: decision.action
     });
   }
@@ -94,6 +112,8 @@ function maintenanceRetryDecision(review, claim = {}, error = {}, now = Date.now
 
 module.exports = {
   safeErrorClass,
+  canonicalFailureClass,
+  safeFailureStatus,
   safeRetryHint,
   maintenanceRetryDecision
 };
