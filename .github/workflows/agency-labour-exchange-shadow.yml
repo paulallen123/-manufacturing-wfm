@@ -27,6 +27,7 @@ on:
       - 'src/frontier/agency-work-start-db-boundary.mjs'
       - 'src/frontier/agency-work-start-principal-lifecycle.mjs'
       - 'src/frontier/agency-work-start-precheck.mjs'
+      - 'src/frontier/agency-work-start-runtime.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
@@ -68,6 +69,7 @@ on:
       - 'test/frontier/agency-work-start-principal-lifecycle-postgres.test.mjs'
       - 'test/frontier/agency-work-start-precheck.test.mjs'
       - 'test/frontier/agency-work-start-precheck-postgres.test.mjs'
+      - 'test/frontier/agency-work-start-runtime.test.mjs'
       - 'test/frontier/agency-postgres-work-start-permit-race.test.mjs'
       - 'test/frontier/agency-postgres-work-start-runtime-race.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
@@ -142,6 +144,7 @@ jobs:
               test/frontier/agency-work-start-db-boundary.test.mjs \
               test/frontier/agency-work-start-principal-lifecycle.test.mjs \
               test/frontier/agency-work-start-precheck.test.mjs \
+              test/frontier/agency-work-start-runtime.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
