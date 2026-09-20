@@ -7,6 +7,8 @@ import {AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL} from '../../src/frontier/agency-righ
 import {AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL} from '../../src/frontier/agency-portal-token-store.mjs';
 import {AGENCY_IDENTITY_CONTINUITY_DDL,createPostgresAgencyIdentityContinuityStore} from '../../src/frontier/agency-identity-continuity.mjs';
 import {AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL} from '../../src/frontier/agency-identity-observation-ingress.mjs';
+import {AGENCY_IDENTITY_DB_BOUNDARY_DDL} from '../../src/frontier/agency-identity-db-boundary.mjs';
+import {AGENCY_WORK_START_DB_BOUNDARY_DDL} from '../../src/frontier/agency-work-start-db-boundary.mjs';
 import {createPostgresAgencyWorkStartAuthorityStore,evaluateAgencyWorkStartReadiness} from '../../src/frontier/agency-work-start-readiness.mjs';
 
 const execFileAsync=promisify(execFile);
@@ -31,7 +33,7 @@ async function query(sql,values=[]){const rows=parseRows(await psql(interpolate(
 async function scalar(sql){const out=await psql(sql);return out.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).at(-1)??null;}
 async function waitForPostgres(){let init=false,last='';for(let i=0;i<80;i+=1){try{const logs=await docker(['logs',CONTAINER],{timeout:5000});last=`${logs.stdout??''}\n${logs.stderr??''}`;init||=last.includes('PostgreSQL init process complete; ready for start up.');if(init){const {stdout}=await docker(['exec',CONTAINER,'psql','-X','-q','-A','-t','-U',DB_USER,'-d',DB_NAME,'-c','SELECT 1;'],{timeout:5000});if(stdout.trim()==='1')return;}}catch{}await new Promise(r=>setTimeout(r,250));}throw new Error(`postgres final server did not become ready\n${last.split(/\r?\n/).slice(-10).join('\n')}`);}
 async function stop(){if(!started)return;try{await docker(['rm','-f',CONTAINER],{timeout:10000});}catch{}started=false;}
-before(async()=>{if(!REQUIRED)return;try{await docker(['version','--format','{{.Server.Version}}'],{timeout:10000});}catch(error){throw new Error(`Docker is required for work-start PostgreSQL proof: ${error.message}`);}await docker(['run','-d','--rm','--name',CONTAINER,'-e',`POSTGRES_PASSWORD=${DB_PASSWORD}`,POSTGRES_IMAGE],{timeout:120000});started=true;await waitForPostgres();await psql(AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL);await psql(AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL);await psql(AGENCY_IDENTITY_CONTINUITY_DDL);await psql(AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL);});
+before(async()=>{if(!REQUIRED)return;try{await docker(['version','--format','{{.Server.Version}}'],{timeout:10000});}catch(error){throw new Error(`Docker is required for work-start PostgreSQL proof: ${error.message}`);}await docker(['run','-d','--rm','--name',CONTAINER,'-e',`POSTGRES_PASSWORD=${DB_PASSWORD}`,POSTGRES_IMAGE],{timeout:120000});started=true;await waitForPostgres();await psql(`${AGENCY_RIGHT_TO_WORK_ASSURANCE_DDL}\n${AGENCY_PORTAL_TOKEN_CONSUMPTION_DDL}\n${AGENCY_IDENTITY_CONTINUITY_DDL}\n${AGENCY_IDENTITY_OBSERVATION_INGRESS_DDL}\n${AGENCY_IDENTITY_DB_BOUNDARY_DDL}\n${AGENCY_WORK_START_DB_BOUNDARY_DDL}`);});
 after(async()=>{await stop();});
 function pgTest(name,fn){test(name,{skip:!REQUIRED},fn);}
 const policy=()=>({policyId:'S-START-PACK-v1',siteId:'S-START',roleId:'PACK-OP',minutesBeforeStart:60,minutesAfterStart:90,minIndependentSources:1,requireDirectIdentity:false,allowedSources:{turnstile:['access_pass']}});
@@ -42,7 +44,7 @@ async function seedValid(){
   await psql(`INSERT INTO wfm_agency_portal_token_consumptions (tenant_id,token_id,site_id,request_id,agency_id,token_fingerprint,action,expires_at,consumed_at,assurance_bindings) VALUES ('T-START','TOK-START','S-START','R-START','A-START','${'1'.repeat(16)}','confirm_preferred_worker','2026-10-05T05:00:00Z','2026-10-04T12:00:00Z','[{"workerId":"W-START","assuranceVersionId":"${ASSURANCE}"}]'::jsonb);`);
   const event='1'.repeat(32),binding=bindingFp(),auth=digest(`auth|${binding}`);
   await psql(`INSERT INTO wfm_agency_identity_continuity_observations (tenant_id,site_id,request_id,agency_id,worker_id,assignment_fingerprint,assurance_version_id,source_system_id,source_event_fingerprint,subject_fingerprint,signal_type,observed_at) VALUES ('T-START','S-START','R-START','A-START','W-START','${ASSIGNMENT}','${ASSURANCE}','turnstile','${event}','${SUBJECT}','access_pass','2026-10-05T05:58:00Z');`);
-  await psql(`INSERT INTO wfm_agency_identity_observation_ingress_receipts (tenant_id,source_system_id,source_event_fingerprint,source_auth_fingerprint,binding_fingerprint,ingress_version,received_at) VALUES ('T-START','turnstile','${event}','${auth}','${binding}','agency-identity-observation-ingress-v0.1.0','2026-10-05T05:58:10Z');`);
+  await psql(`INSERT INTO wfm_agency_identity_observation_ingress_receipts (tenant_id,source_system_id,source_event_fingerprint,source_auth_fingerprint,binding_fingerprint,ingress_version,received_at) VALUES ('T-START','turnstile','${event}','${auth}','${binding}','agency-identity-observation-ingress-v0.2.0','2026-10-05T05:58:10Z');`);
 }
 async function evaluate(){return evaluateAgencyWorkStartReadiness({tenantId:'T-START',siteId:'S-START',agencyId:'A-START',request:REQUEST,workerId:'W-START',now:NOW,policy:policy(),authorityStore:createPostgresAgencyWorkStartAuthorityStore({query}),continuityStore:createPostgresAgencyIdentityContinuityStore({query})});}
 
