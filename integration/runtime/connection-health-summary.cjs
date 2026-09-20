@@ -2,6 +2,7 @@
 
 const { evaluateActivation, evaluateRuntimeHealth } = require('./connection-proof-gate.cjs');
 const { planProviderProofMaintenance } = require('./provider-proof-maintenance.cjs');
+const { retryExhaustionHealth } = require('./maintenance-retry-health.cjs');
 
 function sameReview(item, review) {
   return item && item.reviewedDigest === review?.reviewedDigest;
@@ -149,6 +150,26 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
       setupProgress: progress,
       automation: maintenance,
       signals: Object.freeze({ activation: 'APPROVED', provider: 'BLOCKED', runtime: 'NOT_EVALUATED' })
+    });
+  }
+
+  const retryExhaustion = retryExhaustionHealth(maintenance, input.maintenanceExecution || {});
+  if (retryExhaustion) {
+    return Object.freeze({
+      state: retryExhaustion.state,
+      canSync: retryExhaustion.canSync,
+      customerMessage: retryExhaustion.customerMessage,
+      nextAction: retryExhaustion.nextAction,
+      setupProgress: progress,
+      automation: maintenance,
+      maintenanceExecutionState: retryExhaustion.maintenanceExecutionState,
+      reconciliationRequiredBeforeResume: retryExhaustion.reconciliationRequiredBeforeResume,
+      retryExhausted: true,
+      signals: Object.freeze({
+        activation: 'APPROVED',
+        provider: retryExhaustion.providerSignal,
+        runtime: retryExhaustion.runtimeSignal
+      })
     });
   }
 
