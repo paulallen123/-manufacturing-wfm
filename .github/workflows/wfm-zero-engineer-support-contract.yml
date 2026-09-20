@@ -147,6 +147,9 @@ jobs:
           echo "WFM_AUTONOMY_HEAD_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           echo "WFM_CANONICAL_BASE_SHA=$(git rev-parse "$CANONICAL_REF")" >> "$GITHUB_ENV"
           echo "WFM_CANONICAL_POLICY_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:release/release-policy.json")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_DEPLOYMENT_POINTER_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:release/deployment-pointer.json")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_STAGING_WORKFLOW_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:.github/workflows/canonical-staging-release.yml")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_RELEASE_VALIDATOR_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:scripts/validate-release-policy.mjs")" >> "$GITHUB_ENV"
           echo "WFM_CANONICAL_MERGE_TREE_SHA=$MERGE_TREE_SHA" >> "$GITHUB_ENV"
 
       - name: Run canonical portable autonomy proof
@@ -167,11 +170,17 @@ jobs:
             "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/branches/integration/canonical")"
           FINAL_CANONICAL_SHA="$(printf '%s' "$BRANCH_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["commit"]["sha"])')"
           FINAL_POLICY_BLOB_SHA="$(git rev-parse "$WFM_CANONICAL_BASE_SHA:release/release-policy.json")"
+          FINAL_DEPLOYMENT_POINTER_BLOB_SHA="$(git rev-parse "$WFM_CANONICAL_BASE_SHA:release/deployment-pointer.json")"
+          FINAL_STAGING_WORKFLOW_BLOB_SHA="$(git rev-parse "$WFM_CANONICAL_BASE_SHA:.github/workflows/canonical-staging-release.yml")"
+          FINAL_RELEASE_VALIDATOR_BLOB_SHA="$(git rev-parse "$WFM_CANONICAL_BASE_SHA:scripts/validate-release-policy.mjs")"
           FINAL_MERGE_TREE_SHA="$(git merge-tree --write-tree "$WFM_AUTONOMY_HEAD_SHA" "$WFM_CANONICAL_BASE_SHA")"
           if [ "$FINAL_CANONICAL_SHA" != "$WFM_CANONICAL_BASE_SHA" ] \
             || [ "$FINAL_POLICY_BLOB_SHA" != "$WFM_CANONICAL_POLICY_BLOB_SHA" ] \
+            || [ "$FINAL_DEPLOYMENT_POINTER_BLOB_SHA" != "$WFM_CANONICAL_DEPLOYMENT_POINTER_BLOB_SHA" ] \
+            || [ "$FINAL_STAGING_WORKFLOW_BLOB_SHA" != "$WFM_CANONICAL_STAGING_WORKFLOW_BLOB_SHA" ] \
+            || [ "$FINAL_RELEASE_VALIDATOR_BLOB_SHA" != "$WFM_CANONICAL_RELEASE_VALIDATOR_BLOB_SHA" ] \
             || [ "$FINAL_MERGE_TREE_SHA" != "$WFM_CANONICAL_MERGE_TREE_SHA" ]; then
-            echo '::error::Canonical trust anchor moved during proof execution. Discarding stale proof; rerun against the new canonical state.' >&2
+            echo '::error::Canonical trust anchor or release-control bundle moved during proof execution. Discarding stale proof; rerun against the new canonical state.' >&2
             exit 1
           fi
         env:
@@ -220,6 +229,7 @@ jobs:
             && p.productionMutation === false
             && p.customerMutation === false
             && p.canonicalTrustAnchorProtected === protectedAnchor
+            && p.canonicalControlBundleReceiptBound === true
             && hydrationValid
             && p.incidentRegressionCorpus
             && p.incidentRegressionCorpus.priorSnapshotLoaded === priorCorpusExpected
@@ -230,6 +240,9 @@ jobs:
             && b.headSha === process.env.WFM_AUTONOMY_HEAD_SHA
             && b.canonicalBaseSha === process.env.WFM_CANONICAL_BASE_SHA
             && b.canonicalPolicyBlobSha === process.env.WFM_CANONICAL_POLICY_BLOB_SHA
+            && b.canonicalDeploymentPointerBlobSha === process.env.WFM_CANONICAL_DEPLOYMENT_POINTER_BLOB_SHA
+            && b.canonicalStagingWorkflowBlobSha === process.env.WFM_CANONICAL_STAGING_WORKFLOW_BLOB_SHA
+            && b.canonicalReleaseValidatorBlobSha === process.env.WFM_CANONICAL_RELEASE_VALIDATOR_BLOB_SHA
             && b.mergeTreeSha === process.env.WFM_CANONICAL_MERGE_TREE_SHA;
           const releaseState = protectedAnchor
             ? p.canonicalReleaseEvidenceBound === true
@@ -301,6 +314,9 @@ jobs:
           const workflowHeadSha = String(process.env.WORKFLOW_HEAD_SHA || '').toLowerCase();
           const canonicalBaseSha = String(process.env.WFM_CANONICAL_BASE_SHA || '').toLowerCase();
           const canonicalPolicyBlobSha = String(process.env.WFM_CANONICAL_POLICY_BLOB_SHA || '').toLowerCase();
+          const canonicalDeploymentPointerBlobSha = String(process.env.WFM_CANONICAL_DEPLOYMENT_POINTER_BLOB_SHA || '').toLowerCase();
+          const canonicalStagingWorkflowBlobSha = String(process.env.WFM_CANONICAL_STAGING_WORKFLOW_BLOB_SHA || '').toLowerCase();
+          const canonicalReleaseValidatorBlobSha = String(process.env.WFM_CANONICAL_RELEASE_VALIDATOR_BLOB_SHA || '').toLowerCase();
           const mergeTreeSha = String(process.env.WFM_CANONICAL_MERGE_TREE_SHA || '').toLowerCase();
 
           const binding = portable?.releaseBinding || null;
@@ -308,6 +324,9 @@ jobs:
             && binding.headSha === workflowHeadSha
             && binding.canonicalBaseSha === canonicalBaseSha
             && binding.canonicalPolicyBlobSha === canonicalPolicyBlobSha
+            && binding.canonicalDeploymentPointerBlobSha === canonicalDeploymentPointerBlobSha
+            && binding.canonicalStagingWorkflowBlobSha === canonicalStagingWorkflowBlobSha
+            && binding.canonicalReleaseValidatorBlobSha === canonicalReleaseValidatorBlobSha
             && binding.mergeTreeSha === mergeTreeSha;
           const portablePassed = portable?.status === 'PASS' && portable?.exactRuntime === true;
           const postProofGatesPassed = canonicalRevalidationOutcome === 'success' && proofReceiptOutcome === 'success';
@@ -331,7 +350,7 @@ jobs:
 
           const releaseClaimAllowed = finalEvidenceStatus === 'ELIGIBLE_EXACT_RELEASE_EVIDENCE';
           const core = {
-            schemaVersion: 3,
+            schemaVersion: 4,
             proof: 'workflow-bound-zero-engineer-autonomy-evidence',
             workflowRunId: String(process.env.WORKFLOW_RUN_ID || ''),
             workflowRunAttempt: String(process.env.WORKFLOW_RUN_ATTEMPT || ''),
@@ -339,6 +358,9 @@ jobs:
             workflowRef: String(process.env.WORKFLOW_REF || ''),
             canonicalBaseSha,
             canonicalPolicyBlobSha,
+            canonicalDeploymentPointerBlobSha,
+            canonicalStagingWorkflowBlobSha,
+            canonicalReleaseValidatorBlobSha,
             mergeTreeSha,
             portableProofSha256: portableRaw ? sha256(portableRaw) : null,
             portableProofStatus: portable?.status || null,
