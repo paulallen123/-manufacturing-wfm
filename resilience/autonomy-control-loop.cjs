@@ -440,6 +440,13 @@ function createAutonomyControlLoop({
     } catch (error) {
       outcome = 'contained';
       result = { containedErrorCode: error.code || 'WFM_AUTONOMY_INTERNAL' };
+      if (tier === 'T1' && actionCount > 0) {
+        safeTerminalEstablished = false;
+        append('t1-safe-terminal-not-established', {
+          code: result.containedErrorCode,
+          reason: 'recovery-or-independent-verification-failed-after-action-start',
+        });
+      }
       if (tier === 'T4') {
         safeTerminalEstablished = false;
         append('t4-safe-terminal-not-established', {
@@ -473,6 +480,7 @@ function createAutonomyControlLoop({
       tier,
       outcome,
       safeTerminal: safeTerminalEstablished,
+      vendorEngineerRequired: false,
       actionCount,
       maxActions,
       evidenceDigest,
@@ -511,6 +519,7 @@ function createAutonomyControlLoop({
 
   function verifyReceipt(receipt) {
     if (!receipt || !Array.isArray(receipt.trace) || !receipt.receiptDigest) return false;
+    if (receipt.vendorEngineerRequired !== false) return false;
     let prev = digest({
       incidentId: receipt.incidentId,
       tenant: receipt.tenant,
@@ -529,6 +538,18 @@ function createAutonomyControlLoop({
     }
 
     if (receipt.traceHeadDigest !== prev) return false;
+    if (receipt.tier === 'T1' && receipt.safeTerminal === true && receipt.actionCount > 0) {
+      if (!receipt.recovery || !receipt.recoveryVerification) return false;
+      if (!isAllowedTerminal(contract, 'T1', receipt.outcome)) return false;
+      if (receipt.outcome !== receipt.recovery.status) return false;
+      if (receipt.recoveryVerification.verified !== true) return false;
+      if (receipt.recoveryVerification.executionDigest !== receipt.recovery.executionDigest) return false;
+      if (!isDigest(receipt.recoveryVerification.verificationDigest)) return false;
+      if (receipt.recoveryVerification.productionAuthorityGranted !== false
+        || receipt.recoveryVerification.customerMutation !== false
+        || receipt.recoveryVerification.modelAuthorityGranted !== false
+        || receipt.recoveryVerification.actionAuthorityGranted !== false) return false;
+    }
     if (receipt.tier === 'T4' && receipt.safeTerminal === true) {
       if (!receipt.t4 || receipt.t4.safeTerminal !== true) return false;
       if (!t4ContainmentController?.verifyReceipt || t4ContainmentController.verifyReceipt(receipt.t4) !== true) return false;
