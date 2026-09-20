@@ -2,6 +2,62 @@
 
 This is the single canonical scorecard for the approved Vector role-first NEW-UI lineage. Historical cycle detail remains in Git history; this file keeps the current evidence boundary, validated deltas and one dependency-ordered next action without repeating old research.
 
+## 2026-09-20 — Vector r14: actionable versus source-confirmation grouping proof
+
+### Journey reviewed
+Factory/operations manager Vector Home → `Needs my action` → contract-backed Time Review work, with source-owned `Decision sent` / `Confirming source` work retained separately under collapsed `Awaiting source confirmation`.
+
+### NEW-UI lineage confirmation
+All product/test work is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired overlay, customer-proof runtime, staging or production presentation was changed.
+
+### Reuse / duplicate-work decision
+- The fast reuse/diff check found that the canonical NEW UI already contains the bounded grouping implementation: `actionDisposition()` / `actionQueueGroups()` drive `Needs my action`, while `decision_sent` and `confirming_source` remain visible in a collapsed `Awaiting source confirmation` section and `resolved` stays excluded.
+- Reused the existing `vector-action-queue.test.cjs`, existing Vector row renderer and existing Vector-only guard. No new queue, component, lifecycle mapper, branch, CSS fork or browser harness was created.
+- Did not repeat external UX/competitor research because the unresolved risk was implementation regression, not an unanswered design question.
+- The unchanged GitHub runner-allocation blocker was checked once on the new head and not retried.
+
+### Evidence-backed finding
+The product grouping already exists, but the existing focused regression verified only lifecycle partitioning at the helper level. A distinct failure remained possible: the rendered markup could accidentally put `Decision sent` / `Confirming source` back into the main action list, open the confirmation section by default, hide actionable work, or allow loose presentation wording to change grouping even while the helper test stayed green.
+
+### Hypothesis
+If the existing test harness exercises the actual `alertsMarkup()` output as well as the grouping helper, then the product can protect the manager-facing distinction between work needing a decision and work merely awaiting authoritative confirmation without adding another component or browser harness.
+
+### Exact implementation / design delta
+- No product UI code was duplicated or redesigned in this cycle; the existing canonical grouping remains the source owner.
+- Commit `65442ad4bb61970e6c832edc8d9ed9d171f904a1` extends the existing `ux-overlay/vector-action-queue.test.cjs` only.
+- The test VM instruments the loaded canonical `vector-shell.js` in-memory for test visibility, then exercises the real `alertsMarkup()` implementation without changing the production export surface.
+- The new regression requires: `3` actionable rows remain under `Needs my action`; `Decision sent` and `Confirming source` remain present under collapsed `Awaiting source confirmation · 2`; `Resolved` is absent; and a loose `Urgent` presentation label cannot move an item into source-confirmation state.
+
+### Serious-idea decision
+| Idea | Evidence | Decision |
+| --- | --- | --- |
+| Protect the actual rendered grouping in the existing unit harness | Helper-only coverage left a distinct markup-regression gap | **BUILD NOW** |
+| Create a second queue/card implementation to separate confirmation work | Existing grouping primitives already own the behaviour | **REJECT** |
+| Infer awaiting-confirmation from presentation words such as urgent/sent | Would move lifecycle authority into presentation | **REJECT** |
+| Extend the existing exact-candidate browser oracle to assert both queue sections on real DOM | Still missing responsive/accessibility integration evidence | **BUILD NEXT** |
+| Start Absence/sign-off grouping before Time Review executable proof | Would duplicate an interaction pattern before the first domain is browser-proven | **REJECT** |
+
+### Focused / affected validation
+- A focused local smoke using the exact current grouping/markup functions passed: `VECTOR_ACTION_GROUPING_FOCUSED=PASS|needs=3|awaiting=2|resolved=excluded|loose-wording=needs-action|details=collapsed`.
+- Source re-fetch confirms the canonical NEW UI currently derives disposition only from structured `confirmationState`, renders `Needs my action`, keeps source-confirming rows under `<details data-vector-awaiting-confirmation>`, and counts only `groups.needs` in the notification badge.
+- The affected GitHub Vector-only run `35477697278` for exact head `65442ad4bb61970e6c832edc8d9ed9d171f904a1` again received no executable steps (`runner_id=0`, `steps=[]`). Therefore the repository test, Docker build and built-asset guard did not execute on GitHub.
+- Railway's isolated `wfm-one-day-enterprise-v1` service had a new failed deployment at 23:55 UTC before this commit; its build log stopped at builder scheduling with no deploy logs. That is not treated as current-head proof and was not retried or forced.
+
+### UX scorecard impact
+- Calm by default: strengthened — in-flight source confirmation no longer needs to compete visually with work requiring a human decision.
+- Dense on demand: strengthened — confirmation work stays available behind one collapsed disclosure rather than disappearing or filling the main list.
+- Explainability: strengthened — the queue structure now reflects authoritative lifecycle ownership rather than presentation language.
+- Accessibility: design intent preserved; exact browser/screen-reader execution for the grouped sections remains unverified.
+- Responsive containment: product structure is unchanged; exact 1440/760/390 DOM proof for the two-section grouping remains unverified.
+- Authority/auditability: preserved — only structured `confirmationState` controls grouping; no timer, AI inference or loose copy can advance lifecycle state.
+- Development efficiency: improved — one existing regression file was extended; no product component or CI path was duplicated.
+
+### Still unverified
+The exact-current-head browser oracle has not executed, so real DOM grouping, disclosure semantics, responsive visibility, keyboard/screen-reader behaviour and an actual source-owned transition from `Action required → Decision sent → Confirming source` remain unverified. GitHub runner allocation is still the execution blocker; the latest isolated Railway deployment failure also predates this test commit and is not evidence about r14 behaviour.
+
+### Single next highest-value NEW-UI action
+Extend the existing source-controlled exact-candidate browser oracle—not a new harness—to assert that a manager sees only actionable rows in `Needs my action`, sees `Decision sent` / `Confirming source` retained under collapsed `Awaiting source confirmation`, and that the bell count excludes awaiting-source rows at desktop/tablet/mobile. Then execute that same oracle when a safe executor is available before reusing the pattern for Absence or weekly sign-off.
+
 ## 2026-09-19 — Vector r13: visible authoritative action lifecycle
 
 ### Journey reviewed
