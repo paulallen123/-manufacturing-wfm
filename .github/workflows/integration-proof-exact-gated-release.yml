@@ -1,5 +1,5 @@
 name: Integration proof exact gated release
-# Release-only refresh: renew exact verified merge authority after the Vector r15 urgency-governance update without changing product runtime or readiness claims.
+# Release-only refresh: renew exact verified merge authority after the Vector r15.1 awaiting-source affordance design gate without changing product runtime or readiness claims.
 
 on:
   push:
