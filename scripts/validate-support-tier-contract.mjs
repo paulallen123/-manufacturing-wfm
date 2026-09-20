@@ -135,6 +135,7 @@ for (const scenario of t1Scenarios) {
   assert.ok(t1Allowed.has(receipt.outcome), `${scenario.id} escaped the T1 terminal allowlist with ${receipt.outcome}.`);
   assert.equal(receipt.outcome, expectedOutcome, `${scenario.id} did not reach its deterministic zero-engineer terminal.`);
   assert.equal(receipt.safeTerminal, true, `${scenario.id} did not establish a safe T1 terminal.`);
+  assert.equal(receipt.vendorEngineerRequired, false, `${scenario.id} unexpectedly requires a vendor engineer.`);
   assert.equal(receipt.productionMutation, false, `${scenario.id} reported production mutation.`);
   assert.equal(receipt.productionAuthorityGranted, false, `${scenario.id} reported production authority.`);
   assert.equal(receipt.customerMutation, false, `${scenario.id} reported customer mutation.`);
@@ -147,14 +148,16 @@ for (const scenario of t1Scenarios) {
     expectedOutcome,
     actualOutcome: receipt.outcome,
     safeTerminal: receipt.safeTerminal,
+    vendorEngineerRequired: receipt.vendorEngineerRequired,
     actionCount: receipt.actionCount,
   });
 }
 
-// Regression for the 2026-09-20 provider path defect: informal human-escalation
-// terminal strings such as "review-required" must never become a T1 terminal. Even a
-// deterministic executor presenting that value is rejected and the loop falls back to
-// contract-approved containment without minting authority.
+// Regression for the 2026-09-20 provider path defect and the follow-on false-green
+// review: informal human-escalation terminal strings such as "review-required" must
+// never become a T1 safe terminal. Because an action has already started, rejecting an
+// invalid executor result is containment intent only until deterministic containment or
+// independent recovery verification establishes a terminal state.
 const informalTerminalLoop = createAutonomyControlLoop({
   contract,
   failureScenarios: scenarios,
@@ -181,24 +184,27 @@ const informalTerminal = await informalTerminalLoop.run({
 assert.equal(informalTerminal.tier, 'T1');
 assert.equal(informalTerminal.outcome, 'contained');
 assert.equal(informalTerminal.containedErrorCode, 'WFM_AUTONOMY_TERMINAL');
-assert.equal(informalTerminal.safeTerminal, true);
+assert.equal(informalTerminal.safeTerminal, false);
+assert.equal(informalTerminal.vendorEngineerRequired, false);
 assert.ok(t1Allowed.has(informalTerminal.outcome));
 assert.equal(informalTerminal.productionMutation, false);
 assert.equal(informalTerminal.productionAuthorityGranted, false);
 assert.equal(informalTerminal.customerMutation, false);
+assert.ok(informalTerminal.trace.some((event) => event.type === 't1-safe-terminal-not-established'));
 assert.equal(informalTerminalLoop.verifyReceipt(informalTerminal), true);
 
 const counts = Object.fromEntries(expectedTiers.map(id => [id, coverage.filter(x => x.tier === id).length]));
 const receipt = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   proof: 'zero-engineer-support-tier-contract',
   status: 'PASS',
   scenarioCount: coverage.length,
   tierCounts: counts,
   t1ScenarioClassesExercised: t1TerminalCoverage.length,
   t1AllowedTerminalOutcomes: [...t1Allowed].sort(),
-  t1EveryScenarioReachedContractTerminal: t1TerminalCoverage.every((entry) => entry.safeTerminal === true && t1Allowed.has(entry.actualOutcome)),
+  t1EveryScenarioReachedContractTerminal: t1TerminalCoverage.every((entry) => entry.safeTerminal === true && entry.vendorEngineerRequired === false && t1Allowed.has(entry.actualOutcome)),
   t1InformalHumanEscalationTerminalRejected: true,
+  t1PostActionUnverifiedFalseGreenRejected: true,
   t1VendorEngineerRequired: false,
   t1TerminalCoverage,
   zeroVendorEngineerRequired: true,
