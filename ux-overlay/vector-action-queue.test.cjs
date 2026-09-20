@@ -6,6 +6,11 @@ const vm = require('node:vm');
 
 function loadVectorHelpers() {
   const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
+  const instrumented = source.replace(
+    'window.VectorWorkforceOperations={marker:MARKER',
+    'window.VectorWorkforceOperations={alertsMarkup,marker:MARKER'
+  );
+  assert.notEqual(instrumented, source, 'Vector action markup test hook could not be attached.');
   const classList = { add() {}, remove() {}, toggle() {} };
   const sandbox = {
     window: { render: undefined, location: { href: 'https://example.test/' } },
@@ -28,7 +33,7 @@ function loadVectorHelpers() {
   sandbox.window.window = sandbox.window;
   sandbox.window.document = sandbox.document;
   vm.createContext(sandbox);
-  vm.runInContext(source, sandbox, { filename: 'vector-shell.js' });
+  vm.runInContext(instrumented, sandbox, { filename: 'vector-shell.js' });
   return sandbox.window.VectorWorkforceOperations;
 }
 
@@ -55,4 +60,40 @@ test('awaiting confirmation remains present but does not inflate action-needed c
   const groups = vector.actionQueueGroups(rows);
   assert.deepEqual(groups.needs.map(row => row.id), ['a', 'b', 'c']);
   assert.deepEqual(groups.awaiting.map(row => row.id), ['d', 'e']);
+});
+
+test('rendered action queue keeps source-confirming work collapsed and visible without hiding actionable work', () => {
+  const vector = loadVectorHelpers();
+  const row = (id, title, status, confirmationState) => ({
+    id,
+    title,
+    status,
+    confirmationState,
+    detail: 'Source-owned evidence',
+    tone: 'blue',
+    route: 'time-review',
+    action: 'Review'
+  });
+  const html = vector.alertsMarkup([
+    row('a', 'Action A', 'Action required', 'action_required'),
+    row('b', 'Decision B', 'Decision sent', 'decision_sent'),
+    row('c', 'Confirming C', 'Confirming source', 'confirming_source'),
+    row('d', 'Verify D', 'Needs verification', 'needs_verification'),
+    row('e', 'Resolved E', 'Resolved', 'resolved'),
+    row('f', 'Loose wording F', 'Urgent', undefined)
+  ]);
+
+  assert.match(html, /Needs my action <em>3<\/em>/);
+  assert.match(html, /<details data-vector-awaiting-confirmation>/);
+  assert.match(html, /Awaiting source confirmation · 2/);
+  assert.doesNotMatch(html, /<details[^>]*\sopen(?:\s|>)/);
+  assert.doesNotMatch(html, /Resolved E/);
+
+  const [needsMarkup, awaitingMarkup = ''] = html.split('<details data-vector-awaiting-confirmation>');
+  assert.match(needsMarkup, /Action A/);
+  assert.match(needsMarkup, /Verify D/);
+  assert.match(needsMarkup, /Loose wording F/);
+  assert.doesNotMatch(needsMarkup, /Decision B|Confirming C/);
+  assert.match(awaitingMarkup, /Decision B/);
+  assert.match(awaitingMarkup, /Confirming C/);
 });
