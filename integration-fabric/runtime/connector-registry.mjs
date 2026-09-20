@@ -97,6 +97,36 @@ function dataCoverageFor(system){
     : [];
 }
 
+function sourceScopeFor(system){
+  const source=system.sourceScope||{};
+  const byVariant=source.requiredDimensionsByVariant&&typeof source.requiredDimensionsByVariant==='object'
+    ? Object.fromEntries(Object.entries(source.requiredDimensionsByVariant).map(([variant,dimensions])=>[
+        variant,
+        unique(Array.isArray(dimensions)?dimensions:[])
+      ]))
+    : null;
+  return {
+    namespaceVersion:1,
+    requiredDimensions:unique(source.requiredDimensions||[]),
+    requiredDimensionsByVariant:byVariant,
+    sourceIdentityDimensions:unique(source.sourceIdentityDimensions||[]),
+    checkpointIncludes:unique([
+      'providerId','connectionId','resource','apiVersion','dataset',
+      ...(source.requiredDimensions||[]),
+      ...Object.values(byVariant||{}).flat()
+    ]),
+    crossScopeCheckpointReuseAllowed:false,
+    crossEntityIdAssumptionAllowed:false,
+    missingRequiredDimension:'fail-closed',
+    scopeChangeRecovery:'new-checkpoint-namespace-and-overlap-replay'
+  };
+}
+
+function deploymentVariantsFor(system){
+  if(!system.deploymentVariants||typeof system.deploymentVariants!=='object'||Array.isArray(system.deploymentVariants)) return null;
+  return structuredClone(system.deploymentVariants);
+}
+
 export function buildConnectorRegistry(){
   const catalog=loadCatalog();
   const connectors=catalog.systems.map(system=>{
@@ -119,6 +149,8 @@ export function buildConnectorRegistry(){
       adapters,
       canonicalTargets:canonicalTargets(system),
       providerIdentity:providerIdentityFor(system),
+      deploymentVariants:deploymentVariantsFor(system),
+      sourceScope:sourceScopeFor(system),
       bootstrapAuthority:system.bootstrapAuthority?structuredClone(system.bootstrapAuthority):null,
       staticCredentialAuthority:system.staticCredentialAuthority?structuredClone(system.staticCredentialAuthority):null,
       versionRouting:versionRoutingFor(system),
@@ -132,7 +164,8 @@ export function buildConnectorRegistry(){
         silentBreakingChangeAllowed:false,
         credentialLikeExtensionsAllowed:false,
         historicalFingerprintRetentionRequired:true,
-        coverageSemanticsRequiredForDeletion:true
+        coverageSemanticsRequiredForDeletion:true,
+        sourceScopeLineageRequired:true
       },
       security:{
         readOnlyDefault:true,
@@ -148,6 +181,7 @@ export function buildConnectorRegistry(){
         remoteProvisioningEnabled:false,
         agentActionEnabled:false,
         crossScopeReadEnabled:false,
+        crossScopeCheckpointReuseAllowed:false,
         unauthenticatedDataSurfaceEnabled:false,
         unauthenticatedWebhookAllowed:false,
         webhookAuthenticationRequired:true,
