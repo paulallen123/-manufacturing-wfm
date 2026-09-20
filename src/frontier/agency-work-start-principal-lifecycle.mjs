@@ -1,4 +1,7 @@
-export const AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_VERSION='agency-work-start-principal-lifecycle-v0.1.0';
+import {AGENCY_WORK_START_DB_BOUNDARY_DDL} from './agency-work-start-db-boundary.mjs';
+
+export const AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_VERSION='agency-work-start-principal-lifecycle-v0.2.0';
+export const AGENCY_WORK_START_CANONICAL_MIGRATION_VERSION='agency-work-start-canonical-migration-v0.1.0';
 export const AGENCY_WORK_START_TENANT_BINDING_ADMIN_ROLE='wfm_agency_work_start_tenant_binding_admin';
 export const AGENCY_WORK_START_DB_OWNER_ROLE='wfm_agency_work_start_owner';
 
@@ -189,6 +192,18 @@ REVOKE ALL ON FUNCTION public.wfm_assert_agency_work_start_tenant_principal_v1(t
   FROM wfm_agency_work_start_reader, wfm_agency_work_start_tenant_binding_admin, wfm_agency_identity_ingress_writer, wfm_agency_identity_reader;
 `;
 
+// PostgreSQL DDL is transactional. Deployment/upgrade code should apply this bundle
+// rather than the base boundary and lifecycle pieces independently: concurrent
+// sessions keep seeing the pre-migration security state until COMMIT, and any failure
+// rolls the entire boundary+lifecycle change back rather than exposing a partial ACL
+// or principal-guard downgrade.
+export const AGENCY_WORK_START_CANONICAL_MIGRATION_DDL=`
+BEGIN;
+${AGENCY_WORK_START_DB_BOUNDARY_DDL}
+${AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_DDL}
+COMMIT;
+`;
+
 export const AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_AUTHORITY=Object.freeze({
   tenantAuthorizationAuthority:'database_session_user_principal_binding',
   bindingMutationAuthority:'security_definer_admin_functions_only',
@@ -199,6 +214,12 @@ export const AGENCY_WORK_START_PRINCIPAL_LIFECYCLE_AUTHORITY=Object.freeze({
   revocationCheckedEveryControlledRead:true,
   pooledConnectionRevalidatedOnEveryControlledRead:true,
   revocationRacePolicy:'work_start_transaction_or_revocation_then_fail_closed',
+  canonicalMigrationVersion:AGENCY_WORK_START_CANONICAL_MIGRATION_VERSION,
+  canonicalMigrationOrder:'db_boundary_then_principal_lifecycle',
+  canonicalMigrationTransactional:true,
+  canonicalMigrationRollbackOnFailure:true,
+  canonicalMigrationFinalHardeningRequired:true,
+  standaloneDbBoundaryAfterLifecycleAuthorized:false,
   rankingImpact:'none',
   scheduleWriteAuthorized:false,
   clockingWriteAuthorized:false,
