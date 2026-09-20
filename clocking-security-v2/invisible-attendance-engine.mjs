@@ -201,7 +201,7 @@ export class AutomaticAttendanceEvidenceEngine {
     if(direction==='in' && state.closeAt!==null && trigger.observedMs<=state.closeAt){
       return {status:'review_required',direction:'in',reason:'IN_NOT_AFTER_PRIOR_CLOSE'};
     }
-    if(direction==='out' && state.openAt!==null && trigger.observedMs<state.openAt && spec.anchorOut){
+    if(direction==='out' && state.openAt!==null && trigger.observedMs<=state.openAt && spec.anchorOut){
       return {status:'review_required',direction:'out',reason:'OUT_BEFORE_OPEN'};
     }
 
@@ -265,7 +265,7 @@ export class AutomaticAttendanceEvidenceEngine {
     if(direction==='in'){
       state.status='present'; state.openAt=at; state.closeAt=null;
     }else{
-      if(state.openAt!==null && at<state.openAt) return {status:'review_required',direction,reason:'OUT_BEFORE_OPEN'};
+      if(state.openAt!==null && at<=state.openAt) return {status:'review_required',direction,reason:'OUT_BEFORE_OPEN'};
       state.status='outside'; state.closeAt=at;
     }
     state.lastDecision=clone(decision);
