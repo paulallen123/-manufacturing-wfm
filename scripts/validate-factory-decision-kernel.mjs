@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { writeFileSync } from 'node:fs';
 import { buildFactoryGraph } from '../platform/factory-graph/factory-graph-kernel.mjs';
-import { evaluateProjectedDecision, recordRealisedOutcome } from '../platform/optimisation/savings-engine.mjs';
+import { evaluateProjectedDecision, recordRealisedOutcome, createOutcomeLedger } from '../platform/optimisation/savings-engine.mjs';
 
 const observedAt = '2026-09-20T10:00:00.000Z';
 const ev = (sourceRef) => ({ sourceType: 'synthetic-proof-fixture', sourceRef, observedAt });
@@ -11,6 +11,7 @@ const graph = buildFactoryGraph({
   entities: [
     { id: 'worker:tech-1', type: 'worker', evidence: ev('fixture://worker/tech-1') },
     { id: 'skill:electrical-maintenance', type: 'skill', evidence: ev('fixture://skill/electrical-maintenance') },
+    { id: 'cert:press-7', type: 'certification', evidence: ev('fixture://cert/press-7') },
     { id: 'shift:night-1', type: 'shift', evidence: ev('fixture://shift/night-1') },
     { id: 'line:4', type: 'line', evidence: ev('fixture://line/4') },
     { id: 'asset:press-7', type: 'asset', evidence: ev('fixture://asset/press-7') },
@@ -19,7 +20,16 @@ const graph = buildFactoryGraph({
     { id: 'tariff:offpeak', type: 'energy_tariff', evidence: ev('fixture://tariff/offpeak') }
   ],
   relations: [
-    { from: 'worker:tech-1', to: 'skill:electrical-maintenance', type: 'HAS_SKILL', evidence: ev('fixture://rel/worker-skill') },
+    {
+      from: 'worker:tech-1', to: 'skill:electrical-maintenance', type: 'HAS_SKILL',
+      validFrom: '2026-01-01T00:00:00.000Z', validTo: '2027-01-01T00:00:00.000Z',
+      evidence: ev('fixture://rel/worker-skill')
+    },
+    {
+      from: 'worker:tech-1', to: 'cert:press-7', type: 'HAS_CERTIFICATION',
+      validFrom: '2025-01-01T00:00:00.000Z', validTo: '2026-09-19T23:59:59.000Z',
+      evidence: ev('fixture://rel/worker-cert')
+    },
     { from: 'worker:tech-1', to: 'shift:night-1', type: 'WORKS_SHIFT', evidence: ev('fixture://rel/worker-shift') },
     { from: 'asset:press-7', to: 'line:4', type: 'LOCATED_AT', evidence: ev('fixture://rel/asset-line') },
     { from: 'maintenance:press-7-pm', to: 'asset:press-7', type: 'MAINTENANCE_FOR', evidence: ev('fixture://rel/maintenance-asset') },
@@ -40,6 +50,8 @@ const graph = buildFactoryGraph({
 });
 
 assert.equal(graph.related('worker:tech-1', 'HAS_SKILL')[0].id, 'skill:electrical-maintenance');
+assert.equal(graph.relatedAt('worker:tech-1', 'HAS_SKILL', observedAt)[0].id, 'skill:electrical-maintenance');
+assert.equal(graph.relatedAt('worker:tech-1', 'HAS_CERTIFICATION', observedAt).length, 0);
 assert.throws(() => buildFactoryGraph({
   entities: [{ id: 'worker:x', type: 'worker', evidence: ev('fixture://worker/x') }],
   relations: [{ from: 'worker:x', to: 'asset:missing', type: 'ASSIGNED_TO', evidence: ev('fixture://bad-rel') }]
@@ -86,13 +98,20 @@ assert.throws(() => recordRealisedOutcome(decision, {
   observedAt
 }), /requires evidenceRefs/);
 
-const realised = recordRealisedOutcome(decision, {
+const ledger = createOutcomeLedger();
+const realised = ledger.record(decision, {
   actualSelectedCost: 2100,
   evidenceRefs: ['fixture://actual/work-order', 'fixture://actual/payroll', 'fixture://actual/meter'],
   attributionKey: 'maintenance:press-7-pm:2026-09-20',
   observedAt
 });
 assert.equal(realised.realisedSaving, 7100);
+assert.throws(() => ledger.record(decision, {
+  actualSelectedCost: 2050,
+  evidenceRefs: ['fixture://actual/duplicate'],
+  attributionKey: 'maintenance:press-7-pm:2026-09-20',
+  observedAt
+}), /duplicate attributionKey/);
 
 const receipt = {
   proof: 'factory-graph-cross-domain-savings-kernel',
@@ -108,6 +127,8 @@ const receipt = {
     projected_saving_gbp: decision.selected.projectedSaving,
     realised_saving_gbp: realised.realisedSaving,
     unsafe_option_rejected: decision.rejectedAlternatives[0].id,
+    expired_certification_excluded: graph.relatedAt('worker:tech-1', 'HAS_CERTIFICATION', observedAt).length === 0,
+    duplicate_savings_attribution_blocked: true,
     graph_entities: graph.entities.length,
     graph_relations: graph.relations.length,
     graph_events: graph.events.length
