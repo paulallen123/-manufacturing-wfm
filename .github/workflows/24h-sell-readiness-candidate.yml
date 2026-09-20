@@ -11,6 +11,7 @@ on:
       - 'integration/**'
       - 'learning/**'
       - 'resilience/**'
+      - 'scripts/compose-vector-presentation.mjs'
       - 'scripts/run-portable-autonomy-proof.mjs'
       - 'scripts/validate-autonomy-*.mjs'
       - 'scripts/validate-support-*.mjs'
@@ -83,19 +84,51 @@ jobs:
       - name: Prove T0-T4 autonomous support boundary
         run: node scripts/run-portable-autonomy-proof.mjs --strict-runtime
 
-      - name: Prove approved Vector role-first composition
+      - name: Prove canonical Vector source contract
         shell: bash
         run: |
           set -euo pipefail
-          node --check ux-overlay/vector-shell.js
           node scripts/validate-vector-only-ui.mjs
-          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' ux-overlay/vector-shell.js
-          grep -F 'Vector Workforce Operations' ux-overlay/vector-shell.css
-          grep -F 'WFM_ADAPTIVE_COACH_BEGIN' Dockerfile
-          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' Dockerfile
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' scripts/compose-vector-presentation.mjs
 
       - name: Build exact combined staging image
         run: docker build --pull=false -t wfm-24h-candidate:${{ github.sha }} .
+
+      - name: Bind canonical Vector asset bytes to exact image
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker create wfm-24h-candidate:${GITHUB_SHA})"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          rm -rf "$RUNNER_TEMP/vector-built" && mkdir -p "$RUNNER_TEMP/vector-built"
+          docker cp "$cid:/app/public/vector-ui.js" "$RUNNER_TEMP/vector-built/vector-ui.js"
+          docker cp "$cid:/app/public/vector-ui.css" "$RUNNER_TEMP/vector-built/vector-ui.css"
+          docker cp "$cid:/app/public/index.html" "$RUNNER_TEMP/vector-built/index.html"
+
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/vector-built/vector-ui.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/vector-built/vector-ui.css"
+          grep -F '/vector-ui.js' "$RUNNER_TEMP/vector-built/index.html"
+          grep -F '/vector-ui.css' "$RUNNER_TEMP/vector-built/index.html"
+
+          retired=(
+            vector-shell.js
+            review-ui.js
+            review-ui.css
+            factory-control-ui.css
+            value-cockpit-ui.js
+            value-cockpit-ui.css
+            ui-evolution.css
+          )
+          for asset in "${retired[@]}"; do
+            ! grep -F "$asset" "$RUNNER_TEMP/vector-built/index.html"
+          done
+
+          js_sha="$(sha256sum "$RUNNER_TEMP/vector-built/vector-ui.js" | awk '{print $1}')"
+          css_sha="$(sha256sum "$RUNNER_TEMP/vector-built/vector-ui.css" | awk '{print $1}')"
+          test -n "$js_sha" && test -n "$css_sha"
+          echo "VECTOR_CANONICAL_JS_SHA256=$js_sha" >> "$GITHUB_ENV"
+          echo "VECTOR_CANONICAL_CSS_SHA256=$css_sha" >> "$GITHUB_ENV"
+          echo "VECTOR_EXACT_IMAGE_ASSET_BINDING=PASS sha=$GITHUB_SHA js=$js_sha css=$css_sha"
 
       - name: Install pinned Railway CLI
         shell: bash
@@ -121,7 +154,7 @@ jobs:
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN is not configured'; exit 1; }
           "$RAILWAY_BIN" up --project "$TEST_PROJECT_ID" --service "$TEST_SERVICE_ID" --environment "$TEST_ENVIRONMENT_ID" --ci
 
-      - name: Prove one-day service health and Vector UI
+      - name: Prove one-day service serves exact canonical Vector bytes
         shell: bash
         run: |
           set -euo pipefail
@@ -132,18 +165,27 @@ jobs:
           done
           test "$success" = 1
           node -e "const h=require(process.env.RUNNER_TEMP+'/test-health.json');if(h.fixtureOnly!==true||h.productionApproved!==false)process.exit(1)"
-          curl --fail --silent --show-error "$TEST_ORIGIN/vector-shell.js" > "$RUNNER_TEMP/test-vector.js"
-          curl --fail --silent --show-error "$TEST_ORIGIN/factory-control-ui.css" > "$RUNNER_TEMP/test-ui.css"
-          curl --fail --silent --show-error "$TEST_ORIGIN/value-cockpit-ui.js" > "$RUNNER_TEMP/test-ui.js"
-          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/test-vector.js"
-          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/test-ui.css"
-          grep -F 'WFM_ADAPTIVE_COACH_BEGIN' "$RUNNER_TEMP/test-ui.js"
-          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' "$RUNNER_TEMP/test-ui.js"
-          for retired in WFM_UX_RESET_CYCLE11_BEGIN WFM_UX_RESET_CYCLE12_BEGIN VECTOR_PRIORITY_BRIDGE_V1; do
-            ! grep -F "$retired" "$RUNNER_TEMP/test-vector.js"
-            ! grep -F "$retired" "$RUNNER_TEMP/test-ui.css"
-            ! grep -F "$retired" "$RUNNER_TEMP/test-ui.js"
+
+          curl --fail --silent --show-error "$TEST_ORIGIN/vector-ui.js" > "$RUNNER_TEMP/test-vector-ui.js"
+          curl --fail --silent --show-error "$TEST_ORIGIN/vector-ui.css" > "$RUNNER_TEMP/test-vector-ui.css"
+          curl --fail --silent --show-error "$TEST_ORIGIN/" > "$RUNNER_TEMP/test-index.html"
+
+          echo "$VECTOR_CANONICAL_JS_SHA256  $RUNNER_TEMP/test-vector-ui.js" | sha256sum -c -
+          echo "$VECTOR_CANONICAL_CSS_SHA256  $RUNNER_TEMP/test-vector-ui.css" | sha256sum -c -
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/test-vector-ui.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/test-vector-ui.css"
+          grep -F '/vector-ui.js' "$RUNNER_TEMP/test-index.html"
+          grep -F '/vector-ui.css' "$RUNNER_TEMP/test-index.html"
+
+          for retired in vector-shell.js review-ui.js review-ui.css factory-control-ui.css value-cockpit-ui.js value-cockpit-ui.css ui-evolution.css; do
+            ! grep -F "$retired" "$RUNNER_TEMP/test-index.html"
+            status="$(curl --silent --output /dev/null --write-out '%{http_code}' "$TEST_ORIGIN/$retired")"
+            case "$status" in
+              404|410) ;;
+              *) echo "Retired presentation asset unexpectedly served: $retired status=$status" >&2; exit 1 ;;
+            esac
           done
+          echo 'ONE_DAY_CANONICAL_VECTOR_HOST_BINDING=PASS'
 
       - name: Upload exact candidate to existing integration proof service
         env:
@@ -153,7 +195,7 @@ jobs:
           set -euo pipefail
           "$RAILWAY_BIN" up --project "$PROOF_PROJECT_ID" --service "$PROOF_SERVICE_ID" --environment "$PROOF_ENVIRONMENT_ID" --ci
 
-      - name: Prove integration proof service health and Vector UI
+      - name: Prove integration service serves exact canonical Vector bytes
         shell: bash
         run: |
           set -euo pipefail
@@ -164,18 +206,27 @@ jobs:
           done
           test "$success" = 1
           node -e "const h=require(process.env.RUNNER_TEMP+'/proof-health.json');if(h.fixtureOnly!==true||h.productionApproved!==false)process.exit(1)"
-          curl --fail --silent --show-error "$PROOF_ORIGIN/vector-shell.js" > "$RUNNER_TEMP/proof-vector.js"
-          curl --fail --silent --show-error "$PROOF_ORIGIN/factory-control-ui.css" > "$RUNNER_TEMP/proof-ui.css"
-          curl --fail --silent --show-error "$PROOF_ORIGIN/value-cockpit-ui.js" > "$RUNNER_TEMP/proof-ui.js"
-          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/proof-vector.js"
-          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/proof-ui.css"
-          grep -F 'WFM_ADAPTIVE_COACH_BEGIN' "$RUNNER_TEMP/proof-ui.js"
-          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' "$RUNNER_TEMP/proof-ui.js"
-          for retired in WFM_UX_RESET_CYCLE11_BEGIN WFM_UX_RESET_CYCLE12_BEGIN VECTOR_PRIORITY_BRIDGE_V1; do
-            ! grep -F "$retired" "$RUNNER_TEMP/proof-vector.js"
-            ! grep -F "$retired" "$RUNNER_TEMP/proof-ui.css"
-            ! grep -F "$retired" "$RUNNER_TEMP/proof-ui.js"
+
+          curl --fail --silent --show-error "$PROOF_ORIGIN/vector-ui.js" > "$RUNNER_TEMP/proof-vector-ui.js"
+          curl --fail --silent --show-error "$PROOF_ORIGIN/vector-ui.css" > "$RUNNER_TEMP/proof-vector-ui.css"
+          curl --fail --silent --show-error "$PROOF_ORIGIN/" > "$RUNNER_TEMP/proof-index.html"
+
+          echo "$VECTOR_CANONICAL_JS_SHA256  $RUNNER_TEMP/proof-vector-ui.js" | sha256sum -c -
+          echo "$VECTOR_CANONICAL_CSS_SHA256  $RUNNER_TEMP/proof-vector-ui.css" | sha256sum -c -
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/proof-vector-ui.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/proof-vector-ui.css"
+          grep -F '/vector-ui.js' "$RUNNER_TEMP/proof-index.html"
+          grep -F '/vector-ui.css' "$RUNNER_TEMP/proof-index.html"
+
+          for retired in vector-shell.js review-ui.js review-ui.css factory-control-ui.css value-cockpit-ui.js value-cockpit-ui.css ui-evolution.css; do
+            ! grep -F "$retired" "$RUNNER_TEMP/proof-index.html"
+            status="$(curl --silent --output /dev/null --write-out '%{http_code}' "$PROOF_ORIGIN/$retired")"
+            case "$status" in
+              404|410) ;;
+              *) echo "Retired presentation asset unexpectedly served: $retired status=$status" >&2; exit 1 ;;
+            esac
           done
+          echo 'INTEGRATION_CANONICAL_VECTOR_HOST_BINDING=PASS'
 
       - name: Publish machine-readable proof receipt
         if: always()
@@ -187,11 +238,15 @@ jobs:
             generatedAt:new Date().toISOString(),
             sha:process.env.GITHUB_SHA,
             branch:process.env.GITHUB_REF_NAME,
-            candidate:'one-day + autonomous integration + adaptive learning + approved Vector role-first UX + T0-T4 support',
+            candidate:'one-day + autonomous integration + adaptive learning + canonical Vector role-first UX + T0-T4 support',
+            vectorAssetDigests:{
+              js:process.env.VECTOR_CANONICAL_JS_SHA256||null,
+              css:process.env.VECTOR_CANONICAL_CSS_SHA256||null
+            },
             productionMutation:false,
             frozenCustomerProofMutation:false,
             targetServices:['wfm-one-day-enterprise-v1','wfm-integration-fabric-v1-proof'],
-            note:'A successful workflow is exact-hosted evidence only for the exercised gates; provider integrations require separately authenticated sandbox/live-provider evidence.'
+            note:'A successful workflow is exact-hosted evidence only for the exercised gates; browser interaction, lifecycle transitions and provider integrations require their separate explicit evidence gates.'
           };
           fs.writeFileSync('24h-sell-readiness-receipt.json',JSON.stringify(receipt,null,2)+'\n');
           NODE
