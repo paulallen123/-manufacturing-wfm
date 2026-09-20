@@ -1,50 +1,11 @@
 import crypto from 'node:crypto';
 import {createPostgresAgencyIdentityContinuityStore} from './agency-identity-continuity.mjs';
-import {acquireAgencyIdentityScopeLock} from './agency-identity-scope-lock.mjs';
 import {createPostgresAgencyWorkStartAuthorityStore,evaluateAgencyWorkStartReadiness} from './agency-work-start-readiness.mjs';
+import {AGENCY_WORK_START_LOCKED_SNAPSHOT_SQL,AGENCY_WORK_START_SET_LOCAL_ROLE_SQL} from './agency-work-start-db-boundary.mjs';
 
-export const AGENCY_WORK_START_PERMIT_VERSION='agency-work-start-permit-v0.2.0';
-export const AGENCY_WORK_START_PERMIT_STORE_VERSION='agency-work-start-permit-store-v0.2.0';
-
-export const AGENCY_WORK_START_PERMIT_LOCK_SQL=`
-SELECT current.assurance_version_id,
-       current.assignment_fingerprint,
-       current.conflicted,
-       accepted.token_fingerprint,
-       accepted.action,
-       accepted.consumed_at
-FROM LATERAL (
-  SELECT assurance_version_id, assignment_fingerprint, conflicted
-  FROM wfm_agency_rtw_assurance_current
-  WHERE tenant_id = $1
-    AND agency_id = $4
-    AND worker_id = $5
-  LIMIT 1
-  FOR SHARE
-) AS current
-LEFT JOIN LATERAL (
-  SELECT consumption.token_fingerprint, consumption.action, consumption.consumed_at
-  FROM wfm_agency_portal_token_consumptions AS consumption
-  WHERE consumption.tenant_id = $1
-    AND consumption.site_id = $2
-    AND consumption.request_id = $3
-    AND consumption.agency_id = $4
-    AND consumption.action IN ('confirm_preferred_worker','partial_fill')
-    AND consumption.consumed_at <= $6::timestamptz
-    AND EXISTS (
-      SELECT 1
-      FROM jsonb_array_elements(
-        CASE WHEN jsonb_typeof(consumption.assurance_bindings)='array'
-          THEN consumption.assurance_bindings ELSE '[]'::jsonb END
-      ) AS entry(binding)
-      WHERE entry.binding->>'workerId' = $5
-        AND lower(entry.binding->>'assuranceVersionId') = lower(current.assurance_version_id)
-    )
-  ORDER BY consumption.consumed_at DESC, consumption.token_fingerprint DESC
-  LIMIT 1
-  FOR SHARE
-) AS accepted ON true;
-`;
+export const AGENCY_WORK_START_PERMIT_VERSION='agency-work-start-permit-v0.3.0';
+export const AGENCY_WORK_START_PERMIT_STORE_VERSION='agency-work-start-permit-store-v0.3.0';
+export const AGENCY_WORK_START_PERMIT_LOCK_SQL=AGENCY_WORK_START_LOCKED_SNAPSHOT_SQL;
 
 const text=(value,max=200)=>typeof value==='string'?value.trim().slice(0,max):'';
 const ms=value=>{const parsed=typeof value==='number'?value:Date.parse(value);return Number.isFinite(parsed)?parsed:null;};
@@ -64,19 +25,23 @@ export function createPostgresAgencyWorkStartPermitStore({withTransaction}={}){
   if(typeof withTransaction!=='function')throw new TypeError('withTransaction function is required');
   return Object.freeze({
     version:AGENCY_WORK_START_PERMIT_STORE_VERSION,
-    concurrencyBoundary:'assignment_scoped_transaction_lock',
+    concurrencyBoundary:'database_owned_assignment_lock_plus_security_definer_row_locks',
+    databaseRoleBoundary:'wfm_agency_work_start_reader',
     async withLockedSnapshot(scope={},evaluate){
       if(typeof evaluate!=='function')throw new TypeError('evaluate function is required');
       const now=iso(scope.now);if(!now)throw new TypeError('now invalid');
-      const values=[required(scope.tenantId,'tenantId',100),required(scope.siteId,'siteId',100),required(scope.requestId,'requestId',100),required(scope.agencyId,'agencyId',100),required(scope.workerId,'workerId',100),now];
+      const values=[required(scope.tenantId,'tenantId',100),required(scope.siteId,'siteId',100),required(scope.requestId,'requestId',100),required(scope.agencyId,'agencyId',100),required(scope.workerId,'workerId',100),required(scope.assignmentFingerprint,'assignmentFingerprint',24).toLowerCase(),now];
+      if(!hex(values[5],24))throw new TypeError('assignmentFingerprint invalid');
       return withTransaction(async transaction=>{
         if(!transaction||typeof transaction.query!=='function')throw new TypeError('transaction.query function is required');
-        const query=(sql,params)=>transaction.query(sql,params);
-        await acquireAgencyIdentityScopeLock({query,scope});
+        const query=(sql,params=[])=>transaction.query(sql,params);
+        await query(AGENCY_WORK_START_SET_LOCAL_ROLE_SQL,[]);
         const locked=await query(AGENCY_WORK_START_PERMIT_LOCK_SQL,values);
         const rows=Array.isArray(locked?.rows)?locked.rows:[];
         if(rows.length!==1)throw new Error(rows.length===0?'work_start_permit_authority_missing':'work_start_permit_authority_ambiguous');
-        return evaluate(Object.freeze({query,lockRow:Object.freeze({...rows[0]})}));
+        const scopeFingerprint=hex(rows[0]?.scope_fingerprint??rows[0]?.scopeFingerprint,24);
+        if(!scopeFingerprint)throw new Error('work_start_permit_scope_lock_invalid');
+        return evaluate(Object.freeze({query,lockRow:Object.freeze({...rows[0],scope_fingerprint:scopeFingerprint})}));
       });
     },
   });
@@ -192,7 +157,7 @@ export async function evaluateAgencyWorkStartPermit({tenantId,siteId,agencyId,re
         rankingImpact:'none',scheduleWriteAuthorized:false,payrollWriteAuthorized:false,clockingWriteAuthorized:false,workStartWriteAuthorized:false,
         authorityBoundary:'transaction_scoped_shadow_work_start_permit_only_no_live_schedule_clocking_payroll_invoice_or_worker_master_mutation',
         privacyBoundary:'no_raw_badge_provider_subject_signature_photo_biometric_date_of_birth_document_number_share_code_portal_token_or_raw_right_to_work_evidence_in_permit_output',
-        atomicityRule:'current_right_to_work_accepted_response_and_authenticated_identity_continuity_are_revalidated_under_the_same_assignment_scoped_transaction_advisory_lock_used_by_authenticated_identity_observation_ingress_before_the_one_shot_shadow_work_start_command_is_consumed',
+        atomicityRule:'current_right_to_work_accepted_response_and_authenticated_identity_continuity_are_revalidated_under_the_same_database_owned_assignment_scope_lock_used_by_authenticated_identity_observation_ingress_and_under_a_dedicated_read_only_runtime_role_before_the_one_shot_shadow_work_start_command_is_consumed',
       });
     });
   }catch{return fail('work_start_permit_store_unavailable',{scope});}
