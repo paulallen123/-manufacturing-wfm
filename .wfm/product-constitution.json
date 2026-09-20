@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "product_north_star": "Understand the factory, recommend the best operational action, execute approved actions safely, and prove the financial and operational outcome.",
+  "mandatory_rules": {
+    "vector_ui_only": true,
+    "duplicate_implementations_forbidden": true,
+    "every_metric_requires_so_what": true,
+    "evidence_before_claim": true,
+    "fail_closed": true,
+    "autonomous_by_default": true,
+    "factory_graph_first": true,
+    "unified_action_layer": true,
+    "savings_ledger_required": true,
+    "scale_gate": {
+      "employees": 10000,
+      "sites": 50
+    },
+    "cloud_portable_runtime": true,
+    "least_privilege": true,
+    "single_deployable_identity": true
+  },
+  "integration_evidence_tiers": [
+    "catalogued",
+    "spec_verified",
+    "sandbox_authenticated",
+    "tenant_authenticated",
+    "production_observed"
+  ],
+  "value_states": [
+    "realised",
+    "projected",
+    "at_risk"
+  ],
+  "platform_primitives": [
+    "factory_graph",
+    "digital_twin",
+    "integration_fabric",
+    "decision_action_engine",
+    "policy_approval_engine",
+    "savings_outcome_ledger",
+    "autonomous_implementation",
+    "autonomous_support_recovery",
+    "vector_role_first_ux",
+    "evidence_release_control"
+  ],
+  "definition_of_done": [
+    "intended_user_journey_proven",
+    "security_boundary_proven",
+    "scale_behaviour_proven_where_applicable",
+    "deployment_provenance_bound",
+    "evidence_receipt_preserved"
+  ]
+}
