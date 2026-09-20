@@ -26,6 +26,7 @@ on:
       - 'src/frontier/agency-work-start-permit.mjs'
       - 'src/frontier/agency-work-start-db-boundary.mjs'
       - 'src/frontier/agency-work-start-principal-lifecycle.mjs'
+      - 'src/frontier/agency-work-start-precheck.mjs'
       - 'src/frontier/agency-supplier-compliance.mjs'
       - 'src/frontier/agency-supplier-portal.mjs'
       - 'src/frontier/agency-portal-token-store.mjs'
@@ -65,6 +66,8 @@ on:
       - 'test/frontier/agency-work-start-db-boundary-postgres.test.mjs'
       - 'test/frontier/agency-work-start-principal-lifecycle.test.mjs'
       - 'test/frontier/agency-work-start-principal-lifecycle-postgres.test.mjs'
+      - 'test/frontier/agency-work-start-precheck.test.mjs'
+      - 'test/frontier/agency-work-start-precheck-postgres.test.mjs'
       - 'test/frontier/agency-postgres-work-start-permit-race.test.mjs'
       - 'test/frontier/agency-postgres-work-start-runtime-race.test.mjs'
       - 'test/frontier/agency-supplier-compliance.test.mjs'
@@ -138,6 +141,7 @@ jobs:
               test/frontier/agency-work-start-permit.test.mjs \
               test/frontier/agency-work-start-db-boundary.test.mjs \
               test/frontier/agency-work-start-principal-lifecycle.test.mjs \
+              test/frontier/agency-work-start-precheck.test.mjs \
               test/frontier/agency-supplier-compliance.test.mjs \
               test/frontier/agency-supplier-compliance-integration.test.mjs \
               test/frontier/agency-supplier-portal.test.mjs \
@@ -169,5 +173,6 @@ jobs:
           node --test test/frontier/agency-work-start-readiness-postgres.test.mjs
           node --test test/frontier/agency-work-start-db-boundary-postgres.test.mjs
           node --test test/frontier/agency-work-start-principal-lifecycle-postgres.test.mjs
+          node --test test/frontier/agency-work-start-precheck-postgres.test.mjs
           node --test test/frontier/agency-postgres-work-start-permit-race.test.mjs
           node --test test/frontier/agency-postgres-work-start-runtime-race.test.mjs
