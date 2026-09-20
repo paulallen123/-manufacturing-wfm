@@ -114,7 +114,6 @@ export class AttendanceSourceSupervisor {
     };
   }
 
-
   exportState(){
     return {
       version:1,
@@ -125,7 +124,7 @@ export class AttendanceSourceSupervisor {
         lastSequence:c.lastSequence,lastProviderEventId:c.lastProviderEventId,duplicates:c.duplicates,gaps:c.gaps,reconnects:c.reconnects,authExpiresAtMs:c.authExpiresAtMs,
         seen:[...c.seen],seenWindowIds:[...c.seenWindowIds],window:{...c.window}
       })),
-      recovery:this.recovery.map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{})}))
+      recovery:this.recovery.map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{}),...(j.reconciliationProof?{reconciliationProof:{...j.reconciliationProof}}:{})}))
     };
   }
 
@@ -154,21 +153,33 @@ export class AttendanceSourceSupervisor {
       if(!j?.jobId||!j?.tenant||!j?.sourceId||!['pending','complete'].includes(j.status)) throw new Error('Invalid persisted attendance recovery job.');
       if(!next.has(keyOf(j.tenant,j.sourceId))) throw new Error('Persisted recovery job references unknown connector.');
       if(j.reason==='SEQUENCE_GAP' && !this.#sequenceGapStateValid(j)) throw new Error('Invalid persisted sequence-gap recovery evidence.');
+      if(j.reason==='RECONNECT_RECONCILIATION' && j.status==='complete' && !this.#reconciliationProofValid(j,j.reconciliationProof)){
+        throw new Error('Invalid persisted reconnect reconciliation evidence.');
+      }
     }
     this.connectors=next;
-    this.recovery=state.recovery.map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{})}));
+    this.recovery=state.recovery.map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{}),...(j.reconciliationProof?{reconciliationProof:{...j.reconciliationProof}}:{})}));
     return true;
   }
 
   pendingRecovery({tenant,sourceId}={}){
     return this.recovery
       .filter(j=>(!tenant||j.tenant===tenant)&&(!sourceId||j.sourceId===sourceId)&&j.status==='pending')
-      .map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{})}));
+      .map(j=>({...j,...(Array.isArray(j.recoveredSequences)?{recoveredSequences:[...j.recoveredSequences]}:{}),...(j.reconciliationProof?{reconciliationProof:{...j.reconciliationProof}}:{})}));
   }
 
-  completeRecovery({jobId}){
+  completeRecovery({jobId,reconciliationProof=null}={}){
     const j=this.recovery.find(x=>x.jobId===jobId); if(!j) return false;
     if(j.reason==='SEQUENCE_GAP' && !this.#sequenceGapSatisfied(j)) return false;
+    if(j.reason==='RECONNECT_RECONCILIATION'){
+      if(!this.#reconciliationProofValid(j,reconciliationProof)) return false;
+      j.reconciliationProof={
+        proofId:String(reconciliationProof.proofId),
+        coverageFromMs:reconciliationProof.coverageFromMs,
+        coverageToMs:reconciliationProof.coverageToMs,
+        completedAtMs:reconciliationProof.completedAtMs
+      };
+    }
     j.status='complete';
     const c=this.#get(j.tenant,j.sourceId);
     if(c.window.id===j.windowId && !c.window.unrecoverable && this.#pendingFor(c).length===0) c.window.continuityComplete=true;
@@ -216,6 +227,18 @@ export class AttendanceSourceSupervisor {
     return true;
   }
   #sequenceGapSatisfied(j){ return this.#sequenceGapStateValid(j)&&j.recoveredSequences.length===j.missingCount; }
+  #reconciliationProofValid(j,proof){
+    if(!proof || typeof proof!=='object') return false;
+    const proofId=String(proof.proofId||'');
+    if(!/^[A-Za-z0-9_.:-]{1,160}$/.test(proofId)) return false;
+    const from=proof.coverageFromMs,to=proof.coverageToMs,completed=proof.completedAtMs;
+    if(!Number.isSafeInteger(from)||from<0||!Number.isSafeInteger(to)||to<from||!Number.isSafeInteger(completed)||completed<to) return false;
+    const requiredFrom=Number.isSafeInteger(j.fromMs)?j.fromMs:null;
+    const requiredTo=Number.isSafeInteger(j.toMs)?j.toMs:null;
+    if(requiredFrom!=null && from>requiredFrom) return false;
+    if(requiredTo!=null && to<requiredTo) return false;
+    return true;
+  }
   #get(tenant,sourceId){ const c=this.connectors.get(keyOf(tenant,sourceId)); if(!c) throw new Error('Connector is not registered.'); return c; }
   #time(ms){ if(!Number.isSafeInteger(ms)||ms<0) throw new Error('Valid millisecond timestamp required.'); }
 }
