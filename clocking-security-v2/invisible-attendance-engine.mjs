@@ -152,11 +152,17 @@ export class AutomaticAttendanceEvidenceEngine {
     const anchor=direction==='in' ? anchors[0] : anchors.at(-1);
     const near=wanted.filter(e=>Math.abs(e.observedMs-anchor.observedMs)<=this.corroborationWindowMs);
     const domains=new Set(near.map(e=>e.domain));
+    const sources=new Set(near.map(e=>e.sourceId));
     const identity=near.some(e=>e.identity);
     const location=near.some(e=>e.location);
-    const corroborated=domains.size>=this.minDistinctDomains && identity && location;
+    // Logical domain diversity is necessary but not sufficient for independent
+    // corroboration. One connector/source must never be able to impersonate two
+    // evidence domains by emitting different event kinds and thereby clock a worker
+    // in or out on its own. Existing authoritative T&A remains the explicit exception
+    // handled above.
+    const corroborated=domains.size>=this.minDistinctDomains && sources.size>=2 && identity && location;
     if(!corroborated){
-      return {status:'review_required',direction,reason:'INSUFFICIENT_INDEPENDENT_CORROBORATION',anchorAt:iso(anchor.observedMs),domains:[...domains].sort()};
+      return {status:'review_required',direction,reason:'INSUFFICIENT_INDEPENDENT_CORROBORATION',anchorAt:iso(anchor.observedMs),domains:[...domains].sort(),sources:[...sources].sort()};
     }
 
     return this.#commit({employeeKey,state,tenant,employee,site,direction,at:anchor.observedMs,reason:'INDEPENDENT_CORROBORATION',evidence:near});
