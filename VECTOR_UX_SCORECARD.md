@@ -11,7 +11,7 @@ Factory/operations manager Vector Home → `Needs my action` / collapsed `Awaiti
 All product/test work is on `feature/one-day-enterprise-implementation-v1` / PR #79, the canonical Vector role-first NEW-UI owner. No legacy/0.6.139 presentation, retired UI branch, customer-proof runtime, staging or production presentation was changed.
 
 ### Reuse / duplicate-work decision
-- Reused the existing `actionDisposition()` / `actionQueueGroups()` lifecycle partition, Universal Action row renderer, source-owned confirmation state, neutral action styling and existing action-queue regression file.
+- Reused the existing `actionDisposition()` / `actionQueueGroups()` lifecycle partition, Universal Action row renderer, source-owned confirmation state, neutral action styling, action-queue regression and exact-candidate browser oracle.
 - Did not create another queue, component, lifecycle mapper, branch, issue, prototype or browser harness.
 - Did not repeat competitor/generic UX research because the unresolved question was already answered by authoritative lifecycle semantics.
 - Did not retry unchanged Railway containment or weaken any proof/runtime security hold.
@@ -29,26 +29,28 @@ If source-confirming rows remain inspectable but use a passive lifecycle-consist
 
 ### Focused validation / regression delta
 - Extended the existing `ux-overlay/vector-action-queue.test.cjs`; no new test harness was created.
-- The regression now protects actionable rows as **Review**, source-confirming rows as **View status**, matching accessible labels, resolved exclusion, collapsed confirmation disclosure and presentation-word independence.
+- The regression protects actionable rows as **Review**, source-confirming rows as **View status**, matching accessible labels, resolved exclusion, collapsed confirmation disclosure and presentation-word independence.
 - Focused deterministic logic smoke passed: `action_required` / `needs_verification` → Review; `decision_sent` / `confirming_source` → View status; loose “Urgent” wording without authoritative confirmation state → Review.
-- The existing responsive browser oracle still owns desktop/tablet/mobile, keyboard disclosure, source-ID binding, lifecycle visibility, no optimistic clear and return-to-context. Its exact-current-head execution remains the release-quality browser gate.
+- Extended the existing `scripts/current-candidate-role-browser-proof.mjs` in commit `d1a4d681447ac75a17a6f33a31bb63259bc2ff19`; no second oracle was created.
+- The exact-candidate oracle now asserts at 1440/760/390 that visible `Needs my action` buttons read **Review**, their accessible labels begin `Review …`, source-confirming rows remain **View status**, and after keyboard expansion those awaiting-source buttons are visible with matching `View status …` accessible labels.
+- Existing source-ID binding, actionable-only badge semantics, collapsed disclosure, keyboard open/close, responsive containment, lifecycle visibility, no optimistic clear and return-to-context assertions remain in the same oracle.
 
 ### Blocker discipline
-The pre-change exact-head Vector-only GitHub job again failed before any workflow step executed (`runner_id=0`, `steps=[]`). That was the unchanged hosted-runner allocation blocker rather than a demonstrated source/test failure. No repeated retry or production/staging mutation was used to manufacture evidence.
+The previous exact-head Vector-only GitHub job failed before any workflow step executed (`runner_id=0`, `steps=[]`). That was the unchanged hosted-runner allocation blocker rather than a demonstrated source/test failure. It is rechecked only after a meaningful candidate-head change; no repeated retry or production/staging mutation is used to manufacture evidence.
 
 ### UX scorecard impact
-- Calm by default: improved — confirmation-in-progress no longer reuses a fresh-work verb.
+- Calm by default: improved — confirmation-in-progress no longer reuses a fresh-work verb, while its disclosure stays collapsed.
 - Dense on demand: preserved — no new panel, page or permanent information is added.
-- Explainability: improved — visible and accessible action wording now matches authoritative lifecycle disposition.
-- Accessibility: source-level semantics improved; exact browser/assistive execution remains pending.
+- Explainability: improved — visible and accessible action wording matches authoritative lifecycle disposition.
+- Accessibility: stronger source/browser acceptance criteria now cover keyboard disclosure and matching visible/accessibility affordances; exact hosted execution remains pending.
 - Authority/auditability: preserved — no source state, approval authority, SLA, resolution logic or write authority moved into Vector.
-- Development efficiency: improved — one generic renderer helper and one existing regression owner cover current and future workflows using the same lifecycle contract.
+- Development efficiency: improved — one generic renderer, one unit-regression owner and one existing exact-candidate browser oracle cover the lifecycle contract without a parallel implementation.
 
 ### Still unverified
-The exact-current-head browser oracle has not yet executed on a safe runner, so responsive DOM behaviour and full authenticated journey proof for r16 are not hosted-green. A genuine source-owned `Action required → Decision sent → Confirming source` transition also remains to be exercised end-to-end.
+The exact-current-head browser oracle has not yet executed on a safe runner, so responsive DOM/accessibility behaviour and the full authenticated journey are not hosted-green. A genuine source-owned `Action required → Decision sent → Confirming source` transition also remains to be exercised end-to-end.
 
 ### Single next highest-value NEW-UI action
-Execute the existing exact-candidate browser oracle on the current r16 head when a safe executor is available, adding the bounded assertion that source-bound needs-action buttons read **Review** and awaiting-source buttons read **View status** at 1440/760/390. If green, drive one real authoritative Time Review item through `Action required → Decision sent → Confirming source` and prove it moves sections/affordance without disappearing, changing authority or inflating the bell count before extending the shared pattern to Absence or weekly sign-off.
+Execute the existing exact-candidate browser oracle on the current r16 head. A green result must prove **Review** versus **View status** at 1440/760/390 alongside source identity, actionable-only badge semantics, keyboard disclosure, no optimistic clear and return-to-context. If green, drive one real authoritative Time Review item through `Action required → Decision sent → Confirming source` and prove it moves sections/affordance without disappearing, changing authority or inflating the bell count before extending the shared pattern to Absence or weekly sign-off.
 
 ## 2026-09-20 — Vector r15: remove position-inferred action urgency
 
