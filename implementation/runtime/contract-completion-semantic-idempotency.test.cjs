@@ -46,15 +46,25 @@ function contract(eventId, overrides = {}) {
   return value;
 }
 
-function makeStore() {
+function makeStore({ crashOnceOnInsertPrefix = null } = {}) {
   const data = new Map();
+  let crashPending = Boolean(crashOnceOnInsertPrefix);
   return {
     durability: 'DURABLE_TRANSACTIONAL',
     transaction(fn) {
       const working = new Map([...data].map(([k, v]) => [k, structuredClone(v)]));
       const tx = {
         get(key) { return working.has(key) ? structuredClone(working.get(key)) : null; },
-        insert(key, value) { if (working.has(key)) throw new Error('duplicate'); working.set(key, structuredClone(value)); }
+        insert(key, value) {
+          if (crashPending && key.startsWith(crashOnceOnInsertPrefix)) {
+            crashPending = false;
+            const error = new Error('simulated crash before commit');
+            error.code = 'SIMULATED_CRASH';
+            throw error;
+          }
+          if (working.has(key)) throw new Error('duplicate');
+          working.set(key, structuredClone(value));
+        }
       };
       const result = fn(tx);
       data.clear();
@@ -67,8 +77,13 @@ function makeStore() {
 
 function baseIngressFactory() {
   return {
-    receive(delivery) {
-      return { duplicate: false, key: 'event:' + delivery.contract.eventId, contract: structuredClone(delivery.contract) };
+    receiveWithinTransaction(tx, delivery) {
+      const key = 'event:' + delivery.contract.eventId;
+      const existing = tx.get(key);
+      if (existing) return { duplicate: true, key, contract: structuredClone(existing.contract) };
+      const record = { contract: structuredClone(delivery.contract) };
+      tx.insert(key, record);
+      return { duplicate: false, key, contract: structuredClone(record.contract) };
     }
   };
 }
@@ -89,7 +104,7 @@ test('different provider event ids for the same exact completed contract collaps
   assert.equal(second.duplicate, true);
   assert.equal(second.semanticDuplicate, true);
   assert.equal(second.contract.eventId, 'evt-100');
-  assert.equal(store.snapshot().length, 1);
+  assert.equal(store.snapshot().filter(([key]) => key.startsWith('wfm-contract-subject:')).length, 1);
 });
 
 test('same contract version with a different authenticated payload fails closed', () => {
@@ -99,6 +114,7 @@ test('same contract version with a different authenticated payload fails closed'
     () => ingress(store).receive({ contract: contract('evt-101', { payloadSha256: 'b'.repeat(64) }) }),
     'WFM_CONTRACT_VERSION_DRIFT'
   );
+  assert.equal(store.snapshot().filter(([key]) => key === 'event:evt-101').length, 0);
 });
 
 test('tenant drift on the same contract version is rejected even when the event id changes', () => {
@@ -108,6 +124,7 @@ test('tenant drift on the same contract version is rejected even when the event 
     () => ingress(store).receive({ contract: contract('evt-101', { tenantId: 'tenant-b' }) }),
     'WFM_CONTRACT_VERSION_DRIFT'
   );
+  assert.equal(store.snapshot().filter(([key]) => key === 'event:evt-101').length, 0);
 });
 
 test('a genuinely new contract version remains independently admissible', () => {
@@ -117,5 +134,21 @@ test('a genuinely new contract version remains independently admissible', () => 
   assert.equal(first.semanticDuplicate, false);
   assert.equal(next.semanticDuplicate, false);
   assert.notEqual(first.semanticKey, next.semanticKey);
-  assert.equal(store.snapshot().length, 2);
+  assert.equal(store.snapshot().filter(([key]) => key.startsWith('wfm-contract-subject:')).length, 2);
+});
+
+test('crash between authenticated event receipt and semantic dedupe rolls back both before retry', () => {
+  const store = makeStore({ crashOnceOnInsertPrefix: 'wfm-contract-subject:' });
+  expectCode(() => ingress(store).receive({ contract: contract('evt-100') }), 'SIMULATED_CRASH');
+  assert.equal(store.snapshot().length, 0);
+
+  const retry = ingress(store).receive({ contract: contract('evt-100') });
+  assert.equal(retry.semanticDuplicate, false);
+  assert.equal(store.snapshot().filter(([key]) => key === 'event:evt-100').length, 1);
+  assert.equal(store.snapshot().filter(([key]) => key.startsWith('wfm-contract-subject:')).length, 1);
+
+  const duplicate = ingress(store).receive({ contract: contract('evt-100') });
+  assert.equal(duplicate.semanticDuplicate, true);
+  assert.equal(store.snapshot().filter(([key]) => key === 'event:evt-100').length, 1);
+  assert.equal(store.snapshot().filter(([key]) => key.startsWith('wfm-contract-subject:')).length, 1);
 });
