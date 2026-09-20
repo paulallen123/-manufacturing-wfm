@@ -116,6 +116,17 @@
         "rollback-evidence"
       ],
       "releaseBlocking": true
+    },
+    {
+      "id": "self-evolving-capability",
+      "target": "Vector continuously converts verified customer outcomes, failures and successful trajectories into new evals, reusable skills, automations and product candidates, with independent verification and rollback.",
+      "proof": [
+        "learning-receipts",
+        "holdout-improvement-proof",
+        "skill-version-lineage",
+        "no-direct-production-authority"
+      ],
+      "releaseBlocking": true
     }
   ],
   "tableStakesToMatch": [
@@ -137,7 +148,8 @@
     "decision-to-outcome-learning",
     "evidence-backed-savings-ledger",
     "labour-plus-production-plus-energy-value",
-    "bounded-autonomous-support-and-recovery"
+    "bounded-autonomous-support-and-recovery",
+    "governed-self-evolving-product-and-customer-intelligence"
   ],
   "releaseRule": "Any failed release-blocking dimension prevents a world-class claim for that dimension. Unknown evidence is not a pass. CADDi parity/beat gates remain UNKNOWN or FAIL until live evidence exists; competitive comparison must never convert aspiration into a claim.",
   "competitorClasses": {
