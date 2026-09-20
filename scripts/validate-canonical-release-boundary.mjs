@@ -9,6 +9,8 @@ const {
   createCanonicalReleaseBoundary,
   validateCanonicalReleasePolicy,
   validateCanonicalTrustAnchorGovernance,
+  deriveCanonicalTrustAnchorGovernanceEvidence,
+  verifyCanonicalTrustAnchorGovernanceEvidence,
 } = require('../resilience/canonical-release-boundary.cjs');
 const root = process.cwd();
 const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'resilience/canonical-release-policy-snapshot.json'), 'utf8'));
@@ -196,6 +198,93 @@ for (const [field, unsafeValue] of [
   );
 }
 
+const protectedBranch = {
+  name: 'integration/canonical',
+  protected: true,
+  commit: { sha: 'a'.repeat(40) },
+};
+const strongProtection = {
+  required_pull_request_reviews: {
+    required_approving_review_count: 1,
+    dismiss_stale_reviews: true,
+    bypass_pull_request_allowances: { users: [], teams: [], apps: [] },
+  },
+  required_status_checks: {
+    strict: true,
+    checks: [{ context: 'WFM zero-engineer support contract', app_id: 1 }],
+  },
+  enforce_admins: { enabled: true },
+  allow_force_pushes: { enabled: false },
+  allow_deletions: { enabled: false },
+};
+const derivedStrongGovernance = deriveCanonicalTrustAnchorGovernanceEvidence({
+  branch: protectedBranch,
+  protection: strongProtection,
+  branchReadStatus: 200,
+  protectionReadStatus: 200,
+  rulesetsReadStatus: 200,
+  applicableRulesetCount: 0,
+});
+assert.equal(derivedStrongGovernance.governanceVerified, true);
+assert.equal(verifyCanonicalTrustAnchorGovernanceEvidence(derivedStrongGovernance), true);
+assert.match(derivedStrongGovernance.governanceEvidenceDigest, /^[a-f0-9]{64}$/);
+
+for (const mutate of [
+  (p) => { p.required_pull_request_reviews.required_approving_review_count = 0; },
+  (p) => { p.required_pull_request_reviews.dismiss_stale_reviews = false; },
+  (p) => { p.required_status_checks.strict = false; },
+  (p) => { p.required_status_checks.checks = []; },
+  (p) => { p.enforce_admins.enabled = false; },
+  (p) => { p.allow_force_pushes.enabled = true; },
+  (p) => { p.allow_deletions.enabled = true; },
+  (p) => { p.required_pull_request_reviews.bypass_pull_request_allowances.users = [{ login: 'bypass' }]; },
+]) {
+  const downgraded = structuredClone(strongProtection);
+  mutate(downgraded);
+  const receipt = deriveCanonicalTrustAnchorGovernanceEvidence({
+    branch: protectedBranch,
+    protection: downgraded,
+    branchReadStatus: 200,
+    protectionReadStatus: 200,
+    rulesetsReadStatus: 200,
+    applicableRulesetCount: 0,
+  });
+  assert.equal(receipt.governanceVerified, false);
+  assert.equal(receipt.governanceReceipt, null);
+  assert.equal(verifyCanonicalTrustAnchorGovernanceEvidence(receipt), true);
+}
+
+for (const incomplete of [
+  { branchReadStatus: 403, protectionReadStatus: 0, rulesetsReadStatus: 200, applicableRulesetCount: 0 },
+  { branchReadStatus: 200, protectionReadStatus: 403, rulesetsReadStatus: 200, applicableRulesetCount: 0 },
+  { branchReadStatus: 200, protectionReadStatus: 200, rulesetsReadStatus: 403, applicableRulesetCount: 0 },
+  { branchReadStatus: 200, protectionReadStatus: 200, rulesetsReadStatus: 200, applicableRulesetCount: 1 },
+]) {
+  const receipt = deriveCanonicalTrustAnchorGovernanceEvidence({
+    branch: protectedBranch,
+    protection: strongProtection,
+    ...incomplete,
+  });
+  assert.equal(receipt.governanceVerified, false);
+  assert.equal(receipt.validationCode, 'WFM_CANONICAL_TRUST_ANCHOR_GOVERNANCE_EVIDENCE_INCOMPLETE');
+  assert.equal(verifyCanonicalTrustAnchorGovernanceEvidence(receipt), true);
+}
+
+const unprotectedReceipt = deriveCanonicalTrustAnchorGovernanceEvidence({
+  branch: { ...protectedBranch, protected: false },
+  protection: null,
+  branchReadStatus: 200,
+  protectionReadStatus: 0,
+  rulesetsReadStatus: 200,
+  applicableRulesetCount: 0,
+});
+assert.equal(unprotectedReceipt.governanceVerified, false);
+assert.equal(verifyCanonicalTrustAnchorGovernanceEvidence(unprotectedReceipt), true);
+
+const tamperedGovernanceReceipt = structuredClone(derivedStrongGovernance);
+tamperedGovernanceReceipt.governance.requiredApprovingReviewCount = 0;
+assert.equal(verifyCanonicalTrustAnchorGovernanceEvidence(tamperedGovernanceReceipt), false);
+
 const boundary = createCanonicalReleaseBoundary(evidence);
 const featureBranch = 'autonomy/zero-engineer-support-sprint-20260918';
 
@@ -289,7 +378,7 @@ tampered.reason = 'forged';
 assert.equal(boundary.verifyReceipt(tampered), false);
 
 console.log(JSON.stringify({
-  schemaVersion: 3,
+  schemaVersion: 4,
   proof: 'canonical-release-boundary-compatibility',
   status: 'PASS',
   liveCanonicalEvidence: evidence.live,
@@ -305,6 +394,11 @@ console.log(JSON.stringify({
   deploymentPointerSemanticsBound: true,
   stagingWorkflowSemanticsBound: true,
   canonicalReleaseValidatorSemanticsBound: true,
+  governanceEvidenceAdapterDeterministic: true,
+  governanceEvidenceInaccessibilityFailsClosed: true,
+  governanceDowngradeFixturesCovered: 8,
+  governanceReceiptTamperDetected: true,
+  repositoryRulesetPresenceRequiresSeparateEvidence: true,
   releaseGradeTrustAnchorRequiresPrGate: true,
   releaseGradeTrustAnchorRequiresApprovals: true,
   releaseGradeTrustAnchorRequiresStrictStatusChecks: true,
