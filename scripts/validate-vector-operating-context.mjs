@@ -41,7 +41,7 @@ check('person locale preference overrides the operating display locale only',()=
 check('mismatched legal/site cost scope cannot leak a currency',()=>{
   const result=C.resolve({
     actor:{name:'Alex'},person:{site:'Plant A'},scope:{id:'site-a'},
-    operatingContext:{authoritative:true,scopeId:'site-a',timeZone:'Europe/London'},
+    operatingContext:{authoritative:true,scopeId:'site-a',timeZone:'Europe/London',currency:'GBP'},
     costEvidence:{scopeId:'site-b',currency:'USD'},
     browser:{locale:'en-GB',timeZone:'Europe/London'}
   });
