@@ -14,7 +14,9 @@
     "customer-text-is-sensor-not-authority",
     "every-regression-becomes-an-eval",
     "every-repeatable-win-becomes-a-skill",
-    "every-manual-repeat-becomes-an-automation-candidate"
+    "every-manual-repeat-becomes-an-automation-candidate",
+    "competitor-gap-becomes-an-eval",
+    "leapfrog-before-copy"
   ],
   "loops": {
     "customerOptimization": {
@@ -87,6 +89,50 @@
         "release-candidate",
         "rollback-plan",
         "learning-receipt"
+      ]
+    },
+    "marketEvolution": {
+      "cycle": [
+        "monitor-authoritative-market-evidence",
+        "normalize-capability",
+        "compare-vector-proof",
+        "create-gap-eval",
+        "generate-leapfrog-hypothesis",
+        "build-isolated-candidate",
+        "run-product-factory-gates",
+        "prove-or-reject",
+        "retain-market-learning"
+      ],
+      "monitoredClasses": [
+        "manufacturing-intelligence",
+        "enterprise-wfm",
+        "agent-platforms",
+        "integration-platforms",
+        "industrial-ai",
+        "manufacturing-optimization"
+      ],
+      "priorityCompetitors": [
+        "CADDi",
+        "UKG",
+        "Workday",
+        "SAP",
+        "Legion",
+        "Quinyx"
+      ],
+      "rules": [
+        "Do not copy a competitor feature without identifying the customer outcome it improves.",
+        "A competitor capability delta creates an eval before it creates a feature.",
+        "Prefer a leapfrog design that connects the capability to Vector's manufacturing operating graph.",
+        "No competitive superiority claim without live evidence.",
+        "Public marketing claims are evidence inputs, not proof of technical superiority."
+      ],
+      "outputs": [
+        "capability-delta",
+        "new-eval",
+        "product-candidate",
+        "integration-candidate",
+        "semantic-model-extension",
+        "competitive-proof-receipt"
       ]
     }
   },
