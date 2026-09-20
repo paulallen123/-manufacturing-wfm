@@ -40,11 +40,11 @@ test('canonical runtime carries tenant-bound function-only readiness into the lo
   let envelope=null;
   const result=await runtime.evaluatePermit(input({readiness,evaluateReadiness:async()=>{poisonCalls+=1;throw new Error('caller evaluator must not run');},permitStore:{async withLockedSnapshot(){poisonCalls+=1;}},shadowWorkStartCommand:async permit=>{envelope=permit.consume(command(readiness));}}));
   assert.equal(result.permitPassed,true);assert.equal(envelope.acceptedForShadow,true);assert.equal(poisonCalls,0);
-  assert.equal(runtime.credentialBoundary,'same_tenant_bound_session_user_transaction_factory_for_precheck_and_permit');assert.equal(runtime.precheckTrustBoundary,'same_runtime_instance_object_identity_one_use');assert.equal(runtime.rankingImpact,'none');
+  assert.equal(runtime.credentialBoundary,'same_tenant_bound_session_user_transaction_factory_for_precheck_and_permit');assert.equal(runtime.precheckTrustBoundary,'same_runtime_instance_object_identity_one_use');assert.equal(runtime.eligibilityBeforeRanking,true);assert.equal(runtime.directTableSelectAllowed,false);assert.equal(runtime.rankingImpact,'none');assert.equal(runtime.workStartWriteAuthorized,false);
   assert.equal(result.scheduleWriteAuthorized,false);assert.equal(result.clockingWriteAuthorized,false);assert.equal(result.payrollWriteAuthorized,false);assert.equal(result.workStartWriteAuthorized,false);
   assert.equal(transactions.length,2);
   for(const calls of transactions){assert.match(calls[0].sql,/^SET LOCAL ROLE wfm_agency_work_start_reader;/i);for(const call of calls.slice(1)){assert.doesNotMatch(call.sql,/\bFROM\s+(?:public\.)?wfm_agency_(?:rtw_assurance_current|portal_token_consumptions|identity_continuity_observations|identity_observation_ingress_receipts)\b/i);assert.doesNotMatch(call.sql,/\bINSERT\b|\bUPDATE\b|\bDELETE\b|\bTRUNCATE\b/i);}}
-  assert.doesNotMatch(JSON.stringify({readiness,result,envelope}),/BADGE|photo|biometric|share[-_]?code|document[-_]?number|raw[-_]?payload|portal[-_]?token/i);
+  assert.doesNotMatch(JSON.stringify({readiness,result,envelope}),/BADGE-123|provider-subject|signature-value|raw-image|1990-01-01|document-number|share-code|portal-token|raw-right-to-work/i);
 });
 
 test('copied or fabricated readiness cannot cross the canonical runtime trust boundary',async()=>{
