@@ -46,6 +46,49 @@ function firstRequiredAction(progress) {
   return actions[pending.key] || 'Complete the next required setup step.';
 }
 
+function maintenanceExecutionDisposition(maintenance = {}, execution = {}) {
+  const state = String(execution?.state || '').trim().toUpperCase();
+  if (!state || state === 'IDLE' || state === 'SUCCESS' || state === 'SUCCEEDED') return null;
+
+  const canContinueOnExistingProof = maintenance.canUseForBusinessTraffic === true;
+
+  if (state === 'CLAIM_EXPIRED') {
+    return Object.freeze({
+      state: canContinueOnExistingProof ? 'DEGRADED' : 'RECOVERING',
+      canSync: canContinueOnExistingProof,
+      customerMessage: canContinueOnExistingProof
+        ? 'The connection can keep syncing on its current proof, but an automatic provider safety check expired before completion.'
+        : 'The connection remains paused because an automatic provider safety check expired before a trusted completion was recorded.',
+      nextAction: canContinueOnExistingProof
+        ? 'Reclaim the durable maintenance task and rerun the safe provider check before the current proof expires.'
+        : 'Reclaim the durable maintenance task, rerun the safe provider check and reconcile before resuming.',
+      providerSignal: 'RETRYING',
+      runtimeSignal: canContinueOnExistingProof ? 'HEALTHY' : 'PAUSED',
+      maintenanceExecutionState: state,
+      reconciliationRequiredBeforeResume: !canContinueOnExistingProof
+    });
+  }
+
+  if (state === 'COMPLETION_UNCERTAIN') {
+    return Object.freeze({
+      state: canContinueOnExistingProof ? 'DEGRADED' : 'ATTENTION_REQUIRED',
+      canSync: canContinueOnExistingProof,
+      customerMessage: canContinueOnExistingProof
+        ? 'The connection can keep syncing on its current proof, but WFM has not confirmed the outcome of the latest safety check.'
+        : 'The connection is paused because WFM cannot prove whether the latest provider safety check completed durably.',
+      nextAction: canContinueOnExistingProof
+        ? 'Confirm the durable maintenance outcome; rerun the safe provider check if it was not recorded.'
+        : 'Reconcile the control-plane outcome and confirm durable completion before retrying or resuming.',
+      providerSignal: 'OUTCOME_UNCERTAIN',
+      runtimeSignal: canContinueOnExistingProof ? 'HEALTHY' : 'PAUSED',
+      maintenanceExecutionState: state,
+      reconciliationRequiredBeforeResume: !canContinueOnExistingProof
+    });
+  }
+
+  return null;
+}
+
 function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
   const evidence = input.activationEvidence || {};
   const activation = evaluateActivation(review, evidence, input.currentConfig);
@@ -76,6 +119,25 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
       setupProgress: progress,
       automation: maintenance,
       signals: Object.freeze({ activation: 'APPROVED', provider: 'BLOCKED', runtime: 'NOT_EVALUATED' })
+    });
+  }
+
+  const maintenanceExecution = maintenanceExecutionDisposition(maintenance, input.maintenanceExecution || {});
+  if (maintenanceExecution) {
+    return Object.freeze({
+      state: maintenanceExecution.state,
+      canSync: maintenanceExecution.canSync,
+      customerMessage: maintenanceExecution.customerMessage,
+      nextAction: maintenanceExecution.nextAction,
+      setupProgress: progress,
+      automation: maintenance,
+      maintenanceExecutionState: maintenanceExecution.maintenanceExecutionState,
+      reconciliationRequiredBeforeResume: maintenanceExecution.reconciliationRequiredBeforeResume,
+      signals: Object.freeze({
+        activation: 'APPROVED',
+        provider: maintenanceExecution.providerSignal,
+        runtime: maintenanceExecution.runtimeSignal
+      })
     });
   }
 
@@ -154,5 +216,6 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
 
 module.exports = {
   setupProgress,
+  maintenanceExecutionDisposition,
   summarizeConnectionHealth
 };
