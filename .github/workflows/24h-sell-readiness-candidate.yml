@@ -12,6 +12,8 @@ on:
       - 'learning/**'
       - 'resilience/**'
       - 'scripts/compose-vector-presentation.mjs'
+      - 'scripts/current-candidate-role-browser-proof.mjs'
+      - 'scripts/current-candidate-role-browser-proof-server.mjs'
       - 'scripts/run-portable-autonomy-proof.mjs'
       - 'scripts/validate-autonomy-*.mjs'
       - 'scripts/validate-support-*.mjs'
@@ -27,6 +29,7 @@ on:
       - 'security/runtime/**'
       - 'operations/runtime/**'
       - 'Dockerfile'
+      - 'Dockerfile.current-candidate-role-browser-proof'
   workflow_dispatch:
 
 permissions:
@@ -187,6 +190,66 @@ jobs:
           done
           echo 'ONE_DAY_CANONICAL_VECTOR_HOST_BINDING=PASS'
 
+      - name: Prove exact-source canonical Vector browser experience
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN is not configured'; exit 1; }
+
+          vars_file="$(mktemp)"
+          chmod 600 "$vars_file"
+          trap 'rm -f "$vars_file"; if [ -n "${browser_cid:-}" ]; then docker rm -f "$browser_cid" >/dev/null 2>&1 || true; fi' EXIT
+          "$RAILWAY_BIN" variable list \
+            --service "$TEST_SERVICE_ID" \
+            --environment "$TEST_ENVIRONMENT_ID" \
+            --kv > "$vars_file"
+          browser_password="$(sed -n 's/^WFM_STAGING_PASSWORD=//p' "$vars_file" | head -n 1)"
+          rm -f "$vars_file"
+          test "${#browser_password}" -ge 20 || { echo 'Isolated proof password unavailable'; exit 1; }
+          echo "::add-mask::$browser_password"
+
+          docker build --pull=false \
+            -f Dockerfile.current-candidate-role-browser-proof \
+            -t wfm-vector-browser-proof:${GITHUB_SHA} .
+
+          browser_cid="$(docker run -d \
+            -e VECTOR_PROOF_URL="$TEST_ORIGIN" \
+            -e WFM_EXPECTED_CANDIDATE_SHA="$GITHUB_SHA" \
+            -e WFM_STAGING_PASSWORD="$browser_password" \
+            -e VECTOR_CANONICAL_JS_SHA256="$VECTOR_CANONICAL_JS_SHA256" \
+            -e VECTOR_CANONICAL_CSS_SHA256="$VECTOR_CANONICAL_CSS_SHA256" \
+            -e WFM_REQUIRE_VECTOR_ASSET_DIGESTS=true \
+            -e WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE=false \
+            wfm-vector-browser-proof:${GITHUB_SHA})"
+
+          browser_pass=0
+          for attempt in $(seq 1 150); do
+            browser_logs="$(docker logs "$browser_cid" 2>&1 || true)"
+            if grep -Fq 'BROWSER_PROOF_SERVER=FAIL' <<<"$browser_logs"; then
+              printf '%s\n' "$browser_logs"
+              exit 1
+            fi
+            if grep -Fq 'BROWSER_PROOF_SERVER=PASS' <<<"$browser_logs"; then
+              browser_pass=1
+              break
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' "$browser_cid" 2>/dev/null || echo false)" != 'true' ]; then
+              printf '%s\n' "$browser_logs"
+              echo 'Canonical browser proof container stopped before PASS' >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          test "$browser_pass" = 1 || { docker logs "$browser_cid" 2>&1 || true; echo 'Canonical browser proof timed out' >&2; exit 1; }
+
+          docker logs "$browser_cid" > "$RUNNER_TEMP/vector-browser-proof.log" 2>&1
+          grep -F 'BROWSER_PROOF_ASSET_BINDING=BOUND' "$RUNNER_TEMP/vector-browser-proof.log"
+          grep -F 'CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS' "$RUNNER_TEMP/vector-browser-proof.log"
+          grep -F 'CURRENT_ACTION_QUEUE_GROUPING=PASS' "$RUNNER_TEMP/vector-browser-proof.log"
+          echo 'VECTOR_STRICT_BROWSER_ASSET_IDENTITY=PASS'
+
       - name: Upload exact candidate to existing integration proof service
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -243,10 +306,14 @@ jobs:
               js:process.env.VECTOR_CANONICAL_JS_SHA256||null,
               css:process.env.VECTOR_CANONICAL_CSS_SHA256||null
             },
+            browserProof:{
+              exactVectorAssetIdentityRequired:true,
+              actionAffordanceCoverageRequired:false
+            },
             productionMutation:false,
             frozenCustomerProofMutation:false,
             targetServices:['wfm-one-day-enterprise-v1','wfm-integration-fabric-v1-proof'],
-            note:'A successful workflow is exact-hosted evidence only for the exercised gates; browser interaction, lifecycle transitions and provider integrations require their separate explicit evidence gates.'
+            note:'A successful workflow proves exact source-to-host Vector asset identity plus the existing role/responsive browser matrix. Review/View status lifecycle affordances remain a separate explicit gate until authoritative source rows exercise both states.'
           };
           fs.writeFileSync('24h-sell-readiness-receipt.json',JSON.stringify(receipt,null,2)+'\n');
           NODE
@@ -259,5 +326,6 @@ jobs:
           path: |
             24h-sell-readiness-receipt.json
             portable-autonomy-proof.json
+            ${{ runner.temp }}/vector-browser-proof.log
           if-no-files-found: warn
           retention-days: 14
