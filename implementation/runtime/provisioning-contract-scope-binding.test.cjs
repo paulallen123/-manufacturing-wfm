@@ -10,6 +10,10 @@ const {
   normaliseFinalScope
 } = require('./adaptive-scoping-finalization-receipt.cjs');
 const { stable: contractStable } = require('./contract-completion-ingress.cjs');
+const { createFreshCreateProof } = require('./provisioning-fresh-create-proof.cjs');
+const { createReadOnlyProvisioningReconciler } = require('./provisioning-readonly-reconciler.cjs');
+const { createRailwayReadOnlyEnvironmentAdapter } = require('./railway-readonly-environment-adapter.cjs');
+const { deriveProvisioningEnvironmentBinding } = require('./provisioning-environment-binding.cjs');
 const {
   createContractScopeBinding,
   verifyContractScopeBinding,
@@ -21,6 +25,7 @@ const {
 const CONTRACT_RECEIPT_KEY = 'internal-receipt-key-0123456789abcdef0123456789abcdef';
 const SCOPE_PROOF_KEY = 'scope-proof-key-0123456789abcdef0123456789abcdef';
 const CONTRACT_SCOPE_BINDING_KEY = 'contract-scope-binding-key-0123456789abcdef0123456789abcdef';
+const FRESH_CREATE_PROOF_KEY = 'fresh-create-proof-key-0123456789abcdef0123456789abcdef';
 
 function expectCode(fn, code) {
   assert.throws(fn, error => error && error.code === code);
@@ -232,6 +237,162 @@ test('contract-bound scope is rechecked at queue admission and immediately befor
   });
   expectCode(() => outbox.beginMutation(claimed.token), 'WFM_CONTRACT_SCOPE_BINDING_INVALID');
   assert.equal(outbox.get(intent.queueKey).state, 'CLAIMED');
+});
+
+test('provider outcome cannot advance after the sealed scope proof is altered', () => {
+  const store = makeStore();
+  const outbox = createOutbox(store, { now: () => 1000 });
+  const intent = launchIntent();
+  outbox.enqueue(intent);
+  const claimed = outbox.claim(intent.queueKey, 'worker-a');
+  outbox.beginMutation(claimed.token);
+
+  store.tamper(intent.queueKey, record => {
+    record.payload.scopeProofBinding.subjectDigest = '0'.repeat(64);
+  });
+
+  expectCode(() => outbox.recordProviderOutcome(claimed.token, {
+    result: 'CONFIRMED_CREATED',
+    providerResourceId: 'railway-env-tamper-test'
+  }), 'WFM_SCOPE_FINALIZATION_BINDING_MISMATCH');
+  assert.equal(outbox.get(intent.queueKey).state, 'MUTATION_STARTED');
+});
+
+test('contract-bound crash restart uses read-only Railway recovery and the same proof through readiness', async () => {
+  let now = 2_000_000;
+  const store = makeStore();
+  let outbox = createOutbox(store, { now: () => now, leaseMs: 1000 });
+  const intent = launchIntent();
+  outbox.enqueue(intent);
+
+  const claimed = outbox.claim(intent.queueKey, 'mutation-worker');
+  const started = outbox.beginMutation(claimed.token);
+  const originalRequestId = started.providerRequestId;
+  const binding = deriveProvisioningEnvironmentBinding(started.record);
+  const creationProof = createFreshCreateProof(started.record, FRESH_CREATE_PROOF_KEY, { issuedAt: now });
+
+  const durableSnapshot = store.snapshot();
+  now += 500;
+  const restartedStore = makeStore(durableSnapshot);
+  outbox = createOutbox(restartedStore, { now: () => now, leaseMs: 1000 });
+
+  const recovered = outbox.claim(intent.queueKey, 'replacement-worker');
+  assert.equal(recovered.action, 'RECONCILE_ONLY');
+  assert.equal(recovered.record.providerRequestId, originalRequestId);
+  assert.equal(deriveProvisioningEnvironmentBinding(recovered.record).environmentName, binding.environmentName);
+
+  let providerReads = 0;
+  const adapter = createRailwayReadOnlyEnvironmentAdapter({
+    projectId: 'railway-project-test',
+    now: () => now,
+    creationProofForLookup: async lookup => {
+      assert.equal(lookup.providerRequestId, originalRequestId);
+      assert.equal(lookup.environmentName, binding.environmentName);
+      return creationProof;
+    },
+    executeGraphQL: async request => {
+      providerReads += 1;
+      assert.match(request.query, /^query\s+/);
+      assert.doesNotMatch(request.query, /\bmutation\b/i);
+      return {
+        data: {
+          environments: {
+            edges: [{
+              node: {
+                id: 'railway-env-contract-crash-test',
+                name: binding.environmentName,
+                createdAt: new Date(2_000_100).toISOString()
+              }
+            }]
+          }
+        }
+      };
+    }
+  });
+
+  const reconciler = createReadOnlyProvisioningReconciler({
+    outbox,
+    providerAdapters: { railway: adapter },
+    proofKey: FRESH_CREATE_PROOF_KEY,
+    now: () => now
+  });
+
+  const reconciled = await reconciler.reconcile(intent.queueKey);
+  assert.equal(providerReads, 1);
+  assert.equal(reconciled.state, 'VERIFY_REQUIRED');
+  assert.equal(reconciled.providerResourceId, 'railway-env-contract-crash-test');
+  assert.equal(reconciled.contractScopeBindingDigest, intent.contractScopeBindingDigest);
+  assert.equal(reconciled.scopeFinalizationDigest, intent.scopeFinalizationEvidence.finalizationDigest);
+
+  const ready = outbox.recordIndependentVerification(intent.queueKey, {
+    independent: true,
+    verifierId: 'independent-readiness-verifier',
+    scopeFinalizationDigest: intent.scopeFinalizationEvidence.finalizationDigest,
+    contractScopeBindingDigest: intent.contractScopeBindingDigest,
+    subject: structuredClone(reconciled.verificationSubject),
+    checks: allChecks()
+  });
+  assert.equal(ready.state, 'COMPLETED');
+  assert.equal(ready.contractScopeBindingDigest, intent.contractScopeBindingDigest);
+  assert.equal(ready.scopeFinalizationDigest, intent.scopeFinalizationEvidence.finalizationDigest);
+});
+
+test('recovery cannot advance if contract-scope proof changes after provider readback starts', async () => {
+  let now = 3_000_000;
+  const store = makeStore();
+  let outbox = createOutbox(store, { now: () => now, leaseMs: 1000 });
+  const intent = launchIntent();
+  outbox.enqueue(intent);
+  const claimed = outbox.claim(intent.queueKey, 'mutation-worker');
+  const started = outbox.beginMutation(claimed.token);
+  const binding = deriveProvisioningEnvironmentBinding(started.record);
+  const creationProof = createFreshCreateProof(started.record, FRESH_CREATE_PROOF_KEY, { issuedAt: now });
+
+  const durableSnapshot = store.snapshot();
+  now += 500;
+  const restartedStore = makeStore(durableSnapshot);
+  outbox = createOutbox(restartedStore, { now: () => now, leaseMs: 1000 });
+
+  const adapter = createRailwayReadOnlyEnvironmentAdapter({
+    projectId: 'railway-project-test',
+    now: () => now,
+    creationProofForLookup: async () => {
+      restartedStore.tamper(intent.queueKey, record => {
+        record.payload.contractScopeBindingEvidence.mac = '0'.repeat(64);
+      });
+      return creationProof;
+    },
+    executeGraphQL: async request => {
+      assert.match(request.query, /^query\s+/);
+      assert.doesNotMatch(request.query, /\bmutation\b/i);
+      return {
+        data: {
+          environments: {
+            edges: [{
+              node: {
+                id: 'railway-env-contract-tamper-test',
+                name: binding.environmentName,
+                createdAt: new Date(3_000_100).toISOString()
+              }
+            }]
+          }
+        }
+      };
+    }
+  });
+
+  const reconciler = createReadOnlyProvisioningReconciler({
+    outbox,
+    providerAdapters: { railway: adapter },
+    proofKey: FRESH_CREATE_PROOF_KEY,
+    now: () => now
+  });
+
+  await assert.rejects(
+    () => reconciler.reconcile(intent.queueKey),
+    error => error && error.code === 'WFM_CONTRACT_SCOPE_BINDING_INVALID'
+  );
+  assert.equal(outbox.get(intent.queueKey).state, 'MUTATION_STARTED');
 });
 
 test('independent readiness must identify the same contract-bound scope proof', () => {
