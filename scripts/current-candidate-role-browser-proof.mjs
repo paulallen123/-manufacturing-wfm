@@ -446,3 +446,5 @@ try {
   await browser.close();
   delete process.env.WFM_STAGING_PASSWORD;
 }
+
+// CHAT_CAPTURE_REFRESH_20260920_A
