@@ -72,9 +72,8 @@ function uiPresentationPath(req) {
   const path = requestPath(req);
   return path === '/' ||
     path === '/index.html' ||
-    path === '/factory-control-ui.css' ||
-    path === '/value-cockpit-ui.js' ||
-    path === '/vector-shell.js';
+    path === '/vector-ui.css' ||
+    path === '/vector-ui.js';
 }
 
 function forceVectorUiFreshness(req, res) {
@@ -85,26 +84,39 @@ function forceVectorUiFreshness(req, res) {
   res.setHeader('X-WFM-UI', 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1');
 }
 
-function serveVectorShell(req, res) {
-  if (requestPath(req) !== '/vector-shell.js') return false;
-  if (String(req.method || 'GET').toUpperCase() !== 'GET') {
+function serveCanonicalVectorAsset(req, res) {
+  const path = requestPath(req);
+  const asset = path === '/vector-ui.js'
+    ? { file: '/app/public/vector-ui.js', type: 'text/javascript; charset=utf-8' }
+    : path === '/vector-ui.css'
+      ? { file: '/app/public/vector-ui.css', type: 'text/css; charset=utf-8' }
+      : null;
+  if (!asset) return false;
+
+  const method = String(req.method || 'GET').toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD') {
     res.statusCode = 405;
-    res.setHeader('Allow', 'GET');
+    res.setHeader('Allow', 'GET, HEAD');
     res.end('Method Not Allowed');
     return true;
   }
+
   try {
-    const body = fs.readFileSync('/app/public/vector-shell.js');
+    const body = fs.readFileSync(asset.file);
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+    res.setHeader('Content-Type', asset.type);
+    res.setHeader('Content-Length', String(body.length));
     res.setHeader('Cache-Control', 'no-store, max-age=0, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.end(body);
+    res.setHeader('X-WFM-UI', 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1');
+    if (method === 'HEAD') res.end();
+    else res.end(body);
   } catch {
     res.statusCode = 503;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
-    res.end('Vector presentation asset unavailable.');
+    res.end('Canonical Vector presentation asset unavailable.');
   }
   return true;
 }
@@ -311,7 +323,7 @@ http.createServer = function guardedCreateServer(listener) {
 
   return originalCreateServer.call(http, async (req, res) => {
     forceVectorUiFreshness(req, res);
-    if (serveVectorShell(req, res)) return;
+    if (serveCanonicalVectorAsset(req, res)) return;
     if (handleStagingAccess(req, res)) return;
     restoreStagingSession(req, res);
 
