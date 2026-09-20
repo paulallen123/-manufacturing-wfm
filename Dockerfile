@@ -165,3 +165,5 @@ ENV NODE_ENV=staging
 ENV WFM_IDENTITY_SURVIVAL_GUARD=enforce
 EXPOSE 3000
 CMD ["node","security-runtime/bootstrap.cjs"]
+
+# VECTOR_CANONICAL_REDEPLOY_20260920
