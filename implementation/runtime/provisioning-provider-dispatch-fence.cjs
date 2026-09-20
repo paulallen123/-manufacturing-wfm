@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { createFreshCreateProof } = require('./provisioning-fresh-create-proof.cjs');
 
 function canonical(value) {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -84,7 +85,21 @@ function assertLiveMutationAuthority(record, token, expectedProviderRequestId, n
   };
 }
 
-function createProviderDispatchFence({ outbox, provider, now = Date.now } = {}) {
+function proofRecordFromPermit(permit) {
+  return {
+    state: 'MUTATION_STARTED',
+    queueKey: permit.queueKey,
+    intentDigest: permit.intentDigest,
+    providerRequestId: permit.providerRequestId,
+    generation: permit.generation,
+    payload: {
+      contract: clone(permit.contract),
+      plan: clone(permit.plan)
+    }
+  };
+}
+
+function createProviderDispatchFence({ outbox, provider, proofKey, now = Date.now } = {}) {
   if (!outbox || typeof outbox.get !== 'function') {
     throw new Error('Provider dispatch fence requires the existing provisioning outbox.');
   }
@@ -94,11 +109,16 @@ function createProviderDispatchFence({ outbox, provider, now = Date.now } = {}) 
   if (provider.supportsIdempotencyKey !== true) {
     throw new Error('Provider create adapter must guarantee idempotency-key handling.');
   }
+  if (provider.supportsCreationProofPersistence !== true) {
+    throw new Error('Provider create adapter must persist the autonomous creation proof on the created environment for later provider readback.');
+  }
+  if (!proofKey) throw new Error('Provider dispatch fence requires the fresh-create proof key.');
 
-  function authorize(token, providerRequestId) {
+  function authorize(token, providerRequestId, nowMs = Number(now())) {
+    if (!Number.isFinite(nowMs)) fail('WFM_PROVIDER_DISPATCH_CLOCK_INVALID', 'Provisioning dispatch clock is invalid.', 500);
     const queueKey = requireString(token && token.queueKey, 'WFM_PROVIDER_DISPATCH_QUEUE_KEY_REQUIRED', 'Provisioning queue identity is required.');
     const record = outbox.get(queueKey);
-    const permit = assertLiveMutationAuthority(record, token, providerRequestId, Number(now()));
+    const permit = assertLiveMutationAuthority(record, token, providerRequestId, nowMs);
     return Object.freeze({
       ...permit,
       dispatchDigest: sha256({
@@ -114,10 +134,11 @@ function createProviderDispatchFence({ outbox, provider, now = Date.now } = {}) 
   }
 
   async function dispatch(token, providerRequestId) {
+    const nowMs = Number(now());
     // Deliberately no await or other work between the final authority check and
-    // invoking the provider mutation. The deterministic request id is propagated
-    // downstream as the provider idempotency key.
-    const permit = authorize(token, providerRequestId);
+    // constructing the signed proof that the provider must persist with the new environment.
+    const permit = authorize(token, providerRequestId, nowMs);
+    const creationProof = createFreshCreateProof(proofRecordFromPermit(permit), proofKey, { issuedAt: nowMs });
     const result = await provider.createIsolatedEnvironment({
       idempotencyKey: permit.providerRequestId,
       fencingToken: `${permit.queueKey}:${permit.generation}`,
@@ -128,9 +149,11 @@ function createProviderDispatchFence({ outbox, provider, now = Date.now } = {}) 
       artifactSha256: permit.artifactSha256,
       contract: clone(permit.contract),
       plan: clone(permit.plan),
+      environmentBinding: clone(creationProof.environmentBinding),
+      creationProof: clone(creationProof),
       dispatchDigest: permit.dispatchDigest
     });
-    return { permit, result };
+    return { permit, creationProof, result };
   }
 
   return { authorize, dispatch };
@@ -139,6 +162,7 @@ function createProviderDispatchFence({ outbox, provider, now = Date.now } = {}) 
 module.exports = {
   createProviderDispatchFence,
   assertLiveMutationAuthority,
+  proofRecordFromPermit,
   sha256,
   canonical
 };
