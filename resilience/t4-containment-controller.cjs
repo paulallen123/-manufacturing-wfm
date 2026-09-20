@@ -204,6 +204,9 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
     throw new Error('maxActions must be between 1 and 12.');
   }
 
+  const forensicPreserve = typeof forensicStore?.preserve === 'function' ? forensicStore.preserve.bind(forensicStore) : null;
+  const forensicVerify = typeof forensicStore?.verify === 'function' ? forensicStore.verify.bind(forensicStore) : null;
+
   async function handle(input = {}) {
     const incidentId = clean(input.incidentId, 120);
     const tenant = clean(input.tenant, 100);
@@ -287,34 +290,54 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
     const plan = [...planned];
     record('containment-plan', { actions: plan });
 
-    if (!forensicStore?.preserve) {
-      record('forensics-preservation-required', { executorAvailable: false });
-      throw Object.assign(new Error('T4 cannot claim a safe terminal without verified forensic preservation.'), { code: 'WFM_T4_FORENSICS_UNAVAILABLE' });
+    if (!forensicPreserve || !forensicVerify) {
+      record('forensics-preservation-required', {
+        preserveAvailable: Boolean(forensicPreserve),
+        independentVerifierAvailable: Boolean(forensicVerify),
+      });
+      throw Object.assign(new Error('T4 cannot claim a safe terminal without independently verifiable forensic preservation.'), { code: 'WFM_T4_FORENSICS_UNAVAILABLE' });
     }
 
     consume('forensics.preserve');
-    const preserved = await forensicStore.preserve({
+    const preserved = await forensicPreserve({
       incidentId,
       tenant,
       scenarioId,
       evidenceDigest,
       eventHeadDigest: previousDigest,
     });
-    if (preserved?.verified !== true || preserved?.immutable !== true || !validDigest(preserved?.forensicDigest)) {
-      throw Object.assign(new Error('Forensic preservation must be independently verified and write-once.'), { code: 'WFM_T4_FORENSICS_VERIFY' });
+    if (preserved?.verified !== true
+      || preserved?.immutable !== true
+      || !validDigest(preserved?.forensicDigest)
+      || !validDigest(preserved?.tenantDigest)
+      || !validDigest(preserved?.storageKey)) {
+      throw Object.assign(new Error('Forensic preservation must be independently verified, tenant-bound and write-once.'), { code: 'WFM_T4_FORENSICS_VERIFY' });
     }
     const forensicReceipt = {
       verified: true,
       forensicDigest: preserved.forensicDigest,
+      tenantDigest: preserved.tenantDigest,
       immutable: true,
       storageMode: clean(preserved.storageMode || 'verified-write-once', 80),
-      storageKey: validDigest(preserved.storageKey) ? preserved.storageKey : null,
+      storageKey: preserved.storageKey,
+      selectedStoreId: preserved.selectedStoreId ? clean(preserved.selectedStoreId, 80) : null,
+      selectedStoreCapabilityDigest: validDigest(preserved.selectedStoreCapabilityDigest) ? preserved.selectedStoreCapabilityDigest : null,
+      failoverUsed: preserved.failoverUsed === true,
+      attemptCount: Number.isSafeInteger(preserved.attemptCount) && preserved.attemptCount >= 1 ? preserved.attemptCount : null,
+      attemptDigest: validDigest(preserved.attemptDigest) ? preserved.attemptDigest : null,
+      failoverContractDigest: validDigest(preserved.failoverContractDigest) ? preserved.failoverContractDigest : null,
+      failoverDigest: validDigest(preserved.failoverDigest) ? preserved.failoverDigest : null,
+      finalReadbackVerified: false,
+      finalReadbackDigest: null,
     };
     record('forensics-preserved', {
-      forensicDigest: preserved.forensicDigest,
+      forensicDigest: forensicReceipt.forensicDigest,
+      tenantDigest: forensicReceipt.tenantDigest,
       immutable: true,
       storageMode: forensicReceipt.storageMode,
       storageKey: forensicReceipt.storageKey,
+      selectedStoreId: forensicReceipt.selectedStoreId,
+      failoverContractDigest: forensicReceipt.failoverContractDigest,
     });
 
     let containmentReceipt = null;
@@ -378,13 +401,38 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
       });
     }
 
+    const finalReadbackVerified = await forensicVerify(forensicReceipt);
+    if (finalReadbackVerified !== true) {
+      record('forensics-final-readback-failed', {
+        storageKey: forensicReceipt.storageKey,
+        selectedStoreId: forensicReceipt.selectedStoreId,
+      });
+      throw Object.assign(new Error('T4 cannot claim a safe terminal because final forensic read-back verification failed.'), { code: 'WFM_T4_FORENSICS_FINAL_VERIFY' });
+    }
+    forensicReceipt.finalReadbackVerified = true;
+    forensicReceipt.finalReadbackDigest = digest({
+      forensicDigest: forensicReceipt.forensicDigest,
+      tenantDigest: forensicReceipt.tenantDigest,
+      storageKey: forensicReceipt.storageKey,
+      selectedStoreId: forensicReceipt.selectedStoreId,
+      selectedStoreCapabilityDigest: forensicReceipt.selectedStoreCapabilityDigest,
+      attemptDigest: forensicReceipt.attemptDigest,
+      failoverContractDigest: forensicReceipt.failoverContractDigest,
+      failoverDigest: forensicReceipt.failoverDigest,
+    });
+    record('forensics-final-readback-verified', {
+      storageKey: forensicReceipt.storageKey,
+      selectedStoreId: forensicReceipt.selectedStoreId,
+      finalReadbackDigest: forensicReceipt.finalReadbackDigest,
+    });
+
     const requiresSecurityAuthority = credentialDisclosureConfirmed && threat.revocationPreauthorised !== true;
     if (outcome === 'contained' && requiresSecurityAuthority) outcome = 'security_or_legal_authority_required';
 
     record('terminal', { outcome, actionCount });
     const endedAt = Number(now());
     const result = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       incidentId,
       tenant,
       scenarioId,
@@ -415,7 +463,25 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
   function verifyReceipt(receipt) {
     if (!receipt || !Array.isArray(receipt.events) || !validDigest(receipt.receiptDigest)) return false;
     if (receipt.safeTerminal === true) {
-      if (receipt.forensicReceipt?.verified !== true || receipt.forensicReceipt?.immutable !== true || !validDigest(receipt.forensicReceipt?.forensicDigest)) return false;
+      const forensicReceipt = receipt.forensicReceipt;
+      if (forensicReceipt?.verified !== true
+        || forensicReceipt?.immutable !== true
+        || forensicReceipt?.finalReadbackVerified !== true
+        || !validDigest(forensicReceipt?.forensicDigest)
+        || !validDigest(forensicReceipt?.tenantDigest)
+        || !validDigest(forensicReceipt?.storageKey)
+        || !validDigest(forensicReceipt?.finalReadbackDigest)) return false;
+      const expectedReadbackDigest = digest({
+        forensicDigest: forensicReceipt.forensicDigest,
+        tenantDigest: forensicReceipt.tenantDigest,
+        storageKey: forensicReceipt.storageKey,
+        selectedStoreId: forensicReceipt.selectedStoreId || null,
+        selectedStoreCapabilityDigest: forensicReceipt.selectedStoreCapabilityDigest || null,
+        attemptDigest: forensicReceipt.attemptDigest || null,
+        failoverContractDigest: forensicReceipt.failoverContractDigest || null,
+        failoverDigest: forensicReceipt.failoverDigest || null,
+      });
+      if (forensicReceipt.finalReadbackDigest !== expectedReadbackDigest) return false;
     }
     let previousDigest = digest({
       incidentId: receipt.incidentId,
