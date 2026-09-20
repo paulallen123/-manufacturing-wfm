@@ -283,3 +283,37 @@ test('uncertain maintenance completion blocks an expired proof until control-pla
   assert.match(result.nextAction, /reconcile/i);
   assert.equal(JSON.stringify(result).includes('must-not-echo'), false);
 });
+
+test('durably reconciled retry keeps a still-valid proof running but visible', () => {
+  const due = providerProofLease({ observedAt: '2026-09-19T15:29:30.000Z' }, { maxAgeSeconds: 660, renewWindowSeconds: 600 });
+  const result = summarizeConnectionHealth(review, {
+    currentConfig: config,
+    activationEvidence: approvedEvidence(),
+    providerProofLease: due,
+    circuitState: closedCircuit(),
+    runtime: healthyRuntime(),
+    maintenanceExecution: { state: 'PENDING', reconciled: true, nextAttemptAt: '2026-09-19T15:41:00.000Z' }
+  }, NOW);
+
+  assert.equal(result.state, 'DEGRADED');
+  assert.equal(result.canSync, true);
+  assert.equal(result.maintenanceExecutionState, 'PENDING');
+  assert.equal(result.signals.provider, 'RETRYING');
+});
+
+test('reconciled maintenance conflict pauses sync even when the previous proof is current', () => {
+  const result = summarizeConnectionHealth(review, {
+    currentConfig: config,
+    activationEvidence: approvedEvidence(),
+    providerProofLease: providerProofLease(),
+    circuitState: closedCircuit(),
+    runtime: healthyRuntime(),
+    maintenanceExecution: { state: 'ATTENTION_REQUIRED', reconciled: false, errorClass: 'maintenance-outcome-digest-mismatch' }
+  }, NOW);
+
+  assert.equal(result.state, 'ATTENTION_REQUIRED');
+  assert.equal(result.canSync, false);
+  assert.equal(result.maintenanceExecutionState, 'ATTENTION_REQUIRED');
+  assert.equal(result.reconciliationRequiredBeforeResume, true);
+  assert.equal(result.signals.provider, 'BLOCKED');
+});
