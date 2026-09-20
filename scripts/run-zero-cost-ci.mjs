@@ -16,7 +16,8 @@ const checks = [
   'scripts/validate-onedrive-sync-guardian.mjs',
   'scripts/validate-release-policy.mjs',
   'scripts/validate-product-factory.mjs',
-  'scripts/validate-self-evolution.mjs'
+  'scripts/validate-self-evolution.mjs',
+  'scripts/prove-adaptive-intelligence-engine.mjs'
 ];
 
 const requested=Number(process.env.WFM_CI_PARALLELISM||0);
