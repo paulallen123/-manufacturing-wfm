@@ -6,7 +6,8 @@ const {
   maintenanceRetryDecision,
   safeRetryHint,
   canonicalFailureClass,
-  safeFailureStatus
+  safeFailureStatus,
+  safeFirstFailureAt
 } = require('./provider-proof-retry-policy.cjs');
 
 const NOW = Date.parse('2026-09-20T03:45:00.000Z');
@@ -57,6 +58,26 @@ test('retry timing grows deterministically across attempts without provider guid
   assert.equal(first.action, 'RETRY');
   assert.equal(first.retryAfterMs, again.retryAfterMs);
   assert.ok(second.retryAfterMs > first.retryAfterMs);
+});
+
+test('durable retry anchor prevents a worker restart from resetting elapsed retry budget', () => {
+  const result = maintenanceRetryDecision(review(), claim({
+    attemptCount: 2,
+    firstFailureAt: NOW - 300_000
+  }), {
+    retryable: true,
+    errorClass: 'provider-timeout'
+  }, NOW);
+
+  assert.equal(result.action, 'BLOCK');
+  assert.equal(result.retryable, false);
+  assert.equal(result.errorClass, 'retry-window-would-be-exceeded');
+});
+
+test('future or malformed retry anchors are ignored safely', () => {
+  assert.equal(safeFirstFailureAt({ firstFailureAt: NOW + 1000 }, NOW), null);
+  assert.equal(safeFirstFailureAt({ firstFailureAt: 'not-a-time' }, NOW), null);
+  assert.equal(safeFirstFailureAt({ firstFailureAt: new Date(NOW - 1000).toISOString() }, NOW), NOW - 1000);
 });
 
 test('shared transport policy overrides a bad adapter retry flag for terminal failures', () => {
