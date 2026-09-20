@@ -131,12 +131,12 @@ try {
 
     if (spec.slug === 'manager') {
       const previous = page.viewportSize();
-      await page.setViewportSize({ width: 700, height: 490 });
+      await page.setViewportSize({ width: 420, height: 294 });
       await page.waitForTimeout(150);
       const compact = await page.screenshot({
         type: 'jpeg',
-        quality: 12,
-        clip: { x: 0, y: 0, width: 700, height: 490 }
+        quality: 6,
+        clip: { x: 0, y: 0, width: 420, height: 294 }
       });
       managerAlignmentEvidence = {
         base64: compact.toString('base64'),
