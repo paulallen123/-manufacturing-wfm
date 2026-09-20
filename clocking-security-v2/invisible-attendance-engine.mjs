@@ -212,7 +212,16 @@ export class AutomaticAttendanceEvidenceEngine {
       const eventAssignmentGeneration=Number.isSafeInteger(e.personAssignmentGeneration)&&e.personAssignmentGeneration>0?e.personAssignmentGeneration:1;
       return Boolean(registered?.active) && registered.site===site && eventGeneration===currentGeneration && eventAssignmentGeneration===currentAssignmentGeneration;
     });
-    const cluster=all.filter(e=>Math.abs(e.observedMs-trigger.observedMs)<=this.corroborationWindowMs);
+    // Evidence from a prior attendance session must never be recycled to satisfy
+    // a new quorum. For IN, every corroborator must be strictly after the prior
+    // authoritative close. For OUT, every corroborator must belong to the currently
+    // open session. This keeps the quorum bound to the transition it is proving.
+    const sessionBounded=all.filter(e=>{
+      if(direction==='in' && state.closeAt!==null) return e.observedMs>state.closeAt;
+      if(direction==='out' && state.openAt!==null) return e.observedMs>=state.openAt;
+      return true;
+    });
+    const cluster=sessionBounded.filter(e=>Math.abs(e.observedMs-trigger.observedMs)<=this.corroborationWindowMs);
     const wanted=cluster.filter(e=>direction==='in'?e.polarity==='present':e.polarity==='absent');
     const anchors=wanted.filter(e=>direction==='in'?e.anchorIn:e.anchorOut);
     if(!anchors.length){
