@@ -2,6 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const { verifyCanonicalTrustAnchorGovernanceEvidence } = require('../resilience/canonical-release-boundary.cjs');
 
 const ROOT = process.cwd();
 const strictRuntime = process.argv.includes('--strict-runtime');
@@ -20,6 +24,10 @@ function validGitSha(value) {
   return /^[a-f0-9]{40}$/.test(String(value ?? '').toLowerCase());
 }
 
+function validDigest(value) {
+  return /^[a-f0-9]{64}$/.test(String(value ?? '').toLowerCase());
+}
+
 function gitHeadSha() {
   const run = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' });
   return run.status === 0 ? String(run.stdout || '').trim().toLowerCase() : '';
@@ -31,6 +39,24 @@ function gitObjectBlobSha(commitSha, repoPath) {
   return run.status === 0 ? String(run.stdout || '').trim().toLowerCase() : '';
 }
 
+function loadCanonicalGovernanceEvidence() {
+  const evidencePath = String(process.env.WFM_CANONICAL_GOVERNANCE_EVIDENCE_FILE || '').trim();
+  if (!evidencePath || !fs.existsSync(evidencePath)) {
+    return { evidence: null, valid: false, error: 'canonical-governance-evidence-unavailable' };
+  }
+  try {
+    const evidence = JSON.parse(fs.readFileSync(evidencePath, 'utf8'));
+    const valid = verifyCanonicalTrustAnchorGovernanceEvidence(evidence);
+    return {
+      evidence: valid ? evidence : null,
+      valid,
+      error: valid ? null : 'canonical-governance-evidence-invalid',
+    };
+  } catch (error) {
+    return { evidence: null, valid: false, error: String(error?.message || error) };
+  }
+}
+
 const canonicalBaseSha = String(process.env.WFM_CANONICAL_BASE_SHA || '').trim().toLowerCase();
 function resolveCanonicalControlBlob(envName, repoPath) {
   const supplied = String(process.env[envName] || '').trim().toLowerCase();
@@ -38,6 +64,18 @@ function resolveCanonicalControlBlob(envName, repoPath) {
   if (supplied && derived && supplied !== derived) return '';
   return supplied || derived;
 }
+
+const governanceLoad = loadCanonicalGovernanceEvidence();
+const canonicalGovernanceEvidence = governanceLoad.evidence;
+const canonicalGovernanceEvidenceDigest = canonicalGovernanceEvidence?.governanceEvidenceDigest || null;
+const canonicalGovernanceEvidenceMatchesCanonical = governanceLoad.valid
+  && validGitSha(canonicalGovernanceEvidence?.branchSha)
+  && canonicalGovernanceEvidence.branchSha === canonicalBaseSha;
+const canonicalTrustAnchorProtected = canonicalGovernanceEvidenceMatchesCanonical
+  && canonicalGovernanceEvidence?.governance?.protected === true;
+const canonicalTrustAnchorGovernanceVerified = canonicalTrustAnchorProtected
+  && canonicalGovernanceEvidence?.governanceVerified === true;
+const releaseGradeCanonicalTrustAnchor = canonicalTrustAnchorProtected && canonicalTrustAnchorGovernanceVerified;
 
 const releaseEvidence = {
   headSha: String(process.env.WFM_AUTONOMY_HEAD_SHA || '').trim().toLowerCase(),
@@ -51,12 +89,15 @@ const releaseEvidence = {
 const releaseBindingComplete = Object.values(releaseEvidence).every(validGitSha);
 const actualHeadSha = gitHeadSha();
 const releaseHeadMatchesCheckout = releaseBindingComplete && actualHeadSha === releaseEvidence.headSha;
-const canonicalTrustAnchorProtected = process.env.WFM_CANONICAL_TRUST_ANCHOR_PROTECTED === 'true';
-const canonicalTrustAnchorGovernanceVerified = process.env.WFM_CANONICAL_TRUST_ANCHOR_GOVERNANCE_VERIFIED === 'true';
-const releaseGradeCanonicalTrustAnchor = canonicalTrustAnchorProtected && canonicalTrustAnchorGovernanceVerified;
-const releaseBinding = releaseBindingComplete ? {
+const releaseBindingCore = releaseBindingComplete ? {
   ...releaseEvidence,
-  bindingDigest: sha256(JSON.stringify(releaseEvidence)),
+  canonicalGovernanceEvidenceDigest: validDigest(canonicalGovernanceEvidenceDigest) ? canonicalGovernanceEvidenceDigest : null,
+  canonicalGovernanceEvidenceBound: governanceLoad.valid,
+  canonicalGovernanceEvidenceMatchesCanonical,
+} : null;
+const releaseBinding = releaseBindingCore ? {
+  ...releaseBindingCore,
+  bindingDigest: sha256(JSON.stringify(releaseBindingCore)),
 } : null;
 
 const checks = [
@@ -143,13 +184,21 @@ if (strictRuntime && (!releaseBindingComplete || !releaseHeadMatchesCheckout)) {
 results.push({
   id: 'canonical-trust-anchor',
   status: releaseGradeCanonicalTrustAnchor ? 'PASS' : 'RELEASE_BLOCKED',
-  reason: !canonicalTrustAnchorProtected
-    ? 'canonical-trust-anchor-unprotected'
-    : canonicalTrustAnchorGovernanceVerified
-      ? 'protected-and-governance-verified-canonical-trust-anchor'
-      : 'canonical-trust-anchor-governance-unverified',
+  reason: !governanceLoad.valid
+    ? 'canonical-trust-anchor-governance-evidence-unavailable-or-invalid'
+    : !canonicalGovernanceEvidenceMatchesCanonical
+      ? 'canonical-trust-anchor-governance-evidence-drift'
+      : !canonicalTrustAnchorProtected
+        ? 'canonical-trust-anchor-unprotected'
+        : canonicalTrustAnchorGovernanceVerified
+          ? 'protected-and-governance-verified-canonical-trust-anchor'
+          : 'canonical-trust-anchor-governance-unverified',
   protected: canonicalTrustAnchorProtected,
   governanceVerified: canonicalTrustAnchorGovernanceVerified,
+  governanceEvidenceBound: governanceLoad.valid,
+  governanceEvidenceMatchesCanonical: canonicalGovernanceEvidenceMatchesCanonical,
+  governanceEvidenceDigest: validDigest(canonicalGovernanceEvidenceDigest) ? canonicalGovernanceEvidenceDigest : null,
+  governanceEvidenceError: governanceLoad.error,
   releaseAuthorityGranted: false,
 });
 
@@ -255,6 +304,10 @@ if (!releaseBindingComplete) {
   releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_RELEASE_EVIDENCE_INCOMPLETE';
 } else if (!releaseHeadMatchesCheckout) {
   releaseEvidenceStatus = 'FAIL_CLOSED_PROOF_HEAD_MISMATCH';
+} else if (!governanceLoad.valid) {
+  releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_GOVERNANCE_EVIDENCE_INVALID';
+} else if (!canonicalGovernanceEvidenceMatchesCanonical) {
+  releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_GOVERNANCE_DRIFT';
 } else if (!canonicalTrustAnchorProtected) {
   releaseEvidenceStatus = 'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED';
 } else if (!canonicalTrustAnchorGovernanceVerified) {
@@ -271,7 +324,7 @@ const proofScope = releaseClaimAllowed
   : exactRuntime ? 'EXACT_RUNTIME_LOGIC_ONLY' : 'NON_EXACT_LOGIC_ONLY';
 
 const receipt = {
-  schemaVersion: 6,
+  schemaVersion: 7,
   proof: 'portable-zero-engineer-autonomy-gate',
   status: failed ? 'FAIL' : 'PASS',
   proofScope,
@@ -287,6 +340,9 @@ const receipt = {
   priorCorpusSelectionAdapterRequired: true,
   canonicalTrustAnchorProtected,
   canonicalTrustAnchorGovernanceVerified,
+  canonicalGovernanceEvidenceBound: governanceLoad.valid,
+  canonicalGovernanceEvidenceMatchesCanonical,
+  canonicalGovernanceEvidenceDigest: validDigest(canonicalGovernanceEvidenceDigest) ? canonicalGovernanceEvidenceDigest : null,
   releaseGradeCanonicalTrustAnchor,
   canonicalReleaseEvidenceBound: releaseClaimAllowed,
   canonicalControlBundleReceiptBound: releaseBindingComplete,
