@@ -181,6 +181,32 @@ const recomputeFinalReadbackDigest = (forensicReceipt) => forensicDigest({
   finalReadbackRecoveryFromStoreId: forensicReceipt.finalReadbackRecoveryFromStoreId || null,
   finalReadbackRecoveryAttemptDigest: forensicReceipt.finalReadbackRecoveryAttemptDigest || null,
 });
+const resealRuntimeReceipt = (receipt) => {
+  const inner = { ...receipt };
+  delete inner.innerContainmentReceiptDigest;
+  delete inner.runtimeForensicReady;
+  delete inner.runtimeForensicReadinessDigest;
+  delete inner.runtimeForensicFailoverContractDigest;
+  delete inner.runtimeRequiredEligibleStores;
+  delete inner.runtimeExecutableStoreCount;
+  delete inner.runtimeFinalReadbackRecoveryMaxAttempts;
+  delete inner.runtimeForensicBindingDigest;
+  delete inner.receiptDigest;
+  receipt.innerContainmentReceiptDigest = forensicDigest(inner);
+  receipt.runtimeForensicBindingDigest = forensicDigest({
+    innerContainmentReceiptDigest: receipt.innerContainmentReceiptDigest,
+    forensicDigest: receipt.forensicReceipt.forensicDigest,
+    runtimeForensicReadinessDigest: receipt.runtimeForensicReadinessDigest,
+    runtimeForensicFailoverContractDigest: receipt.runtimeForensicFailoverContractDigest,
+    requiredEligibleStores: receipt.runtimeRequiredEligibleStores,
+    executableStoreCount: receipt.runtimeExecutableStoreCount,
+    finalReadbackRecoveryMaxAttempts: receipt.runtimeFinalReadbackRecoveryMaxAttempts,
+  });
+  const outer = { ...receipt };
+  delete outer.receiptDigest;
+  receipt.receiptDigest = forensicDigest(outer);
+  return receipt;
+};
 
 const root = mkdtempSync(join(tmpdir(), 'wfm-t4-forensic-failover-'));
 try {
@@ -297,34 +323,30 @@ try {
   forgedRuntimeReceipt.forensicReceipt.finalReadbackRecoveryAttemptDigest = null;
   forgedRuntimeReceipt.forensicReceipt.failoverDigest = recomputeFailoverDigest(forgedRuntimeReceipt.forensicReceipt);
   forgedRuntimeReceipt.forensicReceipt.finalReadbackDigest = recomputeFinalReadbackDigest(forgedRuntimeReceipt.forensicReceipt);
-
-  const innerForgery = { ...forgedRuntimeReceipt };
-  delete innerForgery.innerContainmentReceiptDigest;
-  delete innerForgery.runtimeForensicReady;
-  delete innerForgery.runtimeForensicReadinessDigest;
-  delete innerForgery.runtimeForensicFailoverContractDigest;
-  delete innerForgery.runtimeRequiredEligibleStores;
-  delete innerForgery.runtimeExecutableStoreCount;
-  delete innerForgery.runtimeFinalReadbackRecoveryMaxAttempts;
-  delete innerForgery.runtimeForensicBindingDigest;
-  delete innerForgery.receiptDigest;
-  forgedRuntimeReceipt.innerContainmentReceiptDigest = forensicDigest(innerForgery);
-  forgedRuntimeReceipt.runtimeForensicBindingDigest = forensicDigest({
-    innerContainmentReceiptDigest: forgedRuntimeReceipt.innerContainmentReceiptDigest,
-    forensicDigest: forgedRuntimeReceipt.forensicReceipt.forensicDigest,
-    runtimeForensicReadinessDigest: forgedRuntimeReceipt.runtimeForensicReadinessDigest,
-    runtimeForensicFailoverContractDigest: forgedRuntimeReceipt.runtimeForensicFailoverContractDigest,
-    requiredEligibleStores: forgedRuntimeReceipt.runtimeRequiredEligibleStores,
-    executableStoreCount: forgedRuntimeReceipt.runtimeExecutableStoreCount,
-    finalReadbackRecoveryMaxAttempts: forgedRuntimeReceipt.runtimeFinalReadbackRecoveryMaxAttempts,
-  });
-  const outerForgery = { ...forgedRuntimeReceipt };
-  delete outerForgery.receiptDigest;
-  forgedRuntimeReceipt.receiptDigest = forensicDigest(outerForgery);
+  resealRuntimeReceipt(forgedRuntimeReceipt);
   assert.equal(
     strictRuntimeController.verifyReceipt(forgedRuntimeReceipt),
     false,
     'Independent runtime verification must reject a recomputed receipt that swaps the attested forensic execution order.',
+  );
+
+  const forgedRecoveryReceipt = structuredClone(strictRuntimeReceipt);
+  forgedRecoveryReceipt.forensicReceipt.attemptedStoreIds = ['terminal-verifier-primary', 'terminal-verifier-secondary'];
+  forgedRecoveryReceipt.forensicReceipt.attemptCount = 2;
+  forgedRecoveryReceipt.forensicReceipt.selectedStoreId = 'terminal-verifier-secondary';
+  forgedRecoveryReceipt.forensicReceipt.selectedStoreCapabilityDigest = capabilityDigestForTest(verifierSecondaryCapability);
+  forgedRecoveryReceipt.forensicReceipt.failoverUsed = true;
+  forgedRecoveryReceipt.forensicReceipt.attemptDigest = d('forged-final-readback-recovery-chain');
+  forgedRecoveryReceipt.forensicReceipt.finalReadbackRecoveryUsed = true;
+  forgedRecoveryReceipt.forensicReceipt.finalReadbackRecoveryFromStoreId = 'terminal-verifier-primary';
+  forgedRecoveryReceipt.forensicReceipt.finalReadbackRecoveryAttemptDigest = d('forged-final-readback-recovery-attempt');
+  forgedRecoveryReceipt.forensicReceipt.failoverDigest = recomputeFailoverDigest(forgedRecoveryReceipt.forensicReceipt);
+  forgedRecoveryReceipt.forensicReceipt.finalReadbackDigest = recomputeFinalReadbackDigest(forgedRecoveryReceipt.forensicReceipt);
+  resealRuntimeReceipt(forgedRecoveryReceipt);
+  assert.equal(
+    strictRuntimeController.verifyReceipt(forgedRecoveryReceipt),
+    false,
+    'Independent runtime verification must reject a recomputed claim that invents final-readback recovery without the bound recovery event sequence.',
   );
 
   let unsafeSecondaryCalls = 0;
@@ -481,7 +503,7 @@ try {
 }
 
 console.log(JSON.stringify({
-  schemaVersion: 4,
+  schemaVersion: 5,
   proof: 't4-outer-terminal-integrity',
   status: 'PASS',
   verifiedT4MayClaimSafeTerminal: true,
@@ -496,6 +518,7 @@ console.log(JSON.stringify({
   unattestedLeadingStoreNeverExecutable: true,
   verifiedZeroCostForensicFailoverRestoresSafeTerminal: true,
   runtimeAttestedStoreOrderTamperRejectedAfterDigestRecompute: true,
+  fabricatedFinalReadbackRecoveryRejectedWithoutEventTrace: true,
   blindPrimaryRetriesDenied: true,
   unattestedCostLaneNeverInvoked: true,
   explicitEligibilityEvidenceRequired: true,

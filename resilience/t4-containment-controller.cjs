@@ -581,6 +581,59 @@ function createT4ContainmentController({ containmentExecutor, rollbackExecutor, 
         finalReadbackRecoveryAttemptDigest: forensicReceipt.finalReadbackRecoveryAttemptDigest || null,
       });
       if (forensicReceipt.finalReadbackDigest !== expectedReadbackDigest) return false;
+
+      const finalVerifiedEvents = receipt.events.filter((event) => event?.type === 'forensics-final-readback-verified');
+      const finalFailedEvents = receipt.events.filter((event) => event?.type === 'forensics-final-readback-failed');
+      const recoveryPreservedEvents = receipt.events.filter((event) => event?.type === 'forensics-final-recovery-preserved');
+      const recoveryFailureEvents = receipt.events.filter((event) => [
+        'forensics-final-recovery-failed',
+        'forensics-final-recovery-rejected',
+        'forensics-final-recovery-readback-failed',
+      ].includes(event?.type));
+      const recoveryBudgetEvents = receipt.events.filter((event) => event?.type === 'action-budget-consumed'
+        && event?.detail?.kind === 'forensics.recover-final-readback');
+      if (finalVerifiedEvents.length !== 1 || recoveryFailureEvents.length !== 0) return false;
+
+      const finalVerifiedEvent = finalVerifiedEvents[0];
+      if (finalVerifiedEvent?.detail?.storageKey !== forensicReceipt.storageKey
+        || (finalVerifiedEvent?.detail?.selectedStoreId || null) !== (forensicReceipt.selectedStoreId || null)
+        || finalVerifiedEvent?.detail?.recoveryUsed !== (forensicReceipt.finalReadbackRecoveryUsed === true)
+        || finalVerifiedEvent?.detail?.finalReadbackDigest !== forensicReceipt.finalReadbackDigest) return false;
+
+      if (forensicReceipt.finalReadbackRecoveryUsed === true) {
+        if (finalFailedEvents.length !== 1
+          || recoveryPreservedEvents.length !== 1
+          || recoveryBudgetEvents.length !== 1
+          || !validDigest(forensicReceipt.finalReadbackRecoveryAttemptDigest)) return false;
+        const failedEvent = finalFailedEvents[0];
+        const recoveryEvent = recoveryPreservedEvents[0];
+        const recoveryBudgetEvent = recoveryBudgetEvents[0];
+        const recoveryFromStoreId = forensicReceipt.finalReadbackRecoveryFromStoreId || null;
+        const selectedStoreId = forensicReceipt.selectedStoreId || null;
+        const attemptedStoreIds = Array.isArray(forensicReceipt.attemptedStoreIds) ? forensicReceipt.attemptedStoreIds : [];
+        if (!recoveryFromStoreId
+          || !selectedStoreId
+          || recoveryFromStoreId === selectedStoreId
+          || failedEvent?.detail?.recoveryAvailable !== true
+          || failedEvent?.detail?.selectedStoreId !== recoveryFromStoreId
+          || recoveryEvent?.detail?.failedStoreId !== recoveryFromStoreId
+          || recoveryEvent?.detail?.recoveredStoreId !== selectedStoreId
+          || recoveryEvent?.detail?.recoveryAttemptDigest !== forensicReceipt.finalReadbackRecoveryAttemptDigest
+          || recoveryEvent?.detail?.forensicDigest !== forensicReceipt.forensicDigest
+          || attemptedStoreIds.length < 2
+          || attemptedStoreIds.at(-2) !== recoveryFromStoreId
+          || attemptedStoreIds.at(-1) !== selectedStoreId
+          || forensicReceipt.attemptCount !== attemptedStoreIds.length
+          || !(failedEvent.seq < recoveryBudgetEvent.seq
+            && recoveryBudgetEvent.seq < recoveryEvent.seq
+            && recoveryEvent.seq < finalVerifiedEvent.seq)) return false;
+      } else if (finalFailedEvents.length !== 0
+        || recoveryPreservedEvents.length !== 0
+        || recoveryBudgetEvents.length !== 0
+        || forensicReceipt.finalReadbackRecoveryFromStoreId != null
+        || forensicReceipt.finalReadbackRecoveryAttemptDigest != null) {
+        return false;
+      }
     }
     let previousDigest = digest({
       incidentId: receipt.incidentId,
