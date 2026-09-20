@@ -13,9 +13,9 @@ function governedProviderFailure(error, decision) {
 
 function durableRetryAnchor(claim, durableTask, now = Date.now()) {
   if (!claim || Number(claim.attemptCount) <= 1 || !durableTask) return null;
-  const notBeforeMs = Date.parse(String(durableTask.notBefore || ''));
-  if (!Number.isFinite(notBeforeMs) || notBeforeMs <= 0 || notBeforeMs > Number(now)) return null;
-  return notBeforeMs;
+  const firstFailureMs = Date.parse(String(durableTask.firstFailureAt || ''));
+  if (!Number.isFinite(firstFailureMs) || firstFailureMs <= 0 || firstFailureMs > Number(now)) return null;
+  return firstFailureMs;
 }
 
 async function processNextProviderProofMaintenanceWithTransportPolicy(input = {}, now = Date.now()) {
