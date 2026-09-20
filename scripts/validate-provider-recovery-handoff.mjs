@@ -1,10 +1,13 @@
 import { DatabaseSync } from 'node:sqlite';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 
 const require = createRequire(import.meta.url);
 const Handoff = require(path.resolve(process.cwd(), 'resilience/provider-recovery-handoff.cjs'));
+const supportContract = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'resilience/support-tier-contract.json'), 'utf8'));
+const t1AllowedTerminals = new Set(supportContract?.tiers?.T1?.allowed_terminal_outcomes || []);
 const sha = (value) => createHash('sha256').update(typeof value === 'string' ? value : Handoff.canonical(value)).digest('hex');
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const expect = async (fn, code) => {
@@ -14,6 +17,9 @@ const expect = async (fn, code) => {
   }
   throw new Error(`Expected ${code}`);
 };
+
+assert(t1AllowedTerminals.has('recovered') && t1AllowedTerminals.has('contained'), 'T1 support contract lost required safe provider terminal states.');
+assert(!t1AllowedTerminals.has('review-required'), 'T1 support contract must not admit an ambiguous vendor-engineer review terminal.');
 
 let now = 1_800_000_000_000;
 const db = new DatabaseSync(':memory:');
@@ -90,7 +96,8 @@ const outcome = await orchestrator.resume({
 assert(Handoff.canonical(firstSeenRequest) === Handoff.canonical(nextRequest), 'Normal adapter did not receive exact committed continuation.');
 assert(firstSeenRequest.offset === 2, 'Adapter restarted from page one instead of committed checkpoint.');
 assert(outcome.status === 'recovered' && outcome.providerCompletionGreen === true, 'Reconciled recovery did not reach green terminal state.');
-assert(outcome.autonomousBusinessApply === false && outcome.productionAuthorityGranted === false, 'Recovery incorrectly granted business/production authority.');
+assert(t1AllowedTerminals.has(outcome.status) && outcome.safeTerminal === true, 'Recovered provider outcome is outside the T1 safe terminal contract.');
+assert(outcome.autonomousBusinessApply === false && outcome.productionAuthorityGranted === false && outcome.vendorEngineerRequired === false, 'Recovery incorrectly granted business/production authority or required a vendor engineer.');
 await expect(() => orchestrator.resume({ token: issued.internalToken, tenant, providerRunId: runId, workerId, currentStateDigest: stateDigest }), 'WFM_PROVIDER_HANDOFF_REPLAY');
 assert(adapterCalls === 1, 'Single-use handoff allowed duplicate adapter execution.');
 
@@ -121,8 +128,10 @@ const heldOrchestrator = Handoff.createProviderResumeOrchestrator({ store, adapt
   },
 } });
 const heldOutcome = await heldOrchestrator.resume({ token: held.internalToken, tenant, providerRunId: 'held-run', workerId, currentStateDigest: stateDigest });
-assert(heldOutcome.status === 'review-required' && heldOutcome.providerCompletionGreen === false, 'Held records incorrectly reached green completion.');
-assert(heldOutcome.autonomousBusinessApply === false, 'Held records received autonomous business apply authority.');
+assert(heldOutcome.status === 'contained' && heldOutcome.providerCompletionGreen === false, 'Held records did not reach the T1 contained terminal.');
+assert(t1AllowedTerminals.has(heldOutcome.status) && heldOutcome.safeTerminal === true, 'Held provider records are outside the T1 safe terminal contract.');
+assert(heldOutcome.terminalReason === 'provider-reconciliation-held-records', 'Held-record containment reason is not deterministic.');
+assert(heldOutcome.autonomousBusinessApply === false && heldOutcome.productionAuthorityGranted === false && heldOutcome.vendorEngineerRequired === false, 'Held records received authority or vendor-engineer dependency.');
 
 const badRecon = issue({ providerRunId: 'bad-recon-run', actionGrantJti: 'grant-bad-recon', idempotencyKey: 'bad-recon-key' });
 const badReconOrchestrator = Handoff.createProviderResumeOrchestrator({ store, adapter: {
@@ -174,7 +183,9 @@ const proof = {
   duplicateBusinessOutcomeSuppressed: true,
   changedPayloadSameIdempotencyKeyDenied: true,
   reconciliationRequired: true,
-  heldRecordsRemainReviewOnly: true,
+  supportTierContractBound: true,
+  heldRecordsReachContainedSafeTerminal: true,
+  ambiguousVendorEngineerReviewTerminalDenied: true,
   directModelAuthorityDenied: true,
   payrollActionDenied: true,
   productionAuthorityGranted: false,
