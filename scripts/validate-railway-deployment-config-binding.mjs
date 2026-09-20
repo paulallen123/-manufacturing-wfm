@@ -5,6 +5,8 @@ const require = createRequire(import.meta.url);
 const {
   assessRailwayDeploymentConfigBinding,
   verifyRailwayDeploymentConfigBindingReceipt,
+  classifyRailwayProofFailureWithBoundConfig,
+  verifyRailwayProofFailureWithBoundConfigReceipt,
   digestDeploymentConfigSnapshot,
   digest,
 } = require('../resilience/railway-deployment-config-binding.cjs');
@@ -215,10 +217,93 @@ delete forgedPayloadCore.receiptDigest;
 resealedPayloadSubstitution.receiptDigest = digest(forgedPayloadCore);
 assert.equal(verifyRailwayDeploymentConfigBindingReceipt(resealedPayloadSubstitution), false);
 
+const holdBuildLogs = [
+  'using build driver railpack-v0.39.0',
+  'Script start.sh not found',
+  'Railpack could not determine how to build the app.',
+];
+
+const liveDiagnosis = classifyRailwayProofFailureWithBoundConfig({
+  deploymentId: latestMobile.deploymentId,
+  deploymentStatus: 'FAILED',
+  serviceConfig: heldConfig,
+  deploymentConfigBindingReceipt: latestMobile,
+  buildLogs: holdBuildLogs,
+  deployLogs: [],
+});
+assert.equal(liveDiagnosis.deploymentConfigEvidenceBound, false);
+assert.equal(liveDiagnosis.diagnosis.classification, 'unclassified-pre-runtime-proof-blocker');
+assert.equal(verifyRailwayProofFailureWithBoundConfigReceipt(liveDiagnosis), true);
+
+const heldConfigDigest = digestDeploymentConfigSnapshot(heldConfig);
+const boundHoldReceipt = assessRailwayDeploymentConfigBinding({
+  deploymentId: 'dep-bound-hold',
+  deploymentSnapshotId: 'snapshot-bound-hold',
+  deploymentCreatedAt: '2026-09-20T02:00:00.000Z',
+  configObservedAt: '2026-09-20T02:00:01.000Z',
+  configSnapshot: heldConfig,
+  configEvidence: {
+    source: 'deployment-snapshot',
+    bindingId: 'snapshot-bound-hold',
+    providerAttestedImmutable: true,
+    attestedConfigDigest: heldConfigDigest,
+  },
+});
+const boundHoldDiagnosis = classifyRailwayProofFailureWithBoundConfig({
+  deploymentId: 'dep-bound-hold',
+  deploymentStatus: 'FAILED',
+  serviceConfig: heldConfig,
+  deploymentConfigBindingReceipt: boundHoldReceipt,
+  buildLogs: holdBuildLogs,
+  deployLogs: [],
+});
+assert.equal(boundHoldDiagnosis.deploymentConfigEvidenceBound, true);
+assert.equal(boundHoldDiagnosis.diagnosis.classification, 'security-containment-hold-active');
+assert.equal(boundHoldDiagnosis.diagnosis.confidence, 'high');
+assert.equal(verifyRailwayProofFailureWithBoundConfigReceipt(boundHoldDiagnosis), true);
+
+const substitutedDiagnosis = classifyRailwayProofFailureWithBoundConfig({
+  deploymentId: 'dep-bound-hold',
+  deploymentStatus: 'FAILED',
+  serviceConfig: substitutedConfig,
+  deploymentConfigBindingReceipt: boundHoldReceipt,
+  buildLogs: holdBuildLogs,
+  deployLogs: [],
+});
+assert.equal(substitutedDiagnosis.deploymentConfigEvidenceBound, false);
+assert.equal(substitutedDiagnosis.diagnosis.classification, 'unclassified-pre-runtime-proof-blocker');
+assert.equal(verifyRailwayProofFailureWithBoundConfigReceipt(substitutedDiagnosis), true);
+
+const mismatchedDeploymentDiagnosis = classifyRailwayProofFailureWithBoundConfig({
+  deploymentId: 'dep-other',
+  deploymentStatus: 'FAILED',
+  serviceConfig: heldConfig,
+  deploymentConfigBindingReceipt: boundHoldReceipt,
+  buildLogs: holdBuildLogs,
+  deployLogs: [],
+});
+assert.equal(mismatchedDeploymentDiagnosis.deploymentConfigEvidenceBound, false);
+assert.equal(mismatchedDeploymentDiagnosis.diagnosis.classification, 'unclassified-pre-runtime-proof-blocker');
+assert.equal(verifyRailwayProofFailureWithBoundConfigReceipt(mismatchedDeploymentDiagnosis), true);
+
+const resealedCompositeEscalation = structuredClone(liveDiagnosis);
+resealedCompositeEscalation.deploymentConfigEvidenceBound = true;
+const forgedCompositeCore = { ...resealedCompositeEscalation };
+delete forgedCompositeCore.receiptDigest;
+resealedCompositeEscalation.receiptDigest = digest(forgedCompositeCore);
+assert.equal(verifyRailwayProofFailureWithBoundConfigReceipt(resealedCompositeEscalation), false);
+
+const nestedDiagnosisTamper = structuredClone(boundHoldDiagnosis);
+nestedDiagnosisTamper.diagnosis.releaseClaimAllowed = true;
+const forgedNestedCore = { ...nestedDiagnosisTamper };
+delete forgedNestedCore.receiptDigest;
+nestedDiagnosisTamper.receiptDigest = digest(forgedNestedCore);
+assert.equal(verifyRailwayProofFailureWithBoundConfigReceipt(nestedDiagnosisTamper), false);
+
 console.log(JSON.stringify({
   validator: 'railway-deployment-config-binding',
   result: 'PASS',
-  cases: 13,
+  cases: 19,
   latestRailwayEvidence: {
     deploymentId: latestMobile.deploymentId,
     deploymentSnapshotId: latestMobile.deploymentSnapshotId,
@@ -232,6 +317,14 @@ console.log(JSON.stringify({
     payloadSubstitutionDenied: true,
     missingPayloadDenied: true,
     resealedPayloadSubstitutionDenied: true,
+  },
+  diagnosisConsumption: {
+    mutableLiveConfigCannotElevateHistoricalDiagnosis: true,
+    exactBoundConfigCanInformDiagnosis: true,
+    substitutedConfigDenied: true,
+    deploymentIdentityMismatchDenied: true,
+    compositeReceiptEscalationDenied: true,
+    nestedDiagnosisTamperDenied: true,
   },
   authority: {
     releaseClaimAllowed: false,
