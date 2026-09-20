@@ -50,6 +50,10 @@ function assertLiveMutationAuthority(record, token, expectedProviderRequestId, n
     fail('WFM_PROVIDER_DISPATCH_LEASE_EXPIRED', 'Provisioning worker lease expired before the provider create call.');
   }
 
+  const mutationStartedAt = Number(record.updatedAt);
+  if (!Number.isFinite(mutationStartedAt) || mutationStartedAt <= 0 || mutationStartedAt > nowMs) {
+    fail('WFM_PROVIDER_DISPATCH_MUTATION_TIME_INVALID', 'Committed provider mutation time is invalid.', 409);
+  }
   const requestId = requireString(expectedProviderRequestId, 'WFM_PROVIDER_DISPATCH_REQUEST_ID_REQUIRED', 'Provider request identity is required.');
   if (record.providerRequestId !== requestId) {
     fail('WFM_PROVIDER_DISPATCH_REQUEST_ID_MISMATCH', 'Provider request identity changed before environment creation.');
@@ -78,6 +82,7 @@ function assertLiveMutationAuthority(record, token, expectedProviderRequestId, n
     workerId: token.workerId,
     generation: Number(token.generation),
     leaseUntil: Number(record.leaseUntil),
+    mutationStartedAt,
     providerRequestId: requestId,
     artifactSha256,
     contract: clone(record.payload.contract),
@@ -126,6 +131,7 @@ function createProviderDispatchFence({ outbox, provider, proofKey, now = Date.no
         intentDigest: permit.intentDigest,
         workerId: permit.workerId,
         generation: permit.generation,
+        mutationStartedAt: permit.mutationStartedAt,
         providerRequestId: permit.providerRequestId,
         artifactSha256: permit.artifactSha256,
         plan: permit.plan
@@ -135,10 +141,10 @@ function createProviderDispatchFence({ outbox, provider, proofKey, now = Date.no
 
   async function dispatch(token, providerRequestId) {
     const nowMs = Number(now());
-    // Deliberately no await or other work between the final authority check and
-    // constructing the signed proof that the provider must persist with the new environment.
+    // The proof timestamp is the durable mutation-start time, not retry time, so
+    // every retry sends the same signed creation identity under the same idempotency key.
     const permit = authorize(token, providerRequestId, nowMs);
-    const creationProof = createFreshCreateProof(proofRecordFromPermit(permit), proofKey, { issuedAt: nowMs });
+    const creationProof = createFreshCreateProof(proofRecordFromPermit(permit), proofKey, { issuedAt: permit.mutationStartedAt });
     const result = await provider.createIsolatedEnvironment({
       idempotencyKey: permit.providerRequestId,
       fencingToken: `${permit.queueKey}:${permit.generation}`,
