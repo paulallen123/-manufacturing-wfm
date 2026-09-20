@@ -9,11 +9,18 @@ const targetBase=(process.env.PROOF_TARGET_BASE||'').replace(/\/$/,'');
 const browserOrigin=(process.env.PROOF_BROWSER_ORIGIN||'').replace(/\/$/,'');
 const expectedSha=process.env.WFM_EXPECTED_CANDIDATE_SHA;
 const password=process.env.WFM_STAGING_PASSWORD;
-assert.ok(targetBase.includes('.railway.internal'));
-assert.ok(browserOrigin.startsWith('https://'));
-assert.match(expectedSha||'',/^[0-9a-f]{40}$/);
+const exactTargetHost='wfm-proof-frozen-0676-private.railway.internal';
+const exactTargetPort='8080';
+const exactBrowserOrigin='https://wfm-private-proof.invalid';
+const exactCandidateCommit='19675a939bfc35b80152e61473462f2fb5eabc3a';
+const target=new URL(targetBase);
+assert.equal(target.protocol,'http:','Frozen private proof target must remain on Railway private networking.');
+assert.equal(target.hostname,exactTargetHost,'Proof harness refused a non-frozen target host.');
+assert.equal(target.port,exactTargetPort,'Proof harness refused an unexpected target port.');
+assert.equal(browserOrigin,exactBrowserOrigin,'Proof harness refused an unexpected synthetic browser origin.');
+assert.equal(expectedSha,exactCandidateCommit,'Proof harness refused a candidate identity mismatch.');
 assert.ok(password&&password.length>=20);
-const target=new URL(targetBase),browserHost=new URL(browserOrigin).host;
+const browserHost=new URL(browserOrigin).host;
 const transport=target.protocol==='https:'?httpsRequest:httpRequest;
 
 async function upstream(path,method,sourceHeaders,body){
