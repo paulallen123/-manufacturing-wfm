@@ -95,3 +95,17 @@ body.vector-ui-active .insight-hero{background:white!important;color:var(--vecto
 @media(max-width:1100px){.vector-concept-dashboard,.vector-concept-lower{grid-template-columns:1fr}.vector-concept-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.vector-priorities,.vector-production-preview{min-height:0}}
 @media(max-width:760px){.vector-concept-heading{align-items:flex-start}.vector-concept-date{display:none}.vector-concept-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.vector-concept-kpi{min-height:96px;grid-template-columns:26px 1fr;padding:11px}.vector-concept-kpi>.vector-icon{display:none}.vector-concept-kpi-icon{width:26px;height:26px}.vector-concept-heading h1{font-size:23px}.vector-concept-dashboard{gap:10px}}
 @media(max-width:480px){.vector-concept-kpis{grid-template-columns:1fr 1fr}.vector-concept-kpi{min-height:104px;display:block}.vector-concept-kpi-icon{margin-bottom:8px}.vector-concept-kpi em{white-space:normal}.vector-production-status{display:none}}
+
+/* VECTOR_HOME_CORE_CONCEPT_FIDELITY_2026_09_21 */
+.vector-concept-kpi.good .vector-concept-kpi-icon{background:#eaf7f1;color:#23815f}
+.vector-concept-kpi.attention .vector-concept-kpi-icon{background:#fff1ed;color:#c45a40}
+.vector-concept-kpi.attention strong{color:#a94a35}
+.vector-forecast-chart{padding:2px 15px 11px}
+.vector-forecast-row{width:100%;min-height:52px;display:grid;grid-template-columns:minmax(94px,.8fr) minmax(120px,1.4fr) 38px;align-items:center;gap:10px;border:0;border-top:1px solid #edf2f7;background:transparent;color:#24415d;text-align:left;cursor:pointer}
+.vector-forecast-row:first-child{border-top:0}
+.vector-forecast-label b{display:block;font-size:10px}.vector-forecast-label small{display:block;margin-top:3px;color:#7d8fa1;font-size:8px}
+.vector-forecast-track{height:9px;border-radius:999px;background:#edf2f7;overflow:hidden}.vector-forecast-track i{display:block;height:100%;border-radius:inherit;background:#6ba6e8}
+.vector-forecast-track.unknown{background:repeating-linear-gradient(90deg,#edf2f7 0 8px,#f8fafc 8px 13px)}
+.vector-forecast-value{text-align:right;color:#60778e;font-size:9px;font-weight:700}
+.vector-forecast-empty{width:100%;min-height:90px;border:1px dashed #d7e2ed;border-radius:7px;background:#fafcff;color:#587089;font:500 10px/1.5 inherit;cursor:pointer}
+@media(max-width:520px){.vector-forecast-row{grid-template-columns:minmax(88px,.9fr) minmax(90px,1.1fr) 34px;gap:7px}}
