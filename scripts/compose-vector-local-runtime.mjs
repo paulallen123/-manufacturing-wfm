@@ -27,7 +27,7 @@ run('scripts/retire-legacy-presentation.mjs', [publicRoot]);
 run('scripts/harden-attendance-integrity.mjs', [publicRoot]);
 const copy = (source, destination) => { recordInput(source); const target = path.join(output, destination); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(path.join(root, source), target); };
 const groups = {
-  security: ['bootstrap.cjs', 'identity-survival-guard.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs'],
+  security: ['bootstrap.cjs', 'identity-survival-guard.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'retired-presentation.cjs'],
   integration: ['autonomous-integration-hub.cjs'],
   implementation: ['one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs', 'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs'],
   learning: ['adaptive-learning-engine.cjs'],
@@ -43,7 +43,7 @@ const js = "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" + '\
 fs.writeFileSync(path.join(publicRoot, 'vector-ui.css'), css);
 fs.writeFileSync(path.join(publicRoot, 'vector-ui.js'), js);
 run('scripts/compose-vector-presentation.mjs', [publicRoot]);
-for (const file of ['factory-control-ui.css', 'value-cockpit-ui.js', 'value-cockpit-ui.css', 'review-ui.js', 'review-ui.css', 'ui-evolution.css', 'vector-shell.js']) fs.rmSync(path.join(publicRoot, file), { force: true });
+for (const file of ['factory-control-ui.js', 'factory-control-ui.css', 'value-cockpit-ui.js', 'value-cockpit-ui.css', 'review-ui.js', 'review-ui.css', 'ui-evolution.css', 'vector-shell.js']) fs.rmSync(path.join(publicRoot, file), { force: true });
 execFileSync(process.execPath, ['--check', path.join(publicRoot, 'vector-ui.js')]);
 execFileSync(process.execPath, ['--check', path.join(publicRoot, 'vector-workflows.js')]);
 // Bootstrap has existing absolute /app imports. A local-only resolver maps those exact

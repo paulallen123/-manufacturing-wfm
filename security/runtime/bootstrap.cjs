@@ -7,6 +7,7 @@ const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
+const { serveRetiredPresentation } = require('./retired-presentation.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
@@ -88,6 +89,7 @@ function forceVectorUiFreshness(req, res) {
 }
 
 function serveCanonicalVectorAsset(req, res) {
+  if (serveRetiredPresentation(req, res)) return true;
   const path = requestPath(req);
   const asset = path === '/vector-ui.js'
     ? { file: '/app/public/vector-ui.js', type: 'text/javascript; charset=utf-8' }
