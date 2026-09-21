@@ -361,16 +361,16 @@ function createOneDayEnterpriseEngine(options = {}) {
 
       if (requirement.key === 'tenant-environment') {
         const ok = tenantEnvironment?.state === 'READY' && tenantEnvironment?.runId === run.id;
-        derived = {
-          status: ok ? 'PASS' : 'MISSING',
-          confidence: ok ? 1 : 0,
+        if (ok) derived = {
+          status: 'PASS',
+          confidence: 1,
           source: 'tenant-environment-provisioner',
-          detail: ok ? {
+          detail: {
             environmentId: tenantEnvironment.environmentId,
             namespace: tenantEnvironment.namespace,
             configurationDigest: tenantEnvironment.configurationDigest,
             dashboardRoute: tenantEnvironment.dashboard.route
-          } : null
+          }
         };
       } else if (requirement.key === 'configuration-scope') {
         const ok = Boolean(customerScope);
