@@ -387,12 +387,16 @@ try {
 
     let navigationClicked = null;
     if (spec.nav) {
-      const locator = page.getByText(spec.nav, { exact: true }).first();
-      if (await locator.count()) {
+      const candidates = page.getByText(spec.nav, { exact: true });
+      const candidateCount = await candidates.count();
+      for (let i = 0; i < candidateCount; i += 1) {
+        const locator = candidates.nth(i);
+        if (!(await locator.isVisible().catch(() => false))) continue;
         await locator.click({ timeout: 5000 });
         await page.waitForTimeout(300);
         navigationClicked = spec.nav;
         navigationClicks += 1;
+        break;
       }
     }
 
