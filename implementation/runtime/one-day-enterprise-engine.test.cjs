@@ -506,6 +506,16 @@ test('customer configuration scope is required, persisted and tenant scoped', as
     assert.equal(saved.body.scopeCaptured, true);
     assert.equal(saved.body.customerScope.employeeCount, 10000);
     assert.equal(saved.body.requirements.find(x => x.key === 'configuration-scope').satisfied, true);
+    assert.equal(saved.body.requirements.find(x => x.key === 'tenant-environment').satisfied, true);
+    assert.equal(saved.body.environment.state, 'READY');
+    assert.equal(saved.body.environment.dashboard.route, 'overview');
+
+    const environment = await call(
+      f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/environment'
+    );
+    assert.equal(environment.status, 200);
+    assert.equal(environment.body.environmentId, saved.body.environment.environmentId);
+    assert.equal(environment.body.isolation.tenant, 'alpha');
 
     const fetched = await call(
       f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/scope'
@@ -518,6 +528,10 @@ test('customer configuration scope is required, persisted and tenant scoped', as
       f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/scope'
     );
     assert.equal(crossTenant.status, 409);
+    const crossTenantEnvironment = await call(
+      f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/environment'
+    );
+    assert.equal(crossTenantEnvironment.status, 404);
   } finally {
     f.close();
   }
