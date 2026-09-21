@@ -1,7 +1,7 @@
 # VECTOR mobile workforce and mass clocking design
 
 Date: 21 September 2026  
-Status: DESIGNED — architecture approved by user on 21 September 2026, conditional on using the previously agreed concept art; exact visual family requires disambiguation before presentation changes.  
+Status: DESIGNED — architecture and blue-and-white concept family approved by the user on 21 September 2026; implementation and deployed proof remain outstanding.  
 Baseline: `paulallen123/-manufacturing-wfm@5ea6d4664e52348557e7e6284fe75a1c98d8a976`
 
 ## Outcome
@@ -16,25 +16,25 @@ Evolve the existing approved Vector interface, kiosk, clock-event API and Digita
 
 This is additive. It does not reintroduce retired presentation code, create a disconnected mobile data model, weaken tenant/security controls, or represent forecasts as realised savings.
 
-## User approval and concept-art condition
+## User approval and authoritative concept art
 
-The user approved this specification with the instruction: “Approve, but use the the concept arts from yesterday”. Preserve that condition across implementation, mobile adaptation and proof.
+The user approved this specification with the instruction: “Approve, but use the the concept arts from yesterday”, then resolved the visual selection explicitly: “Blue and white, green one was meant to have been deleted”. The blue-and-white family below is the sole approved visual direction for this workstream across desktop, mobile and tablet. No further colour-family approval is required.
 
-On retrieval, two materially different visual families were found, both dated 19 September 2026, not 20 September. Their pixels were inspected. The creation date alone does not establish which was approved. Do not select, blend or replace a visual family solely because it is newer or matches the current shell.
+The selected original images are dated 19 September 2026 and their pixels have been inspected. The user's explicit selection, not the creation date or existing shell, establishes their authority. Do not blend in the rejected green-and-black branding or use that concept as a fallback.
 
-| Candidate | Original reference | Persistent reference | Visual identity |
+| Approved scope | Original reference | Persistent reference | Visual identity |
 |---|---|---|---|
 | Blue/white factory and mobile | Vector Factory Operations Dashboard Showcase.png | libfile_33da4b7756d8819199d2f94ace41d109 | Blue Vector mark, navy sidebar, white cards, blue actions; Today / People / Plan / Factory / Improve; light mobile screens |
 | Blue/white leadership | Vector Directors & Ops AI Dashboard.png | libfile_cb7aadc34e9c81918ec2466924c1439f | AI summary, site comparison, decision list, Operations / Finance / MD-Executive views |
 | Blue/white employee/shift detail | Vector Shift Pattern Dashboard.png | libfile_5bc8faf92d9c8191bee1e31feba1adef | Employee profile tabs, shift calendar, quick actions, rules-and-checks panel |
 | Blue/white workflow board | Vector Workforce Management Dashboard Mockup.png | libfile_7d0b36fec9f881919c2b82d7bce92089 | Today, People, Plan, live factory, line detail, forecast, what-if and improvement screens |
-| Green/black multi-device | VECTOR Workforce Operations Dashboard(1).png | libfile_c2829f0714088191b4352d292342dd09 | Uppercase VECTOR wordmark, green savings emphasis, factory-photo header, dark mobile cards and bottom navigation |
 
-Before changing presentation code, confirm which family the user means. Keep the architecture approval; only visual-family selection is unresolved. The existing shell is not evidence that its visual design matches the requested art.
+The rejected green-and-black image (retired reference ID `libfile_c2829f0714088191b4352d292342dd09`) was confirmed still present and moved to recoverable trash on 21 September 2026. It is not an active design reference and must not be restored, offered again, or included in build/visual-test reference inputs unless the user explicitly changes this decision. Its local downloaded copy was removed from active references. Other source images are preserved. This records the removal of this identified asset, not a claim that every historical copy or deployed screen has been audited.
 
-Visual acceptance rules for the selected family:
+Visual acceptance rules for the blue-and-white family:
 
-- Match its logo/wordmark, palette, hierarchy, card geometry, navigation, spacing and action emphasis. Mobile/tablet adaptations preserve identity while reducing density and retaining accessible touch targets.
+- Match the blue Vector mark, navy navigation, white/light content panels, blue primary actions, hierarchy, card geometry, spacing and action emphasis. Preserve the Today / People / Plan / Factory / Improve structure where appropriate to role authority, and the detailed leadership/profile layouts shown in their specific references. Mobile/tablet adaptations preserve identity while reducing density and retaining accessible touch targets.
+- Green status indicators already present in the approved blue-and-white art (for example, available staff or covered shifts) remain legitimate semantic colours. Retiring the green-branded concept does not mean deleting green success indicators, data, or business functionality.
 - Use the original reference images as comparison inputs, not generated replacements. Treat every illustrative person, company, date, chart and financial number as example content, never a live product claim.
 - Keep role permissions and working engine actions intact. The kiosk must not expose leadership or employee-private information merely to resemble a dashboard.
 - Capture actual desktop, tablet and phone screens alongside the mapped concept. Record deliberate responsive differences and fix clipping, text overflow, inaccessible controls or unapproved visual substitutions.
