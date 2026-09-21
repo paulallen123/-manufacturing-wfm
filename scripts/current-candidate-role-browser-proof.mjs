@@ -457,7 +457,14 @@ try {
   assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
   assert.ok(managerDesktopEvidence?.base64, 'Manager desktop screenshot unavailable.');
   console.log(`CURRENT_MANAGER_DESKTOP_SCREENSHOT_META|bytes=${managerDesktopEvidence.bytes}|sha=${managerDesktopEvidence.sha256}`);
-  console.log(`CURRENT_MANAGER_DESKTOP_SCREENSHOT_B64|${managerDesktopEvidence.base64}`);
+  {
+    const encoded = managerDesktopEvidence.base64;
+    const chunkSize = 24000;
+    const chunks = Math.ceil(encoded.length / chunkSize);
+    for (let i = 0; i < chunks; i += 1) {
+      console.log(`CURRENT_MANAGER_DESKTOP_SCREENSHOT_B64_CHUNK|${i + 1}|${chunks}|${encoded.slice(i * chunkSize, (i + 1) * chunkSize)}`);
+    }
+  }
   console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|sha=${managerAlignmentEvidence.sha256}`);
   console.log(`CURRENT_MANAGER_SCREENSHOT_B64|${managerAlignmentEvidence.base64}`);
   console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|activeActionJourneys=${timeReviewActionJourneys}|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
