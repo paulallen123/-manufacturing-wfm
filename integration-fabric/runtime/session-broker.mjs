@@ -22,14 +22,13 @@ function statusOf(error){
   return Number.isInteger(status)?status:null;
 }
 
-function sanitizeError(error,token,overrideCode=null){
-  const raw=String(error?.message||'session operation failed');
-  const message=token?raw.split(token).join('[REDACTED]'):raw;
+function safeExecutorError(error,phase,overrideCode=null){
+  const internal=typeof error?.code==='string'&&error.code.startsWith('WFM_SESSION_');
+  const message=internal?String(error.message):(phase==='login'?'session login failed':'session read failed');
   const safe=new Error(message);
   const status=statusOf(error);
   if(status!==null) safe.status=status;
-  const code=overrideCode||error?.code;
-  if(code) safe.code=String(code).split(token||'\0').join('[REDACTED]');
+  safe.code=overrideCode||(internal?error.code:(phase==='login'?'WFM_SESSION_LOGIN_FAILED':'WFM_SESSION_READ_FAILED'));
   return safe;
 }
 
@@ -39,33 +38,59 @@ function closedError(){
   return error;
 }
 
-function assertNoSecret(value,token,path='result',seen=new WeakSet()){
+function resultError(message,code='WFM_SESSION_RESULT_INVALID'){
+  const error=new Error(message);
+  error.code=code;
+  return error;
+}
+
+function cloneSafeResult(value,token,path='result',state={seen:new WeakSet(),nodes:0},depth=0){
+  state.nodes++;
+  if(state.nodes>100_000||depth>100) throw resultError('session result exceeds structural safety limits');
+  if(value===null||typeof value==='boolean') return value;
+  if(typeof value==='number'){
+    if(!Number.isFinite(value)) throw resultError('session result contains a non-finite number');
+    return value;
+  }
   if(typeof value==='string'){
-    if(value.includes(token)){
-      const error=new Error(`session secret attempted to leave trusted executor at ${path}`);
-      error.code='WFM_SESSION_SECRET_EGRESS';
-      throw error;
-    }
-    return;
+    if(value.includes(token)) throw resultError(`session secret attempted to leave trusted executor at ${path}`,'WFM_SESSION_SECRET_EGRESS');
+    return value;
   }
-  if(!value||typeof value!=='object') return;
-  if(seen.has(value)) return;
-  seen.add(value);
-  for(const [key,child] of Object.entries(value)){
-    if(String(key).includes(token)){
-      const error=new Error(`session secret attempted to leave trusted executor at ${path}`);
-      error.code='WFM_SESSION_SECRET_EGRESS';
-      throw error;
-    }
-    assertNoSecret(child,token,`${path}.${key}`,seen);
+  if(!value||typeof value!=='object') throw resultError(`session result contains unsupported data at ${path}`);
+  if(state.seen.has(value)) throw resultError('session result contains a cycle');
+  state.seen.add(value);
+
+  if(Array.isArray(value)){
+    const ownKeys=Reflect.ownKeys(value);
+    if(ownKeys.some(key=>typeof key!=='string'||(key!=='length'&&!/^\d+$/.test(key)))) throw resultError('session result array contains unsupported properties');
+    if(Object.keys(value).length!==value.length) throw resultError('session result array contains holes or hidden values');
+    const copy=value.map((child,index)=>cloneSafeResult(child,token,`${path}[${index}]`,state,depth+1));
+    return Object.freeze(copy);
   }
+
+  const prototype=Object.getPrototypeOf(value);
+  if(prototype!==Object.prototype&&prototype!==null) throw resultError(`session result must be plain JSON data at ${path}`);
+  const descriptors=Object.getOwnPropertyDescriptors(value);
+  if(Reflect.ownKeys(value).some(key=>typeof key!=='string')) throw resultError('session result contains symbol properties');
+  const copy={};
+  for(const [key,descriptor] of Object.entries(descriptors)){
+    if(!descriptor.enumerable||!('value' in descriptor)||descriptor.get||descriptor.set) throw resultError(`session result contains hidden or executable data at ${path}.${key}`);
+    if(key.includes(token)) throw resultError(`session secret attempted to leave trusted executor at ${path}`,'WFM_SESSION_SECRET_EGRESS');
+    copy[key]=cloneSafeResult(descriptor.value,token,`${path}.${key}`,state,depth+1);
+  }
+  return Object.freeze(copy);
 }
 
 function validateLoginResult(value,now){
-  if(!value||typeof value!=='object'||Array.isArray(value)) throw new Error('login executor must return a session result object');
-  const token=String(value.token??'');
+  if(!value||typeof value!=='object'||Array.isArray(value)||(Object.getPrototypeOf(value)!==Object.prototype&&Object.getPrototypeOf(value)!==null)) throw new Error('login executor must return a plain session result object');
+  const keys=Reflect.ownKeys(value);
+  if(keys.length!==2||!keys.includes('token')||!keys.includes('expiresAt')) throw new Error('login executor must return only token and expiresAt');
+  const descriptors=Object.getOwnPropertyDescriptors(value);
+  if(!('value' in descriptors.token)||!('value' in descriptors.expiresAt)) throw new Error('login executor session fields must be inert data');
+  const token=descriptors.token.value;
+  if(typeof token!=='string') throw new Error('login executor returned an invalid session token');
   if(!token||token.length>65_536||/[\r\n\0]/.test(token)) throw new Error('login executor returned an invalid session token');
-  const expiresAt=Number(value.expiresAt);
+  const expiresAt=descriptors.expiresAt.value;
   if(!Number.isSafeInteger(expiresAt)||expiresAt<=now) throw new Error('login executor returned an invalid or expired expiry');
   return {token,expiresAt};
 }
@@ -196,7 +221,7 @@ export function createSessionBroker({
     if(state.refreshPromise) return state.refreshPromise;
     if(!force&&state.generation!==expectedGeneration&&valid(state)) return {generation:state.generation};
     if(!force&&state.failedRefresh?.expectedGeneration===expectedGeneration){
-      throw sanitizeError(state.failedRefresh.error,state.token);
+      throw safeExecutorError(state.failedRefresh.error,'login');
     }
     if(!force&&!refreshRequired&&valid(state)) return {generation:state.generation};
     if(force) state.failedRefresh=null;
@@ -214,7 +239,7 @@ export function createSessionBroker({
           attemptId
         });
       }catch(error){
-        throw sanitizeError(error,state.token);
+        throw safeExecutorError(error,'login');
       }
       authorizeScope(state.scopeNamespace);
       const login=validateLoginResult(raw,currentTime());
@@ -228,7 +253,7 @@ export function createSessionBroker({
       state.lastUsed=currentTime();
       return {generation:state.generation};
     })().catch(error=>{
-      const safe=sanitizeError(error,state.token);
+      const safe=safeExecutorError(error,'login');
       if(!state.closed&&scopes.get(state.scopeNamespace)===state&&state.epoch===capturedEpoch&&state.generation===capturedGeneration){
         state.failedRefresh={expectedGeneration:capturedGeneration,error:safe};
       }
@@ -255,10 +280,9 @@ export function createSessionBroker({
         recoveryAttempt,
         request
       });
-      assertNoSecret(value,snapshot.token);
-      return value;
+      return cloneSafeResult(value,snapshot.token);
     }catch(error){
-      throw sanitizeError(error,snapshot.token);
+      throw safeExecutorError(error,'read');
     }
   }
 
@@ -267,11 +291,14 @@ export function createSessionBroker({
     acquire(state);
     try{
       authorizeRequest(state.scopeNamespace,request);
+      const generationBeforeEnsure=state.generation;
+      const priorContinuityExists=generationBeforeEnsure>0;
       const first=await ensureSession(state);
+      const proactiveRecovery=priorContinuityExists&&first.generation!==generationBeforeEnsure;
       authorizeRequest(state.scopeNamespace,request);
       try{
         const value=await invokeRead(state,request,first,0);
-        return Object.freeze({value,generation:first.generation,recoveryPerformed:false,reconciliationRequired:false});
+        return Object.freeze({value,generation:first.generation,recoveryPerformed:proactiveRecovery,reconciliationRequired:proactiveRecovery});
       }catch(error){
         if(statusOf(error)!==401) throw error;
       }
@@ -289,7 +316,7 @@ export function createSessionBroker({
         const value=await invokeRead(state,request,recovery,1);
         return Object.freeze({value,generation:recovery.generation,recoveryPerformed:true,reconciliationRequired:true});
       }catch(error){
-        if(statusOf(error)===401) throw sanitizeError(error,recovery.token,'WFM_SESSION_REAUTH_EXHAUSTED');
+        if(statusOf(error)===401) throw safeExecutorError(error,'read','WFM_SESSION_REAUTH_EXHAUSTED');
         throw error;
       }
     }finally{

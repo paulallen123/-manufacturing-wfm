@@ -17,7 +17,7 @@ Provider next links are untrusted input. The guard requires the exact origin, AP
 
 A 401 permits one bounded reauthentication attempt for the same scope. The uncommitted page chain is replayed from the last committed checkpoint with overlap reconciliation. A second 401 stops for credential diagnosis; 403 stops for permission diagnosis; 429 and retryable server/network failures back off without changing credentials or versions. Affinity loss replays the uncommitted page and cannot advance a checkpoint. Any session-scope change requires a new checkpoint namespace and reconciliation.
 
-The broker also fences late login completion after a scope closes, rechecks scope/request authority before login and recovery, bounds active requests and stored scopes, refuses to evict active leases, redacts echoed session values from errors, and blocks session values from returned data and diagnostics.
+The broker also fences late login completion after a scope closes, rechecks scope/request authority before login and recovery, bounds active requests and stored scopes, and refuses to evict active leases. Executor failures cross the boundary only as fixed messages/codes plus numeric status; raw provider text is never returned. Read results are cloned through a finite plain-JSON contract that rejects getters, functions, custom prototypes, maps, buffers, cycles and hidden properties before checking for session values. Proactive expiry rotation and reactive 401 recovery both mark reconciliation as required.
 
 ## Composition
 

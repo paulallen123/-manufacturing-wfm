@@ -110,8 +110,30 @@ test('session tokens cannot escape results, errors or diagnostics',async()=>{
   await broker.rotate({scopeNamespace:'scope:a'});
   await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.code==='WFM_SESSION_SECRET_EGRESS');
   mode='error';
-  await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.status===500&&!error.message.includes(token)&&error.message.includes('[REDACTED]'));
+  await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.status===500&&!error.message.includes(token)&&error.message==='session read failed');
   assert.ok(!JSON.stringify(broker.diagnostics()).includes(token));
+});
+
+test('unknown login secrets and non-plain read results cannot cross the broker boundary',async()=>{
+  const unknown='synthetic-new-secret';
+  const failedLogin=brokerFor({
+    loginExecutor:async()=>{throw statusError(503,`Set-Cookie: B1SESSION=${unknown}`);},
+    readExecutor:async()=>null
+  });
+  await assert.rejects(
+    ()=>failedLogin.rotate({scopeNamespace:'scope:a'}),
+    error=>error.status===503&&error.message==='session login failed'&&!JSON.stringify(error).includes(unknown)
+  );
+
+  const token='synthetic-private-cookie';
+  for(const result of [new Map([['secret',token]]),Buffer.from(token),{toJSON(){return {secret:token};}}]){
+    const broker=brokerFor({
+      loginExecutor:async()=>({token,expiresAt:Date.now()+60_000}),
+      readExecutor:async()=>result
+    });
+    await broker.rotate({scopeNamespace:'scope:a'});
+    await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.code==='WFM_SESSION_RESULT_INVALID');
+  }
 });
 
 test('expired sessions refresh before use and idle scopes are bounded without evicting active leases',async()=>{
@@ -125,6 +147,8 @@ test('expired sessions refresh before use and idle scopes are bounded without ev
   now=1200;
   const refreshed=await broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}});
   assert.equal(refreshed.value,2);
+  assert.equal(refreshed.recoveryPerformed,true);
+  assert.equal(refreshed.reconciliationRequired,true,'proactive expiry rotation breaks page-chain continuity too');
   await broker.rotate({scopeNamespace:'scope:b'});
   const active=broker.execute({scopeNamespace:'scope:a',request:{resource:'Items',hold:true}});
   await new Promise(resolve=>setImmediate(resolve));
