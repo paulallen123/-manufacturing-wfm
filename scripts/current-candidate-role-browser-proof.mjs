@@ -526,6 +526,102 @@ try {
     }
   }
 
+  const routePack = [];
+  {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const page = await context.newPage();
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(String(error?.stack || error)));
+    await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    const loginStatus = await page.evaluate(async ({ password }) => {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'manager@northstar.example', password })
+      });
+      return response.status;
+    }, { password });
+    assert.equal(loginStatus, 200, 'Manager route-pack login failed.');
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+    await page.waitForTimeout(1200);
+
+    const seenRoutes = new Set();
+    async function captureRoute(section, label) {
+      await page.waitForTimeout(500);
+      const state = await page.evaluate(() => ({
+        href: location.href,
+        hash: location.hash,
+        width: innerWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        title: document.title,
+        heading: (document.querySelector('.content h1')?.textContent || '').replace(/\s+/g, ' ').trim()
+      }));
+      assert.ok(state.scrollWidth <= state.width + 1, `${section} / ${label} horizontal overflow.`);
+      const route = state.hash || `#screen-${section}-${label}`;
+      if (seenRoutes.has(route)) return;
+      seenRoutes.add(route);
+      const shot = await page.screenshot({ type: 'jpeg', quality: 44, fullPage: false });
+      assert.ok(shot.length > 9000, `${section} / ${label} screenshot too small.`);
+      routePack.push({
+        section,
+        label,
+        route,
+        title: state.title,
+        heading: state.heading,
+        bytes: shot.length,
+        sha256: crypto.createHash('sha256').update(shot).digest('hex'),
+        base64: shot.toString('base64')
+      });
+    }
+
+    const sectionLabels = ['Today', 'People', 'Plan', 'Factory', 'Improve'];
+    for (let sectionIndex = 0; sectionIndex < sectionLabels.length; sectionIndex += 1) {
+      const sectionLabel = sectionLabels[sectionIndex];
+      const nav = page.locator('.vector-nav-item').nth(sectionIndex);
+      if (!(await nav.isVisible().catch(() => false)) || await nav.isDisabled().catch(() => true)) continue;
+      if ((await nav.getAttribute('aria-current')) !== 'page') {
+        await nav.click({ timeout: 5000 });
+        await page.waitForTimeout(650);
+      }
+      await captureRoute(sectionLabel, sectionLabel === 'Today' ? 'Today' : 'Overview');
+
+      const tabs = page.locator('.vector-section-tabs button:not([disabled])');
+      const tabCount = await tabs.count();
+      const tabTargets = [];
+      for (let i = 0; i < tabCount; i += 1) {
+        const tab = tabs.nth(i);
+        tabTargets.push({
+          label: ((await tab.textContent()) || '').replace(/\s+/g, ' ').trim(),
+          route: await tab.getAttribute('data-vector-route')
+        });
+      }
+      for (const target of tabTargets) {
+        if (!target.route || !target.label) continue;
+        const tab = page.locator(`.vector-section-tabs button[data-vector-route="${target.route}"]`).first();
+        if (!(await tab.isVisible().catch(() => false)) || await tab.isDisabled().catch(() => true)) continue;
+        if ((await tab.getAttribute('aria-current')) !== 'page') {
+          await tab.click({ timeout: 5000 });
+          await page.waitForTimeout(650);
+        }
+        await captureRoute(sectionLabel, target.label);
+      }
+    }
+    assert.deepEqual(pageErrors, [], `Manager route-pack page errors: ${pageErrors.join(' | ')}`);
+    await context.close();
+  }
+
+  console.log(`CURRENT_MANAGER_ROUTE_SCREEN_PACK=PASS|screens=${routePack.length}|routes=${routePack.map(item => item.route).join(',')}`);
+  for (const item of routePack) {
+    const encoded = item.base64;
+    const chunkSize = 24000;
+    const chunks = Math.ceil(encoded.length / chunkSize);
+    console.log(`CURRENT_MANAGER_ROUTE_SCREEN_META|${item.section}|${item.label}|${item.route}|bytes=${item.bytes}|sha=${item.sha256}|chunks=${chunks}`);
+    for (let i = 0; i < chunks; i += 1) {
+      console.log(`CURRENT_MANAGER_ROUTE_SCREEN_B64_CHUNK|${item.section}|${item.label}|${item.route}|${i + 1}|${chunks}|${encoded.slice(i * chunkSize, (i + 1) * chunkSize)}`);
+    }
+  }
+
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
   assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
