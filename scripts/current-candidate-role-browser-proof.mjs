@@ -78,6 +78,28 @@ try {
     assert.equal(boundary.payroll, spec.payroll, `${spec.slug} payroll boundary mismatch.`);
     assert.equal(boundary.surface, 200, `${spec.slug} required surface failed.`);
 
+    if (spec.slug === 'manager') {
+      const readiness = await page.evaluate(async () => {
+        const response = await fetch('/api/readiness', { cache: 'no-store' });
+        let json = null;
+        try { json = await response.json(); } catch {}
+        return { status: response.status, json };
+      });
+      const compact = value => {
+        if (Array.isArray(value)) return value.slice(0, 8).map(compact);
+        if (!value || typeof value !== 'object') return value;
+        const out = {};
+        for (const [key, item] of Object.entries(value)) {
+          if (/token|password|secret|cookie|credential/i.test(key)) continue;
+          if (Array.isArray(item)) out[key] = item.slice(0, 8).map(compact);
+          else if (item && typeof item === 'object') out[key] = compact(item);
+          else out[key] = item;
+        }
+        return out;
+      };
+      console.log('CURRENT_READINESS_SAMPLE|' + JSON.stringify({ status: readiness.status, json: compact(readiness.json) }));
+    }
+
     const ui = await page.evaluate(async () => {
       const [scriptAsset, styleAsset] = await Promise.all([
         fetch('/vector-ui.js', { cache: 'no-store' }),
