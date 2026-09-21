@@ -241,6 +241,63 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     }), /saved result is not yet confirmed/);
     assert.equal(uncertain.workflow.state().receipt, null);
   });
+  await t.test('a stale attendance exception cannot leave the workflow permanently busy', async () => {
+    const uncertain = await client('manager@northstar.example');
+    await uncertain.workflow.refresh();
+    const team = uncertain.context.RF.report.teams.find(item => item.id === 's1');
+    uncertain.context.RF.team = team.id;
+    await assert.rejects(() => uncertain.workflow.mutate('review-resolve', {
+      period: '2026-09-07', team: team.id, revision: team.revision, issue: 'missing-issue',
+      decision: 'accept', checked: true, reason: 'Evidence no longer exists.'
+    }), /source exception changed/);
+    assert.equal(uncertain.workflow.state().busy, false, 'a pre-submit evidence failure must release the action lock');
+  });
+  await t.test('a corrected punch with an unchanged worked total cannot produce a success receipt', async () => {
+    const uncertain = await client('manager@northstar.example');
+    await uncertain.workflow.refresh();
+    const team = uncertain.context.RF.report.teams.find(item => item.id === 's1');
+    const issue = team.issues.find(item => item.id === 'issue-5');
+    uncertain.context.RF.team = team.id;
+    const reason = issue.evidence;
+    uncertain.context.command = async () => ({ ok: true, version: uncertain.bootstrap().state.version + 1, result: { id: issue.id, status: 'resolved', revision: team.revision + 1 } });
+    const original = uncertain.context.request;
+    uncertain.context.request = async (...args) => {
+      const response = await original(...args);
+      if (args[0].startsWith('/api/weekly-review')) {
+        const savedTeam = response.teams.find(item => item.id === team.id);
+        savedTeam.revision = team.revision + 1;
+        const savedIssue = savedTeam.issues.find(item => item.id === issue.id);
+        savedIssue.status = 'resolved';
+        savedIssue.resolution = { by: 'm1', decision: 'accept', reason };
+        const savedRow = savedTeam.records.find(item => item.id === issue.row);
+        savedRow.effective = { ...savedRow.effective, ...issue.proposed };
+        savedRow.correction = structuredClone(issue.proposed);
+        savedRow.reviewedBy = 'm1';
+        // Deliberately leave workedMinutes at its old 450-minute value.
+      }
+      return response;
+    };
+    await assert.rejects(() => uncertain.workflow.mutate('review-resolve', {
+      period: '2026-09-07', team: team.id, revision: team.revision, issue: issue.id,
+      decision: 'accept', checked: true, reason
+    }), /saved result is not yet confirmed/);
+    assert.equal(uncertain.workflow.state().receipt, null);
+  });
+  await t.test('the same attendance identifiers remain isolated to the signed-in tenant', async () => {
+    const isolated = await client('other@isolation.example');
+    await isolated.workflow.refresh();
+    const isolatedTeam = isolated.context.RF.report.teams.find(item => item.issues.some(issue => issue.id === 'issue-5' && issue.status === 'open'));
+    assert.ok(isolatedTeam, 'the isolated fixture must contain its own independently scoped issue-5');
+    const isolatedIssue = isolatedTeam.issues.find(item => item.id === 'issue-5');
+    isolated.context.RF.team = isolatedTeam.id;
+    await isolated.workflow.mutate('review-resolve', {
+      period: '2026-09-07', team: isolatedTeam.id, revision: isolatedTeam.revision, issue: isolatedIssue.id,
+      decision: 'accept', checked: true, reason: isolatedIssue.evidence
+    });
+    const northstar = await client('manager@northstar.example');
+    await northstar.workflow.refresh();
+    assert.equal(northstar.context.RF.report.teams.find(item => item.id === 's1').issues.find(item => item.id === 'issue-5').status, 'open');
+  });
   await t.test('manager attendance correction preserves raw punches and reads back the exact reviewed result', async () => {
     const attendanceManager = await client('manager@northstar.example');
     await attendanceManager.workflow.refresh();
@@ -248,7 +305,7 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     const issue = team.issues.find(item => item.id === 'issue-5');
     const before = team.records.find(item => item.id === issue.row);
     attendanceManager.context.RF.team = team.id;
-    await attendanceManager.workflow.mutate('review-resolve', {
+    const correction = await attendanceManager.workflow.mutate('review-resolve', {
       period: '2026-09-07', team: team.id, revision: team.revision, issue: issue.id,
       decision: 'accept', checked: true, reason: issue.evidence
     });
@@ -265,7 +322,11 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.equal(savedTeam.revision, team.revision + 1);
     assert.equal(attendanceManager.workflow.state().receipt.action, 'review-resolve');
     const db = new DatabaseSync(dbPath);
-    try { assert.ok(db.prepare("SELECT COUNT(*) AS count FROM audit_events WHERE tenant='northstar-demo' AND actor='m1' AND action='review-resolve'").get().count > 0); } finally { db.close(); }
+    try {
+      const audit = db.prepare("SELECT detail FROM audit_events WHERE tenant='northstar-demo' AND actor='m1' AND action='review-resolve' ORDER BY id DESC LIMIT 1").get();
+      assert.ok(audit, 'the exact correction must have an append-only server audit row');
+      assert.deepEqual(JSON.parse(audit.detail), { version: correction.version, resultId: issue.id });
+    } finally { db.close(); }
   });
   await t.test('failed manager decision clears an earlier success message', async () => {
     const original = manager.context.request;
@@ -297,6 +358,14 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     await fresh.workflow.refresh();
     const recovered = fresh.context.RF.report.teams.find(item => item.id === team.id);
     assert.equal(recovered.categories.find(item => item.id === category.id).confirmed, false, 'the saved correction resets the affected prior confirmation');
+    const recoveredIssue = recovered.issues.find(item => item.id === 'issue-5');
+    const recoveredRow = recovered.records.find(item => item.id === 'wr-e2-2026-09-09');
+    assert.equal(recoveredIssue.status, 'resolved');
+    assert.equal(recoveredIssue.resolution.by, 'm1');
+    assert.equal(recoveredRow.raw.clockOut, '2026-09-09T13:00:00.000Z');
+    assert.equal(recoveredRow.effective.clockOut, '2026-09-09T13:30:00.000Z');
+    assert.equal(recoveredRow.workedMinutes, 480);
+    assert.equal(recoveredRow.reviewedBy, 'm1');
     assert.equal(fresh.workflow.state().receipt, null, 'a new login does not fabricate a prior UI receipt');
   });
   await t.test('payroll source is readable by explicit payroll authority', async () => {

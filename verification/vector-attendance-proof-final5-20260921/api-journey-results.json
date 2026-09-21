@@ -1,0 +1,99 @@
+{
+  "scope": "LOCAL composed candidate only; not deployed UI proof",
+  "node": "v22.23.2",
+  "runtime": {
+    "artifactSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+    "sourceSetSha256": "562547ff35cafbc209266b292f66972a9d6e885f002977d23367c821765a472f",
+    "runtimeSetSha256": "dcc85e969a0076b4a4c2505da54b22cd2bed3c765de6de55c474500e18a1024d",
+    "verifiedRuntimeFiles": 150,
+    "assets": [
+      {
+        "path": "public/vector-ui.css",
+        "sha256": "bfe09dfc63a219fa997d7a9671c117e763d05d9f196fceb4ee3ff5ed1cfa976d"
+      },
+      {
+        "path": "public/vector-ui.js",
+        "sha256": "5ef5a7516003c8cbcfdb00279d128097b0654c06a14ca7d36c36be71af48c040"
+      },
+      {
+        "path": "public/vector-workflows.js",
+        "sha256": "a08138f821fdb292bddd231a81b9ae82de3daadffb41f78e65e9fcb94cadc458"
+      }
+    ]
+  },
+  "synthetic": true,
+  "checks": [
+    {
+      "name": "unauthenticated state refused",
+      "status": "PASS"
+    },
+    {
+      "name": "employee leave creates pending saved request",
+      "status": "PASS"
+    },
+    {
+      "name": "refresh returns new leave and reserved balance",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate submission with stale version rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate overlapping request with fresh version rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "employee cannot approve own request",
+      "status": "PASS"
+    },
+    {
+      "name": "other tenant cannot act on request identifier",
+      "status": "PASS"
+    },
+    {
+      "name": "new login sees manager saved decision",
+      "status": "PASS"
+    },
+    {
+      "name": "conflicting concurrent versions commit once",
+      "status": "PASS"
+    },
+    {
+      "name": "employee cannot read payroll",
+      "status": "PASS"
+    },
+    {
+      "name": "payroll cannot release before required sign-offs",
+      "status": "PASS"
+    },
+    {
+      "name": "controlled local process restart retains manager decision",
+      "status": "PASS"
+    },
+    {
+      "name": "audit has saved decision in same persisted database",
+      "status": "PASS"
+    }
+  ],
+  "observations": [
+    {
+      "name": "approval attempt",
+      "status": 200,
+      "result": {
+        "ok": true,
+        "result": {
+          "id": "r-1789953446720-1",
+          "status": "approved"
+        },
+        "version": 3
+      }
+    },
+    {
+      "name": "payroll holds",
+      "canRelease": false,
+      "blockerCount": 6
+    }
+  ],
+  "dbPath": "/tmp/vector-api-proof-idxXw5/state.sqlite"
+}

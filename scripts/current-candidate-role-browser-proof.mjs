@@ -6,7 +6,7 @@ const origin = new URL(process.env.VECTOR_PROOF_URL).origin;
 const expectedSha = process.env.WFM_EXPECTED_CANDIDATE_SHA;
 const password = process.env.WFM_STAGING_PASSWORD;
 const requireActionAffordanceCoverage = process.env.WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE === 'true';
-export let browserProofEvidence = { leaveJourney: null };
+export let browserProofEvidence = { leaveJourney: null, attendanceJourney: null };
 
 assert.match(expectedSha || '', /^[0-9a-f]{40}$/);
 assert.ok(password && password.length >= 20, 'Staging password unavailable.');
@@ -51,6 +51,18 @@ async function openLeaveRoute(page, expectedRole) {
   await route.waitFor({ state: 'visible', timeout: 10000 });
   await route.click({ timeout: 5000 });
   await page.locator(`[data-vector-leave-route="${expectedRole}"]`).waitFor({ state: 'visible', timeout: 10000 });
+}
+
+async function openWeeklyRoute(page, teamId) {
+  const timeAttendance = page.getByText('Time & Attendance', { exact: true }).first();
+  await timeAttendance.waitFor({ state: 'visible', timeout: 10000 });
+  await timeAttendance.click({ timeout: 5000 });
+  const weekly = page.locator('button[data-vector-workflow="weekly"]').first();
+  await weekly.waitFor({ state: 'visible', timeout: 10000 });
+  await weekly.click({ timeout: 5000 });
+  const team = page.locator('#vw-team');
+  await team.waitFor({ state: 'visible', timeout: 10000 });
+  await team.selectOption(teamId);
 }
 
 try {
@@ -554,15 +566,181 @@ try {
   assert.equal((await approvedRow.innerText()).trim().toLowerCase(), 'approved');
   leaveJourney.freshEmployeeLoginSawDecision = true;
   await freshEmployeeContext.close();
-  browserProofEvidence = { leaveJourney };
   console.log(`CURRENT_LEAVE_BROWSER_JOURNEY=PASS|request=${created.id}|decision=approved|overlapRefused=true|refreshReadback=true|freshLoginReadback=true`);
+
+  const attendanceJourney = {
+    managerUiApproved: false,
+    exactCorrectionReadBack: false,
+    rawPunchesPreserved: false,
+    domainAuditReadBack: false,
+    refreshedUiRetainedCorrection: false,
+    weeklySignStillBlocked: false,
+    payrollReleaseStillBlocked: false,
+    issueId: null,
+    recordId: null
+  };
+  const period = '2026-09-07';
+  const teamId = 's1';
+  const issueId = 'issue-5';
+  const recordId = 'wr-e2-2026-09-09';
+  const correctionReason = 'Fictional employee correction request: production handover continued until 14:30.';
+
+  const attendancePayrollContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const attendancePayrollPage = await attendancePayrollContext.newPage();
+  const payrollPageErrors = [];
+  attendancePayrollPage.on('pageerror', error => payrollPageErrors.push(String(error?.stack || error)));
+  await loginRole(attendancePayrollPage, 'payroll@northstar.example');
+  const beforePayroll = await attendancePayrollPage.evaluate(async period => {
+    const response = await fetch('/api/payroll-run?period=' + encodeURIComponent(period));
+    return { status: response.status, json: await response.json() };
+  }, period);
+  assert.equal(beforePayroll.status, 200, 'Payroll baseline could not be read by payroll authority.');
+  assert.equal(beforePayroll.json.canRelease, false, 'Synthetic attendance baseline unexpectedly allowed payroll release.');
+  const beforePayrollTeam = beforePayroll.json.teams.find(item => item.id === teamId);
+  assert.ok(beforePayrollTeam, 'Synthetic payroll baseline is missing team s1.');
+
+  const attendanceManagerContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const attendanceManagerPage = await attendanceManagerContext.newPage();
+  const attendancePageErrors = [];
+  attendanceManagerPage.on('pageerror', error => attendancePageErrors.push(String(error?.stack || error)));
+  await loginRole(attendanceManagerPage, 'manager@northstar.example');
+  const beforeAttendance = await attendanceManagerPage.evaluate(async period => {
+    const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period));
+    return { status: response.status, json: await response.json() };
+  }, period);
+  assert.equal(beforeAttendance.status, 200, 'Manager could not read the synthetic weekly review.');
+  const beforeAttendanceTeam = beforeAttendance.json.teams.find(item => item.id === teamId);
+  const beforeAttendanceIssue = beforeAttendanceTeam?.issues.find(item => item.id === issueId);
+  const beforeAttendanceRow = beforeAttendanceTeam?.records.find(item => item.id === recordId);
+  assert.equal(beforeAttendanceIssue?.status, 'open', 'The explicitly evidenced synthetic attendance issue is not fresh.');
+  assert.equal(beforeAttendanceIssue?.row, recordId);
+  assert.equal(beforeAttendanceIssue?.employee, 'e2');
+  assert.equal(beforeAttendanceIssue?.proposed?.clockOut, '2026-09-09T13:30:00.000Z');
+  assert.equal(beforeAttendanceIssue?.evidence, correctionReason);
+  assert.equal(beforeAttendanceRow?.raw?.clockOut, '2026-09-09T13:00:00.000Z');
+  assert.equal(beforeAttendanceRow?.workedMinutes, 450);
+
+  await openWeeklyRoute(attendanceManagerPage, teamId);
+  const issueButton = attendanceManagerPage.locator(`button[data-vector-workflow="issue"][data-id="${issueId}"]`);
+  await issueButton.waitFor({ state: 'visible', timeout: 10000 });
+  await issueButton.click({ timeout: 5000 });
+  await attendanceManagerPage.locator('#modalform select[name="decision"]').selectOption('accept');
+  await attendanceManagerPage.locator('#modalform textarea[name="reason"]').fill(correctionReason);
+  await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
+  const correctionResponsePromise = attendanceManagerPage.waitForResponse(response => {
+    if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
+    try { return response.request().postDataJSON()?.command === 'review-resolve'; } catch { return false; }
+  }, { timeout: 10000 });
+  await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  const correctionResponse = await correctionResponsePromise;
+  assert.equal(correctionResponse.status(), 200, 'Manager UI attendance decision was rejected.');
+  const correctionResult = await correctionResponse.json();
+  assert.equal(correctionResult.ok, true);
+  assert.equal(correctionResult.result?.id, issueId);
+  assert.equal(correctionResult.result?.status, 'resolved');
+  await attendanceManagerPage.waitForFunction(id => {
+    const receipt = document.querySelector('.vw-receipt');
+    return receipt?.textContent?.includes('review-resolve') && receipt.textContent.includes(id);
+  }, issueId, { timeout: 10000 });
+  attendanceJourney.managerUiApproved = true;
+
+  const afterAttendance = await attendanceManagerPage.evaluate(async period => {
+    const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period));
+    return { status: response.status, json: await response.json() };
+  }, period);
+  assert.equal(afterAttendance.status, 200);
+  const savedAttendanceTeam = afterAttendance.json.teams.find(item => item.id === teamId);
+  const savedAttendanceIssue = savedAttendanceTeam?.issues.find(item => item.id === issueId);
+  const savedAttendanceRow = savedAttendanceTeam?.records.find(item => item.id === recordId);
+  assert.equal(savedAttendanceIssue?.status, 'resolved');
+  assert.equal(savedAttendanceIssue?.resolution?.by, 'm1');
+  assert.equal(savedAttendanceIssue?.resolution?.decision, 'accept');
+  assert.equal(savedAttendanceIssue?.resolution?.reason, correctionReason);
+  assert.deepEqual(savedAttendanceRow?.raw, beforeAttendanceRow.raw, 'Attendance correction overwrote original punches.');
+  assert.equal(savedAttendanceRow?.effective?.clockOut, '2026-09-09T13:30:00.000Z');
+  assert.equal(savedAttendanceRow?.workedMinutes, 480);
+  assert.equal(savedAttendanceRow?.reviewedBy, 'm1');
+  assert.equal(savedAttendanceTeam?.revision, beforeAttendanceTeam.revision + 1);
+  assert.equal(savedAttendanceTeam?.blockers?.length, beforeAttendanceTeam.blockers.length - 1);
+  assert.equal(correctionResult.result?.revision, savedAttendanceTeam.revision);
+  attendanceJourney.exactCorrectionReadBack = true;
+  attendanceJourney.rawPunchesPreserved = true;
+  attendanceJourney.issueId = issueId;
+  attendanceJourney.recordId = recordId;
+
+  await attendanceManagerPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await attendanceManagerPage.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+  await openWeeklyRoute(attendanceManagerPage, teamId);
+  assert.equal(await attendanceManagerPage.locator(`button[data-vector-workflow="issue"][data-id="${issueId}"]`).count(), 0, 'Resolved attendance issue returned after refresh.');
+  const adjustmentButton = attendanceManagerPage.locator('button[data-vector-workflow="category"][data-id="adjustments"]');
+  await adjustmentButton.waitFor({ state: 'visible', timeout: 10000 });
+  await adjustmentButton.click({ timeout: 5000 });
+  const adjustmentModalText = await attendanceManagerPage.locator('#modalform').innerText();
+  assert.match(adjustmentModalText, /wr-e2-2026-09-09/);
+  assert.match(adjustmentModalText, /Correction recorded; original retained/);
+  assert.match(adjustmentModalText, /8 h/);
+  await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
+  const categoryResponsePromise = attendanceManagerPage.waitForResponse(response => {
+    if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
+    try {
+      const submitted = response.request().postDataJSON();
+      return submitted?.command === 'review-check' && submitted?.payload?.category === 'adjustments' && submitted?.payload?.team === teamId;
+    } catch { return false; }
+  }, { timeout: 10000 });
+  await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  const categoryResponse = await categoryResponsePromise;
+  assert.equal(categoryResponse.status(), 200, 'Saved Adjustments verification was rejected.');
+  await attendanceManagerPage.waitForFunction(team => {
+    const receipt = document.querySelector('.vw-receipt');
+    return receipt?.textContent?.includes('review-check') && receipt.textContent.includes(team);
+  }, teamId, { timeout: 10000 });
+  const afterCategory = await attendanceManagerPage.evaluate(async period => {
+    const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period));
+    return await response.json();
+  }, period);
+  const verifiedAttendanceTeam = afterCategory.teams.find(item => item.id === teamId);
+  assert.equal(verifiedAttendanceTeam?.categories.find(item => item.id === 'adjustments')?.confirmed, true);
+  attendanceJourney.refreshedUiRetainedCorrection = true;
+  const signButton = attendanceManagerPage.locator('button[data-vector-workflow="sign"]');
+  assert.equal(await signButton.isDisabled(), true, 'Weekly sign-off became available while source blockers remained.');
+  attendanceJourney.weeklySignStillBlocked = true;
+  assert.deepEqual(attendancePageErrors, [], `Attendance journey uncaught page errors: ${attendancePageErrors.join(' | ')}`);
+  await attendanceManagerContext.close();
+
+  const afterPayroll = await attendancePayrollPage.evaluate(async period => {
+    const response = await fetch('/api/payroll-run?period=' + encodeURIComponent(period));
+    return { status: response.status, json: await response.json() };
+  }, period);
+  assert.equal(afterPayroll.status, 200);
+  const afterPayrollTeam = afterPayroll.json.teams.find(item => item.id === teamId);
+  assert.equal(afterPayroll.json.totals.workedMinutes, beforePayroll.json.totals.workedMinutes + 30);
+  assert.equal(afterPayrollTeam?.workedMinutes, beforePayrollTeam.workedMinutes + 30);
+  assert.equal(afterPayroll.json.canRelease, false);
+  assert.equal(afterPayroll.json.lines.length, 0);
+  assert.equal(afterPayroll.json.reconciliation.ok, false);
+  const correctionAudit = afterPayroll.json.audit.find(item => item.type === 'exception-evidence-confirmed' && item.team === teamId && item.record === recordId && item.actor === 'm1');
+  const categoryAudit = afterPayroll.json.audit.find(item => item.type === 'category-checked' && item.team === teamId && item.category === 'adjustments' && item.actor === 'm1');
+  assert.equal(correctionAudit?.before?.clockOut, '2026-09-09T13:00:00.000Z');
+  assert.equal(correctionAudit?.after?.clockOut, '2026-09-09T13:30:00.000Z');
+  assert.equal(correctionAudit?.reason, correctionReason);
+  assert.ok(categoryAudit, 'Saved Adjustments verification was not present in domain audit state.');
+  attendanceJourney.domainAuditReadBack = true;
+  await attendancePayrollPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await attendancePayrollPage.waitForFunction(() => document.querySelector('button[data-vector-workflow="release"]'), { timeout: 30000 });
+  assert.equal(await attendancePayrollPage.locator('button[data-vector-workflow="release"]').isDisabled(), true, 'Payroll release became available while review holds remained.');
+  attendanceJourney.payrollReleaseStillBlocked = true;
+  assert.deepEqual(payrollPageErrors, [], `Payroll readback uncaught page errors: ${payrollPageErrors.join(' | ')}`);
+  await attendancePayrollContext.close();
+
+  browserProofEvidence = { leaveJourney, attendanceJourney };
+  console.log(`CURRENT_ATTENDANCE_BROWSER_JOURNEY=PASS|issue=${issueId}|record=${recordId}|workedMinutes=450->480|weeklyBlocked=true|payrollBlocked=true|domainAudit=true`);
 
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
   assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
   console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|sha=${managerAlignmentEvidence.sha256}`);
   console.log(`CURRENT_MANAGER_SCREENSHOT_B64|${managerAlignmentEvidence.base64}`);
-  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|sourceActionOpenJourneys=${timeReviewActionJourneys}|leaveBusinessActionJourneys=1|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
+  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|sourceActionOpenJourneys=${timeReviewActionJourneys}|leaveBusinessActionJourneys=1|attendanceBusinessActionJourneys=1|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
 } finally {
   await browser.close();
   delete process.env.WFM_STAGING_PASSWORD;

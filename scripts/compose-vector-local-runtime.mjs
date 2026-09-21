@@ -24,6 +24,7 @@ execFileSync('tar', ['--no-same-owner', '-xzf', archive, '-C', output]);
 const run = (file, args = []) => { recordInput(file); return execFileSync(process.execPath, [path.join(root, file), ...args], { stdio: 'inherit' }); };
 const publicRoot = path.join(output, 'public');
 run('scripts/retire-legacy-presentation.mjs', [publicRoot]);
+run('scripts/harden-attendance-integrity.mjs', [publicRoot]);
 const copy = (source, destination) => { recordInput(source); const target = path.join(output, destination); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(path.join(root, source), target); };
 const groups = {
   security: ['bootstrap.cjs', 'identity-survival-guard.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs'],

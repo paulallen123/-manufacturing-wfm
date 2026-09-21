@@ -23,8 +23,10 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
  && tar -xzf /tmp/runtime.tgz -C /app \
  && rm -f /tmp/runtime.tgz
 COPY scripts/retire-legacy-presentation.mjs /tmp/retire-legacy-presentation.mjs
+COPY scripts/harden-attendance-integrity.mjs /tmp/harden-attendance-integrity.mjs
 RUN node /tmp/retire-legacy-presentation.mjs /app/public \
- && rm -f /tmp/retire-legacy-presentation.mjs
+ && node /tmp/harden-attendance-integrity.mjs /app/public \
+ && rm -f /tmp/retire-legacy-presentation.mjs /tmp/harden-attendance-integrity.mjs
 
 # Resource-side identity survival overlay. Keep the original sealed artifact intact and
 # add the defence overlay as a separately reviewable layer.
@@ -151,6 +153,16 @@ RUN node --check /app/security-runtime/bootstrap.cjs \
  && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS')" \
  && rm -f /tmp/compose-vector-presentation.mjs \
  && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
+
+# Consequential attendance admission against the exact final runtime. Reject an
+# overlapping correction before mutation, then prove valid reconciliation/export.
+COPY verification/vector-repair-20260921/attendance-overlap-regression.mjs /tmp/wfm-attendance-tests/attendance-overlap-regression.mjs
+COPY verification/vector-repair-20260921/attendance-payroll-acceptance.mjs /tmp/wfm-attendance-tests/attendance-payroll-acceptance.mjs
+COPY verification/vector-repair-20260921/attendance-guardrails.test.cjs /tmp/wfm-attendance-tests/attendance-guardrails.test.cjs
+RUN WFM_RUNTIME=/app node --test /tmp/wfm-attendance-tests/attendance-guardrails.test.cjs \
+ && WFM_RUNTIME=/app node /tmp/wfm-attendance-tests/attendance-overlap-regression.mjs \
+ && WFM_RUNTIME=/app node /tmp/wfm-attendance-tests/attendance-payroll-acceptance.mjs \
+ && rm -rf /tmp/wfm-attendance-tests
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
 # managers from the final runtime so npm-bundled libraries are not an exposed attack surface.

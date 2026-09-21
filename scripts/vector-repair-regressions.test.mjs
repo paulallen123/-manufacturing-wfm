@@ -90,3 +90,26 @@ test('saved leave UI journey removes navigation-only gaps but retains audit and 
   assert.ok(result.missingEvidence.includes('exact-backend-binding'));
   assert.ok(result.missingEvidence.includes('major-workflow-coverage'));
 });
+test('saved attendance correction is reported separately without manufacturing weekly or payroll readiness', () => {
+  const leave = {
+    employeeUiSubmitted: true, pendingStateReadBack: true, overlapRefusedInUi: true,
+    refreshedUiRetainedPending: true, managerUiDecided: true,
+    managerStateReadBack: true, freshEmployeeLoginSawDecision: true
+  };
+  const attendance = {
+    managerUiApproved: true,
+    exactCorrectionReadBack: true,
+    rawPunchesPreserved: true,
+    domainAuditReadBack: true,
+    refreshedUiRetainedCorrection: true,
+    weeklySignStillBlocked: true,
+    payrollReleaseStillBlocked: true
+  };
+  const result = roleProofResult({ status: 'BOUND' }, leave, attendance);
+  assert.equal(result.scopedAttendanceJourneyVerified, true);
+  assert.equal(result.endToEndVerified, false);
+  assert.equal(result.productReady, false);
+  assert.ok(result.missingEvidence.includes('weekly-sign-off-business-action'));
+  assert.ok(result.missingEvidence.includes('payroll-reconciliation-business-action'));
+  assert.ok(result.missingEvidence.includes('exact-backend-binding'));
+});

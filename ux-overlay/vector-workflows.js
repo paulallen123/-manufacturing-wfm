@@ -46,6 +46,20 @@
   }
   const evidenceCopy = value => JSON.parse(JSON.stringify(value));
   const sameEvidence = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+  function exactWorkedMinutes(effective) {
+    if (effective?.kind !== 'worked') return null;
+    const clockIn = Date.parse(effective.clockIn), clockOut = Date.parse(effective.clockOut);
+    if (!Number.isFinite(clockIn) || !Number.isFinite(clockOut) || clockOut < clockIn) return null;
+    let unpaidBreakMinutes = 0;
+    for (const item of Array.isArray(effective.breaks) ? effective.breaks : []) {
+      if (item?.paid === true) continue;
+      const start = Date.parse(item?.start), end = Date.parse(item?.end);
+      if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+      unpaidBreakMinutes += (end - start) / 60000;
+    }
+    const worked = (clockOut - clockIn) / 60000 - unpaidBreakMinutes;
+    return Number.isInteger(worked) && worked >= 0 ? worked : null;
+  }
   function observationBasis(name, input) {
     if (name !== 'review-resolve') return null;
     const team = RF.report?.teams.find(item => item.id === input.team);
@@ -69,7 +83,8 @@
       if (basis.issue.type !== 'adjustment') return true;
       if (input.decision === 'decline') return sameEvidence(row.effective, basis.row.effective);
       const expectedEffective = { ...basis.row.effective, ...basis.issue.proposed };
-      return input.decision === 'accept' && row.reviewedBy === actor()?.personId && sameEvidence(row.effective, expectedEffective) && Object.entries(basis.issue.proposed || {}).every(([key, value]) => sameEvidence(row.correction?.[key], value));
+      const expectedWorkedMinutes = exactWorkedMinutes(expectedEffective);
+      return input.decision === 'accept' && expectedWorkedMinutes !== null && row.workedMinutes === expectedWorkedMinutes && row.reviewedBy === actor()?.personId && sameEvidence(row.effective, expectedEffective) && Object.entries(basis.issue.proposed || {}).every(([key, value]) => sameEvidence(row.correction?.[key], value));
     }
     if (name === 'review-amend') return team?.issues.some(item => item.row === input.record && item.type === 'adjustment' && item.status === 'open' && item.proposedBy === actor()?.personId);
     if (name === 'payroll-remind') return RF.company?.reminders.some(item => item.id === result.id && item.team === input.team && item.message === input.reason);
@@ -84,10 +99,11 @@
     if (OFFLINE) throw Error('An authenticated connection is required.');
     state.busy = true; state.receipt = null;
     const owner = ownerKey(), period = RF.period;
-    const basis = observationBasis(name, input);
-    const submit = document.querySelector('#modalform button[type="submit"]');
-    if (submit) submit.disabled = true;
+    let submit = null;
     try {
+      const basis = observationBasis(name, input);
+      submit = document.querySelector('#modalform button[type="submit"]');
+      if (submit) submit.disabled = true;
       const response = await command(name, input);
       if (response?.ok !== true || !Number.isInteger(response.version)) throw Error('The service did not confirm a saved result. Refresh before trying again.');
       if (!F.ready || owner !== ownerKey() || period !== RF.period) throw Error('The account or review period changed. Reopen the source before checking this action.');
