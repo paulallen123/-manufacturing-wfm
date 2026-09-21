@@ -30,6 +30,7 @@ let navigationClicks = 0;
 let timeReviewActionJourneys = 0;
 let timeReviewEmptyStateJourneys = 0;
 let managerAlignmentEvidence = null;
+let managerDesktopEvidence = null;
 
 try {
   for (const spec of specs) {
@@ -131,6 +132,16 @@ try {
 
     if (spec.slug === 'manager') {
       const previous = page.viewportSize();
+      const desktop = await page.screenshot({
+        type: 'jpeg',
+        quality: 58,
+        fullPage: false
+      });
+      managerDesktopEvidence = {
+        base64: desktop.toString('base64'),
+        bytes: desktop.length,
+        sha256: crypto.createHash('sha256').update(desktop).digest('hex')
+      };
       await page.setViewportSize({ width: 420, height: 294 });
       await page.waitForTimeout(150);
       const compact = await page.screenshot({
@@ -444,6 +455,9 @@ try {
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
   assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
+  assert.ok(managerDesktopEvidence?.base64, 'Manager desktop screenshot unavailable.');
+  console.log(`CURRENT_MANAGER_DESKTOP_SCREENSHOT_META|bytes=${managerDesktopEvidence.bytes}|sha=${managerDesktopEvidence.sha256}`);
+  console.log(`CURRENT_MANAGER_DESKTOP_SCREENSHOT_B64|${managerDesktopEvidence.base64}`);
   console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|sha=${managerAlignmentEvidence.sha256}`);
   console.log(`CURRENT_MANAGER_SCREENSHOT_B64|${managerAlignmentEvidence.base64}`);
   console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|activeActionJourneys=${timeReviewActionJourneys}|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
