@@ -1,0 +1,7 @@
+{
+  "Dockerfile": "c278c09e90450920d2ada2a59c0200bde53537c75eeaeb5fa64716c0a46fe264",
+  "scripts/compose-vector-presentation.mjs": "2baf454424d6fbee3621b3ddc59bfd4b2fad6386dd963ce33839ec8b69d860bd",
+  "scripts/compose-vector-presentation.test.cjs": "a68febb174f05febf934d6dfc3586d13cc2555ba7db216fdb9008dd1f854f0ae",
+  "ux-overlay/vector-workflows.test.cjs": "66dee24b143020ba13157b805f0d8249441c2e10bb2cefb48dbf5151d521bd94",
+  "ux-overlay/vector-action-queue.test.cjs": "ff50562f69df2bb54149dc2b438c58643894bf797f7d4359805f2f6579e773fd"
+}

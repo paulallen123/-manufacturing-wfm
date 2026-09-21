@@ -1,0 +1,136 @@
+{
+  "base": "338e07b24d3096d30dcc97fe14c33a03261b7e86",
+  "head": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85",
+  "status": "ahead",
+  "ahead_by": 9,
+  "behind_by": 0,
+  "merge_base": "338e07b24d3096d30dcc97fe14c33a03261b7e86",
+  "files": [
+    {
+      "path": ".github/workflows/24h-sell-readiness-candidate.yml",
+      "status": "modified",
+      "changes": 187
+    },
+    {
+      "path": "Dockerfile",
+      "status": "modified",
+      "changes": 4
+    },
+    {
+      "path": "Dockerfile.current-vector-browser-proof",
+      "status": "added",
+      "changes": 7
+    },
+    {
+      "path": "VECTOR_UX_SCORECARD.md",
+      "status": "modified",
+      "changes": 47
+    },
+    {
+      "path": "proof-triggers/current-vector-browser-proof.trigger",
+      "status": "added",
+      "changes": 2
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "status": "added",
+      "changes": 48
+    },
+    {
+      "path": "scripts/compose-vector-presentation.mjs",
+      "status": "modified",
+      "changes": 11
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "status": "modified",
+      "changes": 51
+    },
+    {
+      "path": "scripts/retire-legacy-presentation.mjs",
+      "status": "modified",
+      "changes": 4
+    },
+    {
+      "path": "security/runtime/OWNER_ACCESS_RECOVERY.md",
+      "status": "added",
+      "changes": 41
+    },
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "status": "modified",
+      "changes": 11
+    },
+    {
+      "path": "security/runtime/owner-access-recovery.cjs",
+      "status": "added",
+      "changes": 163
+    },
+    {
+      "path": "security/runtime/owner-access-recovery.test.cjs",
+      "status": "added",
+      "changes": 185
+    },
+    {
+      "path": "ux-overlay/vector-workflows.css",
+      "status": "added",
+      "changes": 1
+    },
+    {
+      "path": "ux-overlay/vector-workflows.js",
+      "status": "added",
+      "changes": 211
+    },
+    {
+      "path": "ux-overlay/vector-workflows.test.cjs",
+      "status": "added",
+      "changes": 173
+    },
+    {
+      "path": "verification/vector-repair-20260920/STATUS.md",
+      "status": "added",
+      "changes": 60
+    },
+    {
+      "path": "verification/vector-repair-20260920/api-journey-proof.mjs",
+      "status": "added",
+      "changes": 61
+    },
+    {
+      "path": "verification/vector-repair-20260920/api-journey-results.json",
+      "status": "added",
+      "changes": 79
+    },
+    {
+      "path": "verification/vector-repair-20260920/payroll-journey-proof.mjs",
+      "status": "added",
+      "changes": 47
+    },
+    {
+      "path": "verification/vector-repair-20260920/payroll-journey-results.json",
+      "status": "added",
+      "changes": 48
+    },
+    {
+      "path": "verification/vector-repair-20260920/security-independent.tap",
+      "status": "added",
+      "changes": 28
+    },
+    {
+      "path": "verification/vector-repair-20260920/source-sha256.json",
+      "status": "added",
+      "changes": 13
+    },
+    {
+      "path": "verification/vector-repair-20260920/workflow-provenance.json",
+      "status": "added",
+      "changes": 51
+    },
+    {
+      "path": "verification/vector-repair-20260920/workflows-independent.tap",
+      "status": "added",
+      "changes": 21
+    }
+  ],
+  "note": "Read-only GitHub comparison; no hosted asset equality assertion."
+}

@@ -49,7 +49,19 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.equal(await asset.text(), source);
     assert.doesNotMatch(html, /src="review-ui\.js"/);
   });
-  async function client(email) {
+  await t.test('real HTTP index retains and serves Time Review script and stylesheet', async () => {
+    const html = await (await fetch(origin + '/')).text();
+    const scripts = [...html.matchAll(/<script\b[^>]*\ssrc=["']([^"']+)["']/gi)].map(match => match[1]);
+    const styles = [...html.matchAll(/<link\b[^>]*\shref=["']([^"']+)["']/gi)].map(match => match[1]);
+    assert.ok(scripts.includes('time-review-ui.js'), 'Time Review controller must be referenced by the actual served page');
+    assert.ok(styles.includes('time-review-ui.css'), 'Time Review layout must be referenced by the actual served page');
+    for (const name of ['time-review-ui.js', 'time-review-ui.css']) {
+      const asset = await fetch(origin + '/' + name);
+      assert.equal(asset.status, 200, name + ' must load over HTTP');
+      assert.equal(await asset.text(), fs.readFileSync(path.join(runtime, 'public', name), 'utf8'));
+    }
+  });
+  async function client(email, options = {}) {
     let cookie = '';
     const request = async (url, method = 'GET', payload) => {
       const response = await fetch(origin + url, { method, headers: { Origin: origin, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, ...(payload ? { body: JSON.stringify(payload) } : {}) });
@@ -60,11 +72,17 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     };
     await request('/api/login', 'POST', { email, password: 'Factory-local-demo-2026!' });
     let bootstrap = await request('/api/bootstrap'), dialog;
-    const document = { addEventListener() {}, querySelector() { return null; }, getElementById() { return { innerHTML: '' }; } };
+    const rootElement = { innerHTML: '' };
+    const document = { addEventListener() {}, querySelector() { return null; }, getElementById(id) { return id === 'root' ? rootElement : { innerHTML: '' }; } };
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const context = vm.createContext({
-      console, URL, setTimeout, clearTimeout, document, OFFLINE: false,
+      console, URL, URLSearchParams, setTimeout, clearTimeout, document, OFFLINE: false,
       PR: require(path.join(runtime, 'public/payroll-control.js')),
       WFMCost: require(path.join(runtime, 'public/cost-engine.js')),
+      WFMPayroll: require(path.join(runtime, 'public/payroll-control.js')),
+      WFMTimeReview: require(path.join(runtime, 'public/time-review.js')),
+      esc, heading: (title, detail) => '<h1>' + esc(title) + '</h1><p>' + esc(detail) + '</p>',
+      button: (label, action) => '<button data-act="' + esc(action) + '">' + label + '</button>', icon: () => '',
       F: { actor: bootstrap.actor, ready: true }, ui: { page: 'overview' },
       payrollActor: () => bootstrap.actor,
       request,
@@ -78,6 +96,16 @@ test('Vector workflow controller uses real authentication, saved checks and rest
       toast() {}, shell: html => html, render: async () => {}, showLogin() {}, fmt: value => new Date(value).toISOString().slice(11, 16),
       fetch: (url, options) => fetch(origin + url, { ...options, headers: { ...options?.headers, Cookie: cookie } })
     });
+    if (options.timeReview) {
+      const html = await (await fetch(origin + '/')).text();
+      const scripts = [...html.matchAll(/<script\b[^>]*\ssrc=["']([^"']+)["']/gi)].map(match => match[1]);
+      const index = scripts.indexOf('time-review-ui.js');
+      assert.ok(index >= 0, 'load Time Review only when the served page includes it');
+      assert.ok(index < scripts.indexOf('/vector-workflows.js'), 'execute the real page controller order');
+      const response = await fetch(origin + '/' + scripts[index]);
+      assert.equal(response.status, 200);
+      vm.runInContext(await response.text(), context, { filename: scripts[index] });
+    }
     vm.runInContext(source, context, { filename: 'vector-workflows.js' });
     return { context, request, workflow: context.VectorWorkflow, dialog: () => dialog, bootstrap: () => bootstrap };
   }
@@ -88,6 +116,17 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.throws(() => vm.runInNewContext('RF.period = TRI.period', { TRI: { period: '2026-09-07' } }), /RF is not defined/);
   });
   const manager = await client('manager@northstar.example');
+  await t.test('HTTP-loaded Time Review controller handles its route and renders authenticated source rows', async () => {
+    const loaded = await client('manager@northstar.example', { timeReview: true });
+    loaded.context.ui.page = 'time-review';
+    await vm.runInContext('render()', loaded.context);
+    const sourceRows = vm.runInContext('TRI.report?.rows', loaded.context);
+    assert.ok(sourceRows?.length > 0, 'real Time Review API returns source records');
+    const html = loaded.context.document.getElementById('root').innerHTML;
+    assert.match(html, /Review the exceptions\. Finish the week\./);
+    assert.ok(html.includes(sourceRows[0].name), 'the actual employee record is rendered');
+    assert.match(html, /data-act="tri-evidence"|id="tri-decision"/, 'the loaded controller exposes a source action, not fallback operations content');
+  });
   await manager.workflow.refresh();
   const team = manager.context.RF.report.teams.find(team => team.categories.some(category => category.open === 0));
   assert.ok(team, 'fixture contains a source-verifiable category');

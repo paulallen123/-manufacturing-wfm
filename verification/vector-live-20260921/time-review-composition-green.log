@@ -1,0 +1,26 @@
+✔ composition retains Time Review JavaScript and styles while removing the retired review UI (117.355962ms)
+✔ composition compares exact asset basenames across relative, root, absolute and queried URLs (113.227053ms)
+✔ Docker presentation admission accepts Time Review but rejects exact retired references and files (176.989991ms)
+▶ Vector workflow controller uses real authentication, saved checks and restart recovery
+  ✔ real HTTP serves the workflow controller before its payroll consumer (7.705932ms)
+  ✔ real HTTP index retains and serves Time Review script and stylesheet (12.125467ms)
+  ✔ baseline surviving Time Review action fails without its removed owner (2.076574ms)
+  ✔ HTTP-loaded Time Review controller handles its route and renders authenticated source rows (142.047134ms)
+  ✔ new workflow reads real team and evidence before individual confirmation (235.786417ms)
+  ✔ concurrent duplicate submission is bounded in the UI controller (208.164652ms)
+  ✔ unfinished weekly sign-off and unprivileged payroll are rejected (55.086411ms)
+  ✔ employee cannot acquire manager review or mutate a team check (144.384111ms)
+  ✔ saved verification survives controlled restart and a fresh login (368.399327ms)
+  ✔ payroll source is readable by explicit payroll authority (175.004641ms)
+  ✔ accepted command without observed saved result cannot produce success receipt (357.413937ms)
+  ✔ account change during a command suppresses old-account readback and receipt (155.128983ms)
+  ✔ unsaved Time Review is protected when entering weekly sign-off (0.283927ms)
+✔ Vector workflow controller uses real authentication, saved checks and restart recovery (3593.266234ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3668.353797

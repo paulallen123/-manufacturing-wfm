@@ -1,0 +1,39 @@
+✔ source lifecycle is partitioned without presentation-word inference (2.938935ms)
+✖ awaiting confirmation remains present but does not inflate action-needed count (2.11119ms)
+✔ rendered action queue keeps source-confirming work collapsed, visible and passive without hiding actionable work (1.291016ms)
+✔ action ordering cannot create synthetic urgency styling (1.058123ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.044955
+
+✖ failing tests:
+
+test at ux-overlay/vector-action-queue.test.cjs:50:1
+✖ awaiting confirmation remains present but does not inflate action-needed count (2.11119ms)
+  AssertionError [ERR_ASSERTION]: Values have same structure but are not reference-equal:
+  
+  [
+    'a',
+    'b',
+    'c'
+  ]
+  
+      at TestContext.<anonymous> (/workspace/scratch/1483ea778fc3/vector-source/ux-overlay/vector-action-queue.test.cjs:61:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'a', 'b', 'c' ],
+    expected: [ 'a', 'b', 'c' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

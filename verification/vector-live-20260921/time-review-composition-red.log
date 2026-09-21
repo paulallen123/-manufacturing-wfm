@@ -1,0 +1,96 @@
+✖ composition retains Time Review JavaScript and styles while removing the retired review UI (126.041659ms)
+✖ composition compares exact asset basenames across relative, root, absolute and queried URLs (120.922267ms)
+▶ Vector workflow controller uses real authentication, saved checks and restart recovery
+  ✔ real HTTP serves the workflow controller before its payroll consumer (8.88811ms)
+  ✖ real HTTP index retains and serves Time Review script and stylesheet (3.666371ms)
+  ✔ baseline surviving Time Review action fails without its removed owner (2.707802ms)
+  ✖ HTTP-loaded Time Review controller handles its route and renders authenticated source rows (92.005969ms)
+  ✔ new workflow reads real team and evidence before individual confirmation (245.638824ms)
+  ✔ concurrent duplicate submission is bounded in the UI controller (214.62078ms)
+  ✔ unfinished weekly sign-off and unprivileged payroll are rejected (57.469061ms)
+  ✔ employee cannot acquire manager review or mutate a team check (155.802335ms)
+  ✔ saved verification survives controlled restart and a fresh login (372.120271ms)
+  ✔ payroll source is readable by explicit payroll authority (177.263153ms)
+  ✔ accepted command without observed saved result cannot produce success receipt (367.149617ms)
+  ✔ account change during a command suppresses old-account readback and receipt (153.105013ms)
+  ✔ unsaved Time Review is protected when entering weekly sign-off (0.339849ms)
+✖ Vector workflow controller uses real authentication, saved checks and restart recovery (3672.189491ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 11
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3767.946102
+
+✖ failing tests:
+
+test at scripts/compose-vector-presentation.test.cjs:23:1
+✖ composition retains Time Review JavaScript and styles while removing the retired review UI (126.041659ms)
+  AssertionError [ERR_ASSERTION]: active dependency must survive: <script src="time-review-ui.js"></script>
+      at TestContext.<anonymous> (/workspace/scratch/1483ea778fc3/vector-source/scripts/compose-vector-presentation.test.cjs:27:36)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at scripts/compose-vector-presentation.test.cjs:31:1
+✖ composition compares exact asset basenames across relative, root, absolute and queried URLs (120.922267ms)
+  AssertionError [ERR_ASSERTION]: remove exact retired basename: <script data-case="retired-js-0" src = 'review-ui.js'></script>
+      at TestContext.<anonymous> (/workspace/scratch/1483ea778fc3/vector-source/scripts/compose-vector-presentation.test.cjs:51:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-workflows.test.cjs:52:11
+✖ real HTTP index retains and serves Time Review script and stylesheet (3.666371ms)
+  AssertionError [ERR_ASSERTION]: Time Review controller must be referenced by the actual served page
+      at TestContext.<anonymous> (/workspace/scratch/1483ea778fc3/vector-source/ux-overlay/vector-workflows.test.cjs:56:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async TestContext.<anonymous> (/workspace/scratch/1483ea778fc3/vector-source/ux-overlay/vector-workflows.test.cjs:52:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-workflows.test.cjs:119:11
+✖ HTTP-loaded Time Review controller handles its route and renders authenticated source rows (92.005969ms)
+  AssertionError [ERR_ASSERTION]: load Time Review only when the served page includes it
+      at client (/workspace/scratch/1483ea778fc3/vector-source/ux-overlay/vector-workflows.test.cjs:103:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (/workspace/scratch/1483ea778fc3/vector-source/ux-overlay/vector-workflows.test.cjs:120:20)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async TestContext.<anonymous> (/workspace/scratch/1483ea778fc3/vector-source/ux-overlay/vector-workflows.test.cjs:119:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

@@ -1,0 +1,55 @@
+- complementary "Vector primary navigation":
+  - strong: Vector
+  - generic: People. Productivity. Possibility.
+  - navigation:
+    - button "Home":
+      - generic: Home
+    - button "People":
+      - generic: People
+    - button "Time & Attendance":
+      - generic: Time & Attendance
+    - button "Absence & Leave":
+      - generic: Absence & Leave
+    - button "Scheduling":
+      - generic: Scheduling
+    - button "Labour Planning":
+      - generic: Labour Planning
+    - button "Skills & Training":
+      - generic: Skills & Training
+    - button "Compliance":
+      - generic: Compliance
+    - button "Cost & Productivity":
+      - generic: Cost & Productivity
+    - button "Reports":
+      - generic: Reports
+    - button "Integrations":
+      - generic: Integrations
+    - button "Admin":
+      - generic: Admin
+  - button "▧ Manufacturing Current workspace":
+    - generic: ▧
+    - generic: Manufacturing
+    - generic: Current workspace
+- main:
+  - searchbox "Ask Vector"
+  - button "Source-confirmed items needing my action":
+    - generic: "2"
+  - button "Help":
+  - button "OH Olivia Hart Current workspace ⌄":
+    - generic: OH
+    - generic: Olivia Hart
+    - generic: Current workspace
+    - generic: ⌄
+  - generic: MONDAY, 14 SEPTEMBER 2026
+  - heading "Every change has a story." [level=1]
+  - paragraph: Demonstration activity log for this session.
+  - heading "Recent activity" [level=2]
+  - paragraph:
+    - text: leave-decision · Daniel Reed
+    - text: approved · d1 · 08:38
+  - generic: The production audit log must be server-written and protected against alteration. This in-memory demo log is not a tamper-proof record.
+  - generic: Fictional data · Local development v0.6 · Changes saved to the local database.
+  - generic: One sign-in · Capability-based access · Not a live payroll service
+- button "Guide 3":
+  - generic: Guide
+  - generic: "3"

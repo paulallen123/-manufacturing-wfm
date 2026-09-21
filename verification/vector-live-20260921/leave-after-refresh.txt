@@ -1,0 +1,64 @@
+Daniel Reed
+Tamworth
+	Not verified	7.5 h	0 h	82.5 h	82.5 h	Review
+d 0 h 0 h 90 h 90 h Review":
+        - cell "Sara Ford Tamworth":
+          - text: Sara Ford
+          - generic: Tamworth
+        - cell "Not verified"
+        - cell "0 h"
+        - cell "0 h"
+        - cell "90 h"
+        - cell "90 h"
+        - cell "Review":
+          - button "Review"
+      - row "Rowan Shaw Tamworth Not verified 0 h 0 h 90 h 90 h Review":
+        - cell "Rowan Shaw Tamworth":
+          - text: Rowan Shaw
+          - generic: Tamworth
+        - cell "Not verified"
+        - cell "0 h"
+        - cell "0 h"
+        - cell "90 h"
+        - cell "90 h"
+        - cell "Review":
+          - button "Review"
+      - row "Harper Evans Tamworth Not verified 0 h 0 h 90 h 90 h Review":
+        - cell "Harper Evans Tamworth":
+          - text: Harper Evans
+          - generic: Tamworth
+        - cell "Not verified"
+        - cell "0 h"
+        - cell "0 h"
+        - cell "90 h"
+        - cell "90 h"
+        - cell "Review":
+          - button "Review"
+  - heading "Time-off requests" [level=2]
+  - paragraph: Recorded hours · decisions remain in the activity log
+  - generic: 2 pending
+  - generic: DR
+  - generic: Daniel Reed
+  - generic: Annual leave · 2026-09-18 · 7.5 h
+  - generic: approved
+  - generic: CNC machining
+  - generic: RP
+  - generic: Ruby Parker
+  - generic: Annual leave · 2026-09-21 · 7.5 h
+  - generic: pending
+  - generic: Assembly
+  - button "Review"
+  - button "Approve"
+  - generic: NT
+  - generic: Nina Taylor
+  - generic: Annual leave · 2026-09-25 · 7.5 h
+  - generic: pending
+  - generic: Quality & packing
+  - button "Review"
+  - button "Approve"
+  - paragraph: Balances as of 2026-09-14. Requests, decisions and reviewed openings save to the same application. Estimates never change balances or calculate holiday pay.
+  - generic: Fictional data · Local development v0.6 · Changes saved to the local database.
+  - generic: One sign-in · Capability-based access · Not a live payroll service
+- button "Guide 3":
+  - generic: Guide
+  - generic: "3"

@@ -1,0 +1,11 @@
+Publish this checked revision
+×
+
+The server will recheck qualifications, approved absence, overlapping duties, rest and complete pay evidence against the current source version.
+
+Change reason
+I reviewed the fresh checks and intended employee assignment.
+Cancel
+Publish shift
+
+Publication is blocked: Another published assignment overlaps this interval.

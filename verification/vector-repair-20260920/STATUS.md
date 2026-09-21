@@ -1,5 +1,7 @@
 # Confidential Vector repair evidence — 20 September 2026
 
+Historical snapshot. Current access, hosted action evidence and the shared priority list are recorded in [21 September evidence](../vector-live-20260921/EVIDENCE.md). Ordinary app access has since been restored; the staging recovery feature was not activated.
+
 ## Status and source boundaries
 
 BUILT and locally checked; deployed end-to-end proof remains BLOCKED. All test records are synthetic. No live customer outcomes or savings are claimed.

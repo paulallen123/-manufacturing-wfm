@@ -1,0 +1,12 @@
+✔ source lifecycle is partitioned without presentation-word inference (3.023352ms)
+✔ awaiting confirmation remains present but does not inflate action-needed count (1.517319ms)
+✔ rendered action queue keeps source-confirming work collapsed, visible and passive without hiding actionable work (1.362732ms)
+✔ action ordering cannot create synthetic urgency styling (0.270257ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 89.900312
