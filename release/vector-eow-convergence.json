@@ -191,5 +191,50 @@
     "prove",
     "measure",
     "evolve"
-  ]
+  ],
+  "programName": "VECTOR FORGE",
+  "programTagline": "Forge every capability into one coherent, intelligent manufacturing experience.",
+  "experienceReview": {
+    "principle": "Capability must improve a real user decision or remove work; adding a screen is not success.",
+    "roles": [
+      "employee",
+      "manager",
+      "operations",
+      "finance",
+      "director",
+      "company-admin"
+    ],
+    "stages": [
+      "observe-current",
+      "map-user-job",
+      "measure-friction",
+      "design-enhancement",
+      "prototype-in-canonical-ui",
+      "connect-real-data",
+      "test-role-journey",
+      "compare-before-after",
+      "simplify",
+      "evolve"
+    ],
+    "requiredEvidence": [
+      "real hosted screenshot",
+      "task completion path",
+      "clicks or steps",
+      "time to decision",
+      "data provenance",
+      "role and tenant boundary",
+      "mobile behaviour",
+      "empty/error/loading states",
+      "accessibility",
+      "before-after evidence"
+    ],
+    "antiPatterns": [
+      "duplicate screens",
+      "different navigation labels rendering the same experience",
+      "metrics without an action",
+      "graphs without source data",
+      "AI output without authority or provenance",
+      "features exposed before their journey is complete"
+    ]
+  }
 }
