@@ -5,7 +5,8 @@ const MUTATION_HINTS=[
 ];
 const SECRET_FIELD_NAMES=new Set([
   'apikey','api_key','secret','secretkey','secret_key','password','authorization','authorizationheader','authorization_header',
-  'token','accesstoken','access_token','refreshtoken','refresh_token','credentialvalue','credential_value'
+  'token','accesstoken','access_token','refreshtoken','refresh_token','credentialvalue','credential_value',
+  'b1session','sessionid','session_id','cookie','cookieheader','cookie_header','setcookie','set_cookie','routeid'
 ]);
 
 function normalizedCapability(value){

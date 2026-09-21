@@ -173,6 +173,7 @@ export function buildConnectorRegistry(){
       sourceScope:sourceScopeFor(system),
       bootstrapAuthority:system.bootstrapAuthority?structuredClone(system.bootstrapAuthority):null,
       staticCredentialAuthority:system.staticCredentialAuthority?structuredClone(system.staticCredentialAuthority):null,
+      sessionReadAuthority:system.sessionReadAuthority?structuredClone(system.sessionReadAuthority):null,
       versionRouting:versionRoutingFor(system),
       dataCoverage:dataCoverageFor(system),
       discoveryStrategy:discoveryStrategy(profileIds,edgeRequired),
