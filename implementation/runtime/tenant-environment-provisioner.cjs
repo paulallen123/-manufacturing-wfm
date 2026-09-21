@@ -40,8 +40,9 @@ function normaliseConfiguration(scope) {
 }
 
 function createTenantEnvironmentProvisioner(options = {}) {
-  if (!options.dbPath) throw new Error('Tenant environment provisioner requires dbPath.');
-  const db = new DatabaseSync(options.dbPath);
+  if (!options.db && !options.dbPath) throw new Error('Tenant environment provisioner requires db or dbPath.');
+  const ownsDb = !options.db;
+  const db = options.db || new DatabaseSync(options.dbPath);
   db.exec(
     'PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;' +
     'CREATE TABLE IF NOT EXISTS tenant_environments(' +
@@ -87,13 +88,14 @@ function createTenantEnvironmentProvisioner(options = {}) {
     }
     const encoded = stableJson(configuration);
     const digest = sha256(encoded);
-    const existing = get.get(tenant);
-    if (existing && existing.configuration_digest === digest && existing.run_id === runId && existing.state === 'READY') {
-      return publicEnvironment(existing);
-    }
     const now = new Date().toISOString();
-    db.exec('BEGIN IMMEDIATE;');
+    if (ownsDb) db.exec('BEGIN IMMEDIATE;');
     try {
+      const existing = get.get(tenant);
+      if (existing && existing.configuration_digest === digest && existing.run_id === runId && existing.state === 'READY') {
+        if (ownsDb) db.exec('COMMIT;');
+        return publicEnvironment(existing);
+      }
       if (existing) {
         update.run(runId, 'READY', encoded, digest, now, tenant);
         event.run(tenant, existing.environment_id, 'ENVIRONMENT_RECONFIGURED', digest, now);
@@ -103,9 +105,9 @@ function createTenantEnvironmentProvisioner(options = {}) {
         insert.run(tenant, environmentId, namespace, runId, 'READY', encoded, digest, now, now);
         event.run(tenant, environmentId, 'ENVIRONMENT_PROVISIONED', digest, now);
       }
-      db.exec('COMMIT;');
+      if (ownsDb) db.exec('COMMIT;');
     } catch (error) {
-      try { db.exec('ROLLBACK;'); } catch {}
+      if (ownsDb) try { db.exec('ROLLBACK;'); } catch {}
       throw error;
     }
     return publicEnvironment(get.get(tenant));
@@ -114,7 +116,7 @@ function createTenantEnvironmentProvisioner(options = {}) {
   return {
     provision,
     statusForTenant(tenant) { return publicEnvironment(get.get(String(tenant || '').trim())); },
-    close() { try { db.close(); } catch {} }
+    close() { if (ownsDb) try { db.close(); } catch {} }
   };
 }
 
