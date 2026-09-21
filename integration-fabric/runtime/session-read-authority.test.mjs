@@ -27,6 +27,10 @@ function policy(overrides={}){
   });
 }
 
+function admitNext(input){
+  return validateSessionNextLink({pageNumber:2,pageBytes:100,elapsedMs:50,...input});
+}
+
 test('session authority is bound to tenant, endpoint, company, principal, credential revision, connection and API version',()=>{
   const base=policy();
   for(const changed of [
@@ -59,6 +63,8 @@ test('only allowlisted GET and HEAD resource reads are authorised',()=>{
   assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/BusinessPartners'}),/not allowlisted/i);
   assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/Items?$top=0'}),/page size/i);
   assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/Items?$apply=groupby((ItemCode))'}),/query parameter/i);
+  assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/Items/SecretNavigation'}),/entity path/i);
+  assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/Items(1)/UnreviewedFunction()'}),/entity path/i);
 });
 
 test('cross-host, credentials, base-path and API-version escapes fail closed',()=>{
@@ -79,7 +85,7 @@ test('provider next links preserve query semantics and advance a bounded cursor'
   const p=policy();
   const current='https://erp.example.test/b1s/v2/ProductionOrders?$select=AbsoluteEntry,ItemNo&$filter=Status%20eq%20%27R%27&$orderby=AbsoluteEntry&$top=20&$skip=0';
   const next='/b1s/v2/ProductionOrders?$select=AbsoluteEntry,ItemNo&$filter=Status%20eq%20%27R%27&$orderby=AbsoluteEntry&$top=20&$skip=20';
-  const result=validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:next,seenNextLinks:[]});
+  const result=admitNext({policy:p,currentRequestUrl:current,nextLink:next,seenNextLinks:[]});
   assert.equal(result.cursorKind,'skip');
   assert.equal(result.cursorValue,'20');
   assert.equal(result.checkpointAdvanceAllowed,false);
@@ -88,21 +94,22 @@ test('provider next links preserve query semantics and advance a bounded cursor'
 test('next-link host escape, query drift, cursor loops and pagination disablement are rejected',()=>{
   const p=policy();
   const current='https://erp.example.test/b1s/v2/Items?$filter=Frozen%20eq%20%27tNO%27&$orderby=ItemCode&$top=20&$skip=0';
-  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:'https://evil.example/b1s/v2/Items?$filter=Frozen%20eq%20%27tNO%27&$orderby=ItemCode&$top=20&$skip=20'}),/origin/i);
-  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:'/b1s/v2/Items?$filter=Frozen%20eq%20%27tYES%27&$orderby=ItemCode&$top=20&$skip=20'}),/query semantics/i);
-  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:'/b1s/v2/Items?$filter=Frozen%20eq%20%27tNO%27&$orderby=ItemCode&$top=0&$skip=20'}),/page size/i);
+  assert.throws(()=>admitNext({policy:p,currentRequestUrl:current,nextLink:'https://evil.example/b1s/v2/Items?$filter=Frozen%20eq%20%27tNO%27&$orderby=ItemCode&$top=20&$skip=20'}),/origin/i);
+  assert.throws(()=>admitNext({policy:p,currentRequestUrl:current,nextLink:'/b1s/v2/Items?$filter=Frozen%20eq%20%27tYES%27&$orderby=ItemCode&$top=20&$skip=20'}),/query semantics/i);
+  assert.throws(()=>admitNext({policy:p,currentRequestUrl:current,nextLink:'/b1s/v2/Items?$filter=Frozen%20eq%20%27tNO%27&$orderby=ItemCode&$top=0&$skip=20'}),/page size/i);
   const repeated='https://erp.example.test/b1s/v2/Items?%24filter=Frozen+eq+%27tNO%27&%24orderby=ItemCode&%24top=20&%24skip=20';
-  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:'/b1s/v2/Items?$filter=Frozen%20eq%20%27tNO%27&$orderby=ItemCode&$top=20&$skip=20',seenNextLinks:[repeated]}),/loop|repeated/i);
+  assert.throws(()=>admitNext({policy:p,currentRequestUrl:current,nextLink:'/b1s/v2/Items?$filter=Frozen%20eq%20%27tNO%27&$orderby=ItemCode&$top=20&$skip=20',seenNextLinks:[repeated]}),/loop|repeated/i);
   const duplicate='https://erp.example.test/b1s/v2/Items?$filter=A&$filter=A&$orderby=ItemCode&$top=20&$skip=0';
-  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:duplicate,nextLink:'/b1s/v2/Items?$filter=A&$filter=A&$orderby=ItemCode&$top=20&$skip=20'}),/duplicate.*\$filter/i);
-  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:'https://erp.example.test/b1s/v2/Items(1)?$top=20&$skip=0',nextLink:'/b1s/v2/Items(2)?$top=20&$skip=20'}),/entity path/i);
-  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:'https://erp.example.test/b1s/v2/Items?$top=20&$skip=0',nextLink:'/b1s/v2/Items/ForeignNavigation?$top=20&$skip=20'}),/entity path/i);
+  assert.throws(()=>admitNext({policy:p,currentRequestUrl:duplicate,nextLink:'/b1s/v2/Items?$filter=A&$filter=A&$orderby=ItemCode&$top=20&$skip=20'}),/duplicate.*\$filter/i);
+  assert.throws(()=>admitNext({policy:p,currentRequestUrl:'https://erp.example.test/b1s/v2/Items(1)?$top=20&$skip=0',nextLink:'/b1s/v2/Items(2)?$top=20&$skip=20'}),/entity path/i);
+  assert.throws(()=>admitNext({policy:p,currentRequestUrl:'https://erp.example.test/b1s/v2/Items?$top=20&$skip=0',nextLink:'/b1s/v2/Items/ForeignNavigation?$top=20&$skip=20'}),/entity path/i);
 });
 
 test('continuation admission enforces configured page, byte and elapsed-time budgets',()=>{
   const p=policy({maxPages:2,maxBytesPerPage:1000,maxElapsedMs:5000});
   const current='https://erp.example.test/b1s/v2/Items?$orderby=ItemCode&$top=20&$skip=0';
   const next='/b1s/v2/Items?$orderby=ItemCode&$top=20&$skip=20';
+  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:next}),/budget observations/i);
   assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:next,pageNumber:3,pageBytes:100,elapsedMs:100}),/page budget/i);
   assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:next,pageNumber:2,pageBytes:1001,elapsedMs:100}),/byte budget/i);
   assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:next,pageNumber:2,pageBytes:100,elapsedMs:5001}),/elapsed-time budget/i);

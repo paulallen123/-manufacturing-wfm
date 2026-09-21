@@ -130,9 +130,11 @@ function parseAuthorizedUrl(policy,requestUrl){
   if(url.origin.toLowerCase()!==policy.endpointOrigin) throw new Error('session read origin does not match exact endpoint authority');
   const prefix=`${policy.endpointBasePath}/`;
   if(!url.pathname.startsWith(prefix)) throw new Error('session read path is outside the authorised API base path or version');
-  const tail=url.pathname.slice(prefix.length);
-  if(!tail||tail.includes('..')) throw new Error('session read resource path is invalid');
-  const resource=decodeURIComponent(tail.split('/')[0]).replace(/\(.*/,'');
+  const tail=decodeURIComponent(url.pathname.slice(prefix.length));
+  if(!tail||tail.includes('..')||tail.includes('/')) throw new Error('session read entity path is invalid or contains undeclared navigation');
+  const match=/^([^()]+)(?:\([^/()]*\))?$/.exec(tail);
+  if(!match) throw new Error('session read entity path contains an undeclared function or malformed key');
+  const resource=match[1];
   if(policy.deniedResources.includes(resource)) throw new Error(`session resource is explicitly denied: ${resource}`);
   if(!policy.allowedResources.includes(resource)) throw new Error(`session resource is not allowlisted: ${resource}`);
   assertQueryAuthority(policy,url);
@@ -174,7 +176,7 @@ function assertSingleParameter(url,name){
   return values[0]??null;
 }
 
-export function validateSessionNextLink({policy,currentRequestUrl,nextLink,seenNextLinks=[],pageNumber=1,pageBytes=0,elapsedMs=0}={}){
+export function validateSessionNextLink({policy,currentRequestUrl,nextLink,seenNextLinks=[],pageNumber,pageBytes,elapsedMs}={}){
   assertPolicy(policy);
   const current=parseAuthorizedUrl(policy,currentRequestUrl);
   const nextUrl=new URL(required(nextLink,'nextLink'),current.url);
@@ -182,6 +184,9 @@ export function validateSessionNextLink({policy,currentRequestUrl,nextLink,seenN
   if(next.resource!==current.resource) throw new Error('next link changed resource');
   if(nextUrl.pathname!==current.url.pathname) throw new Error('next link changed exact entity path');
 
+  if(pageNumber===undefined||pageNumber===null||pageBytes===undefined||pageBytes===null||elapsedMs===undefined||elapsedMs===null){
+    throw new Error('explicit continuation budget observations are required');
+  }
   const page=Number(pageNumber),bytes=Number(pageBytes),elapsed=Number(elapsedMs);
   if(!Number.isSafeInteger(page)||page<=0||page>policy.readBudget.maxPages) throw new Error('next link exceeded page budget');
   if(!Number.isSafeInteger(bytes)||bytes<0||bytes>policy.readBudget.maxBytesPerPage) throw new Error('next link exceeded byte budget');
