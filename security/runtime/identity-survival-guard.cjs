@@ -139,6 +139,10 @@ function createIdentitySurvivalGuard(options = {}) {
 
   function beforeRequest(req, res) {
     if (rejectInjectedIdentity(req, res)) return true;
+    // A stale cookie must not prevent the sealed server from checking fresh
+    // credentials or clearing a session. No session or authority is granted here.
+    // Exact POST routes only; identity-header rejection above remains mandatory.
+    if (req.method === 'POST' && (req.url === '/api/login' || req.url === '/api/logout')) return false;
     const token = cookieSessionToken(req);
     if (!token) return false; // Public/integration routes remain governed by the sealed server.
 
