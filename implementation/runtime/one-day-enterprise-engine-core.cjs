@@ -2,6 +2,7 @@
 
 const { createHash, randomBytes, randomUUID, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { createTenantEnvironmentProvisioner } = require('./tenant-environment-provisioner.cjs');
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -169,6 +170,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   if (!dbPath) throw new Error('One-day implementation engine requires WFM_DB.');
 
   const db = new DatabaseSync(dbPath);
+  const environmentProvisioner = createTenantEnvironmentProvisioner({ dbPath });
   db.exec(
     'PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;' +
     'CREATE TABLE IF NOT EXISTS implementation_invitations(' +
@@ -341,6 +343,7 @@ function createOneDayEnterpriseEngine(options = {}) {
 
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
+    const tenantEnvironment = environmentProvisioner.statusForTenant(run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
     const scopeRow = scopeByRun.get(run.id, run.tenant);
     let customerScope = null;
@@ -356,7 +359,20 @@ function createOneDayEnterpriseEngine(options = {}) {
       const row = map.get(requirement.key);
       let derived = null;
 
-      if (requirement.key === 'configuration-scope') {
+      if (requirement.key === 'tenant-environment') {
+        const ok = tenantEnvironment?.state === 'READY' && tenantEnvironment?.runId === run.id;
+        derived = {
+          status: ok ? 'PASS' : 'MISSING',
+          confidence: ok ? 1 : 0,
+          source: 'tenant-environment-provisioner',
+          detail: ok ? {
+            environmentId: tenantEnvironment.environmentId,
+            namespace: tenantEnvironment.namespace,
+            configurationDigest: tenantEnvironment.configurationDigest,
+            dashboardRoute: tenantEnvironment.dashboard.route
+          } : null
+        };
+      } else if (requirement.key === 'configuration-scope') {
         const ok = Boolean(customerScope);
         derived = {
           status: ok ? 'PASS' : 'MISSING',
@@ -447,7 +463,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       blockingDecisions,
       learningSummary,
       scopeCaptured: Boolean(customerScope),
-      customerScope
+      customerScope,
+      environment: tenantEnvironment
     };
   }
 
@@ -674,6 +691,12 @@ function createOneDayEnterpriseEngine(options = {}) {
     const existing = scopeByRun.get(run.id, ctx.tenant);
     const ts = nowIso();
     upsertScope.run(run.id, ctx.tenant, JSON.stringify(scope), sha256(ctx.email).slice(0, 16), existing?.created_at || ts, ts);
+    const environment = environmentProvisioner.provision({ tenant: ctx.tenant, runId: run.id, scope });
+    record(run.id, ctx.tenant, 'TENANT_ENVIRONMENT_READY', {
+      environmentId: environment.environmentId,
+      namespace: environment.namespace,
+      configurationDigest: environment.configurationDigest
+    });
     record(run.id, ctx.tenant, existing ? 'CUSTOMER_SCOPE_UPDATED' : 'CUSTOMER_SCOPE_SUBMITTED', {
       by: sha256(ctx.email).slice(0, 16),
       employees: scope.employeeCount,
@@ -839,6 +862,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       if (req.method === 'GET' && path === PREFIX + '/invitation') return handleInvitation(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/start') return await handleStart(ctx, req, res);
       if (req.method === 'GET' && path === PREFIX + '/scope') return handleScopeGet(ctx, res);
+      if (req.method === 'GET' && path === PREFIX + '/environment') {
+        const environment = environmentProvisioner.statusForTenant(ctx.tenant);
+        return environment ? writeJson(res, 200, environment) : writeJson(res, 404, { error: 'Tenant environment has not been provisioned.' });
+      }
       if (req.method === 'POST' && path === PREFIX + '/scope') return await handleScope(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/decision') return await handleDecision(ctx, req, res);
       return writeJson(res, 404, { error: 'Autonomous implementation endpoint not found.' });
@@ -855,7 +882,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       const run = currentRun.get(tenant);
       return run ? recompute(run) : null;
     },
-    close() { try { db.close(); } catch {} }
+    close() { try { environmentProvisioner.close(); } catch {} try { db.close(); } catch {} }
   };
 }
 
