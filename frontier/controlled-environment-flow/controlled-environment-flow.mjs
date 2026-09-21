@@ -1,6 +1,10 @@
-export const CONTROLLED_ENVIRONMENT_FLOW_VERSION='controlled-environment-flow-v0.1.0';
+export const CONTROLLED_ENVIRONMENT_FLOW_VERSION='controlled-environment-flow-v0.1.1';
 
 const clean=v=>typeof v==='string'?v.trim():'';
+// Inputs must use canonical string identifiers. Resolve aliases upstream.
+const canonicalId=v=>typeof v==='string'&&v.length>0&&v===v.trim();
+// Structured keys prevent user-controlled separators from aliasing records.
+const pairKey=(a,b)=>JSON.stringify([a,b]);
 const finite=v=>typeof v==='number'&&Number.isFinite(v);
 const ts=v=>{const n=Date.parse(String(v??''));return Number.isFinite(n)?n:null;};
 
@@ -15,27 +19,41 @@ function policyGate(policy, now){
 }
 
 function transitionIndex(policy){
+  if(!Array.isArray(policy.transitions))return {ok:false,reason:'transition_rules_invalid'};
   const map=new Map();
-  for(const row of Array.isArray(policy.transitions)?policy.transitions:[]){
-    const from=clean(row?.from),to=clean(row?.to);
-    if(!from||!to)continue;
-    map.set(from+'>'+to,row);
+  for(const row of policy.transitions){
+    if(!canonicalId(row?.from)||!canonicalId(row?.to)||typeof row.allowed!=='boolean'){
+      return {ok:false,reason:'transition_rule_invalid'};
+    }
+    const key=pairKey(row.from,row.to);
+    // Even identical duplicates require source reconciliation, not guessing.
+    if(map.has(key))return {ok:false,reason:'duplicate_transition_rule'};
+    map.set(key,row);
   }
-  return map;
+  return {ok:true,map};
 }
 
 export function evaluateControlledEnvironmentPlan({policy,workers=[],tasks=[],plan,now=new Date().toISOString()}={}){
   const gate=policyGate(policy,now);
   if(!gate.ok)return {status:'blocked',reason:gate.reason};
 
+  const transitionsState=transitionIndex(policy);
+  if(!transitionsState.ok)return {status:'blocked',reason:transitionsState.reason};
+  if(!Array.isArray(workers))return {status:'rejected',reason:'workers_invalid'};
+  if(!Array.isArray(tasks))return {status:'rejected',reason:'tasks_invalid'};
+
   const siteId=clean(policy.siteId);
   const workerById=new Map();
   for(const worker of workers){
+    if(!canonicalId(worker?.id))return {status:'rejected',reason:'worker_id_invalid'};
+    if(workerById.has(worker.id))return {status:'rejected',reason:'duplicate_worker_id',workerId:worker.id};
     if(clean(worker?.siteId)!==siteId)return {status:'rejected',reason:'worker_site_mismatch',workerId:worker?.id??null};
     workerById.set(String(worker.id),worker);
   }
   const taskById=new Map();
   for(const task of tasks){
+    if(!canonicalId(task?.id))return {status:'rejected',reason:'task_id_invalid'};
+    if(taskById.has(task.id))return {status:'rejected',reason:'duplicate_task_id',taskId:task.id};
     if(clean(task?.siteId)!==siteId)return {status:'rejected',reason:'task_site_mismatch',taskId:task?.id??null};
     if(!clean(task?.zone)||!clean(task?.skill)||!Number.isInteger(task?.slot))return {status:'rejected',reason:'task_invalid',taskId:task?.id??null};
     taskById.set(String(task.id),task);
@@ -52,13 +70,13 @@ export function evaluateControlledEnvironmentPlan({policy,workers=[],tasks=[],pl
     const task=taskById.get(String(a?.taskId));
     const worker=workerById.get(String(a?.workerId));
     if(!task||!worker)return {status:'rejected',reason:'unknown_assignment_reference'};
-    const key=String(worker.id)+'@'+task.slot;
+    const key=pairKey(worker.id,task.slot);
     if(seenWorkerSlot.has(key))return {status:'rejected',reason:'worker_double_booked',workerId:worker.id,slot:task.slot};
     seenWorkerSlot.add(key);
     if(!new Set(worker.skills||[]).has(task.skill))return {status:'rejected',reason:'skill_missing',workerId:worker.id,taskId:task.id};
     if(!new Set(worker.qualifiedZones||[]).has(task.zone))return {status:'rejected',reason:'zone_qualification_missing',workerId:worker.id,taskId:task.id};
     covered.set(String(task.id),(covered.get(String(task.id))||0)+1);
-    const oz=task.zone+'@'+task.slot;
+    const oz=pairKey(task.zone,task.slot);
     zoneSlotCount.set(oz,(zoneSlotCount.get(oz)||0)+1);
     if(!byWorker.has(String(worker.id)))byWorker.set(String(worker.id),[]);
     byWorker.get(String(worker.id)).push(task);
@@ -71,21 +89,21 @@ export function evaluateControlledEnvironmentPlan({policy,workers=[],tasks=[],pl
 
   const zones=policy.zones&&typeof policy.zones==='object'?policy.zones:{};
   for(const [key,count] of zoneSlotCount){
-    const zone=key.split('@')[0],limit=Number(zones?.[zone]?.maxPersonnel);
+    const [zone]=JSON.parse(key),limit=Number(zones?.[zone]?.maxPersonnel);
     if(Number.isFinite(limit)&&count>limit)return {status:'rejected',reason:'zone_occupancy_exceeded',zone,count,limit};
   }
 
-  const tx=transitionIndex(policy);
+  const tx=transitionsState.map;
   let transitions=0,gowningCycles=0,controlMinutes=0,controlCost=0,costComplete=true;
   const movement=[];
   for(const [workerId,rows] of byWorker){
-    rows.sort((a,b)=>a.slot-b.slot||String(a.id).localeCompare(String(b.id)));
+    rows.sort((a,b)=>a.slot-b.slot||String(a.id).localeCompare(b.id));
     const worker=workerById.get(workerId);
     let from=clean(worker.currentZone)||clean(policy.defaultOutsideZone)||'OUT';
     for(const task of rows){
       const to=task.zone;
       if(from!==to){
-        const rule=tx.get(from+'>'+to);
+        const rule=tx.get(pairKey(from,to));
         if(!rule||rule.allowed!==true)return {status:'rejected',reason:'transition_not_approved',workerId,from,to,taskId:task.id};
         transitions+=1;
         if(rule.gowningCycle===true)gowningCycles+=1;
