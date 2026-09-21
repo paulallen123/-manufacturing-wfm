@@ -143,7 +143,7 @@ test('unknown login secrets and non-plain read results cannot cross the broker b
   }
 });
 
-test('forged internal codes, array subclasses and secret accessor keys remain contained',async()=>{
+test('forged internal codes, hostile status accessors, array subclasses and secret accessor keys remain contained',async()=>{
   const token='synthetic-private-cookie';
   class HostileArray extends Array{
     map(){return {secret:token};}
@@ -159,11 +159,18 @@ test('forged internal codes, array subclasses and secret accessor keys remain co
         error.code='WFM_SESSION_VENDOR_FAILURE';
         throw error;
       }
+      if(mode==='status-accessor'){
+        const error=new Error('safe-looking provider failure');
+        Object.defineProperty(error,'status',{get(){throw new Error(`B1SESSION=${token}`);}});
+        throw error;
+      }
       if(mode==='array') return new HostileArray('safe');
       return accessor;
     }
   });
   await broker.rotate({scopeNamespace:'scope:a'});
+  await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.message==='session read failed'&&!error.message.includes(token));
+  mode='status-accessor';
   await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.message==='session read failed'&&!error.message.includes(token));
   mode='array';
   await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.code==='WFM_SESSION_RESULT_INVALID'&&!error.message.includes(token));

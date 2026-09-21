@@ -27,8 +27,11 @@ function scopeName(value){
 }
 
 function statusOf(error){
-  const status=Number(error?.status);
-  return Number.isInteger(status)?status:null;
+  if(!error||(typeof error!=='object'&&typeof error!=='function')) return null;
+  let descriptor;
+  try{descriptor=Object.getOwnPropertyDescriptor(error,'status');}catch{return null;}
+  if(!descriptor||!('value' in descriptor)||typeof descriptor.value!=='number') return null;
+  return Number.isInteger(descriptor.value)?descriptor.value:null;
 }
 
 function safeExecutorError(error,phase,overrideCode=null){
