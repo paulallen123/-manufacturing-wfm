@@ -1,117 +1,122 @@
 {
   "schemaVersion": 1,
   "generatedAt": "2026-09-20",
-  "purpose": "Authoritative-vendor manufacturing execution integration delta adding Aegis FactoryLogix at spec-verified only. Reuses the existing HTTP RPC/JSON and files/SFTP profiles for xTend JSON and xStream/XML/file export routes, records the on-prem cleartext-default endpoint and mutative RPC authority as security evidence blockers, and keeps Manufacturing WFM read-only and customer-edge constrained. No customer credentials, production data, write/control calls or plant-network probes were used.",
+  "purpose": "Authoritative-vendor manufacturing execution integration delta promoting Aegis FactoryLogix at spec-verified only. Reuses the existing HTTP RPC/JSON and files/SFTP profiles for xTend JSON and xStream/XML/file export routes, records the on-prem cleartext-default endpoint and mutative RPC authority as security evidence blockers, and keeps Manufacturing WFM read-only and customer-edge constrained. No customer credentials, production data, write/control calls or plant-network probes were used.",
   "protocolFamilies": [],
-  "overrides": [],
-  "systems": [
+  "overrides": [
     {
       "id": "aegis-factorylogix",
-      "name": "Aegis FactoryLogix",
-      "category": "mes",
-      "priority": "P1",
-      "protocols": ["HTTP RPC/JSON", "files"],
-      "auth": "factorylogix-user-session-with-role-permissions-or-customer-controlled-one-way-export",
-      "researchStatus": "docs-verified",
-      "docsUrl": "https://docs.aiscorp.com/en/factorylogix-learning/FL/op/get-started-with-the-xtend-api",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": true,
-      "securityEvidenceBlockers": [
-        "The documented xTend REST JSON/POX examples use an on-prem http://[server]:6063 endpoint and username/password Connect flow. WFM must not send credentials or customer data over cleartext HTTP or directly traverse a protected plant network; authentication evidence cannot advance until the customer exposes a verified TLS-protected edge/read projection or another customer-approved encrypted route.",
-        "xTend is a session-backed method API that includes mutative production, configuration, security and equipment/automation operations as well as reads. A dedicated non-admin FactoryLogix identity, effective read-only role evidence and an explicit reviewed read-method allowlist (or the one-way xStream/export route) are required before authentication can count as safe WFM evidence."
-      ],
-      "evidenceUrl": "https://docs.aiscorp.com/en/factorylogix-learning/FL/op/xtend-in-the-factorylogix-integration-landscape",
-      "evidenceNote": "Aegis documents FactoryLogix xTend as a direct integration API and xStream as a one-way automated export path. The xTend REST interface exposes JSON and XML/POX service/method URLs, establishes a session with FactoryLogix credentials and a database connection, then requires the returned sessionId on subsequent calls. FactoryLogix roles have individually configurable permissions, while xTend includes mutative methods such as deleting users and recording indirect touch time; HTTP method or session success therefore does not prove read-only authority. FactoryLogix also models factories/areas/lines/workstations, WIP tracking and touch time, operation resource restrictions, cycle/setup times, material/resource context and operation certification restrictions that validate operators against required current certifications. Customer Library access can be broad if no users/groups are associated with a customer, so customer/site scope must be explicitly proven. The same platform can connect equipment/automation; WFM deliberately consumes only the enterprise/read projection and does not inherit CFX/xLink, equipment, robot or control authority.",
-      "valueReview": {
-        "basis": "vendor-docs",
-        "evidenceUrl": "https://www.aiscorp.com/solutions/integration",
-        "requiredPermissions": [
-          "customer-edge only: no direct cloud scan or direct connection to an on-prem FactoryLogix xTend service",
-          "prefer one-way xStream/export where it supplies the approved dataset; validate checksums, schema, source timestamps and idempotent file ingestion",
-          "for xTend, dedicated non-admin FactoryLogix technical user with only the minimum effective read permissions required for approved services/methods",
-          "explicit reviewed allowlist of read-only xTend service/method identifiers; deny production mutation, user/security administration, process/product editing, material movement, equipment/automation actions and all other mutative methods",
-          "explicit factory/site/customer/database-connection binding; customer access must be constrained rather than relying on the permissive no-association default",
-          "TLS-protected customer edge, reverse proxy or equivalent encrypted transport before FactoryLogix credentials/session identifiers can be presented",
-          "no direct SQL integration: Aegis recommends xTend rather than bypassing FactoryLogix business logic"
+      "patch": {
+        "name": "Aegis FactoryLogix",
+        "category": "mes",
+        "priority": "P1",
+        "protocols": [
+          "HTTP RPC/JSON",
+          "files"
         ],
-        "dataAvailableOrExpected": [
-          "factory hierarchy including factories, areas, lines, workstations/clusters and resource/location identifiers",
-          "production batches/orders, WIP state, operations/routing context, start/finish/touch-time evidence and production status",
-          "operation estimated cycle time, setup time, resource restrictions and workstation/resource requirements",
-          "operator/user references and operation certification restrictions, including the requirement that operator certifications be valid before an operation proceeds",
-          "material, stock/resource, tooling/consumable and manufacturing-readiness context where exposed by the customer's approved projection",
-          "quality/inspection/non-conformance and traceability context where exposed by approved read services or xStream reports",
-          "machine/equipment and production context only through a governed FactoryLogix read projection; no direct CFX/xLink/PLC control path"
+        "auth": "factorylogix-user-session-with-role-permissions-or-customer-controlled-one-way-export",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.aiscorp.com/en/factorylogix-learning/FL/op/get-started-with-the-xtend-api",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "securityEvidenceBlockers": [
+          "The documented xTend REST JSON/POX examples use an on-prem http://[server]:6063 endpoint and username/password Connect flow. WFM must not send credentials or customer data over cleartext HTTP or directly traverse a protected plant network; authentication evidence cannot advance until the customer exposes a verified TLS-protected edge/read projection or another customer-approved encrypted route.",
+          "xTend is a session-backed method API that includes mutative production, configuration, security and equipment/automation operations as well as reads. A dedicated non-admin FactoryLogix identity, effective read-only role evidence and an explicit reviewed read-method allowlist (or the one-way xStream/export route) are required before authentication can count as safe WFM evidence."
         ],
-        "wfmObjects": [
-          "site",
-          "work-centre",
-          "production-demand",
-          "production-event",
-          "labour-requirement",
-          "worker-activity-context",
-          "qualification-requirement",
-          "skill-demand",
-          "inventory-readiness",
-          "quality-event",
-          "disruption-event",
-          "shift-outcome",
-          "integration-event"
-        ],
-        "automationOpportunities": [
-          "compare planned/active FactoryLogix operations with WFM availability and verified qualifications to surface skill-constrained production risk before the shift starts",
-          "recommend qualified redeployment between lines/workstations when WIP, resource or disruption state changes, without changing FactoryLogix execution state",
-          "forecast overtime or agency-labour pressure from production backlog, cycle/setup expectations and the number of currently eligible workers",
-          "reconcile payable attendance with FactoryLogix operation/touch-time evidence to identify paid-but-nonproductive time and labour-to-order/unit cost, while keeping WFM/payroll authoritative for payable time",
-          "hold or reroute staffing recommendations when required material/tool/resource readiness is missing so labour is not sent to work that cannot start",
-          "use engineering/process/certification changes as a trigger for qualification-gap and retraining readiness review",
-          "future controlled write candidates exist through xTend, but all production, labour-time, user/security, material and equipment/control writes remain disabled until a separate authorised write-roundtrip programme"
-        ],
-        "customerValue": [
-          "labour-cost reduction",
-          "payroll accuracy",
-          "overtime reduction",
-          "scheduling efficiency",
-          "agency-labour reduction",
-          "compliance",
-          "skills deployment",
-          "production throughput",
-          "downtime reduction",
-          "inventory/logistics improvements",
-          "faster implementation",
-          "reduced administration",
-          "improved forecasting",
-          "finance attribution",
-          "executive reporting"
-        ],
-        "savingsHypotheses": [
-          "reduce avoidable overtime and agency demand by finding skill-constrained production coverage gaps before work reaches the line",
-          "reduce paid idle time and throughput loss by redeploying appropriately qualified labour when WIP/resource conditions change",
-          "reduce qualification-related production delays by joining operation certification requirements to current WFM worker readiness before assignment",
-          "reduce labour-cost reconciliation effort by linking WIP/touch-time/production evidence to WFM time, shift and cost records without treating MES touch time as payroll truth",
-          "reduce wasted labour dispatch when materials, tooling or other required resources are not production-ready",
-          "reduce bespoke implementation effort by reusing the existing HTTP RPC/JSON operation-gating pattern and file-batch ingestion rather than creating a FactoryLogix-specific transport stack"
-        ],
-        "dataGaps": [
-          "FactoryLogix is not normally authoritative for employment contract, leave/absence, payable time, payroll rules, agency commercials or full workforce availability",
-          "FactoryLogix certification data may be authoritative for shop-floor process gating but does not automatically represent every legal, regulated or customer-defined WFM qualification; mapping authority must be explicit",
-          "public documentation does not establish a universal pagination, rate-limit or incremental-change contract for all xTend read methods; each approved method requires tenant/version proof",
-          "available xTend services depend on licences/version/deployment and customer role permissions; method availability must be discovered rather than assumed",
-          "multi-site deployments can use different database connections, customer associations, custom fields, process/resource identifiers and regional operating models that require versioned customer-specific mappings",
-          "xStream export content and cadence depend on the configured report/export; file completeness and freshness must be proven before real-time workforce decisions"
-        ],
-        "constraintsRisks": [
-          "the public xTend getting-started contract shows cleartext HTTP on port 6063; this is an evidence blocker, not an acceptable production WFM transport",
-          "xTend sessions are created with reusable FactoryLogix credentials and session identifiers; secrets/session IDs must remain executor-bound, encrypted in transit, rotated according to customer policy and absent from logs/evidence",
-          "the same API has read and mutative methods, including security and labour-time mutation; HTTP verb alone cannot classify authority and only reviewed read method IDs may be called",
-          "FactoryLogix customer access can be unexpectedly broad when no users/groups are associated with a customer; explicit customer/site scope proof is required before tenant evidence",
-          "Aegis supports SaaS, cloud, hybrid and on-prem deployments but the documented xTend service is server-oriented; endpoint topology and safe customer-edge placement must be discovered per deployment",
-          "equipment connectivity, CFX/xLink and factory automation capabilities are separate high-authority surfaces and must not be inherited by the WFM connector",
-          "intermittent plant connectivity, duplicate WIP/events, late file exports and schema/version drift must fail to stale/advisory mode rather than silently producing complete-looking staffing decisions"
-        ],
-        "nextDevelopmentAction": "Reuse the existing HTTP RPC/JSON and files-SFTP adapters. In an authorised non-production/customer environment, first prove an encrypted customer-edge route and a dedicated FactoryLogix technical user with explicitly reviewed read-only effective permissions and constrained customer/site/database scope; otherwise use a customer-controlled xStream one-way export. For xTend, inventory the exact installed-version service/method catalogue, allowlist only non-mutative read methods, prove attempted mutative methods fail, then validate method-specific paging/rate behaviour, session expiry/reconnect, multi-database/site identity, custom fields, schema fingerprints, stable-ID deduplication and WIP/touch-time/certification mappings. Do not call production, labour-time, user/security, material, equipment or automation mutations."
+        "evidenceUrl": "https://docs.aiscorp.com/en/factorylogix-learning/FL/op/xtend-in-the-factorylogix-integration-landscape",
+        "evidenceNote": "Aegis documents FactoryLogix xTend as a direct integration API and xStream as a one-way automated export path. The xTend REST interface exposes JSON and XML/POX service/method URLs, establishes a session with FactoryLogix credentials and a database connection, then requires the returned sessionId on subsequent calls. FactoryLogix roles have individually configurable permissions, while xTend includes mutative methods such as deleting users and recording indirect touch time; HTTP method or session success therefore does not prove read-only authority. FactoryLogix also models factories/areas/lines/workstations, WIP tracking and touch time, operation resource restrictions, cycle/setup times, material/resource context and operation certification restrictions that validate operators against required current certifications. Customer Library access can be broad if no users/groups are associated with a customer, so customer/site scope must be explicitly proven. The same platform can connect equipment/automation; WFM deliberately consumes only the enterprise/read projection and does not inherit CFX/xLink, equipment, robot or control authority.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.aiscorp.com/solutions/integration",
+          "requiredPermissions": [
+            "customer-edge only: no direct cloud scan or direct connection to an on-prem FactoryLogix xTend service",
+            "prefer one-way xStream/export where it supplies the approved dataset; validate checksums, schema, source timestamps and idempotent file ingestion",
+            "for xTend, dedicated non-admin FactoryLogix technical user with only the minimum effective read permissions required for approved services/methods",
+            "explicit reviewed allowlist of read-only xTend service/method identifiers; deny production mutation, user/security administration, process/product editing, material movement, equipment/automation actions and all other mutative methods",
+            "explicit factory/site/customer/database-connection binding; customer access must be constrained rather than relying on the permissive no-association default",
+            "TLS-protected customer edge, reverse proxy or equivalent encrypted transport before FactoryLogix credentials/session identifiers can be presented",
+            "no direct SQL integration: Aegis recommends xTend rather than bypassing FactoryLogix business logic"
+          ],
+          "dataAvailableOrExpected": [
+            "factory hierarchy including factories, areas, lines, workstations/clusters and resource/location identifiers",
+            "production batches/orders, WIP state, operations/routing context, start/finish/touch-time evidence and production status",
+            "operation estimated cycle time, setup time, resource restrictions and workstation/resource requirements",
+            "operator/user references and operation certification restrictions, including the requirement that operator certifications be valid before an operation proceeds",
+            "material, stock/resource, tooling/consumable and manufacturing-readiness context where exposed by the customer's approved projection",
+            "quality/inspection/non-conformance and traceability context where exposed by approved read services or xStream reports",
+            "machine/equipment and production context only through a governed FactoryLogix read projection; no direct CFX/xLink/PLC control path"
+          ],
+          "wfmObjects": [
+            "site",
+            "work-centre",
+            "production-demand",
+            "production-event",
+            "labour-requirement",
+            "worker-activity-context",
+            "qualification-requirement",
+            "skill-demand",
+            "inventory-readiness",
+            "quality-event",
+            "disruption-event",
+            "shift-outcome",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "compare planned/active FactoryLogix operations with WFM availability and verified qualifications to surface skill-constrained production risk before the shift starts",
+            "recommend qualified redeployment between lines/workstations when WIP, resource or disruption state changes, without changing FactoryLogix execution state",
+            "forecast overtime or agency-labour pressure from production backlog, cycle/setup expectations and the number of currently eligible workers",
+            "reconcile payable attendance with FactoryLogix operation/touch-time evidence to identify paid-but-nonproductive time and labour-to-order/unit cost, while keeping WFM/payroll authoritative for payable time",
+            "hold or reroute staffing recommendations when required material/tool/resource readiness is missing so labour is not sent to work that cannot start",
+            "use engineering/process/certification changes as a trigger for qualification-gap and retraining readiness review",
+            "future controlled write candidates exist through xTend, but all production, labour-time, user/security, material and equipment/control writes remain disabled until a separate authorised write-roundtrip programme"
+          ],
+          "customerValue": [
+            "labour-cost reduction",
+            "payroll accuracy",
+            "overtime reduction",
+            "scheduling efficiency",
+            "agency-labour reduction",
+            "compliance",
+            "skills deployment",
+            "production throughput",
+            "downtime reduction",
+            "inventory/logistics improvements",
+            "faster implementation",
+            "reduced administration",
+            "improved forecasting",
+            "finance attribution",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce avoidable overtime and agency demand by finding skill-constrained production coverage gaps before work reaches the line",
+            "reduce paid idle time and throughput loss by redeploying appropriately qualified labour when WIP/resource conditions change",
+            "reduce qualification-related production delays by joining operation certification requirements to current WFM worker readiness before assignment",
+            "reduce labour-cost reconciliation effort by linking WIP/touch-time/production evidence to WFM time, shift and cost records without treating MES touch time as payroll truth",
+            "reduce wasted labour dispatch when materials, tooling or other required resources are not production-ready",
+            "reduce bespoke implementation effort by reusing the existing HTTP RPC/JSON operation-gating pattern and file-batch ingestion rather than creating a FactoryLogix-specific transport stack"
+          ],
+          "dataGaps": [
+            "FactoryLogix is not normally authoritative for employment contract, leave/absence, payable time, payroll rules, agency commercials or full workforce availability",
+            "FactoryLogix certification data may be authoritative for shop-floor process gating but does not automatically represent every legal, regulated or customer-defined WFM qualification; mapping authority must be explicit",
+            "public documentation does not establish a universal pagination, rate-limit or incremental-change contract for all xTend read methods; each approved method requires tenant/version proof",
+            "available xTend services depend on licences/version/deployment and customer role permissions; method availability must be discovered rather than assumed",
+            "multi-site deployments can use different database connections, customer associations, custom fields, process/resource identifiers and regional operating models that require versioned customer-specific mappings",
+            "xStream export content and cadence depend on the configured report/export; file completeness and freshness must be proven before real-time workforce decisions"
+          ],
+          "constraintsRisks": [
+            "the public xTend getting-started contract shows cleartext HTTP on port 6063; this is an evidence blocker, not an acceptable production WFM transport",
+            "xTend sessions are created with reusable FactoryLogix credentials and session identifiers; secrets/session IDs must remain executor-bound, encrypted in transit, rotated according to customer policy and absent from logs/evidence",
+            "the same API has read and mutative methods, including security and labour-time mutation; HTTP verb alone cannot classify authority and only reviewed read method IDs may be called",
+            "FactoryLogix customer access can be unexpectedly broad when no users/groups are associated with a customer; explicit customer/site scope proof is required before tenant evidence",
+            "Aegis supports SaaS, cloud, hybrid and on-prem deployments but the documented xTend service is server-oriented; endpoint topology and safe customer-edge placement must be discovered per deployment",
+            "equipment connectivity, CFX/xLink and factory automation capabilities are separate high-authority surfaces and must not be inherited by the WFM connector",
+            "intermittent plant connectivity, duplicate WIP/events, late file exports and schema/version drift must fail to stale/advisory mode rather than silently producing complete-looking staffing decisions"
+          ],
+          "nextDevelopmentAction": "Reuse the existing HTTP RPC/JSON and files-SFTP adapters. In an authorised non-production/customer environment, first prove an encrypted customer-edge route and a dedicated FactoryLogix technical user with explicitly reviewed read-only effective permissions and constrained customer/site/database scope; otherwise use a customer-controlled xStream one-way export. For xTend, inventory the exact installed-version service/method catalogue, allowlist only non-mutative read methods, prove attempted mutative methods fail, then validate method-specific paging/rate behaviour, session expiry/reconnect, multi-database/site identity, custom fields, schema fingerprints, stable-ID deduplication and WIP/touch-time/certification mappings. Do not call production, labour-time, user/security, material, equipment or automation mutations."
+        }
       }
     }
-  ]
+  ],
+  "systems": []
 }
