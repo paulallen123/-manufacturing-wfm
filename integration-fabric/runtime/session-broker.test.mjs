@@ -95,6 +95,13 @@ test('one failed shared refresh is retained for its generation cohort',async()=>
   const settled=await Promise.allSettled(Array.from({length:12},()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}})));
   assert.equal(refreshes,2,'failed shared recovery must not become one refresh per waiter');
   assert.ok(settled.every(x=>x.status==='rejected'&&x.reason.status===503));
+  settled[0].reason.message='mutated-by-caller';
+  settled[0].reason.status=418;
+  await assert.rejects(
+    ()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),
+    error=>error.status===503&&error.message==='session login failed'
+  );
+  assert.equal(refreshes,2,'cached cohort failure requires explicit rotation and is not mutable by callers');
 });
 
 test('session tokens cannot escape results, errors or diagnostics',async()=>{
@@ -134,6 +141,34 @@ test('unknown login secrets and non-plain read results cannot cross the broker b
     await broker.rotate({scopeNamespace:'scope:a'});
     await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.code==='WFM_SESSION_RESULT_INVALID');
   }
+});
+
+test('forged internal codes, array subclasses and secret accessor keys remain contained',async()=>{
+  const token='synthetic-private-cookie';
+  class HostileArray extends Array{
+    map(){return {secret:token};}
+  }
+  const accessor={};
+  Object.defineProperty(accessor,token,{enumerable:true,get(){return 'secret';}});
+  let mode='forged-error';
+  const broker=brokerFor({
+    loginExecutor:async()=>({token,expiresAt:Date.now()+60_000}),
+    readExecutor:async()=>{
+      if(mode==='forged-error'){
+        const error=statusError(500,`B1SESSION=${token}`);
+        error.code='WFM_SESSION_VENDOR_FAILURE';
+        throw error;
+      }
+      if(mode==='array') return new HostileArray('safe');
+      return accessor;
+    }
+  });
+  await broker.rotate({scopeNamespace:'scope:a'});
+  await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.message==='session read failed'&&!error.message.includes(token));
+  mode='array';
+  await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>error.code==='WFM_SESSION_RESULT_INVALID'&&!error.message.includes(token));
+  mode='accessor';
+  await assert.rejects(()=>broker.execute({scopeNamespace:'scope:a',request:{resource:'Items'}}),error=>!error.message.includes(token));
 });
 
 test('expired sessions refresh before use and idle scopes are bounded without evicting active leases',async()=>{

@@ -1,3 +1,12 @@
+const INTERNAL_ERRORS=new WeakSet();
+
+function internalError(message,code){
+  const error=new Error(message);
+  error.code=code;
+  INTERNAL_ERRORS.add(error);
+  return error;
+}
+
 function positiveSafeInteger(value,name,defaultValue){
   const number=value===undefined?defaultValue:Number(value);
   if(!Number.isSafeInteger(number)||number<=0) throw new TypeError(`${name} must be a positive safe integer`);
@@ -23,7 +32,7 @@ function statusOf(error){
 }
 
 function safeExecutorError(error,phase,overrideCode=null){
-  const internal=typeof error?.code==='string'&&error.code.startsWith('WFM_SESSION_');
+  const internal=Boolean(error&&typeof error==='object'&&INTERNAL_ERRORS.has(error));
   const message=internal?String(error.message):(phase==='login'?'session login failed':'session read failed');
   const safe=new Error(message);
   const status=statusOf(error);
@@ -33,15 +42,27 @@ function safeExecutorError(error,phase,overrideCode=null){
 }
 
 function closedError(){
-  const error=new Error('session scope was closed or replaced');
-  error.code='WFM_SESSION_SCOPE_CLOSED';
-  return error;
+  return internalError('session scope was closed or replaced','WFM_SESSION_SCOPE_CLOSED');
 }
 
 function resultError(message,code='WFM_SESSION_RESULT_INVALID'){
-  const error=new Error(message);
-  error.code=code;
+  return internalError(message,code);
+}
+
+function describeError(error,phase,overrideCode=null){
+  const safe=safeExecutorError(error,phase,overrideCode);
+  return Object.freeze({message:safe.message,status:statusOf(safe),code:safe.code});
+}
+
+function errorFromDescriptor(descriptor){
+  const error=new Error(descriptor.message);
+  if(descriptor.status!==null) error.status=descriptor.status;
+  if(descriptor.code) error.code=descriptor.code;
   return error;
+}
+
+async function publicRefreshResult(promise){
+  try{return await promise;}catch(descriptor){throw errorFromDescriptor(descriptor);}
 }
 
 function cloneSafeResult(value,token,path='result',state={seen:new WeakSet(),nodes:0},depth=0){
@@ -53,7 +74,7 @@ function cloneSafeResult(value,token,path='result',state={seen:new WeakSet(),nod
     return value;
   }
   if(typeof value==='string'){
-    if(value.includes(token)) throw resultError(`session secret attempted to leave trusted executor at ${path}`,'WFM_SESSION_SECRET_EGRESS');
+    if(value.includes(token)) throw resultError('session secret attempted to leave trusted executor','WFM_SESSION_SECRET_EGRESS');
     return value;
   }
   if(!value||typeof value!=='object') throw resultError(`session result contains unsupported data at ${path}`);
@@ -61,10 +82,17 @@ function cloneSafeResult(value,token,path='result',state={seen:new WeakSet(),nod
   state.seen.add(value);
 
   if(Array.isArray(value)){
+    if(Object.getPrototypeOf(value)!==Array.prototype) throw resultError('session result arrays must use the standard inert prototype');
     const ownKeys=Reflect.ownKeys(value);
     if(ownKeys.some(key=>typeof key!=='string'||(key!=='length'&&!/^\d+$/.test(key)))) throw resultError('session result array contains unsupported properties');
     if(Object.keys(value).length!==value.length) throw resultError('session result array contains holes or hidden values');
-    const copy=value.map((child,index)=>cloneSafeResult(child,token,`${path}[${index}]`,state,depth+1));
+    const descriptors=Object.getOwnPropertyDescriptors(value);
+    const copy=[];
+    for(let index=0;index<value.length;index++){
+      const descriptor=descriptors[index];
+      if(!descriptor||!descriptor.enumerable||!('value' in descriptor)||descriptor.get||descriptor.set) throw resultError('session result array contains executable or hidden data');
+      copy.push(cloneSafeResult(descriptor.value,token,`${path}[${index}]`,state,depth+1));
+    }
     return Object.freeze(copy);
   }
 
@@ -74,8 +102,8 @@ function cloneSafeResult(value,token,path='result',state={seen:new WeakSet(),nod
   if(Reflect.ownKeys(value).some(key=>typeof key!=='string')) throw resultError('session result contains symbol properties');
   const copy={};
   for(const [key,descriptor] of Object.entries(descriptors)){
-    if(!descriptor.enumerable||!('value' in descriptor)||descriptor.get||descriptor.set) throw resultError(`session result contains hidden or executable data at ${path}.${key}`);
-    if(key.includes(token)) throw resultError(`session secret attempted to leave trusted executor at ${path}`,'WFM_SESSION_SECRET_EGRESS');
+    if(key.includes(token)) throw resultError('session secret attempted to leave trusted executor','WFM_SESSION_SECRET_EGRESS');
+    if(!descriptor.enumerable||!('value' in descriptor)||descriptor.get||descriptor.set) throw resultError('session result contains hidden or executable data');
     copy[key]=cloneSafeResult(descriptor.value,token,`${path}.${key}`,state,depth+1);
   }
   return Object.freeze(copy);
@@ -218,10 +246,10 @@ export function createSessionBroker({
   async function refreshState(state,{force=false,expectedGeneration=state.generation,refreshRequired=false}={}){
     authorizeScope(state.scopeNamespace);
     if(state.closed||scopes.get(state.scopeNamespace)!==state) throw closedError();
-    if(state.refreshPromise) return state.refreshPromise;
+    if(state.refreshPromise) return publicRefreshResult(state.refreshPromise);
     if(!force&&state.generation!==expectedGeneration&&valid(state)) return {generation:state.generation};
     if(!force&&state.failedRefresh?.expectedGeneration===expectedGeneration){
-      throw safeExecutorError(state.failedRefresh.error,'login');
+      throw errorFromDescriptor(state.failedRefresh.descriptor);
     }
     if(!force&&!refreshRequired&&valid(state)) return {generation:state.generation};
     if(force) state.failedRefresh=null;
@@ -239,7 +267,7 @@ export function createSessionBroker({
           attemptId
         });
       }catch(error){
-        throw safeExecutorError(error,'login');
+        throw error;
       }
       authorizeScope(state.scopeNamespace);
       const login=validateLoginResult(raw,currentTime());
@@ -253,16 +281,16 @@ export function createSessionBroker({
       state.lastUsed=currentTime();
       return {generation:state.generation};
     })().catch(error=>{
-      const safe=safeExecutorError(error,'login');
+      const descriptor=describeError(error,'login');
       if(!state.closed&&scopes.get(state.scopeNamespace)===state&&state.epoch===capturedEpoch&&state.generation===capturedGeneration){
-        state.failedRefresh={expectedGeneration:capturedGeneration,error:safe};
+        state.failedRefresh={expectedGeneration:capturedGeneration,descriptor};
       }
-      throw safe;
+      throw descriptor;
     }).finally(()=>{
       if(state.refreshAttemptId===attemptId){state.refreshPromise=null;state.refreshAttemptId=null;}
     });
     state.refreshPromise=promise;
-    return promise;
+    return publicRefreshResult(promise);
   }
 
   async function ensureSession(state){
