@@ -474,6 +474,58 @@ try {
     await context.close();
   }
 
+  const sectionPack = [];
+  {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const page = await context.newPage();
+    await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    const loginStatus = await page.evaluate(async ({ password }) => {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'manager@northstar.example', password })
+      });
+      return response.status;
+    }, { password });
+    assert.equal(loginStatus, 200, 'Manager section-pack login failed.');
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+    await page.waitForTimeout(1200);
+
+    const labels = ['Today', 'People', 'Plan', 'Factory', 'Improve'];
+    for (let i = 0; i < labels.length; i += 1) {
+      const nav = page.locator('.vector-nav-item').nth(i);
+      assert.equal(await nav.count(), 1, `Missing canonical nav item ${labels[i]}.`);
+      if ((await nav.getAttribute('aria-current')) !== 'page') {
+        await nav.click({ timeout: 5000 });
+        await page.waitForTimeout(800);
+      }
+      if (labels[i] === 'Today') {
+        await page.waitForTimeout(800);
+      }
+      const shot = await page.screenshot({ type: 'jpeg', quality: 52, fullPage: false });
+      assert.ok(shot.length > 10000, `${labels[i]} section screenshot too small.`);
+      sectionPack.push({
+        label: labels[i],
+        bytes: shot.length,
+        sha256: crypto.createHash('sha256').update(shot).digest('hex'),
+        base64: shot.toString('base64')
+      });
+    }
+    await context.close();
+  }
+
+  console.log(`CURRENT_MANAGER_SECTION_SCREEN_PACK=PASS|screens=${sectionPack.length}|labels=${sectionPack.map(item => item.label).join(',')}`);
+  for (const item of sectionPack) {
+    const encoded = item.base64;
+    const chunkSize = 24000;
+    const chunks = Math.ceil(encoded.length / chunkSize);
+    console.log(`CURRENT_MANAGER_SECTION_SCREEN_META|${item.label}|bytes=${item.bytes}|sha=${item.sha256}|chunks=${chunks}`);
+    for (let i = 0; i < chunks; i += 1) {
+      console.log(`CURRENT_MANAGER_SECTION_SCREEN_B64_CHUNK|${item.label}|${i + 1}|${chunks}|${encoded.slice(i * chunkSize, (i + 1) * chunkSize)}`);
+    }
+  }
+
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
   assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
