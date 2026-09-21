@@ -110,6 +110,9 @@
     if (!LF.bootstrap && !(await leaveRefresh())) throw Error('Current leave evidence could not be loaded.');
     const owner = ownerKey(), date = String(input?.date || ''), hoursRequested = Number(input?.hours);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(hoursRequested) || hoursRequested < 0.5 || hoursRequested > 12) throw Error('Choose a valid date and 0.5–12 scheduled hours.');
+    const beforeLeave = LF.personal?.leave, requestedMinutes = Math.round(hoursRequested * 60);
+    if (!Number.isFinite(Number(beforeLeave?.availableMinutes)) || !Number.isFinite(Number(beforeLeave?.pendingMinutes))) throw Error('Current leave balance evidence is unavailable. Refresh before requesting leave.');
+    LF.receipt = null;
     LF.busy = true;
     try {
       const response = await request('/api/personal/work', 'POST', {
@@ -118,7 +121,10 @@
       if (response?.ok !== true || !response.result?.id || response.result.status !== 'pending') throw Error('The service did not confirm a saved leave request.');
       if (!(await leaveRefresh()) || owner !== ownerKey()) throw Error('The account changed before the leave request could be read back.');
       const saved = leaveRequests().find(item => item.id === response.result.id);
-      if (saved?.status !== 'pending' || !LF.personal?.leave) throw Error('The leave request was accepted but its saved balance and status were not confirmed.');
+      const afterLeave = LF.personal?.leave;
+      const requestMatches = saved?.status === 'pending' && saved.employee === actor()?.personId && saved.date === date && Number(saved.hours) === hoursRequested;
+      const reservationMatches = Number(afterLeave?.availableMinutes) === Number(beforeLeave.availableMinutes) - requestedMinutes && Number(afterLeave?.pendingMinutes) === Number(beforeLeave.pendingMinutes) + requestedMinutes;
+      if (!requestMatches || !reservationMatches) throw Error('The leave request was accepted but its saved balance and request details were not confirmed.');
       LF.receipt = { action: 'leave-request', id: saved.id, status: saved.status, version: response.version };
       toast('Leave request saved and read back from the service.');
       return response.result;

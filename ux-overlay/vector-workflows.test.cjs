@@ -126,6 +126,26 @@ test('Vector workflow controller uses real authentication, saved checks and rest
   });
   const leaveEmployee = await client('maya@northstar.example');
   let leaveRequestId, leaveDate, leaveAvailableBefore;
+  await t.test('leave request cannot show success when the saved balance was not reserved', async () => {
+    const uncertain = await client('maya@northstar.example');
+    await uncertain.workflow.leaveRefresh();
+    const before = uncertain.workflow.leaveState();
+    const date = before.personal.shifts[2].start.slice(0, 10);
+    const original = uncertain.context.request;
+    let accepted = false;
+    uncertain.context.request = async (url, method, payload) => {
+      if (url === '/api/personal/work') {
+        accepted = true;
+        return { ok: true, version: before.bootstrap.state.version + 1, result: { id: 'leave-unreserved', status: 'pending' } };
+      }
+      const response = await original(url, method, payload);
+      if (accepted && url === '/api/bootstrap') response.state.requests.push({ id: 'leave-unreserved', employee: before.bootstrap.actor.personId, date, hours: 7.5, status: 'pending' });
+      if (accepted && url === '/api/personal') response.leave = structuredClone(before.personal.leave);
+      return response;
+    };
+    await assert.rejects(() => uncertain.workflow.leaveRequest({ date, hours: 7.5 }), /saved balance and request details were not confirmed/);
+    assert.equal(uncertain.workflow.leaveState().receipt, null);
+  });
   await t.test('employee leave route saves a real request and reads back reserved balance', async () => {
     await leaveEmployee.workflow.leaveRefresh();
     const before = leaveEmployee.workflow.leaveState();
@@ -141,9 +161,8 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.doesNotMatch(leaveEmployee.workflow.leavePage(), /workflow preview|demo does not certify/i);
   });
   await t.test('employee leave route surfaces authoritative overlap refusal without a false receipt', async () => {
-    const priorReceipt = leaveEmployee.workflow.leaveState().receipt;
     await assert.rejects(() => leaveEmployee.workflow.leaveRequest({ date: leaveDate, hours: 7.5 }), error => error.status === 409);
-    assert.deepEqual(leaveEmployee.workflow.leaveState().receipt, priorReceipt);
+    assert.equal(leaveEmployee.workflow.leaveState().receipt, null);
     assert.equal(leaveEmployee.workflow.leaveState().bootstrap.state.requests.filter(request => request.id === leaveRequestId).length, 1);
   });
   await t.test('manager leave route renders source request and saves an authorised decision', async () => {
