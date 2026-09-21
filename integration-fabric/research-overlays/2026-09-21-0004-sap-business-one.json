@@ -115,7 +115,7 @@
         ],
         "reconciliation": "Bind sessions and checkpoints to the full WFM tenant/connection/origin/company/principal/credential-version/API scope. Never advance on a partial chain. Expiry, affinity loss, route change or failover replays from the last committed checkpoint with overlap and stable-ID dedupe; absence becomes deletion evidence only after a proven complete authoritative snapshot and governed reconciliation.",
         "schemaDrift": "Fetch and fingerprint company-scoped v2 $metadata. Additive approved fields retain extension provenance; type, removal, unit, sensitivity or identifier changes quarantine the dataset until reviewed.",
-        "retriesReconnect": "The built authority decision permits one bounded 401 recovery and forces uncommitted-page replay; repeated 401 and 403 stop while 429/5xx/network failures back off. A production executor still requires a separately implemented and tested single-flight, generation-aware session broker so concurrent or stale failures cannot invalidate a newer session.",
+        "retriesReconnect": "The built in-memory session broker shares one generation-fenced refresh across concurrent 401 failures, prevents stale failures replacing a newer session, permits one recovery read, fences late login completion after scope closure, and keeps 403/429/5xx outside credential refresh. Failed refreshes remain closed for that generation until explicit rotation. Durable restart and multi-process coordination remain topology-specific and unproven.",
         "evidenceUrl": "https://help.sap.com/doc/056f69366b5345a386bb8149f1700c19/10.0/en-US/Service%20Layer%20API%20Reference.html",
         "evidenceNote": "SAP documentation establishes Service Layer OData v3/v4 routes, company/user login, mandatory B1SESSION, optional ROUTEID affinity, session timeout, metadata including company-specific user-defined extensions, entity reads, paging and extensive mutation/action surfaces. No sandbox or customer tenant was authenticated, no effective permissions were observed and no live read round-trip was performed.",
         "securityEvidenceBlockers": [
@@ -135,7 +135,7 @@
           ]
         },
         "causalOutcomeReadiness": "Preserve connection, server instance, company, API version, source key, schema fingerprint and source/effective/observation/ingestion timestamps plus recommendation/action identifiers, baseline/outcome windows and competing material, schedule, machine, quality and finance changes.",
-        "nextBuildAction": "Implement and test the single-flight generation-aware session broker, then use an authorised SAP Business One test environment to prove exact host/company/principal scope, dedicated read permissions and denied writes/actions/SQLQueries; run real v2 metadata and paginated reads, session expiry/rotation, ROUTEID change, multi-company collision, UDF drift, 401/403/429/5xx recovery and complete-snapshot reconciliation."
+        "nextBuildAction": "Use an authorised SAP Business One test environment to prove exact host/company/principal scope, dedicated read permissions and denied writes/actions/SQLQueries; run real v2 metadata and paginated reads, session expiry/rotation, ROUTEID change, multi-company collision, UDF drift, 401/403/429/5xx recovery and complete-snapshot reconciliation. Validate whether each horizontally scaled worker may hold an independent provider session or requires a distributed session coordinator."
       }
     }
   ],
