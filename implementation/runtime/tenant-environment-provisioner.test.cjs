@@ -5,6 +5,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { spawn } = require('node:child_process');
+const { DatabaseSync } = require('node:sqlite');
 const { createTenantEnvironmentProvisioner } = require('./tenant-environment-provisioner.cjs');
 
 test('scope submission provisions an isolated persisted tenant environment idempotently', () => {
@@ -64,6 +66,38 @@ test('a different tenant receives a different namespace and cannot read another 
     assert.equal(provisioner.statusForTenant('missing'), null);
   } finally {
     provisioner.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('simultaneous provisioners serialize idempotent creation', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-tenant-race-'));
+  const dbPath = path.join(root, 'wfm.sqlite');
+  const modulePath = path.join(__dirname, 'tenant-environment-provisioner.cjs');
+  const worker = [
+    "const {createTenantEnvironmentProvisioner}=require(process.argv[1]);",
+    "const p=createTenantEnvironmentProvisioner({dbPath:process.argv[2]});",
+    "const scope={companyName:'Factory',employeeCount:10,countries:['UK'],sites:['Plant'],sourceSystems:[],features:[],workPatterns:[],clockingMethods:[]};",
+    "p.provision({tenant:'alpha',runId:'run-1',scope});p.close();"
+  ].join('');
+
+  function runWorker() {
+    return new Promise((resolve, reject) => {
+      const child = spawn(process.execPath, ['-e', worker, modulePath, dbPath], { stdio: ['ignore', 'ignore', 'pipe'] });
+      let stderr = '';
+      child.stderr.on('data', chunk => { stderr += chunk; });
+      child.on('error', reject);
+      child.on('exit', code => code === 0 ? resolve() : reject(new Error(stderr || 'worker exited ' + code)));
+    });
+  }
+
+  try {
+    await Promise.all([runWorker(), runWorker()]);
+    const db = new DatabaseSync(dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM tenant_environments WHERE tenant=?').get('alpha').count, 1);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM tenant_environment_events WHERE tenant=?').get('alpha').count, 1);
+    db.close();
+  } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
