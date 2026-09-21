@@ -36,6 +36,7 @@ const newAssertion = String.raw`   const overlapStarted = Date.now();
    await capture(employee.page,'leave-'+run+'-overlap-warning');`;
 journey = replaceExactly(journey, oldAssertion, newAssertion);
 journey = replaceExactly(journey, String.raw`await employee.page.locator('#modalform [data-act="close"]').click();`, String.raw`await employee.page.locator('#modalform').getByRole('button',{name:'Cancel',exact:true}).click();`);
+journey = replaceExactly(journey, "await manager.page.locator('.vw-receipt').waitFor();", String.raw`await manager.page.locator('.vw-receipt').filter({hasText:' · leave-decision · '+id+' · declined · version '}).waitFor();console.log(JSON.stringify({event:'VECTOR_MANAGER_RECEIPT_BOUND',run,id,decision:'declined'}));`);
 const originalCapture = String.raw`async function capture(page,name){const bytes=await page.screenshot({path:out+'/'+name+'.png',fullPage:true});state.artifacts.push({file:name+'.png',sha256:digest(bytes),bytes:bytes.length});}`;
 const observedCapture = originalCapture.slice(0,-1) + String.raw`
  if(name==='manager-today'){
@@ -53,5 +54,5 @@ const insertion = String.raw` state.scope='Exact deployed fixture UI with two le
  state.testResult='PASS';`;
 diagnostic = replaceExactly(diagnostic, " state.testResult='PASS';", insertion);
 process.env.WFM_BROWSER_PATCHED_JOURNEY = journey;
-console.log(JSON.stringify({event:'VECTOR_FEEDBACK_PROOF_V4_PRIVATE',originalJourneySha256:'36d996c04079c1d6dd5ef33356972f2dc5bc56fabdbcae0c4531f067f9d0fdbc',patchedJourneySha256:hash(journey),patchedDiagnosticSha256:hash(diagnostic),applicationChanged:false}));
+console.log(JSON.stringify({event:'VECTOR_FEEDBACK_PROOF_V4_PRIVATE_BOUND',originalJourneySha256:'36d996c04079c1d6dd5ef33356972f2dc5bc56fabdbcae0c4531f067f9d0fdbc',patchedJourneySha256:hash(journey),patchedDiagnosticSha256:hash(diagnostic),applicationChanged:false}));
 import('data:text/javascript;base64,'+Buffer.from(diagnostic).toString('base64')).catch(()=>{console.error('BROWSER_DIAGNOSTIC_BOOT_FAILED');process.exitCode=1;});
