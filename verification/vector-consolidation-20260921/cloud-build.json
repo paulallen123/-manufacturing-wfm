@@ -1,0 +1,30 @@
+{
+  "status": "BUILT",
+  "applicationCommit": "c056f34494986c9bf41736f61c98f59e74a84a44",
+  "applicationTree": "84b5eaf0633c330a37a48a143917d8c3b1ee6c07",
+  "proofCarrierCommit": "65fc59dadba377bce5fc68a88dc536261a5e68be",
+  "railwayBuildDeployment": "73fee096-f685-441d-900e-e13fde32ec07",
+  "railwayProofService": "845b5dcc-9c95-42cf-95fb-5719e96511f2",
+  "providerStatus": "SUCCESS",
+  "providerCompletedAt": "2026-09-21T02:06:16.928Z",
+  "node": "v22.23.2",
+  "dockerAdmission": true,
+  "sourceInterfaceContractTests": {"passed":40,"failed":0,"skipped":0},
+  "isolatedAuthenticatedEngineChecks":22,
+  "isolatedAttendanceIntegrityChecks":11,
+  "finalRuntimePayrollAcceptance":{
+    "passed":true,
+    "syntheticExportRows":172,
+    "syntheticExportSha256":"50593dff40fac1c864d3d403a4a3c60b7fe8ae329a8bdae8529937061ec22bb1",
+    "persistedAcrossProcessRestartAndFreshLogin":true
+  },
+  "assetSha256":{
+    "/vector-ui.js":"cc9b69b48b14b643e50cf6b44f6c601772eaa13a829cf3d4205e652ed8574377",
+    "/vector-ui.css":"db33e280854fe55927077a9f0ab85ea86eb9d34aa6aa049936ad46b88f558738",
+    "/vector-workflows.js":"a08138f821fdb292bddd231a81b9ae82de3daadffb41f78e65e9fcb94cadc458"
+  },
+  "deployedBrowserJourney":false,
+  "customerDatabaseDurability":false,
+  "mainProductDeploymentChanged":false,
+  "boundary":"Exact source Docker admission and isolated synthetic engine/SQLite proof only. Existing fixture service can be used for the next deployed verification step; this receipt does not authorise promotion of the older main database."
+}

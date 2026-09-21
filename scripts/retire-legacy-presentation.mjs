@@ -48,7 +48,7 @@ replaceRequired(
 replaceRequired(
   'payroll-intelligence-ui.js',
   'const pciOldPayrollReport=payrollReport;',
-  "const pciOldPayrollReport=typeof globalThis.payrollReport==='function'?globalThis.payrollReport:async()=>{};"
+  "const pciOldPayrollReport=globalThis.payrollReport;if(typeof pciOldPayrollReport!=='function')throw new Error('Vector payroll controller unavailable');"
 );
 replaceRequired(
   'payroll-intelligence-ui.js',
@@ -58,7 +58,7 @@ replaceRequired(
 replaceRequired(
   'payroll-intelligence-ui.js',
   'const pciOldPayrollPage=payrollPageV4;',
-  "const pciOldPayrollPage=typeof globalThis.payrollPageV4==='function'?globalThis.payrollPageV4:()=>'';"
+  "const pciOldPayrollPage=globalThis.payrollPageV4;if(typeof pciOldPayrollPage!=='function')throw new Error('Vector payroll presentation unavailable');"
 );
 replaceRequired(
   'payroll-intelligence-ui.js',

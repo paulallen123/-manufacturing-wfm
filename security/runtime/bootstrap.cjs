@@ -6,6 +6,8 @@ const { createHash, randomBytes, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
+const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
+const { serveRetiredPresentation } = require('./retired-presentation.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
@@ -30,6 +32,7 @@ function secureEqualHex(left, right) {
 }
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
 installHostedListenGuard(http, { hosted });
+const ownerAccessRecovery = createOwnerAccessRecovery();
 let guard = null;
 let integrationHub = null;
 let integrationHubInitError = null;
@@ -73,7 +76,8 @@ function uiPresentationPath(req) {
   return path === '/' ||
     path === '/index.html' ||
     path === '/vector-ui.css' ||
-    path === '/vector-ui.js';
+    path === '/vector-ui.js' ||
+    path === '/vector-workflows.js';
 }
 
 function forceVectorUiFreshness(req, res) {
@@ -85,12 +89,15 @@ function forceVectorUiFreshness(req, res) {
 }
 
 function serveCanonicalVectorAsset(req, res) {
+  if (serveRetiredPresentation(req, res)) return true;
   const path = requestPath(req);
   const asset = path === '/vector-ui.js'
     ? { file: '/app/public/vector-ui.js', type: 'text/javascript; charset=utf-8' }
     : path === '/vector-ui.css'
       ? { file: '/app/public/vector-ui.css', type: 'text/css; charset=utf-8' }
-      : null;
+      : path === '/vector-workflows.js'
+        ? { file: '/app/public/vector-workflows.js', type: 'text/javascript; charset=utf-8' }
+        : null;
   if (!asset) return false;
 
   const method = String(req.method || 'GET').toUpperCase();
@@ -324,6 +331,7 @@ http.createServer = function guardedCreateServer(listener) {
   return originalCreateServer.call(http, async (req, res) => {
     forceVectorUiFreshness(req, res);
     if (serveCanonicalVectorAsset(req, res)) return;
+    if (await ownerAccessRecovery.handleRequest(req, res)) return;
     if (handleStagingAccess(req, res)) return;
     restoreStagingSession(req, res);
 
@@ -363,3 +371,4 @@ http.createServer = function guardedCreateServer(listener) {
 };
 
 require('/app/server.cjs');
+

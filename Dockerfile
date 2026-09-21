@@ -2,10 +2,13 @@
 # against the exact candidate sources. Nothing from this stage is copied into runtime.
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS autonomy-proof
 WORKDIR /proof
-COPY resilience/ ./resilience/
-COPY scripts/ ./scripts/
-COPY .github/workflows/ ./.github/workflows/
-RUN rm -f scripts/validate-deployment.mjs \
+COPY . ./
+RUN node scripts/validate-deployment.mjs \
+ && node scripts/validate-vector-only-ui.mjs \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs \
+ && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
+ && cat /proof-vector-integrated/summary.json \
+ && rm -f scripts/validate-deployment.mjs \
  && node scripts/run-portable-autonomy-proof.mjs --strict-runtime
 
 # Customer-proof staging build: sealed 0.6.76 runtime
@@ -23,8 +26,10 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
  && tar -xzf /tmp/runtime.tgz -C /app \
  && rm -f /tmp/runtime.tgz
 COPY scripts/retire-legacy-presentation.mjs /tmp/retire-legacy-presentation.mjs
+COPY scripts/harden-attendance-integrity.mjs /tmp/harden-attendance-integrity.mjs
 RUN node /tmp/retire-legacy-presentation.mjs /app/public \
- && rm -f /tmp/retire-legacy-presentation.mjs
+ && node /tmp/harden-attendance-integrity.mjs /app/public \
+ && rm -f /tmp/retire-legacy-presentation.mjs /tmp/harden-attendance-integrity.mjs
 
 # Resource-side identity survival overlay. Keep the original sealed artifact intact and
 # add the defence overlay as a separately reviewable layer.
@@ -32,6 +37,8 @@ RUN mkdir -p /app/security-runtime
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
 COPY security/runtime/hosted-listen-guard.cjs /app/security-runtime/hosted-listen-guard.cjs
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
+COPY security/runtime/owner-access-recovery.cjs /app/security-runtime/owner-access-recovery.cjs
+COPY security/runtime/retired-presentation.cjs /app/security-runtime/retired-presentation.cjs
 
 # Autonomous integration fabric. The control plane is separately reviewable and
 # uses only Node built-ins plus the existing per-tenant SQLite runtime.
@@ -117,7 +124,9 @@ RUN WFM_PROOF_ONESHOT=true \
 # Retired shell entry points are physically removed from the runtime image, not hidden.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
 COPY scripts/compose-vector-presentation.mjs /tmp/compose-vector-presentation.mjs
-RUN node --check /app/security-runtime/bootstrap.cjs \
+COPY scripts/prove-vector-built-asset-provenance.mjs /tmp/prove-vector-built-asset-provenance.mjs
+RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
+ && node --check /app/security-runtime/bootstrap.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
  && printf '/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' > /app/public/vector-ui.css \
@@ -128,6 +137,9 @@ RUN node --check /app/security-runtime/bootstrap.cjs \
  && cat /tmp/wfm-implementation-ui/implementation-journey.css >> /app/public/vector-ui.css \
  && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/vector-ui.css \
  && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/vector-ui.css \
+ && cat /tmp/wfm-ux-overlay/vector-workflows.css >> /app/public/vector-ui.css \
+ && cp /tmp/wfm-ux-overlay/vector-workflows.js /app/public/vector-workflows.js \
+ && node --check /app/public/vector-workflows.js \
  && printf "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" > /app/public/vector-ui.js \
  && printf '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/vector-ui.js \
  && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/vector-ui.js \
@@ -137,16 +149,32 @@ RUN node --check /app/security-runtime/bootstrap.cjs \
  && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/vector-ui.js \
  && node --check /app/public/vector-ui.js \
  && node /tmp/compose-vector-presentation.mjs /app/public \
- && rm -f /app/public/factory-control-ui.css \
+ && rm -f /app/public/factory-control-ui.js /app/public/factory-control-ui.css \
           /app/public/value-cockpit-ui.js \
           /app/public/value-cockpit-ui.css \
           /app/public/review-ui.js \
           /app/public/review-ui.css \
           /app/public/ui-evolution.css \
           /app/public/vector-shell.js \
- && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS')" \
- && rm -f /tmp/compose-vector-presentation.mjs \
+ && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.js','factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS')" \
+ && mkdir -p /tmp/vector-provenance/learning /tmp/vector-provenance/implementation \
+ && cp -r /tmp/wfm-ux-overlay /tmp/vector-provenance/ux-overlay \
+ && cp -r /tmp/wfm-learning-ui /tmp/vector-provenance/learning/ui \
+ && cp -r /tmp/wfm-implementation-ui /tmp/vector-provenance/implementation/ui \
+ && node /tmp/prove-vector-built-asset-provenance.mjs /tmp/vector-provenance /app/public /tmp/vector-sealed-base.css \
+ && rm -rf /tmp/vector-provenance \
+ && rm -f /tmp/vector-sealed-base.css /tmp/prove-vector-built-asset-provenance.mjs /tmp/compose-vector-presentation.mjs \
  && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
+
+# Consequential attendance admission against the exact final runtime. Reject an
+# overlapping correction before mutation, then prove valid reconciliation/export.
+COPY verification/vector-repair-20260921/attendance-overlap-regression.mjs /tmp/wfm-attendance-tests/attendance-overlap-regression.mjs
+COPY verification/vector-repair-20260921/attendance-payroll-acceptance.mjs /tmp/wfm-attendance-tests/attendance-payroll-acceptance.mjs
+COPY verification/vector-repair-20260921/attendance-guardrails.test.cjs /tmp/wfm-attendance-tests/attendance-guardrails.test.cjs
+RUN WFM_RUNTIME=/app node --test /tmp/wfm-attendance-tests/attendance-guardrails.test.cjs \
+ && WFM_RUNTIME=/app node /tmp/wfm-attendance-tests/attendance-overlap-regression.mjs \
+ && WFM_RUNTIME=/app node /tmp/wfm-attendance-tests/attendance-payroll-acceptance.mjs \
+ && rm -rf /tmp/wfm-attendance-tests
 
 # The staged application is self-contained and uses Node built-ins only. Remove package
 # managers from the final runtime so npm-bundled libraries are not an exposed attack surface.

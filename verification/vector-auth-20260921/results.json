@@ -1,0 +1,27 @@
+{
+  "status": "BUILT",
+  "authenticationBaseline": "ab93677008026540208d82c8f449b03f190c9faa",
+  "publicationParent": "d0c843092a8a4c462ffbd109e78fbf997e372933",
+  "node": "v22.16.0",
+  "scope": "Local synthetic authentication modules with real SQLite state and injected email delivery; not the full application or actual provider delivery",
+  "consecutiveFinalRuns": 3,
+  "testsPerRun": 55,
+  "passedPerRun": 55,
+  "failedPerRun": 0,
+  "skippedPerRun": 0,
+  "exactPinnedRuntimeTested": false,
+  "dockerAdmission": false,
+  "deployedBrowserJourney": false,
+  "realEmailDelivery": false,
+  "liveDeploymentChanged": false,
+  "files": {
+    "security/runtime/identity-survival-guard.cjs": "a3a54088e6b6801cc04ecabd89c90e3506016480",
+    "security/runtime/owner-access-recovery.cjs": "78973bd96d96fc24835a884e7349c7cc6147fda4",
+    "security/runtime/identity-login-reentry.test.cjs": "62272a2f2502f5f71a23149efe32e3bc975083d2",
+    "security/runtime/email-signin.test.cjs": "f8310817f49877fdba313878b11522636fe7f613"
+  },
+  "unchangedOriginalTests": {
+    "security/runtime/identity-survival-guard.test.cjs": "fd62586802f5a21c71ad2d6452f13ac18d74cd1a",
+    "security/runtime/owner-access-recovery.test.cjs": "c4db2580af82c2e8c000bf6ab3244866d4bcbc8e"
+  }
+}

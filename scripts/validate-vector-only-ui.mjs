@@ -19,6 +19,10 @@ const forbiddenTokens=[
 const skipDirs=new Set(['.git','node_modules']);
 const tokenScanSkip=new Set([
   'scripts/validate-vector-only-ui.mjs',
+  // These immutable copies contain the checker's own banned-token dictionary.
+  // Only the checker files are exempt; all other snapshot files remain scanned.
+  '__security_hold_7b6f9d22e1__/scripts/validate-vector-only-ui.mjs',
+  '__security_hold_one_day_enterprise__/scripts/validate-vector-only-ui.mjs',
   '.github/workflows/vector-only-ui-guard.yml'
 ]);
 const textExt=new Set(['.js','.cjs','.mjs','.css','.html','.htm','.yml','.yaml','.json','.md','.txt']);
@@ -70,7 +74,7 @@ else {
   if(!vector.includes('VECTOR_ACTION_SOURCE_BOUND_V1')) violations.push({type:'missing-action-source-governance',path:'ux-overlay/vector-shell.js'});
   if(vector.includes("tone:i===0?'red':i<3?'amber':'blue'")) violations.push({type:'presentation-inferred-urgency',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes("tone:'blue',action:'Review',status:'Needs review'")) violations.push({type:'review-state-not-neutral',path:'ux-overlay/vector-shell.js'});
-  if(!vector.includes('Review source evidence before acting.')||!vector.includes('aria-label="Review ${esc(r.title)}"')) violations.push({type:'review-accessibility-contract-missing',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('Review source evidence before acting.')||!vector.includes('aria-label="${esc(action)} ${esc(r.title)}"')||!vector.includes('const action=actionAffordance(r)')) violations.push({type:'review-accessibility-contract-missing',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('data-vector-action-status="${esc(r.status)}"')||!vector.includes('· ${esc(r.status)}</small>')) violations.push({type:'action-lifecycle-not-visibly-rendered',path:'ux-overlay/vector-shell.js'});
   if(vector.includes('const risk=/gap|critical|short|risk|review|under/i')) violations.push({type:'planning-risk-inferred-from-copy',path:'ux-overlay/vector-shell.js'});
   if(vector.includes('width:risk?58')||vector.includes("width:[82,71,69,55][i]")) violations.push({type:'planning-width-invented',path:'ux-overlay/vector-shell.js'});
@@ -95,8 +99,8 @@ else {
   if(vector.includes('function actionRows(')||vector.includes('.vector-home-source .fcc-action')||vector.includes('.vector-home-source .ux-approved-decision-card')) violations.push({type:'action-state-derived-from-hidden-presentation',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('function structuredReviewRows(){')||!vector.includes("String(issue?.status||'').toLowerCase()==='open'")||!vector.includes("String(request?.status||'').toLowerCase()!=='pending'")) violations.push({type:'structured-action-source-contract-missing',path:'ux-overlay/vector-shell.js'});
   if(!vector.includes('if(employee())return [];')||!vector.includes('if(!tokens.size)return [];')) violations.push({type:'action-scope-fail-closed-missing',path:'ux-overlay/vector-shell.js'});
-  if(!vector.includes('const count=structuredReviewRows().length')) violations.push({type:'notification-count-not-source-bound',path:'ux-overlay/vector-shell.js'});
-  if(!vector.includes('data-vector-action-evidence="${ACTION_MARKER}"')||!vector.includes('No source-confirmed items need review.')) violations.push({type:'action-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('actionQueueGroups(structuredReviewRows()).needs.length')) violations.push({type:'notification-count-not-source-bound',path:'ux-overlay/vector-shell.js'});
+  if(!vector.includes('data-vector-action-evidence="${ACTION_MARKER}"')||!vector.includes('No source-confirmed items need your action.')) violations.push({type:'action-evidence-boundary-missing',path:'ux-overlay/vector-shell.js'});
 
   // Time Review must consume the authoritative read-only bridge once, validate the
   // shared contract, and preserve every uncovered local open item as neutral work.

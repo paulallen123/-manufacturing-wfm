@@ -1,0 +1,71 @@
+{
+  "date": "2026-09-21",
+  "owner": "Current Chat",
+  "status": "BUILT",
+  "scope": "Retained proof-source repair plus independently inspected hosted fixture evidence; not production acceptance",
+  "sourceRepair": {
+    "baselineCommit": "46aecd00c86dfc3f2cabfe2cca490770c77a56b9",
+    "preservedNewerCommit": "d0c843092a8a4c462ffbd109e78fbf997e372933",
+    "testCommit": "5b28350174576d53aade9a5f1ee44f1db96f9998",
+    "repairCommit": "5a8ef84c0e764f9cf2ed510c990f5f136988607d",
+    "sourceFile": "scripts/current-candidate-role-browser-proof.mjs",
+    "originalBlob": "e6dcfac288cdc2f0d104b25445110c83fda3a76d",
+    "originalBytes": 48116,
+    "repairedBlob": "0e8f527950e0e38a4eede3b948e5a853da448aeb",
+    "repairedSha256": "aba6b918233bcf2acfbbceacbf7502a1f69bf73e33b738d3c0b0634d287f81b0",
+    "testFile": "scripts/vector-overlap-feedback-wait.test.mjs",
+    "testBlob": "7cebbe98fcc906d8cdc8eec0a33121fe007735d4",
+    "testSha256": "c6ba4a9a189944659f01aa54b67e6bb12c564a90b65487aca13b36dea6986438",
+    "publishedBlobsReadBackAndMatched": true,
+    "change": "One executable wait now requires matching content as well as visibility. The exact existing regex, final innerText assertion and 10000ms timeout are retained. No fixed sleep, click replay or product mutation was added.",
+    "knownBoundary": "This retained script is not assumed to be the environment-held hosted journey. Its older navigation assumptions were not changed or exercised by this unit regression. It alone is not admission for the latest five-section interface."
+  },
+  "localRegression": {
+    "command": "PLAYWRIGHT_EXECUTABLE_PATH=/usr/bin/chromium node --test scripts/vector-overlap-feedback-wait.test.mjs",
+    "node": "v22.16.0",
+    "chromium": "144.0.7559.96",
+    "scope": "Exact assertion snippet in ten independent real-browser contexts with synthetic DOM input; not a Vector UI/API journey",
+    "red": {"cases": 10, "passedCases": 7, "failedCases": 3, "nodeReportedTestsIncludingParent": 11, "exitCode": 1},
+    "green": {"cases": 10, "passedCases": 10, "failedCases": 0, "nodeReportedTestsIncludingParent": 11, "skipped": 0, "exitCode": 0},
+    "repeat": {"cases": 10, "passedCases": 10, "failedCases": 0, "nodeReportedTestsIncludingParent": 11, "skipped": 0, "exitCode": 0},
+    "positiveCases": ["delayed text in visible empty box", "placeholder followed by feedback", "element replaced during render", "immediate matching feedback"],
+    "negativeCases": ["permanently blank", "unrelated error", "missing element", "hidden matching element", "matching text in hidden child", "matching text outside error element"],
+    "syntaxChecks": "Both changed JavaScript files passed node --check.",
+    "fullProjectSuite": "Not run: complete composed application/runtime checkout is unavailable locally and Node v22.16.0 is not the declared v22.23.2 admission version. No full-suite claim."
+  },
+  "hostedEvidenceObserved": {
+    "recordType": "Fields extracted from the connected Railway deployment logs, not a downloaded original proof archive",
+    "executedBy": "Existing separate foreground proof owner, whose active ownership was checked before writes; this continuation did not deploy or rerun it",
+    "proofDeployment": "3d1f231d-0ac3-48ce-b9f7-74bd775cecdb",
+    "proofRun": "d598a3b6-c349-4072-a513-1c4b19a57f34",
+    "checkedAt": "2026-09-21T07:52:38.285Z",
+    "candidateDeployment": "fc233864-76c8-4a26-a8a1-8379833746fb",
+    "candidateCommit": "ab93677008026540208d82c8f449b03f190c9faa",
+    "origin": "https://vector-ui-v2-candidate-production.up.railway.app",
+    "designReference": "VECTOR_FIVE_SECTION_2026_09_19",
+    "sectionsObserved": ["Today", "People", "Plan", "Factory", "Improve"],
+    "exactAssetsReportedMatched": ["/vector-ui.js", "/vector-ui.css", "/vector-workflows.js"],
+    "originalJourneySha256": "36d996c04079c1d6dd5ef33356972f2dc5bc56fabdbcae0c4531f067f9d0fdbc",
+    "patchedJourneySha256": "a13ac06653866c69613e2ed36be069b13381d947eec03c0eb844d56ac14b4bc4",
+    "patchedDiagnosticSha256": "e753f20ee2da194282ffaa92660fde796556006b861ae2a8402d763d93ad06b1",
+    "applicationChanged": false,
+    "result": "PASS",
+    "journeys": [
+      {"run": 1, "requestId": "r-1789977146963-15", "httpStatus": 409, "immediateFeedback": "", "settledFeedback": "Overlapping request already exists.", "feedbackElapsedMs": 353, "managerDecision": "declined", "freshLoginReadback": true, "entitlementRestored": true, "otherTenantWriteRejected": 404, "auditReferenceObserved": false},
+      {"run": 2, "requestId": "r-1789977152955-17", "httpStatus": 409, "immediateFeedback": "", "settledFeedback": "Overlapping request already exists.", "feedbackElapsedMs": 352, "managerDecision": "declined", "freshLoginReadback": true, "entitlementRestored": true, "otherTenantWriteRejected": 404, "auditReferenceObserved": false}
+    ],
+    "reportedChecks": ["employee request saved and reserved balance read", "duplicate refused without another saved request", "pending request retained after refresh", "other tenant cannot see or decide request", "manager decline saved and read back", "fresh employee login shows decline and original entitlement restored"],
+    "visualBoundary": "Rendered design labels and asset identity inspected in logs. This continuation did not download/review the full-resolution screenshot archive or conduct an independent visual design acceptance."
+  },
+  "ciAdmission": {
+    "commit": "5a8ef84c0e764f9cf2ed510c990f5f136988607d",
+    "runs": [
+      {"id": 35575232852, "name": "Verify sealed Vector runtime transform", "result": "failure", "recordedSteps": 0, "runnerId": 0},
+      {"id": 35575232855, "name": "Vector-only UI guard", "result": "failure", "recordedSteps": 0, "runnerId": 0}
+    ],
+    "cause": "Unconfirmed. These are not observed failing code assertions or successful admission. No unchanged rerun or gate bypass."
+  },
+  "unchanged": ["approved product UI", "business rules", "authentication", "original live SQLite", "production deployment", "Railway configuration in this continuation", "six schedules", "PR draft/unmerged and release holds"],
+  "remainingAcceptance": ["manager approval path and post-approval balances", "request-specific audit linkage", "safe database backup/restore and restart durability", "attendance and weekly-signoff/payroll end-to-end proof", "full Golden Customer Journey", "exact full release admission", "production readiness and narrated marketing video"],
+  "coordination": "Source-only editor checkpoint 5757175476; hosted service owner checkpoint 5757145128 remains separate. No new Astra assignment, branch, service or schedule was created."
+}

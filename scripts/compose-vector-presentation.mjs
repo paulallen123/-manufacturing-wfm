@@ -7,7 +7,19 @@ if (!process.argv[2]) throw new Error('PUBLIC_ROOT_REQUIRED');
 const indexPath = path.join(publicRoot, 'index.html');
 let html = fs.readFileSync(indexPath, 'utf8');
 
+// Controllers must be available before payroll intelligence captures their callbacks.
+// Keep the retired presentation absent; its workflow ownership now belongs to Vector.
+if (!fs.existsSync(path.join(publicRoot, 'vector-workflows.js'))) {
+  throw new Error('VECTOR_WORKFLOW_CONTROLLER_MISSING');
+}
+if (!html.includes('src="/vector-workflows.js"')) {
+  const consumer = /<script\b[^>]*src=["'][^"']*payroll-intelligence-ui\.js[^"']*["'][^>]*>/i;
+  if (!consumer.test(html)) throw new Error('VECTOR_WORKFLOW_CONSUMER_MISSING');
+  html = html.replace(consumer, match => '<script src="/vector-workflows.js"></script>\n' + match);
+}
+
 const retired = [
+  'factory-control-ui.js',
   'factory-control-ui.css',
   'value-cockpit-ui.js',
   'value-cockpit-ui.css',
@@ -42,4 +54,17 @@ if (!html.includes('vector-ui.js')) {
 }
 
 fs.writeFileSync(indexPath, html);
+for (const name of retired) {
+  const file = path.join(publicRoot, name);
+  fs.rmSync(file, { force: true });
+  if (html.includes(name) || fs.existsSync(file)) throw new Error(`RETIRED_PRESENTATION_REMAINS:${name}`);
+}
+for (const name of ['vector-ui.js', 'vector-ui.css']) {
+  const file = path.join(publicRoot, name);
+  if (!fs.existsSync(file)) throw new Error(`VECTOR_CANONICAL_ASSET_MISSING:${name}`);
+  if (!fs.readFileSync(file, 'utf8').includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')) {
+    throw new Error(`VECTOR_CANONICAL_MARKER_MISSING:${name}`);
+  }
+}
 console.log('VECTOR_INDEX_COMPOSITION=PASS');
+console.log('VECTOR_RETIRED_ENTRYPOINT_PURGE=PASS');
