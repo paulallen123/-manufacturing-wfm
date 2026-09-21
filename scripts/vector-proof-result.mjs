@@ -19,8 +19,10 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     'weeklySignStillBlocked',
     'payrollReleaseStillBlocked'
   ];
-  const scopedLeaveJourneyVerified = leaveChecks.every(key => leaveJourney?.[key] === true);
-  const scopedAttendanceJourneyVerified = attendanceChecks.every(key => attendanceJourney?.[key] === true);
+  // Action flags cannot certify a journey on an unidentified or retired UI.
+  const exactAssetsVerified = assetBinding?.status === 'BOUND';
+  const scopedLeaveJourneyVerified = exactAssetsVerified && leaveChecks.every(key => leaveJourney?.[key] === true);
+  const scopedAttendanceJourneyVerified = exactAssetsVerified && attendanceChecks.every(key => attendanceJourney?.[key] === true);
   return {
     status: 'PARTIAL',
     roleChecks: 'PASS',
@@ -29,9 +31,9 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     scopedAttendanceJourneyVerified,
     endToEndVerified: false,
     productReady: false,
-    exactAssetsVerified: assetBinding?.status === 'BOUND',
+    exactAssetsVerified,
     missingEvidence: [
-      ...(assetBinding?.status === 'BOUND' ? [] : ['exact-deployed-asset-binding']),
+      ...(exactAssetsVerified ? [] : ['exact-deployed-asset-binding']),
       ...(scopedLeaveJourneyVerified ? [] : ['UI-triggered-business-action', 'persisted-state-readback', 'updated-UI-after-reload']),
       ...(scopedAttendanceJourneyVerified ? [] : ['attendance-correction-business-action']),
       'server-audit-readback',
