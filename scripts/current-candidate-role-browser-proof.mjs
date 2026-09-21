@@ -386,18 +386,19 @@ try {
     }
 
     let navigationClicked = null;
-    if (spec.nav) {
-      const candidates = page.getByText(spec.nav, { exact: true });
-      const candidateCount = await candidates.count();
-      for (let i = 0; i < candidateCount; i += 1) {
-        const locator = candidates.nth(i);
-        if (!(await locator.isVisible().catch(() => false))) continue;
-        await locator.click({ timeout: 5000 });
-        await page.waitForTimeout(300);
-        navigationClicked = spec.nav;
-        navigationClicks += 1;
-        break;
-      }
+    const navCandidates = page.locator('.vector-nav-item:not([disabled])');
+    const navCount = await navCandidates.count();
+    for (let i = 0; i < navCount; i += 1) {
+      const locator = navCandidates.nth(i);
+      if (!(await locator.isVisible().catch(() => false))) continue;
+      if ((await locator.getAttribute('aria-current')) === 'page') continue;
+      const label = ((await locator.textContent()) || '').replace(/\s+/g, ' ').trim();
+      if (!label) continue;
+      await locator.click({ timeout: 5000 });
+      await page.waitForTimeout(300);
+      navigationClicked = label;
+      navigationClicks += 1;
+      break;
     }
 
     const screenshot = await page.screenshot({ fullPage: true });
