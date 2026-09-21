@@ -52,6 +52,8 @@ COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-ru
 COPY implementation/runtime/one-day-enterprise-engine-core.cjs /app/implementation-runtime/one-day-enterprise-engine-core.cjs
 COPY implementation/runtime/readiness-evidence-contract.cjs /app/implementation-runtime/readiness-evidence-contract.cjs
 COPY implementation/runtime/configuration-inference-engine.cjs /app/implementation-runtime/configuration-inference-engine.cjs
+COPY implementation/runtime/implementation-digital-twin.cjs /app/implementation-runtime/implementation-digital-twin.cjs
+COPY implementation/runtime/tenant-environment-provisioner.cjs /app/implementation-runtime/tenant-environment-provisioner.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
 COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/workforce-lifecycle-core.cjs
 COPY operations/runtime/workflow-action-evidence-contract.cjs /app/operations-runtime/workflow-action-evidence-contract.cjs
@@ -74,6 +76,10 @@ COPY implementation/runtime/readiness-evidence-contract.cjs /tmp/wfm-tests/imple
 COPY implementation/runtime/readiness-evidence-contract.test.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.test.cjs
 COPY implementation/runtime/readiness-evidence-wrapper.test.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-wrapper.test.cjs
 COPY implementation/runtime/configuration-inference-engine.cjs /tmp/wfm-tests/implementation/runtime/configuration-inference-engine.cjs
+COPY implementation/runtime/implementation-digital-twin.cjs /tmp/wfm-tests/implementation/runtime/implementation-digital-twin.cjs
+COPY implementation/runtime/implementation-digital-twin.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-digital-twin.test.cjs
+COPY implementation/runtime/tenant-environment-provisioner.cjs /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.cjs
+COPY implementation/runtime/tenant-environment-provisioner.test.cjs /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.test.cjs
 COPY implementation/runtime/one-day-enterprise-engine.test.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs
 COPY implementation/runtime/configuration-inference-engine.test.cjs /tmp/wfm-tests/implementation/runtime/configuration-inference-engine.test.cjs
 COPY implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs
@@ -101,6 +107,8 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/implementation/runtime/readiness-evidence-wrapper.test.cjs \
       /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs \
       /tmp/wfm-tests/implementation/runtime/configuration-inference-engine.test.cjs \
+      /tmp/wfm-tests/implementation/runtime/implementation-digital-twin.test.cjs \
+      /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.test.cjs \
       /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs \
       /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs \
       /tmp/wfm-tests/security/runtime/hosted-listen-guard.test.cjs \
