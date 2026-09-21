@@ -24,7 +24,7 @@ const NAV=[
 const DESIGN_ID='VECTOR_FIVE_SECTION_2026_09_19';
 let navigationEpoch=0,historyReady=false;
 const RETIRED_ROUTE_REDIRECTS=Object.freeze({'weekly-review':'time-review','savings-decisions':'costs'});
-const state={queued:false,evidenceEpoch:0,timeReviewEvidence:{status:'idle',items:[]},returnFocus:false};
+const state={queued:false,evidenceEpoch:0,readinessEpoch:0,timeReviewEvidence:{status:'idle',items:[]},readinessEvidence:{status:'idle',departments:[],summary:null,asOf:null,limitations:[]},returnFocus:false};
 const observerConfig={subtree:true,childList:true};
 let shellObserver=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -200,6 +200,45 @@ async function loadTimeReviewEvidence(){
   }
   refreshActionSurfaces();
 }
+function invalidateReadinessEvidence(){state.readinessEpoch++;state.readinessEvidence={status:'idle',departments:[],summary:null,asOf:null,limitations:[]};}
+function readinessDepartment(item){
+  if(!item||typeof item!=='object'||Array.isArray(item))return null;
+  const demand=item.demand&&typeof item.demand==='object'?item.demand:{};
+  const required=Number(demand.requiredHours),planned=Number(demand.planAvailableHours??demand.scheduledPaidHours),gap=Number(demand.planGapHours);
+  if(!String(item.name||'').trim()||!Number.isFinite(required)||!Number.isFinite(planned))return null;
+  return {id:String(item.id||''),name:String(item.name).trim(),requiredHours:Math.max(0,required),plannedHours:Math.max(0,planned),gapHours:Number.isFinite(gap)?Math.max(0,gap):Math.max(0,required-planned),status:String(item.status||'').trim(),counts:item.counts&&typeof item.counts==='object'?item.counts:{}};
+}
+function refreshReadinessSurfaces(){
+  if(page()!=='overview'||employee())return;
+  const source=document.querySelector('.vector-home-source');
+  const production=document.querySelector('.vector-production-preview');
+  if(production)production.outerHTML=productionPreviewMarkup(source);
+  const kpis=document.querySelector('.vector-concept-kpis');
+  if(kpis)kpis.outerHTML=conceptKpiMarkup(metrics(source),structuredReviewRows(),source);
+}
+async function loadReadinessEvidence(){
+  if(employee()||page()!=='overview'||state.readinessEvidence.status!=='idle')return;
+  const epoch=state.readinessEpoch;
+  state.readinessEvidence={status:'loading',departments:[],summary:null,asOf:null,limitations:[]};
+  try{
+    const response=await fetch('/api/readiness',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
+    if(!response.ok)throw new Error('readiness unavailable');
+    const body=await response.json();
+    if(!body||body.schemaVersion!=='readiness-1'||!Array.isArray(body.departments))throw new Error('readiness contract mismatch');
+    if(epoch!==state.readinessEpoch||employee()||page()!=='overview')return;
+    state.readinessEvidence={
+      status:'ready',
+      departments:body.departments.map(readinessDepartment).filter(Boolean),
+      summary:body.summary&&typeof body.summary==='object'?body.summary:null,
+      asOf:String(body.asOf||''),
+      limitations:Array.isArray(body.limitations)?body.limitations.map(String).slice(0,6):[]
+    };
+  }catch{
+    if(epoch!==state.readinessEpoch||employee())return;
+    state.readinessEvidence={status:'unavailable',departments:[],summary:null,asOf:null,limitations:[]};
+  }
+  refreshReadinessSurfaces();
+}
 function leaveDate(value){const d=new Date(value);return Number.isFinite(d.getTime())?d:null;}
 function leaveWhen(value){const d=leaveDate(value);return d?new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'2-digit',month:'short'}).format(d):'Date unavailable';}
 function leaveRows(){try{if(typeof data==='undefined'||!Array.isArray(data.requests))return [];const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),now.getDate()),end=new Date(start);end.setDate(end.getDate()+7);return data.requests.filter(r=>String(r.status||'').toLowerCase()==='approved').map(r=>({r,date:leaveDate(r.start||r.date)})).filter(x=>x.date&&x.date>=start&&x.date<end).sort((a,b)=>a.date-b.date).slice(0,4).map(({r,date})=>{let p=null;try{if(typeof person==='function')p=person(r.employee)||null;}catch{}const name=(typeof p?.name==='string'&&p.name.trim())?p.name.trim():(typeof r.employeeName==='string'&&r.employeeName.trim()?r.employeeName.trim():'Employee');const area=[p?.departmentName,p?.teamName,p?.areaName].find(v=>typeof v==='string'&&v.trim())?.trim()||'Source-confirmed leave';const type=(typeof r.typeLabel==='string'&&r.typeLabel.trim())?r.typeLabel.trim():(typeof r.type==='string'&&r.type.trim()?r.type.trim():'Leave');return {name,area,when:leaveWhen(date),type};});}catch{return []}}
@@ -222,10 +261,13 @@ function shiftsMarkup(rows){return `<section class="vector-card vector-shifts" d
 function secondaryKpis(m){const s=scopedStats(),vals=[{label:'Absence today',value:m[1].value==='—'?'—':m[1].value+(s.total?' / '+s.total:''),detail:m[1].detail,route:'leave'},{label:'Overtime',value:m[2].value==='—'?'—':m[2].value+' people',detail:m[2].detail,route:'time-review'},{label:'Labour cost',value:m[3].value,detail:m[3].detail,route:'costs'},{label:'Productivity',value:'—',detail:'Open productivity evidence',route:'insights'}];return `<section class="vector-mini-grid" data-vector-kpi-evidence="${KPI_MARKER}" aria-label="Operational KPI summaries. Trend graphics are shown only when verified source history is available.">${vals.map(v=>`<button type="button" class="vector-mini-card" data-vector-route="${v.route}"><span><b>${esc(v.label)}</b><strong>${esc(v.value)}</strong><small>${esc(v.detail)}</small><em>View details ${icon('arrow')}</em></span></button>`).join('')}</section>`;}
 function alertRowMarkup(r){const context=r.sourceId&&r.workflow?` data-vector-source-id="${esc(r.sourceId)}" data-vector-workflow="${esc(r.workflow)}"`:'';const action=actionAffordance(r);return `<div class="vector-alert-row" role="group" aria-label="${esc(r.title)}. Status: ${esc(r.status)}. Review source evidence before acting."><i class="${r.tone}" aria-hidden="true"></i><b>${esc(r.title)}<small aria-hidden="true" data-vector-action-status="${esc(r.status)}"> · ${esc(r.status)}</small></b><details class="vector-action-detail"><summary>Why this needs attention</summary><p>${esc(r.detail||'Review source evidence')}</p></details><button type="button" data-vector-route="${esc(r.route)}"${context} aria-label="${esc(action)} ${esc(r.title)}">${esc(action)}</button></div>`;}
 function conceptKpiMarkup(m,rows,source){
-  const actionCount=actionQueueGroups(rows).needs.length,s=scopedStats(),productionAreas=productionForecastRows(source).length;
+  const actionCount=actionQueueGroups(rows).needs.length,s=scopedStats(),productionAreas=productionForecastRows(source).length,readinessSummary=state.readinessEvidence.summary;
   const peopleValue=s.total?String(s.onsite??'—')+' / '+String(s.total):String(s.onsite??'—');
+  const readinessGap=Number(readinessSummary?.gaps),readinessDepartments=Number(readinessSummary?.departments);
+  const productionValue=state.readinessEvidence.status==='ready'?(Number.isFinite(readinessGap)&&readinessGap>0?readinessGap+' gaps':'On track'):(state.readinessEvidence.status==='loading'?'Loading':'Open');
+  const productionDetail=state.readinessEvidence.status==='ready'&&Number.isFinite(readinessDepartments)?readinessDepartments+' departments · readiness source':(productionAreas?productionAreas+' source planning areas':'Open live factory');
   const items=[
-    {label:'Production',value:productionAreas?'Live':'—',detail:productionAreas?productionAreas+' source planning areas':'Open live factory',route:'readiness',icon:'planning',tone:'good'},
+    {label:'Production',value:productionValue,detail:productionDetail,route:'readiness',icon:'planning',tone:Number.isFinite(readinessGap)&&readinessGap>0?'attention':'good'},
     {label:'People',value:peopleValue,detail:m?.[0]?.detail||'Current attendance',route:'vector-people',icon:'people',tone:'blue'},
     {label:'Issues',value:String(actionCount),detail:actionCount===1?'1 source-confirmed item waiting':actionCount+' source-confirmed items waiting',route:'time-review',icon:'bell',tone:actionCount?'attention':'good'},
     {label:"Today's cost",value:m?.[3]?.value??'—',detail:m?.[3]?.detail||'Verified cost total',route:'costs',icon:'cost',tone:'blue'}
@@ -239,17 +281,30 @@ function priorityMarkup(rows){
   return `<section class="vector-card vector-alerts vector-priorities" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><div><span class="vector-card-kicker">Priority</span><h2 id="vector-review-title">Top priorities <em>${groups.needs.length}</em></h2></div><button type="button" data-vector-route="time-review">View all ${icon('arrow')}</button></div><div class="vector-alert-list">${body}</div>${awaiting}</section>`;
 }
 function productionForecastRows(source){
+  if(state.readinessEvidence.status==='ready'&&state.readinessEvidence.departments.length){
+    return state.readinessEvidence.departments.slice(0,5).map(item=>({label:item.name,required:item.requiredHours,planned:item.plannedHours,gap:item.gapHours,status:item.status}));
+  }
   const cards=[...(source?.querySelectorAll('.fcc-dept-grid > *, .ux-approved-line-card')||[])].slice(0,5);
   return cards.map((card,i)=>{
     const label=(card.querySelector('b,strong,h3')?text(card.querySelector('b,strong,h3')):'').slice(0,28)||`Line ${i+1}`;
-    const raw=text(card),match=raw.match(/\b(\d{1,3})(?:\.\d+)?\s*%\b/),pct=match?Math.max(0,Math.min(100,Number(match[1]))):null;
-    return {label,pct,status:pct==null?'Source planning available':pct+'% source-reported level'};
+    return {label,required:null,planned:null,gap:null,status:'Source planning available'};
   });
 }
+function hours(value){return Number.isFinite(value)?(Math.round(value*10)/10).toFixed(1).replace(/\.0$/,'')+'h':'—';}
 function productionPreviewMarkup(source){
-  const rows=productionForecastRows(source);
-  const body=rows.length?rows.map(row=>`<button type="button" class="vector-forecast-row" data-vector-route="readiness"><span class="vector-forecast-label"><b>${esc(row.label)}</b><small>${esc(row.status)}</small></span><span class="vector-forecast-track ${row.pct==null?'unknown':''}">${row.pct==null?'':`<i style="width:${row.pct}%"></i>`}</span><span class="vector-forecast-value">${row.pct==null?'Open':esc(row.pct+'%')}</span></button>`).join(''):`<button type="button" class="vector-forecast-empty" data-vector-route="readiness">Open Factory to view source production planning ${icon('arrow')}</button>`;
-  return `<section class="vector-card vector-production-preview" data-vector-planning="${PLANNING_MARKER}"><div class="vector-card-head"><div><span class="vector-card-kicker">Production</span><h2>Today’s production forecast</h2></div><button type="button" data-vector-route="readiness">Open Factory ${icon('arrow')}</button></div><div class="vector-forecast-chart">${body}</div><div class="vector-production-foot"><span></span>Only source-reported production values are plotted.</div></section>`;
+  const rows=productionForecastRows(source),numeric=rows.filter(row=>Number.isFinite(row.required)&&Number.isFinite(row.planned));
+  let body='';
+  if(numeric.length){
+    const max=Math.max(1,...numeric.flatMap(row=>[row.required,row.planned]));
+    body=`<div class="vector-capacity-legend"><span><i class="required"></i>Required labour hours</span><span><i class="planned"></i>Planned labour hours</span></div><div class="vector-capacity-bars">${numeric.map(row=>{const req=Math.max(8,Math.round(row.required/max*100)),plan=Math.max(8,Math.round(row.planned/max*100));return `<button type="button" class="vector-capacity-column" data-vector-route="readiness" aria-label="${esc(row.label)}. Required ${hours(row.required)}. Planned ${hours(row.planned)}. Gap ${hours(row.gap)}."><span class="vector-capacity-plot"><i class="required" style="height:${req}%"><em>${hours(row.required)}</em></i><i class="planned" style="height:${plan}%"><em>${hours(row.planned)}</em></i></span><b>${esc(row.label)}</b><small class="${row.gap>0?'gap':'good'}">${row.gap>0?'Gap '+hours(row.gap):'Covered'}</small></button>`;}).join('')}</div>`;
+  }else if(state.readinessEvidence.status==='loading'){
+    body='<div class="vector-capacity-loading" aria-label="Loading production readiness source"><i></i><i></i><i></i><i></i><i></i><i></i></div>';
+  }else{
+    body=`<button type="button" class="vector-forecast-empty" data-vector-route="readiness">Open Factory to view source production planning ${icon('arrow')}</button>`;
+  }
+  const asOf=state.readinessEvidence.asOf?new Date(state.readinessEvidence.asOf):null;
+  const asOfText=asOf&&Number.isFinite(asOf.getTime())?new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(asOf):'current source snapshot';
+  return `<section class="vector-card vector-production-preview" data-vector-planning="${PLANNING_MARKER}"><div class="vector-card-head"><div><span class="vector-card-kicker">Production</span><h2>Today’s production forecast</h2><p>Required vs planned labour capacity</p></div><button type="button" data-vector-route="readiness">Open Factory ${icon('arrow')}</button></div><div class="vector-forecast-chart">${body}</div><div class="vector-production-foot"><span></span>Readiness source · ${esc(asOfText)}. No production-output units are invented.</div></section>`;
 }
 function alertsMarkup(rows){const groups=actionQueueGroups(rows),visibleNeeds=groups.needs.slice(0,4),visibleAwaiting=groups.awaiting.slice(0,3),needsBody=visibleNeeds.length?visibleNeeds.map(alertRowMarkup).join(''):'<div class="vector-empty">No source-confirmed items need your action.</div>',awaitingBody=groups.awaiting.length?`<details data-vector-awaiting-confirmation><summary class="vector-empty">Awaiting source confirmation · ${groups.awaiting.length}</summary><div class="vector-alert-list">${visibleAwaiting.map(alertRowMarkup).join('')}</div></details>`:'';return `<section class="vector-card vector-alerts" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><h2 id="vector-review-title"><span class="vector-alert-bell">${icon('bell')}</span>Needs my action <em>${groups.needs.length}</em></h2><button type="button" data-vector-route="time-review">Open Time Review ${icon('arrow')}</button></div><div class="vector-alert-list">${needsBody}</div>${awaitingBody}</section>`;}
 function leaveMarkup(rows){const body=rows.length?rows.slice(0,4).map((r,i)=>`<button type="button" class="vector-leave-row" data-vector-route="leave"><span class="vector-person-badge b${i}">${esc(r.name.split(/\s+/).map(x=>x[0]).join('').slice(0,2))}</span><span><b>${esc(r.name)}</b><small>${esc(r.area)}</small></span><em>${esc(r.when)}</em><strong>${esc(r.type)}</strong>${icon('chevron')}</button>`).join(''):`<button type="button" class="vector-leave-row" data-vector-route="leave" aria-label="Open Absence & Leave to review upcoming leave evidence"><span class="vector-person-badge" aria-hidden="true">i</span><span><b>Open Absence & Leave</b><small>No approved leave is available to this summary.</small></span><em>Source check</em><strong>Review</strong>${icon('chevron')}</button>`;return `<section class="vector-card vector-leave" data-vector-leave-evidence="${LEAVE_MARKER}" aria-label="Upcoming leave. Only approved source requests dated within the next seven days are shown."><div class="vector-card-head"><h2>Upcoming leave (next 7 days)</h2><button type="button" data-vector-route="leave">View calendar ${icon('arrow')}</button></div><div class="vector-leave-list">${body}</div></section>`;}
@@ -295,11 +350,11 @@ function settingsMenu(){
  const existing=content.querySelector('.vector-settings');if(existing){existing.remove();return;}
  const panel=document.createElement('section');panel.className='vector-card vector-settings';panel.innerHTML='<div class="vector-card-head"><h2>Settings & more</h2><button type="button" data-vector-settings>Close</button></div><div class="vector-settings-links">'+sourceButtons().filter(b=>!NAV.some(n=>n.routes.includes(b.dataset.page))).map(b=>`<button type="button" data-vector-route="${esc(b.dataset.page)}">${esc(text(b))}</button>`).join('')+'</div>';content.prepend(panel);panel.scrollIntoView({block:'start'});
 }
-function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(page()==='overview'&&!employee())renderHome(content);else generalPage(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
+function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(page()==='overview'&&!employee())renderHome(content);else generalPage(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
 document.addEventListener('click',e=>{if(e.target.closest('[data-vector-close-review]')){document.getElementById('modal').close();return;}const review=e.target.closest('[data-vector-review-coverage]');if(review){const id=review.dataset.vectorReviewCoverage;const r=data.requests?.find(r=>String(r.id)===id);if(r&&visiblePeople().some(p=>String(p.id)===String(r.employee)))void approveRequest(id);return;}if(e.target.closest('[data-vector-settings]')){settingsMenu();return;}const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec){const r=firstRoute(spec.routes);if(r)go(r);}return;}if(e.target.closest('[data-vector-return-context]')){clearActionContext();state.returnFocus=true;go('overview');return;}const actionButton=e.target.closest('[data-vector-source-id][data-vector-workflow][data-vector-route]');if(actionButton){if(actionButton.dataset.vectorWorkflow==='leave'){openLeaveReview(actionButton.dataset.vectorSourceId);return;}rememberActionContext({sourceId:actionButton.dataset.vectorSourceId,workflow:actionButton.dataset.vectorWorkflow,route:actionButton.dataset.vectorRoute,title:actionButton.closest('.vector-alert-row')?.querySelector('b')?.textContent||'Time Review item'});go(actionButton.dataset.vectorRoute);return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('time-review');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askWorkforce(input.value.trim());}});
 const previousRender=window.render;
-if(typeof previousRender==='function')window.render=async function(...args){invalidateTimeReviewEvidence();let result;if(page()==='vector-people'&&!employee()){document.getElementById('root').innerHTML=shell(peoplePage());}else result=await previousRender.apply(this,args);document.body.classList.remove('vector-menu-open');queueMicrotask(apply);return result;};
+if(typeof previousRender==='function')window.render=async function(...args){invalidateTimeReviewEvidence();invalidateReadinessEvidence();let result;if(page()==='vector-people'&&!employee()){document.getElementById('root').innerHTML=shell(peoplePage());}else result=await previousRender.apply(this,args);document.body.classList.remove('vector-menu-open');queueMicrotask(apply);return result;};
 window.nav=go;
 document.addEventListener('input',e=>{if(e.target.matches('[aria-label="Search people"]')){const q=e.target.value.trim().toLowerCase();let count=0;document.querySelectorAll('[data-vector-person-row]').forEach(r=>{r.hidden=!r.dataset.search.includes(q);if(!r.hidden)count++;});const empty=document.querySelector('.vector-no-results');if(empty)empty.hidden=count>0;}});
 shellObserver=new MutationObserver(()=>apply());
