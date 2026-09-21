@@ -9,7 +9,9 @@ test('session and cookie values cannot enter generic evidence payloads',()=>{
     {Cookie:'B1SESSION=secret-marker'},
     {'Set-Cookie':'B1SESSION=secret-marker; Secure'},
     {headers:{cookieHeader:'B1SESSION=secret-marker'}},
-    {ROUTEID:'.node-secret-marker'}
+    {ROUTEID:'.node-secret-marker'},
+    {headers:[{name:'Cookie',value:'B1SESSION=secret-marker'}]},
+    {diagnosticMessage:'upstream rejected B1SESSION=secret-marker'}
   ]){
     assert.throws(
       ()=>assertNoStaticCredentialMaterial(evidence),

@@ -8,6 +8,12 @@ const SECRET_FIELD_NAMES=new Set([
   'token','accesstoken','access_token','refreshtoken','refresh_token','credentialvalue','credential_value',
   'b1session','sessionid','session_id','cookie','cookieheader','cookie_header','setcookie','set_cookie','routeid'
 ]);
+const SECRET_VALUE_PATTERNS=[
+  /\b(?:b1session|sessionid|routeid)\s*=/i,
+  /\bauthorization\s*:\s*(?:basic|bearer)\b/i,
+  /\bset-cookie\s*:/i,
+  /\bcookie\s*:/i
+];
 
 function normalizedCapability(value){
   return String(value??'').trim();
@@ -22,10 +28,18 @@ function normalizedScope(value){
 }
 
 function findSecretMaterial(value,path='evidence',hits=[]){
+  if(typeof value==='string'){
+    if(SECRET_VALUE_PATTERNS.some(pattern=>pattern.test(value))) hits.push(path);
+    return hits;
+  }
   if(!value||typeof value!=='object') return hits;
   if(Array.isArray(value)){
     value.forEach((item,index)=>findSecretMaterial(item,`${path}[${index}]`,hits));
     return hits;
+  }
+  const headerName=typeof value.name==='string'?value.name.replace(/[^a-z0-9_]/gi,'').toLowerCase():null;
+  if(headerName&&SECRET_FIELD_NAMES.has(headerName)&&value.value!==null&&value.value!==undefined&&String(value.value).length>0){
+    hits.push(`${path}.value`);
   }
   for(const [key,item] of Object.entries(value)){
     const normalized=key.replace(/[^a-z0-9_]/gi,'').toLowerCase();

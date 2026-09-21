@@ -22,6 +22,7 @@ function policy(overrides={}){
     affinityCookieNames:['ROUTEID'],
     allowedResources:['ProductionOrders','EmployeesInfo','Items','JournalEntries','InventoryGenEntries','InventoryGenExits'],
     deniedResources:['SQLQueries','Login','Logout'],
+    allowedQueryParameters:['$select','$filter','$orderby','$expand','$count','$top','$skip','$skiptoken'],
     ...overrides
   });
 }
@@ -47,6 +48,7 @@ test('cookie semantics remain immutable and never treat affinity as authenticati
   assert.equal(p.affinityMayEstablishCompleteness,false);
   assert.equal(p.sessionSecretsAllowedInEvidence,false);
   assert.throws(()=>p.allowedResources.push('BusinessPartners'),/extensible|read only|object is not extensible/i);
+  assert.throws(()=>policy({sessionCookieNames:['B1SESSION\r\nX-Injected']}),/cookie name/i);
 });
 
 test('only allowlisted GET and HEAD resource reads are authorised',()=>{
@@ -55,6 +57,8 @@ test('only allowlisted GET and HEAD resource reads are authorised',()=>{
   assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/ProductionOrders',method:'POST'}),/GET or HEAD/i);
   assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/SQLQueries'}),/denied/i);
   assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/BusinessPartners'}),/not allowlisted/i);
+  assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/Items?$top=0'}),/page size/i);
+  assert.throws(()=>authorizeSessionRead({policy:p,requestUrl:'https://erp.example.test/b1s/v2/Items?$apply=groupby((ItemCode))'}),/query parameter/i);
 });
 
 test('cross-host, credentials, base-path and API-version escapes fail closed',()=>{
@@ -89,6 +93,19 @@ test('next-link host escape, query drift, cursor loops and pagination disablemen
   assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:'/b1s/v2/Items?$filter=Frozen%20eq%20%27tNO%27&$orderby=ItemCode&$top=0&$skip=20'}),/page size/i);
   const repeated='https://erp.example.test/b1s/v2/Items?%24filter=Frozen+eq+%27tNO%27&%24orderby=ItemCode&%24top=20&%24skip=20';
   assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:'/b1s/v2/Items?$filter=Frozen%20eq%20%27tNO%27&$orderby=ItemCode&$top=20&$skip=20',seenNextLinks:[repeated]}),/loop|repeated/i);
+  const duplicate='https://erp.example.test/b1s/v2/Items?$filter=A&$filter=A&$orderby=ItemCode&$top=20&$skip=0';
+  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:duplicate,nextLink:'/b1s/v2/Items?$filter=A&$filter=A&$orderby=ItemCode&$top=20&$skip=20'}),/duplicate.*\$filter/i);
+  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:'https://erp.example.test/b1s/v2/Items(1)?$top=20&$skip=0',nextLink:'/b1s/v2/Items(2)?$top=20&$skip=20'}),/entity path/i);
+  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:'https://erp.example.test/b1s/v2/Items?$top=20&$skip=0',nextLink:'/b1s/v2/Items/ForeignNavigation?$top=20&$skip=20'}),/entity path/i);
+});
+
+test('continuation admission enforces configured page, byte and elapsed-time budgets',()=>{
+  const p=policy({maxPages:2,maxBytesPerPage:1000,maxElapsedMs:5000});
+  const current='https://erp.example.test/b1s/v2/Items?$orderby=ItemCode&$top=20&$skip=0';
+  const next='/b1s/v2/Items?$orderby=ItemCode&$top=20&$skip=20';
+  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:next,pageNumber:3,pageBytes:100,elapsedMs:100}),/page budget/i);
+  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:next,pageNumber:2,pageBytes:1001,elapsedMs:100}),/byte budget/i);
+  assert.throws(()=>validateSessionNextLink({policy:p,currentRequestUrl:current,nextLink:next,pageNumber:2,pageBytes:100,elapsedMs:5001}),/elapsed-time budget/i);
 });
 
 test('session expiry permits one bounded reauthentication and forces uncommitted-page replay',()=>{
@@ -118,4 +135,6 @@ test('affinity loss never changes source scope but invalidates the uncommitted p
   assert.equal(decision.action,'reacquire-affinity-and-replay-uncommitted-page');
   assert.equal(decision.requiresNewCheckpointNamespace,false);
   assert.equal(decision.checkpointAdvanceAllowed,false);
+  assert.equal(sessionFailureDecision({status:403,affinityLost:true}).action,'stop-permission-diagnostic');
+  assert.equal(sessionFailureDecision({status:401,reauthAttempts:1,affinityLost:true}).action,'stop-credential-diagnostic');
 });

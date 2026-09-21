@@ -12,6 +12,14 @@ function unique(values,name){
   return [...new Set(values.map(value=>required(value,name)))];
 }
 
+function cookieNames(values,name){
+  const names=unique(values,name);
+  for(const value of names){
+    if(!/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(value)) throw new TypeError(`${name} contains an invalid cookie name`);
+  }
+  return names;
+}
+
 function deepFreeze(value){
   if(!value||typeof value!=='object'||Object.isFrozen(value)) return value;
   for(const child of Object.values(value)) deepFreeze(child);
@@ -42,6 +50,7 @@ function positiveSafeInteger(value,name,defaultValue){
 export function createSessionReadPolicy({
   providerId,wfmTenantId,connectionId,endpointUrl,company,principalId,credentialRevision,apiVersion,
   sessionCookieNames=[],affinityCookieNames=[],allowedResources=[],deniedResources=[],
+  allowedQueryParameters=[],
   maxPages,maxBytesPerPage,maxElapsedMs
 }={}){
   const version=required(apiVersion,'apiVersion');
@@ -57,14 +66,15 @@ export function createSessionReadPolicy({
     credentialRevision:required(credentialRevision,'credentialRevision'),
     apiVersion:version
   };
-  const sessionNames=unique(sessionCookieNames,'sessionCookieNames');
+  const sessionNames=cookieNames(sessionCookieNames,'sessionCookieNames');
   if(sessionNames.length===0) throw new TypeError('at least one session cookie name is required');
-  const affinityNames=unique(affinityCookieNames,'affinityCookieNames');
+  const affinityNames=cookieNames(affinityCookieNames,'affinityCookieNames');
   const overlap=sessionNames.filter(name=>affinityNames.includes(name));
   if(overlap.length) throw new TypeError(`cookie cannot be both session credential and affinity hint: ${overlap.join(', ')}`);
   const allowed=unique(allowedResources,'allowedResources');
   if(allowed.length===0) throw new TypeError('at least one allowed resource is required');
   const denied=unique(deniedResources,'deniedResources');
+  const allowedQueries=unique(allowedQueryParameters,'allowedQueryParameters');
   const cookieSemantics=Object.fromEntries([
     ...sessionNames.map(name=>[name,'credential-secret']),
     ...affinityNames.map(name=>[name,'routing-hint-only'])
@@ -78,6 +88,7 @@ export function createSessionReadPolicy({
     cookieSemantics,
     allowedResources:allowed,
     deniedResources:denied,
+    allowedQueryParameters:allowedQueries,
     allowedMethods:['GET','HEAD'],
     readBudget:{
       maxPages:positiveSafeInteger(maxPages,'maxPages',10_000),
@@ -95,6 +106,22 @@ function assertPolicy(policy){
   if(!policy||policy.schemaVersion!==1||!policy.sessionScopeNamespace) throw new TypeError('invalid session read policy');
 }
 
+function assertQueryAuthority(policy,url){
+  const seen=new Set();
+  for(const [key] of url.searchParams){
+    if(seen.has(key)) throw new Error(`duplicate query parameter is not permitted: ${key}`);
+    seen.add(key);
+    if(!policy.allowedQueryParameters.includes(key)) throw new Error(`query parameter is not allowlisted: ${key}`);
+  }
+  const top=url.searchParams.get('$top');
+  if(top!==null&&(!/^\d+$/.test(top)||BigInt(top)<=0n)) throw new Error('page size must be a positive integer');
+  const skip=url.searchParams.get('$skip');
+  if(skip!==null&&!/^\d+$/.test(skip)) throw new Error('$skip must be an unsigned integer');
+  const token=url.searchParams.get('$skiptoken');
+  if(token!==null&&!token.trim()) throw new Error('$skiptoken must not be empty');
+  if(skip!==null&&token!==null) throw new Error('only one pagination cursor is permitted');
+}
+
 function parseAuthorizedUrl(policy,requestUrl){
   const url=new URL(required(requestUrl,'requestUrl'));
   if(url.username||url.password) throw new Error('session read URL must not contain credentials');
@@ -108,6 +135,7 @@ function parseAuthorizedUrl(policy,requestUrl){
   const resource=decodeURIComponent(tail.split('/')[0]).replace(/\(.*/,'');
   if(policy.deniedResources.includes(resource)) throw new Error(`session resource is explicitly denied: ${resource}`);
   if(!policy.allowedResources.includes(resource)) throw new Error(`session resource is not allowlisted: ${resource}`);
+  assertQueryAuthority(policy,url);
   return {url,resource};
 }
 
@@ -146,12 +174,18 @@ function assertSingleParameter(url,name){
   return values[0]??null;
 }
 
-export function validateSessionNextLink({policy,currentRequestUrl,nextLink,seenNextLinks=[]}={}){
+export function validateSessionNextLink({policy,currentRequestUrl,nextLink,seenNextLinks=[],pageNumber=1,pageBytes=0,elapsedMs=0}={}){
   assertPolicy(policy);
   const current=parseAuthorizedUrl(policy,currentRequestUrl);
   const nextUrl=new URL(required(nextLink,'nextLink'),current.url);
   const next=authorizeSessionRead({policy,requestUrl:nextUrl.href});
   if(next.resource!==current.resource) throw new Error('next link changed resource');
+  if(nextUrl.pathname!==current.url.pathname) throw new Error('next link changed exact entity path');
+
+  const page=Number(pageNumber),bytes=Number(pageBytes),elapsed=Number(elapsedMs);
+  if(!Number.isSafeInteger(page)||page<=0||page>policy.readBudget.maxPages) throw new Error('next link exceeded page budget');
+  if(!Number.isSafeInteger(bytes)||bytes<0||bytes>policy.readBudget.maxBytesPerPage) throw new Error('next link exceeded byte budget');
+  if(!Number.isSafeInteger(elapsed)||elapsed<0||elapsed>policy.readBudget.maxElapsedMs) throw new Error('next link exceeded elapsed-time budget');
 
   const top=assertSingleParameter(nextUrl,'$top');
   if(top!==null&&(!/^\d+$/.test(top)||BigInt(top)<=0n)) throw new Error('next link page size must be a positive integer');
@@ -190,13 +224,6 @@ export function validateSessionNextLink({policy,currentRequestUrl,nextLink,seenN
 
 export function sessionFailureDecision({status,reauthAttempts=0,affinityLost=false}={}){
   const code=Number(status);
-  if(affinityLost===true){
-    return deepFreeze({
-      action:'reacquire-affinity-and-replay-uncommitted-page',
-      requiresNewCheckpointNamespace:false,
-      checkpointAdvanceAllowed:false
-    });
-  }
   if(code===401&&Number(reauthAttempts)===0){
     return deepFreeze({
       action:'reauthenticate-once',
@@ -208,6 +235,13 @@ export function sessionFailureDecision({status,reauthAttempts=0,affinityLost=fal
   }
   if(code===401) return deepFreeze({action:'stop-credential-diagnostic',checkpointAdvanceAllowed:false});
   if(code===403) return deepFreeze({action:'stop-permission-diagnostic',checkpointAdvanceAllowed:false});
+  if(affinityLost===true){
+    return deepFreeze({
+      action:'reacquire-affinity-and-replay-uncommitted-page',
+      requiresNewCheckpointNamespace:false,
+      checkpointAdvanceAllowed:false
+    });
+  }
   if(code===429||(code>=500&&code<=599)) return deepFreeze({action:'retry-current-session-with-backoff',checkpointAdvanceAllowed:false});
   return deepFreeze({action:'stop-and-diagnose',checkpointAdvanceAllowed:false});
 }
