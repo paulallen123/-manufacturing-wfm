@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "release": "VECTOR_EOW_2026_09_25",
+  "baseCandidate": "d4121d85f7c01fb76949406c78eeb8c1d47251b6",
+  "policy": {
+    "singleCanonicalUI": true,
+    "preserveSecurityHolds": true,
+    "noProductionAuthorityFromAI": true,
+    "noInventedSavings": true,
+    "noInventedProductionData": true,
+    "failClosedOnUnprovenHighImpactAction": true,
+    "proofRequiredForPromotion": true
+  },
+  "target": [
+    {
+      "id": "factory-autopilot",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "digital-twin",
+        "realised-value",
+        "integration-fabric",
+        "realtime-ui"
+      ]
+    },
+    {
+      "id": "digital-twin",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "persistent-storage"
+      ]
+    },
+    {
+      "id": "realised-value",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "payroll-actuals",
+        "production-actuals",
+        "outcome-ledger"
+      ]
+    },
+    {
+      "id": "integration-fabric",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "provider-adapters",
+        "reconciliation",
+        "recovery"
+      ]
+    },
+    {
+      "id": "one-day-implementation",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "tenant-provisioning",
+        "digital-twin",
+        "integration-fabric",
+        "training"
+      ]
+    },
+    {
+      "id": "training",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "adaptive-learning",
+        "role-context",
+        "video-generation"
+      ]
+    },
+    {
+      "id": "mobile-tablet",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "responsive-shell",
+        "mass-clocking",
+        "offline-recovery"
+      ]
+    },
+    {
+      "id": "factory-depth",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "readiness",
+        "site-performance",
+        "simulation",
+        "shutdowns"
+      ]
+    },
+    {
+      "id": "plan-improve-distinct",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "route-specific-data-contracts"
+      ]
+    },
+    {
+      "id": "agency-labour",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "supplier-flow",
+        "worker-readiness",
+        "cost",
+        "invoice-outcome"
+      ]
+    },
+    {
+      "id": "energy-intelligence",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "tariff-evidence",
+        "usage-evidence",
+        "erp-actuals",
+        "production-baseline"
+      ]
+    },
+    {
+      "id": "cash-to-capacity",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "evidence",
+        "decision",
+        "outcome"
+      ]
+    },
+    {
+      "id": "resilience",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "bounded-repair",
+        "canary",
+        "rollback",
+        "forensics"
+      ]
+    },
+    {
+      "id": "self-learning",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "independent-evaluation",
+        "ci",
+        "rollback"
+      ]
+    },
+    {
+      "id": "realtime-ui",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "event-channel",
+        "tenant-scope",
+        "reconnect"
+      ]
+    },
+    {
+      "id": "production-tenant",
+      "target": "PILOT_READY",
+      "dependsOn": [
+        "durable-storage",
+        "backup-restore",
+        "monitoring",
+        "provider-proof"
+      ]
+    },
+    {
+      "id": "autonomous-support",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "incident-detection",
+        "reproduction",
+        "bounded-repair",
+        "proof",
+        "handoff"
+      ]
+    },
+    {
+      "id": "sales-demo",
+      "target": "PROVEN_HOSTED",
+      "dependsOn": [
+        "golden-journey",
+        "screenshots",
+        "narration",
+        "video"
+      ]
+    }
+  ],
+  "reviewLoop": [
+    "delta-scan",
+    "highest-value-gap",
+    "design",
+    "build",
+    "simulate",
+    "break-test",
+    "prove",
+    "measure",
+    "evolve"
+  ]
+}
