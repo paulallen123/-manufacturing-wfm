@@ -617,6 +617,7 @@ try {
     const chunkSize = 24000;
     const chunks = Math.ceil(encoded.length / chunkSize);
     console.log(`CURRENT_MANAGER_ROUTE_SCREEN_META|${item.section}|${item.label}|${item.route}|bytes=${item.bytes}|sha=${item.sha256}|chunks=${chunks}`);
+    console.log('CURRENT_MANAGER_ROUTE_SCREEN_CONTENT|' + JSON.stringify({ section:item.section,label:item.label,route:item.route,title:item.title,heading:item.heading }));
     for (let i = 0; i < chunks; i += 1) {
       console.log(`CURRENT_MANAGER_ROUTE_SCREEN_B64_CHUNK|${item.section}|${item.label}|${item.route}|${i + 1}|${chunks}|${encoded.slice(i * chunkSize, (i + 1) * chunkSize)}`);
     }
