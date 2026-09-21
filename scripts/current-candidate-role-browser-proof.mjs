@@ -6,6 +6,7 @@ const origin = new URL(process.env.VECTOR_PROOF_URL).origin;
 const expectedSha = process.env.WFM_EXPECTED_CANDIDATE_SHA;
 const password = process.env.WFM_STAGING_PASSWORD;
 const requireActionAffordanceCoverage = process.env.WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE === 'true';
+export let browserProofEvidence = { leaveJourney: null };
 
 assert.match(expectedSha || '', /^[0-9a-f]{40}$/);
 assert.ok(password && password.length >= 20, 'Staging password unavailable.');
@@ -30,6 +31,27 @@ let navigationClicks = 0;
 let timeReviewActionJourneys = 0;
 let timeReviewEmptyStateJourneys = 0;
 let managerAlignmentEvidence = null;
+
+async function loginRole(page, email) {
+  const first = await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  assert.ok(first && first.status() < 500, `${email} initial page failed.`);
+  const loginStatus = await page.evaluate(async ({ email, password }) => {
+    const response = await fetch('/api/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password })
+    });
+    return response.status;
+  }, { email, password });
+  assert.equal(loginStatus, 200, `${email} login failed.`);
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+}
+
+async function openLeaveRoute(page, expectedRole) {
+  const route = page.locator('[data-vector-route="leave"]').first();
+  await route.waitFor({ state: 'visible', timeout: 10000 });
+  await route.click({ timeout: 5000 });
+  await page.locator(`[data-vector-leave-route="${expectedRole}"]`).waitFor({ state: 'visible', timeout: 10000 });
+}
 
 try {
   for (const spec of specs) {
@@ -78,11 +100,12 @@ try {
     assert.equal(boundary.surface, 200, `${spec.slug} required surface failed.`);
 
     const ui = await page.evaluate(async () => {
-      const [scriptAsset, styleAsset] = await Promise.all([
+      const [scriptAsset, styleAsset, workflowAsset] = await Promise.all([
         fetch('/vector-ui.js', { cache: 'no-store' }),
-        fetch('/vector-ui.css', { cache: 'no-store' })
+        fetch('/vector-ui.css', { cache: 'no-store' }),
+        fetch('/vector-workflows.js', { cache: 'no-store' })
       ]);
-      const [scriptText, styleText] = await Promise.all([scriptAsset.text(), styleAsset.text()]);
+      const [scriptText, styleText, workflowText] = await Promise.all([scriptAsset.text(), styleAsset.text(), workflowAsset.text()]);
       const resources = performance.getEntriesByType('resource').map(entry => {
         try { return new URL(entry.name, location.href).pathname; } catch { return String(entry.name || ''); }
       });
@@ -103,12 +126,15 @@ try {
       return {
         scriptAssetStatus: scriptAsset.status,
         styleAssetStatus: styleAsset.status,
+        workflowAssetStatus: workflowAsset.status,
         approvedScript: scriptText.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'),
         approvedStyle: styleText.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'),
+        approvedWorkflow: workflowText.includes('VECTOR_AUTHENTICATED_WORKFLOWS_V1'),
         retiredMarkers: ['WFM_UX_RESET_CYCLE11_BEGIN', 'WFM_UX_RESET_CYCLE12_BEGIN', 'VECTOR_PRIORITY_BRIDGE_V1']
           .filter(marker => scriptText.includes(marker) || styleText.includes(marker)),
         scriptExecuted: resources.includes('/vector-ui.js'),
         styleExecuted: resources.includes('/vector-ui.css'),
+        workflowExecuted: resources.includes('/vector-workflows.js'),
         retiredExecuted: retiredAssets.filter(name => resources.some(path => path.endsWith(`/${name}`))),
         nodes,
         labels,
@@ -119,11 +145,14 @@ try {
     });
     assert.equal(ui.scriptAssetStatus, 200, `${spec.slug} canonical Vector script unavailable.`);
     assert.equal(ui.styleAssetStatus, 200, `${spec.slug} canonical Vector stylesheet unavailable.`);
+    assert.equal(ui.workflowAssetStatus, 200, `${spec.slug} authenticated Vector workflow controller unavailable.`);
     assert.equal(ui.approvedScript, true, `${spec.slug} canonical Vector script marker missing.`);
     assert.equal(ui.approvedStyle, true, `${spec.slug} canonical Vector stylesheet marker missing.`);
+    assert.equal(ui.approvedWorkflow, true, `${spec.slug} authenticated Vector workflow marker missing.`);
     assert.deepEqual(ui.retiredMarkers, [], `${spec.slug} retired presentation marker executed in canonical Vector assets.`);
     assert.equal(ui.scriptExecuted, true, `${spec.slug} canonical /vector-ui.js entrypoint was not loaded.`);
     assert.equal(ui.styleExecuted, true, `${spec.slug} canonical /vector-ui.css entrypoint was not loaded.`);
+    assert.equal(ui.workflowExecuted, true, `${spec.slug} authenticated /vector-workflows.js entrypoint was not loaded.`);
     assert.deepEqual(ui.retiredExecuted, [], `${spec.slug} retired presentation asset executed: ${ui.retiredExecuted.join(', ')}`);
     assert.ok(ui.nodes > 0, `${spec.slug} Vector DOM missing.`);
     assert.ok(ui.bodyText > 200, `${spec.slug} rendered body too small.`);
@@ -419,8 +448,8 @@ try {
       payrollStatus: boundary.payroll,
       requiredSurface: spec.surface,
       requiredSurfaceStatus: boundary.surface,
-      vectorApproved: ui.approvedScript && ui.approvedStyle,
-      vectorExecuted: ui.scriptExecuted && ui.styleExecuted,
+      vectorApproved: ui.approvedScript && ui.approvedStyle && ui.approvedWorkflow,
+      vectorExecuted: ui.scriptExecuted && ui.styleExecuted && ui.workflowExecuted,
       retiredPresentationExecuted: ui.retiredExecuted,
       vectorNodes: ui.nodes,
       visibleNavigation: ui.labels,
@@ -436,12 +465,104 @@ try {
     await context.close();
   }
 
+  const leaveJourney = {
+    employeeUiSubmitted: false,
+    pendingStateReadBack: false,
+    overlapRefusedInUi: false,
+    refreshedUiRetainedPending: false,
+    managerUiDecided: false,
+    managerStateReadBack: false,
+    freshEmployeeLoginSawDecision: false,
+    requestId: null,
+    decision: null
+  };
+  const employeeContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const employeePage = await employeeContext.newPage();
+  await loginRole(employeePage, 'maya@northstar.example');
+  await openLeaveRoute(employeePage, 'employee');
+  const beforeLeave = await employeePage.evaluate(async () => {
+    const [bootstrapResponse, personalResponse] = await Promise.all([fetch('/api/bootstrap'), fetch('/api/personal')]);
+    return { bootstrap: await bootstrapResponse.json(), personal: await personalResponse.json() };
+  });
+  const existingDates = new Set((beforeLeave.bootstrap?.state?.requests || []).filter(item => item.status !== 'declined').map(item => item.date || item.start));
+  const shift = (beforeLeave.personal?.shifts || []).find(item => item?.start && !existingDates.has(item.start.slice(0, 10)));
+  assert.ok(shift, 'No unrequested synthetic shift is available for the leave browser journey.');
+  const requestedDate = shift.start.slice(0, 10);
+  await employeePage.locator('button[data-vector-workflow="leave-request"]').click({ timeout: 5000 });
+  await employeePage.locator('#modalform input[name="date"]').fill(requestedDate);
+  await employeePage.locator('#modalform input[name="hours"]').fill('7.5');
+  await employeePage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  await employeePage.locator('.vw-receipt').waitFor({ state: 'visible', timeout: 10000 });
+  const afterRequest = await employeePage.evaluate(async () => {
+    const [bootstrapResponse, personalResponse] = await Promise.all([fetch('/api/bootstrap'), fetch('/api/personal')]);
+    return { bootstrap: await bootstrapResponse.json(), personal: await personalResponse.json() };
+  });
+  const beforeIds = new Set((beforeLeave.bootstrap?.state?.requests || []).map(item => item.id));
+  const created = (afterRequest.bootstrap?.state?.requests || []).find(item => !beforeIds.has(item.id));
+  assert.ok(created?.id && created.status === 'pending', 'Employee UI did not create a source-saved pending leave request.');
+  assert.equal(afterRequest.personal.leave.availableMinutes, beforeLeave.personal.leave.availableMinutes - 450, 'Employee UI did not read back the reserved leave balance.');
+  leaveJourney.employeeUiSubmitted = true;
+  leaveJourney.pendingStateReadBack = true;
+  leaveJourney.requestId = created.id;
+
+  await employeePage.locator('button[data-vector-workflow="leave-request"]').click({ timeout: 5000 });
+  await employeePage.locator('#modalform input[name="date"]').fill(requestedDate);
+  await employeePage.locator('#modalform input[name="hours"]').fill('7.5');
+  await employeePage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  const overlapError = employeePage.locator('#formerror');
+  await overlapError.waitFor({ state: 'visible', timeout: 10000 });
+  assert.match(await overlapError.innerText(), /overlap|already|request/i, 'Employee UI did not surface the authoritative overlap refusal.');
+  leaveJourney.overlapRefusedInUi = true;
+  await employeePage.locator('#modalform [data-act="close"]').click({ timeout: 5000 });
+
+  await employeePage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await employeePage.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+  await openLeaveRoute(employeePage, 'employee');
+  const pendingRow = employeePage.locator(`[data-vector-leave-id="${created.id}"] [data-vector-leave-status]`);
+  await pendingRow.waitFor({ state: 'visible', timeout: 10000 });
+  assert.equal((await pendingRow.innerText()).trim().toLowerCase(), 'pending');
+  leaveJourney.refreshedUiRetainedPending = true;
+  await employeeContext.close();
+
+  const managerContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const managerPage = await managerContext.newPage();
+  await loginRole(managerPage, 'manager@northstar.example');
+  await openLeaveRoute(managerPage, 'manager');
+  const managerRow = managerPage.locator(`[data-vector-leave-id="${created.id}"]`);
+  await managerRow.waitFor({ state: 'visible', timeout: 10000 });
+  await managerRow.locator('button[data-vector-workflow="leave-approve"]').click({ timeout: 5000 });
+  await managerPage.locator('#modalform input[name="reviewed"]').check();
+  await managerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  await managerPage.locator('.vw-receipt').waitFor({ state: 'visible', timeout: 10000 });
+  leaveJourney.managerUiDecided = true;
+  const managerReadBack = await managerPage.evaluate(async id => {
+    const response = await fetch('/api/bootstrap');
+    const bootstrap = await response.json();
+    return bootstrap.state.requests.find(item => item.id === id) || null;
+  }, created.id);
+  assert.equal(managerReadBack?.status, 'approved', 'Manager UI decision was not read back from stored state.');
+  leaveJourney.managerStateReadBack = true;
+  leaveJourney.decision = 'approved';
+  await managerContext.close();
+
+  const freshEmployeeContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const freshEmployeePage = await freshEmployeeContext.newPage();
+  await loginRole(freshEmployeePage, 'maya@northstar.example');
+  await openLeaveRoute(freshEmployeePage, 'employee');
+  const approvedRow = freshEmployeePage.locator(`[data-vector-leave-id="${created.id}"] [data-vector-leave-status]`);
+  await approvedRow.waitFor({ state: 'visible', timeout: 10000 });
+  assert.equal((await approvedRow.innerText()).trim().toLowerCase(), 'approved');
+  leaveJourney.freshEmployeeLoginSawDecision = true;
+  await freshEmployeeContext.close();
+  browserProofEvidence = { leaveJourney };
+  console.log(`CURRENT_LEAVE_BROWSER_JOURNEY=PASS|request=${created.id}|decision=approved|overlapRefused=true|refreshReadback=true|freshLoginReadback=true`);
+
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
   assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
   console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|sha=${managerAlignmentEvidence.sha256}`);
   console.log(`CURRENT_MANAGER_SCREENSHOT_B64|${managerAlignmentEvidence.base64}`);
-  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|activeActionJourneys=${timeReviewActionJourneys}|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
+  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|sourceActionOpenJourneys=${timeReviewActionJourneys}|leaveBusinessActionJourneys=1|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
 } finally {
   await browser.close();
   delete process.env.WFM_STAGING_PASSWORD;

@@ -5,6 +5,7 @@
   'use strict';
   const RF = globalThis.RF = { period: '2026-09-07', team: '', report: null, company: null, recoveryActuals: [], financeAttribution: [], epoch: 0 };
   const state = { busy: false, receipt: null, owner: '', epoch: 0 };
+  const LF = { bootstrap: null, personal: null, busy: false, receipt: null, owner: '', epoch: 0 };
   const actor = () => payrollActor();
   const ownerKey = () => [actor()?.tenant, actor()?.email, actor()?.personId].join(':');
   const permitted = permission => !!actor() && PR.has(actor(), permission);
@@ -82,6 +83,84 @@
     const saved = state.receipt;
     return saved ? `<p class="vw-receipt" role="status">Saved result: ${escape(saved.action)} · ${escape(saved.id)} · ${escape(saved.status)} · version ${saved.version}. Read back from the authenticated service.</p>` : '';
   }
+  function clearLeaveOwner() {
+    const owner = ownerKey();
+    if (owner === LF.owner) return;
+    LF.owner = owner; LF.bootstrap = null; LF.personal = null; LF.receipt = null;
+  }
+  function leaveRequests() {
+    return Array.isArray(LF.bootstrap?.state?.requests) ? LF.bootstrap.state.requests : [];
+  }
+  async function leaveRefresh() {
+    if (OFFLINE) throw Error('Connect to the authenticated Vector service to review or request leave.');
+    clearLeaveOwner();
+    const owner = LF.owner, epoch = ++LF.epoch;
+    const employee = actor()?.role === 'employee';
+    const [bootstrap, personal] = await Promise.all([
+      request('/api/bootstrap'),
+      employee ? request('/api/personal') : null
+    ]);
+    if (epoch !== LF.epoch || owner !== LF.owner || owner !== ownerKey() || !F.ready) return false;
+    LF.bootstrap = bootstrap; LF.personal = personal;
+    return true;
+  }
+  async function leaveRequest(input) {
+    if (LF.busy) throw Error('A leave action is already being saved. Wait for its result.');
+    if (actor()?.role !== 'employee') throw Error('Only the employee can submit this leave request.');
+    if (!LF.bootstrap && !(await leaveRefresh())) throw Error('Current leave evidence could not be loaded.');
+    const owner = ownerKey(), date = String(input?.date || ''), hoursRequested = Number(input?.hours);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(hoursRequested) || hoursRequested < 0.5 || hoursRequested > 12) throw Error('Choose a valid date and 0.5–12 scheduled hours.');
+    LF.busy = true;
+    try {
+      const response = await request('/api/personal/work', 'POST', {
+        command: 'leave-request', payload: { date, hours: hoursRequested }, version: LF.bootstrap.state.version
+      });
+      if (response?.ok !== true || !response.result?.id || response.result.status !== 'pending') throw Error('The service did not confirm a saved leave request.');
+      if (!(await leaveRefresh()) || owner !== ownerKey()) throw Error('The account changed before the leave request could be read back.');
+      const saved = leaveRequests().find(item => item.id === response.result.id);
+      if (saved?.status !== 'pending' || !LF.personal?.leave) throw Error('The leave request was accepted but its saved balance and status were not confirmed.');
+      LF.receipt = { action: 'leave-request', id: saved.id, status: saved.status, version: response.version };
+      toast('Leave request saved and read back from the service.');
+      return response.result;
+    } finally { LF.busy = false; }
+  }
+  async function leaveDecision(input) {
+    if (LF.busy) throw Error('A leave action is already being saved. Wait for its result.');
+    if (!reviewer()) throw Error('A manager role is required to decide this leave request.');
+    if (!LF.bootstrap && !(await leaveRefresh())) throw Error('Current leave evidence could not be loaded.');
+    const id = String(input?.id || ''), decision = String(input?.decision || '');
+    if (!id || !['approved', 'declined'].includes(decision) || input?.reviewed !== true) throw Error('Review the request and choose an approved or declined decision.');
+    const owner = ownerKey();
+    LF.busy = true;
+    try {
+      const response = await request('/api/command', 'POST', {
+        command: 'leave-decision',
+        payload: { id, decision, reviewed: true, ...(input.reason ? { reason: String(input.reason) } : {}) },
+        version: LF.bootstrap.state.version
+      });
+      if (response?.ok !== true || response.result?.id !== id) throw Error('The service did not confirm a saved leave decision.');
+      if (!(await leaveRefresh()) || owner !== ownerKey()) throw Error('The account changed before the leave decision could be read back.');
+      const saved = leaveRequests().find(item => item.id === id);
+      if (saved?.status !== decision) throw Error('The leave decision was accepted but its saved result was not confirmed.');
+      LF.receipt = { action: 'leave-decision', id, status: decision, version: response.version };
+      toast('Leave decision saved and read back from the service.');
+      return response.result;
+    } finally { LF.busy = false; }
+  }
+  function leaveReceipt() {
+    const saved = LF.receipt;
+    return saved ? `<p class="vw-receipt" role="status">Saved and read back from the service · ${escape(saved.action)} · ${escape(saved.id)} · ${escape(saved.status)} · version ${escape(saved.version)}.</p>` : '';
+  }
+  function leavePage() {
+    const employee = actor()?.role === 'employee';
+    const requests = leaveRequests().filter(item => employee ? item.employee === actor()?.personId : item.status === 'pending');
+    if (employee) {
+      const leave = LF.personal?.leave;
+      const nextDate = LF.personal?.shifts?.find(shift => shift?.start)?.start?.slice(0, 10) || '';
+      return `<section class="vw-panel" data-vector-leave-route="employee"><h1>Absence &amp; Leave</h1><p>Request scheduled leave and track the saved manager decision.</p>${leaveReceipt()}<div class="personal-grid"><div><b>${escape((Number(leave?.availableMinutes || 0) / 60).toFixed(1))} hours</b><small>Available after pending requests</small></div><div><b>${escape((Number(leave?.pendingMinutes || 0) / 60).toFixed(1))} hours</b><small>Awaiting a manager decision</small></div></div>${control('Request leave', 'leave-request', nextDate, !nextDate || LF.busy)}<h2>My requests</h2>${requests.map(item => `<div class="vw-row" data-vector-leave-id="${escape(item.id)}"><span><b>${escape(item.kind || 'Annual leave')}</b><br>${escape(item.date || item.start)} · ${escape(item.hours)} hours</span><strong data-vector-leave-status>${escape(item.status)}</strong></div>`).join('') || '<p>No leave requests are recorded.</p>'}</section>`;
+    }
+    return `<section class="vw-panel" data-vector-leave-route="manager"><h1>Absence &amp; Leave</h1><p>Only source-saved requests in the authenticated scope can be decided.</p>${leaveReceipt()}<h2>Requests awaiting a decision</h2>${requests.map(item => `<div class="vw-row" data-vector-leave-id="${escape(item.id)}"><span><b>${escape(item.employeeName || item.employee)}</b><br>${escape(item.date || item.start)} · ${escape(item.hours)} hours<br><small>${escape(item.id)}</small></span><div>${control('Approve', 'leave-approve', item.id, LF.busy)}${control('Decline', 'leave-decline', item.id, LF.busy)}</div></div>`).join('') || '<p>No pending requests are visible in this reporting scope.</p>'}</section>`;
+  }
   function evidence(rows) {
     return `<div class="vw-scroll"><table class="table"><thead><tr><th>Employee / date</th><th>Original clocking</th><th>Reviewed outcome</th><th>Worked / absence</th></tr></thead><tbody>${rows.map(row => `<tr><td>${escape(selected()?.employees.find(person => person.id === row.employee)?.name || row.employee)}<br>${escape(row.date)}<br><small>${escape(row.id)}</small></td><td>${escape(row.raw.clockIn || 'Missing')}<br>${escape(row.raw.clockOut || 'Missing')}</td><td>${escape(row.effective.kind)}<br>${escape(row.effective.clockIn || '')}<br>${escape(row.effective.clockOut || '')}${row.correction ? '<br>Correction recorded; original retained' : ''}</td><td>${row.workedMinutes == null ? 'Unverified' : hours(row.workedMinutes)} / ${hours(row.effective.absenceMinutes)}</td></tr>`).join('')}</tbody></table></div>`;
   }
@@ -143,6 +222,14 @@
     setTimeout(() => URL.revokeObjectURL(url), 1500); toast('Immutable CSV downloaded; access recorded by the service.');
   }
   async function action(name, id = '') {
+    if (name === 'leave-request') {
+      const date = id || LF.personal?.shifts?.find(shift => shift?.start)?.start?.slice(0, 10) || '';
+      return modal('Request leave', `<label>Date<input name="date" type="date" value="${escape(date)}" required></label><label>Scheduled paid hours<input name="hours" type="number" min=".5" max="12" step=".5" value="7.5" required></label><p>The authenticated service checks entitlement and overlapping requests before saving.</p>${modalActions('Send request')}`, form => leaveRequest({ date: String(form.get('date')), hours: Number(form.get('hours')) }));
+    }
+    if (name === 'leave-approve' || name === 'leave-decline') {
+      const decision = name === 'leave-approve' ? 'approved' : 'declined';
+      return modal(decision === 'approved' ? 'Approve leave request' : 'Decline leave request', `<p>Request ${escape(id)}. The decision is saved only after server-side entitlement, overlap, role and staffing checks.</p>${decision === 'declined' ? reason() : ''}${checked('reviewed', 'I reviewed the current request and available evidence.')}${modalActions('Save decision')}`, form => leaveDecision({ id, decision, reviewed: form.has('reviewed'), reason: String(form.get('reason') || '') }));
+    }
     if (name === 'weekly' || name === 'payroll' || name === 'time') { if (ui.page === 'time-review' && typeof triClean === 'function' && !triClean()) return; ui.page = ({ weekly: 'vector-weekly-signoff', payroll: 'payroll-run', time: 'time-review' })[name]; return render(); }
     if (name === 'issue') return resolve(id);
     if (name === 'category' || name === 'employee') return check(name, id);
@@ -164,6 +251,7 @@
   const previousLogin = showLogin;
   showLogin = function (...args) {
     RF.epoch++; state.epoch++; state.owner = ''; state.receipt = null;
+    LF.epoch++; LF.owner = ''; LF.bootstrap = null; LF.personal = null; LF.receipt = null;
     RF.report = null; RF.company = null; RF.team = '';
     document.getElementById('modal')?.close?.();
     return previousLogin.apply(this, args);
@@ -181,6 +269,11 @@
         if (epoch !== state.epoch || route !== ui.page) return;
         const body = route === 'vector-weekly-signoff' ? weeklyPage() : globalThis.payrollPageV4();
         document.getElementById('root').innerHTML = shell(body); return;
+      }
+      if (route === 'leave') {
+        await leaveRefresh();
+        if (epoch !== state.epoch || route !== ui.page) return;
+        document.getElementById('root').innerHTML = shell(leavePage()); return;
       }
       await previousRender.apply(this, args);
       if (epoch !== state.epoch || ui.page !== 'time-review' || !reviewer()) return;
@@ -207,5 +300,5 @@
     if (event.target.id === 'vw-team') { RF.team = event.target.value; await render(); }
     if (event.target.id === 'vw-period') { RF.period = event.target.value; RF.report = null; RF.company = null; state.receipt = null; await render(); }
   });
-  globalThis.VectorWorkflow = Object.freeze({ refresh, action, mutate, weeklyPage, payrollPage, state: () => ({ receipt: state.receipt, busy: state.busy }), marker: 'VECTOR_AUTHENTICATED_WORKFLOWS_V1' });
+  globalThis.VectorWorkflow = Object.freeze({ refresh, action, mutate, weeklyPage, payrollPage, leaveRefresh, leaveRequest, leaveDecision, leavePage, leaveState: () => ({ bootstrap: LF.bootstrap, personal: LF.personal, receipt: LF.receipt, busy: LF.busy }), state: () => ({ receipt: state.receipt, busy: state.busy }), marker: 'VECTOR_AUTHENTICATED_WORKFLOWS_V1' });
 }());

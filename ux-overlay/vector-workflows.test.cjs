@@ -124,6 +124,47 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     await assert.rejects(() => employee.workflow.mutate('review-check', { period: '2026-09-07', team: team.id, revision: team.revision, category: category.id, checked: true }), error => error.status === 403);
     assert.equal(employee.workflow.state().receipt, null);
   });
+  const leaveEmployee = await client('maya@northstar.example');
+  let leaveRequestId, leaveDate, leaveAvailableBefore;
+  await t.test('employee leave route saves a real request and reads back reserved balance', async () => {
+    await leaveEmployee.workflow.leaveRefresh();
+    const before = leaveEmployee.workflow.leaveState();
+    leaveDate = before.personal.shifts[1].start.slice(0, 10);
+    leaveAvailableBefore = before.personal.leave.availableMinutes;
+    const result = await leaveEmployee.workflow.leaveRequest({ date: leaveDate, hours: 7.5 });
+    leaveRequestId = result.id;
+    const after = leaveEmployee.workflow.leaveState();
+    assert.equal(after.bootstrap.state.requests.find(request => request.id === leaveRequestId).status, 'pending');
+    assert.equal(after.personal.leave.pendingMinutes, 450);
+    assert.equal(after.personal.leave.availableMinutes, leaveAvailableBefore - 450);
+    assert.match(leaveEmployee.workflow.leavePage(), /Saved and read back from the service/);
+    assert.doesNotMatch(leaveEmployee.workflow.leavePage(), /workflow preview|demo does not certify/i);
+  });
+  await t.test('employee leave route surfaces authoritative overlap refusal without a false receipt', async () => {
+    const priorReceipt = leaveEmployee.workflow.leaveState().receipt;
+    await assert.rejects(() => leaveEmployee.workflow.leaveRequest({ date: leaveDate, hours: 7.5 }), error => error.status === 409);
+    assert.deepEqual(leaveEmployee.workflow.leaveState().receipt, priorReceipt);
+    assert.equal(leaveEmployee.workflow.leaveState().bootstrap.state.requests.filter(request => request.id === leaveRequestId).length, 1);
+  });
+  await t.test('manager leave route renders source request and saves an authorised decision', async () => {
+    await manager.workflow.leaveRefresh();
+    assert.match(manager.workflow.leavePage(), new RegExp(leaveRequestId));
+    assert.match(manager.workflow.leavePage(), /Approve/);
+    await manager.workflow.leaveDecision({ id: leaveRequestId, decision: 'approved', reviewed: true });
+    const saved = manager.workflow.leaveState().bootstrap.state.requests.find(request => request.id === leaveRequestId);
+    assert.equal(saved.status, 'approved');
+    assert.equal(manager.workflow.leaveState().receipt.action, 'leave-decision');
+  });
+  await t.test('fresh employee login sees the manager decision and durable audit', async () => {
+    const freshEmployee = await client('maya@northstar.example');
+    await freshEmployee.workflow.leaveRefresh();
+    assert.equal(freshEmployee.workflow.leaveState().bootstrap.state.requests.find(request => request.id === leaveRequestId).status, 'approved');
+    const db = new DatabaseSync(dbPath);
+    try {
+      const actions = db.prepare("SELECT action FROM audit_events WHERE tenant='northstar-demo' AND action IN ('leave-request','leave-decision') ORDER BY id").all().map(row => row.action);
+      assert.deepEqual(actions.slice(-2), ['leave-request', 'leave-decision']);
+    } finally { db.close(); }
+  });
   await t.test('saved verification survives controlled restart and a fresh login', async () => {
     await stop(); await start();
     const fresh = await client('manager@northstar.example');

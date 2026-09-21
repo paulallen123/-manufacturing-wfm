@@ -64,4 +64,29 @@ test('exact assets and successful role checks still require completed business w
   assert.ok(result.missingEvidence.includes('persisted-state-readback'));
   assert.ok(result.missingEvidence.includes('updated-UI-after-reload'));
 });
-
+test('opening a workflow route cannot be counted as a completed business action', () => {
+  const result = roleProofResult({ status: 'BOUND' }, { routeOpened: true, returnContextRestored: true });
+  assert.equal(result.scopedLeaveJourneyVerified, false);
+  assert.ok(result.missingEvidence.includes('UI-triggered-business-action'));
+  assert.ok(result.missingEvidence.includes('persisted-state-readback'));
+});
+test('saved leave UI journey removes navigation-only gaps but retains audit and backend proof boundaries', () => {
+  const result = roleProofResult({ status: 'BOUND' }, {
+    employeeUiSubmitted: true,
+    pendingStateReadBack: true,
+    overlapRefusedInUi: true,
+    refreshedUiRetainedPending: true,
+    managerUiDecided: true,
+    managerStateReadBack: true,
+    freshEmployeeLoginSawDecision: true
+  });
+  assert.equal(result.scopedLeaveJourneyVerified, true);
+  assert.equal(result.endToEndVerified, false);
+  assert.equal(result.productReady, false);
+  assert.ok(!result.missingEvidence.includes('UI-triggered-business-action'));
+  assert.ok(!result.missingEvidence.includes('persisted-state-readback'));
+  assert.ok(!result.missingEvidence.includes('updated-UI-after-reload'));
+  assert.ok(result.missingEvidence.includes('server-audit-readback'));
+  assert.ok(result.missingEvidence.includes('exact-backend-binding'));
+  assert.ok(result.missingEvidence.includes('major-workflow-coverage'));
+});

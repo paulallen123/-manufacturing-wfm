@@ -40,47 +40,55 @@ async function proveCanonicalAssetBinding() {
   const requireBinding = process.env.WFM_REQUIRE_VECTOR_ASSET_DIGESTS === 'true';
   const expectedJs = String(process.env.VECTOR_CANONICAL_JS_SHA256 || '').trim().toLowerCase();
   const expectedCss = String(process.env.VECTOR_CANONICAL_CSS_SHA256 || '').trim().toLowerCase();
+  const expectedWorkflow = String(process.env.VECTOR_WORKFLOW_JS_SHA256 || '').trim().toLowerCase();
 
-  if (!expectedJs || !expectedCss) {
-    assert.equal(requireBinding, false, 'Strict browser proof requires VECTOR_CANONICAL_JS_SHA256 and VECTOR_CANONICAL_CSS_SHA256.');
+  if (!expectedJs || !expectedCss || !expectedWorkflow) {
+    assert.equal(requireBinding, false, 'Strict browser proof requires Vector JS, CSS and authenticated workflow digests.');
     return { status: 'UNBOUND', required: false };
   }
 
   assert.match(expectedJs, /^[0-9a-f]{64}$/, 'Invalid VECTOR_CANONICAL_JS_SHA256.');
   assert.match(expectedCss, /^[0-9a-f]{64}$/, 'Invalid VECTOR_CANONICAL_CSS_SHA256.');
+  assert.match(expectedWorkflow, /^[0-9a-f]{64}$/, 'Invalid VECTOR_WORKFLOW_JS_SHA256.');
 
   const origin = new URL(process.env.VECTOR_PROOF_URL).origin;
-  const [jsResponse, cssResponse] = await Promise.all([
+  const [jsResponse, cssResponse, workflowResponse] = await Promise.all([
     fetch(`${origin}/vector-ui.js`, { cache: 'no-store', signal: AbortSignal.timeout(15000) }),
-    fetch(`${origin}/vector-ui.css`, { cache: 'no-store', signal: AbortSignal.timeout(15000) })
+    fetch(`${origin}/vector-ui.css`, { cache: 'no-store', signal: AbortSignal.timeout(15000) }),
+    fetch(`${origin}/vector-workflows.js`, { cache: 'no-store', signal: AbortSignal.timeout(15000) })
   ]);
 
   assert.equal(jsResponse.status, 200, 'Canonical Vector script unavailable for exact-byte proof.');
   assert.equal(cssResponse.status, 200, 'Canonical Vector stylesheet unavailable for exact-byte proof.');
+  assert.equal(workflowResponse.status, 200, 'Authenticated Vector workflow controller unavailable for exact-byte proof.');
 
-  const [jsBytes, cssBytes] = await Promise.all([
+  const [jsBytes, cssBytes, workflowBytes] = await Promise.all([
     jsResponse.arrayBuffer().then(buffer => Buffer.from(buffer)),
-    cssResponse.arrayBuffer().then(buffer => Buffer.from(buffer))
+    cssResponse.arrayBuffer().then(buffer => Buffer.from(buffer)),
+    workflowResponse.arrayBuffer().then(buffer => Buffer.from(buffer))
   ]);
   const actualJs = sha256(jsBytes);
   const actualCss = sha256(cssBytes);
+  const actualWorkflow = sha256(workflowBytes);
 
   assert.equal(actualJs, expectedJs, 'Hosted /vector-ui.js bytes do not match the exact source-built candidate digest.');
   assert.equal(actualCss, expectedCss, 'Hosted /vector-ui.css bytes do not match the exact source-built candidate digest.');
+  assert.equal(actualWorkflow, expectedWorkflow, 'Hosted /vector-workflows.js bytes do not match the exact source-built candidate digest.');
 
   return {
     status: 'BOUND',
     required: requireBinding,
     origin,
     jsSha256: actualJs,
-    cssSha256: actualCss
+    cssSha256: actualCss,
+    workflowSha256: actualWorkflow
   };
 }
 
 try {
   assetBinding = await proveCanonicalAssetBinding();
-  await import('./current-candidate-role-browser-proof.mjs');
-  outcome = roleProofResult(assetBinding);
+  const proof = await import('./current-candidate-role-browser-proof.mjs');
+  outcome = roleProofResult(assetBinding, proof.browserProofEvidence?.leaveJourney);
   state = outcome.status;
   console.log(`BROWSER_PROOF_ASSET_BINDING=${assetBinding.status}`);
   console.log('BROWSER_ROLE_CHECKS=PASS');
