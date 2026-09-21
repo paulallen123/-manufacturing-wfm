@@ -8,6 +8,7 @@ const indexPath = path.join(publicRoot, 'index.html');
 let html = fs.readFileSync(indexPath, 'utf8');
 
 const retired = [
+  'factory-control-ui.js',
   'factory-control-ui.css',
   'value-cockpit-ui.js',
   'value-cockpit-ui.css',
@@ -42,4 +43,15 @@ if (!html.includes('vector-ui.js')) {
 }
 
 fs.writeFileSync(indexPath, html);
+for (const name of retired) {
+  const file = path.join(publicRoot, name);
+  fs.rmSync(file, { force: true });
+  if (html.includes(name) || fs.existsSync(file)) throw new Error(`RETIRED_PRESENTATION_REMAINS:${name}`);
+}
+for (const name of ['vector-ui.js','vector-ui.css']) {
+  const file=path.join(publicRoot,name);
+  if(!fs.existsSync(file)) throw new Error('VECTOR_CANONICAL_ASSET_MISSING');
+  if(!fs.readFileSync(file,'utf8').includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')) throw new Error(`VECTOR_CANONICAL_MARKER_MISSING:${name}`);
+}
 console.log('VECTOR_INDEX_COMPOSITION=PASS');
+console.log('VECTOR_RETIRED_ENTRYPOINT_PURGE=PASS');

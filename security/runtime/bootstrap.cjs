@@ -85,6 +85,7 @@ function forceVectorUiFreshness(req, res) {
 }
 
 function serveCanonicalVectorAsset(req, res) {
+  if(require('./retired-presentation.cjs').serveRetiredPresentation(req,res)) return true;
   const path = requestPath(req);
   const asset = path === '/vector-ui.js'
     ? { file: '/app/public/vector-ui.js', type: 'text/javascript; charset=utf-8' }
@@ -363,3 +364,4 @@ http.createServer = function guardedCreateServer(listener) {
 };
 
 require('/app/server.cjs');
+

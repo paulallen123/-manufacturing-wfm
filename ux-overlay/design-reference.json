@@ -1,0 +1,29 @@
+{
+  "designId": "VECTOR_FIVE_SECTION_2026_09_19",
+  "primarySections": [
+    "Today",
+    "People",
+    "Plan",
+    "Factory",
+    "Improve"
+  ],
+  "approvedDecisions": [
+    "2026-09-19: persistent five-section routes with back/forward and working or disabled controls",
+    "2026-09-20: role-first Items to review and review drawer with So what explanation"
+  ],
+  "references": [
+    {
+      "name": "Vector Factory Operations Dashboard Showcase.png",
+      "sha256": "e210c481bcff0d9aa4b2ef7a442babcbae06c5ada1589b60c940350a6c8e51e5"
+    },
+    {
+      "name": "Vector Workforce Management Dashboard Mockup.png",
+      "sha256": "e1e53c77a30025dcaa7958548fc5209b4170c5e3b4e27a24178c837e2346c510"
+    },
+    {
+      "name": "Vector Directors & Ops AI Dashboard.png",
+      "sha256": "5e3b2ab2be89914d4feac1e0d379e29789f4fb86ed1ddc21998493a72d4dbf2f"
+    }
+  ],
+  "limits": "Reference images are concepts. Operational values must come from authorised source evidence; no invented output, skills or savings."
+}

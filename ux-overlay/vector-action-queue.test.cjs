@@ -13,7 +13,7 @@ function loadVectorHelpers() {
   assert.notEqual(instrumented, source, 'Vector action markup test hook could not be attached.');
   const classList = { add() {}, remove() {}, toggle() {} };
   const sandbox = {
-    window: { render: undefined, location: { href: 'https://example.test/' } },
+    window: { render: undefined, addEventListener() {}, location: { href: 'https://example.test/' } },
     document: {
       addEventListener() {},
       documentElement: {},
@@ -58,8 +58,8 @@ test('awaiting confirmation remains present but does not inflate action-needed c
     { id: 'f', confirmationState: 'resolved' }
   ];
   const groups = vector.actionQueueGroups(rows);
-  assert.deepEqual(groups.needs.map(row => row.id), ['a', 'b', 'c']);
-  assert.deepEqual(groups.awaiting.map(row => row.id), ['d', 'e']);
+  assert.deepEqual(Array.from(groups.needs, row => row.id), ['a', 'b', 'c']);
+  assert.deepEqual(Array.from(groups.awaiting, row => row.id), ['d', 'e']);
 });
 
 test('rendered action queue keeps source-confirming work collapsed, visible and passive without hiding actionable work', () => {
