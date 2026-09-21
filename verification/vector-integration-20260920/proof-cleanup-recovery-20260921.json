@@ -1,0 +1,110 @@
+{
+  "status": "BUILT",
+  "scope": "Local Vector browser proof recovery only; not application or deployed customer acceptance",
+  "date": "2026-09-21",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 220,
+  "ownershipComment": 5757576231,
+  "sourceReviewed": "3a3529b58bb7baeffc6f2c114fce5bbeb242044c",
+  "concurrentHeadReviewed": "595aaa1230e248f4eb11c82e8c345cd345b9be00",
+  "concurrentChanges": "Four intervening commits affect other files and are retained, not overwritten.",
+  "originalRunnerBlob": "fd65fd01626ce4acb459f3bbef6594c0af063c08",
+  "unchangedBrowserAssertionsSha256": "1ddb3167f132c9e7ed1dcb15524b19fb1e85ae26ce1b6058d42a42fee4233714",
+  "files": {
+    "scripts/vector-five-section-browser-regression.mjs": {
+      "gitBlobSha": "cce00394d1cb9e639d21be7acc84a68e2cc3d47e",
+      "sha256": "2bce1cd398292657f207aaafdeeba15b9e88f651d9ca3834c2d4aefe248bc256"
+    },
+    "scripts/vector-proof-cleanup.mjs": {
+      "gitBlobSha": "02b2cd063b38ff7728c7769d3cda8a5585e95a1f",
+      "sha256": "3952c8a8a46de66b7eed8319c28efaef025b3f32b9b9660344cf36690e713769"
+    },
+    "scripts/vector-proof-cleanup.test.mjs": {
+      "gitBlobSha": "840d137315c6f5b2a71c8a4231864ef5af109a27",
+      "sha256": "60299dc06b9ae543e5be3e8ca406ad423afe38cdc80e953efeaef397942c63c1"
+    }
+  },
+  "defectsReproduced": [
+    "Already-exited runtime left the old finalizer waiting for a past exit event.",
+    "A rejected context.close prevented browser/runtime cleanup and left the owned child running."
+  ],
+  "change": "Observe the owned local child from spawn; bounded graceful stop then bounded force-stop if necessary; idempotent teardown; attempt later cleanup after earlier cleanup failure; preserve the primary test failure and write private cleanup evidence.",
+  "verification": {
+    "runtime": "Node v22.16.0",
+    "originalReproducer": {
+      "cases": 2,
+      "failedAsExpected": 2,
+      "realChildProcesses": true
+    },
+    "focusedSuiteRuns": [
+      {
+        "tests": 14,
+        "pass": 14,
+        "fail": 0,
+        "skipped": 0
+      },
+      {
+        "tests": 14,
+        "pass": 14,
+        "fail": 0,
+        "skipped": 0
+      }
+    ],
+    "realBrowserStartupFailure": {
+      "node": "v22.16.0",
+      "scenario": "exact local browser runner with missing runtime; real Chromium",
+      "exitCode": 1,
+      "elapsedSeconds": 17.149,
+      "timedOut": false,
+      "cleanup": {
+        "status": "PASS",
+        "runtimeStopped": true,
+        "failures": []
+      },
+      "originalFailurePreserved": true,
+      "productJourneyExecuted": false
+    },
+    "reproductionCommand": "node --test scripts/vector-proof-cleanup.test.mjs",
+    "fullApplicationSuiteRun": false,
+    "exactTargetRuntimeRun": false,
+    "dockerAdmissionRun": false,
+    "hostedRepairRun": false,
+    "independentReviewerRun": false,
+    "limits": "Focused local source subset, not a full application checkout. Browser resource failures are reported, never silently treated as recovered. Time bounds depend on a responsive local event loop. No full browser business journey was run."
+  },
+  "hostedDelta": {
+    "deployment": "77ed648a-e489-4587-bc80-c82b5c3192bc",
+    "run": "d8f6ad59-b023-4c4a-93e6-58ae5700d082",
+    "candidate": "ab93677008026540208d82c8f449b03f190c9faa",
+    "checkedAt": "2026-09-21T08:13:48.716Z",
+    "testResult": "FAIL",
+    "completedDeclineJourneys": 1,
+    "repeatFailure": "Second request remained pending where declined was expected.",
+    "requestSpecificAuditLinkObserved": false,
+    "rootCauseConfirmed": false,
+    "localCleanupRepairClaimsToFixHostedFailure": false
+  },
+  "measuredHumanTouch": {
+    "liveCustomerStepsRemoved": 0,
+    "implementationQuestionsRemoved": 0,
+    "localManualCleanupFailureClassesPrevented": 2,
+    "newSupportTerminalPaths": 0,
+    "realProvisioningExecuted": false,
+    "timeToReadyReductionMeasured": false
+  },
+  "boundaries": {
+    "productionMutation": false,
+    "customerMutation": false,
+    "payrollMutation": false,
+    "identityMutation": false,
+    "applicationCodeChanged": false,
+    "hostedRunnerChanged": false,
+    "railwayChanged": false,
+    "deployOrRestart": false,
+    "additionalInfrastructureCreated": false,
+    "paidCiRequested": false,
+    "modelAuthorityGranted": false,
+    "releaseClaimAllowed": false
+  },
+  "nextAction": "Hosted proof owner to correlate the second manager decision with exact response, saved request, balance and audit before another run; preserve original database, release holds and proof failure evidence."
+}

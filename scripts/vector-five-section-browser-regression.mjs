@@ -4,9 +4,10 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
+import {trackProofRuntime,cleanupProofResources} from './vector-proof-cleanup.mjs';
 const require=createRequire(import.meta.url),{chromium}=require(require.resolve('playwright',{paths:[process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES]}));
 const root=path.resolve(import.meta.dirname),runtime=path.resolve(process.argv[2]),out=path.resolve(process.argv[3]);fs.mkdirSync(out,{recursive:true});
-const base='http://127.0.0.1:4188',app=spawn(process.execPath,[runtime+'/security-runtime/bootstrap.cjs'],{env:{...process.env,PORT:'4188',WFM_DB:out+'/synthetic.sqlite'},stdio:'ignore'});let browser,context,page;const checks=[],errors=[],network=[];
+const base='http://127.0.0.1:4188',app=spawn(process.execPath,[runtime+'/security-runtime/bootstrap.cjs'],{env:{...process.env,PORT:'4188',WFM_DB:out+'/synthetic.sqlite'},stdio:'ignore'});const stopRuntime=trackProofRuntime(app);let browser,context,page;const checks=[],errors=[],network=[];
 async function check(name,fn){try{await fn();checks.push({name,pass:true});console.log('PASS '+name);}catch(e){checks.push({name,pass:false,error:e.message});console.log('FAIL '+name+': '+e.message.split('\n')[0]);await page?.screenshot({path:out+'/failure-'+checks.length+'.png'});}}
 try{
  for(let i=0;i<100;i++){try{if((await fetch(base+'/api/health')).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
@@ -56,4 +57,10 @@ try{
   const ctx=await browser.newContext();try{const l=await ctx.request.post(base+'/api/login',{headers:{Origin:base},data:{email:'maya@northstar.example',password:process.env.WFM_PROOF_PASSWORD||'Factory-local-demo-2026!'}});assert.equal(l.status(),200);const p=await ctx.newPage();await p.goto(base+'/#vector/vector-people');await p.locator('.vector-sidebar').waitFor();await p.waitForFunction(()=>location.hash==='#vector/overview');assert.equal(await p.locator('[data-vector-person-row]').count(),0);assert.equal(await p.locator('.vector-nav').getByRole('button',{name:'Factory',exact:true}).isDisabled(),true);assert.equal(await ctx.request.get(base+'/api/costs').then(r=>r.status()),403);assert.equal(await p.getByText('Labour cost (today)',{exact:true}).count(),0);}finally{await ctx.close();}
  });
  const release=await (await fetch(base+'/api/release')).json();fs.writeFileSync(out+'/result.json',JSON.stringify({release,checks,errors,network},null,2));console.log(JSON.stringify({passed:checks.filter(c=>c.pass).length,total:checks.length}));if(checks.some(c=>!c.pass))process.exitCode=1;
-}finally{await context?.close();await browser?.close();app.kill();await new Promise(r=>app.on('exit',r));}
+}finally{
+ const cleanup=await cleanupProofResources({context,browser,stopRuntime});
+ if(cleanup.status!=='PASS')process.exitCode=1;
+ try{fs.writeFileSync(out+'/cleanup.json',JSON.stringify(cleanup,null,2),{mode:0o600});}
+ catch{process.exitCode=1;console.error('VECTOR_CLEANUP_EVIDENCE_WRITE_FAILED');}
+ console.log(JSON.stringify({event:'VECTOR_LOCAL_PROOF_CLEANUP',...cleanup}));
+}
