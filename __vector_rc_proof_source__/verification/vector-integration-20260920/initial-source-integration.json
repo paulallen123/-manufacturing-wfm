@@ -1,0 +1,450 @@
+{
+  "createdAt": "2026-09-20T23:40:29.984722+00:00",
+  "status": "BUILT",
+  "root": "/workspace/scratch/26327d6f022a/vector-integration",
+  "baseCommit": "6667f4217e0c0a8a90cab8d4c7d79f8efd628662",
+  "repairCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85",
+  "overlayCommit": "57d5dbe3cc2d3792a330af7541b8f713eb28397b",
+  "nodeVersion": "v22.23.2",
+  "sourceSetSha256": "d9371bc585aee1c1c1ce770026760b154a53cf32eea27f78d94982ad7ab41b7f",
+  "sourceFiles": [
+    {
+      "path": "DEPLOYMENT_MANIFEST.json",
+      "bytes": 2103,
+      "sha256": "a8854d8adc7fd0733fba152ef1a5261020adec95d4efaf12a2d3cdee6abf6d0b",
+      "gitBlob": "85636f8523d31db854f3cdb1653919a92ace7730",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "Dockerfile",
+      "bytes": 14080,
+      "sha256": "3ad82fb605e99cec4cc9172278e4044211afa103b5a2677f4182a06fe6681ca1",
+      "gitBlob": "f7cf888888beeef9dc3dc34d71bc9a7092118bf8",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "Dockerfile.current-candidate-role-browser-proof",
+      "bytes": 550,
+      "sha256": "188ce465e06c51a9c8d593b69fcffc4d073060735d0a17e95071077b9dbcb688",
+      "gitBlob": "77126c751514b870ecabafa2b26e3fc3f33a9437",
+      "sourceCommit": "57d5dbe3cc2d3792a330af7541b8f713eb28397b"
+    },
+    {
+      "path": "Dockerfile.current-vector-browser-proof",
+      "bytes": 550,
+      "sha256": "188ce465e06c51a9c8d593b69fcffc4d073060735d0a17e95071077b9dbcb688",
+      "gitBlob": "77126c751514b870ecabafa2b26e3fc3f33a9437",
+      "sourceCommit": "57d5dbe3cc2d3792a330af7541b8f713eb28397b"
+    },
+    {
+      "path": "README.md",
+      "bytes": 658,
+      "sha256": "192b11f7de792e652db941508a6125c316e3ccb0bf1698b35991bcfefa390628",
+      "gitBlob": "45695a24746988769ccf442ead1bc1c514fccc83",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "bytes": 562434,
+      "sha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+      "gitBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/runtime/configuration-inference-engine.cjs",
+      "bytes": 11506,
+      "sha256": "ee945c9ccf97abf56fd5acb9e684485da36884b221bdf009ddb38e806433c610",
+      "gitBlob": "d3688d27841a28d3b8801b7d4c63f254e8bf7edd",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/runtime/configuration-inference-engine.test.cjs",
+      "bytes": 5691,
+      "sha256": "50082f41fd215ebed1201dd7fe0510e7f147b3308ea7ef9156e07bedfae2cff1",
+      "gitBlob": "8961de2ae2c10c3022519a3e1c5931f7e316a543",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/runtime/implementation-learning-integration.test.cjs",
+      "bytes": 10405,
+      "sha256": "aa347f60c5be280fcb22177c9264974fc0eab66abab10c0eea0f5feea70e4b4a",
+      "gitBlob": "5083f7b290ebe2460a0846fe4e3187e8f9f94ff6",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "bytes": 39366,
+      "sha256": "ab6e43e577e10fd42fd2f31d70f664b55e7fe50f79aa1665ba3f2d6362ed5d83",
+      "gitBlob": "0baf58781a329792b50ebf5e7b91725ffc52543f",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.cjs",
+      "bytes": 3417,
+      "sha256": "883bc2d31cbc6c196c7a455101cb37781ff9760a57f02ef845b74035d9f8c0e3",
+      "gitBlob": "31354c83f4cbe1d36465193399b598f879369678",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "bytes": 20690,
+      "sha256": "f9d03bb8ed34b9b2ac12f56c68eaaf15121dbf97c2c256b857ed00f28623a50b",
+      "gitBlob": "38bc9c89fa5f9acc5662a00f7eee709874f40fd2",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.cjs",
+      "bytes": 5415,
+      "sha256": "05ea430bb9de49ae88f26b96533f91ed10be8818cb9ff593dc88c5d330ab2420",
+      "gitBlob": "c4ffd812067ab7937482417143379d4f29653ea1",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.test.cjs",
+      "bytes": 3836,
+      "sha256": "cc18149ffef5f74faee136f0f35bfc7fb3008ba5169cbf7703feba60a698e146",
+      "gitBlob": "e5e6d72af69ce73598ae2eb9b55fdae1e4a3222f",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+      "bytes": 4701,
+      "sha256": "cdd76dc7f2c5ff409f2a695c8378e589e148f5f701bfebd949140e6f8b8500d7",
+      "gitBlob": "94f2b7b688b66e3d8ffec05624ffe0453d988234",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/ui/implementation-journey.css",
+      "bytes": 10613,
+      "sha256": "1e2ec2f10aab05491761a79a0177bc2d31bf68909b44b6ed8120837e50b8deb3",
+      "gitBlob": "6a2fbb210c1aa738e0e71bce7e94c21707ae1bb6",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "implementation/ui/implementation-journey.js",
+      "bytes": 28078,
+      "sha256": "f181375c5d143eb255a6b58da39910fe5ef00e27cc59a9976c7ea100c04d6eef",
+      "gitBlob": "a558fc10036acb82f3c79bc99d07fe6e3c0ba32e",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "integration/runtime/autonomous-integration-hub.cjs",
+      "bytes": 41666,
+      "sha256": "abaabe06cc797d00a4a010b789eeda59b604d93fda2a8cd1572ff7de2c9d2390",
+      "gitBlob": "839ccd9b749a6d7caf409848df83f6fa6a8d8169",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "integration/runtime/autonomous-integration-hub.test.cjs",
+      "bytes": 18774,
+      "sha256": "8bf08f1ee2dadc4849dd02d38d91d99f4c8fe9381c13d179ddffb6470efe9e50",
+      "gitBlob": "db5edbc7b1efea59e9c1cec3c22d39f9f637d4cf",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "integration/runtime/directory-oauth-broker.cjs",
+      "bytes": 8292,
+      "sha256": "eec35f21c35d32106bc0fa9e61621c7146d3d40b3a26b86f7cfa0622b988c4b7",
+      "gitBlob": "ebb3855ccf22ec25511f55e7b02b5f77ea2d91ab",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "integration/runtime/directory-oauth-broker.test.cjs",
+      "bytes": 6656,
+      "sha256": "4f7d0bfb96e219ff255b26ae6faa89046b1e874a984d4fe10ced7f494d07964a",
+      "gitBlob": "79d8762177008f45bcf2296a9bfc3f1989f9dfa1",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "learning/runtime/adaptive-learning-engine.cjs",
+      "bytes": 26777,
+      "sha256": "add373b153e3e078e651904f054f8d29d79f3b26353256fe7e46468805545545",
+      "gitBlob": "bb167a8fbe26ba68f51f78eec83c4c0140827d8d",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "learning/runtime/adaptive-learning-engine.test.cjs",
+      "bytes": 11701,
+      "sha256": "339f540125922b13b7640e72ac8ec74816388cc8d22c11b1a2e078d3652f9034",
+      "gitBlob": "47b55e4e2895cbd0780a939265940dde402aa6f6",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "learning/ui/adaptive-coach.css",
+      "bytes": 3687,
+      "sha256": "f954625a5845075ec62aa40177a9a6caddcadfc2c0c617a28be478e8ef6e96e1",
+      "gitBlob": "422d4ee77f27062279781176b2a1992581ce56b6",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "learning/ui/adaptive-coach.js",
+      "bytes": 6778,
+      "sha256": "28c798c47992b52564505cfa5e6567912263b2361b1df7e0ccba38a95d07bd3e",
+      "gitBlob": "18730cc96b74f733dcb5d67b4b742f123ab2a086",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "operations/runtime/workflow-action-evidence-bridge.cjs",
+      "bytes": 7548,
+      "sha256": "e178bbf6a92feb17a7eedf1c18c54413de1921be4c9b38d499f5d7ba893d3f67",
+      "gitBlob": "a60fe04a574eb0492e8b87c6674bbc1004e46bc5",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "operations/runtime/workflow-action-evidence-bridge.test.cjs",
+      "bytes": 7006,
+      "sha256": "a04fc93f3e7084118ef5bc0fd884bc045fa97e86c81ce8b6034edc833c412902",
+      "gitBlob": "ec37a73db6b65099269f340d02c568cd3bf543b6",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "operations/runtime/workflow-action-evidence-contract.cjs",
+      "bytes": 8645,
+      "sha256": "3eb9b62341061eda81a189940c0e397baba8f52b70df40928d2612fae4101d6f",
+      "gitBlob": "472ff24ec4129c23d06849ebc69b9985a02becc3",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "operations/runtime/workflow-action-evidence-contract.test.cjs",
+      "bytes": 8724,
+      "sha256": "f1edf81ec4c2abb1eba3b6a5f319f2cf6c4d6181f52c92671a6c600cb1e69db8",
+      "gitBlob": "4441a6993a420585dd423709cb117eeddc5e5d35",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "operations/runtime/workforce-lifecycle-guard.cjs",
+      "bytes": 14061,
+      "sha256": "db3e93a480357d0a817958165e15a0fa0ffd5aefc261d575f6f827f1fdd4a268",
+      "gitBlob": "cc2c1a7442c3f51a150cdf60868b28cbba2a30f0",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "operations/runtime/workforce-lifecycle-guard.test.cjs",
+      "bytes": 9000,
+      "sha256": "f8ae54a7c2d18c592ac9a7417346f63539de518b8e4a26d583248e8fb5c02059",
+      "gitBlob": "99fb9fcccd0490abafec2a909fac905e0ab7a5f8",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "operations/runtime/workforce-lifecycle-router.cjs",
+      "bytes": 1147,
+      "sha256": "0fdf39594a06e6c7ab787e721c017c5046e3b3c3299c6c239e15e16db336afc4",
+      "gitBlob": "646b5730e298ea5e10792a829d863864bdc990ee",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "bytes": 5380,
+      "sha256": "1fa61b974555fb39026aa2316f4d0004de429fcc7653820f501c8eae71f7c0a4",
+      "gitBlob": "60e6031ba850e90847f9d72deb438011a9d34f03",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "scripts/compose-vector-presentation.mjs",
+      "bytes": 1969,
+      "sha256": "2df566e22d58fc8e90897a213b5d8a0f6c7613c5afc00053893bd96e33218bb6",
+      "gitBlob": "b0f461f2d510ecb2c4735bddc0e03721a462aec0",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "bytes": 3812,
+      "sha256": "3a3468fae12ceeda84ef4abf7f71b973ccda2b7dbaf0f44ccd175a760424e9d4",
+      "gitBlob": "613cc755f2c4c94de6caa956c970222b51bd6bce",
+      "sourceCommit": "57d5dbe3cc2d3792a330af7541b8f713eb28397b"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof.mjs",
+      "bytes": 27728,
+      "sha256": "0f44f11ba3121f8e4b239511e6580bb94abcbfdae5053e6448278024af906002",
+      "gitBlob": "db5724ba2a3f62c7a8e7b1ed5d34d33914636e37",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "scripts/retire-legacy-presentation.mjs",
+      "bytes": 5791,
+      "sha256": "5468c9de8c1dd7addf23c066ce20a27e7af416910857b265b68ae39ca381e3af",
+      "gitBlob": "f1065d1fdaf7812d0ff1bb7caf92a23b94fc725b",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "scripts/vector-proof-result.mjs",
+      "bytes": 699,
+      "sha256": "26849578168026540e9a7835607ddf1ff45a041699d43c4d5538ebfa56f9465c",
+      "gitBlob": "5befafa3cf539cacd755ad61696039d1251bf405",
+      "sourceCommit": "57d5dbe3cc2d3792a330af7541b8f713eb28397b"
+    },
+    {
+      "path": "scripts/vector-repair-regressions.test.mjs",
+      "bytes": 3131,
+      "sha256": "ef40cb0ae21f4fb3a67315e204d4586fc4c60f322fc71ba1896eb9a39d52b342",
+      "gitBlob": "329e56214562bc8a7664171f36ab33fa861db4be",
+      "sourceCommit": "57d5dbe3cc2d3792a330af7541b8f713eb28397b"
+    },
+    {
+      "path": "security/runtime/OWNER_ACCESS_RECOVERY.md",
+      "bytes": 6314,
+      "sha256": "e08fe9254000577b95684f05210b8287c81560c5382e4e5fe676ac570b9053e2",
+      "gitBlob": "fac3334875722ec29eb61966c9a08b5ccf9e8773",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "bytes": 13531,
+      "sha256": "99161894f273c2a6aacac35ed5f16f38d0deaa727ed4a8a214335ccf46c129e3",
+      "gitBlob": "4cf1eef307ad3835b44eae8908f148dec38f50e4",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "security/runtime/hosted-listen-guard.cjs",
+      "bytes": 1243,
+      "sha256": "b5c7aeafb96f84fcdf6ee28aa103223cdf9743fe9d28e3dfa29412bd966f25e5",
+      "gitBlob": "e35e218c49c4d157af8c877b3e95c2b16792af42",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "security/runtime/hosted-listen-guard.test.cjs",
+      "bytes": 1746,
+      "sha256": "66f80769440dfd86e67403076569ba34f2f2de39afea65fdc4b8f24ff1e440fe",
+      "gitBlob": "76439f7615f643c85c2311b496fae514c25cf1a6",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "security/runtime/identity-survival-guard.cjs",
+      "bytes": 9050,
+      "sha256": "be2a60131f79e0d301bf37dacf013d03357e13b290ad63913eaadc16f0cf2080",
+      "gitBlob": "5393b30d17e2f4e5d80fedd1e123fa4dccf1232a",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "security/runtime/identity-survival-guard.test.cjs",
+      "bytes": 7515,
+      "sha256": "f7b27c466a86dd745a73cfdc56d809930692f407058e84e26328299aa198854e",
+      "gitBlob": "fd62586802f5a21c71ad2d6452f13ac18d74cd1a",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "security/runtime/owner-access-recovery.cjs",
+      "bytes": 11614,
+      "sha256": "4f0ff3f3968dea60f5511c0c9b89bbff148463fb37067337dada7c9abdb5475d",
+      "gitBlob": "c08b0c27ff7265d341bf524d1680977305241b96",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "security/runtime/owner-access-recovery.test.cjs",
+      "bytes": 12420,
+      "sha256": "5c6fdcaf571cba85ba3ba25c643f5dda75c7a9bbf0dede9494821eac72acaccd",
+      "gitBlob": "c4db2580af82c2e8c000bf6ab3244866d4bcbc8e",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "ux-overlay/vector-action-queue.test.cjs",
+      "bytes": 5167,
+      "sha256": "6661efb59815adf0ec3e612885227fc0d3ce91b2e6cf75d41a663f9486b1da95",
+      "gitBlob": "b4c8d4029a50ca52390a101eaa4bb6f29166c9a0",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "ux-overlay/vector-shell.css",
+      "bytes": 20910,
+      "sha256": "74ebe7e9203205cb30842ea0681b1e4876ba5cc73e1e22ec894bbbaa1774105d",
+      "gitBlob": "85ded45e2219bd565875b153681328901abd1b54",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "bytes": 37560,
+      "sha256": "93af328e9dfc0cbd7669bb891d40005b7450c4664c54f5383d88dee4e768c131",
+      "gitBlob": "953cddfaabd7f2f1456c8f6fb655a4ce59851b1d",
+      "sourceCommit": "57d5dbe3cc2d3792a330af7541b8f713eb28397b"
+    },
+    {
+      "path": "ux-overlay/vector-workflows.css",
+      "bytes": 1393,
+      "sha256": "c6192424b7752a5f24a96b76d04cf8257b327de96a842ca5dcc963abaf1adb1f",
+      "gitBlob": "2ef98d64b784ab28403c18bb38e78de03764b1b7",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "ux-overlay/vector-workflows.js",
+      "bytes": 30416,
+      "sha256": "3c176dcb56f283b7ed8422c08937bdbcf09dc96ec36c4a3d5ecb67c80188a38a",
+      "gitBlob": "6b9852c143759fbad61e559abbb6875366f7dd35",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "ux-overlay/vector-workflows.test.cjs",
+      "bytes": 11260,
+      "sha256": "63389d50cb0aa31145ce1a8486b695dd6928cded20bfbdb71a86baa16ec839ed",
+      "gitBlob": "56f97a9f89ff66a94530cca2567a7e504f0f412c",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "verification/vector-repair-20260920/api-journey-proof.mjs",
+      "bytes": 7108,
+      "sha256": "352869b9fcbff45582d90e8adba06e517f711213e55710830026f883c899bf33",
+      "gitBlob": "e8bc17069f41a75123c1f19fcca633cd63601f68",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    },
+    {
+      "path": "verification/vector-repair-20260920/payroll-journey-proof.mjs",
+      "bytes": 6899,
+      "sha256": "8f6c13778f073dbab7a43261122087d147751ae551b4483a3aaa9ecd2a4effd1",
+      "gitBlob": "3725ed82e7ddd46ab4b59cf9076beef9813cdcae",
+      "sourceCommit": "1aad642a4ec4bbbcb40e933ab2bcae750be50e85"
+    }
+  ],
+  "changesRelativeToRepair": [
+    "Dockerfile.current-candidate-role-browser-proof",
+    "Dockerfile.current-vector-browser-proof",
+    "scripts/current-candidate-role-browser-proof-server.mjs",
+    "scripts/vector-proof-result.mjs",
+    "scripts/vector-repair-regressions.test.mjs",
+    "ux-overlay/vector-shell.js"
+  ],
+  "repairChangesRelativeToCommonBase": [
+    "Dockerfile",
+    "scripts/compose-vector-local-runtime.mjs",
+    "scripts/compose-vector-presentation.mjs",
+    "scripts/retire-legacy-presentation.mjs",
+    "security/runtime/OWNER_ACCESS_RECOVERY.md",
+    "security/runtime/bootstrap.cjs",
+    "security/runtime/owner-access-recovery.cjs",
+    "security/runtime/owner-access-recovery.test.cjs",
+    "ux-overlay/vector-workflows.css",
+    "ux-overlay/vector-workflows.js",
+    "ux-overlay/vector-workflows.test.cjs",
+    "verification/vector-repair-20260920/STATUS.md",
+    "verification/vector-repair-20260920/api-journey-proof.mjs",
+    "verification/vector-repair-20260920/api-journey-results.json",
+    "verification/vector-repair-20260920/payroll-journey-proof.mjs",
+    "verification/vector-repair-20260920/payroll-journey-results.json",
+    "verification/vector-repair-20260920/security-independent.tap",
+    "verification/vector-repair-20260920/source-sha256.json",
+    "verification/vector-repair-20260920/workflow-provenance.json",
+    "verification/vector-repair-20260920/workflows-independent.tap"
+  ],
+  "integrationFixes": [],
+  "normalization": "36 copied text files each had exactly one extra trailing newline; removal restored every immutable Git blob. No semantic code changes.",
+  "verification": {
+    "command": "node --test security/runtime/*.test.cjs ux-overlay/vector-workflows.test.cjs scripts/vector-repair-regressions.test.mjs",
+    "tests": 39,
+    "passed": 39,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 3525.832955,
+    "syntaxCheckedFiles": [
+      "ux-overlay/vector-shell.js",
+      "scripts/current-candidate-role-browser-proof-server.mjs",
+      "scripts/vector-proof-result.mjs",
+      "scripts/vector-repair-regressions.test.mjs",
+      "ux-overlay/vector-workflows.js",
+      "security/runtime/owner-access-recovery.cjs",
+      "security/runtime/bootstrap.cjs",
+      "scripts/compose-vector-presentation.mjs"
+    ],
+    "logPath": "/workspace/scratch/26327d6f022a/vector-integration-focused.tap",
+    "logSha256": "0b11b36a0d76ad66cbdda77b817074817cb83fbe458aba29d934b26de783dd67"
+  },
+  "claimBoundary": "Isolated local exact Node22 source/controller/API/SQLite tests only. Not Docker build, deployed proof or Railway storage durability. Prior evidence and generated runtime/database outputs excluded."
+}

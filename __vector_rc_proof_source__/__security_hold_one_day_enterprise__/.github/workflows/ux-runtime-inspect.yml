@@ -1,0 +1,52 @@
+name: WFM UX runtime structure inspect
+
+on:
+  push:
+    branches:
+      - main
+      - 'ux/**'
+      - 'autonomy/**'
+    paths:
+      - '.github/workflows/ux-runtime-inspect.yml'
+      - 'Dockerfile'
+      - 'ux-overlay/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Build composed image
+        run: docker build --pull=false -t wfm-ux-inspect:pr .
+      - name: Inspect employee self-service runtime structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker create wfm-ux-inspect:pr)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          rm -rf /tmp/wfm-public && mkdir -p /tmp/wfm-public
+          docker cp "$cid:/app/public/." /tmp/wfm-public/
+          {
+            echo '=== EMPLOYEE NAV / PAGE HOOKS ==='
+            grep -RIn -E "personHome|personLeave|personShifts|time-review|employee-hero|newleave|leave balance|entitlement|availability|personal|profile|my time|my day|time off|shift" /tmp/wfm-public --include='*.js' | head -n 900 || true
+            echo '=== EMPLOYEE CSS / RESPONSIVE HOOKS ==='
+            grep -RIn -E "employee|personal|leave|shift|time-review|mobile|@media|overflow|person" /tmp/wfm-public --include='*.css' | head -n 700 || true
+            echo '=== CORE EMPLOYEE RENDERERS ==='
+            grep -RIn -E "function person(Home|Leave|Shifts)|person(Home|Leave|Shifts)\s*=|function .*employee|function .*profile|function .*time.*review" /tmp/wfm-public --include='*.js' | head -n 500 || true
+            echo '=== EMPLOYEE SOURCE CONTEXT ==='
+            grep -RIl -E "personHome|personLeave|personShifts" /tmp/wfm-public --include='*.js' | while read f; do echo "--- $f ---"; grep -n -C 12 -E "personHome|personLeave|personShifts" "$f" | head -n 420; done || true
+            echo '=== ROLE-FIRST EMPLOYEE OVERLAY ==='
+            grep -n -C 6 -E "employeeRouteLabel|enhanceEmployeeSelfService|employeeBalanceCard|fixEmployeeLeaveModal" /tmp/wfm-public/value-cockpit-ui.js | head -n 420 || true
+          } | tee /tmp/wfm-runtime-contract.txt
+      - name: Preserve runtime contract evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: wfm-ux-runtime-contract
+          path: /tmp/wfm-runtime-contract.txt
+          if-no-files-found: error
+          retention-days: 1

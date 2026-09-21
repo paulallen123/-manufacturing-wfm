@@ -1,0 +1,208 @@
+name: 24h sell-readiness candidate
+
+on:
+  push:
+    branches:
+      - feature/one-day-enterprise-implementation-v1
+      - release/24h-sell-readiness-20260918-r1
+    paths:
+      - '.github/workflows/24h-sell-readiness-candidate.yml'
+      - 'implementation/**'
+      - 'integration/**'
+      - 'learning/**'
+      - 'resilience/**'
+      - 'scripts/run-portable-autonomy-proof.mjs'
+      - 'scripts/validate-autonomy-*.mjs'
+      - 'scripts/validate-support-*.mjs'
+      - 'scripts/validate-provider-recovery-handoff.mjs'
+      - 'scripts/validate-autonomous-repair-*.mjs'
+      - 'scripts/validate-isolated-repair-worker.mjs'
+      - 'scripts/validate-independent-repair-verifier.mjs'
+      - 'scripts/validate-disposable-staging-gate.mjs'
+      - 'scripts/validate-canary-rollback-controller.mjs'
+      - 'scripts/validate-ci-provider-failover.mjs'
+      - 'scripts/validate-vector-only-ui.mjs'
+      - 'ux-overlay/**'
+      - 'security/runtime/**'
+      - 'operations/runtime/**'
+      - 'Dockerfile'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wfm-24h-sell-readiness-candidate
+  cancel-in-progress: true
+
+jobs:
+  prove-and-deploy:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      RAILWAY_NO_AUTO_UPDATE: '1'
+      TEST_PROJECT_ID: '9cd73309-0ece-4b9a-891f-7daa13d94f0d'
+      TEST_ENVIRONMENT_ID: '9e7875b6-e214-4c32-9cee-81235e3d49ff'
+      TEST_SERVICE_ID: '8cadddc3-15e9-4c38-a93f-0af829054f29'
+      TEST_ORIGIN: 'https://wfm-one-day-enterprise-v1-production.up.railway.app'
+      PROOF_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'
+      PROOF_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'
+      PROOF_SERVICE_ID: '2631d462-61bf-4c01-ac4b-e106a562feeb'
+      PROOF_ORIGIN: 'https://wfm-integration-fabric-v1-proof-production.up.railway.app'
+
+    steps:
+      - name: Checkout exact combined candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Pin exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Prove implementation integration learning security and lifecycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test \
+            implementation/runtime/one-day-enterprise-engine.test.cjs \
+            implementation/runtime/configuration-inference-engine.test.cjs \
+            implementation/runtime/implementation-learning-integration.test.cjs \
+            learning/runtime/adaptive-learning-engine.test.cjs \
+            integration/runtime/autonomous-integration-hub.test.cjs \
+            integration/runtime/directory-oauth-broker.test.cjs \
+            integration/worker/directory-discovery-worker.test.cjs \
+            security/runtime/hosted-listen-guard.test.cjs \
+            operations/runtime/workforce-lifecycle-guard.test.cjs
+          node implementation/simulation/one-day-enterprise-simulation.mjs --assert-target
+
+      - name: Prove T0-T4 autonomous support boundary
+        run: node scripts/run-portable-autonomy-proof.mjs --strict-runtime
+
+      - name: Prove approved Vector role-first composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ux-overlay/vector-shell.js
+          node scripts/validate-vector-only-ui.mjs
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' ux-overlay/vector-shell.js
+          grep -F 'Vector Workforce Operations' ux-overlay/vector-shell.css
+          grep -F 'WFM_ADAPTIVE_COACH_BEGIN' Dockerfile
+          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' Dockerfile
+
+      - name: Build exact combined staging image
+        run: docker build --pull=false -t wfm-24h-candidate:${{ github.sha }} .
+
+      - name: Install pinned Railway CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
+          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
+          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
+          echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/railway-cli"
+          tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
+          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)"
+          test -n "$CLI_BIN"
+          echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
+          "$CLI_BIN" --version
+
+      - name: Upload exact candidate to existing one-day service
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN is not configured'; exit 1; }
+          "$RAILWAY_BIN" up --project "$TEST_PROJECT_ID" --service "$TEST_SERVICE_ID" --environment "$TEST_ENVIRONMENT_ID" --ci
+
+      - name: Prove one-day service health and Vector UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent --show-error "$TEST_ORIGIN/api/health" > "$RUNNER_TEMP/test-health.json"; then success=1; break; fi
+            sleep 4
+          done
+          test "$success" = 1
+          node -e "const h=require(process.env.RUNNER_TEMP+'/test-health.json');if(h.fixtureOnly!==true||h.productionApproved!==false)process.exit(1)"
+          curl --fail --silent --show-error "$TEST_ORIGIN/vector-shell.js" > "$RUNNER_TEMP/test-vector.js"
+          curl --fail --silent --show-error "$TEST_ORIGIN/factory-control-ui.css" > "$RUNNER_TEMP/test-ui.css"
+          curl --fail --silent --show-error "$TEST_ORIGIN/value-cockpit-ui.js" > "$RUNNER_TEMP/test-ui.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/test-vector.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/test-ui.css"
+          grep -F 'WFM_ADAPTIVE_COACH_BEGIN' "$RUNNER_TEMP/test-ui.js"
+          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' "$RUNNER_TEMP/test-ui.js"
+          for retired in WFM_UX_RESET_CYCLE11_BEGIN WFM_UX_RESET_CYCLE12_BEGIN VECTOR_PRIORITY_BRIDGE_V1; do
+            ! grep -F "$retired" "$RUNNER_TEMP/test-vector.js"
+            ! grep -F "$retired" "$RUNNER_TEMP/test-ui.css"
+            ! grep -F "$retired" "$RUNNER_TEMP/test-ui.js"
+          done
+
+      - name: Upload exact candidate to existing integration proof service
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RAILWAY_BIN" up --project "$PROOF_PROJECT_ID" --service "$PROOF_SERVICE_ID" --environment "$PROOF_ENVIRONMENT_ID" --ci
+
+      - name: Prove integration proof service health and Vector UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent --show-error "$PROOF_ORIGIN/api/health" > "$RUNNER_TEMP/proof-health.json"; then success=1; break; fi
+            sleep 4
+          done
+          test "$success" = 1
+          node -e "const h=require(process.env.RUNNER_TEMP+'/proof-health.json');if(h.fixtureOnly!==true||h.productionApproved!==false)process.exit(1)"
+          curl --fail --silent --show-error "$PROOF_ORIGIN/vector-shell.js" > "$RUNNER_TEMP/proof-vector.js"
+          curl --fail --silent --show-error "$PROOF_ORIGIN/factory-control-ui.css" > "$RUNNER_TEMP/proof-ui.css"
+          curl --fail --silent --show-error "$PROOF_ORIGIN/value-cockpit-ui.js" > "$RUNNER_TEMP/proof-ui.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/proof-vector.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/proof-ui.css"
+          grep -F 'WFM_ADAPTIVE_COACH_BEGIN' "$RUNNER_TEMP/proof-ui.js"
+          grep -F 'WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN' "$RUNNER_TEMP/proof-ui.js"
+          for retired in WFM_UX_RESET_CYCLE11_BEGIN WFM_UX_RESET_CYCLE12_BEGIN VECTOR_PRIORITY_BRIDGE_V1; do
+            ! grep -F "$retired" "$RUNNER_TEMP/proof-vector.js"
+            ! grep -F "$retired" "$RUNNER_TEMP/proof-ui.css"
+            ! grep -F "$retired" "$RUNNER_TEMP/proof-ui.js"
+          done
+
+      - name: Publish machine-readable proof receipt
+        if: always()
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const receipt={
+            generatedAt:new Date().toISOString(),
+            sha:process.env.GITHUB_SHA,
+            branch:process.env.GITHUB_REF_NAME,
+            candidate:'one-day + autonomous integration + adaptive learning + approved Vector role-first UX + T0-T4 support',
+            productionMutation:false,
+            frozenCustomerProofMutation:false,
+            targetServices:['wfm-one-day-enterprise-v1','wfm-integration-fabric-v1-proof'],
+            note:'A successful workflow is exact-hosted evidence only for the exercised gates; provider integrations require separately authenticated sandbox/live-provider evidence.'
+          };
+          fs.writeFileSync('24h-sell-readiness-receipt.json',JSON.stringify(receipt,null,2)+'\n');
+          NODE
+
+      - name: Upload proof receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wfm-24h-sell-readiness-receipts
+          path: |
+            24h-sell-readiness-receipt.json
+            portable-autonomy-proof.json
+          if-no-files-found: warn
+          retention-days: 14

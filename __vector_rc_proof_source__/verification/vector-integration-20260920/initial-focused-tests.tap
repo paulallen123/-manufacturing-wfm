@@ -1,0 +1,271 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: authoritative zero attendance and absence survive unrelated rendered numbers
+ok 1 - authoritative zero attendance and absence survive unrelated rendered numbers
+  ---
+  duration_ms: 2.143061
+  type: 'test'
+  ...
+# Subtest: an empty workforce is not replaced by a number from another card
+ok 2 - an empty workforce is not replaced by a number from another card
+  ---
+  duration_ms: 0.807346
+  type: 'test'
+  ...
+# Subtest: missing evidence stays unknown
+ok 3 - missing evidence stays unknown
+  ---
+  duration_ms: 0.954924
+  type: 'test'
+  ...
+# Subtest: missing, blank, boolean and malformed costs cannot become a verified zero
+ok 4 - missing, blank, boolean and malformed costs cannot become a verified zero
+  ---
+  duration_ms: 4.596087
+  type: 'test'
+  ...
+# Subtest: verified zero and pence values remain valid
+ok 5 - verified zero and pence values remain valid
+  ---
+  duration_ms: 1.826726
+  type: 'test'
+  ...
+# Subtest: unbound navigation proof cannot claim end-to-end readiness
+ok 6 - unbound navigation proof cannot claim end-to-end readiness
+  ---
+  duration_ms: 0.330506
+  type: 'test'
+  ...
+# Subtest: exact assets and successful role checks still require completed business workflows
+ok 7 - exact assets and successful role checks still require completed business workflows
+  ---
+  duration_ms: 0.262486
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: local mode leaves loopback binding untouched
+ok 8 - local mode leaves loopback binding untouched
+  ---
+  duration_ms: 1.100648
+  type: 'test'
+  ...
+# Subtest: hosted mode changes only loopback host to all interfaces
+ok 9 - hosted mode changes only loopback host to all interfaces
+  ---
+  duration_ms: 0.168938
+  type: 'test'
+  ...
+# Subtest: hosted options form rewrites loopback without mutating caller options
+ok 10 - hosted options form rewrites loopback without mutating caller options
+  ---
+  duration_ms: 0.178192
+  type: 'test'
+  ...
+# Subtest: hosted mode preserves explicit non-loopback and unix-socket bindings
+ok 11 - hosted mode preserves explicit non-loopback and unix-socket bindings
+  ---
+  duration_ms: 0.119636
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:15) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: valid authenticated session is resource-bound and allowed
+ok 12 - valid authenticated session is resource-bound and allowed
+  ---
+  duration_ms: 7.42795
+  type: 'test'
+  ...
+# Subtest: client-supplied tenant or role authority is rejected before application code
+ok 13 - client-supplied tenant or role authority is rejected before application code
+  ---
+  duration_ms: 4.382033
+  type: 'test'
+  ...
+# Subtest: stale tenant session epoch self-revokes only the presented session
+ok 14 - stale tenant session epoch self-revokes only the presented session
+  ---
+  duration_ms: 5.219073
+  type: 'test'
+  ...
+# Subtest: tampered cross-tenant binding is contained and session revoked
+ok 15 - tampered cross-tenant binding is contained and session revoked
+  ---
+  duration_ms: 4.93141
+  type: 'test'
+  ...
+# Subtest: privileged freeze blocks manager mutation but preserves employee low-risk path and other tenant
+ok 16 - privileged freeze blocks manager mutation but preserves employee low-risk path and other tenant
+  ---
+  duration_ms: 5.905431
+  type: 'test'
+  ...
+# Subtest: policy version change forces re-authentication rather than silently changing authority
+ok 17 - policy version change forces re-authentication rather than silently changing authority
+  ---
+  duration_ms: 3.699709
+  type: 'test'
+  ...
+# Subtest: unknown or expired bearer is denied before the application
+ok 18 - unknown or expired bearer is denied before the application
+  ---
+  duration_ms: 2.304508
+  type: 'test'
+  ...
+# (node:16) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:16) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: atomic reset preserves authority, revokes only target sessions, audits, and survives restart replay
+ok 19 - atomic reset preserves authority, revokes only target sessions, audits, and survives restart replay
+  ---
+  duration_ms: 137.111421
+  type: 'test'
+  ...
+# Subtest: absent/malformed/non-staging/expired configuration never enables recovery
+ok 20 - absent/malformed/non-staging/expired configuration never enables recovery
+  ---
+  duration_ms: 2.85733
+  type: 'test'
+  ...
+# Subtest: rejects wrong host, origin, transport, method, injected identity, content type, body and token
+ok 21 - rejects wrong host, origin, transport, method, injected identity, content type, body and token
+  ---
+  duration_ms: 5.551642
+  type: 'test'
+  ...
+# Subtest: frozen, rotated, deleted, or tenant/role/person reassigned account fails closed
+ok 22 - frozen, rotated, deleted, or tenant/role/person reassigned account fails closed
+  ---
+  duration_ms: 351.539301
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back consumption, password update and session revocation
+ok 23 - audit failure rolls back consumption, password update and session revocation
+  ---
+  duration_ms: 40.079824
+  type: 'test'
+  ...
+# Subtest: durable revocation and token re-keying cannot resurrect a used grant
+ok 24 - durable revocation and token re-keying cannot resurrect a used grant
+  ---
+  duration_ms: 114.120875
+  type: 'test'
+  ...
+# Subtest: expiry is rechecked after request body and within reset transaction
+ok 25 - expiry is rechecked after request body and within reset transaction
+  ---
+  duration_ms: 39.474854
+  type: 'test'
+  ...
+# Subtest: recovery page exposes no secret and accepts no token in request URL
+ok 26 - recovery page exposes no secret and accepts no token in request URL
+  ---
+  duration_ms: 1.860395
+  type: 'test'
+  ...
+# (node:16) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:16) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:16) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:16) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:16) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:16) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:16) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: concurrent independent workers can consume a grant only once
+ok 27 - concurrent independent workers can consume a grant only once
+  ---
+  duration_ms: 134.914375
+  type: 'test'
+  ...
+# (node:21) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:21) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: Vector workflow controller uses real authentication, saved checks and restart recovery
+    # Subtest: real HTTP serves the workflow controller before its payroll consumer
+    ok 1 - real HTTP serves the workflow controller before its payroll consumer
+      ---
+      duration_ms: 8.432978
+      type: 'test'
+      ...
+    # Subtest: baseline surviving Time Review action fails without its removed owner
+    ok 2 - baseline surviving Time Review action fails without its removed owner
+      ---
+      duration_ms: 1.745596
+      type: 'test'
+      ...
+    # Subtest: new workflow reads real team and evidence before individual confirmation
+    ok 3 - new workflow reads real team and evidence before individual confirmation
+      ---
+      duration_ms: 215.65698
+      type: 'test'
+      ...
+    # Subtest: concurrent duplicate submission is bounded in the UI controller
+    ok 4 - concurrent duplicate submission is bounded in the UI controller
+      ---
+      duration_ms: 216.235434
+      type: 'test'
+      ...
+    # Subtest: unfinished weekly sign-off and unprivileged payroll are rejected
+    ok 5 - unfinished weekly sign-off and unprivileged payroll are rejected
+      ---
+      duration_ms: 58.151561
+      type: 'test'
+      ...
+    # Subtest: employee cannot acquire manager review or mutate a team check
+    ok 6 - employee cannot acquire manager review or mutate a team check
+      ---
+      duration_ms: 153.819997
+      type: 'test'
+      ...
+    # Subtest: saved verification survives controlled restart and a fresh login
+    ok 7 - saved verification survives controlled restart and a fresh login
+      ---
+      duration_ms: 371.957045
+      type: 'test'
+      ...
+    # Subtest: payroll source is readable by explicit payroll authority
+    ok 8 - payroll source is readable by explicit payroll authority
+      ---
+      duration_ms: 174.060895
+      type: 'test'
+      ...
+    # Subtest: accepted command without observed saved result cannot produce success receipt
+    ok 9 - accepted command without observed saved result cannot produce success receipt
+      ---
+      duration_ms: 365.386289
+      type: 'test'
+      ...
+    # Subtest: account change during a command suppresses old-account readback and receipt
+    ok 10 - account change during a command suppresses old-account readback and receipt
+      ---
+      duration_ms: 173.987626
+      type: 'test'
+      ...
+    # Subtest: unsaved Time Review is protected when entering weekly sign-off
+    ok 11 - unsaved Time Review is protected when entering weekly sign-off
+      ---
+      duration_ms: 0.180716
+      type: 'test'
+      ...
+    1..11
+ok 28 - Vector workflow controller uses real authentication, saved checks and restart recovery
+  ---
+  duration_ms: 3439.48265
+  type: 'test'
+  ...
+1..28
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3525.832955

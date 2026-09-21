@@ -1,0 +1,92 @@
+name: Vector-only UI guard
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+      - 'ux/**'
+    paths:
+      - 'ux-overlay/**'
+      - 'implementation/ui/**'
+      - 'learning/ui/**'
+      - 'operations/runtime/workflow-action-evidence-contract.cjs'
+      - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
+      - 'Dockerfile'
+      - 'scripts/compose-vector-presentation.mjs'
+      - 'scripts/validate-vector-only-ui.mjs'
+      - '.github/workflows/vector-only-ui-guard.yml'
+  pull_request:
+    paths:
+      - 'ux-overlay/**'
+      - 'implementation/ui/**'
+      - 'learning/ui/**'
+      - 'operations/runtime/workflow-action-evidence-contract.cjs'
+      - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
+      - 'Dockerfile'
+      - 'scripts/compose-vector-presentation.mjs'
+      - 'scripts/validate-vector-only-ui.mjs'
+      - '.github/workflows/vector-only-ui-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vector-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Prove source-owned action evidence semantics
+        run: node --test operations/runtime/workflow-action-evidence-contract.test.cjs ux-overlay/vector-action-queue.test.cjs
+      - name: Refuse retired UI source
+        run: node scripts/validate-vector-only-ui.mjs
+      - name: Build exact runtime
+        run: docker build --pull=false -t wfm-vector-only .
+      - name: Prove Vector is the only active presentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="$(docker create wfm-vector-only)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          rm -rf "$RUNNER_TEMP/public" && mkdir -p "$RUNNER_TEMP/public"
+          docker cp "$cid:/app/public/." "$RUNNER_TEMP/public/"
+
+          test -f "$RUNNER_TEMP/public/vector-ui.js"
+          test -f "$RUNNER_TEMP/public/vector-ui.css"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/public/vector-ui.js"
+          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/public/vector-ui.css"
+          grep -F '/vector-ui.js' "$RUNNER_TEMP/public/index.html"
+          grep -F '/vector-ui.css' "$RUNNER_TEMP/public/index.html"
+
+          retired=(
+            vector-shell.js
+            review-ui.js
+            review-ui.css
+            factory-control-ui.css
+            value-cockpit-ui.js
+            value-cockpit-ui.css
+            ui-evolution.css
+          )
+          for asset in "${retired[@]}"; do
+            test ! -e "$RUNNER_TEMP/public/$asset" || {
+              echo "Retired presentation asset remains active: $asset" >&2
+              exit 1
+            }
+            ! grep -F "$asset" "$RUNNER_TEMP/public/index.html"
+          done
+
+          if grep -RIlE 'WFM_UX_RESET_CYCLE11_BEGIN|WFM_UX_RESET_CYCLE12_BEGIN|VECTOR_PRIORITY_BRIDGE_V1' "$RUNNER_TEMP/public" --include='*.js' --include='*.css' --include='*.html'; then
+            echo 'Retired presentation overlay found in built public assets.' >&2
+            exit 1
+          fi
+
+          js_sha="$(sha256sum "$RUNNER_TEMP/public/vector-ui.js" | awk '{print $1}')"
+          css_sha="$(sha256sum "$RUNNER_TEMP/public/vector-ui.css" | awk '{print $1}')"
+          test -n "$js_sha" && test -n "$css_sha"
+          echo "VECTOR_CANONICAL_JS_SHA256=$js_sha"
+          echo "VECTOR_CANONICAL_CSS_SHA256=$css_sha"
+          echo 'VECTOR_ONLY_BUILT_ASSET_GUARD=PASS'
