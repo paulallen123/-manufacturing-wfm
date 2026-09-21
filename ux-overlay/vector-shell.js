@@ -179,7 +179,7 @@ function structuredReviewRows(){
 }
 function refreshActionSurfaces(){
   const rows=structuredReviewRows(),groups=actionQueueGroups(rows);
-  const current=document.querySelector('.vector-alerts');if(current)current.outerHTML=current.classList.contains('vector-priorities')?priorityMarkup(rows):alertsMarkup(rows);
+  const current=document.querySelector('.vector-alerts');if(current)current.outerHTML=current.classList?.contains?.('vector-priorities')?priorityMarkup(rows):alertsMarkup(rows);
   const badge=document.querySelector('.vector-notification-count');if(badge){badge.textContent=String(groups.needs.length);badge.hidden=!groups.needs.length;}
 }
 function invalidateTimeReviewEvidence(){state.evidenceEpoch++;state.timeReviewEvidence={status:'idle',items:[]};}
