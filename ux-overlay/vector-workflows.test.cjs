@@ -146,6 +146,31 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     await assert.rejects(() => uncertain.workflow.leaveRequest({ date, hours: 7.5 }), /saved balance and request details were not confirmed/);
     assert.equal(uncertain.workflow.leaveState().receipt, null);
   });
+  await t.test('missing or blank saved balances cannot be interpreted as a valid zero', async () => {
+    for (const [suffix, malformed] of [['null', null], ['blank', '']]) {
+      const uncertain = await client('maya@northstar.example');
+      await uncertain.workflow.leaveRefresh();
+      const state = uncertain.workflow.leaveState();
+      const date = state.personal.shifts[2].start.slice(0, 10);
+      state.personal.leave.availableMinutes = 450;
+      state.personal.leave.pendingMinutes = 0;
+      const baseline = structuredClone(state.personal.leave);
+      const original = uncertain.context.request;
+      let accepted = false;
+      uncertain.context.request = async (url, method, payload) => {
+        if (url === '/api/personal/work') {
+          accepted = true;
+          return { ok: true, version: state.bootstrap.state.version + 1, result: { id: 'leave-malformed-' + suffix, status: 'pending' } };
+        }
+        const response = await original(url, method, payload);
+        if (accepted && url === '/api/bootstrap') response.state.requests.push({ id: 'leave-malformed-' + suffix, employee: state.bootstrap.actor.personId, date, hours: 7.5, status: 'pending' });
+        if (accepted && url === '/api/personal') response.leave = { ...baseline, availableMinutes: malformed, pendingMinutes: 450 };
+        return response;
+      };
+      await assert.rejects(() => uncertain.workflow.leaveRequest({ date, hours: 7.5 }), /saved balance and request details were not confirmed/);
+      assert.equal(uncertain.workflow.leaveState().receipt, null);
+    }
+  });
   await t.test('employee leave route saves a real request and reads back reserved balance', async () => {
     await leaveEmployee.workflow.leaveRefresh();
     const before = leaveEmployee.workflow.leaveState();

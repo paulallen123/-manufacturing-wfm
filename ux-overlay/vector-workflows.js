@@ -111,7 +111,7 @@
     const owner = ownerKey(), date = String(input?.date || ''), hoursRequested = Number(input?.hours);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(hoursRequested) || hoursRequested < 0.5 || hoursRequested > 12) throw Error('Choose a valid date and 0.5–12 scheduled hours.');
     const beforeLeave = LF.personal?.leave, requestedMinutes = Math.round(hoursRequested * 60);
-    if (!Number.isFinite(Number(beforeLeave?.availableMinutes)) || !Number.isFinite(Number(beforeLeave?.pendingMinutes))) throw Error('Current leave balance evidence is unavailable. Refresh before requesting leave.');
+    if (typeof beforeLeave?.availableMinutes !== 'number' || !Number.isFinite(beforeLeave.availableMinutes) || typeof beforeLeave?.pendingMinutes !== 'number' || !Number.isFinite(beforeLeave.pendingMinutes)) throw Error('Current leave balance evidence is unavailable. Refresh before requesting leave.');
     LF.receipt = null;
     LF.busy = true;
     try {
@@ -123,7 +123,8 @@
       const saved = leaveRequests().find(item => item.id === response.result.id);
       const afterLeave = LF.personal?.leave;
       const requestMatches = saved?.status === 'pending' && saved.employee === actor()?.personId && saved.date === date && Number(saved.hours) === hoursRequested;
-      const reservationMatches = Number(afterLeave?.availableMinutes) === Number(beforeLeave.availableMinutes) - requestedMinutes && Number(afterLeave?.pendingMinutes) === Number(beforeLeave.pendingMinutes) + requestedMinutes;
+      const balanceTypesValid = typeof afterLeave?.availableMinutes === 'number' && Number.isFinite(afterLeave.availableMinutes) && typeof afterLeave?.pendingMinutes === 'number' && Number.isFinite(afterLeave.pendingMinutes);
+      const reservationMatches = balanceTypesValid && afterLeave.availableMinutes === beforeLeave.availableMinutes - requestedMinutes && afterLeave.pendingMinutes === beforeLeave.pendingMinutes + requestedMinutes;
       if (!requestMatches || !reservationMatches) throw Error('The leave request was accepted but its saved balance and request details were not confirmed.');
       LF.receipt = { action: 'leave-request', id: saved.id, status: saved.status, version: response.version };
       toast('Leave request saved and read back from the service.');
