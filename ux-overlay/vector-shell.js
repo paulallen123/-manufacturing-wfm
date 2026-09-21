@@ -232,9 +232,10 @@ function conceptKpiMarkup(m,rows){
   return `<section class="vector-concept-kpis" data-vector-kpi-evidence="${KPI_MARKER}">${items.map(item=>`<button type="button" class="vector-concept-kpi" data-vector-route="${item.route}"><span class="vector-concept-kpi-icon">${icon(item.icon)}</span><span><small>${esc(item.label)}</small><strong>${esc(item.value)}</strong><em>${esc(item.detail)}</em></span>${icon('chevron')}</button>`).join('')}</section>`;
 }
 function priorityMarkup(rows){
-  const groups=actionQueueGroups(rows),visible=groups.needs.slice(0,5);
-  const body=visible.length?visible.map(alertRowMarkup).join(''):'<div class="vector-empty">No source-confirmed items need your action.</div>';
-  return `<section class="vector-card vector-alerts vector-priorities" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-priority-title"><div class="vector-card-head"><div><span class="vector-card-kicker">Priority</span><h2 id="vector-priority-title">Top priorities</h2></div><button type="button" data-vector-route="time-review">View all ${icon('arrow')}</button></div><div class="vector-alert-list">${body}</div></section>`;
+  const groups=actionQueueGroups(rows),visibleNeeds=groups.needs.slice(0,5),visibleAwaiting=groups.awaiting.slice(0,3);
+  const body=visibleNeeds.length?visibleNeeds.map(alertRowMarkup).join(''):'<div class="vector-empty">No source-confirmed items need your action.</div>';
+  const awaiting=groups.awaiting.length?`<details data-vector-awaiting-confirmation><summary class="vector-empty">Awaiting source confirmation · ${groups.awaiting.length}</summary><div class="vector-alert-list">${visibleAwaiting.map(alertRowMarkup).join('')}</div></details>`:'';
+  return `<section class="vector-card vector-alerts vector-priorities" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><div><span class="vector-card-kicker">Priority</span><h2 id="vector-review-title">Top priorities <em>${groups.needs.length}</em></h2></div><button type="button" data-vector-route="time-review">View all ${icon('arrow')}</button></div><div class="vector-alert-list">${body}</div>${awaiting}</section>`;
 }
 function productionPreviewMarkup(source){
   const rows=departmentRows(source).slice(0,4);
