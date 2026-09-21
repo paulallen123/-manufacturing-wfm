@@ -23,6 +23,11 @@ function localMinute(value) {
   return new Intl.DateTimeFormat('sv-SE', {timeZone:'Europe/London', year:'numeric', month:'2-digit',
     day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false}).format(new Date(value)).replace(' ', 'T');
 }
+async function recoverSubmission(request, intent) {
+  const recovered = (await request('/api/attendance-corrections/command', intent.cookie, intent.body)).body;
+  need(/^AC-[a-f0-9]{32}$/i.test(recovered?.result?.id || ''), 'FIXTURE_SUBMISSION_UNRESOLVED');
+  return recovered.result.id;
+}
 async function runProof({ origin = TARGET, password, fetchImpl = fetch, onCheck = () => {} } = {}) {
   need(origin === TARGET, 'TARGET_NOT_CANDIDATE');
   need(typeof password === 'string' && password.length >= 20, 'CREDENTIAL_REFERENCE_UNAVAILABLE');
@@ -30,6 +35,7 @@ async function runProof({ origin = TARGET, password, fetchImpl = fetch, onCheck 
   const cookies = [];
   let fixtureRequest = null;
   let cleanupCookie = '';
+  let submissionIntent = null;
   function passed(name) { checks.push(name); onCheck(name); }
   async function request(path, cookie = '', payload, expected = 200) {
     let response;
@@ -110,6 +116,7 @@ async function runProof({ origin = TARGET, password, fetchImpl = fetch, onCheck 
     const submit = {version:dash.version, command:'correction-submit', idempotencyKey:'ui-http-'+randomBytes(10).toString('hex'),
       payload:{period:record.period, record:record.id, clockIn:localMinute(record.effective.clockIn), clockOut:localMinute(record.effective.clockOut),
         note:'Isolated candidate HTTP proof: requested times match current evidence. Reject by design.'}};
+    submissionIntent = {cookie:employee.cookie, body:submit};
     const submitted = (await request('/api/attendance-corrections/command', employee.cookie, submit)).body;
     const id = submitted?.result?.id;
     if (typeof id === 'string') fixtureRequest = id;
@@ -128,6 +135,7 @@ async function runProof({ origin = TARGET, password, fetchImpl = fetch, onCheck 
     const reviewed = (await request('/api/attendance-corrections/command', roles.manager.cookie, review)).body;
     need(reviewed?.result?.id === id && reviewed.result.status === 'rejected' && reviewed.result.revision === 2, 'REVIEW_DECISION');
     fixtureRequest = null;
+    submissionIntent = null;
     const reviewReplay = (await request('/api/attendance-corrections/command', roles.manager.cookie, review)).body;
     need(reviewReplay?.replayed === true && reviewReplay.result?.id === id && reviewReplay.result.status === 'rejected', 'REVIEW_IDEMPOTENCY');
     passed('manager decision and duplicate decision replay');
@@ -148,6 +156,12 @@ async function runProof({ origin = TARGET, password, fetchImpl = fetch, onCheck 
       assetSha256:DIGESTS, boundary:'Fixture HTTP/API and served asset proof. No browser rendering or restart durability claim.'};
   } finally {
     let cleanupFailed = false;
+    if (submissionIntent && !fixtureRequest) {
+      try {
+        fixture((await request('/api/health')).body);
+        fixtureRequest = await recoverSubmission(request, submissionIntent);
+      } catch { cleanupFailed = true; }
+    }
     if (fixtureRequest) {
       try {
         fixture((await request('/api/health')).body);
@@ -199,5 +213,5 @@ function start() {
     console.log(JSON.stringify({event:'VECTOR_HTTP_PROOF',...state.proof}));
   });
 }
-module.exports = {TARGET, MAIN, DIGESTS, runProof, verifyAsset, statusResponse, start};
+module.exports = {TARGET, MAIN, DIGESTS, runProof, verifyAsset, recoverSubmission, statusResponse, start};
 if (!module.parent) start();

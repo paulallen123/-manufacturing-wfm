@@ -31,3 +31,22 @@ test('proof failure is separate from verifier liveness and monitored product hea
   assert.equal(V.statusResponse('/', state).code, 503);
   assert.equal(V.statusResponse('/healthz', state).code, 200);
 });
+
+test('lost submission response is recovered using the identical idempotency payload', async () => {
+  const intent = {cookie:'test-session', body:{command:'correction-submit', idempotencyKey:'same-receipt', version:9, payload:{record:'fixture-record'}}};
+  const id = 'AC-' + 'a'.repeat(32);
+  let requests = 0;
+  const recovered = await V.recoverSubmission(async (path,cookie,body) => {
+    requests++;
+    assert.equal(path, '/api/attendance-corrections/command');
+    assert.equal(cookie, intent.cookie);
+    assert.equal(body, intent.body);
+    return {body:{replayed:true,result:{id}}};
+  }, intent);
+  assert.equal(recovered, id);
+  assert.equal(requests, 1);
+});
+
+test('unresolved submission recovery cannot silently declare cleanup successful', async () => {
+  await assert.rejects(V.recoverSubmission(async () => ({body:{result:{}}}), {cookie:'test',body:{}}), /FIXTURE_SUBMISSION_UNRESOLVED/);
+});
