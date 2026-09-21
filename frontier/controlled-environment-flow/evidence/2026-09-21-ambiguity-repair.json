@@ -1,0 +1,72 @@
+{
+  "status": "BUILT",
+  "evidenceClass": "local_synthetic_only",
+  "recordedAt": "2026-09-21T09:10:42.957826+00:00",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 216,
+  "branch": "frontier/controlled-environment-flow-v1",
+  "baseline": "b5d387153d102023e1d358726475e143dba30ed8",
+  "testedSourceCommit": "57e4be5a4bfa9cbc2a76e0bd522b7662d0254690",
+  "runtime": "v22.16.0",
+  "identities": {
+    "controlled-environment-flow.mjs": {
+      "gitBlob": "66724e05985033501feea66f1effa62fd2032b80",
+      "sha256": "a557abd4c903d9039551266b39b9755b092c7f72937ab07c9afbcf0fcc871f56",
+      "bytes": 7934
+    },
+    "controlled-environment-flow-ambiguity.test.mjs": {
+      "gitBlob": "d0dd862e30a262ec07c4b90de992354cc8f9ed6b",
+      "sha256": "192735c375796cd9722ecc620e320b3a758652d6b6a963041a53cbe9facaabd3",
+      "bytes": 5900
+    },
+    "controlled-environment-flow.test.mjs": {
+      "gitBlob": "f48e10bb0bb633168d04993137f013b0e153d646",
+      "sha256": "e19eb01bf7808f32a6af7b766ad11be9098ccf43f7d4be087361b864a96385e8",
+      "bytes": 4814
+    },
+    "controlled-environment-flow.sim.mjs": {
+      "gitBlob": "afa6eaee56fc3df583070682e592a994b00f6698",
+      "sha256": "602485b9c0955e30ddb50a81c7d55bc902918da719a800da1f09cc4efbb55ab2",
+      "bytes": 3517
+    }
+  },
+  "results": {
+    "baselineOriginalSuite": { "passed": 7, "failed": 0 },
+    "redRegressionSuite": {
+      "passed": 2, "failed": 22, "total": 24,
+      "note": "Includes fail-closed reason and malformed-input assertions, not 22 independent unsafe approvals."
+    },
+    "patchedFocusedSuite": { "passed": 31, "failed": 0, "skipped": 0, "repeated": true },
+    "originalSimulationRerun": { "cases": 2000, "outputUnchanged": true, "notRealSafetyProof": true },
+    "materialClockArchiveVerification": {
+      "sha256": "3c5008cbea98e0b946e16fe13b824b37266a5b6465ddcece833e4ceae06de141",
+      "testsPassed": 36, "gridCasesMatched": 3240, "newCodeChanges": false
+    }
+  },
+  "repairs": [
+    "Reject duplicate or non-canonical task and worker IDs before Map construction",
+    "Reject all duplicate transition pairs including identical definitions",
+    "Reject malformed transition lists/rows",
+    "Use tuple keys for transitions, worker slots and occupancy slots to prevent delimiter collisions"
+  ],
+  "reproduction": [
+    "node --test frontier/controlled-environment-flow/controlled-environment-flow.test.mjs frontier/controlled-environment-flow/controlled-environment-flow-ambiguity.test.mjs",
+    "node frontier/controlled-environment-flow/controlled-environment-flow.sim.mjs"
+  ],
+  "unexecuted": [
+    "Independent reviewer verification",
+    "Complete repository regression and Docker admission",
+    "Ledger duplicate/policy consistency hardening",
+    "Authenticated Vector UI integration",
+    "Hosted/provider/customer proof"
+  ],
+  "gate": "CONTROLLED_ENVIRONMENT_PLAN_SAFETY_AND_COVERAGE remains BLOCKED pending independent exact-head verification and broader safety requirements.",
+  "claimBoundary": "Only listed ambiguity regressions are repaired. The existing safe_candidate return value is not regulatory or real-world safety certification. No contamination, scrap, staffing or cash saving has been measured.",
+  "unchanged": [
+    "PR220 shared Vector repair",
+    "Production and customer databases",
+    "Deployment/security holds",
+    "Six-engine schedules",
+    "Material clock original archive"
+  ]
+}
