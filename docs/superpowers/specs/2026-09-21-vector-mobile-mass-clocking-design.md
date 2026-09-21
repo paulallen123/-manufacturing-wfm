@@ -1,7 +1,7 @@
 # VECTOR mobile workforce and mass clocking design
 
 Date: 21 September 2026  
-Status: Proposed for implementation  
+Status: DESIGNED — architecture approved by user on 21 September 2026, conditional on using the previously agreed concept art; exact visual family requires disambiguation before presentation changes.  
 Baseline: `paulallen123/-manufacturing-wfm@5ea6d4664e52348557e7e6284fe75a1c98d8a976`
 
 ## Outcome
@@ -16,9 +16,33 @@ Evolve the existing approved Vector interface, kiosk, clock-event API and Digita
 
 This is additive. It does not reintroduce retired presentation code, create a disconnected mobile data model, weaken tenant/security controls, or represent forecasts as realised savings.
 
-## Current verified foundation
+## User approval and concept-art condition
 
-The current repository and hosted fixture environment already provide:
+The user approved this specification with the instruction: “Approve, but use the the concept arts from yesterday”. Preserve that condition across implementation, mobile adaptation and proof.
+
+On retrieval, two materially different visual families were found, both dated 19 September 2026, not 20 September. Their pixels were inspected. The creation date alone does not establish which was approved. Do not select, blend or replace a visual family solely because it is newer or matches the current shell.
+
+| Candidate | Original reference | Persistent reference | Visual identity |
+|---|---|---|---|
+| Blue/white factory and mobile | Vector Factory Operations Dashboard Showcase.png | libfile_33da4b7756d8819199d2f94ace41d109 | Blue Vector mark, navy sidebar, white cards, blue actions; Today / People / Plan / Factory / Improve; light mobile screens |
+| Blue/white leadership | Vector Directors & Ops AI Dashboard.png | libfile_cb7aadc34e9c81918ec2466924c1439f | AI summary, site comparison, decision list, Operations / Finance / MD-Executive views |
+| Blue/white employee/shift detail | Vector Shift Pattern Dashboard.png | libfile_5bc8faf92d9c8191bee1e31feba1adef | Employee profile tabs, shift calendar, quick actions, rules-and-checks panel |
+| Blue/white workflow board | Vector Workforce Management Dashboard Mockup.png | libfile_7d0b36fec9f881919c2b82d7bce92089 | Today, People, Plan, live factory, line detail, forecast, what-if and improvement screens |
+| Green/black multi-device | VECTOR Workforce Operations Dashboard(1).png | libfile_c2829f0714088191b4352d292342dd09 | Uppercase VECTOR wordmark, green savings emphasis, factory-photo header, dark mobile cards and bottom navigation |
+
+Before changing presentation code, confirm which family the user means. Keep the architecture approval; only visual-family selection is unresolved. The existing shell is not evidence that its visual design matches the requested art.
+
+Visual acceptance rules for the selected family:
+
+- Match its logo/wordmark, palette, hierarchy, card geometry, navigation, spacing and action emphasis. Mobile/tablet adaptations preserve identity while reducing density and retaining accessible touch targets.
+- Use the original reference images as comparison inputs, not generated replacements. Treat every illustrative person, company, date, chart and financial number as example content, never a live product claim.
+- Keep role permissions and working engine actions intact. The kiosk must not expose leadership or employee-private information merely to resemble a dashboard.
+- Capture actual desktop, tablet and phone screens alongside the mapped concept. Record deliberate responsive differences and fix clipping, text overflow, inaccessible controls or unapproved visual substitutions.
+- A screenshot looking similar is visual evidence only. Functional acceptance still requires authenticated actions, saved state, refresh/restart and downstream assertions.
+
+## Source-inspected foundation
+
+The previous inspection found the following composition code and proof scripts in the repository. These scripts describe expected behaviour; they were not rerun during the architecture inspection and do not establish current end-to-end or physical-device acceptance:
 
 - the Vector-only shell composed through `ux-overlay/vector-shell.js` and `vector-shell.css`;
 - responsive authenticated role rendering on desktop and a 390x844 mobile viewport;
@@ -30,7 +54,7 @@ The current repository and hosted fixture environment already provide:
 - session-derived tenant authority that ignores or rejects client-supplied tenant selection;
 - employee personal, manager time-review and attendance-correction surfaces.
 
-These are staging proofs, not production or physical-device acceptance. The current frozen release remains fixture-only, `productionApproved=false`, `pilotReady=false`, and has no hosted persistent volume.
+The inspected manifest identifies a fixture-only release with `productionApproved=false` and `pilotReady=false`. The inspected Railway service metadata listed no attached volumes. Durable hosted storage still needs verification; these observations do not prove either successful persistence or data loss.
 
 ## Recommended architecture
 
