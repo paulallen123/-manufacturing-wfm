@@ -170,7 +170,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   if (!dbPath) throw new Error('One-day implementation engine requires WFM_DB.');
 
   const db = new DatabaseSync(dbPath);
-  const environmentProvisioner = createTenantEnvironmentProvisioner({ dbPath });
+  const environmentProvisioner = createTenantEnvironmentProvisioner({ db });
   db.exec(
     'PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;' +
     'CREATE TABLE IF NOT EXISTS implementation_invitations(' +
@@ -193,12 +193,12 @@ function createOneDayEnterpriseEngine(options = {}) {
       'question TEXT NOT NULL, proposal_json TEXT NOT NULL, confidence REAL NOT NULL, risk TEXT NOT NULL,' +
       'status TEXT NOT NULL, decision_json TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,' +
       'UNIQUE(run_id,decision_key));' +
-    'CREATE TABLE IF NOT EXISTS implementation_events(' +
+    'CREATE TABLE IF NOT EXISTS one_day_implementation_events(' +
       'id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT, tenant TEXT, event TEXT NOT NULL,' +
       'detail_json TEXT NOT NULL, created_at TEXT NOT NULL);' +
-    'CREATE TRIGGER IF NOT EXISTS no_implementation_event_update BEFORE UPDATE ON implementation_events ' +
+    'CREATE TRIGGER IF NOT EXISTS no_one_day_implementation_event_update BEFORE UPDATE ON one_day_implementation_events ' +
       "BEGIN SELECT RAISE(ABORT,'Implementation events are append only.'); END;" +
-    'CREATE TRIGGER IF NOT EXISTS no_implementation_event_delete BEFORE DELETE ON implementation_events ' +
+    'CREATE TRIGGER IF NOT EXISTS no_one_day_implementation_event_delete BEFORE DELETE ON one_day_implementation_events ' +
       "BEGIN SELECT RAISE(ABORT,'Implementation events are append only.'); END;"
   );
 
@@ -260,13 +260,17 @@ function createOneDayEnterpriseEngine(options = {}) {
     'UPDATE implementation_decisions SET status=?,decision_json=?,updated_at=? WHERE id=? AND tenant=?'
   );
   const eventStmt = db.prepare(
-    'INSERT INTO implementation_events(run_id,tenant,event,detail_json,created_at) VALUES(?,?,?,?,?)'
+    'INSERT INTO one_day_implementation_events(run_id,tenant,event,detail_json,created_at) VALUES(?,?,?,?,?)'
   );
 
   function record(runId, tenant, event, detail = {}) {
     try {
       eventStmt.run(runId || null, tenant || null, event, JSON.stringify(detail), nowIso());
     } catch {}
+  }
+
+  function recordRequired(runId, tenant, event, detail = {}) {
+    eventStmt.run(runId || null, tenant || null, event, JSON.stringify(detail), nowIso());
   }
 
   function authContext(req) {
@@ -281,7 +285,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       writeJson(res, 401, { error: 'Sign in is required.' });
       return null;
     }
-    if (String(ctx.role).toLowerCase() === 'employee') {
+    const role = String(ctx.role || '').trim().toLowerCase();
+    if (!new Set(['manager', 'director', 'superuser', 'admin', 'administrator']).has(role)) {
       writeJson(res, 403, { error: 'Implementation control requires an authorised manager or administrator.' });
       return null;
     }
@@ -690,21 +695,29 @@ function createOneDayEnterpriseEngine(options = {}) {
     const scope = normaliseScope(await readJson(req));
     const existing = scopeByRun.get(run.id, ctx.tenant);
     const ts = nowIso();
-    upsertScope.run(run.id, ctx.tenant, JSON.stringify(scope), sha256(ctx.email).slice(0, 16), existing?.created_at || ts, ts);
-    const environment = environmentProvisioner.provision({ tenant: ctx.tenant, runId: run.id, scope });
-    record(run.id, ctx.tenant, 'TENANT_ENVIRONMENT_READY', {
-      environmentId: environment.environmentId,
-      namespace: environment.namespace,
-      configurationDigest: environment.configurationDigest
-    });
-    record(run.id, ctx.tenant, existing ? 'CUSTOMER_SCOPE_UPDATED' : 'CUSTOMER_SCOPE_SUBMITTED', {
-      by: sha256(ctx.email).slice(0, 16),
-      employees: scope.employeeCount,
-      countries: scope.countries.length,
-      sites: scope.sites.length,
-      sourceSystems: scope.sourceSystems.length,
-      features: scope.features.length
-    });
+    let environment;
+    db.exec('BEGIN IMMEDIATE;');
+    try {
+      upsertScope.run(run.id, ctx.tenant, JSON.stringify(scope), sha256(ctx.email).slice(0, 16), existing?.created_at || ts, ts);
+      environment = environmentProvisioner.provision({ tenant: ctx.tenant, runId: run.id, scope });
+      recordRequired(run.id, ctx.tenant, 'TENANT_ENVIRONMENT_READY', {
+        environmentId: environment.environmentId,
+        namespace: environment.namespace,
+        configurationDigest: environment.configurationDigest
+      });
+      recordRequired(run.id, ctx.tenant, existing ? 'CUSTOMER_SCOPE_UPDATED' : 'CUSTOMER_SCOPE_SUBMITTED', {
+        by: sha256(ctx.email).slice(0, 16),
+        employees: scope.employeeCount,
+        countries: scope.countries.length,
+        sites: scope.sites.length,
+        sourceSystems: scope.sourceSystems.length,
+        features: scope.features.length
+      });
+      db.exec('COMMIT;');
+    } catch (error) {
+      try { db.exec('ROLLBACK;'); } catch {}
+      throw error;
+    }
     return writeJson(res, existing ? 200 : 201, recompute(run));
   }
 
