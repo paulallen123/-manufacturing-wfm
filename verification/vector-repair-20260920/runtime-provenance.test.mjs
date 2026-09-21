@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync, writeFileSync, rmSync} from 'node:fs';
+import {mkdirSync, mkdtempSync, symlinkSync, writeFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -29,4 +29,31 @@ test('proof refuses a modified inventory with the old digest', t => {
   manifest.runtimeFiles[0].sha256 = hash('different engine');
   writeFileSync(join(root, 'LOCAL_PROOF_PROVENANCE.json'), JSON.stringify(manifest));
   assert.throws(() => verifiedRuntimeProvenance(root), /Runtime inventory digest mismatch/);
+});
+
+test('proof refuses unlisted files that can change runtime semantics', t => {
+  const {root} = fixture(t);
+  mkdirSync(join(root, 'lib'));
+  writeFileSync(join(root, 'lib', 'package.json'), JSON.stringify({type: 'module'}));
+  assert.throws(() => verifiedRuntimeProvenance(root), /Runtime inventory does not match actual files/);
+});
+
+test('proof refuses duplicate and non-normalized inventory paths', t => {
+  const duplicate = fixture(t);
+  duplicate.manifest.runtimeFiles.push({...duplicate.manifest.runtimeFiles[0]});
+  duplicate.manifest.runtimeSetSha256 = hash(JSON.stringify(duplicate.manifest.runtimeFiles));
+  writeFileSync(join(duplicate.root, 'LOCAL_PROOF_PROVENANCE.json'), JSON.stringify(duplicate.manifest));
+  assert.throws(() => verifiedRuntimeProvenance(duplicate.root), /Duplicate runtime path/);
+
+  const nonNormalized = fixture(t);
+  nonNormalized.manifest.runtimeFiles[0].path = './server.cjs';
+  nonNormalized.manifest.runtimeSetSha256 = hash(JSON.stringify(nonNormalized.manifest.runtimeFiles));
+  writeFileSync(join(nonNormalized.root, 'LOCAL_PROOF_PROVENANCE.json'), JSON.stringify(nonNormalized.manifest));
+  assert.throws(() => verifiedRuntimeProvenance(nonNormalized.root), /Non-normalized runtime path/);
+});
+
+test('proof refuses unlisted symlinks and special entries', t => {
+  const {root} = fixture(t);
+  symlinkSync('server.cjs', join(root, 'engine-link.cjs'));
+  assert.throws(() => verifiedRuntimeProvenance(root), /Unexpected runtime file type/);
 });

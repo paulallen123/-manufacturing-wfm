@@ -2,6 +2,8 @@
 
 Status: **BUILT**. The combined repair passes local exact-runtime checks. The approved real environment has not yet passed a repaired browser action journey.
 
+21 September provenance closure: independent attack testing found that the original verifier accepted an unlisted nested `package.json` that changed Node module semantics without changing the listed-file digest. The verifier now requires the actual regular-file set to equal the manifest, rejects duplicate/non-normalized paths and refuses symlinks or special entries. On exact Node v22.23.2, 50 focused tests and 22 synthetic engine checks passed; an independent verifier rejected the original attack and passed 14 held-out attacks, with zero skips. Evidence: `provenance-closure-20260921.json`. This repairs static local file-set/contents closure only; it does not establish Docker/deployed identity, immutable execution, Railway durability, restore, or browser proof.
+
 Execution window: 20 September 2026 23:30 UTC to 21 September 2026 23:30 UTC. This is the user's target, not a completion guarantee or a claim of uninterrupted background execution.
 
 ## Ownership and source
