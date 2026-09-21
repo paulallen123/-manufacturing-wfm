@@ -20,3 +20,7 @@ test('the folded active proof remains syntactically valid and keeps honest scope
   assert.ok(source.includes('restart durability, full approval/payroll and provider proof remain unproven'));
   assert.ok(source.includes('applicationChanged:false'));
 });
+test('manager confirmation must be bound to the current leave request, not any old receipt',()=>{
+  assert.ok(source.includes("filter({hasText:' · leave-decision · '+id+' · declined · version '})"));
+  assert.ok(source.includes('VECTOR_MANAGER_RECEIPT_BOUND'));
+});
