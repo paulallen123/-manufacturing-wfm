@@ -272,6 +272,9 @@ async function saveScope(form){
   try{
     S.status=await request(IMPL+'/scope',{method:'POST',body:JSON.stringify(payload)});
     renderView();
+    if(S.status?.environment?.state==='READY'&&S.status?.environment?.dashboard?.route){
+      setTimeout(()=>openRoute(S.status.environment.dashboard.route),150);
+    }
   }catch(error){
     S.error=error.message||'Configuration scope could not be saved.';
     renderView();
