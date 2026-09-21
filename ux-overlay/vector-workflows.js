@@ -44,12 +44,33 @@
     if (!report?.teams.some(team => team.id === RF.team)) RF.team = report?.teams[0]?.id || '';
     return true;
   }
-  function resultObserved(name, input, result) {
+  const evidenceCopy = value => JSON.parse(JSON.stringify(value));
+  const sameEvidence = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+  function observationBasis(name, input) {
+    if (name !== 'review-resolve') return null;
+    const team = RF.report?.teams.find(item => item.id === input.team);
+    const issue = team?.issues.find(item => item.id === input.issue);
+    const row = team?.records.find(item => item.id === issue?.row);
+    if (!team || !issue || !row || issue.status !== 'open') throw Error('The source exception changed. Refresh before recording a decision.');
+    return evidenceCopy({ teamRevision: team.revision, issue, row });
+  }
+  function resultObserved(name, input, result, basis) {
     const team = RF.report?.teams.find(item => item.id === input.team) || RF.company?.teams.find(item => item.id === input.team);
     if (name === 'review-check') return input.category ? team?.categories.some(item => item.id === input.category && item.confirmed) : team?.employees.some(item => item.id === input.employee && item.checked);
     if (name === 'review-sign') return team?.status === 'signed' && team.signature?.by === actor()?.personId;
     if (name === 'review-return') return team?.status === 'returned' && team.returnedReason === input.reason;
-    if (name === 'review-resolve') return team?.issues.some(item => item.id === input.issue && item.status === 'resolved');
+    if (name === 'review-resolve') {
+      const issue = team?.issues.find(item => item.id === input.issue);
+      const row = team?.records.find(item => item.id === basis?.issue?.row);
+      const resolutionMatches = issue?.status === 'resolved' && issue.row === basis?.issue?.row && issue.employee === basis?.issue?.employee && issue.resolution?.by === actor()?.personId && issue.resolution?.reason === input.reason && (!input.decision || issue.resolution?.decision === input.decision);
+      const savedVersionMatches = result.id === input.issue && result.status === 'resolved' && result.revision === team?.revision && team?.revision === basis?.teamRevision + 1;
+      const rawPreserved = row?.id === basis?.row?.id && row.employee === basis.row.employee && sameEvidence(row.raw, basis.row.raw);
+      if (!resolutionMatches || !savedVersionMatches || !rawPreserved) return false;
+      if (basis.issue.type !== 'adjustment') return true;
+      if (input.decision === 'decline') return sameEvidence(row.effective, basis.row.effective);
+      const expectedEffective = { ...basis.row.effective, ...basis.issue.proposed };
+      return input.decision === 'accept' && row.reviewedBy === actor()?.personId && sameEvidence(row.effective, expectedEffective) && Object.entries(basis.issue.proposed || {}).every(([key, value]) => sameEvidence(row.correction?.[key], value));
+    }
     if (name === 'review-amend') return team?.issues.some(item => item.row === input.record && item.type === 'adjustment' && item.status === 'open' && item.proposedBy === actor()?.personId);
     if (name === 'payroll-remind') return RF.company?.reminders.some(item => item.id === result.id && item.team === input.team && item.message === input.reason);
     if (['payroll-release', 'payroll-sent', 'payroll-void'].includes(name)) return RF.company?.batches.some(item => item.id === result.id && item.status === result.status);
@@ -63,6 +84,7 @@
     if (OFFLINE) throw Error('An authenticated connection is required.');
     state.busy = true; state.receipt = null;
     const owner = ownerKey(), period = RF.period;
+    const basis = observationBasis(name, input);
     const submit = document.querySelector('#modalform button[type="submit"]');
     if (submit) submit.disabled = true;
     try {
@@ -70,7 +92,7 @@
       if (response?.ok !== true || !Number.isInteger(response.version)) throw Error('The service did not confirm a saved result. Refresh before trying again.');
       if (!F.ready || owner !== ownerKey() || period !== RF.period) throw Error('The account or review period changed. Reopen the source before checking this action.');
       const refreshed = await refresh();
-      if (!refreshed || owner !== ownerKey() || !resultObserved(name, input, response.result || {})) throw Error('The service accepted the action, but its saved result is not yet confirmed in the source. Refresh and verify before retrying.');
+      if (!refreshed || owner !== ownerKey() || !resultObserved(name, input, response.result || {}, basis)) throw Error('The service accepted the action, but its saved result is not yet confirmed in the source. Refresh and verify before retrying.');
       state.receipt = { action: name, id: response.result?.id || input.team || input.period, version: response.version, status: response.result?.status || 'saved' };
       toast('Saved and read back from the service · version ' + response.version + '.');
       return response;
@@ -104,6 +126,16 @@
     LF.bootstrap = bootstrap; LF.personal = personal;
     return true;
   }
+  async function refreshLeaveAndShell() {
+    if (typeof reload !== 'function') throw Error('The shared Vector workspace cannot refresh this saved result. Reload the page before trying again.');
+    await reload();
+    return leaveRefresh();
+  }
+  async function refreshLeaveAfterConflict(error, owner) {
+    LF.receipt = null;
+    if (error?.status !== 409 || owner !== ownerKey()) return;
+    try { await refreshLeaveAndShell(); } catch { LF.bootstrap = null; LF.personal = null; }
+  }
   async function leaveRequest(input) {
     if (LF.busy) throw Error('A leave action is already being saved. Wait for its result.');
     if (actor()?.role !== 'employee') throw Error('Only the employee can submit this leave request.');
@@ -119,7 +151,7 @@
         command: 'leave-request', payload: { date, hours: hoursRequested }, version: LF.bootstrap.state.version
       });
       if (response?.ok !== true || !response.result?.id || response.result.status !== 'pending') throw Error('The service did not confirm a saved leave request.');
-      if (!(await leaveRefresh()) || owner !== ownerKey()) throw Error('The account changed before the leave request could be read back.');
+      if (!(await refreshLeaveAndShell()) || owner !== ownerKey()) throw Error('The account changed before the leave request could be read back.');
       const saved = leaveRequests().find(item => item.id === response.result.id);
       const afterLeave = LF.personal?.leave;
       const requestMatches = saved?.status === 'pending' && saved.employee === actor()?.personId && saved.date === date && Number(saved.hours) === hoursRequested;
@@ -129,6 +161,9 @@
       LF.receipt = { action: 'leave-request', id: saved.id, status: saved.status, version: response.version };
       toast('Leave request saved and read back from the service.');
       return response.result;
+    } catch (error) {
+      await refreshLeaveAfterConflict(error, owner);
+      throw error;
     } finally { LF.busy = false; }
   }
   async function leaveDecision(input) {
@@ -138,6 +173,7 @@
     const id = String(input?.id || ''), decision = String(input?.decision || '');
     if (!id || !['approved', 'declined'].includes(decision) || input?.reviewed !== true) throw Error('Review the request and choose an approved or declined decision.');
     const owner = ownerKey();
+    LF.receipt = null;
     LF.busy = true;
     try {
       const response = await request('/api/command', 'POST', {
@@ -146,12 +182,15 @@
         version: LF.bootstrap.state.version
       });
       if (response?.ok !== true || response.result?.id !== id) throw Error('The service did not confirm a saved leave decision.');
-      if (!(await leaveRefresh()) || owner !== ownerKey()) throw Error('The account changed before the leave decision could be read back.');
+      if (!(await refreshLeaveAndShell()) || owner !== ownerKey()) throw Error('The account changed before the leave decision could be read back.');
       const saved = leaveRequests().find(item => item.id === id);
       if (saved?.status !== decision) throw Error('The leave decision was accepted but its saved result was not confirmed.');
       LF.receipt = { action: 'leave-decision', id, status: decision, version: response.version };
       toast('Leave decision saved and read back from the service.');
       return response.result;
+    } catch (error) {
+      await refreshLeaveAfterConflict(error, owner);
+      throw error;
     } finally { LF.busy = false; }
   }
   function leaveReceipt() {

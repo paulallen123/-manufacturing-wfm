@@ -61,17 +61,23 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     await request('/api/login', 'POST', { email, password: 'Factory-local-demo-2026!' });
     let bootstrap = await request('/api/bootstrap'), dialog;
     const document = { addEventListener() {}, querySelector() { return null; }, getElementById() { return { innerHTML: '' }; } };
-    const context = vm.createContext({
+    let context;
+    context = vm.createContext({
       console, URL, setTimeout, clearTimeout, document, OFFLINE: false,
       PR: require(path.join(runtime, 'public/payroll-control.js')),
       WFMCost: require(path.join(runtime, 'public/cost-engine.js')),
-      F: { actor: bootstrap.actor, ready: true }, ui: { page: 'overview' },
+      F: { actor: bootstrap.actor, ready: true }, ui: { page: 'overview' }, data: bootstrap.state,
       payrollActor: () => bootstrap.actor,
       request,
       command: async (command, payload) => {
         const response = await request('/api/command', 'POST', { command, payload, version: bootstrap.state.version });
         bootstrap = await request('/api/bootstrap');
         return response;
+      },
+      reload: async () => {
+        bootstrap = await request('/api/bootstrap');
+        context.data = bootstrap.state;
+        context.F.actor = bootstrap.actor;
       },
       modal: (title, html, submit) => { dialog = { title, html, submit }; },
       modalActions: label => '<button type="submit">' + label + '</button>',
@@ -182,6 +188,7 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.equal(after.bootstrap.state.requests.find(request => request.id === leaveRequestId).status, 'pending');
     assert.equal(after.personal.leave.pendingMinutes, 450);
     assert.equal(after.personal.leave.availableMinutes, leaveAvailableBefore - 450);
+    assert.equal(leaveEmployee.context.data.version, after.bootstrap.state.version, 'saved leave must refresh the shared Vector dashboard state');
     assert.match(leaveEmployee.workflow.leavePage(), /Saved and read back from the service/);
     assert.doesNotMatch(leaveEmployee.workflow.leavePage(), /workflow preview|demo does not certify/i);
   });
@@ -189,6 +196,15 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     await assert.rejects(() => leaveEmployee.workflow.leaveRequest({ date: leaveDate, hours: 7.5 }), error => error.status === 409);
     assert.equal(leaveEmployee.workflow.leaveState().receipt, null);
     assert.equal(leaveEmployee.workflow.leaveState().bootstrap.state.requests.filter(request => request.id === leaveRequestId).length, 1);
+  });
+  await t.test('a rejected stale leave write refreshes the next action context without replaying it', async () => {
+    const state = leaveEmployee.workflow.leaveState();
+    const actualVersion = state.bootstrap.state.version;
+    const date = state.personal.shifts.map(shift => shift.start.slice(0, 10)).find(value => value !== leaveDate);
+    state.bootstrap.state.version = actualVersion - 1;
+    await assert.rejects(() => leaveEmployee.workflow.leaveRequest({ date, hours: 7.5 }), error => error.status === 409);
+    assert.equal(leaveEmployee.workflow.leaveState().bootstrap.state.version, actualVersion, '409 must refresh the saved action version');
+    assert.equal(leaveEmployee.workflow.leaveState().receipt, null);
   });
   await t.test('manager leave route renders source request and saves an authorised decision', async () => {
     await manager.workflow.leaveRefresh();
@@ -198,6 +214,72 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     const saved = manager.workflow.leaveState().bootstrap.state.requests.find(request => request.id === leaveRequestId);
     assert.equal(saved.status, 'approved');
     assert.equal(manager.workflow.leaveState().receipt.action, 'leave-decision');
+  });
+  await t.test('a synthetic saved result without its matching correction cannot produce a success receipt', async () => {
+    const uncertain = await client('manager@northstar.example');
+    await uncertain.workflow.refresh();
+    const team = uncertain.context.RF.report.teams.find(item => item.id === 's1');
+    const issue = team.issues.find(item => item.id === 'issue-5');
+    uncertain.context.RF.team = team.id;
+    const reason = issue.evidence;
+    uncertain.context.command = async () => ({ ok: true, version: uncertain.bootstrap().state.version + 1, result: { id: issue.id, status: 'resolved', revision: team.revision + 1 } });
+    const original = uncertain.context.request;
+    uncertain.context.request = async (...args) => {
+      const response = await original(...args);
+      if (args[0].startsWith('/api/weekly-review')) {
+        const savedTeam = response.teams.find(item => item.id === team.id);
+        savedTeam.revision = team.revision + 1;
+        const savedIssue = savedTeam.issues.find(item => item.id === issue.id);
+        savedIssue.status = 'resolved';
+        savedIssue.resolution = { by: 'm1', decision: 'accept', reason };
+      }
+      return response;
+    };
+    await assert.rejects(() => uncertain.workflow.mutate('review-resolve', {
+      period: '2026-09-07', team: team.id, revision: team.revision, issue: issue.id,
+      decision: 'accept', checked: true, reason
+    }), /saved result is not yet confirmed/);
+    assert.equal(uncertain.workflow.state().receipt, null);
+  });
+  await t.test('manager attendance correction preserves raw punches and reads back the exact reviewed result', async () => {
+    const attendanceManager = await client('manager@northstar.example');
+    await attendanceManager.workflow.refresh();
+    const team = attendanceManager.context.RF.report.teams.find(item => item.id === 's1');
+    const issue = team.issues.find(item => item.id === 'issue-5');
+    const before = team.records.find(item => item.id === issue.row);
+    attendanceManager.context.RF.team = team.id;
+    await attendanceManager.workflow.mutate('review-resolve', {
+      period: '2026-09-07', team: team.id, revision: team.revision, issue: issue.id,
+      decision: 'accept', checked: true, reason: issue.evidence
+    });
+    const savedTeam = attendanceManager.context.RF.report.teams.find(item => item.id === team.id);
+    const savedIssue = savedTeam.issues.find(item => item.id === issue.id);
+    const saved = savedTeam.records.find(item => item.id === issue.row);
+    assert.equal(savedIssue.status, 'resolved');
+    assert.equal(savedIssue.resolution.by, 'm1');
+    assert.equal(savedIssue.resolution.decision, 'accept');
+    assert.deepEqual(saved.raw, before.raw);
+    assert.equal(saved.effective.clockOut, '2026-09-09T13:30:00.000Z');
+    assert.equal(saved.workedMinutes, 480);
+    assert.equal(saved.reviewedBy, 'm1');
+    assert.equal(savedTeam.revision, team.revision + 1);
+    assert.equal(attendanceManager.workflow.state().receipt.action, 'review-resolve');
+    const db = new DatabaseSync(dbPath);
+    try { assert.ok(db.prepare("SELECT COUNT(*) AS count FROM audit_events WHERE tenant='northstar-demo' AND actor='m1' AND action='review-resolve'").get().count > 0); } finally { db.close(); }
+  });
+  await t.test('failed manager decision clears an earlier success message', async () => {
+    const original = manager.context.request;
+    manager.context.request = async (url, method, payload) => {
+      if (url === '/api/command' && payload?.command === 'leave-decision') {
+        const error = Error('The saved request changed before this decision.');
+        error.status = 409;
+        throw error;
+      }
+      return original(url, method, payload);
+    };
+    await assert.rejects(() => manager.workflow.leaveDecision({ id: leaveRequestId, decision: 'declined', reviewed: true }), /saved request changed/);
+    assert.equal(manager.workflow.leaveState().receipt, null);
+    manager.context.request = original;
   });
   await t.test('fresh employee login sees the manager decision and durable audit', async () => {
     const freshEmployee = await client('maya@northstar.example');
@@ -214,7 +296,7 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     const fresh = await client('manager@northstar.example');
     await fresh.workflow.refresh();
     const recovered = fresh.context.RF.report.teams.find(item => item.id === team.id);
-    assert.equal(recovered.categories.find(item => item.id === category.id).confirmed, true);
+    assert.equal(recovered.categories.find(item => item.id === category.id).confirmed, false, 'the saved correction resets the affected prior confirmation');
     assert.equal(fresh.workflow.state().receipt, null, 'a new login does not fabricate a prior UI receipt');
   });
   await t.test('payroll source is readable by explicit payroll authority', async () => {
