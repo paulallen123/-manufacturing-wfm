@@ -14,6 +14,9 @@ try{
  context=await browser.newContext({viewport:{width:1440,height:1000}});const login=await context.request.post(base+'/api/login',{headers:{Origin:base},data:{email:'superuser@northstar.example',password:process.env.WFM_PROOF_PASSWORD||'Factory-local-demo-2026!'}});assert.equal(login.status(),200);
  page=await context.newPage();page.setDefaultTimeout(6000);page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>network.push({path:new URL(r.url()).pathname,status:r.status()}));await page.goto(base);await page.locator('.vector-sidebar').waitFor();
  const primary=()=>page.locator('.vector-nav');
+ await check('unverified overtime is not inferred from unrelated attendance numbers',async()=>{
+  assert.equal(await page.locator('.vector-kpi-card').filter({hasText:'In overtime'}).locator('strong').innerText(),'—');
+ });
  await check('approved navigation reaches each real section instead of leaving stale content',async()=>{
   assert.deepEqual(await primary().getByRole('button').allTextContents(),['Today','People','Plan','Factory','Improve']);
   for(const [label,heading] of [['People','People'],['Plan','Build and publish the week.'],['Factory','Factory'],['Improve','Know what changed. Know what to check.']]){
