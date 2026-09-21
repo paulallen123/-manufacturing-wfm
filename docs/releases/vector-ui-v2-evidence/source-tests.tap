@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: accepts explicit source-owned current action evidence
+ok 1 - accepts explicit source-owned current action evidence
+  ---
+  duration_ms: 2.17649
+  type: 'test'
+  ...
+# Subtest: observation timestamp alone cannot become freshness
+ok 2 - observation timestamp alone cannot become freshness
+  ---
+  duration_ms: 0.297047
+  type: 'test'
+  ...
+# Subtest: current freshness requires a source policy and explicit validity boundary
+ok 3 - current freshness requires a source policy and explicit validity boundary
+  ---
+  duration_ms: 0.26545
+  type: 'test'
+  ...
+# Subtest: unknown freshness is valid and remains neutral without an invented expiry
+ok 4 - unknown freshness is valid and remains neutral without an invented expiry
+  ---
+  duration_ms: 0.196819
+  type: 'test'
+  ...
+# Subtest: contract never converts confirming source to needs verification from wall clock
+ok 5 - contract never converts confirming source to needs verification from wall clock
+  ---
+  duration_ms: 0.266322
+  type: 'test'
+  ...
+# Subtest: needs verification requires explicit source-owned SLA expiry state
+ok 6 - needs verification requires explicit source-owned SLA expiry state
+  ---
+  duration_ms: 0.266722
+  type: 'test'
+  ...
+# Subtest: confirming source cannot claim the source SLA is already expired
+ok 7 - confirming source cannot claim the source SLA is already expired
+  ---
+  duration_ms: 0.26524
+  type: 'test'
+  ...
+# Subtest: resolved state requires authoritative confirmation evidence
+ok 8 - resolved state requires authoritative confirmation evidence
+  ---
+  duration_ms: 0.337486
+  type: 'test'
+  ...
+# Subtest: consequence is admitted only with explicit verified source evidence
+ok 9 - consequence is admitted only with explicit verified source evidence
+  ---
+  duration_ms: 0.414569
+  type: 'test'
+  ...
+# Subtest: unsupported source workflow fails closed
+ok 10 - unsupported source workflow fails closed
+  ---
+  duration_ms: 0.324287
+  type: 'test'
+  ...
+# Subtest: Time Review producer emits only scoped open structured source issues
+ok 11 - Time Review producer emits only scoped open structured source issues
+  ---
+  duration_ms: 0.50368
+  type: 'test'
+  ...
+# Subtest: Time Review producer fails closed without explicit source scope or required authority fields
+ok 12 - Time Review producer fails closed without explicit source scope or required authority fields
+  ---
+  duration_ms: 0.926943
+  type: 'test'
+  ...
+# Subtest: Time Review producer passes explicit source freshness without deriving it from generatedAt
+ok 13 - Time Review producer passes explicit source freshness without deriving it from generatedAt
+  ---
+  duration_ms: 0.232132
+  type: 'test'
+  ...
+# Subtest: Time Review producer preserves explicit confirmation lifecycle and never applies wall-clock expiry
+ok 14 - Time Review producer preserves explicit confirmation lifecycle and never applies wall-clock expiry
+  ---
+  duration_ms: 0.194216
+  type: 'test'
+  ...
+# Subtest: an unavailable payroll route cannot be invoked through the new shell
+ok 15 - an unavailable payroll route cannot be invoked through the new shell
+  ---
+  duration_ms: 3.572583
+  type: 'test'
+  ...
+# Subtest: registered workflow is opened through its authoritative source control
+ok 16 - registered workflow is opened through its authoritative source control
+  ---
+  duration_ms: 0.921425
+  type: 'test'
+  ...
+# Subtest: grouped navigation retains every registered workflow exactly once
+ok 17 - grouped navigation retains every registered workflow exactly once
+  ---
+  duration_ms: 1.054331
+  type: 'test'
+  ...
+# Subtest: employee navigation exposes only their registered self-service destinations
+ok 18 - employee navigation exposes only their registered self-service destinations
+  ---
+  duration_ms: 0.864231
+  type: 'test'
+  ...
+# Subtest: late source evidence refreshes the visible attention total as well as the queue
+ok 19 - late source evidence refreshes the visible attention total as well as the queue
+  ---
+  duration_ms: 4.151175
+  type: 'test'
+  ...
+# Subtest: source lifecycle is partitioned without presentation-word inference
+ok 20 - source lifecycle is partitioned without presentation-word inference
+  ---
+  duration_ms: 3.845685
+  type: 'test'
+  ...
+# Subtest: awaiting confirmation remains present but does not inflate action-needed count
+ok 21 - awaiting confirmation remains present but does not inflate action-needed count
+  ---
+  duration_ms: 2.103824
+  type: 'test'
+  ...
+# Subtest: rendered action queue keeps source-confirming work collapsed, visible and passive without hiding actionable work
+ok 22 - rendered action queue keeps source-confirming work collapsed, visible and passive without hiding actionable work
+  ---
+  duration_ms: 1.903199
+  type: 'test'
+  ...
+# Subtest: action ordering cannot create synthetic urgency styling
+ok 23 - action ordering cannot create synthetic urgency styling
+  ---
+  duration_ms: 1.390264
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 105.109253

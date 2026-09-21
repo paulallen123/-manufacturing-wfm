@@ -1,0 +1,8 @@
+{
+  "ux-overlay/vector-shell.js": "42bd6d1401e486cad2c94346e3f6e2d2f7b13fb5faec216527c87fec3ad5a5f0",
+  "ux-overlay/vector-shell.css": "177e7b1d04f79587b00656fd5ad943d18b85d9a977e3eefc8b59fd455e64bc76",
+  "ux-overlay/vector-action-queue.test.cjs": "5e87c70ac33a41aae132d20c2a82f89faa9e62c1a66abd1bd90b6cfafd5f8372",
+  "scripts/validate-vector-only-ui.mjs": "3293d6831b0dfb4455b4e2a5c60845ac20c42fb361a449c2ea680db8fe54a22b",
+  "tests/vector-navigation.test.cjs": "258068e26841fdee6ff8e454a3c62fa3251a3b96338b453c4ce6b1bbede7f34d",
+  "tests/vector-refresh.test.cjs": "0257b2b3ffa15af7226acbe7e53943a0394183c4f32b93ff900a73e4647586d8"
+}

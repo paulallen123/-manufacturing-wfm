@@ -58,8 +58,8 @@ test('awaiting confirmation remains present but does not inflate action-needed c
     { id: 'f', confirmationState: 'resolved' }
   ];
   const groups = vector.actionQueueGroups(rows);
-  assert.deepEqual(groups.needs.map(row => row.id), ['a', 'b', 'c']);
-  assert.deepEqual(groups.awaiting.map(row => row.id), ['d', 'e']);
+  assert.deepEqual(Array.from(groups.needs, row => row.id), ['a', 'b', 'c']);
+  assert.deepEqual(Array.from(groups.awaiting, row => row.id), ['d', 'e']);
 });
 
 test('rendered action queue keeps source-confirming work collapsed, visible and passive without hiding actionable work', () => {
