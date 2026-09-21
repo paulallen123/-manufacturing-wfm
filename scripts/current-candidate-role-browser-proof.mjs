@@ -522,7 +522,9 @@ try {
   await employeePage.locator('#modalform input[name="hours"]').fill('7.5');
   await employeePage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
   const overlapError = employeePage.locator('#formerror');
-  await overlapError.waitFor({ state: 'visible', timeout: 10000 });
+  // The empty error box can already be visible while the refusal is still rendering.
+  // Wait for matching content as well; keep the final visible-text assertion below.
+  await overlapError.filter({ hasText: /overlap|already|request/i }).waitFor({ state: 'visible', timeout: 10000 });
   assert.match(await overlapError.innerText(), /overlap|already|request/i, 'Employee UI did not surface the authoritative overlap refusal.');
   leaveJourney.overlapRefusedInUi = true;
   await employeePage.locator('#modalform [data-act="close"]').click({ timeout: 5000 });
