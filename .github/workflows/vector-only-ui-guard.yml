@@ -8,6 +8,7 @@ on:
       - 'ux/**'
     paths:
       - 'ux-overlay/**'
+      - 'tests/vector-*.test.cjs'
       - 'implementation/ui/**'
       - 'learning/ui/**'
       - 'operations/runtime/workflow-action-evidence-contract.cjs'
@@ -19,6 +20,7 @@ on:
   pull_request:
     paths:
       - 'ux-overlay/**'
+      - 'tests/vector-*.test.cjs'
       - 'implementation/ui/**'
       - 'learning/ui/**'
       - 'operations/runtime/workflow-action-evidence-contract.cjs'
@@ -41,7 +43,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Prove source-owned action evidence semantics
-        run: node --test operations/runtime/workflow-action-evidence-contract.test.cjs ux-overlay/vector-action-queue.test.cjs tests/vector-navigation.test.cjs tests/vector-refresh.test.cjs
+        run: node --test operations/runtime/workflow-action-evidence-contract.test.cjs ux-overlay/vector-action-queue.test.cjs tests/vector-*.test.cjs
       - name: Refuse retired UI source
         run: node scripts/validate-vector-only-ui.mjs
       - name: Build exact runtime

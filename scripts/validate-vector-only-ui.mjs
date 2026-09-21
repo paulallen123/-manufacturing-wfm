@@ -19,6 +19,10 @@ const forbiddenTokens=[
 const skipDirs=new Set(['.git','node_modules']);
 const tokenScanSkip=new Set([
   'scripts/validate-vector-only-ui.mjs',
+  // These immutable copies contain the checker's own banned-token dictionary.
+  // Only the checker files are exempt; all other snapshot files remain scanned.
+  '__security_hold_7b6f9d22e1__/scripts/validate-vector-only-ui.mjs',
+  '__security_hold_one_day_enterprise__/scripts/validate-vector-only-ui.mjs',
   '.github/workflows/vector-only-ui-guard.yml'
 ]);
 const textExt=new Set(['.js','.cjs','.mjs','.css','.html','.htm','.yml','.yaml','.json','.md','.txt']);
