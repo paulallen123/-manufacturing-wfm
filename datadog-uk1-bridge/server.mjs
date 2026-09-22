@@ -308,10 +308,37 @@ app.post("/mcp", async (req, res) => {
 app.get("/mcp", (_req, res) => res.status(405).json({ error: "Method not allowed" }));
 app.delete("/mcp", (_req, res) => res.status(405).json({ error: "Method not allowed" }));
 
-app.listen(PORT, "0.0.0.0", (error) => {
+app.listen(PORT, "0.0.0.0", async (error) => {
   if (error) {
     console.error("Failed to start", error);
     process.exit(1);
   }
   console.log("Datadog UK1 read-only MCP bridge listening on port " + PORT);
+
+  if (!configured()) {
+    console.warn("Datadog UK1 startup self-test: credentials not fully configured");
+    return;
+  }
+
+  try {
+    await dd("/api/v1/validate");
+    console.log("Datadog UK1 startup self-test: API key validation OK");
+  } catch (e) {
+    console.error("Datadog UK1 startup self-test: API key validation FAILED (" + (e?.payload?.status || "unknown") + ")");
+    return;
+  }
+
+  try {
+    await dd("/api/v2/logs/events/search", {
+      method: "POST",
+      body: {
+        filter: { query: "*", from: "now-1m", to: "now" },
+        page: { limit: 1 },
+        sort: "-timestamp"
+      }
+    });
+    console.log("Datadog UK1 startup self-test: application key read validation OK");
+  } catch (e) {
+    console.error("Datadog UK1 startup self-test: application key read validation FAILED (" + (e?.payload?.status || "unknown") + ")");
+  }
 });
