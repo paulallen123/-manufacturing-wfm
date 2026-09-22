@@ -10,6 +10,7 @@ const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
 const { serveRetiredPresentation } = require('./retired-presentation.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
+const { createTrainingDeliveryService } = require('/app/learning-runtime/training-delivery-service.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
 const { createDemandDecisionService } = require('/app/operations-runtime/demand-decision-service.cjs');
@@ -41,6 +42,8 @@ let integrationHub = null;
 let integrationHubInitError = null;
 let learningEngine = null;
 let learningEngineInitError = null;
+let trainingDeliveryService = null;
+let trainingDeliveryServiceInitError = null;
 let implementationEngine = null;
 let implementationEngineInitError = null;
 let lifecycleGuard = null;
@@ -66,6 +69,10 @@ function integrationPath(req) {
 
 function learningPath(req) {
   return requestPath(req).startsWith('/api/learning/adaptive');
+}
+
+function trainingPath(req) {
+  return requestPath(req).startsWith('/api/learning/training');
 }
 
 function implementationPath(req) {
@@ -323,6 +330,11 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!trainingDeliveryService && !trainingDeliveryServiceInitError && process.env.WFM_DB) {
+    try { trainingDeliveryService = createTrainingDeliveryService({ dbPath: process.env.WFM_DB }); }
+    catch (error) { trainingDeliveryServiceInitError = error; }
+  }
+
   if (!implementationEngine && !implementationEngineInitError && process.env.WFM_DB) {
     try {
       implementationEngine = createOneDayEnterpriseEngine({
@@ -398,6 +410,10 @@ http.createServer = function guardedCreateServer(listener) {
 
     if (learningPath(req)) {
       if (await routeOverlay(learningEngine, learningEngineInitError, res, 'Adaptive learning', req)) return;
+    }
+
+    if (trainingPath(req)) {
+      if (await routeOverlay(trainingDeliveryService, trainingDeliveryServiceInitError, res, 'Training delivery', req)) return;
     }
 
     if (implementationPath(req)) {

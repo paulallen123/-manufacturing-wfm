@@ -2,6 +2,7 @@
   'use strict';
 
   const API = '/api/learning/adaptive';
+  const TRAINING_API = '/api/learning/training';
   let plan = null;
   let root = null;
   let panel = null;
@@ -29,6 +30,55 @@
     if (response.status === 401 || response.status === 403) return null;
     if (!response.ok) throw new Error('Learning request failed');
     return response.json();
+  }
+
+  async function trainingRequest(path, options) {
+    const response = await fetch(TRAINING_API + path, {
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
+    if (response.status === 401 || response.status === 403) return null;
+    if (!response.ok) throw new Error('Training delivery request failed');
+    return response.json();
+  }
+
+  function renderModule(card, module) {
+    let host = card.querySelector('.wfm-coach-delivery');
+    if (!host) { host = el('div', { class: 'wfm-coach-delivery', 'aria-live': 'polite' }); card.append(host); }
+    host.replaceChildren();
+    const meta = el('p', { class: 'wfm-coach-delivery-meta' }, module.mode.replaceAll('_', ' ') + ' · ' + module.surface);
+    host.append(meta);
+    if (module.mode === 'PRACTISE' && module.scenario) {
+      host.append(el('p', { class: 'wfm-coach-question' }, module.scenario.prompt));
+      const options = el('div', { class: 'wfm-coach-options' });
+      module.scenario.episode.options.forEach(option => {
+        const button = el('button', { type: 'button', class: 'wfm-coach-option' }, option.label);
+        button.addEventListener('click', async () => {
+          const result = await trainingRequest('/scenario/answer', { method: 'POST', body: JSON.stringify({ competencyKey: module.competencyKey, optionId: option.id }) });
+          if (result) host.append(el('p', { class: 'wfm-coach-feedback', 'data-result': result.matchedRecommendation ? 'pass' : 'retry' }, result.feedback));
+        });
+        options.append(button);
+      });
+      host.append(options);
+      return;
+    }
+    if (module.mode === 'TEST_ME') {
+      host.append(el('p', { class: 'wfm-coach-test-note' }, 'Complete this task independently in VECTOR. Guidance is hidden and mastery can only come from authoritative observed-task evidence.'));
+      return;
+    }
+    const steps = el('ol', { class: 'wfm-coach-steps' });
+    module.steps.forEach(step => {
+      const li = el('li');
+      li.append(el('strong', null, step.title), el('span', null, step.instruction));
+      steps.append(li);
+    });
+    host.append(steps);
+  }
+
+  async function openTrainingMode(item, mode, card) {
+    const module = await trainingRequest('/module?competencyKey=' + encodeURIComponent(item.competencyKey) + '&mode=' + encodeURIComponent(mode), { method: 'GET' });
+    if (module) renderModule(card, module);
   }
 
   function closePanel() {
@@ -102,6 +152,14 @@
       practice.append(options);
       card.append(practice);
     }
+
+    const modes = el('div', { class: 'wfm-coach-modes', 'aria-label': 'Choose how to learn' });
+    [['SHOW_ME','Show me'],['GUIDE_ME','Guide me'],['PRACTISE','Practise'],['TEST_ME','Test me']].forEach(([mode,label]) => {
+      const button = el('button', { type: 'button', class: 'wfm-coach-mode' }, label);
+      button.addEventListener('click', () => openTrainingMode(item, mode, card));
+      modes.append(button);
+    });
+    card.append(modes);
 
     const feedback = el('p', { class: 'wfm-coach-feedback', 'aria-live': 'polite' }, '');
     const actions = el('div', { class: 'wfm-coach-actions' });

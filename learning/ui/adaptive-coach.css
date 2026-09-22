@@ -148,3 +148,49 @@
     animation: none !important;
   }
 }
+.wfm-coach-modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+.wfm-coach-mode {
+  min-height: 40px;
+  padding: 9px 10px;
+  border: 1px solid rgba(15,23,42,.16);
+  border-radius: 10px;
+  background: Canvas;
+  color: CanvasText;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.wfm-coach-mode:hover, .wfm-coach-mode:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+.wfm-coach-delivery {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, CanvasText 4%, Canvas);
+  border: 1px solid rgba(15,23,42,.10);
+}
+.wfm-coach-delivery-meta {
+  margin: 0 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  opacity: .65;
+  font-weight: 800;
+}
+.wfm-coach-steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 22px;
+}
+.wfm-coach-steps li { padding-left: 4px; }
+.wfm-coach-steps strong, .wfm-coach-steps span { display: block; }
+.wfm-coach-steps span { margin-top: 3px; font-size: 13px; line-height: 1.4; opacity: .78; }
+.wfm-coach-test-note { margin: 0; font-size: 13px; line-height: 1.45; }
