@@ -6,7 +6,7 @@ COPY . ./
 RUN node scripts/validate-deployment.mjs \
  && node scripts/validate-capability-superset.mjs \
  && node scripts/validate-vector-only-ui.mjs \
- && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -75,6 +75,28 @@ COPY src/frontier/energy-profile-benchmark.mjs /app/operations-runtime/energy-pr
 COPY src/frontier/energy-profile-binding.mjs /app/operations-runtime/energy-profile-binding.mjs
 RUN mkdir -p /app/operations-runtime/agency
 COPY src/frontier/agency-*.mjs /app/operations-runtime/agency/
+RUN mkdir -p /app/operations-runtime/attendance
+COPY clocking-security-v2/access-control-evidence.mjs /app/operations-runtime/attendance/access-control-evidence.mjs
+COPY clocking-security-v2/access-feed-supervisor.mjs /app/operations-runtime/attendance/access-feed-supervisor.mjs
+COPY clocking-security-v2/access-onboarding-autopilot.mjs /app/operations-runtime/attendance/access-onboarding-autopilot.mjs
+COPY clocking-security-v2/access-push-adapters.mjs /app/operations-runtime/attendance/access-push-adapters.mjs
+COPY clocking-security-v2/attendance-certification.mjs /app/operations-runtime/attendance/attendance-certification.mjs
+COPY clocking-security-v2/attendance-coverage-assurance.mjs /app/operations-runtime/attendance/attendance-coverage-assurance.mjs
+COPY clocking-security-v2/attendance-coverage-planner.mjs /app/operations-runtime/attendance/attendance-coverage-planner.mjs
+COPY clocking-security-v2/attendance-payroll-gate.mjs /app/operations-runtime/attendance/attendance-payroll-gate.mjs
+COPY clocking-security-v2/attendance-release-control.mjs /app/operations-runtime/attendance/attendance-release-control.mjs
+COPY clocking-security-v2/attendance-source-supervisor.mjs /app/operations-runtime/attendance/attendance-source-supervisor.mjs
+COPY clocking-security-v2/durable-attendance-journal.mjs /app/operations-runtime/attendance/durable-attendance-journal.mjs
+COPY clocking-security-v2/durable-source-supervisor.mjs /app/operations-runtime/attendance/durable-source-supervisor.mjs
+COPY clocking-security-v2/invisible-attendance-engine.mjs /app/operations-runtime/attendance/invisible-attendance-engine.mjs
+COPY clocking-security-v2/signed-rollback-anchor.mjs /app/operations-runtime/attendance/signed-rollback-anchor.mjs
+COPY clocking-security-v2/sqlite-attendance-runtime.mjs /app/operations-runtime/attendance/sqlite-attendance-runtime.mjs
+COPY clocking-security-v2/sqlite-attendance-worker.mjs /app/operations-runtime/attendance/sqlite-attendance-worker.mjs
+COPY clocking-security-v2/telemetry-continuity-guard.mjs /app/operations-runtime/attendance/telemetry-continuity-guard.mjs
+COPY clocking-security-v2/trust-root-recovery-controller.mjs /app/operations-runtime/attendance/trust-root-recovery-controller.mjs
+COPY clocking-security-v2/trust-root-recovery.mjs /app/operations-runtime/attendance/trust-root-recovery.mjs
+COPY clocking-security-v2/wifi-evidence-adapters.mjs /app/operations-runtime/attendance/wifi-evidence-adapters.mjs
+COPY clocking-security-v2/windows-wef-evidence.mjs /app/operations-runtime/attendance/windows-wef-evidence.mjs
 COPY operations/runtime/workforce-lifecycle-router.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 COPY implementation/ui/ /tmp/wfm-implementation-ui/
