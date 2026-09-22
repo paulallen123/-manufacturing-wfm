@@ -119,11 +119,13 @@ function launchProofMarkup(){
   const total=gates.length;
   const blocked=(launch.blocking||[]).slice(0,3);
   const ready=launch.ready===true;
+  const path=launch.integrationPath||{};
+  const route=path.selected?.route?String(path.selected.route).replaceAll('_',' '):stateLabel(path.state||'DISCOVERY_REQUIRED');
   const detail=blocked.length
     ? blocked.map(x=>String(x.gate||'').replaceAll('-',' ')+' · '+stateLabel(x.status)).join(' · ')
     : 'All launch evidence gates are proven.';
   return '<section class="wfm-ij-panel wfm-ij-launch-proof"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">LAUNCH AUTOPILOT · EVIDENCE CONTROL</span><h2>'+safe(ready?'Autonomous implementation is proven ready':'VECTOR is proving the implementation')+'</h2><p>'+safe(detail)+'</p></div><span class="wfm-ij-status '+(ready?'ready':'working')+'">'+safe(stateLabel(launch.state||'DISCOVER'))+'</span></div>'+
-    '<div class="wfm-ij-training-meta"><span><b>'+proven+' / '+total+'</b> proof gates</span><span><b>'+(launch.compatibility?.existingImplementationReady?'Passed':'Protected')+'</b> existing readiness</span><span><b>'+(launch.twinRevision?safe(String(launch.twinRevision).slice(0,10))+'…':'Building')+'</b> implementation twin</span><span><b>No</b> autonomous production authority</span></div></section>';
+    '<div class="wfm-ij-training-meta"><span><b>'+proven+' / '+total+'</b> proof gates</span><span><b>'+(launch.compatibility?.existingImplementationReady?'Passed':'Protected')+'</b> existing readiness</span><span><b>'+safe(route)+'</b> integration path</span><span><b>'+(launch.twinRevision?safe(String(launch.twinRevision).slice(0,10))+'…':'Building')+'</b> implementation twin</span><span><b>No</b> autonomous production authority</span></div></section>';
 }
 function proposalSummary(proposal){
   if(!proposal||typeof proposal!=='object')return '';
