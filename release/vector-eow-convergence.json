@@ -58,7 +58,8 @@
         "tenant-provisioning",
         "digital-twin",
         "integration-fabric",
-        "training"
+        "training",
+        "launch-autopilot-controller"
       ]
     },
     {
@@ -240,5 +241,33 @@
       "AI output without authority or provenance",
       "features exposed before their journey is complete"
     ]
+  },
+  "implementationAutopilot": {
+    "controller": "implementation/runtime/launch-autopilot-controller.cjs",
+    "rule": "coordinate existing authorities; never grant production mutation authority",
+    "stages": [
+      "DISCOVER",
+      "MODEL",
+      "PROVISION",
+      "CONNECT",
+      "CONFIGURE",
+      "SIMULATE",
+      "RECONCILE",
+      "TRAIN",
+      "VALIDATE",
+      "READY"
+    ],
+    "activationAuthority": "EXTERNAL_PERMIT_REQUIRED",
+    "regressionPolicy": "affected proof immediately leaves PASS and only affected gates are revalidated",
+    "integrationFallback": [
+      "NATIVE_API",
+      "MIDDLEWARE",
+      "EVENT",
+      "DATABASE",
+      "SFTP",
+      "FILE",
+      "DOCUMENT",
+      "NATIVE_CAPTURE"
+    ]
   }
-}
+}\n
