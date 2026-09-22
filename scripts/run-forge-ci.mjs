@@ -16,6 +16,7 @@ const checks = [
     'operations/runtime/customer-demand-intelligence.test.cjs',
     'operations/runtime/absence-recovery-shadow.test.cjs',
     'operations/runtime/demand-decision-service.test.cjs',
+    'operations/runtime/decision-outcome-proof.test.cjs',
     'scripts/prove-vector-built-asset-provenance.test.mjs'
   ]]
 ];
