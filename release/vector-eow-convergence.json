@@ -272,6 +272,26 @@
     "compatibilityGate": "existing-readiness",
     "compatibilityRule": "Launch Autopilot cannot report READY unless the existing one-day implementation engine is operationalReady with all existing detailed requirements satisfied and no blocking decisions.",
     "proofGateCount": 14,
-    "ui": "existing canonical Implementation screen; no parallel workspace"
+    "ui": "existing canonical Implementation screen; no parallel workspace",
+    "integrationPathfinder": {
+      "module": "implementation/runtime/launch-integration-pathfinder.cjs",
+      "evidenceRule": "route requires real executor, authorisation, provenance, reconciliation, authoritative coverage and proof evidence before PROVEN_ROUTE",
+      "currentObservedRoutes": [
+        "NATIVE_API",
+        "SFTP"
+      ],
+      "unprovenUntilExecutorEvidence": [
+        "MIDDLEWARE",
+        "EVENT",
+        "DATABASE",
+        "FILE",
+        "DOCUMENT",
+        "NATIVE_CAPTURE"
+      ],
+      "parallelConnectorStack": false
+    },
+    "twinRevisionBarrier": {
+      "rule": "affected gates cannot return to PASS after a twin change using stale evidence; fresh evidence must be later than the invalidation and bound to the new twin revision"
+    }
   }
 }
