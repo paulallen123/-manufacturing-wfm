@@ -1,6 +1,6 @@
 # VECTOR FORGE — Manufacturing Asset, Decision & Value Operating System
 
-Status: DESIGN APPROVED IN CHAT — implementation not started  
+Status: DESIGN REVISED FOR WHOLE-PRODUCT ALIGNMENT — implementation not started  
 Target lineage: `feature/vector-eow-convergence-20260925` / VECTOR FORGE  
 Date: 2026-09-22
 
@@ -23,6 +23,97 @@ Create three reusable platform primitives underneath existing FORGE experiences:
 3. **Decision & Outcome Ledger** — records recommendation -> authorised action -> operational outcome -> financial outcome -> forecast error so the system learns without rewriting deterministic rules.
 
 Together these allow existing Autopilot, Cost & Value, Plan, Factory and Improve experiences to reason across people, machines, materials, energy, tooling, facilities, inventory, supply capacity, cash and operational knowledge.
+
+
+## Bigger-picture alignment gate
+
+This architecture is subordinate to the existing VECTOR FORGE convergence programme and must strengthen it rather than compete with it.
+
+### North-star rule
+
+Every development item must answer:
+
+> Does this move VECTOR closer to one coherent, hosted, evidence-backed Manufacturing Asset, Decision & Value Operating System, or does it merely add another capability?
+
+If it is only another capability, it must be deferred, absorbed into an existing service, or rejected.
+
+### Current critical path remains first
+
+Until the exact FORGE candidate has repeatable hosted proof, the priority order is:
+
+1. approved blue-and-white VECTOR UI -> authenticated backend -> deterministic business rules -> durable saved state -> refreshed screen;
+2. Golden Customer Journey across leave/entitlement/overlap, attendance, weekly sign-off and payroll;
+3. tenant/role isolation, provenance, backup/restore, restart durability and release identity;
+4. shared primitives that unlock multiple FORGE targets;
+5. only then additional domain capability and Frontier expansion.
+
+The Asset Intelligence / Constraint Value work may advance before full hosted proof only when it is isolated, non-conflicting and clearly reusable across several existing FORGE targets. It must not take ownership from the active release/proof path.
+
+### Portfolio alignment with existing FORGE targets
+
+The new layer must reuse and strengthen the current convergence targets rather than create parallel versions:
+
+- **digital-twin** -> extended into the Asset Intelligence read model;
+- **factory-autopilot** -> consumes safe Decision Option contracts rather than gaining new authority;
+- **realised-value** -> supplies/receives outcome evidence through the Decision & Outcome Ledger;
+- **integration-fabric** -> remains the source of identity, provenance, freshness, units and reconciliation;
+- **one-day-implementation** -> configures the new contracts from existing customer evidence rather than adding manual setup;
+- **energy-intelligence** -> remains a domain candidate generator;
+- **cash-to-capacity** -> remains a domain candidate generator;
+- **agency-labour** -> remains a domain candidate generator;
+- **resilience** -> supplies optionality/recovery candidates;
+- **self-learning** -> updates confidence only after reconciled outcomes;
+- **realtime-ui** -> transports current state; it does not become business authority;
+- **production-tenant** -> keeps durability, backup, monitoring and provider proof requirements;
+- **autonomous-support** -> diagnoses missing/stale evidence and contract failures;
+- **sales-demo** -> demonstrates only functionality already proven in the exact hosted candidate.
+
+### One capability, one owner, one reusable primitive
+
+Before new code:
+- check for an existing engine, contract, schema, event, evidence model or UI primitive;
+- extend the canonical owner where possible;
+- do not fork by sector, country, customer size or experiment unless technically or legally required;
+- do not create a second graph, outcome ledger, value model, recommendation queue or decision-card system.
+
+Frontier may discover and prototype novel domain logic, but accepted logic must hand back into the canonical product/data/proof owners.
+
+### Bigger-picture prioritisation score
+
+Every material candidate should be ranked against the whole programme using:
+
+1. customer financial / throughput / admin impact;
+2. dependency unlock across multiple FORGE targets;
+3. cross-product reuse;
+4. time to verified customer outcome;
+5. evidence confidence;
+6. reduction in manual implementation/support;
+7. global/all-size applicability;
+8. strategic defensibility;
+9. safety/security/data risk;
+10. duplication or architecture debt introduced.
+
+A lower-scoring feature does not displace a higher-value proof, platform or dependency task merely because it is new.
+
+### Integration rule
+
+A new capability is accepted into FORGE only when:
+- it has a named existing owner;
+- it uses existing identity/provenance/authority boundaries;
+- it improves an existing user job or removes work;
+- it produces evidence compatible with the shared Outcome Ledger;
+- it has a deterministic failure/degradation path;
+- it can be tested without inventing data or weakening release controls;
+- its UI fits Today / People / Plan / Factory / Improve rather than creating another navigation concept.
+
+### Product-level success measure
+
+The programme is not optimised for feature count.
+
+The primary measure is:
+
+**verified customer outcome and risk reduction per unit of development effort, while increasing the percentage of the product that shares the same data, decision, evidence and learning primitives.**
+
 
 ## 3. Non-goals
 
@@ -438,11 +529,16 @@ Redesign or reject the layer if:
 
 ## 21. Implementation order
 
-1. contracts and invariants;
-2. deterministic outcome ledger;
-3. adapters from two existing engines;
-4. composite synthetic proof;
-5. 1-person and 10,000/50-site proof;
-6. existing FORGE UI decision-card integration;
-7. hosted exact-candidate proof;
-8. only then expand to additional asset classes and optionality valuation.
+The release/proof critical path remains ahead of this work. Execute these steps only where they do not compete with the active FORGE Golden Journey and hosted-proof owners.
+
+1. confirm reuse points against the current Digital Twin, realised-value, integration and decision-card contracts;
+2. implement contracts and invariants as shared primitives only;
+3. implement the deterministic outcome ledger by extending the existing realised-value/outcome direction rather than creating a parallel ledger;
+4. adapt two existing domain engines rather than creating new business logic;
+5. run the composite synthetic proof;
+6. run 1-person and 10,000/50-site scope proof;
+7. integrate into existing FORGE decision cards only after the underlying exact candidate remains stable;
+8. obtain hosted exact-candidate proof through normal FORGE gates;
+9. expand to additional asset classes and optionality valuation only when measured reuse/value justifies it.
+
+At every step, re-run the bigger-picture priority score. If another FORGE dependency or proof gap has higher customer value or unlocks more of the product, pause this sequence and advance that higher-value item first.
