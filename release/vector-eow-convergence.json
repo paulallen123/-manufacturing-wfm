@@ -9,7 +9,11 @@
     "noInventedSavings": true,
     "noInventedProductionData": true,
     "failClosedOnUnprovenHighImpactAction": true,
-    "proofRequiredForPromotion": true
+    "proofRequiredForPromotion": true,
+    "noCapabilityRegression": true,
+    "replacementRequiresSupersetProof": true,
+    "functionalParityMinimum": 1,
+    "valueMustStaySameOrIncrease": true
   },
   "target": [
     {
