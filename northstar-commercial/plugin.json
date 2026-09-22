@@ -1,0 +1,7 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "northstar-integration-lab",
+  "version": "0.1.0",
+  "description": "Create isolated synthetic enterprises, emulate integration providers and devices, inject failures, run proof scenarios, and return auditable evidence without touching production systems.",
+  "keywords": ["integration-testing", "mcp", "simulation", "synthetic-data", "qa", "proof"]
+}
