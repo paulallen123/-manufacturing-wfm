@@ -2,6 +2,7 @@
 
 const { createHash, randomUUID, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { createUniversalDataGateway } = require('./universal-data-gateway.cjs');
 
 const PREFIX = '/api/integrations/autonomous';
 const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
@@ -229,6 +230,7 @@ function createAutonomousIntegrationHub(options = {}) {
   if (!dbPath) throw new Error('Autonomous integration hub requires WFM_DB.');
 
   const db = new DatabaseSync(dbPath);
+  const universalGateway = createUniversalDataGateway({ dbPath, internalToken, maxBodyBytes });
   db.exec(
     'PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;' +
     'CREATE TABLE IF NOT EXISTS integration_candidates(' +
@@ -412,6 +414,8 @@ function createAutonomousIntegrationHub(options = {}) {
     const connections = listConnections.all(tenant).map(publicConnection);
     const confirmedPeople = candidates.filter(c => c.status === 'CONFIRMED' && c.authoritativeFor.includes('people'));
     const activePeople = connections.filter(c => c.state === 'ACTIVE' && c.semanticScopes.includes('people.read'));
+    const universal = universalGateway.statusForTenant(tenant);
+    const universalReady = Boolean(universal && universal.state === 'PROVEN' && universal.readiness?.readyForOperationalDataAfterProof !== false);
     return {
       mode: 'zero-engineer-minimum-admin',
       discovery: {
@@ -420,8 +424,10 @@ function createAutonomousIntegrationHub(options = {}) {
         candidates
       },
       connections,
+      universalGateway: universal,
       readiness: {
         readyForPeopleSync: activePeople.length > 0,
+        readyForOperationalData: activePeople.length > 0 || universalReady,
         peopleSourceConfirmed: confirmedPeople.length > 0,
         needsAdminAction: connections.filter(c => ['AUTHORIZATION_REQUIRED', 'REAUTH_REQUIRED'].includes(c.state)).length,
         needsValidation: connections.filter(c => ['VALIDATING', 'DEGRADED'].includes(c.state)).length
@@ -746,6 +752,7 @@ function createAutonomousIntegrationHub(options = {}) {
   async function handleRequest(req, res) {
     const path = requestPath(req);
     if (!path.startsWith(PREFIX)) return false;
+    if (path.startsWith(PREFIX + '/universal')) return await universalGateway.handleRequest(req, res);
 
     try {
       if (req.method === 'POST' && WORKER_PATHS.has(path)) {
@@ -759,7 +766,7 @@ function createAutonomousIntegrationHub(options = {}) {
       const ctx = requireManager(req, res);
       if (!ctx) return true;
       if (req.method === 'GET' && path === PREFIX + '/catalog') {
-        return writeJson(res, 200, { systems: publicCatalog(), discoverySources: [...DISCOVERY_SOURCES] });
+        return writeJson(res, 200, { systems: publicCatalog(), discoverySources: [...DISCOVERY_SOURCES], universalRoutes: universalGateway.publicCatalog() });
       }
       if (req.method === 'GET' && path === PREFIX + '/status') {
         return writeJson(res, 200, statusForTenant(ctx.tenant));
@@ -781,7 +788,7 @@ function createAutonomousIntegrationHub(options = {}) {
 
   return {
     handleRequest,
-    close() { try { db.close(); } catch {} },
+    close() { try { universalGateway.close(); } catch {} try { db.close(); } catch {} },
     statusForTenant,
     publicCatalog
   };
