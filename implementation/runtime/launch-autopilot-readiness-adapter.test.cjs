@@ -101,3 +101,20 @@ test('Implementation Digital Twin revision is deterministic for unchanged author
   assert.equal(a.nodes.filter(x => x.type === 'site').length, 2);
   assert.equal(a.nodes.filter(x => x.type === 'integration').length, 1);
 });
+
+
+test('unchanged implementation polling is idempotent and does not append duplicate proof events', () => withController(controller => {
+  const r = readiness();
+  syncLaunchAutopilot({ controller, readiness: r, integrations: integrations() });
+  const first = controller.events('alpha','run-1').length;
+  const polled = {
+    ...r,
+    requirements: r.requirements.map(item =>
+      ['customer-scope','adaptive-learning-engine'].includes(item.source)
+        ? { ...item, observedAt: '2026-09-22T11:59:59Z' }
+        : item
+    )
+  };
+  syncLaunchAutopilot({ controller, readiness: polled, integrations: integrations() });
+  assert.equal(controller.events('alpha','run-1').length, first);
+});
