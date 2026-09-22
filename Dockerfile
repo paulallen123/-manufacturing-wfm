@@ -5,7 +5,7 @@ WORKDIR /proof
 COPY . ./
 RUN node scripts/validate-deployment.mjs \
  && node scripts/validate-vector-only-ui.mjs \
- && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -58,6 +58,10 @@ COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptiv
 COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/workforce-lifecycle-core.cjs
 COPY operations/runtime/workflow-action-evidence-contract.cjs /app/operations-runtime/workflow-action-evidence-contract.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.cjs /app/operations-runtime/workflow-action-evidence-bridge.cjs
+COPY operations/runtime/decision-episode.cjs /app/operations-runtime/decision-episode.cjs
+COPY operations/runtime/customer-demand-intelligence.cjs /app/operations-runtime/customer-demand-intelligence.cjs
+COPY operations/runtime/absence-recovery-shadow.cjs /app/operations-runtime/absence-recovery-shadow.cjs
+COPY operations/runtime/demand-decision-service.cjs /app/operations-runtime/demand-decision-service.cjs
 COPY operations/runtime/workforce-lifecycle-router.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 COPY implementation/ui/ /tmp/wfm-implementation-ui/
@@ -100,6 +104,14 @@ COPY operations/runtime/workflow-action-evidence-contract.cjs /tmp/wfm-tests/ope
 COPY operations/runtime/workflow-action-evidence-contract.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.test.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.test.cjs
+COPY operations/runtime/decision-episode.cjs /tmp/wfm-tests/operations/runtime/decision-episode.cjs
+COPY operations/runtime/decision-episode.test.cjs /tmp/wfm-tests/operations/runtime/decision-episode.test.cjs
+COPY operations/runtime/customer-demand-intelligence.cjs /tmp/wfm-tests/operations/runtime/customer-demand-intelligence.cjs
+COPY operations/runtime/customer-demand-intelligence.test.cjs /tmp/wfm-tests/operations/runtime/customer-demand-intelligence.test.cjs
+COPY operations/runtime/absence-recovery-shadow.cjs /tmp/wfm-tests/operations/runtime/absence-recovery-shadow.cjs
+COPY operations/runtime/absence-recovery-shadow.test.cjs /tmp/wfm-tests/operations/runtime/absence-recovery-shadow.test.cjs
+COPY operations/runtime/demand-decision-service.cjs /tmp/wfm-tests/operations/runtime/demand-decision-service.cjs
+COPY operations/runtime/demand-decision-service.test.cjs /tmp/wfm-tests/operations/runtime/demand-decision-service.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
@@ -118,6 +130,10 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.test.cjs \
       /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.test.cjs \
       /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.test.cjs \
+      /tmp/wfm-tests/operations/runtime/decision-episode.test.cjs \
+      /tmp/wfm-tests/operations/runtime/customer-demand-intelligence.test.cjs \
+      /tmp/wfm-tests/operations/runtime/absence-recovery-shadow.test.cjs \
+      /tmp/wfm-tests/operations/runtime/demand-decision-service.test.cjs \
  && rm -rf /tmp/wfm-tests
 
 # Railway cloud-build admission: execute the exact 10,000-employee / 50-site
@@ -146,6 +162,8 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && printf '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/vector-ui.css \
  && cat /tmp/wfm-ux-overlay/vector-shell.css >> /app/public/vector-ui.css \
  && cat /tmp/wfm-ux-overlay/vector-workflows.css >> /app/public/vector-ui.css \
+ && printf '\n/* VECTOR_DEMAND_DECISION_INTELLIGENCE_BEGIN */\n' >> /app/public/vector-ui.css \
+ && cat /tmp/wfm-ux-overlay/vector-demand-intelligence.css >> /app/public/vector-ui.css \
  && cp /tmp/wfm-ux-overlay/vector-workflows.js /app/public/vector-workflows.js \
  && node --check /app/public/vector-workflows.js \
  && printf "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" > /app/public/vector-ui.js \
@@ -155,6 +173,8 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && cat /tmp/wfm-implementation-ui/implementation-journey.js >> /app/public/vector-ui.js \
  && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/vector-ui.js \
  && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/vector-ui.js \
+ && printf '\n;/* VECTOR_DEMAND_DECISION_INTELLIGENCE_BEGIN */\n' >> /app/public/vector-ui.js \
+ && cat /tmp/wfm-ux-overlay/vector-demand-intelligence.js >> /app/public/vector-ui.js \
  && node --check /app/public/vector-ui.js \
  && node /tmp/compose-vector-presentation.mjs /app/public \
  && rm -f /app/public/factory-control-ui.js /app/public/factory-control-ui.css \
