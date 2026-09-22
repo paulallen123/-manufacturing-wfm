@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "claimBoundary": "Northstar device emulators reproduce synthetic clocking/evidence behaviours for VECTOR development. They are not hardware certification, biometric certification, or proof of a customer's physical device estate.",
+  "devices": [
+    {
+      "id": "personal-mobile",
+      "name": "Personal mobile self-clocking",
+      "class": "self-service",
+      "authority": "explicit-user-action",
+      "identity": "signed-in employee session",
+      "online": "HTTPS",
+      "offline": "durable local queue + replay",
+      "signals": [
+        "CLOCK_IN",
+        "CLOCK_OUT",
+        "BREAK_START",
+        "BREAK_END"
+      ],
+      "faults": [
+        "offline-replay",
+        "clock-skew",
+        "double-tap",
+        "revoked-session",
+        "stale-app-version"
+      ],
+      "privacy": [
+        "no raw continuous GPS",
+        "site/proximity assertion can be represented as bounded evidence"
+      ]
+    },
+    {
+      "id": "shared-tablet-kiosk",
+      "name": "Shared tablet / kiosk",
+      "class": "shared-device",
+      "authority": "explicit-user-action",
+      "identity": "employee PIN/QR/badge/session handoff",
+      "online": "HTTPS",
+      "offline": "bounded kiosk queue",
+      "signals": [
+        "CLOCK_IN",
+        "CLOCK_OUT",
+        "BREAK_START",
+        "BREAK_END"
+      ],
+      "faults": [
+        "session-bleed",
+        "double-tap",
+        "offline-replay",
+        "kiosk-reset",
+        "wrong-employee"
+      ],
+      "privacy": [
+        "no persistent cross-worker session",
+        "shared device cannot imply identity without explicit worker binding"
+      ]
+    },
+    {
+      "id": "wall-terminal",
+      "name": "Wall clocking terminal",
+      "class": "time-and-attendance-terminal",
+      "authority": "direct-authority-when-explicitly-configured",
+      "identity": "badge/NFC/PIN credential",
+      "online": "push/poll/edge",
+      "offline": "terminal buffer + sequence reconciliation",
+      "signals": [
+        "IN",
+        "OUT"
+      ],
+      "faults": [
+        "sequence-gap",
+        "duplicate-punch",
+        "offline-replay",
+        "clock-skew",
+        "revoked-credential"
+      ]
+    },
+    {
+      "id": "access-reader",
+      "name": "Access-control reader",
+      "class": "attendance-evidence",
+      "authority": "evidence-unless-existing-T&A-authority",
+      "identity": "mapped personal credential",
+      "online": "webhook/event-stream",
+      "offline": "provider backfill/reconciliation",
+      "signals": [
+        "ACCESS_GRANTED_ENTRY",
+        "ACCESS_GRANTED_EXIT",
+        "ACCESS_DENIED"
+      ],
+      "faults": [
+        "duplicate-event",
+        "sequence-gap",
+        "unknown-direction",
+        "shared-credential",
+        "door-state-only"
+      ]
+    },
+    {
+      "id": "workstation-hmi",
+      "name": "Workstation / HMI login",
+      "class": "corroborating-evidence",
+      "authority": "never-direct-out-by-default",
+      "identity": "enterprise login",
+      "online": "event/log stream",
+      "offline": "log backfill",
+      "signals": [
+        "LOGIN",
+        "LOGOUT"
+      ],
+      "faults": [
+        "logout-without-departure",
+        "duplicate-event",
+        "stale-session"
+      ],
+      "safety": [
+        "logout cannot by itself stop pay"
+      ]
+    },
+    {
+      "id": "wifi-radius",
+      "name": "Enterprise Wi-Fi / RADIUS",
+      "class": "corroborating-evidence",
+      "authority": "never-direct-out-by-default",
+      "identity": "authenticated enterprise session",
+      "online": "RADIUS/accounting/event stream",
+      "offline": "accounting reconciliation",
+      "signals": [
+        "ASSOCIATE",
+        "DISASSOCIATE",
+        "ACCOUNTING_START",
+        "ACCOUNTING_STOP"
+      ],
+      "faults": [
+        "signal-loss",
+        "roam",
+        "duplicate-event",
+        "stale-stop"
+      ],
+      "safety": [
+        "signal disappearance cannot by itself stop pay"
+      ]
+    },
+    {
+      "id": "privacy-sensitive-biometric-terminal",
+      "name": "Biometric terminal safety test",
+      "class": "privacy-boundary-test",
+      "authority": "disabled-by-default",
+      "identity": "biometric reference",
+      "signals": [
+        "MATCH"
+      ],
+      "faults": [
+        "raw-template-present",
+        "identity-mismatch"
+      ],
+      "safety": [
+        "raw biometric template/image is rejected from attendance evidence path by default"
+      ]
+    }
+  ]
+}
