@@ -84,6 +84,20 @@ A route is eligible only when it is:
 
 A lower-tech route is therefore a compatibility fallback, not a lower proof standard.
 
+### Integration Pathfinder
+
+The Launch integration pathfinder does not infer that a route works merely because a protocol exists in the catalog.
+
+A route is reported as `PROVEN_ROUTE` only when VECTOR has evidence for the real executor plus authorisation, provenance, reconciliation and authoritative coverage. Otherwise the route remains one of:
+
+- `DISCOVERY_REQUIRED`;
+- `EXECUTOR_UNAVAILABLE`;
+- `PROOF_REQUIRED`.
+
+This deliberately reuses the existing autonomous integration hub and integration-fabric proof primitives. It does not create a second connector stack.
+
+The current Launch implementation can recognise proven API and SFTP connections from the existing integration hub. Middleware, event, database, file, document and native-capture routes remain unproven until their existing/future executors expose equivalent evidence into this contract. They must never be counted as connected because they are merely technically possible.
+
 ## Continuous implementation
 
 When the Implementation Digital Twin changes, Launch Autopilot consumes the existing change-impact result and reopens only the affected proof.
