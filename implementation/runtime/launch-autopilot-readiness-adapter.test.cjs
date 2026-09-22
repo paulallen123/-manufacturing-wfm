@@ -80,6 +80,8 @@ test('current one-day implementation proof can satisfy Launch Autopilot without 
   assert.equal(launch.activation.authority, 'EXTERNAL_PERMIT_REQUIRED');
   assert.equal(launch.activation.productionMutation, false);
   assert.ok(launch.twinRevision);
+  assert.equal(launch.integrationPath.state, 'PROVEN_ROUTE');
+  assert.equal(launch.integrationPath.selected.route, 'NATIVE_API');
   assert.equal(launch.gates.find(x => x.key === 'existing-readiness').status, 'PASS');
 }));
 
