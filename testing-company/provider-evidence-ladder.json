@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "ladder": [
+    {
+      "level": 1,
+      "id": "PROTOCOL_EMULATED",
+      "requires": [
+        "deterministic provider profile",
+        "negative/fault tests"
+      ],
+      "allowsClaim": "Provider behaviour emulated for development"
+    },
+    {
+      "level": 2,
+      "id": "HOSTED_TEST_DOUBLE_PROVEN",
+      "requires": [
+        "deployed callable route",
+        "synthetic auth",
+        "hosted route self-test"
+      ],
+      "allowsClaim": "Hosted provider test double proven"
+    },
+    {
+      "level": 3,
+      "id": "VECTOR_TEST_TENANT_ROUNDTRIP",
+      "requires": [
+        "fictional VECTOR tenant",
+        "authenticated connector",
+        "ingest/persist/readback",
+        "reconciliation receipt"
+      ],
+      "allowsClaim": "VECTOR round-trip proven against Northstar test double"
+    },
+    {
+      "level": 4,
+      "id": "PROVIDER_SANDBOX_PROVEN",
+      "requires": [
+        "genuine provider sandbox",
+        "provider-issued non-production credential",
+        "provider acceptance evidence"
+      ],
+      "allowsClaim": "Provider sandbox integration proven"
+    },
+    {
+      "level": 5,
+      "id": "CUSTOMER_TENANT_PROVEN",
+      "requires": [
+        "customer-controlled tenant",
+        "customer acceptance",
+        "security/operational evidence"
+      ],
+      "allowsClaim": "Customer tenant integration proven"
+    },
+    {
+      "level": 6,
+      "id": "PRODUCTION_CERTIFIED",
+      "requires": [
+        "production acceptance",
+        "operational controls",
+        "security assurance",
+        "rollback/support"
+      ],
+      "allowsClaim": "Production-certified integration"
+    }
+  ],
+  "rule": "Evidence cannot be promoted by naming, simulation, screenshots or lower-level proof."
+}
