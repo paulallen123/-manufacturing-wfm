@@ -1,8 +1,9 @@
-import { timingSafeEqual } from "node:crypto";
+import express from "express";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
 import * as z from "zod/v4";
+import { authChallenge, mountOAuth, oauthConfigured, verifyAccessToken } from "./oauth.mjs";
 
 const PORT = Number(process.env.PORT || 3000);
 const DD_BASE = "https://api.uk1.datadoghq.com";
@@ -252,12 +253,15 @@ function serverFactory() {
   return server;
 }
 
-const app = createMcpExpressApp({ host: "0.0.0.0", allowedHosts: ["datadog-uk1-mcp-production.up.railway.app", "healthcheck.railway.app"] });\napp.use(express.urlencoded({ extended: false, limit: "16kb" }));\nmountOAuth(app);
+const app = createMcpExpressApp({ host: "0.0.0.0", allowedHosts: ["datadog-uk1-mcp-production.up.railway.app", "healthcheck.railway.app"] });
+app.use(express.urlencoded({ extended: false, limit: "16kb" }));
+mountOAuth(app);
 
 app.get("/", (_req, res) => res.json({
   name: "Datadog UK1 ChatGPT Bridge",
   site: "uk1.datadoghq.com",
   mode: "read_only",
+  authentication: "oauth2_pkce",
   mcp: "/mcp",
   health: "/health"
 }));
@@ -268,7 +272,7 @@ app.get("/health", (_req, res) => res.json({
   mode: "read_only",
   site: "uk1.datadoghq.com",
   datadog_credentials_configured: configured(),
-  bridge_token_configured: Boolean(env("BRIDGE_TOKEN"))
+  oauth_configured: oauthConfigured()
 }));
 
 app.use("/mcp", (req, res, next) => {
