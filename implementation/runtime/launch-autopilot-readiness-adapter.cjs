@@ -35,13 +35,13 @@ function requirementIndex(readiness) {
   return new Map((readiness?.requirements || []).map(item => [item.key, item]));
 }
 
-function latestObserved(requirements, fallback) {
+function proofObserved(requirements, fallback) {
   const volatileDerivedSources = new Set(['customer-scope', 'adaptive-learning-engine']);
   const values = requirements
     .filter(item => !volatileDerivedSources.has(String(item?.source || '')))
     .map(item => Date.parse(String(item?.observedAt || '')))
     .filter(Number.isFinite);
-  if (values.length) return new Date(Math.max(...values)).toISOString();
+  if (values.length) return new Date(Math.min(...values)).toISOString();
   const parsed = Date.parse(String(fallback || ''));
   return Number.isFinite(parsed) ? new Date(parsed).toISOString() : new Date(0).toISOString();
 }
@@ -142,7 +142,7 @@ function buildImplementationTwin(readiness, integrations = null) {
   return createTwinRevision({ tenant: readiness.tenant, nodes, edges });
 }
 
-function receiptForGate({ gate, readiness, requirements, observedAt, detail = {}, evidenceSuffix = '' }) {
+function receiptForGate({ gate, readiness, requirements, observedAt, twinRevision = null, detail = {}, evidenceSuffix = '' }) {
   const status = statusForRequirements(requirements);
   const evidenceState = requirements.map(item => ({
     key: item?.key || null,
@@ -159,6 +159,7 @@ function receiptForGate({ gate, readiness, requirements, observedAt, detail = {}
     evidenceRef: 'implementation:' + readiness.runId + ':' + gate + ':' + digest({ evidenceState, evidenceSuffix }).slice(0, 32),
     observedAt,
     verified: status === 'PASS',
+    twinRevision,
     detail: { requirements: evidenceState, ...detail }
   };
 }
@@ -169,6 +170,10 @@ function syncLaunchAutopilot({ controller, readiness, integrations = null }) {
 
   const index = requirementIndex(readiness);
   const fallbackObservedAt = readiness.startedAt;
+  const twin = buildImplementationTwin(readiness, integrations);
+  if (twin && typeof controller.observeTwin === 'function') {
+    controller.observeTwin({ tenant: readiness.tenant, runId: readiness.runId, twin });
+  }
 
   for (const [gate, keys] of Object.entries(GATE_REQUIREMENTS)) {
     const requirements = keys.map(key => index.get(key) || { key, status: 'MISSING', confidence: 0, satisfied: false });
@@ -179,12 +184,12 @@ function syncLaunchAutopilot({ controller, readiness, integrations = null }) {
         gate,
         readiness,
         requirements,
-        observedAt: latestObserved(requirements, fallbackObservedAt)
+        observedAt: proofObserved(requirements, fallbackObservedAt),
+        twinRevision: twin?.revision || null
       })
     });
   }
 
-  const twin = buildImplementationTwin(readiness, integrations);
   const scopeRequirement = index.get('configuration-scope');
   controller.recordReceipt({
     tenant: readiness.tenant,
@@ -194,7 +199,7 @@ function syncLaunchAutopilot({ controller, readiness, integrations = null }) {
       status: 'PASS',
       source: 'implementation-digital-twin',
       evidenceRef: 'twin:' + twin.revision,
-      observedAt: latestObserved([scopeRequirement], fallbackObservedAt),
+      observedAt: proofObserved([scopeRequirement], fallbackObservedAt),
       verified: true,
       twinRevision: twin.revision,
       detail: { revision: twin.revision, nodes: twin.nodes.length, edges: twin.edges.length }
@@ -203,7 +208,7 @@ function syncLaunchAutopilot({ controller, readiness, integrations = null }) {
       status: 'UNKNOWN',
       source: 'implementation-digital-twin',
       evidenceRef: 'twin:pending:' + readiness.runId,
-      observedAt: latestObserved([scopeRequirement].filter(Boolean), fallbackObservedAt),
+      observedAt: proofObserved([scopeRequirement].filter(Boolean), fallbackObservedAt),
       verified: false,
       detail: { reason: 'IMPLEMENTATION_SCOPE_REQUIRED' }
     }
@@ -226,7 +231,7 @@ function syncLaunchAutopilot({ controller, readiness, integrations = null }) {
         requirements: allRequirements.map(item => [item.key, item.status, item.confidence, item.satisfied]),
         blockingDecisions: (readiness.blockingDecisions || []).map(item => item.key || item.id)
       }).slice(0, 32),
-      observedAt: latestObserved(allRequirements, fallbackObservedAt),
+      observedAt: proofObserved(allRequirements, fallbackObservedAt),
       verified: existingReady,
       detail: {
         operationalReady: readiness.operationalReady === true,
@@ -252,6 +257,7 @@ function syncLaunchAutopilot({ controller, readiness, integrations = null }) {
 module.exports = {
   GATE_REQUIREMENTS,
   statusForRequirements,
+  proofObserved,
   buildImplementationTwin,
   syncLaunchAutopilot
 };
