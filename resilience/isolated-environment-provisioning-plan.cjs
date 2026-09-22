@@ -5,6 +5,7 @@ const VERSION = '1.0.0';
 const CAPACITY_SOURCES = new Set(['platform-control-plane','provider-control-plane','preauthorised-capacity-registry']);
 const ACTIONS = new Set(['reserve-existing-capacity','create-isolated-tenant-namespace','attach-private-network','bind-secret-reference','apply-site-template-reference','install-health-probe','create-rollback-checkpoint','verify-tenant-isolation']);
 const SECRET_PURPOSES = new Set(['tenant-encryption-key','runtime-signing-key','integration-credential-reference']);
+const REQUIRED_SECRET_PURPOSES = Object.freeze(['tenant-encryption-key','runtime-signing-key']);
 
 function canonical(v){if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])]));return v;}
 function digest(v){return createHash('sha256').update(JSON.stringify(canonical(v))).digest('hex');}
@@ -50,6 +51,9 @@ function secrets(items){
     if(x.verified!==true||x.source!=='secret-manager'||!hex(x.evidenceDigest)||!SECRET_PURPOSES.has(x.purpose)||!ref(x.ref,240)||seen.has(x.purpose))fail('WFM_PROVISIONING_SECRET_REF','invalid or duplicate secret reference');
     seen.add(x.purpose);out.push({purpose:x.purpose,ref:x.ref,source:'secret-manager',evidenceDigest:x.evidenceDigest});
   }
+  for(const purpose of REQUIRED_SECRET_PURPOSES){
+    if(!seen.has(purpose)) fail('WFM_PROVISIONING_SECRET_REQUIRED',`mandatory secret reference missing: ${purpose}`);
+  }
   return out.sort((a,b)=>a.purpose.localeCompare(b.purpose));
 }
 
@@ -89,11 +93,33 @@ function planIsolatedEnvironmentProvisioning({scopeReceipt,rolloutReceipt,policy
 function verifyIsolatedEnvironmentProvisioningPlan(r){
   if(!r||r.schemaVersion!==1||r.provisioningPlanVersion!==VERSION||!hex(r.receiptDigest)||!allFalse(r.authority)||!allFalse(r.guardrails))return false;
   const e=r.executionEnvelope;if(!e||e.permitIssued!==false||e.executionAuthorityGranted!==false||e.llmMayExecute!==false||e.requiresExistingProviderPreauthorisation!==true||e.requiresIndependentPostActionVerification!==true||e.killSwitchRequired!==true||e.rollbackRequired!==true)return false;
-  if(!Array.isArray(r.regionPlans)||!Array.isArray(r.blockedSiteIds)||!Array.isArray(r.secretReferences))return false;const scheduled=new Set();let count=0;
-  for(const p of r.regionPlans){if(p.privateNetworkOnly!==true||p.publicIngress!==false||p.zeroIncrementalCost!==true||p.rollbackRequired!==true||p.independentIsolationVerificationRequired!==true||!Array.isArray(p.actions)||new Set(p.siteIds).size!==p.siteIds.length)return false;for(const id of p.siteIds){if(scheduled.has(id)||r.blockedSiteIds.includes(id))return false;scheduled.add(id);}for(const a of p.actions){count++;if(!ACTIONS.has(a.type)||!hex(a.idempotencyKey)||a.productionWrite!==false||a.customerDataMutation!==false||a.payrollMutation!==false||a.identityMutation!==false||a.publicExposure!==false||a.destructive!==false)return false;if(JSON.stringify(a)!==JSON.stringify(step(r.tenantRef,p.dataRegion,a.type,a.target,a.inputs)))return false;}}
+  if(!Array.isArray(r.regionPlans)||!Array.isArray(r.blockedSiteIds)||!Array.isArray(r.secretReferences))return false;
+  const secretByPurpose=new Map();
+  for(const s of r.secretReferences){
+    if(!s||typeof s!=='object'||Array.isArray(s)||s.source!=='secret-manager'||!SECRET_PURPOSES.has(s.purpose)||!ref(s.ref,240)||!hex(s.evidenceDigest)||secretByPurpose.has(s.purpose))return false;
+    secretByPurpose.set(s.purpose,s);
+  }
+  for(const purpose of REQUIRED_SECRET_PURPOSES)if(!secretByPurpose.has(purpose))return false;
+  const scheduled=new Set();let count=0;
+  for(const p of r.regionPlans){
+    if(p.privateNetworkOnly!==true||p.publicIngress!==false||p.zeroIncrementalCost!==true||p.rollbackRequired!==true||p.independentIsolationVerificationRequired!==true||!Array.isArray(p.actions)||new Set(p.siteIds).size!==p.siteIds.length)return false;
+    for(const id of p.siteIds){if(scheduled.has(id)||r.blockedSiteIds.includes(id))return false;scheduled.add(id);}
+    const bound=new Map();
+    for(const a of p.actions){
+      count++;
+      if(!ACTIONS.has(a.type)||!hex(a.idempotencyKey)||a.productionWrite!==false||a.customerDataMutation!==false||a.payrollMutation!==false||a.identityMutation!==false||a.publicExposure!==false||a.destructive!==false)return false;
+      if(JSON.stringify(a)!==JSON.stringify(step(r.tenantRef,p.dataRegion,a.type,a.target,a.inputs)))return false;
+      if(a.type==='bind-secret-reference'){
+        const expected=secretByPurpose.get(a.target);
+        if(!expected||bound.has(a.target)||a.inputs?.ref!==expected.ref||a.inputs?.evidenceDigest!==expected.evidenceDigest)return false;
+        bound.set(a.target,true);
+      }
+    }
+    if(bound.size!==secretByPurpose.size||[...secretByPurpose.keys()].some(purpose=>!bound.has(purpose)))return false;
+  }
   if(e.actionBudget!==count||r.metrics?.deterministicActionsPlanned!==count||r.metrics?.sitesReadyForIsolatedProvisioning!==scheduled.size||r.metrics?.manualProviderExecutionStepsRemoved!==0||r.metrics?.realProvisioningExecuted!==false||r.metrics?.autonomousProvisioningProven!==false||r.metrics?.implementationQuestionsAdded!==0)return false;
   if(r.status==='PROVISIONING_PLAN_READY'&&r.blockedSiteIds.length||r.status==='PROVISIONING_BLOCKED'&&scheduled.size||r.status==='PARTIAL_PROVISIONING_BLOCKED'&&(!scheduled.size||!r.blockedSiteIds.length)||!['PROVISIONING_PLAN_READY','PARTIAL_PROVISIONING_BLOCKED','PROVISIONING_BLOCKED'].includes(r.status))return false;
   const c=clone(r),want=c.receiptDigest;delete c.receiptDigest;return digest(c)===want;
 }
 
-module.exports={PROVISIONING_PLAN_VERSION:VERSION,ALLOWED_ACTION_TYPES:ACTIONS,planIsolatedEnvironmentProvisioning,verifyIsolatedEnvironmentProvisioningPlan,digest};
+module.exports={PROVISIONING_PLAN_VERSION:VERSION,ALLOWED_ACTION_TYPES:ACTIONS,REQUIRED_SECRET_PURPOSES,planIsolatedEnvironmentProvisioning,verifyIsolatedEnvironmentProvisioningPlan,digest};
