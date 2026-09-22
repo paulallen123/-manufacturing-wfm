@@ -291,9 +291,16 @@
         "learning/runtime/training-delivery-service.cjs",
         "learning/runtime/training-delivery-service.test.cjs",
         "learning/ui/adaptive-coach.js",
-        "learning/ui/adaptive-coach.css"
+        "learning/ui/adaptive-coach.css",
+        "learning/runtime/training-video-contract.cjs",
+        "learning/runtime/training-video-contract.test.cjs",
+        "learning/runtime/training-artifact-registry.cjs",
+        "learning/runtime/training-artifact-registry.test.cjs",
+        "learning/video-worker/package.json",
+        "learning/video-worker/runner.mjs",
+        "Dockerfile.training-video"
       ],
-      "integrationNote": "Adaptive learning is now extended by a Training Twin, authoritative workflow manifests, exact product/UI artifact fingerprints, Show/Guide/Practise/Test delivery modes, and a Decision-Episode-based synthetic practice scenario. Guidance and practice explicitly cannot award mastery; independent or observed task evidence remains required. Autonomous rendered video generation is the next layer and must bind to the same artifact fingerprint before publication."
+      "integrationNote": "Training Twin and contextual Show/Guide/Practise/Test are now joined by an autonomous video artifact contract, append-only artifact registry and isolated Playwright worker. Recording is synthetic-only, exact-SHA/UI/workflow bound, fails closed on missing DOM anchors, scans for non-synthetic PII/secrets, emits transcript + WebVTT captions + step screenshots + video digests, and cannot award mastery. Until durable storage and a proven narration adapter are present, generated videos remain PROOF_ONLY rather than customer-published READY."
     },
     {
       "id": "zero-touch-secure-entry",

@@ -137,6 +137,63 @@ const WORKFLOWS = Object.freeze({
   }
 });
 
+
+const CAPTURE_PLANS = Object.freeze({
+  'time.clock': Object.freeze({
+    status: 'READY',
+    revision: '1',
+    route: 'attendance',
+    requiredSelectors: ['body.vector-ui-active','[data-vector-route="attendance"][aria-current="page"]','.vector-page-content'],
+    expectedText: null,
+    safeFocusSelectors: []
+  }),
+  'absence.request': Object.freeze({
+    status: 'READY',
+    revision: '1',
+    route: 'leave',
+    requiredSelectors: ['body.vector-ui-active','[data-vector-route="leave"][aria-current="page"]'],
+    roleSelectors: Object.freeze({
+      employee: '[data-vector-leave-route="employee"]',
+      manager: '[data-vector-leave-route="manager"]',
+      admin: '[data-vector-leave-route="manager"]'
+    }),
+    expectedText: 'Absence & Leave',
+    safeFocusSelectors: ['[data-vector-workflow="leave-request"]']
+  }),
+  'time.signoff': Object.freeze({
+    status: 'READY',
+    revision: '1',
+    route: 'vector-weekly-signoff',
+    requiredSelectors: ['body.vector-ui-active','.vw-panel'],
+    expectedText: 'Weekly sign-off',
+    safeFocusSelectors: ['[data-vector-workflow="sign"]']
+  }),
+  'schedule.recover': Object.freeze({
+    status: 'READY',
+    revision: '1',
+    route: 'readiness',
+    requiredSelectors: ['body.vector-ui-active','[data-vector-route="readiness"][aria-current="page"]','.vector-page-content'],
+    expectedText: 'Factory',
+    safeFocusSelectors: []
+  }),
+  'labour.cost': Object.freeze({
+    status: 'READY',
+    revision: '1',
+    route: 'costs',
+    requiredSelectors: ['body.vector-ui-active','[data-vector-route="costs"][aria-current="page"]','.vector-page-content'],
+    expectedText: null,
+    safeFocusSelectors: []
+  }),
+  'payroll.reconcile': Object.freeze({
+    status: 'READY',
+    revision: '1',
+    route: 'payroll-run',
+    requiredSelectors: ['body.vector-ui-active','.vw-panel'],
+    expectedText: 'Payroll preparation',
+    safeFocusSelectors: []
+  })
+});
+
 function canonicalRole(role){
   const v=String(role||'').toLowerCase();
   if(v.includes('payroll')) return 'payroll';
@@ -151,6 +208,22 @@ function stable(value){
 }
 function digest(value){return createHash('sha256').update(stable(value)).digest('hex');}
 function workflowFor(competencyKey){return WORKFLOWS[String(competencyKey||'')]||null;}
+function captureFor(competencyKey,role){
+  const plan=CAPTURE_PLANS[String(competencyKey||'')];
+  if(!plan) return Object.freeze({status:'PENDING_ANCHOR',revision:'0',route:null,requiredSelectors:[],expectedText:null,safeFocusSelectors:[]});
+  const canonical=canonicalRole(role);
+  const required=[...(plan.requiredSelectors||[])];
+  const roleSelector=plan.roleSelectors?.[canonical];
+  if(roleSelector) required.push(roleSelector);
+  return Object.freeze({
+    status:plan.status,
+    revision:plan.revision,
+    route:plan.route,
+    requiredSelectors:Object.freeze([...new Set(required)]),
+    expectedText:plan.expectedText||null,
+    safeFocusSelectors:Object.freeze([...(plan.safeFocusSelectors||[])])
+  });
+}
 function roleCanUse(workflow,role){return Boolean(workflow&&workflow.roles.includes(canonicalRole(role)));}
 function normaliseLocale(locale){
   const value=String(locale||'en-GB').trim();
@@ -162,6 +235,12 @@ function buildArtifactFingerprint(input={}){
   const payload={
     contractVersion:CONTRACT_VERSION,
     competencyKey:input.competencyKey,
+    role:artifact.payload.role,
+    permissionClass:artifact.payload.permissionClass,
+    configurationClass:artifact.payload.configurationClass,
+    productSha:artifact.payload.productSha,
+    uiVersion:artifact.payload.uiVersion,
+    generatorVersion:artifact.payload.generatorVersion,
     workflowRevision:workflow.revision,
     role:canonicalRole(input.role),
     permissionClass:String(input.permissionClass||'default'),
@@ -197,6 +276,7 @@ function buildTrainingModule(input={}){
     exposureOnly:mode==='SHOW_ME'||mode==='GUIDE_ME',
     evidencePolicy:mode==='TEST_ME'?'OBSERVED_INDEPENDENT_TASK_REQUIRED':'NO_MASTERY_FROM_DELIVERY',
     scenario:workflow.scenario,
+    capture:captureFor(input.competencyKey,artifact.payload.role),
     steps
   });
 }
@@ -210,5 +290,5 @@ function affectedCompetencies(dependencies=[]){
 
 module.exports=Object.freeze({
   CONTRACT_VERSION,GENERATOR_VERSION,UI_VERSION,DELIVERY_MODES,WORKFLOWS,
-  canonicalRole,workflowFor,roleCanUse,buildArtifactFingerprint,buildTrainingModule,affectedCompetencies
+  canonicalRole,workflowFor,roleCanUse,captureFor,buildArtifactFingerprint,buildTrainingModule,affectedCompetencies
 });
