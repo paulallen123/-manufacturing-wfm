@@ -2,6 +2,7 @@
 
 const { createTwinRevision } = require('./implementation-digital-twin.cjs');
 const { digest } = require('./launch-autopilot-controller.cjs');
+const { buildIntegrationPath } = require('./launch-integration-pathfinder.cjs');
 
 const GATE_REQUIREMENTS = Object.freeze({
   scope: ['configuration-scope'],
@@ -243,9 +244,11 @@ function syncLaunchAutopilot({ controller, readiness, integrations = null }) {
   });
 
   const launch = controller.status(readiness.tenant, readiness.runId);
+  const integrationPath = buildIntegrationPath({ integrationStatus: integrations });
   return {
     ...launch,
     twinRevision: twin?.revision || null,
+    integrationPath,
     compatibility: {
       existingImplementationReady: existingReady,
       noRequirementRemoved: true,
