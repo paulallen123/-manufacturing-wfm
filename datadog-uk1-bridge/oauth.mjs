@@ -29,7 +29,7 @@ function verify(token, type) {
     const expected = createHmac("sha256", env("OAUTH_SIGNING_SECRET")).update(body).digest("base64url");
     if (!safeEqual(sig, expected)) return null;
     const p = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
-    if (p.typ !== type || p.exp <= now() || p.resource !== MCP_RESOURCE) return null;
+    if (p.typ !== type || p.exp <= now() || p.iss !== ISSUER || p.aud !== MCP_RESOURCE || p.resource !== MCP_RESOURCE) return null;
     if (!String(p.scope || "").split(/\s+/).includes(OAUTH_SCOPE)) return null;
     return p;
   } catch { return null; }
@@ -41,16 +41,30 @@ export function oauthConfigured() {
 export function authChallenge() {
   return 'Bearer resource_metadata="' + ORIGIN + '/.well-known/oauth-protected-resource", scope="' + OAUTH_SCOPE + '"';
 }
-function tokenPair(clientId) {
+function tokenPair(clientId, scope = OAUTH_SCOPE) {
   const iat = now();
-  const base = { sub:"datadog-uk1-owner", client_id:clientId, resource:MCP_RESOURCE, scope:OAUTH_SCOPE, iat, jti:randomBytes(16).toString("base64url") };
-  return {
+  const granted = String(scope || OAUTH_SCOPE).split(/\s+/).filter(Boolean);
+  const scopeText = [...new Set(granted)].join(" ");
+  const base = {
+    iss:ISSUER,
+    aud:MCP_RESOURCE,
+    sub:"datadog-uk1-owner",
+    client_id:clientId,
+    resource:MCP_RESOURCE,
+    scope:scopeText,
+    iat,
+    jti:randomBytes(16).toString("base64url")
+  };
+  const out = {
     token_type:"Bearer",
     access_token:sign({ ...base, typ:"access", exp:iat + 3600 }),
     expires_in:3600,
-    refresh_token:sign({ ...base, typ:"refresh", exp:iat + 30 * 86400 }),
-    scope:OAUTH_SCOPE
+    scope:scopeText
   };
+  if (granted.includes("offline_access")) {
+    out.refresh_token = sign({ ...base, typ:"refresh", exp:iat + 30 * 86400 });
+  }
+  return out;
 }
 function noStore(res) {
   res.setHeader("Cache-Control","no-store");
@@ -76,7 +90,8 @@ function params(src) {
   if (p.challengeMethod !== "S256" || p.challenge.length < 43) throw new Error("PKCE S256 is required.");
   if (p.resource !== MCP_RESOURCE) throw new Error("Invalid resource.");
   const scopes = p.scope.split(/\s+/).filter(Boolean);
-  if (scopes.length !== 1 || scopes[0] !== OAUTH_SCOPE) throw new Error("Unsupported scope.");
+  const allowed = new Set([OAUTH_SCOPE, "offline_access"]);
+  if (!scopes.includes(OAUTH_SCOPE) || scopes.some((scope) => !allowed.has(scope))) throw new Error("Unsupported scope.");
   return p;
 }
 async function validateClient(clientId, redirectUri) {
@@ -127,7 +142,7 @@ export function mountOAuth(app) {
       response_modes_supported:["query"],
       grant_types_supported:["authorization_code","refresh_token"],
       code_challenge_methods_supported:["S256"],
-      scopes_supported:[OAUTH_SCOPE],
+      scopes_supported:[OAUTH_SCOPE,"offline_access"],
       token_endpoint_auth_methods_supported:["none"],
       client_id_metadata_document_supported:true,
       authorization_response_iss_parameter_supported:true
@@ -168,12 +183,12 @@ export function mountOAuth(app) {
         if (rec.clientId !== clientId || rec.redirectUri !== String(body.redirect_uri || "") || rec.resource !== resource || !safeEqual(challenge,rec.challenge)) {
           codes.delete(code); return error(res,400,"invalid_grant","Authorization code verification failed.");
         }
-        codes.delete(code); noStore(res); return res.json(tokenPair(clientId));
+        codes.delete(code); noStore(res); return res.json(tokenPair(clientId, rec.scope));
       }
       if (grant === "refresh_token") {
         const claims = verify(String(body.refresh_token || ""),"refresh");
         if (!claims || claims.client_id !== clientId) return error(res,400,"invalid_grant","Refresh token is invalid or expired.");
-        noStore(res); return res.json(tokenPair(clientId));
+        noStore(res); return res.json(tokenPair(clientId, claims.scope));
       }
       return error(res,400,"unsupported_grant_type","Only authorization_code and refresh_token are supported.");
     } catch(e) { return error(res,400,"invalid_request",e.message || "Token request failed."); }
