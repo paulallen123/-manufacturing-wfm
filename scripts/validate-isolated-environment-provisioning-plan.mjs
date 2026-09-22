@@ -130,6 +130,36 @@ const secrets = [
 ];
 const asOf = '2026-09-20T18:00:00Z';
 
+function expectMissingSecretFailure(secretReferences, missingPurpose) {
+  assert.throws(
+    () => planIsolatedEnvironmentProvisioning({
+      scopeReceipt: scopeReceipt(1, 10),
+      rolloutReceipt: rolloutReceipt(scopeReceipt(1, 10), 'tenant-secret-negative', topology(1, 10, ['uk'])),
+      policyReceipt: policyReceipt('tenant-secret-negative', topology(1, 10, ['uk'])),
+      capacityEvidence: capacity(['uk']),
+      secretReferences,
+      asOf,
+    }),
+    (error) => error.code === 'WFM_PROVISIONING_SECRET_REQUIRED' && String(error.message).includes(missingPurpose),
+  );
+}
+
+expectMissingSecretFailure([], 'tenant-encryption-key');
+expectMissingSecretFailure([secrets[0]], 'runtime-signing-key');
+expectMissingSecretFailure([secrets[1]], 'tenant-encryption-key');
+
+assert.throws(
+  () => planIsolatedEnvironmentProvisioning({
+    scopeReceipt: scopeReceipt(1, 10),
+    rolloutReceipt: rolloutReceipt(scopeReceipt(1, 10), 'tenant-secret-duplicate', topology(1, 10, ['uk'])),
+    policyReceipt: policyReceipt('tenant-secret-duplicate', topology(1, 10, ['uk'])),
+    capacityEvidence: capacity(['uk']),
+    secretReferences: [secrets[0], { ...secrets[0], ref: 'secret://tenant/encryption-duplicate', evidenceDigest: d('secret:enc:duplicate') }, secrets[1]],
+    asOf,
+  }),
+  (error) => error.code === 'WFM_PROVISIONING_SECRET_REF',
+);
+
 const scaleCases = [
   [1, 1, ['uk']],
   [1, 25, ['uk']],
@@ -243,6 +273,38 @@ delete forgedActionCore.receiptDigest;
 forgedAction.receiptDigest = digest(forgedActionCore);
 assert.equal(verifyIsolatedEnvironmentProvisioningPlan(forgedAction), false);
 
+const missingMetadataSecret = structuredClone(partial);
+missingMetadataSecret.secretReferences = missingMetadataSecret.secretReferences.filter((s) => s.purpose !== 'runtime-signing-key');
+const missingMetadataSecretCore = structuredClone(missingMetadataSecret);
+delete missingMetadataSecretCore.receiptDigest;
+missingMetadataSecret.receiptDigest = digest(missingMetadataSecretCore);
+assert.equal(verifyIsolatedEnvironmentProvisioningPlan(missingMetadataSecret), false);
+
+const missingBindAction = structuredClone(partial);
+missingBindAction.regionPlans[0].actions = missingBindAction.regionPlans[0].actions.filter(
+  (action) => !(action.type === 'bind-secret-reference' && action.target === 'runtime-signing-key'),
+);
+missingBindAction.executionEnvelope.actionBudget -= 1;
+missingBindAction.metrics.deterministicActionsPlanned -= 1;
+const missingBindActionCore = structuredClone(missingBindAction);
+delete missingBindActionCore.receiptDigest;
+missingBindAction.receiptDigest = digest(missingBindActionCore);
+assert.equal(verifyIsolatedEnvironmentProvisioningPlan(missingBindAction), false);
+
+const duplicateBindAction = structuredClone(partial);
+const duplicate = structuredClone(
+  duplicateBindAction.regionPlans[0].actions.find(
+    (action) => action.type === 'bind-secret-reference' && action.target === 'tenant-encryption-key',
+  ),
+);
+duplicateBindAction.regionPlans[0].actions.push(duplicate);
+duplicateBindAction.executionEnvelope.actionBudget += 1;
+duplicateBindAction.metrics.deterministicActionsPlanned += 1;
+const duplicateBindActionCore = structuredClone(duplicateBindAction);
+delete duplicateBindActionCore.receiptDigest;
+duplicateBindAction.receiptDigest = digest(duplicateBindActionCore);
+assert.equal(verifyIsolatedEnvironmentProvisioningPlan(duplicateBindAction), false);
+
 const wrongTenantPolicy = policyReceipt('other-tenant', sites);
 assert.throws(
   () => planIsolatedEnvironmentProvisioning({ scopeReceipt: scope, rolloutReceipt: rollout, policyReceipt: wrongTenantPolicy, capacityEvidence: capacity(['uk', 'eu']), secretReferences: secrets, asOf }),
@@ -260,7 +322,7 @@ console.log(JSON.stringify({
   validator: 'isolated-environment-provisioning-plan',
   result: 'PASS',
   scaleCases: scaleResults,
-  edgeCases: 12,
+  edgeCases: 19,
   humanTouch: {
     planningQuestionsAdded: 0,
     smallCustomerPlanningStepsRemoved: scaleResults[0].planningStepsRemoved,
