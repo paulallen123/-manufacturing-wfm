@@ -2,6 +2,7 @@
 
 const { createHash, randomUUID } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { changeImpact } = require('./implementation-digital-twin.cjs');
 
 const STAGES = Object.freeze([
   'DISCOVER',
@@ -146,6 +147,13 @@ function selectIntegrationRoute(candidates = []) {
 function gatesForImpact(impact = {}) {
   const affected = impact.affected || {};
   const keys = new Set();
+  const changed = Array.isArray(impact.changed) ? impact.changed : [];
+  if (changed.some(id => id === 'tenant' || String(id).startsWith('site:') || String(id).startsWith('department:') || String(id).startsWith('line:'))) {
+    keys.add('configuration');
+    keys.add('scenario-validation');
+    keys.add('historical-replay');
+    keys.add('live-data-import');
+  }
   if ((affected.integrations || []).length) {
     keys.add('source-systems');
     keys.add('mapping');
@@ -175,6 +183,9 @@ function createLaunchAutopilotController(options = {}) {
       'id INTEGER PRIMARY KEY AUTOINCREMENT,run_id TEXT NOT NULL,tenant TEXT NOT NULL,gate_key TEXT NOT NULL,' +
       'status TEXT NOT NULL,source TEXT NOT NULL,evidence_ref TEXT NOT NULL,observed_at TEXT NOT NULL,' +
       'verified INTEGER NOT NULL,twin_revision TEXT,detail_json TEXT NOT NULL,digest TEXT NOT NULL,created_at TEXT NOT NULL);' +
+    'CREATE TABLE IF NOT EXISTS launch_autopilot_twins(' +
+      'id INTEGER PRIMARY KEY AUTOINCREMENT,run_id TEXT NOT NULL,tenant TEXT NOT NULL,revision TEXT NOT NULL,' +
+      'twin_json TEXT NOT NULL,created_at TEXT NOT NULL,UNIQUE(run_id,tenant,revision));' +
     'CREATE TABLE IF NOT EXISTS launch_autopilot_events(' +
       'id INTEGER PRIMARY KEY AUTOINCREMENT,run_id TEXT NOT NULL,tenant TEXT NOT NULL,event TEXT NOT NULL,' +
       'detail_json TEXT NOT NULL,created_at TEXT NOT NULL);' +
@@ -185,7 +196,11 @@ function createLaunchAutopilotController(options = {}) {
     'CREATE TRIGGER IF NOT EXISTS launch_event_no_update BEFORE UPDATE ON launch_autopilot_events ' +
       "BEGIN SELECT RAISE(ABORT,'Launch Autopilot events are append only.'); END;" +
     'CREATE TRIGGER IF NOT EXISTS launch_event_no_delete BEFORE DELETE ON launch_autopilot_events ' +
-      "BEGIN SELECT RAISE(ABORT,'Launch Autopilot events are append only.'); END;"
+      "BEGIN SELECT RAISE(ABORT,'Launch Autopilot events are append only.'); END;" +
+    'CREATE TRIGGER IF NOT EXISTS launch_twin_no_update BEFORE UPDATE ON launch_autopilot_twins ' +
+      "BEGIN SELECT RAISE(ABORT,'Launch Autopilot twins are append only.'); END;" +
+    'CREATE TRIGGER IF NOT EXISTS launch_twin_no_delete BEFORE DELETE ON launch_autopilot_twins ' +
+      "BEGIN SELECT RAISE(ABORT,'Launch Autopilot twins are append only.'); END;"
   );
 
   const runQ = db.prepare('SELECT * FROM launch_autopilot_runs WHERE run_id=? AND tenant=?');
@@ -200,6 +215,8 @@ function createLaunchAutopilotController(options = {}) {
   const latestReceiptByGate = db.prepare('SELECT * FROM launch_autopilot_receipts WHERE run_id=? AND tenant=? AND gate_key=? ORDER BY id DESC LIMIT 1');
   const insertEvent = db.prepare('INSERT INTO launch_autopilot_events(run_id,tenant,event,detail_json,created_at) VALUES(?,?,?,?,?)');
   const eventsQ = db.prepare('SELECT event,detail_json,created_at FROM launch_autopilot_events WHERE run_id=? AND tenant=? ORDER BY id');
+  const latestTwinQ = db.prepare('SELECT * FROM launch_autopilot_twins WHERE run_id=? AND tenant=? ORDER BY id DESC LIMIT 1');
+  const insertTwin = db.prepare('INSERT OR IGNORE INTO launch_autopilot_twins(run_id,tenant,revision,twin_json,created_at) VALUES(?,?,?,?,?)');
 
   function nowIso() { return new Date().toISOString(); }
 
@@ -258,6 +275,15 @@ function createLaunchAutopilotController(options = {}) {
     const receiptDigest = digest({ tenant: run.tenant, runId: run.runId, ...normalised });
     const existing = latestReceiptByGate.get(run.runId, run.tenant, normalised.gate);
     if (existing && existing.digest === receiptDigest) return status(run.tenant, run.runId);
+    if (normalised.status === 'PASS' && existing?.status === 'DEGRADED') {
+      let priorDetail = {};
+      try { priorDetail = JSON.parse(existing.detail_json || '{}'); } catch {}
+      if (priorDetail.reason === 'TWIN_CHANGE_REVALIDATION_REQUIRED') {
+        const freshEnough = Date.parse(normalised.observedAt) > Date.parse(existing.observed_at);
+        const sameRevision = Boolean(normalised.twinRevision) && normalised.twinRevision === existing.twin_revision;
+        if (!freshEnough || !sameRevision) return status(run.tenant, run.runId);
+      }
+    }
     const ts = nowIso();
     const before = status(run.tenant, run.runId);
     insertReceipt.run(
@@ -306,6 +332,40 @@ function createLaunchAutopilotController(options = {}) {
     return status(run.tenant, run.runId);
   }
 
+  function observeTwin({ tenant, runId, twin }) {
+    const run = ensureRun(tenant, runId);
+    if (!twin || twin.tenant !== run.tenant || !text(twin.revision, 180)) {
+      throw new Error('A tenant-bound Implementation Digital Twin revision is required.');
+    }
+    const previousRow = latestTwinQ.get(run.runId, run.tenant);
+    if (previousRow?.revision === twin.revision) {
+      return { twinRevision: twin.revision, impact: null, readiness: status(run.tenant, run.runId) };
+    }
+    const ts = nowIso();
+    insertTwin.run(run.runId, run.tenant, twin.revision, JSON.stringify(twin), ts);
+    let impact = null;
+    if (previousRow) {
+      const previous = JSON.parse(previousRow.twin_json);
+      impact = changeImpact(previous, twin);
+      if (impact.changed.length) {
+        invalidateForTwinImpact({
+          tenant: run.tenant,
+          runId: run.runId,
+          impact,
+          twinRevision: twin.revision,
+          source: 'implementation-digital-twin'
+        });
+      }
+    }
+    insertEvent.run(run.runId, run.tenant, 'TWIN_REVISION_OBSERVED', JSON.stringify({
+      revision: twin.revision,
+      previousRevision: previousRow?.revision || null,
+      changed: impact?.changed || [],
+      authority: impact?.authority || 'OBSERVED'
+    }), ts);
+    return { twinRevision: twin.revision, impact, readiness: status(run.tenant, run.runId) };
+  }
+
   function events(tenant, runId) {
     return eventsQ.all(text(runId, 180), text(tenant, 120)).map(row => ({
       event: row.event,
@@ -319,6 +379,7 @@ function createLaunchAutopilotController(options = {}) {
     recordReceipt,
     status,
     invalidateForTwinImpact,
+    observeTwin,
     events,
     close() { if (ownsDb) try { db.close(); } catch {} }
   };
