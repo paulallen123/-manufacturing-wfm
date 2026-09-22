@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "release": "VECTOR_EOW_2026_09_25",
+  "policy": {
+    "functionalParityMinimum": 1,
+    "securityMustNotRegress": true,
+    "complianceMustNotRegress": true,
+    "automationMustNotRegress": true,
+    "evidenceMustNotRegress": true,
+    "manualStepsMustNotIncrease": true,
+    "timeToDecisionMustNotIncrease": true,
+    "retireLegacyOnlyAfterSupersetProof": true,
+    "unknownOrStaleEvidenceFailsClosed": true
+  },
+  "proofRequiredToRetire": [
+    "original-behaviour-tests",
+    "exact-image-admission",
+    "hosted-role-journey",
+    "tenant-isolation",
+    "refresh-new-login",
+    "restart-durability",
+    "error-empty-loading-states",
+    "rollback-or-safe-abstention",
+    "before-after-value-evidence"
+  ],
+  "capabilities": [
+    {
+      "id": "factory-autopilot",
+      "releaseTargetIds": ["factory-autopilot"],
+      "sourceRefs": ["PR#227", "operations/runtime/decision-episode.cjs", "operations/runtime/absence-recovery-shadow.cjs"],
+      "status": "in-development",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "do-nothing option",
+        "hard-constraint rejection",
+        "uncertainty-aware recommendation",
+        "recommendation-authority separation",
+        "tenant-isolated append-only evidence",
+        "shadow mode cannot execute"
+      ],
+      "valueAddTargets": [
+        "authorised reversible execution",
+        "post-action verification",
+        "predicted-versus-actual measurement",
+        "bounded learning",
+        "automatic rollback or containment"
+      ],
+      "integratedPaths": [
+        "operations/runtime/decision-episode.cjs",
+        "operations/runtime/absence-recovery-shadow.cjs",
+        "operations/runtime/demand-decision-service.cjs"
+      ]
+    },
+    {
+      "id": "energy-intelligence",
+      "releaseTargetIds": ["energy-intelligence"],
+      "sourceRefs": ["PR#69"],
+      "status": "retain-source",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "tariff and signal freshness",
+        "revision and supersession checks",
+        "process flexibility constraints",
+        "skills qualifications rest supervision and consent guards",
+        "conservative net-value ranking",
+        "double-count prevention",
+        "no direct machine grid BESS or robot actuation"
+      ],
+      "valueAddTargets": [
+        "live tariff and usage evidence",
+        "FORGE Factory and Improve decision surface",
+        "shared Autopilot decision episode",
+        "realised outcome reconciliation"
+      ],
+      "integratedPaths": []
+    },
+    {
+      "id": "cash-to-capacity",
+      "releaseTargetIds": ["cash-to-capacity"],
+      "sourceRefs": ["PR#210"],
+      "status": "retain-source",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "skills compliance fatigue safety quality and customer gates",
+        "tenant site legal-entity and currency isolation",
+        "source revision and freshness",
+        "cash timing separated from economic value",
+        "negative economic cases rejected",
+        "prediction-to-production-to-payment reconciliation"
+      ],
+      "valueAddTargets": [
+        "canonical Finance and Operations experience",
+        "shared Decision Episode",
+        "realised value ledger",
+        "realtime outcome updates"
+      ],
+      "integratedPaths": []
+    },
+    {
+      "id": "agency-labour",
+      "releaseTargetIds": ["agency-labour"],
+      "sourceRefs": ["PR#82", "PR#88"],
+      "status": "retain-source",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "supplier eligibility before ranking",
+        "worker eligibility before ranking",
+        "right-to-work and licence evidence",
+        "expiring scoped supplier response tokens",
+        "high-risk approval gate",
+        "delivery idempotency and unknown-outcome reconciliation",
+        "clocked claimed and invoiced hour reconciliation",
+        "no blind resend after unknown delivery"
+      ],
+      "valueAddTargets": [
+        "exception-only manufacturer workflow",
+        "Autopilot cover option",
+        "realtime supplier response state",
+        "attendance and invoice outcome closure"
+      ],
+      "integratedPaths": []
+    },
+    {
+      "id": "automatic-training-video",
+      "releaseTargetIds": ["training"],
+      "sourceRefs": ["PR#79", "proof/video-runner-emergency-20260920"],
+      "status": "in-development",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "role-specific curricula",
+        "mastery evidence",
+        "guided practice",
+        "teach-back where required",
+        "delta learning for changed functionality",
+        "implementation readiness cannot override learning mastery"
+      ],
+      "valueAddTargets": [
+        "autonomous walkthrough generation from exact hosted UI",
+        "interactive checkpoints",
+        "multiple explanation modes",
+        "automatic regeneration after verified UI change"
+      ],
+      "integratedPaths": [
+        "learning/runtime/adaptive-learning-engine.cjs",
+        "learning/ui/adaptive-coach.js"
+      ]
+    },
+    {
+      "id": "zero-touch-secure-entry",
+      "releaseTargetIds": ["production-tenant"],
+      "sourceRefs": ["security/runtime/identity-survival-guard.cjs", "PR#217"],
+      "status": "in-development",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "authentication cannot be bypassed",
+        "tenant and role boundaries",
+        "resource-side identity survival",
+        "fail-closed recovery",
+        "auditability",
+        "no model-created authority"
+      ],
+      "valueAddTargets": [
+        "zero unnecessary landing friction",
+        "device-bound or delegated secure entry where supported",
+        "step-up only for risk",
+        "fast secure recovery without weakening identity"
+      ],
+      "integratedPaths": [
+        "security/runtime/identity-survival-guard.cjs",
+        "security/runtime/bootstrap.cjs"
+      ]
+    },
+    {
+      "id": "mobile-tablet-mass-clocking",
+      "releaseTargetIds": ["mobile-tablet"],
+      "sourceRefs": ["PR#83"],
+      "status": "retain-source",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "weak signals cannot silently stop pay",
+        "tenant and site isolation",
+        "idempotent evidence ingestion",
+        "durable crash and restart recovery",
+        "duplicate suppression",
+        "payroll protection",
+        "privacy minimisation",
+        "source health and reconnect reconciliation"
+      ],
+      "valueAddTargets": [
+        "responsive mobile and tablet workflow",
+        "mass clocking",
+        "supervisor exception flow",
+        "offline recovery",
+        "realtime payroll-readiness state"
+      ],
+      "integratedPaths": []
+    },
+    {
+      "id": "realtime-ui",
+      "releaseTargetIds": ["realtime-ui"],
+      "sourceRefs": ["docs/VECTOR_FORGE_EXPERIENCE_EVOLUTION.md"],
+      "status": "in-development",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "authoritative backend remains source of truth",
+        "tenant-scoped updates",
+        "periodic refresh remains recovery fallback",
+        "stale state cannot authorise high-impact actions"
+      ],
+      "valueAddTargets": [
+        "event-driven updates",
+        "reconnect and resynchronisation",
+        "optimistic UI only for reversible low-risk state",
+        "cross-screen outcome propagation"
+      ],
+      "integratedPaths": []
+    },
+    {
+      "id": "autonomous-integrations",
+      "releaseTargetIds": ["integration-fabric"],
+      "sourceRefs": ["PR#106", "PR#194", "integration/runtime/autonomous-integration-hub.cjs"],
+      "status": "in-development",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "protocol-first provider-neutral paths",
+        "read-only by default",
+        "tenant-bound authentication",
+        "scope and source-authority checks",
+        "reconciliation",
+        "no inherited industrial control authority",
+        "unknown interfaces are not guessed"
+      ],
+      "valueAddTargets": [
+        "autonomous discovery",
+        "safe schema mapping",
+        "connection planning",
+        "drift detection",
+        "self-healing reconnect",
+        "implementation-readiness integration"
+      ],
+      "integratedPaths": [
+        "integration/runtime/autonomous-integration-hub.cjs"
+      ]
+    },
+    {
+      "id": "customer-outcome-learning",
+      "releaseTargetIds": ["realised-value", "self-learning"],
+      "sourceRefs": ["PR#204", "operations/runtime/decision-episode.cjs"],
+      "status": "in-development",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "no unsupported realised savings",
+        "predicted and realised outcomes remain distinct",
+        "authority cannot be learned from outcome data",
+        "cross-tenant raw learning memory prohibited",
+        "regressions become evaluations"
+      ],
+      "valueAddTargets": [
+        "prediction error measurement",
+        "versioned tenant-safe calibration",
+        "holdout and canary evaluation",
+        "automatic bounded improvement proposal",
+        "rollback on regression"
+      ],
+      "integratedPaths": [
+        "operations/runtime/decision-episode.cjs"
+      ]
+    }
+  ]
+}
