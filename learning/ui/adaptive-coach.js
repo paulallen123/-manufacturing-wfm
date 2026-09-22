@@ -49,6 +49,24 @@
     host.replaceChildren();
     const meta = el('p', { class: 'wfm-coach-delivery-meta' }, module.mode.replaceAll('_', ' ') + ' · ' + module.surface);
     host.append(meta);
+    if (module.mode === 'SHOW_ME' && module.video?.state === 'READY' && module.video.videoUrl) {
+      const video = el('video', { controls: '', playsinline: '', preload: 'metadata', class: 'wfm-coach-video', 'aria-label': module.title + ' demonstration' });
+      video.src = module.video.videoUrl;
+      if (module.video.captionsUrl) {
+        const track = el('track', { kind: 'captions', srclang: module.locale || 'en-GB', label: 'Captions', src: module.video.captionsUrl, default: '' });
+        video.append(track);
+      }
+      host.append(video);
+      if (module.video.transcriptUrl) {
+        const transcript = el('a', { href: module.video.transcriptUrl, target: '_blank', rel: 'noopener', class: 'wfm-coach-transcript' }, 'Open transcript');
+        host.append(transcript);
+      }
+      host.append(el('p', { class: 'wfm-coach-test-note' }, 'Watching this demonstration is guidance only. VECTOR still requires independent or observed task evidence for mastery.'));
+      return;
+    }
+    if (module.mode === 'SHOW_ME' && module.video?.state && module.video.state !== 'READY') {
+      host.append(el('p', { class: 'wfm-coach-test-note' }, 'A version-bound training video is not yet published for this exact VECTOR configuration. Showing the authoritative step guide instead.'));
+    }
     if (module.mode === 'PRACTISE' && module.scenario) {
       host.append(el('p', { class: 'wfm-coach-question' }, module.scenario.prompt));
       const options = el('div', { class: 'wfm-coach-options' });

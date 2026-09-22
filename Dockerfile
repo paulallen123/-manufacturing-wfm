@@ -11,7 +11,7 @@ RUN node scripts/validate-deployment.mjs \
  && node scripts/validate-vector-only-ui.mjs \
  && node --check learning/video-worker/runner.mjs \
  && node integration-fabric/scripts/validate.mjs \
- && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -89,6 +89,7 @@ COPY learning/runtime/training-scenario-engine.cjs /app/learning-runtime/trainin
 COPY learning/runtime/training-delivery-service.cjs /app/learning-runtime/training-delivery-service.cjs
 COPY learning/runtime/training-video-contract.cjs /app/learning-runtime/training-video-contract.cjs
 COPY learning/runtime/training-artifact-registry.cjs /app/learning-runtime/training-artifact-registry.cjs
+COPY learning/runtime/training-regeneration-planner.cjs /app/learning-runtime/training-regeneration-planner.cjs
 RUN mkdir -p /app/learning-runtime/evolution /app/product-factory/features
 COPY adaptive-intelligence/engine.mjs /app/learning-runtime/evolution/engine.mjs
 COPY product-factory/adaptive-intelligence-manifest.json /app/product-factory/adaptive-intelligence-manifest.json
@@ -178,6 +179,8 @@ COPY learning/runtime/training-video-contract.cjs /tmp/wfm-tests/learning/runtim
 COPY learning/runtime/training-video-contract.test.cjs /tmp/wfm-tests/learning/runtime/training-video-contract.test.cjs
 COPY learning/runtime/training-artifact-registry.cjs /tmp/wfm-tests/learning/runtime/training-artifact-registry.cjs
 COPY learning/runtime/training-artifact-registry.test.cjs /tmp/wfm-tests/learning/runtime/training-artifact-registry.test.cjs
+COPY learning/runtime/training-regeneration-planner.cjs /tmp/wfm-tests/learning/runtime/training-regeneration-planner.cjs
+COPY learning/runtime/training-regeneration-planner.test.cjs /tmp/wfm-tests/learning/runtime/training-regeneration-planner.test.cjs
 COPY operations/runtime/decision-episode.cjs /tmp/wfm-tests/operations/runtime/decision-episode.cjs
 COPY security/runtime/hosted-listen-guard.cjs /tmp/wfm-tests/security/runtime/hosted-listen-guard.cjs
 COPY security/runtime/hosted-listen-guard.test.cjs /tmp/wfm-tests/security/runtime/hosted-listen-guard.test.cjs
@@ -224,6 +227,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/learning/runtime/training-delivery-service.test.cjs \
       /tmp/wfm-tests/learning/runtime/training-video-contract.test.cjs \
       /tmp/wfm-tests/learning/runtime/training-artifact-registry.test.cjs \
+      /tmp/wfm-tests/learning/runtime/training-regeneration-planner.test.cjs \
       /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs \
       /tmp/wfm-tests/security/runtime/hosted-listen-guard.test.cjs \
       /tmp/wfm-tests/integration/runtime/autonomous-integration-hub.test.cjs \

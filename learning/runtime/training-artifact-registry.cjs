@@ -31,7 +31,9 @@ function createTrainingArtifactRegistry(options={}){
       captionsAvailable:Boolean(receipt.media?.captionsSha256),
       transcriptAvailable:Boolean(receipt.media?.transcriptSha256),
       narrationAvailable:receipt.narration?.status==='PRESENT',
-      url:row.state==='READY'?receipt.publication?.url||null:null
+      videoUrl:row.state==='READY'?receipt.publication?.videoUrl||null:null,
+      captionsUrl:row.state==='READY'?receipt.publication?.captionsUrl||null:null,
+      transcriptUrl:row.state==='READY'?receipt.publication?.transcriptUrl||null:null
     };
   }
   function currentForFingerprint(fingerprint){return publicView(latest.get(String(fingerprint||'')));}

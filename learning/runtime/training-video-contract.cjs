@@ -112,7 +112,11 @@ function validateVideoReceipt(job,receipt={}){
   if(!validDigest(receipt.media?.transcriptSha256)) errors.push('TRANSCRIPT_DIGEST_INVALID');
   if(!Number.isFinite(Number(receipt.media?.durationMs))||Number(receipt.media.durationMs)<2000) errors.push('VIDEO_DURATION_INVALID');
   const narrationPresent=receipt.narration?.status==='PRESENT'&&validDigest(receipt.narration?.audioSha256);
-  const durable=receipt.publication?.durable===true&&/^https:\/\//.test(String(receipt.publication?.url||''));
+  const videoUrl=String(receipt.publication?.videoUrl||'');
+  const captionsUrl=String(receipt.publication?.captionsUrl||'');
+  const transcriptUrl=String(receipt.publication?.transcriptUrl||'');
+  const durable=receipt.publication?.durable===true&&
+    /^https:\/\//.test(videoUrl)&&/^https:\/\//.test(captionsUrl)&&/^https:\/\//.test(transcriptUrl);
   const state=errors.length?'FAILED':(narrationPresent&&durable?'READY':'PROOF_ONLY');
   return {ok:errors.length===0,state,errors:[...new Set(errors)]};
 }

@@ -298,9 +298,11 @@
         "learning/runtime/training-artifact-registry.test.cjs",
         "learning/video-worker/package.json",
         "learning/video-worker/runner.mjs",
-        "Dockerfile.training-video"
+        "Dockerfile.training-video",
+        "learning/runtime/training-regeneration-planner.cjs",
+        "learning/runtime/training-regeneration-planner.test.cjs"
       ],
-      "integrationNote": "Training Twin and contextual Show/Guide/Practise/Test are now joined by an autonomous video artifact contract, append-only artifact registry and isolated Playwright worker. Recording is synthetic-only, exact-SHA/UI/workflow bound, fails closed on missing DOM anchors, scans for non-synthetic PII/secrets, emits transcript + WebVTT captions + step screenshots + video digests, and cannot award mastery. Until durable storage and a proven narration adapter are present, generated videos remain PROOF_ONLY rather than customer-published READY."
+      "integrationNote": "Training is now an adaptive system rather than a static library: Training Twin + Show/Guide/Practise/Test + Decision Episode practice + provenance-bound synthetic video factory + append-only artifact registry + customer playback with captions/transcript + dependency-based selective regeneration. Videos cannot be published READY unless they match the exact product/UI/workflow fingerprint, pass privacy/secret/console/DOM proof, have durable HTTPS video/caption/transcript artifacts and a proven narration artifact. Guidance never awards mastery."
     },
     {
       "id": "zero-touch-secure-entry",

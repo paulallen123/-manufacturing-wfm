@@ -7,6 +7,7 @@ const { buildTrainingModule, workflowFor } = require('./training-workflow-manife
 const { scenarioFor, evaluateScenarioAnswer } = require('./training-scenario-engine.cjs');
 const { createVideoGenerationJob } = require('./training-video-contract.cjs');
 const { createTrainingArtifactRegistry } = require('./training-artifact-registry.cjs');
+const { planTrainingRegeneration } = require('./training-regeneration-planner.cjs');
 
 const PREFIX='/api/learning/training';
 const INTERNAL_HEADER='x-wfm-training-factory-internal';
@@ -97,6 +98,23 @@ function createTrainingDeliveryService(options={}){
         if(!body.job||!body.receipt) return writeJson(res,400,{error:'job and receipt are required.'});
         const result=artifacts.recordReceipt(body.job,body.receipt);
         return writeJson(res,result.validation.ok?200:422,result);
+      }
+      if(req.method==='POST'&&path===PREFIX+'/change-impact'){
+        if(!requireInternal(req,res)) return true;
+        const body=await readJson(req);
+        const identity=productIdentity();
+        const plan=planTrainingRegeneration({
+          changedDependencies:body.changedDependencies,
+          roles:body.roles,
+          locales:body.locales,
+          explanationMode:body.explanationMode,
+          permissionClass:body.permissionClass,
+          configurationClass:body.configurationClass||identity.configurationClass,
+          productSha:identity.productSha,
+          uiVersion:identity.uiVersion,
+          targetOrigin:process.env.WFM_TRAINING_CAPTURE_TARGET_ORIGIN||String(body.targetOrigin||'')
+        });
+        return writeJson(res,200,{plan});
       }
       const user=requireUser(req,res);if(!user)return true;
       if(req.method==='GET'&&path===PREFIX+'/plan') return writeJson(res,200,planForUser(user));
