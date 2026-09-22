@@ -26,8 +26,14 @@
   "capabilities": [
     {
       "id": "factory-autopilot",
-      "releaseTargetIds": ["factory-autopilot"],
-      "sourceRefs": ["PR#227", "operations/runtime/decision-episode.cjs", "operations/runtime/absence-recovery-shadow.cjs"],
+      "releaseTargetIds": [
+        "factory-autopilot"
+      ],
+      "sourceRefs": [
+        "PR#227",
+        "operations/runtime/decision-episode.cjs",
+        "operations/runtime/absence-recovery-shadow.cjs"
+      ],
       "status": "in-development",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
@@ -53,8 +59,12 @@
     },
     {
       "id": "energy-intelligence",
-      "releaseTargetIds": ["energy-intelligence"],
-      "sourceRefs": ["PR#69"],
+      "releaseTargetIds": [
+        "energy-intelligence"
+      ],
+      "sourceRefs": [
+        "PR#69"
+      ],
       "status": "retain-source",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
@@ -76,9 +86,13 @@
     },
     {
       "id": "cash-to-capacity",
-      "releaseTargetIds": ["cash-to-capacity"],
-      "sourceRefs": ["PR#210"],
-      "status": "retain-source",
+      "releaseTargetIds": [
+        "cash-to-capacity"
+      ],
+      "sourceRefs": [
+        "PR#210"
+      ],
+      "status": "in-development",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
         "skills compliance fatigue safety quality and customer gates",
@@ -94,12 +108,27 @@
         "realised value ledger",
         "realtime outcome updates"
       ],
-      "integratedPaths": []
+      "integratedPaths": [
+        "src/frontier/cash-to-capacity-decision.mjs",
+        "src/frontier/cash-to-capacity-engine.mjs",
+        "src/frontier/cash-to-capacity-evidence.mjs",
+        "src/frontier/cash-to-capacity-outcome.mjs",
+        "test/frontier/cash-to-capacity-decision.test.mjs",
+        "test/frontier/cash-to-capacity-engine.test.mjs",
+        "test/frontier/cash-to-capacity-evidence.test.mjs",
+        "test/frontier/cash-to-capacity-outcome.test.mjs"
+      ],
+      "integrationNote": "Original deterministic engine and original regression tests are admitted into the exact FORGE image. Legacy source remains retained until canonical UI/API and hosted journey prove superset behaviour."
     },
     {
       "id": "agency-labour",
-      "releaseTargetIds": ["agency-labour"],
-      "sourceRefs": ["PR#82", "PR#88"],
+      "releaseTargetIds": [
+        "agency-labour"
+      ],
+      "sourceRefs": [
+        "PR#82",
+        "PR#88"
+      ],
       "status": "retain-source",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
@@ -122,8 +151,13 @@
     },
     {
       "id": "automatic-training-video",
-      "releaseTargetIds": ["training"],
-      "sourceRefs": ["PR#79", "proof/video-runner-emergency-20260920"],
+      "releaseTargetIds": [
+        "training"
+      ],
+      "sourceRefs": [
+        "PR#79",
+        "proof/video-runner-emergency-20260920"
+      ],
       "status": "in-development",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
@@ -147,8 +181,13 @@
     },
     {
       "id": "zero-touch-secure-entry",
-      "releaseTargetIds": ["production-tenant"],
-      "sourceRefs": ["security/runtime/identity-survival-guard.cjs", "PR#217"],
+      "releaseTargetIds": [
+        "production-tenant"
+      ],
+      "sourceRefs": [
+        "security/runtime/identity-survival-guard.cjs",
+        "PR#217"
+      ],
       "status": "in-development",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
@@ -172,8 +211,12 @@
     },
     {
       "id": "mobile-tablet-mass-clocking",
-      "releaseTargetIds": ["mobile-tablet"],
-      "sourceRefs": ["PR#83"],
+      "releaseTargetIds": [
+        "mobile-tablet"
+      ],
+      "sourceRefs": [
+        "PR#83"
+      ],
       "status": "retain-source",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
@@ -197,8 +240,12 @@
     },
     {
       "id": "realtime-ui",
-      "releaseTargetIds": ["realtime-ui"],
-      "sourceRefs": ["docs/VECTOR_FORGE_EXPERIENCE_EVOLUTION.md"],
+      "releaseTargetIds": [
+        "realtime-ui"
+      ],
+      "sourceRefs": [
+        "docs/VECTOR_FORGE_EXPERIENCE_EVOLUTION.md"
+      ],
       "status": "in-development",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
@@ -217,8 +264,14 @@
     },
     {
       "id": "autonomous-integrations",
-      "releaseTargetIds": ["integration-fabric"],
-      "sourceRefs": ["PR#106", "PR#194", "integration/runtime/autonomous-integration-hub.cjs"],
+      "releaseTargetIds": [
+        "integration-fabric"
+      ],
+      "sourceRefs": [
+        "PR#106",
+        "PR#194",
+        "integration/runtime/autonomous-integration-hub.cjs"
+      ],
       "status": "in-development",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
@@ -244,8 +297,14 @@
     },
     {
       "id": "customer-outcome-learning",
-      "releaseTargetIds": ["realised-value", "self-learning"],
-      "sourceRefs": ["PR#204", "operations/runtime/decision-episode.cjs"],
+      "releaseTargetIds": [
+        "realised-value",
+        "self-learning"
+      ],
+      "sourceRefs": [
+        "PR#204",
+        "operations/runtime/decision-episode.cjs"
+      ],
       "status": "in-development",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
