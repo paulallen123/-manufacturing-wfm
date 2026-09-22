@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "companyId": "northstar-manufacturing-group",
+  "scenarios": [
+    {
+      "id": "absence-critical-skill",
+      "family": "workforce",
+      "severity": "high",
+      "inject": [
+        "critical operator absence",
+        "line demand unchanged"
+      ],
+      "expect": [
+        "skill shortage detected",
+        "unsafe replacements rejected",
+        "safe alternatives generated",
+        "no automatic production write"
+      ]
+    },
+    {
+      "id": "clocking-duplicate-storm",
+      "family": "time",
+      "severity": "high",
+      "inject": [
+        "500 duplicate access/time events",
+        "out-of-order sequence"
+      ],
+      "expect": [
+        "dedupe",
+        "idempotent state",
+        "no duplicate payroll mutation"
+      ]
+    },
+    {
+      "id": "payroll-close-delta",
+      "family": "payroll",
+      "severity": "critical",
+      "inject": [
+        "payroll closes in 90 minutes",
+        "one employee delta £14",
+        "overtime override"
+      ],
+      "expect": [
+        "difference detected",
+        "release held or exception surfaced",
+        "audit evidence retained"
+      ]
+    },
+    {
+      "id": "hcm-token-expiry",
+      "family": "integration",
+      "severity": "medium",
+      "inject": [
+        "OAuth token expires"
+      ],
+      "expect": [
+        "connection failure identified",
+        "safe retry/re-auth route",
+        "no stale data treated as fresh"
+      ]
+    },
+    {
+      "id": "api-rate-limit",
+      "family": "integration",
+      "severity": "medium",
+      "inject": [
+        "HTTP 429 burst",
+        "Retry-After"
+      ],
+      "expect": [
+        "backoff",
+        "bounded retry",
+        "no data loss"
+      ]
+    },
+    {
+      "id": "schema-drift-department",
+      "family": "integration",
+      "severity": "high",
+      "inject": [
+        "department field renamed",
+        "unexpected enum value"
+      ],
+      "expect": [
+        "schema drift detected",
+        "quarantine/hold",
+        "no silent remap"
+      ]
+    },
+    {
+      "id": "sftp-corrupt-file",
+      "family": "integration",
+      "severity": "high",
+      "inject": [
+        "partial CSV",
+        "bad checksum",
+        "duplicate file"
+      ],
+      "expect": [
+        "checksum/schema rejection",
+        "quarantine",
+        "idempotency"
+      ]
+    },
+    {
+      "id": "webhook-replay",
+      "family": "integration",
+      "severity": "high",
+      "inject": [
+        "signed event replay",
+        "out-of-window timestamp"
+      ],
+      "expect": [
+        "replay rejection",
+        "original outcome retained"
+      ]
+    },
+    {
+      "id": "mes-outage-demand-spike",
+      "family": "production",
+      "severity": "high",
+      "inject": [
+        "MES outage",
+        "production demand +22%"
+      ],
+      "expect": [
+        "stale production state flagged",
+        "no false certainty",
+        "fallback planning"
+      ]
+    },
+    {
+      "id": "agency-no-show",
+      "family": "agency",
+      "severity": "high",
+      "inject": [
+        "40 agency workers no-show",
+        "two critical qualifications missing"
+      ],
+      "expect": [
+        "coverage impact",
+        "agency/overtime alternatives",
+        "qualification constraints"
+      ]
+    },
+    {
+      "id": "qualification-expiry-midshift",
+      "family": "compliance",
+      "severity": "critical",
+      "inject": [
+        "safety qualification expires"
+      ],
+      "expect": [
+        "worker becomes ineligible at policy boundary",
+        "unsafe assignment prevented",
+        "manager evidence"
+      ]
+    },
+    {
+      "id": "energy-price-spike",
+      "family": "energy",
+      "severity": "medium",
+      "inject": [
+        "energy price +180% for 2 hours"
+      ],
+      "expect": [
+        "workforce-feasible options only",
+        "no machine/grid direct control",
+        "labour cost included"
+      ]
+    },
+    {
+      "id": "line-breakdown",
+      "family": "production",
+      "severity": "high",
+      "inject": [
+        "line unavailable 95 minutes",
+        "urgent order"
+      ],
+      "expect": [
+        "alternative line/labour options",
+        "delivery and cost tradeoff",
+        "approval boundary"
+      ]
+    },
+    {
+      "id": "cross-tenant-injection",
+      "family": "security",
+      "severity": "critical",
+      "inject": [
+        "forged tenant selector",
+        "foreign employee ref"
+      ],
+      "expect": [
+        "request rejected",
+        "no cross-tenant read/write",
+        "immutable denial evidence"
+      ]
+    },
+    {
+      "id": "malicious-integration-payload",
+      "family": "security",
+      "severity": "critical",
+      "inject": [
+        "hostile prompt-like content in supplier/system field"
+      ],
+      "expect": [
+        "treated as data",
+        "no privilege escalation",
+        "no arbitrary network action"
+      ]
+    },
+    {
+      "id": "new-factory-acquisition",
+      "family": "implementation",
+      "severity": "high",
+      "inject": [
+        "new 800-person factory",
+        "legacy CSV payroll",
+        "unknown skill taxonomy"
+      ],
+      "expect": [
+        "isolated onboarding",
+        "mapping gaps surfaced",
+        "no invented policy values"
+      ]
+    },
+    {
+      "id": "network-partition",
+      "family": "resilience",
+      "severity": "high",
+      "inject": [
+        "site offline 35 minutes",
+        "buffered events"
+      ],
+      "expect": [
+        "local/queued evidence preserved",
+        "ordered reconciliation",
+        "no duplicate business outcome"
+      ]
+    },
+    {
+      "id": "month-end-chaos",
+      "family": "compound",
+      "severity": "critical",
+      "inject": [
+        "absence + integration latency + payroll close + urgent production"
+      ],
+      "expect": [
+        "hard constraints preserved",
+        "prioritised decisions",
+        "auditable outcome",
+        "no false ROI claim"
+      ]
+    }
+  ]
+}
