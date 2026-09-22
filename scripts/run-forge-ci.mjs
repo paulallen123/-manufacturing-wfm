@@ -18,6 +18,7 @@ const checks = [
     'operations/runtime/demand-decision-service.test.cjs',
     'operations/runtime/decision-outcome-proof.test.cjs',
     'implementation/runtime/launch-autopilot-controller.test.cjs',
+    'implementation/runtime/launch-autopilot-readiness-adapter.test.cjs',
     'scripts/prove-vector-built-asset-provenance.test.mjs'
   ]]
 ];
