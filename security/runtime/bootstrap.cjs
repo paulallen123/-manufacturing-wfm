@@ -13,6 +13,7 @@ const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
 const { createDemandDecisionService } = require('/app/operations-runtime/demand-decision-service.cjs');
+const { createAutopilotExecutionEngine } = require('/app/operations-runtime/autopilot-execution-engine.cjs');
 const { createRealtimeEventService } = require('/app/operations-runtime/realtime-event-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
@@ -46,6 +47,8 @@ let lifecycleGuard = null;
 let lifecycleGuardInitError = null;
 let realtimeEventService = null;
 let realtimeEventServiceInitError = null;
+let autopilotExecutionEngine = null;
+let autopilotExecutionEngineInitError = null;
 let demandDecisionService = null;
 let demandDecisionServiceInitError = null;
 
@@ -72,6 +75,8 @@ function implementationPath(req) {
 function lifecyclePath(req) {
   return requestPath(req).startsWith('/api/workforce/lifecycle');
 }
+
+function autopilotPath(req) { return requestPath(req).startsWith('/api/operations/autopilot'); }
 
 function realtimePath(req) {
   return requestPath(req).startsWith('/api/realtime');
@@ -350,6 +355,10 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!autopilotExecutionEngine && !autopilotExecutionEngineInitError && process.env.WFM_DB) {
+    try { autopilotExecutionEngine=createAutopilotExecutionEngine({dbPath:process.env.WFM_DB,lifecycleAdapter:lifecycleGuard,publishEvent:realtimeEventService&&!realtimeEventServiceInitError?event=>realtimeEventService.publish(event):null}); } catch(error){ autopilotExecutionEngineInitError=error; }
+  }
+
   if (!demandDecisionService && !demandDecisionServiceInitError && process.env.WFM_DB) {
     try {
       demandDecisionService = createDemandDecisionService({
@@ -398,6 +407,8 @@ http.createServer = function guardedCreateServer(listener) {
     if (lifecyclePath(req)) {
       if (await routeOverlay(lifecycleGuard, lifecycleGuardInitError, res, 'Workforce lifecycle', req)) return;
     }
+
+    if (autopilotPath(req)) { if (await routeOverlay(autopilotExecutionEngine, autopilotExecutionEngineInitError, res, 'Autopilot execution', req)) return; }
 
     if (realtimePath(req)) {
       if (await routeOverlay(realtimeEventService, realtimeEventServiceInitError, res, 'Realtime events', req)) return;

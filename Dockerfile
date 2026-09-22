@@ -10,7 +10,7 @@ RUN node scripts/validate-deployment.mjs \
  && node scripts/validate-self-evolution.mjs \
  && node scripts/validate-vector-only-ui.mjs \
  && node integration-fabric/scripts/validate.mjs \
- && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -97,6 +97,7 @@ COPY operations/runtime/absence-recovery-shadow.cjs /app/operations-runtime/abse
 COPY operations/runtime/demand-decision-service.cjs /app/operations-runtime/demand-decision-service.cjs
 COPY operations/runtime/decision-outcome-proof.cjs /app/operations-runtime/decision-outcome-proof.cjs
 COPY operations/runtime/realtime-event-service.cjs /app/operations-runtime/realtime-event-service.cjs
+COPY operations/runtime/autopilot-execution-engine.cjs /app/operations-runtime/autopilot-execution-engine.cjs
 COPY src/frontier/cash-to-capacity-engine.mjs /app/operations-runtime/cash-to-capacity-engine.mjs
 COPY src/frontier/cash-to-capacity-evidence.mjs /app/operations-runtime/cash-to-capacity-evidence.mjs
 COPY src/frontier/cash-to-capacity-decision.mjs /app/operations-runtime/cash-to-capacity-decision.mjs
@@ -185,6 +186,8 @@ COPY operations/runtime/decision-outcome-proof.cjs /tmp/wfm-tests/operations/run
 COPY operations/runtime/decision-outcome-proof.test.cjs /tmp/wfm-tests/operations/runtime/decision-outcome-proof.test.cjs
 COPY operations/runtime/realtime-event-service.cjs /tmp/wfm-tests/operations/runtime/realtime-event-service.cjs
 COPY operations/runtime/realtime-event-service.test.cjs /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs
+COPY operations/runtime/autopilot-execution-engine.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.cjs
+COPY operations/runtime/autopilot-execution-engine.test.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
@@ -209,6 +212,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/demand-decision-service.test.cjs \
       /tmp/wfm-tests/operations/runtime/decision-outcome-proof.test.cjs \
       /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs \
+      /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs \
  && rm -rf /tmp/wfm-tests
 
 # Railway cloud-build admission: execute the exact 10,000-employee / 50-site

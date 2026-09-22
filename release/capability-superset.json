@@ -54,8 +54,13 @@
       "integratedPaths": [
         "operations/runtime/decision-episode.cjs",
         "operations/runtime/absence-recovery-shadow.cjs",
-        "operations/runtime/demand-decision-service.cjs"
-      ]
+        "operations/runtime/demand-decision-service.cjs",
+        "operations/runtime/autopilot-execution-engine.cjs",
+        "operations/runtime/autopilot-execution-engine.test.cjs",
+        "operations/runtime/workforce-lifecycle-guard.cjs",
+        "operations/runtime/realtime-event-service.cjs"
+      ],
+      "integrationNote": "Bounded execution spine now covers Shadow -> explicit human permit -> exact context check -> reversible authoritative workforce lifecycle action -> post-action verification -> outcome binding when evidence exists -> compensating rollback -> containment if rollback cannot be verified. No AI-created authority and no direct payroll/machine control. Hosted proof and canonical approval UI remain required."
     },
     {
       "id": "energy-intelligence",
