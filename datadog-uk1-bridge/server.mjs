@@ -267,7 +267,7 @@ function serverFactory() {
   return server;
 }
 
-const app = createMcpExpressApp({ host: "0.0.0.0" });
+const app = createMcpExpressApp({ host: "0.0.0.0", allowedHosts: ["datadog-uk1-mcp-production.up.railway.app"] });
 
 app.get("/", (_req, res) => res.json({
   name: "Datadog UK1 ChatGPT Bridge",
