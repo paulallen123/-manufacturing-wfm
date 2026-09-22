@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "companyId": "northstar-manufacturing-group",
+  "legalName": "Northstar Manufacturing Group",
+  "fictional": true,
+  "purpose": "Independent synthetic manufacturer used to test VECTOR.",
+  "baselineRevision": "2026-09-22.1",
+  "workforce": {
+    "employees": 10000,
+    "agencyPool": 1450,
+    "managers": 620,
+    "payrollAdmins": 36,
+    "skills": 184,
+    "qualifications": 72,
+    "shiftPatterns": [
+      "2-shift",
+      "3-shift",
+      "4-on-4-off",
+      "continental",
+      "day-only",
+      "night-only"
+    ]
+  },
+  "estate": {
+    "sites": 50,
+    "countries": [
+      "GB",
+      "DE",
+      "FR",
+      "PL",
+      "NL",
+      "US"
+    ],
+    "archetypes": [
+      {
+        "id": "automotive-assembly",
+        "sites": 10,
+        "employees": 3200
+      },
+      {
+        "id": "food-processing",
+        "sites": 8,
+        "employees": 1450
+      },
+      {
+        "id": "electronics",
+        "sites": 8,
+        "employees": 1150
+      },
+      {
+        "id": "industrial-components",
+        "sites": 9,
+        "employees": 1450
+      },
+      {
+        "id": "packaging",
+        "sites": 7,
+        "employees": 900
+      },
+      {
+        "id": "distribution-and-service",
+        "sites": 8,
+        "employees": 1850
+      }
+    ]
+  },
+  "systems": [
+    {
+      "id": "hcm-workday-style",
+      "category": "hcm",
+      "protocol": "REST/OpenAPI",
+      "mode": "simulation"
+    },
+    {
+      "id": "erp-sap-s4hana-style",
+      "category": "erp",
+      "protocol": "OData/REST/IDoc",
+      "mode": "simulation"
+    },
+    {
+      "id": "erp-netsuite-style",
+      "category": "erp",
+      "protocol": "REST/SuiteQL",
+      "mode": "simulation"
+    },
+    {
+      "id": "payroll-adp-style",
+      "category": "payroll",
+      "protocol": "REST/SFTP",
+      "mode": "simulation"
+    },
+    {
+      "id": "mes-event-stream",
+      "category": "mes",
+      "protocol": "Kafka/REST",
+      "mode": "simulation"
+    },
+    {
+      "id": "access-control",
+      "category": "access",
+      "protocol": "webhooks/events",
+      "mode": "simulation"
+    },
+    {
+      "id": "legacy-sftp",
+      "category": "legacy",
+      "protocol": "SFTP/files",
+      "mode": "simulation"
+    },
+    {
+      "id": "plant-opcua",
+      "category": "industrial",
+      "protocol": "OPC UA",
+      "mode": "simulation"
+    },
+    {
+      "id": "middleware-mulesoft-style",
+      "category": "ipaas",
+      "protocol": "REST/webhooks",
+      "mode": "simulation"
+    }
+  ],
+  "financialModel": {
+    "currency": "GBP",
+    "labourCostBasis": "synthetic",
+    "agencyPremiumModel": "synthetic",
+    "overtimePremiumModel": "synthetic",
+    "energyModel": "synthetic",
+    "customerRoiClaimAllowed": false
+  }
+}
