@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "claimBoundary": "Provider emulators reproduce selected documented public interface semantics for development testing. They are not provider-certified sandboxes, customer connections or substitutes for provider acceptance testing.",
+  "providers": [
+    {
+      "id": "oracle-netsuite",
+      "name": "Oracle NetSuite",
+      "category": "ERP",
+      "sourceAuthority": "official-public-docs",
+      "auth": [
+        "oauth2"
+      ],
+      "transports": [
+        "REST"
+      ],
+      "behaviours": {
+        "basePattern": "https://{account}.suitetalk.api.netsuite.com/services/rest",
+        "readWorkersLikeData": "POST /query/v1/suiteql",
+        "headers": {
+          "Prefer": "transient",
+          "Content-Type": "application/json"
+        },
+        "bodyShape": {
+          "q": "SELECT ... FROM ... ORDER BY ..."
+        },
+        "paging": [
+          "limit",
+          "offset",
+          "stable unique ORDER BY required for paged SuiteQL"
+        ],
+        "errors": [
+          "401 expired/invalid token",
+          "429/concurrency or throttling style response",
+          "400 query/schema error"
+        ]
+      },
+      "developmentTests": [
+        "SuiteQL POST semantics",
+        "OAuth expiry",
+        "stable ordered pagination",
+        "bound/query parameter handling",
+        "429 recovery",
+        "schema/query failure"
+      ],
+      "writeAuthorityDefault": false
+    },
+    {
+      "id": "sap-s4hana",
+      "name": "SAP S/4HANA",
+      "category": "ERP",
+      "sourceAuthority": "official-public-docs",
+      "auth": [
+        "oauth2-or-enterprise"
+      ],
+      "transports": [
+        "OData",
+        "REST"
+      ],
+      "behaviours": {
+        "basePattern": "https://{host}/sap/opu/odata4/...",
+        "metadata": "GET $metadata",
+        "paging": [
+          "@odata.nextLink",
+          "$skiptoken"
+        ],
+        "responseShape": {
+          "@odata.context": "...",
+          "value": [],
+          "@odata.nextLink": "...$skiptoken=..."
+        },
+        "errors": [
+          "401/403 auth",
+          "400 OData query",
+          "429 throttling where gateway applies",
+          "5xx upstream"
+        ]
+      },
+      "developmentTests": [
+        "metadata discovery",
+        "nextLink continuation",
+        "skiptoken replay protection",
+        "entity/schema drift",
+        "partial page recovery"
+      ],
+      "writeAuthorityDefault": false
+    },
+    {
+      "id": "workday",
+      "name": "Workday",
+      "category": "HCM",
+      "sourceAuthority": "official-public-docs",
+      "auth": [
+        "configured-auth-profile"
+      ],
+      "transports": [
+        "REST"
+      ],
+      "behaviours": {
+        "collectionShape": {
+          "data": [],
+          "total": 0
+        },
+        "paging": [
+          "limit default 20 maximum 100",
+          "offset",
+          "cursor/next-page patterns where API/orchestration exposes them"
+        ],
+        "identifiers": [
+          "WID",
+          "Reference_ID"
+        ],
+        "example": "GET /workers?limit=5&offset=99",
+        "errors": [
+          "REST error envelope",
+          "401/403 auth",
+          "invalid identifier",
+          "paging link misuse"
+        ]
+      },
+      "developmentTests": [
+        "limit/offset paging",
+        "cursor continuation",
+        "WID/reference-ID identity",
+        "next-page URI handling",
+        "duplicate query parameter rejection"
+      ],
+      "writeAuthorityDefault": false
+    },
+    {
+      "id": "adp-workforce-now",
+      "name": "ADP Workforce Now",
+      "category": "HCM/Payroll",
+      "sourceAuthority": "official-public-docs",
+      "auth": [
+        "provider-auth-profile"
+      ],
+      "transports": [
+        "REST"
+      ],
+      "behaviours": {
+        "workerEndpoint": "GET /hr/v2/workers",
+        "metadataEndpoint": "GET /hr/v2/workers/meta",
+        "paging": [
+          "$top maximum 100 for documented WFN worker pagination",
+          "$skip",
+          "204 No Content at end in documented flow"
+        ],
+        "async": [
+          "Prefer: respond-async",
+          "202 Accepted",
+          "link header",
+          "retry-after header"
+        ],
+        "responseHints": [
+          "meta.totalNumber",
+          "workerStatus",
+          "primary work assignment semantics"
+        ]
+      },
+      "developmentTests": [
+        "$top/$skip pagination",
+        "204 terminal page",
+        "async 202 polling",
+        "meta total reconciliation",
+        "worker status mapping",
+        "retry-after handling"
+      ],
+      "writeAuthorityDefault": false
+    },
+    {
+      "id": "mulesoft-gateway",
+      "name": "MuleSoft Anypoint Gateway",
+      "category": "Middleware/iPaaS",
+      "sourceAuthority": "official-public-docs",
+      "auth": [
+        "gateway-policy"
+      ],
+      "transports": [
+        "REST",
+        "proxy"
+      ],
+      "behaviours": {
+        "roles": [
+          "routing",
+          "rate limiting",
+          "caching",
+          "authentication",
+          "authorization",
+          "logging"
+        ],
+        "transformation": [
+          "request/response body transformation",
+          "header enrichment",
+          "DataWeave-style policy"
+        ],
+        "failure": [
+          "400 when body transformation policy produces invalid result",
+          "policy rejection",
+          "throttling"
+        ],
+        "provenance": [
+          "preserve original source digest across transformed message"
+        ]
+      },
+      "developmentTests": [
+        "throttle policy",
+        "auth policy",
+        "body transformation",
+        "header enrichment",
+        "transformation failure",
+        "upstream retry",
+        "provenance retention"
+      ],
+      "writeAuthorityDefault": false
+    },
+    {
+      "id": "legacy-sftp-payroll",
+      "name": "Legacy SFTP Payroll",
+      "category": "Payroll/Legacy",
+      "sourceAuthority": "northstar-test-contract",
+      "auth": [
+        "ssh-key-reference"
+      ],
+      "transports": [
+        "SFTP"
+      ],
+      "behaviours": {
+        "files": [
+          "CSV",
+          "fixed-width",
+          "XML"
+        ],
+        "controls": [
+          "checksum",
+          "manifest",
+          "sequence number",
+          "atomic rename"
+        ],
+        "errors": [
+          "partial upload",
+          "duplicate filename",
+          "checksum mismatch",
+          "late file",
+          "unexpected column"
+        ]
+      },
+      "developmentTests": [
+        "atomic delivery",
+        "partial-file quarantine",
+        "duplicate idempotency",
+        "checksum mismatch",
+        "schema drift",
+        "late-arrival reconciliation"
+      ],
+      "writeAuthorityDefault": false
+    }
+  ]
+}
