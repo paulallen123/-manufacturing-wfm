@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "contract": "northstar-vector-test-connection",
+  "targetTenantClass": "fictional-test-only",
+  "permittedModes": [
+    "VECTOR_SHADOW",
+    "VECTOR_TEST_TENANT"
+  ],
+  "prohibitedTargets": [
+    "production",
+    "pilot-customer",
+    "customer-tenant"
+  ],
+  "northstarToVector": {
+    "contractSource": "VECTOR integration-fabric/openapi.yaml",
+    "permittedFamilies": [
+      "workers",
+      "shifts",
+      "time-events",
+      "production-events",
+      "access-events",
+      "qualifications",
+      "training-completions",
+      "worker-restrictions",
+      "safety-signals",
+      "canonical-events"
+    ],
+    "authority": "synthetic-ingest-only",
+    "tenantBindingRequired": true,
+    "idempotencyRequired": true,
+    "evidenceDigestRequired": true
+  },
+  "vectorToNorthstar": {
+    "permittedReads": [
+      "health",
+      "release identity",
+      "connector health",
+      "role/tenant proof",
+      "decision intelligence",
+      "scenario outcome evidence"
+    ],
+    "writeBackToNorthstar": "evidence-only"
+  },
+  "safety": {
+    "productionCredentials": false,
+    "customerData": false,
+    "payrollReleaseAuthority": false,
+    "publishedScheduleAuthority": false,
+    "policyOverrideAuthority": false,
+    "modelExecutionAuthority": false
+  },
+  "receiptRequired": [
+    "companyRevision",
+    "scenarioId",
+    "seed",
+    "eventDigests",
+    "vectorSourceIdentity",
+    "mode",
+    "expected",
+    "observed",
+    "pass",
+    "claimBoundary"
+  ]
+}
