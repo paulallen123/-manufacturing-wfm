@@ -36,7 +36,9 @@ function requirementIndex(readiness) {
 }
 
 function latestObserved(requirements, fallback) {
+  const volatileDerivedSources = new Set(['customer-scope', 'adaptive-learning-engine']);
   const values = requirements
+    .filter(item => !volatileDerivedSources.has(String(item?.source || '')))
     .map(item => Date.parse(String(item?.observedAt || '')))
     .filter(Number.isFinite);
   if (values.length) return new Date(Math.max(...values)).toISOString();
@@ -148,7 +150,7 @@ function receiptForGate({ gate, readiness, requirements, observedAt, detail = {}
     confidence: Number(item?.confidence || 0),
     satisfied: item?.satisfied === true,
     source: item?.source || null,
-    observedAt: item?.observedAt || null
+    detailDigest: digest(item?.detail || {})
   }));
   return {
     gate,
