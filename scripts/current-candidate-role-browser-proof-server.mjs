@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import http from 'node:http';
+import { roleProofResult } from './vector-proof-result.mjs';
 
 let state = 'RUNNING';
 let detail = null;
 let assetBinding = { status: 'UNVERIFIED' };
+let outcome = { roleChecks: 'UNVERIFIED', endToEndVerified: false, productReady: false };
 
 const body = () => JSON.stringify({
+  ...outcome,
   status: state,
   candidateSha: process.env.WFM_EXPECTED_CANDIDATE_SHA,
   claimBoundary: 'fixture/demo browser proof only; production approval and real-provider claims remain false',
@@ -15,7 +18,9 @@ const body = () => JSON.stringify({
 });
 
 const server = http.createServer((req, res) => {
-  res.statusCode = state === 'FAIL' ? 503 : 200;
+  // Serving a running proof process is liveness, never product readiness.
+  const readinessRequest = new URL(req.url || '/', 'http://localhost').pathname === '/ready';
+  res.statusCode = state === 'FAIL' || (readinessRequest && outcome.productReady !== true) ? 503 : 200;
   res.setHeader('content-type', 'application/json');
   res.setHeader('cache-control', 'no-store');
   res.end(body());
@@ -75,9 +80,11 @@ async function proveCanonicalAssetBinding() {
 try {
   assetBinding = await proveCanonicalAssetBinding();
   await import('./current-candidate-role-browser-proof.mjs');
-  state = 'PASS';
+  outcome = roleProofResult(assetBinding);
+  state = outcome.status;
   console.log(`BROWSER_PROOF_ASSET_BINDING=${assetBinding.status}`);
-  console.log('BROWSER_PROOF_SERVER=PASS');
+  console.log('BROWSER_ROLE_CHECKS=PASS');
+  console.log('BROWSER_PROOF_SERVER=PARTIAL|endToEndVerified=false|productReady=false');
 } catch (error) {
   state = 'FAIL';
   detail = String(error?.stack || error);
