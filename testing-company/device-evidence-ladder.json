@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "levels": [
+    {
+      "level": 1,
+      "id": "DEVICE_BEHAVIOUR_EMULATED",
+      "claim": "Synthetic clocking/device behaviour proven deterministically"
+    },
+    {
+      "level": 2,
+      "id": "HOSTED_DEVICE_DOUBLE_PROVEN",
+      "claim": "Hosted callable device test double proven"
+    },
+    {
+      "level": 3,
+      "id": "VECTOR_TEST_TENANT_ATTENDANCE_ROUNDTRIP",
+      "claim": "VECTOR attendance round-trip proven against Northstar fictional devices"
+    },
+    {
+      "level": 4,
+      "id": "REAL_HARDWARE_OR_PROVIDER_SANDBOX_PROVEN",
+      "claim": "Real non-production hardware/provider environment proven"
+    },
+    {
+      "level": 5,
+      "id": "CUSTOMER_SITE_PROVEN",
+      "claim": "Customer-site attendance integration proven"
+    },
+    {
+      "level": 6,
+      "id": "PRODUCTION_CERTIFIED",
+      "claim": "Production-certified attendance path"
+    }
+  ],
+  "rule": "Simulation, screenshots, local tests or hosted test doubles cannot be described as real hardware/customer production proof."
+}
