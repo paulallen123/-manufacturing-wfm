@@ -65,7 +65,7 @@
       "sourceRefs": [
         "PR#69"
       ],
-      "status": "retain-source",
+      "status": "in-development",
       "mayRetireLegacySource": false,
       "preservedBehaviors": [
         "tariff and signal freshness",
@@ -82,7 +82,22 @@
         "shared Autopilot decision episode",
         "realised outcome reconciliation"
       ],
-      "integratedPaths": []
+      "integratedPaths": [
+        "src/frontier/energy-bill-evidence.mjs",
+        "src/frontier/energy-data-reconciliation.mjs",
+        "src/frontier/energy-flexibility.mjs",
+        "src/frontier/energy-input-hardening.mjs",
+        "src/frontier/energy-profile-benchmark.mjs",
+        "src/frontier/energy-profile-binding.mjs",
+        "test/frontier/energy-bill-evidence.test.mjs",
+        "test/frontier/energy-coordination-sensitivity.test.mjs",
+        "test/frontier/energy-data-reconciliation.test.mjs",
+        "test/frontier/energy-flexibility.test.mjs",
+        "test/frontier/energy-input-hardening.test.mjs",
+        "test/frontier/energy-profile-benchmark.test.mjs",
+        "test/frontier/energy-profile-binding.test.mjs"
+      ],
+      "integrationNote": "Original energy evidence, reconciliation, hardening, flexibility and profile engines plus all regression/sensitivity tests are admitted into the exact FORGE image. Legacy source remains retained until canonical live-data/UI/outcome journey proves superset behaviour."
     },
     {
       "id": "cash-to-capacity",

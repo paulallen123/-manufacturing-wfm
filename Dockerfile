@@ -6,7 +6,7 @@ COPY . ./
 RUN node scripts/validate-deployment.mjs \
  && node scripts/validate-capability-superset.mjs \
  && node scripts/validate-vector-only-ui.mjs \
- && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -67,6 +67,12 @@ COPY src/frontier/cash-to-capacity-engine.mjs /app/operations-runtime/cash-to-ca
 COPY src/frontier/cash-to-capacity-evidence.mjs /app/operations-runtime/cash-to-capacity-evidence.mjs
 COPY src/frontier/cash-to-capacity-decision.mjs /app/operations-runtime/cash-to-capacity-decision.mjs
 COPY src/frontier/cash-to-capacity-outcome.mjs /app/operations-runtime/cash-to-capacity-outcome.mjs
+COPY src/frontier/energy-bill-evidence.mjs /app/operations-runtime/energy-bill-evidence.mjs
+COPY src/frontier/energy-data-reconciliation.mjs /app/operations-runtime/energy-data-reconciliation.mjs
+COPY src/frontier/energy-flexibility.mjs /app/operations-runtime/energy-flexibility.mjs
+COPY src/frontier/energy-input-hardening.mjs /app/operations-runtime/energy-input-hardening.mjs
+COPY src/frontier/energy-profile-benchmark.mjs /app/operations-runtime/energy-profile-benchmark.mjs
+COPY src/frontier/energy-profile-binding.mjs /app/operations-runtime/energy-profile-binding.mjs
 COPY operations/runtime/workforce-lifecycle-router.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 COPY implementation/ui/ /tmp/wfm-implementation-ui/
