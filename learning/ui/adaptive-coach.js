@@ -99,6 +99,12 @@
     if (module) renderModule(card, module);
   }
 
+  function currentVectorRoute() {
+    try {
+      return location.hash.startsWith('#vector/') ? decodeURIComponent(location.hash.slice(8)) : '';
+    } catch { return ''; }
+  }
+
   function closePanel() {
     if (!panel) return;
     panel.hidden = true;
@@ -157,6 +163,9 @@
       el('span', { class: 'wfm-coach-score' }, item.score + '/100')
     );
     card.append(top, el('h3', null, item.title), el('p', null, item.objective));
+    if (item.recommendedMode && item.recommendedMode !== 'NONE') {
+      card.append(el('p', { class: 'wfm-coach-recommended' }, 'Recommended now: ' + item.recommendedMode.replaceAll('_', ' ').toLowerCase()));
+    }
 
     if (item.practice) {
       const practice = el('div', { class: 'wfm-coach-practice' });
@@ -173,7 +182,8 @@
 
     const modes = el('div', { class: 'wfm-coach-modes', 'aria-label': 'Choose how to learn' });
     [['SHOW_ME','Show me'],['GUIDE_ME','Guide me'],['PRACTISE','Practise'],['TEST_ME','Test me']].forEach(([mode,label]) => {
-      const button = el('button', { type: 'button', class: 'wfm-coach-mode' }, label);
+      const className = 'wfm-coach-mode' + (item.recommendedMode === mode ? ' recommended' : '');
+      const button = el('button', { type: 'button', class: className, 'aria-label': label + (item.recommendedMode === mode ? ' — recommended' : '') }, label);
       button.addEventListener('click', () => openTrainingMode(item, mode, card));
       modes.append(button);
     });
@@ -183,7 +193,9 @@
     const actions = el('div', { class: 'wfm-coach-actions' });
     const help = el('button', { type: 'button', class: 'wfm-coach-secondary' }, 'I need help');
     help.addEventListener('click', () => askForHelp(item, help));
-    actions.append(help);
+    const know = el('button', { type: 'button', class: 'wfm-coach-secondary' }, 'I already know this — test me');
+    know.addEventListener('click', () => openTrainingMode(item, 'TEST_ME', card));
+    actions.append(help, know);
     card.append(feedback, actions);
     container.append(card);
   }
@@ -215,8 +227,21 @@
 
   async function refresh() {
     try {
-      const nextPlan = await request('/plan', { method: 'GET' });
+      const route = currentVectorRoute();
+      const [nextPlan, deliveryPlan] = await Promise.all([
+        request('/plan', { method: 'GET' }),
+        trainingRequest('/plan?route=' + encodeURIComponent(route), { method: 'GET' })
+      ]);
       if (!nextPlan) return;
+      if (deliveryPlan?.competencies) {
+        const recommendations = new Map(deliveryPlan.competencies.map(item => [item.competencyKey, item.recommendedMode]));
+        nextPlan.next = nextPlan.next.map(item => ({ ...item, recommendedMode: recommendations.get(item.competencyKey) || null }));
+        nextPlan.all = nextPlan.all.map(item => ({ ...item, recommendedMode: recommendations.get(item.competencyKey) || null }));
+        if (route && deliveryPlan.next?.length) {
+          const contextualKey = deliveryPlan.next[0].competencyKey;
+          nextPlan.next.sort((a,b) => (a.competencyKey === contextualKey ? -1 : b.competencyKey === contextualKey ? 1 : 0));
+        }
+      }
       plan = nextPlan;
       if (!root) mount();
       render();

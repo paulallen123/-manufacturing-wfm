@@ -302,7 +302,7 @@
         "learning/runtime/training-regeneration-planner.cjs",
         "learning/runtime/training-regeneration-planner.test.cjs"
       ],
-      "integrationNote": "Training is now an adaptive system rather than a static library: Training Twin + Show/Guide/Practise/Test + Decision Episode practice + provenance-bound synthetic video factory + append-only artifact registry + customer playback with captions/transcript + dependency-based selective regeneration. Videos cannot be published READY unless they match the exact product/UI/workflow fingerprint, pass privacy/secret/console/DOM proof, have durable HTTPS video/caption/transcript artifacts and a proven narration artifact. Guidance never awards mastery."
+      "integrationNote": "VECTOR training now adapts to both demonstrated competence and the user's current workflow: the Guide prioritises due competencies relevant to the active VECTOR route and highlights the recommended learning mode. 'I already know this' routes directly to TEST_ME rather than granting mastery. This sits alongside Training Twin, Show/Guide/Practise/Test, Decision Episode practice, provenance-bound video generation, accessible publication and selective regeneration."
     },
     {
       "id": "zero-touch-secure-entry",

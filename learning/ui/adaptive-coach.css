@@ -194,3 +194,18 @@
 .wfm-coach-steps strong, .wfm-coach-steps span { display: block; }
 .wfm-coach-steps span { margin-top: 3px; font-size: 13px; line-height: 1.4; opacity: .78; }
 .wfm-coach-test-note { margin: 0; font-size: 13px; line-height: 1.45; }
+
+.wfm-coach-recommended {
+  margin: -6px 0 10px !important;
+  font-size: 12px;
+  font-weight: 750;
+  opacity: .78;
+}
+.wfm-coach-mode.recommended {
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+.wfm-coach-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

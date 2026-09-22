@@ -3,7 +3,7 @@
 const { createHash, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createTrainingTwin } = require('./training-twin.cjs');
-const { buildTrainingModule, workflowFor } = require('./training-workflow-manifest.cjs');
+const { buildTrainingModule, workflowFor, captureFor } = require('./training-workflow-manifest.cjs');
 const { scenarioFor, evaluateScenarioAnswer } = require('./training-scenario-engine.cjs');
 const { createVideoGenerationJob } = require('./training-video-contract.cjs');
 const { createTrainingArtifactRegistry } = require('./training-artifact-registry.cjs');
@@ -41,11 +41,19 @@ function createTrainingDeliveryService(options={}){
       configurationClass:process.env.WFM_TRAINING_CONFIGURATION_CLASS||'standard'
     };
   }
-  function planForUser(user){
+  function planForUser(user,route=''){
     const profile=twin.profileForUser(user);
+    const requestedRoute=String(route||'').trim();
+    const due=[...profile.due].sort((a,b)=>{
+      if(!requestedRoute) return 0;
+      const ar=captureFor(a.competencyKey,user.role).route===requestedRoute?0:1;
+      const br=captureFor(b.competencyKey,user.role).route===requestedRoute?0:1;
+      return ar-br;
+    });
     return {
       ...profile,
-      next:profile.due.slice(0,3),
+      next:due.slice(0,3),
+      contextRoute:requestedRoute||null,
       deliveryPrinciple:'Guidance never counts as mastery. Independent or observed task evidence is required.'
     };
   }
@@ -117,7 +125,7 @@ function createTrainingDeliveryService(options={}){
         return writeJson(res,200,{plan});
       }
       const user=requireUser(req,res);if(!user)return true;
-      if(req.method==='GET'&&path===PREFIX+'/plan') return writeJson(res,200,planForUser(user));
+      if(req.method==='GET'&&path===PREFIX+'/plan'){ const q=queryOf(req); return writeJson(res,200,planForUser(user,String(q.get('route')||''))); }
       if(req.method==='GET'&&path===PREFIX+'/module'){
         const q=queryOf(req),key=String(q.get('competencyKey')||''),mode=String(q.get('mode')||'');
         return writeJson(res,200,moduleForUser(user,key,mode));
