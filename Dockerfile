@@ -58,6 +58,9 @@ COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptiv
 COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/workforce-lifecycle-core.cjs
 COPY operations/runtime/workflow-action-evidence-contract.cjs /app/operations-runtime/workflow-action-evidence-contract.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.cjs /app/operations-runtime/workflow-action-evidence-bridge.cjs
+COPY operations/runtime/decision-episode.cjs /app/operations-runtime/decision-episode.cjs
+COPY operations/runtime/customer-demand-intelligence.cjs /app/operations-runtime/customer-demand-intelligence.cjs
+COPY operations/runtime/absence-recovery-shadow.cjs /app/operations-runtime/absence-recovery-shadow.cjs
 COPY operations/runtime/workforce-lifecycle-router.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 COPY implementation/ui/ /tmp/wfm-implementation-ui/
@@ -100,6 +103,12 @@ COPY operations/runtime/workflow-action-evidence-contract.cjs /tmp/wfm-tests/ope
 COPY operations/runtime/workflow-action-evidence-contract.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.test.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.test.cjs
+COPY operations/runtime/decision-episode.cjs /tmp/wfm-tests/operations/runtime/decision-episode.cjs
+COPY operations/runtime/decision-episode.test.cjs /tmp/wfm-tests/operations/runtime/decision-episode.test.cjs
+COPY operations/runtime/customer-demand-intelligence.cjs /tmp/wfm-tests/operations/runtime/customer-demand-intelligence.cjs
+COPY operations/runtime/customer-demand-intelligence.test.cjs /tmp/wfm-tests/operations/runtime/customer-demand-intelligence.test.cjs
+COPY operations/runtime/absence-recovery-shadow.cjs /tmp/wfm-tests/operations/runtime/absence-recovery-shadow.cjs
+COPY operations/runtime/absence-recovery-shadow.test.cjs /tmp/wfm-tests/operations/runtime/absence-recovery-shadow.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
