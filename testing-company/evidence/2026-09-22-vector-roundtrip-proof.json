@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-22",
+  "northstarHostedLab": "https://vector-proof-plane-9bosun.v2.appdeploy.ai/",
+  "evidence": [
+    {
+      "id": "northstar-provider-vector-roundtrip",
+      "status": "PROVEN",
+      "northstarSide": {
+        "mode": "hosted-provider-test-double",
+        "providerPersona": "Workday-shaped",
+        "sourceRecords": 25,
+        "realExternalProvider": false
+      },
+      "vectorSide": {
+        "service": "wfm-integration-fabric-v1-proof",
+        "serviceId": "2631d462-61bf-4c01-ac4b-e106a562feeb",
+        "deploymentId": "51f74445-2d2e-4a08-a092-52044860400a",
+        "origin": "https://wfm-integration-fabric-v1-proof-production.up.railway.app",
+        "tenant": "northstar-demo",
+        "productionApproved": false
+      },
+      "assertions": {
+        "authenticatedFictionalManager": true,
+        "candidateDetected": "workday",
+        "sourceAuthorityConfirmed": true,
+        "managedAuthorizationReference": true,
+        "mappingActivated": true,
+        "sourceRecords": 25,
+        "validRecords": 25,
+        "invalidRecords": 0,
+        "duplicateCount": 0,
+        "reconciliation": "PASS",
+        "activeAfterSync": true,
+        "schemaDriftDetected": true,
+        "degradedOnSchemaDrift": true,
+        "repairAction": "REVALIDATE_MAPPING",
+        "recoveredToActive": true,
+        "readyForPeopleSync": true
+      },
+      "runner": {
+        "service": "northstar-vector-roundtrip-proof",
+        "serviceId": "4b2eb009-c969-45fa-b137-67bbb2eacbea",
+        "domain": "https://northstar-vector-roundtrip-proof-production.up.railway.app",
+        "healthPath": "/health",
+        "receiptPath": "/receipt"
+      },
+      "claimBoundary": "Proves a hosted fictional-tenant round trip from the Northstar Workday-shaped test double into the existing hosted VECTOR integration-fabric proof runtime. It does not prove a real Workday/customer integration or the latest FORGE convergence runtime."
+    },
+    {
+      "id": "northstar-device-vector-roundtrip",
+      "status": "PROVEN",
+      "northstarSide": {
+        "mode": "hosted-device-test-double",
+        "devicePersona": "wall-terminal",
+        "realHardware": false,
+        "hardwareCertified": false
+      },
+      "vectorSide": {
+        "service": "wfm-customer-proof-0676",
+        "serviceId": "ddd54fb9-3564-4251-9959-28cf3308c272",
+        "deploymentId": "451b7c15-815c-4570-841d-eeb15537e1f0",
+        "release": "0.6.76-hosted-staging-rc1",
+        "origin": "https://wfm-customer-proof-0676-production.up.railway.app",
+        "tenant": "northstar-demo",
+        "fixtureOnly": true,
+        "productionApproved": false,
+        "pilotReady": false
+      },
+      "assertions": {
+        "northstarWallTerminalHosted": true,
+        "vectorDeviceRegistered": true,
+        "tenantInjectionRejected": true,
+        "acceptedEvents": 2,
+        "exactReplayIdempotent": true,
+        "sequenceGapHeld": true,
+        "deviceSecretNotReturnedByAdminList": true,
+        "timeReviewHealthy": true,
+        "attendanceCorrectionsHealthy": true,
+        "deviceRevoked": true,
+        "revokedCredentialRejected": true
+      },
+      "runner": {
+        "service": "northstar-vector-device-roundtrip-proof",
+        "serviceId": "d62736c8-a258-438f-ae93-168adfd620d7",
+        "domain": "https://northstar-vector-device-roundtrip-proof-production.up.railway.app",
+        "healthPath": "/health",
+        "receiptPath": "/receipt"
+      },
+      "claimBoundary": "Proves a hosted fictional-device round trip from Northstar's wall-terminal emulator into the existing sealed VECTOR registered-kiosk path. It does not certify physical hardware, a customer site, or the latest FORGE convergence runtime."
+    }
+  ],
+  "promotionRule": "Repeat the same Northstar provider and device round-trip suites against the exact current FORGE SHA before those capabilities can be called PROVEN on the convergence release."
+}
