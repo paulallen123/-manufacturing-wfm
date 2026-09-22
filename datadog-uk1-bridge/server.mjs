@@ -252,7 +252,7 @@ function serverFactory() {
   return server;
 }
 
-const app = createMcpExpressApp({ host: "0.0.0.0", allowedHosts: ["datadog-uk1-mcp-production.up.railway.app"] });\napp.use(express.urlencoded({ extended: false, limit: "16kb" }));\nmountOAuth(app);
+const app = createMcpExpressApp({ host: "0.0.0.0", allowedHosts: ["datadog-uk1-mcp-production.up.railway.app", "healthcheck.railway.app"] });\napp.use(express.urlencoded({ extended: false, limit: "16kb" }));\nmountOAuth(app);
 
 app.get("/", (_req, res) => res.json({
   name: "Datadog UK1 ChatGPT Bridge",
