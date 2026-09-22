@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-18T20:43:00Z",
+  "branch": "autonomy/zero-engineer-support-sprint-20260918",
+  "pull_request": 86,
+  "build_head": "b9fd27fb1394a7191737233b34cc1304a378d804",
+  "tiers_advanced": ["T4"],
+  "code_config_changed": [
+    "resilience/t4-containment-controller.cjs",
+    "scripts/validate-t4-containment-chaos.mjs",
+    "resilience/autonomous-repair-factory.cjs",
+    "scripts/validate-autonomous-repair-factory.mjs",
+    "scripts/run-portable-autonomy-proof.mjs",
+    "scripts/validate-autonomy-source-syntax.mjs",
+    ".github/workflows/wfm-zero-engineer-support-contract.yml"
+  ],
+  "proofs_run": {
+    "local_runtime": "22.16.0",
+    "release_runtime_exact": false,
+    "tier4_chaos_cases": 13,
+    "tier4_chaos_status": "PASS",
+    "covered": [
+      "prompt-injection containment",
+      "memory-poisoning containment",
+      "credential-exfiltration attempt without secret visibility",
+      "confirmed credential disclosure authority boundary",
+      "provenance tamper quarantine",
+      "support-system failure safe path",
+      "schema-safe independently verified known-good rollback",
+      "unsafe rollback denial",
+      "cross-tenant rollback denial",
+      "runaway repair containment",
+      "unknown failure containment",
+      "receipt tamper detection",
+      "hostile containment-executor authority rejection"
+    ]
+  },
+  "ci_provider_health": {
+    "provider": "github-hosted",
+    "workflow_run_id": 35392902860,
+    "job_id": 105755147902,
+    "classification": "PREEXECUTION_FAILURE",
+    "runner_id": 0,
+    "steps_executed": 0,
+    "product_test_failure": false,
+    "selected_lane": "NO_EXECUTION_LANE",
+    "release_gate": "FAIL_CLOSED_CI_EVIDENCE_UNAVAILABLE",
+    "new_billable_resource_created": false
+  },
+  "defects_found_and_fixed": [
+    "Tier 4 had only a coarse fallback path and no dedicated deterministic adversarial containment proof.",
+    "The repair worker protection list did not yet protect the new Tier 4 controller, its validator, or the agent network boundary.",
+    "The canonical portable proof and workflow path triggers did not yet include Tier 4 containment chaos."
+  ],
+  "safe_terminal_paths_added": [
+    "contained",
+    "rolled_back_to_known_good",
+    "security_or_legal_authority_required"
+  ],
+  "open_blockers": [
+    "GitHub-hosted Actions still fails before runner allocation, so exact Node 22.23.2 release evidence is unavailable.",
+    "The Tier 4 containment controller is not yet composed into the central autonomy control loop."
+  ],
+  "production_claim_boundary": "No production/customer mutation, no production credential change, no public exposure and no release claim. Local Node 22.16.0 evidence is logic/chaos proof only.",
+  "single_next_highest_value_action": "Compose the Tier 4 containment controller into the central autonomy control loop and prove all T4 scenario classes preserve the same bounded authority and receipt invariants."
+}

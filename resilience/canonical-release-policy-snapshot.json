@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 2,
+  "sourceRef": "integration/canonical",
+  "sourceBaseSha": "7d8117a457f823ddaeb30174cb8cf162c4637067",
+  "sourcePolicyBlobSha": "c7ad730d4d7379cf730a3759264ee05ac0b82d04",
+  "sourceDeploymentPointerBlobSha": "147f6825eb5bee31142a07f9f52e43d5bfbeac98",
+  "sourceStagingWorkflowBlobSha": "2d99a1d7f80df417a2ab12d2f99a96bf3362bed8",
+  "sourceReleaseValidatorBlobSha": "f5863f0fd332f75dacdace1d7ddd72bbe3711003",
+  "observedAt": "2026-09-20T06:43:54Z",
+  "policy": {
+    "schemaVersion": 1,
+    "sourceOfTruth": "github",
+    "executionProvider": "railway",
+    "canonicalBranches": {
+      "integration": "integration/canonical",
+      "staging": "release/staging",
+      "production": "release/production",
+      "stagingDeployMirror": "main"
+    },
+    "canonicalRailway": {
+      "staging": {
+        "projectId": "9a774359-37fa-47e8-bde0-932420c32923",
+        "environmentId": "6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6",
+        "serviceId": "3bea5411-cebb-4878-adcc-766f5fd58cc7",
+        "serviceName": "wfm-concept-fidelity-preview",
+        "sourceBranch": "main",
+        "authorityAlias": "wfm-canonical-staging",
+        "deploymentAuthority": ".github/workflows/canonical-staging-release.yml"
+      },
+      "production": null
+    },
+    "rules": {
+      "featureBranchesMayDeployOnlyToDisposablePreviewServices": true,
+      "previewTtlHours": 24,
+      "canonicalStagingAcceptsOnlyReleaseStagingBranch": true,
+      "canonicalProductionAcceptsOnlyReleaseProductionBranch": true,
+      "productionMustUseExactStagingCommit": true,
+      "manualRailwayUpToCanonicalServices": false,
+      "legacyPinnedShaWorkflowsAreProofOnly": true,
+      "deletePreviewAfterMergeOrClose": true,
+      "mainIsStagingMirrorOnly": true,
+      "mainMustMatchReleaseStagingBeforeCanonicalDeploy": true,
+      "canonicalRailwayCliOnlyFromReleaseWorkflow": true,
+      "mainPromotionRequiresReleasePr": true
+    }
+  },
+  "deploymentPointer": {
+    "schemaVersion": 1,
+    "releaseSequence": 1,
+    "purpose": "canonical-release-path-proof",
+    "integrationBranch": "integration/canonical",
+    "stagingCandidateRef": "release/staging",
+    "stagingDeployMirror": "main",
+    "productionRef": "release/production",
+    "canonicalRailwayServiceId": "3bea5411-cebb-4878-adcc-766f5fd58cc7",
+    "requiresExactShaMatch": true,
+    "customerMutation": false,
+    "productionMutation": false
+  }
+}

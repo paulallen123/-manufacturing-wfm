@@ -1,0 +1,489 @@
+name: WFM zero-engineer support contract
+
+on:
+  push:
+    branches:
+      - 'autonomy/zero-engineer-support-sprint-**'
+    paths:
+      - 'SUPPORT_TIER_CONTRACT.md'
+      - 'resilience/support-tier-contract.json'
+      - 'resilience/failure-scenarios.json'
+      - 'resilience/security-baseline.json'
+      - 'resilience/agent-network-boundary.json'
+      - 'resilience/support-selfhelp.cjs'
+      - 'resilience/autonomous-repair-factory.cjs'
+      - 'resilience/isolated-repair-worker.cjs'
+      - 'resilience/independent-repair-verifier.cjs'
+      - 'resilience/disposable-staging-gate.cjs'
+      - 'resilience/autonomous-repair-pipeline.cjs'
+      - 'resilience/canary-rollback-controller.cjs'
+      - 'resilience/autonomous-repair-canary-orchestrator.cjs'
+      - 'resilience/canonical-release-boundary.cjs'
+      - 'resilience/canonical-release-policy-snapshot.json'
+      - 'resilience/deployment-proof-provenance-verifier.cjs'
+      - 'resilience/railway-deployment-config-binding.cjs'
+      - 'resilience/railway-hosted-origin-preflight.cjs'
+      - 'resilience/railway-hosted-staging-proof-receipt.cjs'
+      - 'resilience/railway-proof-failure-classifier.cjs'
+      - 'resilience/build-secret-boundary.cjs'
+      - 'resilience/evidence-bound-data-import-plan.cjs'
+      - 'resilience/isolated-data-import-executor.cjs'
+      - 'resilience/authorised-staging-import-readiness.cjs'
+      - 'resilience/authorised-staging-import-executor.cjs'
+      - 'resilience/t3-shadow-simulator.cjs'
+      - 'resilience/t3-shadow-verifier.cjs'
+      - 'resilience/t3-customer-authorisation-gate.cjs'
+      - 'resilience/t3-execution-preflight-verifier.cjs'
+      - 'resilience/t3-execution-readiness-gate.cjs'
+      - 'resilience/t3-deterministic-execution-sandbox.cjs'
+      - 'resilience/t4-containment-controller.cjs'
+      - 'resilience/t4-forensic-failover-store.cjs'
+      - 'resilience/autonomy-control-loop.cjs'
+      - 'resilience/incident-learning-planner.cjs'
+      - 'resilience/incident-regression-corpus.cjs'
+      - 'resilience/prior-corpus-evidence-verifier.cjs'
+      - 'resilience/ci-provider-failover.cjs'
+      - 'resilience/provider-recovery-handoff.cjs'
+      - 'scripts/collect-canonical-governance-evidence.mjs'
+      - 'scripts/validate-deployment.mjs'
+      - 'scripts/validate-deployment-proof-provenance.mjs'
+      - 'scripts/validate-railway-deployment-config-binding.mjs'
+      - 'scripts/validate-railway-hosted-origin-preflight.mjs'
+      - 'scripts/validate-railway-hosted-staging-proof-receipt.mjs'
+      - 'scripts/validate-railway-proof-failure-classifier.mjs'
+      - 'scripts/validate-build-secret-boundary.mjs'
+      - 'scripts/validate-evidence-bound-data-import-plan.mjs'
+      - 'scripts/validate-isolated-data-import-executor.mjs'
+      - 'scripts/validate-authorised-staging-import-readiness.mjs'
+      - 'scripts/validate-authorised-staging-import-executor.mjs'
+      - 'scripts/validate-resilience-scenarios.mjs'
+      - 'scripts/validate-support-tier-contract.mjs'
+      - 'scripts/validate-support-selfhelp.mjs'
+      - 'scripts/validate-provider-recovery-handoff.mjs'
+      - 'scripts/validate-autonomous-repair-factory.mjs'
+      - 'scripts/validate-repair-path-canonicalization.mjs'
+      - 'scripts/validate-isolated-repair-worker.mjs'
+      - 'scripts/validate-independent-repair-verifier.mjs'
+      - 'scripts/validate-disposable-staging-gate.mjs'
+      - 'scripts/validate-autonomous-repair-pipeline.mjs'
+      - 'scripts/validate-canary-rollback-controller.mjs'
+      - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'
+      - 'scripts/validate-canonical-release-boundary.mjs'
+      - 'scripts/validate-ci-provider-failover.mjs'
+      - 'scripts/validate-t3-shadow-support.mjs'
+      - 'scripts/validate-t3-customer-authorisation-gate.mjs'
+      - 'scripts/validate-t3-consent-receipt-integrity.mjs'
+      - 'scripts/validate-t3-execution-readiness.mjs'
+      - 'scripts/validate-t3-deterministic-execution-sandbox.mjs'
+      - 'scripts/validate-t3-sandbox-component-binding.mjs'
+      - 'scripts/validate-t3-capability-poisoning.mjs'
+      - 'scripts/validate-t4-containment-chaos.mjs'
+      - 'scripts/validate-t4-outer-terminal-integrity.mjs'
+      - 'scripts/validate-autonomy-control-loop.mjs'
+      - 'scripts/validate-incident-learning-planner.mjs'
+      - 'scripts/validate-historical-incident-replay.mjs'
+      - 'scripts/validate-incident-regression-corpus.mjs'
+      - 'scripts/validate-persistent-incident-corpus.mjs'
+      - 'scripts/validate-prior-corpus-evidence-verifier.mjs'
+      - 'scripts/validate-prior-corpus-selection-adapter.mjs'
+      - 'scripts/select-prior-corpus-evidence.mjs'
+      - 'scripts/hydrate-prior-corpus-github.mjs'
+      - 'scripts/validate-autonomy-source-syntax.mjs'
+      - 'scripts/validate-autonomy-proof-coverage.mjs'
+      - 'scripts/run-portable-autonomy-proof.mjs'
+      - '.github/workflows/wfm-zero-engineer-support-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: wfm-zero-engineer-support-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-contract:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout trusted owner push with canonical history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Hydrate prior verified incident regression corpus
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node scripts/hydrate-prior-corpus-github.mjs
+
+      - name: Collect canonical trust-anchor governance evidence
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WFM_CANONICAL_GOVERNANCE_EVIDENCE_OUTPUT: ${{ github.workspace }}/canonical-governance-evidence.json
+        run: |
+          set -euo pipefail
+          node scripts/collect-canonical-governance-evidence.mjs
+          test -s canonical-governance-evidence.json
+
+      - name: Bind live canonical state and release policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          CANONICAL_REF='origin/integration/canonical'
+          git rev-parse "$CANONICAL_REF" >/dev/null
+          MERGE_TREE_SHA="$(git merge-tree --write-tree HEAD "$CANONICAL_REF")"
+          test "${#MERGE_TREE_SHA}" -eq 40
+          POLICY_FILE="$RUNNER_TEMP/canonical-release-policy.json"
+          git show "$CANONICAL_REF:release/release-policy.json" > "$POLICY_FILE"
+          echo "WFM_CANONICAL_RELEASE_POLICY_FILE=$POLICY_FILE" >> "$GITHUB_ENV"
+          echo "WFM_AUTONOMY_HEAD_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_BASE_SHA=$(git rev-parse "$CANONICAL_REF")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_POLICY_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:release/release-policy.json")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_DEPLOYMENT_POINTER_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:release/deployment-pointer.json")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_STAGING_WORKFLOW_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:.github/workflows/canonical-staging-release.yml")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_RELEASE_VALIDATOR_BLOB_SHA=$(git rev-parse "$CANONICAL_REF:scripts/validate-release-policy.mjs")" >> "$GITHUB_ENV"
+          echo "WFM_CANONICAL_MERGE_TREE_SHA=$MERGE_TREE_SHA" >> "$GITHUB_ENV"
+
+      - name: Run canonical portable autonomy proof
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/run-portable-autonomy-proof.mjs --strict-runtime 2>&1 | tee portable-autonomy-proof.log
+
+      - name: Revalidate canonical binding at proof completion
+        id: canonical_revalidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH_JSON="$(curl --fail-with-body --silent --show-error \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/branches/integration/canonical")"
+          FINAL_CANONICAL_SHA="$(printf '%s' "$BRANCH_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["commit"]["sha"])')"
+          FINAL_POLICY_BLOB_SHA="$(git rev-parse "$WFM_CANONICAL_BASE_SHA:release/release-policy.json")"
+          FINAL_DEPLOYMENT_POINTER_BLOB_SHA="$(git rev-parse "$WFM_CANONICAL_BASE_SHA:release/deployment-pointer.json")"
+          FINAL_STAGING_WORKFLOW_BLOB_SHA="$(git rev-parse "$WFM_CANONICAL_BASE_SHA:.github/workflows/canonical-staging-release.yml")"
+          FINAL_RELEASE_VALIDATOR_BLOB_SHA="$(git rev-parse "$WFM_CANONICAL_BASE_SHA:scripts/validate-release-policy.mjs")"
+          FINAL_MERGE_TREE_SHA="$(git merge-tree --write-tree "$WFM_AUTONOMY_HEAD_SHA" "$WFM_CANONICAL_BASE_SHA")"
+          if [ "$FINAL_CANONICAL_SHA" != "$WFM_CANONICAL_BASE_SHA" ] \
+            || [ "$FINAL_POLICY_BLOB_SHA" != "$WFM_CANONICAL_POLICY_BLOB_SHA" ] \
+            || [ "$FINAL_DEPLOYMENT_POINTER_BLOB_SHA" != "$WFM_CANONICAL_DEPLOYMENT_POINTER_BLOB_SHA" ] \
+            || [ "$FINAL_STAGING_WORKFLOW_BLOB_SHA" != "$WFM_CANONICAL_STAGING_WORKFLOW_BLOB_SHA" ] \
+            || [ "$FINAL_RELEASE_VALIDATOR_BLOB_SHA" != "$WFM_CANONICAL_RELEASE_VALIDATOR_BLOB_SHA" ] \
+            || [ "$FINAL_MERGE_TREE_SHA" != "$WFM_CANONICAL_MERGE_TREE_SHA" ]; then
+            echo '::error::Canonical trust anchor or release-control bundle moved during proof execution. Discarding stale proof; rerun against the new canonical state.' >&2
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Revalidate canonical governance at proof completion
+        id: governance_revalidate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WFM_CANONICAL_GOVERNANCE_EXPORT_ENV: 'false'
+          WFM_CANONICAL_GOVERNANCE_EVIDENCE_OUTPUT: ${{ github.workspace }}/canonical-governance-evidence-final.json
+        run: |
+          set -euo pipefail
+          node scripts/collect-canonical-governance-evidence.mjs
+          test -s canonical-governance-evidence-final.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { createRequire } from 'node:module';
+          const require = createRequire(import.meta.url);
+          const { verifyCanonicalTrustAnchorGovernanceEvidence } = require('./resilience/canonical-release-boundary.cjs');
+          const initial = JSON.parse(fs.readFileSync('canonical-governance-evidence.json', 'utf8'));
+          const final = JSON.parse(fs.readFileSync('canonical-governance-evidence-final.json', 'utf8'));
+          const canonicalBase = String(process.env.WFM_CANONICAL_BASE_SHA || '').toLowerCase();
+          if (!verifyCanonicalTrustAnchorGovernanceEvidence(initial)) process.exit(1);
+          if (!verifyCanonicalTrustAnchorGovernanceEvidence(final)) process.exit(1);
+          if (initial.branchSha !== canonicalBase || final.branchSha !== canonicalBase) process.exit(1);
+          if (initial.governanceEvidenceDigest !== final.governanceEvidenceDigest) process.exit(1);
+          NODE
+
+      - name: Assert portable proof receipt
+        id: proof_receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s portable-autonomy-proof.json
+          test -s canonical-governance-evidence.json
+          test -s incident-regression-corpus.snapshot.json
+          test -s incident-regression-corpus-continuity.json
+          test -s incident-regression-corpus-hydration.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import { createRequire } from 'node:module';
+          const require = createRequire(import.meta.url);
+          const { verifySelectionReceipt } = require('./resilience/prior-corpus-evidence-verifier.cjs');
+          const { verifyCanonicalTrustAnchorGovernanceEvidence } = require('./resilience/canonical-release-boundary.cjs');
+          const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+          const p = JSON.parse(fs.readFileSync('portable-autonomy-proof.json', 'utf8'));
+          const governance = JSON.parse(fs.readFileSync('canonical-governance-evidence.json', 'utf8'));
+          const corpusRaw = fs.readFileSync('incident-regression-corpus.snapshot.json');
+          const corpus = JSON.parse(corpusRaw.toString('utf8'));
+          const hydration = JSON.parse(fs.readFileSync('incident-regression-corpus-hydration.json', 'utf8'));
+          const corpusSha = sha256(corpusRaw);
+          const b = p.releaseBinding;
+          const governanceValid = verifyCanonicalTrustAnchorGovernanceEvidence(governance);
+          const governanceMatchesCanonical = governanceValid && governance.branchSha === process.env.WFM_CANONICAL_BASE_SHA;
+          const protectedAnchor = governanceMatchesCanonical && governance.governance?.protected === true;
+          const governanceVerified = protectedAnchor && governance.governanceVerified === true;
+          const priorCorpusPath = process.env.WFM_INCIDENT_CORPUS_INPUT || '';
+          const priorCorpusExpected = Boolean(priorCorpusPath);
+          const priorSnapshotBindingValid = !priorCorpusExpected || (
+            fs.existsSync(priorCorpusPath)
+            && hydration.priorSnapshotLoaded === true
+            && hydration.selectedSnapshotSha256 === sha256(fs.readFileSync(priorCorpusPath))
+          );
+          const hydrationValid = verifySelectionReceipt(hydration)
+            && hydration.priorSnapshotLoaded === priorCorpusExpected
+            && hydration.productionMutation === false
+            && hydration.customerMutation === false
+            && hydration.releaseAuthorityGranted === false
+            && priorSnapshotBindingValid;
+          const common = p.status === 'PASS'
+            && p.providerNeutral === true
+            && p.requiresGitHubHostedRunner === false
+            && p.exactRuntime === true
+            && p.productionMutation === false
+            && p.customerMutation === false
+            && governanceValid
+            && p.canonicalTrustAnchorProtected === protectedAnchor
+            && p.canonicalTrustAnchorGovernanceVerified === governanceVerified
+            && p.canonicalGovernanceEvidenceBound === true
+            && p.canonicalGovernanceEvidenceMatchesCanonical === governanceMatchesCanonical
+            && p.canonicalGovernanceEvidenceDigest === governance.governanceEvidenceDigest
+            && p.canonicalControlBundleReceiptBound === true
+            && hydrationValid
+            && p.incidentRegressionCorpus
+            && p.incidentRegressionCorpus.priorSnapshotLoaded === priorCorpusExpected
+            && p.incidentRegressionCorpus.corpusDigest === corpus.corpusDigest
+            && p.incidentRegressionCorpus.snapshotSha256 === corpusSha
+            && p.incidentRegressionCorpus.entryCount === corpus.entryCount
+            && b
+            && b.headSha === process.env.WFM_AUTONOMY_HEAD_SHA
+            && b.canonicalBaseSha === process.env.WFM_CANONICAL_BASE_SHA
+            && b.canonicalPolicyBlobSha === process.env.WFM_CANONICAL_POLICY_BLOB_SHA
+            && b.canonicalDeploymentPointerBlobSha === process.env.WFM_CANONICAL_DEPLOYMENT_POINTER_BLOB_SHA
+            && b.canonicalStagingWorkflowBlobSha === process.env.WFM_CANONICAL_STAGING_WORKFLOW_BLOB_SHA
+            && b.canonicalReleaseValidatorBlobSha === process.env.WFM_CANONICAL_RELEASE_VALIDATOR_BLOB_SHA
+            && b.mergeTreeSha === process.env.WFM_CANONICAL_MERGE_TREE_SHA
+            && b.canonicalGovernanceEvidenceDigest === governance.governanceEvidenceDigest
+            && b.canonicalGovernanceEvidenceBound === true
+            && b.canonicalGovernanceEvidenceMatchesCanonical === governanceMatchesCanonical;
+          const blockedStatuses = new Set([
+            'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_GOVERNANCE_EVIDENCE_INVALID',
+            'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_GOVERNANCE_DRIFT',
+            'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_UNPROTECTED',
+            'FAIL_CLOSED_CANONICAL_TRUST_ANCHOR_GOVERNANCE_UNVERIFIED',
+          ]);
+          const releaseEligible = protectedAnchor && governanceVerified;
+          const releaseState = releaseEligible
+            ? p.canonicalReleaseEvidenceBound === true
+              && p.releaseClaimAllowed === true
+              && p.releaseEvidenceStatus === 'ELIGIBLE_EXACT_RELEASE_EVIDENCE'
+              && p.proofScope === 'EXACT_RUNTIME_RELEASE_ELIGIBLE'
+            : p.canonicalReleaseEvidenceBound === false
+              && p.releaseClaimAllowed === false
+              && blockedStatuses.has(p.releaseEvidenceStatus)
+              && p.proofScope === 'EXACT_RUNTIME_LOGIC_ONLY';
+          if (!(common && releaseState)) process.exit(1);
+          NODE
+
+      - name: Enforce release evidence fail-closed boundary
+        id: release_boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$WFM_CANONICAL_TRUST_ANCHOR_PROTECTED" != 'true' ] || [ "$WFM_CANONICAL_TRUST_ANCHOR_GOVERNANCE_VERIFIED" != 'true' ]; then
+            echo '::error::Exact-runtime autonomy logic proof completed, but release evidence remains fail-closed because integration/canonical is not independently proven to have the complete release-grade governance contract.' >&2
+            exit 1
+          fi
+
+      - name: Finalize workflow-bound proof envelope
+        id: proof_envelope
+        if: always()
+        shell: bash
+        env:
+          CANONICAL_REVALIDATE_OUTCOME: ${{ steps.canonical_revalidate.outcome }}
+          GOVERNANCE_REVALIDATE_OUTCOME: ${{ steps.governance_revalidate.outcome }}
+          PROOF_RECEIPT_OUTCOME: ${{ steps.proof_receipt.outcome }}
+          RELEASE_BOUNDARY_OUTCOME: ${{ steps.release_boundary.outcome }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_RUN_ATTEMPT: ${{ github.run_attempt }}
+          WORKFLOW_HEAD_SHA: ${{ github.sha }}
+          WORKFLOW_REF: ${{ github.ref }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { createHash } from 'node:crypto';
+
+          const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+          const proofPath = 'portable-autonomy-proof.json';
+          const governancePath = 'canonical-governance-evidence.json';
+          const hydrationPath = 'incident-regression-corpus-hydration.json';
+          let portable = null;
+          let portableRaw = null;
+          let parseError = null;
+          if (fs.existsSync(proofPath)) {
+            portableRaw = fs.readFileSync(proofPath);
+            try {
+              portable = JSON.parse(portableRaw.toString('utf8'));
+            } catch (error) {
+              parseError = String(error?.message || error);
+            }
+          }
+          let governance = null;
+          let governanceRaw = null;
+          if (fs.existsSync(governancePath)) {
+            governanceRaw = fs.readFileSync(governancePath);
+            try {
+              governance = JSON.parse(governanceRaw.toString('utf8'));
+            } catch (error) {
+              parseError = parseError || `governance:${String(error?.message || error)}`;
+            }
+          }
+          let hydration = null;
+          let hydrationRaw = null;
+          if (fs.existsSync(hydrationPath)) {
+            hydrationRaw = fs.readFileSync(hydrationPath);
+            try {
+              hydration = JSON.parse(hydrationRaw.toString('utf8'));
+            } catch (error) {
+              parseError = parseError || `hydration:${String(error?.message || error)}`;
+            }
+          }
+
+          const canonicalRevalidationOutcome = process.env.CANONICAL_REVALIDATE_OUTCOME || 'unknown';
+          const governanceRevalidationOutcome = process.env.GOVERNANCE_REVALIDATE_OUTCOME || 'unknown';
+          const proofReceiptOutcome = process.env.PROOF_RECEIPT_OUTCOME || 'unknown';
+          const releaseBoundaryOutcome = process.env.RELEASE_BOUNDARY_OUTCOME || 'unknown';
+          const workflowHeadSha = String(process.env.WORKFLOW_HEAD_SHA || '').toLowerCase();
+          const canonicalBaseSha = String(process.env.WFM_CANONICAL_BASE_SHA || '').toLowerCase();
+          const canonicalPolicyBlobSha = String(process.env.WFM_CANONICAL_POLICY_BLOB_SHA || '').toLowerCase();
+          const canonicalDeploymentPointerBlobSha = String(process.env.WFM_CANONICAL_DEPLOYMENT_POINTER_BLOB_SHA || '').toLowerCase();
+          const canonicalStagingWorkflowBlobSha = String(process.env.WFM_CANONICAL_STAGING_WORKFLOW_BLOB_SHA || '').toLowerCase();
+          const canonicalReleaseValidatorBlobSha = String(process.env.WFM_CANONICAL_RELEASE_VALIDATOR_BLOB_SHA || '').toLowerCase();
+          const mergeTreeSha = String(process.env.WFM_CANONICAL_MERGE_TREE_SHA || '').toLowerCase();
+          const governanceEvidenceDigest = governance?.governanceEvidenceDigest || null;
+
+          const binding = portable?.releaseBinding || null;
+          const bindingMatches = Boolean(binding)
+            && binding.headSha === workflowHeadSha
+            && binding.canonicalBaseSha === canonicalBaseSha
+            && binding.canonicalPolicyBlobSha === canonicalPolicyBlobSha
+            && binding.canonicalDeploymentPointerBlobSha === canonicalDeploymentPointerBlobSha
+            && binding.canonicalStagingWorkflowBlobSha === canonicalStagingWorkflowBlobSha
+            && binding.canonicalReleaseValidatorBlobSha === canonicalReleaseValidatorBlobSha
+            && binding.mergeTreeSha === mergeTreeSha
+            && binding.canonicalGovernanceEvidenceDigest === governanceEvidenceDigest
+            && binding.canonicalGovernanceEvidenceBound === true
+            && binding.canonicalGovernanceEvidenceMatchesCanonical === true;
+          const portablePassed = portable?.status === 'PASS' && portable?.exactRuntime === true;
+          const postProofGatesPassed = canonicalRevalidationOutcome === 'success'
+            && governanceRevalidationOutcome === 'success'
+            && proofReceiptOutcome === 'success';
+
+          let finalEvidenceStatus;
+          if (!portableRaw || !portable || !governanceRaw || !governance || parseError) {
+            finalEvidenceStatus = 'INCOMPLETE_NO_VALID_PORTABLE_PROOF';
+          } else if (!portablePassed) {
+            finalEvidenceStatus = 'INVALID_PORTABLE_PROOF';
+          } else if (!bindingMatches) {
+            finalEvidenceStatus = 'INVALID_RELEASE_BINDING_MISMATCH';
+          } else if (!postProofGatesPassed) {
+            finalEvidenceStatus = 'INVALID_POST_PROOF_GATES_FAILED';
+          } else if (releaseBoundaryOutcome === 'success' && portable.releaseClaimAllowed === true) {
+            finalEvidenceStatus = 'ELIGIBLE_EXACT_RELEASE_EVIDENCE';
+          } else if (releaseBoundaryOutcome === 'failure' && portable.releaseClaimAllowed === false) {
+            finalEvidenceStatus = 'LOGIC_ONLY_RELEASE_BLOCKED';
+          } else {
+            finalEvidenceStatus = 'INVALID_RELEASE_STATE_MISMATCH';
+          }
+
+          const releaseClaimAllowed = finalEvidenceStatus === 'ELIGIBLE_EXACT_RELEASE_EVIDENCE';
+          const core = {
+            schemaVersion: 5,
+            proof: 'workflow-bound-zero-engineer-autonomy-evidence',
+            workflowRunId: String(process.env.WORKFLOW_RUN_ID || ''),
+            workflowRunAttempt: String(process.env.WORKFLOW_RUN_ATTEMPT || ''),
+            workflowHeadSha,
+            workflowRef: String(process.env.WORKFLOW_REF || ''),
+            canonicalBaseSha,
+            canonicalPolicyBlobSha,
+            canonicalDeploymentPointerBlobSha,
+            canonicalStagingWorkflowBlobSha,
+            canonicalReleaseValidatorBlobSha,
+            canonicalGovernanceEvidenceDigest: governanceEvidenceDigest,
+            canonicalGovernanceEvidenceSha256: governanceRaw ? sha256(governanceRaw) : null,
+            canonicalTrustAnchorProtected: portable?.canonicalTrustAnchorProtected === true,
+            canonicalTrustAnchorGovernanceVerified: portable?.canonicalTrustAnchorGovernanceVerified === true,
+            mergeTreeSha,
+            portableProofSha256: portableRaw ? sha256(portableRaw) : null,
+            portableProofStatus: portable?.status || null,
+            portableProofScope: portable?.proofScope || null,
+            portableReleaseEvidenceStatus: portable?.releaseEvidenceStatus || null,
+            portableReleaseClaimAllowed: portable?.releaseClaimAllowed === true,
+            incidentRegressionCorpusDigest: portable?.incidentRegressionCorpus?.corpusDigest || null,
+            incidentRegressionCorpusSnapshotSha256: portable?.incidentRegressionCorpus?.snapshotSha256 || null,
+            incidentRegressionCorpusPriorSnapshotLoaded: portable?.incidentRegressionCorpus?.priorSnapshotLoaded === true,
+            incidentCorpusHydrationProof: hydration?.proof || null,
+            incidentCorpusHydrationStatus: hydration?.status || null,
+            incidentCorpusHydrationSha256: hydrationRaw ? sha256(hydrationRaw) : null,
+            incidentCorpusHydrationSelectionDigest: hydration?.selectionDigest || null,
+            incidentCorpusHydrationSelectedEvidenceProofDigest: hydration?.selectedEvidenceProofDigest || null,
+            incidentCorpusHydrationSelectedRunId: hydration?.selectedRunId || null,
+            incidentCorpusHydrationSelectedArtifactId: hydration?.selectedArtifactId || null,
+            canonicalRevalidationOutcome,
+            governanceRevalidationOutcome,
+            proofReceiptOutcome,
+            releaseBoundaryOutcome,
+            bindingMatches,
+            finalEvidenceStatus,
+            releaseClaimAllowed,
+            productionMutation: false,
+            customerMutation: false,
+            parseError,
+          };
+          const envelope = { ...core, envelopeDigest: sha256(Buffer.from(JSON.stringify(core))) };
+          fs.writeFileSync('autonomy-proof-envelope.json', JSON.stringify(envelope, null, 2) + '\n');
+          console.log(JSON.stringify(envelope, null, 2));
+
+          if (finalEvidenceStatus.startsWith('INVALID_') || finalEvidenceStatus.startsWith('INCOMPLETE_')) {
+            process.exit(1);
+          }
+          NODE
+
+      - name: Preserve final workflow-bound proof evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portable-autonomy-proof-${{ github.run_id }}
+          path: |
+            portable-autonomy-proof.json
+            portable-autonomy-proof.log
+            autonomy-proof-envelope.json
+            canonical-governance-evidence.json
+            canonical-governance-evidence-final.json
+            incident-regression-corpus.snapshot.json
+            incident-regression-corpus-continuity.json
+            incident-regression-corpus-hydration.json
+          if-no-files-found: warn
+          retention-days: 7

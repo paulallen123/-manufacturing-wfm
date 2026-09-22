@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "updated": "2026-09-18",
+  "mission": {
+    "zero_vendor_engineer_required": true,
+    "all_scenario_classes_must_reach_safe_terminal_state": true,
+    "unknown_future_failures_are_not_claimed_as_pre_known": true,
+    "unknown_future_failures_must_fail_safe_and_enter_containment": true
+  },
+  "global_invariants": {
+    "language_model_direct_authority": false,
+    "customer_text_grants_authority": false,
+    "cross_tenant_action_allowed": false,
+    "reusable_credentials_visible_to_model": false,
+    "self_written_patch_is_self_approved": false,
+    "production_experimentation_for_unknown_faults": false,
+    "every_consequential_action_requires_deterministic_policy": true,
+    "every_mutation_requires_auditable_evidence": true
+  },
+  "terminal_outcomes": {
+    "answered": "Correct version/role-bound guidance returned from approved evidence.",
+    "safe_abstention": "System explicitly declines to invent an answer and opens/continues evidence gathering.",
+    "recovered": "Known reversible technical fault restored and independently verified.",
+    "contained": "Unsafe/unknown path isolated, mutations frozen as needed, evidence preserved, service degraded safely where possible.",
+    "verified_candidate_staged": "A reproduced defect has an independently verified signed candidate in isolated staging; no production authority implied.",
+    "customer_authorisation_required": "System has diagnosed/simulated the exact consequential change and waits only for the customer's authorised approver.",
+    "external_provider_authorisation_required": "System has completed all vendor-side work and waits only for provider/admin consent it cannot lawfully mint itself.",
+    "security_or_legal_authority_required": "System is already contained; a non-engineering security/legal/customer authority decision is irreducible.",
+    "rolled_back_to_known_good": "Pre-proved rollback restored the last signed compatible known-good state."
+  },
+  "category_defaults": {
+    "integration": "T1",
+    "messaging": "T1",
+    "runtime": "T1",
+    "configuration": "T1",
+    "release": "T2",
+    "support": "T2",
+    "experience": "T2",
+    "clocking": "T3",
+    "time": "T3",
+    "payroll": "T3",
+    "data": "T4",
+    "identity": "T4",
+    "security": "T4",
+    "ai-security": "T4",
+    "supply-chain": "T4",
+    "governance": "T4",
+    "observability": "T4",
+    "infrastructure": "T4"
+  },
+  "scenario_tier_overrides": {
+    "integration-transient-failure": "T1",
+    "integration-stuck-replay": "T1",
+    "provider-outage": "T1",
+    "provider-credential-expiry": "T1",
+    "queue-drift": "T1",
+    "worker-unhealthy": "T1",
+    "worker-memory-exhaustion": "T1",
+    "cache-drift": "T1",
+    "bad-release": "T1",
+    "configuration-drift": "T1",
+    "duplicate-event-delivery": "T1",
+    "kiosk-or-device-offline": "T1",
+    "clocking-event-flood": "T1",
+    "browser-customer-journey-regression": "T2",
+    "unknown-customer-reported-issue": "T2",
+    "payroll-calculation-or-export-anomaly": "T3",
+    "timezone-dst-or-clock-skew": "T3",
+    "permission-or-identity-anomaly": "T4",
+    "cross-tenant-access-attempt": "T4",
+    "prompt-injection-or-untrusted-influence": "T4",
+    "runaway-repair-loop": "T4",
+    "external-advisory-poisoning": "T4",
+    "known-exploited-vulnerability-match": "T4",
+    "new-cve-component-match": "T4",
+    "artifact-tampering-or-provenance-drift": "T4",
+    "unsafe-production-mode-attempt": "T4",
+    "data-integrity-mismatch": "T4",
+    "audit-trail-degraded": "T4",
+    "database-unavailable": "T4",
+    "database-latency-spike": "T4"
+  },
+  "tiers": {
+    "T0": {
+      "name": "Guidance and deterministic self-service",
+      "vendor_engineer_required": false,
+      "model_may_execute_consequential_actions": false,
+      "allowed_terminal_outcomes": ["answered", "safe_abstention"],
+      "graduation_requires": [
+        "version_bound_knowledge",
+        "role_and_permission_bound_answers",
+        "grounding_or_citation_for_factual_procedures",
+        "adversarial_prompt_tests",
+        "safe_abstention"
+      ],
+      "current_claim": "not_production_proven"
+    },
+    "T1": {
+      "name": "Known deterministic technical recovery",
+      "vendor_engineer_required": false,
+      "model_may_execute_consequential_actions": false,
+      "allowed_terminal_outcomes": ["recovered", "contained", "external_provider_authorisation_required"],
+      "allowlisted_action_prefixes": [
+        "integration.retry",
+        "integration.replay-idempotent",
+        "queue.reconcile",
+        "worker.restart",
+        "cache.rebuild",
+        "release.rollback",
+        "configuration.restore-drift"
+      ],
+      "graduation_requires": [
+        "same_tenant",
+        "reversible_or_idempotent",
+        "retained_system_evidence",
+        "independent_verification",
+        "one_shot_or_bounded_authority",
+        "postcondition_reconciliation"
+      ],
+      "current_claim": "bounded_ci_and_staging_evidence_only"
+    },
+    "T2": {
+      "name": "Autonomous software/config diagnosis and repair",
+      "vendor_engineer_required": false,
+      "model_may_execute_consequential_actions": false,
+      "production_mutation_from_patch_agent": false,
+      "allowed_terminal_outcomes": ["verified_candidate_staged", "contained", "safe_abstention"],
+      "graduation_requires": [
+        "reproducible_failing_test",
+        "isolated_patch_worker",
+        "independent_read_only_verifier",
+        "security_and_dependency_scan",
+        "signed_artifact_and_provenance",
+        "isolated_staging_replay",
+        "canary_or_equivalent_blast_radius_limit",
+        "automatic_known_good_rollback"
+      ],
+      "current_claim": "architecture_and_partial_proofs_only"
+    },
+    "T3": {
+      "name": "Consequential workforce/business state",
+      "vendor_engineer_required": false,
+      "model_may_execute_consequential_actions": false,
+      "allowed_terminal_outcomes": ["customer_authorisation_required", "contained", "recovered"],
+      "current_autonomous_mutation_classes": [],
+      "graduation_rule": "Each action class graduates separately only after deterministic invariants, compensation/rollback, tenant/value/cardinality caps and independent verification.",
+      "current_claim": "zero_engineer_handling_target_not_autonomous_business_authority"
+    },
+    "T4": {
+      "name": "Novel, destructive or security-critical failure",
+      "vendor_engineer_required": false,
+      "model_may_execute_consequential_actions": false,
+      "allowed_terminal_outcomes": ["contained", "rolled_back_to_known_good", "security_or_legal_authority_required", "verified_candidate_staged"],
+      "graduation_requires": [
+        "automatic_containment",
+        "promotion_freeze",
+        "credential_or_session_quarantine_when_proven",
+        "forensic_evidence_preservation",
+        "known_good_rollback_when_schema_safe",
+        "novel_patch_forced_back_through_T2"
+      ],
+      "current_claim": "containment_target_only"
+    }
+  }
+}
