@@ -24,6 +24,8 @@ It does **not** create a second implementation UI, second integration hub, secon
 
 The visible journey remains inside the canonical blue-and-white VECTOR Implementation experience:
 
+The existing screen also receives a compact Launch Autopilot evidence panel showing proof gates, the current implementation-twin revision and whether the existing readiness engine still agrees. It does not introduce a second implementation workspace.
+
 `Discover -> Model -> Provision -> Connect -> Configure -> Simulate -> Reconcile -> Train -> Validate -> Ready`
 
 Each stage is derived from evidence. There are no manually ticked completion boxes.
@@ -43,7 +45,7 @@ Each stage is derived from evidence. There are no manually ticked completion box
 
 ## Evidence gates
 
-Launch Autopilot coordinates thirteen existing proof domains:
+Launch Autopilot coordinates fourteen proof domains. Thirteen group existing implementation evidence into an operational control plane; the fourteenth is a compatibility gate that requires the existing one-day engine itself to remain fully ready:
 
 | Gate | Existing authority |
 | --- | --- |
@@ -60,8 +62,9 @@ Launch Autopilot coordinates thirteen existing proof domains:
 | Role learning | adaptive learning engine |
 | Security controls | security runtime |
 | Resilience | recovery runtime |
+| Existing readiness | one-day enterprise engine; all existing detailed requirements plus customer decisions must still be ready |
 
-All thirteen must PASS before the controller can report Ready.
+All fourteen must PASS before the controller can report Ready. This means Launch Autopilot is a strict superset of the existing implementation gate rather than a replacement for it.
 
 Even then, its output is only `EXTERNAL_PERMIT_REQUIRED`. Launch Autopilot never turns readiness into production authority itself.
 
