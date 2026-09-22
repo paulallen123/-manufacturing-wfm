@@ -55,7 +55,10 @@ function integrations() {
     connections: [{
       id: 'hcm-1',
       productKey: 'workday',
+      name: 'Workday',
       state: 'ACTIVE',
+      authMethod: 'oauth2',
+      sourceInstanceId: 'tenant-a',
       mappingVersion: 2,
       lastSyncAt: '2026-09-22T09:30:00Z',
       lastReconciliation: { status: 'PASS' }
