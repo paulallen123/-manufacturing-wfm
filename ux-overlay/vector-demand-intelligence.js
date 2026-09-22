@@ -26,7 +26,14 @@ function render(){
   const demandHtml=demand?'<div class="vector-decision-intel-block"><small>Demand signal</small><b>'+esc(label(demand.decisionKey))+'</b><span>'+esc(demand.signalCount)+' signals · '+esc(demand.silentDemandSignals)+' silent-demand observations</span></div>':'';
   const rec=decision?.recommendation?.optionId;
   const decisionHtml=decision?'<div class="vector-decision-intel-block"><small>Shadow recommendation</small><b>'+esc(label(rec||'No eligible option'))+'</b><span>'+esc(label(decision.decisionType))+' · no execution authority</span></div>':'';
-  card.innerHTML='<div class="vector-card-head"><div><span class="vector-card-kicker">Decision intelligence</span><h2>What the evidence says to improve next</h2></div><span class="vector-decision-shadow">Shadow only</span></div><div class="vector-decision-intel-grid">'+demandHtml+decisionHtml+'</div>';
+  const signature=JSON.stringify({
+    demand:demand?[demand.decisionKey,demand.signalCount,demand.silentDemandSignals,demand.priority,demand.evidenceStrength]:null,
+    decision:decision?[decision.episodeId,decision.decisionType,rec,decision.mode]:null
+  });
+  if(card.dataset.vectorDemandSignature!==signature){
+    card.dataset.vectorDemandSignature=signature;
+    card.innerHTML='<div class="vector-card-head"><div><span class="vector-card-kicker">Decision intelligence</span><h2>What the evidence says to improve next</h2></div><span class="vector-decision-shadow">Shadow only</span></div><div class="vector-decision-intel-grid">'+demandHtml+decisionHtml+'</div>';
+  }
   if(!existing){
     const production=host.querySelector('.vector-production-preview');
     if(production)production.insertAdjacentElement('afterend',card);else host.appendChild(card);
