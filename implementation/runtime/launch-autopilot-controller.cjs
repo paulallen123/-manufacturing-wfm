@@ -29,7 +29,8 @@ const GATE_DEFINITIONS = Object.freeze([
   { key: 'live-data-import', stage: 'RECONCILE', source: 'integration-runtime' },
   { key: 'role-learning', stage: 'TRAIN', source: 'adaptive-learning-engine' },
   { key: 'security-controls', stage: 'VALIDATE', source: 'security-runtime' },
-  { key: 'resilience', stage: 'VALIDATE', source: 'recovery-runtime' }
+  { key: 'resilience', stage: 'VALIDATE', source: 'recovery-runtime' },
+  { key: 'existing-readiness', stage: 'VALIDATE', source: 'one-day-enterprise-engine' }
 ]);
 
 const GATE_BY_KEY = new Map(GATE_DEFINITIONS.map(g => [g.key, g]));
@@ -196,6 +197,7 @@ function createLaunchAutopilotController(options = {}) {
       'SELECT gate_key,MAX(id) AS max_id FROM launch_autopilot_receipts WHERE run_id=? AND tenant=? GROUP BY gate_key' +
     ') x ON x.max_id=r.id ORDER BY r.gate_key'
   );
+  const latestReceiptByGate = db.prepare('SELECT * FROM launch_autopilot_receipts WHERE run_id=? AND tenant=? AND gate_key=? ORDER BY id DESC LIMIT 1');
   const insertEvent = db.prepare('INSERT INTO launch_autopilot_events(run_id,tenant,event,detail_json,created_at) VALUES(?,?,?,?,?)');
   const eventsQ = db.prepare('SELECT event,detail_json,created_at FROM launch_autopilot_events WHERE run_id=? AND tenant=? ORDER BY id');
 
@@ -254,6 +256,8 @@ function createLaunchAutopilotController(options = {}) {
     const run = ensureRun(tenant, runId);
     const normalised = normaliseReceipt(receipt);
     const receiptDigest = digest({ tenant: run.tenant, runId: run.runId, ...normalised });
+    const existing = latestReceiptByGate.get(run.runId, run.tenant, normalised.gate);
+    if (existing && existing.digest === receiptDigest) return status(run.tenant, run.runId);
     const ts = nowIso();
     const before = status(run.tenant, run.runId);
     insertReceipt.run(
