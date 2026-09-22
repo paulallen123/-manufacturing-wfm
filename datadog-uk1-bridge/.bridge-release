@@ -1,0 +1,4 @@
+datadog-uk1-mcp-bridge
+release=1
+mode=read-only
+site=uk1
