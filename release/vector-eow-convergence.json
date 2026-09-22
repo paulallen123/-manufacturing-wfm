@@ -19,7 +19,10 @@
         "digital-twin",
         "realised-value",
         "integration-fabric",
-        "realtime-ui"
+        "realtime-ui",
+        "decision-episode",
+        "absence-recovery-shadow",
+        "customer-demand-intelligence"
       ]
     },
     {
@@ -179,6 +182,30 @@
         "narration",
         "video"
       ]
+    },
+    {
+      "id": "decision-episode",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "digital-twin"
+      ]
+    },
+    {
+      "id": "customer-demand-intelligence",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "decision-episode",
+        "outcome-ledger"
+      ]
+    },
+    {
+      "id": "absence-recovery-shadow",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "decision-episode",
+        "digital-twin",
+        "simulation"
+      ]
     }
   ],
   "reviewLoop": [
@@ -236,5 +263,38 @@
       "AI output without authority or provenance",
       "features exposed before their journey is complete"
     ]
+  },
+  "customerDemandIntelligence": {
+    "principle": "Build from evidence about customer decisions and measurable outcomes, not feature requests alone.",
+    "evidenceTypes": [
+      "stated",
+      "revealed",
+      "operational",
+      "economic"
+    ],
+    "silentDemand": [
+      "workarounds",
+      "manual overrides",
+      "workflow abandonment",
+      "integration failures",
+      "training searches"
+    ],
+    "pipeline": [
+      "signal",
+      "decision-problem",
+      "segment-jtbd",
+      "value-quantification",
+      "hypothesis",
+      "simple-alternative",
+      "theory-test",
+      "shadow-mode",
+      "controlled-pilot",
+      "build",
+      "measure-outcome",
+      "generalise-or-reject"
+    ],
+    "biasControl": "Single-account demand remains evidence-limited unless mandatory safety/regulatory risk applies.",
+    "firstClosedLoop": "qualified labour shortage or absence -> simulated alternatives -> policy/safety filter -> shadow recommendation -> observed outcome -> prediction error",
+    "executionBoundary": "Shadow recommendations have no execution authority. Human or policy authority remains separately gated."
   }
 }

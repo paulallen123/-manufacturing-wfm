@@ -202,3 +202,45 @@ Before a capability can be promoted:
 **OBSERVE → PRIORITISE → REDESIGN → CONNECT → PROVE → MEASURE → SIMPLIFY → EVOLVE**
 
 The first post-FORGE evolution should focus on the simplified **Cost & Value experience**, because the underlying realised-value system can become much richer without making the interface more complicated.
+
+
+## Customer Demand → Decision → Outcome intelligence
+
+FORGE now treats customer demand as evidence about **decisions and outcomes**, not a feature-request queue.
+
+The first implementation adds three reusable primitives:
+
+1. **Customer Demand Intelligence**
+   - separates stated, revealed, operational and economic demand;
+   - captures silent demand such as spreadsheets, manual overrides, re-keying, abandoned workflows and integration failures;
+   - scores recurring problems with an evidence-strength penalty for single-account noise;
+   - keeps mandatory safety/regulatory demand visible even when prevalence is low.
+
+2. **Decision Episode**
+   - binds tenant/site context, Digital Twin revision, source evidence, candidate actions, predicted cost/output/risk, uncertainty, authority state, selection and eventual observed outcome;
+   - requires a **do nothing** option;
+   - excludes infeasible, policy-blocked or hard-constraint-breaking options from recommendation;
+   - records predicted-versus-realised outcome error so future simulation can be calibrated;
+   - never grants execution authority itself.
+
+3. **Absence / qualified-labour-shortage shadow Autopilot**
+   - is the first closed-loop proof slice;
+   - consumes already-simulated options rather than inventing production facts;
+   - runs in SHADOW mode only;
+   - cannot execute or mutate workforce/payroll/production state;
+   - is designed to progress through historical replay -> shadow validation -> human-approved execution -> policy-bounded autonomy only after Trust/Proof gates.
+
+### Reuse of current FORGE development
+
+This is deliberately additive:
+- Implementation Digital Twin revisions provide the context identity;
+- existing workflow action/evidence contracts remain the authoritative execution boundary;
+- existing realised-value/outcome work supplies actual financial/production evidence when available;
+- current Vector role-first Decision Card patterns are the intended UI surface;
+- Trust/Proof remains responsible for promotion, causal claims and safety evidence.
+
+The required development question becomes:
+
+**Which customer decision are we improving, how often does it happen, what does it cost or constrain, what evidence says it matters, what did VECTOR change, and did the outcome actually improve?**
+
+A feature that cannot increasingly answer those questions stays lower confidence in the FORGE queue.
