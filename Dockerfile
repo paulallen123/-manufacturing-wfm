@@ -4,6 +4,7 @@ FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317f
 WORKDIR /proof
 COPY . ./
 RUN node scripts/validate-deployment.mjs \
+ && node scripts/validate-capability-superset.mjs \
  && node scripts/validate-vector-only-ui.mjs \
  && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
