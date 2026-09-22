@@ -1,0 +1,36 @@
+{
+  "version": "0.1.0",
+  "mode": "simulation_only",
+  "defaults": {
+    "production_access": "deny",
+    "real_customer_data": "deny",
+    "outbound_network": "deny_unless_allowlisted",
+    "destructive_actions": "deny",
+    "cross_tenant_access": "deny",
+    "unbounded_compute": "deny",
+    "public_write_tools": "deny",
+    "secrets_in_logs": "deny",
+    "training_on_customer_data": "deny"
+  },
+  "required_controls": {
+    "synthetic_data_only": true,
+    "ephemeral_environment_per_run": true,
+    "tenant_isolation": true,
+    "least_privilege": true,
+    "idempotency_keys": true,
+    "immutable_evidence_receipts": true,
+    "spend_caps": true,
+    "automatic_expiry": true,
+    "rate_limits": true,
+    "audit_log": true,
+    "rollback": true,
+    "security_regression_gate": true
+  },
+  "promotion_gates": [
+    "No production connector until explicit separate security review and contractual approval.",
+    "No real personal data until UK GDPR/DPA controls are implemented and verified.",
+    "No destructive MCP tool may be exposed publicly.",
+    "No environment may exceed configured spend, duration, network or data limits.",
+    "A failed isolation, auth, security or rollback test blocks promotion automatically."
+  ]
+}
