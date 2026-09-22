@@ -12,6 +12,7 @@ const { createAutonomousIntegrationHub } = require('/app/integration-runtime/aut
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
+const { createDemandDecisionService } = require('/app/operations-runtime/demand-decision-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -42,6 +43,8 @@ let implementationEngine = null;
 let implementationEngineInitError = null;
 let lifecycleGuard = null;
 let lifecycleGuardInitError = null;
+let demandDecisionService = null;
+let demandDecisionServiceInitError = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -65,6 +68,10 @@ function implementationPath(req) {
 
 function lifecyclePath(req) {
   return requestPath(req).startsWith('/api/workforce/lifecycle');
+}
+
+function demandDecisionPath(req) {
+  return requestPath(req).startsWith('/api/operations/intelligence');
 }
 
 function stagingAccessPath(req) {
@@ -328,6 +335,14 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!demandDecisionService && !demandDecisionServiceInitError && process.env.WFM_DB) {
+    try {
+      demandDecisionService = createDemandDecisionService({ dbPath: process.env.WFM_DB });
+    } catch (error) {
+      demandDecisionServiceInitError = error;
+    }
+  }
+
   return originalCreateServer.call(http, async (req, res) => {
     forceVectorUiFreshness(req, res);
     if (serveCanonicalVectorAsset(req, res)) return;
@@ -364,6 +379,10 @@ http.createServer = function guardedCreateServer(listener) {
 
     if (lifecyclePath(req)) {
       if (await routeOverlay(lifecycleGuard, lifecycleGuardInitError, res, 'Workforce lifecycle', req)) return;
+    }
+
+    if (demandDecisionPath(req)) {
+      if (await routeOverlay(demandDecisionService, demandDecisionServiceInitError, res, 'Decision intelligence', req)) return;
     }
 
     return listener(req, res);
