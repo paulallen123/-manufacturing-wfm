@@ -140,3 +140,14 @@ Implemented components:
 The timing model is synthetic. GitHub Actions is currently failing before executable steps are created and the new Railway test service has not received its first deployment. Therefore the code is **not yet represented as runtime-proven**. Those infrastructure failures are tracked separately from product test results.
 
 The next proof milestone is an executable exact-image test run followed by a customer-like replay using a large synthetic manufacturing workforce and representative integration data.
+
+
+## Universal data route
+
+Implementation no longer assumes that an external HCM, ERP or payroll system exists or is directly integratable.
+
+The \`source-systems\` readiness gate represents an **authoritative data route**. It may be satisfied by a conventional connector or by a PROVEN Universal Data Gateway route such as VECTOR-native, Edge Bridge, automated file/SFTP, secure upload, isolated edge or another approved fallback.
+
+See \`docs/universal-data-gateway.md\` for the route-selection, canonical data and proof contract.
+
+This is additive: existing integrations remain preferred where they are the safest and lowest-friction route, and no existing workforce, payroll, UI, security, training or proof capability is removed.
