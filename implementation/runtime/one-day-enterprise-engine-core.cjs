@@ -11,7 +11,7 @@ const REQUIREMENTS = Object.freeze([
   { key: 'configuration-scope', label: 'Customer implementation scope', minConfidence: 1.0, budgetMinutes: 5, dependsOn: [] },
   { key: 'tenant-environment', label: 'Tenant environment', minConfidence: 0.99, budgetMinutes: 15, dependsOn: ['configuration-scope'] },
   { key: 'identity-access', label: 'Identity and access', minConfidence: 0.99, budgetMinutes: 20, dependsOn: ['tenant-environment'] },
-  { key: 'source-systems', label: 'Authoritative source systems', minConfidence: 0.95, budgetMinutes: 45, dependsOn: ['identity-access'] },
+  { key: 'source-systems', label: 'Authoritative data route (source system or VECTOR native)', minConfidence: 0.95, budgetMinutes: 45, dependsOn: ['identity-access'] },
   { key: 'people-data', label: 'People data and hierarchy', minConfidence: 0.99, budgetMinutes: 30, dependsOn: ['source-systems'] },
   { key: 'organisation-model', label: 'Sites, departments and cost structure', minConfidence: 0.98, budgetMinutes: 30, dependsOn: ['people-data'] },
   { key: 'time-policies', label: 'Time, break and overtime policies', minConfidence: 0.995, budgetMinutes: 45, dependsOn: ['people-data'] },
@@ -339,6 +339,26 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
   }
 
+  function universalRouteForTenant(tenant) {
+    try {
+      const table = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='universal_ingestion_plans'").get();
+      if (!table) return null;
+      const row = db.prepare('SELECT * FROM universal_ingestion_plans WHERE tenant=? ORDER BY version DESC LIMIT 1').get(tenant);
+      if (!row || row.state !== 'PROVEN') return null;
+      const plan = JSON.parse(row.plan_json);
+      if (plan?.readiness?.readyForOperationalDataAfterProof !== true) return null;
+      return {
+        planId: row.id,
+        routeKey: row.route_key,
+        state: row.state,
+        version: row.version,
+        reason: plan.reason || null
+      };
+    } catch {
+      return null;
+    }
+  }
+
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
@@ -351,6 +371,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (learningSummaryProvider) {
       try { learningSummary = learningSummaryProvider(run.tenant); } catch {}
     }
+    const universalRoute = universalRouteForTenant(run.tenant);
 
     const requirements = REQUIREMENTS.map(requirement => {
       const row = map.get(requirement.key);
@@ -370,6 +391,13 @@ function createOneDayEnterpriseEngine(options = {}) {
             systemCount: customerScope.sourceSystems.length,
             featureCount: customerScope.features.length
           } : null
+        };
+      } else if (requirement.key === 'source-systems' && universalRoute) {
+        derived = {
+          status: 'PASS',
+          confidence: 1,
+          source: 'universal-data-gateway',
+          detail: universalRoute
         };
       } else if (learningSummary && requirement.key === 'role-learning') {
         const ok = learningSummary.users > 0 && learningSummary.assignments >= learningSummary.users;
