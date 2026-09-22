@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "name": "Vector Adaptive Intelligence & Self-Evolution Engine",
+  "objective": "Continuously improve customer outcomes and Vector capability from evidence while keeping learning, execution and release authority separated.",
+  "principles": [
+    "outcomes-not-opinions",
+    "eval-driven-improvement",
+    "tenant-isolated-learning",
+    "evidence-lineage",
+    "independent-verification",
+    "reversible-promotion",
+    "no-direct-llm-production-authority",
+    "unknown-evidence-fails-closed",
+    "customer-text-is-sensor-not-authority",
+    "every-regression-becomes-an-eval",
+    "every-repeatable-win-becomes-a-skill",
+    "every-manual-repeat-becomes-an-automation-candidate",
+    "competitor-gap-becomes-an-eval",
+    "leapfrog-before-copy"
+  ],
+  "loops": {
+    "customerOptimization": {
+      "cycle": [
+        "observe",
+        "attribute",
+        "hypothesize",
+        "simulate",
+        "shadow",
+        "evaluate",
+        "promote",
+        "measure",
+        "learn"
+      ],
+      "signals": [
+        "production-output",
+        "labour-cost",
+        "overtime",
+        "agency-spend",
+        "absence",
+        "quality",
+        "downtime",
+        "skills-gaps",
+        "schedule-adherence",
+        "energy",
+        "payroll-exceptions",
+        "user-friction",
+        "support-incidents",
+        "integration-health"
+      ],
+      "outputs": [
+        "explanation",
+        "recommendation",
+        "scenario",
+        "automation-candidate",
+        "tenant-skill-candidate",
+        "workflow-improvement-candidate"
+      ]
+    },
+    "productEvolution": {
+      "cycle": [
+        "collect-evidence",
+        "generate-eval",
+        "propose-change",
+        "build-isolated-candidate",
+        "run-evals",
+        "adversarial-test",
+        "compare-baseline",
+        "canary",
+        "release-or-reject",
+        "retain-learning"
+      ],
+      "candidateTypes": [
+        "prompt-or-skill",
+        "configuration",
+        "decision-rule",
+        "integration-mapping",
+        "test",
+        "workflow",
+        "ui",
+        "code",
+        "schema",
+        "security-control"
+      ],
+      "outputs": [
+        "versioned-skill",
+        "feature-contract",
+        "regression-test",
+        "pull-request",
+        "release-candidate",
+        "rollback-plan",
+        "learning-receipt"
+      ]
+    },
+    "marketEvolution": {
+      "cycle": [
+        "monitor-authoritative-market-evidence",
+        "normalize-capability",
+        "compare-vector-proof",
+        "create-gap-eval",
+        "generate-leapfrog-hypothesis",
+        "build-isolated-candidate",
+        "run-product-factory-gates",
+        "prove-or-reject",
+        "retain-market-learning"
+      ],
+      "monitoredClasses": [
+        "manufacturing-intelligence",
+        "enterprise-wfm",
+        "agent-platforms",
+        "integration-platforms",
+        "industrial-ai",
+        "manufacturing-optimization"
+      ],
+      "priorityCompetitors": [
+        "CADDi",
+        "UKG",
+        "Workday",
+        "SAP",
+        "Legion",
+        "Quinyx"
+      ],
+      "rules": [
+        "Do not copy a competitor feature without identifying the customer outcome it improves.",
+        "A competitor capability delta creates an eval before it creates a feature.",
+        "Prefer a leapfrog design that connects the capability to Vector's manufacturing operating graph.",
+        "No competitive superiority claim without live evidence.",
+        "Public marketing claims are evidence inputs, not proof of technical superiority."
+      ],
+      "outputs": [
+        "capability-delta",
+        "new-eval",
+        "product-candidate",
+        "integration-candidate",
+        "semantic-model-extension",
+        "competitive-proof-receipt"
+      ]
+    }
+  },
+  "learningState": {
+    "tenantIsolationRequired": true,
+    "crossTenantRawMemoryAllowed": false,
+    "crossTenantPromotionRequiresDeidentifiedAggregates": true,
+    "provenanceRequired": true,
+    "expiryAndInvalidationRequired": true,
+    "untrustedTextDirectAuthority": false,
+    "secretsInMemory": false
+  },
+  "optimization": {
+    "objectives": [
+      "task-success",
+      "customer-financial-value",
+      "production-output",
+      "quality",
+      "safety",
+      "reliability",
+      "user-effort",
+      "latency",
+      "cost-to-serve"
+    ],
+    "forbiddenSingleMetricOptimization": true,
+    "holdoutEvaluationRequired": true,
+    "regressionBudget": "zero for release-blocking safety/security/payroll/tenant-isolation controls"
+  },
+  "promotionLadder": [
+    {
+      "level": 0,
+      "name": "insight-only",
+      "directBusinessMutation": false,
+      "autoPromotionEligible": true,
+      "requirements": [
+        "source-evidence",
+        "claim-boundary"
+      ]
+    },
+    {
+      "level": 1,
+      "name": "recommendation-or-ranking",
+      "directBusinessMutation": false,
+      "autoPromotionEligible": true,
+      "requirements": [
+        "offline-eval",
+        "holdout-improvement",
+        "safety-pass",
+        "rollback"
+      ]
+    },
+    {
+      "level": 2,
+      "name": "reversible-tenant-configuration",
+      "directBusinessMutation": true,
+      "autoPromotionEligible": true,
+      "requirements": [
+        "offline-eval",
+        "shadow",
+        "canary",
+        "independent-policy-authority",
+        "rollback",
+        "outcome-monitoring"
+      ]
+    },
+    {
+      "level": 3,
+      "name": "operational-action-policy",
+      "directBusinessMutation": true,
+      "autoPromotionEligible": false,
+      "requirements": [
+        "separate-execution-authority",
+        "adversarial-eval",
+        "scenario-proof",
+        "signed-policy-decision",
+        "one-shot-or-bounded-authority"
+      ]
+    },
+    {
+      "level": 4,
+      "name": "product-code-schema-security-payroll",
+      "directBusinessMutation": true,
+      "autoPromotionEligible": false,
+      "requirements": [
+        "isolated-branch",
+        "full-product-factory-gates",
+        "security-review-gate",
+        "performance-gate",
+        "rollback",
+        "release-authority"
+      ]
+    }
+  ],
+  "selfDevelopment": {
+    "directEditOfProduction": false,
+    "branchFirst": true,
+    "canGenerateCode": true,
+    "canGenerateTests": true,
+    "canRepairFailedTests": true,
+    "canGenerateEvalsFromFailures": true,
+    "canRankCandidatePatches": true,
+    "canOpenPullRequests": true,
+    "canRecommendPromotion": true,
+    "releaseAuthoritySeparated": true,
+    "goal": "Make successful product improvements increasingly reusable and machine-executable without allowing the optimizer to grant itself authority."
+  },
+  "evidencePolicy": {
+    "minimumBeforeLearning": [
+      "source",
+      "timestamp",
+      "tenant-scope",
+      "baseline",
+      "outcome-or-failure",
+      "confidence"
+    ],
+    "everyPromotedChangeNeeds": [
+      "candidate-version",
+      "baseline-comparison",
+      "holdout-results",
+      "safety-results",
+      "rollback",
+      "lineage"
+    ],
+    "unknownIsPass": false
+  }
+}

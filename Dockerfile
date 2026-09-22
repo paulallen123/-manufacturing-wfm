@@ -5,6 +5,9 @@ WORKDIR /proof
 COPY . ./
 RUN node scripts/validate-deployment.mjs \
  && node scripts/validate-capability-superset.mjs \
+ && node scripts/validate-product-factory.mjs \
+ && node scripts/prove-adaptive-intelligence-engine.mjs \
+ && node scripts/validate-self-evolution.mjs \
  && node scripts/validate-vector-only-ui.mjs \
  && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
@@ -56,6 +59,12 @@ COPY implementation/runtime/configuration-inference-engine.cjs /app/implementati
 COPY implementation/runtime/implementation-digital-twin.cjs /app/implementation-runtime/implementation-digital-twin.cjs
 COPY implementation/runtime/tenant-environment-provisioner.cjs /app/implementation-runtime/tenant-environment-provisioner.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
+RUN mkdir -p /app/learning-runtime/evolution /app/product-factory/features
+COPY adaptive-intelligence/engine.mjs /app/learning-runtime/evolution/engine.mjs
+COPY product-factory/adaptive-intelligence-manifest.json /app/product-factory/adaptive-intelligence-manifest.json
+COPY product-factory/learning-receipt-schema.json /app/product-factory/learning-receipt-schema.json
+COPY product-factory/features/self-evolving-customer-intelligence.json /app/product-factory/features/self-evolving-customer-intelligence.json
+COPY product-factory/features/verified-value-ledger.json /app/product-factory/features/verified-value-ledger.json
 COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/workforce-lifecycle-core.cjs
 COPY operations/runtime/workflow-action-evidence-contract.cjs /app/operations-runtime/workflow-action-evidence-contract.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.cjs /app/operations-runtime/workflow-action-evidence-bridge.cjs

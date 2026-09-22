@@ -497,8 +497,22 @@
         "rollback on regression"
       ],
       "integratedPaths": [
+        "adaptive-intelligence/engine.mjs",
+        "product-factory/adaptive-intelligence-manifest.json",
+        "product-factory/competitive-capability-matrix.json",
+        "product-factory/feature-template.json",
+        "product-factory/learning-receipt-schema.json",
+        "product-factory/manifest.json",
+        "product-factory/world-class-24h-benchmark.json",
+        "product-factory/features/self-evolving-customer-intelligence.json",
+        "product-factory/features/verified-value-ledger.json",
+        "scripts/prove-adaptive-intelligence-engine.mjs",
+        "scripts/validate-product-factory.mjs",
+        "scripts/validate-self-evolution.mjs",
+        "src/frontier/cash-to-capacity-outcome.mjs",
         "operations/runtime/decision-episode.cjs"
-      ]
+      ],
+      "integrationNote": "Governed adaptive-intelligence engine, self-evolution validators and verified-value schemas are now part of FORGE alongside Decision Episode and Cash-to-Capacity outcome reconciliation. Real customer history is intentionally not fabricated; legacy source remains retained until customer-like and then real outcome evidence prove calibration and rollback behaviour."
     }
   ]
 }
