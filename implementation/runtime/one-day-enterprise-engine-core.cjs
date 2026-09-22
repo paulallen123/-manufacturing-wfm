@@ -166,6 +166,9 @@ function createOneDayEnterpriseEngine(options = {}) {
   const learningSummaryProvider = typeof options.learningSummaryProvider === 'function'
     ? options.learningSummaryProvider
     : null;
+  const readinessAugmenter = typeof options.readinessAugmenter === 'function'
+    ? options.readinessAugmenter
+    : null;
   if (!dbPath) throw new Error('One-day implementation engine requires WFM_DB.');
 
   const db = new DatabaseSync(dbPath);
@@ -458,7 +461,27 @@ function createOneDayEnterpriseEngine(options = {}) {
       record(run.id, run.tenant, 'STATE_CHANGED', { from: run.state, to: readiness.state });
       run.state = readiness.state;
     }
-    return readiness;
+    if (!readinessAugmenter) return readiness;
+    try {
+      return { ...readiness, launchAutopilot: readinessAugmenter(readiness) };
+    } catch (error) {
+      record(run.id, run.tenant, 'LAUNCH_AUTOPILOT_SYNC_FAILED', {
+        failureClass: String(error?.name || 'Error').slice(0, 80)
+      });
+      return {
+        ...readiness,
+        launchAutopilot: {
+          state: 'UNAVAILABLE',
+          ready: false,
+          activation: { eligible: false, authority: 'NOT_ELIGIBLE', productionMutation: false },
+          compatibility: {
+            existingImplementationReady: readiness.operationalReady === true,
+            noRequirementRemoved: true,
+            productionMutation: false
+          }
+        }
+      };
+    }
   }
 
   function publicInvitation(row) {
