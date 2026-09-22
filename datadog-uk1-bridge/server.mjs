@@ -11,21 +11,6 @@ const annotations = { readOnlyHint: true, destructiveHint: false, idempotentHint
 const env = (name) => String(process.env[name] || "").trim();
 const configured = () => Boolean(env("DD_API_KEY") && env("DD_APP_KEY"));
 
-function equal(a, b) {
-  const x = Buffer.from(String(a || ""));
-  const y = Buffer.from(String(b || ""));
-  return x.length > 0 && x.length === y.length && timingSafeEqual(x, y);
-}
-
-function authorised(req) {
-  const expected = env("BRIDGE_TOKEN");
-  if (!expected) return false;
-  const auth = String(req.headers.authorization || "");
-  const bearer = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  const custom = String(req.headers["x-bridge-token"] || "").trim();
-  return equal(bearer, expected) || equal(custom, expected);
-}
-
 function compact(v, depth = 0) {
   if (depth > 7) return "[max-depth]";
   if (typeof v === "string") return v.length > 5000 ? v.slice(0, 5000) + "...[truncated]" : v;
@@ -267,7 +252,7 @@ function serverFactory() {
   return server;
 }
 
-const app = createMcpExpressApp({ host: "0.0.0.0", allowedHosts: ["datadog-uk1-mcp-production.up.railway.app"] });
+const app = createMcpExpressApp({ host: "0.0.0.0", allowedHosts: ["datadog-uk1-mcp-production.up.railway.app"] });\napp.use(express.urlencoded({ extended: false, limit: "16kb" }));\nmountOAuth(app);
 
 app.get("/", (_req, res) => res.json({
   name: "Datadog UK1 ChatGPT Bridge",
@@ -287,10 +272,14 @@ app.get("/health", (_req, res) => res.json({
 }));
 
 app.use("/mcp", (req, res, next) => {
-  if (!authorised(req)) {
-    res.setHeader("WWW-Authenticate", 'Bearer realm="datadog-uk1-mcp"');
+  const auth = String(req.headers.authorization || "");
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  const claims = verifyAccessToken(token);
+  if (!claims) {
+    res.setHeader("WWW-Authenticate", authChallenge());
     return res.status(401).json({ error: "unauthorized" });
   }
+  req.oauthClaims = claims;
   next();
 });
 
