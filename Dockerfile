@@ -10,7 +10,7 @@ RUN node scripts/validate-deployment.mjs \
  && node scripts/validate-self-evolution.mjs \
  && node scripts/validate-vector-only-ui.mjs \
  && node integration-fabric/scripts/validate.mjs \
- && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -95,6 +95,7 @@ COPY operations/runtime/decision-episode.cjs /app/operations-runtime/decision-ep
 COPY operations/runtime/customer-demand-intelligence.cjs /app/operations-runtime/customer-demand-intelligence.cjs
 COPY operations/runtime/absence-recovery-shadow.cjs /app/operations-runtime/absence-recovery-shadow.cjs
 COPY operations/runtime/demand-decision-service.cjs /app/operations-runtime/demand-decision-service.cjs
+COPY operations/runtime/realtime-event-service.cjs /app/operations-runtime/realtime-event-service.cjs
 COPY src/frontier/cash-to-capacity-engine.mjs /app/operations-runtime/cash-to-capacity-engine.mjs
 COPY src/frontier/cash-to-capacity-evidence.mjs /app/operations-runtime/cash-to-capacity-evidence.mjs
 COPY src/frontier/cash-to-capacity-decision.mjs /app/operations-runtime/cash-to-capacity-decision.mjs
@@ -179,6 +180,8 @@ COPY operations/runtime/absence-recovery-shadow.cjs /tmp/wfm-tests/operations/ru
 COPY operations/runtime/absence-recovery-shadow.test.cjs /tmp/wfm-tests/operations/runtime/absence-recovery-shadow.test.cjs
 COPY operations/runtime/demand-decision-service.cjs /tmp/wfm-tests/operations/runtime/demand-decision-service.cjs
 COPY operations/runtime/demand-decision-service.test.cjs /tmp/wfm-tests/operations/runtime/demand-decision-service.test.cjs
+COPY operations/runtime/realtime-event-service.cjs /tmp/wfm-tests/operations/runtime/realtime-event-service.cjs
+COPY operations/runtime/realtime-event-service.test.cjs /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
@@ -201,6 +204,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/customer-demand-intelligence.test.cjs \
       /tmp/wfm-tests/operations/runtime/absence-recovery-shadow.test.cjs \
       /tmp/wfm-tests/operations/runtime/demand-decision-service.test.cjs \
+      /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs \
  && rm -rf /tmp/wfm-tests
 
 # Railway cloud-build admission: execute the exact 10,000-employee / 50-site
@@ -220,6 +224,7 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && node --check /app/security-runtime/bootstrap.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
+ && node --check /tmp/wfm-ux-overlay/vector-realtime.js \
  && printf '/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' > /app/public/vector-ui.css \
  && cat /app/public/factory-control-ui.css >> /app/public/vector-ui.css \
  && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/vector-ui.css \
@@ -242,6 +247,8 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/vector-ui.js \
  && printf '\n;/* VECTOR_DEMAND_DECISION_INTELLIGENCE_BEGIN */\n' >> /app/public/vector-ui.js \
  && cat /tmp/wfm-ux-overlay/vector-demand-intelligence.js >> /app/public/vector-ui.js \
+ && printf '\n;/* VECTOR_REALTIME_BEGIN */\n' >> /app/public/vector-ui.js \
+ && cat /tmp/wfm-ux-overlay/vector-realtime.js >> /app/public/vector-ui.js \
  && node --check /app/public/vector-ui.js \
  && node /tmp/compose-vector-presentation.mjs /app/public \
  && rm -f /app/public/factory-control-ui.js /app/public/factory-control-ui.css \

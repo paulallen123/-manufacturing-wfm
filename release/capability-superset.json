@@ -435,7 +435,14 @@
         "optimistic UI only for reversible low-risk state",
         "cross-screen outcome propagation"
       ],
-      "integratedPaths": []
+      "integratedPaths": [
+        "operations/runtime/realtime-event-service.cjs",
+        "operations/runtime/realtime-event-service.test.cjs",
+        "ux-overlay/vector-realtime.js",
+        "operations/runtime/demand-decision-service.cjs",
+        "security/runtime/bootstrap.cjs"
+      ],
+      "integrationNote": "Tenant-scoped persisted SSE channel with ordered reconnect replay, role/audience filtering and session-expiry handling is wired into canonical Vector. Events are notification-only and force authoritative API refetch; Demand/Autopilot is the first publisher. Periodic/fallback refetch remains available."
     },
     {
       "id": "autonomous-integrations",

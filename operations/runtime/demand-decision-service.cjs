@@ -94,6 +94,7 @@ function lifecycleDemandSignal(row){
 function createDemandDecisionService(options={}){
   const dbPath=options.dbPath||process.env.WFM_DB;
   const internalToken=options.internalToken||process.env.WFM_DEMAND_INTERNAL_TOKEN||process.env.WFM_INTEGRATION_INTERNAL_TOKEN||'';
+  const publishEvent=typeof options.publishEvent==='function'?options.publishEvent:null;
   if(!dbPath) throw new Error('Demand decision service requires WFM_DB.');
   const db=new DatabaseSync(dbPath);
   db.exec(
@@ -173,6 +174,7 @@ function createDemandDecisionService(options={}){
     const existing=signalById.get(tenant,signal.signalId);
     if(existing) return writeJson(res,200,{signal:JSON.parse(existing.signal_json),idempotent:true});
     insertSignal.run(tenant,signal.signalId,JSON.stringify(signal),nowIso());
+    try{publishEvent?.({tenant,topic:'demand.updated',audience:'manager',payload:{signalId:signal.signalId}});}catch{}
     return writeJson(res,201,{signal,idempotent:false});
   }
   async function ingestAbsenceShadow(req,res){
@@ -185,6 +187,7 @@ function createDemandDecisionService(options={}){
     const existing=episodeById.get(tenant,episode.episodeId);
     if(existing) return writeJson(res,200,{shadow:{...shadow,episode:JSON.parse(existing.episode_json)},idempotent:true});
     insertEpisode.run(tenant,episode.episodeId,episode.decisionType,JSON.stringify(episode),nowIso());
+    try{publishEvent?.({tenant,topic:'autopilot.shadow.updated',audience:'manager',payload:{episodeId:episode.episodeId}});}catch{}
     return writeJson(res,201,{shadow,idempotent:false});
   }
   function summary(req,res){

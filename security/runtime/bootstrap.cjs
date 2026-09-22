@@ -13,6 +13,7 @@ const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
 const { createDemandDecisionService } = require('/app/operations-runtime/demand-decision-service.cjs');
+const { createRealtimeEventService } = require('/app/operations-runtime/realtime-event-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -43,6 +44,8 @@ let implementationEngine = null;
 let implementationEngineInitError = null;
 let lifecycleGuard = null;
 let lifecycleGuardInitError = null;
+let realtimeEventService = null;
+let realtimeEventServiceInitError = null;
 let demandDecisionService = null;
 let demandDecisionServiceInitError = null;
 
@@ -68,6 +71,10 @@ function implementationPath(req) {
 
 function lifecyclePath(req) {
   return requestPath(req).startsWith('/api/workforce/lifecycle');
+}
+
+function realtimePath(req) {
+  return requestPath(req).startsWith('/api/realtime');
 }
 
 function demandDecisionPath(req) {
@@ -335,9 +342,20 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!realtimeEventService && !realtimeEventServiceInitError && process.env.WFM_DB) {
+    try {
+      realtimeEventService = createRealtimeEventService({ dbPath: process.env.WFM_DB });
+    } catch (error) {
+      realtimeEventServiceInitError = error;
+    }
+  }
+
   if (!demandDecisionService && !demandDecisionServiceInitError && process.env.WFM_DB) {
     try {
-      demandDecisionService = createDemandDecisionService({ dbPath: process.env.WFM_DB });
+      demandDecisionService = createDemandDecisionService({
+        dbPath: process.env.WFM_DB,
+        publishEvent: realtimeEventService && !realtimeEventServiceInitError ? event => realtimeEventService.publish(event) : null
+      });
     } catch (error) {
       demandDecisionServiceInitError = error;
     }
@@ -379,6 +397,10 @@ http.createServer = function guardedCreateServer(listener) {
 
     if (lifecyclePath(req)) {
       if (await routeOverlay(lifecycleGuard, lifecycleGuardInitError, res, 'Workforce lifecycle', req)) return;
+    }
+
+    if (realtimePath(req)) {
+      if (await routeOverlay(realtimeEventService, realtimeEventServiceInitError, res, 'Realtime events', req)) return;
     }
 
     if (demandDecisionPath(req)) {
