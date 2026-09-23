@@ -8,9 +8,9 @@ const {
 
 const policy={
   lanes:[
-    {id:'github-actions-ui',provider:'github-actions',class:'supplemental',exactSourceSha:true,requiredForDevelopment:false},
-    {id:'circleci-runtime',provider:'circleci',class:'exact-image',exactSourceSha:true,requiredForDevelopment:false},
-    {id:'railway-forge-current-proof',provider:'railway',class:'exact-image',exactSourceSha:true,requiredForDevelopment:false}
+    {id:'github-actions-ui',provider:'github-actions',class:'supplemental',exactSourceSha:true,requiredForDevelopment:false,proofScopes:['supplemental-status'],runtimeMode:'none'},
+    {id:'circleci-runtime',provider:'circleci',class:'exact-image',exactSourceSha:true,requiredForDevelopment:false,proofScopes:['exact-image','runtime-security','hosted-http-boundary'],runtimeMode:'product-runtime'},
+    {id:'railway-forge-current-proof',provider:'railway',class:'exact-image',exactSourceSha:true,requiredForDevelopment:false,proofScopes:['exact-image','docker-admission'],runtimeMode:'proof-stub'}
   ],
   fallbackOrder:['railway-forge-current-proof','circleci-runtime','github-actions-ui']
 };
@@ -145,4 +145,26 @@ test('prevention learning is review-only and cannot self-authorise',()=>{
   assert.equal(prevention.autoApply,false);
   assert.equal(prevention.productionMutation,false);
   assert.equal(prevention.productionAuthorityGranted,false);
+});
+
+
+test('fallback must preserve required proof scope',()=>{
+  const c=classifyObservation({provider:'railway',deploymentStatus:'SKIPPED'});
+  const lane=selectAlternativeLane(policy,c,{
+    provider:'railway',
+    requiredProofScopes:['exact-image','runtime-security']
+  });
+  assert.equal(lane.laneId,'circleci-runtime');
+  assert.ok(lane.proofScopes.includes('runtime-security'));
+});
+
+test('weaker proof lane cannot substitute for an uncovered hosted-product scope',()=>{
+  const c=classifyObservation({provider:'railway',deploymentStatus:'SKIPPED'});
+  const lane=selectAlternativeLane(policy,c,{
+    provider:'railway',
+    requiredProofScopes:['hosted-product-runtime']
+  });
+  assert.equal(lane,null);
+  const plan=fiveMinutePlan(c,lane);
+  assert.ok(plan.byTwoMinutes.some(x=>x.includes('keep only the uncovered scope blocked')));
 });

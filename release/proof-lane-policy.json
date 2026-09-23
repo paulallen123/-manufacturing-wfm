@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
-  "name": "VECTOR_PROOF_LANE_INDEPENDENCE_V1",
-  "principle": "Development and testing continue through another executable lane when any CI or hosting provider is unavailable. Provider degradation never counts as product PASS or FAIL.",
+  "schemaVersion": 2,
+  "name": "VECTOR_PROOF_LANE_INDEPENDENCE_V2",
+  "principle": "Development and testing continue through an equivalent executable lane when a provider is unavailable. A fallback must preserve exact candidate identity and the required proof scope; weaker evidence never substitutes for stronger proof.",
   "states": {
     "providerUnavailable": "PROVIDER_DEGRADED",
     "noRunner": "PROVIDER_DEGRADED",
@@ -17,7 +17,10 @@
     "exactSourceShaRequired": true,
     "immutableEvidenceRequired": true,
     "developmentContinuesIfAnyExecutableLaneExists": true,
-    "productionPromotionRequiresIndependentProviders": 2
+    "productionPromotionRequiresIndependentProviders": 2,
+    "fallbackMustMatchRequiredProofScopes": true,
+    "weakerLaneMayNotSubstituteForStrongerProof": true,
+    "uncoveredRequiredScopeRemainsBlocked": true
   },
   "lanes": [
     {
@@ -26,7 +29,12 @@
       "class": "supplemental",
       "exactSourceSha": true,
       "requiredForDevelopment": false,
-      "requiredForPromotion": false
+      "requiredForPromotion": false,
+      "sourceBinding": "must-match-candidate-sha",
+      "proofScopes": [
+        "supplemental-status"
+      ],
+      "runtimeMode": "none"
     },
     {
       "id": "circleci-core",
@@ -34,7 +42,14 @@
       "class": "source-proof",
       "exactSourceSha": true,
       "requiredForDevelopment": false,
-      "requiredForPromotion": true
+      "requiredForPromotion": true,
+      "sourceBinding": "must-match-candidate-sha",
+      "proofScopes": [
+        "source-contracts",
+        "preflight",
+        "semantic-continuity"
+      ],
+      "runtimeMode": "source"
     },
     {
       "id": "circleci-runtime",
@@ -42,7 +57,17 @@
       "class": "exact-image",
       "exactSourceSha": true,
       "requiredForDevelopment": false,
-      "requiredForPromotion": true
+      "requiredForPromotion": true,
+      "sourceBinding": "must-match-candidate-sha",
+      "proofScopes": [
+        "source-contracts",
+        "preflight",
+        "semantic-continuity",
+        "exact-image",
+        "runtime-security",
+        "hosted-http-boundary"
+      ],
+      "runtimeMode": "product-runtime"
     },
     {
       "id": "railway-forge-candidate",
@@ -51,7 +76,17 @@
       "exactSourceSha": true,
       "watchPattern": "**",
       "requiredForDevelopment": false,
-      "requiredForPromotion": true
+      "requiredForPromotion": true,
+      "sourceBinding": "must-match-candidate-sha",
+      "proofScopes": [
+        "source-contracts",
+        "preflight",
+        "semantic-continuity",
+        "exact-image",
+        "hosted-product-runtime",
+        "hosted-healthcheck"
+      ],
+      "runtimeMode": "product-runtime"
     },
     {
       "id": "railway-forge-current-proof",
@@ -60,7 +95,16 @@
       "exactSourceSha": true,
       "watchPattern": "**",
       "requiredForDevelopment": false,
-      "requiredForPromotion": true
+      "requiredForPromotion": true,
+      "sourceBinding": "must-match-candidate-sha",
+      "proofScopes": [
+        "source-contracts",
+        "preflight",
+        "semantic-continuity",
+        "exact-image",
+        "docker-admission"
+      ],
+      "runtimeMode": "proof-stub"
     }
   ],
   "fallbackOrder": [
@@ -70,6 +114,6 @@
     "circleci-core",
     "github-actions-ui"
   ],
-  "developmentRule": "A broken provider changes the lane state, not the product-development state. Continue coding and run the same immutable SHA through the next executable lane.",
-  "promotionRule": "Promote only when an exact-image PASS is SHA-bound and independent evidence exists from at least two providers. GitHub Actions is supplemental and can be PROVIDER_DEGRADED without stopping development."
+  "developmentRule": "A broken provider changes the lane state, not the product-development state. Continue coding and reroute the same immutable candidate only to a lane that proves every required scope; otherwise keep that scope explicitly blocked while unrelated development continues.",
+  "promotionRule": "Promote only when required proof scopes are satisfied by SHA-bound evidence and independent providers meet the promotion rule. A source-only, proof-stub or supplemental lane cannot stand in for hosted product runtime proof."
 }

@@ -317,18 +317,25 @@ function createPreventionCandidate({ classification, observation, baseline = nul
   return Object.freeze({ ...core, candidateDigest: digest(core) });
 }
 
-function laneEligible(lane) {
-  return lane &&
+function laneEligible(lane, requiredScopes = []) {
+  if (!(lane &&
     lane.exactSourceSha === true &&
     lane.requiredForDevelopment !== true &&
     lane.provider &&
-    lane.id;
+    lane.id)) return false;
+  const scopes = new Set(Array.isArray(lane.proofScopes) ? lane.proofScopes : []);
+  return requiredScopes.every(scope => scopes.has(scope));
 }
 
 function selectAlternativeLane(policy, classification, observation = {}) {
   if (!classification?.reroute) return null;
   const failedProvider = String(observation.provider || '').toLowerCase();
-  const lanes = new Map((policy?.lanes || []).filter(laneEligible).map(l => [l.id, l]));
+  const requiredScopes = Array.isArray(observation.requiredProofScopes)
+    ? [...new Set(observation.requiredProofScopes.map(String))]
+    : [];
+  const lanes = new Map((policy?.lanes || [])
+    .filter(lane => laneEligible(lane, requiredScopes))
+    .map(l => [l.id, l]));
   for (const id of policy?.fallbackOrder || []) {
     const lane = lanes.get(id);
     if (!lane) continue;
@@ -338,6 +345,9 @@ function selectAlternativeLane(policy, classification, observation = {}) {
       laneId: lane.id,
       provider: lane.provider,
       class: lane.class,
+      proofScopes: Object.freeze([...(lane.proofScopes || [])]),
+      requiredProofScopes: Object.freeze(requiredScopes),
+      runtimeMode: lane.runtimeMode || null,
       exactSourceSha: true,
       productionAuthorityGranted: false
     });
@@ -381,7 +391,7 @@ function fiveMinutePlan(classification, alternateLane) {
     ],
     byTwoMinutes: classification.reroute
       ? [
-          alternateLane ? 'dispatch exact candidate to ' + alternateLane.laneId : 'dispatch independent reproducer',
+          alternateLane ? 'dispatch exact candidate to equivalent proof lane ' + alternateLane.laneId : 'no equivalent proof lane: preserve evidence and keep only the uncovered scope blocked',
           'open bounded circuit on impaired provider after retry budget',
           'continue unrelated development'
         ]
