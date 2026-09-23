@@ -4,7 +4,7 @@
 const IMPL='/api/implementation/autonomous';
 const INTEGRATIONS='/api/integrations/autonomous';
 const LEARNING='/api/learning/adaptive';
-const VERSION='version-d-2';
+const VERSION='version-d-3';
 const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',timer:null,lastLoad:0};
 const inviteToken=()=>{try{return new URL(window.location.href).searchParams.get('implementation_invite')||'';}catch{return '';}};
 const currentPage=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
@@ -111,6 +111,22 @@ function activeWork(){
     return '<div class="wfm-ij-work"><span class="'+tone+'">'+(tone==='blocked'?'!':'•')+'</span><div><b>'+safe(x.label)+'</b><small>'+safe(x.status==='MISSING'?'Waiting for required evidence':stateLabel(x.status))+'</small></div></div>';
   }).join('')+'</div>';
 }
+function launchProofMarkup(){
+  const launch=S.status?.launchAutopilot;
+  if(!launch)return '';
+  const gates=Array.isArray(launch.gates)?launch.gates:[];
+  const proven=gates.filter(x=>x.status==='PASS').length;
+  const total=gates.length;
+  const blocked=(launch.blocking||[]).slice(0,3);
+  const ready=launch.ready===true;
+  const path=launch.integrationPath||{};
+  const route=path.selected?.route?String(path.selected.route).replaceAll('_',' '):stateLabel(path.state||'DISCOVERY_REQUIRED');
+  const detail=blocked.length
+    ? blocked.map(x=>String(x.gate||'').replaceAll('-',' ')+' · '+stateLabel(x.status)).join(' · ')
+    : 'All launch evidence gates are proven.';
+  return '<section class="wfm-ij-panel wfm-ij-launch-proof"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">LAUNCH AUTOPILOT · EVIDENCE CONTROL</span><h2>'+safe(ready?'Autonomous implementation is proven ready':'VECTOR is proving the implementation')+'</h2><p>'+safe(detail)+'</p></div><span class="wfm-ij-status '+(ready?'ready':'working')+'">'+safe(stateLabel(launch.state||'DISCOVER'))+'</span></div>'+
+    '<div class="wfm-ij-training-meta"><span><b>'+proven+' / '+total+'</b> proof gates</span><span><b>'+(launch.compatibility?.existingImplementationReady?'Passed':'Protected')+'</b> existing readiness</span><span><b>'+safe(route)+'</b> integration path</span><span><b>'+(launch.twinRevision?safe(String(launch.twinRevision).slice(0,10))+'…':'Building')+'</b> implementation twin</span><span><b>No</b> autonomous production authority</span></div></section>';
+}
 function proposalSummary(proposal){
   if(!proposal||typeof proposal!=='object')return '';
   const entries=Object.entries(proposal).slice(0,4);
@@ -182,6 +198,7 @@ function liveMarkup(){
     '<header class="wfm-ij-header"><div><span class="wfm-ij-kicker">IMPLEMENTATION IN PROGRESS</span><h1>Your implementation</h1><p>One place to see what is happening, what has been proven and what needs you.</p></div><span class="wfm-ij-status '+(state==='READY'?'ready':state==='AT_RISK'||state==='SLA_MISSED'?'blocked':'working')+'">'+safe(stateLabel(state))+'</span></header>'+
     scopeMarkup()+
     '<section class="wfm-ij-overall"><div class="wfm-ij-overall-top"><div><b>Overall progress</b><span>'+progress+'% · '+Number(S.status?.completedRequirements||0)+' of '+Number(S.status?.totalRequirements||(S.status?.requirements||[]).length)+' controls proven</span></div><strong>'+progress+'%</strong></div><div class="wfm-ij-progress"><span style="width:'+progress+'%"></span></div><div class="wfm-ij-stagebar">'+stageMarkup()+'</div></section>'+
+    launchProofMarkup()+
     decisionsMarkup()+
     '<div class="wfm-ij-grid">'+
       '<section class="wfm-ij-panel wfm-ij-activity"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">CURRENT ACTIVITY</span><h2>What the implementation is working through</h2></div></div>'+activeWork()+'</section>'+
