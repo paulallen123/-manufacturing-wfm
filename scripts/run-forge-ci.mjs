@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 
 const checks = [
   ['node', ['scripts/validate-deployment.mjs']],
+  ['node', ['scripts/validate-t9-candidate.mjs']],
   ['node', ['scripts/validate-product-factory.mjs']],
   ['node', ['scripts/validate-isolated-environment-provisioning-plan.mjs']],
   ['node', ['scripts/validate-resilience-scenarios.mjs']],
@@ -21,6 +22,7 @@ const checks = [
     'operations/runtime/decision-outcome-proof.test.cjs',
     'trust/runtime/vector-trust-spine.test.cjs',
     'operations/runtime/t9-autopilot-adapter.test.cjs',
+    'trust/runtime/vector-t9-support-adapter.test.cjs',
     'operations/runtime/autopilot-execution-engine.test.cjs',
     'scripts/prove-vector-built-asset-provenance.test.mjs'
   ]]
