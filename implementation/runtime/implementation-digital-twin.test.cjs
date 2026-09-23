@@ -63,3 +63,26 @@ test('unknown edge target fails closed',()=>{
     edges:[{from:'tenant',to:'missing',relation:'contains',source:'scope',observedAt:at,verified:true}]
   }),/unknown node/);
 });
+
+
+test('research-aligned manufacturing asset types are additive and provenance-bound',()=>{
+  const revision=createTwinRevision({
+    tenant:'alpha',
+    nodes:[
+      {id:'machine:line4',type:'machine',source:'mes',observedAt:at,verified:true,data:{}},
+      {id:'material:batch7',type:'material',source:'erp',observedAt:at,verified:true,data:{}},
+      {id:'energy:meter1',type:'energy',source:'meter',observedAt:at,verified:true,data:{}},
+      {id:'cash:order9',type:'cash-commitment',source:'erp',observedAt:at,verified:true,data:{}},
+      {id:'knowledge:sop4',type:'knowledge',source:'qms',observedAt:at,verified:true,data:{}}
+    ],
+    edges:[
+      {from:'machine:line4',to:'material:batch7',relation:'consumes',source:'mes',observedAt:at,verified:true},
+      {from:'machine:line4',to:'energy:meter1',relation:'uses',source:'meter',observedAt:at,verified:true},
+      {from:'cash:order9',to:'machine:line4',relation:'depends-on',source:'erp',observedAt:at,verified:true},
+      {from:'machine:line4',to:'knowledge:sop4',relation:'governed-by',source:'qms',observedAt:at,verified:true}
+    ]
+  });
+  assert.equal(revision.nodes.length,5);
+  assert.equal(revision.edges.length,4);
+  assert.throws(()=>createTwinRevision({tenant:'alpha',nodes:[{id:'m',type:'machine'}],edges:[]}),/source and observedAt/);
+});
