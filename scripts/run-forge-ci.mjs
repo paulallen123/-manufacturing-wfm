@@ -28,7 +28,9 @@ const checks = [
     'learning/runtime/training-media-plan.test.cjs',
     'learning/runtime/training-authoring-contract.test.cjs',
     'learning/runtime/training-coach-orchestrator.test.cjs',
-    'learning/runtime/training-quality-gate.test.cjs'
+    'learning/runtime/training-quality-gate.test.cjs',
+    'learning/runtime/training-learner-memory.test.cjs',
+    'learning/runtime/training-factory-orchestrator.test.cjs'
   ]]
 ];
 
