@@ -1,2 +1,2 @@
-VECTOR_FORGE_CURRENT_PROOF=2026-09-23T08:26+01:00
-PURPOSE=verify-restored-evidence-backed-value-and-provisioning-gates
+VECTOR_FORGE_CURRENT_PROOF=2026-09-23T08:49+01:00
+PURPOSE=verify-canonical-forge-ci-and-evidence-backed-value
