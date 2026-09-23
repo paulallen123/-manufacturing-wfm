@@ -71,7 +71,7 @@ function registerCoreEngineeringTools(foundry) {
     handler: async (input) => {
       const scenarios = Array.isArray(input.scenarios) ? input.scenarios : [];
       const results = scenarios.map((scenario, index) => {
-        const id = String(scenario?.id || \`scenario-\${index + 1}\`);
+        const id = String(scenario?.id || `scenario-\${index + 1}`);
         const pass = same(scenario?.actual, scenario?.expected);
         return { id, pass, expected: scenario?.expected, actual: scenario?.actual };
       });
