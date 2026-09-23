@@ -9,6 +9,21 @@ This slice is additive and stacked on the current converged Launch + Training br
 1. A customer moving from a mature WFM competitor must not lose core scheduling capability.
 2. VECTOR must extend those capabilities into manufacturing economics and safe autonomous operations rather than becoming a copy of a generic WFM scheduler.
 
+## Simplicity / complexity budget
+
+Scheduling intelligence must make the task simpler, not expose the machinery used to solve it.
+
+- Add **zero** new top-level navigation items, Plan tabs or permanent panels for scheduling intelligence.
+- Default experience: VECTOR completes safe work in the background and surfaces only exceptions or decisions that require a person.
+- A scheduling task may expose at most **one primary action** and one optional **View details** disclosure.
+- If no human action is required, show no action button.
+- Default visible information is limited to the outcome plus at most three decision-relevant metrics; constraints, solver detail, evidence and alternatives stay behind progressive disclosure.
+- Action labels describe the customer outcome (for example **Review cover** or **Review change**), never internal machinery such as “Run AI”, “Optimise”, “Recalculate” or “Execute solver”.
+- Reuse the existing **Today / Plan / Factory** surfaces and existing action queue. Do not create a second scheduling workspace, second queue or new shell.
+- Every proposed button must either complete a required task, resolve an exception, or expose evidence. Otherwise it does not ship.
+
+The automated simplicity contract is `ux-overlay/vector-scheduling-simplicity-contract.cjs`; its regression test is part of the exact Docker proof path.
+
 ## Implemented in this slice
 
 - P50/P90/confidence demand consumption without claiming a proven forecasting model.
