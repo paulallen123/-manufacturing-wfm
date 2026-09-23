@@ -17,8 +17,9 @@ const plane = JSON.parse(fs.readFileSync(path.join(root, 'release/vector-enginee
 const foundry = new VectorToolFoundry({ principal: 'vector-engineering-plane' });
 registerCoreEngineeringTools(foundry);
 
-const learningBridge = new VectorEngineeringLearningBridge({ foundry });
+const learningBridge = new VectorEngineeringLearningBridge({ foundry, now: () => 0 });
 const learningCandidate = learningBridge.propose({
+  candidateId: 'vector-foundry-preflight-regression',
   signal: 'REGRESSION',
   evidenceClass: 'SYNTHETIC',
   evidenceRefs: ['proof:vector-foundry-preflight'],
