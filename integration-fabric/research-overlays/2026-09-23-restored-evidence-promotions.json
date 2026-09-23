@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedAt": "2026-09-23",
-  "purpose": "Restore ten documentation-backed Integration Fabric promotions that were lost during FORGE convergence. Entries are copied from previously reviewed evidence overlays; no maturity inflation, tenant certification or write authority is introduced.",
+  "purpose": "Restore documentation-backed Integration Fabric promotions and inline vendor value reviews lost during FORGE convergence. Entries are copied from previously reviewed evidence overlays; no maturity inflation, tenant certification or write authority is introduced.",
   "protocolFamilies": [
     "Sparkplug B"
   ],
@@ -595,6 +595,232 @@
             "REST/SOAP/file integrations may be customer-configured and version-specific",
             "incumbent WFM data must not automatically override the WFM system of record without explicit source-of-truth rules",
             "write-back remains disabled until sandbox round-trip proof"
+          ]
+        }
+      }
+    },
+    {
+      "id": "tulip",
+      "patch": {
+        "protocols": [
+          "REST",
+          "connectors",
+          "OPC UA",
+          "MQTT",
+          "database"
+        ],
+        "auth": "scoped-service-account-basic-auth",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://support.tulip.co/docs/work-with-apis",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://support.tulip.co/apidocs/look-up-a-tulip-table",
+        "evidenceNote": "Tulip documents scoped REST APIs for Tables, Users/Operators, Stations and Machine Attributes, plus HTTP/SQL/MQTT connectors and OPC UA-backed machine data. API service accounts use key/secret credentials via HTTP Basic Auth with granular scopes such as tables:read; write endpoints and documented endpoint rate limits remain separately gated. No tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://support.tulip.co/docs/work-with-apis",
+          "requiredPermissions": [
+            "workspace-scoped service account",
+            "read scopes for tables/users/stations required by the workflow",
+            "machine/production read access only",
+            "no users:write or machine write scope during discovery"
+          ],
+          "dataAvailableOrExpected": [
+            "Tulip table records and schemas",
+            "users/operators, roles and groups",
+            "station/workspace context",
+            "machine attributes and machine data configured in Tulip",
+            "shop-floor application data exposed through customer tables"
+          ],
+          "wfmObjects": [
+            "worker",
+            "work-centre",
+            "production-event",
+            "machine-state",
+            "site",
+            "shift-outcome"
+          ],
+          "automationOpportunities": [
+            "operator/worker reconciliation",
+            "shop-floor station and work-centre mapping",
+            "production/machine events can refresh labour demand and shift outcome evidence",
+            "approved operator provisioning only after write certification"
+          ],
+          "customerValue": [
+            "stronger frontline-to-WFM data continuity",
+            "less duplicate operator administration",
+            "labour-to-production visibility",
+            "faster implementation where Tulip already models machines and stations"
+          ],
+          "savingsHypotheses": [
+            "reduce duplicate shop-floor data entry",
+            "reduce manual operator reconciliation",
+            "identify labour/machine mismatch using Tulip production context"
+          ],
+          "dataGaps": [
+            "customer tables are configurable and require schema discovery",
+            "not every app or machine attribute is semantically suitable for workforce decisions"
+          ],
+          "constraintsRisks": [
+            "service-account keys are reusable secrets and must be vaulted/rotated",
+            "write-capable scopes must remain excluded from discovery",
+            "documented endpoint-specific rate limits require adapter throttling"
+          ],
+          "nextDevelopmentAction": "Generate a Tulip thin adapter over the existing REST profile with table-schema discovery, pagination/rate-limit handling and canonical worker/station/machine mapping; then prove read-only access in an authorised tenant."
+        }
+      }
+    },
+    {
+      "id": "celigo-integrator-io",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "evidenceUrl": "https://docs.celigo.com/hc/en-us/articles/52487952583067-Celigo-platform-MCP-and-CLI",
+        "evidenceNote": "Celigo's 2026 platform documentation adds a hosted MCP management surface over Streamable HTTP using bearer API tokens, operating on the same integration resources as the REST API. Celigo also documents network policies and scoped token/access controls. This is useful for autonomous implementation orchestration, but it is a management plane and must not be treated as permission for unsupervised production mutations. No Celigo tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://docs.celigo.com/hc/en-us/articles/52487952583067-Celigo-platform-MCP-and-CLI",
+          "requiredPermissions": [
+            "custom-scoped API token rather than full access",
+            "network policy restricting allowed callers",
+            "read-only/account-observation capabilities during discovery",
+            "separate approval for flow, connection or resource mutations"
+          ],
+          "dataAvailableOrExpected": [
+            "integration/flow/connection metadata",
+            "logs and execution state exposed by integrator.io APIs",
+            "MCP tool/resource metadata for configured Celigo capabilities"
+          ],
+          "wfmObjects": [
+            "integration-event",
+            "connector-health",
+            "implementation-evidence"
+          ],
+          "automationOpportunities": [
+            "autonomous implementation can inspect existing Celigo integration resources",
+            "reuse customer flows/connectors rather than create duplicate point-to-point integrations",
+            "surface integration failures into WFM support automation"
+          ],
+          "customerValue": [
+            "faster zero-human implementation where Celigo is already present",
+            "reduced integration support administration",
+            "reuse of existing customer iPaaS investment"
+          ],
+          "savingsHypotheses": [
+            "reduce implementation engineering time",
+            "reduce duplicate connector build/maintenance",
+            "shorten diagnosis of integration failures"
+          ],
+          "dataGaps": [
+            "available MCP tools depend on account configuration and entitlements",
+            "business data semantics still depend on connected upstream systems"
+          ],
+          "constraintsRisks": [
+            "MCP/REST management capabilities can mutate production integration resources",
+            "unrestricted tokens or servers may expose more capability than WFM needs",
+            "regional Celigo environments must be bound explicitly"
+          ],
+          "nextDevelopmentAction": "Model Celigo MCP as a separately governed management-plane adapter, first with tool/resource discovery only; add a reusable MCP transport profile only after read-only capability enforcement and sandbox behaviour are verified."
+        }
+      }
+    },
+    {
+      "id": "sap-successfactors",
+      "patch": {
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://help.sap.com/docs/SAP_SUCCESSFACTORS_LEARNING/5aab9bef78fc4c4fa199c1f7aa142720/user-userlearning-service-v1-metadata",
+          "requiredPermissions": [
+            "OAuth bearer access to required SuccessFactors/Learning OData services",
+            "learning-history/competency scopes only where needed"
+          ],
+          "dataAvailableOrExpected": [
+            "employee/organisation data",
+            "learning history and completion dates/status",
+            "learning item revisions",
+            "competency assessments/mastery levels",
+            "certification links where exposed"
+          ],
+          "wfmObjects": [
+            "worker",
+            "organisation-unit",
+            "skill",
+            "qualification",
+            "training-completion",
+            "competency",
+            "eligibility-rule"
+          ],
+          "automationOpportunities": [
+            "remove scheduling eligibility when required training expires or changes revision",
+            "restore eligibility when verified completion arrives",
+            "assign/recommend retraining after engineering or safety change; write only after separate proof"
+          ],
+          "customerValue": [
+            "skills-based scheduling",
+            "compliance automation",
+            "fewer unqualified assignments",
+            "faster qualification reconciliation"
+          ],
+          "savingsHypotheses": [
+            "reduce manual training checks",
+            "avoid production disruption from missing qualifications",
+            "reduce compliance administration"
+          ],
+          "dataGaps": [
+            "customer learning item taxonomy must map to WFM skills/roles",
+            "learning write-back has documented limits and permissions"
+          ],
+          "constraintsRisks": [
+            "learning-event writes have call/array limits and do not support e-signatures or attachments",
+            "training history is qualification evidence only when customer policy maps it to a role/skill requirement"
+          ]
+        }
+      }
+    },
+    {
+      "id": "infor-workforce-management",
+      "patch": {
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://docs.infor.com/wfm/2026/en-us/wfmclolh/api_config_cloud/jlp1696352204318.html",
+          "requiredPermissions": [
+            "ION API authorised app with Infor-WFMPublic or required suite scope",
+            "team hierarchy limited to required employees",
+            "View/GET-only API Suite permission during discovery"
+          ],
+          "dataAvailableOrExpected": [
+            "employees",
+            "employee schedule details",
+            "clock/reader-group data where WFM Clocks is used",
+            "configured public API resources documented by tenant Swagger/OpenAPI"
+          ],
+          "wfmObjects": [
+            "worker",
+            "shift",
+            "time-event",
+            "availability",
+            "clock-device"
+          ],
+          "automationOpportunities": [
+            "schedule/time coexistence import",
+            "clock estate migration/reconciliation",
+            "employee/schedule delta ingestion"
+          ],
+          "customerValue": [
+            "faster migration from Infor WFM",
+            "lower implementation effort",
+            "payroll/time comparison during parallel run"
+          ],
+          "savingsHypotheses": [
+            "reduce manual migration and parallel-run reconciliation",
+            "reduce duplicate clock/time administration"
+          ],
+          "dataGaps": [
+            "available API suites and versions depend on deployment/configuration",
+            "team hierarchy/security determines visible employees"
+          ],
+          "constraintsRisks": [
+            "cloud and on-prem setup differ",
+            "multi-tenant customers may require Cloud Ops configuration",
+            "GET and POST permissions are distinct and WFM should request View only initially"
           ]
         }
       }
