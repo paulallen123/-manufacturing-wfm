@@ -11,6 +11,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-deployment.mjs \
  && node scripts/validate-proof-lane-policy.mjs \
  && node scripts/validate-hosted-public-runtime-verifier.mjs \
+ && node scripts/validate-point-of-consumption-proof.mjs \
  && node scripts/validate-integration-evidence-continuity.mjs \
  && node --test resilience/blocker-autopilot.test.cjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \
