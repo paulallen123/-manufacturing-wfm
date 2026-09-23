@@ -24,13 +24,18 @@
     "deploymentSuccessNeverCountsAsHostedProof": true,
     "publicIngressVerificationRequired": true,
     "applicationIdentityVerificationRequired": true,
-    "proofLinkMayBeSharedOnlyAfterExternalVerification": true
+    "proofLinkMayBeSharedOnlyAfterExternalVerification": true,
+    "proofEndsAtPointOfConsumption": true,
+    "nextRealWorldStepSimulationRequired": true,
+    "userActionMustBeExecutedNotInferred": true,
+    "downstreamOutcomeIndependentReadbackRequired": true
   },
   "phases": [
     "source-and-contract",
     "exact-image",
     "hosted-runtime",
     "public-ingress-verification",
+    "point-of-consumption-proof",
     "authenticated-golden-journey",
     "refresh-new-login-persistence",
     "restart-recovery",
