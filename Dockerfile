@@ -74,6 +74,18 @@ COPY integration-fabric/protocol-profiles.json /app/integration-fabric-catalog/p
 COPY integration-fabric/opportunity-profiles.json /app/integration-fabric-catalog/opportunity-profiles.json
 COPY integration-fabric/openapi.yaml /app/integration-fabric-catalog/openapi.yaml
 
+# Preserve the Integration Fabric source-relative module layout as a runtime-verifiable tree.
+# Existing compatibility copies above remain in place until every consumer is migrated.
+RUN mkdir -p /app/integration-fabric/runtime /app/integration-fabric/scripts /app/integration-fabric/research-overlays
+COPY integration-fabric/runtime/ /app/integration-fabric/runtime/
+COPY integration-fabric/scripts/load-catalog.mjs /app/integration-fabric/scripts/load-catalog.mjs
+COPY integration-fabric/systems.json /app/integration-fabric/systems.json
+COPY integration-fabric/systems-research.json /app/integration-fabric/systems-research.json
+COPY integration-fabric/research-overlays/ /app/integration-fabric/research-overlays/
+COPY integration-fabric/protocol-profiles.json /app/integration-fabric/protocol-profiles.json
+COPY integration-fabric/opportunity-profiles.json /app/integration-fabric/opportunity-profiles.json
+COPY integration-fabric/openapi.yaml /app/integration-fabric/openapi.yaml
+
 # One-day implementation and adaptive learning overlays. These remain additive,
 # tenant-scoped, fail-closed control planes using Node built-ins and the existing SQLite state.
 RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
