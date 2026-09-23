@@ -32,6 +32,10 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
     'trust-runtime': 'trust'
   };
   for (const required of absoluteRequires) {
+    if (required === 'server.cjs') {
+      assert.match(composer, /artifact\/wfm-0\.6\.76-hosted-staging-rc1\.tar\.gz/, 'base server must remain sourced from the pinned sealed runtime artifact');
+      continue;
+    }
     const [runtimeGroup, ...rest] = required.split('/');
     const sourceGroup = runtimeGroups[runtimeGroup];
     assert.ok(sourceGroup, `unmapped bootstrap runtime group: ${runtimeGroup}`);
