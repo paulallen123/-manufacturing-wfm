@@ -19,12 +19,17 @@ const checks = [
     'operations/runtime/customer-demand-intelligence.test.cjs',
     'operations/runtime/absence-recovery-shadow.test.cjs',
     'operations/runtime/demand-decision-service.test.cjs',
-    'operations/runtime/decision-outcome-proof.test.cjs',\n    'operations/runtime/frontier-decision-control.test.cjs',\n    'operations/runtime/autopilot-execution-engine.test.cjs',\n    'trust/runtime/vector-trust-spine.test.cjs',
+    'operations/runtime/decision-outcome-proof.test.cjs',
+    'operations/runtime/frontier-decision-control.test.cjs',
+    'operations/runtime/autopilot-execution-engine.test.cjs',
+    'trust/runtime/vector-trust-spine.test.cjs',
+    'engineering/runtime/vector-tool-foundry.test.cjs',
     'implementation/runtime/launch-autopilot-controller.test.cjs',
     'implementation/runtime/launch-integration-pathfinder.test.cjs',
     'implementation/runtime/launch-autopilot-readiness-adapter.test.cjs',
     'scripts/prove-vector-built-asset-provenance.test.mjs'
-  ]]
+  ]],
+  ['node', ['scripts/run-vector-foundry-proof.mjs']]
 ];
 
 for (const [command, args] of checks) {
