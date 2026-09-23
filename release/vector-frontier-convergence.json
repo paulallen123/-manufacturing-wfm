@@ -1,0 +1,41 @@
+{
+  "contractVersion": "VECTOR_FRONTIER_CONVERGENCE_V1",
+  "sourceBranch": "feature/vector-frontier-t9-converged-20260923",
+  "baseBranch": "feature/vector-forge-launch-converged-20260923",
+  "purpose": "Converge T9 trust and frontier decision assurance onto current FORGE without a parallel product.",
+  "requiredRuntime": [
+    "trust/runtime/vector-trust-spine.cjs",
+    "operations/runtime/frontier-decision-control.cjs",
+    "operations/runtime/autopilot-execution-engine.cjs"
+  ],
+  "enforcedPrinciples": [
+    "decision-episode-bound-simulation-passport",
+    "explicit-unknowns-reduce-autonomy",
+    "machine-readable-authority",
+    "typed-actions-with-preconditions-and-postconditions",
+    "executor-verifier-separation",
+    "simulation-validity-gates-execution",
+    "recovery-distinguishes-rollback-from-compensation",
+    "causal-learning-never-self-grants-authority"
+  ],
+  "autonomyLadder": [
+    "REPLAY_ONLY",
+    "SHADOW",
+    "RECOMMEND",
+    "HUMAN_APPROVAL",
+    "BOUNDED_AUTO"
+  ],
+  "proofRules": {
+    "exactSourceBinding": true,
+    "railwayBranchMustEqual": "feature/vector-frontier-t9-converged-20260923",
+    "railwayCommitMustEqualCurrentHeadAtProofTime": true,
+    "dockerAdmissionRequired": true,
+    "hostedSuccessRequiredBeforeClaimingHostedProof": true,
+    "oldMainSnapshotDoesNotCount": true
+  },
+  "isolation": {
+    "northstarModified": false,
+    "productionModified": false,
+    "proofProject": "manufacturing-wfm-test"
+  }
+}
