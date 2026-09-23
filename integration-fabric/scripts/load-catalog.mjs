@@ -44,6 +44,22 @@ export function loadResearchDelta() {
   };
 }
 
+function mergePatch(current, patch) {
+  if (!patch || typeof patch !== 'object' || Array.isArray(patch)) return structuredClone(patch);
+  const out = current && typeof current === 'object' && !Array.isArray(current)
+    ? structuredClone(current)
+    : {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (value && typeof value === 'object' && !Array.isArray(value)
+      && out[key] && typeof out[key] === 'object' && !Array.isArray(out[key])) {
+      out[key] = mergePatch(out[key], value);
+    } else {
+      out[key] = structuredClone(value);
+    }
+  }
+  return out;
+}
+
 export function loadCatalog() {
   const base = JSON.parse(fs.readFileSync(baseUrl, 'utf8'));
   const deltas = loadResearchDeltas();
@@ -61,7 +77,7 @@ export function loadCatalog() {
       }
       if (!byId.has(entry.id)) throw new Error('Research override in ' + delta.source + ' targets unknown system: ' + entry.id);
       const current = byId.get(entry.id);
-      byId.set(entry.id, {...current, ...structuredClone(entry.patch), id:entry.id});
+      byId.set(entry.id, {...mergePatch(current, entry.patch), id:entry.id});
       overrides += 1;
     }
 
