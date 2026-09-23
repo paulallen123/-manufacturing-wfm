@@ -91,6 +91,20 @@
     "repeatedManualWork": "automation-or-tool-candidate",
     "releasePath": "isolated-candidate -> tests -> adversarial/holdout proof -> independent release authority",
     "directProductionMutation": false,
-    "selfCertification": false
+    "selfCertification": false,
+    "candidateContract": "VECTOR_ENGINEERING_LEARNING_CANDIDATE_V1",
+    "allowedEvidenceClasses": [
+      "SANITISED",
+      "DERIVED",
+      "SYNTHETIC"
+    ],
+    "forbiddenInputs": [
+      "raw-customer-data",
+      "raw-secret",
+      "direct-execution-token",
+      "unsigned-production-authority"
+    ],
+    "productFactoryReceiptSchema": "product-factory/learning-receipt-schema.json",
+    "tamperEvidentCandidateDigest": true
   }
 }
