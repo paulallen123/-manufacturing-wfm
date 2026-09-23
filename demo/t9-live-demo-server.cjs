@@ -128,6 +128,12 @@ function learning(){
   });
   return {
     identity:IDENTITY,
+    outcome:{
+      predictedPlanAttainmentPct:98,
+      verifiedPlanAttainmentPct:97,
+      predictedLabourCost:250,
+      verifiedLabourCost:245
+    },
     observational:{
       promotionEligible:observational.promotionEligible,
       maySelfPromote:observational.maySelfPromote,
