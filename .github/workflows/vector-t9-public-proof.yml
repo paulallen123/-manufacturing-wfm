@@ -1,0 +1,70 @@
+name: Vector T9 public proof
+
+on:
+  push:
+    branches:
+      - demo/vector-t9-live-demo-20260923
+    paths:
+      - '.github/workflows/vector-t9-public-proof.yml'
+      - 'demo/t9-live-demo-server.cjs'
+      - 'Dockerfile.frontier-proof'
+      - 'demo/public-proof.trigger'
+
+jobs:
+  verify-public-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ORIGIN: https://vector-t9-live-demo-v2-production.up.railway.app
+    steps:
+      - name: Wait for public application identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          passed=0
+          for attempt in $(seq 1 20); do
+            status="$(curl -sS -o /tmp/root.html -w '%{http_code}' --max-time 10 "$ORIGIN/" || true)"
+            if [ "$status" = "200" ] && grep -q 'VECTOR_T9_LIVE_DEMO_V1' /tmp/root.html; then
+              passed=1
+              break
+            fi
+            sleep 3
+          done
+          test "$passed" = "1"
+          echo "VECTOR_PUBLIC_INGRESS=PASS"
+
+      - name: Verify runtime identity and decision safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const origin=process.env.ORIGIN;
+          async function get(path){
+            const r=await fetch(origin+path,{redirect:'follow'});
+            if(!r.ok) throw new Error(path+' HTTP '+r.status);
+            const text=await r.text();
+            return {r,text,json:()=>JSON.parse(text)};
+          }
+          const health=await get('/healthz');
+          if(!health.text.includes('VECTOR_T9_LIVE_DEMO_V1')) throw new Error('health identity missing');
+
+          const fresh=(await get('/api/run?mode=fresh')).json();
+          if(fresh.identity!=='VECTOR_T9_LIVE_DEMO_V1') throw new Error('fresh identity mismatch');
+          if(fresh.autonomy?.ceiling!=='BOUNDED_AUTO') throw new Error('fresh autonomy not BOUNDED_AUTO: '+fresh.autonomy?.ceiling);
+          if(fresh.execution?.allowed!==true) throw new Error('fresh execution should be allowed');
+
+          const stale=(await get('/api/run?mode=stale')).json();
+          if(stale.identity!=='VECTOR_T9_LIVE_DEMO_V1') throw new Error('stale identity mismatch');
+          if(stale.autonomy?.ceiling!=='SHADOW') throw new Error('stale autonomy not SHADOW: '+stale.autonomy?.ceiling);
+          if(stale.execution?.allowed!==false) throw new Error('stale execution should be blocked');
+
+          const learning=(await get('/api/learning')).json();
+          if(learning.observational?.promotionEligible!==false) throw new Error('observational learning incorrectly promotion eligible');
+          if(learning.replicated?.promotionEligible!==true) throw new Error('replicated learning should be promotion eligible');
+          if(learning.replicated?.maySelfPromote!==false || learning.replicated?.maySelfGrantAuthority!==false) throw new Error('learning self-authority boundary failed');
+
+          console.log('VECTOR_PUBLIC_APPLICATION_IDENTITY=PASS');
+          console.log('VECTOR_FRESH_BOUNDED_AUTO=PASS');
+          console.log('VECTOR_STALE_SHADOW_BLOCK=PASS');
+          console.log('VECTOR_CAUSAL_LEARNING_BOUNDARY=PASS');
+          NODE
