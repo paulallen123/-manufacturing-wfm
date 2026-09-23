@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "VECTOR_HOSTED_PROOF_CLAIM_V1",
+  "principle": "A successful build or deployment is evidence that infrastructure accepted a candidate, not proof that a user can reach the intended application.",
+  "states": [
+    "BUILD_ADMITTED",
+    "DEPLOYED_UNVERIFIED",
+    "PUBLIC_INGRESS_VERIFIED",
+    "APPLICATION_IDENTITY_VERIFIED",
+    "HOSTED_PROVEN"
+  ],
+  "rules": {
+    "deploymentSuccessAloneNeverCountsAsHostedProof": true,
+    "publicIngressMustReturn2xx": true,
+    "applicationIdentityMarkerRequired": true,
+    "connectionRefusedAlwaysFails": true,
+    "gateway5xxAlwaysFails": true,
+    "railwayFailurePageAlwaysFails": true,
+    "externalVerificationMustOccurAfterDeployment": true,
+    "proofLinkMayBeSharedOnlyAfterHostedProven": true,
+    "sameOriginRetryIsBounded": true,
+    "unknownResponseFailsClosed": true
+  },
+  "requiredReceipt": [
+    "candidateSha",
+    "deploymentId",
+    "origin",
+    "verifiedAt",
+    "httpStatus",
+    "applicationIdentityMarker",
+    "responseDigest",
+    "state"
+  ],
+  "hostedProvenRequires": [
+    "terminal deployment success",
+    "external public-ingress 2xx",
+    "expected application identity marker",
+    "response from the intended origin",
+    "receipt bound to the exact candidate and deployment"
+  ]
+}
