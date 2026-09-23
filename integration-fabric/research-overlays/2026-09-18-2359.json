@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-18",
+  "purpose": "Hourly authoritative-vendor research delta. Evidence upgrades remain spec-level only; no tenant credentials were used and connector writes remain disabled.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "ifs-cloud",
+      "patch": {
+        "protocols": ["REST", "OData", "OpenAPI"],
+        "auth": "oauth2-preferred",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.ifs.com/techdocs/25R2/040_tailoring/300_extensibility/020_api_explorer/",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://docs.ifs.com/techdocs/25R2/040_tailoring/300_extensibility/020_api_explorer/040_entity_services/",
+        "evidenceNote": "IFS Cloud officially exposes REST APIs using OData, with OpenAPI v2/v3 specifications available from API Explorer. Premium and Integration APIs are preferred for system integrations; Entity Service APIs can expose entity models for CRUD/state transitions but require administrator activation. Projection permission sets support read-only access, which is the required WFM starting posture. No tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://docs.ifs.com/techdocs/25R2/040_tailoring/300_extensibility/020_api_explorer/",
+          "requiredPermissions": ["OAuth 2.0 identity scoped to required API projections", "read-only projection permission sets wherever available", "no Entity Service mutation permissions during discovery"],
+          "dataAvailableOrExpected": ["tenant-exposed OData entity sets and projection data", "ERP/manufacturing entity data exposed by authorised Premium, Integration or Entity Service APIs"],
+          "wfmObjects": ["organisation-unit", "production-demand", "labour-cost", "site", "integration-event"],
+          "automationOpportunities": ["production-demand refresh from authorised ERP projections", "cost-centre and organisation synchronisation", "approved labour/cost export only after write-roundtrip certification"],
+          "customerValue": ["faster ERP integration through published OData/OpenAPI contracts", "labour-to-production and finance attribution", "less bespoke IFS integration maintenance"],
+          "savingsHypotheses": ["reduce manual finance and production-data reconciliation", "reduce implementation effort by reusing stable published projections", "reduce overstaffing when production demand can be read from IFS"],
+          "dataGaps": ["exact enabled projections and manufacturing objects are tenant/version specific", "custom projections require customer-specific mapping"],
+          "constraintsRisks": ["Entity Service APIs require administrator activation", "deprecated API versions must not be selected for new adapters", "write-capable entity services remain disabled in WFM"]
+        }
+      }
+    },
+    {
+      "id": "epicor-kinetic",
+      "patch": {
+        "protocols": ["REST", "OData"],
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+        "evidenceNote": "Epicor documents Kinetic Open REST API as platform-level access to ERP services, data and business logic. The API is OData v4-compliant, versioned, discoverable through built-in REST help, and protected by API keys, access scopes and ERP user/data permissions. This provides a usable route for manufacturing orders, resources, costs and related ERP context once a customer tenant is authorised. No tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+          "requiredPermissions": ["API key restricted by access scope", "ERP user/data permissions limited to required read services", "no business-logic execution permission during discovery unless separately required"],
+          "dataAvailableOrExpected": ["authorised Kinetic ERP service data", "manufacturing/order/resource/cost context exposed by the customer's enabled ERP services"],
+          "wfmObjects": ["production-demand", "work-centre", "labour-cost", "organisation-unit", "site"],
+          "automationOpportunities": ["production/order changes can trigger labour-plan recalculation once representative reads are proven", "approved labour/cost feedback can be considered only after controlled write certification"],
+          "customerValue": ["production-driven staffing", "labour-cost attribution", "reduced manual ERP/WFM reconciliation", "faster implementation through OData-compatible service discovery"],
+          "savingsHypotheses": ["identify labour variance against manufacturing demand", "reduce duplicate production-data entry", "reduce planning latency between ERP order changes and workforce schedules"],
+          "dataGaps": ["available business objects and customisations vary by Kinetic tenant/version", "resource and labour semantics require canonical mapping validation"],
+          "constraintsRisks": ["API key access must also be constrained by Epicor access scopes and ERP permissions", "service versions and customer customisations require compatibility testing"]
+        }
+      }
+    },
+    {
+      "id": "inductive-automation-ignition",
+      "patch": {
+        "protocols": ["REST", "OpenAPI", "OPC UA", "MQTT", "database"],
+        "auth": "api-token-or-industrial-trust",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.docs.inductiveautomation.com/docs/8.3/platform/gateway/openapi",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://www.docs.inductiveautomation.com/docs/8.3/platform/gateway/openapi",
+        "evidenceNote": "Ignition 8.3 documents a dynamically generated OpenAPI/REST interface at /openapi and /openapi.json, OPC UA client/server connectivity, and Edge IIoT MQTT publication. HTTP API tokens can reach mutative routes and vendor guidance warns they can modify configuration, tags or projects, so WFM must use a segregated read-only facade or equivalent gateway controls rather than assuming a token alone is least privilege. No plant or tenant connection was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.docs.inductiveautomation.com/docs/8.3/platform/gateway/openapi",
+          "requiredPermissions": ["read-only tag/telemetry access through a segregated facade or equivalent policy boundary", "OPC UA/MQTT subscription rights limited to required namespaces/topics", "no Gateway configuration/project/tag mutation rights"],
+          "dataAvailableOrExpected": ["industrial tags and machine/process state made available through OPC UA", "MQTT-published edge telemetry", "Gateway API metadata exposed through documented OpenAPI routes"],
+          "wfmObjects": ["machine-state", "downtime-event", "production-event", "work-centre", "shift-outcome"],
+          "automationOpportunities": ["machine-stop events can trigger labour redeployment recommendations", "machine restart/recovery can trigger staffing recall recommendations", "correlate staffed time with machine state and output evidence"],
+          "customerValue": ["downtime reduction", "paid-idle-time visibility", "real-time labour/machine alignment", "better shift productivity evidence"],
+          "savingsHypotheses": ["reduce paid idle time during equipment stops", "reduce labour waiting for unavailable machines", "quantify labour cost of downtime by shift/work centre"],
+          "dataGaps": ["tag names and semantics are site-specific", "machine output/OEE meaning requires customer asset mapping", "timestamps and historian retention require site validation"],
+          "constraintsRisks": ["Ignition API tokens may reach mutative HTTP API routes", "plant-network connectivity must terminate at a controlled site-edge boundary", "WFM must not issue PLC/tag writes or control methods by default"]
+        }
+      }
+    }
+  ],
+  "systems": [
+    {
+      "id": "siemens-industrial-edge",
+      "name": "Siemens Industrial Edge",
+      "category": "iiot-edge",
+      "priority": "P1",
+      "protocols": ["REST", "OpenAPI", "Protobuf RPC/HTTP2", "MQTT", "OPC UA"],
+      "auth": "token-or-enterprise",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.eu1.edge.siemens.cloud/apis_and_references/index.html",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://docs.eu1.edge.siemens.cloud/build_a_device/device_building/development/integration/devicekit.html",
+      "evidenceNote": "Siemens documents public Industrial Edge management APIs, token-based IEM access, and an IE Device Kit based on gRPC/Protocol Buffers; the fabric reuses its existing Protobuf RPC/HTTP2 profile rather than creating a duplicate transport. Industrial Edge also supports shop-floor connectivity through MQTT and OPC UA. Device Kit 1.29.0 (06/2026) added an API-only external-endpoint TCP connectivity check useful for preflight validation. WFM should consume telemetry/health read-only; device onboarding, app deployment and industrial-control actions remain separately gated. No tenant or edge-device authentication was attempted.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://docs.eu1.edge.siemens.cloud/apis_and_references/index.html",
+        "requiredPermissions": ["time-limited Industrial Edge token scoped to required read endpoints", "read-only telemetry/data-plane subscriptions", "no device onboarding, application deployment or industrial-control permissions"],
+        "dataAvailableOrExpected": ["edge/device and connectivity metadata exposed through documented APIs", "shop-floor telemetry routed through MQTT/OPC UA integrations", "external-endpoint connectivity status useful for integration preflight"],
+        "wfmObjects": ["machine-state", "connector-health", "work-centre", "production-event", "downtime-event"],
+        "automationOpportunities": ["preflight plant endpoint reachability before enabling a connector", "machine/connectivity state can trigger workforce disruption workflows", "reuse customer edge routing instead of creating direct cloud-to-PLC connectivity"],
+        "customerValue": ["faster and safer plant integration", "reduced integration support effort", "downtime-driven labour recovery", "reuse of existing Siemens edge investment"],
+        "savingsHypotheses": ["reduce site-integration troubleshooting time", "reduce paid idle time by reacting to machine/connectivity loss", "avoid additional bespoke plant gateways where Industrial Edge already provides the approved boundary"],
+        "dataGaps": ["exact telemetry objects depend on deployed Industrial Edge apps and plant mappings", "customer network segmentation and edge policies determine reachable assets"],
+        "constraintsRisks": ["management-plane APIs can change device/application state and remain outside normal WFM authority", "industrial-control writes are prohibited by default", "short-lived access tokens require secure rotation without broadening scopes"]
+      }
+    }
+  ]
+}
