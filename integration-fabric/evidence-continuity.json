@@ -1,7 +1,6 @@
 {
-  "schemaVersion": 1,
-  "contract": "VECTOR_INTEGRATION_EVIDENCE_CONTINUITY_V1",
-  "minimumOverlayFiles": 58,
+  "schemaVersion": 2,
+  "contract": "VECTOR_INTEGRATION_EVIDENCE_CONTINUITY_V2",
   "minimumEffectiveSystems": 161,
   "requiredProviders": [
     "ifs-cloud",
@@ -68,5 +67,15 @@
     "JMS",
     "Sparkplug B"
   ],
-  "invariant": "New research is additive. A branch may change evidence only when the effective catalog remains a capability superset or an explicit reviewed retirement contract exists."
+  "invariant": "New research is additive. Admission is based on effective capabilities, provider evidence, promotions and protocol coverage rather than brittle repository file counts. A branch may reduce capability only through an explicit reviewed retirement contract.",
+  "continuityMode": "effective-capability-set",
+  "diagnosticOverlayBaseline": 57,
+  "invariants": {
+    "rawOverlayCountIsAdmissionGate": false,
+    "effectiveCapabilityLossIsAdmissionGate": true,
+    "requiredProviderLossIsAdmissionGate": true,
+    "verifiedPromotionRegressionIsAdmissionGate": true,
+    "requiredProtocolLossIsAdmissionGate": true,
+    "repositoryShapeMayChangeWhenEffectiveCapabilitiesArePreserved": true
+  }
 }

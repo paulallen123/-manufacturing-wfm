@@ -8,6 +8,7 @@ const FAILURE_CLASSES = Object.freeze([
   'PRODUCT_DEFECT',
   'TEST_DEFECT',
   'EVIDENCE_OR_CATALOG_DRIFT',
+  'PROOF_GUARD_DEFECT',
   'BRANCH_OR_CONVERGENCE_DRIFT',
   'PACKAGING_DEFECT',
   'CREDENTIAL_OR_SECRET',
@@ -20,6 +21,7 @@ const PROOF_STATES = Object.freeze([
   'PASS',
   'PRODUCT_FAIL',
   'INFRA_FAIL',
+  'GUARD_FAIL',
   'NO_RUNNER',
   'SKIPPED',
   'CANCELLED',
@@ -254,6 +256,67 @@ function classifyObservation(input = {}) {
   });
 }
 
+
+function classifyWithBaseline(observation = {}, baseline = {}) {
+  const initial = classifyObservation(observation);
+  const candidateOverlayFiles = Number(baseline.candidateOverlayFiles);
+  const canonicalOverlayFiles = Number(baseline.canonicalOverlayFiles);
+  const declaredOverlayFloor = Number(baseline.declaredOverlayFloor);
+  const sameRepositoryShape = Number.isFinite(candidateOverlayFiles) &&
+    Number.isFinite(canonicalOverlayFiles) &&
+    candidateOverlayFiles === canonicalOverlayFiles;
+  const guardContradictsCanonicalBaseline = Number.isFinite(declaredOverlayFloor) &&
+    Number.isFinite(canonicalOverlayFiles) &&
+    declaredOverlayFloor > canonicalOverlayFiles;
+  const capabilitySetPreserved = baseline.canonicalCapabilitySetPasses === true &&
+    baseline.candidateCapabilitySetPasses === true;
+
+  if (
+    (initial.failureClass === 'EVIDENCE_OR_CATALOG_DRIFT' || initial.failureClass === 'UNKNOWN') &&
+    capabilitySetPreserved &&
+    sameRepositoryShape &&
+    guardContradictsCanonicalBaseline
+  ) {
+    return result({
+      failureClass: 'PROOF_GUARD_DEFECT',
+      proofState: 'GUARD_FAIL',
+      retry: 'FIX_GUARD_CONTRACT_THEN_REPROVE',
+      reroute: false,
+      deterministic: true,
+      reason: 'proof-guard-requires-more-than-canonical-baseline',
+      owner: 'quality',
+      safeToContinueDevelopment: true
+    });
+  }
+
+  return initial;
+}
+
+function createPreventionCandidate({ classification, observation, baseline = null }) {
+  if (!classification?.failureClass) throw new Error('classification with failureClass required.');
+  const proposedControl = classification.failureClass === 'PROOF_GUARD_DEFECT'
+    ? 'prefer-effective-capability-set-over-repository-shape'
+    : classification.failureClass === 'PROVIDER_DEGRADED' || classification.failureClass === 'CAPACITY_OR_QUEUE'
+      ? 'persist-provider-fingerprint-and-bounded-reroute-envelope'
+      : 'persist-fingerprint-and-add-regression-before-policy-change';
+
+  const core = {
+    schemaVersion: 1,
+    contract: 'VECTOR_BLOCKER_PREVENTION_CANDIDATE_V1',
+    failureClass: classification.failureClass,
+    reason: classification.reason,
+    observationDigest: digest(observation || {}),
+    baselineDigest: baseline ? digest(baseline) : null,
+    proposedControl,
+    status: 'REVIEW_REQUIRED',
+    autoApply: false,
+    productionMutation: false,
+    productionAuthorityGranted: false,
+    customerMutation: false
+  };
+  return Object.freeze({ ...core, candidateDigest: digest(core) });
+}
+
 function laneEligible(lane) {
   return lane &&
     lane.exactSourceSha === true &&
@@ -362,6 +425,8 @@ module.exports = Object.freeze({
   canonical,
   digest,
   classifyObservation,
+  classifyWithBaseline,
+  createPreventionCandidate,
   selectAlternativeLane,
   groupFailureBatch,
   fiveMinutePlan,

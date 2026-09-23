@@ -3,7 +3,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const {
-  classifyObservation,selectAlternativeLane,groupFailureBatch,fiveMinutePlan,createBlockerReceipt
+  classifyObservation,classifyWithBaseline,createPreventionCandidate,selectAlternativeLane,groupFailureBatch,fiveMinutePlan,createBlockerReceipt
 }=require('./blocker-autopilot.cjs');
 
 const policy={
@@ -98,4 +98,51 @@ test('receipt is tamper-evident and never carries production authority',()=>{
   assert.match(receipt.receiptDigest,/^[a-f0-9]{64}$/);
   assert.equal(receipt.productionMutation,false);
   assert.equal(receipt.productionAuthorityGranted,false);
+});
+
+
+test('guard cannot invent a capability floor above the canonical baseline',()=>{
+  const observation={phase:'test',message:'Integration evidence continuity regression: overlays=57 required>=58'};
+  const c=classifyWithBaseline(observation,{
+    candidateOverlayFiles:57,
+    canonicalOverlayFiles:57,
+    declaredOverlayFloor:58,
+    canonicalCapabilitySetPasses:true,
+    candidateCapabilitySetPasses:true
+  });
+  assert.equal(c.failureClass,'PROOF_GUARD_DEFECT');
+  assert.equal(c.proofState,'GUARD_FAIL');
+  assert.equal(c.reason,'proof-guard-requires-more-than-canonical-baseline');
+  assert.equal(c.productionAuthorityGranted,false);
+});
+
+test('real capability loss remains a product/evidence blocker',()=>{
+  const observation={phase:'test',message:'Required provider evidence missing: ifs-cloud'};
+  const c=classifyWithBaseline(observation,{
+    candidateOverlayFiles:57,
+    canonicalOverlayFiles:57,
+    declaredOverlayFloor:58,
+    canonicalCapabilitySetPasses:true,
+    candidateCapabilitySetPasses:false
+  });
+  assert.equal(c.failureClass,'EVIDENCE_OR_CATALOG_DRIFT');
+  assert.equal(c.promotionBlocked,true);
+});
+
+test('prevention learning is review-only and cannot self-authorise',()=>{
+  const observation={phase:'test',message:'Integration evidence continuity regression: overlays=57 required>=58'};
+  const baseline={
+    candidateOverlayFiles:57,
+    canonicalOverlayFiles:57,
+    declaredOverlayFloor:58,
+    canonicalCapabilitySetPasses:true,
+    candidateCapabilitySetPasses:true
+  };
+  const c=classifyWithBaseline(observation,baseline);
+  const prevention=createPreventionCandidate({classification:c,observation,baseline});
+  assert.equal(prevention.proposedControl,'prefer-effective-capability-set-over-repository-shape');
+  assert.equal(prevention.status,'REVIEW_REQUIRED');
+  assert.equal(prevention.autoApply,false);
+  assert.equal(prevention.productionMutation,false);
+  assert.equal(prevention.productionAuthorityGranted,false);
 });
