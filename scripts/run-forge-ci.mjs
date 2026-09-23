@@ -19,6 +19,9 @@ const checks = [
     'operations/runtime/absence-recovery-shadow.test.cjs',
     'operations/runtime/demand-decision-service.test.cjs',
     'operations/runtime/decision-outcome-proof.test.cjs',
+    'trust/runtime/vector-trust-spine.test.cjs',
+    'operations/runtime/t9-autopilot-adapter.test.cjs',
+    'operations/runtime/autopilot-execution-engine.test.cjs',
     'scripts/prove-vector-built-asset-provenance.test.mjs'
   ]]
 ];
