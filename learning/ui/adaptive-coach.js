@@ -49,6 +49,19 @@
     host.replaceChildren();
     const meta = el('p', { class: 'wfm-coach-delivery-meta' }, module.mode.replaceAll('_', ' ') + ' · ' + module.surface);
     host.append(meta);
+    if (module.coach?.reason) {
+      const reasonCopy = {
+        NO_UNNECESSARY_TRAINING: 'No extra training is needed right now.',
+        SPACED_RETRIEVAL_DUE: 'A short refresher is due to keep this skill current.',
+        PROVE_EXISTING_COMPETENCE: 'You can skip the explanation and prove the task directly.',
+        NOVICE_NEEDS_MODEL: 'A worked example is the fastest way to understand this task.',
+        REPEATED_HELP_SIGNAL: 'VECTOR noticed repeated help and is increasing support.',
+        LOW_MASTERY_EVIDENCE: 'A safe practice attempt will be more useful than more reading.',
+        TRANSFER_TO_PERFORMANCE: 'The next useful step is to perform the task, not study more.',
+        BUILD_COMPETENCE: 'VECTOR is giving you only the support needed for the next attempt.'
+      };
+      host.append(el('p', { class: 'wfm-coach-why' }, reasonCopy[module.coach.reason] || 'VECTOR has adapted this step to your recent evidence.'));
+    }
     if (module.mode === 'SHOW_ME' && module.video?.state === 'READY' && module.video.videoUrl) {
       const video = el('video', { controls: '', playsinline: '', preload: 'metadata', class: 'wfm-coach-video', 'aria-label': module.title + ' demonstration' });
       video.src = module.video.videoUrl;
@@ -57,6 +70,9 @@
         video.append(track);
       }
       host.append(video);
+      if (module.video.narrationAvailable) {
+        host.append(el('p', { class: 'wfm-coach-voice-badge' }, 'Narrated by VECTOR Guide · captions available'));
+      }
       if (module.video.transcriptUrl) {
         const transcript = el('a', { href: module.video.transcriptUrl, target: '_blank', rel: 'noopener', class: 'wfm-coach-transcript' }, 'Open transcript');
         host.append(transcript);
@@ -167,7 +183,37 @@
       card.append(el('p', { class: 'wfm-coach-recommended' }, 'Recommended now: ' + item.recommendedMode.replaceAll('_', ' ').toLowerCase()));
     }
 
+    const modeCopy = {
+      SHOW_ME: { label: 'Watch a short example', why: 'Best when this task is new or unfamiliar.' },
+      GUIDE_ME: { label: 'Talk me through it', why: 'VECTOR will reveal only the next useful step.' },
+      PRACTISE: { label: 'Practise a realistic scenario', why: 'Try the decision safely before doing it live.' },
+      TEST_ME: { label: 'Prove I can do it', why: 'Skip the explanation and demonstrate the task independently.' }
+    };
+    const recommendedMode = modeCopy[item.recommendedMode] ? item.recommendedMode : 'PRACTISE';
+    const recommended = modeCopy[recommendedMode];
+    card.append(el('p', { class: 'wfm-coach-why' }, recommended.why));
+
+    const primary = el('button', {
+      type: 'button',
+      class: 'wfm-coach-primary',
+      'aria-label': recommended.label + ' — recommended next step'
+    }, recommended.label);
+    primary.addEventListener('click', () => openTrainingMode(item, recommendedMode, card));
+    card.append(primary);
+
+    const more = el('details', { class: 'wfm-coach-more' });
+    more.append(el('summary', null, 'Other ways to learn'));
+    const modes = el('div', { class: 'wfm-coach-modes', 'aria-label': 'Other learning options' });
+    Object.entries(modeCopy).filter(([mode]) => mode !== recommendedMode).forEach(([mode,copy]) => {
+      const button = el('button', { type: 'button', class: 'wfm-coach-mode', 'aria-label': copy.label }, copy.label);
+      button.addEventListener('click', () => openTrainingMode(item, mode, card));
+      modes.append(button);
+    });
+    more.append(modes);
+
     if (item.practice) {
+      const quick = el('details', { class: 'wfm-coach-quick-check' });
+      quick.append(el('summary', null, 'Quick check · 1 question'));
       const practice = el('div', { class: 'wfm-coach-practice' });
       practice.append(el('p', { class: 'wfm-coach-question' }, item.practice.prompt));
       const options = el('div', { class: 'wfm-coach-options' });
@@ -177,25 +223,22 @@
         options.append(button);
       });
       practice.append(options);
-      card.append(practice);
+      quick.append(practice);
+      more.append(quick);
     }
-
-    const modes = el('div', { class: 'wfm-coach-modes', 'aria-label': 'Choose how to learn' });
-    [['SHOW_ME','Show me'],['GUIDE_ME','Guide me'],['PRACTISE','Practise'],['TEST_ME','Test me']].forEach(([mode,label]) => {
-      const className = 'wfm-coach-mode' + (item.recommendedMode === mode ? ' recommended' : '');
-      const button = el('button', { type: 'button', class: className, 'aria-label': label + (item.recommendedMode === mode ? ' — recommended' : '') }, label);
-      button.addEventListener('click', () => openTrainingMode(item, mode, card));
-      modes.append(button);
-    });
-    card.append(modes);
+    card.append(more);
 
     const feedback = el('p', { class: 'wfm-coach-feedback', 'aria-live': 'polite' }, '');
     const actions = el('div', { class: 'wfm-coach-actions' });
-    const help = el('button', { type: 'button', class: 'wfm-coach-secondary' }, 'I need help');
+    const help = el('button', { type: 'button', class: 'wfm-coach-secondary' }, 'I need more help');
     help.addEventListener('click', () => askForHelp(item, help));
-    const know = el('button', { type: 'button', class: 'wfm-coach-secondary' }, 'I already know this — test me');
-    know.addEventListener('click', () => openTrainingMode(item, 'TEST_ME', card));
-    actions.append(help, know);
+    if (recommendedMode !== 'TEST_ME') {
+      const know = el('button', { type: 'button', class: 'wfm-coach-secondary' }, 'I already know this — test me');
+      know.addEventListener('click', () => openTrainingMode(item, 'TEST_ME', card));
+      actions.append(help, know);
+    } else {
+      actions.append(help);
+    }
     card.append(feedback, actions);
     container.append(card);
   }
