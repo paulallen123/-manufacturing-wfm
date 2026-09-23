@@ -11,7 +11,8 @@ COPY operations/runtime/golden-industrial-loop.cjs /app/operations/runtime/golde
 COPY operations/runtime/decision-outcome-proof.cjs /app/operations/runtime/decision-outcome-proof.cjs
 COPY operations/runtime/frontier-outcome-learning.cjs /app/operations/runtime/frontier-outcome-learning.cjs
 COPY trust/runtime/vector-trust-spine.cjs /app/trust/runtime/vector-trust-spine.cjs
-COPY release/vector-frontier-convergence.json /app/release/vector-frontier-convergence.json\nCOPY demo/t9-live-demo-server.cjs /app/demo/t9-live-demo-server.cjs
+COPY release/vector-frontier-convergence.json /app/release/vector-frontier-convergence.json
+COPY demo/t9-live-demo-server.cjs /app/demo/t9-live-demo-server.cjs
 
 # Build admission runs against the exact runtime paths. Test files are copied beside
 # those runtime modules only for the admission step and are then removed.
@@ -21,7 +22,8 @@ COPY operations/runtime/golden-industrial-loop.test.cjs /app/operations/runtime/
 COPY operations/runtime/frontier-outcome-learning.test.cjs /app/operations/runtime/frontier-outcome-learning.test.cjs
 COPY trust/runtime/vector-trust-spine.test.cjs /app/trust/runtime/vector-trust-spine.test.cjs
 
-RUN node --check /app/operations/runtime/decision-episode.cjs \
+RUN node --check /app/demo/t9-live-demo-server.cjs \
+ && node --check /app/operations/runtime/decision-episode.cjs \
  && node --check /app/operations/runtime/frontier-decision-control.cjs \
  && node --check /app/operations/runtime/autopilot-execution-engine.cjs \
  && node --check /app/operations/runtime/golden-industrial-loop.cjs \
@@ -50,4 +52,4 @@ USER node
 ENV NODE_ENV=staging
 EXPOSE 3000
 
-CMD ["node","-e","require('node:http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({status:'FRONTIER_PROOF_BUILT',contract:'VECTOR_FRONTIER_CONVERGENCE_V1'}))}).listen(Number(process.env.PORT||3000),'0.0.0.0')"]
+CMD ["node","/app/demo/t9-live-demo-server.cjs"]
