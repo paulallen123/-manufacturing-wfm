@@ -42,6 +42,31 @@ The initial engineering plane is deliberately stronger than a normal internal sc
 
 Consequential customer/runtime actions remain behind VECTOR T9 trust, authority, Guardian and typed-action controls rather than being smuggled through engineering tools.
 
+
+## Relationship to existing VECTOR systems
+
+The engineering plane is deliberately a composition layer rather than a replacement for existing VECTOR capability:
+
+- **Product Factory / Adaptive Intelligence** is the evolution and candidate-governance brain. Verified regressions become eval candidates, repeatable verified wins become skill/tool candidates, and repeated manual effort becomes an automation candidate. Release authority remains separate.
+- **Tool Foundry** is the executable engineering-tool plane. It supplies immutable, versioned test/simulation/diagnostic/proof tools and composes them into pipelines.
+- **T9 Trust Spine** remains the only route for governed customer-operational authority. Foundry tooling cannot bypass evidence, authority, Guardian, typed-action or independent-verification controls.
+- **Northstar** remains isolated external simulation/customer emulation. It can supply sanitised evidence and disposable/read-only test material, but it does not share VECTOR runtime, data, secrets or deployments.
+- **Railway proof services** are disposable hosted build/proof lanes. They prove exact source candidates but do not become the customer production runtime.
+- **GitHub** remains the canonical source/history/review layer for all of the above.
+
+This split gives VECTOR one evolution loop without creating one giant privileged runtime.
+
+## Placement rule for every new internal capability
+
+Before creating a new tool, classify it:
+
+1. If it is source history, review, branching or release metadata, keep it in GitHub.
+2. If it turns evidence into an eval/candidate or decides whether a product improvement deserves promotion, put it in Product Factory.
+3. If it tests, simulates, diagnoses, measures or proves something repeatedly, implement it as a Foundry tool.
+4. If it emulates an external customer/provider/device/browser environment, keep that emulator in Northstar and cross the boundary only with sanitised evidence or disposable test material.
+5. If it could change a customer's operational state, it must use T9 authority controls rather than Foundry authority.
+6. If none of the above applies, prefer an existing mature external primitive unless VECTOR-specific context creates a measurable advantage.
+
 ## Tool lifecycle
 
 `PROPOSED -> SHADOW -> CERTIFIED -> DEPRECATED`
