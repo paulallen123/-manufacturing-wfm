@@ -52,7 +52,6 @@ RUN node --check /app/operations/runtime/decision-episode.cjs \
       /app/trust/runtime/vector-trust-spine.test.cjs \
       /app/engineering/runtime/vector-tool-foundry.test.cjs \
       /app/engineering/runtime/vector-engineering-learning-bridge.test.cjs \
-      /app/engineering/runtime/vector-engineering-learning-bridge.test.cjs \
  && node /app/scripts/validate-vector-engineering-plane.mjs \
  && node /app/scripts/run-vector-foundry-proof.mjs \
  && node -e "const f=require('/app/operations/runtime/frontier-decision-control.cjs');const a=require('/app/operations/runtime/autopilot-execution-engine.cjs');const g=require('/app/operations/runtime/golden-industrial-loop.cjs');const l=require('/app/operations/runtime/frontier-outcome-learning.cjs');const t=require('/app/trust/runtime/vector-trust-spine.cjs');const e=require('/app/engineering/runtime/vector-tool-foundry.cjs');const lb=require('/app/engineering/runtime/vector-engineering-learning-bridge.cjs');if(typeof f.createAssuranceEnvelope!=='function'||typeof f.validateAssuranceEnvelope!=='function'||typeof a.createAutopilotExecutionEngine!=='function'||typeof g.buildGoldenIndustrialLoop!=='function'||typeof l.assessGoldenCausalPromotion!=='function'||typeof t.EvidenceLedger!=='function'||typeof e.VectorToolFoundry!=='function'||typeof lb.VectorEngineeringLearningBridge!=='function')throw new Error('FRONTIER_RUNTIME_IMPORT_PROOF_FAILED');console.log('FRONTIER_RUNTIME_IMPORT_PROOF=PASS')" \
@@ -62,7 +61,8 @@ RUN node --check /app/operations/runtime/decision-episode.cjs \
       /app/operations/runtime/golden-industrial-loop.test.cjs \
       /app/operations/runtime/frontier-outcome-learning.test.cjs \
       /app/trust/runtime/vector-trust-spine.test.cjs \
-      /app/engineering/runtime/vector-tool-foundry.test.cjs
+      /app/engineering/runtime/vector-tool-foundry.test.cjs \
+      /app/engineering/runtime/vector-engineering-learning-bridge.test.cjs
 
 RUN chown -R root:root /app \
  && find /app -type d -exec chmod 0555 {} + \
