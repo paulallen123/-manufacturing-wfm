@@ -18,6 +18,7 @@ const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workf
 const { createDemandDecisionService } = require('/app/operations-runtime/demand-decision-service.cjs');
 const { createAutopilotExecutionEngine } = require('/app/operations-runtime/autopilot-execution-engine.cjs');
 const { createRealtimeEventService } = require('/app/operations-runtime/realtime-event-service.cjs');
+const { createSchedulingIntelligenceService } = require('/app/operations-runtime/scheduling-intelligence-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -58,6 +59,8 @@ let autopilotExecutionEngine = null;
 let autopilotExecutionEngineInitError = null;
 let demandDecisionService = null;
 let demandDecisionServiceInitError = null;
+let schedulingIntelligenceService = null;
+let schedulingIntelligenceServiceInitError = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -395,6 +398,17 @@ http.createServer = function guardedCreateServer(listener) {
     try { autopilotExecutionEngine=createAutopilotExecutionEngine({dbPath:process.env.WFM_DB,lifecycleAdapter:lifecycleGuard,publishEvent:realtimeEventService&&!realtimeEventServiceInitError?event=>realtimeEventService.publish(event):null}); } catch(error){ autopilotExecutionEngineInitError=error; }
   }
 
+  if (!schedulingIntelligenceService && !schedulingIntelligenceServiceInitError && process.env.WFM_DB) {
+    try {
+      schedulingIntelligenceService = createSchedulingIntelligenceService({
+        dbPath: process.env.WFM_DB,
+        publishEvent: realtimeEventService && !realtimeEventServiceInitError ? event => realtimeEventService.publish(event) : null
+      });
+    } catch (error) {
+      schedulingIntelligenceServiceInitError = error;
+    }
+  }
+
   if (!demandDecisionService && !demandDecisionServiceInitError && process.env.WFM_DB) {
     try {
       demandDecisionService = createDemandDecisionService({
@@ -426,6 +440,10 @@ http.createServer = function guardedCreateServer(listener) {
         }
         return;
       }
+    }
+
+    if (requestPath(req).startsWith('/api/operations/scheduling')) {
+      if (await routeOverlay(schedulingIntelligenceService, schedulingIntelligenceServiceInitError, res, 'Scheduling intelligence', req)) return;
     }
 
     if (integrationPath(req)) {
