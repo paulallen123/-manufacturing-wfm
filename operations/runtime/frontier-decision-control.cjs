@@ -309,6 +309,7 @@ function createAssuranceEnvelope(input = {}) {
 
   const autonomy = deriveAutonomy({
     simulationValidity: passport.validity,
+    simulationGeneratedAt: passport.generatedAt,
     actionContract,
     authority,
     verifier,
@@ -321,6 +322,7 @@ function createAssuranceEnvelope(input = {}) {
     sourceEpisodeId: episode.episodeId,
     contextRevision: episode.contextRevision,
     simulationPassportDigest: passport.passportDigest,
+    simulationGeneratedAt: passport.generatedAt,
     simulationValidity: clone(passport.validity),
     inputEvidenceRefs: passport.inputEvidenceRefs,
     actionContract,
@@ -370,6 +372,7 @@ function validateAssuranceEnvelope(envelope) {
   }
   const expected = deriveAutonomy({
     simulationValidity: core.simulationValidity,
+    simulationGeneratedAt: core.simulationGeneratedAt,
     actionContract: core.actionContract,
     authority: core.authority,
     verifier: core.verifier,
