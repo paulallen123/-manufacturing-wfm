@@ -15,6 +15,10 @@ assert.equal(p.rules.developmentContinuesIfAnyExecutableLaneExists,true);
 assert.equal(p.rules.fallbackMustMatchRequiredProofScopes,true);
 assert.equal(p.rules.weakerLaneMayNotSubstituteForStrongerProof,true);
 assert.equal(p.rules.uncoveredRequiredScopeRemainsBlocked,true);
+assert.equal(p.rules.deploymentSuccessNeverCountsAsHostedPass,true);
+assert.equal(p.rules.publicIngressVerificationRequired,true);
+assert.equal(p.rules.applicationIdentityVerificationRequired,true);
+assert.equal(p.rules.proofLinkMayBeSharedOnlyAfterPublicVerification,true);
 assert.ok(Number(p.rules.productionPromotionRequiresIndependentProviders)>=2);
 
 const ids=new Set(),providers=new Set();
@@ -42,6 +46,8 @@ for(const lane of p.lanes||[]) for(const scope of lane.proofScopes||[]){
 }
 assert.ok(scopeCoverage.get('exact-image')?.size>=2,'Exact-image proof must have at least two provider families.');
 assert.ok(scopeCoverage.get('hosted-product-runtime')?.size>=1,'Hosted product runtime proof scope must exist.');
+assert.ok(scopeCoverage.get('public-ingress-2xx')?.size>=1,'At least one hosted lane must prove public ingress.');
+assert.ok(scopeCoverage.get('application-identity')?.size>=1,'At least one hosted lane must prove application identity.');
 assert.match(p.developmentRule,/every required scope/);
 assert.match(p.promotionRule,/cannot stand in for hosted product runtime proof/);
 console.log('VECTOR_PROOF_LANE_INDEPENDENCE=PASS providers='+providers.size+' exactImageLanes='+exactImage+' scopes='+scopeCoverage.size);
