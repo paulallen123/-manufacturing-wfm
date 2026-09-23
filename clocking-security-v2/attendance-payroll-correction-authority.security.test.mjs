@@ -8,7 +8,7 @@ const OUT='2026-09-19T14:00:00.000Z';
 
 function setup(){
   const rows=[{employee:'e1',workerType:'employee',status:'missing_out',openAt:IN,evidenceCount:2}];
-  const coverage={evaluateShift(){return {rows,payrollReady:false,unexpectedCount:0,unmappedSignalCount:0};}};
+  const coverage={evaluateShift(){return {rows,payrollReady:false,afterClose:true,unexpectedCount:0,unmappedSignalCount:0};}};
   const certifier={certifyShift(){return {claimLevel:'NOT_CERTIFIED',claim:null,certification:{sourceContinuityPeriod:true,verifiedPeriodCertified:false}};}};
   const payroll=new AttendancePayrollGate({coverage,certifier});
   payroll.recordCorrection({
