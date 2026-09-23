@@ -1,40 +1,10 @@
 name: Vector-only UI guard
 
+# GitHub-hosted runners are a supplemental diagnostic lane only.
+# Automatic VECTOR validation runs in CircleCI and the exact Railway Docker lanes.
+# This workflow remains available on demand without allowing GitHub runner outages
+# to block development or promotion evidence from independent providers.
 on:
-  push:
-    branches:
-      - main
-      - 'feature/**'
-      - 'ux/**'
-    paths:
-      - 'ux-overlay/**'
-      - 'implementation/ui/**'
-      - 'learning/ui/**'
-      - 'operations/runtime/workflow-action-evidence-contract.cjs'
-      - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
-      - 'artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz'
-      - 'Dockerfile'
-      - 'scripts/compose-vector-presentation.mjs'
-      - 'scripts/compose-vector-presentation.regression.test.mjs'
-      - 'scripts/prove-vector-built-asset-provenance.mjs'
-      - 'scripts/prove-vector-built-asset-provenance.test.mjs'
-      - 'scripts/validate-vector-only-ui.mjs'
-      - '.github/workflows/vector-only-ui-guard.yml'
-  pull_request:
-    paths:
-      - 'ux-overlay/**'
-      - 'implementation/ui/**'
-      - 'learning/ui/**'
-      - 'operations/runtime/workflow-action-evidence-contract.cjs'
-      - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
-      - 'artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz'
-      - 'Dockerfile'
-      - 'scripts/compose-vector-presentation.mjs'
-      - 'scripts/compose-vector-presentation.regression.test.mjs'
-      - 'scripts/prove-vector-built-asset-provenance.mjs'
-      - 'scripts/prove-vector-built-asset-provenance.test.mjs'
-      - 'scripts/validate-vector-only-ui.mjs'
-      - '.github/workflows/vector-only-ui-guard.yml'
   workflow_dispatch:
 
 permissions:
