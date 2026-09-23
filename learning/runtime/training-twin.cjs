@@ -2,6 +2,7 @@
 
 const { DatabaseSync } = require('node:sqlite');
 const { canonicalRole, workflowFor } = require('./training-workflow-manifest.cjs');
+const { buildLearnerMemory } = require('./training-learner-memory.cjs');
 
 const DAY=24*60*60*1000;
 const EXPLANATION_MODES=new Set(['concise','detailed','step-by-step','example-led']);
@@ -35,8 +36,10 @@ function createTrainingTwin(options={}){
       'explanation_mode TEXT NOT NULL DEFAULT \'step-by-step\',skip_explanation INTEGER NOT NULL DEFAULT 0,'+
       'updated_at TEXT NOT NULL,PRIMARY KEY(tenant,email));'
   );
-  const assignments=db.prepare('SELECT competency_key,status,score,due_at_ms,mastered_at_ms,source FROM learning_assignments WHERE tenant=? AND email=? ORDER BY competency_key');
+  const assignments=db.prepare('SELECT id,competency_key,status,score,due_at_ms,mastered_at_ms,source FROM learning_assignments WHERE tenant=? AND email=? ORDER BY competency_key');
   const help=db.prepare('SELECT COUNT(*) AS count FROM learning_help WHERE tenant=? AND email=? AND competency_key=? AND created_at_ms>=?');
+  let evidence=null;
+  try{ evidence=db.prepare('SELECT evidence_type,result,score_value,detail_json,created_at FROM learning_evidence WHERE assignment_id=? ORDER BY id'); }catch{ evidence=null; }
   const preference=db.prepare('SELECT * FROM training_preferences WHERE tenant=? AND email=?');
   const upsertPreference=db.prepare(
     'INSERT INTO training_preferences(tenant,email,locale,explanation_mode,skip_explanation,updated_at) VALUES(?,?,?,?,?,?) '+
@@ -63,6 +66,7 @@ function createTrainingTwin(options={}){
     const competencies=rows.map(row=>{
       const recentHelp=Number(help.get(user.tenant,user.email,row.competency_key,Date.now()-7*DAY)?.count||0);
       const workflow=workflowFor(row.competency_key);
+      const memory=buildLearnerMemory({assignment:row,evidence:evidence?evidence.all(row.id):[],recentHelp});
       return {
         competencyKey:row.competency_key,
         title:workflow?.title||row.competency_key,
@@ -71,6 +75,10 @@ function createTrainingTwin(options={}){
         dueAt:new Date(Number(row.due_at_ms||Date.now())).toISOString(),
         masteredAt:row.mastered_at_ms?new Date(Number(row.mastered_at_ms)).toISOString():null,
         recentHelp,
+        memory,
+        learnerState:memory.state,
+        evidenceQuality:memory.evidenceQuality,
+        assistanceDependence:memory.assistanceDependence,
         recommendedMode:recommendation(row,recentHelp,pref.skipExplanation)
       };
     });

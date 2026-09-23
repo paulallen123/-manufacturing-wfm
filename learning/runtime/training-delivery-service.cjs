@@ -8,6 +8,11 @@ const { scenarioFor, evaluateScenarioAnswer } = require('./training-scenario-eng
 const { createVideoGenerationJob } = require('./training-video-contract.cjs');
 const { createTrainingArtifactRegistry } = require('./training-artifact-registry.cjs');
 const { planTrainingRegeneration } = require('./training-regeneration-planner.cjs');
+const { createTrainingMediaPlan } = require('./training-media-plan.cjs');
+const { createAuthoringJob } = require('./training-authoring-contract.cjs');
+const { planCoachIntervention } = require('./training-coach-orchestrator.cjs');
+const { evaluateTrainingQuality } = require('./training-quality-gate.cjs');
+const { planTrainingFactoryRun } = require('./training-factory-orchestrator.cjs');
 
 const PREFIX='/api/learning/training';
 const INTERNAL_HEADER='x-wfm-training-factory-internal';
@@ -68,19 +73,32 @@ function createTrainingDeliveryService(options={}){
       ...productIdentity()
     });
     const scenario=selectedMode==='PRACTISE'?scenarioFor(competencyKey,{role:user.role,revealRecommendation:false}):null;
+    const video=(()=>{
+      const current=artifacts.currentForFingerprint(module.artifactFingerprint);
+      if(current) return current;
+      if(module.artifactPublishable!==true) return {state:'SOURCE_UNVERIFIED',fingerprint:module.artifactFingerprint};
+      if(module.capture?.status!=='READY') return {state:'PENDING_ANCHOR',fingerprint:module.artifactFingerprint};
+      if(module.locale!=='en-GB') return {state:'LOCALISATION_REQUIRED',fingerprint:module.artifactFingerprint};
+      return {state:'NOT_GENERATED',fingerprint:module.artifactFingerprint};
+    })();
+    const coach=planCoachIntervention({
+      competency:item,
+      preferences:profile.preferences,
+      intent:selectedMode==='TEST_ME'?'TEST':'LEARN',
+      context:{
+        videoAvailable:video.state==='READY',
+        voiceAvailable:video.narrationAvailable===true,
+        simulationAvailable:Boolean(scenario),
+        realTaskAvailable:Boolean(module.capture?.route)
+      }
+    });
     return {
       ...module,
       recommendedMode:item.recommendedMode,
       readiness:{status:item.status,score:item.score,dueAt:item.dueAt,recentHelp:item.recentHelp},
       scenario,
-      video:(()=>{
-        const current=artifacts.currentForFingerprint(module.artifactFingerprint);
-        if(current) return current;
-        if(module.artifactPublishable!==true) return {state:'SOURCE_UNVERIFIED',fingerprint:module.artifactFingerprint};
-        if(module.capture?.status!=='READY') return {state:'PENDING_ANCHOR',fingerprint:module.artifactFingerprint};
-        if(module.locale!=='en-GB') return {state:'LOCALISATION_REQUIRED',fingerprint:module.artifactFingerprint};
-        return {state:'NOT_GENERATED',fingerprint:module.artifactFingerprint};
-      })()
+      coach,
+      video
     };
   }
   async function handleRequest(req,res){
@@ -98,7 +116,24 @@ function createTrainingDeliveryService(options={}){
         });
         const targetOrigin=process.env.WFM_TRAINING_CAPTURE_TARGET_ORIGIN||String(body.targetOrigin||'');
         const job=createVideoGenerationJob(module,{targetOrigin});
+        const mediaPlan=createTrainingMediaPlan(module,{productSha:identity.productSha});
+        return writeJson(res,200,{job,mediaPlan,narrationJob:mediaPlan.narrationJob});
+      }
+      if(req.method==='POST'&&path===PREFIX+'/authoring-job'){
+        if(!requireInternal(req,res)) return true;
+        const body=await readJson(req);
+        const job=createAuthoringJob(body);
         return writeJson(res,200,{job});
+      }
+      if(req.method==='POST'&&path===PREFIX+'/quality-gate'){
+        if(!requireInternal(req,res)) return true;
+        const body=await readJson(req);
+        return writeJson(res,200,{quality:evaluateTrainingQuality(body)});
+      }
+      if(req.method==='POST'&&path===PREFIX+'/factory-plan'){
+        if(!requireInternal(req,res)) return true;
+        const body=await readJson(req);
+        return writeJson(res,200,{factory:planTrainingFactoryRun(body)});
       }
       if(req.method==='POST'&&path===PREFIX+'/artifact-receipt'){
         if(!requireInternal(req,res)) return true;
