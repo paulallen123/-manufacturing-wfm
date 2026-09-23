@@ -17,8 +17,8 @@ test('delimiter-shaped tenant/source IDs cannot inherit another tenant direct-at
   engine.registerPerson({tenant:'plant:west',employee:'e1',sites:['s1']});
 
   // These pairs collided under the old `${tenant}:${sourceId}` map key.
-  engine.registerSource({tenant:'plant:west',sourceId:'clock',site:'s1',type:'legacy_taa',directAttendanceAuthority:false});
-  engine.registerSource({tenant:'plant',sourceId:'west:clock',site:'s1',type:'legacy_taa',directAttendanceAuthority:true});
+  engine.registerSource({tenant:'plant:west',sourceId:'clock',site:'s1',type:'legacy',directAttendanceAuthority:false});
+  engine.registerSource({tenant:'plant',sourceId:'west:clock',site:'s1',type:'legacy',directAttendanceAuthority:true});
 
   const receipt=engine.ingest({
     tenant:'plant:west',sourceId:'clock',eventId:'event0001',employee:'e1',kind:'legacy_clock_in',
@@ -119,9 +119,9 @@ test('transactional runtime does not reject another tenant event because its com
   try{
     const engine=new AutomaticAttendanceEvidenceEngine();
     engine.registerPerson({tenant:'plant:west',employee:'e1',sites:['s1']});
-    engine.registerSource({tenant:'plant:west',sourceId:'clock',site:'s1',type:'legacy_taa',directAttendanceAuthority:true});
+    engine.registerSource({tenant:'plant:west',sourceId:'clock',site:'s1',type:'legacy',directAttendanceAuthority:true});
     engine.registerPerson({tenant:'plant',employee:'e2',sites:['s2']});
-    engine.registerSource({tenant:'plant',sourceId:'west:clock',site:'s2',type:'legacy_taa',directAttendanceAuthority:true});
+    engine.registerSource({tenant:'plant',sourceId:'west:clock',site:'s2',type:'legacy',directAttendanceAuthority:true});
     runtime=new SQLiteAttendanceRuntime({filePath:dbPath,engine});
 
     const first=runtime.ingest({tenant:'plant:west',sourceId:'clock',eventId:'event0001',employee:'e1',kind:'legacy_clock_in',observedAt:new Date(T).toISOString(),receivedAtMs:T+100});
