@@ -41,3 +41,13 @@ test('retired presentation serves 410 for direct and encoded paths, and never in
     assert.equal((await fetch(base + route)).status, 204);
   }
 });
+
+
+test('legacy local-data writes are redirected outside immutable app root', () => {
+  const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
+  assert.match(docker, /mkdir -p \/tmp\/vector-local-data/);
+  assert.match(docker, /ln -s \/tmp\/vector-local-data \/app\/local-data/);
+  assert.match(docker, /chmod 0700 \/tmp\/vector-local-data/);
+  assert.match(docker, /USER node/);
+  assert.match(docker, /find \/app -type d -exec chmod 0555/);
+});
