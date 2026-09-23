@@ -51,3 +51,17 @@ test('legacy local-data writes are redirected outside immutable app root', () =>
   assert.match(docker, /USER node/);
   assert.match(docker, /find \/app -type d -exec chmod 0555/);
 });
+
+
+test('integration fabric runtime retains its source-relative loader layout', () => {
+  const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
+  assert.match(docker, /COPY integration-fabric\/runtime\/ \/app\/integration-fabric\/runtime\//);
+  assert.match(docker, /COPY integration-fabric\/scripts\/load-catalog\.mjs \/app\/integration-fabric\/scripts\/load-catalog\.mjs/);
+  assert.match(docker, /COPY integration-fabric\/systems\.json \/app\/integration-fabric\/systems\.json/);
+  assert.match(docker, /COPY integration-fabric\/systems-research\.json \/app\/integration-fabric\/systems-research\.json/);
+  assert.match(docker, /COPY integration-fabric\/research-overlays\/ \/app\/integration-fabric\/research-overlays\//);
+  assert.match(docker, /COPY integration-fabric\/protocol-profiles\.json \/app\/integration-fabric\/protocol-profiles\.json/);
+  assert.match(docker, /COPY integration-fabric\/opportunity-profiles\.json \/app\/integration-fabric\/opportunity-profiles\.json/);
+  const registry = fs.readFileSync(path.join(root, 'integration-fabric/runtime/connector-registry.mjs'), 'utf8');
+  assert.match(registry, /\.\.\/scripts\/load-catalog\.mjs/);
+});
