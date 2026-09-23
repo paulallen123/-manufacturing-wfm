@@ -3,7 +3,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const {
-  classifyObservation,classifyWithBaseline,createPreventionCandidate,selectAlternativeLane,groupFailureBatch,fiveMinutePlan,createBlockerReceipt
+  classifyObservation,classifyWithBaseline,createPreventionCandidate,failureFingerprint,attributeFailureProvenance,selectAlternativeLane,groupFailureBatch,fiveMinutePlan,createBlockerReceipt
 }=require('./blocker-autopilot.cjs');
 
 const policy={
@@ -167,4 +167,71 @@ test('weaker proof lane cannot substitute for an uncovered hosted-product scope'
   assert.equal(lane,null);
   const plan=fiveMinutePlan(c,lane);
   assert.ok(plan.byTwoMinutes.some(x=>x.includes('keep only the uncovered scope blocked')));
+});
+
+
+test('failure fingerprint ignores volatile SHA duration and stack line metadata',()=>{
+  const a=failureFingerprint({
+    testName:'IFS Cloud is promoted',
+    file:'/proof/integration-fabric/runtime/ifs-cloud.test.mjs',
+    code:'ERR_ASSERTION',
+    signature:'candidate abcdef123 duration_ms: 22.1 at file:18:10'
+  });
+  const b=failureFingerprint({
+    testName:'IFS Cloud is promoted',
+    file:'/proof/integration-fabric/runtime/ifs-cloud.test.mjs',
+    code:'ERR_ASSERTION',
+    signature:'candidate 1234567 duration_ms: 99.9 at file:44:2'
+  });
+  assert.equal(a,b);
+});
+
+test('identical mandatory failures are attributed to the baseline without becoming PASS',()=>{
+  const failures=[
+    {testName:'IFS Cloud is promoted',file:'integration-fabric/runtime/ifs-cloud.test.mjs',code:'ERR_ASSERTION',signature:'test level mismatch'},
+    {testName:'Epicor value mapping',file:'integration-fabric/runtime/epicor.test.mjs',code:'ERR_ASSERTION',signature:'production-order'}
+  ];
+  const p=attributeFailureProvenance({
+    candidateFailures:failures,
+    baselineFailures:failures,
+    candidateSourceSha:'a'.repeat(40),
+    baselineSourceSha:'b'.repeat(40)
+  });
+  assert.equal(p.state,'INHERITED_BASELINE_FAILURES');
+  assert.equal(p.inheritedFailureCount,2);
+  assert.equal(p.candidateRegressionCount,0);
+  assert.equal(p.candidateCausal,false);
+  assert.equal(p.promotionBlocked,true);
+  assert.equal(p.featureScopeMayContinue,true);
+});
+
+test('candidate-only failure is a candidate regression and remains fail-closed',()=>{
+  const common={testName:'existing failure',file:'x.test.mjs',code:'ERR_ASSERTION',signature:'same'};
+  const added={testName:'new failure',file:'y.test.mjs',code:'ERR_ASSERTION',signature:'new'};
+  const p=attributeFailureProvenance({
+    candidateFailures:[common,added],
+    baselineFailures:[common],
+    candidateSourceSha:'c'.repeat(40),
+    baselineSourceSha:'d'.repeat(40)
+  });
+  assert.equal(p.state,'CANDIDATE_REGRESSION');
+  assert.equal(p.candidateRegressionCount,1);
+  assert.equal(p.candidateCausal,true);
+  assert.equal(p.promotionBlocked,true);
+  assert.equal(p.featureScopeMayContinue,false);
+});
+
+test('candidate can improve baseline while remaining blocked by inherited mandatory failures',()=>{
+  const inherited={testName:'still failing',file:'a.test.mjs',code:'ERR_ASSERTION',signature:'same'};
+  const resolved={testName:'fixed upstream',file:'b.test.mjs',code:'ERR_ASSERTION',signature:'old'};
+  const p=attributeFailureProvenance({
+    candidateFailures:[inherited],
+    baselineFailures:[inherited,resolved],
+    candidateSourceSha:'e'.repeat(40),
+    baselineSourceSha:'f'.repeat(40)
+  });
+  assert.equal(p.state,'INHERITED_WITH_BASELINE_IMPROVEMENT');
+  assert.equal(p.baselineResolvedCount,1);
+  assert.equal(p.promotionBlocked,true);
+  assert.equal(p.featureScopeMayContinue,true);
 });

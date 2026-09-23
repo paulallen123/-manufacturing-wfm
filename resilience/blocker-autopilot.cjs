@@ -355,6 +355,76 @@ function selectAlternativeLane(policy, classification, observation = {}) {
   return null;
 }
 
+
+function normalizeFailureField(value = '') {
+  return String(value)
+    .replace(/\u001b\[[0-9;]*m/g, '')
+    .replace(/\b[a-f0-9]{7,64}\b/gi, '<sha>')
+    .replace(/\bduration_ms\s*[:=]\s*\d+(?:\.\d+)?/gi, 'duration_ms=<duration>')
+    .replace(/\b\d+(?:\.\d+)?\s*ms\b/gi, '<duration>')
+    .replace(/:\d+:\d+\b/g, ':<line>:<column>')
+    .replace(/\\/g, '/')
+    .trim();
+}
+
+function failureFingerprint(failure = {}) {
+  const identity = {
+    testName: normalizeFailureField(failure.testName || failure.name || failure.id || ''),
+    file: normalizeFailureField(failure.file || failure.path || ''),
+    code: normalizeFailureField(failure.code || failure.errorCode || ''),
+    signature: normalizeFailureField(failure.signature || failure.error || failure.reason || '')
+  };
+  if (!identity.testName && !identity.file && !identity.code && !identity.signature) {
+    throw new Error('Failure identity requires at least one stable field.');
+  }
+  return digest(identity);
+}
+
+function attributeFailureProvenance({ candidateFailures = [], baselineFailures = [], candidateSourceSha, baselineSourceSha } = {}) {
+  if (!/^[a-f0-9]{7,64}$/i.test(String(candidateSourceSha || ''))) throw new Error('candidateSourceSha required.');
+  if (!/^[a-f0-9]{7,64}$/i.test(String(baselineSourceSha || ''))) throw new Error('baselineSourceSha required.');
+
+  const enrich = failure => Object.freeze({
+    ...failure,
+    fingerprint: failureFingerprint(failure)
+  });
+  const candidate = candidateFailures.map(enrich);
+  const baseline = baselineFailures.map(enrich);
+  const candidateByFingerprint = new Map(candidate.map(f => [f.fingerprint, f]));
+  const baselineByFingerprint = new Map(baseline.map(f => [f.fingerprint, f]));
+
+  const inherited = candidate.filter(f => baselineByFingerprint.has(f.fingerprint));
+  const candidateOnly = candidate.filter(f => !baselineByFingerprint.has(f.fingerprint));
+  const baselineResolved = baseline.filter(f => !candidateByFingerprint.has(f.fingerprint));
+
+  let state = 'PASS';
+  if (candidateOnly.length > 0) state = 'CANDIDATE_REGRESSION';
+  else if (inherited.length > 0 && baselineResolved.length > 0) state = 'INHERITED_WITH_BASELINE_IMPROVEMENT';
+  else if (inherited.length > 0) state = 'INHERITED_BASELINE_FAILURES';
+  else if (baselineResolved.length > 0) state = 'BASELINE_FAILURES_RESOLVED';
+
+  return Object.freeze({
+    contract: 'VECTOR_FAILURE_PROVENANCE_V1',
+    state,
+    candidateSourceSha: String(candidateSourceSha).toLowerCase(),
+    baselineSourceSha: String(baselineSourceSha).toLowerCase(),
+    candidateFailureCount: candidate.length,
+    baselineFailureCount: baseline.length,
+    inheritedFailureCount: inherited.length,
+    candidateRegressionCount: candidateOnly.length,
+    baselineResolvedCount: baselineResolved.length,
+    inheritedFingerprints: Object.freeze(inherited.map(f => f.fingerprint).sort()),
+    candidateRegressionFingerprints: Object.freeze(candidateOnly.map(f => f.fingerprint).sort()),
+    baselineResolvedFingerprints: Object.freeze(baselineResolved.map(f => f.fingerprint).sort()),
+    candidateCausal: candidateOnly.length > 0,
+    promotionBlocked: candidate.length > 0,
+    featureScopeMayContinue: candidateOnly.length === 0,
+    productionMutation: false,
+    productionAuthorityGranted: false,
+    customerMutation: false
+  });
+}
+
 function groupFailureBatch(observations = []) {
   const groups = new Map();
   for (const observation of observations) {
@@ -437,6 +507,8 @@ module.exports = Object.freeze({
   classifyObservation,
   classifyWithBaseline,
   createPreventionCandidate,
+  failureFingerprint,
+  attributeFailureProvenance,
   selectAlternativeLane,
   groupFailureBatch,
   fiveMinutePlan,

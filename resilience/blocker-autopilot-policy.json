@@ -26,7 +26,10 @@
     "independentReproductionBeforeUnknownBecomesProductDefect": true,
     "baselineGuardMustPassCanonicalReference": true,
     "proofPolicyMayNotInventUnmetCanonicalFloor": true,
-    "preventionLearningMayAutoApply": false
+    "preventionLearningMayAutoApply": false,
+    "inheritedBaselineFailureNeverCountsAsPass": true,
+    "baselineComparisonMustBindExactSha": true,
+    "candidateOnlyFailureRequiredForFeatureCausality": true
   },
   "proofGuardDiscipline": {
     "preferEffectiveCapabilitiesOverRepositoryShape": true,
@@ -34,5 +37,13 @@
     "canonicalReferenceMustSatisfyAnyHardFloor": true,
     "candidateCapabilityLossStillFailsClosed": true,
     "preventionCandidatesRequireReview": true
+  },
+  "failureProvenance": {
+    "compareAgainstExactBaselineSha": true,
+    "inheritedMandatoryFailureCountsAsPass": false,
+    "candidateCausalityRequiresCandidateOnlyFailure": true,
+    "inheritedFailureMayReleaseFeatureScopeForContinuedDevelopment": true,
+    "inheritedFailureMayReleasePromotion": false,
+    "baselineFailuresRemainOwnedByCanonicalConvergence": true
   }
 }
