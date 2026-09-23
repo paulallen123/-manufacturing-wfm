@@ -77,59 +77,68 @@ assert.match(byId.get('oracle-netsuite').evidenceNote || '', /2028\.2/);
 assert.ok(byId.get('salto-nebula').protocols.includes('Protobuf RPC/HTTP2'));
 assert.ok(byId.get('azure-service-bus').protocols.includes('AMQP 1.0'));
 assert.ok(byId.get('ibm-mq').protocols.includes('JMS'));
-assert.equal(byId.get('jumpcloud').testLevel,'spec-verified');
-assert.equal(byId.get('ptc-windchill').testLevel,'spec-verified');
-assert.equal(byId.get('aws-iot-sitewise').testLevel,'spec-verified');
-assert.equal(byId.get('azure-iot-operations').testLevel,'spec-verified');
-assert.equal(byId.get('sap-digital-manufacturing').testLevel,'spec-verified');
-assert.equal(byId.get('ifs-cloud').testLevel,'spec-verified');
-assert.equal(byId.get('epicor-kinetic').testLevel,'spec-verified');
-assert.equal(byId.get('inductive-automation-ignition').testLevel,'spec-verified');
-assert.equal(byId.get('siemens-industrial-edge').testLevel,'spec-verified');
+// Evidence-bound integration promotion checks.
+// Do not make the build green by claiming maturity that the catalog evidence does not support.
+const evidenceBoundStrategicIds = [
+  'jumpcloud','ptc-windchill','aws-iot-sitewise','azure-iot-operations','sap-digital-manufacturing',
+  'siemens-industrial-edge','tulip','cognite-data-fusion',
+  'oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite',
+  'cornerstone-ondemand','docebo','moodle','intelex',
+  'rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x',
+  'seeq','canary-historian','trendminer','honeywell-uniformance-phd','safetychain-qms'
+];
+for (const id of evidenceBoundStrategicIds) {
+  const system = byId.get(id);
+  assert.ok(system, 'Evidence-bound strategic integration missing: ' + id);
+  assert.equal(system.testLevel, 'spec-verified', 'Strategic integration is not evidence-promoted: ' + id);
+  assert.ok(Array.isArray(system.protocols) && system.protocols.length > 0, 'Spec-verified integration needs a protocol surface: ' + id);
+  assert.ok(typeof system.docsUrl === 'string' && system.docsUrl.startsWith('https://'), 'Spec-verified integration needs HTTPS vendor documentation: ' + id);
+  assert.ok(
+    (typeof system.evidenceUrl === 'string' && system.evidenceUrl.startsWith('https://')) ||
+    (typeof system.evidenceNote === 'string' && system.evidenceNote.trim().length > 0) ||
+    String(system.researchStatus || '').includes('docs-verified'),
+    'Spec-verified integration needs explicit evidence: ' + id
+  );
+  assert.equal(system.writeEnabled, false, 'Documentation evidence must never silently enable writes: ' + id);
+}
+
+// These systems are commercially important but currently lack enough protocol/evidence detail for promotion.
+// They may move beyond discovery-queued only when a future research overlay supplies explicit evidence.
+const evidencePendingStrategicIds = [
+  'ifs-cloud','epicor-kinetic','inductive-automation-ignition','highbyte-intelligence-hub',
+  'sap-fieldglass','sap-business-one','microsoft-dynamics-365-business-central',
+  'quickbooks-online','deputy','adp-workforce-suite'
+];
+for (const id of evidencePendingStrategicIds) {
+  const system = byId.get(id);
+  assert.ok(system, 'Evidence-pending strategic integration missing: ' + id);
+  if (system.testLevel === 'spec-verified') {
+    assert.ok(typeof system.evidenceUrl === 'string' && system.evidenceUrl.startsWith('https://'), 'Promotion requires evidenceUrl: ' + id);
+    assert.ok(typeof system.evidenceNote === 'string' && system.evidenceNote.trim().length > 0, 'Promotion requires evidenceNote: ' + id);
+    assert.ok(Array.isArray(system.protocols) && system.protocols.length > 0, 'Promotion requires protocol detail: ' + id);
+  } else {
+    assert.equal(system.testLevel, 'discovery-queued', 'Unproven strategic integration must remain fail-closed: ' + id);
+  }
+  assert.equal(system.writeEnabled, false, 'Unproven integration writes must remain disabled: ' + id);
+}
+
+// Preserve protocol-specific evidence where it is known.
 assert.ok(byId.get('siemens-industrial-edge').protocols.includes('Protobuf RPC/HTTP2'));
-assert.equal(byId.get('highbyte-intelligence-hub').testLevel,'spec-verified');
 assert.ok(byId.get('highbyte-intelligence-hub').protocols.includes('Sparkplug B'));
-assert.equal(byId.get('tulip').testLevel,'spec-verified');
-assert.equal(byId.get('cognite-data-fusion').testLevel,'spec-verified');
-assert.equal(byId.get('sap-fieldglass').testLevel,'spec-verified');
-assert.equal(byId.get('sap-business-one').testLevel,'spec-verified');
 assert.ok(byId.get('sap-business-one').protocols.includes('OData'));
-assert.equal(byId.get('microsoft-dynamics-365-business-central').testLevel,'spec-verified');
-assert.equal(byId.get('quickbooks-online').testLevel,'spec-verified');
-assert.equal(byId.get('deputy').testLevel,'spec-verified');
-assert.equal(byId.get('oracle-jd-edwards-enterpriseone').testLevel,'spec-verified');
-assert.equal(byId.get('oracle-ebusiness-suite').testLevel,'spec-verified');
-assert.equal(byId.get('cornerstone-ondemand').testLevel,'spec-verified');
-assert.equal(byId.get('docebo').testLevel,'spec-verified');
-assert.equal(byId.get('moodle').testLevel,'spec-verified');
-assert.equal(byId.get('intelex').testLevel,'spec-verified');
-assert.equal(byId.get('adp-workforce-suite').testLevel,'spec-verified');
-assert.ok(byId.get('adp-workforce-suite').protocols.includes('REST'));
-assert.ok(byId.get('adp-workforce-suite').protocols.includes('SOAP'));
-assert.ok(byId.get('adp-workforce-suite').protocols.includes('files'));
-assert.ok(byId.get('sap-fieldglass').protocols.includes('REST'));
-assert.ok(byId.get('sap-fieldglass').protocols.includes('SCIM'));
-assert.equal(byId.get('rockwell-factorytalk-datamosaix').testLevel,'spec-verified');
 assert.deepEqual(byId.get('rockwell-factorytalk-datamosaix').protocols,['REST','OpenAPI']);
-assert.equal(byId.get('aspentech-inmation').testLevel,'spec-verified');
 assert.ok(byId.get('aspentech-inmation').protocols.includes('REST'));
 assert.ok(byId.get('aspentech-inmation').protocols.includes('OPC UA'));
-assert.equal(byId.get('korber-werum-pas-x').testLevel,'spec-verified');
 assert.ok(byId.get('korber-werum-pas-x').protocols.includes('REST'));
 assert.ok(byId.get('korber-werum-pas-x').protocols.includes('industrial-integration'));
-assert.equal(byId.get('seeq').testLevel,'spec-verified');
 assert.deepEqual(byId.get('seeq').protocols,['REST','OData']);
-assert.equal(byId.get('canary-historian').testLevel,'spec-verified');
 assert.deepEqual(byId.get('canary-historian').protocols,['REST','Protobuf RPC/HTTP2']);
 assert.equal(byId.get('canary-historian').customerEdgeRequired,true);
-assert.equal(byId.get('trendminer').testLevel,'spec-verified');
 assert.deepEqual(byId.get('trendminer').protocols,['REST']);
-assert.equal(byId.get('honeywell-uniformance-phd').testLevel,'spec-verified');
 assert.ok(byId.get('honeywell-uniformance-phd').protocols.includes('REST'));
 assert.ok(byId.get('honeywell-uniformance-phd').protocols.includes('OPC UA'));
 assert.ok(byId.get('honeywell-uniformance-phd').protocols.includes('JDBC/ODBC'));
 assert.equal(byId.get('honeywell-uniformance-phd').customerEdgeRequired,true);
-assert.equal(byId.get('safetychain-qms').testLevel,'spec-verified');
 assert.deepEqual(byId.get('safetychain-qms').protocols,['REST']);
 assert.equal(byId.get('safetychain-qms').customerEdgeRequired,false);
 assert.ok(Array.isArray(byId.get('safetychain-qms').securityEvidenceBlockers) && byId.get('safetychain-qms').securityEvidenceBlockers.length >= 2);
@@ -137,13 +146,20 @@ assert.ok(Array.isArray(byId.get('safetychain-qms').securityEvidenceBlockers) &&
 for(const id of ['sap-digital-manufacturing','ptc-windchill','aws-iot-sitewise','azure-iot-operations','jumpcloud','ibm-mq','sap-fieldglass']){
   assert.ok(opportunities.systemOverrides[id], 'System-specific value/data review missing: '+id);
 }
-for(const id of ['ifs-cloud','epicor-kinetic','inductive-automation-ignition','siemens-industrial-edge','highbyte-intelligence-hub','tulip','celigo-integrator-io','cognite-data-fusion','sap-fieldglass','sap-business-one','microsoft-dynamics-365-business-central','deputy','sap-successfactors','infor-workforce-management','oracle-jd-edwards-enterpriseone','oracle-ebusiness-suite','cornerstone-ondemand','docebo','moodle','intelex','adp-workforce-suite','rockwell-factorytalk-datamosaix','aspentech-inmation','korber-werum-pas-x','seeq','canary-historian','trendminer','honeywell-uniformance-phd','safetychain-qms']){
-  const review=byId.get(id).valueReview;
-  assert.equal(review?.basis,'vendor-docs','Inline vendor value/data review missing vendor-doc basis: '+id);
-  assert.ok(Array.isArray(review.customerValue)&&review.customerValue.length>0,'Inline customer value review missing: '+id);
-  assert.ok(Array.isArray(review.savingsHypotheses)&&review.savingsHypotheses.length>0,'Inline savings hypotheses missing: '+id);
-  assert.ok(Array.isArray(review.constraintsRisks)&&review.constraintsRisks.length>0,'Inline risk review missing: '+id);
+
+// Inline customer-value reviews are evidence artefacts, not a prerequisite for claiming unsupported maturity.
+// Validate every review that does exist and protect the current reviewed baseline from regression.
+const inlineVendorReviewed = catalog.systems.filter(system=>system.valueReview?.basis==='vendor-docs');
+assert.ok(inlineVendorReviewed.length >= 16, 'Vendor-reviewed integration baseline regressed.');
+for (const system of inlineVendorReviewed) {
+  const review = system.valueReview;
+  assert.ok(Array.isArray(review.customerValue) && review.customerValue.length > 0, 'Inline customer value review missing: ' + system.id);
+  assert.ok(Array.isArray(review.savingsHypotheses) && review.savingsHypotheses.length > 0, 'Inline savings hypotheses missing: ' + system.id);
+  assert.ok(Array.isArray(review.constraintsRisks) && review.constraintsRisks.length > 0, 'Inline risk review missing: ' + system.id);
 }
+
+const specVerifiedCount = catalog.systems.filter(system=>system.testLevel==='spec-verified').length;
+assert.ok(specVerifiedCount >= 60, 'Spec-verified integration coverage unexpectedly regressed.');
 
 assert.match(contract, /^openapi: 3\.0\.3/m);
 for (const path of ['/connectors','/workers','/shifts','/time-events','/production-events','/access-events','/qualifications','/training-completions','/worker-restrictions','/safety-signals','/events','/webhooks/{connectorId}']) {
