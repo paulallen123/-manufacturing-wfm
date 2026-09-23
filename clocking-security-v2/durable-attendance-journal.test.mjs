@@ -25,7 +25,7 @@ test('fsynced event survives crash before engine apply and is applied once on re
   const file=tmp(); const j1=new DurableEvidenceJournal({filePath:file});
   j1.appendEvent(event());
   const e2=new FakeEngine(); const j2=new DurableEvidenceJournal({filePath:file}); new DurableAttendanceRuntime({engine:e2,journal:j2});
-  assert.equal(e2.applied.length,1); assert.equal(j2.getOutcome('acme:door:event-0001').ok,true);
+  assert.equal(e2.applied.length,1); assert.equal(j2.getOutcome(JSON.stringify(['acme','door','event-0001'])).ok,true);
 });
 
 test('crash after engine apply/outcome then client retry is a durable replay, not a second apply',()=>{
