@@ -21,7 +21,10 @@ function clone(value) {
 const NODE_TYPES = new Set([
   'tenant', 'legal-entity', 'site', 'department', 'line', 'person', 'role',
   'system', 'integration', 'policy', 'configuration', 'competency',
-  'training', 'test', 'evidence', 'readiness-gate'
+  'training', 'test', 'evidence', 'readiness-gate',
+  'machine', 'automation', 'material', 'wip', 'energy', 'tooling', 'facility',
+  'inventory', 'supplier-capacity', 'cash-commitment', 'knowledge',
+  'work-order', 'order', 'product', 'quality-event'
 ]);
 
 function normaliseNode(node, tenant) {
