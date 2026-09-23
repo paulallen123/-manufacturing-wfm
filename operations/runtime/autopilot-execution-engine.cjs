@@ -4,6 +4,8 @@ const {DatabaseSync}=require('node:sqlite');
 const {createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,digest}=require('./decision-episode.cjs');
 const {executeT9AutopilotAction}=require('./t9-autopilot-adapter.cjs');
 const PREFIX='/api/operations/autopilot',PERMIT_TTL_MS=15*60*1000;
+const AUTOPILOT_APPROVER_ROLES=new Set(['manager','director','superuser']);
+function isAutopilotApproverRole(role){return AUTOPILOT_APPROVER_ROLES.has(String(role||'').trim().toLowerCase());}
 function sha256(v){return createHash('sha256').update(String(v)).digest('hex');}
 function compact(v,max=240){return String(v??'').trim().slice(0,max);}
 function iso(v){const n=Date.parse(String(v??''));return Number.isFinite(n)?new Date(n).toISOString():null;}
@@ -37,7 +39,7 @@ function createAutopilotExecutionEngine(options={}){
  const permitI=db.prepare('INSERT INTO vector_autopilot_permits VALUES(?,?,?,?,?,?,?,?)'),eventI=db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)');
  const executionQ=db.prepare('SELECT state,detail_json,created_at FROM vector_autopilot_execution_events WHERE execution_id=? ORDER BY id'),tenantQ=db.prepare('SELECT execution_id,permit_id,state,detail_json,created_at FROM vector_autopilot_execution_events WHERE tenant=? ORDER BY id DESC LIMIT ?');
  function ctx(req){const t=cookieToken(req);return t?auth.get(sha256(t),Date.now())||null:null;}
- function manager(req,res){const c=ctx(req);if(!c){writeJson(res,401,{error:'Sign in is required.'});return null;}if(String(c.role).toLowerCase()==='employee'){writeJson(res,403,{error:'Autopilot execution requires an authorised manager or administrator.'});return null;}return c;}
+ function manager(req,res){const c=ctx(req);if(!c){writeJson(res,401,{error:'Sign in is required.'});return null;}if(!isAutopilotApproverRole(c.role)){writeJson(res,403,{error:'Autopilot execution requires an authorised manager or company administrator.'});return null;}return c;}
  function log(executionId,permitId,tenant,state,detail={}){eventI.run(executionId,permitId,tenant,state,JSON.stringify(detail),new Date().toISOString());try{publish?.({tenant,topic:'autopilot.execution.updated',audience:'manager',payload:{executionId,state}});}catch{}}
  function last(executionId){const r=executionQ.all(executionId).at(-1);return r?{state:r.state,detail:JSON.parse(r.detail_json),createdAt:r.created_at}:null;}
  function issueHumanPermit({tenant,episodeId,optionId,actorRef,contextRevision,plan,now=Date.now()}){
@@ -80,4 +82,4 @@ function createAutopilotExecutionEngine(options={}){
  async function handleRequest(req,res){const path=pathOf(req);if(!path.startsWith(PREFIX))return false;try{const c=manager(req,res);if(!c)return true;if(req.method==='GET'&&path===PREFIX+'/status')return writeJson(res,200,{contractVersion:'VECTOR_AUTOPILOT_EXECUTION_V1',tenant:c.tenant,events:statusForTenant(c.tenant)});if(req.method==='POST'&&path===PREFIX+'/permit'){const b=await readJson(req),permit=issueHumanPermit({tenant:c.tenant,episodeId:compact(b.episodeId,180),optionId:compact(b.optionId,120),actorRef:c.email,contextRevision:compact(b.contextRevision,180),plan:b.plan});return writeJson(res,201,{contractVersion:'VECTOR_AUTOPILOT_PERMIT_V1',permit});}if(req.method==='POST'&&path===PREFIX+'/execute'){const b=await readJson(req),result=await executePermit({tenant:c.tenant,permitId:compact(b.permitId,180),currentContextRevision:compact(b.contextRevision,180)});return writeJson(res,result.state==='VERIFIED'?200:409,{contractVersion:'VECTOR_AUTOPILOT_EXECUTION_V1',result});}return writeJson(res,404,{error:'Autopilot execution endpoint not found.'});}catch(error){return writeJson(res,Number(error?.statusCode||500),{error:error?.statusCode?error.message:'Autopilot execution failed safely.'});}}
  return {handleRequest,issueHumanPermit,executePermit,statusForTenant,close(){try{db.close();}catch{}}};
 }
-module.exports={createAutopilotExecutionEngine,safePlan};
+module.exports={createAutopilotExecutionEngine,safePlan,isAutopilotApproverRole};
