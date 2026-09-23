@@ -70,7 +70,7 @@ function createT9CustomerGuardian(options={}){
     let applied=null;
     try{state(key,o,f,'REPAIR_STARTED',{actorId:r.actorId});applied=await r.apply(ctx);if(await r.verify(ctx,applied)){state(key,o,f,'AUTO_FIXED_VERIFIED',{actorId:r.actorId,verifierId:r.verifierId});return;}if(typeof r.rollback==='function')try{await r.rollback(ctx,applied);}catch{}state(key,o,f,'REPAIR_FAILED',{reason:'VERIFY_FAILED'});}catch(e){if(applied&&typeof r.rollback==='function')try{await r.rollback(ctx,applied);}catch{}state(key,o,f,'REPAIR_FAILED',{reason:'SAFE_REPAIR_EXCEPTION',errorDigest:sha(e?.message)});}
   }
-  async function process(o){
+  async function processObservation(o){
     o.tenant=o.tenant||tenant(o.tokenHash);const ss=scenarios(o.family,o.risk).map(id=>({id,state:'SHADOW_REHEARSAL_ONLY',productionMutation:false,proofClaim:'NONE'})),fs=findings(o);
     ev.run(o.tenant,o.family,o.method,o.status,o.ms,o.risk,JSON.stringify(ss),JSON.stringify(fs),new Date().toISOString());
     for(const f of fs){const key='gf-'+sha(o.tenant+'|'+o.family+'|'+f.type).slice(0,40);state(key,o,f,'DETECTED',{severity:f.severity});const n=Number(cnt.get(f.type,o.family)?.n||0);if(n>=3){const sig=o.family+'|'+f.type;cand.run('scenario-'+sha(sig).slice(0,32),sig,JSON.stringify({status:'PROPOSAL_ONLY',mayGrantAuthority:false,routeFamily:o.family,findingType:f.type,occurrences:n}),new Date().toISOString());}await repair(key,o,f);}
@@ -80,7 +80,7 @@ function createT9CustomerGuardian(options={}){
     const o={tokenHash:tokenOf(req)?sha(tokenOf(req)):'',family:f,method:String(req?.method||'GET').toUpperCase(),status:Number(statusCode)||0,ms:Math.round(Number(durationMs)||0)};o.risk=risk(o.method,o.family);
     if(q.length>=maxQ){if(o.risk!=='HIGH'&&o.status<500)return{queued:false,dropped:'LOW_RISK_BACKPRESSURE'};q.shift();}q.push(o);return{queued:true};
   }
-  async function drain(){const o=q.shift();if(!o)return false;await process(o);return true;}
+  async function drain(){const o=q.shift();if(!o)return false;await processObservation(o);return true;}
   async function drainAllForTests(){while(await drain()){}}
   const timer=setInterval(()=>{drain().catch(()=>{});},Math.max(50,Number(options.tickMs)||250));if(timer.unref)timer.unref();
   return{observeHttpCompletion,drainAllForTests,registerRemediator,summaryForTests(){return{events:allEv.all().map(r=>({...r,scenarios:JSON.parse(r.scenarios_json),findings:JSON.parse(r.findings_json)})),findings:allFe.all().map(r=>({...r,detail:JSON.parse(r.detail_json)})),candidates:allCa.all().map(r=>({...r,scenario:JSON.parse(r.scenario_json)}))};},close(){clearInterval(timer);try{db.close();}catch{}}};
