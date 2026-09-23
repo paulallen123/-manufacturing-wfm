@@ -12,6 +12,7 @@ const { createTrainingMediaPlan } = require('./training-media-plan.cjs');
 const { createAuthoringJob } = require('./training-authoring-contract.cjs');
 const { planCoachIntervention } = require('./training-coach-orchestrator.cjs');
 const { evaluateTrainingQuality } = require('./training-quality-gate.cjs');
+const { planTrainingFactoryRun } = require('./training-factory-orchestrator.cjs');
 
 const PREFIX='/api/learning/training';
 const INTERNAL_HEADER='x-wfm-training-factory-internal';
@@ -128,6 +129,11 @@ function createTrainingDeliveryService(options={}){
         if(!requireInternal(req,res)) return true;
         const body=await readJson(req);
         return writeJson(res,200,{quality:evaluateTrainingQuality(body)});
+      }
+      if(req.method==='POST'&&path===PREFIX+'/factory-plan'){
+        if(!requireInternal(req,res)) return true;
+        const body=await readJson(req);
+        return writeJson(res,200,{factory:planTrainingFactoryRun(body)});
       }
       if(req.method==='POST'&&path===PREFIX+'/artifact-receipt'){
         if(!requireInternal(req,res)) return true;
