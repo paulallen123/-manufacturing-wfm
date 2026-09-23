@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "VECTOR_POINT_OF_CONSUMPTION_PROOF_V1",
+  "principle": "Proof ends where the intended customer or downstream system successfully consumes the outcome, not where the upstream component reports success.",
+  "requiredSequence": [
+    "SOURCE_BOUND",
+    "BUILD_ADMITTED",
+    "RUNTIME_STARTED",
+    "INTERNAL_HEALTH_VERIFIED",
+    "PUBLIC_INGRESS_VERIFIED",
+    "APPLICATION_IDENTITY_VERIFIED",
+    "USER_ACTION_VERIFIED",
+    "DOWNSTREAM_OUTCOME_VERIFIED"
+  ],
+  "recoverySequenceWhenClaimed": [
+    "RECOVERY_VERIFIED"
+  ],
+  "rules": {
+    "upstreamSuccessNeverImpliesDownstreamSuccess": true,
+    "userActionMustBePerformedNotInferred": true,
+    "downstreamStateMustBeReadBackIndependently": true,
+    "publicLinksRequirePublicIngressAndIdentityProof": true,
+    "nextRealWorldStepMustBeSimulatedBeforeClaim": true,
+    "everyDiscoveredFailureBecomesARegressionGuard": true,
+    "repeatAfterSuccessByAttackingRecoveryDriftAndEdgeCases": true,
+    "unknownsFailClosed": true
+  },
+  "examples": {
+    "deployment": "build -> start -> health -> public route -> app identity -> user action",
+    "integration": "connect -> send -> provider accepts -> destination reflects -> reconciliation agrees",
+    "payroll": "calculate -> export -> payroll ingests -> employee result reconciles",
+    "training": "author -> publish -> learner opens -> completes -> mastery evidence persists",
+    "autopilot": "recommend -> simulate -> authorise -> act -> independent readback -> business outcome"
+  }
+}
