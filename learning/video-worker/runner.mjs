@@ -17,6 +17,12 @@ const NARRATION_RECEIPT_PATH=process.env.TRAINING_NARRATION_RECEIPT_PATH||'';
 let state={running:true,passed:false,error:null,receipt:null};
 
 function sha256File(file){return createHash('sha256').update(fs.readFileSync(file)).digest('hex');}
+function mediaDurationMs(file){
+  const raw=execFileSync('ffprobe',['-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',file],{encoding:'utf8'}).trim();
+  const seconds=Number(raw);
+  if(!Number.isFinite(seconds)||seconds<=0) throw new Error('Rendered video duration could not be verified.');
+  return Math.round(seconds*1000);
+}
 function msTime(ms){
   const total=Math.max(0,Math.round(ms));
   const h=Math.floor(total/3600000),m=Math.floor((total%3600000)/60000),s=Math.floor((total%60000)/1000),x=total%1000;
@@ -74,6 +80,13 @@ async function run(){
   const width=Number(job.composition?.resolution?.width||1440);
   const height=Number(job.composition?.resolution?.height||900);
   const sceneById=new Map((job.composition?.scenes||[]).map(scene=>[scene.id,scene]));
+  const timingById=new Map((narration?.receipt?.segmentTimings||[]).map(timing=>[timing.id,timing]));
+  const pauseById=new Map((job.narration?.job?.segments||[]).map(segment=>[segment.id,Number(segment.pauseAfterMs||0)]));
+  function holdFor(id,fallback){
+    const timing=timingById.get(id);
+    if(!timing) return Number(fallback);
+    return Math.max(Number(fallback)||0,Math.round(Number(timing.endMs)-Number(timing.startMs)+Number(pauseById.get(id)||0)+220));
+  }
   const recordingStart=Date.now();
   try{
     browser=await chromium.launch({headless:true});
@@ -114,7 +127,7 @@ async function run(){
 
     const introStart=Date.now()-recordingStart;
     await addOverlay(page,job.competencyKey,'This demonstration is generated from the exact verified VECTOR workflow. Watching it does not prove competence.',0,job.script.length);
-    await page.waitForTimeout(Number(sceneById.get('intro')?.holdMs||1800));
+    await page.waitForTimeout(holdFor('intro',Number(sceneById.get('intro')?.holdMs||1800)));
     cues.push({start:introStart,end:Date.now()-recordingStart,text:'VECTOR demonstration. Watching guidance does not prove competence.'});
 
     for(const step of job.script){
@@ -123,38 +136,44 @@ async function run(){
       const shot=path.join(outputDir,'step-'+String(step.index).padStart(2,'0')+'.png');
       await page.screenshot({path:shot,fullPage:false});
       screenshots.push({stepId:step.id,file:path.basename(shot),sha256:sha256File(shot)});
-      await page.waitForTimeout(Number(sceneById.get(step.id)?.holdMs||3200));
+      await page.waitForTimeout(holdFor(step.id,Number(sceneById.get(step.id)?.holdMs||3200)));
       cues.push({start,end:Date.now()-recordingStart,text:step.title+'. '+step.instruction});
     }
 
     const visibleText=(await page.locator('body').innerText()).slice(0,250000);
     const scan=privacyScan(visibleText+'\n'+job.script.map(x=>x.title+' '+x.instruction).join('\n'));
-    const transcriptFile=path.join(outputDir,'transcript.txt');
-    fs.writeFileSync(transcriptFile,job.script.map((x,i)=>String(i+1)+'. '+x.title+'\n'+x.instruction).join('\n\n')+'\n');
-    const captionFile=path.join(outputDir,'captions.vtt');
-    fs.writeFileSync(captionFile,vtt(cues));
     const recap=sceneById.get('recap');
     if(recap){
       const start=Date.now()-recordingStart;
       await addOverlay(page,recap.title,recap.narration,job.script.length+1,job.script.length+1);
-      await page.waitForTimeout(Number(recap.holdMs||2200));
+      await page.waitForTimeout(holdFor('recap',Number(recap.holdMs||2200)));
       cues.push({start,end:Date.now()-recordingStart,text:recap.narration});
     }
+    const transcriptFile=path.join(outputDir,'transcript.txt');
+    const transcriptScenes=(job.composition?.scenes||[]).map((scene,index)=>String(index+1)+'. '+scene.title+'\n'+scene.narration).join('\n\n')+'\n';
+    fs.writeFileSync(transcriptFile,transcriptScenes);
+    const captionFile=path.join(outputDir,'captions.vtt');
+    fs.writeFileSync(captionFile,vtt(cues));
+    const capturedDurationMs=Date.now()-recordingStart;
 
     await context.close(); context=null;
     const videoPath=await video.path();
     const rawVideo=path.join(outputDir,'training.raw.webm');
     const canonicalVideo=path.join(outputDir,'training.webm');
     if(videoPath!==rawVideo) fs.renameSync(videoPath,rawVideo);
+    const visualLeadMs=Math.max(0,Math.round(introStart));
     if(narration){
+      const delay=String(visualLeadMs)+'|'+String(visualLeadMs);
       execFileSync('ffmpeg',[
         '-y','-i',rawVideo,'-i',narration.audioPath,
-        '-map','0:v:0','-map','1:a:0','-c:v','copy','-c:a','libopus','-b:a','160k',
-        '-filter:a','loudnorm=I=-16:TP=-1:LRA=11','-shortest',canonicalVideo
+        '-filter_complex','[1:a]adelay='+delay+',loudnorm=I=-16:TP=-1:LRA=11,apad[a]',
+        '-map','0:v:0','-map','[a]','-c:v','copy','-c:a','libopus','-b:a','160k',
+        '-shortest',canonicalVideo
       ],{stdio:'ignore'});
     }else{
       fs.renameSync(rawVideo,canonicalVideo);
     }
+    const renderedDurationMs=mediaDurationMs(canonicalVideo);
 
     const receipt={
       contractVersion:'VECTOR_TRAINING_VIDEO_RECEIPT_V1',
@@ -179,7 +198,8 @@ async function run(){
         transcriptFile:'transcript.txt',
         transcriptSha256:sha256File(transcriptFile),
         screenshots,
-        durationMs:Date.now()-recordingStart,
+        durationMs:renderedDurationMs,
+        captureDurationMs:capturedDurationMs,
         width,
         height
       },
@@ -188,13 +208,19 @@ async function run(){
         audioSha256:sha256File(narration.audioPath),
         audioUrl:narration.receipt.audioUrl||null,
         voiceProfileId:narration.receipt.voiceProfileId,
-        voiceReceiptState:narration.validation.state
+        voiceReceiptState:narration.validation.state,
+        durationMs:Number(narration.receipt.durationMs),
+        visualLeadMs,
+        sync:'TIMING_BOUND'
       }:{
         status:'NOT_CONFIGURED',
         audioSha256:null,
         audioUrl:null,
         voiceProfileId:job.narration?.voiceProfileId||null,
-        voiceReceiptState:null
+        voiceReceiptState:null,
+        durationMs:null,
+        visualLeadMs:null,
+        sync:null
       },
       publication:{durable:false,videoUrl:null,captionsUrl:null,transcriptUrl:null},
       generatedAt:new Date().toISOString()
