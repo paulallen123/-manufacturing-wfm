@@ -24,6 +24,7 @@ const checks = [
     'operations/runtime/frontier-decision-control.test.cjs',
     'operations/runtime/autopilot-execution-engine.test.cjs',
     'trust/runtime/vector-trust-spine.test.cjs',
+    'trust/runtime/vector-zero-human-governance.test.cjs',
     'engineering/runtime/vector-tool-foundry.test.cjs',
     'engineering/runtime/vector-engineering-learning-bridge.test.cjs',
     'implementation/runtime/launch-autopilot-controller.test.cjs',
