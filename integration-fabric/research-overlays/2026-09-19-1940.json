@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor evidence delta adding CorityOne and Wolters Kluwer Enablon to the global manufacturing integration catalogue, and tightening Intelex integration evidence around authentication variants, custom-object discovery, pagination and throttling. CorityOne is spec-verified on its vendor-documented RESTful integration surface; Enablon remains discovery-queued on the existing vendor-thin connector scaffold because current public material confirms API-ready/SDK integration capability but not a stable outward protocol/authentication contract. No credentials, customer data, writes or private/plant-network surfaces were used.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "intelex",
+      "patch": {
+        "auth": "basic-or-api-key-or-v6-oauth2-client-credentials",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developers.intelex.com/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "evidenceUrl": "https://developers.intelex.com/",
+        "evidenceNote": "Intelex's current developer documentation verifies a REST/JSON API over each customer's configured application model. V2 supports Basic and API-key authentication; the newer V6 secure API supports client-credentials bearer tokens when enabled. API requests preserve platform security settings for the effective user, but API-key and secure-token setup is limited to Admin/Full Access users, so authenticated evidence must prove the resulting technical identity is actually constrained to the approved records. The API is tenant/custom-object driven rather than a fixed EHS schema, caps sequential result pages at 500 records with @odata.nextLink paging, and documents a platform rate limit of 6 requests per second with 429/Retry-After semantics. WFM therefore reuses the existing REST adapter with customer-model discovery, explicit field/object allowlists, bounded paging and adaptive backoff; mutative object/user/task operations remain outside normal connector authority.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://developers.intelex.com/",
+          "requiredPermissions": [
+            "Intelex REST API enabled for the target tenant and required applications only",
+            "dedicated integration identity whose effective platform permissions are limited to the approved sites, applications, objects and records",
+            "prefer short-lived V6 bearer tokens where available; do not assume Admin/Full Access ability to create credentials means broad business-data access is acceptable",
+            "read-only access to the specific EHS/QMS/training/reference objects needed by WFM; no record creation, workflow action, task reassignment, user provisioning or archive/revoke authority",
+            "HTTPS with tenant hostname pinned; no arbitrary instance URLs or cross-host redirects"
+          ],
+          "dataAvailableOrExpected": [
+            "tenant-defined and standard application objects exposed through the Intelex Object Data API, including customer custom fields and relations",
+            "employees, users, groups and locations used to reconcile people/site context where the customer permits them",
+            "incident, hazard, inspection, audit, corrective-action, compliance and quality records where those applications are installed and exposed",
+            "training, competency or qualification evidence where implemented in the customer's application model",
+            "task/workflow references and responsible-person context where read access is approved, without taking workflow action"
+          ],
+          "wfmObjects": [
+            "worker",
+            "site",
+            "safety-event",
+            "risk-signal",
+            "compliance-event",
+            "qualification-requirement",
+            "training-completion",
+            "worker-restriction",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "pre-shift readiness checks using approved training, qualification, safety and restriction signals without copying unnecessary sensitive incident or health records",
+            "identify sites, jobs or shifts with recurring EHS/quality risk and feed that evidence into staffing, supervision and training planning",
+            "reuse employee/location/group reference data to reduce implementation mapping and duplicate administration",
+            "use incident, corrective-action and task state to forecast temporary safety/compliance workload or specialist coverage needs",
+            "correlate skills mix, staffing level, overtime and shift outcomes with safety/quality events for executive and finance analysis",
+            "after separate write certification only, consider tightly scoped task/workflow hand-offs rather than generic object mutation"
+          ],
+          "customerValue": [
+            "labour-cost reduction",
+            "overtime reduction",
+            "scheduling efficiency",
+            "compliance",
+            "skills deployment",
+            "quality/rework reduction",
+            "faster implementation",
+            "reduced administration",
+            "forecasting",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce avoidable overtime and schedule churn by surfacing training, qualification and safety-readiness gaps before shift assignment",
+            "reduce duplicate EHS administration by reusing approved Intelex employee, location and compliance records instead of re-keying them",
+            "reduce incident/rework cost by correlating risk and quality outcomes with staffing, skill mix and shift conditions",
+            "shorten implementation by discovering the customer's existing application/object model and mapping custom fields once with versioned fingerprints",
+            "reduce API support effort through bounded 500-record paging, adaptive 6-request-per-second throttling and Retry-After-aware backoff"
+          ],
+          "dataGaps": [
+            "Intelex is configurable, so public documentation cannot establish which EHS/QMS/training objects or custom fields exist in a specific customer tenant",
+            "the platform is not normally authoritative for payroll, contractual hours, absence, agency commercials or production demand",
+            "API-key and secure-token setup is available only to Admin/Full Access users; effective least-privilege data scope must therefore be demonstrated rather than assumed",
+            "V2 and V6 authentication/API surfaces may coexist by tenant/version and must be discovered explicitly",
+            "health-sensitive or detailed incident narrative fields must not be ingested unless separately justified; WFM normally needs only a derived restriction/risk/eligibility signal"
+          ],
+          "constraintsRisks": [
+            "the documented platform API limit is 6 requests per second and 429 responses may include Retry-After; connectors must throttle and back off rather than retry aggressively",
+            "sequential result sets page after 500 records using @odata.nextLink; next-link hosts must remain pinned to the approved tenant and cannot bypass cross-host redirect policy",
+            "custom objects and fields create schema drift across tenants and environments, requiring schema fingerprints and versioned customer mappings",
+            "Object Data, User Management and workflow/task APIs can mutate business data and identities; WFM must allowlist read routes/verbs and keep those mutations disabled",
+            "tenant security is user-dependent; a successful token does not prove least privilege unless allowed applications, objects, records and fields are tested"
+          ],
+          "nextDevelopmentAction": "Keep Intelex at spec verification. Reuse the existing REST fabric; in an authorised sandbox/tenant, discover the exact API version and application/object model, prove the effective integration identity is least-privilege, exercise a bounded read-only page including @odata.nextLink handling, validate 6-rps throttling and Retry-After behaviour, fingerprint custom fields/relations, and normalise only approved worker/site/safety/qualification/restriction signals before promoting evidence."
+        }
+      }
+    }
+  ],
+  "systems": [
+    {
+      "id": "corityone",
+      "name": "CorityOne",
+      "category": "ehs-qms-learning",
+      "priority": "P1",
+      "protocols": ["REST"],
+      "auth": "enterprise-saas-authentication-tenant-specific",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.cority.com/technology-vision/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://www.cority.com/technology-vision/",
+      "evidenceNote": "Cority's current technology vision explicitly documents open integration through RESTful APIs connecting CorityOne with enterprise systems. The CorityOne platform spans safety, health, environmental, quality, sustainability, learning and management-of-change workflows. Public material reviewed in this cycle does not publish the stable endpoint catalogue, authentication mechanism, scopes, pagination or rate-limit contract needed for authenticated WFM proof, so CorityOne remains spec-verified only. WFM reuses the existing REST adapter, keeps writes and Cortex AI/agent actions disabled, and treats occupational-health information as sensitive: normal WFM ingestion should use only customer-approved derived work-restriction/readiness signals rather than raw clinical records.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.cority.com/corityone/",
+        "requiredPermissions": [
+          "dedicated CorityOne integration identity limited to the approved tenant, sites, modules and read-only API surfaces",
+          "read access only to the minimum safety, training, quality, organisational and derived occupational-health fields required by the WFM use case",
+          "no incident/workflow mutation, management-of-change action, clinical note access, record deletion, configuration administration or Cortex AI agent authority",
+          "explicit customer approval and retention policy before ingesting any worker restriction/readiness signal derived from occupational-health data"
+        ],
+        "dataAvailableOrExpected": [
+          "sites, organisational references and worker identifiers used across the configured CorityOne environment where exposed through the tenant API",
+          "incidents, hazards, inspections, audits, risk/compliance and corrective-action context where licensed and API-exposed",
+          "learning assignments, training completion/performance and certification-related evidence from CorityOne Learning Management where licensed",
+          "quality and management-of-change context that can explain temporary production or staffing constraints where licensed",
+          "occupational-health surveillance/compliance and return-to-work status where licensed, reduced for WFM to the minimum approved restriction/readiness signal rather than clinical detail"
+        ],
+        "wfmObjects": [
+          "worker",
+          "site",
+          "safety-event",
+          "risk-signal",
+          "compliance-event",
+          "qualification-requirement",
+          "training-completion",
+          "worker-restriction",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "pre-shift readiness checks that combine customer-mapped training/certification evidence with approved work-restriction signals before assignment",
+          "warn planners when an incident, hazard, management-of-change or compliance state creates a temporary staffing/skills constraint at a site or work area",
+          "identify recurring safety/quality hotspots and automatically recommend additional supervision, training or qualified coverage without changing CorityOne records",
+          "reuse governed site, worker and training structures during onboarding to reduce duplicate implementation administration",
+          "correlate overtime, staffing level and skills mix with safety, quality and training outcomes for executive reporting",
+          "after separate write certification only, consider narrowly scoped acknowledgement/task hand-offs; never inherit Cortex AI agent or generic workflow authority"
+        ],
+        "customerValue": [
+          "labour-cost reduction",
+          "overtime reduction",
+          "absence optimisation",
+          "scheduling efficiency",
+          "compliance",
+          "skills deployment",
+          "production throughput",
+          "quality/rework reduction",
+          "faster implementation",
+          "reduced administration",
+          "forecasting",
+          "executive reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce last-minute overtime/agency substitution by finding training, certification and approved work-restriction gaps before a worker reaches the shift",
+          "reduce EHS/training administration by reusing governed CorityOne records rather than maintaining separate WFM copies",
+          "reduce incident, rework and disruption cost by incorporating current safety/quality constraints into staffing and supervision decisions",
+          "shorten implementation by reusing existing site, worker and learning structures where the customer API safely exposes them",
+          "improve workforce-risk reporting by linking paid labour and staffing decisions to safety/training outcomes without centralising raw clinical information"
+        ],
+        "dataGaps": [
+          "public Cority material confirms RESTful integration capability but does not publish the endpoint catalogue, authentication/scopes, pagination or rate-limit semantics needed for a tenant-ready adapter",
+          "CorityOne is not necessarily authoritative for payroll, contractual hours, production demand, machine state or agency-worker commercials",
+          "licensed modules and customer configuration determine which safety, learning, health, quality and sustainability objects actually exist",
+          "occupational-health records may contain highly sensitive clinical information that WFM neither needs nor should ingest; a separate customer-approved derivation must produce only the minimum restriction/readiness signal",
+          "training completion is evidence only and does not automatically establish legal work eligibility without customer-defined qualification rules"
+        ],
+        "constraintsRisks": [
+          "do not infer API authentication or token scope from Cority's marketing-level REST statement; discover and prove the actual tenant contract before authentication evidence",
+          "the platform can automate EHS workflows and now includes Cortex AI agents, but WFM normal integration authority must remain read-only with agent/action functions disabled",
+          "custom workflows, fields and modules can create schema drift between customers and regions, requiring fingerprints and versioned mappings",
+          "health/medical and incident data may be special-category/sensitive data subject to regional privacy, residency and retention requirements",
+          "multi-site enterprises require deterministic site/worker identity reconciliation before safety or training signals influence scheduling"
+        ],
+        "nextDevelopmentAction": "Keep CorityOne at spec verification. Reuse the existing REST adapter and global EHS data-minimisation rules. Obtain current customer/vendor API documentation or an authorised sandbox, identify the supported base URLs/API versions/authentication/scopes/pagination/rate limits, prove a dedicated read-only integration identity, enumerate only approved objects/fields, and first normalise site, safety, learning/qualification and derived worker-restriction signals before any evidence promotion."
+      }
+    },
+    {
+      "id": "wolters-kluwer-enablon",
+      "name": "Wolters Kluwer Enablon Vision Platform",
+      "category": "ehs-operational-risk",
+      "priority": "P1",
+      "protocols": ["connectors"],
+      "auth": "enterprise-deployment-specific",
+      "researchStatus": "research-queued",
+      "docsUrl": "https://www.wolterskluwer.com/en/solutions/enablon/vision-platform",
+      "testLevel": "discovery-queued",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://www.wolterskluwer.com/en/solutions/enablon/vision-platform",
+      "evidenceNote": "Wolters Kluwer currently describes Enablon Vision as an API-ready EHS/operational-risk platform and documents Enablon Hub as a self-service development kit for integration with third-party software, content providers, Edge/IoT devices, drones, beacons and wearables. Public material reviewed here does not define a stable outward REST/OData/SOAP endpoint contract, authentication/scopes, pagination or rate limits for a WFM client. WFM therefore reuses only the existing vendor-thin connector scaffold at discovery stage rather than inventing a protocol. The product's ability to connect to Edge/IoT sources does not grant WFM plant-network or device-control authority.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.wolterskluwer.com/en/solutions/enablon",
+        "requiredPermissions": [
+          "a vendor-supported read-only Enablon Hub/API/reporting identity once the customer-specific integration contract is obtained",
+          "site/module/object scope limited to the EHS, control-of-work and operational-risk records needed by WFM",
+          "no permit approval, control-of-work action, incident/workflow mutation, configuration administration or IoT/device-control authority",
+          "customer/site edge termination if the eventual supported interface reaches protected plant/IoT networks rather than a vendor-managed SaaS API"
+        ],
+        "dataAvailableOrExpected": [
+          "health and safety incidents, hazards, inspections, audits, actions and risk controls where licensed",
+          "process-safety, control-of-work, permit/isolation and operational-risk context where licensed",
+          "site, organisation, worker/contractor references and responsibility assignments where exposed",
+          "environmental/ESG and operational KPI context used by Enablon Open Insights where relevant to labour/operations analysis",
+          "IoT/edge observations already brought into the Enablon platform through supported integrations, without assuming direct WFM access to the originating device"
+        ],
+        "wfmObjects": [
+          "worker",
+          "external-worker",
+          "site",
+          "safety-event",
+          "risk-signal",
+          "compliance-event",
+          "production-risk",
+          "worker-restriction",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "incorporate permit/control-of-work and safety-risk state into labour readiness once a supported read interface is proven",
+          "identify areas requiring additional qualified supervision or temporary labour restrictions based on current operational-risk controls",
+          "reuse site, contractor and responsibility structures to reduce implementation mapping and compliance administration",
+          "join approved safety/operational-risk signals to absence, overtime, agency and production outcomes for forecasting and executive reporting",
+          "after separate write certification only, consider narrow task/acknowledgement hand-offs; never inherit generic permit, isolation or IoT control authority"
+        ],
+        "customerValue": [
+          "labour-cost reduction",
+          "overtime reduction",
+          "scheduling efficiency",
+          "agency-labour reduction",
+          "compliance",
+          "skills deployment",
+          "production throughput",
+          "downtime reduction",
+          "faster implementation",
+          "reduced administration",
+          "forecasting",
+          "executive reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce staffing against temporarily unavailable/high-risk work by exposing current control-of-work and safety constraints to planning",
+          "reduce manual compliance administration by reusing approved Enablon site, contractor and action context",
+          "reduce disruption/overtime following safety events by bringing risk and control status into workforce contingency planning sooner",
+          "shorten implementation by reusing established enterprise/site structures once a supported read interface is obtained"
+        ],
+        "dataGaps": [
+          "public vendor material does not establish the outward API/SDK wire protocol, authentication model, scopes, endpoint/version contract, pagination or rate limits needed for a concrete WFM adapter",
+          "Enablon is not normally authoritative for payroll, payable time, contractual availability, detailed production orders or machine telemetry",
+          "actual available objects depend on licensed solution bundles and customer configuration",
+          "IoT/edge integration capability describes Enablon's ability to ingest data; it is not evidence that WFM may directly query or control those upstream devices"
+        ],
+        "constraintsRisks": [
+          "do not label Enablon REST/OData/SOAP or select a direct cloud endpoint until authoritative current technical documentation or an authorised tenant proves it",
+          "control-of-work and permit systems may contain safety-critical workflow authority; the WFM connector must remain read-only and informational",
+          "the eventual deployment can include SaaS plus edge/IoT integrations, so network topology must be discovered before deciding whether customer-edge termination is required",
+          "multi-site/global deployments require deterministic worker/site/contractor identity mapping and regional data-residency review"
+        ],
+        "nextDevelopmentAction": "Keep Enablon at discovery-queued on the existing vendor-thin scaffold. Obtain current Enablon Hub/API/SDK technical documentation or an authorised customer sandbox, identify the supported outward protocol, authentication/scopes, endpoint/version model, paging/throttling and read-only role; then reuse the matching protocol adapter instead of creating a bespoke stack, add any required customer-edge boundary, and only promote to spec verification when the interface contract is authoritative."
+      }
+    }
+  ]
+}

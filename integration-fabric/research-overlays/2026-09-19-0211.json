@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Hourly authoritative-vendor integration/value delta. Adds Siemens Insights Hub as a distinct industrial-IoT source and Schneider EcoStruxure Resource Advisor as a distinct energy-cost source whose customer integration transport is not yet evidenced. No vendor tenant credentials were used and connector writes remain disabled.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "siemens-insights-hub",
+      "name": "Siemens Insights Hub",
+      "category": "iiot",
+      "priority": "P1",
+      "protocols": [
+        "REST"
+      ],
+      "auth": "user-token-or-technical-client-credentials",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://developer.siemens.com/insights-hub/docs/apis/index.html",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://developer.siemens.com/insights-hub/docs/resources/industrial-iot-sdk-python/index.html",
+      "evidenceNote": "Siemens documents RESTful Insights Hub Industrial IoT APIs and SDK clients for Asset Management, IoT Time Series, Time Series Aggregates, IoT File, MindConnect and related services. Time-series reads can page via Link headers; service/API versions differ across SDKs and older versions are retained for backward compatibility before deprecation. MindConnect supports upstream upload of time series, events, files and asset data models with documented quotas, but that does not imply SFTP or webhook semantics for the WFM read connector: the proven WFM integration path here is the documented REST API family. Technical access can use application or tenant service credentials to obtain tokens. Several services also expose mutative endpoints, so the WFM connector is strictly read-only and must use operation-level permission enforcement rather than assume a named Siemens access tier is read-only. No tenant or sandbox authentication was attempted.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://developer.siemens.com/insights-hub/docs/apis/iot-iottimeseries/api-iottimeseries-overview.html",
+        "replaceProfileFields": [
+          "requiredPermissions"
+        ],
+        "requiredPermissions": [
+          "tenant/application technical identity limited to required read APIs",
+          "read Asset Management metadata needed for asset/work-centre mapping",
+          "read IoT Time Series/TS Aggregates and event/file data through documented read APIs only where required",
+          "no time-series, asset, file, event, device, agent or management-plane writes",
+          "tenant/site data scope restricted to the customer's approved manufacturing assets"
+        ],
+        "dataAvailableOrExpected": [
+          "industrial asset hierarchy and aspect metadata",
+          "time-series measurements and latest values",
+          "aggregated time-series summaries",
+          "machine events such as failures/emergency stops where customers publish them",
+          "asset-linked files and device/log artefacts where authorised",
+          "agent-side asset data models and measurement mappings"
+        ],
+        "wfmObjects": [
+          "machine-state",
+          "production-event",
+          "downtime-event",
+          "work-centre",
+          "shift-outcome"
+        ],
+        "automationOpportunities": [
+          "machine-stop/recovery signals can trigger labour redeployment and recall recommendations",
+          "correlate staffed time with machine state and production telemetry by work centre",
+          "use aggregate time-series reads for efficient shift/day performance correlation instead of high-volume raw polling",
+          "detect stale or interrupted telemetry before using machine state in workforce decisions",
+          "combine energy-like measurements published as time series with labour/production outcomes when the customer supplies trustworthy tag semantics"
+        ],
+        "customerValue": [
+          "downtime reduction",
+          "production throughput",
+          "lower paid idle time",
+          "better labour-to-machine and labour-to-output attribution",
+          "faster integration where Siemens Insights Hub is already the industrial data layer",
+          "cross-site executive manufacturing performance reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce paid idle labour by responding earlier to machine failures and recovery",
+          "reduce bespoke plant integration effort by consuming the customer's existing Insights Hub asset model",
+          "reduce telemetry-processing cost and API load by using aggregates for long-range workforce analysis",
+          "identify staffing conditions associated with throughput loss or repeated downtime"
+        ],
+        "dataGaps": [
+          "worker identity, employment, payroll and roster truth normally remain in HCM/WFM/payroll systems",
+          "asset/aspect names and tag semantics are customer-specific and require canonical mapping",
+          "not every tenant exposes the same services, versions, regions or licensed capabilities",
+          "event availability depends on what plant agents and upstream systems publish"
+        ],
+        "constraintsRisks": [
+          "time-series reads can require pagination through response Link headers",
+          "API versions differ between services/SDKs and older versions have deprecation paths, so capability negotiation and schema fingerprints are required",
+          "vendor quotas, call-rate limits and time-window limits require bounded polling, backoff and aggregate selection",
+          "late/out-of-order data and millisecond timestamp precision must be handled without corrupting shift attribution",
+          "technical client secrets are version/tenant sensitive and must remain executor-boundary only",
+          "Siemens access labels must not be treated as proof of read-only semantics; some limited access modes can still manage assets/files or create events",
+          "write/delete endpoints exist and remain prohibited until separate sandbox write-roundtrip evidence and customer authorisation",
+          "direct plant-network access remains prohibited; WFM reads the governed cloud/edge data layer rather than scanning PLC networks"
+        ],
+        "nextDevelopmentAction": "Build an Insights Hub thin adapter on the existing REST profile with service/version capability discovery, Link-header pagination, quota-aware retries, timestamp/order normalization and canonical asset/aspect mapping. Then obtain an authorised Siemens development/customer tenant for least-privilege authentication and a read round-trip before any write path is considered."
+      }
+    },
+    {
+      "id": "schneider-resource-advisor",
+      "name": "Schneider Electric EcoStruxure Resource Advisor",
+      "category": "energy",
+      "priority": "P1",
+      "protocols": [],
+      "auth": "interface-not-yet-evidenced",
+      "researchStatus": "product-docs-verified-interface-unverified",
+      "docsUrl": "https://www.se.com/ww/en/work/services/se-advisory-services/intelligent-software/resource-advisor/",
+      "testLevel": "discovery-queued",
+      "writeEnabled": false,
+      "evidenceUrl": "https://www.se.com/ww/en/work/services/se-advisory-services/intelligent-software/resource-advisor/",
+      "evidenceNote": "Schneider Electric documents Resource Advisor as a cloud platform aggregating enterprise energy and sustainability data, including utility-bill validation, energy cost/budget analysis, interval consumption and site-level benchmarking. This verifies a high-value data opportunity but the public product documentation reviewed does not establish a supported customer API, authentication method, webhook, SFTP or file-export contract. The system intentionally has no protocol assigned until an authoritative integration interface or authorised tenant/export sample is available; this is an explicit integration gap rather than an inferred connector path.",
+      "valueReview": {
+        "basis": "vendor-product-docs-capability-only",
+        "evidenceUrl": "https://www.se.com/ww/en/work/services/se-advisory-services/intelligent-software/resource-advisor/",
+        "replaceProfileFields": [
+          "requiredPermissions"
+        ],
+        "requiredPermissions": [
+          "customer-authorised read access to energy/resource data only after an interface is identified",
+          "site/entity scope limited to WFM cost and optimisation use cases",
+          "no BMS/control permission and no procurement mutation authority"
+        ],
+        "dataAvailableOrExpected": [
+          "enterprise and site energy consumption",
+          "interval consumption profiles",
+          "utility bill and invoice-validation data",
+          "energy spend and budget context",
+          "procurement/contract outcome context where licensed",
+          "facility benchmarking and performance-drift signals"
+        ],
+        "wfmObjects": [
+          "energy-event",
+          "site",
+          "shift-outcome",
+          "cost-driver"
+        ],
+        "automationOpportunities": [
+          "attribute verified energy spend and consumption to site/shift alongside labour and production",
+          "identify staffed non-productive periods with abnormal energy consumption",
+          "alert on energy-cost or consumption drift before shift-cost variance becomes material",
+          "combine tariff/cost context with staffing and production forecasts when customer-authorised data is available"
+        ],
+        "customerValue": [
+          "true labour-plus-energy shift cost",
+          "energy reduction",
+          "better budget variance analysis",
+          "less manual utility-bill and energy-data reconciliation",
+          "executive site-level cost and sustainability reporting"
+        ],
+        "savingsHypotheses": [
+          "identify energy consumed during paid but non-productive time",
+          "reduce spreadsheet effort reconciling utility bills, sites and shift outcomes",
+          "improve start-up/shutdown staffing decisions using interval energy profiles",
+          "surface tariff/budget exposure alongside labour-cost forecasts"
+        ],
+        "dataGaps": [
+          "public product documentation reviewed does not establish a supported external API, webhook, SFTP or file-export contract for customer integration",
+          "tariff, invoice and procurement fields depend on customer licensing, geography and configured data services",
+          "workforce identity and production-order detail must come from other systems"
+        ],
+        "constraintsRisks": [
+          "do not infer API availability from the platform's ability to aggregate data",
+          "energy and procurement data can cross legal entities/countries and requires explicit site/entity/data-residency scoping",
+          "any BMS/control surface must remain segregated from the Resource Advisor WFM read path",
+          "do not reuse generic EcoStruxure BMS protocols as evidence for the separate Resource Advisor cloud product"
+        ],
+        "nextDevelopmentAction": "Obtain Schneider/customer Resource Advisor interface documentation or an authorised tenant/export sample; only then assign an existing REST/file/middleware protocol path and prove a read round-trip. Until then, treat Resource Advisor as a verified value source with an unresolved transport boundary, not as an available connector."
+      }
+    }
+  ]
+}

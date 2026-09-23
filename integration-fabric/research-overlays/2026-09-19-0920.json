@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor delta for three previously discovery-queued manufacturing integrations. Promotes Siemens WinCC, MaintainX and Fiix CMMS to spec-verified only, corrects the Fiix protocol classification away from REST, and records least-privilege/data-value boundaries. No sandbox or tenant credentials were used and no writes are enabled.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "siemens-wincc",
+      "patch": {
+        "protocols": ["OPC UA"],
+        "auth": "opcua-certificate-and-named-user",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.siemens.com/products/opc-ua/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://www.siemens.com/products/opc-ua/",
+        "evidenceNote": "Current Siemens documentation identifies SIMATIC WinCC/WinCC Unified as OPC UA server/client-capable SCADA/HMI products. OPC UA itself can read, write, subscribe and invoke functionality, and WinCC security configuration can permit anonymous/no-security modes in some variants. Manufacturing WFM therefore uses only customer-approved Browse/Read/Subscribe data behind the site edge, requires a named identity, approved certificate trust and signed/encrypted sessions, and does not enable Write, method calls or alarm/control operations. Exact WinCC variant/version capabilities must be discovered per site. No WinCC runtime was authenticated or queried.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.siemens.com/products/opc-ua/",
+          "requiredPermissions": [
+            "dedicated named OPC UA identity limited to customer-approved WinCC nodes",
+            "Browse, Read and Subscribe only; no Write, method invocation, alarm acknowledgement or process-control actions",
+            "customer-approved server/client certificates and endpoint trust with signed or signed-and-encrypted sessions",
+            "no anonymous or no-security production sessions"
+          ],
+          "dataAvailableOrExpected": [
+            "customer-published process and machine tags from the WinCC OPC UA information model",
+            "machine or line state and production counters where modelled by the customer project",
+            "alarms and condition/event context where the WinCC variant and publication configuration expose them",
+            "node hierarchy and semantic names that can assist mapping to sites, lines and work centres",
+            "historical or archived observations only where the deployed WinCC variant exposes them through an approved read surface"
+          ],
+          "wfmObjects": ["site", "work-centre", "machine-state", "production-event", "production-demand", "downtime-event", "maintenance-window", "shift-outcome", "integration-event"],
+          "automationOpportunities": [
+            "adjust labour-demand and redeployment recommendations from actual line/machine state without direct PLC access",
+            "trigger human review of staffing risks when downtime or alarms reduce executable production",
+            "reuse WinCC node hierarchy to accelerate site, line and work-centre mapping during implementation",
+            "correlate shift labour, overtime and paid-idle periods with production counters and downtime evidence"
+          ],
+          "customerValue": ["faster brownfield implementation", "paid-idle-time reduction", "overtime reduction", "downtime reduction", "production throughput", "maintenance coordination", "labour-to-output attribution", "multi-site reporting"],
+          "savingsHypotheses": [
+            "reduce bespoke PLC integration by consuming an existing governed WinCC OPC UA projection",
+            "reduce paid idle time by aligning labour recommendations with actual equipment availability",
+            "reduce avoidable overtime by surfacing production recovery and constraint changes earlier",
+            "reduce implementation mapping effort by reusing the SCADA information model and node hierarchy"
+          ],
+          "dataGaps": [
+            "tag naming, engineering units, hierarchy and business semantics are customer/project specific",
+            "WinCC product generations and editions expose different capabilities and security configuration",
+            "SCADA does not normally provide authoritative worker, payroll, absence, skills or agency-labour truth",
+            "alarm or archived data availability must be proven per deployed variant rather than inferred from OPC UA support"
+          ],
+          "constraintsRisks": [
+            "OPC UA is bidirectional and may expose writes/methods; WFM operation allowlists must remain read/subscription only",
+            "some WinCC configurations can permit anonymous or reduced-security OPC UA; those modes are not acceptable for production WFM",
+            "WinCC normally resides in protected plant networks, so the customer/site edge remains mandatory",
+            "version/variant differences require capability discovery and node-schema fingerprints before mapping is trusted"
+          ],
+          "nextDevelopmentAction": "Reuse the existing OPC UA edge adapter for a thin WinCC profile. On an authorised WinCC runtime, discover endpoint/version and approved namespace read-only, prove named-user/certificate authentication and Sign/SignAndEncrypt, snapshot the allowed node schema, test reconnect/subscription replay and source timestamps, and normalize representative machine-state/downtime/production observations before promotion beyond spec verification."
+        }
+      }
+    },
+    {
+      "id": "maintainx",
+      "patch": {
+        "protocols": ["REST", "webhooks"],
+        "auth": "bearer-api-key",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.getmaintainx.com/build/build-with-maintainx",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://help.getmaintainx.com/build/build-with-maintainx",
+        "evidenceNote": "Current MaintainX documentation confirms a bearer-token REST API, updatedAt polling with pagination/deduplication, signed webhooks, external identifiers for cross-system identity, and a Reporting/Power BI API-key mode that cannot modify data. Webhook subscriptions themselves are configurable/mutative and therefore remain outside the normal WFM data-plane authority. MaintainX also documents region-specific OT connector endpoints and customer-side outbound-only industrial data paths, but those do not grant WFM direct plant-network authority. No MaintainX tenant was authenticated or queried.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://help.getmaintainx.com/build/build-with-maintainx",
+          "requiredPermissions": [
+            "prefer a read-only Reporting/Power BI API key where its endpoint coverage is sufficient for the WFM workflow",
+            "otherwise use a dedicated bearer API key constrained to the minimum required organization/data scope",
+            "verify webhook timestamps/signatures and provision subscription configuration out-of-band rather than granting the runtime subscription-management authority",
+            "bind multi-organization and regional routing explicitly and do not reuse tokens across customer tenants"
+          ],
+          "dataAvailableOrExpected": [
+            "work orders and work-order status changes exposed through the REST API/webhooks",
+            "assets and asset updates",
+            "locations and parts including stable external identifiers where configured",
+            "work requests and other maintenance entities exposed by the customer's enabled API surface",
+            "change timestamps for incremental polling plus webhook occurrence metadata for event-driven reconciliation"
+          ],
+          "wfmObjects": ["asset", "maintenance-work", "maintenance-window", "skill-demand", "labour-requirement", "disruption-event", "site", "integration-event"],
+          "automationOpportunities": [
+            "turn planned/emergency maintenance demand into workforce requirements and qualified-worker recommendations",
+            "combine maintenance status changes with production schedules to reduce avoidable production/maintenance clashes",
+            "use external identifiers to reconcile assets/locations with ERP, MES and WFM records without duplicate master data",
+            "use signed webhooks plus updatedAt catch-up polling so missed events do not leave staffing decisions stale",
+            "correlate maintenance response, work-order timing and equipment availability with overtime and shift outcomes"
+          ],
+          "customerValue": ["downtime reduction", "maintenance coordination", "reduced emergency overtime", "skills deployment", "faster implementation", "reduced integration administration", "duplicate-record reduction", "multi-site reporting"],
+          "savingsHypotheses": [
+            "reduce emergency callout and overtime by exposing maintenance demand earlier to workforce planning",
+            "reduce avoidable downtime by matching maintenance work with available qualified labour and production windows",
+            "reduce integration reconciliation effort using stable external identifiers for assets, locations and parts",
+            "reduce polling load and latency by combining signed webhooks with incremental catch-up polling"
+          ],
+          "dataGaps": [
+            "authoritative employee contracts, payroll, absence and broad skills records normally remain in HCM/WFM/payroll systems",
+            "work-order labour standards and skill requirements depend on customer configuration",
+            "externalId is only supported on documented entity types and records a single external identifier per entity",
+            "available API data and organization scope depend on plan, key type and customer configuration"
+          ],
+          "constraintsRisks": [
+            "REST keys can expose mutative operations even though WFM remains read-only; prefer the documented non-modifying Reporting key where possible",
+            "webhook configuration endpoints create/update/delete subscriptions and remain management-plane operations",
+            "incremental polling must handle pagination, updatedAt overlap windows and deduplication by stable ID",
+            "regional and multi-organization routing must be pinned so data cannot cross a customer's intended boundary",
+            "OT connector telemetry may originate from protected plant networks; WFM must consume the approved cloud projection rather than gaining inbound plant access"
+          ],
+          "nextDevelopmentAction": "Reuse the existing REST/OpenAPI and signed-webhook adapters. In an authorised MaintainX environment, first prove a read-only Reporting key against the required asset/work-order/location endpoints; if insufficient, document the minimum dedicated REST-key scope. Validate pagination, updatedAt overlap/dedupe, webhook signature/replay handling, externalId reconciliation, region/org binding and representative read normalization before promotion beyond spec verification."
+        }
+      }
+    },
+    {
+      "id": "fiix",
+      "patch": {
+        "protocols": ["SDK"],
+        "auth": "tenant-subdomain-and-api-keys",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://helpdesk.fiixsoftware.com/hc/en-us/articles/360018524352-Fiix-API-FAQ",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://helpdesk.fiixsoftware.com/hc/en-us/articles/360018524352-Fiix-API-FAQ",
+        "evidenceNote": "Fiix's current official API FAQ explicitly states that the Fiix API is not RESTful and is not SOAP. It is a cloud HTTPS/JSON API with Java and JavaScript SDKs and two request families: object requests and RPCs. API keys inherit both the associated user's permissions and CMMS-wide configuration, and the documented usage limit is 1,000 API calls per day per user licence. The previous generic REST classification was therefore incorrect; Manufacturing WFM now uses the existing vendor-thin SDK/custom-API path and keeps all object/RPC mutations disabled. No Fiix tenant was authenticated or queried.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://helpdesk.fiixsoftware.com/hc/en-us/articles/360018524352-Fiix-API-FAQ",
+          "requiredPermissions": [
+            "dedicated Fiix API user/application keys with user-group/role permissions limited to the required read/find object operations",
+            "read-only access to only the required Work Order, Asset, Task and related maintenance objects",
+            "no create, change, remove or mutative RPC permissions",
+            "tenant subdomain and keys isolated per customer and kept at the executor boundary"
+          ],
+          "dataAvailableOrExpected": [
+            "Work Order objects",
+            "Asset objects",
+            "Task objects",
+            "other maintenance objects made available by the customer's Fiix API permissions",
+            "meter/asset-state context where the customer uses the documented Fiix API use cases"
+          ],
+          "wfmObjects": ["asset", "maintenance-work", "maintenance-window", "skill-demand", "labour-requirement", "disruption-event", "site", "integration-event"],
+          "automationOpportunities": [
+            "turn maintenance work-order demand into staffing and qualified-worker recommendations",
+            "correlate asset state and maintenance work with production disruption, emergency overtime and shift outcomes",
+            "schedule API synchronization within the documented daily call budget using change watermarks and customer-priority objects",
+            "reuse the vendor-thin custom API adapter rather than pretending Fiix follows REST semantics"
+          ],
+          "customerValue": ["downtime reduction", "maintenance coordination", "reduced emergency overtime", "skills deployment", "payroll/overtime context", "faster implementation", "reduced connector defects"],
+          "savingsHypotheses": [
+            "reduce emergency callout and overtime by exposing maintenance demand to workforce planning",
+            "reduce downtime by aligning maintenance work with qualified labour and production windows",
+            "reduce integration defects/support effort by modelling Fiix object/RPC semantics correctly instead of using a false REST abstraction",
+            "reduce API throttling incidents by planning synchronization around the documented licence-based daily call budget"
+          ],
+          "dataGaps": [
+            "API availability requires the Fiix Enterprise plan",
+            "worker contracts, payroll, absence and broad qualification truth normally remain outside Fiix",
+            "CMMS v5/v6 configuration changes object/action availability; v6 User API access is read-only while other object behaviour must be checked against the deployed account",
+            "exact object fields and relationships must be capability-discovered from the customer's current Fiix API reference/tenant"
+          ],
+          "constraintsRisks": [
+            "Fiix is not REST or SOAP; generic REST pagination/error assumptions must not be applied",
+            "API keys inherit the associated user's permissions and CMMS-wide configuration, so least privilege must be proved rather than inferred",
+            "object requests and RPCs can modify data; WFM must technically block create/change/remove and mutative RPC operations",
+            "the documented 1,000-calls-per-day-per-user-licence limit requires budgeted polling, backoff and prioritized synchronization",
+            "Fiix account version differences can change accessible objects/actions"
+          ],
+          "nextDevelopmentAction": "Reuse the existing vendor-thin SDK/custom-API profile rather than the REST adapter. In an authorised Fiix Enterprise tenant, discover the deployed API/account version and permitted object/RPC catalogue, prove a dedicated read-only user's Find/read behavior on Work Orders, Assets and Tasks, verify rate-budget handling and error semantics, fingerprint representative schemas and normalize read results before promotion beyond spec verification."
+        }
+      }
+    }
+  ],
+  "systems": []
+}

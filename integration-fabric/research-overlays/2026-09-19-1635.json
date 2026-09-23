@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor evidence delta promoting L2L Connected Manufacturing Operations from adapter-less discovery to a constrained REST application-data path and promoting Sepasoft MES at spec-verified. Reuses existing REST/SOAP protocol layers, preserves the customer-edge boundary for plant-local Sepasoft deployments, does not infer plant-control access, and does not enable writes or claim sandbox/tenant evidence.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "l2l-connected-manufacturing-operations",
+      "patch": {
+        "protocols": [
+          "REST"
+        ],
+        "auth": "vendor-assisted-authentication-not-publicly-specified",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.l2l.com/hubfs/Product%20Sheet%20PDFs/CloudDISPATCH%20Intro.pdf?hsLang=en",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://www.l2l.com/hubfs/Product%20Sheet%20PDFs/CloudDISPATCH%20Intro.pdf?hsLang=en",
+        "evidenceNote": "L2L's current platform documentation separates Application Sync from Machine Data Sync, while its official CloudDISPATCH factsheet explicitly documents an easy-to-use REST-based web service API and a fully functioning API integrating with ERP, MES, EAM/CMMS, MOM and other systems. This is sufficient to select the existing REST adapter for the vendor-managed application data plane, but not to infer any SCADA/OPC/PLC endpoint. L2L also documents its cloud platform as AWS-hosted/single-tenant. The normal WFM route is therefore the constrained cloud/application REST interface with writes disabled; any separate machine/SCADA/IIoT path remains vendor/customer-site-specific and must independently satisfy the normal edge and industrial-security gates. Public material reviewed still does not publish the exact REST authentication, scopes, pagination or rate-limit contract, so no sandbox, tenant or round-trip evidence is claimed.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.l2l.com/platform/integrations",
+          "requiredPermissions": [
+            "vendor/customer-approved L2L application API identity limited to approved read-only production, maintenance, inventory, worker/training or operational data",
+            "no FlowEngine, dispatch/workflow, maintenance work-order, production-control or machine-control action authority in the normal WFM connector",
+            "no direct PLC/SCADA/IIoT access through the cloud REST connector; any Machine Data Sync or plant route must be separately evidenced and edge-gated",
+            "customer-approved site/entity scope proving the API identity cannot read unrelated plants or business units"
+          ],
+          "dataAvailableOrExpected": [
+            "production actuals, scrap, downtime, minor stops and production/order context documented by L2L",
+            "maintenance, predictive-maintenance, dispatch/escalation and spare-parts context",
+            "digital work instructions, frontline workflow, training and skills/upskilling information in the L2L platform",
+            "machine-derived OEE and downtime results already normalized into L2L where Machine Data Sync is deployed",
+            "site, line, area and operational alert context used by frontline teams"
+          ],
+          "wfmObjects": [
+            "production-demand",
+            "production-event",
+            "work-centre",
+            "downtime-event",
+            "maintenance-event",
+            "training-completion",
+            "skill",
+            "shift-outcome",
+            "site",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "refresh staffing and recovery recommendations from L2L production/downtime state once representative reads are proven",
+            "join skills/training evidence to schedule-readiness checks while keeping customer qualification and legal eligibility rules authoritative",
+            "anticipate technician demand from maintenance and machine-health context to reduce emergency overtime",
+            "reuse site/line/order context during implementation to reduce manual mapping and labour-to-output administration",
+            "after separate write certification, consider narrow workflow hand-offs without granting broad FlowEngine, maintenance or production-control authority"
+          ],
+          "customerValue": [
+            "labour-cost reduction",
+            "overtime reduction",
+            "scheduling efficiency",
+            "skills deployment",
+            "production throughput",
+            "downtime reduction",
+            "maintenance coordination",
+            "faster implementation",
+            "reduced administration",
+            "forecasting",
+            "finance attribution",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce paid idle time and avoidable overtime by using current production/downtime state in labour decisions",
+            "reduce training and skills administration by reusing L2L frontline evidence rather than maintaining duplicate readiness records",
+            "reduce implementation effort by reusing L2L site/line/order structures and already-normalized machine outcomes",
+            "improve labour productivity and cost attribution by correlating L2L execution outcomes with WFM paid time and skills mix"
+          ],
+          "dataGaps": [
+            "public L2L material confirms the REST web-service/API route but does not publish the exact authentication method, scope model, endpoint catalogue, pagination, rate limits or webhook contract",
+            "it is not yet proven which current L2L modules/tenant packages expose which objects through the customer API",
+            "training completion and skills evidence do not automatically establish legal qualification or work eligibility",
+            "authoritative payroll, employment, absence and agency-worker records normally remain outside L2L",
+            "customer site/line/machine/worker identifiers still require deterministic reconciliation with HCM, ERP, MES and WFM masters"
+          ],
+          "constraintsRisks": [
+            "L2L exposes automation and operational workflows, so read authority must be proven independently from action authority",
+            "the documented Machine Data Sync path may touch PLC/SCADA/IIoT networks and must not be collapsed into the cloud REST connector",
+            "customer packages and legacy/current L2L modules may expose different API objects or versions",
+            "unknown rate-limit, pagination, schema-version and retry semantics must be discovered before round-trip evidence",
+            "single-tenant cloud hosting does not itself prove least-privilege site/entity scope"
+          ],
+          "nextDevelopmentAction": "Map the documented L2L REST application interface onto the existing REST/OpenAPI adapter without inventing SCADA/OPC routes. In an authorised L2L sandbox or customer tenant, identify the exact base URL/version/authentication and scopes, prove the technical identity is read-only and correctly site/entity-scoped, enumerate supported production/maintenance/training objects, test pagination/rate-limit/retry/schema behaviour, normalise representative records, and only then promote beyond spec verification. Treat Machine Data Sync/plant connectivity as a separate edge-gated evidence path."
+        }
+      }
+    },
+    {
+      "id": "sepasoft-mes",
+      "patch": {
+        "name": "Sepasoft MES Module Suite",
+        "category": "mes-mom-quality-production",
+        "priority": "P1",
+        "protocols": [
+          "REST",
+          "SOAP"
+        ],
+        "auth": "ignition-user-source-or-provider-config",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.sepasoft.com/articles/user-manual/web-services",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://docs.sepasoft.com/articles/knowledge-base/serving-up-analysis-data-as-a-web-service-rest-endpoint",
+        "evidenceNote": "Sepasoft's current documentation confirms that its Web Services module can make an Ignition Gateway a REST or SOAP service provider for external systems and can expose MES analysis/production data. Sepasoft also documents MES 3.0/4.0 scripting for production, work orders, OEE/downtime, batch, traceability and SPC, and states the suite is built on Inductive Automation Ignition. Provider endpoints can be secured with Ignition User Sources and SSL, while the same platform can also expose mutative operations such as schedule edits or alarm actions. WFM therefore reuses only the existing REST/SOAP read path behind the customer/site edge, requires a dedicated read identity and route allowlist, and keeps all scripting/action/control authority disabled. No Sepasoft customer tenant, gateway or credentials were used.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.sepasoft.com/",
+          "requiredPermissions": [
+            "customer-created Sepasoft/Ignition integration identity limited to specifically exposed read-only REST/SOAP operations",
+            "TLS plus customer-approved Ignition User Source/provider authentication; no anonymous production-data route",
+            "customer/site edge termination for the Ignition/Sepasoft gateway; no direct cloud scanning of plant networks",
+            "no MES scripting, schedule modification, alarm clearing, batch execution, tag writing, PLC/OPC write or other control authority"
+          ],
+          "dataAvailableOrExpected": [
+            "production runs, production results and work-order/schedule context exposed through customer-defined web-service operations",
+            "OEE, downtime and production-performance analysis",
+            "equipment/work-centre hierarchy and resource status",
+            "batch execution and traceability/genealogy context",
+            "SPC/quality results and material/lot context where the relevant Sepasoft modules are installed",
+            "real-time or historical MES analysis output intentionally exposed by the customer's Sepasoft Web Services configuration"
+          ],
+          "wfmObjects": [
+            "production-demand",
+            "work-centre",
+            "production-event",
+            "machine-state",
+            "downtime-event",
+            "quality-event",
+            "shift-outcome",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "refresh labour demand from current work orders, production runs and equipment state rather than static schedules alone",
+            "redeploy appropriately skilled labour when OEE/downtime indicates a constrained or stopped line",
+            "join quality/SPC and traceability outcomes to worker/skill mix for root-cause and rework analysis",
+            "reuse equipment/work-centre structure during implementation to reduce manual line and resource mapping",
+            "attribute paid labour and overtime to actual production, downtime and quality outcomes for finance and executive reporting",
+            "after separate write certification, evaluate narrowly scoped schedule/workflow hand-offs without granting generic MES scripting or control"
+          ],
+          "customerValue": [
+            "labour-cost reduction",
+            "overtime reduction",
+            "scheduling efficiency",
+            "production throughput",
+            "downtime reduction",
+            "quality/rework reduction",
+            "inventory/logistics improvements",
+            "faster implementation",
+            "reduced administration",
+            "forecasting",
+            "finance attribution",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce paid idle time by matching staffing to actual line/work-order state from Sepasoft",
+            "reduce overtime caused by late visibility of downtime or production slippage",
+            "reduce rework and quality losses by correlating SPC/traceability outcomes with labour and skills deployment",
+            "reduce implementation effort by reusing the customer's Sepasoft equipment and work-centre model",
+            "improve labour-cost-per-unit and shift profitability analysis by combining WFM paid time with MES production evidence"
+          ],
+          "dataGaps": [
+            "Sepasoft Web Services are customer-configured, so there is no single universal endpoint or object contract across deployments",
+            "provider authentication, operation names and payload schemas depend on the customer's Ignition/Sepasoft configuration",
+            "MES 3.x and 4.x plus Ignition 8.1/8.3 combinations create version-specific behaviour and deployment differences",
+            "authoritative worker employment, payroll, absence, agency labour and legal qualification records normally remain outside Sepasoft",
+            "quality, traceability, batch and OEE data availability depends on the Sepasoft modules actually licensed and configured"
+          ],
+          "constraintsRisks": [
+            "the same Web Services module can expose mutative operations; endpoint allowlisting and effective read-only permission proof are mandatory",
+            "the gateway commonly sits inside a protected plant network, so customer-edge routing remains mandatory even though transport is HTTPS/SOAP",
+            "customer-defined REST/SOAP payloads can drift as projects are edited; schema fingerprints and mapping versioning are required",
+            "intermittent plant connectivity requires bounded retries, freshness tracking and duplicate/idempotency handling",
+            "Sepasoft can sit directly alongside Ignition tags and OPC-connected equipment, so WFM must never inherit tag-write or control privileges from the gateway identity"
+          ],
+          "nextDevelopmentAction": "Reuse the existing REST and SOAP adapters behind the customer/site edge. In an authorised Sepasoft/Ignition test gateway, enumerate only the customer-exposed read operations, prove a dedicated integration identity cannot invoke mutative web-service or scripting actions, fingerprint MES/Ingition versions and payload schemas, test pagination or bounded query windows where applicable, stale/retry/duplicate behaviour and custom fields, reconcile site/line/work-centre identifiers, and normalise representative production/OEE/downtime/quality records before promotion beyond spec verification."
+        }
+      }
+    }
+  ],
+  "systems": []
+}

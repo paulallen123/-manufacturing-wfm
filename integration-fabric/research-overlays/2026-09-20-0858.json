@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-20",
+  "purpose": "Authoritative-vendor manufacturing maintenance integration delta adding Fracttal One at spec-verified only. Reuses the existing REST/OpenAPI transport, records OAuth2 permission-group, pagination, rate-limit, custom-field, multi-site and write-authority boundaries, and keeps Manufacturing WFM read-only. No sandbox/customer credentials, customer data, writes or plant-network probes were used.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "fracttal-one",
+      "name": "Fracttal One",
+      "category": "eam-cmms",
+      "priority": "P1",
+      "protocols": ["REST"],
+      "auth": "oauth2-client-credentials-or-authorization-code-with-permission-group",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://api.fracttal.com/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://api.fracttal.com/v2-En/reference/oauth-20",
+      "evidenceNote": "Current Fracttal documentation confirms a JSON REST API secured with OAuth 2.0. OAuth consumers support Client Credentials or Authorization Code and must be associated with a permission group that controls accessible resources and actions. Read endpoints cover assets/locations/equipment/tools/spares, work orders and tasks, pending tasks, work requests, meters/readings, personnel references, custom fields and work-order material movements. Most list endpoints use start/limit pagination with a default/maximum page size of 100; vendor FAQ documents a 200 requests/minute API limit, and dynamic filters are bounded. The same API also supports create/update/delete operations, including advanced work-order creation, so WFM requires a dedicated read-only permission group and never treats OAuth success alone as proof of least privilege. Public documentation still contains legacy Hawk-authentication material alongside the current OAuth2 contract; deployment/version discovery must therefore pin the actual supported auth/API contract before authentication evidence can advance. No Fracttal tenant was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://api.fracttal.com/",
+        "requiredPermissions": [
+          "dedicated OAuth2 consumer, preferably Client Credentials, associated with a customer-created permission group containing only the minimum GET/read resources required for WFM",
+          "read assets/locations/equipment, work orders/tasks, pending tasks, work requests, meters/readings and inventory/material context only where the customer approves each domain",
+          "tenant/company and site/location hierarchy bound explicitly; do not accept a token whose effective permission group can create, update or delete maintenance, asset, inventory or personnel records",
+          "exclude personnel document bodies and unrelated personal data by default; use only the minimum worker/resource reference needed for assignment reconciliation",
+          "no advanced-API work-order creation, task update, stock mutation, personnel creation, configuration or administrative authority"
+        ],
+        "dataAvailableOrExpected": [
+          "asset hierarchy covering locations, equipment, tools, spares/supplies and customer custom fields",
+          "maintenance work orders and associated tasks, status, dates, responsible resource references and asset context",
+          "pending/planned maintenance tasks, work requests/incidents, urgency/status and request-to-work-order lifecycle context",
+          "meter definitions/readings and last-maintenance context where the customer's plan/add-on exposes them",
+          "work-order material requisitions, warehouses/spares context and inventory resources associated with maintenance tasks",
+          "human-resource/personnel identifiers and assignment references where required for deterministic WFM worker reconciliation"
+        ],
+        "wfmObjects": [
+          "asset",
+          "maintenance-work",
+          "maintenance-demand",
+          "skill-demand",
+          "labour-requirement",
+          "worker-activity-context",
+          "inventory-readiness",
+          "disruption-event",
+          "site",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "forecast technician/headcount demand from pending and planned maintenance before it becomes emergency overtime or agency labour",
+          "match WFM availability and verified qualifications to Fracttal work-order demand while keeping Fracttal personnel/resource data as assignment context rather than employment authority",
+          "avoid dispatching labour when required spare/material readiness is missing and surface the constraint before shift execution",
+          "use meter/asset condition and urgent work-request context to prioritize maintenance coverage and coordinate production downtime windows",
+          "reconcile maintenance labour demand, responsible-resource assignments and completion timing against WFM paid time for cost/downtime attribution",
+          "future controlled write candidate: create/update Fracttal work orders only after separate write-roundtrip, idempotency, approval and customer-authority evidence; disabled in the normal connector plane"
+        ],
+        "customerValue": [
+          "labour-cost reduction",
+          "overtime reduction",
+          "agency-labour reduction",
+          "scheduling efficiency",
+          "skills deployment",
+          "downtime reduction",
+          "maintenance coordination",
+          "inventory/logistics improvements",
+          "faster implementation",
+          "reduced administration",
+          "improved forecasting",
+          "finance attribution",
+          "executive reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce emergency overtime and contractor/agency call-outs by forecasting maintenance labour and skill demand from pending work earlier",
+          "reduce maintenance-related production loss by aligning qualified labour and required material availability before the planned intervention window",
+          "reduce manual maintenance-to-timesheet reconciliation through deterministic work-order, asset, responsible-resource and timestamp joins",
+          "improve labour-to-asset/downtime cost attribution for maintenance, operations and finance without making Fracttal the payroll source",
+          "reduce bespoke CMMS integration effort by reusing the existing REST adapter, standard OAuth2 service identity and common offset-pagination controls"
+        ],
+        "dataGaps": [
+          "Fracttal is not normally authoritative for employment contracts, payable attendance, absence, payroll, agency commercials or complete workforce availability",
+          "personnel/resource records do not by themselves prove qualification, legal eligibility or current skill certification",
+          "exact enabled endpoints depend on customer plan/add-ons; advanced APIs and optional modules cannot be assumed present",
+          "customer custom fields, asset codes, location hierarchy and responsible-resource identifiers require versioned customer-specific canonical mappings",
+          "public documentation spans multiple generations/languages and includes older Hawk-authentication guidance, so the effective tenant API/auth version must be discovered rather than inferred"
+        ],
+        "constraintsRisks": [
+          "the REST surface is bidirectional; WFM must verify the OAuth permission group's effective operations are read-only instead of relying on GET-only client intent",
+          "most list endpoints cap pages at 100 records and use start/limit or page semantics; extraction must continue until completion and reconcile stable IDs across overlapping incremental windows",
+          "the documented 200 requests/minute limit requires per-tenant budgeting, bounded concurrency, Retry-After/backoff handling where returned, and no credential-sharding to evade throttling",
+          "dynamic filters are bounded and date/time values can include UTC offsets; filter encoding, timezone normalization and source timestamps must be preserved",
+          "partial add-on coverage, intermittent API availability, duplicate/changed records and schema/custom-field drift must fail to advisory/stale-data mode rather than silently producing complete-looking workforce decisions",
+          "write-capable advanced endpoints exist, including work-order creation; they remain outside the normal connector authority until separate controlled write evidence is earned"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST/OpenAPI adapter and generic connection-evidence gate. In an authorised Fracttal sandbox/customer tenant, first discover the effective API/auth generation, create a dedicated OAuth2 Client Credentials consumer with a read-only permission group, prove tenant/company/site scope and actual permitted operations, then perform bounded GET reads for assets, work orders/tasks, pending tasks, work requests and meters. Validate 100-record pagination, the 200-requests/minute budget/backoff, date filters/timezones, custom-field schema fingerprints, stable-ID deduplication, partial/add-on behaviour and resource-to-WFM identity mappings before promotion beyond spec verification. Keep all POST/PUT/DELETE and Advanced API write paths disabled until a separately authorised write-roundtrip programme exists."
+      }
+    }
+  ]
+}
