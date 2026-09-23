@@ -7,6 +7,7 @@ RUN mkdir -p /app/operations/runtime /app/trust/runtime /app/release
 COPY operations/runtime/decision-episode.cjs /app/operations/runtime/decision-episode.cjs
 COPY operations/runtime/frontier-decision-control.cjs /app/operations/runtime/frontier-decision-control.cjs
 COPY operations/runtime/autopilot-execution-engine.cjs /app/operations/runtime/autopilot-execution-engine.cjs
+COPY operations/runtime/golden-industrial-loop.cjs /app/operations/runtime/golden-industrial-loop.cjs
 COPY trust/runtime/vector-trust-spine.cjs /app/trust/runtime/vector-trust-spine.cjs
 COPY release/vector-frontier-convergence.json /app/release/vector-frontier-convergence.json
 
@@ -14,20 +15,24 @@ COPY release/vector-frontier-convergence.json /app/release/vector-frontier-conve
 # those runtime modules only for the admission step and are then removed.
 COPY operations/runtime/frontier-decision-control.test.cjs /app/operations/runtime/frontier-decision-control.test.cjs
 COPY operations/runtime/autopilot-execution-engine.test.cjs /app/operations/runtime/autopilot-execution-engine.test.cjs
+COPY operations/runtime/golden-industrial-loop.test.cjs /app/operations/runtime/golden-industrial-loop.test.cjs
 COPY trust/runtime/vector-trust-spine.test.cjs /app/trust/runtime/vector-trust-spine.test.cjs
 
 RUN node --check /app/operations/runtime/decision-episode.cjs \
  && node --check /app/operations/runtime/frontier-decision-control.cjs \
  && node --check /app/operations/runtime/autopilot-execution-engine.cjs \
+ && node --check /app/operations/runtime/golden-industrial-loop.cjs \
  && node --check /app/trust/runtime/vector-trust-spine.cjs \
  && node --test \
       /app/operations/runtime/frontier-decision-control.test.cjs \
       /app/operations/runtime/autopilot-execution-engine.test.cjs \
+      /app/operations/runtime/golden-industrial-loop.test.cjs \
       /app/trust/runtime/vector-trust-spine.test.cjs \
- && node -e "const f=require('/app/operations/runtime/frontier-decision-control.cjs');const a=require('/app/operations/runtime/autopilot-execution-engine.cjs');const t=require('/app/trust/runtime/vector-trust-spine.cjs');if(typeof f.createAssuranceEnvelope!=='function'||typeof f.validateAssuranceEnvelope!=='function'||typeof a.createAutopilotExecutionEngine!=='function'||typeof t.EvidenceLedger!=='function')throw new Error('FRONTIER_RUNTIME_IMPORT_PROOF_FAILED');console.log('FRONTIER_RUNTIME_IMPORT_PROOF=PASS')" \
+ && node -e "const f=require('/app/operations/runtime/frontier-decision-control.cjs');const a=require('/app/operations/runtime/autopilot-execution-engine.cjs');const g=require('/app/operations/runtime/golden-industrial-loop.cjs');const t=require('/app/trust/runtime/vector-trust-spine.cjs');if(typeof f.createAssuranceEnvelope!=='function'||typeof f.validateAssuranceEnvelope!=='function'||typeof a.createAutopilotExecutionEngine!=='function'||typeof g.buildGoldenIndustrialLoop!=='function'||typeof t.EvidenceLedger!=='function')throw new Error('FRONTIER_RUNTIME_IMPORT_PROOF_FAILED');console.log('FRONTIER_RUNTIME_IMPORT_PROOF=PASS')" \
  && rm -f \
       /app/operations/runtime/frontier-decision-control.test.cjs \
       /app/operations/runtime/autopilot-execution-engine.test.cjs \
+      /app/operations/runtime/golden-industrial-loop.test.cjs \
       /app/trust/runtime/vector-trust-spine.test.cjs
 
 RUN chown -R root:root /app \
