@@ -1,0 +1,64 @@
+{
+  "contractVersion": "VECTOR_ENGINEERING_PLANE_V1",
+  "operatingModel": "HYBRID_GITHUB_SOURCE_VECTOR_EXECUTION",
+  "purpose": "Provide a continuously evolving internal engineering plane for VECTOR-specific testing, simulation, diagnosis, proof and development tooling without rebuilding mature source-control capabilities.",
+  "sourceControl": {
+    "system": "GitHub",
+    "sourceOfTruth": true,
+    "responsibilities": [
+      "git-history",
+      "branches-and-pull-requests",
+      "code-review",
+      "release-history",
+      "disaster-recovery-source-copy"
+    ]
+  },
+  "vectorEngineeringPlane": {
+    "responsibilities": [
+      "tool-registry",
+      "test-and-regression-tools",
+      "simulation-tools",
+      "diagnostic-tools",
+      "proof-and-evidence-tools",
+      "reusable-vector-specific-automation",
+      "tool-pipelines",
+      "tool-evolution-proposals"
+    ],
+    "lifecycle": ["PROPOSED", "SHADOW", "CERTIFIED", "DEPRECATED"],
+    "defaultExecutionMode": "SHADOW",
+    "defaultEnvironment": "PROOF"
+  },
+  "boundaries": {
+    "productionExecutionAllowed": false,
+    "productionMutationAllowed": false,
+    "rawCustomerDataAllowed": false,
+    "directExternalSystemWritesAllowed": false,
+    "rawSecretsInRunReceiptsAllowed": false,
+    "northstarRuntimeShared": false,
+    "northstarDatabaseShared": false,
+    "northstarSecretsShared": false,
+    "northstarDeploymentShared": false
+  },
+  "northstar": {
+    "role": "ISOLATED_EXTERNAL_SIMULATION_AND_CUSTOMER_EMULATION",
+    "relationship": "sanitised evidence and read-only/disposable test inputs only"
+  },
+  "governance": {
+    "immutableToolVersions": true,
+    "independentPromotionRequired": true,
+    "proposedToolsMayExecute": false,
+    "shadowToolsMayMutatePersistently": false,
+    "selfCertificationAllowed": false,
+    "selfRegistrationOfEvolutionProposalAllowed": false
+  },
+  "continuousEvolutionLoop": [
+    "observe-repeated-engineering-friction-or-failure",
+    "capture-evidence",
+    "propose-new-or-revised-tool",
+    "run-in-shadow",
+    "measure-value-and-failure-modes",
+    "independently-certify-if-earned",
+    "compose-into-reusable-pipelines",
+    "deprecate-when-obsolete"
+  ]
+}
