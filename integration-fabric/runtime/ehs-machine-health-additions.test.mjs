@@ -9,7 +9,8 @@ test('new EHS and machine-health systems remain spec-only and read-only',()=>{
     const c=connectorById(id);
     assert.ok(c,id+' missing from effective registry');
     assert.equal(c.evidenceLevel,'spec-verified',id);
-    assert.equal(c.nextEvidenceGate,'sandbox-authentication',id);
+    assert.equal(c.nextEvidenceGate,id==='mitti-safetyculture'?'resolve-security-evidence-blockers-before-authentication':'sandbox-authentication',id);
+    if(id==='mitti-safetyculture') assert.ok(c.evidenceBlockers.some(x=>/least-privilege|read-only/i.test(x)),'Mitti must retain its explicit least-privilege evidence blocker');
     assert.equal(c.security.readOnlyDefault,true,id);
     assert.equal(c.security.writeEnabled,false,id);
     assert.equal(c.security.arbitraryEndpointAllowed,false,id);
