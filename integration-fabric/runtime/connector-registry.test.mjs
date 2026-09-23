@@ -5,7 +5,7 @@ import {buildConnectorRegistry,connectorById} from './connector-registry.mjs';
 test('effective catalogue compiles safely and preserves explicit interface gaps',()=>{
   const registry=buildConnectorRegistry();
   assert.ok(registry.connectors.length>=170,'Expected the continuously growing reviewed catalogue to retain at least 170 systems.');
-  assert.deepEqual(registry.connectors.filter(x=>x.adapters.length===0).map(x=>x.id),['schneider-resource-advisor']);
+  assert.deepEqual(registry.connectors.filter(x=>x.adapters.length===0).map(x=>x.id),['schneider-resource-advisor','acadia-performance-platform']);
   for(const c of registry.connectors){
     assert.equal(c.security.readOnlyDefault,true,c.id);
     assert.equal(c.security.writeEnabled,false,c.id);
