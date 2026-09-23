@@ -13,6 +13,7 @@ COPY operations/runtime/frontier-outcome-learning.cjs /app/operations/runtime/fr
 COPY trust/runtime/vector-trust-spine.cjs /app/trust/runtime/vector-trust-spine.cjs
 COPY release/vector-frontier-convergence.json /app/release/vector-frontier-convergence.json
 COPY demo/t9-live-demo-server.cjs /app/demo/t9-live-demo-server.cjs
+COPY demo/t9-wow.html /app/demo/t9-wow.html
 
 # Build admission runs against the exact runtime paths. Test files are copied beside
 # those runtime modules only for the admission step and are then removed.
