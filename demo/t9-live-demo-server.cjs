@@ -197,6 +197,7 @@ const server=http.createServer((req,res)=>{
   }
 });
 
-server.listen(Number(process.env.PORT||3000),'0.0.0.0',()=>{
-  console.log(IDENTITY+' LISTENING '+String(process.env.PORT||3000));
+const LISTEN_PORT=3000;
+server.listen(LISTEN_PORT,'0.0.0.0',()=>{
+  console.log(IDENTITY+' LISTENING '+LISTEN_PORT+' PUBLIC_TARGET=3000');
 });
