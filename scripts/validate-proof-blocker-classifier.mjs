@@ -11,6 +11,15 @@ const cases=[
   ['MISSING_EVIDENCE','PROOF_REQUIRED exact hosted evidence unavailable'],
   ['PRODUCT_REGRESSION','not ok 10 - calculation result failed']
 ];
-for(const [expected,log] of cases) assert.equal(classifyProofBlocker(log).blockerClass,expected,log);
-assert.equal(classifyProofBlocker('Build Failed without useful evidence').blockerClass,'UNKNOWN_FAIL_CLOSED');
-console.log('VECTOR_PROOF_BLOCKER_CLASSIFIER=PASS cases='+cases.length);
+for(const [expected,log] of cases){
+  const r=classifyProofBlocker(log);
+  assert.equal(r.blockerClass,expected,log);
+  assert.equal(r.globalStop,false,log);
+  assert.equal(r.unaffectedDevelopment,'CONTINUE',log);
+  assert.equal(r.unaffectedProof,'CONTINUE',log);
+}
+const unknown=classifyProofBlocker('Build Failed without useful evidence');
+assert.equal(unknown.blockerClass,'UNKNOWN_FAIL_CLOSED');
+assert.equal(unknown.globalStop,false);
+assert.equal(unknown.affectedScopeMode,'DIAGNOSTIC_ONLY');
+console.log('VECTOR_PROOF_BLOCKER_CLASSIFIER=PASS cases='+cases.length+' scopedIsolation=true');

@@ -14,8 +14,17 @@ for(const key of [
   'everyChangeHasProofRoute','preflightBeforeExpensiveProof','classifyBeforeRetry',
   'rootCauseRepairBeforeRetry','neverWeakenGateToGetGreen','exactSourceShaAcrossFallbackLanes',
   'providerFailureTriggersFallback','productFailureNeverMaskedByFallback',
-  'learnedBlockerBecomesPermanentGuard','unknownBlockerFailsClosed'
+  'learnedBlockerBecomesPermanentGuard','unknownBlockerFailsClosed',
+  'blockerIsolationByCapability','unaffectedDevelopmentAlwaysContinues',
+  'unaffectedProofStagesAlwaysContinue','blockedCapabilityDiagnosticsContinue',
+  'neverGloballyFreezeForSingleCapabilityBlocker','promotionStopsOnlyAtExplicitDependencyBoundary'
 ]) assert.equal(control.rules[key],true,key);
+assert.equal(control.stageIsolationPolicy?.onBlocker,'QUARANTINE_AFFECTED_SCOPE');
+assert.equal(control.stageIsolationPolicy?.unaffectedDevelopment,'CONTINUE');
+assert.equal(control.stageIsolationPolicy?.unaffectedProofStages,'CONTINUE');
+assert.equal(control.stageIsolationPolicy?.affectedCapabilityLaterDiagnostics,'CONTINUE_DIAGNOSTIC_ONLY');
+assert.equal(control.stageIsolationPolicy?.affectedCapabilityPromotion,'BLOCK_UNTIL_REPAIRED');
+assert.equal(control.blockerReceiptContract?.globalStopDefault,false);
 assert.ok(Array.isArray(control.pathRules)&&control.pathRules.length>=8);
 assert.ok(Array.isArray(knowledge.entries)&&knowledge.entries.length>=5);
 for(const item of knowledge.entries){

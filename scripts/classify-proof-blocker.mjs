@@ -23,6 +23,15 @@ function result(blockerClass,blocking,developmentCanContinue,fallbackAllowed,nex
     blocking,
     developmentCanContinue,
     fallbackAllowed,
+    affectedScope:'affected-capability',
+    affectedStage:'current-proof-stage',
+    dependencyBoundary:'exact-failing-contract',
+    globalStop:false,
+    unaffectedDevelopment:'CONTINUE',
+    unaffectedProof:'CONTINUE',
+    affectedScopeMode:blocking?'DIAGNOSTIC_ONLY':'CONTINUE',
+    affectedPromotion:blocking?'QUARANTINED':'CONTINUE',
+    propagateOnlyOn:['explicit-dependency','shared-security-invariant','shared-authority-boundary','shared-data-integrity-boundary'],
     nextAction,
     learningAction:'After resolution, record the cause and add a deterministic regression or preflight guard.'
   };

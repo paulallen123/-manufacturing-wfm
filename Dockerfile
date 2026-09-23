@@ -5,6 +5,7 @@ WORKDIR /proof
 COPY . ./
 RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-proof-blocker-classifier.mjs \
+ && node scripts/validate-proof-stage-router.mjs \
  && node scripts/validate-deployment.mjs \
  && node scripts/validate-proof-lane-policy.mjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \

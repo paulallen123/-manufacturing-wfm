@@ -14,7 +14,13 @@
     "staleProofContractIsAFirstClassBlocker": true,
     "missingProofDependencyFailsEarly": true,
     "learnedBlockerBecomesPermanentGuard": true,
-    "unknownBlockerFailsClosed": true
+    "unknownBlockerFailsClosed": true,
+    "blockerIsolationByCapability": true,
+    "unaffectedDevelopmentAlwaysContinues": true,
+    "unaffectedProofStagesAlwaysContinue": true,
+    "blockedCapabilityDiagnosticsContinue": true,
+    "neverGloballyFreezeForSingleCapabilityBlocker": true,
+    "promotionStopsOnlyAtExplicitDependencyBoundary": true
   },
   "phases": [
     "source-and-contract",
@@ -130,5 +136,38 @@
     "resolutionMustAddRegressionOrPreflightGuard": true,
     "rawCustomerDataMayEnterSharedLearning": false,
     "modelOutputMayNotBecomeAuthority": true
+  },
+  "stageIsolationPolicy": {
+    "executionModel": "parallel-and-scoped",
+    "onBlocker": "QUARANTINE_AFFECTED_SCOPE",
+    "unaffectedDevelopment": "CONTINUE",
+    "unaffectedProofStages": "CONTINUE",
+    "affectedCapabilityDevelopment": "CONTINUE",
+    "affectedCapabilityLaterDiagnostics": "CONTINUE_DIAGNOSTIC_ONLY",
+    "affectedCapabilityPromotion": "BLOCK_UNTIL_REPAIRED",
+    "globalPromotion": "CONTINUE_FOR_UNAFFECTED_SCOPES",
+    "propagationAllowedOnlyWhen": [
+      "explicit-dependency",
+      "shared-security-invariant",
+      "shared-authority-boundary",
+      "shared-data-integrity-boundary"
+    ],
+    "rule": "A blocker may reduce authority or proof state for its exact dependency scope, but it must not halt unrelated development, testing or proof."
+  },
+  "blockerReceiptContract": {
+    "required": [
+      "blockerClass",
+      "affectedScope",
+      "affectedStage",
+      "dependencyBoundary",
+      "globalStop",
+      "unaffectedDevelopment",
+      "unaffectedProof",
+      "affectedScopeMode",
+      "nextAction"
+    ],
+    "globalStopDefault": false,
+    "affectedScopeModeDefault": "DIAGNOSTIC_ONLY",
+    "promotionStateDefault": "QUARANTINED"
   }
 }

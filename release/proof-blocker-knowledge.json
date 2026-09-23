@@ -49,6 +49,14 @@
       "learnedFrom": "GitHub/Railway proof lane degradation",
       "prevention": "Classify provider degradation separately and route the exact SHA to the next executable proof lane.",
       "permanentGuard": "provider-independent proof-lane policy"
+    },
+    {
+      "id": "blocker-overpropagation",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "One failing capability or proof gate pauses unrelated development or downstream proof.",
+      "learnedFrom": "Vecta proof-recovery directive 2026-09-23",
+      "prevention": "Quarantine only the affected capability and explicit dependency scopes. Continue all unrelated development and proof stages; allow diagnostic-only progression for the blocked capability.",
+      "permanentGuard": "proof-stage router + control-plane isolation assertions"
     }
   ]
 }
