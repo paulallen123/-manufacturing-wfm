@@ -1,6 +1,7 @@
 'use strict';
 
 const http=require('node:http');
+const fs=require('node:fs');
 const f=require('/app/operations/runtime/frontier-decision-control.cjs');
 
 const IDENTITY='VECTOR_T9_LIVE_DEMO_V1';
@@ -145,41 +146,7 @@ function json(res,status,payload){
   res.end(JSON.stringify(payload,null,2));
 }
 
-const html=`<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Vector T9 Live Proof</title>
-<style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0d1117;color:#f0f6fc;margin:0;padding:24px}
-main{max-width:900px;margin:auto}.tag{color:#8b949e;font-size:13px}.card{background:#161b22;border:1px solid #30363d;border-radius:16px;padding:18px;margin:14px 0}
-h1{font-size:32px;margin:8px 0}h2{font-size:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-button{background:#238636;border:0;color:white;border-radius:10px;padding:12px 16px;font-weight:700;margin-right:8px}
-button.alt{background:#da3633}.pill{display:inline-block;border-radius:999px;padding:4px 9px;background:#21262d;margin:3px;font-size:12px}
-pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0d1117;border-radius:10px;padding:14px;font-size:12px}
-.good{color:#3fb950}.bad{color:#f85149}@media(max-width:700px){.grid{grid-template-columns:1fr}}
-</style></head>
-<body><main>
-<div class="tag">${IDENTITY} · isolated synthetic factory proof</div>
-<h1>Vector T9 decision control — live</h1>
-<p>This page calls the actual T9 decision-control runtime in this hosted container. It does not mutate production or customer data.</p>
-<div class="grid">
-  <div class="card"><h2>Fresh evidence</h2><p>Low risk, reversible, independently verifiable.</p><button onclick="run('fresh')">Run fresh decision</button></div>
-  <div class="card"><h2>Stale evidence</h2><p>Same decision, but the simulation is stale.</p><button class="alt" onclick="run('stale')">Run stale decision</button></div>
-</div>
-<div class="card"><h2>Result</h2><div id="summary">Choose a scenario.</div><pre id="result"></pre></div>
-<div class="card"><h2>Causal learning gate</h2><button onclick="learn()">Run learning gate</button><pre id="learning"></pre></div>
-<script>
-async function run(mode){
- const r=await fetch('/api/run?mode='+mode); const x=await r.json();
- document.getElementById('summary').innerHTML =
-  '<span class="pill">Passport '+(x.passportValid?'VALID':'INVALID')+'</span>'+
-  '<span class="pill">Assurance '+(x.assuranceValid?'VALID':'INVALID')+'</span>'+
-  '<span class="pill">Autonomy '+x.autonomy.ceiling+'</span>'+
-  '<span class="'+(x.execution.allowed?'good':'bad')+'">'+(x.execution.allowed?' EXECUTION ALLOWED':' EXECUTION BLOCKED')+'</span>';
- document.getElementById('result').textContent=JSON.stringify(x,null,2);
-}
-async function learn(){const r=await fetch('/api/learning');document.getElementById('learning').textContent=JSON.stringify(await r.json(),null,2);}
-</script>
-</main></body></html>`;
+const html=fs.readFileSync('/app/demo/t9-wow.html','utf8');
 
 const server=http.createServer((req,res)=>{
   try{
