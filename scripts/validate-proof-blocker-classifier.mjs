@@ -4,6 +4,7 @@ import {classifyProofBlocker} from './classify-proof-blocker.mjs';
 
 const cases=[
   ['PROVIDER_DEGRADED','runner_id=0 no runner allocated before execution'],
+  ['PUBLIC_RUNTIME_UNREACHABLE','Railway status SUCCESS but public GET returned httpStatus: 502 upstream connection refused Application failed to respond'],
   ['MISSING_PROOF_DEPENDENCY',"ENOENT: no such file or directory, open '/proof/missing.json'"],
   ['SECURITY_INVARIANT','not ok 7 - cross-tenant payroll authority isolation failed'],
   ['EVIDENCE_OR_CATALOG_DRIFT','not ok 8 - integration-fabric canonicalTargets expected protocol evidence'],
