@@ -5,251 +5,267 @@
   "protocolFamilies": [
     "Sparkplug B"
   ],
-  "overrides": [],
-  "systems": [
+  "overrides": [
     {
       "id": "rockwell-factorytalk-datamosaix",
-      "name": "Rockwell Automation FactoryTalk DataMosaix",
-      "category": "industrial-connectivity",
-      "priority": "P1",
-      "protocols": [
-        "REST",
-        "OpenAPI"
-      ],
-      "auth": "m2m-access-token",
-      "researchStatus": "docs-verified",
-      "docsUrl": "https://www.rockwellautomation.com/en-us/docs/factorytalk-datamosaix/current/online-help-ditamap/api-reference.html",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": false,
-      "evidenceUrl": "https://www.rockwellautomation.com/en-us/docs/factorytalk-datamosaix/current/online-help-ditamap/api-reference.html",
-      "evidenceNote": "Rockwell's current DataMosaix API reference documents REST APIs, M2M access, OpenAPI specifications, access tokens and Swagger UI. Catalog presence is documentation evidence only; no customer tenant was authenticated.",
-      "valueReview": {
-        "basis": "vendor-docs",
-        "customerValue": [
-          "Expose governed industrial data to workforce/production intelligence without inventing a plant-specific connector surface."
+      "patch": {
+        "name": "Rockwell Automation FactoryTalk DataMosaix",
+        "category": "industrial-connectivity",
+        "priority": "P1",
+        "protocols": [
+          "REST",
+          "OpenAPI"
         ],
-        "savingsHypotheses": [
-          "Reduce manual extraction and reconciliation effort when labour decisions require contextualised production data."
-        ],
-        "constraintsRisks": [
-          "Project roles and token scopes remain customer-specific; no write authority is enabled by this profile."
-        ]
+        "auth": "m2m-access-token",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.rockwellautomation.com/en-us/docs/factorytalk-datamosaix/current/online-help-ditamap/api-reference.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://www.rockwellautomation.com/en-us/docs/factorytalk-datamosaix/current/online-help-ditamap/api-reference.html",
+        "evidenceNote": "Rockwell's current DataMosaix API reference documents REST APIs, M2M access, OpenAPI specifications, access tokens and Swagger UI. Catalog presence is documentation evidence only; no customer tenant was authenticated.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "customerValue": [
+            "Expose governed industrial data to workforce/production intelligence without inventing a plant-specific connector surface."
+          ],
+          "savingsHypotheses": [
+            "Reduce manual extraction and reconciliation effort when labour decisions require contextualised production data."
+          ],
+          "constraintsRisks": [
+            "Project roles and token scopes remain customer-specific; no write authority is enabled by this profile."
+          ]
+        }
       }
     },
     {
       "id": "aspentech-inmation",
-      "name": "AspenTech Inmation",
-      "category": "industrial-connectivity",
-      "priority": "P1",
-      "protocols": [
-        "REST",
-        "OPC UA"
-      ],
-      "auth": "enterprise-role-and-endpoint-security",
-      "researchStatus": "docs-verified",
-      "docsUrl": "https://docs.inmation.com/home/index.html",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": true,
-      "evidenceUrl": "https://docs.inmation.com/system/1.110/product-overview/datasources.html",
-      "evidenceNote": "Current Inmation documentation exposes Web API/HTTP integration and OPC UA client/server connectivity. The profile remains edge/read-first because endpoint certificates, model permissions and plant-network topology are deployment specific.",
-      "valueReview": {
-        "basis": "vendor-docs",
-        "customerValue": [
-          "Bridge historian/industrial signals into labour, readiness and production context through supported web and OPC UA surfaces."
+      "patch": {
+        "name": "AspenTech Inmation",
+        "category": "industrial-connectivity",
+        "priority": "P1",
+        "protocols": [
+          "REST",
+          "OPC UA"
         ],
-        "savingsHypotheses": [
-          "Reduce bespoke OT data plumbing and manual production-context reconciliation."
-        ],
-        "constraintsRisks": [
-          "Plant-network access, OPC UA certificates and write permissions must be proven per site; cloud scanning is not assumed."
-        ]
+        "auth": "enterprise-role-and-endpoint-security",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.inmation.com/home/index.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://docs.inmation.com/system/1.110/product-overview/datasources.html",
+        "evidenceNote": "Current Inmation documentation exposes Web API/HTTP integration and OPC UA client/server connectivity. The profile remains edge/read-first because endpoint certificates, model permissions and plant-network topology are deployment specific.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "customerValue": [
+            "Bridge historian/industrial signals into labour, readiness and production context through supported web and OPC UA surfaces."
+          ],
+          "savingsHypotheses": [
+            "Reduce bespoke OT data plumbing and manual production-context reconciliation."
+          ],
+          "constraintsRisks": [
+            "Plant-network access, OPC UA certificates and write permissions must be proven per site; cloud scanning is not assumed."
+          ]
+        }
       }
     },
     {
       "id": "korber-werum-pas-x",
-      "name": "Körber Werum PAS-X MES",
-      "category": "mes",
-      "priority": "P1",
-      "protocols": [
-        "REST",
-        "OpenAPI",
-        "industrial-integration"
-      ],
-      "auth": "enterprise",
-      "researchStatus": "docs-verified",
-      "docsUrl": "https://www.koerber.com/en/solutions/software-and-ai/life-sciences-mes/digital-integration-msi",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": false,
-      "evidenceUrl": "https://service.koerber-pharma.com/hubfs/K%C3%B6rber%20Pharma/Software/Landing%20Pages/Lunch%20and%20Learn%20Europe%20LP/API%20functionality/Q%26A_APIfunctionality_Jan-2025.pdf?hsLang=en",
-      "evidenceNote": "Körber documents PAS-X open APIs and an OpenAPI specification, plus MSI/message-based shop-floor integration. API rate limits and regulated/GxP deployment controls require customer-specific validation.",
-      "valueReview": {
-        "basis": "vendor-docs",
-        "customerValue": [
-          "Relate workforce availability and skills to MES production execution while preserving regulated-system boundaries."
+      "patch": {
+        "name": "Körber Werum PAS-X MES",
+        "category": "mes",
+        "priority": "P1",
+        "protocols": [
+          "REST",
+          "OpenAPI",
+          "industrial-integration"
         ],
-        "savingsHypotheses": [
-          "Reduce manual MES-to-workforce reconciliation and accelerate response to labour-driven production risk."
-        ],
-        "constraintsRisks": [
-          "GxP validation, API rate limits, MES version and customer interface governance must be established before operational actions."
-        ]
+        "auth": "enterprise",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.koerber.com/en/solutions/software-and-ai/life-sciences-mes/digital-integration-msi",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://service.koerber-pharma.com/hubfs/K%C3%B6rber%20Pharma/Software/Landing%20Pages/Lunch%20and%20Learn%20Europe%20LP/API%20functionality/Q%26A_APIfunctionality_Jan-2025.pdf?hsLang=en",
+        "evidenceNote": "Körber documents PAS-X open APIs and an OpenAPI specification, plus MSI/message-based shop-floor integration. API rate limits and regulated/GxP deployment controls require customer-specific validation.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "customerValue": [
+            "Relate workforce availability and skills to MES production execution while preserving regulated-system boundaries."
+          ],
+          "savingsHypotheses": [
+            "Reduce manual MES-to-workforce reconciliation and accelerate response to labour-driven production risk."
+          ],
+          "constraintsRisks": [
+            "GxP validation, API rate limits, MES version and customer interface governance must be established before operational actions."
+          ]
+        }
       }
     },
     {
       "id": "seeq",
-      "name": "Seeq",
-      "category": "historian-analytics",
-      "priority": "P2",
-      "protocols": [
-        "REST",
-        "OData"
-      ],
-      "auth": "access-key-or-enterprise-identity",
-      "researchStatus": "docs-verified",
-      "docsUrl": "https://support.seeq.com/latest/cloud/seeq-apis-and-sdks",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": false,
-      "evidenceUrl": "https://support.seeq.com/latest/cloud/odata-export",
-      "evidenceNote": "Seeq documents its Server REST API and modern OData 4.0 export endpoints. Legacy OData exports were deprecated and modern endpoints should be used.",
-      "valueReview": {
-        "basis": "vendor-docs",
-        "customerValue": [
-          "Consume industrial analytics and OData exports as evidence for workforce/production decisions."
+      "patch": {
+        "name": "Seeq",
+        "category": "historian-analytics",
+        "priority": "P2",
+        "protocols": [
+          "REST",
+          "OData"
         ],
-        "savingsHypotheses": [
-          "Reduce spreadsheet handoffs between process analytics and labour planning."
-        ],
-        "constraintsRisks": [
-          "Export availability, access keys and analysis visibility remain tenant/role specific; this profile grants no mutation authority."
-        ]
+        "auth": "access-key-or-enterprise-identity",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://support.seeq.com/latest/cloud/seeq-apis-and-sdks",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://support.seeq.com/latest/cloud/odata-export",
+        "evidenceNote": "Seeq documents its Server REST API and modern OData 4.0 export endpoints. Legacy OData exports were deprecated and modern endpoints should be used.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "customerValue": [
+            "Consume industrial analytics and OData exports as evidence for workforce/production decisions."
+          ],
+          "savingsHypotheses": [
+            "Reduce spreadsheet handoffs between process analytics and labour planning."
+          ],
+          "constraintsRisks": [
+            "Export availability, access keys and analysis visibility remain tenant/role specific; this profile grants no mutation authority."
+          ]
+        }
       }
     },
     {
       "id": "canary-historian",
-      "name": "Canary Historian",
-      "category": "historian",
-      "priority": "P2",
-      "protocols": [
-        "REST",
-        "Protobuf RPC/HTTP2"
-      ],
-      "auth": "api-token",
-      "researchStatus": "docs-verified",
-      "docsUrl": "https://helpcenter.canarylabs.com/t/p8ypl9x/using-the-read-api-version-26",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": true,
-      "evidenceUrl": "https://helpcenter.canarylabs.com/t/p8ypl9x/using-the-read-api-version-26",
-      "evidenceNote": "Canary documents HTTPS web APIs and a native gRPC API for historian reads, with token-based authentication and optional tag-security permissions. VECTOR keeps historian writes disabled by default.",
-      "valueReview": {
-        "basis": "vendor-docs",
-        "customerValue": [
-          "Read high-resolution process/historian evidence alongside attendance, skills and labour allocation."
+      "patch": {
+        "name": "Canary Historian",
+        "category": "historian",
+        "priority": "P2",
+        "protocols": [
+          "REST",
+          "Protobuf RPC/HTTP2"
         ],
-        "savingsHypotheses": [
-          "Reduce manual correlation of plant events with workforce decisions and payroll/shift evidence."
-        ],
-        "constraintsRisks": [
-          "Views, tag security, ports and site routing are deployment specific; edge placement is expected for many plants."
-        ]
+        "auth": "api-token",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://helpcenter.canarylabs.com/t/p8ypl9x/using-the-read-api-version-26",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://helpcenter.canarylabs.com/t/p8ypl9x/using-the-read-api-version-26",
+        "evidenceNote": "Canary documents HTTPS web APIs and a native gRPC API for historian reads, with token-based authentication and optional tag-security permissions. VECTOR keeps historian writes disabled by default.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "customerValue": [
+            "Read high-resolution process/historian evidence alongside attendance, skills and labour allocation."
+          ],
+          "savingsHypotheses": [
+            "Reduce manual correlation of plant events with workforce decisions and payroll/shift evidence."
+          ],
+          "constraintsRisks": [
+            "Views, tag security, ports and site routing are deployment specific; edge placement is expected for many plants."
+          ]
+        }
       }
     },
     {
       "id": "trendminer",
-      "name": "TrendMiner",
-      "category": "historian-analytics",
-      "priority": "P2",
-      "protocols": [
-        "REST"
-      ],
-      "auth": "enterprise",
-      "researchStatus": "docs-verified",
-      "docsUrl": "https://documentation.trendminer.com/en/developer-and-api-documentation.html",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": false,
-      "evidenceUrl": "https://documentation.trendminer.com/en/developer-and-api-documentation.html",
-      "evidenceNote": "TrendMiner's current developer documentation points to its REST API and custom-connectivity developer portal. No customer tenant authentication has been performed.",
-      "valueReview": {
-        "basis": "vendor-docs",
-        "customerValue": [
-          "Use process analytics and contextual events as evidence when diagnosing production/labour deviations."
+      "patch": {
+        "name": "TrendMiner",
+        "category": "historian-analytics",
+        "priority": "P2",
+        "protocols": [
+          "REST"
         ],
-        "savingsHypotheses": [
-          "Reduce analyst-to-supervisor handoffs when workforce action depends on process context."
-        ],
-        "constraintsRisks": [
-          "Tenant API scopes and source-system entitlements must be validated before reading customer data."
-        ]
+        "auth": "enterprise",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://documentation.trendminer.com/en/developer-and-api-documentation.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://documentation.trendminer.com/en/developer-and-api-documentation.html",
+        "evidenceNote": "TrendMiner's current developer documentation points to its REST API and custom-connectivity developer portal. No customer tenant authentication has been performed.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "customerValue": [
+            "Use process analytics and contextual events as evidence when diagnosing production/labour deviations."
+          ],
+          "savingsHypotheses": [
+            "Reduce analyst-to-supervisor handoffs when workforce action depends on process context."
+          ],
+          "constraintsRisks": [
+            "Tenant API scopes and source-system entitlements must be validated before reading customer data."
+          ]
+        }
       }
     },
     {
       "id": "honeywell-uniformance-phd",
-      "name": "Honeywell Uniformance PHD",
-      "category": "historian",
-      "priority": "P2",
-      "protocols": [
-        "REST",
-        "OPC UA",
-        "JDBC/ODBC"
-      ],
-      "auth": "enterprise",
-      "researchStatus": "docs-verified",
-      "docsUrl": "https://process.honeywell.com/",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": true,
-      "evidenceUrl": "https://process.honeywell.com/content/dam/process/en/documents/document-lists/doc_list_hints/2024/2024-February-System%20HINTS.pdf",
-      "evidenceNote": "Honeywell identifies RESTful API, OPC UA, ODBC/OLEDB, Java and .NET alternatives for PHD and advises new software away from the deprecated VisualPHD API. VECTOR therefore targets current read-first interfaces only.",
-      "valueReview": {
-        "basis": "vendor-docs",
-        "customerValue": [
-          "Bring historian/process evidence into labour and production intelligence without depending on deprecated VisualPHD integrations."
+      "patch": {
+        "name": "Honeywell Uniformance PHD",
+        "category": "historian",
+        "priority": "P2",
+        "protocols": [
+          "REST",
+          "OPC UA",
+          "JDBC/ODBC"
         ],
-        "savingsHypotheses": [
-          "Reduce manual historian exports and legacy-interface maintenance in workforce-production analysis."
-        ],
-        "constraintsRisks": [
-          "PHD version, API packaging, on-prem routing and security configuration are customer specific; edge connectivity is assumed until proven otherwise."
-        ]
+        "auth": "enterprise",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://process.honeywell.com/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://process.honeywell.com/content/dam/process/en/documents/document-lists/doc_list_hints/2024/2024-February-System%20HINTS.pdf",
+        "evidenceNote": "Honeywell identifies RESTful API, OPC UA, ODBC/OLEDB, Java and .NET alternatives for PHD and advises new software away from the deprecated VisualPHD API. VECTOR therefore targets current read-first interfaces only.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "customerValue": [
+            "Bring historian/process evidence into labour and production intelligence without depending on deprecated VisualPHD integrations."
+          ],
+          "savingsHypotheses": [
+            "Reduce manual historian exports and legacy-interface maintenance in workforce-production analysis."
+          ],
+          "constraintsRisks": [
+            "PHD version, API packaging, on-prem routing and security configuration are customer specific; edge connectivity is assumed until proven otherwise."
+          ]
+        }
       }
     },
     {
       "id": "safetychain-qms",
-      "name": "SafetyChain QMS",
-      "category": "qms",
-      "priority": "P2",
-      "protocols": [
-        "REST"
-      ],
-      "auth": "bearer-token-integration-user",
-      "researchStatus": "docs-verified-security-evidence-required",
-      "docsUrl": "https://developers.safetychain.com/",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": false,
-      "evidenceUrl": "https://developers.safetychain.com/reference/overview-3",
-      "evidenceNote": "SafetyChain documents REST APIs for record extraction, supplier onboarding and process/resource operations. Some endpoints can mutate records/resources, so VECTOR remains read-only until tenant-specific least-privilege evidence is proven.",
-      "securityEvidenceBlockers": [
-        "No customer-tenant integration user or role-scope evidence has been captured for VECTOR.",
-        "Process APIs include mutating operations; exact least-privilege permissions and approval boundaries must be proven before any write-capable maturity level."
-      ],
-      "valueReview": {
-        "basis": "vendor-docs",
-        "customerValue": [
-          "Correlate quality records and tasks with workforce availability, skills and production decisions."
+      "patch": {
+        "name": "SafetyChain QMS",
+        "category": "qms",
+        "priority": "P2",
+        "protocols": [
+          "REST"
         ],
-        "savingsHypotheses": [
-          "Reduce manual quality-to-workforce reconciliation and surface labour-related quality risk earlier."
+        "auth": "bearer-token-integration-user",
+        "researchStatus": "docs-verified-security-evidence-required",
+        "docsUrl": "https://developers.safetychain.com/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://developers.safetychain.com/reference/overview-3",
+        "evidenceNote": "SafetyChain documents REST APIs for record extraction, supplier onboarding and process/resource operations. Some endpoints can mutate records/resources, so VECTOR remains read-only until tenant-specific least-privilege evidence is proven.",
+        "securityEvidenceBlockers": [
+          "No customer-tenant integration user or role-scope evidence has been captured for VECTOR.",
+          "Process APIs include mutating operations; exact least-privilege permissions and approval boundaries must be proven before any write-capable maturity level."
         ],
-        "constraintsRisks": [
-          "Environment-specific bearer tokens, admin permissions and write-capable endpoints require strict tenant evidence and read-only defaults."
-        ]
+        "valueReview": {
+          "basis": "vendor-docs",
+          "customerValue": [
+            "Correlate quality records and tasks with workforce availability, skills and production decisions."
+          ],
+          "savingsHypotheses": [
+            "Reduce manual quality-to-workforce reconciliation and surface labour-related quality risk earlier."
+          ],
+          "constraintsRisks": [
+            "Environment-specific bearer tokens, admin permissions and write-capable endpoints require strict tenant evidence and read-only defaults."
+          ]
+        }
       }
     }
-  ]
+  ],
+  "systems": []
 }
