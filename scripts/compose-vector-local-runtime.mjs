@@ -29,9 +29,25 @@ const copy = (source, destination) => { recordInput(source); const target = path
 const groups = {
   security: ['bootstrap.cjs', 'identity-survival-guard.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'retired-presentation.cjs'],
   integration: ['autonomous-integration-hub.cjs'],
-  implementation: ['one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs', 'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs'],
-  learning: ['adaptive-learning-engine.cjs'],
-  operations: ['workflow-action-evidence-contract.cjs', 'workflow-action-evidence-bridge.cjs']
+  implementation: [
+    'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs',
+    'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs',
+    'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs'
+  ],
+  learning: [
+    'adaptive-learning-engine.cjs', 'training-workflow-manifest.cjs',
+    'training-twin.cjs', 'training-scenario-engine.cjs',
+    'training-delivery-service.cjs', 'training-video-contract.cjs',
+    'training-artifact-registry.cjs', 'training-regeneration-planner.cjs'
+  ],
+  operations: [
+    'workflow-action-evidence-contract.cjs', 'workflow-action-evidence-bridge.cjs',
+    'decision-episode.cjs', 'customer-demand-intelligence.cjs',
+    'absence-recovery-shadow.cjs', 'demand-decision-service.cjs',
+    'decision-outcome-proof.cjs', 'realtime-event-service.cjs',
+    'autopilot-execution-engine.cjs', 't9-customer-guardian.cjs'
+  ],
+  trust: ['vector-trust-spine.cjs']
 };
 for (const [group, files] of Object.entries(groups)) for (const file of files) copy(`${group}/runtime/${file}`, `${group}-runtime/${file}`);
 copy('operations/runtime/workforce-lifecycle-guard.cjs', 'operations-runtime/workforce-lifecycle-core.cjs');
