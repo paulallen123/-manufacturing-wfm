@@ -1,1 +1,193 @@
-{"schemaVersion":1,"generatedAt":"2026-09-20","purpose":"Odoo 19 authoritative interface/security evidence promotion.","protocolFamilies":["JSON-2"],"overrides":[{"id":"odoo","patch":{"protocols":["JSON-2","JSON-RPC","XML-RPC"],"auth":"bearer-api-key-v19plus-or-legacy-user-api-key-by-version","researchStatus":"docs-verified","docsUrl":"https://www.odoo.com/documentation/19.0/developer/reference/external_api.html","testLevel":"spec-verified","writeEnabled":false,"customerEdgeRequired":false,"evidenceUrl":"https://www.odoo.com/documentation/19.0/developer/reference/external_api.html","evidenceNote":"Odoo 19 provider documentation establishes External JSON-2 at /json/2/<model>/<method>, bearer API-key authentication, database-specific /doc discovery, ordinary Odoo access-right/record-rule/field enforcement, dedicated bot-user guidance, a maximum three-month API-key lifetime, optional X-Odoo-Database routing, and one SQL transaction per JSON-2 call. Legacy XML-RPC/JSON-RPC common/object services are deprecated in Odoo 19 with JSON-2 as replacement. No sandbox or tenant was authenticated and no live read was performed, so this is specification evidence only.","providerIdentity":{"canonicalName":"Odoo Manufacturing","aliases":["Odoo ERP","Odoo Enterprise","Odoo MRP"],"canonicalApiHosts":[],"transitionalApiHosts":[],"regionalHostModel":"customer-database-domain-on-odoo-online-or-odoo-sh-or-customer-managed-on-prem-host; hosting region is deployment-specific","crossHostRedirectApproved":false},"deploymentVariants":{"odooOnline19Plus":{"customerEdgeRequired":false,"transport":"https","auth":"bearer-api-key","endpointModel":"https://{customer-domain}/json/2/{model}/{method}","externalApiPlan":"Custom","customServerModulesAllowed":false},"odooSh19Plus":{"customerEdgeRequired":false,"transport":"https","auth":"bearer-api-key","endpointModel":"https://{customer-domain}/json/2/{model}/{method}","externalApiPlan":"Custom","customServerModulesAllowed":true},"onPrem19Plus":{"customerEdgeRequired":true,"transport":"customer-managed-https-via-edge","auth":"bearer-api-key","endpointModel":"https://{customer-managed-host}/json/2/{model}/{method}","directCloudToPrivateNetworkAllowed":false},"legacyHostedPre19OrMigration":{"customerEdgeRequired":false,"transport":"https","auth":"legacy-user-api-key-or-provider-version-specific-auth","protocols":["JSON-RPC","XML-RPC"],"migrationOnly":true,"directCloudToPrivateNetworkAllowed":false},"legacyOnPremPre19OrMigration":{"customerEdgeRequired":true,"transport":"customer-managed-https-via-edge","auth":"legacy-user-api-key-or-provider-version-specific-auth","protocols":["JSON-RPC","XML-RPC"],"migrationOnly":true,"directCloudToPrivateNetworkAllowed":false}},"apiVersionRouting":{"preferredPolicy":"deployment-and-major-version-aware","preferredVersion":"json-2-v19+","fallbackVersion":"legacy-rpc-migration-only","fallbackRequiresProviderDeclaration":true,"paginationByVersion":{"json-2-v19+":"orm-search-read-offset-limit","legacy-rpc-migration-only":"orm-search-offset-limit"}},"sourceScope":{"requiredDimensions":["database"],"requiredDimensionsByVariant":{"odooOnline19Plus":["database"],"odooSh19Plus":["database"],"onPrem19Plus":["host","database"],"legacyHostedPre19OrMigration":["database"],"legacyOnPremPre19OrMigration":["host","database"]},"sourceIdentityDimensions":["host","database","company","odooVersion","model","dataset"]},"rpcReadAuthority":{"transportVerbAuthoritative":false,"requireExactModelMethodAllowlist":true,"allowWildcardModels":false,"preferredGenericReadMethods":["search_read","search_count","read","fields_get"],"singleCallConsistentMethods":["search_read"],"transactionModel":"per-call","credentialControlMethodsAllowed":false,"metadataDiscovery":"authorised-database-doc-and-reviewed-fields-get"},"readConsistency":{"crossModelAtomicSnapshotAssumed":false,"preserveObservationWindow":true,"reconcileAfterPartialOrHighSkew":true,"preferredSingleCallMethod":"search_read"},"datasetCoverage":[{"dataset":"authorised-model-incremental-read","kind":"incremental-delta","absenceMeaning":"record may be unchanged, outside the reviewed domain/window, hidden by record rules, or outside company scope; absence is not deletion","entityUniverse":"records visible to the dedicated integration user for the exact database/company/model/domain","scopeProven":false,"pageComplete":false,"reconciliationComplete":false,"authoritativeForExistence":false},{"dataset":"bounded-full-model-scan","kind":"complete-snapshot","absenceMeaning":"candidate absence only after the authorised database/company/model scope, access rules and every bounded page are proven complete","entityUniverse":"exact reviewed model and company/domain visible to the dedicated integration user","scopeProven":false,"pageComplete":false,"reconciliationComplete":false,"authoritativeForExistence":false}],"staticCredentialAuthority":{"credentialType":"bearer-api-key","runtimeReadOnlyRequired":true,"providerMaximumLifetime":"three-months","rotationRequired":true,"revocationProofRequired":true,"programmaticCredentialManagementAllowed":false,"exactHostAndDatabaseBindingRequired":true},"securityEvidenceBlockers":["JSON-2 uses HTTP POST for both reads and potentially mutating model methods. Before authentication evidence advances, prove executor-enforced exact model+method read allowlists; HTTP verb, successful authentication and a public ORM method are never write/read authority by themselves.","JSON-2 inherits the dedicated user's Odoo access rights, record rules and field access. Prove a bot identity with only the required database/company/model/field visibility and demonstrate that create, write, unlink, action/control and credential-management methods are denied.","Actual models, fields and methods are database-specific and may change with installed apps, custom modules, custom fields and Odoo Online intermediate versions. Discover the authorised database /doc and reviewed metadata, fingerprint schemas and fail closed on breaking drift instead of assuming stock model names or fields.","Each JSON-2 call runs in its own SQL transaction. Multi-model or multi-call reads must preserve their observation window and cannot be represented as one atomic source snapshot; prefer single-call methods such as search_read and reconcile partial or high-skew reads.","API keys cannot last more than three months. Prove secure rotation and revocation without enabling programmatic key generation/revocation in the steady-state WFM data-plane identity.","On-premises/private Odoo deployments require an authorised customer-edge HTTPS route. WFM must not scan, bridge or directly expose customer private networks.","Legacy XML-RPC/JSON-RPC common/object services are deprecated in Odoo 19 and scheduled for removal. They remain migration-only and must not become a new-integration dependency where JSON-2 is available."]}}],"systems":[]}
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-20",
+  "purpose": "Odoo 19 authoritative interface/security evidence promotion.",
+  "protocolFamilies": [
+    "JSON-2"
+  ],
+  "overrides": [
+    {
+      "id": "odoo",
+      "patch": {
+        "protocols": [
+          "JSON-2",
+          "JSON-RPC",
+          "XML-RPC"
+        ],
+        "auth": "bearer-api-key-v19plus-or-legacy-user-api-key-by-version",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.odoo.com/documentation/19.0/developer/reference/external_api.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://www.odoo.com/documentation/19.0/developer/reference/external_api.html",
+        "evidenceNote": "Odoo 19 provider documentation establishes External JSON-2 at /json/2/<model>/<method>, bearer API-key authentication, database-specific /doc discovery, ordinary Odoo access-right/record-rule/field enforcement, dedicated bot-user guidance, a maximum three-month API-key lifetime, optional X-Odoo-Database routing, and one SQL transaction per JSON-2 call. Legacy XML-RPC/JSON-RPC common/object services are deprecated in Odoo 19 with JSON-2 as replacement; the legacy db service is removed in Odoo 20 and the common/object RPC services are scheduled for removal in Odoo 22. No sandbox or tenant was authenticated and no live read was performed, so this is specification evidence only.",
+        "providerIdentity": {
+          "canonicalName": "Odoo Manufacturing",
+          "aliases": [
+            "Odoo ERP",
+            "Odoo Enterprise",
+            "Odoo MRP"
+          ],
+          "canonicalApiHosts": [],
+          "transitionalApiHosts": [],
+          "regionalHostModel": "customer-database-domain-on-odoo-online-or-odoo-sh-or-customer-managed-on-prem-host; hosting region is deployment-specific",
+          "crossHostRedirectApproved": false
+        },
+        "deploymentVariants": {
+          "odooOnline19Plus": {
+            "customerEdgeRequired": false,
+            "transport": "https",
+            "auth": "bearer-api-key",
+            "endpointModel": "https://{customer-domain}/json/2/{model}/{method}",
+            "externalApiPlan": "Custom",
+            "customServerModulesAllowed": false
+          },
+          "odooSh19Plus": {
+            "customerEdgeRequired": false,
+            "transport": "https",
+            "auth": "bearer-api-key",
+            "endpointModel": "https://{customer-domain}/json/2/{model}/{method}",
+            "externalApiPlan": "Custom",
+            "customServerModulesAllowed": true
+          },
+          "onPrem19Plus": {
+            "customerEdgeRequired": true,
+            "transport": "customer-managed-https-via-edge",
+            "auth": "bearer-api-key",
+            "endpointModel": "https://{customer-managed-host}/json/2/{model}/{method}",
+            "directCloudToPrivateNetworkAllowed": false
+          },
+          "legacyHostedPre19OrMigration": {
+            "customerEdgeRequired": false,
+            "transport": "https",
+            "auth": "legacy-user-api-key-or-provider-version-specific-auth",
+            "protocols": [
+              "JSON-RPC",
+              "XML-RPC"
+            ],
+            "migrationOnly": true,
+            "directCloudToPrivateNetworkAllowed": false
+          },
+          "legacyOnPremPre19OrMigration": {
+            "customerEdgeRequired": true,
+            "transport": "customer-managed-https-via-edge",
+            "auth": "legacy-user-api-key-or-provider-version-specific-auth",
+            "protocols": [
+              "JSON-RPC",
+              "XML-RPC"
+            ],
+            "migrationOnly": true,
+            "directCloudToPrivateNetworkAllowed": false
+          }
+        },
+        "apiVersionRouting": {
+          "preferredPolicy": "deployment-and-major-version-aware",
+          "preferredVersion": "json-2-v19+",
+          "fallbackVersion": "legacy-rpc-migration-only",
+          "fallbackRequiresProviderDeclaration": true,
+          "paginationByVersion": {
+            "json-2-v19+": "orm-search-read-offset-limit",
+            "legacy-rpc-migration-only": "orm-search-offset-limit"
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": [
+            "database"
+          ],
+          "requiredDimensionsByVariant": {
+            "odooOnline19Plus": [
+              "database"
+            ],
+            "odooSh19Plus": [
+              "database"
+            ],
+            "onPrem19Plus": [
+              "host",
+              "database"
+            ],
+            "legacyHostedPre19OrMigration": [
+              "database"
+            ],
+            "legacyOnPremPre19OrMigration": [
+              "host",
+              "database"
+            ]
+          },
+          "sourceIdentityDimensions": [
+            "host",
+            "database",
+            "company",
+            "odooVersion",
+            "model",
+            "dataset"
+          ]
+        },
+        "rpcReadAuthority": {
+          "transportVerbAuthoritative": false,
+          "requireExactModelMethodAllowlist": true,
+          "allowWildcardModels": false,
+          "preferredGenericReadMethods": [
+            "search_read",
+            "search_count",
+            "read",
+            "fields_get"
+          ],
+          "singleCallConsistentMethods": [
+            "search_read"
+          ],
+          "transactionModel": "per-call",
+          "credentialControlMethodsAllowed": false,
+          "metadataDiscovery": "authorised-database-doc-and-reviewed-fields-get"
+        },
+        "readConsistency": {
+          "crossModelAtomicSnapshotAssumed": false,
+          "preserveObservationWindow": true,
+          "reconcileAfterPartialOrHighSkew": true,
+          "preferredSingleCallMethod": "search_read"
+        },
+        "datasetCoverage": [
+          {
+            "dataset": "authorised-model-incremental-read",
+            "kind": "incremental-delta",
+            "absenceMeaning": "record may be unchanged, outside the reviewed domain/window, hidden by record rules, or outside company scope; absence is not deletion",
+            "entityUniverse": "records visible to the dedicated integration user for the exact database/company/model/domain",
+            "scopeProven": false,
+            "pageComplete": false,
+            "reconciliationComplete": false,
+            "authoritativeForExistence": false
+          },
+          {
+            "dataset": "bounded-full-model-scan",
+            "kind": "complete-snapshot",
+            "absenceMeaning": "candidate absence only after the authorised database/company/model scope, access rules and every bounded page are proven complete",
+            "entityUniverse": "exact reviewed model and company/domain visible to the dedicated integration user",
+            "scopeProven": false,
+            "pageComplete": false,
+            "reconciliationComplete": false,
+            "authoritativeForExistence": false
+          }
+        ],
+        "staticCredentialAuthority": {
+          "credentialType": "bearer-api-key",
+          "runtimeReadOnlyRequired": true,
+          "providerMaximumLifetime": "three-months",
+          "rotationRequired": true,
+          "revocationProofRequired": true,
+          "programmaticCredentialManagementAllowed": false,
+          "exactHostAndDatabaseBindingRequired": true
+        },
+        "securityEvidenceBlockers": [
+          "JSON-2 uses HTTP POST for both reads and potentially mutating model methods. Before authentication evidence advances, prove executor-enforced exact model+method read allowlists; HTTP verb, successful authentication and a public ORM method are never write/read authority by themselves.",
+          "JSON-2 inherits the dedicated user's Odoo access rights, record rules and field access. Prove a bot identity with only the required database/company/model/field visibility and demonstrate that create, write, unlink, action/control and credential-management methods are denied.",
+          "Actual models, fields and methods are database-specific and may change with installed apps, custom modules, custom fields and Odoo Online intermediate versions. Discover the authorised database /doc and reviewed metadata, fingerprint schemas and fail closed on breaking drift instead of assuming stock model names or fields.",
+          "Each JSON-2 call runs in its own SQL transaction. Multi-model or multi-call reads must preserve their observation window and cannot be represented as one atomic source snapshot; prefer single-call methods such as search_read and reconcile partial or high-skew reads.",
+          "API keys cannot last more than three months. Prove secure rotation and revocation without enabling programmatic key generation/revocation in the steady-state WFM data-plane identity.",
+          "On-premises/private Odoo deployments require an authorised customer-edge HTTPS route. WFM must not scan, bridge or directly expose customer private networks.",
+          "Legacy XML-RPC/JSON-RPC common/object services are deprecated in Odoo 19 and scheduled for removal. They remain migration-only and must not become a new-integration dependency where JSON-2 is available."
+        ]
+      }
+    }
+  ],
+  "systems": []
+}
