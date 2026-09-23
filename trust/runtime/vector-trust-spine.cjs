@@ -419,6 +419,9 @@ class TypedActionGateway {
     if (unknowns.autonomyCeiling === 'CONTAINMENT_ONLY' && RISK_ORDER[action.riskClass] > RISK_ORDER.READ_ONLY) {
       deny('VECTOR_ACTION_UNKNOWNS', 'Unknowns Engine reduced autonomy to containment-only.', unknowns);
     }
+    if (unknowns.autonomyCeiling === 'SHADOW_OR_LOW_RISK' && RISK_ORDER[action.riskClass] > RISK_ORDER.LOW) {
+      deny('VECTOR_ACTION_UNKNOWNS', 'Unknowns Engine permits only shadow or low-risk action for this uncertainty level.', unknowns);
+    }
 
     const guardian = this.guardian.evaluate(action, input.context || {});
     if (!guardian.allowed) deny('VECTOR_ACTION_GUARDIAN', 'Customer Guardian rejected the action.', guardian);
