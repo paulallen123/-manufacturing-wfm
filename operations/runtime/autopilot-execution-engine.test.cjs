@@ -7,3 +7,24 @@ function plan(){return{adapter:'workforce-lifecycle',reversible:true,action:{eve
 test('requires current context and reversible plan',()=>{const s=setup({});assert.throws(()=>s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'old',plan:plan()}),/context changed/i);assert.throws(()=>s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:{...plan(),reversible:false}}),/reversible/);s.engine.close();fs.rmSync(s.dir,{recursive:true,force:true});});
 test('executes verifies and is idempotent',async()=>{const m=new Map(),a={applyTrustedEvent({eventKey}){const x={event:{id:'wf-'+eventKey,eventKey,status:'ACCEPTED'},decision:{status:'ACCEPTED',reasonCode:'OK'}};m.set(eventKey,x.event);return x;},getTrustedEvent({eventKey}){return m.get(eventKey)||null;}};const s=setup(a),p=s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:plan()}),r=await s.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'}),r2=await s.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'});assert.equal(r.state,'VERIFIED');assert.equal(r2.idempotent,true);s.engine.close();fs.rmSync(s.dir,{recursive:true,force:true});});
 test('failed verification rolls back or contains',async()=>{const m=new Map();let fail=true;const a={applyTrustedEvent({eventKey,event}){const x={event:{id:'wf-'+eventKey,eventKey,status:'ACCEPTED'},decision:{status:'ACCEPTED',reasonCode:'OK'}};m.set(eventKey,x.event);return x;},getTrustedEvent({eventKey}){if(eventKey==='ot'&&fail){fail=false;return null;}return m.get(eventKey)||null;}};const s=setup(a),p=s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:plan()}),r=await s.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'});assert.equal(r.state,'ROLLED_BACK');s.engine.close();fs.rmSync(s.dir,{recursive:true,force:true});});
+
+
+test('frontier assurance cannot be used to bypass earned-autonomy limits',()=>{
+ const s=setup({});
+ const blocked={
+  contractVersion:'VECTOR_DECISION_ASSURANCE_V1',
+  sourceEpisodeId:s.e.episodeId,
+  contextRevision:'r7',
+  autonomy:{ceiling:'SHADOW'}
+ };
+ assert.throws(()=>s.engine.issueHumanPermit({
+  tenant:'A',
+  episodeId:s.e.episodeId,
+  optionId:'overtime',
+  actorRef:'m',
+  contextRevision:'r7',
+  plan:{...plan(),frontierAssurance:blocked}
+ }),/does not permit execution/i);
+ s.engine.close();
+ fs.rmSync(s.dir,{recursive:true,force:true});
+});
