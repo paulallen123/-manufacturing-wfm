@@ -77,7 +77,7 @@ test('stable derived event ID deduplicates WEF re-delivery without storing SID o
 test('WEF local login plus independent Wi-Fi evidence can create authoritative IN',()=>{
   const engine=new AutomaticAttendanceEvidenceEngine({corroborationWindowMs:120_000});
   engine.registerPerson({tenant:'acme',employee:'e1',sites:['s1']});
-  engine.registerSource({tenant:'acme',sourceId:'wef-line3',site:'s1',type:'windows_wef'});
+  engine.registerSource({tenant:'acme',sourceId:'wef-line3',site:'s1',type:'wef'});
   engine.registerSource({tenant:'acme',sourceId:'wifi',site:'s1',type:'radius'});
   const wef=normalize({system:baseSystem(4624),data:{LogonType:2,TargetLogonId:'0x123'}});
   engine.ingest({tenant:'acme',receivedAtMs:R,...wef.event});
@@ -93,7 +93,7 @@ test('WEF local login plus independent Wi-Fi evidence can create authoritative I
 test('WEF logoff plus Wi-Fi disconnect cannot stop pay without a departure anchor',()=>{
   const engine=new AutomaticAttendanceEvidenceEngine({corroborationWindowMs:120_000});
   engine.registerPerson({tenant:'acme',employee:'e1',sites:['s1']});
-  engine.registerSource({tenant:'acme',sourceId:'wef-line3',site:'s1',type:'windows_wef'});
+  engine.registerSource({tenant:'acme',sourceId:'wef-line3',site:'s1',type:'wef'});
   engine.registerSource({tenant:'acme',sourceId:'wifi',site:'s1',type:'radius'});
   engine.registerSource({tenant:'acme',sourceId:'door',site:'s1',type:'access'});
   engine.ingest({tenant:'acme',sourceId:'door',eventId:'door-entry-001',employee:'e1',kind:'access_entry',observedAt:'2026-09-18T06:00:00Z',receivedAtMs:R});
