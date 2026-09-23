@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { createTrainingMediaPlan } = require('./training-media-plan.cjs');
 
 const VIDEO_JOB_VERSION='VECTOR_TRAINING_VIDEO_JOB_V1';
 const VIDEO_RECEIPT_VERSION='VECTOR_TRAINING_VIDEO_RECEIPT_V1';
@@ -35,6 +36,11 @@ function validateVideoGenerationJob(job={}){
   if(!Array.isArray(job.capture?.requiredSelectors)||job.capture.requiredSelectors.length<2) errors.push('CAPTURE_SELECTORS_REQUIRED');
   if(!Array.isArray(job.script)||job.script.length<1) errors.push('SCRIPT_REQUIRED');
   if(job.script?.some(step=>!clean(step?.title,200)||!clean(step?.instruction,1000))) errors.push('SCRIPT_STEP_INVALID');
+  if(job.narration?.job?.contractVersion!=='VECTOR_TRAINING_NARRATION_JOB_V1') errors.push('NARRATION_JOB_REQUIRED');
+  if(job.narration?.job?.artifactFingerprint!==job.artifactFingerprint) errors.push('NARRATION_ARTIFACT_MISMATCH');
+  if(job.narration?.job?.productSha!==job.productSha) errors.push('NARRATION_PRODUCT_MISMATCH');
+  if(!clean(job.narration?.voiceProfileId,120)) errors.push('VOICE_PROFILE_REQUIRED');
+  if(!Number.isFinite(Number(job.composition?.resolution?.width))||Number(job.composition.resolution.width)<1280) errors.push('COMPOSITION_RESOLUTION_INVALID');
   if(job.containsCredentials===true) errors.push('CREDENTIALS_MUST_NOT_BE_EMBEDDED');
   return {ok:errors.length===0,errors:[...new Set(errors)]};
 }
@@ -44,6 +50,7 @@ function createVideoGenerationJob(module,input={}){
   if(module.artifactPublishable!==true) throw new Error('Exact product identity is required before video generation.');
   if(module.capture?.status!=='READY') throw new Error('This workflow has no verified capture plan.');
   const targetOrigin=String(input.targetOrigin||'').replace(/\/$/,'');
+  const mediaPlan=createTrainingMediaPlan(module,{productSha:module.productSha});
   const seed={
     artifactFingerprint:module.artifactFingerprint,
     productSha:module.productSha,
@@ -81,9 +88,18 @@ function createVideoGenerationJob(module,input={}){
       transcriptRequired:true,
       reducedMotion:true
     },
+    composition:{
+      resolution:mediaPlan.resolution,
+      audio:mediaPlan.audio,
+      captions:mediaPlan.captions,
+      motion:mediaPlan.motion,
+      scenes:mediaPlan.scenes
+    },
     narration:{
       requiredForPublication:true,
-      provider:'UNBOUND'
+      provider:'UNBOUND',
+      voiceProfileId:mediaPlan.narrationJob.voiceProfile.id,
+      job:mediaPlan.narrationJob
     },
     publicationPolicy:'PROOF_ONLY_UNTIL_DURABLE_NARRATED'
   };
@@ -111,13 +127,17 @@ function validateVideoReceipt(job,receipt={}){
   if(!validDigest(receipt.media?.captionsSha256)) errors.push('CAPTION_DIGEST_INVALID');
   if(!validDigest(receipt.media?.transcriptSha256)) errors.push('TRANSCRIPT_DIGEST_INVALID');
   if(!Number.isFinite(Number(receipt.media?.durationMs))||Number(receipt.media.durationMs)<2000) errors.push('VIDEO_DURATION_INVALID');
-  const narrationPresent=receipt.narration?.status==='PRESENT'&&validDigest(receipt.narration?.audioSha256);
+  const narrationPresent=receipt.narration?.status==='PRESENT'&&
+    validDigest(receipt.narration?.audioSha256)&&
+    receipt.narration?.voiceProfileId===job.narration?.voiceProfileId;
+  const narrationReady=narrationPresent&&receipt.narration?.voiceReceiptState==='READY';
+  if(receipt.narration?.status==='PRESENT'&&receipt.narration?.voiceProfileId!==job.narration?.voiceProfileId) errors.push('VOICE_PROFILE_MISMATCH');
   const videoUrl=String(receipt.publication?.videoUrl||'');
   const captionsUrl=String(receipt.publication?.captionsUrl||'');
   const transcriptUrl=String(receipt.publication?.transcriptUrl||'');
   const durable=receipt.publication?.durable===true&&
     /^https:\/\//.test(videoUrl)&&/^https:\/\//.test(captionsUrl)&&/^https:\/\//.test(transcriptUrl);
-  const state=errors.length?'FAILED':(narrationPresent&&durable?'READY':'PROOF_ONLY');
+  const state=errors.length?'FAILED':(narrationReady&&durable?'READY':'PROOF_ONLY');
   return {ok:errors.length===0,state,errors:[...new Set(errors)]};
 }
 module.exports=Object.freeze({
