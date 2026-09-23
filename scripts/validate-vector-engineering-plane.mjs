@@ -63,6 +63,19 @@ assert.match(foundry, /VECTOR_FOUNDRY_RUN_RECEIPT_V1/);
 assert.match(foundry, /Engineering-plane execution is prohibited in production/);
 assert.match(foundry, /maySelfCertify:\s*false/);
 
+const learningBridge = read('engineering/runtime/vector-engineering-learning-bridge.cjs');
+assert.match(learningBridge, /VECTOR_ENGINEERING_LEARNING_CANDIDATE_V1/);
+assert.match(learningBridge, /mayExecute:\s*false/);
+assert.match(learningBridge, /mayMutateProduction:\s*false/);
+assert.match(learningBridge, /maySelfPromote:\s*false/);
+assert.match(learningBridge, /maySelfCertify:\s*false/);
+
+const learningSchema = json('product-factory/learning-receipt-schema.json');
+assert.ok(learningSchema.required.includes('sourceEvidence'));
+assert.ok(learningSchema.required.includes('holdoutResult'));
+assert.ok(learningSchema.prohibited.includes('direct-execution-token'));
+assert.ok(learningSchema.prohibited.includes('unsigned-production-authority'));
+
 const builtins = read('engineering/runtime/vector-tool-builtins.cjs');
 assert.match(builtins, /vector\.contract\.check/);
 assert.match(builtins, /vector\.regression\.compare/);
@@ -98,6 +111,7 @@ console.log(JSON.stringify({
   status: 'PASS',
   githubSourceOfTruth: true,
   productFactoryIntegrated: true,
+  learningBridgeIntegrated: true,
   t9AuthoritySeparated: true,
   productionRuntimeUntouched: true,
   northstarIsolated: true,
