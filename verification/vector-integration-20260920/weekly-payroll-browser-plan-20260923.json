@@ -1,0 +1,61 @@
+{
+  "status": "BUILT",
+  "scope": "Weekly sign-off to payroll browser journey source only; not hosted or production acceptance",
+  "date": "2026-09-23",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 220,
+  "sourceParent": "ca1877e9272668072aad33742f433ceeb7df34d1",
+  "ownershipComment": 5803387270,
+  "objective": "Reuse the existing Vector weekly review and payroll rules to drive one bounded UI journey from unresolved fixture evidence through team signing and checksum-bound payroll release, without direct command POSTs from the proof module.",
+  "files": {
+    "scripts/vector-weekly-payroll-journey.mjs": {
+      "sha256": "37536a57e1f3e3c4ee0644cd90c6a5f957474f41c96cc7915059be5202de96f7"
+    },
+    "scripts/vector-weekly-payroll-browser-journey.mjs": {
+      "sha256": "a25a4c88987820cac663c6cb97276a7305ebbbfad09741d74ef649c396601b33"
+    },
+    "scripts/vector-weekly-payroll-journey.test.mjs": {
+      "sha256": "8cfda7011ea5e91dea42cea4155a1ba05d68c574958614ee1290bde4c0a323e4"
+    }
+  },
+  "verification": {
+    "runtime": "Node v22.16.0",
+    "tddRed": "The focused test failed first because the requested journey module did not yet exist.",
+    "focusedTests": {"total": 13, "passed": 13, "failed": 0, "skipped": 0},
+    "browserModuleSyntax": "PASS",
+    "hostedBrowserExecution": false,
+    "fullApplicationSuite": false,
+    "exactTargetRuntimeNode22_23_2": false,
+    "dockerAdmission": false,
+    "providerSubmission": false
+  },
+  "safety": {
+    "weeklyActionBudget": 256,
+    "unknownIssueTypesFailClosed": true,
+    "staleReturnedOrBlockedTeamsFailClosed": true,
+    "payrollReleaseRequiresAllTeamsSigned": true,
+    "payrollReleaseRequiresNoBlockers": true,
+    "payrollReleaseRequiresReconciliation": true,
+    "savedBatchAndChecksumMustReadBack": true,
+    "freshLoginReadbackRequired": true,
+    "otherTenantExportDeniedRequired": true,
+    "directApiCommandPostsFromBrowserProof": false,
+    "productionMutation": false,
+    "customerMutation": false,
+    "providerSubmission": false,
+    "modelAuthorityGranted": false
+  },
+  "measurement": {
+    "liveCustomerHumanStepsRemoved": 0,
+    "realPayrollStepsRemoved": 0,
+    "newReusableAutomatedBrowserSequence": "weekly review -> issue resolution -> category checks -> employee checks -> team signing -> payroll readiness -> UI release -> checksum/readback -> tenant-isolation check",
+    "timeToReadyReductionMeasured": false
+  },
+  "remainingProof": [
+    "Execute the new browser journey against the exact bound fixture candidate through the existing approved proof infrastructure.",
+    "Independently verify request-specific audit linkage for leave decisions.",
+    "Verify safe restart/durable database preservation before any stateful promotion.",
+    "Keep the known post-release adjustment limitation outside any broad payroll-integrity claim.",
+    "Pass the existing release/security admission gates without weakening them."
+  ]
+}
