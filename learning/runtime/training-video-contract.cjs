@@ -130,8 +130,14 @@ function validateVideoReceipt(job,receipt={}){
   const narrationPresent=receipt.narration?.status==='PRESENT'&&
     validDigest(receipt.narration?.audioSha256)&&
     receipt.narration?.voiceProfileId===job.narration?.voiceProfileId;
-  const narrationReady=narrationPresent&&receipt.narration?.voiceReceiptState==='READY';
+  const narrationSync=receipt.narration?.sync==='TIMING_BOUND';
+  const narrationReady=narrationPresent&&receipt.narration?.voiceReceiptState==='READY'&&narrationSync;
   if(receipt.narration?.status==='PRESENT'&&receipt.narration?.voiceProfileId!==job.narration?.voiceProfileId) errors.push('VOICE_PROFILE_MISMATCH');
+  if(receipt.narration?.status==='PRESENT'&&!narrationSync) errors.push('NARRATION_SYNC_UNPROVEN');
+  if(receipt.narration?.status==='PRESENT'){
+    const audioEnd=Number(receipt.narration?.visualLeadMs||0)+Number(receipt.narration?.durationMs||0);
+    if(!Number.isFinite(audioEnd)||audioEnd>Number(receipt.media?.durationMs||0)+1000) errors.push('NARRATION_EXCEEDS_VIDEO');
+  }
   const videoUrl=String(receipt.publication?.videoUrl||'');
   const captionsUrl=String(receipt.publication?.captionsUrl||'');
   const transcriptUrl=String(receipt.publication?.transcriptUrl||'');
