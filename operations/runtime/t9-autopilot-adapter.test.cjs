@@ -85,3 +85,17 @@ test('T9 adapter refuses an expired customer permit before any mutation', async 
     /expire/i
   );
 });
+
+test('T9 adapter fails closed when telemetry is blind for a medium-risk workforce action', async () => {
+  const f = fixture();
+  let writes = 0;
+  const lifecycle = {
+    applyTrustedEvent() { writes += 1; throw new Error('must not execute'); },
+    getTrustedEvent() { return null; },
+  };
+  await assert.rejects(
+    () => executeT9AutopilotAction({ tenant: 'A', ...f, telemetryBlind: true, lifecycle }),
+    (error) => error?.code === 'VECTOR_ACTION_UNKNOWNS'
+  );
+  assert.equal(writes, 0);
+});
