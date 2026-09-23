@@ -1,0 +1,20 @@
+name: VECTOR runner fallback probe
+
+on:
+  push:
+    branches: ['staging/vector-eow-rc1-20260923']
+    paths:
+      - '.github/workflows/vector-runner-fallback-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - run: |
+          echo "VECTOR_GITHUB_RUNNER=PASS"
+          uname -a
