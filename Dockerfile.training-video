@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/playwright:v1.63.0-noble
 WORKDIR /worker
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 COPY learning/video-worker/package.json ./package.json
 RUN npm install --omit=dev --ignore-scripts
 COPY learning/video-worker/runner.mjs ./runner.mjs
@@ -7,6 +8,8 @@ RUN mkdir -p /worker/runtime /data/training-output \
  && chown -R pwuser:pwuser /data
 COPY learning/runtime/training-workflow-manifest.cjs /worker/runtime/training-workflow-manifest.cjs
 COPY learning/runtime/training-video-contract.cjs /worker/runtime/training-video-contract.cjs
+COPY learning/runtime/training-media-plan.cjs /worker/runtime/training-media-plan.cjs
+COPY learning/runtime/training-voice-contract.cjs /worker/runtime/training-voice-contract.cjs
 USER pwuser
 ENV NODE_ENV=production
 ENV TRAINING_OUTPUT_ROOT=/data/training-output
