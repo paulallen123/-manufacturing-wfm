@@ -88,3 +88,28 @@ test('core engineering tools catch contract drift and metric regression', async 
   assert.equal(regression.output.pass, false);
   assert.equal(regression.output.regressions[0].metric, 'passRate');
 });
+
+
+test('default generated ids are concrete and deterministic', async () => {
+  const foundry = new VectorToolFoundry();
+  registerCoreEngineeringTools(foundry);
+  foundry.registerPipeline({
+    id: 'vector.default-id-proof',
+    version: '1.0.0',
+    steps: [{ toolId: 'vector.scenario.assert', version: '1.0.0', mode: 'SHADOW' }],
+  });
+  const result = await foundry.executePipeline({
+    pipelineId: 'vector.default-id-proof',
+    version: '1.0.0',
+    environment: 'CI',
+    sourceRef: 'ci:default-id',
+    inputs: {
+      'step-1': { scenarios: [{ expected: true, actual: true }] },
+    },
+  });
+  assert.equal(result.status, 'PASS');
+  assert.equal(result.results[0].alias, 'step-1');
+  assert.equal(result.results[0].output.results[0].id, 'scenario-1');
+  assert.doesNotMatch(result.results[0].alias, /\$\{/);
+  assert.doesNotMatch(result.results[0].output.results[0].id, /\$\{/);
+});
