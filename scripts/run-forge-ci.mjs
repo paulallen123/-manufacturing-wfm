@@ -23,7 +23,12 @@ const checks = [
     'implementation/runtime/launch-autopilot-controller.test.cjs',
     'implementation/runtime/launch-integration-pathfinder.test.cjs',
     'implementation/runtime/launch-autopilot-readiness-adapter.test.cjs',
-    'scripts/prove-vector-built-asset-provenance.test.mjs'
+    'scripts/prove-vector-built-asset-provenance.test.mjs',
+    'learning/runtime/training-voice-contract.test.cjs',
+    'learning/runtime/training-media-plan.test.cjs',
+    'learning/runtime/training-authoring-contract.test.cjs',
+    'learning/runtime/training-coach-orchestrator.test.cjs',
+    'learning/runtime/training-quality-gate.test.cjs'
   ]]
 ];
 
