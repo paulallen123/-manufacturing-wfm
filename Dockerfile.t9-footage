@@ -1,0 +1,12 @@
+FROM mcr.microsoft.com/playwright:v1.56.1-noble
+WORKDIR /app
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ffmpeg \
+ && rm -rf /var/lib/apt/lists/* \
+ && npm init -y >/dev/null 2>&1 \
+ && npm install playwright@1.56.1 >/dev/null 2>&1
+COPY demo/record-t9-footage.mjs /app/record-t9-footage.mjs
+RUN node --check /app/record-t9-footage.mjs
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["node","/app/record-t9-footage.mjs"]
