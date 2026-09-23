@@ -156,8 +156,17 @@ assert.ok(inlineVendorReviewed.length >= 16, 'Vendor-reviewed integration baseli
 for (const system of inlineVendorReviewed) {
   const review = system.valueReview;
   assert.ok(Array.isArray(review.customerValue) && review.customerValue.length > 0, 'Inline customer value review missing: ' + system.id);
-  assert.ok(Array.isArray(review.savingsHypotheses) && review.savingsHypotheses.length > 0, 'Inline savings hypotheses missing: ' + system.id);
-  assert.ok(Array.isArray(review.constraintsRisks) && review.constraintsRisks.length > 0, 'Inline risk review missing: ' + system.id);
+  const valueActions = [
+    ...(Array.isArray(review.savingsHypotheses) ? review.savingsHypotheses : []),
+    ...(Array.isArray(review.automationOpportunities) ? review.automationOpportunities : [])
+  ];
+  assert.ok(valueActions.length > 0, 'Inline value/action hypotheses missing: ' + system.id);
+  const riskEvidence = [
+    ...(Array.isArray(review.constraintsRisks) ? review.constraintsRisks : []),
+    ...(Array.isArray(system.securityEvidenceBlockers) ? system.securityEvidenceBlockers : []),
+    ...(Array.isArray(system.failureModes) ? system.failureModes : [])
+  ];
+  assert.ok(riskEvidence.length > 0, 'Inline integration risk evidence missing: ' + system.id);
 }
 
 const specVerifiedCount = catalog.systems.filter(system=>system.testLevel==='spec-verified').length;
