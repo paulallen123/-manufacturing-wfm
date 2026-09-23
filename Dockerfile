@@ -4,6 +4,7 @@ FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317f
 WORKDIR /proof
 COPY . ./
 RUN node scripts/validate-deployment.mjs \
+ && node scripts/validate-t9-candidate.mjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \
  && node scripts/validate-capability-superset.mjs \
  && node scripts/validate-product-factory.mjs \
@@ -12,7 +13,7 @@ RUN node scripts/validate-deployment.mjs \
  && node scripts/validate-vector-only-ui.mjs \
  && node --check learning/video-worker/runner.mjs \
  && node integration-fabric/scripts/validate.mjs \
- && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs trust/runtime/vector-trust-spine.test.cjs operations/runtime/t9-autopilot-adapter.test.cjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs trust/runtime/vector-trust-spine.test.cjs trust/runtime/vector-t9-support-adapter.test.cjs operations/runtime/t9-autopilot-adapter.test.cjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -88,7 +89,7 @@ COPY integration-fabric/openapi.yaml /app/integration-fabric/openapi.yaml
 
 # One-day implementation and adaptive learning overlays. These remain additive,
 # tenant-scoped, fail-closed control planes using Node built-ins and the existing SQLite state.
-RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
+RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /app/trust-runtime /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-runtime/one-day-enterprise-engine.cjs
 COPY implementation/runtime/one-day-enterprise-engine-core.cjs /app/implementation-runtime/one-day-enterprise-engine-core.cjs
 COPY implementation/runtime/readiness-evidence-contract.cjs /app/implementation-runtime/readiness-evidence-contract.cjs
@@ -121,6 +122,8 @@ COPY operations/runtime/realtime-event-service.cjs /app/operations-runtime/realt
 COPY operations/runtime/autopilot-execution-engine.cjs /app/operations-runtime/autopilot-execution-engine.cjs
 COPY operations/runtime/t9-autopilot-adapter.cjs /app/operations-runtime/t9-autopilot-adapter.cjs
 COPY trust/runtime/vector-trust-spine.cjs /app/operations-runtime/vector-trust-spine.cjs
+COPY trust/runtime/vector-trust-spine.cjs /app/trust-runtime/vector-trust-spine.cjs
+COPY trust/runtime/vector-t9-support-adapter.cjs /app/trust-runtime/vector-t9-support-adapter.cjs
 COPY src/frontier/cash-to-capacity-engine.mjs /app/operations-runtime/cash-to-capacity-engine.mjs
 COPY src/frontier/cash-to-capacity-evidence.mjs /app/operations-runtime/cash-to-capacity-evidence.mjs
 COPY src/frontier/cash-to-capacity-decision.mjs /app/operations-runtime/cash-to-capacity-decision.mjs
@@ -230,6 +233,8 @@ COPY operations/runtime/t9-autopilot-adapter.cjs /tmp/wfm-tests/operations/runti
 COPY operations/runtime/t9-autopilot-adapter.test.cjs /tmp/wfm-tests/operations/runtime/t9-autopilot-adapter.test.cjs
 COPY trust/runtime/vector-trust-spine.cjs /tmp/wfm-tests/operations/runtime/vector-trust-spine.cjs
 COPY trust/runtime/vector-trust-spine.test.cjs /tmp/wfm-tests/operations/runtime/vector-trust-spine.test.cjs
+COPY trust/runtime/vector-t9-support-adapter.cjs /tmp/wfm-tests/operations/runtime/vector-t9-support-adapter.cjs
+COPY trust/runtime/vector-t9-support-adapter.test.cjs /tmp/wfm-tests/operations/runtime/vector-t9-support-adapter.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
@@ -263,6 +268,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs \
       /tmp/wfm-tests/operations/runtime/vector-trust-spine.test.cjs \
       /tmp/wfm-tests/operations/runtime/t9-autopilot-adapter.test.cjs \
+      /tmp/wfm-tests/operations/runtime/vector-t9-support-adapter.test.cjs \
       /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs \
  && rm -rf /tmp/wfm-tests
 
