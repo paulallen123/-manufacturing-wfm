@@ -165,6 +165,66 @@ function minLevel(a, b) {
   return autonomyIndex(a) <= autonomyIndex(b) ? a : b;
 }
 
+function deriveAutonomy({ simulationValidity, actionContract, authority, verifier, unknowns }) {
+  let ceiling = 'BOUNDED_AUTO';
+  const reasons = [];
+  const riskClass = actionContract.riskClass;
+  const reversibility = actionContract.reversibility;
+
+  if (!simulationValidity.insideEnvelope || simulationValidity.stale || simulationValidity.outOfDistribution) {
+    ceiling = minLevel(ceiling, 'SHADOW');
+    reasons.push('SIMULATION_OUTSIDE_VALIDITY');
+  }
+  if (simulationValidity.modelDisagreement) {
+    ceiling = minLevel(ceiling, 'RECOMMEND');
+    reasons.push('MODEL_DISAGREEMENT');
+  }
+  if (unknowns.autonomyCeiling === 'CONTAINMENT_ONLY') {
+    ceiling = minLevel(ceiling, 'REPLAY_ONLY');
+    reasons.push('UNKNOWNS_CONTAINMENT_ONLY');
+  } else if (unknowns.autonomyCeiling === 'SHADOW_OR_LOW_RISK') {
+    ceiling = minLevel(ceiling, riskClass === 'READ_ONLY' || riskClass === 'LOW' ? 'HUMAN_APPROVAL' : 'SHADOW');
+    reasons.push('UNKNOWNS_REDUCED_AUTONOMY');
+  }
+
+  if (RISK_ORDER[riskClass] > RISK_ORDER[authority.riskCeiling]) {
+    ceiling = minLevel(ceiling, 'SHADOW');
+    reasons.push('RISK_EXCEEDS_AUTHORITY');
+  }
+  if (actionContract.maxBlastRadius > authority.blastRadiusCeiling) {
+    ceiling = minLevel(ceiling, 'SHADOW');
+    reasons.push('BLAST_RADIUS_EXCEEDS_AUTHORITY');
+  }
+  if (!verifier.independentReadBack) {
+    ceiling = minLevel(ceiling, 'SHADOW');
+    reasons.push('NO_INDEPENDENT_READBACK');
+  }
+  if (riskClass === 'MEDIUM' || riskClass === 'HIGH') {
+    ceiling = minLevel(ceiling, 'HUMAN_APPROVAL');
+    reasons.push('CONSEQUENTIAL_RISK_REQUIRES_HUMAN');
+  }
+  if (riskClass === 'CRITICAL') {
+    ceiling = minLevel(ceiling, 'SHADOW');
+    reasons.push('CRITICAL_RISK_NOT_EXECUTABLE');
+  }
+  if (reversibility === 'COMPENSATABLE') {
+    ceiling = minLevel(ceiling, 'HUMAN_APPROVAL');
+    reasons.push('COMPENSATION_NOT_TRUE_ROLLBACK');
+  }
+  if (reversibility === 'IRREVERSIBLE') {
+    ceiling = minLevel(ceiling, 'SHADOW');
+    reasons.push('IRREVERSIBLE_ACTION_NOT_EXECUTABLE');
+  }
+
+  return Object.freeze({
+    ceiling,
+    executionEligible: autonomyIndex(ceiling) >= autonomyIndex('HUMAN_APPROVAL'),
+    requiresHumanApproval: ceiling === 'HUMAN_APPROVAL',
+    boundedAutoEligible: ceiling === 'BOUNDED_AUTO',
+    reasons: [...new Set(reasons)]
+  });
+}
+
 function createAssuranceEnvelope(input = {}) {
   const episode = input.episode;
   const passport = input.simulationPassport;
@@ -243,53 +303,13 @@ function createAssuranceEnvelope(input = {}) {
     reasons: list(input.unknownsAssessment?.reasons, 50, 160)
   };
 
-  let ceiling = 'BOUNDED_AUTO';
-  const reasons = [];
-
-  if (!passport.validity.insideEnvelope || passport.validity.stale || passport.validity.outOfDistribution) {
-    ceiling = minLevel(ceiling, 'SHADOW');
-    reasons.push('SIMULATION_OUTSIDE_VALIDITY');
-  }
-  if (passport.validity.modelDisagreement) {
-    ceiling = minLevel(ceiling, 'RECOMMEND');
-    reasons.push('MODEL_DISAGREEMENT');
-  }
-  if (unknowns.autonomyCeiling === 'CONTAINMENT_ONLY') {
-    ceiling = minLevel(ceiling, 'REPLAY_ONLY');
-    reasons.push('UNKNOWNS_CONTAINMENT_ONLY');
-  } else if (unknowns.autonomyCeiling === 'SHADOW_OR_LOW_RISK') {
-    ceiling = minLevel(ceiling, riskClass === 'READ_ONLY' || riskClass === 'LOW' ? 'HUMAN_APPROVAL' : 'SHADOW');
-    reasons.push('UNKNOWNS_REDUCED_AUTONOMY');
-  }
-
-  if (RISK_ORDER[riskClass] > RISK_ORDER[authority.riskCeiling]) {
-    ceiling = minLevel(ceiling, 'SHADOW');
-    reasons.push('RISK_EXCEEDS_AUTHORITY');
-  }
-  if (actionContract.maxBlastRadius > authority.blastRadiusCeiling) {
-    ceiling = minLevel(ceiling, 'SHADOW');
-    reasons.push('BLAST_RADIUS_EXCEEDS_AUTHORITY');
-  }
-  if (Date.parse(authority.expiresAt) <= Date.parse(passport.generatedAt)) {
-    ceiling = minLevel(ceiling, 'SHADOW');
-    reasons.push('AUTHORITY_EXPIRED_AT_SIMULATION_TIME');
-  }
-  if (!verifier.independentReadBack) {
-    ceiling = minLevel(ceiling, 'HUMAN_APPROVAL');
-    reasons.push('NO_INDEPENDENT_READBACK');
-  }
-  if (riskClass === 'MEDIUM' || riskClass === 'HIGH' || riskClass === 'CRITICAL') {
-    ceiling = minLevel(ceiling, 'HUMAN_APPROVAL');
-    reasons.push('CONSEQUENTIAL_RISK_REQUIRES_HUMAN');
-  }
-  if (reversibility === 'COMPENSATABLE') {
-    ceiling = minLevel(ceiling, 'HUMAN_APPROVAL');
-    reasons.push('COMPENSATION_NOT_TRUE_ROLLBACK');
-  }
-  if (reversibility === 'IRREVERSIBLE') {
-    ceiling = minLevel(ceiling, 'HUMAN_APPROVAL');
-    reasons.push('IRREVERSIBLE_ACTION');
-  }
+  const autonomy = deriveAutonomy({
+    simulationValidity: passport.validity,
+    actionContract,
+    authority,
+    verifier,
+    unknowns
+  });
 
   const core = {
     contractVersion: 'VECTOR_DECISION_ASSURANCE_V1',
@@ -297,31 +317,84 @@ function createAssuranceEnvelope(input = {}) {
     sourceEpisodeId: episode.episodeId,
     contextRevision: episode.contextRevision,
     simulationPassportDigest: passport.passportDigest,
+    simulationValidity: clone(passport.validity),
     inputEvidenceRefs: passport.inputEvidenceRefs,
     actionContract,
     verifier,
     authority,
     unknowns,
     causalPlan,
-    autonomy: {
-      ceiling,
-      executionEligible: autonomyIndex(ceiling) >= autonomyIndex('HUMAN_APPROVAL'),
-      requiresHumanApproval: ceiling === 'HUMAN_APPROVAL',
-      boundedAutoEligible: ceiling === 'BOUNDED_AUTO',
-      reasons: [...new Set(reasons)]
-    }
+    autonomy
   };
 
   return Object.freeze({ ...core, assuranceDigest: digest(core) });
 }
 
-function assertExecutionAllowed(envelope, input = {}) {
+function validateSimulationPassport(passport) {
+  if (!passport || passport.contractVersion !== 'VECTOR_SIMULATION_PASSPORT_V1') {
+    throw new Error('Valid Simulation Passport required.');
+  }
+  const { passportDigest, ...core } = clone(passport);
+  if (!passportDigest || digest(core) !== passportDigest) throw new Error('Simulation Passport integrity check failed.');
+  if (!core.sourceEpisodeId || !core.contextRevision || !core.stateSnapshotRef) throw new Error('Simulation Passport binding is incomplete.');
+  if (!Array.isArray(core.models) || !core.models.length) throw new Error('Simulation Passport has no model evidence.');
+  if (!Array.isArray(core.candidates) || core.candidates.length < 2) throw new Error('Simulation Passport has insufficient candidate evidence.');
+  if (new Set(core.candidates.map(x => x.optionId)).size !== core.candidates.length) throw new Error('Simulation Passport candidate ids must be unique.');
+  if (!core.validity || typeof core.validity !== 'object') throw new Error('Simulation Passport validity evidence is missing.');
+  return true;
+}
+
+function validateAssuranceEnvelope(envelope) {
   if (!envelope || envelope.contractVersion !== 'VECTOR_DECISION_ASSURANCE_V1') {
     throw new Error('Valid frontier Decision Assurance Envelope required.');
   }
+  const { assuranceDigest, ...core } = clone(envelope);
+  if (!assuranceDigest || digest(core) !== assuranceDigest) throw new Error('Decision Assurance integrity check failed.');
+  if (!core.sourceEpisodeId || !core.contextRevision || !core.simulationPassportDigest) {
+    throw new Error('Decision Assurance binding is incomplete.');
+  }
+  if (!core.actionContract || !(core.actionContract.riskClass in RISK_ORDER)) throw new Error('Decision Assurance action contract is invalid.');
+  if (!REVERSIBILITY.includes(core.actionContract.reversibility)) throw new Error('Decision Assurance reversibility is invalid.');
+  if (!core.authority || !(core.authority.riskCeiling in RISK_ORDER)) throw new Error('Decision Assurance authority is invalid.');
+  iso(core.authority.expiresAt, 'authority.expiresAt');
+  if (!core.verifier?.executorId || !core.verifier?.verifierId || core.verifier.executorId === core.verifier.verifierId) {
+    throw new Error('Decision Assurance verifier separation is invalid.');
+  }
+  if (!core.simulationValidity || typeof core.simulationValidity !== 'object') {
+    throw new Error('Decision Assurance simulation validity evidence is missing.');
+  }
+  const expected = deriveAutonomy({
+    simulationValidity: core.simulationValidity,
+    actionContract: core.actionContract,
+    authority: core.authority,
+    verifier: core.verifier,
+    unknowns: core.unknowns || { autonomyCeiling: 'CONTAINMENT_ONLY' }
+  });
+  if (stable(expected) !== stable(core.autonomy)) throw new Error('Decision Assurance autonomy derivation mismatch.');
+  return true;
+}
+
+function assertExecutionAllowed(envelope, input = {}) {
+  validateAssuranceEnvelope(envelope);
   const requestedMode = text(input.requestedMode, 40).toUpperCase();
   if (!['HUMAN_APPROVAL', 'BOUNDED_AUTO'].includes(requestedMode)) {
     throw new Error('Execution requestedMode must be HUMAN_APPROVAL or BOUNDED_AUTO.');
+  }
+  const at = input.at ? iso(input.at, 'execution.at') : new Date().toISOString();
+  if (Date.parse(envelope.authority.expiresAt) <= Date.parse(at)) {
+    throw new Error('Decision Assurance authority grant is expired.');
+  }
+  const expectedEpisodeId = text(input.expectedEpisodeId, 180);
+  if (expectedEpisodeId && envelope.sourceEpisodeId !== expectedEpisodeId) {
+    throw new Error('Decision Assurance episode binding mismatch.');
+  }
+  const expectedContextRevision = text(input.expectedContextRevision, 180);
+  if (expectedContextRevision && envelope.contextRevision !== expectedContextRevision) {
+    throw new Error('Decision Assurance context binding mismatch.');
+  }
+  const expectedActionType = text(input.expectedActionType, 180);
+  if (expectedActionType && envelope.actionContract.actionType !== expectedActionType) {
+    throw new Error('Decision Assurance action-type binding mismatch.');
   }
   if (requestedMode === 'HUMAN_APPROVAL' && autonomyIndex(envelope.autonomy.ceiling) < autonomyIndex('HUMAN_APPROVAL')) {
     throw new Error('Decision assurance does not permit execution.');
@@ -379,7 +452,9 @@ module.exports = Object.freeze({
   stable,
   digest,
   createSimulationPassport,
+  validateSimulationPassport,
   createAssuranceEnvelope,
+  validateAssuranceEnvelope,
   assertExecutionAllowed,
   createCausalPromotionAssessment
 });
