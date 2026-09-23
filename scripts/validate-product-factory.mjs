@@ -54,12 +54,17 @@ assert.match(vector,/Vector AI Assistant/,'role home must preserve the AI assist
 assert.doesNotMatch(vector,/guaranteed savings|guaranteed ROI/i,'unsupported financial guarantees are forbidden');
 
 const circle=read('.circleci/config.yml');
-assert.match(circle,/run-zero-cost-ci\.mjs/,'CircleCI must execute the consolidated validation runner');
+assert.match(circle,/node scripts\/run-forge-ci\.mjs/,'CircleCI must execute the canonical FORGE source-validation runner');
 assert.match(circle,/22\.23\.2/,'CI runtime must remain exact/pinned');
+assert.match(circle,/docker build --pull=false/,'CircleCI must build the exact FORGE runtime candidate');
+assert.match(circle,/api\/health/,'CircleCI must prove the hosted HTTP health boundary');
+assert.match(circle,/api\/bootstrap/,'CircleCI must prove unauthenticated bootstrap remains denied');
 
-const runner=read('scripts/run-zero-cost-ci.mjs');
-assert.match(runner,/validate-product-factory\.mjs/,'consolidated validation must include product-factory validation');
-assert.match(runner,/WFM_CI_PARALLELISM/,'validation runner must expose bounded parallelism');
+const runner=read('scripts/run-forge-ci.mjs');
+assert.match(runner,/validate-product-factory\.mjs/,'FORGE validation must include product-factory validation');
+assert.match(runner,/validate-isolated-environment-provisioning-plan\.mjs/,'FORGE validation must include isolated provisioning proof');
+assert.match(runner,/validate-autonomous-recovery-proof\.mjs/,'FORGE validation must include autonomous recovery proof');
+assert.match(runner,/validate-vector-only-ui\.mjs/,'FORGE validation must include Vector-only UI proof');
 
 const proof={
   schemaVersion:1,
