@@ -325,7 +325,12 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
 
 # A compromised Node process must not be able to rewrite the application or its own guard.
 # Runtime state lives outside /app (for staging, WFM_DB is an explicit writable path).
-RUN chown -R root:root /app \
+RUN mkdir -p /tmp/vector-local-data \
+ && chown node:node /tmp/vector-local-data \
+ && chmod 0700 /tmp/vector-local-data \
+ && rm -rf /app/local-data \
+ && ln -s /tmp/vector-local-data /app/local-data \
+ && chown -R root:root /app \
  && find /app -type d -exec chmod 0555 {} + \
  && find /app -type f -exec chmod 0444 {} +
 
