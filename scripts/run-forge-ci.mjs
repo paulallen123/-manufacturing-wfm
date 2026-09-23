@@ -2,6 +2,7 @@
 import { spawnSync } from 'node:child_process';
 
 const checks = [
+  ['node', ['scripts/run-blocker-preflight.mjs']],
   ['node', ['scripts/validate-deployment.mjs']],
   ['node', ['scripts/validate-proof-lane-policy.mjs']],
   ['node', ['scripts/validate-product-factory.mjs']],
@@ -20,6 +21,7 @@ const checks = [
     'operations/runtime/absence-recovery-shadow.test.cjs',
     'operations/runtime/demand-decision-service.test.cjs',
     'operations/runtime/decision-outcome-proof.test.cjs',
+    'resilience/blocker-autopilot.test.cjs',
     'scripts/prove-vector-built-asset-provenance.test.mjs'
   ]]
 ];

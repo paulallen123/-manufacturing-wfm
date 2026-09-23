@@ -11,6 +11,8 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/run-completion-rehearsal.mjs --assert-orchestration \
  && node scripts/validate-deployment.mjs \
  && node scripts/validate-proof-lane-policy.mjs \
+ && node scripts/validate-integration-evidence-continuity.mjs \
+ && node --test resilience/blocker-autopilot.test.cjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \
  && node scripts/validate-capability-superset.mjs \
  && node scripts/validate-product-factory.mjs \
