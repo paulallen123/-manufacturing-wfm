@@ -20,12 +20,17 @@
     "unaffectedProofStagesAlwaysContinue": true,
     "blockedCapabilityDiagnosticsContinue": true,
     "neverGloballyFreezeForSingleCapabilityBlocker": true,
-    "promotionStopsOnlyAtExplicitDependencyBoundary": true
+    "promotionStopsOnlyAtExplicitDependencyBoundary": true,
+    "deploymentSuccessNeverCountsAsHostedProof": true,
+    "publicIngressVerificationRequired": true,
+    "applicationIdentityVerificationRequired": true,
+    "proofLinkMayBeSharedOnlyAfterExternalVerification": true
   },
   "phases": [
     "source-and-contract",
     "exact-image",
     "hosted-runtime",
+    "public-ingress-verification",
     "authenticated-golden-journey",
     "refresh-new-login-persistence",
     "restart-recovery",
@@ -49,6 +54,7 @@
         "source-and-contract",
         "exact-image",
         "hosted-runtime",
+        "public-ingress-verification",
         "security-destructive"
       ]
     },
@@ -58,6 +64,7 @@
         "source-and-contract",
         "exact-image",
         "hosted-runtime",
+        "public-ingress-verification",
         "authenticated-golden-journey"
       ]
     },
@@ -77,6 +84,7 @@
         "source-and-contract",
         "exact-image",
         "hosted-runtime",
+        "public-ingress-verification",
         "restart-recovery"
       ]
     },
@@ -86,6 +94,7 @@
         "source-and-contract",
         "exact-image",
         "hosted-runtime",
+        "public-ingress-verification",
         "security-destructive"
       ]
     },
@@ -117,6 +126,7 @@
   ],
   "blockerClasses": [
     "PROVIDER_DEGRADED",
+    "PUBLIC_RUNTIME_UNREACHABLE",
     "MISSING_PROOF_DEPENDENCY",
     "PACKAGING_DRIFT",
     "STALE_PROOF_CONTRACT",
