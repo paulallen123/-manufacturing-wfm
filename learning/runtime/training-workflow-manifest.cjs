@@ -235,12 +235,6 @@ function buildArtifactFingerprint(input={}){
   const payload={
     contractVersion:CONTRACT_VERSION,
     competencyKey:input.competencyKey,
-    role:artifact.payload.role,
-    permissionClass:artifact.payload.permissionClass,
-    configurationClass:artifact.payload.configurationClass,
-    productSha:artifact.payload.productSha,
-    uiVersion:artifact.payload.uiVersion,
-    generatorVersion:artifact.payload.generatorVersion,
     workflowRevision:workflow.revision,
     role:canonicalRole(input.role),
     permissionClass:String(input.permissionClass||'default'),
