@@ -109,6 +109,19 @@ function validateNarrationReceipt(job,receipt={}){
   if(receipt.scan?.pii!=='PASS') errors.push('PII_SCAN_FAILED');
   if(receipt.scan?.secrets!=='PASS') errors.push('SECRET_SCAN_FAILED');
   if(receipt.contentMatch!==true) errors.push('NARRATION_CONTENT_MISMATCH');
+  const durationMs=Number(receipt.durationMs);
+  const timings=Array.isArray(receipt.segmentTimings)?receipt.segmentTimings:[];
+  if(timings.length!==job.segments.length) errors.push('SEGMENT_TIMINGS_REQUIRED');
+  let previousEnd=0;
+  for(let index=0;index<timings.length;index++){
+    const timing=timings[index]||{},expected=job.segments[index];
+    const start=Number(timing.startMs),end=Number(timing.endMs);
+    if(timing.id!==expected?.id) errors.push('SEGMENT_TIMING_ID_MISMATCH');
+    if(!Number.isFinite(start)||!Number.isFinite(end)||start<0||end<=start) errors.push('SEGMENT_TIMING_INVALID');
+    if(Number.isFinite(start)&&start<previousEnd) errors.push('SEGMENT_TIMING_OVERLAP');
+    if(Number.isFinite(end)&&Number.isFinite(durationMs)&&end>durationMs+250) errors.push('SEGMENT_TIMING_OUT_OF_RANGE');
+    if(Number.isFinite(end)) previousEnd=end;
+  }
   const audioUrl=clean(receipt.audioUrl,2000);
   const durable=receipt.durable===true&&/^https:\/\//.test(audioUrl);
   return Object.freeze({ok:errors.length===0,state:errors.length?'FAILED':(durable?'READY':'PROOF_ONLY'),errors:[...new Set(errors)]});
