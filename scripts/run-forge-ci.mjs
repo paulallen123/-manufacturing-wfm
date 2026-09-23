@@ -25,6 +25,7 @@ const checks = [
     'operations/runtime/autopilot-execution-engine.test.cjs',
     'trust/runtime/vector-trust-spine.test.cjs',
     'engineering/runtime/vector-tool-foundry.test.cjs',
+    'engineering/runtime/vector-engineering-learning-bridge.test.cjs',
     'implementation/runtime/launch-autopilot-controller.test.cjs',
     'implementation/runtime/launch-integration-pathfinder.test.cjs',
     'implementation/runtime/launch-autopilot-readiness-adapter.test.cjs',
