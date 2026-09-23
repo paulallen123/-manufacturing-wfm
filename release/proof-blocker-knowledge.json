@@ -57,6 +57,14 @@
       "learnedFrom": "Vecta proof-recovery directive 2026-09-23",
       "prevention": "Quarantine only the affected capability and explicit dependency scopes. Continue all unrelated development and proof stages; allow diagnostic-only progression for the blocked capability.",
       "permanentGuard": "proof-stage router + control-plane isolation assertions"
+    },
+    {
+      "id": "deployment-success-public-502",
+      "class": "PUBLIC_RUNTIME_UNREACHABLE",
+      "symptom": "Infrastructure reports terminal deployment SUCCESS while the externally routed application URL returns 502, connection refused, an infrastructure error page, or the wrong application identity.",
+      "learnedFrom": "Vector T9 live demo 2026-09-23: Railway deployment SUCCESS but public ingress returned Application failed to respond / connection refused.",
+      "prevention": "Never equate deployment state with customer reachability. After every hosted deployment, independently GET the public origin and require 2xx plus an exact application identity marker before the state can become HOSTED_PROVEN or a proof link can be shared.",
+      "permanentGuard": "VECTOR_HOSTED_PROOF_CLAIM_V1 + verify-hosted-public-runtime.mjs + blocker classifier regression"
     }
   ]
 }
