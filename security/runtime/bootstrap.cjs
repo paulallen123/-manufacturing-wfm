@@ -16,6 +16,7 @@ const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workf
 const { createDemandDecisionService } = require('/app/operations-runtime/demand-decision-service.cjs');
 const { createAutopilotExecutionEngine } = require('/app/operations-runtime/autopilot-execution-engine.cjs');
 const { createRealtimeEventService } = require('/app/operations-runtime/realtime-event-service.cjs');
+const { createT9CustomerGuardian } = require('/app/operations-runtime/t9-customer-guardian.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -54,6 +55,8 @@ let autopilotExecutionEngine = null;
 let autopilotExecutionEngineInitError = null;
 let demandDecisionService = null;
 let demandDecisionServiceInitError = null;
+let t9CustomerGuardian = null;
+let t9CustomerGuardianInitError = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -382,7 +385,21 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!t9CustomerGuardian && !t9CustomerGuardianInitError && process.env.WFM_DB) {
+    try { t9CustomerGuardian = createT9CustomerGuardian({ dbPath: process.env.WFM_DB }); }
+    catch (error) { t9CustomerGuardianInitError = error; }
+  }
+
   return originalCreateServer.call(http, async (req, res) => {
+    const guardianStarted = process.hrtime.bigint();
+    if (t9CustomerGuardian && !t9CustomerGuardianInitError && typeof res.once === 'function') {
+      res.once('finish', () => {
+        const elapsedMs = Number(process.hrtime.bigint() - guardianStarted) / 1e6;
+        queueMicrotask(() => {
+          try { t9CustomerGuardian.observeHttpCompletion({ req, statusCode: res.statusCode, durationMs: elapsedMs }); } catch {}
+        });
+      });
+    }
     forceVectorUiFreshness(req, res);
     if (serveCanonicalVectorAsset(req, res)) return;
     if (await ownerAccessRecovery.handleRequest(req, res)) return;

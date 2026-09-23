@@ -331,7 +331,10 @@
       ],
       "integratedPaths": [
         "security/runtime/identity-survival-guard.cjs",
-        "security/runtime/bootstrap.cjs"
+        "security/runtime/bootstrap.cjs",
+        "security/runtime/identity-survival-guard.test.cjs",
+        "security/runtime/owner-access-recovery.cjs",
+        "security/runtime/owner-access-recovery.test.cjs"
       ]
     },
     {
@@ -626,9 +629,50 @@
         "scripts/validate-product-factory.mjs",
         "scripts/validate-self-evolution.mjs",
         "src/frontier/cash-to-capacity-outcome.mjs",
-        "operations/runtime/decision-episode.cjs"
+        "operations/runtime/decision-episode.cjs",
+        "operations/runtime/decision-outcome-proof.cjs",
+        "operations/runtime/decision-outcome-proof.test.cjs",
+        "operations/runtime/decision-episode.test.cjs",
+        "test/frontier/cash-to-capacity-outcome.test.mjs"
       ],
       "integrationNote": "Governed adaptive-intelligence engine, self-evolution validators and verified-value schemas are now part of FORGE alongside Decision Episode and Cash-to-Capacity outcome reconciliation. Real customer history is intentionally not fabricated; legacy source remains retained until customer-like and then real outcome evidence prove calibration and rollback behaviour."
+    },
+    {
+      "id": "t9-continuous-customer-guardian",
+      "releaseTargetIds": [
+        "production-tenant",
+        "self-learning",
+        "factory-autopilot"
+      ],
+      "sourceRefs": [
+        "trust/runtime/vector-trust-spine.cjs",
+        "release/t9-customer-guardian-contract.json"
+      ],
+      "status": "in-development",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "simulation never delays customer response",
+        "simulation cannot mutate production authority",
+        "unknown findings remain open",
+        "safe fixes require independent verification",
+        "repeated patterns cannot self-promote authority"
+      ],
+      "valueAddTargets": [
+        "silent per-action shadow rehearsal",
+        "support demand driven toward zero",
+        "automatic certified safe remediation",
+        "repeated failure patterns become proposal-only scenarios",
+        "every verified fix becomes a permanent guard"
+      ],
+      "integratedPaths": [
+        "trust/runtime/vector-trust-spine.cjs",
+        "trust/runtime/vector-trust-spine.test.cjs",
+        "operations/runtime/t9-customer-guardian.cjs",
+        "operations/runtime/t9-customer-guardian.test.cjs",
+        "release/t9-customer-guardian-contract.json",
+        "security/runtime/bootstrap.cjs"
+      ],
+      "integrationNote": "T9 is now embedded in canonical FORGE. The Customer Guardian observes API completion off the customer response path, writes append-only shadow evidence, auto-fixes only through certified safe remediators with distinct verification, and turns repeated failure patterns into proposal-only scenarios."
     }
   ]
 }
