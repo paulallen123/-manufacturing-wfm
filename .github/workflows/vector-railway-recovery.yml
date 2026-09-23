@@ -1,0 +1,92 @@
+name: VECTOR Railway build-path recovery
+
+on:
+  push:
+    branches: ['feature/vector-eow-convergence-20260925']
+    paths:
+      - '.github/workflows/vector-railway-recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vector-railway-build-path-recovery
+  cancel-in-progress: true
+
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      RAILWAY_NO_AUTO_UPDATE: '1'
+      RAILWAY_PROJECT_ID: '9cd73309-0ece-4b8a-891f-7daa13d94f0d'
+      RAILWAY_ENVIRONMENT_ID: '9e7875b6-e214-4c32-9cee-81235e3d49ff'
+      FORGE_SERVICE_ID: 'c9b2fffa-3d18-47ab-942d-d94664382348'
+      AUTOPILOT_SERVICE_ID: 'fc99691c-6b63-427d-9810-52da41e27721'
+      DECISION_SERVICE_ID: 'dbfa25ab-8c9e-41cb-9796-5c7d1b7b23b5'
+
+    steps:
+      - name: Checkout recovery definition
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install pinned Railway CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
+          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
+          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
+          echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/railway-cli"
+          tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
+          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)"
+          test -n "$CLI_BIN"
+          echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
+          "$CLI_BIN" --version
+
+      - name: Discover build-environment API support
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
+          "$RAILWAY_BIN" api 'query { __type(name: "ServiceInstanceUpdateInput") { inputFields { name type { kind name ofType { kind name } } } } }' > "$RUNNER_TEMP/service-input.json"
+          node --input-type=module - "$RUNNER_TEMP/service-input.json" <<'NODE'
+          import fs from 'node:fs';
+          const raw=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const fields=raw?.data?.__type?.inputFields||[];
+          const field=fields.find((x)=>x.name==='buildEnvironment');
+          if(!field){
+            console.error('Railway API does not expose buildEnvironment on ServiceInstanceUpdateInput.');
+            process.exit(2);
+          }
+          console.log('BUILD_ENVIRONMENT_FIELD=PASS', JSON.stringify(field.type));
+          NODE
+
+      - name: Switch failed candidates away from V3 Metal build path
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for service in "$FORGE_SERVICE_ID" "$AUTOPILOT_SERVICE_ID" "$DECISION_SERVICE_ID"; do
+            echo "Updating build path for $service"
+            "$RAILWAY_BIN" api "mutation { serviceInstanceUpdate(serviceId: \"$service\", environmentId: \"$RAILWAY_ENVIRONMENT_ID\", input: { buildEnvironment: V2 }) }"
+          done
+
+      - name: Redeploy exact existing candidate commits
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for service in "$FORGE_SERVICE_ID" "$AUTOPILOT_SERVICE_ID" "$DECISION_SERVICE_ID"; do
+            "$RAILWAY_BIN" api "mutation { serviceInstanceRedeploy(serviceId: \"$service\", environmentId: \"$RAILWAY_ENVIRONMENT_ID\") }"
+          done
+          echo 'VECTOR_RAILWAY_RECOVERY_SUBMITTED=PASS'
