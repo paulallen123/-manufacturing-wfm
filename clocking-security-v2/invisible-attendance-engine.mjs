@@ -36,6 +36,7 @@ const SOURCE_KIND_DEFAULTS = new Map([
   ['mes',['hmi_login','hmi_logout']],
   ['hmi',['hmi_login','hmi_logout']],
   ['windows',['workstation_login','workstation_logout']],
+  ['windows_wef',['workstation_login','workstation_logout']],
   ['workstation',['workstation_login','workstation_logout']],
   ['wef',['workstation_login','workstation_logout']],
   ['legacy',['legacy_clock_in','legacy_clock_out']],
