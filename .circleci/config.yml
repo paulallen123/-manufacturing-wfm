@@ -11,6 +11,15 @@ jobs:
           name: Verify exact Node runtime
           command: test "$(node --version)" = "v22.23.2"
       - run:
+          name: Validate branch drift budget
+          command: |
+            set -euo pipefail
+            git fetch --no-tags origin feature/vector-eow-convergence-20260925:refs/remotes/origin/feature/vector-eow-convergence-20260925
+            node scripts/validate-branch-drift-budget.mjs --base origin/feature/vector-eow-convergence-20260925 --head HEAD --warn-behind 5 --max-behind 10
+      - run:
+          name: Bind exact candidate identity
+          command: node scripts/generate-vector-candidate-identity.mjs
+      - run:
           name: Current FORGE source validation
           command: node scripts/run-forge-ci.mjs
       - run:
@@ -19,6 +28,7 @@ jobs:
           command: |
             mkdir -p circleci-artifacts
             cp *-proof.json circleci-artifacts/ 2>/dev/null || true
+            cp candidate-identity.json blocker-preflight-report.json circleci-artifacts/ 2>/dev/null || true
       - store_artifacts:
           path: circleci-artifacts
           destination: forge-source-proof
