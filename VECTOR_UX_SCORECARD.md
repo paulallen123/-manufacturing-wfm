@@ -2,6 +2,27 @@
 
 This is the single canonical scorecard for the approved Vector role-first NEW-UI lineage. Historical cycle detail remains in Git history; this file keeps only the current evidence boundary, validated increments and one dependency-ordered next action so documentation does not become a second backlog.
 
+## 2026-09-23 — Scheduling simplicity contract
+
+### Journey boundary
+Scheduling parity/evolution is allowed to add intelligence behind **Today / Plan / Factory**, but it may not add a new top-level section, a second scheduling workspace, a permanent scheduling-intelligence panel, or a button simply because a capability exists.
+
+### Complexity budget
+- Top-level navigation additions: **0**.
+- New Plan tabs: **0**.
+- New permanent scheduling panels: **0**.
+- Primary actions per scheduling task: **maximum 1**.
+- Secondary actions: **maximum 1**, limited to progressive disclosure such as **View details**.
+- Default visible scheduling metrics: **maximum 3**.
+- If VECTOR can safely complete the task without a human, **no button is rendered**.
+- Technical solver/AI language is forbidden from normal action labels; the interface communicates the business outcome instead.
+
+### Product behaviour
+VECTOR should pre-calculate, filter ineligible workers, compare internal/cross-site/overtime/contingent/agency options, preserve schedule stability, and prepare the best safe answer in the background. The manager sees the outcome and only the decision they still need to make. Details, rejected alternatives, constraints and evidence remain inspectable on demand.
+
+### Source / proof boundary
+`ux-overlay/vector-scheduling-simplicity-contract.cjs` turns this into an executable contract. Its regression protects the existing five-section navigation and action-density limits before scheduling UI is wired. The test is admitted to the exact Docker proof path. This is a source/build guard only until the eventual canonical hosted scheduling journey is browser-proven.
+
 ## 2026-09-20 — Vector r16: lifecycle-consistent action affordance
 
 ### Journey reviewed
