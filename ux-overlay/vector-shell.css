@@ -119,3 +119,15 @@ body.vector-ui-active .insight-hero{background:white!important;color:var(--vecto
 .vector-capacity-column b{align-self:start;min-height:20px;color:#2a455f;font-size:8px;line-height:1.2}.vector-capacity-column small{align-self:start;font-size:7.5px}.vector-capacity-column small.gap{color:#b65d48}.vector-capacity-column small.good{color:#348266}
 .vector-capacity-loading{height:170px;display:flex;align-items:flex-end;justify-content:space-around;gap:10px;padding:12px}.vector-capacity-loading i{width:22px;border-radius:4px 4px 1px 1px;background:#e8eef4}.vector-capacity-loading i:nth-child(1){height:62%}.vector-capacity-loading i:nth-child(2){height:44%}.vector-capacity-loading i:nth-child(3){height:80%}.vector-capacity-loading i:nth-child(4){height:56%}.vector-capacity-loading i:nth-child(5){height:70%}.vector-capacity-loading i:nth-child(6){height:49%}
 @media(max-width:760px){.vector-capacity-bars{height:165px;gap:6px}.vector-capacity-column{grid-template-rows:118px auto auto}.vector-capacity-plot{height:114px}.vector-capacity-column b{font-size:7.5px}.vector-capacity-legend{flex-wrap:wrap}}
+
+
+/* VECTOR_VERIFIED_VALUE_V1 styles */
+.vector-verified-value{margin:18px 0;padding:20px 22px}
+.vector-verified-value .vector-card-head{align-items:flex-start;gap:18px}
+.vector-verified-value .vector-card-head p{margin:6px 0 0;max-width:680px;color:var(--vector-muted,#667085);font-size:13px;line-height:1.45}
+.vector-value-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.vector-value-grid>div{border:1px solid rgba(15,23,42,.09);border-radius:14px;padding:16px;background:rgba(248,250,252,.76);display:grid;gap:5px}
+.vector-value-grid small{font-size:12px;font-weight:700;color:var(--vector-muted,#667085)}
+.vector-value-grid strong{font-size:26px;line-height:1.15;letter-spacing:-.02em;color:var(--vector-text,#0f172a)}
+.vector-value-grid span{font-size:12px;line-height:1.4;color:var(--vector-muted,#667085)}
+@media (max-width:760px){.vector-value-grid{grid-template-columns:1fr}.vector-verified-value{padding:16px}}
