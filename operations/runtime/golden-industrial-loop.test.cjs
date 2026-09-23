@@ -10,7 +10,8 @@ const {
   validateGoldenIndustrialLoop,
   registerGoldenIndustrialLoop,
   issueGoldenIndustrialLoopPermit,
-  executeGoldenIndustrialLoop
+  executeGoldenIndustrialLoop,
+  recordGoldenIndustrialLoopOutcome
 } = require('./golden-industrial-loop.cjs');
 
 function episode() {
@@ -242,4 +243,58 @@ test('permit and execution remain bound to the same root episode and context', a
     now: Date.parse('2026-09-23T08:11:00Z')
   });
   assert.equal(result.state, 'VERIFIED');
+});
+
+
+test('golden loop business outcome is recorded only after verified execution and preserves root binding', () => {
+  const loop = buildGoldenIndustrialLoop(input());
+  const execution = {
+    executionId: 'exec-17',
+    state: 'VERIFIED',
+    detail: { outcomePending: true }
+  };
+  const engine = {
+    recordVerifiedOutcome(args) {
+      assert.equal(args.tenant, loop.tenant);
+      assert.equal(args.executionId, execution.executionId);
+      return {
+        contractVersion: 'VECTOR_AUTOPILOT_OUTCOME_V1',
+        rootEpisodeId: loop.rootEpisodeId,
+        selectedEpisodeId: 'selected-17',
+        outcomeDigest: 'outcome-17',
+        episode: {
+          contractVersion: 'VECTOR_DECISION_EPISODE_V1',
+          episodeId: 'selected-17',
+          outcome: { actual: args.actual }
+        },
+        idempotent: false
+      };
+    }
+  };
+  const result = recordGoldenIndustrialLoopOutcome(engine, loop, execution, {
+    observedAt: '2026-09-23T18:00:00Z',
+    evidenceRefs: ['measure:17'],
+    actual: { planAttainmentPct: 99, labourCost: 245 },
+    actorRef: 'system:measurement'
+  });
+  assert.equal(result.rootEpisodeId, loop.rootEpisodeId);
+  assert.equal(result.executionId, execution.executionId);
+  assert.equal(result.outcomeDigest, 'outcome-17');
+});
+
+test('golden loop refuses business outcome before independently verified execution', () => {
+  const loop = buildGoldenIndustrialLoop(input());
+  assert.throws(
+    () => recordGoldenIndustrialLoopOutcome(
+      { recordVerifiedOutcome() { throw new Error('should not be called'); } },
+      loop,
+      { executionId: 'exec-17', state: 'APPLIED' },
+      {
+        observedAt: '2026-09-23T18:00:00Z',
+        evidenceRefs: ['measure:17'],
+        actual: { planAttainmentPct: 99 }
+      }
+    ),
+    /requires a VERIFIED execution/i
+  );
 });
