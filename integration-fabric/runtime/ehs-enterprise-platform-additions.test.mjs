@@ -43,7 +43,8 @@ test('Intelex evidence keeps custom EHS reads on REST with least-privilege and h
   assert.deepEqual(c.protocols,['REST']);
   assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
   assert.equal(c.authentication,'basic-or-api-key-or-v6-oauth2-client-credentials');
-  assert.equal(c.nextEvidenceGate,'sandbox-authentication');
+  assert.equal(c.nextEvidenceGate,'resolve-security-evidence-blockers-before-authentication');
+  assert.ok(c.evidenceBlockers.some(x=>/tenant|least-privilege|permission/i.test(x)),'Intelex must retain explicit tenant/least-privilege evidence blockers');
   assert.equal(c.security.writeEnabled,false);
   assert.equal(c.security.crossScopeReadEnabled,false);
   assert.equal(c.security.rawSensitiveHealthDataAllowed,false);
