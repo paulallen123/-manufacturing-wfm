@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+
+const p=JSON.parse(fs.readFileSync(new URL('../release/proof-lane-policy.json',import.meta.url),'utf8'));
+assert.equal(p.schemaVersion,1);
+assert.equal(p.name,'VECTOR_PROOF_LANE_INDEPENDENCE_V1');
+assert.equal(p.rules.neverSkipTestsToUnblock,true);
+assert.equal(p.rules.skippedNeverCountsAsPass,true);
+assert.equal(p.rules.noRunnerNeverCountsAsProductFailure,true);
+assert.equal(p.rules.providerFailureNeverCountsAsPass,true);
+assert.equal(p.rules.exactSourceShaRequired,true);
+assert.equal(p.rules.immutableEvidenceRequired,true);
+assert.equal(p.rules.developmentContinuesIfAnyExecutableLaneExists,true);
+assert.ok(Number(p.rules.productionPromotionRequiresIndependentProviders)>=2);
+
+const ids=new Set(),providers=new Set();
+let exactImage=0;
+for(const lane of p.lanes||[]){
+  assert.ok(lane.id&&lane.provider&&lane.class);
+  assert.ok(!ids.has(lane.id),'Duplicate proof lane: '+lane.id);ids.add(lane.id);
+  providers.add(lane.provider);
+  assert.equal(lane.exactSourceSha,true,'Every proof lane must bind the exact source SHA: '+lane.id);
+  if(lane.class==='exact-image') exactImage++;
+}
+assert.ok(providers.size>=3,'Proof topology must span at least three providers/signals.');
+assert.ok(exactImage>=2,'At least two exact-image lanes are required.');
+for(const id of p.fallbackOrder||[]) assert.ok(ids.has(id),'Unknown fallback lane: '+id);
+assert.match(p.developmentRule,/Continue coding/);
+assert.match(p.promotionRule,/two providers/);
+console.log('VECTOR_PROOF_LANE_INDEPENDENCE=PASS providers='+providers.size+' exactImageLanes='+exactImage);
