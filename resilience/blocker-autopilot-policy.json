@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "contract": "VECTOR_BLOCKER_AUTOPILOT_POLICY_V1",
+  "goal": "Restore or preserve an executable development and proof path within five minutes without removing tests, weakening security or granting production authority.",
+  "classificationSloSeconds": 60,
+  "fallbackDispatchSloSeconds": 90,
+  "executablePathRestoreSloSeconds": 300,
+  "retryBudgets": {
+    "providerPreExecution": 1,
+    "transientExternalDependency": 2,
+    "deterministicProductFailure": 0,
+    "unknownBeforeIndependentReproducer": 0
+  },
+  "branchDrift": {
+    "warningBehindCommits": 5,
+    "maximumBehindCommits": 10
+  },
+  "invariants": {
+    "skippedIsProof": false,
+    "noRunnerIsProductFailure": false,
+    "providerOutageIsPass": false,
+    "staleProofIsPass": false,
+    "testsMayBeRemovedToRestoreVelocity": false,
+    "productionMutationAuthority": false,
+    "customerMutationAuthority": false,
+    "independentReproductionBeforeUnknownBecomesProductDefect": true
+  }
+}
