@@ -373,6 +373,7 @@ test('frontier route requires registered simulation, registered assurance and in
   });
   assert.equal(result.state, 'VERIFIED');
   assert.equal(result.detail.assuranceDigest, assurance.assuranceDigest);
+  assert.equal(result.detail.outcomePending, true);
   cleanup(s);
 });
 
@@ -444,4 +445,169 @@ test('tampered assurance cannot enter the trusted registry', () => {
     /integrity check failed/i
   );
   cleanup(s);
+});
+
+
+test('frontier outcome is recorded only after independently verified execution and is append-only', async () => {
+  const events = new Map();
+  const lifecycle = {
+    applyTrustedEvent({ eventKey }) {
+      const x = {
+        event: { id: 'wf-' + eventKey, eventKey, status: 'ACCEPTED' },
+        decision: { status: 'ACCEPTED', reasonCode: 'OK' }
+      };
+      events.set(eventKey, x.event);
+      return x;
+    },
+    getTrustedEvent({ eventKey }) {
+      return events.get(eventKey) || null;
+    }
+  };
+  const verifier = {
+    getTrustedEvent({ eventKey }) {
+      return events.get(eventKey) || null;
+    }
+  };
+
+  const s = setup(lifecycle, verifier);
+  const { passport, assurance } = frontierEvidence(s.e);
+  s.engine.registerSimulationPassport({ tenant: 'A', episodeId: s.e.episodeId, passport });
+  s.engine.registerFrontierAssurance({ tenant: 'A', episodeId: s.e.episodeId, envelope: assurance });
+
+  const permit = s.engine.issueHumanPermit({
+    tenant: 'A',
+    episodeId: s.e.episodeId,
+    optionId: 'overtime',
+    actorRef: 'manager:1',
+    contextRevision: 'r7',
+    now: Date.parse('2026-09-22T09:05:00Z'),
+    plan: plan({ frontierAssuranceDigest: assurance.assuranceDigest })
+  });
+  const execution = await s.engine.executePermit({
+    tenant: 'A',
+    permitId: permit.permitId,
+    currentContextRevision: 'r7',
+    now: Date.parse('2026-09-22T09:06:00Z')
+  });
+  assert.equal(execution.state, 'VERIFIED');
+  assert.equal(execution.detail.outcomePending, true);
+
+  const measured = {
+    tenant: 'A',
+    executionId: execution.executionId,
+    observedAt: '2099-01-01T00:00:00Z',
+    evidenceRefs: ['measure:throughput:17', 'measure:labour:17'],
+    actual: { planAttainmentPct: 97, labourCost: 310 },
+    actorRef: 'system:measurement-worker'
+  };
+  const outcome = s.engine.recordVerifiedOutcome(measured);
+  assert.equal(outcome.rootEpisodeId, s.e.episodeId);
+  assert.equal(outcome.episode.outcome.actual.planAttainmentPct, 97);
+  assert.equal(outcome.episode.outcome.actual.labourCost, 310);
+  assert.equal(outcome.idempotent, false);
+
+  const replay = s.engine.recordVerifiedOutcome(measured);
+  assert.equal(replay.idempotent, true);
+  assert.equal(replay.outcomeDigest, outcome.outcomeDigest);
+
+  const stored = s.engine.outcomeForExecution('A', execution.executionId);
+  assert.equal(stored.outcomeDigest, outcome.outcomeDigest);
+  assert.equal(stored.rootEpisodeId, s.e.episodeId);
+
+  assert.throws(
+    () => s.engine.recordVerifiedOutcome({
+      ...measured,
+      actual: { planAttainmentPct: 91, labourCost: 360 }
+    }),
+    /conflicting business outcome/i
+  );
+  cleanup(s);
+});
+
+test('outcome measurement cannot predate verification or attach to a rolled-back execution', async () => {
+  const events = new Map();
+  const healthy = {
+    applyTrustedEvent({ eventKey }) {
+      const x = {
+        event: { id: 'wf-' + eventKey, eventKey, status: 'ACCEPTED' },
+        decision: { status: 'ACCEPTED', reasonCode: 'OK' }
+      };
+      events.set(eventKey, x.event);
+      return x;
+    },
+    getTrustedEvent({ eventKey }) {
+      return events.get(eventKey) || null;
+    }
+  };
+  const s1 = setup(healthy);
+  const permit1 = s1.engine.issueHumanPermit({
+    tenant: 'A',
+    episodeId: s1.e.episodeId,
+    optionId: 'overtime',
+    actorRef: 'm',
+    contextRevision: 'r7',
+    plan: plan()
+  });
+  const verified = await s1.engine.executePermit({
+    tenant: 'A',
+    permitId: permit1.permitId,
+    currentContextRevision: 'r7'
+  });
+  assert.throws(
+    () => s1.engine.recordVerifiedOutcome({
+      tenant: 'A',
+      executionId: verified.executionId,
+      observedAt: '2000-01-01T00:00:00Z',
+      evidenceRefs: ['measure:old'],
+      actual: { planAttainmentPct: 90 }
+    }),
+    /cannot predate execution verification/i
+  );
+  cleanup(s1);
+
+  const rollbackEvents = new Map();
+  let failReadback = true;
+  const rollbackLifecycle = {
+    applyTrustedEvent({ eventKey }) {
+      const x = {
+        event: { id: 'wf-' + eventKey, eventKey, status: 'ACCEPTED' },
+        decision: { status: 'ACCEPTED', reasonCode: 'OK' }
+      };
+      rollbackEvents.set(eventKey, x.event);
+      return x;
+    },
+    getTrustedEvent({ eventKey }) {
+      if (eventKey === 'ot' && failReadback) {
+        failReadback = false;
+        return null;
+      }
+      return rollbackEvents.get(eventKey) || null;
+    }
+  };
+  const s2 = setup(rollbackLifecycle);
+  const permit2 = s2.engine.issueHumanPermit({
+    tenant: 'A',
+    episodeId: s2.e.episodeId,
+    optionId: 'overtime',
+    actorRef: 'm',
+    contextRevision: 'r7',
+    plan: plan()
+  });
+  const rolledBack = await s2.engine.executePermit({
+    tenant: 'A',
+    permitId: permit2.permitId,
+    currentContextRevision: 'r7'
+  });
+  assert.equal(rolledBack.state, 'ROLLED_BACK');
+  assert.throws(
+    () => s2.engine.recordVerifiedOutcome({
+      tenant: 'A',
+      executionId: rolledBack.executionId,
+      observedAt: '2099-01-01T00:00:00Z',
+      evidenceRefs: ['measure:invalid'],
+      actual: { planAttainmentPct: 90 }
+    }),
+    /until execution is independently VERIFIED/i
+  );
+  cleanup(s2);
 });
