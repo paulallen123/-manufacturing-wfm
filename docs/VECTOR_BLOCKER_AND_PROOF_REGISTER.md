@@ -1,6 +1,6 @@
 # VECTOR Blocker & Proof Register
 
-Updated: 2026-09-22
+Updated: 2026-09-23
 
 ## Operating rule
 
@@ -20,6 +20,16 @@ Statuses in this register use the product programme meanings:
 - **DESIGNED** — agreed design, implementation incomplete.
 - **RESEARCHED** — evidence/research only.
 - **BLOCKED** — no safe route exists for that exact claim; an alternate route must continue immediately.
+
+## 2026-09-23 acceleration hardening
+
+- RC1 source is frozen at `ac7a2f7d22fdd30202dff2e86e36d2b0cf31b868` on `release/vector-eow-rc1-20260923`.
+- Forward work continues from `feature/vector-post-rc1-20260923`; new development must not move RC1 proof identity.
+- Railway Forge, Autopilot and Demand Decision candidate services now use explicit proof-trigger watch patterns instead of rebuilding on every development commit.
+- The mandatory tenant encryption/runtime signing key-binding repair has been converged into FORGE and is required by both core CI and exact Docker admission.
+- GitHub-hosted runner fallback probing with `ubuntu-latest` also failed before any step received a runner. Treat GitHub Actions as a control-plane/account execution blocker, not as a failed VECTOR test.
+- The checked-in CircleCI exact-runtime fallback has not produced a status for a fresh `staging/*` push; do not count it as executable resilience until the provider integration is actually connected and emitting proof.
+- No provider failure may cause a product security/provenance gate to be relaxed. Development continues; promotion waits for exact-candidate evidence.
 
 ## Current proof layers
 
@@ -106,10 +116,10 @@ Demand Intelligence is now included in both the canonical provenance composition
 
 **Promotion condition:** exact current Docker candidate executes the provenance suite in a hosted/full-runtime lane.
 
-### B5 — Provisioning plan could previously omit mandatory key bindings
+### B5 — Provisioning plan could previously omit mandatory key bindings — CONVERGED
 **Type:** security defect.
 
-**Status:** BUILT repair on `autonomy/zero-engineer-support-sprint-20260918`.
+**Status:** CONVERGED into FORGE on 2026-09-23; the repaired planner and negative validator are admitted by core CI and exact Docker build admission.
 
 **Repair:** both `tenant-encryption-key` and `runtime-signing-key` are mandatory before readiness. The independent verifier also requires exactly one matching bind action per declared secret in every regional plan.
 
