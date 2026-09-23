@@ -20,7 +20,11 @@
     "productionPromotionRequiresIndependentProviders": 2,
     "fallbackMustMatchRequiredProofScopes": true,
     "weakerLaneMayNotSubstituteForStrongerProof": true,
-    "uncoveredRequiredScopeRemainsBlocked": true
+    "uncoveredRequiredScopeRemainsBlocked": true,
+    "deploymentSuccessNeverCountsAsHostedPass": true,
+    "publicIngressVerificationRequired": true,
+    "applicationIdentityVerificationRequired": true,
+    "proofLinkMayBeSharedOnlyAfterPublicVerification": true
   },
   "lanes": [
     {
@@ -84,7 +88,9 @@
         "semantic-continuity",
         "exact-image",
         "hosted-product-runtime",
-        "hosted-healthcheck"
+        "hosted-healthcheck",
+        "public-ingress-2xx",
+        "application-identity"
       ],
       "runtimeMode": "product-runtime"
     },
@@ -115,5 +121,5 @@
     "github-actions-ui"
   ],
   "developmentRule": "A broken provider changes the lane state, not the product-development state. Continue coding and reroute the same immutable candidate only to a lane that proves every required scope; otherwise keep that scope explicitly blocked while unrelated development continues.",
-  "promotionRule": "Promote only when required proof scopes are satisfied by SHA-bound evidence and independent providers meet the promotion rule. A source-only, proof-stub or supplemental lane cannot stand in for hosted product runtime proof."
+  "promotionRule": "Promote only when required proof scopes are satisfied by SHA-bound evidence and independent providers meet the promotion rule. A source-only, proof-stub or supplemental lane cannot stand in for hosted product runtime proof. Railway deployment SUCCESS alone is DEPLOYED_UNVERIFIED; hosted proof additionally requires external public-ingress 2xx and the expected application identity marker."
 }
