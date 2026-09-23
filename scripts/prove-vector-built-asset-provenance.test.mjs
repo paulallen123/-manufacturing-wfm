@@ -37,5 +37,5 @@ test('workflow styling is included in the source-bound final CSS bytes',t=>{
 
 test('demand intelligence source is bound into the canonical built assets',t=>{
  const f=fixture(t);fs.appendFileSync(path.join(f.repoRoot,'ux-overlay/vector-demand-intelligence.js'),'tamper();');
- assert.throws(()=>proveVectorBuiltAssetProvenance(f),/PROVENANCE_MISMATCH:vector-ui\\.js/);
+ assert.throws(()=>proveVectorBuiltAssetProvenance(f),/PROVENANCE_MISMATCH:vector-ui\.js/);
 });

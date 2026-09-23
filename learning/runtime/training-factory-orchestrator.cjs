@@ -69,7 +69,7 @@ function planTrainingFactoryRun(input={}){
     'Measure independent task success, retention, errors and assistance dependence.',
     'LEARNING_ANALYTICS',false);
 
-  const blockers=stages.filter(x=>x.blocking&&x.status==='BLOCKED').map(x=>x.id);
+  const blockers=stages.filter(x=>x.blocking&&(x.status==='BLOCKED'||(highRisk&&x.id==='REVIEW'&&x.status!=='PASS'))).map(x=>x.id);
   const next=stages.find(x=>x.status==='READY')||null;
   return Object.freeze({
     contractVersion:'VECTOR_TRAINING_FACTORY_PLAN_V1',

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Security refinement from SYSPRO's own OData service documentation: read-only SQL access is available, but the OData service bypasses normal SYSPRO security controls such as branch access. This is therefore an explicit evidence blocker until effective company/table scope is proven or a customer-controlled constrained projection is used.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "syspro",
+      "patch": {
+        "securityEvidenceBlockers": [
+          "SYSPRO documents that the OData Service bypasses the normal SYSPRO security framework, including controls such as branch access. Although generated OData SQL credentials are read-only, read-only is not sufficient evidence of least privilege. Before sandbox/tenant authentication can count as WFM evidence, prove that the effective SQL/OData identity is restricted to the approved companies and tables, or terminate it behind a customer-controlled constrained read projection."
+        ],
+        "evidenceNote": "SYSPRO documentation verifies an OData 4.0 service that provides RESTful read-only data access for third-party applications, available to on-premise and SYSPRO Cloud ERP; cloud customers must use OData because direct database access is unavailable. OData uses Basic authentication over HTTPS and generated SQL users can be read-only. A material security caveat is also vendor-documented: the OData Service bypasses SYSPRO's normal security framework, including controls such as branch access. WFM therefore keeps the connector spec-verified only, fails closed to customer edge for deployment ambiguity, and blocks authenticated evidence until effective company/table scope is demonstrated or a customer-controlled constrained read projection is used. e.net/business-object writes, SQL writes and MOM outbound transactions remain outside WFM authority."
+      }
+    }
+  ],
+  "systems": []
+}

@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor industrial-data delta. Promotes HighByte Intelligence Hub and Rockwell FactoryTalk Optix/View from discovery-queued to spec-verified, adds Flow Software Timebase Historian at spec-verified only, and records production security boundaries for bidirectional/agent/unauthenticated surfaces. No sandbox or tenant credentials were used; all WFM paths remain read-only.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "highbyte-intelligence-hub",
+      "patch": {
+        "protocols": ["REST", "OpenAPI", "MQTT", "OPC UA"],
+        "auth": "bearer-token-api-key-rbac-or-protocol-specific-tls-x509",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://guide.highbyte.com/dev/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://guide.highbyte.com/dev/configuration/servers/restdata/",
+        "evidenceNote": "Current HighByte documentation confirms a REST Data Server, MQTT, OPC UA, role/claim-based access control and API keys. Claims distinguish read/list/execute-read from execute-write/publish and can scope selected resources by tags. The same product also exposes API-trigger pipelines, MCP tools and i3X surfaces that can execute writes/configuration. Manufacturing WFM therefore uses only explicitly allowlisted read/list/execute-read data paths behind the customer edge. API-trigger pipelines, MCP tools, i3X write-capable paths, configuration APIs and central-management operations remain excluded until separately authorised and evidenced. No HighByte instance was authenticated or queried.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://guide.highbyte.com/configuration/administration/users_and_roles/",
+          "requiredPermissions": [
+            "dedicated HighByte user/API key with only read, list and execute-read claims for customer-approved connections, instances, namespaces and tags",
+            "tag-scoped resource claims where available so the connector cannot browse unrelated factory/site content",
+            "HTTPS plus customer-approved certificate trust; MQTT subscribe-only and OPC UA Browse/Read/Subscribe only with named authenticated sessions where those transports are used",
+            "no execute-write, publish, create, update, delete, pipeline action, MCP configuration/action, central-hub administration or project import/export authority"
+          ],
+          "dataAvailableOrExpected": [
+            "modelled industrial instances and namespace hierarchy representing sites, lines, assets and processes",
+            "raw or contextualised operational values from connected OT/IT sources through REST Data Server reads",
+            "MQTT/Sparkplug-style telemetry and OPC UA values/events when customers expose approved read-only projections",
+            "connection/model/instance metadata needed to map source tags and hierarchy into canonical WFM objects",
+            "historical or calculated values where the customer's configured source and model expose them, marked with transformation provenance"
+          ],
+          "wfmObjects": ["site", "work-centre", "machine-state", "downtime-event", "production-event", "production-demand", "maintenance-window", "energy-event", "shift-outcome", "integration-event"],
+          "automationOpportunities": [
+            "reuse customer-built industrial models and namespaces to auto-suggest site, line and work-centre mappings during implementation",
+            "adjust staffing and redeployment recommendations from actual line/machine availability without direct PLC access",
+            "correlate labour cost, downtime, throughput and energy through one governed OT projection",
+            "use common REST/MQTT/OPC UA abstractions across factories whose underlying PLC, historian, SQL or MES technologies differ",
+            "accelerate diagnostics through connection/model metadata without granting project or management-plane authority"
+          ],
+          "customerValue": ["faster brownfield implementation", "reduced bespoke integration engineering", "paid-idle-time reduction", "overtime reduction", "downtime reduction", "production throughput", "maintenance coordination", "energy-to-labour attribution", "multi-site reporting"],
+          "savingsHypotheses": [
+            "reduce connector build/support effort by consuming HighByte's normalized industrial projection rather than integrating each machine/source separately",
+            "reduce paid idle time by matching labour recommendations to actual equipment availability",
+            "reduce overtime caused by delayed visibility of production recovery or line constraints",
+            "reduce implementation mapping effort by reusing model, instance and namespace hierarchy",
+            "improve labour-to-output and labour-to-energy attribution without expanding control authority"
+          ],
+          "dataGaps": [
+            "worker, payroll, absence, roster and skills truth normally remains in HCM/WFM/payroll systems",
+            "semantic quality depends on the customer's HighByte model/tagging design and upstream sources",
+            "calculated/contextualised values require raw-versus-derived provenance and cannot automatically be treated as raw machine truth",
+            "central-hub views can span multiple remote hubs and therefore require explicit site/tenant scope review",
+            "API-trigger pipelines are customer-defined and cannot be assumed read-only from their names"
+          ],
+          "constraintsRisks": [
+            "REST Data Server and i3X/MCP surfaces are bidirectional-capable; WFM must enforce technical read-only operation allowlists rather than relying on intent",
+            "HighByte MCP tools can execute operations/configuration and remain behind the separate agent-action gate",
+            "HighByte i3X can support writes when a write pipeline is configured, so it is not enabled as a WFM production route until operation-level read-only enforcement is proven",
+            "Allow Anonymous must remain disabled for production data access; unauthenticated schema/help endpoints do not establish permission to consume business data",
+            "customer/site edge remains mandatory because HighByte commonly bridges protected OT networks"
+          ],
+          "nextDevelopmentAction": "Reuse existing REST/OpenAPI, MQTT and OPC UA profiles for a thin HighByte adapter. Discover version/capabilities read-only, verify dedicated claims contain no execute-write/publish/configuration actions, bind allowed models/instances/tags to a customer/site mapping, preserve source/event and ingestion time plus raw-versus-derived provenance, and keep API-trigger pipelines, MCP, i3X writes and central-management APIs disabled until separately authorised. Obtain an authorised lab/customer instance before promotion beyond spec verification."
+        }
+      }
+    },
+    {
+      "id": "rockwell-factorytalk-optix-view",
+      "patch": {
+        "protocols": ["OPC UA", "MQTT"],
+        "auth": "factorytalk-optix-user-role-domain-or-oauth2-plus-opcua-mqtt-security",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.rockwellautomation.com/en-us/docs/factorytalk-optix/current/contents-ditamap/creating-projects/opc-ua.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://www.rockwellautomation.com/en-us/docs/factorytalk-optix/current/contents-ditamap/creating-projects/opc-ua/opcua-server/add-an-opc-ua-server.html",
+        "evidenceNote": "Rockwell's current FactoryTalk Optix documentation confirms runtime OPC UA server/client support, user-scoped published nodes, configurable minimum message security, certificates/keys, MQTT 5.0 publisher/subscriber capability and multiple runtime authentication modes. OPC UA is bidirectional and can invoke methods; MQTT can both publish and subscribe. Manufacturing WFM therefore consumes only an explicitly published node subset via authenticated Browse/Read/Subscribe or approved MQTT subscriptions behind the customer edge. REST connectivity documented for Optix is outbound-to-REST-server capability and is not treated as a proven inbound WFM API. No Optix runtime was authenticated or queried.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.rockwellautomation.com/en-us/docs/factorytalk-optix/current/contents-ditamap/creating-projects/opc-ua/opcua-server/add-an-opc-ua-server.html",
+          "requiredPermissions": [
+            "dedicated non-anonymous FactoryTalk Optix/OPC UA identity limited to customer-approved published nodes",
+            "OPC UA Browse/Read/Subscribe only with certificate validation and Sign or SignAndEncrypt security; no Write or method invocation",
+            "MQTT subscribe-only ACLs on approved topics over TLS where MQTT is used",
+            "no Optix project deployment, runtime administration, business-logic exposure, configuration changes or controller/device writes"
+          ],
+          "dataAvailableOrExpected": [
+            "selected runtime information-model nodes exposed by the customer's Optix OPC UA server",
+            "machine/line variables, counters, state flags and HMI-derived values chosen for publication",
+            "OPC UA events/alarms where the project publishes them",
+            "MQTT 5 telemetry with timestamp, tag name and value using Optix publisher payloads or customer-defined topics",
+            "project hierarchy/node paths that can assist mapping assets and work centres when the customer exposes them"
+          ],
+          "wfmObjects": ["site", "work-centre", "machine-state", "downtime-event", "production-event", "production-demand", "maintenance-window", "energy-event", "shift-outcome", "integration-event"],
+          "automationOpportunities": [
+            "turn HMI/edge runtime state into labour-demand and redeployment signals without connecting WFM directly to controllers",
+            "map published node paths or MQTT topic structure to site/line/work-centre during implementation",
+            "correlate alarms, downtime and production counters with staffing and overtime outcomes",
+            "use service-mode Optix gateway deployments as a governed plant-side data projection",
+            "standardize ingestion across Rockwell and supported third-party controllers already normalized by Optix"
+          ],
+          "customerValue": ["faster implementation", "brownfield connectivity", "paid-idle-time reduction", "downtime reduction", "overtime reduction", "production throughput", "maintenance coordination", "reduced direct PLC integration", "multi-site reporting"],
+          "savingsHypotheses": [
+            "reduce bespoke controller integration where customers already expose governed Optix nodes/topics",
+            "reduce paid idle and overtime by aligning staffing recommendations with current line state and alarms",
+            "reduce implementation effort by reusing HMI information-model hierarchy instead of manually reconstructing asset relationships",
+            "reduce plant-network exposure by terminating WFM reads at Optix rather than scanning controllers",
+            "improve labour-to-output attribution using timestamped counters/state events"
+          ],
+          "dataGaps": [
+            "Optix publishes only what each customer project models and exposes; semantics are not globally standard",
+            "if Nodes to publish is left unspecified, the entire project may be published, which is too broad for WFM",
+            "MQTT payload/topic design can be customer-specific and QoS 1 can produce duplicates",
+            "workforce/payroll/skills/absence truth remains outside Optix",
+            "HMI-derived values may be calculated or transformed and require provenance"
+          ],
+          "constraintsRisks": [
+            "Rockwell documents that an OPC UA server can publish the entire project when no node subset is specified; WFM requires an explicit allowlisted publication set",
+            "the default Anonymous user can be assigned to published nodes, but production WFM does not accept anonymous OPC UA",
+            "OPC UA supports writes and method invocation, and MQTT supports publishing; both remain technically blocked by WFM policy",
+            "minimum OPC UA security can be configured as None, so tenant evidence must prove the customer endpoint is signed/encrypted and certificate-validated",
+            "dynamic configuration/business-logic nodes must not be exposed to WFM"
+          ],
+          "nextDevelopmentAction": "Reuse existing OPC UA and MQTT profiles for a thin FactoryTalk Optix adapter. Require explicit published-node allowlists, named user identity, certificate validation and Sign/SignAndEncrypt; block Write/Call; validate MQTT TLS and subscribe-only ACLs; fingerprint node/topic schemas; preserve source timestamps and QoS dedupe. Obtain an authorised Optix runtime before promotion beyond spec verification."
+        }
+      }
+    }
+  ],
+  "systems": [
+    {
+      "id": "flow-timebase-historian",
+      "name": "Flow Software Timebase Historian",
+      "category": "industrial-historian",
+      "priority": "P2",
+      "protocols": ["REST", "OpenAPI"],
+      "auth": "oauth2-oidc-via-timebase-pulse-or-deployment-specific",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.timebase.flow-software.com/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://docs.timebase.flow-software.com/knowledge-base/upgrade",
+      "evidenceNote": "Current Timebase documentation describes an on-prem/Docker industrial historian with a REST API, Swagger/OpenAPI help, OAuth 2.0/OpenID Connect protection through Timebase Pulse, raw historical retrieval, and collectors for OPC UA/MQTT/Sparkplug with store-and-forward. Timebase 1.3.1 documentation explicitly states that its separate i3X API does not yet enforce authentication, even though that API can browse and query tag history/current values. Manufacturing WFM therefore does not use the i3X or MCP surfaces in production and consumes only the authenticated HTTPS historian API behind the customer edge. No Timebase instance was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://docs.timebase.flow-software.com/knowledge-base/i3x-interoperability-api-guide-",
+        "requiredPermissions": [
+          "dedicated Timebase Pulse OAuth2/OIDC client for the Historian HTTPS API with read-only application scope where deployment supports it",
+          "HTTPS endpoint with customer-approved certificate trust; no plain HTTP production use",
+          "read/query endpoints only for approved datasets/tags and time ranges",
+          "no historian writes, collector configuration, Pulse administration, MCP tools or unauthenticated i3X access"
+        ],
+        "dataAvailableOrExpected": [
+          "historian datasets and tag metadata",
+          "last-known tag values and historical time-series values",
+          "value quality and source timestamps available through Timebase's i3X representation and equivalent historian records",
+          "raw historical values from Ignition-connected tags and other collectors where configured",
+          "tag/dataset hierarchy originating from OPC UA, MQTT, Sparkplug, Ignition or Telegraf collectors"
+        ],
+        "wfmObjects": ["machine-state", "downtime-event", "production-event", "production-demand", "work-centre", "site", "maintenance-window", "energy-event", "shift-outcome", "integration-event"],
+        "automationOpportunities": [
+          "derive machine availability, downtime and throughput history for labour-demand forecasting",
+          "correlate timestamped production/utility tags with shift staffing and labour cost",
+          "reuse dataset/tag hierarchy to accelerate site, line and work-centre mapping",
+          "reconcile plant outages using historian history without treating reconnect/backfill as live state",
+          "support brownfield factories already feeding Timebase from OPC UA, MQTT, Sparkplug or Ignition without new direct PLC connections"
+        ],
+        "customerValue": ["faster brownfield implementation", "downtime reduction", "production throughput", "paid-idle-time reduction", "overtime reduction", "energy-to-labour attribution", "forecasting", "reduced integration administration", "historical executive reporting"],
+        "savingsHypotheses": [
+          "reduce direct device integration by consuming one historian projection",
+          "reduce overtime and paid idle time by forecasting labour needs from actual historical machine availability",
+          "reduce implementation effort by reusing existing Timebase dataset/tag organisation",
+          "improve labour/energy/output attribution using timestamped historical observations",
+          "reduce missed data during intermittent connectivity by using the historian's store-and-forward-backed history"
+        ],
+        "dataGaps": [
+          "historian tags do not inherently contain worker, payroll, absence, qualification or agency-labour truth",
+          "tag meaning and dataset hierarchy are customer-specific and require mapping fingerprints",
+          "historical observations may arrive after reconnect and must not be treated as live state",
+          "the documented i3X implementation is flat for relationships and does not itself provide asset relationships",
+          "authentication/authorization capabilities vary by Timebase version and deployment configuration"
+        ],
+        "constraintsRisks": [
+          "Timebase 1.3.1 documentation states i3X authentication is not yet enforced; WFM production must not consume that unauthenticated surface",
+          "the built-in MCP server is beta and remains behind the separate agent-action gate",
+          "historian/collector components can support writes and configuration; WFM connector remains query-only",
+          "the historian normally resides on a protected plant/site network and must terminate through the customer edge",
+          "store-and-forward replay requires source timestamp, ingestion timestamp, quality, dedupe and freshness controls"
+        ],
+        "nextDevelopmentAction": "Reuse the REST/OpenAPI profile for a thin Timebase Historian adapter behind the customer edge. Require HTTPS and Pulse OAuth2/OIDC where available; discover version and Swagger metadata read-only; bind approved datasets/tags; preserve VQT/source time plus ingestion time; add replay-age watermarks and schema fingerprints. Keep i3X and MCP disabled for production until authenticated, least-privilege behavior is evidenced in an authorised environment."
+      }
+    }
+  ]
+}

@@ -36,9 +36,11 @@ const SOURCE_KIND_DEFAULTS = new Map([
   ['mes',['hmi_login','hmi_logout']],
   ['hmi',['hmi_login','hmi_logout']],
   ['windows',['workstation_login','workstation_logout']],
+  ['windows_wef',['workstation_login','workstation_logout']],
   ['workstation',['workstation_login','workstation_logout']],
   ['wef',['workstation_login','workstation_logout']],
   ['legacy',['legacy_clock_in','legacy_clock_out']],
+  ['legacy_taa',['legacy_clock_in','legacy_clock_out']],
   ['taa',['legacy_clock_in','legacy_clock_out']],
   ['t&a',['legacy_clock_in','legacy_clock_out']],
   ['sso',['site_sso_login','site_sso_logout']],
@@ -47,7 +49,7 @@ const SOURCE_KIND_DEFAULTS = new Map([
   ['proximity',['ranging_near','ranging_away']],
   ['scanner',['scanner_activity']]
 ]);
-const DIRECT_TAA_TYPES = new Set(['legacy','taa','t&a']);
+const DIRECT_TAA_TYPES = new Set(['legacy','legacy_taa','taa','t&a']);
 
 function clone(x){ return JSON.parse(JSON.stringify(x)); }
 function digest(x){ return crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex'); }
