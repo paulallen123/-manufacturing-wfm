@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor evidence delta adding VKS and Augmentir as connected-worker/frontline manufacturing integration targets and promoting Arena PLM from discovery to spec verification. Reuses existing REST, webhook, OData and vendor-thin profiles; no credentials, customer data, writes, agent actions or plant-network/control surfaces were used. Hybrid/on-prem VKS remains fail-closed to the customer edge.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "arena-plm",
+      "patch": {
+        "protocols": ["REST", "webhooks"],
+        "auth": "oauth2-or-arena-session-token",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.arenasolutions.com/resources/arena-developer-platform/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://api.arenasolutions.com/v1/swagger-ui/index.html",
+        "evidenceNote": "Arena's current Developer Platform documents RESTful APIs, OAuth 2.0, SSO, webhooks, a Data Extract Service, a low-code integration engine/event queue, and Arena Connect. The public v1 Swagger exposes resource-oriented REST endpoints for items, revisions, BOMs, changes, quality, training, files and outbound events and requires an Arena access/session token for authenticated calls. The same API surface supports CRUD and outbound-integration administration, so WFM reuses the existing REST and signed-event profiles but remains GET/read-event only until an authorised tenant proves a least-privilege API identity. Arena is cloud-native, so no plant-network route is inferred.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.arenasolutions.com/resources/arena-developer-platform/",
+          "requiredPermissions": [
+            "dedicated Arena API identity limited by the customer's Arena role/workspace permissions to the approved PLM/QMS objects",
+            "read access to items, revisions, BOM/change, quality, training and supplier/product records needed by WFM",
+            "read-only access to outbound-event data or a customer-approved webhook subscription; no outbound-integration administration",
+            "no create/update/delete, import commit, workflow approval, automation administration or Arena Connect flow-edit authority"
+          ],
+          "dataAvailableOrExpected": [
+            "items, revisions, bills of material, sourcing/supplier and compliance context",
+            "engineering changes, requests, projects and lifecycle state",
+            "quality processes including CAPA/nonconformance-related product context where licensed",
+            "training relationships/evidence attached to controlled product records where exposed",
+            "files/attachments metadata and outbound events for approved change notifications"
+          ],
+          "wfmObjects": ["production-demand", "qualification-requirement", "training-completion", "quality-event", "production-risk", "integration-event"],
+          "automationOpportunities": [
+            "flag workforce plans when a released engineering/BOM change alters the skills, training or work-instruction readiness needed for production",
+            "use approved training evidence and product revision context to stop stale qualification assumptions before shift assignment",
+            "feed product/quality change events into labour-demand and specialist-coverage forecasts without mutating Arena",
+            "reuse Arena Connect or the event queue as a customer-managed hand-off when that reduces custom integration work, while keeping WFM action authority read-only",
+            "join quality/CAPA and change-cycle context with WFM staffing, overtime and skills data to identify labour patterns associated with rework or slow change adoption"
+          ],
+          "customerValue": ["skills deployment", "compliance", "quality/rework reduction", "scheduling efficiency", "production throughput", "faster implementation", "reduced administration", "forecasting", "inventory/logistics improvements", "executive reporting"],
+          "savingsHypotheses": [
+            "reduce rework and startup delay by detecting product/revision changes that require refreshed training or specialist coverage before production begins",
+            "reduce manual PLM-to-WFM administration by reusing approved Arena item, change, training and quality context",
+            "reduce schedule churn and avoidable overtime caused by late engineering-change or quality constraints",
+            "shorten implementation where Arena's Developer Platform, outbound events or Arena Connect already provide governed enterprise integration routes"
+          ],
+          "dataGaps": [
+            "Arena is not normally authoritative for payroll, contractual hours, absence, detailed machine state or agency-worker commercials",
+            "public documentation does not establish the exact tenant-specific API role, record scope, rate limits or event replay guarantees for a particular customer",
+            "training linked to a product record is evidence only and does not automatically confer WFM work eligibility without customer qualification policy",
+            "customer configuration determines which quality, supplier, project and custom attributes are populated and useful to workforce decisions"
+          ],
+          "constraintsRisks": [
+            "the REST API supports create/update/delete and import/integration administration; WFM must allowlist read routes and prove the technical identity cannot exercise mutative authority",
+            "API/session token handling and OAuth/SSO deployment details can vary; credentials must be vaulted and tenant/workspace bound",
+            "webhook/outbound-event delivery must be deduplicated, replay-bounded and reconciled with periodic reads before events affect staffing decisions",
+            "BOM/change/custom attributes evolve over time, requiring schema fingerprints and versioned customer mappings",
+            "files and quality records can contain sensitive or export-controlled content; ingest metadata/minimum fields rather than copying documents by default"
+          ],
+          "nextDevelopmentAction": "Keep Arena at spec verification. In an authorised customer workspace, prove the actual OAuth/session-token flow and least-privilege role, enumerate approved REST resources, exercise bounded read pagination and an outbound event with dedupe/reconciliation, fingerprint custom fields, and normalise only the product/change/training/quality signals needed by WFM before promoting to sandbox or tenant authentication."
+        }
+      }
+    }
+  ],
+  "systems": [
+    {
+      "id": "vks",
+      "name": "VKS Connected Worker / Human-Centric MES",
+      "category": "frontline-operations",
+      "priority": "P1",
+      "protocols": ["REST", "webhooks"],
+      "auth": "vendor-api-tenant-specific",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://vksapp.com/products/enterprise",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://vksapp.com/blog/vks-6-8",
+      "evidenceNote": "VKS documents a REST API for ERP/MES/BI integration and Push API notifications for form completion, operation completion, quantity completion, work-order completion, non-conformance and cycle-complete events. VKS also supports SaaS and fully isolated on-prem deployments, and VKS Edge can communicate with databases, tools, sensors and PLCs. WFM therefore reuses the existing REST and webhook/event fabric but fails closed to a customer/site edge until deployment topology is proven; VKS Edge device/tool/PLC control is outside WFM authority.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://vksapp.com/blog/vks-6-8",
+        "requiredPermissions": [
+          "dedicated VKS integration/API identity limited to the approved company/site and read-only production/form/reporting data where the product permits it",
+          "read access to work orders, operations, quantities, cycle/form/non-conformance and relevant traceability data needed by WFM",
+          "customer-approved Push API destination/event subscription for read-side notifications only",
+          "for on-prem/private deployments, route through the customer edge; no direct cloud scan of the VKS host or plant network",
+          "no guidebook mutation, work-order update, device/tool/PLC command, parameter push or VKS Edge control authority"
+        ],
+        "dataAvailableOrExpected": [
+          "work orders and operation status exchanged with ERP/MES integrations",
+          "completed quantities, cycle times, material usage and work-order/cycle completion events",
+          "smart-form data including customer-defined quality/non-conformance and traceability fields",
+          "serial/lot/product-history and process-compliance evidence captured during guided work where configured",
+          "guide/work-instruction execution and productivity context available in VKS reports/operations views"
+        ],
+        "wfmObjects": ["production-demand", "production-event", "shift-outcome", "quality-event", "work-centre", "integration-event"],
+        "automationOpportunities": [
+          "refresh labour demand and completion forecasts from live work-order, operation, cycle and quantity progress",
+          "detect cycle-time or non-conformance patterns that may require redeployment, extra qualified coverage or supervisor attention",
+          "correlate paid labour and skills mix with VKS cycle, completion and quality outcomes to identify overstaffing, bottlenecks and rework",
+          "use Push API events as a low-latency trigger with periodic REST reconciliation rather than high-frequency polling",
+          "reuse existing ERP/MES-to-VKS work-order context during implementation to reduce duplicate site/work-centre/order mapping"
+        ],
+        "customerValue": ["labour-cost reduction", "overtime reduction", "scheduling efficiency", "skills deployment", "production throughput", "quality/rework reduction", "faster implementation", "reduced administration", "forecasting", "finance attribution", "executive reporting"],
+        "savingsHypotheses": [
+          "reduce paid idle time and avoidable overtime by updating staffing decisions from actual operation/cycle progress rather than static plans",
+          "reduce rework and supervision effort by linking non-conformance/cycle evidence to the skills mix and staffing conditions that produced it",
+          "reduce manual production-to-WFM reconciliation by consuming VKS completion, quantity and form data already captured at the frontline",
+          "shorten deployment where VKS already carries the customer's ERP/MES work-order identifiers and traceability fields"
+        ],
+        "dataGaps": [
+          "public material confirms REST/Push integration capability but does not publish the authentication method, API version lifecycle, rate limits, pagination contract or all endpoint schemas",
+          "worker identity, qualification and training records may not be available or authoritative through the API and must not be inferred from execution data alone",
+          "payroll, contractual hours, absence and agency-commercial data remain authoritative in HCM/WFM/payroll/VMS systems",
+          "customer smart forms and work-instruction data are highly configurable and require per-tenant schema discovery/fingerprints"
+        ],
+        "constraintsRisks": [
+          "VKS can be SaaS or fully isolated on-prem; deployment topology must be proven before any direct-cloud route is allowed, and on-prem/private hosts stay behind the customer edge",
+          "Push notifications are event triggers rather than complete state; duplicate/out-of-order/missed events require idempotency and periodic REST reconciliation",
+          "VKS Edge can push tool parameters and communicate with PLCs/devices; WFM must not inherit device, parameter or industrial-control authority",
+          "form/attachment content may include quality, customer or regulated evidence and should be data-minimised",
+          "bidirectional ERP/MES API capability exists but writes remain disabled until separately authorised and write-roundtrip certified"
+        ],
+        "nextDevelopmentAction": "Keep VKS at spec verification and reuse the REST plus signed-event fabric. Obtain current tenant API documentation or an authorised sandbox, classify SaaS versus on-prem topology, prove a least-privilege read identity, validate pagination/rate limits and Push event authenticity/replay behaviour, fingerprint customer forms/fields and normalise work-order/operation/cycle/quality signals. Keep VKS Edge and all control/write surfaces disabled."
+      }
+    },
+    {
+      "id": "augmentir",
+      "name": "Augmentir Connected Worker",
+      "category": "frontline-operations",
+      "priority": "P1",
+      "protocols": ["OData", "connectors"],
+      "auth": "vendor-tenant-specific",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.augmentir.com/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://www.augmentir.com/fr/lp/connected-worker-platform/",
+      "evidenceNote": "Augmentir's official connected-worker material documents bidirectional standard connectors to ERP, CMMS, QMS, MES, CRM, HCM and LMS, pro-code extensibility, OData and APIs for reporting/integration. The platform captures skills, training, frontline work, performance, safety, quality, maintenance and asset context, and now includes agentic/GenAI actions. WFM reuses the existing OData plus vendor-thin connector profiles; authentication, scope, paging and rate-limit details remain tenant/vendor-specific and no agent action or bidirectional mutation authority is inherited.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.augmentir.com/",
+        "requiredPermissions": [
+          "dedicated Augmentir reporting/integration identity scoped to the approved tenant/sites and read-side OData/API data",
+          "read access only to the skills, training, worker-performance, work-execution, asset/maintenance and safety/quality signals required by WFM",
+          "no Agent Studio, Augie/agent execution, workflow mutation, content authoring, maintenance-notification write-back or enterprise connector administration",
+          "explicit customer mapping between Augmentir worker/task/site identifiers and WFM identities before data can affect staffing"
+        ],
+        "dataAvailableOrExpected": [
+          "skills matrix, skill gaps, training/workforce-development evidence and task-level proficiency/performance context",
+          "digital work-instruction/checklist execution and associated frontline data",
+          "worker/task productivity and execution signals used by Augmentir workforce intelligence",
+          "asset, operator-care, maintenance issue and work-history context where configured",
+          "safety, quality and non-conformance observations captured in frontline workflows",
+          "enterprise-system context already synchronized into Augmentir through standard connectors"
+        ],
+        "wfmObjects": ["worker", "skill", "qualification-requirement", "training-completion", "production-event", "shift-outcome", "maintenance-demand", "risk-signal", "integration-event"],
+        "automationOpportunities": [
+          "enrich skills-based scheduling with current skill/training and task-performance evidence rather than static matrices",
+          "identify workers or teams needing targeted upskilling before shortages turn into overtime or agency demand",
+          "correlate frontline execution/performance with staffing, shift, production and quality outcomes to improve labour standards and forecasts",
+          "use asset/maintenance issue context to trigger qualified maintenance coverage or safe redeployment without letting WFM execute maintenance actions",
+          "reuse Augmentir's existing ERP/HCM/CMMS/MES connector context to reduce duplicate implementation mapping"
+        ],
+        "customerValue": ["labour-cost reduction", "overtime reduction", "agency-labour reduction", "scheduling efficiency", "skills deployment", "compliance", "production throughput", "downtime reduction", "maintenance coordination", "quality/rework reduction", "faster implementation", "reduced administration", "forecasting", "executive reporting"],
+        "savingsHypotheses": [
+          "reduce overtime and agency use by finding skill gaps early and assigning available qualified workers more accurately",
+          "reduce time-to-proficiency and training administration by reusing current skills/training/execution evidence in workforce planning",
+          "reduce downtime and rework by linking task performance, maintenance/safety observations and staffing conditions",
+          "shorten implementation where Augmentir already reconciles worker, task, asset and enterprise-system context"
+        ],
+        "dataGaps": [
+          "public material does not publish the tenant authentication/scopes, OData entity catalogue, API versions, pagination, rate limits or event semantics needed for authenticated proof",
+          "Augmentir is not authoritative for payroll, contractual hours, statutory absence or agency commercials unless those are synchronized from another source",
+          "AI-derived performance/proficiency signals require customer governance and must not automatically override formal qualifications, legal eligibility or agreed labour rules",
+          "which skills, training, safety, quality, maintenance and asset fields exist depends on the customer's configured workflows and integrations"
+        ],
+        "constraintsRisks": [
+          "bidirectional standard connectors and pro-code extensibility exist, but WFM must remain read-only until any write path is separately certified",
+          "Augmentir's agentic AI can execute tasks and drive workflows; normal WFM integration must preserve agentActionEnabled:false and never inherit Agent Studio/Augie action authority",
+          "performance/proficiency analytics can affect workers materially and require transparent customer policy, provenance and human-governed use rather than opaque automated eligibility decisions",
+          "custom workflows and enterprise connector mappings can create schema/identity drift across sites and must be fingerprinted/versioned"
+        ],
+        "nextDevelopmentAction": "Keep Augmentir at spec verification. Obtain current vendor API/OData documentation or an authorised tenant, identify authentication/scopes/entity metadata/pagination/rate limits, prove a read-only integration identity, map worker/site/task/skill identifiers, sample only approved skills/training/execution/maintenance signals, and keep all agent/workflow/write authority disabled before any evidence promotion."
+      }
+    }
+  ]
+}

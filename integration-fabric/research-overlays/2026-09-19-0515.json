@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor manufacturing integration delta. Adds TrendMiner industrial analytics and Honeywell Uniformance PHD as distinct manufacturing integration targets using existing REST and historian protocol profiles. Records TrendMiner's current early-access MCP capability as a separately gated agent surface, not as a production connector protocol. Evidence remains specification/public-documentation level only: no sandbox or customer tenant credentials were used and all writes remain disabled.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "trendminer",
+      "name": "TrendMiner",
+      "category": "iiot-analytics",
+      "priority": "P1",
+      "protocols": [
+        "REST"
+      ],
+      "auth": "tenant-session-or-service-credential-by-interface",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://documentation.trendminer.com/en/developer-and-api-documentation.html",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://documentation.trendminer.com/en/trendminer-api-console.html",
+      "evidenceNote": "TrendMiner's current 2026 documentation describes a rich REST API, an in-product API console at /rest-api, and connector APIs for data-source/provider discovery, tag enumeration and indexed time-series reads. The platform can sit over historians and industrial sources including AVEVA PI, AspenTech IP.21, GE Proficy, Yokogawa Exaquantum, Honeywell PHD, Canary, AWS IoT SiteWise and generic database/file sources. Current 2026 innovation documentation also describes an early-access MCP Server with tools for tag/asset discovery, tag data, value-based search and analytics; because the early-access toolset also includes add_calculations, MCP is treated as a separately gated agent/management surface rather than a normal WFM read protocol. No TrendMiner tenant or MCP environment was authenticated.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://documentation.trendminer.com/en/developer-and-api-documentation.html",
+        "requiredPermissions": [
+          "customer-authorised TrendMiner identity limited to the tags, assets, analyses and contexts needed by WFM",
+          "read-only REST operations for tag/asset discovery and analytical/time-series results",
+          "no ConfigHub, connector configuration, calculation creation, user/role administration or other mutative permission during discovery",
+          "on self-hosted deployments, access only through the customer-approved HTTPS/edge/network path",
+          "MCP tool discovery or read tools only if an authorised Early Access environment proves operation-level permissions and auditability"
+        ],
+        "dataAvailableOrExpected": [
+          "industrial tags and indexed time-series data",
+          "tag types, metadata and historian/data-source identity",
+          "asset hierarchy and contextual information where configured",
+          "calculated, searched and analytical results created in TrendMiner",
+          "historian/provider inventory through the customer's configured Plant Integrations layer",
+          "context data from supported enterprise/industrial sources where licensed and configured"
+        ],
+        "wfmObjects": [
+          "machine-state",
+          "downtime-event",
+          "production-event",
+          "production-risk",
+          "maintenance-window",
+          "work-centre",
+          "shift-outcome",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "use customer-approved TrendMiner operating-state, anomaly and downtime analytics to refine labour demand and redeployment recommendations",
+          "correlate staffing, throughput and downtime across multiple historians through one governed analytics layer",
+          "reuse TrendMiner's existing historian/provider mappings instead of creating duplicate direct plant integrations",
+          "preserve interpolation type and query interval metadata so sampled analytical data is not mistaken for raw telemetry",
+          "detect changed tags, providers, asset mappings and API behaviour after TrendMiner upgrades before decisions are affected",
+          "evaluate MCP read tools for implementation/support acceleration only after separate agent-security proof; keep add_calculations and other mutations disabled"
+        ],
+        "customerValue": [
+          "faster multi-historian implementation",
+          "downtime reduction",
+          "production throughput",
+          "paid-idle-time reduction",
+          "maintenance coordination",
+          "better forecasting",
+          "reduced OT integration administration",
+          "cross-site operational and executive reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce duplicate historian integration engineering by consuming TrendMiner's governed industrial analytics layer",
+          "reduce paid idle labour by acting on sustained downtime/recovery analytics rather than isolated tag changes",
+          "reduce manual root-cause and shift analysis by joining WFM outcomes to TrendMiner analytics",
+          "reduce implementation effort for estates containing mixed historians and legacy data providers",
+          "if the MCP read surface is later certified, reduce AI/agent integration effort by reusing vendor-supported discovery and data tools"
+        ],
+        "dataGaps": [
+          "worker, payroll, qualification and roster truth normally remains outside TrendMiner",
+          "tag names, asset hierarchy, calculations and contextual models are customer-specific",
+          "TrendMiner may interpolate or index source values; exact raw-versus-derived semantics must be retained",
+          "provider availability and supported versions differ by TrendMiner release and customer deployment",
+          "MCP is early access and does not yet establish a production-safe least-privilege WFM contract"
+        ],
+        "constraintsRisks": [
+          "the REST API supports mutative methods as well as GET, so operation allowlists and least-privilege roles are mandatory",
+          "self-hosted TrendMiner and Plant Integrations can be close to historians and may use firewall-unfriendly legacy drivers; WFM must not bypass the customer edge",
+          "indexed reads explicitly use interpolation types and intervals, which must be carried into lineage/quality metadata",
+          "large tag/time ranges require bounded windows and controlled concurrency",
+          "upgrades can change API details; current 2026 upgrade guidance warns stricter trailing-slash handling can break existing integrations",
+          "MCP currently includes add_calculations and may gain more tools; tool names or inherited user permissions are not evidence of safe read-only authority"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST profile for a thin TrendMiner adapter with version/capability discovery, read-operation allowlists, bounded time-series windows, explicit interpolation/index metadata, source-historian lineage, tag/asset schema fingerprints and customer work-centre mappings. Treat self-hosted endpoints as customer-network resources and never connect directly to underlying historians through WFM cloud. Separately model TrendMiner MCP only after an authorised Early Access environment proves tool enumeration, read-only filtering, identity/audit boundaries and safe failure behaviour. Then obtain an authorised TrendMiner tenant for least-privilege authentication and a read round-trip."
+      }
+    },
+    {
+      "id": "honeywell-uniformance-phd",
+      "name": "Honeywell Uniformance Process History Database (PHD)",
+      "category": "historian",
+      "priority": "P1",
+      "protocols": [
+        "REST",
+        "OPC UA",
+        "JDBC/ODBC"
+      ],
+      "auth": "enterprise-api-or-opcua-identity-by-deployment",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://process.honeywell.com/us/en/products/trainings/honeywell-connected-industrial/uniformance-phd-uni",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": true,
+      "evidenceUrl": "https://process.honeywell.com/content/dam/process/en/documents/document-lists/doc_list_hints/2024/2024-February-System%20HINTS.pdf",
+      "evidenceNote": "Honeywell describes Uniformance PHD as its process historian for collecting, storing and replaying historical and continuous plant process data. Honeywell's PHD API guidance deprecates VisualPHD/ModTag for new software and identifies supported alternatives including PHDAPINet, OLEDB, ODBC, Java API, OPC DA/HDA, OPC UA and a RESTful API. Manufacturing WFM records only reusable REST, OPC UA and ODBC-family routes and does not rely on deprecated VisualPHD or create a new vendor-specific transport. A 2026 Honeywell lifecycle publication continues to list PHD as an active Enterprise Data Management product. No customer PHD environment was authenticated or queried.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://process.honeywell.com/content/dam/process/en/documents/document-lists/doc_list_hints/2024/2024-February-System%20HINTS.pdf",
+        "requiredPermissions": [
+          "customer-authorised read identity limited to approved PHD tags/history and asset areas",
+          "REST or ODBC read access where available, or OPC UA Browse/Read/Subscribe only through a customer-edge gateway",
+          "no tag modification, manual-input, archive administration, historian configuration or process/control writes",
+          "customer site/network and historian security controls remain authoritative",
+          "no deprecated VisualPHD/ModTag dependency for new connector work"
+        ],
+        "dataAvailableOrExpected": [
+          "historical and continuous plant process tag values",
+          "tag definitions, engineering units and historian metadata where exposed by the selected API",
+          "timestamps and process-history context",
+          "event/journal context where the customer's PHD configuration exposes it",
+          "calculated/virtual tag outputs where authorised",
+          "asset/process context mapped by the customer's historian implementation"
+        ],
+        "wfmObjects": [
+          "machine-state",
+          "downtime-event",
+          "production-event",
+          "production-demand",
+          "work-centre",
+          "maintenance-window",
+          "site",
+          "shift-outcome",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "use historical machine/process state to improve staffing demand, downtime response and labour redeployment recommendations",
+          "correlate staffing and overtime with process throughput, recurring stoppages and recovery patterns",
+          "use historian evidence to coordinate maintenance windows and specialist skill demand",
+          "reuse a long-lived PHD estate rather than require customers to modernise historians before adopting WFM",
+          "detect tag/schema/version drift and API-path deprecation before historian changes affect WFM decisions",
+          "consider any write or manual-input route only after a separate authorised sandbox/site write safety case"
+        ],
+        "customerValue": [
+          "legacy-plant integration",
+          "downtime reduction",
+          "production throughput",
+          "paid-idle-time reduction",
+          "maintenance coordination",
+          "overtime reduction",
+          "better labour-to-process attribution",
+          "faster implementation without historian replacement"
+        ],
+        "savingsHypotheses": [
+          "reduce integration cost by reusing existing PHD estates and standard read interfaces",
+          "reduce paid idle labour by identifying process stoppage/recovery patterns by shift",
+          "reduce emergency maintenance overtime through better historical failure/condition correlation",
+          "reduce manual process-versus-labour reconciliation",
+          "extend workforce optimisation to legacy sites that cannot immediately migrate their historian"
+        ],
+        "dataGaps": [
+          "PHD tag naming, hierarchy, event models and asset semantics are customer-specific",
+          "worker identity, schedule, payroll and qualification data usually come from separate enterprise systems",
+          "exact REST endpoint/version/authentication documentation is distributed with the customer's PHD software and therefore must be verified per deployed release",
+          "calculated/virtual tags must be distinguished from raw measurements",
+          "older estates may expose deprecated or legacy interfaces that should not be selected for new work"
+        ],
+        "constraintsRisks": [
+          "PHD deployments are commonly on-prem and plant-network adjacent; direct cloud access is prohibited and customer-edge routing is required",
+          "legacy API availability varies by PHD release; VisualPHD and ModTag are deprecated for new software",
+          "OPC UA and ODBC permissions must be read-only and bounded to required tags/data sets",
+          "large historical queries require bounded windows, backpressure and deterministic checkpoints",
+          "timestamps, quality and calculated/virtual-tag provenance must be preserved before using historian values for real-time WFM actions",
+          "customer upgrade/support matrices determine compatible API options and should be captured during implementation"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST, OPC UA and database-read profiles for a thin Uniformance PHD adapter; explicitly reject deprecated VisualPHD/ModTag for new builds. Add deployed-version/API capability discovery, customer-edge enforcement, read-only tag namespace mapping, bounded history reads, quality/source-time/provenance preservation, schema/tag fingerprints and customer asset/work-centre mappings. Obtain customer-version API documentation plus an authorised PHD lab or tenant for least-privilege authentication and read round-trip proof before considering any write path."
+      }
+    }
+  ]
+}
