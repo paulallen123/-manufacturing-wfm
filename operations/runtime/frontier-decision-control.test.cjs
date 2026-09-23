@@ -4,7 +4,9 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   createSimulationPassport,
+  validateSimulationPassport,
   createAssuranceEnvelope,
+  validateAssuranceEnvelope,
   assertExecutionAllowed,
   createCausalPromotionAssessment
 } = require('./frontier-decision-control.cjs');
@@ -26,11 +28,27 @@ function passport(overrides = {}) {
     generatedAt: '2026-09-23T15:00:00Z',
     inputEvidenceRefs: ['ev:skills', 'ev:absence', 'ev:plan'],
     models: [
-      { id: 'workforce-des', version: '17', type: 'DISCRETE_EVENT', calibrationEvidenceRefs: ['cal:1'], validityRef: 'validity:17' }
+      {
+        id: 'workforce-des',
+        version: '17',
+        type: 'DISCRETE_EVENT',
+        calibrationEvidenceRefs: ['cal:1'],
+        validityRef: 'validity:17'
+      }
     ],
     candidates: [
-      { optionId: 'do-nothing', expected: { planAttainmentPct: 81 }, constraintViolationProbability: 0, hardConstraintsPassed: true },
-      { optionId: 'redeploy', expected: { planAttainmentPct: 97 }, constraintViolationProbability: 0.001, hardConstraintsPassed: true }
+      {
+        optionId: 'do-nothing',
+        expected: { planAttainmentPct: 81 },
+        constraintViolationProbability: 0,
+        hardConstraintsPassed: true
+      },
+      {
+        optionId: 'overtime',
+        expected: { planAttainmentPct: 97 },
+        constraintViolationProbability: 0.001,
+        hardConstraintsPassed: true
+      }
     ],
     validity: {
       insideEnvelope: true,
@@ -54,9 +72,13 @@ function envelope(overrides = {}) {
   return createAssuranceEnvelope({
     episode: episode(),
     simulationPassport: passport(),
-    unknownsAssessment: { level: 'KNOWN', autonomyCeiling: 'FULL_BOUNDED', reasons: [] },
+    unknownsAssessment: {
+      level: 'KNOWN',
+      autonomyCeiling: 'FULL_BOUNDED',
+      reasons: []
+    },
     actionContract: {
-      actionType: 'workforce.redeploy',
+      actionType: 'workforce.overtime_override',
       riskClass: 'LOW',
       reversibility: 'REVERSIBLE',
       maxBlastRadius: 1,
@@ -70,8 +92,8 @@ function envelope(overrides = {}) {
       blastRadiusCeiling: 1
     },
     verifier: {
-      executorId: 'executor-a',
-      verifierId: 'verifier-b',
+      executorId: 'workforce-lifecycle-executor',
+      verifierId: 'workforce-lifecycle-verifier',
       independentReadBack: true
     },
     causalPlan: {
@@ -85,24 +107,38 @@ function envelope(overrides = {}) {
   });
 }
 
-test('simulation passport is bound to models, evidence, candidates and validity', () => {
+test('simulation passport is integrity-bound to models, evidence, candidates and validity', () => {
   const p = passport();
+  assert.equal(validateSimulationPassport(p), true);
   assert.equal(p.contractVersion, 'VECTOR_SIMULATION_PASSPORT_V1');
-  assert.equal(p.candidates.length, 2);
   assert.match(p.passportDigest, /^[a-f0-9]{64}$/);
+
+  const tampered = JSON.parse(JSON.stringify(p));
+  tampered.validity.insideEnvelope = false;
+  assert.throws(() => validateSimulationPassport(tampered), /integrity check failed/i);
 });
 
 test('low-risk reversible decision with independent verification can earn bounded autonomy', () => {
   const a = envelope();
+  assert.equal(validateAssuranceEnvelope(a), true);
   assert.equal(a.autonomy.ceiling, 'BOUNDED_AUTO');
   assert.equal(a.autonomy.boundedAutoEligible, true);
-  assert.equal(assertExecutionAllowed(a, { requestedMode: 'BOUNDED_AUTO' }), true);
+  assert.equal(
+    assertExecutionAllowed(a, {
+      requestedMode: 'BOUNDED_AUTO',
+      at: '2026-09-23T15:30:00Z',
+      expectedEpisodeId: 'ep-1',
+      expectedContextRevision: 'twin-r17',
+      expectedActionType: 'workforce.overtime_override'
+    }),
+    true
+  );
 });
 
 test('consequential or compensatable actions are capped at human approval', () => {
   const a = envelope({
     actionContract: {
-      actionType: 'workforce.reassign',
+      actionType: 'workforce.overtime_override',
       riskClass: 'MEDIUM',
       reversibility: 'COMPENSATABLE',
       maxBlastRadius: 1,
@@ -118,8 +154,47 @@ test('consequential or compensatable actions are capped at human approval', () =
     }
   });
   assert.equal(a.autonomy.ceiling, 'HUMAN_APPROVAL');
-  assert.equal(assertExecutionAllowed(a, { requestedMode: 'HUMAN_APPROVAL' }), true);
-  assert.throws(() => assertExecutionAllowed(a, { requestedMode: 'BOUNDED_AUTO' }), /earned bounded autonomy/i);
+  assert.equal(
+    assertExecutionAllowed(a, {
+      requestedMode: 'HUMAN_APPROVAL',
+      at: '2026-09-23T15:30:00Z'
+    }),
+    true
+  );
+  assert.throws(
+    () => assertExecutionAllowed(a, {
+      requestedMode: 'BOUNDED_AUTO',
+      at: '2026-09-23T15:30:00Z'
+    }),
+    /earned bounded autonomy/i
+  );
+});
+
+test('critical or irreversible decisions cannot execute in the first frontier increment', () => {
+  const a = envelope({
+    actionContract: {
+      actionType: 'workforce.overtime_override',
+      riskClass: 'CRITICAL',
+      reversibility: 'IRREVERSIBLE',
+      maxBlastRadius: 1,
+      preconditions: ['safety-case-present'],
+      postconditions: ['verified']
+    },
+    authority: {
+      grantRef: 'grant:critical',
+      expiresAt: '2026-09-23T16:00:00Z',
+      riskCeiling: 'CRITICAL',
+      blastRadiusCeiling: 1
+    }
+  });
+  assert.equal(a.autonomy.ceiling, 'SHADOW');
+  assert.throws(
+    () => assertExecutionAllowed(a, {
+      requestedMode: 'HUMAN_APPROVAL',
+      at: '2026-09-23T15:30:00Z'
+    }),
+    /does not permit execution/i
+  );
 });
 
 test('out-of-envelope simulation forces shadow-only behavior', () => {
@@ -135,7 +210,13 @@ test('out-of-envelope simulation forces shadow-only behavior', () => {
   });
   const a = envelope({ simulationPassport: p });
   assert.equal(a.autonomy.ceiling, 'SHADOW');
-  assert.throws(() => assertExecutionAllowed(a, { requestedMode: 'HUMAN_APPROVAL' }), /does not permit execution/i);
+  assert.throws(
+    () => assertExecutionAllowed(a, {
+      requestedMode: 'HUMAN_APPROVAL',
+      at: '2026-09-23T15:30:00Z'
+    }),
+    /does not permit execution/i
+  );
 });
 
 test('unknowns containment reduces the decision to replay-only', () => {
@@ -150,9 +231,49 @@ test('unknowns containment reduces the decision to replay-only', () => {
 });
 
 test('executor and verifier separation is mandatory', () => {
-  assert.throws(() => envelope({
-    verifier: { executorId: 'same', verifierId: 'same', independentReadBack: true }
-  }), /distinct identified principals/i);
+  assert.throws(
+    () => envelope({
+      verifier: {
+        executorId: 'same',
+        verifierId: 'same',
+        independentReadBack: true
+      }
+    }),
+    /distinct identified principals/i
+  );
+});
+
+test('authority is checked at simulation time and again at execution time', () => {
+  const expiredAtSimulation = envelope({
+    authority: {
+      grantRef: 'grant:old',
+      expiresAt: '2026-09-23T14:59:59Z',
+      riskCeiling: 'LOW',
+      blastRadiusCeiling: 1
+    }
+  });
+  assert.equal(expiredAtSimulation.autonomy.ceiling, 'SHADOW');
+
+  const a = envelope();
+  assert.throws(
+    () => assertExecutionAllowed(a, {
+      requestedMode: 'HUMAN_APPROVAL',
+      at: '2026-09-23T16:00:01Z'
+    }),
+    /authority grant is expired/i
+  );
+});
+
+test('tampering with a derived autonomy ceiling invalidates the assurance envelope', () => {
+  const a = JSON.parse(JSON.stringify(envelope({
+    unknownsAssessment: {
+      level: 'NOVEL_OR_COMPOUND',
+      autonomyCeiling: 'CONTAINMENT_ONLY',
+      reasons: ['unknown-process-state']
+    }
+  })));
+  a.autonomy.ceiling = 'BOUNDED_AUTO';
+  assert.throws(() => validateAssuranceEnvelope(a), /integrity check failed|autonomy derivation mismatch/i);
 });
 
 test('causal learning cannot self-promote and requires strong replicated evidence', () => {
