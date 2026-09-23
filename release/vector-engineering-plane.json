@@ -24,7 +24,12 @@
       "tool-pipelines",
       "tool-evolution-proposals"
     ],
-    "lifecycle": ["PROPOSED", "SHADOW", "CERTIFIED", "DEPRECATED"],
+    "lifecycle": [
+      "PROPOSED",
+      "SHADOW",
+      "CERTIFIED",
+      "DEPRECATED"
+    ],
     "defaultExecutionMode": "SHADOW",
     "defaultEnvironment": "PROOF"
   },
@@ -60,5 +65,32 @@
     "independently-certify-if-earned",
     "compose-into-reusable-pipelines",
     "deprecate-when-obsolete"
-  ]
+  ],
+  "integration": {
+    "productFactory": {
+      "role": "EVOLUTION_AND_CANDIDATE_GOVERNANCE",
+      "manifest": "product-factory/adaptive-intelligence-manifest.json",
+      "relationship": "Product Factory converts verified failures, repeated wins and manual repetition into evals/candidates; Tool Foundry provides versioned execution primitives. Neither grants itself release authority."
+    },
+    "t9Trust": {
+      "role": "CUSTOMER_OPERATIONAL_AUTHORITY",
+      "relationship": "Customer-impacting execution remains behind T9 evidence, authority, Guardian, typed-action and independent-verification controls. Engineering tools do not bypass this boundary."
+    },
+    "northstar": {
+      "role": "ISOLATED_EXTERNAL_SIMULATION_AND_CUSTOMER_EMULATION",
+      "relationship": "Northstar remains a separate environment. Only sanitised evidence and disposable/read-only test material may cross the boundary."
+    },
+    "hostedProof": {
+      "role": "ISOLATED_ENGINEERING_BUILD_AND_PROOF",
+      "relationship": "Railway proof services build and exercise exact source candidates without becoming the customer production runtime."
+    }
+  },
+  "learningBridge": {
+    "regression": "persistent-eval-candidate",
+    "repeatedVerifiedWin": "versioned-skill-or-tool-candidate",
+    "repeatedManualWork": "automation-or-tool-candidate",
+    "releasePath": "isolated-candidate -> tests -> adversarial/holdout proof -> independent release authority",
+    "directProductionMutation": false,
+    "selfCertification": false
+  }
 }
