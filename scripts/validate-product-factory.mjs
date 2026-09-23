@@ -45,6 +45,11 @@ assert.match(dockerfile,/VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1/,'Dockerfile mu
 const vector=read('ux-overlay/vector-shell.js');
 assert.match(vector,/VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1/);
 assert.match(vector,/VECTOR_VERIFIED_VALUE_V1/,'home must expose evidence-backed value');
+assert.match(vector,/function verifiedValueEvidence\(/,'home value must be evidence bound, not marker-only');
+assert.match(vector,/Realised \/ verified savings/,'verified and realised value must be labelled explicitly');
+assert.match(vector,/Identified opportunity/,'opportunity must remain distinct from realised savings');
+assert.match(vector,/No verified saving is available/,'unknown verified value must fail closed');
+assert.match(vector,/Open cost evidence/,'value summary must navigate to underlying cost evidence');
 assert.match(vector,/Vector AI Assistant/,'role home must preserve the AI assistant');
 assert.doesNotMatch(vector,/guaranteed savings|guaranteed ROI/i,'unsupported financial guarantees are forbidden');
 
