@@ -35,7 +35,26 @@ const server=http.createServer((req,res)=>{
   if(!fs.existsSync(file)) return sendJson(res,503,status);
   const stat=fs.statSync(file);
   const type=file.endsWith('.mp4')?'video/mp4':'video/webm';
-  res.writeHead(200,{'content-type':type,'content-length':stat.size,'cache-control':'public,max-age=300'});
+  const range=req.headers.range;
+  const common={'content-type':type,'accept-ranges':'bytes','cache-control':'public,max-age=300'};
+  if(range){
+    const m=/bytes=(\\d*)-(\\d*)/.exec(range);
+    if(!m){
+      res.writeHead(416,{...common,'content-range':'bytes */'+stat.size});
+      return res.end();
+    }
+    let start=m[1]?Number(m[1]):0;
+    let end=m[2]?Number(m[2]):Math.min(start+1024*1024-1,stat.size-1);
+    if(!Number.isFinite(start)||!Number.isFinite(end)||start<0||end<start||start>=stat.size){
+      res.writeHead(416,{...common,'content-range':'bytes */'+stat.size});
+      return res.end();
+    }
+    end=Math.min(end,stat.size-1);
+    const len=end-start+1;
+    res.writeHead(206,{...common,'content-length':len,'content-range':'bytes '+start+'-'+end+'/'+stat.size});
+    return fs.createReadStream(file,{start,end}).pipe(res);
+  }
+  res.writeHead(200,{...common,'content-length':stat.size});
   fs.createReadStream(file).pipe(res);
 });
 
