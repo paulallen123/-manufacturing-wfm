@@ -2,6 +2,7 @@
 const {createHash}=require('node:crypto');
 const {DatabaseSync}=require('node:sqlite');
 const {createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,digest}=require('./decision-episode.cjs');
+const {executeT9AutopilotAction}=require('./t9-autopilot-adapter.cjs');
 const PREFIX='/api/operations/autopilot',PERMIT_TTL_MS=15*60*1000;
 function sha256(v){return createHash('sha256').update(String(v)).digest('hex');}
 function compact(v,max=240){return String(v??'').trim().slice(0,max);}
@@ -53,17 +54,26 @@ function createAutopilotExecutionEngine(options={}){
   const selected=JSON.parse(p.selected_episode_json);if(compact(currentContextRevision,180)!==selected.contextRevision)throw Object.assign(new Error('Decision context changed. Execution refused.'),{statusCode:409});
   const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40),prior=last(executionId);if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED'].includes(prior.state))return {executionId,idempotent:true,...prior};
   if(!lifecycle?.applyTrustedEvent)throw Object.assign(new Error('Authoritative workforce execution adapter is unavailable.'),{statusCode:503});
-  log(executionId,permitId,tenant,'PREPARED',{episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)});let applied=null;
+  log(executionId,permitId,tenant,'PREPARED',{episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan),trustContract:'VECTOR_T9_TRUST_SPINE_V1'});
   try{
-   const action={...plan.action,payload:{...plan.action.payload}};if(action.kind==='OVERTIME_OVERRIDE'){action.payload.approvalRef=permitId;action.payload.approvedBy=p.actor_ref;}
-   applied=lifecycle.applyTrustedEvent({tenant,eventKey:plan.action.eventKey,event:action});if(applied?.decision?.status!=='ACCEPTED')throw new Error('Authoritative lifecycle adapter rejected the action.');
-   log(executionId,permitId,tenant,'APPLIED',{eventId:applied.event.id,reasonCode:applied.decision.reasonCode});
-   const verified=lifecycle.getTrustedEvent({tenant,eventKey:plan.action.eventKey});if(!verified||verified.status!=='ACCEPTED')throw new Error('Post-action verification did not confirm authoritative state.');
-   let outcome=null;if(plan.expectedOutcome?.actual&&Array.isArray(plan.expectedOutcome.evidenceRefs)&&plan.expectedOutcome.evidenceRefs.length)outcome=recordDecisionOutcome(selected,{observedAt:new Date().toISOString(),evidenceRefs:plan.expectedOutcome.evidenceRefs,actual:plan.expectedOutcome.actual,notes:'Autopilot post-action outcome supplied by authoritative verifier.'});
-   log(executionId,permitId,tenant,'VERIFIED',{eventId:verified.id,outcomeDigest:outcome?.outcomeDigest||null});return {executionId,idempotent:false,state:'VERIFIED',detail:{eventId:verified.id,outcomeDigest:outcome?.outcomeDigest||null}};
+   const governed=await executeT9AutopilotAction({tenant,permit:p,selected,plan,lifecycle});
+   if(governed.state==='VERIFIED'){
+    log(executionId,permitId,tenant,'APPLIED',{eventId:governed.eventId,trustReceiptDigest:governed.trustReceiptDigest});
+    let outcome=null;if(plan.expectedOutcome?.actual&&Array.isArray(plan.expectedOutcome.evidenceRefs)&&plan.expectedOutcome.evidenceRefs.length)outcome=recordDecisionOutcome(selected,{observedAt:new Date().toISOString(),evidenceRefs:plan.expectedOutcome.evidenceRefs,actual:plan.expectedOutcome.actual,notes:'T9-governed Autopilot outcome supplied after independent lifecycle verification.'});
+    log(executionId,permitId,tenant,'VERIFIED',{eventId:governed.eventId,outcomeDigest:outcome?.outcomeDigest||null,trustReceiptDigest:governed.trustReceiptDigest,evidenceLedgerHeadDigest:governed.evidenceLedgerHeadDigest,authorityGrantDigest:governed.authorityGrantDigest});
+    return {executionId,idempotent:false,state:'VERIFIED',detail:{eventId:governed.eventId,outcomeDigest:outcome?.outcomeDigest||null,trustReceiptDigest:governed.trustReceiptDigest}};
+   }
+   if(governed.state==='ROLLED_BACK'){
+    log(executionId,permitId,tenant,'VERIFY_FAILED',{error:'T9 independent postcondition verification failed; compensating rollback executed.',failureCode:governed.failureCode||null});
+    log(executionId,permitId,tenant,'ROLLED_BACK',{rollbackEventId:governed.rollbackEventId||null,evidenceLedgerHeadDigest:governed.evidenceLedgerHeadDigest,authorityGrantDigest:governed.authorityGrantDigest});
+    return {executionId,idempotent:false,state:'ROLLED_BACK',detail:{rollbackEventId:governed.rollbackEventId||null}};
+   }
+   log(executionId,permitId,tenant,'CONTAINED',{reason:governed.reason||'T9_CONTAINED',failureCode:governed.failureCode||null,appliedEventId:governed.appliedEventId||null,evidenceLedgerHeadDigest:governed.evidenceLedgerHeadDigest||null,authorityGrantDigest:governed.authorityGrantDigest||null});
+   return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:governed.reason||'T9_CONTAINED'}};
   }catch(error){
-   log(executionId,permitId,tenant,'VERIFY_FAILED',{error:compact(error.message,300)});if(!applied?.event?.id){log(executionId,permitId,tenant,'CONTAINED',{reason:'NO_CONFIRMED_APPLY'});return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:'NO_CONFIRMED_APPLY'}};}
-   try{const rb=lifecycle.applyTrustedEvent({tenant,eventKey:plan.rollback.eventKey,event:{kind:'RETRO_CHANGE',employeeId:plan.action.employeeId,effectiveAt:new Date().toISOString(),payload:{targetEventId:applied.event.id,reason:plan.rollback.reason,approvalRef:permitId,correction:{autopilotRollback:true}}}});if(rb?.decision?.status!=='ACCEPTED')throw new Error('Compensating rollback was rejected.');const confirmed=lifecycle.getTrustedEvent({tenant,eventKey:plan.rollback.eventKey});if(!confirmed||confirmed.status!=='ACCEPTED')throw new Error('Rollback verification failed.');log(executionId,permitId,tenant,'ROLLED_BACK',{rollbackEventId:confirmed.id});return {executionId,idempotent:false,state:'ROLLED_BACK',detail:{rollbackEventId:confirmed.id}};}catch(rbError){log(executionId,permitId,tenant,'CONTAINED',{reason:'ROLLBACK_UNCONFIRMED',error:compact(rbError.message,300)});return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:'ROLLBACK_UNCONFIRMED'}};}
+   log(executionId,permitId,tenant,'VERIFY_FAILED',{error:compact(error.message,300),failureCode:compact(error.code||'VECTOR_T9_GUARD_REJECTED',120)});
+   log(executionId,permitId,tenant,'CONTAINED',{reason:'T9_GUARD_REJECTED',failureCode:compact(error.code||'VECTOR_T9_GUARD_REJECTED',120)});
+   return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:'T9_GUARD_REJECTED',failureCode:compact(error.code||'VECTOR_T9_GUARD_REJECTED',120)}};
   }
  }
  function statusForTenant(tenant,limit=50){return tenantQ.all(tenant,Math.max(1,Math.min(100,Number(limit)||50))).map(r=>({executionId:r.execution_id,permitId:r.permit_id,state:r.state,detail:JSON.parse(r.detail_json),createdAt:r.created_at}));}
