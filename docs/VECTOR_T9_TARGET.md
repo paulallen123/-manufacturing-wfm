@@ -149,3 +149,46 @@ The first T9 source increment is `trust/runtime/vector-trust-spine.cjs` with tes
 - proposal-only causal episodes that cannot self-promote.
 
 This is a **foundation**. It becomes PROVEN only when exact-candidate, hosted, restart/recovery and customer-like evidence pass.
+
+
+## Zero Human Operational Effort — 24 September 2026
+
+This decision is additive to the T9 trust spine and supersedes the earlier assumption that consequential incidents should fall back to a support person.
+
+The target is **zero human operational effort**: VECTOR must implement, operate, support, repair, recover and continuously improve without a human operations/support team. Any human operational touch required to keep a customer running is treated as a product defect.
+
+The operating loop becomes:
+
+**predict → prevent → detect → isolate → reproduce → diagnose → simulate → machine-quorum authorise → execute → independently verify → rollback/compensate → learn → convert the resolved class into a tested reusable playbook**
+
+### Machine quorum
+
+A consequential autonomous repair must not rely on one model confidence score. It requires independent evidence from:
+- diagnostic/proposer;
+- deterministic policy engine;
+- Customer Guardian / tenant invariants;
+- isolated simulation;
+- executor;
+- independent verifier;
+- independent security verifier;
+- proven rollback or compensation where needed.
+
+For governed high-risk actions, proposer, policy engine, executor, verifier and security verifier are distinct principals.
+
+### No human escalation fallback
+
+Insufficient proof does **not** create a support ticket for a person. VECTOR must move to the safest autonomous containment state, preserve evidence, reproduce the incident in isolation and continue the proof loop until a certified repair exists.
+
+Novel incidents may not invent production repairs. They may execute only pre-authorised containment until a repair has passed reproduction, regression, security, rollback and canary evidence.
+
+### Hard external mandates
+
+If a law, regulator, identity provider or external contractual ceremony explicitly requires an identified person, VECTOR records that as an **external mandate boundary** rather than falsely claiming zero-touch. The architecture goal is to remove or replace that dependency wherever a lawful technical alternative exists.
+
+### Release metric
+
+**Human operational touches per 1,000 customer-days = 0.**
+
+Any manual log inspection, reset, data correction, vendor chase, configuration fix, restart, integration repair or incident investigation is a `HUMAN_OPERATIONAL_TOUCH` release blocker for the zero-human claim until the recovery is generalised and proven.
+
+The first executable contract is `trust/runtime/vector-zero-human-governance.cjs`. It is part of the existing T9 spine, not a separate product. Northstar remains isolated from VECTOR production control.
