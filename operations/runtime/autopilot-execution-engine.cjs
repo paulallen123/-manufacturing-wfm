@@ -1,7 +1,7 @@
 'use strict';
 const {createHash}=require('node:crypto');
 const {DatabaseSync}=require('node:sqlite');
-const {createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,digest}=require('./decision-episode.cjs');
+const {createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,digest}=require('./decision-episode.cjs');\nconst {assertExecutionAllowed}=require('./frontier-decision-control.cjs');
 const PREFIX='/api/operations/autopilot',PERMIT_TTL_MS=15*60*1000;
 function sha256(v){return createHash('sha256').update(String(v)).digest('hex');}
 function compact(v,max=240){return String(v??'').trim().slice(0,max);}
@@ -17,7 +17,7 @@ function safePlan(input={}){
  const kind=compact(a.kind,40).toUpperCase();if(!['OVERTIME_OVERRIDE','AGENCY_ASSIGNMENT'].includes(kind))throw new Error('Autopilot workforce execution is limited to approved overtime or agency assignment actions.');
  if(!compact(a.employeeId,120)||!iso(a.effectiveAt))throw new Error('Autopilot workforce action requires employeeId and effectiveAt.');
  const rb=input.rollback&&typeof input.rollback==='object'&&!Array.isArray(input.rollback)?input.rollback:null;if(!rb||!compact(rb.eventKey,160)||!compact(rb.reason,300))throw new Error('Autopilot execution requires an explicit rollback plan.');
- return {adapter:'workforce-lifecycle',reversible:true,action:{eventKey:compact(a.eventKey,160)||'autopilot-action',kind,employeeId:compact(a.employeeId,120),effectiveAt:iso(a.effectiveAt),payload:a.payload&&typeof a.payload==='object'&&!Array.isArray(a.payload)?JSON.parse(JSON.stringify(a.payload)):{}},rollback:{eventKey:compact(rb.eventKey,160),reason:compact(rb.reason,300)},expectedOutcome:input.expectedOutcome&&typeof input.expectedOutcome==='object'&&!Array.isArray(input.expectedOutcome)?JSON.parse(JSON.stringify(input.expectedOutcome)):null};
+ return {adapter:'workforce-lifecycle',reversible:true,action:{eventKey:compact(a.eventKey,160)||'autopilot-action',kind,employeeId:compact(a.employeeId,120),effectiveAt:iso(a.effectiveAt),payload:a.payload&&typeof a.payload==='object'&&!Array.isArray(a.payload)?JSON.parse(JSON.stringify(a.payload)):{}},rollback:{eventKey:compact(rb.eventKey,160),reason:compact(rb.reason,300)},expectedOutcome:input.expectedOutcome&&typeof input.expectedOutcome==='object'&&!Array.isArray(input.expectedOutcome)?JSON.parse(JSON.stringify(input.expectedOutcome)):null,frontierAssurance:input.frontierAssurance&&typeof input.frontierAssurance==='object'&&!Array.isArray(input.frontierAssurance)?JSON.parse(JSON.stringify(input.frontierAssurance)):null};
 }
 function promote(shadow){return createDecisionEpisode({tenant:shadow.tenant,site:shadow.site,decisionType:shadow.decisionType,triggerId:shadow.triggerId,triggeredAt:shadow.triggeredAt,contextRevision:shadow.contextRevision,mode:'HUMAN_APPROVAL',sourceEvidence:shadow.sourceEvidence,objective:{...(shadow.objective?.weights||{}),uncertaintyPenalty:shadow.objective?.uncertaintyPenalty},options:shadow.options});}
 function createAutopilotExecutionEngine(options={}){
@@ -43,17 +43,17 @@ function createAutopilotExecutionEngine(options={}){
   const row=ep.get(tenant,episodeId);if(!row)throw Object.assign(new Error('Decision episode not found.'),{statusCode:404});
   const shadow=JSON.parse(row.episode_json);if(shadow.mode!=='SHADOW')throw Object.assign(new Error('Only a Shadow decision may enter this approval route.'),{statusCode:409});
   if(compact(contextRevision,180)!==shadow.contextRevision)throw Object.assign(new Error('Decision context changed. Re-simulate before approval.'),{statusCode:409});
-  const selected=selectDecisionOption(promote(shadow),{optionId,selectedAt:new Date(now).toISOString(),actorRef,authorityDecision:'HUMAN_APPROVED'}),safe=safePlan(plan);
-  const issuedAt=new Date(now).toISOString(),expiresAt=new Date(now+PERMIT_TTL_MS).toISOString(),payload={tenant,episodeId:selected.episodeId,shadowEpisodeId:episodeId,optionId:selected.selection.optionId,contextRevision:selected.contextRevision,actorRef:compact(actorRef,180),issuedAt,expiresAt,plan:safe},permitId='ap-'+digest(payload).slice(0,40);
+  const selected=selectDecisionOption(promote(shadow),{optionId,selectedAt:new Date(now).toISOString(),actorRef,authorityDecision:'HUMAN_APPROVED'}),safe=safePlan(plan);\n  if(safe.frontierAssurance){\n   if(safe.frontierAssurance.sourceEpisodeId!==episodeId||safe.frontierAssurance.contextRevision!==selected.contextRevision)throw Object.assign(new Error('Frontier assurance is not bound to this decision context.'),{statusCode:409});\n   assertExecutionAllowed(safe.frontierAssurance,{requestedMode:'HUMAN_APPROVAL'});\n  }
+  const issuedAt=new Date(now).toISOString(),expiresAt=new Date(now+PERMIT_TTL_MS).toISOString(),payload={tenant,episodeId:selected.episodeId,shadowEpisodeId:episodeId,optionId:selected.selection.optionId,contextRevision:selected.contextRevision,actorRef:compact(actorRef,180),issuedAt,expiresAt,assuranceDigest:safe.frontierAssurance?.assuranceDigest||null,plan:safe},permitId='ap-'+digest(payload).slice(0,40);
   if(!permitQ.get(tenant,permitId))permitI.run(permitId,tenant,selected.episodeId,JSON.stringify(selected),JSON.stringify(safe),payload.actorRef,issuedAt,expiresAt);
   return {permitId,...payload};
  }
  async function executePermit({tenant,permitId,currentContextRevision}){
   const p=permitQ.get(tenant,permitId);if(!p)throw Object.assign(new Error('Autopilot permit not found.'),{statusCode:404});if(Date.parse(p.expires_at)<=Date.now())throw Object.assign(new Error('Autopilot permit expired. Re-approve current evidence.'),{statusCode:409});
   const selected=JSON.parse(p.selected_episode_json);if(compact(currentContextRevision,180)!==selected.contextRevision)throw Object.assign(new Error('Decision context changed. Execution refused.'),{statusCode:409});
-  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40),prior=last(executionId);if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED'].includes(prior.state))return {executionId,idempotent:true,...prior};
+  const plan=JSON.parse(p.plan_json);if(plan.frontierAssurance)assertExecutionAllowed(plan.frontierAssurance,{requestedMode:'HUMAN_APPROVAL'});const executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40),prior=last(executionId);if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED'].includes(prior.state))return {executionId,idempotent:true,...prior};
   if(!lifecycle?.applyTrustedEvent)throw Object.assign(new Error('Authoritative workforce execution adapter is unavailable.'),{statusCode:503});
-  log(executionId,permitId,tenant,'PREPARED',{episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)});let applied=null;
+  log(executionId,permitId,tenant,'PREPARED',{episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan),assuranceDigest:plan.frontierAssurance?.assuranceDigest||null});let applied=null;
   try{
    const action={...plan.action,payload:{...plan.action.payload}};if(action.kind==='OVERTIME_OVERRIDE'){action.payload.approvalRef=permitId;action.payload.approvedBy=p.actor_ref;}
    applied=lifecycle.applyTrustedEvent({tenant,eventKey:plan.action.eventKey,event:action});if(applied?.decision?.status!=='ACCEPTED')throw new Error('Authoritative lifecycle adapter rejected the action.');
