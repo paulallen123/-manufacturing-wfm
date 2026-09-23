@@ -209,3 +209,48 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
+
+/* Training Intelligence V2 — progressive disclosure and one obvious next action */
+.wfm-coach-primary {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 14px;
+  border: 1px solid currentColor;
+  border-radius: 12px;
+  background: CanvasText;
+  color: Canvas;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.wfm-coach-primary:hover,
+.wfm-coach-primary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.wfm-coach-why {
+  margin: 8px 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: .78;
+}
+.wfm-coach-more,
+.wfm-coach-quick-check {
+  margin-top: 10px;
+}
+.wfm-coach-more > summary,
+.wfm-coach-quick-check > summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 750;
+}
+.wfm-coach-more .wfm-coach-modes {
+  margin-top: 10px;
+}
+.wfm-coach-voice-badge {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 750;
+  opacity: .78;
+}
