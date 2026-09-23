@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "name": "VECTOR_PROOF_LANE_INDEPENDENCE_V1",
+  "principle": "Development and testing continue through another executable lane when any CI or hosting provider is unavailable. Provider degradation never counts as product PASS or FAIL.",
+  "states": {
+    "providerUnavailable": "PROVIDER_DEGRADED",
+    "noRunner": "PROVIDER_DEGRADED",
+    "skipped": "NO_PROOF",
+    "productGateFailure": "PRODUCT_FAILURE",
+    "exactPass": "PASS"
+  },
+  "rules": {
+    "neverSkipTestsToUnblock": true,
+    "skippedNeverCountsAsPass": true,
+    "noRunnerNeverCountsAsProductFailure": true,
+    "providerFailureNeverCountsAsPass": true,
+    "exactSourceShaRequired": true,
+    "immutableEvidenceRequired": true,
+    "developmentContinuesIfAnyExecutableLaneExists": true,
+    "productionPromotionRequiresIndependentProviders": 2
+  },
+  "lanes": [
+    {
+      "id": "github-actions-ui",
+      "provider": "github-actions",
+      "class": "supplemental",
+      "exactSourceSha": true,
+      "requiredForDevelopment": false,
+      "requiredForPromotion": false
+    },
+    {
+      "id": "circleci-core",
+      "provider": "circleci",
+      "class": "source-proof",
+      "exactSourceSha": true,
+      "requiredForDevelopment": false,
+      "requiredForPromotion": true
+    },
+    {
+      "id": "circleci-runtime",
+      "provider": "circleci",
+      "class": "exact-image",
+      "exactSourceSha": true,
+      "requiredForDevelopment": false,
+      "requiredForPromotion": true
+    },
+    {
+      "id": "railway-forge-candidate",
+      "provider": "railway",
+      "class": "exact-image",
+      "exactSourceSha": true,
+      "watchPattern": "**",
+      "requiredForDevelopment": false,
+      "requiredForPromotion": true
+    },
+    {
+      "id": "railway-forge-current-proof",
+      "provider": "railway",
+      "class": "exact-image",
+      "exactSourceSha": true,
+      "watchPattern": "**",
+      "requiredForDevelopment": false,
+      "requiredForPromotion": true
+    }
+  ],
+  "fallbackOrder": [
+    "railway-forge-current-proof",
+    "circleci-runtime",
+    "railway-forge-candidate",
+    "circleci-core",
+    "github-actions-ui"
+  ],
+  "developmentRule": "A broken provider changes the lane state, not the product-development state. Continue coding and run the same immutable SHA through the next executable lane.",
+  "promotionRule": "Promote only when an exact-image PASS is SHA-bound and independent evidence exists from at least two providers. GitHub Actions is supplemental and can be PROVIDER_DEGRADED without stopping development."
+}
