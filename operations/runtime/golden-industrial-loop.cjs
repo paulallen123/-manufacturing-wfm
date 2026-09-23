@@ -242,6 +242,36 @@ async function executeGoldenIndustrialLoop(engine, loop, permit, input = {}) {
   });
 }
 
+function recordGoldenIndustrialLoopOutcome(engine, loop, execution, input = {}) {
+  validateGoldenIndustrialLoop(loop);
+  if (!execution?.executionId || execution.state !== 'VERIFIED') {
+    throw new Error('Golden loop business outcome requires a VERIFIED execution.');
+  }
+  if (!engine || typeof engine.recordVerifiedOutcome !== 'function') {
+    throw new Error('Golden loop requires verified outcome capability from Autopilot.');
+  }
+  const outcome = engine.recordVerifiedOutcome({
+    tenant: loop.tenant,
+    executionId: execution.executionId,
+    observedAt: input.observedAt,
+    evidenceRefs: input.evidenceRefs,
+    actual: input.actual,
+    actorRef: text(input.actorRef, 180) || 'system:golden-loop-outcome'
+  });
+  if (outcome.rootEpisodeId !== loop.rootEpisodeId) {
+    throw new Error('Golden loop outcome root episode binding mismatch.');
+  }
+  return Object.freeze({
+    contractVersion: 'VECTOR_GOLDEN_LOOP_OUTCOME_V1',
+    rootEpisodeId: loop.rootEpisodeId,
+    loopDigest: loop.loopDigest,
+    executionId: execution.executionId,
+    outcomeDigest: outcome.outcomeDigest,
+    episode: outcome.episode,
+    idempotent: outcome.idempotent === true
+  });
+}
+
 module.exports = Object.freeze({
   CONTRACT_VERSION,
   buildGoldenIndustrialLoop,
@@ -249,6 +279,7 @@ module.exports = Object.freeze({
   registerGoldenIndustrialLoop,
   issueGoldenIndustrialLoopPermit,
   executeGoldenIndustrialLoop,
+  recordGoldenIndustrialLoopOutcome,
   stable,
   digest
 });
