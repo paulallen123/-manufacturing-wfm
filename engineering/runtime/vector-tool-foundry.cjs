@@ -219,7 +219,7 @@ class VectorToolFoundry {
 
     const aliases = new Set();
     const steps = spec.steps.map((step, index) => {
-      const alias = clean(step.alias || `step-\${index + 1}`, 120);
+      const alias = clean(step.alias || `step-${index + 1}`, 120);
       if (!alias || aliases.has(alias)) deny('VECTOR_FOUNDRY_PIPELINE_ALIAS', 'Pipeline step aliases must be unique.');
       aliases.add(alias);
       const toolId = clean(step.toolId, 180);
