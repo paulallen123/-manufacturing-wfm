@@ -123,6 +123,9 @@ COPY operations/runtime/demand-decision-service.cjs /app/operations-runtime/dema
 COPY operations/runtime/decision-outcome-proof.cjs /app/operations-runtime/decision-outcome-proof.cjs
 COPY operations/runtime/realtime-event-service.cjs /app/operations-runtime/realtime-event-service.cjs
 COPY operations/runtime/autopilot-execution-engine.cjs /app/operations-runtime/autopilot-execution-engine.cjs
+COPY operations/runtime/frontier-decision-control.cjs /app/operations-runtime/frontier-decision-control.cjs
+RUN mkdir -p /app/trust-runtime
+COPY trust/runtime/vector-trust-spine.cjs /app/trust-runtime/vector-trust-spine.cjs
 COPY src/frontier/cash-to-capacity-engine.mjs /app/operations-runtime/cash-to-capacity-engine.mjs
 COPY src/frontier/cash-to-capacity-evidence.mjs /app/operations-runtime/cash-to-capacity-evidence.mjs
 COPY src/frontier/cash-to-capacity-decision.mjs /app/operations-runtime/cash-to-capacity-decision.mjs
@@ -168,7 +171,7 @@ COPY implementation/proof/cloud-scale-proof-runner.cjs /app/proof-runtime/cloud-
 # Deterministic build admission for the new implementation and learning control planes.
 # Tests execute against the exact files copied into this image; test sources are removed
 # afterwards so they do not expand the runtime attack surface.
-RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime /tmp/wfm-tests/security/runtime /tmp/wfm-tests/integration/runtime /tmp/wfm-tests/integration/worker /tmp/wfm-tests/operations/runtime
+RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime /tmp/wfm-tests/security/runtime /tmp/wfm-tests/integration/runtime /tmp/wfm-tests/integration/worker /tmp/wfm-tests/operations/runtime /tmp/wfm-tests/trust/runtime
 COPY implementation/runtime/one-day-enterprise-engine.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.cjs
 COPY implementation/runtime/one-day-enterprise-engine-core.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine-core.cjs
 COPY implementation/runtime/readiness-evidence-contract.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.cjs
@@ -234,6 +237,10 @@ COPY operations/runtime/realtime-event-service.cjs /tmp/wfm-tests/operations/run
 COPY operations/runtime/realtime-event-service.test.cjs /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs
 COPY operations/runtime/autopilot-execution-engine.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.cjs
 COPY operations/runtime/autopilot-execution-engine.test.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs
+COPY operations/runtime/frontier-decision-control.cjs /tmp/wfm-tests/operations/runtime/frontier-decision-control.cjs
+COPY operations/runtime/frontier-decision-control.test.cjs /tmp/wfm-tests/operations/runtime/frontier-decision-control.test.cjs
+COPY trust/runtime/vector-trust-spine.cjs /tmp/wfm-tests/trust/runtime/vector-trust-spine.cjs
+COPY trust/runtime/vector-trust-spine.test.cjs /tmp/wfm-tests/trust/runtime/vector-trust-spine.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
@@ -269,6 +276,8 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/decision-outcome-proof.test.cjs \
       /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs \
       /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs \
+      /tmp/wfm-tests/operations/runtime/frontier-decision-control.test.cjs \
+      /tmp/wfm-tests/trust/runtime/vector-trust-spine.test.cjs \
  && rm -rf /tmp/wfm-tests
 
 # Railway cloud-build admission: execute the exact 10,000-employee / 50-site
