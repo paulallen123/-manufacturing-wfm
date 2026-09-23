@@ -195,7 +195,11 @@ function deriveAutonomy({ simulationValidity, simulationGeneratedAt, actionContr
     ceiling = minLevel(ceiling, 'SHADOW');
     reasons.push('BLAST_RADIUS_EXCEEDS_AUTHORITY');
   }
-  if (Date.parse(authority.expiresAt) <= Date.parse(simulationGeneratedAt)) {\n    ceiling = minLevel(ceiling, 'SHADOW');\n    reasons.push('AUTHORITY_EXPIRED_AT_SIMULATION_TIME');\n  }\n  if (!verifier.independentReadBack) {
+  if (Date.parse(authority.expiresAt) <= Date.parse(simulationGeneratedAt)) {
+    ceiling = minLevel(ceiling, 'SHADOW');
+    reasons.push('AUTHORITY_EXPIRED_AT_SIMULATION_TIME');
+  }
+  if (!verifier.independentReadBack) {
     ceiling = minLevel(ceiling, 'SHADOW');
     reasons.push('NO_INDEPENDENT_READBACK');
   }
@@ -360,7 +364,8 @@ function validateAssuranceEnvelope(envelope) {
   if (!core.verifier?.executorId || !core.verifier?.verifierId || core.verifier.executorId === core.verifier.verifierId) {
     throw new Error('Decision Assurance verifier separation is invalid.');
   }
-  iso(core.simulationGeneratedAt, 'simulationGeneratedAt');\n  if (!core.simulationValidity || typeof core.simulationValidity !== 'object') {
+  iso(core.simulationGeneratedAt, 'simulationGeneratedAt');
+  if (!core.simulationValidity || typeof core.simulationValidity !== 'object') {
     throw new Error('Decision Assurance simulation validity evidence is missing.');
   }
   const expected = deriveAutonomy({
