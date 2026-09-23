@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "name": "VECTOR_DEVELOPMENT_TO_PROOF_CONTROL_V1",
+  "objective": "Keep the path from development to trustworthy proof continuously executable without weakening product, security, evidence or customer safeguards.",
+  "rules": {
+    "everyChangeHasProofRoute": true,
+    "preflightBeforeExpensiveProof": true,
+    "classifyBeforeRetry": true,
+    "rootCauseRepairBeforeRetry": true,
+    "neverWeakenGateToGetGreen": true,
+    "exactSourceShaAcrossFallbackLanes": true,
+    "providerFailureTriggersFallback": true,
+    "productFailureNeverMaskedByFallback": true,
+    "staleProofContractIsAFirstClassBlocker": true,
+    "missingProofDependencyFailsEarly": true,
+    "learnedBlockerBecomesPermanentGuard": true,
+    "unknownBlockerFailsClosed": true
+  },
+  "phases": [
+    "source-and-contract",
+    "exact-image",
+    "hosted-runtime",
+    "authenticated-golden-journey",
+    "refresh-new-login-persistence",
+    "restart-recovery",
+    "security-destructive",
+    "customer-quality-demonstration",
+    "independent-promotion"
+  ],
+  "pathRules": [
+    {
+      "prefix": "clocking-security-v2/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "restart-recovery",
+        "security-destructive"
+      ]
+    },
+    {
+      "prefix": "integration-fabric/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "security-destructive"
+      ]
+    },
+    {
+      "prefix": "learning/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "authenticated-golden-journey"
+      ]
+    },
+    {
+      "prefix": "operations/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "authenticated-golden-journey",
+        "refresh-new-login-persistence",
+        "restart-recovery"
+      ]
+    },
+    {
+      "prefix": "implementation/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "restart-recovery"
+      ]
+    },
+    {
+      "prefix": "security/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "security-destructive"
+      ]
+    },
+    {
+      "prefix": "src/frontier/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "authenticated-golden-journey",
+        "customer-quality-demonstration"
+      ]
+    },
+    {
+      "prefix": "ux-overlay/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "authenticated-golden-journey"
+      ]
+    },
+    {
+      "prefix": "release/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "independent-promotion"
+      ]
+    }
+  ],
+  "blockerClasses": [
+    "PROVIDER_DEGRADED",
+    "MISSING_PROOF_DEPENDENCY",
+    "PACKAGING_DRIFT",
+    "STALE_PROOF_CONTRACT",
+    "EVIDENCE_OR_CATALOG_DRIFT",
+    "SECURITY_INVARIANT",
+    "PRODUCT_REGRESSION",
+    "MISSING_EVIDENCE",
+    "UNKNOWN_FAIL_CLOSED"
+  ],
+  "retryPolicy": {
+    "sameFailureSameShaMaxBlindRetries": 0,
+    "requireClassificationBeforeRetry": true,
+    "requireChangedCauseOrDifferentExecutableLane": true
+  },
+  "learningPolicy": {
+    "resolutionMustRecordCause": true,
+    "resolutionMustAddRegressionOrPreflightGuard": true,
+    "rawCustomerDataMayEnterSharedLearning": false,
+    "modelOutputMayNotBecomeAuthority": true
+  }
+}

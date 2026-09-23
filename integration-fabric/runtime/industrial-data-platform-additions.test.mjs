@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildConnectorRegistry,connectorById} from './connector-registry.mjs';
@@ -56,10 +55,10 @@ test('N3uron reuses REST MQTT Sparkplug and OPC UA profiles',()=>{
 });
 
 test('coverage planning keeps industrial data platforms behind the site edge',()=>{
-  const report=JSON.parse(fs.readFileSync(new URL('../reports/coverage-matrix.json',import.meta.url),'utf8'));
   for(const id of edgeIds){
-    const system=report.systems.find(x=>x.id===id);
-    assert.ok(system,id+' missing from coverage matrix');
-    assert.equal(system.recommendedRoute,'site-edge-gateway',id);
+    const c=connectorById(id);
+    assert.ok(c,id+' missing from effective registry');
+    assert.equal(c.security.customerEdgeRequired,true,id);
+    assert.equal(c.discoveryStrategy,'customer-edge-config-required',id);
   }
 });

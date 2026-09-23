@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "VECTOR_PROOF_BLOCKER_KNOWLEDGE_V1",
+  "entries": [
+    {
+      "id": "stale-vendor-version-assertion",
+      "class": "STALE_PROOF_CONTRACT",
+      "symptom": "Validator asserts a historical/future vendor version label while authoritative integration evidence has changed.",
+      "learnedFrom": "Odoo JSON-2 evidence/version mismatch",
+      "prevention": "Assert capability, protocol and evidence semantics rather than brittle version prose.",
+      "permanentGuard": "development proof preflight + semantic integration validator"
+    },
+    {
+      "id": "missing-generated-proof-report",
+      "class": "MISSING_PROOF_DEPENDENCY",
+      "symptom": "A test reads a generated report/file that is not committed or packaged into the exact candidate.",
+      "learnedFrom": "integration-fabric coverage-matrix.json",
+      "prevention": "Proof reads the effective runtime registry directly unless the generated artifact is itself admitted and packaged.",
+      "permanentGuard": "preflight resolves every local new URL(..., import.meta.url) dependency before expensive proof"
+    },
+    {
+      "id": "retired-attendance-source-alias",
+      "class": "STALE_PROOF_CONTRACT",
+      "symptom": "Security fixture uses a retired source type alias not accepted by hardened runtime trust boundaries.",
+      "learnedFrom": "windows_wef / legacy_taa fixtures",
+      "prevention": "Tests use canonical registered source families and fail if retired aliases reappear.",
+      "permanentGuard": "preflight retired-alias scan"
+    },
+    {
+      "id": "stale-training-publication-shape",
+      "class": "STALE_PROOF_CONTRACT",
+      "symptom": "Test asserts an obsolete aggregate URL after the public artifact contract split into explicit video/caption/transcript URLs.",
+      "learnedFrom": "training artifact registry",
+      "prevention": "Tests assert current public contract fields and no hidden compatibility field.",
+      "permanentGuard": "preflight stale artifact.url scan"
+    },
+    {
+      "id": "shallow-research-overlay-merge",
+      "class": "EVIDENCE_OR_CATALOG_DRIFT",
+      "symptom": "Later research overlay replaces nested verified evidence/value objects, silently losing prior mappings.",
+      "learnedFrom": "Integration Fabric research overlays",
+      "prevention": "Nested objects merge recursively while arrays remain explicit replacements.",
+      "permanentGuard": "preflight verifies mergePatch exists and rejects the retired shallow merge implementation"
+    },
+    {
+      "id": "runner-or-builder-no-execution",
+      "class": "PROVIDER_DEGRADED",
+      "symptom": "Proof never reaches product/test execution because runner/builder allocation fails.",
+      "learnedFrom": "GitHub/Railway proof lane degradation",
+      "prevention": "Classify provider degradation separately and route the exact SHA to the next executable proof lane.",
+      "permanentGuard": "provider-independent proof-lane policy"
+    }
+  ]
+}

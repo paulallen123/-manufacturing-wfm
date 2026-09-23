@@ -3,7 +3,9 @@
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS autonomy-proof
 WORKDIR /proof
 COPY . ./
-RUN node scripts/validate-deployment.mjs \
+RUN node scripts/validate-development-proof-readiness.mjs \
+ && node scripts/validate-proof-blocker-classifier.mjs \
+ && node scripts/validate-deployment.mjs \
  && node scripts/validate-proof-lane-policy.mjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \
  && node scripts/validate-capability-superset.mjs \
