@@ -194,7 +194,14 @@ function createAutopilotExecutionEngine(options = {}) {
     "CREATE TRIGGER IF NOT EXISTS no_vector_autopilot_execution_update BEFORE UPDATE ON vector_autopilot_execution_events " +
       "BEGIN SELECT RAISE(ABORT,'Autopilot execution evidence is append only.'); END;" +
     "CREATE TRIGGER IF NOT EXISTS no_vector_autopilot_execution_delete BEFORE DELETE ON vector_autopilot_execution_events " +
-      "BEGIN SELECT RAISE(ABORT,'Autopilot execution evidence is append only.'); END;"
+      "BEGIN SELECT RAISE(ABORT,'Autopilot execution evidence is append only.'); END;" +
+    "CREATE TABLE IF NOT EXISTS vector_autopilot_outcomes(" +
+      "tenant TEXT NOT NULL,execution_id TEXT NOT NULL,root_episode_id TEXT NOT NULL,selected_episode_id TEXT NOT NULL,outcome_digest TEXT NOT NULL,episode_json TEXT NOT NULL,recorded_by TEXT NOT NULL,created_at TEXT NOT NULL," +
+      "PRIMARY KEY(tenant,execution_id));" +
+    "CREATE TRIGGER IF NOT EXISTS no_vector_autopilot_outcome_update BEFORE UPDATE ON vector_autopilot_outcomes " +
+      "BEGIN SELECT RAISE(ABORT,'Autopilot outcomes are append only.'); END;" +
+    "CREATE TRIGGER IF NOT EXISTS no_vector_autopilot_outcome_delete BEFORE DELETE ON vector_autopilot_outcomes " +
+      "BEGIN SELECT RAISE(ABORT,'Autopilot outcomes are append only.'); END;"
   );
 
   const auth = db.prepare(
@@ -229,6 +236,15 @@ function createAutopilotExecutionEngine(options = {}) {
   );
   const tenantQ = db.prepare(
     'SELECT execution_id,permit_id,state,detail_json,created_at FROM vector_autopilot_execution_events WHERE tenant=? ORDER BY id DESC LIMIT ?'
+  );
+  const executionEvidenceQ = db.prepare(
+    'SELECT permit_id,state,detail_json,created_at FROM vector_autopilot_execution_events WHERE tenant=? AND execution_id=? ORDER BY id'
+  );
+  const outcomeQ = db.prepare(
+    'SELECT * FROM vector_autopilot_outcomes WHERE tenant=? AND execution_id=?'
+  );
+  const outcomeI = db.prepare(
+    'INSERT INTO vector_autopilot_outcomes(tenant,execution_id,root_episode_id,selected_episode_id,outcome_digest,episode_json,recorded_by,created_at) VALUES(?,?,?,?,?,?,?,?)'
   );
 
   function ctx(req) {
@@ -517,6 +533,7 @@ function createAutopilotExecutionEngine(options = {}) {
 
       let outcome = null;
       if (
+        !assurance &&
         plan.expectedOutcome?.actual &&
         Array.isArray(plan.expectedOutcome.evidenceRefs) &&
         plan.expectedOutcome.evidenceRefs.length
@@ -535,7 +552,8 @@ function createAutopilotExecutionEngine(options = {}) {
         eventId: verified.id,
         verifierId: assurance ? verifierId : 'legacy-lifecycle-readback',
         assuranceDigest: plan.frontierAssuranceDigest,
-        outcomeDigest: outcome?.outcomeDigest || null
+        outcomeDigest: outcome?.outcomeDigest || null,
+        outcomePending: Boolean(assurance && !outcome)
       });
 
       return {
@@ -545,7 +563,8 @@ function createAutopilotExecutionEngine(options = {}) {
         detail: {
           eventId: verified.id,
           assuranceDigest: plan.frontierAssuranceDigest,
-          outcomeDigest: outcome?.outcomeDigest || null
+          outcomeDigest: outcome?.outcomeDigest || null,
+          outcomePending: Boolean(assurance && !outcome)
         }
       };
     } catch (error) {
@@ -623,6 +642,111 @@ function createAutopilotExecutionEngine(options = {}) {
     }
   }
 
+  function recordVerifiedOutcome({
+    tenant,
+    executionId,
+    observedAt,
+    evidenceRefs,
+    actual,
+    actorRef = 'system:outcome-measurement'
+  }) {
+    const id = compact(executionId, 180);
+    if (!id) throw Object.assign(new Error('Execution id is required for outcome measurement.'), { statusCode: 400 });
+    const rows = executionEvidenceQ.all(tenant, id);
+    if (!rows.length) throw Object.assign(new Error('Autopilot execution not found.'), { statusCode: 404 });
+    const terminal = rows.at(-1);
+    if (terminal.state !== 'VERIFIED') {
+      throw Object.assign(new Error('Business outcome cannot be recorded until execution is independently VERIFIED.'), { statusCode: 409 });
+    }
+
+    const observed = iso(observedAt);
+    if (!observed) throw Object.assign(new Error('Valid observedAt is required.'), { statusCode: 400 });
+    if (Date.parse(observed) < Date.parse(terminal.created_at)) {
+      throw Object.assign(new Error('Outcome measurement cannot predate execution verification.'), { statusCode: 409 });
+    }
+
+    const refs = Array.isArray(evidenceRefs)
+      ? [...new Set(evidenceRefs.map(v => compact(v, 220)).filter(Boolean))].slice(0, 50)
+      : [];
+    if (!refs.length) throw Object.assign(new Error('Outcome measurement requires evidence references.'), { statusCode: 400 });
+    const measured = actual && typeof actual === 'object' && !Array.isArray(actual) ? actual : {};
+    if (!Object.values(measured).some(v => v != null && Number.isFinite(Number(v)))) {
+      throw Object.assign(new Error('Outcome measurement requires at least one numeric business metric.'), { statusCode: 400 });
+    }
+
+    const permit = permitQ.get(tenant, terminal.permit_id);
+    if (!permit) throw Object.assign(new Error('Execution permit evidence is missing.'), { statusCode: 409 });
+    const selected = JSON.parse(permit.selected_episode_json);
+    const plan = JSON.parse(permit.plan_json);
+    let rootEpisodeId = selected.episodeId;
+    if (plan.frontierAssuranceDigest) {
+      const trusted = trustedAssurance(tenant, plan.frontierAssuranceDigest);
+      rootEpisodeId = trusted.row.shadow_episode_id;
+    }
+
+    const completed = recordDecisionOutcome(selected, {
+      observedAt: observed,
+      evidenceRefs: refs,
+      actual: measured,
+      notes: 'Business outcome recorded after independently verified execution.'
+    });
+
+    const existing = outcomeQ.get(tenant, id);
+    if (existing) {
+      if (existing.outcome_digest !== completed.outcomeDigest) {
+        throw Object.assign(new Error('A conflicting business outcome is already recorded for this execution.'), { statusCode: 409 });
+      }
+      return Object.freeze({
+        contractVersion: 'VECTOR_AUTOPILOT_OUTCOME_V1',
+        tenant,
+        executionId: id,
+        rootEpisodeId: existing.root_episode_id,
+        selectedEpisodeId: existing.selected_episode_id,
+        outcomeDigest: existing.outcome_digest,
+        episode: JSON.parse(existing.episode_json),
+        idempotent: true
+      });
+    }
+
+    outcomeI.run(
+      tenant,
+      id,
+      rootEpisodeId,
+      selected.episodeId,
+      completed.outcomeDigest,
+      JSON.stringify(completed),
+      compact(actorRef, 180) || 'system:outcome-measurement',
+      new Date().toISOString()
+    );
+
+    return Object.freeze({
+      contractVersion: 'VECTOR_AUTOPILOT_OUTCOME_V1',
+      tenant,
+      executionId: id,
+      rootEpisodeId,
+      selectedEpisodeId: selected.episodeId,
+      outcomeDigest: completed.outcomeDigest,
+      episode: completed,
+      idempotent: false
+    });
+  }
+
+  function outcomeForExecution(tenant, executionId) {
+    const row = outcomeQ.get(tenant, compact(executionId, 180));
+    if (!row) return null;
+    return Object.freeze({
+      contractVersion: 'VECTOR_AUTOPILOT_OUTCOME_V1',
+      tenant,
+      executionId: row.execution_id,
+      rootEpisodeId: row.root_episode_id,
+      selectedEpisodeId: row.selected_episode_id,
+      outcomeDigest: row.outcome_digest,
+      episode: JSON.parse(row.episode_json),
+      recordedBy: row.recorded_by,
+      createdAt: row.created_at
+    });
+  }
+
   function statusForTenant(tenant, limit = 50) {
     return tenantQ
       .all(tenant, Math.max(1, Math.min(100, Number(limit) || 50)))
@@ -696,6 +820,8 @@ function createAutopilotExecutionEngine(options = {}) {
     registerFrontierAssurance,
     issueHumanPermit,
     executePermit,
+    recordVerifiedOutcome,
+    outcomeForExecution,
     statusForTenant,
     close() {
       try { db.close(); } catch {}
