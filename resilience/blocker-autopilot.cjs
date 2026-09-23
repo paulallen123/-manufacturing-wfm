@@ -147,7 +147,7 @@ function classifyObservation(input = {}) {
     });
   }
 
-  if (/scheduling build on metal builder|waiting for runner|queued/.test(lower) &&
+  if (/(scheduling build on metal builder|waiting for runner|\b(?:build|job|runner|deployment)\s+(?:is\s+)?queued\b|\bqueued for (?:runner|builder)\b)/.test(lower) &&
       input.productExecutionStarted !== true) {
     return result({
       failureClass: 'CAPACITY_OR_QUEUE',
