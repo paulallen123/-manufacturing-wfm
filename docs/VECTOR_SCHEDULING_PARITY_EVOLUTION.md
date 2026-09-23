@@ -26,7 +26,9 @@ The automated simplicity contract is `ux-overlay/vector-scheduling-simplicity-co
 
 ## Implemented in this slice
 
-- P50/P90/confidence demand consumption without claiming a proven forecasting model.
+- P50/P90/confidence demand consumption.
+- Evidence-backed baseline forecast ensemble (mean/EWMA/trend/seasonal when supported) with holdout error weighting, uncertainty and explicit non-claim of customer accuracy before validation.
+- Production-units-to-headcount translation only when a customer-validated capacity rate is supplied.
 - Skills/certifications, availability, rest, weekly hours, overtime, consecutive shift/night limits.
 - Deterministic policy/union rule references that fail closed.
 - Preferences, fairness, fatigue, multi-site/travel economics.
@@ -36,6 +38,8 @@ The automated simplicity contract is `ux-overlay/vector-scheduling-simplicity-co
 - Bounded exact search for smaller problems; explicit non-optimal deterministic repair for larger ones.
 - Append-only shadow plans/repairs and no-show/production/demand repair.
 - Manager what-if planning with no execution authority.
+- Schedule-to-attendance reconciliation that consumes only attendance already released by the existing payroll gate; it calculates no pay and gains no payroll authority.
+- Append-only reconciliation receipts with missing/unexpected-attendance blockers.
 
 ## VECTOR evolution
 
@@ -60,7 +64,7 @@ The current slice stops before approval/execution. It must pass replay, simulati
 2. Country/site/union policy packs.
 3. Authoritative employee availability/preferences/open-shift/swap UX.
 4. Existing Decision Episode + Factory/Plan UI binding.
-5. Schedule -> attendance -> exception -> pay reconciliation.
+5. Continue schedule -> verified attendance -> exception reconciliation into downstream contractual pay rules; scheduling itself remains non-payroll-authoritative.
 6. 10,000 employee / 50 site scale and adversarial testing.
 7. Incumbent-vs-VECTOR replay/shadow scoring.
 8. Proven low-risk actions only through existing Autopilot permit/verify/rollback.
