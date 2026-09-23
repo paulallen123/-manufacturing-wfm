@@ -19,8 +19,7 @@ function sendJson(res,code,payload){
 
 const server=http.createServer((req,res)=>{
   if(req.url==='/healthz'){
-    if(status.state==='READY') return sendJson(res,200,status);
-    return sendJson(res,503,status);
+    return sendJson(res,status.state==='FAILED'?500:200,status);
   }
   if(req.url==='/status'||req.url==='/status.json') return sendJson(res,200,status);
   if(req.url==='/' ){
