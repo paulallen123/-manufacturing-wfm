@@ -8,6 +8,7 @@ const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const control=JSON.parse(fs.readFileSync(path.join(ROOT,'release/development-proof-control.json'),'utf8'));
 const knowledge=JSON.parse(fs.readFileSync(path.join(ROOT,'release/proof-blocker-knowledge.json'),'utf8'));
 const hostedClaim=JSON.parse(fs.readFileSync(path.join(ROOT,'release/hosted-proof-claim-contract.json'),'utf8'));
+const consumptionClaim=JSON.parse(fs.readFileSync(path.join(ROOT,'release/point-of-consumption-proof.json'),'utf8'));
 
 assert.equal(control.schemaVersion,1);
 assert.equal(control.name,'VECTOR_DEVELOPMENT_TO_PROOF_CONTROL_V1');
@@ -20,7 +21,9 @@ for(const key of [
   'unaffectedProofStagesAlwaysContinue','blockedCapabilityDiagnosticsContinue',
   'neverGloballyFreezeForSingleCapabilityBlocker','promotionStopsOnlyAtExplicitDependencyBoundary',
   'deploymentSuccessNeverCountsAsHostedProof','publicIngressVerificationRequired',
-  'applicationIdentityVerificationRequired','proofLinkMayBeSharedOnlyAfterExternalVerification'
+  'applicationIdentityVerificationRequired','proofLinkMayBeSharedOnlyAfterExternalVerification',
+  'proofEndsAtPointOfConsumption','nextRealWorldStepSimulationRequired',
+  'userActionMustBeExecutedNotInferred','downstreamOutcomeIndependentReadbackRequired'
 ]) assert.equal(control.rules[key],true,key);
 assert.equal(control.stageIsolationPolicy?.onBlocker,'QUARANTINE_AFFECTED_SCOPE');
 assert.equal(control.stageIsolationPolicy?.unaffectedDevelopment,'CONTINUE');
@@ -33,6 +36,8 @@ assert.ok(control.blockerClasses.includes('PUBLIC_RUNTIME_UNREACHABLE'),'public 
 assert.equal(hostedClaim.schemaVersion,1);
 assert.equal(hostedClaim.name,'VECTOR_HOSTED_PROOF_CLAIM_V1');
 for(const key of ['deploymentSuccessAloneNeverCountsAsHostedProof','publicIngressMustReturn2xx','applicationIdentityMarkerRequired','proofLinkMayBeSharedOnlyAfterHostedProven','unknownResponseFailsClosed']) assert.equal(hostedClaim.rules[key],true,key);
+assert.equal(consumptionClaim.name,'VECTOR_POINT_OF_CONSUMPTION_PROOF_V1');
+for(const key of ['upstreamSuccessNeverImpliesDownstreamSuccess','userActionMustBePerformedNotInferred','downstreamStateMustBeReadBackIndependently','nextRealWorldStepMustBeSimulatedBeforeClaim','everyDiscoveredFailureBecomesARegressionGuard','repeatAfterSuccessByAttackingRecoveryDriftAndEdgeCases','unknownsFailClosed']) assert.equal(consumptionClaim.rules[key],true,key);
 assert.ok(Array.isArray(control.pathRules)&&control.pathRules.length>=8);
 assert.ok(Array.isArray(knowledge.entries)&&knowledge.entries.length>=5);
 for(const item of knowledge.entries){
