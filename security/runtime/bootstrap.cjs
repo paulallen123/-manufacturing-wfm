@@ -12,6 +12,8 @@ const { createAutonomousIntegrationHub } = require('/app/integration-runtime/aut
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createTrainingDeliveryService } = require('/app/learning-runtime/training-delivery-service.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
+const { createLaunchAutopilotController } = require('/app/implementation-runtime/launch-autopilot-controller.cjs');
+const { syncLaunchAutopilot } = require('/app/implementation-runtime/launch-autopilot-readiness-adapter.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
 const { createDemandDecisionService } = require('/app/operations-runtime/demand-decision-service.cjs');
 const { createAutopilotExecutionEngine } = require('/app/operations-runtime/autopilot-execution-engine.cjs');
@@ -42,6 +44,8 @@ let integrationHub = null;
 let integrationHubInitError = null;
 let learningEngine = null;
 let learningEngineInitError = null;
+let launchAutopilotController = null;
+let launchAutopilotInitError = null;
 let trainingDeliveryService = null;
 let trainingDeliveryServiceInitError = null;
 let implementationEngine = null;
@@ -335,6 +339,14 @@ http.createServer = function guardedCreateServer(listener) {
     catch (error) { trainingDeliveryServiceInitError = error; }
   }
 
+  if (!launchAutopilotController && !launchAutopilotInitError && process.env.WFM_DB) {
+    try {
+      launchAutopilotController = createLaunchAutopilotController({ dbPath: process.env.WFM_DB });
+    } catch (error) {
+      launchAutopilotInitError = error;
+    }
+  }
+
   if (!implementationEngine && !implementationEngineInitError && process.env.WFM_DB) {
     try {
       implementationEngine = createOneDayEnterpriseEngine({
@@ -344,6 +356,18 @@ http.createServer = function guardedCreateServer(listener) {
             throw new Error('Adaptive learning evidence unavailable.');
           }
           return learningEngine.summaryForTenant(tenant);
+        },
+        readinessAugmenter: readiness => {
+          if (!launchAutopilotController || launchAutopilotInitError) {
+            throw new Error('Launch Autopilot evidence coordinator unavailable.');
+          }
+          return syncLaunchAutopilot({
+            controller: launchAutopilotController,
+            readiness,
+            integrations: integrationHub && !integrationHubInitError
+              ? integrationHub.statusForTenant(readiness.tenant)
+              : null
+          });
         }
       });
     } catch (error) {

@@ -14,7 +14,7 @@ function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
 }
 
-function fixture() {
+function fixture(engineOverrides = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-one-day-'));
   const dbPath = path.join(dir, 'test.sqlite');
   const db = new DatabaseSync(dbPath);
@@ -48,7 +48,8 @@ function fixture() {
     sendInvitation: async invitation => {
       sentInvitations.push(invitation);
       return { provider: 'test-mailer', messageId: 'mail-' + sentInvitations.length };
-    }
+    },
+    ...engineOverrides
   });
 
   return {
@@ -584,6 +585,63 @@ test('unknown evidence kinds and raw untrusted evidence are rejected', async () 
       f.internal
     );
     assert.equal(unknown.status, 400);
+  } finally {
+    f.close();
+  }
+});
+
+
+test('Launch Autopilot readiness is additive and visible through the existing implementation status', async () => {
+  const observed = [];
+  const f = fixture({
+    readinessAugmenter(readiness) {
+      observed.push({ runId: readiness.runId, ready: readiness.operationalReady });
+      return {
+        state: readiness.operationalReady ? 'READY' : 'VALIDATE',
+        ready: readiness.operationalReady,
+        activation: {
+          eligible: readiness.operationalReady,
+          authority: readiness.operationalReady ? 'EXTERNAL_PERMIT_REQUIRED' : 'NOT_ELIGIBLE',
+          productionMutation: false
+        },
+        compatibility: {
+          existingImplementationReady: readiness.operationalReady,
+          noRequirementRemoved: true,
+          productionMutation: false
+        }
+      };
+    }
+  });
+  try {
+    const started = await startRun(f, 'alpha', 'launch-autopilot-status', 8);
+    assert.ok(started.launchAutopilot);
+    assert.equal(started.launchAutopilot.ready, false);
+
+    const final = await passAllEvidence(f, started.runId);
+    assert.equal(final.operationalReady, true);
+    assert.equal(final.launchAutopilot.ready, true);
+    assert.equal(final.launchAutopilot.activation.authority, 'EXTERNAL_PERMIT_REQUIRED');
+    assert.equal(final.launchAutopilot.activation.productionMutation, false);
+    assert.ok(observed.length > 1);
+  } finally {
+    f.close();
+  }
+});
+
+test('Launch Autopilot failure cannot regress the existing implementation engine', async () => {
+  const f = fixture({
+    readinessAugmenter() {
+      throw new Error('simulated launch coordinator outage');
+    }
+  });
+  try {
+    const started = await startRun(f, 'alpha', 'launch-autopilot-failure-isolation', 8);
+    const final = await passAllEvidence(f, started.runId);
+    assert.equal(final.operationalReady, true);
+    assert.equal(final.state, 'READY');
+    assert.equal(final.launchAutopilot.state, 'UNAVAILABLE');
+    assert.equal(final.launchAutopilot.ready, false);
+    assert.equal(final.launchAutopilot.compatibility.noRequirementRemoved, true);
   } finally {
     f.close();
   }
