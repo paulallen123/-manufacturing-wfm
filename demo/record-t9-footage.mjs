@@ -39,8 +39,9 @@ const server=http.createServer((req,res)=>{
   fs.createReadStream(file).pipe(res);
 });
 
-server.listen(3000,'0.0.0.0',()=>{
-  console.log('VECTOR_T9_FOOTAGE_SERVER LISTENING 3000');
+const LISTEN_PORT=Number(process.env.PORT||3000);
+server.listen(LISTEN_PORT,'0.0.0.0',()=>{
+  console.log('VECTOR_T9_FOOTAGE_SERVER LISTENING '+LISTEN_PORT);
   void record();
 });
 
