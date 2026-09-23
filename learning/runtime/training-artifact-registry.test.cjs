@@ -13,6 +13,6 @@ test('artifact registry is append-only and exposes only durable READY URLs',()=>
   const job=createVideoGenerationJob(module,{targetOrigin:'https://vector.example'}),hex='b'.repeat(64);
   const receipt={contractVersion:'VECTOR_TRAINING_VIDEO_RECEIPT_V1',jobId:job.jobId,artifactFingerprint:job.artifactFingerprint,productSha:job.productSha,uiVersion:job.uiVersion,sourceClass:'SYNTHETIC',capture:{route:'leave',observedSelectors:job.capture.requiredSelectors,expectedTextObserved:true},scan:{pii:'PASS',secrets:'PASS'},consoleErrors:[],media:{videoSha256:hex,captionsSha256:hex,transcriptSha256:hex,durationMs:8000},narration:{status:'NOT_CONFIGURED'},publication:{durable:false,url:null}};
   const result=registry.recordReceipt(job,receipt);
-  assert.equal(result.artifact.state,'PROOF_ONLY');assert.equal(result.artifact.url,null);
+  assert.equal(result.artifact.state,'PROOF_ONLY');assert.equal(result.artifact.videoUrl,null);
   registry.close();fs.rmSync(dir,{recursive:true,force:true});
 });

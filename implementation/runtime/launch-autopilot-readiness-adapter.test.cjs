@@ -126,7 +126,7 @@ test('unchanged implementation polling is idempotent and does not append duplica
   };
   syncLaunchAutopilot({ controller, readiness: polled, integrations: integrations() });
   assert.equal(controller.events('alpha','run-1').length, first);
-});
+}));
 
 
 test('Digital Twin integration change cannot be cleared by stale proof and restores only after fresh revision-bound evidence', () => withController(controller => {
@@ -165,4 +165,4 @@ test('Digital Twin integration change cannot be cleared by stale proof and resto
   assert.equal(restored.gates.find(x => x.key === 'source-systems').status, 'PASS');
   assert.ok(controller.events('alpha','run-1').some(e => e.event === 'TWIN_REVISION_OBSERVED'));
   assert.ok(controller.events('alpha','run-1').some(e => e.event === 'DELTA_REVALIDATION_OPENED'));
-});
+}));
