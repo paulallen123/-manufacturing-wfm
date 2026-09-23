@@ -104,7 +104,7 @@ class EvidenceLedger {
       row.tenant === tenant &&
       row.subjectId === subjectId &&
       row.claimKey === claimKey &&
-      row.supersededBy == null
+      !this.records.some((candidate) => candidate.supersedes === row.id)
     );
 
     const contradictionRefs = sameClaim
@@ -132,18 +132,17 @@ class EvidenceLedger {
       contradictionRefs,
       transformationRef: input.transformationRef ? clean(input.transformationRef, 180) : null,
       authorityRef: input.authorityRef ? clean(input.authorityRef, 180) : null,
+      supersedes: input.supersedes ? clean(input.supersedes, 120) : null,
       previousDigest: this.headDigest,
-      supersededBy: null,
     };
     const record = { ...core, recordDigest: digest(core) };
     this.records.push(record);
     this.byId.set(id, record);
     this.headDigest = record.recordDigest;
 
-    if (input.supersedes) {
-      const prior = this.byId.get(clean(input.supersedes, 120));
+    if (record.supersedes) {
+      const prior = this.byId.get(record.supersedes);
       if (!prior || prior.tenant !== tenant) deny('VECTOR_EVIDENCE_SUPERSEDE', 'Superseded evidence must exist in the same tenant.');
-      prior.supersededBy = id;
     }
 
     return clone(record);
