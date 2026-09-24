@@ -355,7 +355,7 @@ function createVectorReportingService(options={}){
   const dashboardList=db.prepare('SELECT id,created_by,dashboard_json,dashboard_digest,version_of,created_at FROM vector_report_dashboards WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
   const dashboardOne=db.prepare('SELECT id,created_by,dashboard_json,dashboard_digest,version_of,created_at FROM vector_report_dashboards WHERE tenant=? AND id=?');
   const scheduleInsert=db.prepare('INSERT INTO vector_report_schedules(id,tenant,created_by,schedule_json,schedule_digest,created_at) VALUES(?,?,?,?,?,?)');
-  const scheduleList=db.prepare('SELECT id,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
+  const scheduleList=db.prepare('SELECT id,tenant,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
   const scheduleOne=db.prepare('SELECT id,tenant,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules WHERE tenant=? AND id=?');
   const scheduleEvent=db.prepare('INSERT INTO vector_report_schedule_events(tenant,schedule_id,enabled,actor,created_at) VALUES(?,?,?,?,?)');
   const scheduleState=db.prepare('SELECT enabled,actor,created_at FROM vector_report_schedule_events WHERE tenant=? AND schedule_id=? ORDER BY id DESC LIMIT 1');
