@@ -7,7 +7,7 @@
 
 const MARKER='VECTOR_REPORTING_UI_V1';
 const IMPROVE_ROUTES=new Set(['insights','costs','recommendations','benchmarks','compliance','overtime-watch']);
-const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],schedules:[],deliveries:[],loading:false,scheduleOpen:false};
+const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],calculations:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],schedules:[],deliveries:[],loading:false,scheduleOpen:false};
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=v=>String(v??'').replace(/\s+/g,' ').trim();
@@ -280,10 +280,18 @@ function renderReport(){
           <select data-report-sort-direction><option value="asc">A → Z / low → high</option><option value="desc">Z → A / high → low</option></select>
           <button type="button" data-report-sort-add>Add sort</button>
         </div>
+        <div class="vector-reporting-calculation-builder">
+          <input data-report-calc-label placeholder="Calculated metric name">
+          <select data-report-calc-left>${(s.fields||[]).map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('')}</select>
+          <select data-report-calc-operator><option value="difference">minus</option><option value="sum">plus</option><option value="product">×</option><option value="ratio">÷</option><option value="percent_change">% change</option></select>
+          <select data-report-calc-right>${(s.fields||[]).map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('')}</select>
+          <button type="button" data-report-calc-add>Add metric</button>
+        </div>
       </div>
       <div class="vector-reporting-chips">
         ${state.filters.map((f,i)=>`<button type="button" data-report-filter-remove="${i}">Filter · ${esc(f.field)} ${esc(f.operator)} ${esc(f.value)}</button>`).join('')}
         ${state.sorts.map((s,i)=>`<button type="button" data-report-sort-remove="${i}">Sort · ${esc(s.field)} ${esc(s.direction)}</button>`).join('')}
+        ${state.calculations.map((x,i)=>`<button type="button" data-report-calc-remove="${i}">Metric · ${esc(x.label)}</button>`).join('')}
       </div>
       <div class="vector-reporting-field-grid">${(s.fields||[]).map(f=>`<label><input type="checkbox" data-report-column="${esc(f)}" ${cols.includes(f)?'checked':''}><span>${esc(f)}</span></label>`).join('')}</div>
       <p>Field access is fixed by the governed semantic catalog. Arbitrary SQL and arbitrary endpoints are not available.</p>
@@ -320,14 +328,14 @@ function tableMarkup(){
 }
 async function chooseTemplate(id){
   const t=template(id);if(!t)return;
-  state.selectedTemplate=t.id;state.selectedSource=source(t.sourceId);state.selectedReportId=null;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(t.columns||[])];state.filters=[];state.sorts=[];state.visualisation=t.visualisation||'table';state.scheduleOpen=false;
+  state.selectedTemplate=t.id;state.selectedSource=source(t.sourceId);state.selectedReportId=null;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(t.columns||[])];state.calculations=[];state.filters=[];state.sorts=[];state.visualisation=t.visualisation||'table';state.scheduleOpen=false;
   renderTemplates(modal().querySelector('[data-report-search]')?.value||'');
   renderReport();
 }
 async function chooseSaved(id){
   const body=await json('/api/reporting/reports/'+encodeURIComponent(id));
   const d=body?.report?.definition;if(!d)return;
-  state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.selectedReportId=id;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];state.filters=[...(d.filters||[])];state.sorts=[...(d.sorts||[])];state.visualisation=d.visualisation||'table';state.scheduleOpen=false;
+  state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.selectedReportId=id;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];state.calculations=[...(d.calculations||[])];state.filters=[...(d.filters||[])];state.sorts=[...(d.sorts||[])];state.visualisation=d.visualisation||'table';state.scheduleOpen=false;
   renderReport();
 }
 function compareValue(a,b){
@@ -343,8 +351,21 @@ function matchesFilter(row,f){
   const cmp=compareValue(a,b);
   return op==='gte'?cmp>=0:op==='lte'?cmp<=0:op==='gt'?cmp>0:op==='lt'?cmp<0:true;
 }
+function calculateRow(row){
+  const out={...row};
+  state.calculations.forEach((calc,index)=>{
+    const a=Number(row?.[calc.left]),b=Number(row?.[calc.right]),key=calc.label||('Calculated '+(index+1));
+    if(!Number.isFinite(a)||!Number.isFinite(b)){out[key]=null;return;}
+    if(calc.operator==='sum')out[key]=a+b;
+    else if(calc.operator==='difference')out[key]=a-b;
+    else if(calc.operator==='product')out[key]=a*b;
+    else if(calc.operator==='ratio')out[key]=b===0?null:a/b;
+    else if(calc.operator==='percent_change')out[key]=b===0?null:((a-b)/Math.abs(b))*100;
+  });
+  return out;
+}
 function applyControls(rows){
-  let out=[...rows];
+  let out=rows.map(calculateRow);
   for(const f of state.filters)out=out.filter(r=>matchesFilter(r,f));
   if(state.sorts.length)out.sort((a,b)=>{for(const s of state.sorts){const n=compareValue(a?.[s.field],b?.[s.field]);if(n)return s.direction==='desc'?-n:n;}return 0;});
   return out;
@@ -373,6 +394,7 @@ async function save(){
       title:t?.label||s.label,
       sourceId:s.id,
       columns:state.columns.filter(c=>(s.fields||[]).includes(c)),
+      calculations:state.calculations,
       filters:state.filters,
       sorts:state.sorts,
       visualisation:state.visualisation,
@@ -466,6 +488,11 @@ async function handleClick(e){
     if(field&&direction){state.sorts.push({field,direction});if(state.raw)recalc();else renderReport();}return;
   }
   const sr=e.target.closest('[data-report-sort-remove]');if(sr){state.sorts.splice(Number(sr.dataset.reportSortRemove),1);if(state.raw)recalc();else renderReport();return;}
+  if(e.target.closest('[data-report-calc-add]')){
+    const root=modal(),label=root.querySelector('[data-report-calc-label]')?.value?.trim(),left=root.querySelector('[data-report-calc-left]')?.value,operator=root.querySelector('[data-report-calc-operator]')?.value,right=root.querySelector('[data-report-calc-right]')?.value;
+    if(label&&left&&right&&operator&&state.calculations.length<8){state.calculations.push({label,left,operator,right});if(state.raw)recalc();else renderReport();}return;
+  }
+  const cr=e.target.closest('[data-report-calc-remove]');if(cr){state.calculations.splice(Number(cr.dataset.reportCalcRemove),1);if(state.raw)recalc();else renderReport();return;}
   const col=e.target.closest('[data-report-column]');
   if(col){const f=col.dataset.reportColumn;if(col.checked&&!state.columns.includes(f))state.columns.push(f);if(!col.checked)state.columns=state.columns.filter(x=>x!==f);if(state.raw)renderReport();}
 }
