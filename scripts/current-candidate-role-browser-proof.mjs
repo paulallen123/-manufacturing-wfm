@@ -242,6 +242,46 @@ try {
       assert.equal(evidence.json?.contractVersion, 'WFM_WORKFLOW_ACTION_EVIDENCE_V1');
       assert.equal(evidence.json?.workflow, 'time-review');
 
+      const sourceDiagnostic = await page.evaluate(async () => {
+        const response = await fetch('/api/time-review', { cache: 'no-store' });
+        let json = null;
+        try { json = await response.json(); } catch {}
+        const teams = Array.isArray(json?.teams) ? json.teams : [];
+        return {
+          status: response.status,
+          teamCount: teams.length,
+          teams: teams.slice(0, 4).map(team => ({
+            id: team?.id ?? null,
+            status: team?.status ?? null,
+            openIssues: (Array.isArray(team?.issues) ? team.issues : [])
+              .filter(issue => String(issue?.status || '').toLowerCase() === 'open')
+              .slice(0, 4)
+              .map(issue => ({
+                id: issue?.id ?? null,
+                sourceId: issue?.sourceId ?? null,
+                status: issue?.status ?? null,
+                reasonCode: issue?.reasonCode ?? null,
+                observedAt: issue?.observedAt ?? null,
+                authorityRequired: issue?.authorityRequired ?? null,
+                confirmation: issue?.confirmation ?? null,
+                keys: Object.keys(issue || {}).sort()
+              }))
+          }))
+        };
+      });
+      console.log('CURRENT_TIME_REVIEW_SOURCE_CONTRACT|' + JSON.stringify(sourceDiagnostic));
+      console.log('CURRENT_ACTION_EVIDENCE_CONTRACT|' + JSON.stringify({
+        status: evidence.status,
+        itemCount: Array.isArray(evidence.json?.items) ? evidence.json.items.length : 0,
+        states: (Array.isArray(evidence.json?.items) ? evidence.json.items : []).map(item => ({
+          sourceId: item?.sourceId ?? null,
+          state: item?.confirmation?.state ?? null,
+          reasonCode: item?.reasonCode ?? null,
+          observedAt: item?.observedAt ?? null,
+          authorityRequired: item?.authorityRequired ?? null
+        }))
+      }));
+
       const active = (Array.isArray(evidence.json?.items) ? evidence.json.items : [])
         .filter(item => String(item?.confirmation?.state || '').toLowerCase() !== 'resolved');
       actionJourney.activeItems = active.length;
