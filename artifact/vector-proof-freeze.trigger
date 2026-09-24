@@ -1,6 +1,6 @@
 VECTOR_PROOF_FREEZE_V1
 branch=feature/vector-eow-convergence-20260925
-candidate_parent_sha=12c0ed68d309c473ba5b7b9f00cac5ab596df40d
+candidate_parent_sha=67e17138dda9031144f04fc225f8624a6a867c10
 rule=hosted proof deploys only when this file changes
 purpose=coalesce development commits into one exact proof candidate and prevent provider queue congestion
 orchestration=no idle wait; scheduled checkpoints never block; simulate ahead and provision/reroute elastic proof lanes
@@ -15,3 +15,4 @@ promotion=blocked until at least two independent failure domains return exact-ca
 regressions=missing hosted vars/domain, fixed-port startup, fixed readiness window, same-provider false parallelism, pre-execution provider failure
 war_room=two-hour proof convergence; canonical auto lanes only; specialist and overflow on demand
 pre_freeze=full bootstrap + health + failure-domain simulation passed for canonical Railway lanes
+retest=no-idle regression fixtures aligned with hardened runtime contract; no product-code relaxation
