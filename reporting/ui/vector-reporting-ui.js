@@ -7,7 +7,7 @@
 
 const MARKER='VECTOR_REPORTING_UI_V1';
 const IMPROVE_ROUTES=new Set(['insights','costs','recommendations','benchmarks','compliance','overtime-watch']);
-const state={catalog:null,selectedTemplate:null,selectedSource:null,rows:[],raw:null,columns:[],saved:[],loading:false};
+const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,rows:[],raw:null,columns:[],saved:[],dashboards:[],deliveries:[],loading:false,scheduleOpen:false};
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=v=>String(v??'').replace(/\s+/g,' ').trim();
@@ -63,6 +63,8 @@ function modal(){
             <input type="search" data-report-search placeholder="e.g. What blocks payroll?" autocomplete="off">
           </label>
           <div class="vector-reporting-template-list" data-report-templates></div>
+          <div class="vector-reporting-saved" data-report-dashboard></div>
+          <div class="vector-reporting-saved" data-report-deliveries></div>
           <div class="vector-reporting-saved" data-report-saved></div>
         </aside>
         <main class="vector-reporting-main" data-report-main>
@@ -83,7 +85,7 @@ function close(){const m=modal();m.hidden=true;document.body.classList.remove('v
 async function open(){
   const m=modal();m.hidden=false;document.body.classList.add('vector-reporting-open');
   if(!state.catalog)await loadCatalog();
-  else{renderTemplates('');renderSaved();}
+  else{renderTemplates('');renderSaved();renderDashboard();renderDeliveries();}
   setTimeout(()=>m.querySelector('[data-report-search]')?.focus(),0);
 }
 async function json(url,options){
@@ -97,9 +99,15 @@ async function loadCatalog(){
   main.innerHTML='<div class="vector-reporting-empty"><strong>Loading reporting controls…</strong></div>';
   try{
     state.catalog=await json('/api/reporting/catalog');
-    const saved=await json('/api/reporting/reports').catch(()=>({reports:[]}));
+    const [saved,dashboards,deliveries]=await Promise.all([
+      json('/api/reporting/reports').catch(()=>({reports:[]})),
+      json('/api/reporting/dashboards').catch(()=>({dashboards:[]})),
+      json('/api/reporting/deliveries').catch(()=>({deliveries:[]}))
+    ]);
     state.saved=Array.isArray(saved?.reports)?saved.reports:[];
-    renderTemplates('');renderSaved();
+    state.dashboards=Array.isArray(dashboards?.dashboards)?dashboards.dashboards:[];
+    state.deliveries=Array.isArray(deliveries?.deliveries)?deliveries.deliveries:[];
+    renderTemplates('');renderSaved();renderDashboard();renderDeliveries();
     main.innerHTML='<div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div>';
   }catch(e){
     main.innerHTML='<div class="vector-reporting-error"><strong>Reporting is unavailable</strong><span>'+esc(e.message)+'</span></div>';
@@ -117,6 +125,20 @@ function renderSaved(){
   const rows=state.saved.slice(0,8);
   host.innerHTML='<div class="vector-reporting-section-label">Saved reports</div>'+
     (rows.length?rows.map(r=>`<button type="button" class="vector-reporting-saved-row" data-report-saved-id="${esc(r.id)}"><b>${esc(r.title)}</b><span>${esc(source(r.sourceId)?.label||r.sourceId)}</span></button>`).join(''):'<div class="vector-reporting-none">None yet.</div>');
+}
+function renderDashboard(){
+  const host=modal().querySelector('[data-report-dashboard]');if(!host)return;
+  const latest=state.dashboards[0],ids=latest?.dashboard?.reportIds||[];
+  const byId=new Map(state.saved.map(r=>[r.id,r])),rows=ids.map(id=>byId.get(id)).filter(Boolean);
+  host.innerHTML='<div class="vector-reporting-section-label">My dashboard</div>'+
+    (rows.length?rows.map(r=>`<button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="${esc(r.id)}"><b>${esc(r.title)}</b><span>▦ Pinned · ${esc(source(r.sourceId)?.label||r.sourceId)}</span></button>`).join(''):'<div class="vector-reporting-none">Pin a saved report here for fast access.</div>');
+}
+function renderDeliveries(){
+  const host=modal().querySelector('[data-report-deliveries]');if(!host)return;
+  const byId=new Map(state.saved.map(r=>[r.id,r]));
+  const rows=state.deliveries.filter(d=>d.status==='READY').slice(0,5);
+  host.innerHTML='<div class="vector-reporting-section-label">Scheduled for you</div>'+
+    (rows.length?rows.map(d=>{const r=byId.get(d.reportId);return `<button type="button" class="vector-reporting-saved-row delivery" data-report-saved-id="${esc(d.reportId)}"><b>${esc(r?.title||'Scheduled report')}</b><span>Ready · ${esc(new Date(d.createdAt).toLocaleString())}</span></button>`;}).join(''):'<div class="vector-reporting-none">No scheduled deliveries yet.</div>');
 }
 function source(id){return (state.catalog?.sources||[]).find(s=>s.id===id)||null;}
 function template(id){return (state.catalog?.templates||[]).find(t=>t.id===id)||null;}
