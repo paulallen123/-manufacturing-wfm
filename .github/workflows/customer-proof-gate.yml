@@ -12,6 +12,11 @@ on:
       - 'scripts/validate-deployment.mjs'
       - 'scripts/validate-resilience-scenarios.mjs'
       - '.github/workflows/customer-proof-gate.yml'
+  pull_request:
+    branches: [release/vector-ui-v2-20260921]
+    paths:
+      - 'artifact/vector-proof-freeze.trigger'
+      - '.github/workflows/customer-proof-gate.yml'
   workflow_dispatch:
 
 permissions:
@@ -71,9 +76,14 @@ jobs:
           proxy_curl() {
             curl -fsS -H 'Host: wfm-ci.invalid' -H 'X-Forwarded-Proto: https' "$@"
           }
-          for i in $(seq 1 30); do
-            if proxy_curl http://127.0.0.1:3000/api/health >/tmp/health.json; then break; fi
-            sleep 1
+          deadline=$((SECONDS+60))
+          until proxy_curl http://127.0.0.1:3000/api/health >/tmp/health.json; do
+            if (( SECONDS >= deadline )); then
+              echo 'Runtime did not become healthy before the readiness deadline.' >&2
+              docker logs wfm-proof >&2 || true
+              exit 1
+            fi
+            sleep 0.25
           done
           proxy_curl http://127.0.0.1:3000/api/health
           proxy_curl http://127.0.0.1:3000/ >/dev/null
