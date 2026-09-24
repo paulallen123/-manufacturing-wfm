@@ -74,6 +74,7 @@ async function proveCanonicalAssetBinding() {
 
 try {
   assetBinding = await proveCanonicalAssetBinding();
+  await import('./current-candidate-hosted-action-proof.mjs');
   await import('./current-candidate-role-browser-proof.mjs');
   state = 'PASS';
   console.log(`BROWSER_PROOF_ASSET_BINDING=${assetBinding.status}`);
