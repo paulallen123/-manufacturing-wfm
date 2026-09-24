@@ -7,7 +7,7 @@
 
 const MARKER='VECTOR_REPORTING_UI_V1';
 const IMPROVE_ROUTES=new Set(['insights','costs','recommendations','benchmarks','compliance','overtime-watch']);
-const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,rows:[],raw:null,columns:[],saved:[],dashboards:[],deliveries:[],loading:false,scheduleOpen:false};
+const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],deliveries:[],loading:false,scheduleOpen:false};
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=v=>String(v??'').replace(/\s+/g,' ').trim();
@@ -79,6 +79,7 @@ function modal(){
   m.addEventListener('click',e=>{if(e.target.closest('[data-report-close]'))close();});
   m.querySelector('[data-report-search]')?.addEventListener('input',e=>renderTemplates(e.target.value));
   m.addEventListener('click',handleClick);
+  m.addEventListener('change',handleChange);
   return m;
 }
 function close(){const m=modal();m.hidden=true;document.body.classList.remove('vector-reporting-open');}
@@ -247,6 +248,31 @@ function renderReport(){
     ${state.scheduleOpen?schedulePanelMarkup():''}
     <details class="vector-reporting-advanced">
       <summary>Advanced controls</summary>
+      <div class="vector-reporting-advanced-grid">
+        <label class="vector-reporting-control">View
+          <select data-report-visualisation>
+            <option value="table" ${state.visualisation==='table'?'selected':''}>Table</option>
+            <option value="kpi" ${state.visualisation==='kpi'?'selected':''}>KPI cards</option>
+            <option value="bar" ${state.visualisation==='bar'?'selected':''}>Bar chart</option>
+            <option value="line" ${state.visualisation==='line'?'selected':''}>Line chart</option>
+          </select>
+        </label>
+        <div class="vector-reporting-filter-builder">
+          <select data-report-filter-field>${(s.fields||[]).map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('')}</select>
+          <select data-report-filter-operator><option value="eq">equals</option><option value="neq">not equal</option><option value="contains">contains</option><option value="gte">≥</option><option value="lte">≤</option><option value="gt">></option><option value="lt"><</option></select>
+          <input data-report-filter-value placeholder="Filter value">
+          <button type="button" data-report-filter-add>Add filter</button>
+        </div>
+        <div class="vector-reporting-filter-builder">
+          <select data-report-sort-field>${(s.fields||[]).map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('')}</select>
+          <select data-report-sort-direction><option value="asc">A → Z / low → high</option><option value="desc">Z → A / high → low</option></select>
+          <button type="button" data-report-sort-add>Add sort</button>
+        </div>
+      </div>
+      <div class="vector-reporting-chips">
+        ${state.filters.map((f,i)=>`<button type="button" data-report-filter-remove="${i}">Filter · ${esc(f.field)} ${esc(f.operator)} ${esc(f.value)}</button>`).join('')}
+        ${state.sorts.map((s,i)=>`<button type="button" data-report-sort-remove="${i}">Sort · ${esc(s.field)} ${esc(s.direction)}</button>`).join('')}
+      </div>
       <div class="vector-reporting-field-grid">${(s.fields||[]).map(f=>`<label><input type="checkbox" data-report-column="${esc(f)}" ${cols.includes(f)?'checked':''}><span>${esc(f)}</span></label>`).join('')}</div>
       <p>Field access is fixed by the governed semantic catalog. Arbitrary SQL and arbitrary endpoints are not available.</p>
     </details>
@@ -256,9 +282,25 @@ function renderReport(){
     </section>
     <footer class="vector-reporting-foot">Source-bound report. Realised outcomes, estimates and opportunities remain separately classified.</footer>`;
 }
+function numericColumns(rows){
+  const keys=availableColumns(rows,state.columns);
+  return keys.filter(k=>rows.some(r=>Number.isFinite(Number(r?.[k]))));
+}
+function chartMarkup(kind){
+  const cols=availableColumns(state.rows,state.columns),nums=numericColumns(state.rows);
+  if(!nums.length)return '<div class="vector-reporting-empty"><strong>No numeric measure</strong><span>Choose a numeric field or use the table view.</span></div>';
+  const measure=nums[0],category=cols.find(c=>c!==measure)||measure,points=state.rows.slice(0,12).map((r,i)=>({label:cell(r[category]??('Row '+(i+1))),value:Number(r[measure])})).filter(p=>Number.isFinite(p.value));
+  if(!points.length)return '<div class="vector-reporting-empty"><strong>No chartable rows</strong></div>';
+  if(kind==='kpi')return '<div class="vector-reporting-kpi-view">'+points.slice(0,6).map(p=>'<div><small>'+esc(p.label)+'</small><strong>'+esc(cell(p.value))+'</strong><span>'+esc(measure)+'</span></div>').join('')+'</div>';
+  const max=Math.max(...points.map(p=>Math.abs(p.value)),1);
+  if(kind==='bar')return '<div class="vector-reporting-bar-view">'+points.map(p=>'<div class="vector-reporting-bar-row"><span>'+esc(p.label)+'</span><i><b style="width:'+Math.max(2,Math.round(Math.abs(p.value)/max*100))+'%"></b></i><strong>'+esc(cell(p.value))+'</strong></div>').join('')+'</div>';
+  const w=700,h=220,pad=22,min=Math.min(...points.map(p=>p.value)),range=Math.max(1,max-min),xy=points.map((p,i)=>({x:pad+(points.length===1?0:(w-pad*2)*i/(points.length-1)),y:h-pad-(h-pad*2)*(p.value-min)/range,p}));
+  return '<div class="vector-reporting-line-view"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+esc(measure)+' line chart"><polyline points="'+xy.map(p=>p.x+','+p.y).join(' ')+'" fill="none" stroke="currentColor" stroke-width="3"/>'+xy.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="currentColor"/>').join('')+'</svg><div class="vector-reporting-line-labels">'+points.map(p=>'<span>'+esc(p.label)+'</span>').join('')+'</div></div>';
+}
 function tableMarkup(){
   if(!state.raw)return '<div class="vector-reporting-empty"><strong>Ready to run</strong><span>The report reads the live source only when you press Run report.</span></div>';
   if(!state.rows.length)return '<div class="vector-reporting-empty"><strong>No rows</strong><span>No report rows were returned. VECTOR has not filled the report with demo values.</span></div>';
+  if(state.visualisation!=='table')return chartMarkup(state.visualisation);
   const cols=availableColumns(state.rows,state.columns);
   return '<div class="vector-reporting-table-wrap"><table><thead><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'+
     state.rows.slice(0,250).map(r=>'<tr>'+cols.map(c=>'<td>'+esc(cell(r[c]))+'</td>').join('')+'</tr>').join('')+
@@ -266,22 +308,42 @@ function tableMarkup(){
 }
 async function chooseTemplate(id){
   const t=template(id);if(!t)return;
-  state.selectedTemplate=t.id;state.selectedSource=source(t.sourceId);state.selectedReportId=null;state.rows=[];state.raw=null;state.columns=[...(t.columns||[])];state.scheduleOpen=false;
+  state.selectedTemplate=t.id;state.selectedSource=source(t.sourceId);state.selectedReportId=null;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(t.columns||[])];state.filters=[];state.sorts=[];state.visualisation=t.visualisation||'table';state.scheduleOpen=false;
   renderTemplates(modal().querySelector('[data-report-search]')?.value||'');
   renderReport();
 }
 async function chooseSaved(id){
   const body=await json('/api/reporting/reports/'+encodeURIComponent(id));
   const d=body?.report?.definition;if(!d)return;
-  state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.selectedReportId=id;state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];state.scheduleOpen=false;
+  state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.selectedReportId=id;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];state.filters=[...(d.filters||[])];state.sorts=[...(d.sorts||[])];state.visualisation=d.visualisation||'table';state.scheduleOpen=false;
   renderReport();
 }
+function compareValue(a,b){
+  const na=Number(a),nb=Number(b);
+  if(Number.isFinite(na)&&Number.isFinite(nb))return na-nb;
+  return String(a??'').localeCompare(String(b??''),undefined,{numeric:true,sensitivity:'base'});
+}
+function matchesFilter(row,f){
+  const a=row?.[f.field],b=f.value,op=f.operator;
+  if(op==='eq')return String(a??'')===String(b??'');
+  if(op==='neq')return String(a??'')!==String(b??'');
+  if(op==='contains')return String(a??'').toLowerCase().includes(String(b??'').toLowerCase());
+  const cmp=compareValue(a,b);
+  return op==='gte'?cmp>=0:op==='lte'?cmp<=0:op==='gt'?cmp>0:op==='lt'?cmp<0:true;
+}
+function applyControls(rows){
+  let out=[...rows];
+  for(const f of state.filters)out=out.filter(r=>matchesFilter(r,f));
+  if(state.sorts.length)out.sort((a,b)=>{for(const s of state.sorts){const n=compareValue(a?.[s.field],b?.[s.field]);if(n)return s.direction==='desc'?-n:n;}return 0;});
+  return out;
+}
+function recalc(){state.rows=applyControls(state.baseRows);renderReport();}
 async function run(){
   if(!state.selectedSource||state.loading)return;
   state.loading=true;renderReport();
   try{
     const body=await json(state.selectedSource.endpoint);
-    state.raw=body;state.rows=rowsFor(state.selectedSource.id,body);
+    state.raw=body;state.baseRows=rowsFor(state.selectedSource.id,body);state.rows=applyControls(state.baseRows);
     if(!state.columns.length)state.columns=availableColumns(state.rows,[]);
   }catch(e){
     state.raw={error:e.message};state.rows=[];
@@ -299,7 +361,9 @@ async function save(){
       title:t?.label||s.label,
       sourceId:s.id,
       columns:state.columns.filter(c=>(s.fields||[]).includes(c)),
-      visualisation:'table',
+      filters:state.filters,
+      sorts:state.sorts,
+      visualisation:state.visualisation,
       comparison:t?.comparison||'none',
       narrative:t?.narrative!==false,
       includeEvidence:true
@@ -356,6 +420,10 @@ function printReport(){
   setTimeout(cleanup,2000);
 }
 function toast(message){try{if(typeof window.toast==='function')return window.toast(message);}catch{}alert(message);}
+function handleChange(e){
+  const vis=e.target.closest('[data-report-visualisation]');
+  if(vis){state.visualisation=vis.value;renderReport();}
+}
 async function handleClick(e){
   const t=e.target.closest('[data-report-template]');if(t){await chooseTemplate(t.dataset.reportTemplate);return;}
   const saved=e.target.closest('[data-report-saved-id]');if(saved){await chooseSaved(saved.dataset.reportSavedId);return;}
@@ -366,8 +434,18 @@ async function handleClick(e){
   if(e.target.closest('[data-report-schedule-confirm]')){await createSchedule();return;}
   if(e.target.closest('[data-report-export]')){csv();return;}
   if(e.target.closest('[data-report-print]')){printReport();return;}
+  if(e.target.closest('[data-report-filter-add]')){
+    const root=modal(),field=root.querySelector('[data-report-filter-field]')?.value,operator=root.querySelector('[data-report-filter-operator]')?.value,value=root.querySelector('[data-report-filter-value]')?.value;
+    if(field&&operator&&value!==''){state.filters.push({field,operator,value});if(state.raw)recalc();else renderReport();}return;
+  }
+  const fr=e.target.closest('[data-report-filter-remove]');if(fr){state.filters.splice(Number(fr.dataset.reportFilterRemove),1);if(state.raw)recalc();else renderReport();return;}
+  if(e.target.closest('[data-report-sort-add]')){
+    const root=modal(),field=root.querySelector('[data-report-sort-field]')?.value,direction=root.querySelector('[data-report-sort-direction]')?.value;
+    if(field&&direction){state.sorts.push({field,direction});if(state.raw)recalc();else renderReport();}return;
+  }
+  const sr=e.target.closest('[data-report-sort-remove]');if(sr){state.sorts.splice(Number(sr.dataset.reportSortRemove),1);if(state.raw)recalc();else renderReport();return;}
   const col=e.target.closest('[data-report-column]');
-  if(col){const f=col.dataset.reportColumn;if(col.checked&&!state.columns.includes(f))state.columns.push(f);if(!col.checked)state.columns=state.columns.filter(x=>x!==f);}
+  if(col){const f=col.dataset.reportColumn;if(col.checked&&!state.columns.includes(f))state.columns.push(f);if(!col.checked)state.columns=state.columns.filter(x=>x!==f);if(state.raw)renderReport();}
 }
 
 const observer=new MutationObserver(()=>installLaunch());
