@@ -46,7 +46,11 @@ const learnedGuardChecks={
   ],
   'same-provider-false-parallelism':[
     ['resilience/pre-freeze-simulator.cjs','falseParallelism'],
-    ['release/proof-lane-policy.json','sharedFailureDomainNeverCountsAsIndependent']
+    ['resilience/no-idle-wait-orchestrator.cjs','unknownFailureDomainHeadroomNeverCreatesOverflow'],
+    ['resilience/no-idle-wait-orchestrator.cjs','PROVISION_THROUGHPUT_LANE'],
+    ['resilience/no-idle-wait-orchestrator.cjs','ROUTE_DISTINCT_FAILURE_DOMAIN'],
+    ['release/proof-lane-policy.json','sharedFailureDomainNeverCountsAsIndependent'],
+    ['release/proof-lane-policy.json','sameFailureDomainScaleRequiresMeasuredHeadroom']
   ],
   'proof-on-every-intermediate-commit':[
     ['release/proof-lane-policy.json','artifact/vector-proof-freeze.trigger'],
