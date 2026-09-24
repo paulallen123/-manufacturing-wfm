@@ -82,7 +82,7 @@ const SOURCES = Object.freeze([
     id:'decision-outcomes',
     label:'Decision outcomes',
     description:'Recommendations, decisions, verification and measured outcomes.',
-    endpoint:'/api/operations/intelligence',
+    endpoint:'/api/operations/intelligence/decisions',
     minRole:'manager',
     evidenceClass:'DECISION',
     fields:['site','decisionType','status','selectedOption','risk','confidence','predictedImpact','actualImpact','verification','evidenceRef']
