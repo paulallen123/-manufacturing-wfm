@@ -111,3 +111,48 @@ test('saved reports are tenant isolated, immutable and audited',async()=>{
     db.close();
   }finally{x.close();}
 });
+
+
+test('dashboard pinning creates immutable tenant-bound versions',async()=>{
+  const x=setup();
+  try{
+    const made=await call(x.service,'POST','/api/reporting/reports','manager-a',{definition:{title:'Coverage',sourceId:'factory-readiness',columns:['department','gapHours']}});
+    const reportId=made.body.report.id;
+    const first=await call(x.service,'POST','/api/reporting/dashboards/pin','manager-a',{reportId});
+    assert.equal(first.status,201);
+    assert.deepEqual(first.body.dashboard.dashboard.reportIds,[reportId]);
+    const second=await call(x.service,'POST','/api/reporting/dashboards/pin','manager-a',{reportId});
+    assert.equal(second.status,201);
+    assert.equal(second.body.dashboard.versionOf,first.body.dashboard.id);
+    assert.deepEqual(second.body.dashboard.dashboard.reportIds,[reportId]);
+    const other=await call(x.service,'GET','/api/reporting/dashboards','manager-b');
+    assert.equal(other.status,200);
+    assert.equal(other.body.dashboards.length,0);
+    const db=new DatabaseSync(x.dbPath);
+    assert.throws(()=>db.prepare('UPDATE vector_report_dashboards SET created_by=? WHERE id=?').run('x',first.body.dashboard.id),/immutable/i);
+    db.close();
+  }finally{x.close();}
+});
+
+test('daily in-app schedules generate one governed delivery per local minute and external delivery fails closed',async()=>{
+  const x=setup();
+  try{
+    const made=await call(x.service,'POST','/api/reporting/reports','manager-a',{definition:{title:'Coverage',sourceId:'factory-readiness',columns:['department','gapHours']}});
+    const reportId=made.body.report.id;
+    const now=new Date('2026-09-24T16:05:00.000Z');
+    const scheduled=await call(x.service,'POST','/api/reporting/schedules','manager-a',{reportId,cadence:'daily',hour:16,minute:5,timeZone:'UTC',delivery:'in_app'});
+    assert.equal(scheduled.status,201);
+    const deliveries=await x.service.runDueSchedules(now);
+    assert.equal(deliveries.length,1);
+    assert.equal(deliveries[0].reportId,reportId);
+    assert.equal(deliveries[0].status,'READY');
+    assert.equal((await x.service.runDueSchedules(now)).length,0,'same local minute must be idempotent');
+    const list=await call(x.service,'GET','/api/reporting/deliveries','manager-a');
+    assert.equal(list.status,200);
+    assert.equal(list.body.deliveries.length,1);
+    assert.equal(list.body.deliveries[0].receipt.claimBoundary.includes('live report'),true);
+    const blocked=await call(x.service,'POST','/api/reporting/schedules','manager-a',{reportId,cadence:'daily',hour:16,minute:5,timeZone:'UTC',delivery:'email_link',destination:'user@example.com'});
+    assert.equal(blocked.status,400);
+    assert.match(blocked.body.error,/adapter is not configured/i);
+  }finally{x.close();}
+});
