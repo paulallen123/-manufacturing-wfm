@@ -83,3 +83,40 @@ test('pre-execution provider failure is excluded before it can count as proof ca
   assert.equal(repair.routeAroundProvider,true);
   assert.ok(repair.issueCodes.includes('PROVIDER_DEGRADED_PREEXECUTION'));
 });
+
+test('24 Sep incident topology is rejected before freeze and cannot masquerade as resilient capacity', () => {
+  const result=simulatePreFreeze({
+    candidateSha:'frozen-sha',
+    requiredIndependentFailureDomains:2,
+    lanes:[
+      exactLane({id:'railway-a',failureDomain:'railway:workspace',variableNames:[],sourceSha:'frozen-sha'}),
+      exactLane({id:'railway-b',failureDomain:'railway:workspace',sourceSha:'frozen-sha'}),
+      exactLane({id:'railway-c',failureDomain:'railway:workspace',variableNames:[],sourceSha:'frozen-sha'}),
+      exactLane({id:'github',provider:'github-actions',failureDomain:'github:repo',providerState:'PREEXECUTION_FAILURE',sourceSha:'frozen-sha'})
+    ]
+  });
+  assert.deepEqual(result.admittedLaneIds,['railway-b']);
+  assert.deepEqual(new Set(result.rejectedLaneIds),new Set(['railway-a','railway-c','github']));
+  assert.deepEqual(result.independentFailureDomains,['railway:workspace']);
+  assert.equal(result.promotionTopologyReady,false);
+  assert.ok(result.actions.some(x=>x.type==='REPAIR_LANE_BEFORE_FREEZE'&&x.laneId==='railway-a'));
+  assert.ok(result.actions.some(x=>x.type==='REPAIR_LANE_BEFORE_FREEZE'&&x.laneId==='railway-c'));
+  assert.ok(result.actions.some(x=>x.type==='REPAIR_LANE_BEFORE_FREEZE'&&x.laneId==='github'&&x.routeAroundProvider===true));
+});
+
+test('24 Sep repaired Railway topology is admitted for throughput but still counts as one resilience domain', () => {
+  const result=simulatePreFreeze({
+    candidateSha:'frozen-sha',
+    requiredIndependentFailureDomains:2,
+    lanes:[
+      exactLane({id:'railway-a',failureDomain:'railway:workspace',sourceSha:'frozen-sha'}),
+      exactLane({id:'railway-b',failureDomain:'railway:workspace',sourceSha:'frozen-sha'}),
+      exactLane({id:'railway-c',failureDomain:'railway:workspace',sourceSha:'frozen-sha'})
+    ]
+  });
+  assert.deepEqual(result.admittedLaneIds,['railway-a','railway-b','railway-c']);
+  assert.deepEqual(result.independentFailureDomains,['railway:workspace']);
+  assert.equal(result.falseParallelism[0].laneCount,3);
+  assert.equal(result.promotionTopologyReady,false);
+  assert.ok(result.actions.some(x=>x.type==='ADD_DISTINCT_FAILURE_DOMAIN'));
+});
