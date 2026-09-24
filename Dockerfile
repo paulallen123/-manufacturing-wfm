@@ -288,8 +288,7 @@ RUN WFM_PROOF_ONESHOT=true \
 # The active image has one presentation entry point only: vector-ui.css + vector-ui.js.
 # Retired shell entry points are physically removed from the runtime image, not hidden.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
-COPY reporting/ui/vector-reporting-ui.js /app/public/vector-reporting-ui.js
-COPY reporting/ui/vector-reporting-ui.css /app/public/vector-reporting-ui.css
+COPY reporting/ui/ /tmp/wfm-reporting-ui/
 COPY scripts/compose-vector-presentation.mjs /tmp/compose-vector-presentation.mjs
 COPY scripts/prove-vector-built-asset-provenance.mjs /tmp/prove-vector-built-asset-provenance.mjs
 RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
@@ -297,7 +296,7 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
  && node --check /tmp/wfm-ux-overlay/vector-realtime.js \
- && node --check /app/public/vector-reporting-ui.js \
+ && node --check /tmp/wfm-reporting-ui/vector-reporting-ui.js \
  && node --check /app/reporting-runtime/vector-reporting-service.cjs \
  && printf '/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' > /app/public/vector-ui.css \
  && cat /app/public/factory-control-ui.css >> /app/public/vector-ui.css \
@@ -310,6 +309,8 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && cat /tmp/wfm-ux-overlay/vector-workflows.css >> /app/public/vector-ui.css \
  && printf '\n/* VECTOR_DEMAND_DECISION_INTELLIGENCE_BEGIN */\n' >> /app/public/vector-ui.css \
  && cat /tmp/wfm-ux-overlay/vector-demand-intelligence.css >> /app/public/vector-ui.css \
+ && printf '\n/* VECTOR_REPORTING_UI_V1 */\n' >> /app/public/vector-ui.css \
+ && cat /tmp/wfm-reporting-ui/vector-reporting-ui.css >> /app/public/vector-ui.css \
  && cp /tmp/wfm-ux-overlay/vector-workflows.js /app/public/vector-workflows.js \
  && node --check /app/public/vector-workflows.js \
  && printf "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" > /app/public/vector-ui.js \
@@ -323,6 +324,8 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && cat /tmp/wfm-ux-overlay/vector-demand-intelligence.js >> /app/public/vector-ui.js \
  && printf '\n;/* VECTOR_REALTIME_BEGIN */\n' >> /app/public/vector-ui.js \
  && cat /tmp/wfm-ux-overlay/vector-realtime.js >> /app/public/vector-ui.js \
+ && printf '\n;/* VECTOR_REPORTING_UI_V1 */\n' >> /app/public/vector-ui.js \
+ && cat /tmp/wfm-reporting-ui/vector-reporting-ui.js >> /app/public/vector-ui.js \
  && node --check /app/public/vector-ui.js \
  && node /tmp/compose-vector-presentation.mjs /app/public \
  && rm -f /app/public/factory-control-ui.js /app/public/factory-control-ui.css \
@@ -332,7 +335,7 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
           /app/public/review-ui.css \
           /app/public/ui-evolution.css \
           /app/public/vector-shell.js \
- && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.js','factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');const rcss=fs.readFileSync('/app/public/vector-reporting-ui.css','utf8');const rjs=fs.readFileSync('/app/public/vector-reporting-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!h.includes('/vector-reporting-ui.css')||!h.includes('/vector-reporting-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!rcss.includes('VECTOR_REPORTING_UI_V1')||!rjs.includes('VECTOR_REPORTING_UI_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS');console.log('VECTOR_REPORTING_PRESENTATION_ADMISSION=PASS')" \
+ && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.js','factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!css.includes('VECTOR_REPORTING_UI_V1')||!js.includes('VECTOR_REPORTING_UI_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS');console.log('VECTOR_REPORTING_PRESENTATION_ADMISSION=PASS')" \
  && mkdir -p /tmp/vector-provenance/learning /tmp/vector-provenance/implementation \
  && cp -r /tmp/wfm-ux-overlay /tmp/vector-provenance/ux-overlay \
  && cp -r /tmp/wfm-learning-ui /tmp/vector-provenance/learning/ui \
@@ -340,7 +343,7 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && node /tmp/prove-vector-built-asset-provenance.mjs /tmp/vector-provenance /app/public /tmp/vector-sealed-base.css \
  && rm -rf /tmp/vector-provenance \
  && rm -f /tmp/vector-sealed-base.css /tmp/prove-vector-built-asset-provenance.mjs /tmp/compose-vector-presentation.mjs \
- && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
+ && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-reporting-ui /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 
 # Consequential attendance admission against the exact final runtime. Reject an
 # overlapping correction before mutation, then prove valid reconciliation/export.
