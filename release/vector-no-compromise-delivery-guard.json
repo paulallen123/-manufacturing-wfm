@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "id": "VECTOR_NO_COMPROMISE_DELIVERY_GUARD_2026_09_24",
+  "intent": "T9 acceleration is additive. It may not consume, defer, weaken or redefine any existing VECTOR delivery commitment.",
+  "hardRules": [
+    "Friday FORGE remains the first protected release/proof milestone.",
+    "No existing capability may be removed, deferred or weakened to make a T9 deadline.",
+    "No safety, security, payroll, tenant, audit, approval, provenance or rollback gate may be relaxed for schedule.",
+    "No UI redesign or architecture rewrite is allowed unless required to repair a proven critical defect.",
+    "T9 work must extend canonical owners and shared services; parallel replacement stacks are prohibited.",
+    "A blocked lane must route around the blocker without stealing capacity from unrelated critical lanes.",
+    "Simulation may accelerate discovery but never substitutes for exact-candidate proof.",
+    "Every deadline claim must distinguish built, integrated, hosted-proven and production-proven states."
+  ],
+  "protectedMilestones": [
+    {
+      "id": "friday-forge",
+      "due": "2026-09-25",
+      "protected": true,
+      "required": [
+        "exact FORGE candidate deployable with immutable release identity",
+        "authenticated Golden Journey evidence",
+        "Factory/Today role-visible authoritative state",
+        "Autopilot representative execute-verify-rollback/contain path",
+        "tenant/payroll/security destructive regressions",
+        "restart/recovery evidence",
+        "customer-quality demonstration",
+        "proof receipt bound to exact source/image identity"
+      ]
+    },
+    {
+      "id": "sunday-t9",
+      "due": "2026-09-27",
+      "protected": true,
+      "required": [
+        "T9 control spine enforced across every consequential mutation domain",
+        "no unexplained bypass path",
+        "domain proof against Sunday T9 exit contract",
+        "cross-domain destructive scenarios",
+        "independent verification and promotion evidence"
+      ]
+    }
+  ],
+  "continuouslyProtectedScope": [
+    "approved blue-and-white FORGE role-first UI",
+    "Golden Journey",
+    "Factory Autopilot and Decision Intelligence",
+    "implementation/Launch Autopilot",
+    "autonomous integrations and data fabric",
+    "clocking/attendance/payroll integrity",
+    "agency labour",
+    "energy intelligence",
+    "Cash-to-Capacity",
+    "training/learning/video",
+    "zero-touch secure entry",
+    "mobile/tablet/mass clocking",
+    "realtime UI",
+    "customer outcome/value proof",
+    "adaptive/self-learning intelligence",
+    "Vecta/autonomous support",
+    "restart/recovery/disaster resilience",
+    "global scale and multi-tenant controls"
+  ],
+  "laneIsolation": {
+    "fridayCriticalPath": [
+      "candidate integration",
+      "hosted proof",
+      "Golden Journey",
+      "security/payroll/tenant/recovery",
+      "customer-quality demo"
+    ],
+    "t9AdditivePath": [
+      "shared T9 contracts",
+      "mutation gateway coverage",
+      "verifier adapters",
+      "evidence/causal receipts",
+      "destructive scenarios",
+      "promotion matrix"
+    ],
+    "safeParallelPath": [
+      "training/video refinement",
+      "integration catalogue/evidence work",
+      "energy/agency/cash-to-capacity deterministic tests",
+      "mobile/tablet UX completion",
+      "realtime propagation",
+      "support scenario generation"
+    ],
+    "convergenceRule": "Only merge parallel work when exact-candidate regression evidence shows no harm to protected milestones."
+  },
+  "blockerPolicy": {
+    "rule": "Blockers change route, not scope.",
+    "requiredResponse": [
+      "classify blocker as product, proof, provider, data, authority or environment",
+      "preserve last known good release identity",
+      "use safe alternate proof/execution lane",
+      "continue unrelated development",
+      "never weaken a guard to unblock",
+      "record evidence and permanent regression when resolved"
+    ]
+  },
+  "sundayAcceptanceRule": "T9 is not allowed to be declared complete if any protected non-T9 commitment is late because T9 work displaced it."
+}
