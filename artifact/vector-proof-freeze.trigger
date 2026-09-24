@@ -1,6 +1,6 @@
 VECTOR_PROOF_FREEZE_V1
 branch=feature/vector-eow-convergence-20260925
-candidate_parent_sha=a29a81f0ad2c1c9b41fd9e5c57b8de04ae6aea66
+candidate_parent_sha=12c0ed68d309c473ba5b7b9f00cac5ab596df40d
 rule=hosted proof deploys only when this file changes
 purpose=coalesce development commits into one exact proof candidate and prevent provider queue congestion
 orchestration=no idle wait; scheduled checkpoints never block; simulate ahead and provision/reroute elastic proof lanes
@@ -13,3 +13,5 @@ railway_runtime_contract=admitted: canonical + overflow A/B/C have hosted mode, 
 failure_domains=railway shared domain counts once; github provider degraded after two pre-execution failures; circleci execution unverified
 promotion=blocked until at least two independent failure domains return exact-candidate proof
 regressions=missing hosted vars/domain, fixed-port startup, fixed readiness window, same-provider false parallelism, pre-execution provider failure
+war_room=two-hour proof convergence; canonical auto lanes only; specialist and overflow on demand
+pre_freeze=full bootstrap + health + failure-domain simulation passed for canonical Railway lanes
