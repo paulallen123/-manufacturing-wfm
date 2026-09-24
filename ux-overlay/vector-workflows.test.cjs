@@ -6,32 +6,48 @@ const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
 const { spawn, execFileSync } = require('node:child_process');
+const net = require('node:net');
 const { once } = require('node:events');
 const { DatabaseSync } = require('node:sqlite');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(__dirname, 'vector-workflows.js'), 'utf8');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+const reservePort = () => new Promise((resolve, reject) => {
+  const server = net.createServer();
+  server.once('error', reject);
+  server.listen(0, '127.0.0.1', () => {
+    const address = server.address();
+    const port = typeof address === 'object' && address ? address.port : 0;
+    server.close(error => error ? reject(error) : resolve(port));
+  });
+});
 
 test('Vector workflow controller uses real authentication, saved checks and restart recovery', async t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-workflow-'));
   const runtime = path.join(directory, 'runtime');
   execFileSync(process.execPath, [path.join(root, 'scripts/compose-vector-local-runtime.mjs'), runtime], { stdio: 'pipe' });
   const dbPath = path.join(directory, 'test.sqlite');
-  const port = 43217, origin = 'http://127.0.0.1:' + port;
+  const port = await reservePort(), origin = 'http://127.0.0.1:' + port;
   let child;
   async function start() {
     child = spawn(process.execPath, ['--require', path.join(runtime, 'local-paths.cjs'), path.join(runtime, 'security-runtime/bootstrap.cjs')], {
       env: { ...process.env, WFM_DB: dbPath, PORT: String(port), WFM_HOSTED_STAGING: 'false', NODE_ENV: 'test' },
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    let diagnostics = ''; child.stderr.on('data', data => { diagnostics += data; });
-    for (let attempt = 0; attempt < 80; attempt++) {
-      if (child.exitCode !== null) throw Error('Runtime exited: ' + diagnostics);
+    let diagnostics = '';
+    child.stdout.on('data', data => { diagnostics += '[stdout] ' + data; });
+    child.stderr.on('data', data => { diagnostics += '[stderr] ' + data; });
+    const startupBudgetMs = Number(process.env.WFM_PROOF_STARTUP_BUDGET_MS || 30000);
+    const deadline = Date.now() + startupBudgetMs;
+    while (Date.now() <= deadline) {
+      if (child.exitCode !== null) throw Error('Runtime exited before ready: ' + diagnostics);
       try { if ((await fetch(origin + '/api/health')).ok) return; } catch {}
-      await delay(50);
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      await delay(Math.min(100, remaining));
     }
-    throw Error('Runtime did not start: ' + diagnostics);
+    throw Error('Runtime did not become ready within condition budget ' + startupBudgetMs + 'ms: ' + diagnostics);
   }
   async function stop() { if (child && child.exitCode === null) { child.kill('SIGTERM'); await once(child, 'exit'); } }
   t.after(async () => { await stop(); fs.rmSync(directory, { recursive: true, force: true }); });
