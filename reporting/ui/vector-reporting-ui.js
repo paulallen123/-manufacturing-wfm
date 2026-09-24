@@ -11,7 +11,7 @@ const state={catalog:null,selectedTemplate:null,selectedSource:null,rows:[],raw:
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=v=>String(v??'').replace(/\s+/g,' ').trim();
-const currentPage=()=>{try{return String(window.ui?.page||'overview')}catch{return'overview'}};
+const currentPage=()=>{try{return String(window.ui?.page||(typeof ui!=='undefined'&&ui?.page)||'overview')}catch{return'overview'}};
 const employee=()=>{try{return typeof window.isEmployee==='function'&&window.isEmployee()}catch{return false}};
 
 function button(){
@@ -24,8 +24,12 @@ function button(){
   return b;
 }
 function installLaunch(){
-  document.querySelectorAll('[data-vector-reporting-launch]').forEach(n=>n.remove());
-  if(employee()||!IMPROVE_ROUTES.has(currentPage()))return;
+  const existing=document.querySelector('[data-vector-reporting-launch]');
+  if(employee()||!IMPROVE_ROUTES.has(currentPage())){
+    existing?.closest('.vector-reporting-launch-wrap')?.remove();
+    return;
+  }
+  if(existing)return;
   const heading=document.querySelector('.vector-page-content>.heading:first-child,.content>.heading:first-child');
   if(!heading)return;
   const holder=document.createElement('div');
