@@ -89,11 +89,15 @@
       "runtimeContract": {
         "requiredVariables": [
           "WFM_DB",
-          "WFM_HOSTED_STAGING"
+          "WFM_HOSTED_STAGING",
+          "WFM_PUBLIC_ORIGIN",
+          "WFM_STAGING_PASSWORD"
         ],
         "hostedModeRequired": true,
         "healthcheckPath": "/api/health",
-        "readinessMode": "condition"
+        "readinessMode": "condition",
+        "stagingPasswordMinLength": 20,
+        "publicOriginHttpsRequired": true
       }
     },
     {
@@ -109,11 +113,15 @@
       "runtimeContract": {
         "requiredVariables": [
           "WFM_DB",
-          "WFM_HOSTED_STAGING"
+          "WFM_HOSTED_STAGING",
+          "WFM_PUBLIC_ORIGIN",
+          "WFM_STAGING_PASSWORD"
         ],
         "hostedModeRequired": true,
         "healthcheckPath": "/api/health",
-        "readinessMode": "condition"
+        "readinessMode": "condition",
+        "stagingPasswordMinLength": 20,
+        "publicOriginHttpsRequired": true
       }
     }
   ],
@@ -185,6 +193,8 @@
         "EXACT_CANDIDATE_BINDING",
         "RUNTIME_VARIABLE_CONTRACT",
         "HOSTED_LISTEN_MODE",
+        "PUBLIC_ORIGIN_CONTRACT",
+        "STAGING_CREDENTIAL_CONTRACT",
         "HEALTHCHECK_CONTRACT",
         "CONDITION_BASED_READINESS",
         "ENDPOINT_REACHABILITY",
