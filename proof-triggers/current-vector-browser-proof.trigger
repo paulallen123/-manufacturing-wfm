@@ -3,3 +3,5 @@ reason=source-bound-current-vector-browser-proof
 
 run=exact-browser-proof-d2f9a5cf9854a85978e1e622107b4877f03667f4
 binding=railway-metadata+vector-ui-js+vector-ui-css+vector-workflows-js
+
+run=diagnose-action-evidence-d2f9
