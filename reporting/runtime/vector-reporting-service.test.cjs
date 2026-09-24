@@ -125,6 +125,9 @@ test('dashboard pinning creates immutable tenant-bound versions',async()=>{
     assert.equal(second.status,201);
     assert.equal(second.body.dashboard.versionOf,first.body.dashboard.id);
     assert.deepEqual(second.body.dashboard.dashboard.reportIds,[reportId]);
+    const removed=await call(x.service,'POST','/api/reporting/dashboards/unpin','manager-a',{reportId});
+    assert.equal(removed.status,201);
+    assert.deepEqual(removed.body.dashboard.dashboard.reportIds,[]);
     const other=await call(x.service,'GET','/api/reporting/dashboards','manager-b');
     assert.equal(other.status,200);
     assert.equal(other.body.dashboards.length,0);
@@ -151,6 +154,13 @@ test('daily in-app schedules generate one governed delivery per local minute and
     assert.equal(list.status,200);
     assert.equal(list.body.deliveries.length,1);
     assert.equal(list.body.deliveries[0].receipt.claimBoundary.includes('live report'),true);
+    const scheduleId=scheduled.body.schedule.id;
+    const paused=await call(x.service,'POST','/api/reporting/schedules/'+encodeURIComponent(scheduleId)+'/state','manager-a',{enabled:false});
+    assert.equal(paused.status,200);
+    assert.equal(paused.body.schedule.enabled,false);
+    assert.equal((await x.service.runDueSchedules(new Date('2026-09-25T16:05:00.000Z'))).length,0,'paused schedule must not deliver');
+    const scheduleList=await call(x.service,'GET','/api/reporting/schedules','manager-a');
+    assert.equal(scheduleList.body.schedules[0].enabled,false);
     const blocked=await call(x.service,'POST','/api/reporting/schedules','manager-a',{reportId,cadence:'daily',hour:16,minute:5,timeZone:'UTC',delivery:'email_link',destination:'user@example.com'});
     assert.equal(blocked.status,400);
     assert.match(blocked.body.error,/adapter is not configured/i);
