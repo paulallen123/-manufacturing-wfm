@@ -9,6 +9,7 @@ const MAX_COLUMNS = 24;
 const MAX_FILTERS = 20;
 const MAX_SORTS = 4;
 const MAX_LIMIT = 5000;
+const MAX_CALCULATIONS = 8;
 const MAX_DASHBOARD_PINS = 12;
 const CADENCES = new Set(['daily','weekly','monthly']);
 const DELIVERY_MODES = new Set(['in_app','email_link','sftp']);
@@ -25,6 +26,7 @@ const ROLE_LEVEL = Object.freeze({
 const OPERATORS = new Set(['eq','neq','in','not_in','contains','gte','lte','gt','lt','between','is_empty','not_empty']);
 const VISUALISATIONS = new Set(['table','kpi','bar','line']);
 const COMPARISONS = new Set(['none','previous_period','previous_week','previous_month','baseline']);
+const CALCULATION_OPERATORS = new Set(['sum','difference','product','ratio','percent_change']);
 
 const SOURCES = Object.freeze([
   {
@@ -144,7 +146,7 @@ function visibleCatalog(role){
     ],
     sources,
     templates:TEMPLATES.filter(t=>ids.has(t.sourceId)),
-    limits:{maxColumns:MAX_COLUMNS,maxFilters:MAX_FILTERS,maxSorts:MAX_SORTS,maxRows:MAX_LIMIT}
+    limits:{maxColumns:MAX_COLUMNS,maxCalculations:MAX_CALCULATIONS,maxFilters:MAX_FILTERS,maxSorts:MAX_SORTS,maxRows:MAX_LIMIT}
   };
 }
 function cleanFilter(filter,allowed){
@@ -204,6 +206,13 @@ function normaliseDefinition(input,role){
   const requested=Array.isArray(input.columns)?input.columns.map(v=>compact(v,80)).filter(Boolean):[];
   const columns=[...new Set(requested.length?requested:source.fields.slice(0,8))].slice(0,MAX_COLUMNS);
   if(columns.some(c=>!allowed.has(c))) throw new Error('Report column is not allowed for this source.');
+  const calculations=(Array.isArray(input.calculations)?input.calculations:[]).slice(0,MAX_CALCULATIONS).map((calc,index)=>{
+    if(!calc||typeof calc!=='object'||Array.isArray(calc))throw new Error('Invalid calculated metric.');
+    const left=compact(calc.left,80),right=compact(calc.right,80),operator=compact(calc.operator,30).toLowerCase(),label=compact(calc.label,80)||('Calculated '+(index+1));
+    if(!allowed.has(left)||!allowed.has(right))throw new Error('Calculated metrics may use only approved source fields.');
+    if(!CALCULATION_OPERATORS.has(operator))throw new Error('Unsupported calculated metric operator.');
+    return {id:'calc_'+(index+1),label,left,right,operator};
+  });
   const filters=(Array.isArray(input.filters)?input.filters:[]).slice(0,MAX_FILTERS).map(f=>cleanFilter(f,allowed));
   const sorts=(Array.isArray(input.sorts)?input.sorts:[]).slice(0,MAX_SORTS).map(s=>{
     const field=compact(s?.field,80),direction=compact(s?.direction,8).toLowerCase();
@@ -221,7 +230,7 @@ function normaliseDefinition(input,role){
   return Object.freeze({
     schemaVersion:'VECTOR_REPORT_DEFINITION_V1',
     title,sourceId,endpoint:source.endpoint,evidenceClass:source.evidenceClass,
-    columns,filters,sorts,visualisation,comparison,limit,narrative,
+    columns,calculations,filters,sorts,visualisation,comparison,limit,narrative,
     includeEvidence:input.includeEvidence!==false,
     claimBoundary
   });
