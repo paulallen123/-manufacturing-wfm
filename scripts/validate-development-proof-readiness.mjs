@@ -38,6 +38,8 @@ const learnedGuardChecks={
   ],
   'hosted-proof-lane-runtime-contract-missing':[
     ['resilience/pre-freeze-simulator.cjs','RUNTIME_VARIABLE_CONTRACT_MISSING'],
+    ['resilience/pre-freeze-simulator.cjs','WFM_PUBLIC_ORIGIN'],
+    ['resilience/pre-freeze-simulator.cjs','WFM_STAGING_PASSWORD'],
     ['release/proof-lane-policy.json','liveRuntimeContractRequiredBeforeLaneAdmission']
   ],
   'fixed-port-and-readiness-window':[
