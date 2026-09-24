@@ -1,5 +1,6 @@
 'use strict';
 
+const { simulatePreFreeze } = require('./pre-freeze-simulator.cjs');
 const WAIT_LIKE = new Set(['PENDING','WAITING','QUEUED','RUNNING','BUILDING','DEPLOYING','NEEDS_APPROVAL']);
 const FAILURE_LIKE = new Set(['FAILED','CRASHED','ERROR','CANCELLED']);
 const EVIDENCE_BLOCK = new Set(['INSUFFICIENT_EVIDENCE','STALE','EXPIRED','NO_PROOF']);
@@ -18,21 +19,25 @@ function planNoIdleWait(input={}){
   const independentWork = Array.isArray(input.independentWork) ? input.independentWork.filter(Boolean) : [];
   const queue = input.queue || {};
   const workers = input.workers || {};
+  const preFreeze = input.preFreeze ? simulatePreFreeze(input.preFreeze) : null;
+  const capacityLanes = preFreeze
+    ? lanes.filter(lane => preFreeze.admittedLaneIds.includes(lane.id))
+    : lanes;
 
   const depth = n(queue.depth);
   const arrival = n(queue.arrivalPerMinute);
   const drain = n(queue.drainPerMinute);
   const netGrowth = Math.max(0, arrival - drain);
-  const idleLaneCount = lanes.filter(l=>['IDLE','READY','AVAILABLE'].includes(String(l.status||'').toUpperCase())).length;
-  const allBusy = lanes.length > 0 && idleLaneCount === 0;
+  const idleLaneCount = capacityLanes.filter(l=>['IDLE','READY','AVAILABLE'].includes(String(l.status||'').toUpperCase())).length;
+  const allBusy = capacityLanes.length > 0 && idleLaneCount === 0;
   const queueSaturationPredicted = netGrowth > 0 || (depth > 0 && allBusy);
   const requestedAdditionalLanes = queueSaturationPredicted
     ? Math.max(1, Math.ceil((depth + netGrowth) / Math.max(1, drain || 1)) - idleLaneCount)
     : 0;
 
-  const activeWorkers = n(workers.active, lanes.length);
+  const activeWorkers = n(workers.active, capacityLanes.length);
   const span = Math.max(1, n(workers.targetSpanPerManager, 8));
-  const requiredManagers = Math.max(1, ceilDiv(Math.max(activeWorkers, lanes.length), span));
+  const requiredManagers = Math.max(1, ceilDiv(Math.max(activeWorkers, capacityLanes.length), span));
 
   const actions = [];
   actions.push(Object.freeze({
@@ -41,6 +46,10 @@ function planNoIdleWait(input={}){
     scenarios:Object.freeze(['SUCCESS','PRODUCT_FAILURE','PROVIDER_FAILURE','SECURITY_OR_INTEGRITY_FAILURE','ROLLBACK_OR_RECOVERY_REQUIRED']),
     bindCandidateSha:input.candidate?.sha || null
   }));
+
+  if (preFreeze) {
+    for (const action of preFreeze.actions) actions.push(Object.freeze({...action}));
+  }
 
   if (independentWork.length) {
     actions.push(Object.freeze({type:'CONTINUE_INDEPENDENT_WORK',work:Object.freeze([...independentWork])}));
@@ -53,13 +62,14 @@ function planNoIdleWait(input={}){
       requestedAdditionalLanes:Math.max(1, requestedAdditionalLanes),
       exactCandidateSha:input.candidate?.sha || null,
       equivalentProofRequired:true,
+      distinctFailureDomainRequired:true,
       weakerEvidenceMaySubstitute:false
     }));
   }
 
   if (FAILURE_LIKE.has(status)) {
     actions.push(Object.freeze({type:'ISOLATE_AND_REPAIR',target:dependency.id || 'dependency',preserveEvidence:true}));
-    if (lanes.some(l => !FAILURE_LIKE.has(String(l.status||'').toUpperCase()))) {
+    if (capacityLanes.some(l => !FAILURE_LIKE.has(String(l.status||'').toUpperCase()))) {
       actions.push(Object.freeze({type:'KEEP_HEALTHY_LANES_RUNNING'}));
     }
   }
@@ -79,7 +89,8 @@ function planNoIdleWait(input={}){
     idleWaitAllowed:false,
     blockingState:false,
     simulationAheadRequired:true,
-    promotionBlocked:EVIDENCE_BLOCK.has(status) || FAILURE_LIKE.has(status),
+    promotionBlocked:EVIDENCE_BLOCK.has(status) || FAILURE_LIKE.has(status) || Boolean(preFreeze && !preFreeze.promotionTopologyReady),
+    preFreeze,
     prediction:Object.freeze({
       queueSaturationPredicted,
       queueDepth:depth,
@@ -92,6 +103,8 @@ function planNoIdleWait(input={}){
       fixedLaneLimit:false,
       fixedWorkerLimit:false,
       fixedManagerLimit:false,
+      admittedLaneCount:capacityLanes.length,
+      independentFailureDomainCount:preFreeze ? preFreeze.independentFailureDomains.length : null,
       requestedAdditionalLanes,
       requiredManagers,
       targetWorkersPerManager:span
@@ -100,7 +113,8 @@ function planNoIdleWait(input={}){
       exactCandidateIdentityRequired:true,
       tenantSecurityPayrollAuditRollbackGatesMayNotWeaken:true,
       simulationNeverCountsAsProductionProof:true,
-      skippedOrStaleEvidenceNeverCountsAsPass:true
+      skippedOrStaleEvidenceNeverCountsAsPass:true,
+      falseParallelismNeverCountsAsIndependentCapacity:true
     }),
     actions:Object.freeze(actions)
   });
