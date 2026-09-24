@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "contract": "VECTOR_META_LOOP_V1",
+  "objective": "Accelerate implementation and proof while continuously converting evidence into customer value, autonomy, reliability and product evolution on one canonical candidate.",
+  "canonicalCandidate": {
+    "singleConvergenceLane": true,
+    "duplicateDevelopmentBranchesAllowed": false,
+    "additiveOnly": true,
+    "preserveProvenCapability": true,
+    "releaseAuthoritySeparated": true
+  },
+  "prioritisation": {
+    "method": "highest-value-weakest-proof-first",
+    "scoreInputs": [
+      "customer-value",
+      "proof-gap",
+      "human-touch",
+      "customer-risk",
+      "regression-risk",
+      "reuse-potential",
+      "time-to-verify"
+    ],
+    "rules": [
+      "A coded feature with weak evidence outranks cosmetic expansion.",
+      "A repeated manual step becomes an automation candidate.",
+      "A repeated failure becomes an eval and prevention candidate.",
+      "A competitor delta becomes a customer-outcome eval before it becomes a feature.",
+      "Do not blindly rerun an unchanged deterministic failure."
+    ]
+  },
+  "requiredQuestions": [
+    "Can we build it faster?",
+    "Can we prove it sooner?",
+    "Can we make it more autonomous?",
+    "Can the learning create additional customer value?",
+    "Can the same class of failure be prevented next time?"
+  ],
+  "loops": [
+    {
+      "id": "delta-frontier",
+      "purpose": "Find the largest capability, proof or market gap.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "customer-value",
+      "purpose": "Translate work into measurable manufacturing, cost, compliance, reliability or user-effort outcomes.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "architecture-t9",
+      "purpose": "Converge changes onto the trust spine and reusable operating architecture.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "implementation",
+      "purpose": "Deliver the smallest end-to-end vertical slice that can be verified.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "simulation",
+      "purpose": "Predict failure and outcome before customer-visible execution.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "trust-security",
+      "purpose": "Attack authority, tenant isolation, audit, identity and unsafe autonomy.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "performance-scale",
+      "purpose": "Prove behaviour from small manufacturers through 10000+ employee multi-site environments.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "ux-friction",
+      "purpose": "Remove clicks, questions, training burden and configuration effort.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "zero-human",
+      "purpose": "Convert recurring implementation and support touch into safe machine-executable handling.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "blocker-continuity",
+      "purpose": "Classify blockers quickly, preserve evidence and route to an equivalent proof lane without weakening gates.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "proof",
+      "purpose": "Bind claims to exact candidate evidence, hosted behaviour, restart and recovery.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "learning",
+      "purpose": "Turn verified failures and wins into evals, skills, runbooks and prevention candidates.",
+      "routesTo": "canonical-candidate",
+      "proofRequired": true
+    },
+    {
+      "id": "northstar-external-assault",
+      "purpose": "Attack VECTOR from a separately isolated test product without granting Northstar VECTOR production authority.",
+      "routesTo": "evidence-ledger",
+      "proofRequired": true
+    }
+  ],
+  "evidenceLadder": [
+    "concept",
+    "coded",
+    "unit-proven",
+    "integrated",
+    "simulated",
+    "adversarially-tested",
+    "hosted",
+    "restart-recovery-proven",
+    "customer-journey-proven",
+    "production-eligible"
+  ],
+  "acceleration": {
+    "parallelWhereIndependent": true,
+    "shareEvidenceAcrossLoops": true,
+    "fixWhileContextIsFresh": true,
+    "noBlindRerun": true,
+    "noSkippedGateCountsAsPass": true,
+    "continueUnrelatedDevelopmentWhenOneProofScopeIsBlocked": true,
+    "preferReusableFixOverOneOffPatch": true,
+    "stopDuplicateBranches": true
+  },
+  "northstarBoundary": {
+    "externalOnly": true,
+    "separateEnvironmentRequired": true,
+    "mayMutateVectorProduction": false,
+    "mayGrantVectorAuthority": false,
+    "evidenceMayBeConsumedOnlyAfterVectorVerification": true
+  },
+  "completion": {
+    "implementationCompleteRequiresCustomerJourneyProof": true,
+    "proofCompleteRequiresExactCandidateIdentity": true,
+    "restartRecoveryEvidenceRequired": true,
+    "learningReceiptRequiredForRepeatedFailureClasses": true,
+    "customerValueEvidenceRequiredForValueClaims": true
+  }
+}
