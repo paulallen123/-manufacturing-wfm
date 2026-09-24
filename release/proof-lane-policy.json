@@ -37,7 +37,10 @@
     "manualCandidateShaVariableNeverAuthoritative": true,
     "minimalFreezeFanoutRequired": true,
     "overflowLanesOnDemandOnly": true,
-    "specialistProofOnDemandOnly": true
+    "specialistProofOnDemandOnly": true,
+    "sameFailureDomainScaleRequiresMeasuredHeadroom": true,
+    "unknownFailureDomainHeadroomCannotTriggerOverflow": true,
+    "sameDomainThroughputNeverCountsAsIndependentResilience": true
   },
   "lanes": [
     {
@@ -210,6 +213,14 @@
         "railway-overflow-c": "artifact/vector-proof-overflow-c.trigger"
       },
       "rule": "A frozen candidate starts only the minimum canonical proof set. Specialist and overflow lanes are activated only when simulation assigns them; existence of a lane never implies eager execution."
+    },
+    "capacityRouting": {
+      "sameDomainPurpose": "THROUGHPUT_ONLY",
+      "sameDomainRequiresMeasuredHeadroom": true,
+      "unknownHeadroomAction": "ROUTE_DISTINCT_FAILURE_DOMAIN",
+      "exhaustedHeadroomAction": "ROUTE_DISTINCT_FAILURE_DOMAIN",
+      "sameDomainCountsAsIndependentResilience": false,
+      "distinctFailureDomainPreferredForProviderQueueOrDegradation": true
     }
   }
 }
