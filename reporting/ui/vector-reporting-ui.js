@@ -7,7 +7,7 @@
 
 const MARKER='VECTOR_REPORTING_UI_V1';
 const IMPROVE_ROUTES=new Set(['insights','costs','recommendations','benchmarks','compliance','overtime-watch']);
-const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],deliveries:[],loading:false,scheduleOpen:false};
+const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],schedules:[],deliveries:[],loading:false,scheduleOpen:false};
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=v=>String(v??'').replace(/\s+/g,' ').trim();
@@ -65,6 +65,7 @@ function modal(){
           <div class="vector-reporting-template-list" data-report-templates></div>
           <div class="vector-reporting-saved" data-report-dashboard></div>
           <div class="vector-reporting-saved" data-report-deliveries></div>
+          <div class="vector-reporting-saved" data-report-schedules></div>
           <div class="vector-reporting-saved" data-report-saved></div>
         </aside>
         <main class="vector-reporting-main" data-report-main>
@@ -86,7 +87,7 @@ function close(){const m=modal();m.hidden=true;document.body.classList.remove('v
 async function open(){
   const m=modal();m.hidden=false;document.body.classList.add('vector-reporting-open');
   if(!state.catalog)await loadCatalog();
-  else{renderTemplates('');renderSaved();renderDashboard();renderDeliveries();}
+  else{renderTemplates('');renderSaved();renderDashboard();renderDeliveries();renderSchedules();}
   setTimeout(()=>m.querySelector('[data-report-search]')?.focus(),0);
 }
 async function json(url,options){
@@ -100,15 +101,17 @@ async function loadCatalog(){
   main.innerHTML='<div class="vector-reporting-empty"><strong>Loading reporting controls…</strong></div>';
   try{
     state.catalog=await json('/api/reporting/catalog');
-    const [saved,dashboards,deliveries]=await Promise.all([
+    const [saved,dashboards,schedules,deliveries]=await Promise.all([
       json('/api/reporting/reports').catch(()=>({reports:[]})),
       json('/api/reporting/dashboards').catch(()=>({dashboards:[]})),
+      json('/api/reporting/schedules').catch(()=>({schedules:[]})),
       json('/api/reporting/deliveries').catch(()=>({deliveries:[]}))
     ]);
     state.saved=Array.isArray(saved?.reports)?saved.reports:[];
     state.dashboards=Array.isArray(dashboards?.dashboards)?dashboards.dashboards:[];
+    state.schedules=Array.isArray(schedules?.schedules)?schedules.schedules:[];
     state.deliveries=Array.isArray(deliveries?.deliveries)?deliveries.deliveries:[];
-    renderTemplates('');renderSaved();renderDashboard();renderDeliveries();
+    renderTemplates('');renderSaved();renderDashboard();renderDeliveries();renderSchedules();
     main.innerHTML='<div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div>';
   }catch(e){
     main.innerHTML='<div class="vector-reporting-error"><strong>Reporting is unavailable</strong><span>'+esc(e.message)+'</span></div>';
@@ -140,6 +143,15 @@ function renderDeliveries(){
   const rows=state.deliveries.filter(d=>d.status==='READY').slice(0,5);
   host.innerHTML='<div class="vector-reporting-section-label">Scheduled for you</div>'+
     (rows.length?rows.map(d=>{const r=byId.get(d.reportId);return `<button type="button" class="vector-reporting-saved-row delivery" data-report-saved-id="${esc(d.reportId)}"><b>${esc(r?.title||'Scheduled report')}</b><span>Ready · ${esc(new Date(d.createdAt).toLocaleString())}</span></button>`;}).join(''):'<div class="vector-reporting-none">No scheduled deliveries yet.</div>');
+}
+function renderSchedules(){
+  const host=modal().querySelector('[data-report-schedules]');if(!host)return;
+  const byId=new Map(state.saved.map(r=>[r.id,r])),rows=state.schedules.slice(0,6);
+  host.innerHTML='<div class="vector-reporting-section-label">Schedules</div>'+
+    (rows.length?rows.map(s=>{const r=byId.get(s.schedule?.reportId),time=String(s.schedule?.hour??0).padStart(2,'0')+':'+String(s.schedule?.minute??0).padStart(2,'0');return `<div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="${esc(s.schedule?.reportId)}"><b>${esc(r?.title||'Saved report')}</b><span>${esc(s.schedule?.cadence||'')} · ${esc(time)} · ${esc(s.schedule?.timeZone||'UTC')}</span></button><button type="button" class="state" data-report-schedule-state="${esc(s.id)}" data-next-enabled="${s.enabled?'false':'true'}">${s.enabled?'Pause':'Resume'}</button></div>`;}).join(''):'<div class="vector-reporting-none">No schedules yet.</div>');
+}
+function isPinnedReport(id){
+  return Boolean(id&&(state.dashboards[0]?.dashboard?.reportIds||[]).includes(id));
 }
 function source(id){return (state.catalog?.sources||[]).find(s=>s.id===id)||null;}
 function template(id){return (state.catalog?.templates||[]).find(t=>t.id===id)||null;}
@@ -237,7 +249,7 @@ function renderReport(){
       <div><span class="vector-reporting-kicker">${esc(s.label)}</span><h3>${esc(t?.label||s.label)}</h3><p>${esc(s.description)}</p></div>
       <div class="vector-reporting-actions">
         <button type="button" class="secondary" data-report-save>${state.selectedReportId?'Saved':'Save'}</button>
-        <button type="button" class="secondary" data-report-pin>Pin to dashboard</button>
+        <button type="button" class="secondary" data-report-pin>${isPinnedReport(state.selectedReportId)?'Remove from dashboard':'Pin to dashboard'}</button>
         <button type="button" class="secondary" data-report-schedule>Schedule</button>
         <button type="button" class="secondary" data-report-export ${state.rows.length?'':'disabled'}>CSV / Excel</button>
         <button type="button" class="secondary" data-report-print ${state.rows.length?'':'disabled'}>Print / PDF</button>
@@ -259,7 +271,7 @@ function renderReport(){
         </label>
         <div class="vector-reporting-filter-builder">
           <select data-report-filter-field>${(s.fields||[]).map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('')}</select>
-          <select data-report-filter-operator><option value="eq">equals</option><option value="neq">not equal</option><option value="contains">contains</option><option value="gte">≥</option><option value="lte">≤</option><option value="gt">></option><option value="lt"><</option></select>
+          <select data-report-filter-operator><option value="eq">equals</option><option value="neq">not equal</option><option value="contains">contains</option><option value="gte">≥</option><option value="lte">≤</option><option value="gt">&gt;</option><option value="lt">&lt;</option></select>
           <input data-report-filter-value placeholder="Filter value">
           <button type="button" data-report-filter-add>Add filter</button>
         </div>
@@ -357,7 +369,7 @@ async function save(){
   const s=state.selectedSource;if(!s)return;
   const t=template(state.selectedTemplate);
   try{
-    const body=await json('/api/reporting/reports',{method:'POST',body:JSON.stringify({definition:{
+    const body=await json('/api/reporting/reports',{method:'POST',body:JSON.stringify({versionOf:state.selectedReportId||null,definition:{
       title:t?.label||s.label,
       sourceId:s.id,
       columns:state.columns.filter(c=>(s.fields||[]).includes(c)),
@@ -378,10 +390,11 @@ async function ensureSaved(){
 }
 async function pin(){
   const id=await ensureSaved();if(!id)return;
+  const removing=isPinnedReport(id),url=removing?'/api/reporting/dashboards/unpin':'/api/reporting/dashboards/pin';
   try{
-    const body=await json('/api/reporting/dashboards/pin',{method:'POST',body:JSON.stringify({reportId:id})});
-    if(body?.dashboard){state.dashboards.unshift(body.dashboard);renderDashboard();toast('Pinned to My dashboard.');}
-  }catch(e){toast(e.message||'Could not pin report.');}
+    const body=await json(url,{method:'POST',body:JSON.stringify({reportId:id})});
+    if(body?.dashboard){state.dashboards.unshift(body.dashboard);renderDashboard();renderReport();toast(removing?'Removed from My dashboard.':'Pinned to My dashboard.');}
+  }catch(e){toast(e.message||'Could not update dashboard.');}
 }
 function schedulePanelMarkup(){
   const now=new Date(),time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
@@ -401,7 +414,8 @@ async function createSchedule(){
   if(cadence==='monthly')payload.dayOfMonth=Math.min(28,now.getDate());
   try{
     const body=await json('/api/reporting/schedules',{method:'POST',body:JSON.stringify(payload)});
-    state.scheduleOpen=false;renderReport();toast(body?.schedule?'Schedule created. VECTOR will deliver it in-product at the selected cadence.':'Schedule created.');
+    if(body?.schedule)state.schedules.unshift(body.schedule);
+    state.scheduleOpen=false;renderSchedules();renderReport();toast(body?.schedule?'Schedule created. VECTOR will deliver it in-product at the selected cadence.':'Schedule created.');
   }catch(e){toast(e.message||'Could not schedule report.');}
 }
 function csv(){
@@ -419,6 +433,13 @@ function printReport(){
   window.print();
   setTimeout(cleanup,2000);
 }
+async function setScheduleState(id,enabled){
+  try{
+    const body=await json('/api/reporting/schedules/'+encodeURIComponent(id)+'/state',{method:'POST',body:JSON.stringify({enabled})});
+    const i=state.schedules.findIndex(s=>s.id===id);if(i>=0&&body?.schedule)state.schedules[i]=body.schedule;
+    renderSchedules();toast(enabled?'Schedule resumed.':'Schedule paused.');
+  }catch(e){toast(e.message||'Could not change schedule.');}
+}
 function toast(message){try{if(typeof window.toast==='function')return window.toast(message);}catch{}alert(message);}
 function handleChange(e){
   const vis=e.target.closest('[data-report-visualisation]');
@@ -426,6 +447,7 @@ function handleChange(e){
 }
 async function handleClick(e){
   const t=e.target.closest('[data-report-template]');if(t){await chooseTemplate(t.dataset.reportTemplate);return;}
+  const stateButton=e.target.closest('[data-report-schedule-state]');if(stateButton){await setScheduleState(stateButton.dataset.reportScheduleState,stateButton.dataset.nextEnabled==='true');return;}
   const saved=e.target.closest('[data-report-saved-id]');if(saved){await chooseSaved(saved.dataset.reportSavedId);return;}
   if(e.target.closest('[data-report-run]')){await run();return;}
   if(e.target.closest('[data-report-save]')){await save();return;}
