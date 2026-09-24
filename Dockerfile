@@ -337,10 +337,13 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
           /app/public/ui-evolution.css \
           /app/public/vector-shell.js \
  && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.js','factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!css.includes('VECTOR_REPORTING_UI_V1')||!js.includes('VECTOR_REPORTING_UI_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS');console.log('VECTOR_REPORTING_PRESENTATION_ADMISSION=PASS')" \
- && mkdir -p /tmp/vector-provenance/learning /tmp/vector-provenance/implementation \
+ && mkdir -p /tmp/vector-provenance/learning /tmp/vector-provenance/implementation /tmp/vector-provenance/reporting \
  && cp -r /tmp/wfm-ux-overlay /tmp/vector-provenance/ux-overlay \
  && cp -r /tmp/wfm-learning-ui /tmp/vector-provenance/learning/ui \
  && cp -r /tmp/wfm-implementation-ui /tmp/vector-provenance/implementation/ui \
+ && cp -r /tmp/wfm-reporting-ui /tmp/vector-provenance/reporting/ui \
+ && test -f /tmp/vector-provenance/reporting/ui/vector-reporting-ui.js \
+ && test -f /tmp/vector-provenance/reporting/ui/vector-reporting-ui.css \
  && node /tmp/prove-vector-built-asset-provenance.mjs /tmp/vector-provenance /app/public /tmp/vector-sealed-base.css \
  && rm -rf /tmp/vector-provenance \
  && rm -f /tmp/vector-sealed-base.css /tmp/prove-vector-built-asset-provenance.mjs /tmp/compose-vector-presentation.mjs \
