@@ -113,9 +113,7 @@ function uiPresentationPath(req) {
     path === '/index.html' ||
     path === '/vector-ui.css' ||
     path === '/vector-ui.js' ||
-    path === '/vector-workflows.js' ||
-    path === '/vector-reporting-ui.css' ||
-    path === '/vector-reporting-ui.js';
+    path === '/vector-workflows.js';
 }
 
 function forceVectorUiFreshness(req, res) {
@@ -135,11 +133,7 @@ function serveCanonicalVectorAsset(req, res) {
       ? { file: '/app/public/vector-ui.css', type: 'text/css; charset=utf-8' }
       : path === '/vector-workflows.js'
         ? { file: '/app/public/vector-workflows.js', type: 'text/javascript; charset=utf-8' }
-        : path === '/vector-reporting-ui.js'
-          ? { file: '/app/public/vector-reporting-ui.js', type: 'text/javascript; charset=utf-8' }
-          : path === '/vector-reporting-ui.css'
-            ? { file: '/app/public/vector-reporting-ui.css', type: 'text/css; charset=utf-8' }
-            : null;
+        : null;
   if (!asset) return false;
 
   const method = String(req.method || 'GET').toUpperCase();
