@@ -235,13 +235,16 @@ function renderReport(){
     <div class="vector-reporting-report-head">
       <div><span class="vector-reporting-kicker">${esc(s.label)}</span><h3>${esc(t?.label||s.label)}</h3><p>${esc(s.description)}</p></div>
       <div class="vector-reporting-actions">
-        <button type="button" class="secondary" data-report-save>Save</button>
+        <button type="button" class="secondary" data-report-save>${state.selectedReportId?'Saved':'Save'}</button>
+        <button type="button" class="secondary" data-report-pin>Pin to dashboard</button>
+        <button type="button" class="secondary" data-report-schedule>Schedule</button>
         <button type="button" class="secondary" data-report-export ${state.rows.length?'':'disabled'}>CSV / Excel</button>
         <button type="button" class="secondary" data-report-print ${state.rows.length?'':'disabled'}>Print / PDF</button>
         <button type="button" class="primary" data-report-run>${state.loading?'Running…':'Run report'}</button>
       </div>
     </div>
     <div class="vector-reporting-boundary"><b>Evidence boundary</b><span>${esc(s.evidenceClass)} · ${esc(s.endpoint)} · role governed · no silent mock data</span></div>
+    ${state.scheduleOpen?schedulePanelMarkup():''}
     <details class="vector-reporting-advanced">
       <summary>Advanced controls</summary>
       <div class="vector-reporting-field-grid">${(s.fields||[]).map(f=>`<label><input type="checkbox" data-report-column="${esc(f)}" ${cols.includes(f)?'checked':''}><span>${esc(f)}</span></label>`).join('')}</div>
@@ -263,14 +266,14 @@ function tableMarkup(){
 }
 async function chooseTemplate(id){
   const t=template(id);if(!t)return;
-  state.selectedTemplate=t.id;state.selectedSource=source(t.sourceId);state.rows=[];state.raw=null;state.columns=[...(t.columns||[])];
+  state.selectedTemplate=t.id;state.selectedSource=source(t.sourceId);state.selectedReportId=null;state.rows=[];state.raw=null;state.columns=[...(t.columns||[])];state.scheduleOpen=false;
   renderTemplates(modal().querySelector('[data-report-search]')?.value||'');
   renderReport();
 }
 async function chooseSaved(id){
   const body=await json('/api/reporting/reports/'+encodeURIComponent(id));
   const d=body?.report?.definition;if(!d)return;
-  state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];
+  state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.selectedReportId=id;state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];state.scheduleOpen=false;
   renderReport();
 }
 async function run(){
@@ -301,8 +304,41 @@ async function save(){
       narrative:t?.narrative!==false,
       includeEvidence:true
     }})});
-    if(body?.report){state.saved.unshift(body.report);renderSaved();toast('Report saved as an immutable, audited definition.');}
+    if(body?.report){state.selectedReportId=body.report.id;state.saved.unshift(body.report);renderSaved();renderDashboard();renderDeliveries();renderReport();toast('Report saved as an immutable, audited definition.');}
   }catch(e){toast(e.message||'Could not save report.');}
+}
+async function ensureSaved(){
+  if(state.selectedReportId)return state.selectedReportId;
+  await save();
+  return state.selectedReportId;
+}
+async function pin(){
+  const id=await ensureSaved();if(!id)return;
+  try{
+    const body=await json('/api/reporting/dashboards/pin',{method:'POST',body:JSON.stringify({reportId:id})});
+    if(body?.dashboard){state.dashboards.unshift(body.dashboard);renderDashboard();toast('Pinned to My dashboard.');}
+  }catch(e){toast(e.message||'Could not pin report.');}
+}
+function schedulePanelMarkup(){
+  const now=new Date(),time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  return `<section class="vector-reporting-schedule-panel">
+    <div><b>Schedule this report</b><span>VECTOR will place a governed live report in your reporting inbox. External email/SFTP stays unavailable until a verified delivery connector is configured.</span></div>
+    <label>Cadence<select data-report-cadence><option value="daily">Daily</option><option value="weekly" selected>Weekly</option><option value="monthly">Monthly</option></select></label>
+    <label>Time<input type="time" data-report-time value="${esc(time)}"></label>
+    <button type="button" class="primary" data-report-schedule-confirm>Create schedule</button>
+  </section>`;
+}
+async function createSchedule(){
+  const id=await ensureSaved();if(!id)return;
+  const panel=modal().querySelector('.vector-reporting-schedule-panel'),cadence=panel?.querySelector('[data-report-cadence]')?.value||'weekly';
+  const raw=panel?.querySelector('[data-report-time]')?.value||'08:00',[hh,mm]=raw.split(':').map(Number),now=new Date();
+  const payload={reportId:id,cadence,hour:hh,minute:mm,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC',delivery:'in_app'};
+  if(cadence==='weekly')payload.weekday=now.getDay();
+  if(cadence==='monthly')payload.dayOfMonth=Math.min(28,now.getDate());
+  try{
+    const body=await json('/api/reporting/schedules',{method:'POST',body:JSON.stringify(payload)});
+    state.scheduleOpen=false;renderReport();toast(body?.schedule?'Schedule created. VECTOR will deliver it in-product at the selected cadence.':'Schedule created.');
+  }catch(e){toast(e.message||'Could not schedule report.');}
 }
 function csv(){
   if(!state.rows.length)return;
@@ -325,6 +361,9 @@ async function handleClick(e){
   const saved=e.target.closest('[data-report-saved-id]');if(saved){await chooseSaved(saved.dataset.reportSavedId);return;}
   if(e.target.closest('[data-report-run]')){await run();return;}
   if(e.target.closest('[data-report-save]')){await save();return;}
+  if(e.target.closest('[data-report-pin]')){await pin();return;}
+  if(e.target.closest('[data-report-schedule]')){state.scheduleOpen=!state.scheduleOpen;renderReport();return;}
+  if(e.target.closest('[data-report-schedule-confirm]')){await createSchedule();return;}
   if(e.target.closest('[data-report-export]')){csv();return;}
   if(e.target.closest('[data-report-print]')){printReport();return;}
   const col=e.target.closest('[data-report-column]');
