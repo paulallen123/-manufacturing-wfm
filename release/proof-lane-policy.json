@@ -33,7 +33,8 @@
     "sharedFailureDomainNeverCountsAsIndependent": true,
     "fixedReadinessWindowsForbidden": true,
     "liveRuntimeContractRequiredBeforeLaneAdmission": true,
-    "confirmedFailuresBecomeRegressionRules": true
+    "confirmedFailuresBecomeRegressionRules": true,
+    "manualCandidateShaVariableNeverAuthoritative": true
   },
   "lanes": [
     {
@@ -182,7 +183,16 @@
         "CONDITION_BASED_READINESS",
         "ENDPOINT_REACHABILITY",
         "FAILURE_DOMAIN_INDEPENDENCE"
-      ]
+      ],
+      "candidateIdentity": {
+        "authoritativeSources": [
+          "immutable freeze receipt",
+          "deployment commit metadata",
+          "source-bound build evidence"
+        ],
+        "serviceEnvironmentVariableAuthoritative": false,
+        "exactMatchRequired": true
+      }
     }
   }
 }
