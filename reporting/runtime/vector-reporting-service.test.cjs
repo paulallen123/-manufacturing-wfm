@@ -65,13 +65,17 @@ test('definition validation refuses arbitrary fields, sources and privilege esca
     title:'Coverage',
     sourceId:'factory-readiness',
     columns:['department','requiredHours','plannedHours','gapHours'],
+    calculations:[{label:'Recomputed gap',left:'requiredHours',operator:'difference',right:'plannedHours'}],
     filters:[{field:'gapHours',operator:'gt',value:0}],
     sorts:[{field:'gapHours',direction:'desc'}],
     comparison:'previous_week'
   },'manager');
   assert.equal(d.endpoint,'/api/readiness');
   assert.equal(d.includeEvidence,true);
+  assert.equal(d.calculations[0].operator,'difference');
   assert.match(d.claimBoundary,/Source-bound/);
+  assert.throws(()=>Reporting.normaliseDefinition({sourceId:'factory-readiness',calculations:[{left:'requiredHours',operator:'eval',right:'plannedHours'}]},'manager'),/unsupported calculated metric/i);
+  assert.throws(()=>Reporting.normaliseDefinition({sourceId:'factory-readiness',calculations:[{left:'passwordHash',operator:'sum',right:'plannedHours'}]},'manager'),/approved source fields/i);
 });
 
 test('saved reports are tenant isolated, immutable and audited',async()=>{
