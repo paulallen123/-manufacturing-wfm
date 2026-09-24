@@ -47,8 +47,8 @@
       "class": "PROVIDER_DEGRADED",
       "symptom": "Proof never reaches product/test execution because runner/builder allocation fails.",
       "learnedFrom": "GitHub/Railway proof lane degradation",
-      "prevention": "Classify provider degradation separately and route the exact SHA to the next executable proof lane.",
-      "permanentGuard": "provider-independent proof-lane policy"
+      "prevention": "Classify provider degradation separately, allow one controlled retry for a transient hypothesis, then exclude the degraded provider from pre-freeze capacity and route the exact SHA to a distinct executable failure domain.",
+      "permanentGuard": "pre-freeze provider-state admission + failure-domain proof-lane policy"
     },
     {
       "id": "blocker-overpropagation",
@@ -57,6 +57,46 @@
       "learnedFrom": "Vecta proof-recovery directive 2026-09-23",
       "prevention": "Quarantine only the affected capability and explicit dependency scopes. Continue all unrelated development and proof stages; allow diagnostic-only progression for the blocked capability.",
       "permanentGuard": "proof-stage router + control-plane isolation assertions"
+    },
+    {
+      "id": "hosted-proof-lane-runtime-contract-missing",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "An exact-image hosted proof service exists but lacks hosted-mode/database/endpoint prerequisites, so it builds successfully and only fails at platform healthcheck.",
+      "learnedFrom": "Railway overflow lanes A/C 2026-09-24",
+      "prevention": "Read live lane configuration before freeze and require hosted runtime variables, health contract and reachable endpoint before the lane can count as capacity.",
+      "permanentGuard": "VECTOR_PRE_FREEZE_SIMULATION_V1 + Railway preDeploy runtime contract"
+    },
+    {
+      "id": "fixed-port-and-readiness-window",
+      "class": "TEST_DEFECT",
+      "symptom": "A proof harness assumes one fixed loopback port and a fixed startup-attempt window, causing collisions or false runtime-start failures under loaded builders.",
+      "learnedFrom": "vector-workflows proof harness 2026-09-24",
+      "prevention": "Use ephemeral ports and condition-based readiness with a bounded diagnostic deadline rather than fixed sleeps/attempt counts.",
+      "permanentGuard": "pre-freeze readiness policy + collision-safe workflow runtime regression"
+    },
+    {
+      "id": "same-provider-false-parallelism",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "Multiple services on one provider are counted as independent resilience even though provider capacity/outage is a shared failure domain.",
+      "learnedFrom": "Railway A/B/C overflow topology 2026-09-24",
+      "prevention": "Count independent failure domains rather than raw service/lane count and require a distinct provider/domain for promotion quorum.",
+      "permanentGuard": "pre-freeze failure-domain simulation + proof-lane policy validator"
+    },
+    {
+      "id": "proof-on-every-intermediate-commit",
+      "class": "CAPACITY_OR_QUEUE",
+      "symptom": "Every development commit fans out expensive hosted proof and creates a self-inflicted provider queue.",
+      "learnedFrom": "Railway proof queue 2026-09-24",
+      "prevention": "Coalesce development commits and trigger expensive hosted proof only on an explicit frozen-candidate artifact change.",
+      "permanentGuard": "artifact/vector-proof-freeze.trigger watch policy + freeze-only CI admission"
+    },
+    {
+      "id": "presentation-provenance-source-tree-drift",
+      "class": "EVIDENCE_OR_CATALOG_DRIFT",
+      "symptom": "Final presentation composition gains a new admitted source but the provenance expected-source tree is not updated, causing late-stage hash/source failures.",
+      "learnedFrom": "reporting UI provenance packaging 2026-09-24",
+      "prevention": "Bind every composed source into the provenance model and assert required source files exist before hashing.",
+      "permanentGuard": "built-asset provenance test + Docker source-tree existence checks"
     }
   ]
 }
