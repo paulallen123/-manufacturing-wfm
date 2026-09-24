@@ -15,7 +15,7 @@ test('pending dependency never produces an idle wait state', () => {
   assert.equal(plan.blockingState,false);
   assert.ok(plan.actions.some(x=>x.type==='SIMULATE_AHEAD'));
   assert.ok(plan.actions.some(x=>x.type==='CONTINUE_INDEPENDENT_WORK'));
-  assert.ok(plan.actions.some(x=>x.type==='PROVISION_OR_ROUTE_LANE'));
+  assert.ok(plan.actions.some(x=>x.type==='ROUTE_DISTINCT_FAILURE_DOMAIN'));
 });
 
 test('predicted queue saturation opens capacity before blocking', () => {
@@ -26,7 +26,7 @@ test('predicted queue saturation opens capacity before blocking', () => {
     availableLanes:[{id:'lane-a',status:'BUSY'},{id:'lane-b',status:'BUSY'}]
   });
   assert.equal(plan.prediction.queueSaturationPredicted,true);
-  const scale = plan.actions.find(x=>x.type==='PROVISION_OR_ROUTE_LANE');
+  const scale = plan.actions.find(x=>x.type==='ROUTE_DISTINCT_FAILURE_DOMAIN');
   assert.ok(scale);
   assert.equal(scale.trigger,'PREDICTED_SATURATION');
 });
