@@ -1,0 +1,110 @@
+{
+  "contractVersion": "VECTOR_ENGINEERING_PLANE_V1",
+  "operatingModel": "HYBRID_GITHUB_SOURCE_VECTOR_EXECUTION",
+  "purpose": "Provide a continuously evolving internal engineering plane for VECTOR-specific testing, simulation, diagnosis, proof and development tooling without rebuilding mature source-control capabilities.",
+  "sourceControl": {
+    "system": "GitHub",
+    "sourceOfTruth": true,
+    "responsibilities": [
+      "git-history",
+      "branches-and-pull-requests",
+      "code-review",
+      "release-history",
+      "disaster-recovery-source-copy"
+    ]
+  },
+  "vectorEngineeringPlane": {
+    "responsibilities": [
+      "tool-registry",
+      "test-and-regression-tools",
+      "simulation-tools",
+      "diagnostic-tools",
+      "proof-and-evidence-tools",
+      "reusable-vector-specific-automation",
+      "tool-pipelines",
+      "tool-evolution-proposals"
+    ],
+    "lifecycle": [
+      "PROPOSED",
+      "SHADOW",
+      "CERTIFIED",
+      "DEPRECATED"
+    ],
+    "defaultExecutionMode": "SHADOW",
+    "defaultEnvironment": "PROOF"
+  },
+  "boundaries": {
+    "productionExecutionAllowed": false,
+    "productionMutationAllowed": false,
+    "rawCustomerDataAllowed": false,
+    "directExternalSystemWritesAllowed": false,
+    "rawSecretsInRunReceiptsAllowed": false,
+    "northstarRuntimeShared": false,
+    "northstarDatabaseShared": false,
+    "northstarSecretsShared": false,
+    "northstarDeploymentShared": false
+  },
+  "northstar": {
+    "role": "ISOLATED_EXTERNAL_SIMULATION_AND_CUSTOMER_EMULATION",
+    "relationship": "sanitised evidence and read-only/disposable test inputs only"
+  },
+  "governance": {
+    "immutableToolVersions": true,
+    "independentPromotionRequired": true,
+    "proposedToolsMayExecute": false,
+    "shadowToolsMayMutatePersistently": false,
+    "selfCertificationAllowed": false,
+    "selfRegistrationOfEvolutionProposalAllowed": false
+  },
+  "continuousEvolutionLoop": [
+    "observe-repeated-engineering-friction-or-failure",
+    "capture-evidence",
+    "propose-new-or-revised-tool",
+    "run-in-shadow",
+    "measure-value-and-failure-modes",
+    "independently-certify-if-earned",
+    "compose-into-reusable-pipelines",
+    "deprecate-when-obsolete"
+  ],
+  "integration": {
+    "productFactory": {
+      "role": "EVOLUTION_AND_CANDIDATE_GOVERNANCE",
+      "manifest": "product-factory/adaptive-intelligence-manifest.json",
+      "relationship": "Product Factory converts verified failures, repeated wins and manual repetition into evals/candidates; Tool Foundry provides versioned execution primitives. Neither grants itself release authority."
+    },
+    "t9Trust": {
+      "role": "CUSTOMER_OPERATIONAL_AUTHORITY",
+      "relationship": "Customer-impacting execution remains behind T9 evidence, authority, Guardian, typed-action and independent-verification controls. Engineering tools do not bypass this boundary."
+    },
+    "northstar": {
+      "role": "ISOLATED_EXTERNAL_SIMULATION_AND_CUSTOMER_EMULATION",
+      "relationship": "Northstar remains a separate environment. Only sanitised evidence and disposable/read-only test material may cross the boundary."
+    },
+    "hostedProof": {
+      "role": "ISOLATED_ENGINEERING_BUILD_AND_PROOF",
+      "relationship": "Railway proof services build and exercise exact source candidates without becoming the customer production runtime."
+    }
+  },
+  "learningBridge": {
+    "regression": "persistent-eval-candidate",
+    "repeatedVerifiedWin": "versioned-skill-or-tool-candidate",
+    "repeatedManualWork": "automation-or-tool-candidate",
+    "releasePath": "isolated-candidate -> tests -> adversarial/holdout proof -> independent release authority",
+    "directProductionMutation": false,
+    "selfCertification": false,
+    "candidateContract": "VECTOR_ENGINEERING_LEARNING_CANDIDATE_V1",
+    "allowedEvidenceClasses": [
+      "SANITISED",
+      "DERIVED",
+      "SYNTHETIC"
+    ],
+    "forbiddenInputs": [
+      "raw-customer-data",
+      "raw-secret",
+      "direct-execution-token",
+      "unsigned-production-authority"
+    ],
+    "productFactoryReceiptSchema": "product-factory/learning-receipt-schema.json",
+    "tamperEvidentCandidateDigest": true
+  }
+}

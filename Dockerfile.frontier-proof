@@ -1,0 +1,92 @@
+FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
+# VECTOR_ENGINEERING_PLANE_WATCH_SYNC_20260923
+
+WORKDIR /app
+
+RUN mkdir -p /app/operations/runtime /app/trust/runtime /app/engineering/runtime /app/release /app/scripts /app/product-factory /app/resilience
+
+COPY operations/runtime/decision-episode.cjs /app/operations/runtime/decision-episode.cjs
+COPY operations/runtime/frontier-decision-control.cjs /app/operations/runtime/frontier-decision-control.cjs
+COPY operations/runtime/autopilot-execution-engine.cjs /app/operations/runtime/autopilot-execution-engine.cjs
+COPY operations/runtime/golden-industrial-loop.cjs /app/operations/runtime/golden-industrial-loop.cjs
+COPY operations/runtime/decision-outcome-proof.cjs /app/operations/runtime/decision-outcome-proof.cjs
+COPY operations/runtime/frontier-outcome-learning.cjs /app/operations/runtime/frontier-outcome-learning.cjs
+COPY trust/runtime/vector-trust-spine.cjs /app/trust/runtime/vector-trust-spine.cjs
+COPY trust/runtime/vector-zero-human-governance.cjs /app/trust/runtime/vector-zero-human-governance.cjs
+COPY engineering/runtime/vector-tool-foundry.cjs /app/engineering/runtime/vector-tool-foundry.cjs
+COPY engineering/runtime/vector-tool-builtins.cjs /app/engineering/runtime/vector-tool-builtins.cjs
+COPY engineering/runtime/vector-engineering-learning-bridge.cjs /app/engineering/runtime/vector-engineering-learning-bridge.cjs
+COPY release/vector-frontier-convergence.json /app/release/vector-frontier-convergence.json
+COPY release/vector-engineering-plane.json /app/release/vector-engineering-plane.json
+COPY release/proof-lane-policy.json /app/release/proof-lane-policy.json
+COPY product-factory/adaptive-intelligence-manifest.json /app/product-factory/adaptive-intelligence-manifest.json
+COPY product-factory/learning-receipt-schema.json /app/product-factory/learning-receipt-schema.json
+COPY product-factory/vector-meta-loop-policy.json /app/product-factory/vector-meta-loop-policy.json
+COPY resilience/blocker-autopilot-policy.json /app/resilience/blocker-autopilot-policy.json
+COPY resilience/failure-scenarios.json /app/resilience/failure-scenarios.json
+COPY resilience/blocker-autopilot.cjs /app/resilience/blocker-autopilot.cjs
+COPY scripts/run-vector-foundry-proof.mjs /app/scripts/run-vector-foundry-proof.mjs
+COPY scripts/validate-vector-engineering-plane.mjs /app/scripts/validate-vector-engineering-plane.mjs
+COPY scripts/validate-vector-meta-loop.mjs /app/scripts/validate-vector-meta-loop.mjs
+
+# Build admission runs against the exact runtime paths. Test files are copied beside
+# those runtime modules only for the admission step and are then removed.
+COPY operations/runtime/frontier-decision-control.test.cjs /app/operations/runtime/frontier-decision-control.test.cjs
+COPY operations/runtime/autopilot-execution-engine.test.cjs /app/operations/runtime/autopilot-execution-engine.test.cjs
+COPY operations/runtime/golden-industrial-loop.test.cjs /app/operations/runtime/golden-industrial-loop.test.cjs
+COPY operations/runtime/frontier-outcome-learning.test.cjs /app/operations/runtime/frontier-outcome-learning.test.cjs
+COPY trust/runtime/vector-trust-spine.test.cjs /app/trust/runtime/vector-trust-spine.test.cjs
+COPY trust/runtime/vector-zero-human-governance.test.cjs /app/trust/runtime/vector-zero-human-governance.test.cjs
+COPY resilience/blocker-autopilot.test.cjs /app/resilience/blocker-autopilot.test.cjs
+COPY engineering/runtime/vector-tool-foundry.test.cjs /app/engineering/runtime/vector-tool-foundry.test.cjs
+COPY engineering/runtime/vector-engineering-learning-bridge.test.cjs /app/engineering/runtime/vector-engineering-learning-bridge.test.cjs
+
+RUN node --check /app/operations/runtime/decision-episode.cjs \
+ && node --check /app/operations/runtime/frontier-decision-control.cjs \
+ && node --check /app/operations/runtime/autopilot-execution-engine.cjs \
+ && node --check /app/operations/runtime/golden-industrial-loop.cjs \
+ && node --check /app/operations/runtime/decision-outcome-proof.cjs \
+ && node --check /app/operations/runtime/frontier-outcome-learning.cjs \
+ && node --check /app/trust/runtime/vector-trust-spine.cjs \
+ && node --check /app/trust/runtime/vector-zero-human-governance.cjs \
+ && node --check /app/resilience/blocker-autopilot.cjs \
+ && node --check /app/engineering/runtime/vector-tool-foundry.cjs \
+ && node --check /app/engineering/runtime/vector-tool-builtins.cjs \
+ && node --check /app/engineering/runtime/vector-engineering-learning-bridge.cjs \
+ && node --check /app/scripts/run-vector-foundry-proof.mjs \
+ && node --check /app/scripts/validate-vector-engineering-plane.mjs \
+ && node --check /app/scripts/validate-vector-meta-loop.mjs \
+ && node --test \
+      /app/operations/runtime/frontier-decision-control.test.cjs \
+      /app/operations/runtime/autopilot-execution-engine.test.cjs \
+      /app/operations/runtime/golden-industrial-loop.test.cjs \
+      /app/operations/runtime/frontier-outcome-learning.test.cjs \
+      /app/trust/runtime/vector-trust-spine.test.cjs \
+      /app/trust/runtime/vector-zero-human-governance.test.cjs \
+      /app/resilience/blocker-autopilot.test.cjs \
+      /app/engineering/runtime/vector-tool-foundry.test.cjs \
+      /app/engineering/runtime/vector-engineering-learning-bridge.test.cjs \
+ && node /app/scripts/validate-vector-engineering-plane.mjs \
+ && node /app/scripts/validate-vector-meta-loop.mjs \
+ && node /app/scripts/run-vector-foundry-proof.mjs \
+ && node -e "const f=require('/app/operations/runtime/frontier-decision-control.cjs');const a=require('/app/operations/runtime/autopilot-execution-engine.cjs');const g=require('/app/operations/runtime/golden-industrial-loop.cjs');const l=require('/app/operations/runtime/frontier-outcome-learning.cjs');const t=require('/app/trust/runtime/vector-trust-spine.cjs');const z=require('/app/trust/runtime/vector-zero-human-governance.cjs');const b=require('/app/resilience/blocker-autopilot.cjs');const meta=require('/app/product-factory/vector-meta-loop-policy.json');const e=require('/app/engineering/runtime/vector-tool-foundry.cjs');const lb=require('/app/engineering/runtime/vector-engineering-learning-bridge.cjs');if(typeof f.createAssuranceEnvelope!=='function'||typeof f.validateAssuranceEnvelope!=='function'||typeof a.createAutopilotExecutionEngine!=='function'||typeof g.buildGoldenIndustrialLoop!=='function'||typeof l.assessGoldenCausalPromotion!=='function'||typeof t.EvidenceLedger!=='function'||typeof z.decideZeroHumanAction!=='function'||typeof z.evaluateHumanTouchReleaseGate!=='function'||typeof b.classifyObservation!=='function'||meta.contract!=='VECTOR_META_LOOP_V1'||typeof e.VectorToolFoundry!=='function'||typeof lb.VectorEngineeringLearningBridge!=='function')throw new Error('FRONTIER_RUNTIME_IMPORT_PROOF_FAILED');console.log('FRONTIER_RUNTIME_IMPORT_PROOF=PASS')" \
+ && rm -f \
+      /app/operations/runtime/frontier-decision-control.test.cjs \
+      /app/operations/runtime/autopilot-execution-engine.test.cjs \
+      /app/operations/runtime/golden-industrial-loop.test.cjs \
+      /app/operations/runtime/frontier-outcome-learning.test.cjs \
+      /app/trust/runtime/vector-trust-spine.test.cjs \
+      /app/trust/runtime/vector-zero-human-governance.test.cjs \
+      /app/resilience/blocker-autopilot.test.cjs \
+      /app/engineering/runtime/vector-tool-foundry.test.cjs \
+      /app/engineering/runtime/vector-engineering-learning-bridge.test.cjs
+
+RUN chown -R root:root /app \
+ && find /app -type d -exec chmod 0555 {} + \
+ && find /app -type f -exec chmod 0444 {} +
+
+USER node
+ENV NODE_ENV=staging
+EXPOSE 3000
+
+CMD ["node","-e","const z=require('/app/trust/runtime/vector-zero-human-governance.cjs');const meta=require('/app/product-factory/vector-meta-loop-policy.json');if(typeof z.decideZeroHumanAction!=='function'||typeof z.evaluateHumanTouchReleaseGate!=='function'||meta.contract!=='VECTOR_META_LOOP_V1')throw new Error('FRONTIER_RUNTIME_IMPORT_PROOF_FAILED');require('node:http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({status:'FRONTIER_PROOF_BUILT',contract:'VECTOR_FRONTIER_CONVERGENCE_V1',engineeringPlane:'VECTOR_ENGINEERING_PLANE_V1',toolFoundry:'SHADOW_PROVEN',learningBridge:'GOVERNED_PROPOSAL_ONLY',zeroHumanGovernance:z.decideZeroHumanAction({}).contractVersion,metaLoop:meta.contract}))}).listen(Number(process.env.PORT||3000),'0.0.0.0')"]

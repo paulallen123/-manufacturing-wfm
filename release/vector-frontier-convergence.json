@@ -1,0 +1,75 @@
+{
+  "contractVersion": "VECTOR_FRONTIER_CONVERGENCE_V1",
+  "sourceBranch": "feature/vector-frontier-t9-converged-20260923",
+  "baseBranch": "feature/vector-forge-launch-converged-20260923",
+  "purpose": "Converge T9 trust and frontier decision assurance onto current FORGE without a parallel product.",
+  "requiredRuntime": [
+    "trust/runtime/vector-trust-spine.cjs",
+    "trust/runtime/vector-zero-human-governance.cjs",
+    "resilience/blocker-autopilot.cjs",
+    "operations/runtime/frontier-decision-control.cjs",
+    "operations/runtime/autopilot-execution-engine.cjs"
+  ],
+  "requiredAdmission": [
+    "trust/runtime/vector-zero-human-governance.test.cjs",
+    "resilience/blocker-autopilot.test.cjs",
+    "product-factory/vector-meta-loop-policy.json",
+    "release/proof-lane-policy.json",
+    "resilience/blocker-autopilot-policy.json",
+    "resilience/failure-scenarios.json",
+    "scripts/validate-vector-meta-loop.mjs",
+    "scripts/vector-frontier-proof-admission.test.mjs"
+  ],
+  "enforcedPrinciples": [
+    "decision-episode-bound-simulation-passport",
+    "explicit-unknowns-reduce-autonomy",
+    "machine-readable-authority",
+    "typed-actions-with-preconditions-and-postconditions",
+    "executor-verifier-separation",
+    "simulation-validity-gates-execution",
+    "recovery-distinguishes-rollback-from-compensation",
+    "causal-learning-never-self-grants-authority",
+    "zero-human-governance-fails-closed",
+    "blocker-autopilot-never-grants-production-authority",
+    "meta-loop-admission-must-be-exact-candidate-bound"
+  ],
+  "autonomyLadder": [
+    "REPLAY_ONLY",
+    "SHADOW",
+    "RECOMMEND",
+    "HUMAN_APPROVAL",
+    "BOUNDED_AUTO"
+  ],
+  "proofRules": {
+    "exactSourceBinding": true,
+    "railwayBranchMustEqual": "feature/vector-frontier-t9-converged-20260923",
+    "railwayCommitMustEqualCurrentHeadAtProofTime": true,
+    "dockerAdmissionRequired": true,
+    "zeroHumanGovernanceDockerAdmissionRequired": true,
+    "blockerAutopilotDockerAdmissionRequired": true,
+    "metaLoopDockerAdmissionRequired": true,
+    "hostedSuccessRequiredBeforeClaimingHostedProof": true,
+    "runtimeModuleLoadRequired": true,
+    "runtimeHealthcheckRequired": true,
+    "oldMainSnapshotDoesNotCount": true
+  },
+  "runtimeProof": {
+    "requiredMarkers": {
+      "status": "FRONTIER_PROOF_BUILT",
+      "zeroHumanGovernance": "VECTOR_ZERO_HUMAN_GOVERNANCE_V1",
+      "humanTouchGate": "VECTOR_ZERO_HUMAN_RELEASE_GATE_V1",
+      "metaLoop": "VECTOR_META_LOOP_V1",
+      "blockerAutopilot": "VECTOR_BLOCKER_AUTOPILOT_POLICY_V1"
+    },
+    "requiredSafetyClaims": {
+      "productionMutation": false,
+      "customerMutation": false,
+      "authorityGranted": false
+    }
+  },
+  "isolation": {
+    "northstarModified": false,
+    "productionModified": false,
+    "proofProject": "manufacturing-wfm-test"
+  }
+}

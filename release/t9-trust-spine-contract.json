@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 2,
+  "id": "VECTOR_T9_TRUST_SPINE_V1",
+  "target": "T9 candidate",
+  "inherits": [
+    "VECTOR FORGE",
+    "T0-T4 autonomous support",
+    "Factory Graph",
+    "Decision Episodes",
+    "Implementation Digital Twin",
+    "Launch Autopilot",
+    "verified-value and outcome proof"
+  ],
+  "principles": {
+    "reasoningMayPropose": true,
+    "reasoningMayWriteDirectly": false,
+    "authorityMaySelfExpand": false,
+    "unknownsReduceAutonomy": true,
+    "verificationIsIndependent": true,
+    "customerGuardianOverridesOptimisation": true,
+    "predictedValueIsNotRealisedValue": true,
+    "learningMaySelfPromote": false,
+    "humanOperationalTouchBudgetZero": true,
+    "insufficientEvidenceFallsBackToHuman": false,
+    "machineQuorumRequiredForGovernedHighRisk": true,
+    "externalHumanMandatesMustBeExplicit": true
+  },
+  "canonicalSpine": [
+    "Evidence Ledger",
+    "Unknowns Engine",
+    "Customer Guardian",
+    "Authority Kernel",
+    "Typed Action Gateway",
+    "Independent Verifier",
+    "Causal Episode / Evaluation Registry"
+  ],
+  "fridayCandidateExit": [
+    "trust-spine source tests pass",
+    "representative support incident reaches verified safe terminal",
+    "unknown incident reaches containment-only without unsafe mutation",
+    "cross-tenant action is denied",
+    "self-granted authority is denied",
+    "consequential action requires safe evidence and explicit grant",
+    "executor and verifier are distinct principals",
+    "idempotent replay creates one business effect",
+    "failed postcondition triggers verified rollback or fail-closed containment",
+    "customer-facing status derives from verified incident state",
+    "zero-human governance source tests pass",
+    "insufficient proof reaches autonomous containment without human escalation",
+    "novel repair is blocked while proven containment remains available",
+    "high-risk reversible repair requires independent machine quorum",
+    "any human operational touch fails the zero-human release gate"
+  ],
+  "t9PromotionLadder": [
+    "SOURCE_BUILT",
+    "EXACT_CANDIDATE_TESTED",
+    "HOSTED_SHADOW_PROVED",
+    "BOUNDED_ACTION_PROVED",
+    "OUTCOME_VERIFIED",
+    "CAUSAL_HYPOTHESIS_EVALUATED",
+    "COUNTERFACTUAL_EVALUATED",
+    "CANARY_PROVED",
+    "INDEPENDENTLY_PROMOTED"
+  ],
+  "claimBoundary": {
+    "fridayMayClaim": "T9-oriented trust and causal-learning foundation implemented and representative safe loops proven where exact-candidate evidence exists.",
+    "fridayMustNotClaim": [
+      "all future failures are autonomously repairable",
+      "production-grade T9",
+      "causal correctness without counterfactual or equivalent evidence",
+      "autonomous authority expansion",
+      "cross-customer raw-data learning",
+      "OT safety certification",
+      "broad customer outcome proof without real customer evidence"
+    ]
+  },
+  "zeroHumanOperations": {
+    "contract": "VECTOR_ZERO_HUMAN_GOVERNANCE_V1",
+    "target": "zero human operational effort",
+    "metric": "human operational touches per 1000 customer-days = 0",
+    "machineQuorum": [
+      "diagnostic/proposer evidence",
+      "deterministic policy approval",
+      "tenant/customer-guardian invariants",
+      "isolated simulation",
+      "independent verifier",
+      "independent security verifier",
+      "proved rollback or compensation where needed"
+    ],
+    "noHumanEscalationFallback": true,
+    "unknownIncidentRule": "contain autonomously; do not invent a production repair",
+    "externalMandateRule": "record explicit external human requirement; do not disguise it as zero-touch"
+  }
+}
