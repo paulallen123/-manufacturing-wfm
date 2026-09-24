@@ -17,7 +17,18 @@
     "exactSourceShaRequired": true,
     "immutableEvidenceRequired": true,
     "developmentContinuesIfAnyExecutableLaneExists": true,
-    "productionPromotionRequiresIndependentProviders": 2
+    "productionPromotionRequiresIndependentProviders": 2,
+    "noIdleWaitAllowed": true,
+    "simulateAheadOnEveryPendingDependency": true,
+    "predictQueueSaturationBeforeBlock": true,
+    "provisionEquivalentLaneBeforeSaturation": true,
+    "fixedLaneLimit": false,
+    "fixedWorkerLimit": false,
+    "fixedManagerLimit": false,
+    "failedLaneMustNotBlockHealthyLanes": true,
+    "simulationNeverCountsAsProductionProof": true,
+    "weakerEvidenceMayNotSubstitute": true,
+    "proofDeploysRequireExplicitFreezeTrigger": true
   },
   "lanes": [
     {
@@ -49,18 +60,20 @@
       "provider": "railway",
       "class": "exact-image",
       "exactSourceSha": true,
-      "watchPattern": "**",
+      "watchPattern": "artifact/vector-proof-freeze.trigger",
       "requiredForDevelopment": false,
-      "requiredForPromotion": true
+      "requiredForPromotion": true,
+      "triggerMode": "explicit-frozen-candidate"
     },
     {
       "id": "railway-forge-current-proof",
       "provider": "railway",
       "class": "exact-image",
       "exactSourceSha": true,
-      "watchPattern": "**",
+      "watchPattern": "artifact/vector-proof-freeze.trigger",
       "requiredForDevelopment": false,
-      "requiredForPromotion": true
+      "requiredForPromotion": true,
+      "triggerMode": "explicit-frozen-candidate"
     }
   ],
   "fallbackOrder": [
@@ -70,6 +83,48 @@
     "circleci-core",
     "github-actions-ui"
   ],
-  "developmentRule": "A broken provider changes the lane state, not the product-development state. Continue coding and run the same immutable SHA through the next executable lane.",
-  "promotionRule": "Promote only when an exact-image PASS is SHA-bound and independent evidence exists from at least two providers. GitHub Actions is supplemental and can be PROVIDER_DEGRADED without stopping development."
+  "developmentRule": "Continue coding and proving without idle waits. A pending or broken provider changes only that lane state: simulate ahead, preserve exact candidate identity, continue all independent work, and route/provision equivalent lanes before saturation.",
+  "promotionRule": "Promote only when an exact-image PASS is SHA-bound and independent evidence exists from at least two providers; no skipped, stale, weaker, simulated, or provider-only success may substitute for required proof.",
+  "orchestration": {
+    "contract": "VECTOR_NO_IDLE_WAIT_V1",
+    "scope": [
+      "development",
+      "proof",
+      "release",
+      "implementation",
+      "integration",
+      "support",
+      "customer-operations"
+    ],
+    "idleWaitState": "FORBIDDEN",
+    "capacityMode": "ELASTIC",
+    "softwareImposedLaneLimit": null,
+    "softwareImposedWorkerLimit": null,
+    "softwareImposedManagerLimit": null,
+    "providerAndAccountLimitsStillApply": true,
+    "managerSpanTarget": 8,
+    "predict": {
+      "queueDepth": true,
+      "arrivalRate": true,
+      "drainRate": true,
+      "providerHealth": true,
+      "branchDrift": true,
+      "staleEvidence": true,
+      "likelyDownstreamFailures": true
+    },
+    "onPending": [
+      "SIMULATE_SUCCESS_AND_FAILURE_PATHS",
+      "PREPARE_PREFLIGHT_AND_DOWNSTREAM_PROOF",
+      "PREPARE_FIX_AND_ROLLBACK",
+      "CONTINUE_ALL_INDEPENDENT_WORK",
+      "PROVISION_OR_ROUTE_EQUIVALENT_LANE"
+    ],
+    "onFailure": [
+      "ISOLATE_FAILED_LANE",
+      "PRESERVE_EVIDENCE",
+      "ASSIGN_REPAIR_WORK",
+      "KEEP_HEALTHY_LANES_RUNNING",
+      "RETEST_EXACT_CANDIDATE"
+    ]
+  }
 }
