@@ -67,3 +67,19 @@ test('inadmissible overflow lanes are repaired before freeze and never counted a
   assert.deepEqual(result.rejectedLaneIds, ['bad-overflow']);
   assert.ok(result.actions.some(x => x.type === 'REPAIR_LANE_BEFORE_FREEZE' && x.laneId === 'bad-overflow'));
 });
+
+test('pre-execution provider failure is excluded before it can count as proof capacity', () => {
+  const result = simulatePreFreeze({
+    candidateSha:'sha-1', requiredIndependentFailureDomains:2,
+    lanes:[
+      exactLane({id:'railway',failureDomain:'railway:a'}),
+      exactLane({id:'github',provider:'github-actions',failureDomain:'github:repo',providerState:'PREEXECUTION_FAILURE'})
+    ]
+  });
+  assert.deepEqual(result.admittedLaneIds,['railway']);
+  assert.deepEqual(result.rejectedLaneIds,['github']);
+  assert.equal(result.promotionTopologyReady,false);
+  const repair=result.actions.find(x=>x.type==='REPAIR_LANE_BEFORE_FREEZE'&&x.laneId==='github');
+  assert.equal(repair.routeAroundProvider,true);
+  assert.ok(repair.issueCodes.includes('PROVIDER_DEGRADED_PREEXECUTION'));
+});
