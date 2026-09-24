@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   prove-sealed-runtime:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout sealed proof repository
