@@ -5,7 +5,9 @@ const checks = [
   ['node', ['scripts/validate-deployment.mjs']],
   ['node', ['scripts/validate-proof-lane-policy.mjs']],
   ['node', ['scripts/validate-vector-engineering-plane.mjs']],
-  ['node', ['scripts/validate-product-factory.mjs']],\n  ['node', ['scripts/validate-self-evolution.mjs']],\n  ['node', ['scripts/validate-vector-meta-loop.mjs']],
+  ['node', ['scripts/validate-product-factory.mjs']],
+  ['node', ['scripts/validate-self-evolution.mjs']],
+  ['node', ['scripts/validate-vector-meta-loop.mjs']],
   ['node', ['scripts/validate-isolated-environment-provisioning-plan.mjs']],
   ['node', ['scripts/validate-resilience-scenarios.mjs']],
   ['node', ['scripts/validate-autonomous-recovery-proof.mjs']],
@@ -24,13 +26,15 @@ const checks = [
     'operations/runtime/frontier-decision-control.test.cjs',
     'operations/runtime/autopilot-execution-engine.test.cjs',
     'trust/runtime/vector-trust-spine.test.cjs',
-    'trust/runtime/vector-zero-human-governance.test.cjs',\n    'resilience/blocker-autopilot.test.cjs',
+    'trust/runtime/vector-zero-human-governance.test.cjs',
+    'resilience/blocker-autopilot.test.cjs',
     'engineering/runtime/vector-tool-foundry.test.cjs',
     'engineering/runtime/vector-engineering-learning-bridge.test.cjs',
     'implementation/runtime/launch-autopilot-controller.test.cjs',
     'implementation/runtime/launch-integration-pathfinder.test.cjs',
     'implementation/runtime/launch-autopilot-readiness-adapter.test.cjs',
-    'scripts/prove-vector-built-asset-provenance.test.mjs'
+    'scripts/prove-vector-built-asset-provenance.test.mjs',
+    'scripts/vector-frontier-proof-admission.test.mjs'
   ]],
   ['node', ['scripts/run-vector-foundry-proof.mjs']]
 ];

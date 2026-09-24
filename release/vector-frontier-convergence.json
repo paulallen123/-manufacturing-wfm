@@ -5,8 +5,20 @@
   "purpose": "Converge T9 trust and frontier decision assurance onto current FORGE without a parallel product.",
   "requiredRuntime": [
     "trust/runtime/vector-trust-spine.cjs",
+    "trust/runtime/vector-zero-human-governance.cjs",
+    "resilience/blocker-autopilot.cjs",
     "operations/runtime/frontier-decision-control.cjs",
     "operations/runtime/autopilot-execution-engine.cjs"
+  ],
+  "requiredAdmission": [
+    "trust/runtime/vector-zero-human-governance.test.cjs",
+    "resilience/blocker-autopilot.test.cjs",
+    "product-factory/vector-meta-loop-policy.json",
+    "release/proof-lane-policy.json",
+    "resilience/blocker-autopilot-policy.json",
+    "resilience/failure-scenarios.json",
+    "scripts/validate-vector-meta-loop.mjs",
+    "scripts/vector-frontier-proof-admission.test.mjs"
   ],
   "enforcedPrinciples": [
     "decision-episode-bound-simulation-passport",
@@ -16,7 +28,10 @@
     "executor-verifier-separation",
     "simulation-validity-gates-execution",
     "recovery-distinguishes-rollback-from-compensation",
-    "causal-learning-never-self-grants-authority"
+    "causal-learning-never-self-grants-authority",
+    "zero-human-governance-fails-closed",
+    "blocker-autopilot-never-grants-production-authority",
+    "meta-loop-admission-must-be-exact-candidate-bound"
   ],
   "autonomyLadder": [
     "REPLAY_ONLY",
@@ -30,6 +45,9 @@
     "railwayBranchMustEqual": "feature/vector-frontier-t9-converged-20260923",
     "railwayCommitMustEqualCurrentHeadAtProofTime": true,
     "dockerAdmissionRequired": true,
+    "zeroHumanGovernanceDockerAdmissionRequired": true,
+    "blockerAutopilotDockerAdmissionRequired": true,
+    "metaLoopDockerAdmissionRequired": true,
     "hostedSuccessRequiredBeforeClaimingHostedProof": true,
     "oldMainSnapshotDoesNotCount": true
   },
