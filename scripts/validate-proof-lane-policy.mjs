@@ -13,6 +13,24 @@ assert.equal(p.rules.exactSourceShaRequired,true);
 assert.equal(p.rules.immutableEvidenceRequired,true);
 assert.equal(p.rules.developmentContinuesIfAnyExecutableLaneExists,true);
 assert.ok(Number(p.rules.productionPromotionRequiresIndependentProviders)>=2);
+assert.equal(p.rules.noIdleWaitAllowed,true);
+assert.equal(p.rules.simulateAheadOnEveryPendingDependency,true);
+assert.equal(p.rules.predictQueueSaturationBeforeBlock,true);
+assert.equal(p.rules.provisionEquivalentLaneBeforeSaturation,true);
+assert.equal(p.rules.fixedLaneLimit,false);
+assert.equal(p.rules.fixedWorkerLimit,false);
+assert.equal(p.rules.fixedManagerLimit,false);
+assert.equal(p.rules.failedLaneMustNotBlockHealthyLanes,true);
+assert.equal(p.rules.simulationNeverCountsAsProductionProof,true);
+assert.equal(p.rules.weakerEvidenceMayNotSubstitute,true);
+assert.equal(p.rules.proofDeploysRequireExplicitFreezeTrigger,true);
+assert.equal(p.orchestration?.contract,'VECTOR_NO_IDLE_WAIT_V1');
+assert.equal(p.orchestration?.idleWaitState,'FORBIDDEN');
+assert.equal(p.orchestration?.capacityMode,'ELASTIC');
+assert.equal(p.orchestration?.softwareImposedLaneLimit,null);
+assert.equal(p.orchestration?.softwareImposedWorkerLimit,null);
+assert.equal(p.orchestration?.softwareImposedManagerLimit,null);
+assert.equal(p.orchestration?.providerAndAccountLimitsStillApply,true);
 
 const ids=new Set(),providers=new Set();
 let exactImage=0;
@@ -22,6 +40,10 @@ for(const lane of p.lanes||[]){
   providers.add(lane.provider);
   assert.equal(lane.exactSourceSha,true,'Every proof lane must bind the exact source SHA: '+lane.id);
   if(lane.class==='exact-image') exactImage++;
+  if(lane.provider==='railway'&&lane.class==='exact-image'){
+    assert.equal(lane.watchPattern,'artifact/vector-proof-freeze.trigger');
+    assert.equal(lane.triggerMode,'explicit-frozen-candidate');
+  }
 }
 assert.ok(providers.size>=3,'Proof topology must span at least three providers/signals.');
 assert.ok(exactImage>=2,'At least two exact-image lanes are required.');
