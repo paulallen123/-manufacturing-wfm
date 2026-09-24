@@ -83,6 +83,10 @@ for(const lane of p.lanes||[]){
       assert.equal(lane.runtimeContract.hostedModeRequired,true);
       assert.ok(lane.runtimeContract.requiredVariables.includes('WFM_DB'));
       assert.ok(lane.runtimeContract.requiredVariables.includes('WFM_HOSTED_STAGING'));
+      assert.ok(lane.runtimeContract.requiredVariables.includes('WFM_PUBLIC_ORIGIN'));
+      assert.ok(lane.runtimeContract.requiredVariables.includes('WFM_STAGING_PASSWORD'));
+      assert.equal(lane.runtimeContract.stagingPasswordMinLength,20);
+      assert.equal(lane.runtimeContract.publicOriginHttpsRequired,true);
     }
   }
   if(lane.provider==='railway'&&lane.class==='exact-image'){
