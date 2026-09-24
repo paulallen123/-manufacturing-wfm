@@ -358,11 +358,16 @@ function createAutopilotExecutionEngine(options = {}) {
     } catch {}
   }
 
+  function executionHistory(executionId) {
+    return executionQ.all(executionId).map(row => ({
+      state: row.state,
+      detail: JSON.parse(row.detail_json),
+      createdAt: row.created_at
+    }));
+  }
+
   function last(executionId) {
-    const row = executionQ.all(executionId).at(-1);
-    return row
-      ? { state: row.state, detail: JSON.parse(row.detail_json), createdAt: row.created_at }
-      : null;
+    return executionHistory(executionId).at(-1) || null;
   }
 
   function trustedAssurance(tenant, assuranceDigest) {
@@ -485,9 +490,143 @@ function createAutopilotExecutionEngine(options = {}) {
       contextRevision: selected.contextRevision
     }).slice(0, 40);
 
-    const prior = last(executionId);
+    const priorHistory = executionHistory(executionId);
+    const prior = priorHistory.at(-1) || null;
     if (prior && ['VERIFIED', 'ROLLED_BACK', 'CONTAINED'].includes(prior.state)) {
       return { executionId, idempotent: true, ...prior };
+    }
+
+    if (prior) {
+      const appliedEvidence = [...priorHistory].reverse().find(row =>
+        row.state === 'APPLIED' && compact(row.detail?.eventId, 180)
+      );
+      const appliedEventId = compact(
+        appliedEvidence?.detail?.eventId || prior.detail?.appliedEventId,
+        180
+      );
+
+      if (!appliedEventId) {
+        log(executionId, permitId, tenant, 'CONTAINED', {
+          reason: prior.state === 'PREPARED'
+            ? 'INTERRUPTED_BEFORE_APPLY_CONFIRMATION'
+            : 'INTERRUPTED_EXECUTION_EVIDENCE_INCOMPLETE',
+          recoveredAfterRestart: true,
+          priorState: prior.state,
+          assuranceDigest: plan.frontierAssuranceDigest
+        });
+        return {
+          executionId,
+          idempotent: false,
+          state: 'CONTAINED',
+          detail: {
+            reason: prior.state === 'PREPARED'
+              ? 'INTERRUPTED_BEFORE_APPLY_CONFIRMATION'
+              : 'INTERRUPTED_EXECUTION_EVIDENCE_INCOMPLETE',
+            recoveredAfterRestart: true,
+            priorState: prior.state
+          }
+        };
+      }
+
+      const recovered = verificationAdapter?.getTrustedEvent?.({
+        tenant,
+        eventKey: plan.action.eventKey
+      });
+      if (
+        recovered &&
+        recovered.status === 'ACCEPTED' &&
+        compact(recovered.id, 180) === appliedEventId
+      ) {
+        log(executionId, permitId, tenant, 'VERIFIED', {
+          eventId: recovered.id,
+          verifierId: assurance ? verifierId : 'legacy-lifecycle-readback',
+          assuranceDigest: plan.frontierAssuranceDigest,
+          outcomeDigest: null,
+          outcomePending: Boolean(assurance),
+          recoveredAfterRestart: true,
+          priorState: prior.state
+        });
+        return {
+          executionId,
+          idempotent: false,
+          state: 'VERIFIED',
+          detail: {
+            eventId: recovered.id,
+            assuranceDigest: plan.frontierAssuranceDigest,
+            outcomeDigest: null,
+            outcomePending: Boolean(assurance),
+            recoveredAfterRestart: true,
+            priorState: prior.state
+          }
+        };
+      }
+
+      try {
+        const rollback = lifecycle?.applyTrustedEvent?.({
+          tenant,
+          eventKey: plan.rollback.eventKey,
+          event: {
+            kind: 'RETRO_CHANGE',
+            employeeId: plan.action.employeeId,
+            effectiveAt: new Date(now).toISOString(),
+            payload: {
+              targetEventId: appliedEventId,
+              reason: plan.rollback.reason,
+              approvalRef: permitId,
+              correction: { autopilotRollback: true, recoveredAfterRestart: true }
+            }
+          }
+        });
+        if (rollback?.decision?.status !== 'ACCEPTED' || !rollback?.event?.id) {
+          throw new Error('Compensating restart rollback was rejected.');
+        }
+        const confirmed = verificationAdapter?.getTrustedEvent?.({
+          tenant,
+          eventKey: plan.rollback.eventKey
+        });
+        if (
+          !confirmed ||
+          confirmed.status !== 'ACCEPTED' ||
+          compact(confirmed.id, 180) !== compact(rollback.event.id, 180)
+        ) {
+          throw new Error('Restart rollback verification failed.');
+        }
+        log(executionId, permitId, tenant, 'ROLLED_BACK', {
+          rollbackEventId: confirmed.id,
+          assuranceDigest: plan.frontierAssuranceDigest,
+          recoveredAfterRestart: true,
+          priorState: prior.state
+        });
+        return {
+          executionId,
+          idempotent: false,
+          state: 'ROLLED_BACK',
+          detail: {
+            rollbackEventId: confirmed.id,
+            assuranceDigest: plan.frontierAssuranceDigest,
+            recoveredAfterRestart: true,
+            priorState: prior.state
+          }
+        };
+      } catch (rollbackError) {
+        log(executionId, permitId, tenant, 'CONTAINED', {
+          reason: 'RESTART_ROLLBACK_UNCONFIRMED',
+          error: compact(rollbackError.message, 300),
+          assuranceDigest: plan.frontierAssuranceDigest,
+          recoveredAfterRestart: true,
+          priorState: prior.state
+        });
+        return {
+          executionId,
+          idempotent: false,
+          state: 'CONTAINED',
+          detail: {
+            reason: 'RESTART_ROLLBACK_UNCONFIRMED',
+            recoveredAfterRestart: true,
+            priorState: prior.state
+          }
+        };
+      }
     }
 
     if (!lifecycle?.applyTrustedEvent) {
@@ -527,8 +666,12 @@ function createAutopilotExecutionEngine(options = {}) {
         tenant,
         eventKey: plan.action.eventKey
       });
-      if (!verified || verified.status !== 'ACCEPTED') {
-        throw new Error('Post-action verification did not confirm authoritative state.');
+      if (
+        !verified ||
+        verified.status !== 'ACCEPTED' ||
+        compact(verified.id, 180) !== compact(applied.event.id, 180)
+      ) {
+        throw new Error('Post-action verification did not confirm the exact authoritative state.');
       }
 
       let outcome = null;
@@ -570,6 +713,7 @@ function createAutopilotExecutionEngine(options = {}) {
     } catch (error) {
       log(executionId, permitId, tenant, 'VERIFY_FAILED', {
         error: compact(error.message, 300),
+        appliedEventId: compact(applied?.event?.id, 180) || null,
         assuranceDigest: plan.frontierAssuranceDigest
       });
 
@@ -609,7 +753,11 @@ function createAutopilotExecutionEngine(options = {}) {
           tenant,
           eventKey: plan.rollback.eventKey
         });
-        if (!confirmed || confirmed.status !== 'ACCEPTED') {
+        if (
+          !confirmed ||
+          confirmed.status !== 'ACCEPTED' ||
+          compact(confirmed.id, 180) !== compact(rollback.event?.id, 180)
+        ) {
           throw new Error('Rollback verification failed.');
         }
 

@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
-const { createDecisionEpisode } = require('./decision-episode.cjs');
+const { createDecisionEpisode, digest } = require('./decision-episode.cjs');
 const {
   createSimulationPassport,
   createAssuranceEnvelope
@@ -610,4 +610,193 @@ test('outcome measurement cannot predate verification or attach to a rolled-back
     /until execution is independently VERIFIED/i
   );
   cleanup(s2);
+});
+
+
+test('restart after persisted APPLIED verifies exact event without replaying the business action', async () => {
+  let actionReplays = 0;
+  const events = new Map([
+    ['ot', { id: 'wf-ot', eventKey: 'ot', status: 'ACCEPTED' }]
+  ]);
+  const lifecycle = {
+    applyTrustedEvent() {
+      actionReplays += 1;
+      throw new Error('business action must not replay after restart');
+    },
+    getTrustedEvent({ eventKey }) {
+      return events.get(eventKey) || null;
+    }
+  };
+  const s = setup(lifecycle);
+  const permit = s.engine.issueHumanPermit({
+    tenant: 'A',
+    episodeId: s.e.episodeId,
+    optionId: 'overtime',
+    actorRef: 'm',
+    contextRevision: 'r7',
+    plan: plan()
+  });
+  const executionId = 'exec-' + digest({
+    permitId: permit.permitId,
+    tenant: 'A',
+    contextRevision: 'r7'
+  }).slice(0, 40);
+  s.engine.close();
+
+  const db = new DatabaseSync(path.join(s.dir, 'x.db'));
+  const insert = db.prepare(
+    'INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)'
+  );
+  insert.run(executionId, permit.permitId, 'A', 'PREPARED', JSON.stringify({ planDigest: 'x' }), new Date().toISOString());
+  insert.run(executionId, permit.permitId, 'A', 'APPLIED', JSON.stringify({ eventId: 'wf-ot', reasonCode: 'OK' }), new Date().toISOString());
+  db.close();
+
+  s.engine = createAutopilotExecutionEngine({
+    dbPath: path.join(s.dir, 'x.db'),
+    lifecycleAdapter: lifecycle,
+    executorId: 'workforce-lifecycle-executor',
+    verifierId: 'workforce-lifecycle-verifier'
+  });
+  const recovered = await s.engine.executePermit({
+    tenant: 'A',
+    permitId: permit.permitId,
+    currentContextRevision: 'r7'
+  });
+  assert.equal(recovered.state, 'VERIFIED');
+  assert.equal(recovered.detail.eventId, 'wf-ot');
+  assert.equal(recovered.detail.recoveredAfterRestart, true);
+  assert.equal(actionReplays, 0);
+
+  const replay = await s.engine.executePermit({
+    tenant: 'A',
+    permitId: permit.permitId,
+    currentContextRevision: 'r7'
+  });
+  assert.equal(replay.idempotent, true);
+  assert.equal(actionReplays, 0);
+  cleanup(s);
+});
+
+test('restart after VERIFY_FAILED rolls back the exact prior event without replaying it', async () => {
+  let actionReplays = 0;
+  let rollbackCalls = 0;
+  const events = new Map();
+  const lifecycle = {
+    applyTrustedEvent({ eventKey, event }) {
+      if (eventKey === 'ot') {
+        actionReplays += 1;
+        throw new Error('business action must not replay after restart');
+      }
+      rollbackCalls += 1;
+      assert.equal(event.payload.targetEventId, 'wf-ot');
+      const stored = { id: 'wf-rb', eventKey, status: 'ACCEPTED' };
+      events.set(eventKey, stored);
+      return { event: stored, decision: { status: 'ACCEPTED', reasonCode: 'OK' } };
+    },
+    getTrustedEvent({ eventKey }) {
+      return events.get(eventKey) || null;
+    }
+  };
+  const s = setup(lifecycle);
+  const permit = s.engine.issueHumanPermit({
+    tenant: 'A',
+    episodeId: s.e.episodeId,
+    optionId: 'overtime',
+    actorRef: 'm',
+    contextRevision: 'r7',
+    plan: plan()
+  });
+  const executionId = 'exec-' + digest({
+    permitId: permit.permitId,
+    tenant: 'A',
+    contextRevision: 'r7'
+  }).slice(0, 40);
+  s.engine.close();
+
+  const db = new DatabaseSync(path.join(s.dir, 'x.db'));
+  const insert = db.prepare(
+    'INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)'
+  );
+  insert.run(executionId, permit.permitId, 'A', 'PREPARED', '{}', new Date().toISOString());
+  insert.run(executionId, permit.permitId, 'A', 'APPLIED', JSON.stringify({ eventId: 'wf-ot', reasonCode: 'OK' }), new Date().toISOString());
+  insert.run(executionId, permit.permitId, 'A', 'VERIFY_FAILED', JSON.stringify({ error: 'readback unavailable', appliedEventId: 'wf-ot' }), new Date().toISOString());
+  db.close();
+
+  s.engine = createAutopilotExecutionEngine({
+    dbPath: path.join(s.dir, 'x.db'),
+    lifecycleAdapter: lifecycle,
+    executorId: 'workforce-lifecycle-executor',
+    verifierId: 'workforce-lifecycle-verifier'
+  });
+  const recovered = await s.engine.executePermit({
+    tenant: 'A',
+    permitId: permit.permitId,
+    currentContextRevision: 'r7'
+  });
+  assert.equal(recovered.state, 'ROLLED_BACK');
+  assert.equal(recovered.detail.rollbackEventId, 'wf-rb');
+  assert.equal(recovered.detail.recoveredAfterRestart, true);
+  assert.equal(actionReplays, 0);
+  assert.equal(rollbackCalls, 1);
+
+  const replay = await s.engine.executePermit({
+    tenant: 'A',
+    permitId: permit.permitId,
+    currentContextRevision: 'r7'
+  });
+  assert.equal(replay.idempotent, true);
+  assert.equal(actionReplays, 0);
+  assert.equal(rollbackCalls, 1);
+  cleanup(s);
+});
+
+test('restart after PREPARED contains uncertain execution rather than replaying it', async () => {
+  let actionCalls = 0;
+  const lifecycle = {
+    applyTrustedEvent() {
+      actionCalls += 1;
+      throw new Error('uncertain prepared action must not replay');
+    },
+    getTrustedEvent() {
+      return null;
+    }
+  };
+  const s = setup(lifecycle);
+  const permit = s.engine.issueHumanPermit({
+    tenant: 'A',
+    episodeId: s.e.episodeId,
+    optionId: 'overtime',
+    actorRef: 'm',
+    contextRevision: 'r7',
+    plan: plan()
+  });
+  const executionId = 'exec-' + digest({
+    permitId: permit.permitId,
+    tenant: 'A',
+    contextRevision: 'r7'
+  }).slice(0, 40);
+  s.engine.close();
+
+  const db = new DatabaseSync(path.join(s.dir, 'x.db'));
+  db.prepare(
+    'INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)'
+  ).run(executionId, permit.permitId, 'A', 'PREPARED', '{}', new Date().toISOString());
+  db.close();
+
+  s.engine = createAutopilotExecutionEngine({
+    dbPath: path.join(s.dir, 'x.db'),
+    lifecycleAdapter: lifecycle,
+    executorId: 'workforce-lifecycle-executor',
+    verifierId: 'workforce-lifecycle-verifier'
+  });
+  const recovered = await s.engine.executePermit({
+    tenant: 'A',
+    permitId: permit.permitId,
+    currentContextRevision: 'r7'
+  });
+  assert.equal(recovered.state, 'CONTAINED');
+  assert.equal(recovered.detail.reason, 'INTERRUPTED_BEFORE_APPLY_CONFIRMATION');
+  assert.equal(recovered.detail.recoveredAfterRestart, true);
+  assert.equal(actionCalls, 0);
+  cleanup(s);
 });
