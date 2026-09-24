@@ -298,6 +298,16 @@ function createVectorReportingService(options={}){
     );
     CREATE INDEX IF NOT EXISTS vector_report_schedules_tenant_created
       ON vector_report_schedules(tenant,created_at DESC);
+    CREATE TABLE IF NOT EXISTS vector_report_schedule_events(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tenant TEXT NOT NULL,
+      schedule_id TEXT NOT NULL,
+      enabled INTEGER NOT NULL CHECK(enabled IN (0,1)),
+      actor TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS vector_report_schedule_events_lookup
+      ON vector_report_schedule_events(tenant,schedule_id,id DESC);
     CREATE TABLE IF NOT EXISTS vector_report_deliveries(
       delivery_key TEXT PRIMARY KEY,
       tenant TEXT NOT NULL,
@@ -322,6 +332,10 @@ function createVectorReportingService(options={}){
       BEFORE UPDATE ON vector_report_schedules BEGIN SELECT RAISE(ABORT,'Schedules are immutable; create a replacement.'); END;
     CREATE TRIGGER IF NOT EXISTS no_vector_schedule_delete
       BEFORE DELETE ON vector_report_schedules BEGIN SELECT RAISE(ABORT,'Schedules are immutable.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_schedule_event_update
+      BEFORE UPDATE ON vector_report_schedule_events BEGIN SELECT RAISE(ABORT,'Schedule state events are append only.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_schedule_event_delete
+      BEFORE DELETE ON vector_report_schedule_events BEGIN SELECT RAISE(ABORT,'Schedule state events are append only.'); END;
     CREATE TRIGGER IF NOT EXISTS no_vector_delivery_update
       BEFORE UPDATE ON vector_report_deliveries BEGIN SELECT RAISE(ABORT,'Delivery receipts are append only.'); END;
     CREATE TRIGGER IF NOT EXISTS no_vector_delivery_delete
@@ -342,6 +356,9 @@ function createVectorReportingService(options={}){
   const dashboardOne=db.prepare('SELECT id,created_by,dashboard_json,dashboard_digest,version_of,created_at FROM vector_report_dashboards WHERE tenant=? AND id=?');
   const scheduleInsert=db.prepare('INSERT INTO vector_report_schedules(id,tenant,created_by,schedule_json,schedule_digest,created_at) VALUES(?,?,?,?,?,?)');
   const scheduleList=db.prepare('SELECT id,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
+  const scheduleOne=db.prepare('SELECT id,tenant,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules WHERE tenant=? AND id=?');
+  const scheduleEvent=db.prepare('INSERT INTO vector_report_schedule_events(tenant,schedule_id,enabled,actor,created_at) VALUES(?,?,?,?,?)');
+  const scheduleState=db.prepare('SELECT enabled,actor,created_at FROM vector_report_schedule_events WHERE tenant=? AND schedule_id=? ORDER BY id DESC LIMIT 1');
   const allSchedules=db.prepare('SELECT id,tenant,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules ORDER BY created_at ASC');
   const deliveryInsert=db.prepare('INSERT OR IGNORE INTO vector_report_deliveries(delivery_key,tenant,schedule_id,report_id,mode,status,receipt_json,created_at) VALUES(?,?,?,?,?,?,?,?)');
   const deliveryList=db.prepare('SELECT delivery_key,schedule_id,report_id,mode,status,receipt_json,created_at FROM vector_report_deliveries WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
@@ -371,7 +388,8 @@ function createVectorReportingService(options={}){
   }
   function scheduleRow(row){
     if(!row)return null;
-    return {id:row.id,schedule:JSON.parse(row.schedule_json),scheduleDigest:row.schedule_digest,createdBy:row.created_by,createdAt:row.created_at};
+    const control=scheduleState.get(row.tenant||'',row.id);
+    return {id:row.id,schedule:JSON.parse(row.schedule_json),scheduleDigest:row.schedule_digest,enabled:control?Boolean(control.enabled):true,control:control?{actor:control.actor,createdAt:control.created_at}:null,createdBy:row.created_by,createdAt:row.created_at};
   }
   function localParts(date,timeZone){
     const parts=new Intl.DateTimeFormat('en-GB',{timeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',weekday:'short',hourCycle:'h23'}).formatToParts(date);
@@ -389,6 +407,7 @@ function createVectorReportingService(options={}){
   async function runDueSchedules(now=new Date()){
     const results=[];
     for(const row of allSchedules.all()){
+      const control=scheduleState.get(row.tenant,row.id);if(control&&Number(control.enabled)!==1)continue;
       let schedule;try{schedule=JSON.parse(row.schedule_json);}catch{continue;}
       const slot=dueKey(schedule,now);if(!slot)continue;
       const report=one.get(row.tenant,schedule.reportId);if(!report)continue;
@@ -477,6 +496,18 @@ function createVectorReportingService(options={}){
       }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to pin report.',300)});}
     }
 
+    if(path===PREFIX+'/dashboards/unpin'&&method==='POST'){
+      try{
+        const body=await readJson(req),reportId=compact(body.reportId,100),latest=dashboardList.all(c.tenant)[0]||null;
+        if(!latest)return writeJson(res,404,{error:'Dashboard not found.'});
+        const previous=dashboardRow(latest),dashboard=normaliseDashboard({title:previous.dashboard.title,reportIds:(previous.dashboard.reportIds||[]).filter(id=>id!==reportId)});
+        const id='vd-'+randomUUID(),createdAt=new Date().toISOString(),dashboardDigest=digest(dashboard);
+        dashboardInsert.run(id,c.tenant,c.email,JSON.stringify(dashboard),dashboardDigest,previous.id,createdAt);
+        record(c,reportId,'REPORT_UNPINNED',{dashboardId:id,dashboardDigest,versionOf:previous.id});
+        return writeJson(res,201,{dashboard:{id,dashboard,dashboardDigest,versionOf:previous.id,createdBy:c.email,createdAt}});
+      }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to unpin report.',300)});}
+    }
+
     if(path===PREFIX+'/schedules'&&method==='GET'){
       return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_SCHEDULE_LIST_V1',schedules:scheduleList.all(c.tenant).map(scheduleRow)});
     }
@@ -490,9 +521,23 @@ function createVectorReportingService(options={}){
         if(!source||!permitted(c.role,source.minRole))return writeJson(res,403,{error:'Current role is not permitted to schedule this report.'});
         const id='vs-'+randomUUID(),createdAt=new Date().toISOString(),scheduleDigest=digest(schedule);
         scheduleInsert.run(id,c.tenant,c.email,JSON.stringify(schedule),scheduleDigest,createdAt);
+        scheduleEvent.run(c.tenant,id,1,c.email,createdAt);
         record(c,schedule.reportId,'REPORT_SCHEDULE_CREATED',{scheduleId:id,scheduleDigest,delivery:schedule.delivery,cadence:schedule.cadence});
-        return writeJson(res,201,{schedule:{id,schedule,scheduleDigest,createdBy:c.email,createdAt}});
+        return writeJson(res,201,{schedule:{id,schedule,scheduleDigest,enabled:true,createdBy:c.email,createdAt}});
       }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to schedule report.',300)});}
+    }
+
+    const scheduleStateMatch=path.match(/^\/api\/reporting\/schedules\/([^/]+)\/state$/);
+    if(scheduleStateMatch&&method==='POST'){
+      try{
+        const id=decodeURIComponent(scheduleStateMatch[1]),row=scheduleOne.get(c.tenant,id);
+        if(!row)return writeJson(res,404,{error:'Schedule not found.'});
+        const body=await readJson(req);if(typeof body.enabled!=='boolean')return writeJson(res,400,{error:'enabled must be true or false.'});
+        const createdAt=new Date().toISOString();scheduleEvent.run(c.tenant,id,body.enabled?1:0,c.email,createdAt);
+        const schedule=JSON.parse(row.schedule_json);
+        record(c,schedule.reportId,body.enabled?'REPORT_SCHEDULE_RESUMED':'REPORT_SCHEDULE_PAUSED',{scheduleId:id});
+        return writeJson(res,200,{schedule:{...scheduleRow(row),enabled:body.enabled,control:{actor:c.email,createdAt}}});
+      }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to change schedule state.',300)});}
     }
 
     if(path===PREFIX+'/deliveries'&&method==='GET'){
