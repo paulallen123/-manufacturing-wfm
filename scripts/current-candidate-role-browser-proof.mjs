@@ -6,9 +6,21 @@ const origin = new URL(process.env.VECTOR_PROOF_URL).origin;
 const expectedSha = process.env.WFM_EXPECTED_CANDIDATE_SHA;
 const password = process.env.WFM_STAGING_PASSWORD;
 const requireActionAffordanceCoverage = process.env.WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE === 'true';
+const requireVectorAssetDigests = process.env.WFM_REQUIRE_VECTOR_ASSET_DIGESTS === 'true';
+const expectedVectorJsSha256 = process.env.VECTOR_CANONICAL_JS_SHA256;
+const expectedVectorCssSha256 = process.env.VECTOR_CANONICAL_CSS_SHA256;
+const expectedWorkflowJsSha256 = process.env.VECTOR_WORKFLOW_JS_SHA256;
+const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 
 assert.match(expectedSha || '', /^[0-9a-f]{40}$/);
 assert.ok(password && password.length >= 20, 'Staging password unavailable.');
+if (requireVectorAssetDigests) {
+  for (const [name, value] of [
+    ['VECTOR_CANONICAL_JS_SHA256', expectedVectorJsSha256],
+    ['VECTOR_CANONICAL_CSS_SHA256', expectedVectorCssSha256],
+    ['VECTOR_WORKFLOW_JS_SHA256', expectedWorkflowJsSha256]
+  ]) assert.match(value || '', /^[0-9a-f]{64}$/, name + ' unavailable.');
+}
 
 const specs = [
   { slug: 'manager', email: 'manager@northstar.example', role: 'manager', tenant: 'northstar-demo', payroll: 403, surface: '/api/time-review', nav: 'Time & Attendance' },
@@ -23,6 +35,25 @@ assert.equal(healthResponse.status, 200);
 const health = await healthResponse.json();
 assert.equal(health.fixtureOnly, true);
 assert.equal(health.productionApproved, false);
+
+let assetDigestProof = null;
+if (requireVectorAssetDigests) {
+  const assets = [
+    ['/vector-ui.js', expectedVectorJsSha256],
+    ['/vector-ui.css', expectedVectorCssSha256],
+    ['/vector-workflows.js', expectedWorkflowJsSha256]
+  ];
+  assetDigestProof = {};
+  for (const [path, expected] of assets) {
+    const response = await fetch(origin + path, { signal: AbortSignal.timeout(15000) });
+    assert.equal(response.status, 200, path + ' unavailable.');
+    const body = Buffer.from(await response.arrayBuffer());
+    const actual = sha256(body);
+    assert.equal(actual, expected, path + ' digest mismatch: hosted bytes are not the frozen candidate bytes.');
+    assetDigestProof[path] = actual;
+  }
+  console.log('CURRENT_CANDIDATE_ASSET_DIGESTS=PASS|' + JSON.stringify(assetDigestProof));
+}
 
 const browser = await chromium.launch({ headless: true });
 const receipts = [];
@@ -638,7 +669,7 @@ try {
   }
   console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|sha=${managerAlignmentEvidence.sha256}`);
   console.log(`CURRENT_MANAGER_SCREENSHOT_B64|${managerAlignmentEvidence.base64}`);
-  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|activeActionJourneys=${timeReviewActionJourneys}|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
+  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|activeActionJourneys=${timeReviewActionJourneys}|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}|assetDigests=${assetDigestProof ? 'verified' : 'not-required'}`);
 } finally {
   await browser.close();
   delete process.env.WFM_STAGING_PASSWORD;
