@@ -34,6 +34,12 @@ function planNoIdleWait(input={}){
   const requestedAdditionalLanes = queueSaturationPredicted
     ? Math.max(1, Math.ceil((depth + netGrowth) / Math.max(1, drain || 1)) - idleLaneCount)
     : 0;
+  const failureDomainHeadroomKnown = queue.failureDomainHeadroomKnown === true;
+  const failureDomainHeadroom = failureDomainHeadroomKnown ? n(queue.failureDomainHeadroom) : 0;
+  const sameFailureDomainScaleAllowed = failureDomainHeadroomKnown && failureDomainHeadroom > 0;
+  const requestedSameDomainLanes = queueSaturationPredicted && sameFailureDomainScaleAllowed
+    ? Math.min(requestedAdditionalLanes, failureDomainHeadroom)
+    : 0;
 
   const activeWorkers = n(workers.active, capacityLanes.length);
   const span = Math.max(1, n(workers.targetSpanPerManager, 8));
@@ -55,10 +61,22 @@ function planNoIdleWait(input={}){
     actions.push(Object.freeze({type:'CONTINUE_INDEPENDENT_WORK',work:Object.freeze([...independentWork])}));
   }
 
-  if (queueSaturationPredicted || WAIT_LIKE.has(status)) {
+  if (requestedSameDomainLanes > 0) {
     actions.push(Object.freeze({
-      type:'PROVISION_OR_ROUTE_LANE',
-      trigger:queueSaturationPredicted ? 'PREDICTED_SATURATION' : 'DEPENDENCY_PENDING',
+      type:'PROVISION_THROUGHPUT_LANE',
+      trigger:'MEASURED_FAILURE_DOMAIN_HEADROOM',
+      requestedLanes:requestedSameDomainLanes,
+      exactCandidateSha:input.candidate?.sha || null,
+      countsAsIndependentResilience:false,
+      equivalentProofRequired:true,
+      weakerEvidenceMaySubstitute:false
+    }));
+  }
+
+  if ((queueSaturationPredicted && !sameFailureDomainScaleAllowed) || WAIT_LIKE.has(status)) {
+    actions.push(Object.freeze({
+      type:'ROUTE_DISTINCT_FAILURE_DOMAIN',
+      trigger:queueSaturationPredicted ? 'PREDICTED_SATURATION_WITHOUT_MEASURED_HEADROOM' : 'DEPENDENCY_PENDING',
       requestedAdditionalLanes:Math.max(1, requestedAdditionalLanes),
       exactCandidateSha:input.candidate?.sha || null,
       equivalentProofRequired:true,
@@ -96,7 +114,9 @@ function planNoIdleWait(input={}){
       queueDepth:depth,
       arrivalPerMinute:arrival,
       drainPerMinute:drain,
-      netGrowthPerMinute:netGrowth
+      netGrowthPerMinute:netGrowth,
+      failureDomainHeadroomKnown,
+      failureDomainHeadroom
     }),
     capacity:Object.freeze({
       mode:'ELASTIC',
@@ -106,6 +126,8 @@ function planNoIdleWait(input={}){
       admittedLaneCount:capacityLanes.length,
       independentFailureDomainCount:preFreeze ? preFreeze.independentFailureDomains.length : null,
       requestedAdditionalLanes,
+      requestedSameDomainLanes,
+      sameFailureDomainScaleAllowed,
       requiredManagers,
       targetWorkersPerManager:span
     }),
@@ -114,7 +136,8 @@ function planNoIdleWait(input={}){
       tenantSecurityPayrollAuditRollbackGatesMayNotWeaken:true,
       simulationNeverCountsAsProductionProof:true,
       skippedOrStaleEvidenceNeverCountsAsPass:true,
-      falseParallelismNeverCountsAsIndependentCapacity:true
+      falseParallelismNeverCountsAsIndependentCapacity:true,
+      unknownFailureDomainHeadroomNeverCreatesOverflow:true
     }),
     actions:Object.freeze(actions)
   });
