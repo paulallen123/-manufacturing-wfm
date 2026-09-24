@@ -87,3 +87,31 @@ test('pre-freeze rejected lanes are excluded from elastic capacity', () => {
   assert.equal(plan.promotionBlocked,true);
   assert.ok(plan.actions.some(x=>x.type==='REPAIR_LANE_BEFORE_FREEZE'&&x.laneId==='bad'));
 });
+
+test('unknown provider headroom never creates same-domain overflow under saturation', () => {
+  const plan=planNoIdleWait({
+    dependency:{id:'railway-domain',status:'QUEUED',kind:'provider'},
+    candidate:{sha:'sha'},
+    queue:{depth:6,arrivalPerMinute:3,drainPerMinute:1,failureDomainHeadroomKnown:false},
+    availableLanes:[{id:'a',status:'BUSY'},{id:'b',status:'BUSY'}]
+  });
+  assert.equal(plan.prediction.queueSaturationPredicted,true);
+  assert.equal(plan.capacity.requestedSameDomainLanes,0);
+  assert.equal(plan.capacity.sameFailureDomainScaleAllowed,false);
+  assert.ok(plan.actions.some(x=>x.type==='ROUTE_DISTINCT_FAILURE_DOMAIN'));
+  assert.ok(!plan.actions.some(x=>x.type==='PROVISION_THROUGHPUT_LANE'));
+});
+
+test('measured provider headroom can add throughput without pretending it adds resilience', () => {
+  const plan=planNoIdleWait({
+    dependency:{id:'railway-domain',status:'RUNNING',kind:'provider'},
+    candidate:{sha:'sha'},
+    queue:{depth:5,arrivalPerMinute:4,drainPerMinute:2,failureDomainHeadroomKnown:true,failureDomainHeadroom:2},
+    availableLanes:[{id:'a',status:'BUSY'}]
+  });
+  assert.equal(plan.capacity.sameFailureDomainScaleAllowed,true);
+  assert.equal(plan.capacity.requestedSameDomainLanes,2);
+  const scale=plan.actions.find(x=>x.type==='PROVISION_THROUGHPUT_LANE');
+  assert.equal(scale.requestedLanes,2);
+  assert.equal(scale.countsAsIndependentResilience,false);
+});
