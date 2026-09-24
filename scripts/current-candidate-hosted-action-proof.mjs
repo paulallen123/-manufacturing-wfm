@@ -56,6 +56,87 @@ const other = await login('other@isolation.example');
 const payroll = await login('payroll@northstar.example');
 const director = await login('superuser@northstar.example');
 
+function londonLocal(iso) {
+  if (!iso) return '';
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(new Date(iso)).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
+  return parts.year + '-' + parts.month + '-' + parts.day + 'T' + parts.hour + ':' + parts.minute;
+}
+
+// Create a genuine Time Review action through the supported manager correction workflow.
+// Reuse an existing open adjustment if a previous proof run left one for independent review.
+const period = '2026-09-07';
+let weekly = await raw('/api/weekly-review?period=' + encodeURIComponent(period), manager);
+assert.equal(weekly.status, 200);
+let adjustment = null;
+let adjustmentTeam = null;
+for (const team of weekly.body?.teams || []) {
+  const existing = (team.issues || []).find(issue => issue?.status === 'open' && issue?.type === 'adjustment');
+  if (existing) { adjustment = existing; adjustmentTeam = team; break; }
+}
+if (!adjustment) {
+  const team = (weekly.body?.teams || []).find(item => (item.records || []).some(row =>
+    row?.effective?.kind === 'worked' && row?.effective?.clockIn && row?.effective?.clockOut &&
+    (row?.effective?.breaks || []).length <= 1 && !(row?.effective?.breaks || []).some(item => item?.paid === true)
+  ));
+  assert.ok(team, 'No safe worked Time Review record exists for hosted correction proof.');
+  const row = team.records.find(item =>
+    item?.effective?.kind === 'worked' && item?.effective?.clockIn && item?.effective?.clockOut &&
+    (item?.effective?.breaks || []).length <= 1 && !(item?.effective?.breaks || []).some(entry => entry?.paid === true)
+  );
+  const managerBootstrap = await bootstrap(manager);
+  const breaks = row.effective.breaks || [];
+  const proposed = await raw('/api/command', manager, 'POST', {
+    command: 'review-amend',
+    payload: {
+      period,
+      team: team.id,
+      revision: team.revision,
+      record: row.id,
+      clockIn: londonLocal(row.effective.clockIn),
+      clockOut: londonLocal(new Date(Date.parse(row.effective.clockOut) + 5 * 60_000).toISOString()),
+      breakStart: londonLocal(breaks[0]?.start),
+      breakEnd: londonLocal(breaks[0]?.end),
+      breaksConfirmed: true,
+      reason: 'Hosted proof correction proposed from preserved source clock evidence.'
+    },
+    version: managerBootstrap.state.version
+  });
+  assert.equal(proposed.status, 200, 'Hosted review-amend failed: ' + JSON.stringify(proposed.body));
+  weekly = await raw('/api/weekly-review?period=' + encodeURIComponent(period), manager);
+  assert.equal(weekly.status, 200);
+  adjustmentTeam = (weekly.body?.teams || []).find(item => item.id === team.id);
+  adjustment = (adjustmentTeam?.issues || []).find(issue => issue?.status === 'open' && issue?.type === 'adjustment' && issue?.row === row.id);
+  assert.ok(adjustment, 'Saved manager correction did not create an open adjustment issue.');
+}
+pass('manager correction proposal created a real Time Review action', { issueId: adjustment.id, team: adjustmentTeam.id });
+
+const sourceAfterAdjustment = await raw('/api/time-review', manager);
+assert.equal(sourceAfterAdjustment.status, 200);
+const sourceIssue = (sourceAfterAdjustment.body?.teams || [])
+  .flatMap(team => team?.issues || [])
+  .find(issue => issue?.id === adjustment.id || issue?.sourceId === adjustment.id);
+assert.ok(sourceIssue, 'Time Review source did not expose the saved open adjustment.');
+const actionEvidenceAfterAdjustment = await raw('/api/workforce/lifecycle/action-evidence/time-review', manager);
+assert.equal(actionEvidenceAfterAdjustment.status, 200);
+const actionItem = (actionEvidenceAfterAdjustment.body?.items || [])
+  .find(item => item?.sourceId === adjustment.id || item?.sourceId === sourceIssue.id);
+assert.ok(actionItem, 'Lifecycle action-evidence bridge did not expose the saved Time Review adjustment.');
+pass('lifecycle bridge exposes the real Time Review action', {
+  sourceId: actionItem.sourceId,
+  state: actionItem.confirmation?.state || null
+});
+console.log('CURRENT_HOSTED_TIME_REVIEW_ACTION_CREATED|' + JSON.stringify({
+  issueId: adjustment.id,
+  state: actionItem.confirmation?.state || null,
+  reasonCode: actionItem.reasonCode || null,
+  observedAt: actionItem.observedAt || null,
+  authorityRequired: actionItem.authorityRequired || null
+}));
+
 for (const [label, path, cookie, accepted] of [
   ['integration catalog', '/api/integrations/autonomous/catalog', manager, [200]],
   ['integration status', '/api/integrations/autonomous/status', manager, [200]],
