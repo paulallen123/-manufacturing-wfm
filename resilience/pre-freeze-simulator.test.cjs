@@ -6,7 +6,7 @@ const { assessProofLane, simulatePreFreeze } = require('./pre-freeze-simulator.c
 function exactLane(overrides={}){
   return {
     id:'railway-a', provider:'railway', failureDomain:'railway:workspace-a', class:'exact-image',
-    variableNames:['WFM_DB','WFM_HOSTED_STAGING'], hostedModeValue:'true',
+    variableNames:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD'], hostedModeValue:'true',
     healthcheckPath:'/api/health', readinessMode:'condition', sourceSha:'sha-1',
     ...overrides
   };
