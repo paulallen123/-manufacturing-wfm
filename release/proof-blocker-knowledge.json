@@ -97,6 +97,14 @@
       "learnedFrom": "reporting UI provenance packaging 2026-09-24",
       "prevention": "Bind every composed source into the provenance model and assert required source files exist before hashing.",
       "permanentGuard": "built-asset provenance test + Docker source-tree existence checks"
+    },
+    {
+      "id": "manual-candidate-identity-env-drift",
+      "class": "EVIDENCE_OR_CATALOG_DRIFT",
+      "symptom": "A manually maintained service environment variable can lag behind the frozen commit and falsely appear to identify the candidate.",
+      "learnedFrom": "pre-freeze simulation hardening 2026-09-24",
+      "prevention": "Derive exact candidate identity from immutable freeze receipt, deployment commit metadata and source-bound build evidence; environment hints are never authoritative.",
+      "permanentGuard": "proof-lane candidate-identity policy + external deployment metadata comparison"
     }
   ]
 }
