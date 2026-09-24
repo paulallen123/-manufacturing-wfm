@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "id": "VECTOR_T9_SUNDAY_EXIT_2026_09_27",
+  "deadline": "2026-09-27T23:59:59+01:00",
+  "rule": "No waiver, no claim inflation, no simulation counted as proof, no unsafe shortcut.",
+  "inherits": [
+    "VECTOR FORGE",
+    "VECTOR_T9_TRUST_SPINE_V1",
+    "VECTOR_T9_CONTINUOUS_CUSTOMER_GUARDIAN_V1",
+    "VECTOR_FINISH_LINE_REHEARSAL_V1"
+  ],
+  "globalInvariants": [
+    "no direct consequential write path outside Typed Action Gateway",
+    "no actor or model may grant or expand its own authority",
+    "unknown or contradictory evidence reduces autonomy",
+    "executor and verifier are distinct principals",
+    "tenant isolation enforced at read, action, evidence and verification layers",
+    "payroll/data-integrity boundaries fail closed",
+    "all consequential actions are idempotent or reconciled before retry",
+    "all reversible actions have tested rollback/compensation",
+    "no resolved status without verified postconditions",
+    "simulation/shadow results never count as operational proof",
+    "predicted value never counts as realised value",
+    "cross-tenant raw learning is prohibited",
+    "learning is proposal-only until independently promoted"
+  ],
+  "promotionLadder": [
+    "SOURCE_BUILT",
+    "EXACT_CANDIDATE_TESTED",
+    "HOSTED_SHADOW_PROVED",
+    "BOUNDED_ACTION_PROVED",
+    "OUTCOME_VERIFIED",
+    "CAUSAL_HYPOTHESIS_EVALUATED",
+    "COUNTERFACTUAL_EVALUATED",
+    "CANARY_PROVED",
+    "INDEPENDENTLY_PROMOTED"
+  ],
+  "domains": [
+    "today-people-plan-improve",
+    "factory-autopilot",
+    "decision-intelligence",
+    "implementation-launch-autopilot",
+    "autonomous-integrations",
+    "clocking-attendance-payroll",
+    "agency-labour",
+    "energy-intelligence",
+    "cash-to-capacity",
+    "training-learning-video",
+    "identity-production-tenants",
+    "mobile-tablet-mass-clocking",
+    "realtime-ui",
+    "customer-outcome-value-proof",
+    "adaptive-self-learning",
+    "vecta-autonomous-support",
+    "resilience-restart-recovery",
+    "release-governance"
+  ],
+  "requiredProofPerDomain": [
+    "exact source SHA and built-asset provenance",
+    "deterministic positive tests",
+    "negative/security tests",
+    "hosted authenticated role/tenant journey",
+    "bounded consequential action or explicit safe abstention",
+    "independent postcondition verification",
+    "refresh/new-login persistence",
+    "restart/recovery and replay safety",
+    "rollback/compensation or fail-closed containment",
+    "destructive fault scenario",
+    "evidence/decision receipt",
+    "learning episode that cannot self-promote",
+    "regression generated from verified failure or outcome",
+    "canary/shadow evidence",
+    "independent promotion decision"
+  ],
+  "mandatoryCrossDomainScenarios": [
+    "stale-or-contradictory-data",
+    "lost-write-acknowledgement",
+    "restart-mid-action",
+    "rollback-failure",
+    "cross-tenant-injection",
+    "identity-provider-outage",
+    "telemetry-blackout",
+    "schema-drift",
+    "customer-has-no-upstream-system",
+    "device-or-edge-offline",
+    "payroll-deadline-with-unresolved-evidence",
+    "model-or-agent-unavailable",
+    "poisoned-memory-or-prompt",
+    "regional-cloud-outage",
+    "customer-correction-of-vecta",
+    "unknown-cascading-failure"
+  ],
+  "sundayClaimGate": {
+    "mayClaimFullyT9OnlyIf": [
+      "every domain has reached every promotion ladder stage",
+      "all global invariants are machine-verified",
+      "all mandatory cross-domain scenarios pass on exact candidate",
+      "no consequential write bypass exists",
+      "all proof receipts bind to the same immutable release identity",
+      "independent promotion has no unresolved critical finding"
+    ],
+    "mustNotClaimIfAny": [
+      "a domain is missing a promotion stage",
+      "evidence comes only from unit tests or simulation",
+      "rollback/recovery is unverified",
+      "tenant or payroll safety relies on convention rather than enforcement",
+      "external-system behaviour is asserted without evidence",
+      "realised financial outcome is inferred rather than reconciled"
+    ]
+  }
+}
