@@ -47,10 +47,18 @@ if (!html.includes('vector-ui.css')) {
   if (!html.includes('</head>')) throw new Error('INDEX_HEAD_CLOSE_MISSING');
   html = html.replace('</head>', '<link rel="stylesheet" href="/vector-ui.css"></head>');
 }
+if (!html.includes('vector-reporting-ui.css')) {
+  if (!html.includes('</head>')) throw new Error('INDEX_HEAD_CLOSE_MISSING');
+  html = html.replace('</head>', '<link rel="stylesheet" href="/vector-reporting-ui.css"></head>');
+}
 
 if (!html.includes('vector-ui.js')) {
   if (!html.includes('</body>')) throw new Error('INDEX_BODY_CLOSE_MISSING');
   html = html.replace('</body>', '<script src="/vector-ui.js"></script></body>');
+}
+if (!html.includes('vector-reporting-ui.js')) {
+  if (!html.includes('</body>')) throw new Error('INDEX_BODY_CLOSE_MISSING');
+  html = html.replace('</body>', '<script src="/vector-reporting-ui.js"></script></body>');
 }
 
 fs.writeFileSync(indexPath, html);
@@ -66,5 +74,13 @@ for (const name of ['vector-ui.js', 'vector-ui.css']) {
     throw new Error(`VECTOR_CANONICAL_MARKER_MISSING:${name}`);
   }
 }
+for (const name of ['vector-reporting-ui.js', 'vector-reporting-ui.css']) {
+  const file = path.join(publicRoot, name);
+  if (!fs.existsSync(file)) throw new Error(`VECTOR_REPORTING_ASSET_MISSING:${name}`);
+  if (!fs.readFileSync(file, 'utf8').includes('VECTOR_REPORTING_UI_V1')) {
+    throw new Error(`VECTOR_REPORTING_MARKER_MISSING:${name}`);
+  }
+}
+console.log('VECTOR_REPORTING_COMPOSITION=PASS');
 console.log('VECTOR_INDEX_COMPOSITION=PASS');
 console.log('VECTOR_RETIRED_ENTRYPOINT_PURGE=PASS');
