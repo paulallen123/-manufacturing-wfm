@@ -19,7 +19,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-vector-only-ui.mjs \
  && node --check learning/video-worker/runner.mjs \
  && node integration-fabric/scripts/validate.mjs \
- && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/t9-customer-guardian.test.cjs trust/runtime/vector-trust-spine.test.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/owner-access-recovery.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/t9-customer-guardian.test.cjs reporting/runtime/vector-reporting-service.test.cjs trust/runtime/vector-trust-spine.test.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/owner-access-recovery.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -127,6 +127,8 @@ COPY operations/runtime/decision-outcome-proof.cjs /app/operations-runtime/decis
 COPY operations/runtime/realtime-event-service.cjs /app/operations-runtime/realtime-event-service.cjs
 COPY operations/runtime/autopilot-execution-engine.cjs /app/operations-runtime/autopilot-execution-engine.cjs
 COPY operations/runtime/t9-customer-guardian.cjs /app/operations-runtime/t9-customer-guardian.cjs
+RUN mkdir -p /app/reporting-runtime
+COPY reporting/runtime/vector-reporting-service.cjs /app/reporting-runtime/vector-reporting-service.cjs
 RUN mkdir -p /app/trust-runtime
 COPY trust/runtime/vector-trust-spine.cjs /app/trust-runtime/vector-trust-spine.cjs
 COPY src/frontier/cash-to-capacity-engine.mjs /app/operations-runtime/cash-to-capacity-engine.mjs
@@ -174,7 +176,7 @@ COPY implementation/proof/cloud-scale-proof-runner.cjs /app/proof-runtime/cloud-
 # Deterministic build admission for the new implementation and learning control planes.
 # Tests execute against the exact files copied into this image; test sources are removed
 # afterwards so they do not expand the runtime attack surface.
-RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime /tmp/wfm-tests/security/runtime /tmp/wfm-tests/integration/runtime /tmp/wfm-tests/integration/worker /tmp/wfm-tests/operations/runtime /tmp/wfm-tests/trust/runtime
+RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime /tmp/wfm-tests/security/runtime /tmp/wfm-tests/integration/runtime /tmp/wfm-tests/integration/worker /tmp/wfm-tests/operations/runtime /tmp/wfm-tests/reporting/runtime /tmp/wfm-tests/trust/runtime
 COPY implementation/runtime/one-day-enterprise-engine.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.cjs
 COPY implementation/runtime/one-day-enterprise-engine-core.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine-core.cjs
 COPY implementation/runtime/readiness-evidence-contract.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.cjs
@@ -236,6 +238,8 @@ COPY operations/runtime/autopilot-execution-engine.cjs /tmp/wfm-tests/operations
 COPY operations/runtime/autopilot-execution-engine.test.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs
 COPY operations/runtime/t9-customer-guardian.cjs /tmp/wfm-tests/operations/runtime/t9-customer-guardian.cjs
 COPY operations/runtime/t9-customer-guardian.test.cjs /tmp/wfm-tests/operations/runtime/t9-customer-guardian.test.cjs
+COPY reporting/runtime/vector-reporting-service.cjs /tmp/wfm-tests/reporting/runtime/vector-reporting-service.cjs
+COPY reporting/runtime/vector-reporting-service.test.cjs /tmp/wfm-tests/reporting/runtime/vector-reporting-service.test.cjs
 COPY trust/runtime/vector-trust-spine.cjs /tmp/wfm-tests/trust/runtime/vector-trust-spine.cjs
 COPY trust/runtime/vector-trust-spine.test.cjs /tmp/wfm-tests/trust/runtime/vector-trust-spine.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
@@ -270,6 +274,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/decision-outcome-proof.test.cjs \
       /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs \
       /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs \
+      /tmp/wfm-tests/reporting/runtime/vector-reporting-service.test.cjs \
  && rm -rf /tmp/wfm-tests
 
 # Railway cloud-build admission: execute the exact 10,000-employee / 50-site
@@ -283,6 +288,8 @@ RUN WFM_PROOF_ONESHOT=true \
 # The active image has one presentation entry point only: vector-ui.css + vector-ui.js.
 # Retired shell entry points are physically removed from the runtime image, not hidden.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
+COPY reporting/ui/vector-reporting-ui.js /app/public/vector-reporting-ui.js
+COPY reporting/ui/vector-reporting-ui.css /app/public/vector-reporting-ui.css
 COPY scripts/compose-vector-presentation.mjs /tmp/compose-vector-presentation.mjs
 COPY scripts/prove-vector-built-asset-provenance.mjs /tmp/prove-vector-built-asset-provenance.mjs
 RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
@@ -290,6 +297,8 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
  && node --check /tmp/wfm-ux-overlay/vector-realtime.js \
+ && node --check /app/public/vector-reporting-ui.js \
+ && node --check /app/reporting-runtime/vector-reporting-service.cjs \
  && printf '/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' > /app/public/vector-ui.css \
  && cat /app/public/factory-control-ui.css >> /app/public/vector-ui.css \
  && printf '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' >> /app/public/vector-ui.css \
@@ -323,7 +332,7 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
           /app/public/review-ui.css \
           /app/public/ui-evolution.css \
           /app/public/vector-shell.js \
- && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.js','factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS')" \
+ && node -e "const fs=require('fs');const h=fs.readFileSync('/app/public/index.html','utf8');const forbidden=['factory-control-ui.js','factory-control-ui.css','value-cockpit-ui.js','value-cockpit-ui.css','review-ui.js','review-ui.css','ui-evolution.css','vector-shell.js'];for(const name of forbidden){if(h.includes(name)||fs.existsSync('/app/public/'+name))throw new Error('Retired presentation remains: '+name)}const css=fs.readFileSync('/app/public/vector-ui.css','utf8');const js=fs.readFileSync('/app/public/vector-ui.js','utf8');const rcss=fs.readFileSync('/app/public/vector-reporting-ui.css','utf8');const rjs=fs.readFileSync('/app/public/vector-reporting-ui.js','utf8');if(!h.includes('/vector-ui.css')||!h.includes('/vector-ui.js')||!h.includes('/vector-reporting-ui.css')||!h.includes('/vector-reporting-ui.js')||!css.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!js.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1')||!rcss.includes('VECTOR_REPORTING_UI_V1')||!rjs.includes('VECTOR_REPORTING_UI_V1'))throw new Error('Vector-only presentation admission failed');console.log('VECTOR_SINGLE_PRESENTATION_ENTRYPOINT=PASS');console.log('VECTOR_REPORTING_PRESENTATION_ADMISSION=PASS')" \
  && mkdir -p /tmp/vector-provenance/learning /tmp/vector-provenance/implementation \
  && cp -r /tmp/wfm-ux-overlay /tmp/vector-provenance/ux-overlay \
  && cp -r /tmp/wfm-learning-ui /tmp/vector-provenance/learning/ui \
