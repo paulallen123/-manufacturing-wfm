@@ -105,6 +105,14 @@
       "learnedFrom": "pre-freeze simulation hardening 2026-09-24",
       "prevention": "Derive exact candidate identity from immutable freeze receipt, deployment commit metadata and source-bound build evidence; environment hints are never authoritative.",
       "permanentGuard": "proof-lane candidate-identity policy + external deployment metadata comparison"
+    },
+    {
+      "id": "eager-duplicate-freeze-fanout",
+      "class": "CAPACITY_OR_QUEUE",
+      "symptom": "One frozen candidate automatically starts multiple same-scope/same-provider specialist and overflow builds, consuming shared build slots and delaying the proof stage that actually matters.",
+      "learnedFrom": "Friday proof fan-out 2026-09-24",
+      "prevention": "Freeze triggers only the minimum canonical proof set; specialist/overflow services use lane-specific triggers and are activated only when the simulator assigns them.",
+      "permanentGuard": "proof trigger routing policy + Railway lane-specific watch patterns"
     }
   ]
 }
