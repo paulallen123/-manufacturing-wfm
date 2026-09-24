@@ -214,7 +214,8 @@ function renderReport(){
       <div><span class="vector-reporting-kicker">${esc(s.label)}</span><h3>${esc(t?.label||s.label)}</h3><p>${esc(s.description)}</p></div>
       <div class="vector-reporting-actions">
         <button type="button" class="secondary" data-report-save>Save</button>
-        <button type="button" class="secondary" data-report-export ${state.rows.length?'':'disabled'}>Export CSV</button>
+        <button type="button" class="secondary" data-report-export ${state.rows.length?'':'disabled'}>CSV / Excel</button>
+        <button type="button" class="secondary" data-report-print ${state.rows.length?'':'disabled'}>Print / PDF</button>
         <button type="button" class="primary" data-report-run>${state.loading?'Running…':'Run report'}</button>
       </div>
     </div>
@@ -288,6 +289,14 @@ function csv(){
   const blob=new Blob([data],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download='vector-report-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+function printReport(){
+  if(!state.rows.length)return;
+  document.body.classList.add('vector-reporting-print');
+  const cleanup=()=>document.body.classList.remove('vector-reporting-print');
+  window.addEventListener('afterprint',cleanup,{once:true});
+  window.print();
+  setTimeout(cleanup,2000);
+}
 function toast(message){try{if(typeof window.toast==='function')return window.toast(message);}catch{}alert(message);}
 async function handleClick(e){
   const t=e.target.closest('[data-report-template]');if(t){await chooseTemplate(t.dataset.reportTemplate);return;}
@@ -295,6 +304,7 @@ async function handleClick(e){
   if(e.target.closest('[data-report-run]')){await run();return;}
   if(e.target.closest('[data-report-save]')){await save();return;}
   if(e.target.closest('[data-report-export]')){csv();return;}
+  if(e.target.closest('[data-report-print]')){printReport();return;}
   const col=e.target.closest('[data-report-column]');
   if(col){const f=col.dataset.reportColumn;if(col.checked&&!state.columns.includes(f))state.columns.push(f);if(!col.checked)state.columns=state.columns.filter(x=>x!==f);}
 }
