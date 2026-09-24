@@ -78,3 +78,26 @@ body.vector-reporting-open{overflow:hidden}
   body.vector-reporting-print .vector-reporting-table-wrap{overflow:visible!important}
   body.vector-reporting-print .vector-reporting-table-card th{position:static!important}
 }
+
+
+.vector-reporting-schedule-panel{display:grid;grid-template-columns:minmax(220px,1.6fr) minmax(130px,.7fr) minmax(110px,.55fr) auto;gap:9px;align-items:end;margin-bottom:11px;padding:12px;border:1px solid #cfe0f5;border-radius:10px;background:#fff}
+.vector-reporting-schedule-panel>div b{display:block;color:#1a304d;font-size:10.5px}
+.vector-reporting-schedule-panel>div span{display:block;margin-top:4px;color:#6a7c94;font-size:8.5px;line-height:1.4}
+.vector-reporting-schedule-panel label,.vector-reporting-control{display:grid;gap:5px;color:#526781;font-size:8.5px;font-weight:700}
+.vector-reporting-schedule-panel select,.vector-reporting-schedule-panel input,.vector-reporting-control select,.vector-reporting-filter-builder select,.vector-reporting-filter-builder input{height:34px;border:1px solid #d5dfec;border-radius:7px;background:#fff;color:#203650;padding:0 8px;font:500 9px/1 inherit;outline:none}
+.vector-reporting-schedule-panel .primary,.vector-reporting-filter-builder button{height:34px;border:1px solid #176ff3;border-radius:7px;background:#176ff3;color:#fff;padding:0 11px;font:700 9px/1 inherit;cursor:pointer}
+.vector-reporting-advanced-grid{display:grid;grid-template-columns:170px minmax(0,1.7fr) minmax(0,1.2fr);gap:8px;padding:3px 0 10px;align-items:end}
+.vector-reporting-filter-builder{display:grid;grid-template-columns:minmax(100px,1fr) minmax(85px,.8fr) minmax(100px,1fr) auto;gap:6px;align-items:end}
+.vector-reporting-filter-builder:last-child{grid-template-columns:minmax(120px,1fr) minmax(140px,1fr) auto}
+.vector-reporting-chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 0 10px}
+.vector-reporting-chips button{appearance:none;border:1px solid #cad9ea;border-radius:999px;background:#f6faff;color:#31577f;padding:6px 9px;font:600 8px/1 inherit;cursor:pointer}
+.vector-reporting-chips button:after{content:' ×';color:#72859b}
+.vector-reporting-kpi-view{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:14px}
+.vector-reporting-kpi-view>div{min-height:105px;border:1px solid #e1e8f1;border-radius:9px;padding:13px;background:#fff}
+.vector-reporting-kpi-view small{display:block;color:#64768e;font-size:8.5px}.vector-reporting-kpi-view strong{display:block;margin:10px 0 5px;color:#15283f;font-size:23px;letter-spacing:-.03em}.vector-reporting-kpi-view span{color:#176ff3;font-size:8px}
+.vector-reporting-bar-view{padding:16px;display:grid;gap:9px}.vector-reporting-bar-row{display:grid;grid-template-columns:minmax(90px,160px) minmax(120px,1fr) 80px;align-items:center;gap:9px;color:#536880;font-size:8.5px}.vector-reporting-bar-row>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vector-reporting-bar-row>i{height:11px;background:#eef3f9;border-radius:999px;overflow:hidden}.vector-reporting-bar-row>i>b{display:block;height:100%;border-radius:999px;background:#176ff3}.vector-reporting-bar-row>strong{text-align:right;color:#1c314d;font-size:9px}
+.vector-reporting-line-view{padding:15px;color:#176ff3}.vector-reporting-line-view svg{width:100%;height:220px;display:block;border-bottom:1px solid #e4eaf2}.vector-reporting-line-labels{display:flex;justify-content:space-between;gap:5px;margin-top:7px;color:#6b7d94;font-size:7.5px}.vector-reporting-line-labels span{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vector-reporting-saved-row.dashboard{border-left:3px solid #176ff3}.vector-reporting-saved-row.delivery{border-left:3px solid #4b87d2}
+@media(max-width:1050px){.vector-reporting-schedule-panel{grid-template-columns:1fr 1fr}.vector-reporting-advanced-grid{grid-template-columns:1fr}.vector-reporting-filter-builder{grid-template-columns:1fr 1fr 1fr auto}}
+@media(max-width:760px){.vector-reporting-schedule-panel{grid-template-columns:1fr}.vector-reporting-filter-builder,.vector-reporting-filter-builder:last-child{grid-template-columns:1fr 1fr}.vector-reporting-filter-builder button{grid-column:1/-1}.vector-reporting-kpi-view{grid-template-columns:1fr 1fr}.vector-reporting-bar-row{grid-template-columns:100px 1fr 55px}}
+@media(max-width:500px){.vector-reporting-kpi-view{grid-template-columns:1fr}.vector-reporting-line-labels{display:none}}
