@@ -73,3 +73,17 @@ test('manager capacity scales with worker and lane pressure', () => {
   assert.equal(plan.capacity.fixedWorkerLimit,false);
   assert.equal(plan.capacity.fixedManagerLimit,false);
 });
+
+test('pre-freeze rejected lanes are excluded from elastic capacity', () => {
+  const plan=planNoIdleWait({
+    dependency:{id:'proof',status:'PENDING'},
+    availableLanes:[{id:'good',status:'READY'},{id:'bad',status:'READY'}],
+    preFreeze:{candidateSha:'sha',requiredIndependentFailureDomains:2,lanes:[
+      {id:'good',provider:'railway',failureDomain:'railway:a',class:'exact-image',variableNames:['WFM_DB','WFM_HOSTED_STAGING'],hostedModeValue:'true',healthcheckPath:'/api/health',readinessMode:'condition',sourceSha:'sha'},
+      {id:'bad',provider:'railway',failureDomain:'railway:a',class:'exact-image',variableNames:[],hostedModeValue:'true',healthcheckPath:'/api/health',readinessMode:'condition',sourceSha:'sha'}
+    ]}
+  });
+  assert.equal(plan.capacity.admittedLaneCount,1);
+  assert.equal(plan.promotionBlocked,true);
+  assert.ok(plan.actions.some(x=>x.type==='REPAIR_LANE_BEFORE_FREEZE'&&x.laneId==='bad'));
+});
