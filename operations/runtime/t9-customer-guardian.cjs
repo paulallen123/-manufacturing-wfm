@@ -14,6 +14,7 @@ function family(p){
   if(p.startsWith('/api/learning/training'))return'training';
   if(p.startsWith('/api/learning'))return'learning';
   if(p.startsWith('/api/realtime'))return'realtime';
+  if(p.startsWith('/api/reporting'))return'reporting';
   if(p==='/api/login'||p==='/api/logout'||p.startsWith('/api/staging-access'))return'identity';
   return p.startsWith('/api/')?'other-api':'non-api';
 }
@@ -29,7 +30,8 @@ function scenarios(f,r){
     learning:['model-or-agent-unavailable','poisoned-memory-or-prompt'],
     identity:['identity-provider-outage','cross-tenant-injection','regional-cloud-outage'],
     realtime:['telemetry-blackout','regional-cloud-outage'],
-    'decision-intelligence':['model-or-agent-unavailable','customer-correction-of-vecta']
+    'decision-intelligence':['model-or-agent-unavailable','customer-correction-of-vecta'],
+    reporting:['cross-tenant-injection','stale-or-contradictory-data','customer-correction-of-vecta']
   };
   const out=[...base,...(map[f]||[])];if(r==='HIGH')out.push('dependency-failure-during-consequential-action');return[...new Set(out)];
 }
