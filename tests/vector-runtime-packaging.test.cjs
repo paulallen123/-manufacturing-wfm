@@ -29,6 +29,7 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
     'implementation-runtime': 'implementation',
     'learning-runtime': 'learning',
     'operations-runtime': 'operations',
+    'reporting-runtime': 'reporting',
     'trust-runtime': 'trust'
   };
   for (const required of absoluteRequires) {
