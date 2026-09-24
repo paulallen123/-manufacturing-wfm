@@ -9,6 +9,9 @@ const MAX_COLUMNS = 24;
 const MAX_FILTERS = 20;
 const MAX_SORTS = 4;
 const MAX_LIMIT = 5000;
+const MAX_DASHBOARD_PINS = 12;
+const CADENCES = new Set(['daily','weekly','monthly']);
+const DELIVERY_MODES = new Set(['in_app','email_link','sftp']);
 
 const ROLE_LEVEL = Object.freeze({
   employee: 0,
@@ -155,6 +158,42 @@ function cleanFilter(filter,allowed){
   else if(typeof value==='string') value=compact(value,500);
   return {field,operator,value:value??null};
 }
+function normaliseDashboard(input={}){
+  const title=compact(input.title,120)||'My reporting dashboard';
+  const pins=[...new Set((Array.isArray(input.reportIds)?input.reportIds:[]).map(v=>compact(v,100)).filter(Boolean))].slice(0,MAX_DASHBOARD_PINS);
+  return Object.freeze({
+    schemaVersion:'VECTOR_REPORT_DASHBOARD_V1',
+    title,
+    reportIds:pins,
+    layout:'responsive-grid',
+    claimBoundary:'Dashboard tiles retain the source report permission and evidence boundaries. A dashboard never widens report access.'
+  });
+}
+function normaliseSchedule(input={},deliveryAdapter){
+  const reportId=compact(input.reportId,100);
+  if(!reportId) throw new Error('reportId is required.');
+  const cadence=compact(input.cadence||'weekly',20).toLowerCase();
+  if(!CADENCES.has(cadence)) throw new Error('Unsupported schedule cadence.');
+  const hour=Number(input.hour),minute=Number(input.minute);
+  if(!Number.isInteger(hour)||hour<0||hour>23||!Number.isInteger(minute)||minute<0||minute>59) throw new Error('Schedule hour/minute are invalid.');
+  const timeZone=compact(input.timeZone,80)||'UTC';
+  try{new Intl.DateTimeFormat('en-GB',{timeZone}).format(new Date());}catch{throw new Error('Schedule timeZone must be a valid IANA time zone.');}
+  const weekday=cadence==='weekly'?Number(input.weekday):null;
+  if(cadence==='weekly'&&(!Number.isInteger(weekday)||weekday<0||weekday>6)) throw new Error('Weekly schedule requires weekday 0-6.');
+  const dayOfMonth=cadence==='monthly'?Number(input.dayOfMonth):null;
+  if(cadence==='monthly'&&(!Number.isInteger(dayOfMonth)||dayOfMonth<1||dayOfMonth>28)) throw new Error('Monthly schedule requires dayOfMonth 1-28.');
+  const delivery=compact(input.delivery||'in_app',24).toLowerCase();
+  if(!DELIVERY_MODES.has(delivery)) throw new Error('Unsupported delivery mode.');
+  if(delivery!=='in_app'&&(!deliveryAdapter||typeof deliveryAdapter.deliver!=='function')) throw new Error('External report delivery adapter is not configured.');
+  const destination=delivery==='in_app'?null:compact(input.destination,320);
+  if(delivery!=='in_app'&&!destination) throw new Error('External delivery destination is required.');
+  return Object.freeze({
+    schemaVersion:'VECTOR_REPORT_SCHEDULE_V1',reportId,cadence,hour,minute,timeZone,weekday,dayOfMonth,delivery,destination,
+    claimBoundary:delivery==='in_app'
+      ?'Scheduled in-product delivery opens the governed live report; it is not a frozen historical snapshot.'
+      :'External delivery remains subject to the configured independently verified delivery adapter.'
+  });
+}
 function normaliseDefinition(input,role){
   if(!input||typeof input!=='object'||Array.isArray(input)) throw new Error('Report definition is required.');
   const sourceId=compact(input.sourceId,80),source=sourceById(sourceId);
@@ -209,6 +248,7 @@ async function readJson(req){
 
 function createVectorReportingService(options={}){
   const dbPath=options.dbPath||process.env.WFM_DB;
+  const deliveryAdapter=options.deliveryAdapter||null;
   if(!dbPath) throw new Error('VECTOR reporting service requires WFM_DB.');
   const db=new DatabaseSync(dbPath);
   db.exec(`
@@ -237,10 +277,55 @@ function createVectorReportingService(options={}){
       detail_json TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS vector_report_dashboards(
+      id TEXT PRIMARY KEY,
+      tenant TEXT NOT NULL,
+      created_by TEXT NOT NULL,
+      dashboard_json TEXT NOT NULL,
+      dashboard_digest TEXT NOT NULL,
+      version_of TEXT,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS vector_report_dashboards_tenant_created
+      ON vector_report_dashboards(tenant,created_at DESC);
+    CREATE TABLE IF NOT EXISTS vector_report_schedules(
+      id TEXT PRIMARY KEY,
+      tenant TEXT NOT NULL,
+      created_by TEXT NOT NULL,
+      schedule_json TEXT NOT NULL,
+      schedule_digest TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS vector_report_schedules_tenant_created
+      ON vector_report_schedules(tenant,created_at DESC);
+    CREATE TABLE IF NOT EXISTS vector_report_deliveries(
+      delivery_key TEXT PRIMARY KEY,
+      tenant TEXT NOT NULL,
+      schedule_id TEXT NOT NULL,
+      report_id TEXT NOT NULL,
+      mode TEXT NOT NULL,
+      status TEXT NOT NULL,
+      receipt_json TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS vector_report_deliveries_tenant_created
+      ON vector_report_deliveries(tenant,created_at DESC);
     CREATE TRIGGER IF NOT EXISTS no_vector_report_update
       BEFORE UPDATE ON vector_report_definitions BEGIN SELECT RAISE(ABORT,'Report definitions are immutable; create a new version.'); END;
     CREATE TRIGGER IF NOT EXISTS no_vector_report_delete
       BEFORE DELETE ON vector_report_definitions BEGIN SELECT RAISE(ABORT,'Report definitions are immutable.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_dashboard_update
+      BEFORE UPDATE ON vector_report_dashboards BEGIN SELECT RAISE(ABORT,'Dashboards are immutable; create a new version.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_dashboard_delete
+      BEFORE DELETE ON vector_report_dashboards BEGIN SELECT RAISE(ABORT,'Dashboards are immutable.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_schedule_update
+      BEFORE UPDATE ON vector_report_schedules BEGIN SELECT RAISE(ABORT,'Schedules are immutable; create a replacement.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_schedule_delete
+      BEFORE DELETE ON vector_report_schedules BEGIN SELECT RAISE(ABORT,'Schedules are immutable.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_delivery_update
+      BEFORE UPDATE ON vector_report_deliveries BEGIN SELECT RAISE(ABORT,'Delivery receipts are append only.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_delivery_delete
+      BEFORE DELETE ON vector_report_deliveries BEGIN SELECT RAISE(ABORT,'Delivery receipts are append only.'); END;
     CREATE TRIGGER IF NOT EXISTS no_vector_report_audit_update
       BEFORE UPDATE ON vector_report_audit BEGIN SELECT RAISE(ABORT,'Report audit is append only.'); END;
     CREATE TRIGGER IF NOT EXISTS no_vector_report_audit_delete
@@ -252,6 +337,14 @@ function createVectorReportingService(options={}){
   const list=db.prepare('SELECT id,title,source_id,definition_json,definition_digest,version_of,created_by,created_at FROM vector_report_definitions WHERE tenant=? ORDER BY created_at DESC LIMIT 200');
   const one=db.prepare('SELECT id,title,source_id,definition_json,definition_digest,version_of,created_by,created_at FROM vector_report_definitions WHERE tenant=? AND id=?');
   const auditRows=db.prepare('SELECT id,report_id,actor,event,detail_json,created_at FROM vector_report_audit WHERE tenant=? ORDER BY id DESC LIMIT 250');
+  const dashboardInsert=db.prepare('INSERT INTO vector_report_dashboards(id,tenant,created_by,dashboard_json,dashboard_digest,version_of,created_at) VALUES(?,?,?,?,?,?,?)');
+  const dashboardList=db.prepare('SELECT id,created_by,dashboard_json,dashboard_digest,version_of,created_at FROM vector_report_dashboards WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
+  const dashboardOne=db.prepare('SELECT id,created_by,dashboard_json,dashboard_digest,version_of,created_at FROM vector_report_dashboards WHERE tenant=? AND id=?');
+  const scheduleInsert=db.prepare('INSERT INTO vector_report_schedules(id,tenant,created_by,schedule_json,schedule_digest,created_at) VALUES(?,?,?,?,?,?)');
+  const scheduleList=db.prepare('SELECT id,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
+  const allSchedules=db.prepare('SELECT id,tenant,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules ORDER BY created_at ASC');
+  const deliveryInsert=db.prepare('INSERT OR IGNORE INTO vector_report_deliveries(delivery_key,tenant,schedule_id,report_id,mode,status,receipt_json,created_at) VALUES(?,?,?,?,?,?,?,?)');
+  const deliveryList=db.prepare('SELECT delivery_key,schedule_id,report_id,mode,status,receipt_json,created_at FROM vector_report_deliveries WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
 
   function context(req){
     const token=cookieToken(req);
@@ -272,6 +365,54 @@ function createVectorReportingService(options={}){
   function record(c,reportId,event,detail){
     audit.run(c.tenant,reportId||null,c.email,event,JSON.stringify(detail||{}),new Date().toISOString());
   }
+  function dashboardRow(row){
+    if(!row)return null;
+    return {id:row.id,dashboard:JSON.parse(row.dashboard_json),dashboardDigest:row.dashboard_digest,versionOf:row.version_of||null,createdBy:row.created_by,createdAt:row.created_at};
+  }
+  function scheduleRow(row){
+    if(!row)return null;
+    return {id:row.id,schedule:JSON.parse(row.schedule_json),scheduleDigest:row.schedule_digest,createdBy:row.created_by,createdAt:row.created_at};
+  }
+  function localParts(date,timeZone){
+    const parts=new Intl.DateTimeFormat('en-GB',{timeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',weekday:'short',hourCycle:'h23'}).formatToParts(date);
+    const get=t=>parts.find(p=>p.type===t)?.value||'';
+    const weekdays={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+    return {year:get('year'),month:get('month'),day:get('day'),hour:Number(get('hour')),minute:Number(get('minute')),weekday:weekdays[get('weekday')]};
+  }
+  function dueKey(schedule,now=new Date()){
+    const p=localParts(now,schedule.timeZone);
+    if(p.hour!==schedule.hour||p.minute!==schedule.minute)return null;
+    if(schedule.cadence==='weekly'&&p.weekday!==schedule.weekday)return null;
+    if(schedule.cadence==='monthly'&&Number(p.day)!==schedule.dayOfMonth)return null;
+    return [p.year,p.month,p.day,String(p.hour).padStart(2,'0'),String(p.minute).padStart(2,'0')].join('-');
+  }
+  async function runDueSchedules(now=new Date()){
+    const results=[];
+    for(const row of allSchedules.all()){
+      let schedule;try{schedule=JSON.parse(row.schedule_json);}catch{continue;}
+      const slot=dueKey(schedule,now);if(!slot)continue;
+      const report=one.get(row.tenant,schedule.reportId);if(!report)continue;
+      const key=row.id+':'+slot;
+      let status='READY',externalReceipt=null;
+      if(schedule.delivery!=='in_app'){
+        if(!deliveryAdapter||typeof deliveryAdapter.deliver!=='function')status='BLOCKED_NO_ADAPTER';
+        else{
+          try{
+            externalReceipt=await deliveryAdapter.deliver({tenant:row.tenant,scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,delivery:schedule.delivery,destination:schedule.destination,slot});
+            status='SENT';
+          }catch(error){status='FAILED';externalReceipt={errorDigest:digest(compact(error?.message||'delivery failure',240))};}
+        }
+      }
+      const receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
+      const createdAt=new Date().toISOString();
+      const inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
+      if(inserted)results.push({...receipt,deliveryKey:key,createdAt});
+    }
+    return results;
+  }
+  const schedulerTimer=setInterval(()=>{runDueSchedules().catch(()=>{});},Math.max(10000,Number(options.schedulerTickMs)||30000));
+  if(schedulerTimer.unref)schedulerTimer.unref();
+
   async function handleRequest(req,res){
     const path=requestPath(req);
     if(!path.startsWith(PREFIX)) return false;
@@ -317,6 +458,49 @@ function createVectorReportingService(options={}){
       }
     }
 
+    if(path===PREFIX+'/dashboards'&&method==='GET'){
+      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_DASHBOARD_LIST_V1',dashboards:dashboardList.all(c.tenant).map(dashboardRow)});
+    }
+
+    if(path===PREFIX+'/dashboards/pin'&&method==='POST'){
+      try{
+        const body=await readJson(req),reportId=compact(body.reportId,100);
+        if(!reportId||!one.get(c.tenant,reportId)) return writeJson(res,404,{error:'Report not found for this tenant.'});
+        const latest=dashboardList.all(c.tenant)[0]||null;
+        const previous=latest?dashboardRow(latest):null;
+        const ids=[...(previous?.dashboard?.reportIds||[]),reportId];
+        const dashboard=normaliseDashboard({title:body.title||previous?.dashboard?.title||'My reporting dashboard',reportIds:ids});
+        const id='vd-'+randomUUID(),createdAt=new Date().toISOString(),dashboardDigest=digest(dashboard);
+        dashboardInsert.run(id,c.tenant,c.email,JSON.stringify(dashboard),dashboardDigest,previous?.id||null,createdAt);
+        record(c,reportId,'REPORT_PINNED',{dashboardId:id,dashboardDigest,versionOf:previous?.id||null});
+        return writeJson(res,201,{dashboard:{id,dashboard,dashboardDigest,versionOf:previous?.id||null,createdBy:c.email,createdAt}});
+      }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to pin report.',300)});}
+    }
+
+    if(path===PREFIX+'/schedules'&&method==='GET'){
+      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_SCHEDULE_LIST_V1',schedules:scheduleList.all(c.tenant).map(scheduleRow)});
+    }
+
+    if(path===PREFIX+'/schedules'&&method==='POST'){
+      try{
+        const body=await readJson(req),schedule=normaliseSchedule(body.schedule||body,deliveryAdapter);
+        const report=one.get(c.tenant,schedule.reportId);
+        if(!report)return writeJson(res,404,{error:'Report not found for this tenant.'});
+        const definition=JSON.parse(report.definition_json),source=sourceById(definition.sourceId);
+        if(!source||!permitted(c.role,source.minRole))return writeJson(res,403,{error:'Current role is not permitted to schedule this report.'});
+        const id='vs-'+randomUUID(),createdAt=new Date().toISOString(),scheduleDigest=digest(schedule);
+        scheduleInsert.run(id,c.tenant,c.email,JSON.stringify(schedule),scheduleDigest,createdAt);
+        record(c,schedule.reportId,'REPORT_SCHEDULE_CREATED',{scheduleId:id,scheduleDigest,delivery:schedule.delivery,cadence:schedule.cadence});
+        return writeJson(res,201,{schedule:{id,schedule,scheduleDigest,createdBy:c.email,createdAt}});
+      }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to schedule report.',300)});}
+    }
+
+    if(path===PREFIX+'/deliveries'&&method==='GET'){
+      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_DELIVERY_LIST_V1',deliveries:deliveryList.all(c.tenant).map(r=>({
+        deliveryKey:r.delivery_key,scheduleId:r.schedule_id,reportId:r.report_id,mode:r.mode,status:r.status,receipt:JSON.parse(r.receipt_json),createdAt:r.created_at
+      }))});
+    }
+
     const match=path.match(/^\/api\/reporting\/reports\/([^/]+)$/);
     if(match&&method==='GET'){
       const row=one.get(c.tenant,decodeURIComponent(match[1]));
@@ -340,10 +524,13 @@ function createVectorReportingService(options={}){
     handleRequest,
     catalogForRole:visibleCatalog,
     validateDefinition:normaliseDefinition,
-    close(){try{db.close();}catch{}}
+    validateDashboard:normaliseDashboard,
+    validateSchedule:input=>normaliseSchedule(input,deliveryAdapter),
+    runDueSchedules,
+    close(){clearInterval(schedulerTimer);try{db.close();}catch{}}
   });
 }
 
 module.exports=Object.freeze({
-  PREFIX,SOURCES,TEMPLATES,ROLE_LEVEL,visibleCatalog,normaliseDefinition,createVectorReportingService,digest
+  PREFIX,SOURCES,TEMPLATES,ROLE_LEVEL,visibleCatalog,normaliseDefinition,normaliseDashboard,normaliseSchedule,createVectorReportingService,digest
 });
