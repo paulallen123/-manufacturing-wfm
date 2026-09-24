@@ -59,6 +59,13 @@ const learnedGuardChecks={
   'manual-candidate-identity-env-drift':[
     ['release/proof-lane-policy.json','manualCandidateShaVariableNeverAuthoritative'],
     ['release/proof-lane-policy.json','deployment commit metadata']
+  ],
+  'eager-duplicate-freeze-fanout':[
+    ['release/proof-lane-policy.json','minimalFreezeFanoutRequired'],
+    ['artifact/vector-reporting-proof.trigger','VECTOR_REPORTING_PROOF_TRIGGER_V1'],
+    ['artifact/vector-proof-overflow-a.trigger','VECTOR_PROOF_OVERFLOW_A_V1'],
+    ['artifact/vector-proof-overflow-b.trigger','VECTOR_PROOF_OVERFLOW_B_V1'],
+    ['artifact/vector-proof-overflow-c.trigger','VECTOR_PROOF_OVERFLOW_C_V1']
   ]
 };
 for(const [id,guards] of Object.entries(learnedGuardChecks)){
