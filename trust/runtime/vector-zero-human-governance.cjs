@@ -59,7 +59,7 @@ function evaluateMachineQuorum(input = {}) {
   if (!(riskClass in RISK_ORDER) || !(riskCeiling in RISK_ORDER)) reasons.push('INVALID_RISK_CLASS');
   if (!actionType) reasons.push('ACTION_TYPE_REQUIRED');
   if (input.policy?.preAuthorised !== true) reasons.push('POLICY_NOT_PREAUTHORISED');
-  if (Array.isArray(input.policy?.allowedActionTypes) && !input.policy.allowedActionTypes.includes(actionType)) {
+  if (!Array.isArray(input.policy?.allowedActionTypes) || !input.policy.allowedActionTypes.includes(actionType)) {
     reasons.push('ACTION_NOT_ALLOWLISTED');
   }
   if ((riskClass in RISK_ORDER) && (riskCeiling in RISK_ORDER) && RISK_ORDER[riskClass] > RISK_ORDER[riskCeiling]) {
@@ -79,6 +79,9 @@ function evaluateMachineQuorum(input = {}) {
   }
   if (input.action?.class === 'REPAIR' && input.evidence?.certifiedPlaybookMatch !== true) {
     reasons.push('REPAIR_PLAYBOOK_NOT_CERTIFIED');
+  }
+  if (input.action?.class === 'CONTAINMENT' && input.evidence?.certifiedContainmentPlaybookMatch !== true) {
+    reasons.push('CONTAINMENT_PLAYBOOK_NOT_CERTIFIED');
   }
 
   return Object.freeze({
@@ -107,7 +110,7 @@ function decideZeroHumanAction(input = {}) {
     allowed = true;
   } else {
     terminal = TERMINALS.AUTONOMOUS_CONTAINMENT;
-    allowed = containmentAction && input.evidence?.tenantInvariantPassed === true;
+    allowed = false;
     if (unknownOrNovel && !containmentAction) reasons.push('NOVEL_INCIDENT_REPAIR_BLOCKED');
   }
 

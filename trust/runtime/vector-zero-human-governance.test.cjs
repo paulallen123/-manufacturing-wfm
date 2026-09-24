@@ -38,7 +38,8 @@ function base(overrides = {}) {
       independentVerifierPassed: true,
       securityVerifierPassed: true,
       rollbackOrCompensationProved: true,
-      certifiedPlaybookMatch: true
+      certifiedPlaybookMatch: true,
+      certifiedContainmentPlaybookMatch: true
     },
     ...overrides
   };
@@ -88,10 +89,49 @@ test('novel incident cannot invent a repair but can execute proven containment',
       ...base().policy,
       allowedActionTypes: ['tenant.write.fence']
     },
-    evidence: { ...base().evidence, certifiedPlaybookMatch: false }
+    evidence: { ...base().evidence, certifiedPlaybookMatch: false, certifiedContainmentPlaybookMatch: true }
   }));
   assert.equal(contain.terminal, 'AUTONOMOUS_EXECUTION');
   assert.equal(contain.allowed, true);
+});
+
+test('containment can never bypass failed machine authority or safety checks', () => {
+  const containment = () => base({
+    incident: { knownFailureClass: false, novel: true },
+    action: {
+      class: 'CONTAINMENT',
+      actionType: 'tenant.write.fence',
+      riskClass: 'HIGH',
+      reversibility: 'REVERSIBLE',
+      blastRadius: 1
+    },
+    policy: {
+      ...base().policy,
+      allowedActionTypes: ['tenant.write.fence']
+    },
+    evidence: {
+      ...base().evidence,
+      certifiedPlaybookMatch: false,
+      certifiedContainmentPlaybookMatch: true
+    }
+  });
+
+  const cases = [
+    [input => { input.policy = { ...input.policy, preAuthorised: false }; }, 'POLICY_NOT_PREAUTHORISED'],
+    [input => { input.policy = { ...input.policy, allowedActionTypes: undefined }; }, 'ACTION_NOT_ALLOWLISTED'],
+    [input => { input.action = { ...input.action, blastRadius: 2 }; }, 'BLAST_RADIUS_EXCEEDS_POLICY'],
+    [input => { input.evidence = { ...input.evidence, securityVerifierPassed: false }; }, 'SECURITY_VERIFICATION_NOT_PROVED'],
+    [input => { input.evidence = { ...input.evidence, certifiedContainmentPlaybookMatch: false }; }, 'CONTAINMENT_PLAYBOOK_NOT_CERTIFIED']
+  ];
+
+  for (const [mutate, reason] of cases) {
+    const input = containment();
+    mutate(input);
+    const decision = decideZeroHumanAction(input);
+    assert.equal(decision.terminal, 'AUTONOMOUS_CONTAINMENT', reason);
+    assert.equal(decision.allowed, false, reason);
+    assert.ok(decision.reasons.includes(reason), reason);
+  }
 });
 
 test('external legal or identity ceremony is surfaced as a hard boundary, never disguised as zero-touch', () => {
