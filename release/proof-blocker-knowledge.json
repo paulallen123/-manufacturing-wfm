@@ -61,10 +61,10 @@
     {
       "id": "hosted-proof-lane-runtime-contract-missing",
       "class": "CONTROL_PLANE_DESIGN",
-      "symptom": "An exact-image hosted proof service exists but lacks hosted-mode/database/endpoint prerequisites, so it builds successfully and only fails at platform healthcheck.",
+      "symptom": "An exact-image hosted proof service exists but lacks hosted-mode/database/public-origin/staging-credential prerequisites, so it can build successfully and fail only during startup or healthcheck.",
       "learnedFrom": "Railway overflow lanes A/C 2026-09-24",
-      "prevention": "Read live lane configuration before freeze and require hosted runtime variables, health contract and reachable endpoint before the lane can count as capacity.",
-      "permanentGuard": "VECTOR_PRE_FREEZE_SIMULATION_V1 + Railway preDeploy runtime contract"
+      "prevention": "Read live lane configuration before freeze and require WFM_DB, WFM_HOSTED_STAGING, WFM_PUBLIC_ORIGIN and WFM_STAGING_PASSWORD; validate credential length and HTTPS origin in pre-deploy before the lane can count as capacity.",
+      "permanentGuard": "VECTOR_PRE_FREEZE_SIMULATION_V1 + Railway preDeploy full bootstrap contract"
     },
     {
       "id": "fixed-port-and-readiness-window",
