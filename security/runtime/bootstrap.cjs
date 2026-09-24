@@ -17,6 +17,7 @@ const { createDemandDecisionService } = require('/app/operations-runtime/demand-
 const { createAutopilotExecutionEngine } = require('/app/operations-runtime/autopilot-execution-engine.cjs');
 const { createRealtimeEventService } = require('/app/operations-runtime/realtime-event-service.cjs');
 const { createT9CustomerGuardian } = require('/app/operations-runtime/t9-customer-guardian.cjs');
+const { createVectorReportingService } = require('/app/reporting-runtime/vector-reporting-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -57,6 +58,8 @@ let demandDecisionService = null;
 let demandDecisionServiceInitError = null;
 let t9CustomerGuardian = null;
 let t9CustomerGuardianInitError = null;
+let reportingService = null;
+let reportingServiceInitError = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -96,6 +99,10 @@ function demandDecisionPath(req) {
   return requestPath(req).startsWith('/api/operations/intelligence');
 }
 
+function reportingPath(req) {
+  return requestPath(req).startsWith('/api/reporting');
+}
+
 function stagingAccessPath(req) {
   return requestPath(req) === '/api/staging-access';
 }
@@ -106,7 +113,9 @@ function uiPresentationPath(req) {
     path === '/index.html' ||
     path === '/vector-ui.css' ||
     path === '/vector-ui.js' ||
-    path === '/vector-workflows.js';
+    path === '/vector-workflows.js' ||
+    path === '/vector-reporting-ui.css' ||
+    path === '/vector-reporting-ui.js';
 }
 
 function forceVectorUiFreshness(req, res) {
@@ -126,7 +135,11 @@ function serveCanonicalVectorAsset(req, res) {
       ? { file: '/app/public/vector-ui.css', type: 'text/css; charset=utf-8' }
       : path === '/vector-workflows.js'
         ? { file: '/app/public/vector-workflows.js', type: 'text/javascript; charset=utf-8' }
-        : null;
+        : path === '/vector-reporting-ui.js'
+          ? { file: '/app/public/vector-reporting-ui.js', type: 'text/javascript; charset=utf-8' }
+          : path === '/vector-reporting-ui.css'
+            ? { file: '/app/public/vector-reporting-ui.css', type: 'text/css; charset=utf-8' }
+            : null;
   if (!asset) return false;
 
   const method = String(req.method || 'GET').toUpperCase();
@@ -390,6 +403,11 @@ http.createServer = function guardedCreateServer(listener) {
     catch (error) { t9CustomerGuardianInitError = error; }
   }
 
+  if (!reportingService && !reportingServiceInitError && process.env.WFM_DB) {
+    try { reportingService = createVectorReportingService({ dbPath: process.env.WFM_DB }); }
+    catch (error) { reportingServiceInitError = error; }
+  }
+
   return originalCreateServer.call(http, async (req, res) => {
     const guardianStarted = process.hrtime.bigint();
     if (t9CustomerGuardian && !t9CustomerGuardianInitError && typeof res.once === 'function') {
@@ -449,6 +467,10 @@ http.createServer = function guardedCreateServer(listener) {
 
     if (demandDecisionPath(req)) {
       if (await routeOverlay(demandDecisionService, demandDecisionServiceInitError, res, 'Decision intelligence', req)) return;
+    }
+
+    if (reportingPath(req)) {
+      if (await routeOverlay(reportingService, reportingServiceInitError, res, 'Reporting', req)) return;
     }
 
     return listener(req, res);
