@@ -31,6 +31,48 @@ for(const item of knowledge.entries){
   assert.ok(item.id&&item.class&&item.symptom&&item.prevention&&item.permanentGuard,item.id||'knowledge-entry');
 }
 
+const learnedGuardChecks={
+  'runner-or-builder-no-execution':[
+    ['resilience/pre-freeze-simulator.cjs','PROVIDER_DEGRADED_PREEXECUTION'],
+    ['release/proof-lane-policy.json','failureDomain']
+  ],
+  'hosted-proof-lane-runtime-contract-missing':[
+    ['resilience/pre-freeze-simulator.cjs','RUNTIME_VARIABLE_CONTRACT_MISSING'],
+    ['release/proof-lane-policy.json','liveRuntimeContractRequiredBeforeLaneAdmission']
+  ],
+  'fixed-port-and-readiness-window':[
+    ['ux-overlay/vector-workflows.test.cjs','reservePort'],
+    ['ux-overlay/vector-workflows.test.cjs','WFM_PROOF_STARTUP_BUDGET_MS']
+  ],
+  'same-provider-false-parallelism':[
+    ['resilience/pre-freeze-simulator.cjs','falseParallelism'],
+    ['release/proof-lane-policy.json','sharedFailureDomainNeverCountsAsIndependent']
+  ],
+  'proof-on-every-intermediate-commit':[
+    ['release/proof-lane-policy.json','artifact/vector-proof-freeze.trigger'],
+    ['.circleci/config.yml','require_frozen_candidate']
+  ],
+  'presentation-provenance-source-tree-drift':[
+    ['Dockerfile','/tmp/vector-provenance/reporting/ui'],
+    ['scripts/prove-vector-built-asset-provenance.mjs','reporting/ui/vector-reporting-ui.js']
+  ],
+  'manual-candidate-identity-env-drift':[
+    ['release/proof-lane-policy.json','manualCandidateShaVariableNeverAuthoritative'],
+    ['release/proof-lane-policy.json','deployment commit metadata']
+  ]
+};
+for(const [id,guards] of Object.entries(learnedGuardChecks)){
+  assert.ok(knowledge.entries.some(item=>item.id===id),'Missing learned blocker entry: '+id);
+  for(const [relativePath,marker] of guards){
+    const target=path.join(ROOT,relativePath);
+    assert.ok(fs.existsSync(target),'Missing permanent guard file for '+id+': '+relativePath);
+    assert.ok(fs.readFileSync(target,'utf8').includes(marker),'Missing permanent guard marker for '+id+': '+relativePath+' -> '+marker);
+  }
+}
+const workflowTest=fs.readFileSync(path.join(ROOT,'ux-overlay/vector-workflows.test.cjs'),'utf8');
+assert.ok(!workflowTest.includes('const port = 43217'),'Retired fixed workflow proof port reappeared.');
+assert.ok(!/for\s*\(let\s+attempt\s*=\s*0;\s*attempt\s*<\s*80/.test(workflowTest),'Retired fixed startup-attempt window reappeared.');
+
 const scanRoots=['tests','test','clocking-security-v2','integration-fabric/runtime','learning/runtime','operations/runtime','scripts'];
 const codeFiles=[];
 function walk(dir){
