@@ -79,8 +79,8 @@
       "class": "CONTROL_PLANE_DESIGN",
       "symptom": "Multiple services on one provider are counted as independent resilience even though provider capacity/outage is a shared failure domain.",
       "learnedFrom": "Railway A/B/C overflow topology 2026-09-24",
-      "prevention": "Count independent failure domains rather than raw service/lane count and require a distinct provider/domain for promotion quorum.",
-      "permanentGuard": "pre-freeze failure-domain simulation + proof-lane policy validator"
+      "prevention": "Count independent failure domains rather than raw service/lane count. Same-domain workers may be added for throughput only when measured provider headroom exists; unknown/exhausted headroom routes to a distinct provider/domain.",
+      "permanentGuard": "pre-freeze failure-domain simulation + measured-headroom allocator + proof-lane policy validator"
     },
     {
       "id": "proof-on-every-intermediate-commit",
