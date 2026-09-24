@@ -10,6 +10,7 @@ function unique(values) {
 function assessProofLane(lane = {}, options = {}) {
   const issues = [];
   const candidateSha = options.candidateSha || null;
+  const providerState = String(lane.providerState || 'AVAILABLE').toUpperCase();
   const exactImage = lane.class === 'exact-image';
   const vars = new Set(Array.isArray(lane.variableNames) ? lane.variableNames : []);
   const requiredVars = Array.isArray(lane.requiredRuntimeVariables)
@@ -19,6 +20,9 @@ function assessProofLane(lane = {}, options = {}) {
   if (!lane.id) issues.push({code:'LANE_ID_MISSING'});
   if (!lane.provider) issues.push({code:'PROVIDER_MISSING'});
   if (!lane.failureDomain) issues.push({code:'FAILURE_DOMAIN_MISSING'});
+  if (['DEGRADED','UNAVAILABLE','NO_RUNNER','PREEXECUTION_FAILURE'].includes(providerState)) {
+    issues.push({code:'PROVIDER_DEGRADED_PREEXECUTION', providerState});
+  }
 
   if (exactImage) {
     const missing = requiredVars.filter(name => !vars.has(name));
@@ -75,7 +79,8 @@ function simulatePreFreeze(input = {}) {
     actions.push({
       type:'REPAIR_LANE_BEFORE_FREEZE',
       laneId:item.id,
-      issueCodes:item.issues.map(issue => issue.code)
+      issueCodes:item.issues.map(issue => issue.code),
+      routeAroundProvider:item.issues.some(issue => issue.code === 'PROVIDER_DEGRADED_PREEXECUTION')
     });
   }
   if (falseParallelism.length) {
