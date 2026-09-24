@@ -49,7 +49,23 @@
     "blockerAutopilotDockerAdmissionRequired": true,
     "metaLoopDockerAdmissionRequired": true,
     "hostedSuccessRequiredBeforeClaimingHostedProof": true,
+    "runtimeModuleLoadRequired": true,
+    "runtimeHealthcheckRequired": true,
     "oldMainSnapshotDoesNotCount": true
+  },
+  "runtimeProof": {
+    "requiredMarkers": {
+      "status": "FRONTIER_PROOF_BUILT",
+      "zeroHumanGovernance": "VECTOR_ZERO_HUMAN_GOVERNANCE_V1",
+      "humanTouchGate": "VECTOR_ZERO_HUMAN_RELEASE_GATE_V1",
+      "metaLoop": "VECTOR_META_LOOP_V1",
+      "blockerAutopilot": "VECTOR_BLOCKER_AUTOPILOT_POLICY_V1"
+    },
+    "requiredSafetyClaims": {
+      "productionMutation": false,
+      "customerMutation": false,
+      "authorityGranted": false
+    }
   },
   "isolation": {
     "northstarModified": false,
