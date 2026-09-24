@@ -1,6 +1,6 @@
 'use strict';
 
-const DEFAULT_RUNTIME_VARS = Object.freeze(['WFM_DB', 'WFM_HOSTED_STAGING']);
+const DEFAULT_RUNTIME_VARS = Object.freeze(['WFM_DB', 'WFM_HOSTED_STAGING', 'WFM_PUBLIC_ORIGIN', 'WFM_STAGING_PASSWORD']);
 const FIXED_READINESS_MODES = new Set(['fixed', 'sleep', 'delay', 'attempt-count']);
 
 function unique(values) {
