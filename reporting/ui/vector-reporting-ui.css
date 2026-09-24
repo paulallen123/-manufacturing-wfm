@@ -60,3 +60,21 @@ body.vector-reporting-open{overflow:hidden}
 @media(max-width:1000px){.vector-reporting-shell{inset:2vh 2vw}.vector-reporting-body{grid-template-columns:250px minmax(0,1fr)}.vector-reporting-field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.vector-reporting-shell{inset:0;border-radius:0}.vector-reporting-head{padding:16px}.vector-reporting-body{grid-template-columns:1fr;grid-template-rows:auto 1fr}.vector-reporting-sidebar{max-height:235px;border-right:0;border-bottom:1px solid #e6ebf2}.vector-reporting-main{padding:14px}.vector-reporting-report-head{display:grid}.vector-reporting-actions{justify-content:flex-start}.vector-reporting-field-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:500px){.vector-reporting-field-grid{grid-template-columns:1fr}.vector-reporting-actions{display:grid;grid-template-columns:1fr 1fr}.vector-reporting-actions .primary{grid-column:1/-1}.vector-reporting-main{padding:11px}}
+
+
+@media print{
+  body.vector-reporting-print>*:not(#vector-reporting-modal){display:none!important}
+  body.vector-reporting-print #vector-reporting-modal{position:static!important;display:block!important}
+  body.vector-reporting-print .vector-reporting-backdrop,
+  body.vector-reporting-print .vector-reporting-sidebar,
+  body.vector-reporting-print .vector-reporting-close,
+  body.vector-reporting-print .vector-reporting-actions,
+  body.vector-reporting-print .vector-reporting-advanced{display:none!important}
+  body.vector-reporting-print .vector-reporting-shell{position:static!important;inset:auto!important;border:0!important;box-shadow:none!important;display:block!important;overflow:visible!important}
+  body.vector-reporting-print .vector-reporting-head{padding:0 0 14px!important;border-bottom:1px solid #dce4ee!important}
+  body.vector-reporting-print .vector-reporting-body{display:block!important}
+  body.vector-reporting-print .vector-reporting-main{padding:14px 0!important;background:#fff!important;overflow:visible!important}
+  body.vector-reporting-print .vector-reporting-table-card{overflow:visible!important}
+  body.vector-reporting-print .vector-reporting-table-wrap{overflow:visible!important}
+  body.vector-reporting-print .vector-reporting-table-card th{position:static!important}
+}
