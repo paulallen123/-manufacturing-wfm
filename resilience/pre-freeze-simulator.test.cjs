@@ -15,7 +15,7 @@ function exactLane(overrides={}){
 test('rejects a hosted exact-image lane before freeze when runtime variables are missing', () => {
   const result = assessProofLane(exactLane({variableNames:[]}), {candidateSha:'sha-1'});
   assert.equal(result.admitted, false);
-  assert.deepEqual(result.issues[0], {code:'RUNTIME_VARIABLE_CONTRACT_MISSING', missing:['WFM_DB','WFM_HOSTED_STAGING']});
+  assert.deepEqual(result.issues[0], {code:'RUNTIME_VARIABLE_CONTRACT_MISSING', missing:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD']});
 });
 
 test('rejects fixed readiness assumptions before they become flaky build waits', () => {
@@ -119,4 +119,14 @@ test('24 Sep repaired Railway topology is admitted for throughput but still coun
   assert.equal(result.falseParallelism[0].laneCount,3);
   assert.equal(result.promotionTopologyReady,false);
   assert.ok(result.actions.some(x=>x.type==='ADD_DISTINCT_FAILURE_DOMAIN'));
+});
+
+test('full hosted bootstrap contract requires public origin and staging credential before freeze', () => {
+  const result=assessProofLane(exactLane({
+    variableNames:['WFM_DB','WFM_HOSTED_STAGING'],
+    sourceSha:'sha-1'
+  }),{candidateSha:'sha-1'});
+  assert.equal(result.admitted,false);
+  const issue=result.issues.find(x=>x.code==='RUNTIME_VARIABLE_CONTRACT_MISSING');
+  assert.deepEqual(issue.missing,['WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD']);
 });
