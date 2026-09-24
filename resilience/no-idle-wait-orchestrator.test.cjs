@@ -28,7 +28,7 @@ test('predicted queue saturation opens capacity before blocking', () => {
   assert.equal(plan.prediction.queueSaturationPredicted,true);
   const scale = plan.actions.find(x=>x.type==='ROUTE_DISTINCT_FAILURE_DOMAIN');
   assert.ok(scale);
-  assert.equal(scale.trigger,'PREDICTED_SATURATION');
+  assert.equal(scale.trigger,'PREDICTED_SATURATION_WITHOUT_MEASURED_HEADROOM');
 });
 
 test('failed lane is isolated while other lanes continue', () => {
@@ -79,7 +79,7 @@ test('pre-freeze rejected lanes are excluded from elastic capacity', () => {
     dependency:{id:'proof',status:'PENDING'},
     availableLanes:[{id:'good',status:'READY'},{id:'bad',status:'READY'}],
     preFreeze:{candidateSha:'sha',requiredIndependentFailureDomains:2,lanes:[
-      {id:'good',provider:'railway',failureDomain:'railway:a',class:'exact-image',variableNames:['WFM_DB','WFM_HOSTED_STAGING'],hostedModeValue:'true',healthcheckPath:'/api/health',readinessMode:'condition',sourceSha:'sha'},
+      {id:'good',provider:'railway',failureDomain:'railway:a',class:'exact-image',variableNames:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD'],hostedModeValue:'true',healthcheckPath:'/api/health',readinessMode:'condition',sourceSha:'sha'},
       {id:'bad',provider:'railway',failureDomain:'railway:a',class:'exact-image',variableNames:[],hostedModeValue:'true',healthcheckPath:'/api/health',readinessMode:'condition',sourceSha:'sha'}
     ]}
   });
