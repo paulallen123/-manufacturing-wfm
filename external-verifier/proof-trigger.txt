@@ -1,1 +1,1 @@
-external verifier persistence launch 2026-09-25
+external verifier persistence alternate launch 2026-09-25
