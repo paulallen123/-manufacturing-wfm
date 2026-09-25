@@ -113,6 +113,14 @@
       "learnedFrom": "Friday proof fan-out 2026-09-24",
       "prevention": "Freeze triggers only the minimum canonical proof set; specialist/overflow services use lane-specific triggers and are activated only when the simulator assigns them.",
       "permanentGuard": "proof trigger routing policy + Railway lane-specific watch patterns"
+    },
+    {
+      "id": "sleeping-or-status-only-lane-admission",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "A lane can look green from commit status or domain configuration while the actual deployment was skipped, sleeping, failed, unreachable, or never bound to the exact candidate.",
+      "learnedFrom": "Railway exact-candidate Lane A and browser-proof admission audit 2026-09-25",
+      "prevention": "Require exact deployment SHA binding, public listen mode, sleep disabled, condition-ready health, outside-in endpoint reachability and an executable deployment state; SKIPPED/SLEEPING/status-only green never counts as proof.",
+      "permanentGuard": "VECTOR_PRE_FREEZE_SIMULATION_V1 execution-state + wake/reachability admission regression"
     }
   ]
 }
