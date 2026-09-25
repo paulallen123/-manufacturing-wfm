@@ -20,7 +20,13 @@
     "unaffectedProofStagesAlwaysContinue": true,
     "blockedCapabilityDiagnosticsContinue": true,
     "neverGloballyFreezeForSingleCapabilityBlocker": true,
-    "promotionStopsOnlyAtExplicitDependencyBoundary": true
+    "promotionStopsOnlyAtExplicitDependencyBoundary": true,
+    "researchDesignRequiredBeforeImplementation": true,
+    "researchTheoryTestRequiredBeforeImplementation": true,
+    "falsifiedResearchRetainedWithResolutionRoute": true,
+    "researchMustReuseCanonicalOwner": true,
+    "researchMayNotCreateDuplicateLoopOrSourceOfTruth": true,
+    "researchMayNotDisplaceGoldenJourney": true
   },
   "phases": [
     "source-and-contract",
@@ -112,6 +118,16 @@
         "source-and-contract",
         "exact-image",
         "independent-promotion"
+      ]
+    },
+    {
+      "prefix": "policy/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "authenticated-golden-journey",
+        "security-destructive"
       ]
     }
   ],
