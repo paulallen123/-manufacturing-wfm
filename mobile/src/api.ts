@@ -1,3 +1,4 @@
+import * as SecureStore from "expo-secure-store";
 export type VectaEpisode = {
   episodeId: string;
   decisionType: string;
@@ -33,13 +34,21 @@ export function apiOrigin() {
   return configuredOrigin;
 }
 
-async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+const MOBILE_SESSION_KEY = "vecta.mobile.session";
+
+async function api<T>(
+  path: string,
+  init: RequestInit = {},
+  options: { auth?: boolean } = {}
+): Promise<T> {
+  const token = options.auth === false ? null : await SecureStore.getItemAsync(MOBILE_SESSION_KEY);
   const response = await fetch(apiOrigin() + path, {
     ...init,
     credentials: "include",
     headers: {
       accept: "application/json",
       ...(init.body ? { "content-type": "application/json" } : {}),
+      ...(token ? { authorization: "Bearer " + token } : {}),
       ...(init.headers || {})
     }
   });
@@ -51,11 +60,31 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export async function signIn(email: string, password: string) {
+  await SecureStore.deleteItemAsync(MOBILE_SESSION_KEY);
   await api("/api/login", {
     method: "POST",
     body: JSON.stringify({ email: email.trim(), password })
+  }, { auth: false });
+
+  const session = await api<{ accessToken: string; expiresAt: string }>("/api/mobile/session", {
+    method: "POST"
+  }, { auth: false });
+
+  // Remove the short-lived browser cookie so all subsequent native calls have one
+  // unambiguous authority: the revocable device bearer stored by the OS.
+  await api("/api/logout", { method: "POST" }, { auth: false });
+  await SecureStore.setItemAsync(MOBILE_SESSION_KEY, session.accessToken, {
+    keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
   });
   return api<any>("/api/bootstrap");
+}
+
+export async function signOut() {
+  try {
+    await api("/api/mobile/session", { method: "DELETE" });
+  } finally {
+    await SecureStore.deleteItemAsync(MOBILE_SESSION_KEY);
+  }
 }
 
 export async function bootstrap() {
@@ -97,10 +126,15 @@ export async function sendAssistantAudio(uri: string, language: string) {
   const audioBase64 = await file.base64();
   if (!audioBase64) throw new Error("Recorded audio is empty.");
 
+  const token = await SecureStore.getItemAsync(MOBILE_SESSION_KEY);
   const response = await fetch(apiOrigin() + "/api/mobile/assistant/audio", {
     method: "POST",
     credentials: "include",
-    headers: { "content-type": "application/json", accept: "application/json" },
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+      ...(token ? { authorization: "Bearer " + token } : {})
+    },
     body: JSON.stringify({ language, mimeType: "audio/mp4", audioBase64 })
   });
   const text = await response.text();
