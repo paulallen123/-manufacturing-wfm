@@ -97,7 +97,9 @@ test('legacy local-data writes are redirected outside immutable app root', () =>
   assert.match(docker, /mkdir -p \/tmp\/vector-local-data/);
   assert.match(docker, /ln -s \/tmp\/vector-local-data \/app\/local-data/);
   assert.match(docker, /chmod 0700 \/tmp\/vector-local-data/);
-  assert.match(docker, /USER node/);
+  assert.match(docker, /USER root/);
+  assert.match(docker, /ENTRYPOINT \[\"\/usr\/local\/bin\/vector-entrypoint\\.sh\"\]/);
+  assert.match(docker, /exec gosu node \"\$@\"/);
   assert.match(docker, /find \/app -type d -exec chmod 0555/);
 });
 
