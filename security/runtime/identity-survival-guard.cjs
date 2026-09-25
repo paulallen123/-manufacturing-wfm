@@ -167,8 +167,12 @@ function createIdentitySurvivalGuard(options = {}) {
     const cookieToken = cookieSessionToken(req);
     const mobileToken = mobileBearerToken(req);
     if (cookieToken && mobileToken && cookieToken !== mobileToken) {
-      record(null, null, 'ambiguous-session-authority-blocked', { path: requestPath(req) });
-      return writeJson(res, 400, { error: 'Conflicting session authorities are not accepted.' });
+      const cookieStillActive = sessionStmt.get(sha256(cookieToken), now);
+      if (cookieStillActive) {
+        record(cookieStillActive.tenant, null, 'ambiguous-session-authority-blocked', { path: requestPath(req) });
+        return writeJson(res, 400, { error: 'Conflicting active session authorities are not accepted.' });
+      }
+      record(null, sha256(cookieToken), 'stale-cookie-ignored-for-mobile-bearer', { path: requestPath(req) });
     }
     const token = mobileToken || cookieToken;
     if (!token) return false; // Public/integration routes remain governed by the sealed server.
