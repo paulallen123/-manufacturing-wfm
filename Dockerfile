@@ -15,6 +15,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \
  && node scripts/validate-capability-superset.mjs \
  && node scripts/validate-research-convergence-ledger.mjs \
+ && node --test resilience/research-convergence-theory-simulator.test.cjs policy/runtime/country-policy-pack-registry.test.cjs \
  && node scripts/validate-product-factory.mjs \
  && node scripts/prove-adaptive-intelligence-engine.mjs \
  && node scripts/validate-self-evolution.mjs \
