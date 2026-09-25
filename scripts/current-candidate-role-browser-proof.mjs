@@ -561,7 +561,10 @@ try {
   try { overlapBody = await overlapResponse.json(); } catch { overlapBody = { parseError: true }; }
   console.log('CURRENT_LEAVE_OVERLAP_HTTP|' + JSON.stringify({ status: overlapResponse.status(), body: overlapBody }));
   const overlapError = employeePage.locator('#formerror');
-  await overlapError.waitFor({ state: 'visible', timeout: 10000 });
+  await employeePage.waitForFunction(
+    () => /overlap|already|request/i.test((document.querySelector('#formerror')?.textContent || '').trim()),
+    { timeout: 10000 }
+  );
   const overlapErrorText = (await overlapError.innerText()).trim();
   console.log('CURRENT_LEAVE_OVERLAP_DIAGNOSTIC|' + JSON.stringify({ text: overlapErrorText }));
   assert.match(overlapErrorText, /overlap|already|request/i, 'Employee UI did not surface the authoritative overlap refusal.');
