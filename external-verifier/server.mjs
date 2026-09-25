@@ -40,7 +40,6 @@ async function runProof() {
   latest = { status: 'running', startedAt: new Date().toISOString(), target: origin, expectedRelease, checks: [] };
   try {
     check('configuration', origin.startsWith('https://') && password.length >= 20, 'invalid verifier configuration');
-
     const health = await req('/api/health');
     check('public-health-http', health.response.status === 200, 'HTTP ' + health.response.status);
     const body = JSON.parse(health.text);
@@ -48,22 +47,13 @@ async function runProof() {
     check('hosted-mode', body.mode === 'hosted-staging', String(body.mode));
     check('fixture-boundary', body.fixtureOnly === true && body.productionApproved === false && body.pilotReady === false,
       JSON.stringify({ fixtureOnly: body.fixtureOnly, productionApproved: body.productionApproved, pilotReady: body.pilotReady }));
-
     const unauth = await req('/api/bootstrap');
     check('unauth-bootstrap-fail-closed', unauth.response.status === 401, 'HTTP ' + unauth.response.status);
-
     const manager = await login('manager@northstar.example');
     await authed(manager, '/api/bootstrap');
     await authed(manager, '/api/payroll-run', 403);
-
     const superuser = await login('superuser@northstar.example');
-    const core = [
-      '/api/bootstrap','/api/readiness','/api/weekly-review','/api/schedule-publication','/api/operations',
-      '/api/payroll-run','/api/readiness/payroll-outcomes','/api/readiness/finance-attribution',
-      '/api/payroll-intelligence','/api/support/bot','/api/personal'
-    ];
-    for (const path of core) await authed(superuser, path);
-
+    for (const path of ['/api/bootstrap','/api/readiness','/api/weekly-review','/api/schedule-publication','/api/operations','/api/payroll-run','/api/readiness/payroll-outcomes','/api/readiness/finance-attribution','/api/payroll-intelligence','/api/support/bot','/api/personal']) await authed(superuser, path);
     const categories = {
       'company-onboarding':['/api/onboarding','/api/company'],
       'workforce-resources':['/api/resources','/api/availability'],
@@ -79,14 +69,10 @@ async function runProof() {
       }
       check('category:' + name, Boolean(passed), 'no HTTP-200 route');
     }
-
-    const assets = ['/','/onboarding-ui.js','/resources-ui.js','/availability-ui.js','/demand-ui.js','/time-review-ui.js',
-      '/cost-ui.js','/recommendation-ui.js','/kiosk-admin-ui.js','/kiosk.html'];
-    for (const path of assets) {
+    for (const path of ['/','/onboarding-ui.js','/resources-ui.js','/availability-ui.js','/demand-ui.js','/time-review-ui.js','/cost-ui.js','/recommendation-ui.js','/kiosk-admin-ui.js','/kiosk.html']) {
       const r = await req(path, { headers: { cookie: superuser, referer: origin + '/' } });
       check('asset:' + path, r.response.status === 200, 'HTTP ' + r.response.status);
     }
-
     latest.status = 'PASS';
   } catch (error) {
     latest.status = 'FAIL';
@@ -95,11 +81,11 @@ async function runProof() {
   latest.finishedAt = new Date().toISOString();
   latest.passCount = latest.checks.filter(x => x.ok).length;
   latest.failCount = latest.checks.filter(x => !x.ok).length;
+  console.log('VECTOR_EXTERNAL_PROOF=' + JSON.stringify(latest));
   return latest;
 }
 
 runProof();
-
 const server = http.createServer(async (request, response) => {
   if (request.url === '/rerun') await runProof();
   response.writeHead(latest.status === 'PASS' ? 200 : 503, { 'content-type': 'application/json', 'cache-control': 'no-store' });
