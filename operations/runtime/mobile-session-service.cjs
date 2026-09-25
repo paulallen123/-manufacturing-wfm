@@ -47,6 +47,7 @@ function createMobileSessionService(options={}){
   const webSession=db.prepare('SELECT s.email,s.expires,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?');
   const mobileMeta=db.prepare('SELECT * FROM mobile_device_sessions WHERE token_hash=?');
   const insertSession=db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)');
+  const deleteSession=db.prepare('DELETE FROM sessions WHERE token_hash=?');
   const insertMobile=db.prepare('INSERT INTO mobile_device_sessions(token_hash,email,tenant,expires,created_at,revoked_at) VALUES(?,?,?,?,?,NULL)');
   const revokeMobile=db.prepare('UPDATE mobile_device_sessions SET revoked_at=COALESCE(revoked_at,?) WHERE token_hash=?');
   const revokeSession=db.prepare('DELETE FROM sessions WHERE token_hash=?');
@@ -65,11 +66,13 @@ function createMobileSessionService(options={}){
     try{
       insertSession.run(tokenHash,actor.email,expires);
       insertMobile.run(tokenHash,actor.email,actor.tenant,expires,createdAt);
+      deleteSession.run(sha256(cookie));
       db.exec('COMMIT;');
     }catch(error){
       try{db.exec('ROLLBACK;');}catch{}
       throw error;
     }
+    res.setHeader('Set-Cookie','wfm_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict');
     return writeJson(res,201,{
       tokenType:'Bearer',
       accessToken:token,
