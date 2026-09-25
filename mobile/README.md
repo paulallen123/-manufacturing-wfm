@@ -16,11 +16,11 @@ Vecta Mobile is a first-class iOS/Android client for the existing Vecta workforc
 
 ## Current native slice
 
-The initial client contains native sign-in, a mobile operations home, recommendation inbox/detail, biometric approval gate, text assistant UI, microphone capture and local-language text-to-speech. The assistant and mobile decision routes intentionally fail closed until their server-side brokers are deployed on the same isolated mobile branch.
+The initial client contains native sign-in, a mobile operations home, recommendation inbox/detail, biometric approval gate, text assistant UI, push-to-talk microphone capture and local-language text-to-speech. The isolated mobile branch now contains guarded server brokers for recommendation decisions and assistant text/audio. Conversational routes require a server-side OPENAI_API_KEY and fail closed when it is absent. No provider credential is embedded in the mobile binary.
 
 ## Local setup
 
-1. Set `EXPO_PUBLIC_VECTOR_API_ORIGIN` to the isolated Vecta staging origin.
+1. Set `EXPO_PUBLIC_VECTOR_API_ORIGIN` to an isolated Vecta mobile staging origin. Never point an unproven development build at production.
 2. Run `npm install` from this directory.
 3. Run `npx expo install --fix` to enforce the SDK 57 dependency matrix.
 4. Run `npm run typecheck`.
