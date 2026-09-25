@@ -45,7 +45,9 @@ const groups = {
     'decision-episode.cjs', 'customer-demand-intelligence.cjs',
     'absence-recovery-shadow.cjs', 'demand-decision-service.cjs',
     'decision-outcome-proof.cjs', 'realtime-event-service.cjs',
-    'autopilot-execution-engine.cjs', 't9-customer-guardian.cjs'
+    'autopilot-execution-engine.cjs', 't9-customer-guardian.cjs',
+    'manufacturing-scheduling-engine.cjs', 'manufacturing-demand-forecast.cjs',
+    'schedule-attendance-reconciliation.cjs', 'scheduling-intelligence-service.cjs'
   ],
   reporting: ['vector-reporting-service.cjs'],
   trust: ['vector-trust-spine.cjs']
