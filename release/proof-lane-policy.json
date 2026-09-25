@@ -45,7 +45,11 @@
     "domainPresenceNeverSubstitutesForReachability": true,
     "outsideInEndpointReachabilityRequired": true,
     "hostedListenMustBePublic": true,
-    "skippedOrSleepingDeploymentNeverAdmitted": true
+    "skippedOrSleepingDeploymentNeverAdmitted": true,
+    "proofReadinessMustReflectTerminalPass": true,
+    "proofObserversMustWaitForSemanticCondition": true,
+    "ambiguousProofLocatorsForbidden": true,
+    "canonicalCandidateMustContainRequiredCapabilities": true
   },
   "lanes": [
     {
@@ -206,7 +210,11 @@
         "FAILURE_DOMAIN_INDEPENDENCE",
         "DEPLOYMENT_EXECUTION_STATE",
         "SLEEP_DISABLED",
-        "OUTSIDE_IN_HEALTH_READY"
+        "OUTSIDE_IN_HEALTH_READY",
+        "TERMINAL_PROOF_READINESS",
+        "SEMANTIC_PROOF_OBSERVATION",
+        "UNIQUE_PROOF_LOCATORS",
+        "CANONICAL_CAPABILITY_COMPLETENESS"
       ],
       "candidateIdentity": {
         "authoritativeSources": [
