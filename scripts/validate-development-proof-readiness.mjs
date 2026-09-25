@@ -72,6 +72,13 @@ const learnedGuardChecks={
     ['artifact/vector-proof-overflow-a.trigger','VECTOR_PROOF_OVERFLOW_A_V1'],
     ['artifact/vector-proof-overflow-b.trigger','VECTOR_PROOF_OVERFLOW_B_V1'],
     ['artifact/vector-proof-overflow-c.trigger','VECTOR_PROOF_OVERFLOW_C_V1']
+  ],
+  'sleeping-or-status-only-lane-admission':[
+    ['resilience/pre-freeze-simulator.cjs','APP_SLEEP_FORBIDDEN'],
+    ['resilience/pre-freeze-simulator.cjs','ENDPOINT_NOT_REACHABLE'],
+    ['resilience/pre-freeze-simulator.cjs','DEPLOYMENT_NOT_EXECUTABLE'],
+    ['release/proof-lane-policy.json','sleepingLaneNeverCountsAsProof'],
+    ['release/proof-lane-policy.json','outsideInEndpointReachabilityRequired']
   ]
 };
 for(const [id,guards] of Object.entries(learnedGuardChecks)){
