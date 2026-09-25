@@ -47,7 +47,7 @@ async function loginRole(page, email) {
 }
 
 async function openLeaveRoute(page, expectedRole) {
-  const route = page.locator('[data-vector-route="leave"]').first();
+  const route = page.locator('[data-vector-route="leave"]:visible').first();
   await route.waitFor({ state: 'visible', timeout: 10000 });
   await route.click({ timeout: 5000 });
   await page.locator(`[data-vector-leave-route="${expectedRole}"]`).waitFor({ state: 'visible', timeout: 10000 });
