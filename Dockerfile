@@ -15,7 +15,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \
  && node scripts/validate-capability-superset.mjs \
  && node scripts/validate-research-convergence-ledger.mjs \
- && node --test resilience/research-convergence-theory-simulator.test.cjs policy/runtime/country-policy-pack-registry.test.cjs \
+ && node --test resilience/research-convergence-theory-simulator.test.cjs policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs \
  && node scripts/validate-product-factory.mjs \
  && node scripts/prove-adaptive-intelligence-engine.mjs \
  && node scripts/validate-self-evolution.mjs \
@@ -137,6 +137,8 @@ COPY operations/runtime/t9-customer-guardian.cjs /app/operations-runtime/t9-cust
 RUN mkdir -p /app/reporting-runtime /app/policy-runtime
 COPY reporting/runtime/vector-reporting-service.cjs /app/reporting-runtime/vector-reporting-service.cjs
 COPY policy/runtime/country-policy-pack-registry.cjs /app/policy-runtime/country-policy-pack-registry.cjs
+COPY policy/runtime/jurisdiction-policy-graph.cjs /app/policy-runtime/jurisdiction-policy-graph.cjs
+COPY policy/runtime/global-site-policy-preflight.cjs /app/policy-runtime/global-site-policy-preflight.cjs
 RUN mkdir -p /app/trust-runtime
 COPY trust/runtime/vector-trust-spine.cjs /app/trust-runtime/vector-trust-spine.cjs
 COPY src/frontier/cash-to-capacity-engine.mjs /app/operations-runtime/cash-to-capacity-engine.mjs
