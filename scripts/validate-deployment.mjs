@@ -53,7 +53,19 @@ assert.equal(imageMatch[2], baseline.node.image_suffix, 'Node image family diffe
 requireSha('node image digest', imageMatch[3]);
 
 assert.equal(manifest.runtime_user, 'node', 'Runtime must use the unprivileged node account.');
-assert.match(dockerfile, /^USER\s+node\s*$/m, 'Dockerfile must switch to USER node.');
+const directNodeUser = /^USER\s+node\s*$/m.test(dockerfile);
+const reviewedVolumeBootstrap =
+  /^USER\s+root\s*$/m.test(dockerfile) &&
+  /ENTRYPOINT\s+\["\/usr\/local\/bin\/vector-entrypoint\.sh"\]/m.test(dockerfile) &&
+  /RAILWAY_VOLUME_MOUNT_PATH:-\}" = "\/data"/.test(dockerfile) &&
+  /chown node:node \/data/.test(dockerfile) &&
+  /chmod 0700 \/data/.test(dockerfile) &&
+  /gosu node \/usr\/bin\/test -w \/data/.test(dockerfile) &&
+  /exec gosu node "\$@"/.test(dockerfile);
+assert.ok(
+  directNodeUser || reviewedVolumeBootstrap,
+  'Dockerfile must either run directly as USER node or use the reviewed root-only volume bootstrap that immediately drops to node.'
+);
 
 const copyMatch = dockerfile.match(/^COPY\s+artifact\/([^\s]+)\s+\/tmp\/runtime\.tgz\s*$/m);
 assert.ok(copyMatch, 'Dockerfile must copy the sealed runtime from the private repository build context.');

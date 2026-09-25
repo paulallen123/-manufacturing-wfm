@@ -81,11 +81,12 @@ jobs:
         run: |
           set -euo pipefail
           image="wfm-identity-guard:${GITHUB_SHA}"
-          test "$(docker inspect --format '{{.Config.User}}' "$image")" = 'node'
+          test "$(docker inspect --format '{{json .Config.Entrypoint}}' "$image")" = '["/usr/local/bin/vector-entrypoint.sh"]'
+          test "$(docker run --rm "$image" id -u)" != '0'
           test "$(docker inspect --format '{{json .Config.Cmd}}' "$image")" = '["node","security-runtime/bootstrap.cjs"]'
           test "$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$image" | grep '^WFM_IDENTITY_SURVIVAL_GUARD=' )" = 'WFM_IDENTITY_SURVIVAL_GUARD=enforce'
 
-          docker run --rm --entrypoint sh "$image" -ec '
+          docker run --rm "$image" sh -ec '
             test ! -w /app/server.cjs
             test ! -w /app/security-runtime/bootstrap.cjs
             test ! -w /app/security-runtime/identity-survival-guard.cjs
@@ -99,7 +100,7 @@ jobs:
             done
           '
 
-          docker run --rm --entrypoint node "$image" -e "require('/app/security-runtime/identity-survival-guard.cjs'); console.log('identity-guard-load=PASS')"
+          docker run --rm "$image" node -e "require('/app/security-runtime/identity-survival-guard.cjs'); console.log('identity-guard-load=PASS')"
 
       - name: Exercise guard on the real staged HTTP request path
         shell: bash

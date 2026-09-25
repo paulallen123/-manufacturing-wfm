@@ -182,10 +182,11 @@ jobs:
           set -euo pipefail
           IMAGE="wfm-every-push:${GITHUB_SHA}"
           EXPECTED_NODE="v$(node -p "require('./resilience/security-baseline.json').node.minimum")"
-          test "$(docker run --rm --entrypoint node "$IMAGE" --version)" = "$EXPECTED_NODE"
-          test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "node"
+          test "$(docker run --rm "$IMAGE" node --version)" = "$EXPECTED_NODE"
+          test "$(docker inspect --format '{{json .Config.Entrypoint}}' "$IMAGE")" = '["/usr/local/bin/vector-entrypoint.sh"]'
+          test "$(docker run --rm "$IMAGE" id -u)" != "0"
 
-          docker run --rm --entrypoint sh "$IMAGE" -ec '
+          docker run --rm "$IMAGE" sh -ec '
             test ! -e /usr/local/lib/node_modules/npm
             test ! -e /usr/local/lib/node_modules/corepack
             for p in npm npx corepack yarn yarnpkg pnpm pnpx; do
