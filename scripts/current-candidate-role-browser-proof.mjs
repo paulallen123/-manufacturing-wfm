@@ -467,18 +467,19 @@ try {
     }
 
     let navigationClicked = null;
-    if (spec.nav) {
-      const locator = page
-        .locator('nav a:visible, nav button:visible, .vector-sidebar a:visible, .vector-sidebar button:visible')
-        .filter({ hasText: spec.nav })
-        .first();
-      if (await locator.count()) {
-        await locator.click({ timeout: 5000 });
-        await page.waitForTimeout(300);
-        navigationClicked = spec.nav;
-        navigationClicks += 1;
-      }
+    const roleNav = page.locator('.vector-sidebar button[data-vector-nav]:visible:not([disabled])');
+    const roleNavCount = await roleNav.count();
+    const beforeRoute = await page.evaluate(() => location.hash);
+    for (let navIndex = 0; navIndex < roleNavCount; navIndex++) {
+      const candidate = roleNav.nth(navIndex);
+      if ((await candidate.getAttribute('aria-current')) === 'page') continue;
+      await candidate.click({ timeout: 5000 });
+      await page.waitForFunction(previous => location.hash !== previous, beforeRoute, { timeout: 5000 });
+      navigationClicked = 'section:' + String(await candidate.getAttribute('data-vector-nav'));
+      navigationClicks += 1;
+      break;
     }
+    assert.ok(navigationClicked, spec.slug + ' had no enabled role-first navigation target.');
 
     const screenshot = await page.screenshot({ fullPage: true });
     assert.ok(screenshot.length > 10000, `${spec.slug} screenshot too small.`);
