@@ -193,6 +193,14 @@
       "learnedFrom": "browser proof /ready run 4322b797 2026-09-25",
       "prevention": "Keep readiness semantic and condition-based; set the provider diagnostic ceiling above the measured proof runtime and fail immediately on terminal proof failure rather than on arbitrary attempt counts.",
       "permanentGuard": "dedicated /ready terminal-PASS contract + Railway browser proof diagnostic ceiling"
+    },
+    {
+      "id": "invented-navigation-authority",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "A presentation route is added for a workflow that is not registered by the authoritative source navigation, causing consolidation proof to detect an invented route and potentially creating UI affordance without source authority.",
+      "learnedFrom": "Time Review navigation consolidation failure on f23ca053 release assault 2026-09-25",
+      "prevention": "Keep Time Review inside the registered Attendance source route, redirect retired review URLs to Attendance, and require the consolidation proof to match source and Vector navigation exactly.",
+      "permanentGuard": "vector-consolidation route-equivalence test + Attendance-owned weekly workflow regression"
     }
   ]
 }
