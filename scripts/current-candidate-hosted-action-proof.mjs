@@ -113,6 +113,17 @@ if (!adjustment) {
   assert.ok(adjustment, 'Saved manager correction did not create an open adjustment issue.');
 }
 pass('manager correction proposal created a real Time Review action', { issueId: adjustment.id, team: adjustmentTeam.id });
+console.log('CURRENT_HOSTED_WEEKLY_ADJUSTMENT|' + JSON.stringify({
+  id: adjustment.id ?? null,
+  sourceId: adjustment.sourceId ?? null,
+  status: adjustment.status ?? null,
+  type: adjustment.type ?? null,
+  reasonCode: adjustment.reasonCode ?? null,
+  observedAt: adjustment.observedAt ?? null,
+  authorityRequired: adjustment.authorityRequired ?? null,
+  confirmation: adjustment.confirmation ?? null,
+  keys: Object.keys(adjustment || {}).sort()
+}));
 
 const sourceAfterAdjustment = await raw('/api/time-review', manager);
 assert.equal(sourceAfterAdjustment.status, 200);
