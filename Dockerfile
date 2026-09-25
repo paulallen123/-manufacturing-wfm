@@ -133,8 +133,9 @@ COPY operations/runtime/decision-outcome-proof.cjs /app/operations-runtime/decis
 COPY operations/runtime/realtime-event-service.cjs /app/operations-runtime/realtime-event-service.cjs
 COPY operations/runtime/autopilot-execution-engine.cjs /app/operations-runtime/autopilot-execution-engine.cjs
 COPY operations/runtime/t9-customer-guardian.cjs /app/operations-runtime/t9-customer-guardian.cjs
-RUN mkdir -p /app/reporting-runtime
+RUN mkdir -p /app/reporting-runtime /app/policy-runtime
 COPY reporting/runtime/vector-reporting-service.cjs /app/reporting-runtime/vector-reporting-service.cjs
+COPY policy/runtime/country-policy-pack-registry.cjs /app/policy-runtime/country-policy-pack-registry.cjs
 RUN mkdir -p /app/trust-runtime
 COPY trust/runtime/vector-trust-spine.cjs /app/trust-runtime/vector-trust-spine.cjs
 COPY src/frontier/cash-to-capacity-engine.mjs /app/operations-runtime/cash-to-capacity-engine.mjs
