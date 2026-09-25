@@ -554,7 +554,9 @@ try {
   await employeePage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
   const overlapError = employeePage.locator('#formerror');
   await overlapError.waitFor({ state: 'visible', timeout: 10000 });
-  assert.match(await overlapError.innerText(), /overlap|already|request/i, 'Employee UI did not surface the authoritative overlap refusal.');
+  const overlapErrorText = (await overlapError.innerText()).trim();
+  console.log('CURRENT_LEAVE_OVERLAP_DIAGNOSTIC|' + JSON.stringify({ text: overlapErrorText }));
+  assert.match(overlapErrorText, /overlap|already|request/i, 'Employee UI did not surface the authoritative overlap refusal.');
   leaveJourney.overlapRefusedInUi = true;
   await employeePage.locator('#modalform [data-act="close"]').click({ timeout: 5000 });
 
