@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "source": "ux-overlay/vector-shell.js NAV + global native requirements",
+  "releaseRule": "Every web route available to a role must have a native mobile route or a documented safety-only exception before production store build.",
+  "routes": [
+    {
+      "section": "Today",
+      "route": "overview",
+      "coverage": "partial",
+      "exception": null
+    },
+    {
+      "section": "People",
+      "route": "vector-people",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "People",
+      "route": "attendance",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "People",
+      "route": "leave",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "People",
+      "route": "availability-control",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "People",
+      "route": "temporary",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Plan",
+      "route": "schedule-publication",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Plan",
+      "route": "shifts",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Plan",
+      "route": "work-patterns",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Plan",
+      "route": "demand",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Plan",
+      "route": "cover",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Factory",
+      "route": "readiness",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Factory",
+      "route": "op-sites",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Factory",
+      "route": "forecast",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Factory",
+      "route": "shutdowns",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Improve",
+      "route": "insights",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Improve",
+      "route": "costs",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Improve",
+      "route": "recommendations",
+      "coverage": "partial",
+      "exception": null
+    },
+    {
+      "section": "Improve",
+      "route": "benchmarks",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Improve",
+      "route": "compliance",
+      "coverage": "missing",
+      "exception": null
+    },
+    {
+      "section": "Global",
+      "route": "assistant",
+      "coverage": "native",
+      "exception": null
+    },
+    {
+      "section": "Global",
+      "route": "action-notifications",
+      "coverage": "partial",
+      "exception": null
+    },
+    {
+      "section": "Global",
+      "route": "settings",
+      "coverage": "missing",
+      "exception": null
+    }
+  ]
+}
