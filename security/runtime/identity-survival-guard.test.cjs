@@ -206,3 +206,20 @@ test('conflicting cookie and mobile bearer authorities fail closed', () => {
     assert.equal(response.statusCode,400);
   } finally { f.close(); }
 });
+
+
+test('consumed stale login cookie cannot block a valid mobile bearer', () => {
+  const f = fixture();
+  try {
+    const mobile = 'vmb_' + 'q'.repeat(48);
+    const hash = tokenHash(mobile);
+    const expires = Date.now() + 60_000;
+    f.control.db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(hash,'manager@alpha',expires);
+    f.control.db.prepare('INSERT INTO mobile_device_sessions(token_hash,email,tenant,expires,created_at,revoked_at) VALUES(?,?,?,?,?,NULL)')
+      .run(hash,'manager@alpha','alpha',expires,new Date().toISOString());
+    f.control.db.prepare('DELETE FROM sessions WHERE token_hash=?').run(tokenHash(f.tokens.alphaManager));
+    const request = req(f.tokens.alphaManager,{headers:{authorization:'Bearer '+mobile}});
+    assert.equal(f.guard.beforeRequest(request,res()),false);
+    assert.equal(request.headers.cookie,'wfm_session='+mobile);
+  } finally { f.close(); }
+});
