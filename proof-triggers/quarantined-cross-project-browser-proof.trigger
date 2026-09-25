@@ -1,0 +1,5 @@
+VECTOR_BROWSER_PROOF_TRIGGER_V2
+candidate_sha=313d504613bf7c677fb6944d74cc555fceb03abb
+source_verifier=feature/vector-eow-convergence-20260925
+isolation=external_verifier_only
+product_mutation=false
