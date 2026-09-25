@@ -7,6 +7,7 @@ const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
+const { enforceDurableState } = require('./durable-state-guard.cjs');
 const { serveRetiredPresentation } = require('./retired-presentation.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
@@ -66,6 +67,11 @@ let reportingServiceInitError = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
+}
+
+const durableState = enforceDurableState();
+if (durableState.required) {
+  console.log('WFM_DURABLE_STATE=PASS mount=' + durableState.mountPoint);
 }
 
 function requestPath(req) {
