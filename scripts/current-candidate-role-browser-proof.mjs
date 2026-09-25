@@ -73,8 +73,22 @@ async function openWeeklyRoute(page, teamId) {
     const labels = ['Time & Attendance', 'Time review', 'Time', 'Attendance'];
     let opened = false;
     for (const label of labels) {
-      const candidate = page.locator('nav a,nav button,[role="tab"],[data-nav],[data-page],a,button')
-        .filter({ hasText: new RegExp('^\\s*' + label + '\\s*
+      const candidate = page.getByText(label, { exact: true }).first();
+      try {
+        await candidate.waitFor({ state: 'visible', timeout: 2500 });
+        await candidate.click({ timeout: 5000 });
+        opened = true;
+        break;
+      } catch {}
+    }
+    assert.equal(opened, true, 'No visible Time/Attendance navigation control could open weekly review.');
+  }
+  await weekly.waitFor({ state: 'visible', timeout: 10000 });
+  await weekly.click({ timeout: 5000 });
+  const team = page.locator('#vw-team');
+  await team.waitFor({ state: 'visible', timeout: 10000 });
+  await team.selectOption(teamId);
+}
 
 try {
   for (const spec of specs) {
