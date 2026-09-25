@@ -13,7 +13,13 @@
     "noCapabilityRegression": true,
     "replacementRequiresSupersetProof": true,
     "functionalParityMinimum": 1,
-    "valueMustStaySameOrIncrease": true
+    "valueMustStaySameOrIncrease": true,
+    "noResearchLoss": true,
+    "researchConvergenceLedgerRequired": true,
+    "everyResearchCapabilityMustConvergeOrBeSupersededWithSupersetProof": true,
+    "blockedResearchRequiresResolutionRoute": true,
+    "researchMayNotDisplaceGoldenJourneyProof": true,
+    "unprovenResearchMayNotBypassSecurityEvidenceReleaseGates": true
   },
   "target": [
     {
@@ -240,5 +246,11 @@
       "AI output without authority or provenance",
       "features exposed before their journey is complete"
     ]
+  },
+  "researchContinuity": {
+    "contract": "VECTOR_RESEARCH_CONVERGENCE_CONTINUITY_V1",
+    "ledger": "release/research-convergence-ledger.json",
+    "rule": "Research, prototypes and discovered capabilities may be isolated while unproven, but may never be silently dropped. Every item must remain registered until safely converged into canonical FORGE or superseded by a demonstrably stronger capability with superset proof.",
+    "priorityBoundary": "Registration and isolated development may continue in parallel; merging may not displace the current hosted Golden Journey, security, payroll, tenant, recovery or evidence gates."
   }
 }

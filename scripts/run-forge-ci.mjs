@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 const checks = [
   ['node', ['scripts/validate-deployment.mjs']],
   ['node', ['scripts/validate-proof-lane-policy.mjs']],
+  ['node', ['scripts/validate-research-convergence-ledger.mjs']],
   ['node', ['scripts/validate-product-factory.mjs']],
   ['node', ['scripts/validate-isolated-environment-provisioning-plan.mjs']],
   ['node', ['scripts/validate-resilience-scenarios.mjs']],

@@ -14,6 +14,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node --test resilience/pre-freeze-simulator.test.cjs resilience/no-idle-wait-orchestrator.test.cjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \
  && node scripts/validate-capability-superset.mjs \
+ && node scripts/validate-research-convergence-ledger.mjs \
  && node scripts/validate-product-factory.mjs \
  && node scripts/prove-adaptive-intelligence-engine.mjs \
  && node scripts/validate-self-evolution.mjs \
