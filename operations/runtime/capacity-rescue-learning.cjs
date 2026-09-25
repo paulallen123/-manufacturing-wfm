@@ -47,9 +47,12 @@ function evaluateCapacityRescueOutcome(input={}){
   if(!tenant||!caseId||!planId) throw new Error('tenant, caseId and planId are required.');
   const evidenceRefs=list(input.evidenceRefs,60,220);
   if(!evidenceRefs.length) throw new Error('Outcome evidence is required.');
-  const predicted=metricPack(input.predicted||{});
-  const actual=metricPack(input.actual||{});
-  const counterfactual=metricPack(input.counterfactualWithoutAction||{});
+  if(!input.predicted||typeof input.predicted!=='object') throw new Error('Predicted outcome is required.');
+  if(!input.actual||typeof input.actual!=='object') throw new Error('Actual outcome is required.');
+  if(!input.counterfactualWithoutAction||typeof input.counterfactualWithoutAction!=='object') throw new Error('Counterfactual without action is required.');
+  const predicted=metricPack(input.predicted);
+  const actual=metricPack(input.actual);
+  const counterfactual=metricPack(input.counterfactualWithoutAction);
   const observed={
     throughputVsCounterfactual:Number((actual.throughputUnits-counterfactual.throughputUnits).toFixed(3)),
     planAttainmentVsCounterfactual:Number((actual.planAttainmentPct-counterfactual.planAttainmentPct).toFixed(3)),
