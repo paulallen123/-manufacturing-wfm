@@ -135,6 +135,45 @@ function publicCatalog() {
   }));
 }
 
+
+const MOBILE_FORBIDDEN_CREDENTIAL_KEY = /(?:^|_)(?:password|passcode|secret|token|access[_-]?token|refresh[_-]?token|api[_-]?key|credential|client[_-]?secret)(?:$|_)/i;
+
+function containsMobileCredentialMaterial(value, depth = 0) {
+  if (depth > 12 || value === null || value === undefined) return false;
+  if (Array.isArray(value)) return value.some(item => containsMobileCredentialMaterial(item, depth + 1));
+  if (typeof value !== 'object') return false;
+  for (const [key, nested] of Object.entries(value)) {
+    if (MOBILE_FORBIDDEN_CREDENTIAL_KEY.test(String(key)) && nested !== null && nested !== undefined && String(nested).length > 0) return true;
+    if (nested && typeof nested === 'object' && containsMobileCredentialMaterial(nested, depth + 1)) return true;
+  }
+  return false;
+}
+
+function mobileAuthorizationAction(product, connection) {
+  const authMethod = String(connection.auth_method || '');
+  const base = {
+    connectionId: connection.id,
+    productKey: product.key,
+    secretsOnDevice: false,
+    credentialSubmissionAllowed: false,
+    readOnlyDefault: true,
+    instruction: 'Complete authorization through Vecta\'s secure server-side connection flow. The mobile app must never store or submit source-system passwords, client secrets, API keys or access tokens.'
+  };
+  if (authMethod === 'oauth2') {
+    return {
+      ...base,
+      type: 'OPEN_SECURE_AUTHORIZATION',
+      mode: 'server-brokered-oauth',
+      pkcePreferred: true
+    };
+  }
+  return {
+    ...base,
+    type: 'COMPLETE_SECURE_SERVER_ENROLLMENT',
+    mode: 'server-side-secret-enrollment'
+  };
+}
+
 function detectProduct(app, source) {
   const explicit = compact(app?.productKey, 80);
   if (explicit && CATALOG_BY_KEY.has(explicit)) {
@@ -598,6 +637,83 @@ function createAutonomousIntegrationHub(options = {}) {
     return writeJson(res, 200, { connection: publicConnection(updated) });
   }
 
+
+  async function handleMobileConnect(ctx, req, res) {
+    const body = await readJson(req, maxBodyBytes);
+    if (containsMobileCredentialMaterial(body)) {
+      return writeJson(res, 400, {
+        error: 'Raw source-system credentials are not accepted from the mobile app. Use Vecta secure authorization.'
+      });
+    }
+
+    const productKey = compact(body.productKey, 80);
+    const product = CATALOG_BY_KEY.get(productKey);
+    if (!product) return writeJson(res, 404, { error: 'Supported integration system not found.' });
+
+    const requestedAuth = compact(body.authMethod, 40) || product.authMethods[0];
+    if (!product.authMethods.includes(requestedAuth)) {
+      return writeJson(res, 400, {
+        error: 'Unsupported authentication method for this system.',
+        supported: product.authMethods
+      });
+    }
+
+    const allowedAuthority = new Set(['people', 'payroll', 'finance', 'production', 'procurement', 'absence', 'time', 'organisation', 'cost-centres']);
+    const requestedAuthority = arrayOfStrings(body.authoritativeFor, 12, 40)
+      .filter(scope => allowedAuthority.has(scope) && product.supports.includes(scope));
+
+    const sourceInstanceId = compact(body.sourceInstanceId, 160) || null;
+    const discovered = ingestDiscovery(ctx.tenant, 'USER', [{
+      productKey: product.key,
+      displayName: product.name,
+      identifier: sourceInstanceId || product.key
+    }]);
+    const candidatePublic = discovered.find(item => item.productKey === product.key);
+    if (!candidatePublic) return writeJson(res, 500, { error: 'Unable to create the integration candidate safely.' });
+
+    confirmCandidateStmt.run(
+      JSON.stringify(requestedAuthority),
+      nowIso(),
+      candidatePublic.id,
+      ctx.tenant
+    );
+
+    let connection = connectionByCandidate.get(ctx.tenant, candidatePublic.id);
+    if (!connection) {
+      const id = randomUUID();
+      const now = nowIso();
+      insertConnection.run(
+        id, ctx.tenant, candidatePublic.id, product.key, product.category, 'AUTHORIZATION_REQUIRED',
+        requestedAuth, JSON.stringify(semanticScopesFor(product)), '[]', null,
+        sourceInstanceId, 0, null, null, null, now, now
+      );
+      connection = connectionById.get(id, ctx.tenant);
+      record(ctx.tenant, id, 'mobile-connection-created', {
+        productKey: product.key,
+        authMethod: requestedAuth,
+        authoritativeFor: requestedAuthority
+      });
+    } else {
+      record(ctx.tenant, connection.id, 'mobile-connection-resumed', {
+        productKey: product.key,
+        state: connection.state
+      });
+    }
+
+    const refreshedCandidate = candidateById.get(candidatePublic.id, ctx.tenant);
+    return writeJson(res, 200, {
+      candidate: publicCandidate(refreshedCandidate),
+      connection: publicConnection(connection),
+      requiredAction: mobileAuthorizationAction(product, connection),
+      mobile: {
+        flow: 'choose-system -> authorize -> verify-readonly -> review-mapping -> reconcile -> activate',
+        connectionRunsServerSide: true,
+        appMayCloseAfterAuthorization: true,
+        deviceRevocationDoesNotDisconnectSource: true
+      }
+    });
+  }
+
   async function handleMappingPreview(ctx, req, res) {
     const body = await readJson(req, maxBodyBytes);
     const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
@@ -768,6 +884,7 @@ function createAutonomousIntegrationHub(options = {}) {
       if (req.method === 'POST' && path === PREFIX + '/discover') return await handleDiscover(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/confirm') return await handleConfirm(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/connect') return await handleConnect(ctx, req, res);
+      if (req.method === 'POST' && path === PREFIX + '/mobile-connect') return await handleMobileConnect(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/mapping-preview') return await handleMappingPreview(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/mapping-activate') return await handleMappingActivate(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/repair') return await handleRepair(ctx, req, res);
