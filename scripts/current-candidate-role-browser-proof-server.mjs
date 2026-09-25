@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import http from 'node:http';
+import fs from 'node:fs';
 
 let state = 'RUNNING';
 let detail = null;
@@ -72,7 +73,16 @@ async function proveCanonicalAssetBinding() {
   };
 }
 
+function assertAuthoritativeProofSource() {
+  const roleSource = fs.readFileSync(new URL('./current-candidate-role-browser-proof.mjs', import.meta.url), 'utf8');
+  assert.ok(roleSource.includes('/api/weekly-review?period=2026-09-07'), 'Role proof is not bound to authoritative Weekly Review period.');
+  assert.ok(roleSource.includes('/api/workforce/lifecycle/action-evidence/time-review?period=2026-09-07'), 'Role proof lifecycle evidence is missing authoritative period binding.');
+  assert.equal(roleSource.includes("fetch('/api/time-review'"), false, 'Legacy Time Review source alias reappeared in role proof.');
+  console.log('BROWSER_PROOF_AUTHORITATIVE_SOURCE=PASS');
+}
+
 try {
+  assertAuthoritativeProofSource();
   assetBinding = await proveCanonicalAssetBinding();
   await import('./current-candidate-hosted-action-proof.mjs');
   await import('./current-candidate-role-browser-proof.mjs');
