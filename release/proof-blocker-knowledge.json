@@ -145,6 +145,38 @@
       "learnedFrom": "Time Review vs Weekly Review lifecycle proof alignment 2026-09-25",
       "prevention": "Bind each proof assertion to the authoritative business source and explicit period/context; do not silently fall back to legacy aliases.",
       "permanentGuard": "browser/action proof authoritative-source contract + watched verifier source"
+    },
+    {
+      "id": "proof-observer-placeholder-race",
+      "class": "TEST_DEFECT",
+      "symptom": "A proof reads a visible-but-empty placeholder immediately after the network response and fails before the application finishes its authoritative refresh and renders the error.",
+      "learnedFrom": "f4b32ca leave-overlap browser proof 2026-09-25",
+      "prevention": "Wait for the semantic expected condition in the DOM or state, never element visibility alone when placeholders exist.",
+      "permanentGuard": "proof-lane policy semantic-observation rule + browser semantic wait regression"
+    },
+    {
+      "id": "ambiguous-proof-locator",
+      "class": "TEST_DEFECT",
+      "symptom": "A broad proof locator resolves multiple valid controls and strict-mode failure blocks the journey even though product behaviour is correct.",
+      "learnedFrom": "leave conflict modal Close/Cancel browser proof 2026-09-25",
+      "prevention": "Use unique accessible-name or source-bound locators and reject ambiguous proof selectors.",
+      "permanentGuard": "proof-lane policy unique-locator rule"
+    },
+    {
+      "id": "liveness-readiness-conflation",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "Provider healthcheck marks a proof worker healthy while the proof is still RUNNING, so infrastructure green can precede a terminal proof failure.",
+      "learnedFrom": "browser proof root healthcheck 2026-09-25",
+      "prevention": "Use a dedicated readiness endpoint that returns success only after terminal PASS; liveness and proof readiness are separate.",
+      "permanentGuard": "proof-lane policy terminal-readiness rule + /ready proof worker contract"
+    },
+    {
+      "id": "capability-stranded-off-canonical-branch",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "A developed capability and its tests exist on a specialist branch but are absent from the canonical convergence candidate, leaving a stale red proof lane and an incomplete product candidate.",
+      "learnedFrom": "manufacturing scheduling parity branch 2026-09-25",
+      "prevention": "Canonical convergence must contain required runtime sources, hosted wiring and regression tests before freeze; specialist branches may not be the only copy of required capability.",
+      "permanentGuard": "canonical capability-completeness policy + Docker scheduling admission + hosted bootstrap wiring"
     }
   ]
 }
