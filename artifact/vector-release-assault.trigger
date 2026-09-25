@@ -16,3 +16,4 @@ pre_freeze=core-external-health-pass+runtime-contract-pass+attendance-route-regr
 retrigger=2026-09-25-exact-head-hardening-1
 retrigger=2026-09-25-critical-simulations-mandatory-1
 retrigger=2026-09-25-prevention-controls-exact-head-2
+retrigger=2026-09-25-named-critical-assault-3
