@@ -30,17 +30,36 @@ function assessProofLane(lane = {}, options = {}) {
     if (lane.hostedModeValue != null && String(lane.hostedModeValue) !== 'true') {
       issues.push({code:'HOSTED_MODE_NOT_ENABLED'});
     }
-    if (lane.healthcheckPath && lane.healthcheckPath !== '/api/health') {
-      issues.push({code:'HEALTHCHECK_CONTRACT_MISMATCH', actual:lane.healthcheckPath});
+    if (lane.healthcheckPath !== '/api/health') {
+      issues.push({code:'HEALTHCHECK_CONTRACT_MISMATCH', actual:lane.healthcheckPath || null});
     }
-    if (lane.publicProofRequired === true && !lane.domain) {
+    if (!lane.domain) {
       issues.push({code:'PUBLIC_ENDPOINT_MISSING'});
+    }
+    if (lane.endpointReachable !== true) {
+      issues.push({code:'ENDPOINT_NOT_REACHABLE'});
+    }
+    if (lane.healthcheckReady !== true) {
+      issues.push({code:'HEALTHCHECK_NOT_READY'});
+    }
+    const listenAddress = String(lane.listenAddress || '');
+    if (!['0.0.0.0','::'].includes(listenAddress)) {
+      issues.push({code:'HOSTED_LISTEN_NOT_PUBLIC', actual:listenAddress || null});
+    }
+    if (lane.sleepApplication === true) {
+      issues.push({code:'APP_SLEEP_FORBIDDEN'});
+    }
+    const deploymentStatus = String(lane.deploymentStatus || '').toUpperCase();
+    if (['SKIPPED','SLEEPING','FAILED','CRASHED','REMOVED'].includes(deploymentStatus)) {
+      issues.push({code:'DEPLOYMENT_NOT_EXECUTABLE', actual:deploymentStatus});
     }
     const readinessMode = String(lane.readinessMode || '').toLowerCase();
     if (!readinessMode || FIXED_READINESS_MODES.has(readinessMode)) {
       issues.push({code:'READINESS_NOT_CONDITION_BASED', actual:lane.readinessMode || null});
     }
-    if (lane.sourceSha && candidateSha && lane.sourceSha !== candidateSha) {
+    if (!lane.sourceSha && candidateSha) {
+      issues.push({code:'CANDIDATE_SHA_UNBOUND', expected:candidateSha});
+    } else if (lane.sourceSha && candidateSha && lane.sourceSha !== candidateSha) {
       issues.push({code:'CANDIDATE_SHA_DRIFT', expected:candidateSha, actual:lane.sourceSha});
     }
   }
