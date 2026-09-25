@@ -551,7 +551,15 @@ try {
   await employeePage.locator('button[data-vector-workflow="leave-request"]').click({ timeout: 5000 });
   await employeePage.locator('#modalform input[name="date"]').fill(requestedDate);
   await employeePage.locator('#modalform input[name="hours"]').fill('7.5');
+  const overlapResponsePromise = employeePage.waitForResponse(response => {
+    try { return new URL(response.url()).pathname === '/api/personal/work' && response.request().method() === 'POST'; }
+    catch { return false; }
+  }, { timeout: 10000 });
   await employeePage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  const overlapResponse = await overlapResponsePromise;
+  let overlapBody = null;
+  try { overlapBody = await overlapResponse.json(); } catch { overlapBody = { parseError: true }; }
+  console.log('CURRENT_LEAVE_OVERLAP_HTTP|' + JSON.stringify({ status: overlapResponse.status(), body: overlapBody }));
   const overlapError = employeePage.locator('#formerror');
   await overlapError.waitFor({ state: 'visible', timeout: 10000 });
   const overlapErrorText = (await overlapError.innerText()).trim();
