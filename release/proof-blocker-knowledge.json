@@ -177,6 +177,22 @@
       "learnedFrom": "manufacturing scheduling parity branch 2026-09-25",
       "prevention": "Canonical convergence must contain required runtime sources, hosted wiring and regression tests before freeze; specialist branches may not be the only copy of required capability.",
       "permanentGuard": "canonical capability-completeness policy + Docker scheduling admission + hosted bootstrap wiring"
+    },
+    {
+      "id": "runtime-assembly-transitive-dependency-gap",
+      "class": "MISSING_PROOF_DEPENDENCY",
+      "symptom": "A newly wired hosted runtime service is present in the canonical source and Docker image but omitted from the local proof assembler, causing every exact proof lane to fail before hosted execution.",
+      "learnedFrom": "c8c77a8 exact release assault 2026-09-25",
+      "prevention": "Every absolute bootstrap dependency and each runtime service's relative dependency closure must be packaged by the local proof assembler and pinned by regression tests before freeze.",
+      "permanentGuard": "vector-runtime-packaging transitive scheduling closure + local runtime composer"
+    },
+    {
+      "id": "proof-readiness-diagnostic-ceiling-too-short",
+      "class": "TEST_DEFECT",
+      "symptom": "The proof readiness endpoint remains correctly fail-closed while the multi-role journey is still running, but the provider diagnostic health deadline expires before the proof can reach terminal PASS.",
+      "learnedFrom": "browser proof /ready run 4322b797 2026-09-25",
+      "prevention": "Keep readiness semantic and condition-based; set the provider diagnostic ceiling above the measured proof runtime and fail immediately on terminal proof failure rather than on arbitrary attempt counts.",
+      "permanentGuard": "dedicated /ready terminal-PASS contract + Railway browser proof diagnostic ceiling"
     }
   ]
 }
