@@ -101,6 +101,28 @@ test('bridge exposes the sealed saved-adjustment shape while preserving fail-clo
   }finally{f.close();}
 });
 
+test('bridge simulation keeps unrelated reasonless issues suppressed beside a valid adjustment',async()=>{
+  const f=fixture(async()=>({status:200,body:report({
+    teams:[{id:'team-a',issues:[
+      {id:'copy-only',status:'open',title:'Urgent-looking presentation copy only'},
+      {
+        id:'issue-adjustment-sim',
+        status:'open',
+        type:'adjustment',
+        row:'row-sim',
+        sourceFingerprint:'sha256:simulated-source',
+        proposed:{clockOut:'2026-09-19T17:10:00.000Z'},
+        message:'Manager proposed a bounded correction.'
+      }
+    ]}]
+  })}));
+  try{
+    const result=await call(f.engine,f.manager,'GET',TIME_REVIEW_PATH+'?period=2026-09-07');
+    assert.equal(result.status,200);
+    assert.deepEqual(result.body.items.map(item=>item.sourceId),['issue-adjustment-sim']);
+  }finally{f.close();}
+});
+
 test('bridge fails closed for employees before reading Time Review',async()=>{
   let calls=0;
   const f=fixture(async()=>{calls++;return{status:200,body:report()};});
