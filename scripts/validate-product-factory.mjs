@@ -39,7 +39,9 @@ for(const file of featureFiles){
 
 const dockerfile=read('Dockerfile');
 assert.match(dockerfile,/FROM\s+[^\n]+@sha256:[a-f0-9]{64}/i,'runtime image must be digest-pinned');
-assert.match(dockerfile,/USER\s+node\b/,'runtime must stay non-root');
+assert.match(dockerfile,/USER\s+root\b/,'runtime image may start privileged only for durable-volume bootstrap');
+assert.match(dockerfile,/ENTRYPOINT\s+\[\"\/usr\/local\/bin\/vector-entrypoint\.sh\"\]/,'runtime must use the reviewed volume-bootstrap entrypoint');
+assert.match(dockerfile,/exec gosu node \"\$@\"/,'reviewed entrypoint must permanently drop application execution to node');
 assert.match(dockerfile,/VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1/,'Dockerfile must compose only the approved Vector presentation');
 
 const vector=read('ux-overlay/vector-shell.js');
