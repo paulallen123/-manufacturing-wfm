@@ -159,7 +159,13 @@ function produceTimeReviewActionEvidence(report,{allowedTeamIds=[]}={}){
     for(const issue of issues){
       if(!isObject(issue)||text(issue.status,32).toLowerCase()!=='open') continue;
       const sourceId=text(issue.sourceId??issue.id,160);
-      const reasonCode=structuredReason(issue.reasonCode);
+      const issueType=text(issue.type,48).toLowerCase();
+      const legacyAdjustmentShape=issueType==='adjustment'
+        && text(issue.row,160)
+        && text(issue.sourceFingerprint,240)
+        && isObject(issue.proposed);
+      const reasonCode=structuredReason(issue.reasonCode)
+        || (legacyAdjustmentShape ? 'TIME_REVIEW_ADJUSTMENT' : '');
       const observedAt=iso(issue.observedAt)||iso(team.observedAt)||iso(report.observedAt)||iso(report.generatedAt);
       const authorityRequired=text(issue.authorityRequired??team.authorityRequired??report.authorityRequired,160);
       if(!sourceId||!reasonCode||!observedAt||!authorityRequired) continue;
@@ -173,7 +179,7 @@ function produceTimeReviewActionEvidence(report,{allowedTeamIds=[]}={}){
         observedAt,
         route:'time-review',
         authorityRequired,
-        title:issue.title,
+        title:issue.title??issue.message,
         whyNow:issue.whyNow,
         recommendation:issue.recommendation,
         consequence:issue.consequence,
