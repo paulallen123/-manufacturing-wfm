@@ -8,6 +8,9 @@ on:
       - 'mobile/**'
       - 'operations/runtime/mobile-recommendation-service.cjs'
       - 'operations/runtime/mobile-recommendation-service.test.cjs'
+      - 'operations/runtime/mobile-assistant-service.cjs'
+      - 'operations/runtime/mobile-assistant-service.test.cjs'
+      - 'scripts/compose-vector-local-runtime.mjs'
       - 'security/runtime/bootstrap.cjs'
       - 'Dockerfile'
       - '.github/workflows/mobile-branch-ci.yml'
@@ -27,9 +30,10 @@ jobs:
       - name: Syntax check guarded runtime
         run: |
           node --check operations/runtime/mobile-recommendation-service.cjs
+          node --check operations/runtime/mobile-assistant-service.cjs
           node --check security/runtime/bootstrap.cjs
       - name: Prove mobile approvals fail closed
-        run: node --test operations/runtime/mobile-recommendation-service.test.cjs
+        run: node --test operations/runtime/mobile-recommendation-service.test.cjs operations/runtime/mobile-assistant-service.test.cjs
 
   native-client:
     runs-on: ubuntu-latest
