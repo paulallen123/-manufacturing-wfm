@@ -12,6 +12,7 @@ const { createAutonomousIntegrationHub } = require('/app/integration-runtime/aut
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
+const { createVectorOperationsLanguageProvider } = require('/app/operations-runtime/vector-operations-language-provider.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -42,6 +43,8 @@ let implementationEngine = null;
 let implementationEngineInitError = null;
 let lifecycleGuard = null;
 let lifecycleGuardInitError = null;
+let operationsBotLanguageProvider = null;
+let operationsBotLanguageProviderInitAttempted = false;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -320,9 +323,23 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!operationsBotLanguageProviderInitAttempted) {
+    operationsBotLanguageProviderInitAttempted = true;
+    try {
+      operationsBotLanguageProvider = createVectorOperationsLanguageProvider();
+    } catch {
+      // Multilingual provider is an additive UX dependency. The core bot remains
+      // available through deterministic language support and never fails open.
+      operationsBotLanguageProvider = null;
+    }
+  }
+
   if (!lifecycleGuard && !lifecycleGuardInitError && process.env.WFM_DB) {
     try {
-      lifecycleGuard = createWorkforceLifecycleGuard({ dbPath: process.env.WFM_DB });
+      lifecycleGuard = createWorkforceLifecycleGuard({
+        dbPath: process.env.WFM_DB,
+        ...(operationsBotLanguageProvider ? { operationsBotLanguageProvider } : {})
+      });
     } catch (error) {
       lifecycleGuardInitError = error;
     }
