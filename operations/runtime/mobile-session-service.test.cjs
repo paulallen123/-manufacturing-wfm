@@ -33,6 +33,8 @@ test('fresh web login can mint a distinct revocable mobile bearer session',async
   const db=new DatabaseSync(dbPath);
   const hash=sha(body.accessToken);
   assert.ok(db.prepare('SELECT 1 FROM sessions WHERE token_hash=?').get(hash));
+  assert.equal(db.prepare('SELECT 1 FROM sessions WHERE token_hash=?').get(sha('web-session')),undefined,'browser login session must be consumed');
+  assert.match(String(out.headers['Set-Cookie']||out.headers['set-cookie']||''),/Max-Age=0/);
   assert.equal(db.prepare('SELECT tenant FROM mobile_device_sessions WHERE token_hash=?').get(hash).tenant,'alpha');
   db.close();
   const gone=res();
