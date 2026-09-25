@@ -8,6 +8,8 @@ function exactLane(overrides={}){
     id:'railway-a', provider:'railway', failureDomain:'railway:workspace-a', class:'exact-image',
     variableNames:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD'], hostedModeValue:'true',
     healthcheckPath:'/api/health', readinessMode:'condition', sourceSha:'sha-1',
+    domain:'https://proof.example', endpointReachable:true, healthcheckReady:true,
+    listenAddress:'0.0.0.0', sleepApplication:false, deploymentStatus:'SUCCESS',
     ...overrides
   };
 }
@@ -28,6 +30,33 @@ test('rejects candidate identity drift before execution', () => {
   const result = assessProofLane(exactLane({sourceSha:'old-sha'}), {candidateSha:'sha-1'});
   assert.equal(result.admitted, false);
   assert.ok(result.issues.some(x => x.code === 'CANDIDATE_SHA_DRIFT'));
+});
+
+
+test('rejects sleeping lanes even when prior deployment metadata was green', () => {
+  const result = assessProofLane(exactLane({sleepApplication:true, deploymentStatus:'SLEEPING'}), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'APP_SLEEP_FORBIDDEN'));
+  assert.ok(result.issues.some(x => x.code === 'DEPLOYMENT_NOT_EXECUTABLE'));
+});
+
+test('rejects domain-only proof when outside-in endpoint and health are not observed', () => {
+  const result = assessProofLane(exactLane({endpointReachable:false, healthcheckReady:false}), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'ENDPOINT_NOT_REACHABLE'));
+  assert.ok(result.issues.some(x => x.code === 'HEALTHCHECK_NOT_READY'));
+});
+
+test('rejects loopback-only hosted listen mode', () => {
+  const result = assessProofLane(exactLane({listenAddress:'127.0.0.1'}), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'HOSTED_LISTEN_NOT_PUBLIC'));
+});
+
+test('rejects missing exact candidate binding instead of treating absence as a match', () => {
+  const result = assessProofLane(exactLane({sourceSha:null}), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'CANDIDATE_SHA_UNBOUND'));
 });
 
 test('multiple lanes in the same provider failure domain do not count as independent resilience', () => {
