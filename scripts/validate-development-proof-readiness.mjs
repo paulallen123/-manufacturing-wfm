@@ -95,6 +95,24 @@ for(const [id,guards] of Object.entries(learnedGuardChecks)){
     assert.ok(fs.readFileSync(target,'utf8').includes(marker),'Missing permanent guard marker for '+id+': '+relativePath+' -> '+marker);
   }
 }
+for (const [id,guards] of Object.entries({
+  'proof-observer-placeholder-race':[['release/proof-lane-policy.json','proofObserversMustWaitForSemanticCondition']],
+  'ambiguous-proof-locator':[['release/proof-lane-policy.json','ambiguousProofLocatorsForbidden']],
+  'liveness-readiness-conflation':[['release/proof-lane-policy.json','proofReadinessMustReflectTerminalPass']],
+  'capability-stranded-off-canonical-branch':[
+    ['release/proof-lane-policy.json','canonicalCandidateMustContainRequiredCapabilities'],
+    ['Dockerfile','operations/runtime/manufacturing-scheduling-engine.test.cjs'],
+    ['security/runtime/bootstrap.cjs','createSchedulingIntelligenceService']
+  ]
+})){
+  assert.ok(knowledge.entries.some(item=>item.id===id),'Missing learned blocker entry: '+id);
+  for(const [relativePath,guardMarker] of guards){
+    const target=path.join(ROOT,relativePath);
+    assert.ok(fs.existsSync(target),'Missing permanent guard file for '+id+': '+relativePath);
+    assert.ok(fs.readFileSync(target,'utf8').includes(guardMarker),'Missing permanent guard marker for '+id+': '+relativePath+' -> '+guardMarker);
+  }
+}
+
 const workflowTest=fs.readFileSync(path.join(ROOT,'ux-overlay/vector-workflows.test.cjs'),'utf8');
 assert.ok(!workflowTest.includes('const port = 43217'),'Retired fixed workflow proof port reappeared.');
 assert.ok(!/for\s*\(let\s+attempt\s*=\s*0;\s*attempt\s*<\s*80/.test(workflowTest),'Retired fixed startup-attempt window reappeared.');
