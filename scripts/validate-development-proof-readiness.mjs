@@ -130,6 +130,21 @@ for (const [id,guards] of Object.entries({
   }
 }
 
+for (const [id,guards] of Object.entries({
+  'invented-navigation-authority':[
+    ['tests/vector-consolidation.test.cjs','five-section navigation keeps every registered workflow reachable exactly once'],
+    ['ux-overlay/vector-workflows.test.cjs','Time Review source-bound inside registered Attendance navigation'],
+    ['ux-overlay/vector-shell.js',"'time-review':'attendance'"]
+  ]
+})){
+  assert.ok(knowledge.entries.some(item=>item.id===id),'Missing learned blocker entry: '+id);
+  for(const [relativePath,guardMarker] of guards){
+    const target=path.join(ROOT,relativePath);
+    assert.ok(fs.existsSync(target),'Missing permanent guard file for '+id+': '+relativePath);
+    assert.ok(fs.readFileSync(target,'utf8').includes(guardMarker),'Missing permanent guard marker for '+id+': '+relativePath+' -> '+guardMarker);
+  }
+}
+
 const workflowTest=fs.readFileSync(path.join(ROOT,'ux-overlay/vector-workflows.test.cjs'),'utf8');
 assert.ok(!workflowTest.includes('const port = 43217'),'Retired fixed workflow proof port reappeared.');
 assert.ok(!/for\s*\(let\s+attempt\s*=\s*0;\s*attempt\s*<\s*80/.test(workflowTest),'Retired fixed startup-attempt window reappeared.');
