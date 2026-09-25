@@ -121,6 +121,22 @@
       "learnedFrom": "Railway exact-candidate Lane A and browser-proof admission audit 2026-09-25",
       "prevention": "Require exact deployment SHA binding, public listen mode, sleep disabled, condition-ready health, outside-in endpoint reachability and an executable deployment state; SKIPPED/SLEEPING/status-only green never counts as proof.",
       "permanentGuard": "VECTOR_PRE_FREEZE_SIMULATION_V1 execution-state + wake/reachability admission regression"
+    },
+    {
+      "id": "proof-worker-source-branch-drift",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "A newly created proof worker can start an initial deployment from a different branch/commit than the service configuration subsequently reports, so setup success can be mistaken for admissible evidence.",
+      "learnedFrom": "Railway vector-proof-verifier-a initial create-deployment 2026-09-25",
+      "prevention": "Compare the actual deployment branch and commit metadata with the intended proof-worker source before accepting any result. Reject the initial run on mismatch and redeploy only after live service config is correct.",
+      "permanentGuard": "proof-worker source-identity admission + deployment metadata comparison"
+    },
+    {
+      "id": "cross-project-proof-credential-drift",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "A browser proof worker can reach the exact hosted candidate and assets but receive HTTP 401 because its copied staging credential no longer matches the target proof runtime.",
+      "learnedFrom": "Exact 0fa78dcf browser proof login failure 2026-09-25",
+      "prevention": "Do not copy proof credentials across projects. Co-locate authenticated proof workers with the isolated target and use provider-native reference variables so secret rotation remains atomic and the secret never leaves the provider.",
+      "permanentGuard": "same-project provider reference for authenticated proof + login preflight before browser journey"
     }
   ]
 }
