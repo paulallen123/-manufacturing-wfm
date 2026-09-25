@@ -298,7 +298,15 @@ function toggleListening() {
 }
 
 function mount() {
-  if (state.mounted || document.getElementById('wfm-bot')) return;
+  if (state.mounted) return;
+  const existingBot = document.getElementById('wfm-bot');
+  if (existingBot && existingBot.dataset.marker === MARKER) {
+    state.mounted = true;
+    return;
+  }
+  if (existingBot) existingBot.remove();
+  const existingLaunch = document.getElementById('wfm-bot-launch');
+  if (existingLaunch) existingLaunch.remove();
   state.mounted = true;
 
   const launch = document.createElement('button');
