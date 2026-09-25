@@ -200,3 +200,36 @@ Do not merge into the canonical release until:
 8. no release/security/payroll gate is weakened.
 
 Agency labour is nevertheless a **core product pillar** in the target architecture and should be represented in the product navigation, Operations Control Tower, Golden Journey and value proof once these gates pass.
+
+
+### 8. Zero-touch temporary clocking after worker confirmation
+
+`src/frontier/agency-temp-clocking-profile.mjs`
+
+A finally confirmed agency worker who passes the existing work-start readiness gate automatically receives a temporary clocking identity and a placement-bound clocking entitlement. The intended worker journey is:
+
+```
+agency confirms worker
+→ VECTOR revalidates readiness
+→ temporary clocking profile/entitlement created
+→ secure QR/PIN or verified badge made available
+→ worker arrives
+→ clocks in / breaks / clocks out
+→ raw events flow to attendance review
+→ profile expires or is revoked automatically
+```
+
+Rules:
+- no manager setup is required on the day of the shift;
+- a supplier nomination alone never activates clocking;
+- worker, agency, site, request and placement scope must all match;
+- the profile is time-limited to the placement plus configured early/late clocking grace;
+- the stable temporary-worker principal can be reused on a later booking, but each placement gets a new entitlement;
+- cancellation, replacement, lost site access or readiness revocation blocks new clock-ins;
+- an already-open session can still clock out safely after revocation/expiry so VECTOR never traps a worker in an open shift;
+- raw kiosk events are preserved and remain subject to attendance review;
+- the clocking profile never grants payroll, schedule, invoice, worker-master or management authority;
+- credentials use a secure QR/PIN/badge mechanism and plaintext credentials are not stored in the profile;
+- kiosk data contains only the minimum identity and placement linkage needed for clocking.
+
+This closes the deliberate gap between agency confirmation and arrival: the customer should not have to manually create a worker in the clocking system for every temporary placement.
