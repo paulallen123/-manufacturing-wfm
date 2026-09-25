@@ -490,7 +490,15 @@ function publicCapability(key, spec) {
 function createVectorOperationsBot(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   if (!dbPath) throw new Error('Vector Operations Bot requires WFM_DB.');
-  const interpreter = typeof options.intentProvider === 'function' ? options.intentProvider : null;
+  const languageProvider = options.languageProvider && typeof options.languageProvider === 'object'
+    ? options.languageProvider
+    : null;
+  const interpreter = languageProvider && typeof languageProvider.interpret === 'function'
+    ? input => languageProvider.interpret(input)
+    : (typeof options.intentProvider === 'function' ? options.intentProvider : null);
+  const translator = languageProvider && typeof languageProvider.translateMap === 'function'
+    ? input => languageProvider.translateMap(input)
+    : null;
   const completionVerifier = typeof options.completionVerifier === 'function'
     ? options.completionVerifier
     : async ({ req, ctx, row, receipt }) => {
@@ -601,33 +609,96 @@ function createVectorOperationsBot(options = {}) {
   }
 
   async function interpret(message, locale, ctx) {
+    const baseline = deterministicInterpret(message, locale, ctx.role);
+    if (baseline.kind !== 'unsupported' && baseline.kind !== 'empty') return baseline;
+
     if (interpreter) {
       try {
+        const allowedCapabilities = Object.freeze(filteredCapabilities(ctx).map(item => item.key));
         const proposal = await interpreter(Object.freeze({
           message,
           locale,
           roleClass: roleClass(ctx.role),
-          allowedCapabilities: Object.freeze(filteredCapabilities(ctx).map(item => item.key))
+          allowedCapabilities
         }));
-        if (proposal && proposal.kind === 'action' && capabilityAllowed(proposal.capability, ctx.role)) {
+        if (!proposal || typeof proposal !== 'object' || Array.isArray(proposal)) return baseline;
+        const detectedLocale = proposal.detectedLocale ? normaliseLocale(proposal.detectedLocale) : null;
+
+        if (proposal.kind === 'action' && capabilityAllowed(proposal.capability, ctx.role)) {
           const args = proposal.args && typeof proposal.args === 'object' && !Array.isArray(proposal.args)
             ? proposal.args
             : {};
           if (proposal.capability === 'leave.request') {
             const date = parseDate(args.date || message);
             const hours = Number(args.hours != null ? args.hours : parseHours(message));
-            if (!date || !Number.isFinite(hours) || hours < 0.5 || hours > 12) {
-              return deterministicInterpret(message, locale, ctx.role);
-            }
-            return Object.freeze({ kind: 'action', capability: proposal.capability, args: Object.freeze({ date, hours }) });
+            if (!date || !Number.isFinite(hours) || hours < 0.5 || hours > 12) return baseline;
+            return Object.freeze({
+              kind: 'action',
+              capability: proposal.capability,
+              args: Object.freeze({ date, hours }),
+              ...(detectedLocale ? { detectedLocale } : {})
+            });
           }
-          return Object.freeze({ kind: 'action', capability: proposal.capability, args: Object.freeze({}) });
+          return Object.freeze({
+            kind: 'action',
+            capability: proposal.capability,
+            args: Object.freeze({}),
+            ...(detectedLocale ? { detectedLocale } : {})
+          });
+        }
+
+        if (proposal.kind === 'capability' && capabilityAllowed(proposal.capability, ctx.role)) {
+          return Object.freeze({
+            kind: 'capability',
+            capability: proposal.capability,
+            ...(detectedLocale ? { detectedLocale } : {})
+          });
+        }
+
+        if (proposal.kind === 'needs_parameters' && capabilityAllowed(proposal.capability, ctx.role)) {
+          const missing = [...new Set((Array.isArray(proposal.missing) ? proposal.missing : [])
+            .map(item => compact(item, 40))
+            .filter(item => item === 'date' || item === 'hours'))];
+          return Object.freeze({
+            kind: 'needs_parameters',
+            capability: proposal.capability,
+            missing: Object.freeze(missing),
+            ...(detectedLocale ? { detectedLocale } : {})
+          });
+        }
+
+        if (proposal.kind === 'capabilities' || proposal.kind === 'unsupported') {
+          return Object.freeze({
+            kind: proposal.kind,
+            ...(detectedLocale ? { detectedLocale } : {})
+          });
         }
       } catch {
-        // The deterministic path is the fail-closed fallback.
+        // Language/model failure never becomes execution authority.
       }
     }
-    return deterministicInterpret(message, locale, ctx.role);
+    return baseline;
+  }
+
+  async function localiseTexts(locale, texts) {
+    const clean = {};
+    for (const [key, value] of Object.entries(texts || {})) {
+      const text = compact(value, 4000);
+      if (text) clean[key] = text;
+    }
+    if (!Object.keys(clean).length || !translator || language(locale) === 'en') return Object.freeze(clean);
+    try {
+      const translated = await translator(Object.freeze({ targetLocale: locale, texts: Object.freeze(clean) }));
+      if (!translated || typeof translated !== 'object' || Array.isArray(translated)) return Object.freeze(clean);
+      const out = { ...clean };
+      for (const key of Object.keys(clean)) {
+        const text = compact(translated[key], 4000);
+        if (text) out[key] = text;
+      }
+      return Object.freeze(out);
+    } catch {
+      return Object.freeze(clean);
+    }
   }
 
   async function plan(req, res, ctx) {
@@ -637,23 +708,38 @@ function createVectorOperationsBot(options = {}) {
     if (!message) return writeJson(res, 400, { error: 'message is required.' });
 
     const interpretation = await interpret(message, locale, ctx);
-    const response = responseForInterpretation(interpretation, locale);
+    const effectiveLocale = interpretation.detectedLocale
+      ? normaliseLocale(interpretation.detectedLocale)
+      : locale;
+    const response = responseForInterpretation(interpretation, effectiveLocale);
 
     if (interpretation.kind !== 'action' || !capabilityAllowed(interpretation.capability, ctx.role)) {
+      const translated = await localiseTexts(effectiveLocale, {
+        answer: response.answer,
+        ...(response.confirmation ? { confirmation: response.confirmation } : {})
+      });
       audit(ctx, 'PLAN_NON_EXECUTABLE', null, {
-        locale,
+        locale: effectiveLocale,
         result: interpretation.kind,
         capability: interpretation.capability || interpretation.topic || null
       });
       return writeJson(res, 200, {
         contractVersion: CONTRACT_VERSION,
-        locale,
+        locale: effectiveLocale,
         supported: interpretation.kind !== 'unsupported',
-        ...response
+        ...response,
+        answer: translated.answer || response.answer,
+        ...(response.confirmation ? { confirmation: translated.confirmation || response.confirmation } : {})
       });
     }
 
     const spec = CAPABILITIES[interpretation.capability];
+    const translated = await localiseTexts(effectiveLocale, {
+      answer: response.answer,
+      confirmation: response.confirmation,
+      title: spec.title,
+      consequence: spec.consequence
+    });
     const planId = 'vop-' + randomUUID();
     const createdAt = Date.now();
     insertPlan.run(
@@ -661,7 +747,7 @@ function createVectorOperationsBot(options = {}) {
       String(ctx.tenant),
       String(ctx.email),
       String(ctx.role),
-      locale,
+      effectiveLocale,
       interpretation.capability,
       JSON.stringify(interpretation.args || {}),
       'PENDING_CONFIRMATION',
@@ -676,15 +762,17 @@ function createVectorOperationsBot(options = {}) {
 
     return writeJson(res, 200, {
       contractVersion: CONTRACT_VERSION,
-      locale,
+      locale: effectiveLocale,
       supported: true,
       ...response,
+      answer: translated.answer || response.answer,
+      confirmation: translated.confirmation || response.confirmation,
       plan: {
         id: planId,
         capability: interpretation.capability,
-        title: spec.title,
+        title: translated.title || spec.title,
         risk: spec.risk,
-        consequence: spec.consequence,
+        consequence: translated.consequence || spec.consequence,
         args: interpretation.args,
         expiresAt: new Date(createdAt + PLAN_TTL_MS).toISOString()
       }
@@ -752,12 +840,13 @@ function createVectorOperationsBot(options = {}) {
       const changed = updateStatus.run('FAILED', Date.now(), planId, 'AUTHORIZED_FOR_EXECUTION');
       if (Number(changed.changes || 0) !== 1) return writeJson(res, 409, { error: 'Action state changed.' });
       audit(ctx, 'EXECUTION_FAILED', planId, { capability: row.capability, receipt });
+      const translated = await localiseTexts(row.locale, { answer: copy(row.locale, 'failed') });
       return writeJson(res, 200, {
         contractVersion: CONTRACT_VERSION,
         planId,
         ok: false,
         locale: row.locale,
-        answer: copy(row.locale, 'failed'),
+        answer: translated.answer || copy(row.locale, 'failed'),
         receipt
       });
     }
@@ -788,12 +877,13 @@ function createVectorOperationsBot(options = {}) {
       receipt,
       evidenceRef: compact(verification.evidenceRef, 200) || null
     });
+    const translated = await localiseTexts(row.locale, { answer: copy(row.locale, 'completed') });
     return writeJson(res, 200, {
       contractVersion: CONTRACT_VERSION,
       planId,
       ok: true,
       locale: row.locale,
-      answer: copy(row.locale, 'completed'),
+      answer: translated.answer || copy(row.locale, 'completed'),
       receipt,
       evidenceRef: compact(verification.evidenceRef, 200) || null
     });
@@ -808,7 +898,12 @@ function createVectorOperationsBot(options = {}) {
     const changed = updateStatus.run('CANCELLED', Date.now(), planId, 'PENDING_CONFIRMATION');
     if (Number(changed.changes || 0) !== 1) return writeJson(res, 409, { error: 'Action state changed.' });
     audit(ctx, 'PLAN_CANCELLED', planId, {});
-    return writeJson(res, 200, { ok: true, answer: copy(row.locale, 'cancelled') });
+    const translated = await localiseTexts(row.locale, { answer: copy(row.locale, 'cancelled') });
+    return writeJson(res, 200, {
+      ok: true,
+      locale: row.locale,
+      answer: translated.answer || copy(row.locale, 'cancelled')
+    });
   }
 
   async function handleRequest(req, res) {
