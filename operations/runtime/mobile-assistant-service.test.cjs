@@ -76,3 +76,41 @@ test('assistant rejects provider action ids outside live Vecta context',async()=
   assert.match(JSON.parse(res.body).error,/not valid/i);
   service.close();fs.rmSync(dir,{recursive:true,force:true});
 });
+
+
+test('push-to-talk transcription feeds the same bounded action proposal path',async()=>{
+  const {dir,dbPath}=fixture();
+  const seen=[];
+  const fakeFetch=async(url)=>{
+    seen.push(String(url));
+    if(String(url).endsWith('/audio/transcriptions')){
+      return {ok:true,status:200,async text(){return JSON.stringify({text:'Yes, use the approved agency cover'});}};
+    }
+    return {
+      ok:true,status:200,
+      async text(){return JSON.stringify({output:[{type:'function_call',name:'prepare_recommendation_action',arguments:JSON.stringify({episodeId:'ep-1',optionId:'agency-1'})}]});}
+    };
+  };
+  const service=createMobileAssistantService({
+    dbPath,apiKey:'test-key',fetchImpl:fakeFetch,
+    decisionService:{recentEpisodes(){return [episode];}}
+  });
+  const r=Readable.from([Buffer.from(JSON.stringify({
+    language:'en-GB',
+    mimeType:'audio/mp4',
+    audioBase64:Buffer.from('synthetic-m4a-test-bytes').toString('base64')
+  }))]);
+  r.method='POST';r.url='/api/mobile/assistant/audio';r.headers={cookie:'wfm_session=session-token'};
+  const res=response();
+  await service.handleRequest(r,res);
+  assert.equal(res.statusCode,200);
+  const body=JSON.parse(res.body);
+  assert.equal(body.transcript,'Yes, use the approved agency cover');
+  assert.equal(body.actionProposal.requiresDeviceConfirmation,true);
+  assert.equal(body.actionProposal.optionId,'agency-1');
+  assert.deepEqual(seen,[
+    'https://api.openai.com/v1/audio/transcriptions',
+    'https://api.openai.com/v1/responses'
+  ]);
+  service.close();fs.rmSync(dir,{recursive:true,force:true});
+});
