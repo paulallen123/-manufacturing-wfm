@@ -138,7 +138,9 @@ test('manager receives non-mutating operational navigation capabilities but not 
 test('leave request follows plan -> explicit confirmation -> typed execution -> verified completion', async t => {
   const f = fixture();
   t.after(() => f.cleanup());
-  const runtime = await startBot(f.dbPath);
+  const runtime = await startBot(f.dbPath, {
+    completionVerifier: async ({ receipt }) => ({ ok: receipt.id === 'leave-123', evidenceRef: 'test-source:leave-123' })
+  });
   t.after(() => runtime.close());
 
   const planned = await api(runtime.base, 'worker-token', '/plan', 'POST', {
@@ -277,7 +279,9 @@ test('an injected language interpreter may classify any language but cannot crea
 test('audit rows are append-only and record the execution lifecycle', async t => {
   const f = fixture();
   t.after(() => f.cleanup());
-  const runtime = await startBot(f.dbPath);
+  const runtime = await startBot(f.dbPath, {
+    completionVerifier: async ({ receipt }) => ({ ok: receipt.id === 'leave-audit', evidenceRef: 'test-source:leave-audit' })
+  });
 
   const planned = await api(runtime.base, 'worker-token', '/plan', 'POST', {
     message: 'Book leave 2026-10-02 8 hours',
@@ -299,10 +303,45 @@ test('audit rows are append-only and record the execution lifecycle', async t =>
   const events = db.prepare(
     'SELECT event FROM vector_operations_bot_audit WHERE plan_id=? ORDER BY created_at,id'
   ).all(planned.value.plan.id).map(row => row.event);
-  assert.deepEqual(events.sort(), ['EXECUTION_AUTHORIZED', 'EXECUTION_VERIFIED_BY_WORKFLOW', 'PLAN_CREATED'].sort());
+  assert.deepEqual(events.sort(), ['EXECUTION_AUTHORIZED', 'EXECUTION_VERIFIED_BY_SOURCE', 'PLAN_CREATED'].sort());
   assert.throws(() => {
     db.prepare('UPDATE vector_operations_bot_audit SET event=? WHERE plan_id=?')
       .run('TAMPERED', planned.value.plan.id);
   }, /append only/i);
+  db.close();
+});
+
+
+test('bot refuses to report success when independent source verification fails', async t => {
+  const f = fixture();
+  t.after(() => f.cleanup());
+  const runtime = await startBot(f.dbPath, {
+    completionVerifier: async () => ({ ok: false, reason: 'SOURCE_UNVERIFIED' })
+  });
+  t.after(() => runtime.close());
+
+  const planned = await api(runtime.base, 'worker-token', '/plan', 'POST', {
+    message: 'Book leave 2026-10-04 for 8 hours',
+    locale: 'en-GB'
+  });
+  const authorised = await api(runtime.base, 'worker-token', '/execute', 'POST', {
+    planId: planned.value.plan.id,
+    confirm: true
+  });
+  assert.equal(authorised.status, 200);
+
+  const unverified = await api(runtime.base, 'worker-token', '/complete', 'POST', {
+    planId: planned.value.plan.id,
+    ok: true,
+    receipt: { id: 'unverified-leave', status: 'pending' }
+  });
+  assert.equal(unverified.status, 409);
+  assert.match(unverified.value.error, /could not independently confirm/i);
+
+  const db = new DatabaseSync(f.dbPath);
+  const plan = db.prepare('SELECT status FROM vector_operations_bot_plans WHERE id=?').get(planned.value.plan.id);
+  assert.equal(plan.status, 'NEEDS_VERIFICATION');
+  const events = db.prepare('SELECT event FROM vector_operations_bot_audit WHERE plan_id=?').all(planned.value.plan.id);
+  assert.ok(events.some(row => row.event === 'EXECUTION_NEEDS_VERIFICATION'));
   db.close();
 });
