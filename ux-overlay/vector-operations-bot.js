@@ -211,6 +211,9 @@ async function confirmPlan(confirm) {
     }
 
     const authority = await request('/execute', { planId, confirm: true });
+    if (authority.verifyAfterExecution !== true) {
+      throw new Error('Vecta refused an execution instruction without a verification requirement.');
+    }
     let receipt = null;
     try {
       receipt = await executeClientAction(authority.execution);
