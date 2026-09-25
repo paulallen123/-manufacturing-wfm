@@ -13,3 +13,4 @@ pre_freeze=core-external-health-pass+runtime-closure-fixed+attendance-source-bou
 run=release-assault-20260925-attendance-regression-aligned
 scope=core+reporting;recovery=current-proof-after-green
 pre_freeze=core-external-health-pass+runtime-contract-pass+attendance-route-regression-pass+specialist-recovery-rejected+promotion-domain-blocked
+retrigger=2026-09-25-exact-head-hardening-1
