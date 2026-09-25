@@ -70,9 +70,8 @@ export async function signIn(email: string, password: string) {
     method: "POST"
   }, { auth: false });
 
-  // Remove the short-lived browser cookie so all subsequent native calls have one
-  // unambiguous authority: the revocable device bearer stored by the OS.
-  await api("/api/logout", { method: "POST" }, { auth: false });
+  // The exchange endpoint atomically consumes the short-lived browser session and
+  // clears its cookie. Only the revocable device bearer survives.
   await SecureStore.setItemAsync(MOBILE_SESSION_KEY, session.accessToken, {
     keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
   });
