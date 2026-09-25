@@ -1,0 +1,40 @@
+/* VECTOR_OPERATIONS_BOT_UI_V1 */
+.wfm-bot-launch{
+ position:fixed;right:24px;bottom:24px;z-index:2140;display:flex;align-items:center;gap:9px;
+ min-height:48px;padding:0 16px;border:1px solid #d7e4f2;border-radius:999px;background:#fff;
+ color:#15324f;box-shadow:0 12px 34px #15324f26;font:600 14px/1.2 inherit;cursor:pointer
+}
+.wfm-bot-launch span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#edf5ff;color:#096bf1;font-size:16px}
+.wfm-bot-launch:hover,.wfm-bot-launch:focus-visible{border-color:#9fc4f2;box-shadow:0 14px 40px #15324f32}
+.wfm-bot{
+ position:fixed;right:24px;bottom:84px;z-index:2150;width:min(430px,calc(100vw - 28px));height:min(650px,calc(100dvh - 112px));
+ display:grid;grid-template-rows:auto 1fr auto auto;background:#fff;border:1px solid #dce7f1;border-radius:18px;
+ box-shadow:0 22px 70px #102b462f;overflow:hidden;color:#15324f
+}
+.wfm-bot[hidden]{display:none!important}
+.wfm-bot header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:17px 18px;border-bottom:1px solid #e7eef5;background:#fbfdff}
+.wfm-bot header>div{display:grid;gap:3px}.wfm-bot header strong{font-size:16px}.wfm-bot header small{font-size:12px;color:#647b91}
+.wfm-bot header button{border:0;background:#eef4fa;color:#35516d;border-radius:50%;width:32px;height:32px;font-size:22px;line-height:1;cursor:pointer}
+.wfm-bot-transcript{overflow:auto;padding:18px;display:flex;flex-direction:column;gap:11px;background:#f8fbfe;scroll-behavior:smooth}
+.wfm-bot-message{max-width:88%;display:grid;gap:5px}.wfm-bot-message p{margin:0;padding:11px 13px;border-radius:14px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.wfm-bot-message small{font-size:11px;color:#71869a;padding:0 6px}.wfm-bot-message.user{align-self:flex-end}.wfm-bot-message.user p{background:#126ef4;color:#fff;border-bottom-right-radius:4px}
+.wfm-bot-message.assistant{align-self:flex-start}.wfm-bot-message.assistant p{background:#fff;color:#223e58;border:1px solid #e0eaf3;border-bottom-left-radius:4px}
+.wfm-bot-confirm{margin:0 0 2px;align-self:flex-start;width:min(92%,360px);padding:13px;border:1px solid #cfe0f3;border-radius:14px;background:#fff;box-shadow:0 6px 18px #15324f0d}
+.wfm-bot-confirm>p{margin:0 0 6px;font-size:14px;font-weight:700}.wfm-bot-confirm>small{display:block;color:#657c91;font-size:11px;line-height:1.45;margin-bottom:10px}
+.wfm-bot-confirm>div{display:flex;gap:8px}.wfm-bot-confirm button{border:1px solid #d8e4ef;background:#fff;color:#31506d;border-radius:8px;padding:8px 11px;font-weight:650;cursor:pointer}
+.wfm-bot-confirm button:first-child{background:#0b6ff4;border-color:#0b6ff4;color:#fff}.wfm-bot-confirm button:disabled{opacity:.48;cursor:default}
+.wfm-bot-controls{display:grid;grid-template-columns:42px 1fr auto;gap:8px;padding:12px;border-top:1px solid #e4edf5;background:#fff}
+.wfm-bot-controls input{min-width:0;border:1px solid #cfdeeb;border-radius:10px;padding:0 12px;height:42px;color:#183650;background:#fff;font:14px inherit}
+.wfm-bot-controls input:focus{outline:2px solid #9dc7f6;outline-offset:1px;border-color:#6eacf2}
+.wfm-bot-controls button{border:1px solid #cbddec;border-radius:10px;background:#f4f8fc;color:#244967;min-height:42px;padding:0 12px;font-weight:650;cursor:pointer}
+#wfm-bot-send{background:#0b6ff4;border-color:#0b6ff4;color:#fff}#wfm-bot-mic{padding:0;font-size:17px}
+#wfm-bot-mic.listening{outline:3px solid #bdd9fb;background:#e9f3ff} .wfm-bot.busy .wfm-bot-controls{opacity:.72}
+.wfm-bot footer{padding:10px 14px 12px;border-top:1px solid #e7eef5;background:#fbfdff;color:#62798f;font-size:11px}
+.wfm-bot footer>label{display:flex;align-items:center;gap:7px;width:max-content;font-weight:600}.wfm-bot footer details{margin-top:7px}
+.wfm-bot footer summary{cursor:pointer;width:max-content}.wfm-bot footer details label{display:grid;gap:4px;margin-top:8px}.wfm-bot footer details input[type=text]{height:32px;border:1px solid #d7e3ee;border-radius:7px;padding:0 8px;max-width:150px}
+.wfm-bot footer details small{display:block;margin-top:6px;line-height:1.4;max-width:360px}
+@media (max-width:700px){
+ .wfm-bot-launch{right:14px;bottom:14px}
+ .wfm-bot{right:14px;bottom:72px;width:calc(100vw - 28px);height:min(680px,calc(100dvh - 92px));border-radius:16px}
+}
+@media (prefers-reduced-motion:reduce){.wfm-bot-transcript{scroll-behavior:auto}}
