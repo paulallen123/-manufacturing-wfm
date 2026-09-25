@@ -189,6 +189,37 @@ test('Time Review producer emits only scoped open structured source issues',()=>
   assert.equal(rows[0].confirmation.state,'action_required');
 });
 
+test('Time Review producer normalizes only the sealed authoritative adjustment shape',()=>{
+  const report=timeReviewReport({
+    teams:[{
+      id:'team-a',
+      issues:[{
+        id:'issue-adjustment-1',
+        status:'open',
+        type:'adjustment',
+        row:'row-17',
+        sourceFingerprint:'sha256:fixture-source',
+        proposed:{clockOut:'2026-09-19T17:05:00.000Z'},
+        message:'Manager proposed a five-minute correction.'
+      }]
+    }]
+  });
+  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a']});
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].sourceId,'issue-adjustment-1');
+  assert.equal(rows[0].reasonCode,'TIME_REVIEW_ADJUSTMENT');
+  assert.equal(rows[0].title,'Manager proposed a five-minute correction.');
+  assert.equal(rows[0].freshness.state,'unknown');
+  assert.equal(rows[0].confirmation.state,'action_required');
+
+  const missingFingerprint=timeReviewReport({
+    teams:[{id:'team-a',issues:[{
+      id:'issue-adjustment-2',status:'open',type:'adjustment',row:'row-18',proposed:{clockOut:'2026-09-19T17:05:00.000Z'}
+    }]}]
+  });
+  assert.deepEqual(produceTimeReviewActionEvidence(missingFingerprint,{allowedTeamIds:['team-a']}),[]);
+});
+
 test('Time Review producer fails closed without explicit source scope or required authority fields',()=>{
   const report=timeReviewReport();
   assert.deepEqual(produceTimeReviewActionEvidence(report),[]);
