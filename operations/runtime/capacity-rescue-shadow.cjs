@@ -1,5 +1,6 @@
 'use strict';
 
+const { createHash } = require('node:crypto');
 const { createDecisionEpisode } = require('./decision-episode.cjs');
 
 const TRIGGERS = Object.freeze(['OUTPUT_SHORTFALL','DEMAND_SURGE','CAPACITY_RISK','ORDER_AT_RISK']);
@@ -20,6 +21,12 @@ function num(v,name,{min=-Infinity,max=Infinity,nullable=false}={}){
   return n;
 }
 function clone(v){ return v==null?v:JSON.parse(JSON.stringify(v)); }
+function stable(v){
+  if(Array.isArray(v)) return '['+v.map(stable).join(',')+']';
+  if(v&&typeof v==='object') return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';
+  return JSON.stringify(v);
+}
+function digest(v){ return createHash('sha256').update(stable(v)).digest('hex'); }
 
 function normaliseConstraint(input={}){
   const id=text(input.id,120);
@@ -99,6 +106,7 @@ function normalisePlan(input={}){
   for(const a of actions) for(const dep of a.dependsOn) if(!ids.has(dep)) throw new Error('Capacity Rescue action dependency is missing: '+dep);
   const nonWorkforce=actions.some(a=>['MAINTENANCE','MATERIAL_REALLOCATION','WORK_ORDER_RESEQUENCE','CHANGEOVER_SHIFT','CROSS_LINE_REBALANCE','CROSS_SITE_REBALANCE'].includes(a.type));
   const highConsequence=actions.some(a=>['MAINTENANCE','CROSS_SITE_REBALANCE'].includes(a.type)||a.reversible!==true);
+  const planGraphDigest=digest(actions).slice(0,20);
   return Object.freeze({
     id,label:text(input.label,200)||id,
     feasible:input.feasible===true,
@@ -107,7 +115,8 @@ function normalisePlan(input={}){
     uncertainty:num(input.uncertainty??1,'plan uncertainty',{min:0,max:1}),
     prediction:clone(input.prediction||{}),
     evidenceRefs:list(input.evidenceRefs,30,220),
-    reasonCodes:list(input.reasonCodes,20,100),
+    reasonCodes:[...new Set([...list(input.reasonCodes,19,100),'PLAN_GRAPH_'+planGraphDigest])],
+    planGraphDigest,
     actions,
     economic:economicValue(input.economic||{}),
     causalEvidence:causalEvidence(input.causalEvidence||{}),
