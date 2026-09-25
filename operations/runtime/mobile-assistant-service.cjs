@@ -175,6 +175,33 @@ function createMobileAssistantService(options={}){
     return {answer,language,actionProposal:null};
   }
 
+  async function transcribeAudio(body){
+    if(!apiKey) throw Object.assign(new Error('Vecta conversational intelligence is not configured in this environment.'),{statusCode:503});
+    const audioBase64=String(body?.audioBase64||'').trim();
+    if(!audioBase64) throw Object.assign(new Error('Recorded audio is required.'),{statusCode:400});
+    if(audioBase64.length>12*1024*1024) throw Object.assign(new Error('Recorded audio is too large. Use a shorter voice turn.'),{statusCode:413});
+    if(!/^[A-Za-z0-9+/=]+$/.test(audioBase64)) throw Object.assign(new Error('Recorded audio encoding is invalid.'),{statusCode:400});
+    const bytes=Buffer.from(audioBase64,'base64');
+    if(!bytes.length||bytes.length>8*1024*1024) throw Object.assign(new Error('Recorded audio is outside the allowed size.'),{statusCode:413});
+    const mimeType=['audio/mp4','audio/m4a','audio/x-m4a'].includes(String(body?.mimeType||''))?String(body.mimeType):'audio/mp4';
+    const form=new FormData();
+    form.append('model',process.env.WFM_TRANSCRIBE_MODEL||'gpt-transcribe');
+    form.append('file',new Blob([bytes],{type:mimeType}),'vecta-question.m4a');
+    const response=await fetchImpl('https://api.openai.com/v1/audio/transcriptions',{
+      method:'POST',
+      headers:{'authorization':'Bearer '+apiKey},
+      body:form,
+      signal:AbortSignal.timeout(20000)
+    });
+    const raw=await response.text();
+    let result={};
+    try{result=raw?JSON.parse(raw):{};}catch{}
+    if(!response.ok) throw Object.assign(new Error('Voice transcription failed safely.'),{statusCode:503,providerStatus:response.status});
+    const transcript=compact(result?.text,4000);
+    if(!transcript) throw Object.assign(new Error('No speech was detected.'),{statusCode:422});
+    return transcript;
+  }
+
   async function handleRequest(req,res){
     const path=pathOf(req);
     if(!path.startsWith(PREFIX)) return false;
@@ -188,10 +215,11 @@ function createMobileAssistantService(options={}){
         return writeJson(res,200,await askModel(c,message,language));
       }
       if(req.method==='POST'&&path===PREFIX+'/audio'){
-        return writeJson(res,501,{
-          error:'Realtime voice transport is not enabled in this isolated mobile candidate yet.',
-          next:'Use the text assistant while the provider-scoped realtime audio session is gated and tested.'
-        });
+        const body=await readJson(req,12*1024*1024);
+        const language=compact(body.language,40)||'en-GB';
+        const transcript=await transcribeAudio(body);
+        const result=await askModel(c,transcript,language);
+        return writeJson(res,200,{transcript,...result});
       }
       return writeJson(res,404,{error:'Mobile assistant endpoint not found.'});
     }catch(error){
