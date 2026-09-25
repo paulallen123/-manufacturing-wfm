@@ -5,7 +5,7 @@ WORKDIR /proof
 COPY . ./
 RUN node scripts/validate-deployment.mjs \
  && node scripts/validate-vector-only-ui.mjs \
- && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-operations-bot.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/vector-operations-bot.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs \
+ && node --test tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-operations-bot.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/vector-operations-language-provider.test.cjs operations/runtime/vector-operations-bot.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -56,6 +56,7 @@ COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptiv
 COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/workforce-lifecycle-core.cjs
 COPY operations/runtime/workflow-action-evidence-contract.cjs /app/operations-runtime/workflow-action-evidence-contract.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.cjs /app/operations-runtime/workflow-action-evidence-bridge.cjs
+COPY operations/runtime/vector-operations-language-provider.cjs /app/operations-runtime/vector-operations-language-provider.cjs
 COPY operations/runtime/vector-operations-bot.cjs /app/operations-runtime/vector-operations-bot.cjs
 COPY operations/runtime/workforce-lifecycle-router.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
@@ -95,6 +96,8 @@ COPY operations/runtime/workflow-action-evidence-contract.cjs /tmp/wfm-tests/ope
 COPY operations/runtime/workflow-action-evidence-contract.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.test.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.cjs
 COPY operations/runtime/workflow-action-evidence-bridge.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.test.cjs
+COPY operations/runtime/vector-operations-language-provider.cjs /tmp/wfm-tests/operations/runtime/vector-operations-language-provider.cjs
+COPY operations/runtime/vector-operations-language-provider.test.cjs /tmp/wfm-tests/operations/runtime/vector-operations-language-provider.test.cjs
 COPY operations/runtime/vector-operations-bot.cjs /tmp/wfm-tests/operations/runtime/vector-operations-bot.cjs
 COPY operations/runtime/vector-operations-bot.test.cjs /tmp/wfm-tests/operations/runtime/vector-operations-bot.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
@@ -112,6 +115,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/integration/worker/directory-discovery-worker.test.cjs \
       /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.test.cjs \
       /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.test.cjs \
+      /tmp/wfm-tests/operations/runtime/vector-operations-language-provider.test.cjs \
       /tmp/wfm-tests/operations/runtime/vector-operations-bot.test.cjs \
       /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.test.cjs \
  && rm -rf /tmp/wfm-tests
@@ -131,6 +135,8 @@ COPY scripts/compose-vector-presentation.mjs /tmp/compose-vector-presentation.mj
 COPY scripts/prove-vector-built-asset-provenance.mjs /tmp/prove-vector-built-asset-provenance.mjs
 RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && node --check /app/security-runtime/bootstrap.cjs \
+ && node --check /app/operations-runtime/vector-operations-language-provider.cjs \
+ && node --check /app/operations-runtime/vector-operations-bot.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
  && node --check /tmp/wfm-ux-overlay/vector-operations-bot.js \
