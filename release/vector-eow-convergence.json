@@ -198,7 +198,10 @@
         "authoritative-country-evidence",
         "effective-dating",
         "regional-inheritance",
-        "customer-legal-review"
+        "customer-legal-review",
+        "jurisdiction-policy-graph",
+        "bitemporal-policy-context",
+        "global-site-policy-preflight"
       ]
     }
   ],

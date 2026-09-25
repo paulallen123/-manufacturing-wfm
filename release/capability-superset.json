@@ -691,19 +691,32 @@
         "provenance required for verified packs",
         "missing country/date coverage fails closed",
         "country packs grant no execution authority",
-        "country packs never override authoritative law payroll safety or customer policy"
+        "country packs never override authoritative law payroll safety or customer policy",
+        "bitemporal legal-validity and VECTOR-knowledge history",
+        "typed jurisdiction composition across country/subdivision/CBA/site/worker context",
+        "customer policy cannot weaken mandatory rules",
+        "temporary work-location context is explicit",
+        "zero-touch preflight asks only irreducible organisational questions"
       ],
       "valueAddTargets": [
         "global multi-country policy context",
         "country-aware implementation defaults",
         "country-specific scheduling/payroll/absence/compliance gates after proof",
-        "regional inheritance and local overrides without separate products"
+        "regional inheritance and local overrides without separate products",
+        "jurisdiction policy graph",
+        "exception-only global site onboarding",
+        "historical policy reconstruction",
+        "cross-border work-location policy context"
       ],
       "integratedPaths": [
         "policy/runtime/country-policy-pack-registry.cjs",
-        "policy/runtime/country-policy-pack-registry.test.cjs"
+        "policy/runtime/country-policy-pack-registry.test.cjs",
+        "policy/runtime/jurisdiction-policy-graph.cjs",
+        "policy/runtime/jurisdiction-policy-graph.test.cjs",
+        "policy/runtime/global-site-policy-preflight.cjs",
+        "policy/runtime/global-site-policy-preflight.test.cjs"
       ],
-      "integrationNote": "The PR#230 read-only country policy registry is admitted into canonical FORGE as policy context only. It is not legal advice, does not certify compliance and cannot authorise payroll/scheduling actions. Consequential enforcement remains blocked until country-specific authoritative evidence, tests and Golden Journey proof exist."
+      "integrationNote": "Country Policy Packs remain read-only policy context. The canonical foundation now adds bitemporal jurisdiction resolution, typed rule composition and zero-touch site/worker preflight. It still grants no scheduling/payroll/legal authority; consequential enforcement remains blocked pending authoritative country evidence, exact hosted Golden Journey and independent authority gates."
     }
   ]
 }
