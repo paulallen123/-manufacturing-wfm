@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Vecta",
+    "slug": "vecta-mobile",
+    "scheme": "vecta",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vecta.workforce",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.vecta.workforce"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      "expo-notifications",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow Vecta to hear your questions when you choose voice mode.",
+          "enableBackgroundRecording": false,
+          "enableBackgroundPlayback": false
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Vecta to use Face ID to confirm sensitive workforce actions."
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Allow Vecta to protect sensitive on-device settings with Face ID."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
