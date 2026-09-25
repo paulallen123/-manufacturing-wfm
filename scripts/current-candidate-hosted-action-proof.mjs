@@ -125,13 +125,13 @@ console.log('CURRENT_HOSTED_WEEKLY_ADJUSTMENT|' + JSON.stringify({
   keys: Object.keys(adjustment || {}).sort()
 }));
 
-const sourceAfterAdjustment = await raw('/api/time-review', manager);
+const sourceAfterAdjustment = await raw('/api/weekly-review?period=' + encodeURIComponent(period), manager);
 assert.equal(sourceAfterAdjustment.status, 200);
 const sourceIssue = (sourceAfterAdjustment.body?.teams || [])
   .flatMap(team => team?.issues || [])
   .find(issue => issue?.id === adjustment.id || issue?.sourceId === adjustment.id);
-assert.ok(sourceIssue, 'Time Review source did not expose the saved open adjustment.');
-const actionEvidenceAfterAdjustment = await raw('/api/workforce/lifecycle/action-evidence/time-review', manager);
+assert.ok(sourceIssue, 'Weekly Review source did not expose the saved open adjustment.');
+const actionEvidenceAfterAdjustment = await raw('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(period), manager);
 assert.equal(actionEvidenceAfterAdjustment.status, 200);
 const actionItem = (actionEvidenceAfterAdjustment.body?.items || [])
   .find(item => item?.sourceId === adjustment.id || item?.sourceId === sourceIssue.id);
