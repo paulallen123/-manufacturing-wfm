@@ -50,8 +50,33 @@ async function runProof() {
     const unauth = await req('/api/bootstrap');
     check('unauth-bootstrap-fail-closed', unauth.response.status === 401, 'HTTP ' + unauth.response.status);
     const manager = await login('manager@northstar.example');
-    await authed(manager, '/api/bootstrap');
+    const managerBootstrap = await authed(manager, '/api/bootstrap');
+    const managerIdentity = JSON.parse(managerBootstrap.text);
+    check('tenant:northstar-manager', managerIdentity.actor?.tenant === 'northstar-demo', String(managerIdentity.actor?.tenant));
     await authed(manager, '/api/payroll-run', 403);
+
+    const isolation = await login('other@isolation.example');
+    const isolationBootstrap = await authed(isolation, '/api/bootstrap');
+    const isolationIdentity = JSON.parse(isolationBootstrap.text);
+    check('tenant:isolation-manager', isolationIdentity.actor?.tenant === 'isolation-test', String(isolationIdentity.actor?.tenant));
+    check('tenant:contexts-distinct', managerIdentity.actor?.tenant !== isolationIdentity.actor?.tenant,
+      managerIdentity.actor?.tenant + ' != ' + isolationIdentity.actor?.tenant);
+    const injectedQuery = await req('/api/bootstrap?tenant=northstar-demo', {
+      headers: { cookie: isolation, accept: 'application/json,text/plain,*/*', referer: origin + '/' }
+    });
+    check('tenant:query-override-http', injectedQuery.response.status === 200, 'HTTP ' + injectedQuery.response.status);
+    const injectedQueryIdentity = JSON.parse(injectedQuery.text);
+    check('tenant:query-override-denied', injectedQueryIdentity.actor?.tenant === 'isolation-test',
+      String(injectedQueryIdentity.actor?.tenant));
+    const injectedHeader = await req('/api/bootstrap', {
+      headers: { cookie: isolation, 'x-tenant-id': 'northstar-demo', accept: 'application/json,text/plain,*/*', referer: origin + '/' }
+    });
+    check('tenant:header-override-http', injectedHeader.response.status === 200, 'HTTP ' + injectedHeader.response.status);
+    const injectedHeaderIdentity = JSON.parse(injectedHeader.text);
+    check('tenant:header-override-denied', injectedHeaderIdentity.actor?.tenant === 'isolation-test',
+      String(injectedHeaderIdentity.actor?.tenant));
+    await authed(isolation, '/api/payroll-run', 403);
+
     const superuser = await login('superuser@northstar.example');
     for (const path of ['/api/bootstrap','/api/readiness','/api/weekly-review','/api/schedule-publication','/api/operations','/api/payroll-run','/api/readiness/payroll-outcomes','/api/readiness/finance-attribution','/api/payroll-intelligence','/api/support/bot','/api/personal']) await authed(superuser, path);
     const categories = {
