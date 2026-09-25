@@ -23,6 +23,12 @@ function assessProofLane(lane = {}, options = {}) {
   if (['DEGRADED','UNAVAILABLE','NO_RUNNER','PREEXECUTION_FAILURE'].includes(providerState)) {
     issues.push({code:'PROVIDER_DEGRADED_PREEXECUTION', providerState});
   }
+  if (lane.expectedSourceBranch && lane.deploymentBranch !== lane.expectedSourceBranch) {
+    issues.push({code:'PROOF_WORKER_BRANCH_DRIFT', expected:lane.expectedSourceBranch, actual:lane.deploymentBranch || null});
+  }
+  if (lane.authenticatedProofRequired === true && lane.credentialBindingMode !== 'provider-reference') {
+    issues.push({code:'PROOF_CREDENTIAL_BINDING_UNSAFE', actual:lane.credentialBindingMode || null});
+  }
 
   if (exactImage) {
     const missing = requiredVars.filter(name => !vars.has(name));
