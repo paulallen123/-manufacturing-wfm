@@ -51,11 +51,16 @@ async function openLeaveRoute(page, expectedRole) {
     actor: typeof me === 'function' ? me() : null,
     sourceRoutes: [...document.querySelectorAll('.app > .sidebar nav .navbtn[data-page], .sidebar:not(.vector-sidebar) nav .navbtn[data-page]')]
       .map(node => node.dataset.page).filter(Boolean),
-    vectorLeaveRoutes: [...document.querySelectorAll('[data-vector-route="leave"]')]
-      .map(node => ({ tag: node.tagName, visible: node.getClientRects().length > 0, disabled: node.disabled === true, text: (node.textContent || '').replace(/\\s+/g, ' ').trim() })),
     workflowAvailable: typeof globalThis.VectorWorkflow?.leaveRefresh === 'function'
   }));
   console.log('CURRENT_LEAVE_ROUTE_DIAGNOSTIC|' + JSON.stringify({ expectedRole, diagnostic }));
+  assert.equal(diagnostic.sourceRoutes.includes('leave'), true, 'Authenticated source navigation does not admit leave for this role.');
+  assert.equal(diagnostic.workflowAvailable, true, 'Authenticated leave workflow controller is unavailable.');
+
+  const people = page.locator('button[data-vector-nav="1"]:visible').first();
+  await people.waitFor({ state: 'visible', timeout: 10000 });
+  await people.click({ timeout: 5000 });
+
   const route = page.locator('[data-vector-route="leave"]:visible').first();
   await route.waitFor({ state: 'visible', timeout: 10000 });
   await route.click({ timeout: 5000 });
