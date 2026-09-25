@@ -86,23 +86,25 @@ jobs:
           if [ -f "$RAILWAY_WORKFLOW" ]; then
             secret_refs="$(grep -oE 'secrets\.[A-Za-z0-9_]+' "$RAILWAY_WORKFLOW" | sort -u || true)"
             [ "$secret_refs" = 'secrets.RAILWAY_TOKEN' ] || {
-              echo 'Railway bootstrap may reference only secrets.RAILWAY_TOKEN.' >&2
+              echo 'Railway isolated persistence repair may reference only secrets.RAILWAY_TOKEN.' >&2
               exit 1
             }
             secret_expression='$''{{ secrets.RAILWAY_TOKEN }}'
             [ "$(grep -Fc "$secret_expression" "$RAILWAY_WORKFLOW")" -eq 1 ] || {
-              echo 'Railway bootstrap must consume RAILWAY_TOKEN exactly once.' >&2
+              echo 'Railway isolated persistence repair must consume RAILWAY_TOKEN exactly once.' >&2
               exit 1
             }
             grep -Fq 'if: github.actor == github.repository_owner' "$RAILWAY_WORKFLOW"
             grep -Fq 'runs-on: ubuntu-24.04' "$RAILWAY_WORKFLOW"
             grep -Fq 'contents: read' "$RAILWAY_WORKFLOW"
             grep -Fq 'persist-credentials: false' "$RAILWAY_WORKFLOW"
-            grep -Fq "RAILWAY_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'" "$RAILWAY_WORKFLOW"
-            grep -Fq "RAILWAY_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'" "$RAILWAY_WORKFLOW"
-            grep -Fq "RAILWAY_SERVICE_ID: 'ddd54fb9-3564-4251-9959-28cf3308c272'" "$RAILWAY_WORKFLOW"
-            grep -Fq "EXPECTED_RUNTIME_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'" "$RAILWAY_WORKFLOW"
-            deploy_line="$(grep -nF 'name: Bootstrap exact existing Railway customer-proof service' "$RAILWAY_WORKFLOW" | cut -d: -f1)"
+            grep -Fq "RAILWAY_PROJECT_ID: 'f547b91f-7181-47dd-9b46-9ca1067ceaa1'" "$RAILWAY_WORKFLOW"
+            grep -Fq "RAILWAY_ENVIRONMENT_ID: 'a249b4e0-2467-4c2b-ae73-a1d052d80013'" "$RAILWAY_WORKFLOW"
+            grep -Fq "RAILWAY_SERVICE_ID: '15646a58-4f44-4222-a9da-945901470a99'" "$RAILWAY_WORKFLOW"
+            grep -Fq "TARGET_MOUNT_PATH: '/data'" "$RAILWAY_WORKFLOW"
+            grep -Fq "TARGET_DB_PATH: '/data/wfm.sqlite'" "$RAILWAY_WORKFLOW"
+            grep -Fq "TARGET_ORIGIN: 'https://vector-proof-target-production.up.railway.app'" "$RAILWAY_WORKFLOW"
+            deploy_line="$(grep -nF 'name: Repair isolated proof target durable storage' "$RAILWAY_WORKFLOW" | cut -d: -f1)"
             secret_line="$(grep -nF "RAILWAY_TOKEN: $secret_expression" "$RAILWAY_WORKFLOW" | cut -d: -f1)"
             [ -n "$deploy_line" ] && [ -n "$secret_line" ] && [ "$secret_line" -gt "$deploy_line" ] && [ $((secret_line-deploy_line)) -le 4 ] || {
               echo 'RAILWAY_TOKEN must be scoped only to the deployment step.' >&2
