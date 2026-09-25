@@ -58,6 +58,17 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
     assert.ok(learningGroup.includes(`'${file}'`), `local proof omitted training dependency: ${file}`);
   }
 });
+test('local proof assembly includes scheduling runtime dependency closure', () => {
+  const composer = fs.readFileSync(path.join(root, 'scripts/compose-vector-local-runtime.mjs'), 'utf8');
+  const scheduling = fs.readFileSync(path.join(root, 'operations/runtime/scheduling-intelligence-service.cjs'), 'utf8');
+  const relatives = Array.from(scheduling.matchAll(/require\(['"]\.\/([^'"]+)['"]\)/g), m => m[1]);
+  const operationsGroup = composer.match(/operations:\s*\[([\s\S]*?)\n\s*\]/)?.[1] || '';
+  assert.ok(operationsGroup.includes("'scheduling-intelligence-service.cjs'"), 'local proof omitted scheduling service');
+  for (const file of relatives) {
+    assert.ok(operationsGroup.includes(`'${file}'`), `local proof omitted scheduling dependency: ${file}`);
+  }
+});
+
 test('retired presentation serves 410 for direct and encoded paths, and never intercepts the real API', async t => {
   const { serveRetiredPresentation } = require('../security/runtime/retired-presentation.cjs');
   const server = http.createServer((req, res) => {
