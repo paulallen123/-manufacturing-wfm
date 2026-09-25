@@ -22,14 +22,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
-          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
-          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
-          echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
+          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-amd64.deb'
+          CLI_SHA256='2756f596cc2ec634e79f448e19d6d2def39a1ccc1e207849044dd7a664953d04'
+          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.deb"
+          echo "$CLI_SHA256  $RUNNER_TEMP/railway.deb" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/railway-cli"
-          tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
-          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)"
+          dpkg-deb -x "$RUNNER_TEMP/railway.deb" "$RUNNER_TEMP/railway-cli"
+          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway | head -n 1)"
           test -n "$CLI_BIN"
+          chmod 0755 "$CLI_BIN"
           "$CLI_BIN" --version
 
   repair:
@@ -58,14 +59,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
-          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
-          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
-          echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
+          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-amd64.deb'
+          CLI_SHA256='2756f596cc2ec634e79f448e19d6d2def39a1ccc1e207849044dd7a664953d04'
+          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.deb"
+          echo "$CLI_SHA256  $RUNNER_TEMP/railway.deb" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/railway-cli"
-          tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
-          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)"
+          dpkg-deb -x "$RUNNER_TEMP/railway.deb" "$RUNNER_TEMP/railway-cli"
+          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway | head -n 1)"
           test -n "$CLI_BIN"
+          chmod 0755 "$CLI_BIN"
           echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
           "$CLI_BIN" --version
 
