@@ -3,7 +3,8 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, 
 import * as Speech from "expo-speech";
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import { getLocales } from "expo-localization";
-import { sendAssistantAudio, sendAssistantMessage } from "@/src/api";
+import { confirmRecommendation, sendAssistantAudio, sendAssistantMessage } from "@/src/api";
+import { confirmSensitiveAction } from "@/src/security";
 
 type Turn = { role: "user" | "vecta"; text: string };
 
@@ -36,6 +37,33 @@ export default function Assistant() {
     Speech.speak(text, { language });
   }
 
+  async function handleAssistantResult(result: { answer: string; actionProposal?: any }) {
+    add("vecta", result.answer);
+    await speak(result.answer);
+
+    const proposal = result.actionProposal;
+    if (!proposal || proposal.type !== "RECOMMENDATION_DECISION") return;
+
+    const confirmation = await confirmSensitiveAction(proposal.label || "Confirm Vecta recommendation");
+    if (!confirmation.ok) {
+      add("vecta", "No action was taken because device confirmation was not completed.");
+      return;
+    }
+
+    const outcome = await confirmRecommendation({
+      episodeId: proposal.episodeId,
+      optionId: proposal.optionId,
+      contextRevision: proposal.contextRevision,
+      decision: proposal.decision === "REJECT" ? "REJECT" : "APPROVE",
+      execute: proposal.execute === true
+    });
+
+    const status = outcome.execution?.state || outcome.status;
+    const receipt = "Confirmed. Vecta server result: " + status + ".";
+    add("vecta", receipt);
+    await speak(receipt);
+  }
+
   async function sendText() {
     const message = draft.trim();
     if (!message || busy) return;
@@ -45,8 +73,7 @@ export default function Assistant() {
     setError("");
     try {
       const result = await sendAssistantMessage(message, language);
-      add("vecta", result.answer);
-      await speak(result.answer);
+      await handleAssistantResult(result);
     } catch (e: any) {
       setError(e?.message || "Vecta assistant is unavailable.");
     } finally {
@@ -69,8 +96,7 @@ export default function Assistant() {
     try {
       const result = await sendAssistantAudio(recorder.uri, language);
       add("user", result.transcript);
-      add("vecta", result.answer);
-      await speak(result.answer);
+      await handleAssistantResult(result);
     } catch (e: any) {
       setError(e?.message || "Voice request failed.");
     } finally {
