@@ -15,7 +15,7 @@ const body = () => JSON.stringify({
 });
 
 const server = http.createServer((req, res) => {
-  res.statusCode = state === 'FAIL' ? 503 : 200;
+  res.statusCode = state === 'PASS' ? 200 : 503;
   res.setHeader('content-type', 'application/json');
   res.setHeader('cache-control', 'no-store');
   res.end(body());
