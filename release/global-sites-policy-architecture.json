@@ -51,12 +51,12 @@
     {
       "id": "authoritative-source-registry",
       "owner": "Integration & Data Fabric",
-      "state": "DESIGNED"
+      "state": "BUILT_READ_ONLY"
     },
     {
       "id": "regulatory-change-candidate-compiler",
       "owner": "Frontier & Cross-Domain Innovation + Trust/Proof/Release",
-      "state": "DESIGNED"
+      "state": "BUILT_READ_ONLY"
     },
     {
       "id": "policy-impact-simulator",
@@ -94,5 +94,21 @@
     "BLACK_PROVEN",
     "CONVERGED"
   ],
-  "claimBoundary": "This architecture provides evidence-bound policy context and zero-touch implementation assistance. It does not provide legal advice and does not itself grant payroll, scheduling, employment or machine-control authority."
+  "claimBoundary": "This architecture provides evidence-bound policy context and zero-touch implementation assistance. It does not provide legal advice and does not itself grant payroll, scheduling, employment or machine-control authority.",
+  "continuousUpdate": {
+    "flow": [
+      "official-source-registry",
+      "verified-snapshot",
+      "source-health",
+      "semantic-diff-candidate",
+      "site-impact-scope",
+      "qualified-review-for-material-change",
+      "generated-tests",
+      "historical-replay",
+      "shadow",
+      "signed-release-later"
+    ],
+    "rule": "Push may notify, but verified pull/snapshot evidence must prove the change. Material workforce changes always remain review-gated at this stage.",
+    "customerBurden": "Routine public-law monitoring is a VECTOR responsibility; customer input is reserved for private agreements, ambiguous applicability and organisation-specific facts."
+  }
 }

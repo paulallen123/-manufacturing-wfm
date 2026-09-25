@@ -25,7 +25,9 @@ const checks = [
     'scripts/prove-vector-built-asset-provenance.test.mjs',
     'policy/runtime/country-policy-pack-registry.test.cjs',
     'policy/runtime/jurisdiction-policy-graph.test.cjs',
-    'policy/runtime/global-site-policy-preflight.test.cjs'
+    'policy/runtime/global-site-policy-preflight.test.cjs',
+    'policy/runtime/authoritative-policy-source-registry.test.cjs',
+    'policy/runtime/regulatory-change-candidate.test.cjs'
   ]]
 ];
 

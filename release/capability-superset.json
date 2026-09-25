@@ -696,7 +696,11 @@
         "typed jurisdiction composition across country/subdivision/CBA/site/worker context",
         "customer policy cannot weaken mandatory rules",
         "temporary work-location context is explicit",
-        "zero-touch preflight asks only irreducible organisational questions"
+        "zero-touch preflight asks only irreducible organisational questions",
+        "authoritative source freshness is explicit",
+        "stale or unverified source evidence cannot create policy candidates",
+        "material regulatory changes require qualified review",
+        "regulatory candidates never auto-promote or mutate customers"
       ],
       "valueAddTargets": [
         "global multi-country policy context",
@@ -706,7 +710,11 @@
         "jurisdiction policy graph",
         "exception-only global site onboarding",
         "historical policy reconstruction",
-        "cross-border work-location policy context"
+        "cross-border work-location policy context",
+        "continuous authoritative country-source monitoring",
+        "automatic site impact scoping",
+        "generated regulatory test candidates",
+        "zero routine customer effort for public-law monitoring"
       ],
       "integratedPaths": [
         "policy/runtime/country-policy-pack-registry.cjs",
@@ -714,7 +722,11 @@
         "policy/runtime/jurisdiction-policy-graph.cjs",
         "policy/runtime/jurisdiction-policy-graph.test.cjs",
         "policy/runtime/global-site-policy-preflight.cjs",
-        "policy/runtime/global-site-policy-preflight.test.cjs"
+        "policy/runtime/global-site-policy-preflight.test.cjs",
+        "policy/runtime/authoritative-policy-source-registry.cjs",
+        "policy/runtime/authoritative-policy-source-registry.test.cjs",
+        "policy/runtime/regulatory-change-candidate.cjs",
+        "policy/runtime/regulatory-change-candidate.test.cjs"
       ],
       "integrationNote": "Country Policy Packs remain read-only policy context. The canonical foundation now adds bitemporal jurisdiction resolution, typed rule composition and zero-touch site/worker preflight. It still grants no scheduling/payroll/legal authority; consequential enforcement remains blocked pending authoritative country evidence, exact hosted Golden Journey and independent authority gates."
     }
