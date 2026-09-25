@@ -8,6 +8,7 @@ import {
   assessAgencyAutonomyAuthority
 } from './agency-operations-intelligence.mjs';
 import { createAgencyDecisionRecord } from './agency-decision-ledger.mjs';
+import { AGENCY_TEMP_CLOCKING_PROFILE_VERSION } from './agency-temp-clocking-profile.mjs';
 
 export const AGENCY_OPERATING_SYSTEM_VERSION='agency-operating-system-v0.1.0';
 
@@ -47,6 +48,13 @@ function workerPacket(worker,passport,request){
     workerChoice:{
       preferences:passport?.preferences??{},
       declineOptionalShiftPenalty:false,
+    },
+    tempClocking:{
+      trigger:'final_confirmation_plus_work_start_readiness',
+      automation:'create_time_limited_placement_bound_profile',
+      managerDayOfShiftSetupRequired:false,
+      expectedJourney:'arrive_identify_clock_in_clock_out_leave',
+      revokeOn:['placement_cancelled','worker_replaced','readiness_revoked','site_access_revoked'],
     },
     experienceBoundary:'one_clear_shift_view_preparation_transparency_timesheet_visibility_and_rebooking_continuity'
   };
@@ -186,6 +194,7 @@ export function runAgencyOperatingSystem(input={}){
     modelVersions:{
       operatingSystem:AGENCY_OPERATING_SYSTEM_VERSION,
       fulfilment:fulfilment.engineVersion??null,
+      tempClockingProfile:AGENCY_TEMP_CLOCKING_PROFILE_VERSION,
     },
     approval:{
       required:!autonomy.executeAutomatically,
@@ -212,6 +221,16 @@ export function runAgencyOperatingSystem(input={}){
     recommendation:recommended,
     autonomy,
     decisionRecord,
+    postConfirmationAutomation:{
+      trigger:'final_agency_worker_confirmation_and_work_start_readiness_pass',
+      action:'provision_temp_clocking_profile_and_placement_entitlement',
+      dayOfShiftManagerSetupRequired:false,
+      profileLifetime:'placement_bound_with_configured_clocking_grace',
+      registeredKioskOnly:true,
+      rawClockEventsPreserved:true,
+      attendanceReviewBeforePayOrInvoice:true,
+      safeClockOutAfterRevocationForOpenSession:true,
+    },
     experiences:{
       operations:{
         sees:['demand_gap','internal_and_external_options','cost','risk','confidence','supplier_and_worker_outcomes'],
@@ -226,7 +245,9 @@ export function runAgencyOperatingSystem(input={}){
       'protected_attributes_are_not_ranking_inputs',
       'optional_shift_declines_do_not_reduce_worker_reliability',
       'no_direct_payroll_or_worker_pay_mutation_from_ai_ranking',
-      'high_impact_or_non_reversible_actions_require_human_authority'
+      'high_impact_or_non_reversible_actions_require_human_authority',
+      'temp_clocking_profile_only_after_final_confirmation_and_work_start_readiness',
+      'temp_clocking_never_grants_payroll_schedule_invoice_or_worker_master_authority'
     ],
   };
   output.reproducibilityHash=hash(output);
