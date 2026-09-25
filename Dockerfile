@@ -43,6 +43,7 @@ COPY integration/runtime/autonomous-integration-hub.cjs /app/integration-runtime
 RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-runtime/one-day-enterprise-engine.cjs
 COPY implementation/runtime/one-day-enterprise-engine-core.cjs /app/implementation-runtime/one-day-enterprise-engine-core.cjs
+COPY implementation/runtime/tenant-environment-provisioner.cjs /app/implementation-runtime/tenant-environment-provisioner.cjs
 COPY implementation/runtime/readiness-evidence-contract.cjs /app/implementation-runtime/readiness-evidence-contract.cjs
 COPY implementation/runtime/configuration-inference-engine.cjs /app/implementation-runtime/configuration-inference-engine.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
@@ -63,6 +64,8 @@ COPY implementation/proof/cloud-scale-proof-runner.cjs /app/proof-runtime/cloud-
 RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime /tmp/wfm-tests/security/runtime /tmp/wfm-tests/integration/runtime /tmp/wfm-tests/integration/worker /tmp/wfm-tests/operations/runtime
 COPY implementation/runtime/one-day-enterprise-engine.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.cjs
 COPY implementation/runtime/one-day-enterprise-engine-core.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine-core.cjs
+COPY implementation/runtime/tenant-environment-provisioner.cjs /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.cjs
+COPY implementation/runtime/tenant-environment-provisioner.test.cjs /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.test.cjs
 COPY implementation/runtime/readiness-evidence-contract.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.cjs
 COPY implementation/runtime/readiness-evidence-contract.test.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.test.cjs
 COPY implementation/runtime/readiness-evidence-wrapper.test.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-wrapper.test.cjs
@@ -92,6 +95,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
       /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.test.cjs \
       /tmp/wfm-tests/implementation/runtime/readiness-evidence-wrapper.test.cjs \
+      /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.test.cjs \
       /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs \
       /tmp/wfm-tests/implementation/runtime/configuration-inference-engine.test.cjs \
       /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs \

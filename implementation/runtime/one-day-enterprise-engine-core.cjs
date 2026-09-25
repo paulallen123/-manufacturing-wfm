@@ -2,6 +2,7 @@
 
 const { createHash, randomBytes, randomUUID, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { createTenantEnvironmentProvisioner } = require('./tenant-environment-provisioner.cjs');
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -169,6 +170,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   if (!dbPath) throw new Error('One-day implementation engine requires WFM_DB.');
 
   const db = new DatabaseSync(dbPath);
+  const environmentProvisioner = createTenantEnvironmentProvisioner({ db });
   db.exec(
     'PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;' +
     'CREATE TABLE IF NOT EXISTS implementation_invitations(' +
@@ -191,12 +193,12 @@ function createOneDayEnterpriseEngine(options = {}) {
       'question TEXT NOT NULL, proposal_json TEXT NOT NULL, confidence REAL NOT NULL, risk TEXT NOT NULL,' +
       'status TEXT NOT NULL, decision_json TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,' +
       'UNIQUE(run_id,decision_key));' +
-    'CREATE TABLE IF NOT EXISTS implementation_events(' +
+    'CREATE TABLE IF NOT EXISTS one_day_implementation_events(' +
       'id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT, tenant TEXT, event TEXT NOT NULL,' +
       'detail_json TEXT NOT NULL, created_at TEXT NOT NULL);' +
-    'CREATE TRIGGER IF NOT EXISTS no_implementation_event_update BEFORE UPDATE ON implementation_events ' +
+    'CREATE TRIGGER IF NOT EXISTS no_one_day_implementation_event_update BEFORE UPDATE ON one_day_implementation_events ' +
       "BEGIN SELECT RAISE(ABORT,'Implementation events are append only.'); END;" +
-    'CREATE TRIGGER IF NOT EXISTS no_implementation_event_delete BEFORE DELETE ON implementation_events ' +
+    'CREATE TRIGGER IF NOT EXISTS no_one_day_implementation_event_delete BEFORE DELETE ON one_day_implementation_events ' +
       "BEGIN SELECT RAISE(ABORT,'Implementation events are append only.'); END;"
   );
 
@@ -258,13 +260,17 @@ function createOneDayEnterpriseEngine(options = {}) {
     'UPDATE implementation_decisions SET status=?,decision_json=?,updated_at=? WHERE id=? AND tenant=?'
   );
   const eventStmt = db.prepare(
-    'INSERT INTO implementation_events(run_id,tenant,event,detail_json,created_at) VALUES(?,?,?,?,?)'
+    'INSERT INTO one_day_implementation_events(run_id,tenant,event,detail_json,created_at) VALUES(?,?,?,?,?)'
   );
 
   function record(runId, tenant, event, detail = {}) {
     try {
       eventStmt.run(runId || null, tenant || null, event, JSON.stringify(detail), nowIso());
     } catch {}
+  }
+
+  function recordRequired(runId, tenant, event, detail = {}) {
+    eventStmt.run(runId || null, tenant || null, event, JSON.stringify(detail), nowIso());
   }
 
   function authContext(req) {
@@ -279,7 +285,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       writeJson(res, 401, { error: 'Sign in is required.' });
       return null;
     }
-    if (String(ctx.role).toLowerCase() === 'employee') {
+    const role = String(ctx.role || '').trim().toLowerCase();
+    if (!new Set(['manager', 'director', 'superuser', 'admin', 'administrator']).has(role)) {
       writeJson(res, 403, { error: 'Implementation control requires an authorised manager or administrator.' });
       return null;
     }
@@ -361,6 +368,7 @@ function createOneDayEnterpriseEngine(options = {}) {
 
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
+    const tenantEnvironment = environmentProvisioner.statusForTenant(run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
     const scopeRow = scopeByRun.get(run.id, run.tenant);
     let customerScope = null;
@@ -377,7 +385,20 @@ function createOneDayEnterpriseEngine(options = {}) {
       const row = map.get(requirement.key);
       let derived = null;
 
-      if (requirement.key === 'configuration-scope') {
+      if (requirement.key === 'tenant-environment') {
+        const ok = tenantEnvironment?.state === 'READY' && tenantEnvironment?.runId === run.id;
+        if (ok) derived = {
+          status: 'PASS',
+          confidence: 1,
+          source: 'tenant-environment-provisioner',
+          detail: {
+            environmentId: tenantEnvironment.environmentId,
+            namespace: tenantEnvironment.namespace,
+            configurationDigest: tenantEnvironment.configurationDigest,
+            dashboardRoute: tenantEnvironment.dashboard.route
+          }
+        };
+      } else if (requirement.key === 'configuration-scope') {
         const ok = Boolean(customerScope);
         derived = {
           status: ok ? 'PASS' : 'MISSING',
@@ -475,7 +496,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       blockingDecisions,
       learningSummary,
       scopeCaptured: Boolean(customerScope),
-      customerScope
+      customerScope,
+      environment: tenantEnvironment
     };
   }
 
@@ -701,15 +723,29 @@ function createOneDayEnterpriseEngine(options = {}) {
     const scope = normaliseScope(await readJson(req));
     const existing = scopeByRun.get(run.id, ctx.tenant);
     const ts = nowIso();
-    upsertScope.run(run.id, ctx.tenant, JSON.stringify(scope), sha256(ctx.email).slice(0, 16), existing?.created_at || ts, ts);
-    record(run.id, ctx.tenant, existing ? 'CUSTOMER_SCOPE_UPDATED' : 'CUSTOMER_SCOPE_SUBMITTED', {
-      by: sha256(ctx.email).slice(0, 16),
-      employees: scope.employeeCount,
-      countries: scope.countries.length,
-      sites: scope.sites.length,
-      sourceSystems: scope.sourceSystems.length,
-      features: scope.features.length
-    });
+    let environment;
+    db.exec('BEGIN IMMEDIATE;');
+    try {
+      upsertScope.run(run.id, ctx.tenant, JSON.stringify(scope), sha256(ctx.email).slice(0, 16), existing?.created_at || ts, ts);
+      environment = environmentProvisioner.provision({ tenant: ctx.tenant, runId: run.id, scope });
+      recordRequired(run.id, ctx.tenant, 'TENANT_ENVIRONMENT_READY', {
+        environmentId: environment.environmentId,
+        namespace: environment.namespace,
+        configurationDigest: environment.configurationDigest
+      });
+      recordRequired(run.id, ctx.tenant, existing ? 'CUSTOMER_SCOPE_UPDATED' : 'CUSTOMER_SCOPE_SUBMITTED', {
+        by: sha256(ctx.email).slice(0, 16),
+        employees: scope.employeeCount,
+        countries: scope.countries.length,
+        sites: scope.sites.length,
+        sourceSystems: scope.sourceSystems.length,
+        features: scope.features.length
+      });
+      db.exec('COMMIT;');
+    } catch (error) {
+      try { db.exec('ROLLBACK;'); } catch {}
+      throw error;
+    }
     return writeJson(res, existing ? 200 : 201, recompute(run));
   }
 
@@ -867,6 +903,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       if (req.method === 'GET' && path === PREFIX + '/invitation') return handleInvitation(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/start') return await handleStart(ctx, req, res);
       if (req.method === 'GET' && path === PREFIX + '/scope') return handleScopeGet(ctx, res);
+      if (req.method === 'GET' && path === PREFIX + '/environment') {
+        const environment = environmentProvisioner.statusForTenant(ctx.tenant);
+        return environment ? writeJson(res, 200, environment) : writeJson(res, 404, { error: 'Tenant environment has not been provisioned.' });
+      }
       if (req.method === 'POST' && path === PREFIX + '/scope') return await handleScope(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/decision') return await handleDecision(ctx, req, res);
       return writeJson(res, 404, { error: 'Autonomous implementation endpoint not found.' });
@@ -883,7 +923,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       const run = currentRun.get(tenant);
       return run ? recompute(run) : null;
     },
-    close() { try { db.close(); } catch {} }
+    close() { try { environmentProvisioner.close(); } catch {} try { db.close(); } catch {} }
   };
 }
 

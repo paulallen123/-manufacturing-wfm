@@ -21,21 +21,31 @@ function fixture() {
   db.exec(
     'CREATE TABLE tenants(id TEXT PRIMARY KEY, version INTEGER NOT NULL, state TEXT NOT NULL);' +
     'CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL REFERENCES tenants(id),person_id TEXT NOT NULL,role TEXT NOT NULL,costs INTEGER NOT NULL,salt TEXT NOT NULL,password_hash TEXT NOT NULL,permissions TEXT NOT NULL DEFAULT \'[]\');' +
-    'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL REFERENCES users(email),expires INTEGER NOT NULL);'
+    'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL REFERENCES users(email),expires INTEGER NOT NULL);' +
+    'CREATE TABLE implementation_events(id INTEGER PRIMARY KEY AUTOINCREMENT,event_type TEXT NOT NULL,detail_json TEXT NOT NULL);'
   );
   db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('alpha', 1, '{}');
   db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('bravo', 1, '{}');
   db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@alpha', 'alpha', 'm1', 'manager', 1, 's', '00', '[]');
   db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('employee@alpha', 'alpha', 'e1', 'employee', 0, 's', '00', '[]');
+  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('viewer@alpha', 'alpha', 'v1', 'viewer', 0, 's', '00', '[]');
+  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('unknown@alpha', 'alpha', 'u1', 'root-like-custom-role', 1, 's', '00', '[]');
+  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('admin@alpha', 'alpha', 'a1', 'admin', 1, 's', '00', '[]');
   db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@bravo', 'bravo', 'm2', 'manager', 1, 's', '00', '[]');
   const tokens = {
     manager: 'm'.repeat(64),
     employee: 'e'.repeat(64),
+    viewer: 'v'.repeat(64),
+    unknown: 'u'.repeat(64),
+    admin: 'a'.repeat(64),
     bravo: 'b'.repeat(64)
   };
   const expires = Date.now() + 60_000;
   db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(tokens.manager), 'manager@alpha', expires);
   db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(tokens.employee), 'employee@alpha', expires);
+  db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(tokens.viewer), 'viewer@alpha', expires);
+  db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(tokens.unknown), 'unknown@alpha', expires);
+  db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(tokens.admin), 'admin@alpha', expires);
   db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(tokens.bravo), 'manager@bravo', expires);
   db.close();
 
@@ -236,13 +246,19 @@ test('provider-neutral signed contract webhook sends one invitation and does not
   }
 });
 
-test('employee cannot inspect enterprise implementation control plane', async () => {
+test('implementation control plane uses a positive role allowlist', async () => {
   const f = fixture();
   try {
-    const result = await call(
-      f.engine, f.tokens.employee, 'GET', '/api/implementation/autonomous/status'
-    );
-    assert.equal(result.status, 403);
+    for (const token of [f.tokens.employee, f.tokens.viewer, f.tokens.unknown]) {
+      const status = await call(f.engine, token, 'GET', '/api/implementation/autonomous/status');
+      const scope = await call(f.engine, token, 'GET', '/api/implementation/autonomous/scope');
+      const environment = await call(f.engine, token, 'GET', '/api/implementation/autonomous/environment');
+      assert.equal(status.status, 403);
+      assert.equal(scope.status, 403);
+      assert.equal(environment.status, 403);
+    }
+    const admin = await call(f.engine, f.tokens.admin, 'GET', '/api/implementation/autonomous/status');
+    assert.equal(admin.status, 200);
   } finally {
     f.close();
   }
@@ -366,7 +382,7 @@ test('readiness is fail-closed until every required evidence item passes at conf
   const f = fixture();
   try {
     const run = await startRun(f);
-    const firstRequirement = REQUIREMENTS.find(item => item.key !== 'configuration-scope');
+    const firstRequirement = REQUIREMENTS.find(item => !['configuration-scope', 'tenant-environment'].includes(item.key));
     const weak = await call(
       f.engine, null, 'POST', '/api/implementation/autonomous/evidence',
       {
@@ -506,6 +522,16 @@ test('customer configuration scope is required, persisted and tenant scoped', as
     assert.equal(saved.body.scopeCaptured, true);
     assert.equal(saved.body.customerScope.employeeCount, 10000);
     assert.equal(saved.body.requirements.find(x => x.key === 'configuration-scope').satisfied, true);
+    assert.equal(saved.body.requirements.find(x => x.key === 'tenant-environment').satisfied, true);
+    assert.equal(saved.body.environment.state, 'READY');
+    assert.equal(saved.body.environment.dashboard.route, 'overview');
+
+    const environment = await call(
+      f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/environment'
+    );
+    assert.equal(environment.status, 200);
+    assert.equal(environment.body.environmentId, saved.body.environment.environmentId);
+    assert.equal(environment.body.isolation.tenant, 'alpha');
 
     const fetched = await call(
       f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/scope'
@@ -518,6 +544,10 @@ test('customer configuration scope is required, persisted and tenant scoped', as
       f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/scope'
     );
     assert.equal(crossTenant.status, 409);
+    const crossTenantEnvironment = await call(
+      f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/environment'
+    );
+    assert.equal(crossTenantEnvironment.status, 404);
   } finally {
     f.close();
   }
@@ -549,17 +579,50 @@ test('trusted evidence cannot bypass missing customer scope', async () => {
   }
 });
 
+test('scope and tenant environment roll back together when provisioning audit fails', async () => {
+  const f = fixture();
+  try {
+    const invitation = await createInvitation(f, 'alpha', 'scope-rollback');
+    const started = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',
+      { token: invitation.token }
+    );
+    assert.equal(started.status, 201);
+
+    const db = new DatabaseSync(f.dbPath);
+    db.exec(
+      "CREATE TRIGGER fail_environment_audit BEFORE INSERT ON tenant_environment_events " +
+      "BEGIN SELECT RAISE(ABORT,'forced environment audit failure'); END;"
+    );
+    db.close();
+
+    const failed = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',
+      scopeFixture('alpha')
+    );
+    assert.equal(failed.status, 500);
+
+    const scope = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/scope');
+    const environment = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/environment');
+    assert.equal(scope.status, 200);
+    assert.equal(scope.body.scopeCaptured, false);
+    assert.equal(environment.status, 404);
+  } finally {
+    f.close();
+  }
+});
+
 test('implementation audit events are append only', async () => {
   const f = fixture();
   try {
     await startRun(f, 'alpha', 'contract-audit');
     const db = new DatabaseSync(f.dbPath);
     assert.throws(
-      () => db.exec("UPDATE implementation_events SET event='tampered'"),
+      () => db.exec("UPDATE one_day_implementation_events SET event='tampered'"),
       /append only/
     );
     assert.throws(
-      () => db.exec('DELETE FROM implementation_events'),
+      () => db.exec('DELETE FROM one_day_implementation_events'),
       /append only/
     );
     db.close();

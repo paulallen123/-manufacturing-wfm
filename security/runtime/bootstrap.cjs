@@ -310,6 +310,7 @@ http.createServer = function guardedCreateServer(listener) {
       });
     } catch (error) {
       implementationEngineInitError = error;
+      console.error('Autonomous implementation initialization failed:', String(error?.code || error?.name || 'ERROR'), String(error?.message || 'unknown initialization failure'));
     }
   }
 
