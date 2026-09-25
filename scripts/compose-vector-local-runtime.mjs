@@ -46,7 +46,7 @@ const groups = {
     'absence-recovery-shadow.cjs', 'demand-decision-service.cjs',
     'decision-outcome-proof.cjs', 'realtime-event-service.cjs',
     'autopilot-execution-engine.cjs', 't9-customer-guardian.cjs',
-    'mobile-recommendation-service.cjs', 'mobile-assistant-service.cjs',
+    'mobile-recommendation-service.cjs', 'mobile-assistant-service.cjs', 'mobile-session-service.cjs',
     'manufacturing-scheduling-engine.cjs', 'manufacturing-demand-forecast.cjs',
     'schedule-attendance-reconciliation.cjs', 'scheduling-intelligence-service.cjs'
   ],
