@@ -25,6 +25,16 @@ function locale() {
   return state.locale;
 }
 
+function applyResponseLocale(response) {
+  const value = String(response && response.locale || '').trim().replace(/_/g, '-');
+  if (!/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/.test(value)) return locale();
+  state.locale = value;
+  const input = document.getElementById('wfm-bot-locale');
+  if (input) input.value = value;
+  if (state.recognition) state.recognition.lang = value;
+  return value;
+}
+
 function escapeText(value) {
   return String(value == null ? '' : value);
 }
@@ -153,10 +163,11 @@ async function plan(message) {
   setBusy(true);
   try {
     const response = await request('/plan', { message: text, locale: locale() });
+    applyResponseLocale(response);
     appendMessage('assistant', response.answer || 'I checked that request.');
-    speak(response.answer || '');
     state.pendingPlan = response.offerToAct && response.plan ? response : null;
     if (state.pendingPlan) addConfirmation(response);
+    speak([response.answer || '', state.pendingPlan ? response.confirmation || '' : ''].filter(Boolean).join(' '));
   } catch (error) {
     appendMessage('assistant', error.message || 'Vecta could not check that request.', { status: 'No action was taken.' });
   } finally {
@@ -196,6 +207,50 @@ async function executeClientAction(execution) {
   throw new Error('Vecta refused an unregistered execution instruction.');
 }
 
+async function interpretPendingConfirmation(message, inputMode = 'text') {
+  const pending = state.pendingPlan;
+  if (!pending || !pending.plan || state.busy) return false;
+  const text = String(message || '').trim().slice(0, 400);
+  if (!text) return false;
+
+  appendMessage('user', text);
+  const input = messageInput();
+  if (input) input.value = '';
+  setBusy(true);
+  let decision = 'unclear';
+  try {
+    const result = await request('/confirmation', {
+      planId: pending.plan.id,
+      message: text,
+      locale: locale(),
+      inputMode: inputMode === 'voice' ? 'voice' : 'text'
+    });
+    applyResponseLocale(result);
+    decision = result.decision || 'unclear';
+    if (decision === 'unclear') {
+      const prompt = 'I did not interpret that as a clear yes or no, so I made no change. Please say yes or no, or use the buttons.';
+      appendMessage('assistant', prompt);
+      speak(prompt);
+    }
+  } catch (error) {
+    appendMessage('assistant', error.message || 'Vecta could not verify that confirmation. No action was taken.');
+    decision = 'unclear';
+  } finally {
+    setBusy(false);
+  }
+
+  if (decision === 'yes' || decision === 'no') {
+    panel()?.querySelectorAll('[data-wfm-bot-confirm]').forEach(button => { button.disabled = true; });
+    await confirmPlan(decision === 'yes');
+  }
+  return true;
+}
+
+async function submitUtterance(message, inputMode = 'text') {
+  if (state.pendingPlan) return interpretPendingConfirmation(message, inputMode);
+  return plan(message);
+}
+
 async function confirmPlan(confirm) {
   const pending = state.pendingPlan;
   if (!pending || !pending.plan || state.busy) return;
@@ -205,6 +260,7 @@ async function confirmPlan(confirm) {
   try {
     if (!confirm) {
       const cancelled = await request('/cancel', { planId });
+      applyResponseLocale(cancelled);
       appendMessage('assistant', cancelled.answer || 'No change was made.');
       speak(cancelled.answer || '');
       return;
@@ -229,6 +285,7 @@ async function confirmPlan(confirm) {
     }
 
     const complete = await request('/complete', { planId, ok: true, receipt });
+    applyResponseLocale(complete);
     appendMessage('assistant', complete.answer || 'Done.', {
       status: receipt && receipt.id ? 'Verified result: ' + receipt.id : 'Verified by the Vecta workflow.'
     });
@@ -264,7 +321,7 @@ function toggleListening() {
       if (value) {
         const input = messageInput();
         if (input) input.value = value;
-        void plan(value);
+        void submitUtterance(value, 'voice');
       }
     };
     recognition.onerror = event => {
@@ -343,7 +400,7 @@ function mount() {
 
   launch.addEventListener('click', () => root.hidden ? show() : hide());
   root.querySelector('[data-wfm-bot-close]')?.addEventListener('click', hide);
-  document.getElementById('wfm-bot-send')?.addEventListener('click', () => plan(messageInput()?.value));
+  document.getElementById('wfm-bot-send')?.addEventListener('click', () => submitUtterance(messageInput()?.value, 'text'));
   document.getElementById('wfm-bot-mic')?.addEventListener('click', toggleListening);
   document.getElementById('wfm-bot-voice-reply')?.addEventListener('change', event => {
     state.voiceReplies = Boolean(event.target.checked);
@@ -365,7 +422,7 @@ function mount() {
   messageInput()?.addEventListener('keydown', event => {
     if (event.key !== 'Enter' || event.shiftKey || state.busy) return;
     event.preventDefault();
-    void plan(event.currentTarget.value);
+    void submitUtterance(event.currentTarget.value, 'text');
   });
 }
 
@@ -376,7 +433,7 @@ window.VectorOperationsBot = Object.freeze({
   marker: MARKER,
   open: show,
   close: hide,
-  ask: plan,
+  ask: submitUtterance,
   locale: () => locale(),
   speechInputAvailable: () => Boolean(SpeechRecognitionCtor()),
   speechOutputAvailable: () => 'speechSynthesis' in window
