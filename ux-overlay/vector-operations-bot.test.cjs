@@ -34,10 +34,13 @@ test('voice input and spoken replies use the same locale without changing action
   assert.match(source, /Voice availability depends on the browser\/device speech service/);
 });
 
-test('the existing Vector ask entry points can find the bot by stable ids', () => {
+test('the existing Vector ask entry points resolve to one canonical Operations Bot', () => {
   assert.match(source, /id\s*=\s*'wfm-bot-launch'/);
   assert.match(source, /root\.id\s*=\s*'wfm-bot'/);
   assert.match(source, /id="bot-message"/);
+  assert.match(source, /existingBot\.remove\(\)/);
+  assert.match(source, /existingLaunch\.remove\(\)/);
+  assert.match(source, /existingBot\.dataset\.marker === MARKER/);
 });
 
 test('bot UI remains inside the approved blue-and-white presentation and is responsive', () => {
