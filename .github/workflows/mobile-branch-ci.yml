@@ -10,6 +10,10 @@ on:
       - 'operations/runtime/mobile-recommendation-service.test.cjs'
       - 'operations/runtime/mobile-assistant-service.cjs'
       - 'operations/runtime/mobile-assistant-service.test.cjs'
+      - 'operations/runtime/mobile-session-service.cjs'
+      - 'operations/runtime/mobile-session-service.test.cjs'
+      - 'security/runtime/identity-survival-guard.cjs'
+      - 'security/runtime/identity-survival-guard.test.cjs'
       - 'scripts/compose-vector-local-runtime.mjs'
       - 'security/runtime/bootstrap.cjs'
       - 'Dockerfile'
@@ -31,9 +35,11 @@ jobs:
         run: |
           node --check operations/runtime/mobile-recommendation-service.cjs
           node --check operations/runtime/mobile-assistant-service.cjs
+          node --check operations/runtime/mobile-session-service.cjs
+          node --check security/runtime/identity-survival-guard.cjs
           node --check security/runtime/bootstrap.cjs
       - name: Prove mobile approvals fail closed
-        run: node --test operations/runtime/mobile-recommendation-service.test.cjs operations/runtime/mobile-assistant-service.test.cjs
+        run: node --test operations/runtime/mobile-recommendation-service.test.cjs operations/runtime/mobile-assistant-service.test.cjs operations/runtime/mobile-session-service.test.cjs security/runtime/identity-survival-guard.test.cjs
 
   native-client:
     runs-on: ubuntu-latest
