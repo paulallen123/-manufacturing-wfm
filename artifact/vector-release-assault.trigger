@@ -10,3 +10,6 @@ pre_freeze=core-external-health-pass+runtime-contract-pass+recovery-specialist-r
 run=release-assault-20260925-attendance-owned-review
 scope=core+reporting;recovery=current-proof-after-green
 pre_freeze=core-external-health-pass+runtime-closure-fixed+attendance-source-bound+specialist-recovery-rejected+promotion-domain-blocked
+run=release-assault-20260925-attendance-regression-aligned
+scope=core+reporting;recovery=current-proof-after-green
+pre_freeze=core-external-health-pass+runtime-contract-pass+attendance-route-regression-pass+specialist-recovery-rejected+promotion-domain-blocked
