@@ -673,6 +673,37 @@
         "security/runtime/bootstrap.cjs"
       ],
       "integrationNote": "T9 is now embedded in canonical FORGE. The Customer Guardian observes API completion off the customer response path, writes append-only shadow evidence, auto-fixes only through certified safe remediators with distinct verification, and turns repeated failure patterns into proposal-only scenarios."
+    },
+    {
+      "id": "country-policy-packs",
+      "releaseTargetIds": [
+        "global-policy"
+      ],
+      "sourceRefs": [
+        "PR#230",
+        "research:country-by-country-manufacturing-report"
+      ],
+      "status": "in-development",
+      "mayRetireLegacySource": false,
+      "preservedBehaviors": [
+        "verified and effective packs only",
+        "effective-dated country context",
+        "provenance required for verified packs",
+        "missing country/date coverage fails closed",
+        "country packs grant no execution authority",
+        "country packs never override authoritative law payroll safety or customer policy"
+      ],
+      "valueAddTargets": [
+        "global multi-country policy context",
+        "country-aware implementation defaults",
+        "country-specific scheduling/payroll/absence/compliance gates after proof",
+        "regional inheritance and local overrides without separate products"
+      ],
+      "integratedPaths": [
+        "policy/runtime/country-policy-pack-registry.cjs",
+        "policy/runtime/country-policy-pack-registry.test.cjs"
+      ],
+      "integrationNote": "The PR#230 read-only country policy registry is admitted into canonical FORGE as policy context only. It is not legal advice, does not certify compliance and cannot authorise payroll/scheduling actions. Consequential enforcement remains blocked until country-specific authoritative evidence, tests and Golden Journey proof exist."
     }
   ]
 }

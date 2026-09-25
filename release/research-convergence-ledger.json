@@ -340,7 +340,7 @@
       ],
       "origin": "country-by-country manufacturing research",
       "prototypeBuilt": true,
-      "status": "QUEUED_FOR_CONVERGENCE",
+      "status": "IN_CONVERGENCE",
       "canonicalTarget": "global policy engine across scheduling/payroll/absence/compliance/implementation",
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "One global VECTOR deployment can apply effective-dated local working-time, payroll, absence, compliance, privacy and workforce rules per employee/site/country.",
@@ -355,10 +355,15 @@
         "trust-proof-release"
       ],
       "designStatus": "COMPLETE",
-      "deliveryStage": "IMPLEMENTATION",
+      "deliveryStage": "CONVERGENCE_PROOF",
       "theoryStatus": "PASS_ISOLATED",
-      "implementationStatus": "QUEUED_FOR_CANONICAL",
-      "nextLifecycleAction": "Admit the existing read-only registry into canonical FORGE, then prove country/date selection and fail-closed missing coverage."
+      "implementationStatus": "CANONICAL_READ_ONLY",
+      "nextLifecycleAction": "Run exact-image and hosted proof; then add authoritative country packs incrementally and prove policy context through implementation, scheduling/payroll advisory journeys before any consequential enforcement.",
+      "canonicalCapabilityId": "country-policy-packs",
+      "theoryEvidenceRefs": [
+        "policy/runtime/country-policy-pack-registry.test.cjs",
+        "resilience/research-convergence-theory-simulator.test.cjs"
+      ]
     },
     {
       "id": "skills-demand-intelligence",
