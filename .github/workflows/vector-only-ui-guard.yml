@@ -12,6 +12,12 @@ on:
       - 'learning/ui/**'
       - 'operations/runtime/workflow-action-evidence-contract.cjs'
       - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
+      - 'operations/runtime/vector-operations-language-provider.cjs'
+      - 'operations/runtime/vector-operations-language-provider.test.cjs'
+      - 'operations/runtime/vector-operations-bot.cjs'
+      - 'operations/runtime/vector-operations-bot.test.cjs'
+      - 'operations/runtime/workforce-lifecycle-router.cjs'
+      - 'security/runtime/bootstrap.cjs'
       - 'artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz'
       - 'Dockerfile'
       - 'scripts/compose-vector-presentation.mjs'
@@ -27,6 +33,12 @@ on:
       - 'learning/ui/**'
       - 'operations/runtime/workflow-action-evidence-contract.cjs'
       - 'operations/runtime/workflow-action-evidence-contract.test.cjs'
+      - 'operations/runtime/vector-operations-language-provider.cjs'
+      - 'operations/runtime/vector-operations-language-provider.test.cjs'
+      - 'operations/runtime/vector-operations-bot.cjs'
+      - 'operations/runtime/vector-operations-bot.test.cjs'
+      - 'operations/runtime/workforce-lifecycle-router.cjs'
+      - 'security/runtime/bootstrap.cjs'
       - 'artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz'
       - 'Dockerfile'
       - 'scripts/compose-vector-presentation.mjs'
@@ -61,7 +73,7 @@ jobs:
           }
           echo "VECTOR_SOURCE_SHA=$actual_sha"
       - name: Prove source-owned action evidence semantics
-        run: node --test operations/runtime/workflow-action-evidence-contract.test.cjs ux-overlay/vector-action-queue.test.cjs
+        run: node --test operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/vector-operations-language-provider.test.cjs operations/runtime/vector-operations-bot.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-operations-bot.test.cjs
       - name: Prove retired presentation purge fails closed
         run: node --test scripts/compose-vector-presentation.regression.test.mjs
       - name: Prove marker spoof cannot satisfy built-asset provenance
