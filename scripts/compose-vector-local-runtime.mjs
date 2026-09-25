@@ -27,7 +27,7 @@ run('scripts/retire-legacy-presentation.mjs', [publicRoot]);
 run('scripts/harden-attendance-integrity.mjs', [publicRoot]);
 const copy = (source, destination) => { recordInput(source); const target = path.join(output, destination); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(path.join(root, source), target); };
 const groups = {
-  security: ['bootstrap.cjs', 'identity-survival-guard.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'retired-presentation.cjs'],
+  security: ['bootstrap.cjs', 'identity-survival-guard.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
   integration: ['autonomous-integration-hub.cjs'],
   implementation: [
     'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs',
