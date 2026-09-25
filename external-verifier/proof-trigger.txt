@@ -1,1 +1,1 @@
-external verifier launch 2026-09-25
+external verifier mutation launch 2026-09-25
