@@ -226,13 +226,13 @@ try {
     };
 
     if (spec.slug === 'employee') {
-      actionJourney.evidenceStatus = await page.evaluate(async () => (await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' })).status);
+      actionJourney.evidenceStatus = await page.evaluate(async () => (await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=2026-09-07', { cache: 'no-store' })).status);
       assert.equal(actionJourney.evidenceStatus, 403, 'Employee unexpectedly received manager action evidence.');
     }
 
     if (spec.slug === 'manager') {
       const evidence = await page.evaluate(async () => {
-        const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' });
+        const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=2026-09-07', { cache: 'no-store' });
         let json = null;
         try { json = await response.json(); } catch {}
         return { status: response.status, json };
@@ -243,7 +243,7 @@ try {
       assert.equal(evidence.json?.workflow, 'time-review');
 
       const sourceDiagnostic = await page.evaluate(async () => {
-        const response = await fetch('/api/time-review', { cache: 'no-store' });
+        const response = await fetch('/api/weekly-review?period=2026-09-07', { cache: 'no-store' });
         let json = null;
         try { json = await response.json(); } catch {}
         const teams = Array.isArray(json?.teams) ? json.teams : [];
@@ -467,7 +467,7 @@ try {
         assert.equal(contextSourceId, sourceId, 'Time Review lost the originating source action context.');
 
         const postOpen = await page.evaluate(async () => {
-          const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' });
+          const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=2026-09-07', { cache: 'no-store' });
           return { status: response.status, json: await response.json() };
         });
         assert.equal(postOpen.status, 200);
