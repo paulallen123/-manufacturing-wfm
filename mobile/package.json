@@ -7,7 +7,10 @@
     "start": "expo start",
     "ios": "expo start --ios",
     "android": "expo start --android",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "parity:report": "node scripts/store-gate.mjs",
+    "store:gate": "VECTOR_STORE_GATE=1 node scripts/store-gate.mjs",
+    "eas-build-pre-install": "node scripts/store-gate.mjs"
   },
   "dependencies": {
     "expo": "~57.0.10",
