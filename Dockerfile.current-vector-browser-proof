@@ -3,6 +3,9 @@ WORKDIR /proof
 COPY scripts/current-candidate-role-browser-proof.mjs ./current-candidate-role-browser-proof.mjs
 COPY scripts/current-candidate-role-browser-proof-server.mjs ./current-candidate-role-browser-proof-server.mjs
 COPY scripts/vector-proof-result.mjs ./vector-proof-result.mjs
-RUN npm init -y >/dev/null 2>&1 \
+RUN node --check ./current-candidate-role-browser-proof.mjs \
+ && node --check ./current-candidate-role-browser-proof-server.mjs \
+ && node --check ./vector-proof-result.mjs \
+ && npm init -y >/dev/null 2>&1 \
  && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install playwright@1.63.0 --no-audit --no-fund --save-exact >/dev/null 2>&1
 CMD ["node","current-candidate-role-browser-proof-server.mjs"]
