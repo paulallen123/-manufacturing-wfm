@@ -14,10 +14,11 @@ const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(__dirname, 'vector-workflows.js'), 'utf8');
 const shellSource = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
 
-test('Vector shell exposes source-bound Time review route without inventing authority', () => {
-  assert.match(shellSource, /\['time-review','Time review'\]/);
-  assert.match(shellSource, /route==='time-review'.*dataset\.page==='attendance'/);
-  assert.match(shellSource, /routes:\['vector-people','personal','attendance','time-review'/);
+test('Vector keeps Time Review source-bound inside registered Attendance navigation', () => {
+  assert.doesNotMatch(shellSource, /\['time-review','Time review'\]/);
+  assert.match(shellSource, /'time-review':'attendance'/);
+  assert.match(source, /ui\.page !== 'attendance'/);
+  assert.match(source, /time: 'attendance'/);
 });
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const reservePort = () => new Promise((resolve, reject) => {
