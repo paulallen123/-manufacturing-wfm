@@ -22,6 +22,12 @@ test('access entry alone is review-required, not a guessed payroll clock',()=>{
   assert.equal(e.getState({tenant:'acme',employee:'e1',site:'s1'}).status,'outside');
 });
 
+test('door source alias remains bounded to physical access evidence kinds',()=>{
+  const e=new AutomaticAttendanceEvidenceEngine();
+  e.registerSource({tenant:'acme',sourceId:'door-alias',site:'s1',type:'door'});
+  assert.throws(()=>e.registerSource({tenant:'acme',sourceId:'door-bad',site:'s1',type:'door',allowedKinds:['wifi_authenticated']}),/outside its trusted capability/);
+});
+
 test('independent access + authenticated wifi auto-confirms IN at the physical anchor',()=>{
   const e=setup();
   ingest(e,{sourceId:'door',eventId:'door-in-0002',kind:'access_entry',observedAt:new Date(T).toISOString()});
