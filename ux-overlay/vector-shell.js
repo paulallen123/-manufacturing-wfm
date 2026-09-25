@@ -17,7 +17,7 @@ const TIME_REVIEW_EVIDENCE_PATH='/api/workforce/lifecycle/action-evidence/time-r
 const ACTION_CONTEXT_KEY='VECTOR_ACTION_RETURN_CONTEXT_V1';
 const NAV=[
  {label:'Today',icon:'home',routes:['overview'],tabs:[['overview','Today']]},
- {label:'People',icon:'people',routes:['vector-people','personal','attendance','leave','availability-control','availability','temporary'],tabs:[['vector-people','Overview'],['attendance','Attendance'],['leave','Absence & leave'],['availability-control','Availability'],['temporary','Agency']]},
+ {label:'People',icon:'people',routes:['vector-people','personal','attendance','time-review','leave','availability-control','availability','temporary'],tabs:[['vector-people','Overview'],['attendance','Attendance'],['time-review','Time review'],['leave','Absence & leave'],['availability-control','Availability'],['temporary','Agency']]},
  {label:'Plan',icon:'calendar',routes:['schedule-publication','shifts','work-patterns','demand','cover','offers'],tabs:[['schedule-publication','Shift plan'],['shifts','My shifts'],['work-patterns','Shift patterns'],['demand','Demand'],['cover','Available cover']]},
  {label:'Factory',icon:'planning',routes:['readiness','op-sites','shutdowns','forecast'],tabs:[['readiness','Live factory'],['op-sites','Site performance'],['forecast','What if?'],['shutdowns','Shutdowns']]},
  {label:'Improve',icon:'report',routes:['insights','costs','recommendations','benchmarks','compliance','overtime-watch'],tabs:[['insights','Performance'],['costs','Cost & productivity'],['recommendations','Opportunities'],['benchmarks','Benchmarks'],['compliance','Compliance']]}
@@ -61,7 +61,7 @@ function icon(name){
   };
   return '<svg class="vector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.home)+'</svg>';
 }
-function available(route){if(employee()&&NAV.slice(3).some(n=>n.routes.includes(route)))return false;return route==='vector-people'?!employee():sourceButtons().some(b=>b.dataset.page===route);}
+function available(route){if(employee()&&NAV.slice(3).some(n=>n.routes.includes(route)))return false;if(route==='time-review')return !employee()&&sourceButtons().some(b=>b.dataset.page==='attendance');return route==='vector-people'?!employee():sourceButtons().some(b=>b.dataset.page===route);}
 function firstRoute(routes){return routes.find(available)||null;}
 function sectionFor(route){return NAV.find(n=>n.routes.includes(route));}
 function sectionItems(spec){
