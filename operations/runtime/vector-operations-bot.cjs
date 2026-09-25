@@ -1,5 +1,6 @@
 'use strict';
 
+const http = require('node:http');
 const { createHash, randomUUID } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 
@@ -7,6 +8,8 @@ const PREFIX = '/api/workforce/lifecycle/operations-bot';
 const CONTRACT_VERSION = 'VECTOR_OPERATIONS_BOT_V1';
 const PLAN_TTL_MS = 10 * 60 * 1000;
 const MAX_MESSAGE_BYTES = 8 * 1024;
+const MAX_SOURCE_BYTES = 512 * 1024;
+const SOURCE_TIMEOUT_MS = 3000;
 
 function nowIso() { return new Date().toISOString(); }
 function sha256(value) { return createHash('sha256').update(String(value)).digest('hex'); }
@@ -55,6 +58,75 @@ async function readJson(req, max = MAX_MESSAGE_BYTES) {
     error.statusCode = 400;
     throw error;
   }
+}
+
+
+function forwardedProto(req) {
+  const raw = compact(req && req.headers && req.headers['x-forwarded-proto'], 64)
+    .split(',')[0].trim().toLowerCase();
+  return raw === 'http' || raw === 'https' ? raw : '';
+}
+
+function fetchLocalJson(req, sourcePath, options = {}) {
+  const timeoutMs = Number(options.timeoutMs || SOURCE_TIMEOUT_MS);
+  const maxBytes = Number(options.maxBytes || MAX_SOURCE_BYTES);
+  const port = Number(options.port || (req && req.socket && req.socket.localPort) || process.env.PORT || 3000);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    return Promise.reject(new Error('Authoritative source port is unavailable.'));
+  }
+
+  const headers = {
+    accept: 'application/json',
+    cookie: String(req && req.headers && req.headers.cookie || ''),
+    host: compact(req && req.headers && req.headers.host, 255) || 'localhost',
+    'user-agent': 'vector-operations-bot/1'
+  };
+  const proto = forwardedProto(req);
+  if (proto) headers['x-forwarded-proto'] = proto;
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (fn, value) => {
+      if (settled) return;
+      settled = true;
+      fn(value);
+    };
+    const sourceReq = http.request({
+      host: '127.0.0.1',
+      port,
+      path: sourcePath,
+      method: 'GET',
+      headers
+    }, sourceRes => {
+      let size = 0;
+      const chunks = [];
+      sourceRes.on('data', chunk => {
+        if (settled) return;
+        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        size += buffer.length;
+        if (size > maxBytes) {
+          sourceReq.destroy(new Error('Authoritative source exceeded the safe read limit.'));
+          return;
+        }
+        chunks.push(buffer);
+      });
+      sourceRes.on('end', () => {
+        if (settled) return;
+        let body = null;
+        try {
+          body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : null;
+        } catch {
+          return finish(reject, new Error('Authoritative source returned invalid JSON.'));
+        }
+        finish(resolve, { status: Number(sourceRes.statusCode || 0), body });
+      });
+    });
+    sourceReq.setTimeout(timeoutMs, () => {
+      sourceReq.destroy(new Error('Authoritative source timed out.'));
+    });
+    sourceReq.on('error', error => finish(reject, error));
+    sourceReq.end();
+  });
 }
 
 function normaliseLocale(value) {
@@ -419,6 +491,50 @@ function createVectorOperationsBot(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   if (!dbPath) throw new Error('Vector Operations Bot requires WFM_DB.');
   const interpreter = typeof options.intentProvider === 'function' ? options.intentProvider : null;
+  const completionVerifier = typeof options.completionVerifier === 'function'
+    ? options.completionVerifier
+    : async ({ req, ctx, row, receipt }) => {
+        if (row.capability === 'leave.request') {
+          let source;
+          try {
+            source = await fetchLocalJson(req, '/api/bootstrap');
+          } catch {
+            return { ok: false, reason: 'AUTHORITATIVE_SOURCE_UNAVAILABLE' };
+          }
+          if (!source || source.status !== 200 || !source.body || typeof source.body !== 'object') {
+            return { ok: false, reason: 'AUTHORITATIVE_SOURCE_UNAVAILABLE' };
+          }
+          const sourceTenant = compact(source.body.tenant || source.body.tenantId, 120);
+          if (sourceTenant && sourceTenant !== String(ctx.tenant)) {
+            return { ok: false, reason: 'TENANT_SCOPE_MISMATCH' };
+          }
+          let args = {};
+          try { args = JSON.parse(row.args_json); } catch {}
+          const requests = Array.isArray(source.body.state && source.body.state.requests)
+            ? source.body.state.requests
+            : [];
+          const saved = requests.find(item => String(item && item.id || '') === String(receipt && receipt.id || ''));
+          const matches = Boolean(
+            saved &&
+            String(saved.status || '').toLowerCase() === 'pending' &&
+            String(saved.date || '') === String(args.date || '') &&
+            Number(saved.hours) === Number(args.hours)
+          );
+          return matches
+            ? { ok: true, evidenceRef: 'bootstrap-request:' + compact(saved.id, 160) }
+            : { ok: false, reason: 'SAVED_RESULT_NOT_CONFIRMED' };
+        }
+
+        const spec = CAPABILITIES[row.capability];
+        if (spec && spec.execution.type === 'navigate') {
+          const matches = String(receipt && receipt.id || '') === String(spec.execution.route) &&
+            String(receipt && receipt.status || '') === 'opened';
+          return matches
+            ? { ok: true, evidenceRef: 'client-navigation:' + spec.execution.route }
+            : { ok: false, reason: 'NAVIGATION_RESULT_NOT_CONFIRMED' };
+        }
+        return { ok: false, reason: 'NO_VERIFIER_FOR_CAPABILITY' };
+      };
   const db = new DatabaseSync(dbPath);
   db.exec(
     'PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;' +
@@ -623,10 +739,7 @@ function createVectorOperationsBot(options = {}) {
     if (!assertOwnedPlan(row, ctx)) return writeJson(res, 404, { error: 'Action plan not found.' });
     if (row.status !== 'AUTHORIZED_FOR_EXECUTION') return writeJson(res, 409, { error: 'This action plan is not awaiting an execution result.' });
 
-    const ok = body.ok === true;
-    const status = ok ? 'COMPLETED' : 'FAILED';
-    const changed = updateStatus.run(status, Date.now(), planId, 'AUTHORIZED_FOR_EXECUTION');
-    if (Number(changed.changes || 0) !== 1) return writeJson(res, 409, { error: 'Action state changed.' });
+    const requestedOk = body.ok === true;
     const receipt = body.receipt && typeof body.receipt === 'object' && !Array.isArray(body.receipt)
       ? {
           id: compact(body.receipt.id, 160) || null,
@@ -634,14 +747,55 @@ function createVectorOperationsBot(options = {}) {
           version: compact(body.receipt.version, 80) || null
         }
       : {};
-    audit(ctx, ok ? 'EXECUTION_VERIFIED_BY_WORKFLOW' : 'EXECUTION_FAILED', planId, { capability: row.capability, receipt });
+
+    if (!requestedOk) {
+      const changed = updateStatus.run('FAILED', Date.now(), planId, 'AUTHORIZED_FOR_EXECUTION');
+      if (Number(changed.changes || 0) !== 1) return writeJson(res, 409, { error: 'Action state changed.' });
+      audit(ctx, 'EXECUTION_FAILED', planId, { capability: row.capability, receipt });
+      return writeJson(res, 200, {
+        contractVersion: CONTRACT_VERSION,
+        planId,
+        ok: false,
+        locale: row.locale,
+        answer: copy(row.locale, 'failed'),
+        receipt
+      });
+    }
+
+    let verification;
+    try {
+      verification = await completionVerifier(Object.freeze({ req, ctx, row, receipt }));
+    } catch {
+      verification = { ok: false, reason: 'VERIFIER_FAILED' };
+    }
+    if (!verification || verification.ok !== true) {
+      const changed = updateStatus.run('NEEDS_VERIFICATION', Date.now(), planId, 'AUTHORIZED_FOR_EXECUTION');
+      if (Number(changed.changes || 0) !== 1) return writeJson(res, 409, { error: 'Action state changed.' });
+      audit(ctx, 'EXECUTION_NEEDS_VERIFICATION', planId, {
+        capability: row.capability,
+        receipt,
+        reason: compact(verification && verification.reason, 120) || 'SOURCE_UNVERIFIED'
+      });
+      return writeJson(res, 409, {
+        error: 'Vecta could not independently confirm the saved source result, so it has not reported the action as done.'
+      });
+    }
+
+    const changed = updateStatus.run('COMPLETED', Date.now(), planId, 'AUTHORIZED_FOR_EXECUTION');
+    if (Number(changed.changes || 0) !== 1) return writeJson(res, 409, { error: 'Action state changed.' });
+    audit(ctx, 'EXECUTION_VERIFIED_BY_SOURCE', planId, {
+      capability: row.capability,
+      receipt,
+      evidenceRef: compact(verification.evidenceRef, 200) || null
+    });
     return writeJson(res, 200, {
       contractVersion: CONTRACT_VERSION,
       planId,
-      ok,
+      ok: true,
       locale: row.locale,
-      answer: copy(row.locale, ok ? 'completed' : 'failed'),
-      receipt
+      answer: copy(row.locale, 'completed'),
+      receipt,
+      evidenceRef: compact(verification.evidenceRef, 200) || null
     });
   }
 
@@ -697,5 +851,6 @@ module.exports = Object.freeze({
   parseHours,
   deterministicInterpret,
   responseForInterpretation,
+  fetchLocalJson,
   createVectorOperationsBot
 });
