@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "slug": "research-aligned-manufacturing-intelligence",
+  "outcome": "VECTOR can absorb current analyst, competitor and manufacturing research through additive evidence projections and versioned policy context without replacing stronger existing workflows or destabilising the Friday FORGE release.",
+  "primaryRoles": [
+    "site-manager",
+    "operations-manager",
+    "finance",
+    "executive",
+    "implementation",
+    "support"
+  ],
+  "valueHypothesis": "Reusing the existing Digital Twin, Decision Episode, Training Twin, Realtime Event Service and Outcome Proof for new intelligence capabilities increases customer value faster and with less regression risk than parallel feature stacks.",
+  "valueMetric": {
+    "name": "research-capability-reuse-ratio",
+    "unit": "ratio",
+    "baselineSource": "existing FORGE capability ownership and changed-file evidence",
+    "resultSource": "admitted research features that reuse existing canonical owners"
+  },
+  "evidenceSources": [
+    "Implementation Digital Twin",
+    "Decision Episode",
+    "Decision Outcome Proof",
+    "Realtime Event Service",
+    "Training Twin",
+    "Product Factory admission evidence"
+  ],
+  "acceptanceCriteria": [
+    "Today / People / Plan / Factory / Improve remain the primary navigation.",
+    "Decision Receipt and Factory Playback are read-only projections and never grant execution authority.",
+    "Asset Intelligence reuses the existing Digital Twin rather than creating a second graph.",
+    "Skills Demand Intelligence requires authoritative verified demand and cannot certify competence.",
+    "Country Policy Packs return only verified effective policy context and fail closed when coverage is missing.",
+    "No financial value is presented as realised unless evidence-bound outcome proof exists.",
+    "No research capability is admitted to Friday FORGE until exact-candidate hosted proof is green."
+  ],
+  "securityControls": [
+    "tenant-and-site-scope-preserved",
+    "read-only-projections",
+    "fail-closed-unverified-policy",
+    "no-machine-control-authority",
+    "no-new-secret-handling"
+  ],
+  "observability": {
+    "signals": [
+      "decision-receipt-created",
+      "factory-playback-created",
+      "asset-projection-created",
+      "verified-policy-pack-resolved",
+      "skills-gap-projected"
+    ],
+    "dashboard": "existing FORGE proof and Product Factory evidence"
+  },
+  "rollback": {
+    "supported": true,
+    "method": "drop the additive research-alignment modules/branch; existing FORGE owners and UI remain unchanged"
+  },
+  "reusePlan": "Each capability composes existing canonical services and is surfaced contextually inside the existing five-section VECTOR experience.",
+  "automationPlan": "Admission stays gated behind independent tests and exact-candidate proof. Future research overlays must map to an existing owner before implementation.",
+  "claimBoundary": "Research alignment improves decision context and explainability. It does not itself prove legal compliance, financial savings, machine-control safety or autonomous production authority."
+}
