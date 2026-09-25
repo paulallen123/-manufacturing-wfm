@@ -79,8 +79,8 @@ test('pre-freeze rejected lanes are excluded from elastic capacity', () => {
     dependency:{id:'proof',status:'PENDING'},
     availableLanes:[{id:'good',status:'READY'},{id:'bad',status:'READY'}],
     preFreeze:{candidateSha:'sha',requiredIndependentFailureDomains:2,lanes:[
-      {id:'good',provider:'railway',failureDomain:'railway:a',class:'exact-image',variableNames:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD'],hostedModeValue:'true',healthcheckPath:'/api/health',readinessMode:'condition',sourceSha:'sha'},
-      {id:'bad',provider:'railway',failureDomain:'railway:a',class:'exact-image',variableNames:[],hostedModeValue:'true',healthcheckPath:'/api/health',readinessMode:'condition',sourceSha:'sha'}
+      {id:'good',provider:'railway',failureDomain:'railway:a',class:'exact-image',variableNames:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD'],hostedModeValue:'true',healthcheckPath:'/api/health',readinessMode:'condition',sourceSha:'sha',domain:'https://good.example',endpointReachable:true,healthcheckReady:true,listenAddress:'0.0.0.0',sleepApplication:false,deploymentStatus:'SUCCESS'},
+      {id:'bad',provider:'railway',failureDomain:'railway:a',class:'exact-image',variableNames:[],hostedModeValue:'true',healthcheckPath:'/api/health',readinessMode:'condition',sourceSha:'sha',domain:'https://bad.example',endpointReachable:true,healthcheckReady:true,listenAddress:'0.0.0.0',sleepApplication:false,deploymentStatus:'SUCCESS'}
     ]}
   });
   assert.equal(plan.capacity.admittedLaneCount,1);
