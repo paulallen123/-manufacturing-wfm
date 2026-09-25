@@ -68,6 +68,23 @@ function assessProofLane(lane = {}, options = {}) {
     } else if (lane.sourceSha && candidateSha && lane.sourceSha !== candidateSha) {
       issues.push({code:'CANDIDATE_SHA_DRIFT', expected:candidateSha, actual:lane.sourceSha});
     }
+
+    if (lane.persistenceRequired === true) {
+      const dbPath = String(lane.dbPath || '');
+      if (!dbPath.startsWith('/data/')) {
+        issues.push({code:'WFM_DB_NOT_DURABLE', actual:dbPath || null, requiredPrefix:'/data/'});
+      }
+      if (lane.persistentMount !== true) {
+        issues.push({code:'PERSISTENT_MOUNT_UNPROVEN'});
+      }
+      if (String(lane.finalRuntimeUid ?? '') === '0') {
+        issues.push({code:'ROOT_RUNTIME_FORBIDDEN'});
+      }
+    }
+
+    if (lane.providerAssistantAuthoritative === true) {
+      issues.push({code:'PROVIDER_ASSISTANT_AUTHORITY_FORBIDDEN'});
+    }
   }
 
   return Object.freeze({
