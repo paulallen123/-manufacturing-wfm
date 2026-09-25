@@ -359,6 +359,54 @@ const REQUEST_WORDS = [
   'طلب','أريد','申请','提交','申請','取りたい','신청','요청','चाहता','चाहती'
 ];
 
+const YES_UTTERANCES = new Set([
+  'yes','yes please','yeah','yep','do it','go ahead','please do','confirm',
+  'oui','oui merci','vas-y','faites-le',
+  'ja','ja bitte','mach es','machen sie das',
+  'sí','si','sí por favor','si por favor','hazlo','hágalo',
+  'sì','si','sì grazie','fallo',
+  'sim','sim por favor','faça isso','faca isso',
+  'ja graag','doe het',
+  'tak','tak proszę','tak prosze','zrób to','zrob to',
+  'نعم','أجل','افعل ذلك',
+  '是','是的','请执行','好',
+  'はい','お願いします','実行して',
+  '네','예','해주세요',
+  'हाँ','जी हाँ','करें'
+]);
+
+const NO_UTTERANCES = new Set([
+  'no','no thanks','no thank you','nope','cancel','do not','don’t','dont',
+  'non','non merci','annuler',
+  'nein','nein danke','abbrechen',
+  'no gracias','cancelar',
+  'no grazie','annulla',
+  'não','nao','não obrigado','nao obrigado','cancelar',
+  'nee','nee bedankt','annuleren',
+  'nie','nie dziękuję','nie dziekuje','anuluj',
+  'لا','إلغاء',
+  '不','不要','取消',
+  'いいえ','キャンセル',
+  '아니요','취소',
+  'नहीं','रद्द करें'
+]);
+
+function normaliseConfirmationText(message) {
+  return String(message || '')
+    .trim()
+    .toLocaleLowerCase()
+    .replace(/[.!?؟。！、,;:]+/g, '')
+    .replace(/\s+/g, ' ')
+    .slice(0, 400);
+}
+
+function deterministicConfirmation(message) {
+  const value = normaliseConfirmationText(message);
+  if (YES_UTTERANCES.has(value)) return 'yes';
+  if (NO_UTTERANCES.has(value)) return 'no';
+  return 'unclear';
+}
+
 function includesAny(message, words) {
   const value = String(message || '').toLocaleLowerCase();
   return words.some(word => value.includes(String(word).toLocaleLowerCase()));
@@ -498,6 +546,9 @@ function createVectorOperationsBot(options = {}) {
     : (typeof options.intentProvider === 'function' ? options.intentProvider : null);
   const translator = languageProvider && typeof languageProvider.translateMap === 'function'
     ? input => languageProvider.translateMap(input)
+    : null;
+  const confirmationInterpreter = languageProvider && typeof languageProvider.confirm === 'function'
+    ? input => languageProvider.confirm(input)
     : null;
   const completionVerifier = typeof options.completionVerifier === 'function'
     ? options.completionVerifier
@@ -701,6 +752,28 @@ function createVectorOperationsBot(options = {}) {
     }
   }
 
+
+  async function interpretConfirmation(message, locale) {
+    const deterministic = deterministicConfirmation(message);
+    if (deterministic !== 'unclear') return Object.freeze({ decision: deterministic, locale });
+
+    if (confirmationInterpreter) {
+      try {
+        const result = await confirmationInterpreter(Object.freeze({ message: compact(message, 400), locale }));
+        const decision = compact(result && result.decision, 20).toLowerCase();
+        if (['yes','no','unclear'].includes(decision)) {
+          return Object.freeze({
+            decision,
+            locale: result && result.detectedLocale ? normaliseLocale(result.detectedLocale) : locale
+          });
+        }
+      } catch {
+        // Ambiguous provider failure must never become a yes.
+      }
+    }
+    return Object.freeze({ decision: 'unclear', locale });
+  }
+
   async function plan(req, res, ctx) {
     const body = await readJson(req);
     const message = compact(body.message, 2000);
@@ -784,6 +857,37 @@ function createVectorOperationsBot(options = {}) {
       String(row.tenant) === String(ctx.tenant) &&
       String(row.actor_email) === String(ctx.email) &&
       String(row.actor_role) === String(ctx.role);
+  }
+
+  async function confirmation(req, res, ctx) {
+    const body = await readJson(req);
+    const planId = compact(body.planId, 120);
+    const message = compact(body.message, 400);
+    if (!planId || !message) return writeJson(res, 400, { error: 'planId and message are required.' });
+
+    const row = getPlan.get(planId);
+    if (!assertOwnedPlan(row, ctx)) return writeJson(res, 404, { error: 'Action plan not found.' });
+    if (row.status !== 'PENDING_CONFIRMATION') {
+      return writeJson(res, 409, { error: 'This action plan is no longer awaiting confirmation.' });
+    }
+    if (Date.now() > Number(row.expires_at_ms)) {
+      updateStatus.run('EXPIRED', Date.now(), planId, 'PENDING_CONFIRMATION');
+      audit(ctx, 'PLAN_EXPIRED', planId, {});
+      return writeJson(res, 409, { error: 'This action plan expired. Ask Vecta again so it can re-check the current state.' });
+    }
+
+    const result = await interpretConfirmation(message, row.locale);
+    audit(ctx, 'CONFIRMATION_INTERPRETED', planId, {
+      decision: result.decision,
+      locale: result.locale,
+      inputMode: compact(body.inputMode, 20) === 'voice' ? 'voice' : 'text'
+    });
+    return writeJson(res, 200, {
+      contractVersion: CONTRACT_VERSION,
+      planId,
+      decision: result.decision,
+      locale: result.locale
+    });
   }
 
   async function execute(req, res, ctx) {
@@ -920,6 +1024,7 @@ function createVectorOperationsBot(options = {}) {
         });
       }
       if (req.method === 'POST' && path === PREFIX + '/plan') return await plan(req, res, ctx);
+      if (req.method === 'POST' && path === PREFIX + '/confirmation') return await confirmation(req, res, ctx);
       if (req.method === 'POST' && path === PREFIX + '/execute') return await execute(req, res, ctx);
       if (req.method === 'POST' && path === PREFIX + '/complete') return await complete(req, res, ctx);
       if (req.method === 'POST' && path === PREFIX + '/cancel') return await cancel(req, res, ctx);
@@ -945,6 +1050,7 @@ module.exports = Object.freeze({
   parseDate,
   parseHours,
   deterministicInterpret,
+  deterministicConfirmation,
   responseForInterpretation,
   fetchLocalJson,
   createVectorOperationsBot
