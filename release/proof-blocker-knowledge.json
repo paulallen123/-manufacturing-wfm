@@ -201,6 +201,14 @@
       "learnedFrom": "Time Review navigation consolidation failure on f23ca053 release assault 2026-09-25",
       "prevention": "Keep Time Review inside the registered Attendance source route, redirect retired review URLs to Attendance, and require the consolidation proof to match source and Vector navigation exactly.",
       "permanentGuard": "vector-consolidation route-equivalence test + Attendance-owned weekly workflow regression"
+    },
+    {
+      "id": "stale-regression-after-route-ownership-change",
+      "class": "STALE_PROOF_CONTRACT",
+      "symptom": "A regression test continues asserting a retired presentation route after workflow ownership moved to the authoritative source route, creating a false release blocker after the product fix.",
+      "learnedFrom": "Attendance-owned weekly sign-off convergence assault 2026-09-25",
+      "prevention": "When source-route ownership changes, update the regression to prove both the protected dirty-state hold and the permitted transition from the new authoritative route; never preserve retired route labels as expected state.",
+      "permanentGuard": "workflow regression asserts Attendance hold and vector-weekly-signoff transition"
     }
   ]
 }
