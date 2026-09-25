@@ -1,0 +1,51 @@
+name: Vecta mobile branch CI
+
+on:
+  push:
+    branches:
+      - feature/vector-mobile-app-20260925
+    paths:
+      - 'mobile/**'
+      - 'operations/runtime/mobile-recommendation-service.cjs'
+      - 'operations/runtime/mobile-recommendation-service.test.cjs'
+      - 'security/runtime/bootstrap.cjs'
+      - 'Dockerfile'
+      - '.github/workflows/mobile-branch-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  approval-broker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.2'
+      - name: Syntax check guarded runtime
+        run: |
+          node --check operations/runtime/mobile-recommendation-service.cjs
+          node --check security/runtime/bootstrap.cjs
+      - name: Prove mobile approvals fail closed
+        run: node --test operations/runtime/mobile-recommendation-service.test.cjs
+
+  native-client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.2'
+          cache: npm
+          cache-dependency-path: mobile/package.json
+      - name: Install mobile dependencies
+        run: npm install --no-audit --no-fund
+      - name: Expo dependency check
+        run: npx expo install --check
+      - name: TypeScript
+        run: npm run typecheck
