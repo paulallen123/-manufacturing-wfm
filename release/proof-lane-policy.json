@@ -56,7 +56,9 @@
     "providerAssistantNeverAuthoritative": true,
     "providerAssistantFailureNeverBlocks": true,
     "providerAssistantOutputRequiresIndependentVerification": true,
-    "canonicalControllerOwnsExecutionAndEvidence": true
+    "canonicalControllerOwnsExecutionAndEvidence": true,
+    "providerRegistrationMustBeObservedBeforeLaneAdmission": true,
+    "providerIdentityMustMatchDeclaredLane": true
   },
   "lanes": [
     {
@@ -189,7 +191,8 @@
       "startupReadinessCondition": true,
       "endpointReachability": true,
       "exactCandidateBinding": true,
-      "failureSignatureRegression": true
+      "failureSignatureRegression": true,
+      "providerRegistration": true
     },
     "onPending": [
       "SIMULATE_SUCCESS_AND_FAILURE_PATHS",
@@ -222,6 +225,8 @@
         "HEALTHCHECK_CONTRACT",
         "CONDITION_BASED_READINESS",
         "ENDPOINT_REACHABILITY",
+        "PROVIDER_REGISTRATION_OBSERVED",
+        "PROVIDER_IDENTITY_MATCH",
         "FAILURE_DOMAIN_INDEPENDENCE",
         "DEPLOYMENT_EXECUTION_STATE",
         "SLEEP_DISABLED",
@@ -243,7 +248,8 @@
         ],
         "serviceEnvironmentVariableAuthoritative": false,
         "exactMatchRequired": true
-      }
+      },
+      "providerRegistrationRule": "A declared lane is inadmissible until the expected provider is observably registered for the exact repository/project. A config file, branch name, queued check from another provider, or intended integration is not execution capacity."
     },
     "triggerRouting": {
       "canonicalFreezeTrigger": "artifact/vector-proof-freeze.trigger",
