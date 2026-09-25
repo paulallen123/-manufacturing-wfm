@@ -442,7 +442,10 @@ try {
 
     let navigationClicked = null;
     if (spec.nav) {
-      const locator = page.getByText(spec.nav, { exact: true }).first();
+      const locator = page
+        .locator('nav a:visible, nav button:visible, .vector-sidebar a:visible, .vector-sidebar button:visible')
+        .filter({ hasText: spec.nav })
+        .first();
       if (await locator.count()) {
         await locator.click({ timeout: 5000 });
         await page.waitForTimeout(300);
