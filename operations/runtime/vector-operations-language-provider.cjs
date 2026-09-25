@@ -196,6 +196,22 @@ function createVectorOperationsLanguageProvider(options = {}) {
     return sanitiseInterpretation(response.result, allowedCapabilities);
   }
 
+  async function confirm(input) {
+    const message = compact(input && input.message, 400);
+    const locale = normaliseLocale(input && input.locale) || 'en-GB';
+    if (!message) return Object.freeze({ decision: 'unclear', detectedLocale: locale });
+    const response = await call('confirm', { message, locale });
+    const decision = compact(response.decision, 20).toLowerCase();
+    if (!['yes','no','unclear'].includes(decision)) {
+      throw new Error('Operations language provider returned an invalid confirmation decision.');
+    }
+    const detectedLocale = normaliseLocale(response.detectedLocale);
+    return Object.freeze({
+      decision,
+      ...(detectedLocale ? { detectedLocale } : {})
+    });
+  }
+
   async function translateMap(input) {
     const targetLocale = normaliseLocale(input && input.targetLocale);
     if (!targetLocale) throw new Error('Operations language translation requires a valid target locale.');
@@ -231,6 +247,7 @@ function createVectorOperationsLanguageProvider(options = {}) {
     contractVersion: CONTRACT_VERSION,
     endpointHost: endpoint.hostname,
     interpret,
+    confirm,
     translateMap
   });
 }
