@@ -20,6 +20,7 @@ const { createRealtimeEventService } = require('/app/operations-runtime/realtime
 const { createSchedulingIntelligenceService } = require('/app/operations-runtime/scheduling-intelligence-service.cjs');
 const { createT9CustomerGuardian } = require('/app/operations-runtime/t9-customer-guardian.cjs');
 const { createVectorReportingService } = require('/app/reporting-runtime/vector-reporting-service.cjs');
+const { createMobileRecommendationService } = require('/app/operations-runtime/mobile-recommendation-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -64,6 +65,8 @@ let t9CustomerGuardian = null;
 let t9CustomerGuardianInitError = null;
 let reportingService = null;
 let reportingServiceInitError = null;
+let mobileRecommendationService = null;
+let mobileRecommendationServiceInitError = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -110,6 +113,10 @@ function demandDecisionPath(req) {
 
 function reportingPath(req) {
   return requestPath(req).startsWith('/api/reporting');
+}
+
+function mobileRecommendationPath(req) {
+  return requestPath(req).startsWith('/api/mobile/recommendations');
 }
 
 function stagingAccessPath(req) {
@@ -422,6 +429,17 @@ http.createServer = function guardedCreateServer(listener) {
     catch (error) { reportingServiceInitError = error; }
   }
 
+  if (!mobileRecommendationService && !mobileRecommendationServiceInitError && process.env.WFM_DB) {
+    try {
+      mobileRecommendationService = createMobileRecommendationService({
+        dbPath: process.env.WFM_DB,
+        autopilot: autopilotExecutionEngine && !autopilotExecutionEngineInitError ? autopilotExecutionEngine : null
+      });
+    } catch (error) {
+      mobileRecommendationServiceInitError = error;
+    }
+  }
+
   return originalCreateServer.call(http, async (req, res) => {
     const guardianStarted = process.hrtime.bigint();
     if (t9CustomerGuardian && !t9CustomerGuardianInitError && typeof res.once === 'function') {
@@ -489,6 +507,10 @@ http.createServer = function guardedCreateServer(listener) {
 
     if (reportingPath(req)) {
       if (await routeOverlay(reportingService, reportingServiceInitError, res, 'Reporting', req)) return;
+    }
+
+    if (mobileRecommendationPath(req)) {
+      if (await routeOverlay(mobileRecommendationService, mobileRecommendationServiceInitError, res, 'Mobile recommendation approval', req)) return;
     }
 
     return listener(req, res);
