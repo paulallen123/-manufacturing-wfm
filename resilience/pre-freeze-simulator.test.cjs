@@ -33,6 +33,19 @@ test('rejects candidate identity drift before execution', () => {
 });
 
 
+
+test('rejects a proof worker whose executed branch differs from its configured source', () => {
+  const result = assessProofLane(exactLane({expectedSourceBranch:'feature/proof',deploymentBranch:'main'}), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'PROOF_WORKER_BRANCH_DRIFT'));
+});
+
+test('authenticated proof workers require provider-native credential references', () => {
+  const result = assessProofLane(exactLane({authenticatedProofRequired:true,credentialBindingMode:'copied-cross-project'}), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'PROOF_CREDENTIAL_BINDING_UNSAFE'));
+});
+
 test('rejects sleeping lanes even when prior deployment metadata was green', () => {
   const result = assessProofLane(exactLane({sleepApplication:true, deploymentStatus:'SLEEPING'}), {candidateSha:'sha-1'});
   assert.equal(result.admitted, false);
