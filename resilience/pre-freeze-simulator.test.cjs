@@ -172,3 +172,40 @@ test('full hosted bootstrap contract requires public origin and staging credenti
   const issue=result.issues.find(x=>x.code==='RUNTIME_VARIABLE_CONTRACT_MISSING');
   assert.deepEqual(issue.missing,['WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD']);
 });
+
+
+test('rejects hosted proof when authoritative state is not on durable mounted storage', () => {
+  const result = assessProofLane(exactLane({
+    persistenceRequired:true,
+    dbPath:'/tmp/vector-local-data/wfm.sqlite',
+    persistentMount:false,
+    finalRuntimeUid:1000
+  }), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'WFM_DB_NOT_DURABLE'));
+  assert.ok(result.issues.some(x => x.code === 'PERSISTENT_MOUNT_UNPROVEN'));
+});
+
+test('rejects final root runtime and provider-assistant authority before freeze', () => {
+  const result = assessProofLane(exactLane({
+    persistenceRequired:true,
+    dbPath:'/data/vector.sqlite',
+    persistentMount:true,
+    finalRuntimeUid:0,
+    providerAssistantAuthoritative:true
+  }), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'ROOT_RUNTIME_FORBIDDEN'));
+  assert.ok(result.issues.some(x => x.code === 'PROVIDER_ASSISTANT_AUTHORITY_FORBIDDEN'));
+});
+
+test('admits durable non-root state while keeping provider assistants non-authoritative', () => {
+  const result = assessProofLane(exactLane({
+    persistenceRequired:true,
+    dbPath:'/data/vector.sqlite',
+    persistentMount:true,
+    finalRuntimeUid:1000,
+    providerAssistantAuthoritative:false
+  }), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, true);
+});
