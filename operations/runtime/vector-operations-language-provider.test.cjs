@@ -81,6 +81,37 @@ test('provider sends minimal role and capability context without tenant or workf
   assert.equal('people' in body.input, false);
 });
 
+test('confirmation provider is bounded to yes, no or unclear', async () => {
+  const decisions = ['yes','no','unclear'];
+  for (const decision of decisions) {
+    const provider = createVectorOperationsLanguageProvider({
+      url: 'https://language.example.test/v1/vector',
+      transport: async request => ({
+        contractVersion: CONTRACT_VERSION,
+        mode: request.body.mode,
+        decision,
+        detectedLocale: 'cy-GB'
+      })
+    });
+    const result = await provider.confirm({ message: 'cadarnhau', locale: 'cy-GB' });
+    assert.equal(result.decision, decision);
+    assert.equal(result.detectedLocale, 'cy-GB');
+  }
+
+  const invalid = createVectorOperationsLanguageProvider({
+    url: 'https://language.example.test/v1/vector',
+    transport: async () => ({
+      contractVersion: CONTRACT_VERSION,
+      mode: 'confirm',
+      decision: 'execute-now'
+    })
+  });
+  await assert.rejects(
+    invalid.confirm({ message: 'anything', locale: 'en-GB' }),
+    /invalid confirmation decision/
+  );
+});
+
 test('translation is UX-only and receives trusted source text plus target locale', async () => {
   const calls = [];
   const provider = createVectorOperationsLanguageProvider({
