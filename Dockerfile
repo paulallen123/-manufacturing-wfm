@@ -33,6 +33,12 @@ RUN node scripts/validate-development-proof-readiness.mjs \
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
 WORKDIR /app
 
+# Railway volumes are mounted root-owned. gosu is used only by the init wrapper
+# to repair ownership on the isolated volume and then permanently drop to node.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gosu \
+ && rm -rf /var/lib/apt/lists/*
+
 # Force the discarded T0-T4 proof stage to execute and admit only its non-secret PASS receipt.
 # No support/repair source code is copied into the runtime stage; the receipt is verified then removed.
 COPY --from=autonomy-proof /proof/portable-autonomy-proof.json /tmp/portable-autonomy-proof.json
@@ -403,7 +409,25 @@ RUN mkdir -p /tmp/vector-local-data \
  && find /app -type d -exec chmod 0555 {} + \
  && find /app -type f -exec chmod 0444 {} +
 
-USER node
+# Volume bootstrap is privileged only long enough to make /data writable by node.
+# The application itself always executes as the unprivileged node user.
+RUN printf '%s\n' \
+ '#!/bin/sh' \
+ 'set -eu' \
+ 'if [ "${WFM_REQUIRE_DURABLE_STATE:-false}" = "true" ]; then' \
+ '  [ "${RAILWAY_VOLUME_MOUNT_PATH:-}" = "/data" ] || { echo "VECTOR_VOLUME_CONTRACT=FAIL mount=${RAILWAY_VOLUME_MOUNT_PATH:-missing}" >&2; exit 73; }' \
+ '  chown node:node /data' \
+ '  chmod 0700 /data' \
+ '  gosu node /usr/bin/test -w /data || { echo "VECTOR_VOLUME_WRITABLE=FAIL" >&2; exit 74; }' \
+ '  echo "VECTOR_VOLUME_WRITABLE=PASS mount=/data owner=node"' \
+ 'fi' \
+ 'echo "VECTOR_RUNTIME_UID_DROP=PASS target=node"' \
+ 'exec gosu node "$@"' \
+ > /usr/local/bin/vector-entrypoint.sh \
+ && chmod 0555 /usr/local/bin/vector-entrypoint.sh
+
+USER root
+ENTRYPOINT ["/usr/local/bin/vector-entrypoint.sh"]
 ENV NODE_ENV=staging
 ENV WFM_IDENTITY_SURVIVAL_GUARD=enforce
 EXPOSE 3000

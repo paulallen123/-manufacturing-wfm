@@ -6,7 +6,8 @@ const { assessProofLane, simulatePreFreeze } = require('./pre-freeze-simulator.c
 function exactLane(overrides={}){
   return {
     id:'railway-a', provider:'railway', failureDomain:'railway:workspace-a', class:'exact-image',
-    variableNames:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD'], hostedModeValue:'true',
+    variableNames:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD','WFM_REQUIRE_DURABLE_STATE'], hostedModeValue:'true',
+    durableStateRequired:true, durableVolumeMountPath:'/data', durableVolumeWritable:true, applicationRuntimeUser:'node',
     healthcheckPath:'/api/health', readinessMode:'condition', sourceSha:'sha-1',
     domain:'https://proof.example', endpointReachable:true, healthcheckReady:true,
     listenAddress:'0.0.0.0', sleepApplication:false, deploymentStatus:'SUCCESS',
@@ -17,7 +18,7 @@ function exactLane(overrides={}){
 test('rejects a hosted exact-image lane before freeze when runtime variables are missing', () => {
   const result = assessProofLane(exactLane({variableNames:[]}), {candidateSha:'sha-1'});
   assert.equal(result.admitted, false);
-  assert.deepEqual(result.issues[0], {code:'RUNTIME_VARIABLE_CONTRACT_MISSING', missing:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD']});
+  assert.deepEqual(result.issues[0], {code:'RUNTIME_VARIABLE_CONTRACT_MISSING', missing:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD','WFM_REQUIRE_DURABLE_STATE']});
 });
 
 test('rejects fixed readiness assumptions before they become flaky build waits', () => {
@@ -70,6 +71,24 @@ test('rejects missing exact candidate binding instead of treating absence as a m
   const result = assessProofLane(exactLane({sourceSha:null}), {candidateSha:'sha-1'});
   assert.equal(result.admitted, false);
   assert.ok(result.issues.some(x => x.code === 'CANDIDATE_SHA_UNBOUND'));
+});
+
+test('rejects durable hosted lane when the required volume is not actually mounted', () => {
+  const result = assessProofLane(exactLane({durableVolumeMountPath:null}), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'DURABLE_VOLUME_MOUNT_MISSING'));
+});
+
+test('rejects mounted durable volume until non-root write access is proven', () => {
+  const result = assessProofLane(exactLane({durableVolumeWritable:false}), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'DURABLE_VOLUME_NOT_WRITABLE'));
+});
+
+test('rejects a customer proof lane whose application process would run as root', () => {
+  const result = assessProofLane(exactLane({applicationRuntimeUser:'root'}), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'APPLICATION_RUNTIME_ROOT_FORBIDDEN'));
 });
 
 test('multiple lanes in the same provider failure domain do not count as independent resilience', () => {

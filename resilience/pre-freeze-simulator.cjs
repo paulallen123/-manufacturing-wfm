@@ -1,6 +1,6 @@
 'use strict';
 
-const DEFAULT_RUNTIME_VARS = Object.freeze(['WFM_DB', 'WFM_HOSTED_STAGING', 'WFM_PUBLIC_ORIGIN', 'WFM_STAGING_PASSWORD']);
+const DEFAULT_RUNTIME_VARS = Object.freeze(['WFM_DB', 'WFM_HOSTED_STAGING', 'WFM_PUBLIC_ORIGIN', 'WFM_STAGING_PASSWORD', 'WFM_REQUIRE_DURABLE_STATE']);
 const FIXED_READINESS_MODES = new Set(['fixed', 'sleep', 'delay', 'attempt-count']);
 
 function unique(values) {
@@ -38,6 +38,18 @@ function assessProofLane(lane = {}, options = {}) {
     }
     if (lane.healthcheckPath !== '/api/health') {
       issues.push({code:'HEALTHCHECK_CONTRACT_MISMATCH', actual:lane.healthcheckPath || null});
+    }
+    const durableStateRequired = lane.durableStateRequired === true || vars.has('WFM_REQUIRE_DURABLE_STATE');
+    if (durableStateRequired) {
+      if (lane.durableVolumeMountPath !== '/data') {
+        issues.push({code:'DURABLE_VOLUME_MOUNT_MISSING', expected:'/data', actual:lane.durableVolumeMountPath || null});
+      }
+      if (lane.durableVolumeWritable !== true) {
+        issues.push({code:'DURABLE_VOLUME_NOT_WRITABLE'});
+      }
+    }
+    if (lane.applicationRuntimeUser === 'root' || lane.applicationRuntimeUid === 0) {
+      issues.push({code:'APPLICATION_RUNTIME_ROOT_FORBIDDEN'});
     }
     if (!lane.domain) {
       issues.push({code:'PUBLIC_ENDPOINT_MISSING'});
