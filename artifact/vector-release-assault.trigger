@@ -17,3 +17,4 @@ retrigger=2026-09-25-exact-head-hardening-1
 retrigger=2026-09-25-critical-simulations-mandatory-1
 retrigger=2026-09-25-prevention-controls-exact-head-2
 retrigger=2026-09-25-named-critical-assault-3
+retrigger=2026-09-25-door-alias-fix-4
