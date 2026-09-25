@@ -503,8 +503,15 @@ function responseForInterpretation(result, locale) {
     return { answer: copy(locale, 'missingLeave'), offerToAct: false, missing: result.missing };
   }
   if (result.kind === 'capability') {
+    const key = result.capability === 'leave.request'
+      ? 'leavePlan'
+      : result.capability === 'time_review.open'
+        ? 'timeReview'
+        : result.capability === 'agency.open'
+          ? 'agency'
+          : 'factory';
     return {
-      answer: copy(locale, 'supported') + ' ' + copy(locale, 'leavePlan'),
+      answer: copy(locale, 'supported') + ' ' + copy(locale, key),
       offerToAct: false
     };
   }
