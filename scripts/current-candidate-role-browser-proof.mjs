@@ -236,6 +236,20 @@ try {
       const expectedVisibleAwaitingIds = expectedAwaitingIds.slice(0, 3);
       const affordanceCoverage = expectedNeedsIds.length > 0 && expectedAwaitingIds.length > 0 ? 'EXERCISED' : 'UNEXERCISED';
 
+      console.log('CURRENT_ACTION_EVIDENCE_DIAGNOSTIC|' + JSON.stringify({
+        totalItems: Array.isArray(evidence.json?.items) ? evidence.json.items.length : 0,
+        activeItems: active.length,
+        items: active.slice(0, 12).map(item => ({
+          sourceId: item?.sourceId ?? null,
+          state: item?.confirmation?.state ?? null,
+          reasonCode: item?.reasonCode ?? null,
+          authorityRequired: item?.authorityRequired ?? null
+        })),
+        expectedNeedsIds,
+        expectedAwaitingIds,
+        affordanceCoverage
+      }));
+
       if (requireActionAffordanceCoverage) {
         assert.ok(expectedNeedsIds.length > 0, 'Strict lifecycle-affordance proof requires at least one authoritative Needs my action row.');
         assert.ok(expectedAwaitingIds.length > 0, 'Strict lifecycle-affordance proof requires at least one authoritative Awaiting source confirmation row.');
