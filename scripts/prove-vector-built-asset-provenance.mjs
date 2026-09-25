@@ -23,7 +23,9 @@ export function composeExpectedVectorAssets({ repoRoot, baseCssPath }) {
     read(repoRoot, 'implementation/ui/implementation-journey.css'),
     Buffer.from(`\n/* ${marker} */\n`),
     read(repoRoot, 'ux-overlay/vector-shell.css'),
-    read(repoRoot, 'ux-overlay/vector-workflows.css')
+    read(repoRoot, 'ux-overlay/vector-workflows.css'),
+    Buffer.from('\n/* VECTOR_OPERATIONS_BOT_UI_V1 */\n'),
+    read(repoRoot, 'ux-overlay/vector-operations-bot.css')
   ]);
 
   const js = Buffer.concat([
@@ -33,7 +35,9 @@ export function composeExpectedVectorAssets({ repoRoot, baseCssPath }) {
     Buffer.from('\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n'),
     read(repoRoot, 'implementation/ui/implementation-journey.js'),
     Buffer.from(`\n;/* ${marker} */\n`),
-    read(repoRoot, 'ux-overlay/vector-shell.js')
+    read(repoRoot, 'ux-overlay/vector-shell.js'),
+    Buffer.from('\n;/* VECTOR_OPERATIONS_BOT_UI_V1 */\n'),
+    read(repoRoot, 'ux-overlay/vector-operations-bot.js')
   ]);
 
   return { js, css, workflows: read(repoRoot, 'ux-overlay/vector-workflows.js') };
