@@ -569,7 +569,7 @@ try {
   console.log('CURRENT_LEAVE_OVERLAP_DIAGNOSTIC|' + JSON.stringify({ text: overlapErrorText }));
   assert.match(overlapErrorText, /overlap|already|request/i, 'Employee UI did not surface the authoritative overlap refusal.');
   leaveJourney.overlapRefusedInUi = true;
-  await employeePage.locator('#modalform [data-act="close"]').click({ timeout: 5000 });
+  await employeePage.getByRole('button', { name: 'Cancel', exact: true }).click({ timeout: 5000 });
 
   await employeePage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
   await employeePage.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
