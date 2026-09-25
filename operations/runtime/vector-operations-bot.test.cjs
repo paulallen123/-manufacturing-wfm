@@ -13,6 +13,7 @@ const {
   parseDate,
   parseHours,
   deterministicInterpret,
+  deterministicConfirmation,
   normaliseLocale,
   createVectorOperationsBot
 } = require('./vector-operations-bot.cjs');
@@ -93,6 +94,16 @@ test('date, hour and locale parsing is strict and language-neutral', () => {
   assert.equal(parseHours('20 hours'), null);
   assert.equal(normaliseLocale('fr_FR'), 'fr-FR');
   assert.equal(normaliseLocale('../bad'), 'en-GB');
+});
+
+test('spoken/text confirmation is exact, multilingual and fail-closed when unclear', () => {
+  assert.equal(deterministicConfirmation('yes please'), 'yes');
+  assert.equal(deterministicConfirmation('oui'), 'yes');
+  assert.equal(deterministicConfirmation('نعم'), 'yes');
+  assert.equal(deterministicConfirmation('いいえ'), 'no');
+  assert.equal(deterministicConfirmation('no thanks'), 'no');
+  assert.equal(deterministicConfirmation('maybe later'), 'unclear');
+  assert.equal(deterministicConfirmation('yes but no'), 'unclear');
 });
 
 test('deterministic fallback recognises multilingual leave requests without inventing missing data', () => {
@@ -184,6 +195,90 @@ test('leave request follows plan -> explicit confirmation -> typed execution -> 
     confirm: true
   });
   assert.equal(replay.status, 409);
+});
+
+test('pending plan can be confirmed by voice text without executing on ambiguity', async t => {
+  const f = fixture();
+  t.after(() => f.cleanup());
+  const runtime = await startBot(f.dbPath);
+  t.after(() => runtime.close());
+
+  const planned = await api(runtime.base, 'worker-token', '/plan', 'POST', {
+    message: 'Book leave 2026-10-06 for 8 hours',
+    locale: 'en-GB'
+  });
+
+  const unclear = await api(runtime.base, 'worker-token', '/confirmation', 'POST', {
+    planId: planned.value.plan.id,
+    message: 'maybe',
+    locale: 'en-GB',
+    inputMode: 'voice'
+  });
+  assert.equal(unclear.status, 200);
+  assert.equal(unclear.value.decision, 'unclear');
+
+  const yes = await api(runtime.base, 'worker-token', '/confirmation', 'POST', {
+    planId: planned.value.plan.id,
+    message: 'yes please',
+    locale: 'en-GB',
+    inputMode: 'voice'
+  });
+  assert.equal(yes.status, 200);
+  assert.equal(yes.value.decision, 'yes');
+
+  const db = new DatabaseSync(f.dbPath);
+  const row = db.prepare('SELECT status FROM vector_operations_bot_plans WHERE id=?').get(planned.value.plan.id);
+  assert.equal(row.status, 'PENDING_CONFIRMATION');
+  const audits = db.prepare('SELECT event,detail_json FROM vector_operations_bot_audit WHERE plan_id=?')
+    .all(planned.value.plan.id);
+  assert.ok(audits.some(item => item.event === 'CONFIRMATION_INTERPRETED' && JSON.parse(item.detail_json).inputMode === 'voice'));
+  db.close();
+});
+
+test('language provider may extend understanding and translate UX but never expand authority', async t => {
+  const f = fixture();
+  t.after(() => f.cleanup());
+  const languageProvider = {
+    async interpret({ allowedCapabilities }) {
+      assert.deepEqual(allowedCapabilities, ['leave.request']);
+      return {
+        kind: 'action',
+        capability: 'leave.request',
+        args: { date: '2026-10-07', hours: 8 },
+        detectedLocale: 'sw-KE'
+      };
+    },
+    async confirm() {
+      return { decision: 'yes', detectedLocale: 'sw-KE' };
+    },
+    async translateMap({ targetLocale, texts }) {
+      assert.equal(targetLocale, 'sw-KE');
+      const out = {};
+      for (const [key, value] of Object.entries(texts)) out[key] = '[sw] ' + value;
+      return out;
+    }
+  };
+  const runtime = await startBot(f.dbPath, { languageProvider });
+  t.after(() => runtime.close());
+
+  const planned = await api(runtime.base, 'worker-token', '/plan', 'POST', {
+    message: 'Nataka muda wa mapumziko',
+    locale: 'sw-KE'
+  });
+  assert.equal(planned.status, 200);
+  assert.equal(planned.value.locale, 'sw-KE');
+  assert.equal(planned.value.plan.capability, 'leave.request');
+  assert.match(planned.value.answer, /^\[sw\]/);
+  assert.match(planned.value.confirmation, /^\[sw\]/);
+
+  const voiceYes = await api(runtime.base, 'worker-token', '/confirmation', 'POST', {
+    planId: planned.value.plan.id,
+    message: 'ndiyo',
+    locale: 'sw-KE',
+    inputMode: 'voice'
+  });
+  assert.equal(voiceYes.value.decision, 'yes');
+  assert.equal(voiceYes.value.locale, 'sw-KE');
 });
 
 test('plan ownership and tenant scope are rechecked at execution', async t => {
