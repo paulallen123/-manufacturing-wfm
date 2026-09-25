@@ -92,18 +92,16 @@ export async function sendAssistantMessage(message: string, language: string) {
 }
 
 export async function sendAssistantAudio(uri: string, language: string) {
-  const form = new FormData();
-  form.append("language", language);
-  form.append("audio", {
-    uri,
-    name: "vecta-question.m4a",
-    type: "audio/mp4"
-  } as any);
+  const { File } = await import("expo-file-system");
+  const file = new File(uri);
+  const audioBase64 = await file.base64();
+  if (!audioBase64) throw new Error("Recorded audio is empty.");
 
   const response = await fetch(apiOrigin() + "/api/mobile/assistant/audio", {
     method: "POST",
     credentials: "include",
-    body: form
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ language, mimeType: "audio/mp4", audioBase64 })
   });
   const text = await response.text();
   let body: any = {};
