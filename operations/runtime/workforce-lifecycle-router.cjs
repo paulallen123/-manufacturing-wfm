@@ -25,6 +25,9 @@ function createWorkforceLifecycleGuard(options = {}) {
   });
   const operationsBot = createVectorOperationsBot({
     dbPath,
+    ...(options.operationsBotLanguageProvider
+      ? { languageProvider: options.operationsBotLanguageProvider }
+      : {}),
     ...(typeof options.operationsBotIntentProvider === 'function'
       ? { intentProvider: options.operationsBotIntentProvider }
       : {})
