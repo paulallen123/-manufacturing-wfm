@@ -294,7 +294,7 @@
       const decision = name === 'leave-approve' ? 'approved' : 'declined';
       return modal(decision === 'approved' ? 'Approve leave request' : 'Decline leave request', `<p>Request ${escape(id)}. The decision is saved only after server-side entitlement, overlap, role and staffing checks.</p>${decision === 'declined' ? reason() : ''}${checked('reviewed', 'I reviewed the current request and available evidence.')}${modalActions('Save decision')}`, form => leaveDecision({ id, decision, reviewed: form.has('reviewed'), reason: String(form.get('reason') || '') }));
     }
-    if (name === 'weekly' || name === 'payroll' || name === 'time') { if (ui.page === 'time-review' && typeof triClean === 'function' && !triClean()) return; ui.page = ({ weekly: 'vector-weekly-signoff', payroll: 'payroll-run', time: 'time-review' })[name]; return render(); }
+    if (name === 'weekly' || name === 'payroll' || name === 'time') { if (ui.page === 'attendance' && typeof triClean === 'function' && !triClean()) return; ui.page = ({ weekly: 'vector-weekly-signoff', payroll: 'payroll-run', time: 'attendance' })[name]; return render(); }
     if (name === 'issue') return resolve(id);
     if (name === 'category' || name === 'employee') return check(name, id);
     if (name === 'sign') { const team = selected(), basis = payload({ attestation: 'confirmed' }); if (!team.canSign) throw Error('Complete every source review before signing.'); return workflowModal('Sign and lock this week', `<p>${escape(team.name)} · ${team.employees.length} employees · ${hours(team.workedMinutes)}</p>${checked('checked', 'I verified attendance, absences, amendments, overtime and every employee total against the available evidence.')}${modalActions('Sign exact reviewed version')}`, form => mutate('review-sign', { ...basis, checked: form.has('checked') })); }
@@ -340,7 +340,7 @@
         document.getElementById('root').innerHTML = shell(leavePage()); return;
       }
       await previousRender.apply(this, args);
-      if (epoch !== state.epoch || ui.page !== 'time-review' || !reviewer()) return;
+      if (epoch !== state.epoch || ui.page !== 'attendance' || !reviewer()) return;
       const content = document.querySelector('.content');
       if (content && !content.querySelector('[data-vector-weekly-entry]')) content.insertAdjacentHTML('afterbegin', `<div class="vw-toolbar" data-vector-weekly-entry><span>Finish the week after resolving attendance evidence.</span>${control('Weekly sign-off', 'weekly')}${permitted('payroll.view') ? control('Payroll preparation', 'payroll') : ''}</div>`);
     } catch (error) {
