@@ -28,6 +28,7 @@ const checks = [
     'trust/runtime/vector-trust-spine.test.cjs',
     'trust/runtime/vector-zero-human-governance.test.cjs',
     'resilience/blocker-autopilot.test.cjs',
+    'resilience/extreme-incident-learning.test.cjs',
     'engineering/runtime/vector-tool-foundry.test.cjs',
     'engineering/runtime/vector-engineering-learning-bridge.test.cjs',
     'implementation/runtime/launch-autopilot-controller.test.cjs',
