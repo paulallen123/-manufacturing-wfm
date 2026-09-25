@@ -49,7 +49,14 @@
     "proofReadinessMustReflectTerminalPass": true,
     "proofObserversMustWaitForSemanticCondition": true,
     "ambiguousProofLocatorsForbidden": true,
-    "canonicalCandidateMustContainRequiredCapabilities": true
+    "canonicalCandidateMustContainRequiredCapabilities": true,
+    "durableStateRequiredForHostedMutationProof": true,
+    "persistentMountMustBeObservedBeforeFreeze": true,
+    "finalHostedRuntimeMustBeNonRoot": true,
+    "providerAssistantNeverAuthoritative": true,
+    "providerAssistantFailureNeverBlocks": true,
+    "providerAssistantOutputRequiresIndependentVerification": true,
+    "canonicalControllerOwnsExecutionAndEvidence": true
   },
   "lanes": [
     {
@@ -106,7 +113,11 @@
         "healthcheckPath": "/api/health",
         "readinessMode": "condition",
         "stagingPasswordMinLength": 20,
-        "publicOriginHttpsRequired": true
+        "publicOriginHttpsRequired": true,
+        "persistenceRequired": true,
+        "dbPathPrefix": "/data/",
+        "persistentMountRequired": true,
+        "finalRuntimeRootAllowed": false
       }
     },
     {
@@ -130,7 +141,11 @@
         "healthcheckPath": "/api/health",
         "readinessMode": "condition",
         "stagingPasswordMinLength": 20,
-        "publicOriginHttpsRequired": true
+        "publicOriginHttpsRequired": true,
+        "persistenceRequired": true,
+        "dbPathPrefix": "/data/",
+        "persistentMountRequired": true,
+        "finalRuntimeRootAllowed": false
       }
     }
   ],
@@ -214,7 +229,11 @@
         "TERMINAL_PROOF_READINESS",
         "SEMANTIC_PROOF_OBSERVATION",
         "UNIQUE_PROOF_LOCATORS",
-        "CANONICAL_CAPABILITY_COMPLETENESS"
+        "CANONICAL_CAPABILITY_COMPLETENESS",
+        "DURABLE_STATE_BACKEND",
+        "PERSISTENT_MOUNT_OBSERVED",
+        "FINAL_RUNTIME_NON_ROOT",
+        "PROVIDER_ASSISTANT_NON_AUTHORITY"
       ],
       "candidateIdentity": {
         "authoritativeSources": [
@@ -249,6 +268,12 @@
       "exhaustedHeadroomAction": "ROUTE_DISTINCT_FAILURE_DOMAIN",
       "sameDomainCountsAsIndependentResilience": false,
       "distinctFailureDomainPreferredForProviderQueueOrDegradation": true
+    },
+    "controllerAuthority": {
+      "canonicalController": "VECTOR_ORCHESTRATOR",
+      "providerAssistants": "OPTIONAL_NON_AUTHORITATIVE_WORKERS",
+      "assistantFailureAction": "ROUTE_AROUND_AND_CONTINUE",
+      "independentVerificationRequired": true
     }
   }
 }
