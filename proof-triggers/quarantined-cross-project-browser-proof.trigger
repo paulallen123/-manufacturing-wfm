@@ -1,0 +1,7 @@
+VECTOR_BROWSER_PROOF_TRIGGER_V10
+candidate_sha=313d504613bf7c677fb6944d74cc555fceb03abb
+purpose=capture_leave_overlap_http_contract
+action_queue_strict_gate=UNPROVEN
+no_readiness_promotion=true
+isolation=external_verifier_only
+product_mutation=false

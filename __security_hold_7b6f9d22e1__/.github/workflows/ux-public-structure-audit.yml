@@ -1,0 +1,64 @@
+name: WFM UX public structure audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ux-public-structure-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    env:
+      WFM_ORIGIN: https://wfm-customer-proof-0676-production.up.railway.app
+    steps:
+      - name: Inspect public UI structure without credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const origin = process.env.WFM_ORIGIN;
+          const get = async path => {
+            const r = await fetch(`${origin}${path}`, { signal: AbortSignal.timeout(15000) });
+            if (!r.ok) throw new Error(`${path} returned HTTP ${r.status}`);
+            return r.text();
+          };
+          const html = await get('/');
+          console.log('ROOT_HTML_START');
+          console.log(html.slice(0, 50000));
+          console.log('ROOT_HTML_END');
+
+          const paths = new Set(['/app.js','/core.js','/features.js','/personal-core.js','/personal-view.js','/personal-ui.js','/review-ui.js','/availability-ui.js','/time-review-ui.js','/cost-ui.js','/payroll-intelligence-ui.js','/value-cockpit-ui.js','/factory-control-ui.js','/operations-ui.js','/schedule-ui.js','/company-ui.js','/resources-ui.js','/recommendation-ui.js','/org-admin-ui.js','/onboarding-ui.js','/integration-ui.js','/support-ui.js']);
+          for (const m of html.matchAll(/<(?:script|link)[^>]+(?:src|href)=["']([^"']+)["']/gi)) {
+            const raw = m[1];
+            if (raw.endsWith('.js') || raw.includes('.js?') || raw.endsWith('.css') || raw.includes('.css?')) {
+              paths.add(raw.startsWith('http') ? new URL(raw).pathname : (raw.startsWith('/') ? raw : `/${raw}`));
+            }
+          }
+
+          const keywords = /(holiday|absence|leave|entitlement|remaining|approve|approval|weekly|sign[- ]?off|cost|efficien|productiv|personal|self[- ]?service|schedule|time review|exception|overflow|scroll)/ig;
+          for (const path of paths) {
+            const source = await get(path).catch(() => '');
+            if (!source) continue;
+            console.log(`SOURCE_META path=${path} bytes=${source.length}`);
+            let hits = 0;
+            for (const match of source.matchAll(keywords)) {
+              const at = match.index ?? -1;
+              if (at < 0) continue;
+              const start = Math.max(0, at - 550);
+              const end = Math.min(source.length, at + 950);
+              console.log(`UX_SNIPPET_START path=${path} term=${match[0]} at=${at}`);
+              console.log(source.slice(start, end).replace(/\0/g, ''));
+              console.log('UX_SNIPPET_END');
+              hits++;
+              if (hits >= 24) break;
+            }
+          }
+          console.log('UX_PUBLIC_STRUCTURE_AUDIT=PASS');
+          NODE

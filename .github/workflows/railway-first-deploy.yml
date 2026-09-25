@@ -1,56 +1,61 @@
-name: Railway first deploy - customer proof 0.6.76
+name: One-day enterprise exact staging deploy
 
 on:
   push:
-    branches: [main]
+    branches: ['feature/one-day-enterprise-implementation-v1']
     paths:
       - '.github/workflows/railway-first-deploy.yml'
-      - 'scripts/live-auth-proof.mjs'
-      - 'scripts/live-isolation-kiosk-proof.mjs'
-      - 'scripts/live-correction-proof.mjs'
-      - 'scripts/live-browser-screenshot-proof.mjs'
-      - 'scripts/live-role-browser-context-proof.mjs'
-      - 'scripts/live-employee-overlay-isolation.mjs'
-      - 'scripts/live-role-accessibility-diagnostic.mjs'
-      - 'scripts/live-visual-evidence.mjs'
-      - 'artifact/customer-proof-0676-railway.trigger'
+      - '.github/workflows/wfm-every-push-security.yml'
+      - 'Dockerfile'
+      - 'scripts/retire-legacy-presentation.mjs'
+      - 'implementation/**'
+      - 'learning/**'
+      - 'integration/**'
+      - 'security/runtime/bootstrap.cjs'
+      - 'ux-overlay/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: railway-auth-proof-wfm-customer-proof-0676-v6
+  group: wfm-one-day-enterprise-exact-staging
   cancel-in-progress: true
 
 jobs:
   first-deploy:
-    if: github.actor == github.repository_owner
+    if: ${{ github.actor == github.repository_owner && !contains(github.event.head_commit.message, '[repair-proof-persistence]') }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       RAILWAY_NO_AUTO_UPDATE: '1'
-      RAILWAY_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'
-      RAILWAY_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'
-      RAILWAY_SERVICE_ID: 'ddd54fb9-3564-4251-9959-28cf3308c272'
+      RAILWAY_PROJECT_ID: '9cd73309-0ece-4b9a-891f-7daa13d94f0d'
+      RAILWAY_ENVIRONMENT_ID: '9e7875b6-e214-4c32-9cee-81235e3d49ff'
+      RAILWAY_SERVICE_ID: '8cadddc3-15e9-4c38-a93f-0af829054f29'
+      WFM_PUBLIC_ORIGIN: 'https://wfm-one-day-enterprise-v1-production.up.railway.app'
       EXPECTED_RUNTIME_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'
+
     steps:
-      - name: Checkout sealed proof repository
+      - name: Checkout exact one-day enterprise candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 1
+          persist-credentials: false
 
-      - name: Re-verify frozen runtime before upload
+      - name: Verify exact candidate and staging authority
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           echo "$EXPECTED_RUNTIME_SHA256  artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz" | sha256sum -c -
           grep -F '"production_approved": false' DEPLOYMENT_MANIFEST.json
-          grep -F '"pilot_ready": false' DEPLOYMENT_MANIFEST.json
           grep -F '"staging_only": true' DEPLOYMENT_MANIFEST.json
+          node --check implementation/runtime/one-day-enterprise-engine.cjs
+          node --check implementation/ui/implementation-journey.js
+          echo "ONE_DAY_EXACT_SOURCE_SHA=$GITHUB_SHA"
 
-      - name: Install pinned Railway CLI with published digest verification
+      - name: Install pinned Railway CLI
         shell: bash
         run: |
           set -euo pipefail
@@ -60,7 +65,7 @@ jobs:
           echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/railway-cli"
           tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
-          CLI_BIN=$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)
+          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)"
           test -n "$CLI_BIN"
           echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
           "$CLI_BIN" --version
@@ -72,59 +77,79 @@ jobs:
         run: |
           set -euo pipefail
           test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
-
-          "$RAILWAY_BIN" variable list \
+          echo "ONE_DAY_STAGING_UPLOAD_SHA=$GITHUB_SHA"
+          "$RAILWAY_BIN" up \
+            --project "$RAILWAY_PROJECT_ID" \
             --service "$RAILWAY_SERVICE_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --json > "$RUNNER_TEMP/railway-vars.json"
+            --ci
+          echo "ONE_DAY_STAGING_DEPLOY=SUBMITTED SHA=$GITHUB_SHA"
 
-          node --input-type=module - "$RUNNER_TEMP/railway-vars.json" <<'NODE'
+      - name: Verify live staging health
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --show-error "$WFM_PUBLIC_ORIGIN/api/health" > "$RUNNER_TEMP/health.json"; then
+              node --input-type=module - "$RUNNER_TEMP/health.json" <<'NODE'
           import fs from 'node:fs';
-          import path from 'node:path';
-          import { spawnSync } from 'node:child_process';
-          const vars = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-          const password = vars.WFM_STAGING_PASSWORD;
-          if (!password || !vars.WFM_PUBLIC_ORIGIN) throw new Error('Required canonical staging variables are unavailable to the proof runner.');
-          delete process.env.RAILWAY_TOKEN;
-          process.env.WFM_STAGING_PASSWORD = password;
-          process.env.WFM_PUBLIC_ORIGIN = vars.WFM_PUBLIC_ORIGIN;
-          await import('./scripts/live-auth-proof.mjs');
-          await import('./scripts/live-isolation-kiosk-proof.mjs');
-          await import('./scripts/live-correction-proof.mjs');
-          await import('./scripts/live-browser-screenshot-proof.mjs');
-
-          process.env.WFM_STAGING_PASSWORD = password;
-          await import('./scripts/live-role-browser-context-proof.mjs');
-          process.env.WFM_STAGING_PASSWORD = password;
-          await import('./scripts/live-employee-overlay-isolation.mjs');
-          process.env.WFM_STAGING_PASSWORD = password;
-          await import('./scripts/live-role-accessibility-diagnostic.mjs');
-
-          const ffmpeg = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' });
-          if (ffmpeg.status === 0 && ffmpeg.stdout.trim()) {
-            process.env.WFM_STAGING_PASSWORD = password;
-            await import('./scripts/live-visual-evidence.mjs');
-          } else {
-            const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
-            fs.mkdirSync(outDir, { recursive: true });
-            fs.writeFileSync(path.join(outDir, 'visual-recording-status.json'), JSON.stringify({
-              capturedAt: new Date().toISOString(), release: '0.6.76-hosted-staging-rc1', status: 'BLOCKED',
-              reason: 'ffmpeg unavailable on pinned runner',
-              claimBoundary: 'authenticated browser screenshots, separate role browser contexts and API/tenant/kiosk/correction proof passed separately; walkthrough video not claimed'
-            }, null, 2));
-            console.log('LIVE_VISUAL_EVIDENCE_CAPTURE=BLOCKED_FFMPEG_UNAVAILABLE');
-          }
-          delete process.env.WFM_STAGING_PASSWORD;
+          const health=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          if(health.productionApproved!==false) throw new Error('Staging unexpectedly has production authority.');
+          console.log('ONE_DAY_STAGING_HEALTH=PASS');
           NODE
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Staging health did not become available.' >&2
+          exit 1
 
-          rm -f "$RUNNER_TEMP/railway-vars.json"
 
-      - name: Upload live evidence package even when a new proof gate fails
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  repair-proof-persistence:
+    if: ${{ github.actor == github.repository_owner && contains(github.event.head_commit.message, '[repair-proof-persistence]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      RAILWAY_NO_AUTO_UPDATE: '1'
+      RAILWAY_PROJECT_ID: 'f547b91f-7181-47dd-9b46-9ca1067ceaa1'
+      RAILWAY_ENVIRONMENT_ID: 'a249b4e0-2467-4c2b-ae73-a1d052d80013'
+      RAILWAY_SERVICE_ID: '15646a58-4f44-4222-a9da-945901470a99'
+
+    steps:
+      - name: Checkout exact persistence-repair source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          name: wfm-customer-proof-0676-live-evidence
-          path: ${{ runner.temp }}/wfm-evidence-output
-          if-no-files-found: warn
-          retention-days: 14
-          compression-level: 6
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install pinned Railway CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI_URL='https://github.com/railwayapp/cli/releases/download/v5.57.8/railway-v5.57.8-x86_64-unknown-linux-gnu.tar.gz'
+          CLI_SHA256='43bc4f0385af68cfecaff09efbf5a933a87df728e01d77cb5613c30b74ac3d9d'
+          curl --fail --location --silent --show-error "$CLI_URL" -o "$RUNNER_TEMP/railway.tgz"
+          echo "$CLI_SHA256  $RUNNER_TEMP/railway.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/railway-cli"
+          tar -xzf "$RUNNER_TEMP/railway.tgz" -C "$RUNNER_TEMP/railway-cli"
+          CLI_BIN="$(find "$RUNNER_TEMP/railway-cli" -type f -name railway -perm -u+x | head -n 1)"
+          test -n "$CLI_BIN"
+          echo "RAILWAY_BIN=$CLI_BIN" >> "$GITHUB_ENV"
+          "$CLI_BIN" --version
+
+      - name: Ensure isolated proof target has durable SQLite storage
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RAILWAY_TOKEN:-}" || { echo 'RAILWAY_TOKEN repository secret is not configured.' >&2; exit 1; }
+          volumes="$("$RAILWAY_BIN" volume list             --project "$RAILWAY_PROJECT_ID"             --environment "$RAILWAY_ENVIRONMENT_ID"             --service "$RAILWAY_SERVICE_ID"             --json)"
+          printf '%s\n' "$volumes"
+          if printf '%s' "$volumes" | grep -Eq '"mountPath"[[:space:]]*:[[:space:]]*"/data"'; then
+            echo 'VECTOR_PROOF_DURABLE_VOLUME=EXISTS'
+          else
+            "$RAILWAY_BIN" volume add               --project "$RAILWAY_PROJECT_ID"               --environment "$RAILWAY_ENVIRONMENT_ID"               --service "$RAILWAY_SERVICE_ID"               --mount-path /data               --json
+            echo 'VECTOR_PROOF_DURABLE_VOLUME=CREATED'
+          fi

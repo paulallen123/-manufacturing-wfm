@@ -40,6 +40,7 @@ jobs:
           set -euo pipefail
           SELF='wfm-every-push-security.yml'
           RAILWAY_WORKFLOW='.github/workflows/railway-first-deploy.yml'
+          CANONICAL_STAGING_WORKFLOW='.github/workflows/canonical-staging-release.yml'
           BROWSER_PROOF_WORKFLOW='.github/workflows/live-browser-readonly-proof.yml'
 
           if grep -RInE 'runs-on:[[:space:]]*ubuntu-latest' .github/workflows --include='*.yml' --include='*.yaml' --exclude="$SELF"; then
@@ -73,7 +74,7 @@ jobs:
           if [ -n "$secret_files" ]; then
             while IFS= read -r file; do
               case "$file" in
-                "$RAILWAY_WORKFLOW"|"$BROWSER_PROOF_WORKFLOW") ;;
+                "$RAILWAY_WORKFLOW"|"$CANONICAL_STAGING_WORKFLOW"|"$BROWSER_PROOF_WORKFLOW") ;;
                 *)
                   echo "Refusing unreviewed workflow secret consumption in $file" >&2
                   exit 1
@@ -97,14 +98,42 @@ jobs:
             grep -Fq 'runs-on: ubuntu-24.04' "$RAILWAY_WORKFLOW"
             grep -Fq 'contents: read' "$RAILWAY_WORKFLOW"
             grep -Fq 'persist-credentials: false' "$RAILWAY_WORKFLOW"
-            grep -Fq "RAILWAY_PROJECT_ID: '9a774359-37fa-47e8-bde0-932420c32923'" "$RAILWAY_WORKFLOW"
-            grep -Fq "RAILWAY_ENVIRONMENT_ID: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6'" "$RAILWAY_WORKFLOW"
-            grep -Fq "RAILWAY_SERVICE_ID: 'ddd54fb9-3564-4251-9959-28cf3308c272'" "$RAILWAY_WORKFLOW"
+            grep -Fq "RAILWAY_PROJECT_ID: '9cd73309-0ece-4b9a-891f-7daa13d94f0d'" "$RAILWAY_WORKFLOW"
+            grep -Fq "RAILWAY_ENVIRONMENT_ID: '9e7875b6-e214-4c32-9cee-81235e3d49ff'" "$RAILWAY_WORKFLOW"
+            grep -Fq "RAILWAY_SERVICE_ID: '8cadddc3-15e9-4c38-a93f-0af829054f29'" "$RAILWAY_WORKFLOW"
             grep -Fq "EXPECTED_RUNTIME_SHA256: '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d'" "$RAILWAY_WORKFLOW"
             deploy_line="$(grep -nF 'name: Bootstrap exact existing Railway customer-proof service' "$RAILWAY_WORKFLOW" | cut -d: -f1)"
             secret_line="$(grep -nF "RAILWAY_TOKEN: $secret_expression" "$RAILWAY_WORKFLOW" | cut -d: -f1)"
             [ -n "$deploy_line" ] && [ -n "$secret_line" ] && [ "$secret_line" -gt "$deploy_line" ] && [ $((secret_line-deploy_line)) -le 4 ] || {
               echo 'RAILWAY_TOKEN must be scoped only to the deployment step.' >&2
+              exit 1
+            }
+          fi
+
+          if [ -f "$CANONICAL_STAGING_WORKFLOW" ]; then
+            canonical_secret_refs="$(grep -oE 'secrets\.[A-Za-z0-9_]+' "$CANONICAL_STAGING_WORKFLOW" | sort -u || true)"
+            [ "$canonical_secret_refs" = 'secrets.RAILWAY_TOKEN' ] || {
+              echo 'Canonical one-day staging may reference only secrets.RAILWAY_TOKEN.' >&2
+              exit 1
+            }
+            [ "$(grep -Fc 'secrets.RAILWAY_TOKEN' "$CANONICAL_STAGING_WORKFLOW")" -eq 1 ] || {
+              echo 'Canonical one-day staging must consume RAILWAY_TOKEN exactly once.' >&2
+              exit 1
+            }
+            grep -Fq 'if: github.actor == github.repository_owner' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'runs-on: ubuntu-24.04' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'contents: read' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'persist-credentials: false' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'cancel-in-progress: true' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Eq '^[[:space:]]*ref:[[:space:]]+.*github[.]sha' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq "RAILWAY_PROJECT_ID: '9cd73309-0ece-4b9a-891f-7daa13d94f0d'" "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq "RAILWAY_ENVIRONMENT_ID: '9e7875b6-e214-4c32-9cee-81235e3d49ff'" "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq "RAILWAY_SERVICE_ID: '8cadddc3-15e9-4c38-a93f-0af829054f29'" "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq -- '--ci' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'name: Verify one-day staging health' "$CANONICAL_STAGING_WORKFLOW"
+            grep -Fq 'health.productionApproved !== false' "$CANONICAL_STAGING_WORKFLOW"
+            grep -A4 -F 'name: Deploy exact candidate to one-day staging' "$CANONICAL_STAGING_WORKFLOW" | grep -Fq 'secrets.RAILWAY_TOKEN' || {
+              echo 'Canonical one-day RAILWAY_TOKEN must be scoped only to the deployment step.' >&2
               exit 1
             }
           fi
