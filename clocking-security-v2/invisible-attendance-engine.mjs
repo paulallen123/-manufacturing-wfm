@@ -30,6 +30,7 @@ const KIND = {
 const SOURCE_KIND_DEFAULTS = new Map([
   ['access',['access_entry','access_exit']],
   ['access-control',['access_entry','access_exit']],
+  ['door',['access_entry','access_exit']],
   ['radius',['wifi_authenticated','wifi_disconnected']],
   ['wifi',['wifi_authenticated','wifi_disconnected']],
   ['network',['wifi_authenticated','wifi_disconnected']],
