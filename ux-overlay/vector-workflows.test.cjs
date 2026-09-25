@@ -435,10 +435,13 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     await assert.rejects(() => changed.workflow.mutate('review-check', { period: '2026-09-07', team: team.id, revision: team.revision, category: category.id, checked: true }), /account or review period changed/);
     assert.equal(changed.workflow.state().receipt, null);
   });
-  await t.test('unsaved Time Review is protected when entering weekly sign-off', async () => {
-    manager.context.ui.page = 'time-review';
+  await t.test('unsaved Attendance review is protected when entering weekly sign-off', async () => {
+    manager.context.ui.page = 'attendance';
     manager.context.triClean = () => false;
     await manager.workflow.action('weekly');
-    assert.equal(manager.context.ui.page, 'time-review');
+    assert.equal(manager.context.ui.page, 'attendance');
+    manager.context.triClean = () => true;
+    await manager.workflow.action('weekly');
+    assert.equal(manager.context.ui.page, 'vector-weekly-signoff');
   });
 });
