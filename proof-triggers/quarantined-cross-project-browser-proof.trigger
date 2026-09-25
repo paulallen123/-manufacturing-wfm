@@ -1,6 +1,6 @@
-VECTOR_BROWSER_PROOF_TRIGGER_V8
+VECTOR_BROWSER_PROOF_TRIGGER_V9
 candidate_sha=313d504613bf7c677fb6944d74cc555fceb03abb
-mode=customer_path_people_to_leave
+purpose=authoritative_leave_overlap_message_diagnostic
 action_queue_strict_gate=UNPROVEN
 no_readiness_promotion=true
 isolation=external_verifier_only
