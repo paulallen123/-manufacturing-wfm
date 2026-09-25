@@ -34,6 +34,17 @@ test('voice input and spoken replies use the same locale without changing action
   assert.match(source, /Voice availability depends on the browser\/device speech service/);
 });
 
+test('voice or typed yes-no confirmation is interpreted before any execution request', () => {
+  assert.match(source, /request\('\/confirmation'/);
+  assert.match(source, /inputMode:\s*inputMode === 'voice' \? 'voice' : 'text'/);
+  assert.match(source, /submitUtterance\(value,\s*'voice'\)/);
+  assert.match(source, /decision === 'yes' \|\| decision === 'no'/);
+  assert.match(source, /did not interpret that as a clear yes or no/);
+  const confirmationIndex = source.indexOf("request('/confirmation'");
+  const executeIndex = source.indexOf("request('/execute'");
+  assert.ok(confirmationIndex >= 0 && executeIndex > confirmationIndex);
+});
+
 test('the existing Vector ask entry points resolve to one canonical Operations Bot', () => {
   assert.match(source, /id\s*=\s*'wfm-bot-launch'/);
   assert.match(source, /root\.id\s*=\s*'wfm-bot'/);
