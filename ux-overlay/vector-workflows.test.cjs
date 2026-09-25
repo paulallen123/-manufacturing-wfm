@@ -12,6 +12,13 @@ const { DatabaseSync } = require('node:sqlite');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(__dirname, 'vector-workflows.js'), 'utf8');
+const shellSource = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
+
+test('Vector shell exposes source-bound Time review route without inventing authority', () => {
+  assert.match(shellSource, /\['time-review','Time review'\]/);
+  assert.match(shellSource, /route==='time-review'.*dataset\.page==='attendance'/);
+  assert.match(shellSource, /routes:\['vector-people','personal','attendance','time-review'/);
+});
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const reservePort = () => new Promise((resolve, reject) => {
   const server = net.createServer();
