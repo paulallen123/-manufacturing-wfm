@@ -79,6 +79,28 @@ test('read-only bridge emits only contract-valid Time Review actions from the au
   }finally{f.close();}
 });
 
+test('bridge exposes the sealed saved-adjustment shape while preserving fail-closed evidence rules',async()=>{
+  const f=fixture(async()=>({status:200,body:report({
+    teams:[{id:'team-a',issues:[{
+      id:'issue-adjustment-1',
+      status:'open',
+      type:'adjustment',
+      row:'row-17',
+      sourceFingerprint:'sha256:fixture-source',
+      proposed:{clockOut:'2026-09-19T17:05:00.000Z'},
+      message:'Manager proposed a five-minute correction.'
+    }]}]
+  })}));
+  try{
+    const result=await call(f.engine,f.manager,'GET',TIME_REVIEW_PATH+'?period=2026-09-07');
+    assert.equal(result.status,200);
+    assert.equal(result.body.items.length,1);
+    assert.equal(result.body.items[0].sourceId,'issue-adjustment-1');
+    assert.equal(result.body.items[0].reasonCode,'TIME_REVIEW_ADJUSTMENT');
+    assert.equal(result.body.items[0].confirmation.state,'action_required');
+  }finally{f.close();}
+});
+
 test('bridge fails closed for employees before reading Time Review',async()=>{
   let calls=0;
   const f=fixture(async()=>{calls++;return{status:200,body:report()};});
