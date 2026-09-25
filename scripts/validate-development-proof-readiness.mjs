@@ -79,6 +79,12 @@ const learnedGuardChecks={
     ['resilience/pre-freeze-simulator.cjs','DEPLOYMENT_NOT_EXECUTABLE'],
     ['release/proof-lane-policy.json','sleepingLaneNeverCountsAsProof'],
     ['release/proof-lane-policy.json','outsideInEndpointReachabilityRequired']
+  ],
+  'proof-worker-source-branch-drift':[
+    ['resilience/pre-freeze-simulator.cjs','PROOF_WORKER_BRANCH_DRIFT']
+  ],
+  'cross-project-proof-credential-drift':[
+    ['resilience/pre-freeze-simulator.cjs','PROOF_CREDENTIAL_BINDING_UNSAFE']
   ]
 };
 for(const [id,guards] of Object.entries(learnedGuardChecks)){
