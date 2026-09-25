@@ -36,6 +36,17 @@ assert.equal(p.rules.specialistProofOnDemandOnly,true);
 assert.equal(p.rules.sameFailureDomainScaleRequiresMeasuredHeadroom,true);
 assert.equal(p.rules.unknownFailureDomainHeadroomCannotTriggerOverflow,true);
 assert.equal(p.rules.sameDomainThroughputNeverCountsAsIndependentResilience,true);
+assert.equal(p.rules.durableStateRequiredForHostedMutationProof,true);
+assert.equal(p.rules.persistentMountMustBeObservedBeforeFreeze,true);
+assert.equal(p.rules.finalHostedRuntimeMustBeNonRoot,true);
+assert.equal(p.rules.providerAssistantNeverAuthoritative,true);
+assert.equal(p.rules.providerAssistantFailureNeverBlocks,true);
+assert.equal(p.rules.providerAssistantOutputRequiresIndependentVerification,true);
+assert.equal(p.rules.canonicalControllerOwnsExecutionAndEvidence,true);
+assert.equal(p.orchestration?.controllerAuthority?.canonicalController,'VECTOR_ORCHESTRATOR');
+assert.equal(p.orchestration?.controllerAuthority?.providerAssistants,'OPTIONAL_NON_AUTHORITATIVE_WORKERS');
+assert.equal(p.orchestration?.controllerAuthority?.assistantFailureAction,'ROUTE_AROUND_AND_CONTINUE');
+assert.equal(p.orchestration?.controllerAuthority?.independentVerificationRequired,true);
 assert.equal(p.orchestration?.capacityRouting?.sameDomainPurpose,'THROUGHPUT_ONLY');
 assert.equal(p.orchestration?.capacityRouting?.sameDomainRequiresMeasuredHeadroom,true);
 assert.equal(p.orchestration?.capacityRouting?.unknownHeadroomAction,'ROUTE_DISTINCT_FAILURE_DOMAIN');
@@ -87,6 +98,10 @@ for(const lane of p.lanes||[]){
       assert.ok(lane.runtimeContract.requiredVariables.includes('WFM_STAGING_PASSWORD'));
       assert.equal(lane.runtimeContract.stagingPasswordMinLength,20);
       assert.equal(lane.runtimeContract.publicOriginHttpsRequired,true);
+      assert.equal(lane.runtimeContract.persistenceRequired,true);
+      assert.equal(lane.runtimeContract.dbPathPrefix,'/data/');
+      assert.equal(lane.runtimeContract.persistentMountRequired,true);
+      assert.equal(lane.runtimeContract.finalRuntimeRootAllowed,false);
     }
   }
   if(lane.provider==='railway'&&lane.class==='exact-image'){
