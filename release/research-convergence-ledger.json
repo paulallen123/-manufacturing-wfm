@@ -9,7 +9,12 @@
     "blockedItemsRequireResolutionRoute": true,
     "unsafeOrUnprovenResearchMayNotBypassReleaseGates": true,
     "goldenJourneyPriorityPreserved": true,
-    "noDuplicateLoop": true
+    "noDuplicateLoop": true,
+    "designBeforeTheoryTest": true,
+    "theoryTestBeforeImplementation": true,
+    "implementationBeforeConvergenceProof": true,
+    "existingSixEnginesOnly": true,
+    "failedTheoryIsRetainedNotDropped": true
   },
   "allowedStatuses": [
     "CONVERGED_INTO_FORGE",
@@ -47,7 +52,19 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Use tariff, consumption, production and workforce evidence to identify safe lower-cost energy/production options.",
       "convergenceRoute": "Remain in canonical FORGE and complete live-data, UI, outcome and Golden-Journey proof.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "CONVERGENCE_PROOF",
+      "theoryStatus": "PASS_ISOLATED",
+      "implementationStatus": "CANONICAL",
+      "nextLifecycleAction": "Complete hosted Golden Journey/outcome proof and continue evolution."
     },
     {
       "id": "manufacturing-event-disruption-cost",
@@ -61,7 +78,19 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Translate manufacturing events and delivery disruption into operational and financial impact for better intervention decisions.",
       "convergenceRoute": "Reconcile event graph semantics with the existing Decision Episode, realised-value and production evidence models, then admit through existing FORGE tests.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "agency-labour",
@@ -76,7 +105,20 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Automate compliant agency labour sourcing, assurance, response, work-start and outcome reconciliation.",
       "convergenceRoute": "Remain in canonical FORGE and complete PostgreSQL, hosted role journey and realised outcome proof.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "autonomous-implementation-support",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "CONVERGENCE_PROOF",
+      "theoryStatus": "PASS_ISOLATED",
+      "implementationStatus": "CANONICAL",
+      "nextLifecycleAction": "Complete hosted Golden Journey/outcome proof and continue evolution."
     },
     {
       "id": "factory-capability-graph",
@@ -90,7 +132,19 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Model what a factory, line, asset and workforce can actually do using capability/ISA-88/AAS evidence rather than static labels.",
       "convergenceRoute": "Map the capability graph onto the existing Digital Twin and scheduling constraints without adding a second graph/source of truth.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "cash-to-capacity",
@@ -104,7 +158,19 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Connect workforce and production choices to cash timing and realised economic outcomes.",
       "convergenceRoute": "Remain in canonical FORGE and complete hosted Finance/Operations journey and realised-value reconciliation.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "CONVERGENCE_PROOF",
+      "theoryStatus": "PASS_ISOLATED",
+      "implementationStatus": "CANONICAL",
+      "nextLifecycleAction": "Complete hosted Golden Journey/outcome proof and continue evolution."
     },
     {
       "id": "skill-chain-resilience",
@@ -118,7 +184,20 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Identify production exposure to scarce skills/certifications and pre-emptively build or move capability before a constraint stops output.",
       "convergenceRoute": "Converge the resilience model into the existing skills Digital Twin, adaptive training and scheduling intelligence; prove that it changes a real staffing decision.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "autonomous-implementation-support",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "degraded-mode-readiness",
@@ -132,7 +211,20 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Keep manufacturing safely operable when automation, integrations or infrastructure degrade.",
       "convergenceRoute": "Reuse the existing failure-scenario, containment, simulation and recovery contracts; add degraded-mode workforce/production decisions without separate recovery authority.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "autonomous-implementation-support",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "loss-prevention-workforce",
@@ -146,7 +238,19 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Adjust workforce decisions using evidence of scrap, loss, quality and yield risk rather than labour cost alone.",
       "convergenceRoute": "Converge its constraints and value evidence into Decision Episode and realised-value; retain safety/quality gates before any execution.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "privacy-preserving-capability-provenance",
@@ -160,7 +264,19 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Prove worker/factory capability without unnecessarily exposing sensitive underlying evidence.",
       "convergenceRoute": "Reconcile with the existing trust spine and evidence provenance so privacy-preserving proof becomes a capability of the canonical evidence model, not a parallel identity system.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "controlled-environment-flow",
@@ -174,7 +290,20 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Ensure staffing/intervention decisions respect controlled-zone access, contamination, safety and transition constraints.",
       "convergenceRoute": "Converge transition/intervention constraints into canonical scheduling and Decision Episode policies with fail-closed ambiguity handling.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "autonomous-implementation-support",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "water-resilience-orchestration",
@@ -188,7 +317,20 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Coordinate people and production when water availability, quality or usage constraints threaten manufacturing output.",
       "convergenceRoute": "Map water constraints into the existing factory evidence/Decision Episode pattern and prove one safe production/workforce response before exposing it in FORGE.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "autonomous-implementation-support",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "country-policy-packs",
@@ -203,7 +345,20 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "One global VECTOR deployment can apply effective-dated local working-time, payroll, absence, compliance, privacy and workforce rules per employee/site/country.",
       "convergenceRoute": "Bring the existing PR#230 country-policy-pack registry into canonical FORGE as an effective-dated, inherited/overridable policy layer; start read-only/advisory, then gate consequential scheduling/payroll actions only after country-specific evidence and tests.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "autonomous-implementation-support",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "IMPLEMENTATION",
+      "theoryStatus": "PASS_ISOLATED",
+      "implementationStatus": "QUEUED_FOR_CANONICAL",
+      "nextLifecycleAction": "Admit the existing read-only registry into canonical FORGE, then prove country/date selection and fail-closed missing coverage."
     },
     {
       "id": "skills-demand-intelligence",
@@ -217,7 +372,19 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Predict which skills will constrain future production and target training before shortages become operational failures.",
       "convergenceRoute": "Converge PR#230 skills-demand intelligence into the existing Training Twin and scheduling forecast, preserving evidence and uncertainty boundaries.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "autonomous-implementation-support",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "asset-intelligence-projection",
@@ -231,7 +398,19 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Expose manufacturing asset intelligence to workforce decisions without creating a second source of truth.",
       "convergenceRoute": "Converge the projection into the existing Digital Twin/integration-fabric read model and prove source provenance.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "integration-data-fabric",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "factory-playback",
@@ -245,7 +424,18 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Replay factory state and decisions to understand incidents, test alternatives and improve future decisions.",
       "convergenceRoute": "Unify with existing simulation, Decision Episode evidence and recovery replay rather than introducing a second replay engine.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "THEORY_TEST",
+      "theoryStatus": "PENDING_RETEST",
+      "implementationStatus": "QUEUED",
+      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
     },
     {
       "id": "frontier-t9-earned-autonomy",
@@ -259,7 +449,26 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Earn greater autonomy only from evidence, independent verification and bounded recovery while preserving zero-human ambitions.",
       "convergenceRoute": "Converge T9 trust, zero-human governance, engineering learning and Tool Foundry contracts through the existing FORGE/Golden-Journey path; do not create a separate production runtime.",
-      "preserveGoldenJourneyPriority": true
+      "preserveGoldenJourneyPriority": true,
+      "assignedEngines": [
+        "orchestrator",
+        "product-evolution",
+        "frontier-cross-domain-innovation",
+        "autonomous-implementation-support",
+        "trust-proof-release"
+      ],
+      "designStatus": "COMPLETE",
+      "deliveryStage": "IMPLEMENTATION",
+      "theoryStatus": "PASS_ISOLATED",
+      "implementationStatus": "IN_PROGRESS",
+      "nextLifecycleAction": "Continue convergence into existing trust/autonomy owners and prove through FORGE."
     }
+  ],
+  "allowedDeliveryStages": [
+    "DESIGN",
+    "THEORY_TEST",
+    "IMPLEMENTATION",
+    "CONVERGENCE_PROOF",
+    "CONVERGED"
   ]
 }

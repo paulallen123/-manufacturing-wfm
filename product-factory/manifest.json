@@ -16,7 +16,11 @@
     "reuse-before-bespoke",
     "governed-self-evolution",
     "customer-outcome-learning",
-    "eval-driven-agent-improvement"
+    "eval-driven-agent-improvement",
+    "no-research-loss",
+    "design-before-build",
+    "theory-test-before-implementation",
+    "research-converges-through-existing-owners"
   ],
   "requiredFeatureFields": [
     "slug",
@@ -34,6 +38,8 @@
     "claimBoundary"
   ],
   "qualityGates": [
+    "design-contract",
+    "theory-falsification",
     "syntax",
     "unit",
     "contract",

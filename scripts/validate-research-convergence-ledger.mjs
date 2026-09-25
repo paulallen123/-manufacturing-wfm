@@ -6,6 +6,7 @@ const root=process.cwd();
 const ledgerPath=path.join(root,'release','research-convergence-ledger.json');
 const capabilityPath=path.join(root,'release','capability-superset.json');
 const convergencePath=path.join(root,'release','vector-eow-convergence.json');
+const operatingModelPath=path.join(root,'release','research-design-test-implement.json');
 
 function fail(message){
   console.error('VECTOR_RESEARCH_CONVERGENCE_GATE=FAIL');
@@ -16,10 +17,16 @@ function fail(message){
 if(!fs.existsSync(ledgerPath)) fail('Missing research convergence ledger.');
 if(!fs.existsSync(capabilityPath)) fail('Missing capability superset manifest.');
 if(!fs.existsSync(convergencePath)) fail('Missing FORGE convergence policy.');
+if(!fs.existsSync(operatingModelPath)) fail('Missing research design-test-implement operating model.');
 
 const ledger=JSON.parse(fs.readFileSync(ledgerPath,'utf8'));
 const capabilities=JSON.parse(fs.readFileSync(capabilityPath,'utf8'));
 const convergence=JSON.parse(fs.readFileSync(convergencePath,'utf8'));
+const operatingModel=JSON.parse(fs.readFileSync(operatingModelPath,'utf8'));
+if(operatingModel.contract!=='VECTOR_RESEARCH_DESIGN_TEST_IMPLEMENT_V1') fail('Unsupported research operating model.');
+const engineIds=new Set(Object.keys(operatingModel.engines||{}));
+if(engineIds.size!==6) fail('Research must route through the existing six engines only.');
+const deliveryStages=new Set(ledger.allowedDeliveryStages||[]);
 
 if(ledger.schemaVersion!==1||ledger.contract!=='VECTOR_RESEARCH_CONVERGENCE_CONTINUITY_V1') fail('Unsupported research convergence contract.');
 for(const [key,value] of Object.entries({
@@ -53,6 +60,13 @@ for(const item of ledger.items||[]){
   for(const ref of item.sourceRefs) sourceRefs.add(ref);
   if(!String(item.customerValue||'').trim()) fail(item.id+': customer value required.');
   if(!String(item.convergenceRoute||'').trim()) fail(item.id+': explicit convergence route required.');
+  if(!deliveryStages.has(item.deliveryStage)) fail(item.id+': delivery stage missing/invalid.');
+  if(item.designStatus!=='COMPLETE') fail(item.id+': design must be complete before tracked theory/implementation work.');
+  if(!Array.isArray(item.assignedEngines)||item.assignedEngines.length===0) fail(item.id+': loop/engine assignments required.');
+  for(const engine of item.assignedEngines) if(!engineIds.has(engine)) fail(item.id+': unknown engine '+engine);
+  for(const requiredEngine of ['orchestrator','product-evolution','frontier-cross-domain-innovation','trust-proof-release']) if(!item.assignedEngines.includes(requiredEngine)) fail(item.id+': missing mandatory engine '+requiredEngine);
+  if(['IMPLEMENTATION','CONVERGENCE_PROOF','CONVERGED'].includes(item.deliveryStage) && !String(item.theoryStatus||'').startsWith('PASS')) fail(item.id+': implementation cannot start before theory passes.');
+  if(!String(item.nextLifecycleAction||'').trim()) fail(item.id+': next lifecycle action required.');
 
   if(item.status==='CONVERGED_INTO_FORGE'){
     if(!item.canonicalCapabilityId||!canonical.has(item.canonicalCapabilityId)) fail(item.id+': converged item must map to capability superset.');

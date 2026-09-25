@@ -16,7 +16,11 @@
     "every-repeatable-win-becomes-a-skill",
     "every-manual-repeat-becomes-an-automation-candidate",
     "competitor-gap-becomes-an-eval",
-    "leapfrog-before-copy"
+    "leapfrog-before-copy",
+    "no-research-loss",
+    "design-before-theory-test",
+    "theory-test-before-implementation",
+    "research-routes-through-existing-six-engines"
   ],
   "loops": {
     "customerOptimization": {
@@ -59,9 +63,14 @@
     "productEvolution": {
       "cycle": [
         "collect-evidence",
+        "register-research-convergence-item",
+        "design-canonical-owner-contract",
+        "test-theory-with-normal-edge-adversarial-scenarios",
+        "falsify-or-retain-with-route",
         "generate-eval",
         "propose-change",
         "build-isolated-candidate",
+        "implement-only-after-theory-admission",
         "run-evals",
         "adversarial-test",
         "compare-baseline",
@@ -97,6 +106,9 @@
         "normalize-capability",
         "compare-vector-proof",
         "create-gap-eval",
+        "register-research-convergence-item",
+        "design-leapfrog-contract",
+        "theory-test-and-falsify",
         "generate-leapfrog-hypothesis",
         "build-isolated-candidate",
         "run-product-factory-gates",
@@ -257,5 +269,12 @@
       "lineage"
     ],
     "unknownIsPass": false
+  },
+  "researchConvergence": {
+    "contract": "VECTOR_RESEARCH_DESIGN_TEST_IMPLEMENT_V1",
+    "operatingModel": "release/research-design-test-implement.json",
+    "ledger": "release/research-convergence-ledger.json",
+    "rule": "Every research item is designed, falsifiably theory-tested and then implemented through existing canonical owners. A failed theory remains registered with a resolution route; it is never silently dropped.",
+    "loops": "existing Product Evolution/Market Evolution plus the existing six-engine VECTOR operating model; no seventh loop"
   }
 }
