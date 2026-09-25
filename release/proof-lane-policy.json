@@ -40,7 +40,12 @@
     "specialistProofOnDemandOnly": true,
     "sameFailureDomainScaleRequiresMeasuredHeadroom": true,
     "unknownFailureDomainHeadroomCannotTriggerOverflow": true,
-    "sameDomainThroughputNeverCountsAsIndependentResilience": true
+    "sameDomainThroughputNeverCountsAsIndependentResilience": true,
+    "sleepingLaneNeverCountsAsProof": true,
+    "domainPresenceNeverSubstitutesForReachability": true,
+    "outsideInEndpointReachabilityRequired": true,
+    "hostedListenMustBePublic": true,
+    "skippedOrSleepingDeploymentNeverAdmitted": true
   },
   "lanes": [
     {
@@ -198,7 +203,10 @@
         "HEALTHCHECK_CONTRACT",
         "CONDITION_BASED_READINESS",
         "ENDPOINT_REACHABILITY",
-        "FAILURE_DOMAIN_INDEPENDENCE"
+        "FAILURE_DOMAIN_INDEPENDENCE",
+        "DEPLOYMENT_EXECUTION_STATE",
+        "SLEEP_DISABLED",
+        "OUTSIDE_IN_HEALTH_READY"
       ],
       "candidateIdentity": {
         "authoritativeSources": [
