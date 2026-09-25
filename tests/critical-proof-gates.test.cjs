@@ -6,13 +6,15 @@ const fs = require('node:fs');
 
 test('release Dockerfile permanently includes critical attendance simulations', () => {
   const dockerfile = fs.readFileSync('Dockerfile', 'utf8');
+  assert.ok(dockerfile.includes('node scripts/run-critical-attendance-assault.mjs'), 'Critical attendance assault runner is not mandatory in the release build.');
+  assert.ok(dockerfile.includes('security/runtime/durable-state-guard.test.cjs'), 'Durable-state regression test is not mandatory in the release build.');
+  const assault = fs.readFileSync('scripts/run-critical-attendance-assault.mjs', 'utf8');
   for (const required of [
     'clocking-security-v2/attendance-24x7-soak.test.mjs',
     'clocking-security-v2/attendance-enterprise-scale.test.mjs',
-    'clocking-security-v2/attendance-certification-live.test.mjs',
-    'security/runtime/durable-state-guard.test.cjs'
+    'clocking-security-v2/attendance-certification-live.test.mjs'
   ]) {
-    assert.ok(dockerfile.includes(required), 'Missing mandatory release simulation: ' + required);
+    assert.ok(assault.includes(required), 'Missing mandatory attendance assault simulation: ' + required);
   }
 });
 
