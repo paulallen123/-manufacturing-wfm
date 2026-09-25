@@ -150,7 +150,9 @@
   async function refreshLeaveAfterConflict(error, owner) {
     LF.receipt = null;
     if (error?.status !== 409 || owner !== ownerKey()) return;
-    try { await refreshLeaveAndShell(); } catch { LF.bootstrap = null; LF.personal = null; }
+    // Preserve the active error boundary: refreshing the whole workspace here
+    // remounts the modal before it can surface the authoritative 409 reason.
+    try { await leaveRefresh(); } catch { LF.bootstrap = null; LF.personal = null; }
   }
   async function leaveRequest(input) {
     if (LF.busy) throw Error('A leave action is already being saved. Wait for its result.');

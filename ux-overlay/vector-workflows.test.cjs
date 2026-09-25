@@ -208,10 +208,21 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.match(leaveEmployee.workflow.leavePage(), /Saved and read back from the service/);
     assert.doesNotMatch(leaveEmployee.workflow.leavePage(), /workflow preview|demo does not certify/i);
   });
-  await t.test('employee leave route surfaces authoritative overlap refusal without a false receipt', async () => {
-    await assert.rejects(() => leaveEmployee.workflow.leaveRequest({ date: leaveDate, hours: 7.5 }), error => error.status === 409);
-    assert.equal(leaveEmployee.workflow.leaveState().receipt, null);
-    assert.equal(leaveEmployee.workflow.leaveState().bootstrap.state.requests.filter(request => request.id === leaveRequestId).length, 1);
+  await t.test('employee leave route surfaces authoritative overlap refusal without remounting the active modal', async () => {
+    const originalReload = leaveEmployee.context.reload;
+    let reloads = 0;
+    leaveEmployee.context.reload = async (...args) => { reloads++; return originalReload(...args); };
+    try {
+      await assert.rejects(
+        () => leaveEmployee.workflow.leaveRequest({ date: leaveDate, hours: 7.5 }),
+        error => error.status === 409 && /overlap|already|request/i.test(String(error.message || ''))
+      );
+      assert.equal(reloads, 0, '409 conflict recovery must not remount the active modal before its error can render.');
+      assert.equal(leaveEmployee.workflow.leaveState().receipt, null);
+      assert.equal(leaveEmployee.workflow.leaveState().bootstrap.state.requests.filter(request => request.id === leaveRequestId).length, 1);
+    } finally {
+      leaveEmployee.context.reload = originalReload;
+    }
   });
   await t.test('a rejected stale leave write refreshes the next action context without replaying it', async () => {
     const state = leaveEmployee.workflow.leaveState();
