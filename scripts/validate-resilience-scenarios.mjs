@@ -16,6 +16,7 @@ const allowedContainment = new Set(Object.keys(catalogue.containment_classes));
 const ids = new Set();
 const categories = new Set();
 const requiredCategories = new Set(['integration','runtime','data','security','ai-security','supply-chain','release','experience','clocking','time','payroll','identity','governance','observability','infrastructure','support']);
+const requiredExtremeScenarioIds = new Set(['multi-integration-outage','provider-schema-or-api-drift','site-offline-mass-reconnect','global-policy-conflict','security-control-plane-compromise','extreme-load-surge','contradictory-source-data','payroll-critical-data-corruption','compound-critical-incident']);
 
 for (const s of catalogue.scenarios) {
   assert.match(s.id, /^[a-z0-9-]+$/, `Invalid scenario id: ${s.id}`);
@@ -37,6 +38,7 @@ for (const s of catalogue.scenarios) {
   }
 }
 for (const required of requiredCategories) assert.ok(categories.has(required), `Missing required failure category: ${required}`);
+for (const required of requiredExtremeScenarioIds) assert.ok(ids.has(required), `Missing required extreme failure scenario: ${required}`);
 
 const critical = catalogue.scenarios.filter(s => s.severity === 'critical');
 assert.ok(critical.length >= 10, 'Critical failure surface is too narrow.');
