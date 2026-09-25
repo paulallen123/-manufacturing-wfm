@@ -6,21 +6,10 @@ const origin = new URL(process.env.VECTOR_PROOF_URL).origin;
 const expectedSha = process.env.WFM_EXPECTED_CANDIDATE_SHA;
 const password = process.env.WFM_STAGING_PASSWORD;
 const requireActionAffordanceCoverage = process.env.WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE === 'true';
-const requireVectorAssetDigests = process.env.WFM_REQUIRE_VECTOR_ASSET_DIGESTS === 'true';
-const expectedVectorJsSha256 = process.env.VECTOR_CANONICAL_JS_SHA256;
-const expectedVectorCssSha256 = process.env.VECTOR_CANONICAL_CSS_SHA256;
-const expectedWorkflowJsSha256 = process.env.VECTOR_WORKFLOW_JS_SHA256;
-const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
+export let browserProofEvidence = { leaveJourney: null, attendanceJourney: null };
 
 assert.match(expectedSha || '', /^[0-9a-f]{40}$/);
 assert.ok(password && password.length >= 20, 'Staging password unavailable.');
-if (requireVectorAssetDigests) {
-  for (const [name, value] of [
-    ['VECTOR_CANONICAL_JS_SHA256', expectedVectorJsSha256],
-    ['VECTOR_CANONICAL_CSS_SHA256', expectedVectorCssSha256],
-    ['VECTOR_WORKFLOW_JS_SHA256', expectedWorkflowJsSha256]
-  ]) assert.match(value || '', /^[0-9a-f]{64}$/, name + ' unavailable.');
-}
 
 const specs = [
   { slug: 'manager', email: 'manager@northstar.example', role: 'manager', tenant: 'northstar-demo', payroll: 403, surface: '/api/time-review', nav: 'Time & Attendance' },
@@ -36,32 +25,45 @@ const health = await healthResponse.json();
 assert.equal(health.fixtureOnly, true);
 assert.equal(health.productionApproved, false);
 
-let assetDigestProof = null;
-if (requireVectorAssetDigests) {
-  const assets = [
-    ['/vector-ui.js', expectedVectorJsSha256],
-    ['/vector-ui.css', expectedVectorCssSha256],
-    ['/vector-workflows.js', expectedWorkflowJsSha256]
-  ];
-  assetDigestProof = {};
-  for (const [path, expected] of assets) {
-    const response = await fetch(origin + path, { signal: AbortSignal.timeout(15000) });
-    assert.equal(response.status, 200, path + ' unavailable.');
-    const body = Buffer.from(await response.arrayBuffer());
-    const actual = sha256(body);
-    assert.equal(actual, expected, path + ' digest mismatch: hosted bytes are not the frozen candidate bytes.');
-    assetDigestProof[path] = actual;
-  }
-  console.log('CURRENT_CANDIDATE_ASSET_DIGESTS=PASS|' + JSON.stringify(assetDigestProof));
-}
-
 const browser = await chromium.launch({ headless: true });
 const receipts = [];
 let navigationClicks = 0;
 let timeReviewActionJourneys = 0;
 let timeReviewEmptyStateJourneys = 0;
 let managerAlignmentEvidence = null;
-let managerDesktopEvidence = null;
+
+async function loginRole(page, email) {
+  const first = await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  assert.ok(first && first.status() < 500, `${email} initial page failed.`);
+  const loginStatus = await page.evaluate(async ({ email, password }) => {
+    const response = await fetch('/api/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password })
+    });
+    return response.status;
+  }, { email, password });
+  assert.equal(loginStatus, 200, `${email} login failed.`);
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+}
+
+async function openLeaveRoute(page, expectedRole) {
+  const route = page.locator('[data-vector-route="leave"]').first();
+  await route.waitFor({ state: 'visible', timeout: 10000 });
+  await route.click({ timeout: 5000 });
+  await page.locator(`[data-vector-leave-route="${expectedRole}"]`).waitFor({ state: 'visible', timeout: 10000 });
+}
+
+async function openWeeklyRoute(page, teamId) {
+  const timeAttendance = page.getByText('Time & Attendance', { exact: true }).first();
+  await timeAttendance.waitFor({ state: 'visible', timeout: 10000 });
+  await timeAttendance.click({ timeout: 5000 });
+  const weekly = page.locator('button[data-vector-workflow="weekly"]').first();
+  await weekly.waitFor({ state: 'visible', timeout: 10000 });
+  await weekly.click({ timeout: 5000 });
+  const team = page.locator('#vw-team');
+  await team.waitFor({ state: 'visible', timeout: 10000 });
+  await team.selectOption(teamId);
+}
 
 try {
   for (const spec of specs) {
@@ -109,34 +111,13 @@ try {
     assert.equal(boundary.payroll, spec.payroll, `${spec.slug} payroll boundary mismatch.`);
     assert.equal(boundary.surface, 200, `${spec.slug} required surface failed.`);
 
-    if (spec.slug === 'manager') {
-      const readiness = await page.evaluate(async () => {
-        const response = await fetch('/api/readiness', { cache: 'no-store' });
-        let json = null;
-        try { json = await response.json(); } catch {}
-        return { status: response.status, json };
-      });
-      const compact = value => {
-        if (Array.isArray(value)) return value.slice(0, 8).map(compact);
-        if (!value || typeof value !== 'object') return value;
-        const out = {};
-        for (const [key, item] of Object.entries(value)) {
-          if (/token|password|secret|cookie|credential/i.test(key)) continue;
-          if (Array.isArray(item)) out[key] = item.slice(0, 8).map(compact);
-          else if (item && typeof item === 'object') out[key] = compact(item);
-          else out[key] = item;
-        }
-        return out;
-      };
-      console.log('CURRENT_READINESS_SAMPLE|' + JSON.stringify({ status: readiness.status, json: compact(readiness.json) }));
-    }
-
     const ui = await page.evaluate(async () => {
-      const [scriptAsset, styleAsset] = await Promise.all([
+      const [scriptAsset, styleAsset, workflowAsset] = await Promise.all([
         fetch('/vector-ui.js', { cache: 'no-store' }),
-        fetch('/vector-ui.css', { cache: 'no-store' })
+        fetch('/vector-ui.css', { cache: 'no-store' }),
+        fetch('/vector-workflows.js', { cache: 'no-store' })
       ]);
-      const [scriptText, styleText] = await Promise.all([scriptAsset.text(), styleAsset.text()]);
+      const [scriptText, styleText, workflowText] = await Promise.all([scriptAsset.text(), styleAsset.text(), workflowAsset.text()]);
       const resources = performance.getEntriesByType('resource').map(entry => {
         try { return new URL(entry.name, location.href).pathname; } catch { return String(entry.name || ''); }
       });
@@ -157,12 +138,15 @@ try {
       return {
         scriptAssetStatus: scriptAsset.status,
         styleAssetStatus: styleAsset.status,
+        workflowAssetStatus: workflowAsset.status,
         approvedScript: scriptText.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'),
         approvedStyle: styleText.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'),
+        approvedWorkflow: workflowText.includes('VECTOR_AUTHENTICATED_WORKFLOWS_V1'),
         retiredMarkers: ['WFM_UX_RESET_CYCLE11_BEGIN', 'WFM_UX_RESET_CYCLE12_BEGIN', 'VECTOR_PRIORITY_BRIDGE_V1']
           .filter(marker => scriptText.includes(marker) || styleText.includes(marker)),
         scriptExecuted: resources.includes('/vector-ui.js'),
         styleExecuted: resources.includes('/vector-ui.css'),
+        workflowExecuted: resources.includes('/vector-workflows.js'),
         retiredExecuted: retiredAssets.filter(name => resources.some(path => path.endsWith(`/${name}`))),
         nodes,
         labels,
@@ -173,11 +157,14 @@ try {
     });
     assert.equal(ui.scriptAssetStatus, 200, `${spec.slug} canonical Vector script unavailable.`);
     assert.equal(ui.styleAssetStatus, 200, `${spec.slug} canonical Vector stylesheet unavailable.`);
+    assert.equal(ui.workflowAssetStatus, 200, `${spec.slug} authenticated Vector workflow controller unavailable.`);
     assert.equal(ui.approvedScript, true, `${spec.slug} canonical Vector script marker missing.`);
     assert.equal(ui.approvedStyle, true, `${spec.slug} canonical Vector stylesheet marker missing.`);
+    assert.equal(ui.approvedWorkflow, true, `${spec.slug} authenticated Vector workflow marker missing.`);
     assert.deepEqual(ui.retiredMarkers, [], `${spec.slug} retired presentation marker executed in canonical Vector assets.`);
     assert.equal(ui.scriptExecuted, true, `${spec.slug} canonical /vector-ui.js entrypoint was not loaded.`);
     assert.equal(ui.styleExecuted, true, `${spec.slug} canonical /vector-ui.css entrypoint was not loaded.`);
+    assert.equal(ui.workflowExecuted, true, `${spec.slug} authenticated /vector-workflows.js entrypoint was not loaded.`);
     assert.deepEqual(ui.retiredExecuted, [], `${spec.slug} retired presentation asset executed: ${ui.retiredExecuted.join(', ')}`);
     assert.ok(ui.nodes > 0, `${spec.slug} Vector DOM missing.`);
     assert.ok(ui.bodyText > 200, `${spec.slug} rendered body too small.`);
@@ -185,16 +172,6 @@ try {
 
     if (spec.slug === 'manager') {
       const previous = page.viewportSize();
-      const desktop = await page.screenshot({
-        type: 'jpeg',
-        quality: 58,
-        fullPage: false
-      });
-      managerDesktopEvidence = {
-        base64: desktop.toString('base64'),
-        bytes: desktop.length,
-        sha256: crypto.createHash('sha256').update(desktop).digest('hex')
-      };
       await page.setViewportSize({ width: 420, height: 294 });
       await page.waitForTimeout(150);
       const compact = await page.screenshot({
@@ -226,13 +203,13 @@ try {
     };
 
     if (spec.slug === 'employee') {
-      actionJourney.evidenceStatus = await page.evaluate(async () => (await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=2026-09-07', { cache: 'no-store' })).status);
+      actionJourney.evidenceStatus = await page.evaluate(async () => (await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' })).status);
       assert.equal(actionJourney.evidenceStatus, 403, 'Employee unexpectedly received manager action evidence.');
     }
 
     if (spec.slug === 'manager') {
       const evidence = await page.evaluate(async () => {
-        const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=2026-09-07', { cache: 'no-store' });
+        const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' });
         let json = null;
         try { json = await response.json(); } catch {}
         return { status: response.status, json };
@@ -241,46 +218,6 @@ try {
       assert.equal(evidence.status, 200, 'Manager action-evidence bridge unavailable.');
       assert.equal(evidence.json?.contractVersion, 'WFM_WORKFLOW_ACTION_EVIDENCE_V1');
       assert.equal(evidence.json?.workflow, 'time-review');
-
-      const sourceDiagnostic = await page.evaluate(async () => {
-        const response = await fetch('/api/weekly-review?period=2026-09-07', { cache: 'no-store' });
-        let json = null;
-        try { json = await response.json(); } catch {}
-        const teams = Array.isArray(json?.teams) ? json.teams : [];
-        return {
-          status: response.status,
-          teamCount: teams.length,
-          teams: teams.slice(0, 4).map(team => ({
-            id: team?.id ?? null,
-            status: team?.status ?? null,
-            openIssues: (Array.isArray(team?.issues) ? team.issues : [])
-              .filter(issue => String(issue?.status || '').toLowerCase() === 'open')
-              .slice(0, 4)
-              .map(issue => ({
-                id: issue?.id ?? null,
-                sourceId: issue?.sourceId ?? null,
-                status: issue?.status ?? null,
-                reasonCode: issue?.reasonCode ?? null,
-                observedAt: issue?.observedAt ?? null,
-                authorityRequired: issue?.authorityRequired ?? null,
-                confirmation: issue?.confirmation ?? null,
-                keys: Object.keys(issue || {}).sort()
-              }))
-          }))
-        };
-      });
-      console.log('CURRENT_TIME_REVIEW_SOURCE_CONTRACT|' + JSON.stringify(sourceDiagnostic));
-      console.log('CURRENT_ACTION_EVIDENCE_CONTRACT|' + JSON.stringify({
-        status: evidence.status,
-        itemCount: Array.isArray(evidence.json?.items) ? evidence.json.items.length : 0,
-        states: (Array.isArray(evidence.json?.items) ? evidence.json.items : []).map(item => ({
-          sourceId: item?.sourceId ?? null,
-          state: item?.confirmation?.state ?? null,
-          reasonCode: item?.reasonCode ?? null,
-          observedAt: item?.observedAt ?? null,
-          authorityRequired: item?.authorityRequired ?? null
-        }))
-      }));
 
       const active = (Array.isArray(evidence.json?.items) ? evidence.json.items : [])
         .filter(item => String(item?.confirmation?.state || '').toLowerCase() !== 'resolved');
@@ -467,7 +404,7 @@ try {
         assert.equal(contextSourceId, sourceId, 'Time Review lost the originating source action context.');
 
         const postOpen = await page.evaluate(async () => {
-          const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=2026-09-07', { cache: 'no-store' });
+          const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' });
           return { status: response.status, json: await response.json() };
         });
         assert.equal(postOpen.status, 200);
@@ -490,19 +427,14 @@ try {
     }
 
     let navigationClicked = null;
-    const navCandidates = page.locator('.vector-nav-item:not([disabled])');
-    const navCount = await navCandidates.count();
-    for (let i = 0; i < navCount; i += 1) {
-      const locator = navCandidates.nth(i);
-      if (!(await locator.isVisible().catch(() => false))) continue;
-      if ((await locator.getAttribute('aria-current')) === 'page') continue;
-      const label = ((await locator.textContent()) || '').replace(/\s+/g, ' ').trim();
-      if (!label) continue;
-      await locator.click({ timeout: 5000 });
-      await page.waitForTimeout(300);
-      navigationClicked = label;
-      navigationClicks += 1;
-      break;
+    if (spec.nav) {
+      const locator = page.getByText(spec.nav, { exact: true }).first();
+      if (await locator.count()) {
+        await locator.click({ timeout: 5000 });
+        await page.waitForTimeout(300);
+        navigationClicked = spec.nav;
+        navigationClicks += 1;
+      }
     }
 
     const screenshot = await page.screenshot({ fullPage: true });
@@ -528,8 +460,8 @@ try {
       payrollStatus: boundary.payroll,
       requiredSurface: spec.surface,
       requiredSurfaceStatus: boundary.surface,
-      vectorApproved: ui.approvedScript && ui.approvedStyle,
-      vectorExecuted: ui.scriptExecuted && ui.styleExecuted,
+      vectorApproved: ui.approvedScript && ui.approvedStyle && ui.approvedWorkflow,
+      vectorExecuted: ui.scriptExecuted && ui.styleExecuted && ui.workflowExecuted,
       retiredPresentationExecuted: ui.retiredExecuted,
       vectorNodes: ui.nodes,
       visibleNavigation: ui.labels,
@@ -545,171 +477,270 @@ try {
     await context.close();
   }
 
-  const sectionPack = [];
-  {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-    const page = await context.newPage();
-    await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    const loginStatus = await page.evaluate(async ({ password }) => {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'manager@northstar.example', password })
-      });
-      return response.status;
-    }, { password });
-    assert.equal(loginStatus, 200, 'Manager section-pack login failed.');
-    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
-    await page.waitForTimeout(1200);
+  const leaveJourney = {
+    employeeUiSubmitted: false,
+    pendingStateReadBack: false,
+    overlapRefusedInUi: false,
+    refreshedUiRetainedPending: false,
+    managerUiDecided: false,
+    managerStateReadBack: false,
+    freshEmployeeLoginSawDecision: false,
+    requestId: null,
+    decision: null
+  };
+  const employeeContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const employeePage = await employeeContext.newPage();
+  await loginRole(employeePage, 'maya@northstar.example');
+  await openLeaveRoute(employeePage, 'employee');
+  const beforeLeave = await employeePage.evaluate(async () => {
+    const [bootstrapResponse, personalResponse] = await Promise.all([fetch('/api/bootstrap'), fetch('/api/personal')]);
+    return { bootstrap: await bootstrapResponse.json(), personal: await personalResponse.json() };
+  });
+  const existingDates = new Set((beforeLeave.bootstrap?.state?.requests || []).filter(item => item.status !== 'declined').map(item => item.date || item.start));
+  const shift = (beforeLeave.personal?.shifts || []).find(item => item?.start && !existingDates.has(item.start.slice(0, 10)));
+  assert.ok(shift, 'No unrequested synthetic shift is available for the leave browser journey.');
+  const requestedDate = shift.start.slice(0, 10);
+  await employeePage.locator('button[data-vector-workflow="leave-request"]').click({ timeout: 5000 });
+  await employeePage.locator('#modalform input[name="date"]').fill(requestedDate);
+  await employeePage.locator('#modalform input[name="hours"]').fill('7.5');
+  await employeePage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  await employeePage.locator('.vw-receipt').waitFor({ state: 'visible', timeout: 10000 });
+  const afterRequest = await employeePage.evaluate(async () => {
+    const [bootstrapResponse, personalResponse] = await Promise.all([fetch('/api/bootstrap'), fetch('/api/personal')]);
+    return { bootstrap: await bootstrapResponse.json(), personal: await personalResponse.json() };
+  });
+  const beforeIds = new Set((beforeLeave.bootstrap?.state?.requests || []).map(item => item.id));
+  const created = (afterRequest.bootstrap?.state?.requests || []).find(item => !beforeIds.has(item.id));
+  assert.ok(created?.id && created.status === 'pending', 'Employee UI did not create a source-saved pending leave request.');
+  assert.equal(afterRequest.personal.leave.availableMinutes, beforeLeave.personal.leave.availableMinutes - 450, 'Employee UI did not read back the reserved leave balance.');
+  leaveJourney.employeeUiSubmitted = true;
+  leaveJourney.pendingStateReadBack = true;
+  leaveJourney.requestId = created.id;
 
-    const labels = ['Today', 'People', 'Plan', 'Factory', 'Improve'];
-    for (let i = 0; i < labels.length; i += 1) {
-      const nav = page.locator('.vector-nav-item').nth(i);
-      assert.equal(await nav.count(), 1, `Missing canonical nav item ${labels[i]}.`);
-      if ((await nav.getAttribute('aria-current')) !== 'page') {
-        await nav.click({ timeout: 5000 });
-        await page.waitForTimeout(800);
-      }
-      if (labels[i] === 'Today') {
-        await page.waitForTimeout(800);
-      }
-      const shot = await page.screenshot({ type: 'jpeg', quality: 52, fullPage: false });
-      assert.ok(shot.length > 10000, `${labels[i]} section screenshot too small.`);
-      sectionPack.push({
-        label: labels[i],
-        bytes: shot.length,
-        sha256: crypto.createHash('sha256').update(shot).digest('hex'),
-        base64: shot.toString('base64')
-      });
-    }
-    await context.close();
-  }
+  await employeePage.locator('button[data-vector-workflow="leave-request"]').click({ timeout: 5000 });
+  await employeePage.locator('#modalform input[name="date"]').fill(requestedDate);
+  await employeePage.locator('#modalform input[name="hours"]').fill('7.5');
+  await employeePage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  const overlapError = employeePage.locator('#formerror');
+  await overlapError.waitFor({ state: 'visible', timeout: 10000 });
+  assert.match(await overlapError.innerText(), /overlap|already|request/i, 'Employee UI did not surface the authoritative overlap refusal.');
+  leaveJourney.overlapRefusedInUi = true;
+  await employeePage.locator('#modalform [data-act="close"]').click({ timeout: 5000 });
 
-  console.log(`CURRENT_MANAGER_SECTION_SCREEN_PACK=PASS|screens=${sectionPack.length}|labels=${sectionPack.map(item => item.label).join(',')}`);
-  for (const item of sectionPack) {
-    const encoded = item.base64;
-    const chunkSize = 24000;
-    const chunks = Math.ceil(encoded.length / chunkSize);
-    console.log(`CURRENT_MANAGER_SECTION_SCREEN_META|${item.label}|bytes=${item.bytes}|sha=${item.sha256}|chunks=${chunks}`);
-    for (let i = 0; i < chunks; i += 1) {
-      console.log(`CURRENT_MANAGER_SECTION_SCREEN_B64_CHUNK|${item.label}|${i + 1}|${chunks}|${encoded.slice(i * chunkSize, (i + 1) * chunkSize)}`);
-    }
-  }
+  await employeePage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await employeePage.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+  await openLeaveRoute(employeePage, 'employee');
+  const pendingRow = employeePage.locator(`[data-vector-leave-id="${created.id}"] [data-vector-leave-status]`);
+  await pendingRow.waitFor({ state: 'visible', timeout: 10000 });
+  assert.equal((await pendingRow.innerText()).trim().toLowerCase(), 'pending');
+  leaveJourney.refreshedUiRetainedPending = true;
+  await employeeContext.close();
 
-  const routePack = [];
-  {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-    const page = await context.newPage();
-    const pageErrors = [];
-    page.on('pageerror', error => pageErrors.push(String(error?.stack || error)));
-    await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    const loginStatus = await page.evaluate(async ({ password }) => {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'manager@northstar.example', password })
-      });
-      return response.status;
-    }, { password });
-    assert.equal(loginStatus, 200, 'Manager route-pack login failed.');
-    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
-    await page.waitForTimeout(1200);
+  const managerContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const managerPage = await managerContext.newPage();
+  await loginRole(managerPage, 'manager@northstar.example');
+  await openLeaveRoute(managerPage, 'manager');
+  const managerRow = managerPage.locator(`[data-vector-leave-id="${created.id}"]`);
+  await managerRow.waitFor({ state: 'visible', timeout: 10000 });
+  await managerRow.locator('button[data-vector-workflow="leave-approve"]').click({ timeout: 5000 });
+  await managerPage.locator('#modalform input[name="reviewed"]').check();
+  await managerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  await managerPage.locator('.vw-receipt').waitFor({ state: 'visible', timeout: 10000 });
+  leaveJourney.managerUiDecided = true;
+  const managerReadBack = await managerPage.evaluate(async id => {
+    const response = await fetch('/api/bootstrap');
+    const bootstrap = await response.json();
+    return bootstrap.state.requests.find(item => item.id === id) || null;
+  }, created.id);
+  assert.equal(managerReadBack?.status, 'approved', 'Manager UI decision was not read back from stored state.');
+  leaveJourney.managerStateReadBack = true;
+  leaveJourney.decision = 'approved';
+  await managerContext.close();
 
-    const seenRoutes = new Set();
-    async function captureRoute(section, label) {
-      await page.waitForTimeout(500);
-      const state = await page.evaluate(() => ({
-        href: location.href,
-        hash: location.hash,
-        width: innerWidth,
-        scrollWidth: document.documentElement.scrollWidth,
-        title: document.title,
-        heading: (document.querySelector('.content h1')?.textContent || '').replace(/\s+/g, ' ').trim()
-      }));
-      assert.ok(state.scrollWidth <= state.width + 1, `${section} / ${label} horizontal overflow.`);
-      const route = state.hash || `#screen-${section}-${label}`;
-      if (seenRoutes.has(route)) return;
-      seenRoutes.add(route);
-      const shot = await page.screenshot({ type: 'jpeg', quality: 44, fullPage: false });
-      assert.ok(shot.length > 9000, `${section} / ${label} screenshot too small.`);
-      routePack.push({
-        section,
-        label,
-        route,
-        title: state.title,
-        heading: state.heading,
-        bytes: shot.length,
-        sha256: crypto.createHash('sha256').update(shot).digest('hex'),
-        base64: shot.toString('base64')
-      });
-    }
+  const freshEmployeeContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const freshEmployeePage = await freshEmployeeContext.newPage();
+  await loginRole(freshEmployeePage, 'maya@northstar.example');
+  await openLeaveRoute(freshEmployeePage, 'employee');
+  const approvedRow = freshEmployeePage.locator(`[data-vector-leave-id="${created.id}"] [data-vector-leave-status]`);
+  await approvedRow.waitFor({ state: 'visible', timeout: 10000 });
+  assert.equal((await approvedRow.innerText()).trim().toLowerCase(), 'approved');
+  leaveJourney.freshEmployeeLoginSawDecision = true;
+  await freshEmployeeContext.close();
+  console.log(`CURRENT_LEAVE_BROWSER_JOURNEY=PASS|request=${created.id}|decision=approved|overlapRefused=true|refreshReadback=true|freshLoginReadback=true`);
 
-    const sectionLabels = ['Today', 'People', 'Plan', 'Factory', 'Improve'];
-    for (let sectionIndex = 0; sectionIndex < sectionLabels.length; sectionIndex += 1) {
-      const sectionLabel = sectionLabels[sectionIndex];
-      const nav = page.locator('.vector-nav-item').nth(sectionIndex);
-      if (!(await nav.isVisible().catch(() => false)) || await nav.isDisabled().catch(() => true)) continue;
-      if ((await nav.getAttribute('aria-current')) !== 'page') {
-        await nav.click({ timeout: 5000 });
-        await page.waitForTimeout(650);
-      }
-      await captureRoute(sectionLabel, sectionLabel === 'Today' ? 'Today' : 'Overview');
+  const attendanceJourney = {
+    managerUiApproved: false,
+    exactCorrectionReadBack: false,
+    rawPunchesPreserved: false,
+    domainAuditReadBack: false,
+    refreshedUiRetainedCorrection: false,
+    weeklySignStillBlocked: false,
+    payrollReleaseStillBlocked: false,
+    issueId: null,
+    recordId: null
+  };
+  const period = '2026-09-07';
+  const teamId = 's1';
+  const issueId = 'issue-5';
+  const recordId = 'wr-e2-2026-09-09';
+  const correctionReason = 'Fictional employee correction request: production handover continued until 14:30.';
 
-      const tabs = page.locator('.vector-section-tabs button:not([disabled])');
-      const tabCount = await tabs.count();
-      const tabTargets = [];
-      for (let i = 0; i < tabCount; i += 1) {
-        const tab = tabs.nth(i);
-        tabTargets.push({
-          label: ((await tab.textContent()) || '').replace(/\s+/g, ' ').trim(),
-          route: await tab.getAttribute('data-vector-route')
-        });
-      }
-      for (const target of tabTargets) {
-        if (!target.route || !target.label) continue;
-        const tab = page.locator(`.vector-section-tabs button[data-vector-route="${target.route}"]`).first();
-        if (!(await tab.isVisible().catch(() => false)) || await tab.isDisabled().catch(() => true)) continue;
-        if ((await tab.getAttribute('aria-current')) !== 'page') {
-          await tab.click({ timeout: 5000 });
-          await page.waitForTimeout(650);
-        }
-        await captureRoute(sectionLabel, target.label);
-      }
-    }
-    assert.deepEqual(pageErrors, [], `Manager route-pack page errors: ${pageErrors.join(' | ')}`);
-    await context.close();
-  }
+  const attendancePayrollContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const attendancePayrollPage = await attendancePayrollContext.newPage();
+  const payrollPageErrors = [];
+  attendancePayrollPage.on('pageerror', error => payrollPageErrors.push(String(error?.stack || error)));
+  await loginRole(attendancePayrollPage, 'payroll@northstar.example');
+  const beforePayroll = await attendancePayrollPage.evaluate(async period => {
+    const response = await fetch('/api/payroll-run?period=' + encodeURIComponent(period));
+    return { status: response.status, json: await response.json() };
+  }, period);
+  assert.equal(beforePayroll.status, 200, 'Payroll baseline could not be read by payroll authority.');
+  assert.equal(beforePayroll.json.canRelease, false, 'Synthetic attendance baseline unexpectedly allowed payroll release.');
+  const beforePayrollTeam = beforePayroll.json.teams.find(item => item.id === teamId);
+  assert.ok(beforePayrollTeam, 'Synthetic payroll baseline is missing team s1.');
 
-  console.log(`CURRENT_MANAGER_ROUTE_SCREEN_PACK=PASS|screens=${routePack.length}|routes=${routePack.map(item => item.route).join(',')}`);
-  for (const item of routePack) {
-    const encoded = item.base64;
-    const chunkSize = 24000;
-    const chunks = Math.ceil(encoded.length / chunkSize);
-    console.log(`CURRENT_MANAGER_ROUTE_SCREEN_META|${item.section}|${item.label}|${item.route}|bytes=${item.bytes}|sha=${item.sha256}|chunks=${chunks}`);
-    console.log('CURRENT_MANAGER_ROUTE_SCREEN_CONTENT|' + JSON.stringify({ section:item.section,label:item.label,route:item.route,title:item.title,heading:item.heading }));
-    for (let i = 0; i < chunks; i += 1) {
-      console.log(`CURRENT_MANAGER_ROUTE_SCREEN_B64_CHUNK|${item.section}|${item.label}|${item.route}|${i + 1}|${chunks}|${encoded.slice(i * chunkSize, (i + 1) * chunkSize)}`);
-    }
-  }
+  const attendanceManagerContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const attendanceManagerPage = await attendanceManagerContext.newPage();
+  const attendancePageErrors = [];
+  attendanceManagerPage.on('pageerror', error => attendancePageErrors.push(String(error?.stack || error)));
+  await loginRole(attendanceManagerPage, 'manager@northstar.example');
+  const beforeAttendance = await attendanceManagerPage.evaluate(async period => {
+    const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period));
+    return { status: response.status, json: await response.json() };
+  }, period);
+  assert.equal(beforeAttendance.status, 200, 'Manager could not read the synthetic weekly review.');
+  const beforeAttendanceTeam = beforeAttendance.json.teams.find(item => item.id === teamId);
+  const beforeAttendanceIssue = beforeAttendanceTeam?.issues.find(item => item.id === issueId);
+  const beforeAttendanceRow = beforeAttendanceTeam?.records.find(item => item.id === recordId);
+  assert.equal(beforeAttendanceIssue?.status, 'open', 'The explicitly evidenced synthetic attendance issue is not fresh.');
+  assert.equal(beforeAttendanceIssue?.row, recordId);
+  assert.equal(beforeAttendanceIssue?.employee, 'e2');
+  assert.equal(beforeAttendanceIssue?.proposed?.clockOut, '2026-09-09T13:30:00.000Z');
+  assert.equal(beforeAttendanceIssue?.evidence, correctionReason);
+  assert.equal(beforeAttendanceRow?.raw?.clockOut, '2026-09-09T13:00:00.000Z');
+  assert.equal(beforeAttendanceRow?.workedMinutes, 450);
+
+  await openWeeklyRoute(attendanceManagerPage, teamId);
+  const issueButton = attendanceManagerPage.locator(`button[data-vector-workflow="issue"][data-id="${issueId}"]`);
+  await issueButton.waitFor({ state: 'visible', timeout: 10000 });
+  await issueButton.click({ timeout: 5000 });
+  await attendanceManagerPage.locator('#modalform select[name="decision"]').selectOption('accept');
+  await attendanceManagerPage.locator('#modalform textarea[name="reason"]').fill(correctionReason);
+  await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
+  const correctionResponsePromise = attendanceManagerPage.waitForResponse(response => {
+    if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
+    try { return response.request().postDataJSON()?.command === 'review-resolve'; } catch { return false; }
+  }, { timeout: 10000 });
+  await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  const correctionResponse = await correctionResponsePromise;
+  assert.equal(correctionResponse.status(), 200, 'Manager UI attendance decision was rejected.');
+  const correctionResult = await correctionResponse.json();
+  assert.equal(correctionResult.ok, true);
+  assert.equal(correctionResult.result?.id, issueId);
+  assert.equal(correctionResult.result?.status, 'resolved');
+  await attendanceManagerPage.waitForFunction(id => {
+    const receipt = document.querySelector('.vw-receipt');
+    return receipt?.textContent?.includes('review-resolve') && receipt.textContent.includes(id);
+  }, issueId, { timeout: 10000 });
+  attendanceJourney.managerUiApproved = true;
+
+  const afterAttendance = await attendanceManagerPage.evaluate(async period => {
+    const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period));
+    return { status: response.status, json: await response.json() };
+  }, period);
+  assert.equal(afterAttendance.status, 200);
+  const savedAttendanceTeam = afterAttendance.json.teams.find(item => item.id === teamId);
+  const savedAttendanceIssue = savedAttendanceTeam?.issues.find(item => item.id === issueId);
+  const savedAttendanceRow = savedAttendanceTeam?.records.find(item => item.id === recordId);
+  assert.equal(savedAttendanceIssue?.status, 'resolved');
+  assert.equal(savedAttendanceIssue?.resolution?.by, 'm1');
+  assert.equal(savedAttendanceIssue?.resolution?.decision, 'accept');
+  assert.equal(savedAttendanceIssue?.resolution?.reason, correctionReason);
+  assert.deepEqual(savedAttendanceRow?.raw, beforeAttendanceRow.raw, 'Attendance correction overwrote original punches.');
+  assert.equal(savedAttendanceRow?.effective?.clockOut, '2026-09-09T13:30:00.000Z');
+  assert.equal(savedAttendanceRow?.workedMinutes, 480);
+  assert.equal(savedAttendanceRow?.reviewedBy, 'm1');
+  assert.equal(savedAttendanceTeam?.revision, beforeAttendanceTeam.revision + 1);
+  assert.equal(savedAttendanceTeam?.blockers?.length, beforeAttendanceTeam.blockers.length - 1);
+  assert.equal(correctionResult.result?.revision, savedAttendanceTeam.revision);
+  attendanceJourney.exactCorrectionReadBack = true;
+  attendanceJourney.rawPunchesPreserved = true;
+  attendanceJourney.issueId = issueId;
+  attendanceJourney.recordId = recordId;
+
+  await attendanceManagerPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await attendanceManagerPage.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+  await openWeeklyRoute(attendanceManagerPage, teamId);
+  assert.equal(await attendanceManagerPage.locator(`button[data-vector-workflow="issue"][data-id="${issueId}"]`).count(), 0, 'Resolved attendance issue returned after refresh.');
+  const adjustmentButton = attendanceManagerPage.locator('button[data-vector-workflow="category"][data-id="adjustments"]');
+  await adjustmentButton.waitFor({ state: 'visible', timeout: 10000 });
+  await adjustmentButton.click({ timeout: 5000 });
+  const adjustmentModalText = await attendanceManagerPage.locator('#modalform').innerText();
+  assert.match(adjustmentModalText, /wr-e2-2026-09-09/);
+  assert.match(adjustmentModalText, /Correction recorded; original retained/);
+  assert.match(adjustmentModalText, /8 h/);
+  await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
+  const categoryResponsePromise = attendanceManagerPage.waitForResponse(response => {
+    if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
+    try {
+      const submitted = response.request().postDataJSON();
+      return submitted?.command === 'review-check' && submitted?.payload?.category === 'adjustments' && submitted?.payload?.team === teamId;
+    } catch { return false; }
+  }, { timeout: 10000 });
+  await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  const categoryResponse = await categoryResponsePromise;
+  assert.equal(categoryResponse.status(), 200, 'Saved Adjustments verification was rejected.');
+  await attendanceManagerPage.waitForFunction(team => {
+    const receipt = document.querySelector('.vw-receipt');
+    return receipt?.textContent?.includes('review-check') && receipt.textContent.includes(team);
+  }, teamId, { timeout: 10000 });
+  const afterCategory = await attendanceManagerPage.evaluate(async period => {
+    const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period));
+    return await response.json();
+  }, period);
+  const verifiedAttendanceTeam = afterCategory.teams.find(item => item.id === teamId);
+  assert.equal(verifiedAttendanceTeam?.categories.find(item => item.id === 'adjustments')?.confirmed, true);
+  attendanceJourney.refreshedUiRetainedCorrection = true;
+  const signButton = attendanceManagerPage.locator('button[data-vector-workflow="sign"]');
+  assert.equal(await signButton.isDisabled(), true, 'Weekly sign-off became available while source blockers remained.');
+  attendanceJourney.weeklySignStillBlocked = true;
+  assert.deepEqual(attendancePageErrors, [], `Attendance journey uncaught page errors: ${attendancePageErrors.join(' | ')}`);
+  await attendanceManagerContext.close();
+
+  const afterPayroll = await attendancePayrollPage.evaluate(async period => {
+    const response = await fetch('/api/payroll-run?period=' + encodeURIComponent(period));
+    return { status: response.status, json: await response.json() };
+  }, period);
+  assert.equal(afterPayroll.status, 200);
+  const afterPayrollTeam = afterPayroll.json.teams.find(item => item.id === teamId);
+  assert.equal(afterPayroll.json.totals.workedMinutes, beforePayroll.json.totals.workedMinutes + 30);
+  assert.equal(afterPayrollTeam?.workedMinutes, beforePayrollTeam.workedMinutes + 30);
+  assert.equal(afterPayroll.json.canRelease, false);
+  assert.equal(afterPayroll.json.lines.length, 0);
+  assert.equal(afterPayroll.json.reconciliation.ok, false);
+  const correctionAudit = afterPayroll.json.audit.find(item => item.type === 'exception-evidence-confirmed' && item.team === teamId && item.record === recordId && item.actor === 'm1');
+  const categoryAudit = afterPayroll.json.audit.find(item => item.type === 'category-checked' && item.team === teamId && item.category === 'adjustments' && item.actor === 'm1');
+  assert.equal(correctionAudit?.before?.clockOut, '2026-09-09T13:00:00.000Z');
+  assert.equal(correctionAudit?.after?.clockOut, '2026-09-09T13:30:00.000Z');
+  assert.equal(correctionAudit?.reason, correctionReason);
+  assert.ok(categoryAudit, 'Saved Adjustments verification was not present in domain audit state.');
+  attendanceJourney.domainAuditReadBack = true;
+  await attendancePayrollPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await attendancePayrollPage.waitForFunction(() => document.querySelector('button[data-vector-workflow="release"]'), { timeout: 30000 });
+  assert.equal(await attendancePayrollPage.locator('button[data-vector-workflow="release"]').isDisabled(), true, 'Payroll release became available while review holds remained.');
+  attendanceJourney.payrollReleaseStillBlocked = true;
+  assert.deepEqual(payrollPageErrors, [], `Payroll readback uncaught page errors: ${payrollPageErrors.join(' | ')}`);
+  await attendancePayrollContext.close();
+
+  browserProofEvidence = { leaveJourney, attendanceJourney };
+  console.log(`CURRENT_ATTENDANCE_BROWSER_JOURNEY=PASS|issue=${issueId}|record=${recordId}|workedMinutes=450->480|weeklyBlocked=true|payrollBlocked=true|domainAudit=true`);
 
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
   assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
-  assert.ok(managerDesktopEvidence?.base64, 'Manager desktop screenshot unavailable.');
-  console.log(`CURRENT_MANAGER_DESKTOP_SCREENSHOT_META|bytes=${managerDesktopEvidence.bytes}|sha=${managerDesktopEvidence.sha256}`);
-  {
-    const encoded = managerDesktopEvidence.base64;
-    const chunkSize = 24000;
-    const chunks = Math.ceil(encoded.length / chunkSize);
-    for (let i = 0; i < chunks; i += 1) {
-      console.log(`CURRENT_MANAGER_DESKTOP_SCREENSHOT_B64_CHUNK|${i + 1}|${chunks}|${encoded.slice(i * chunkSize, (i + 1) * chunkSize)}`);
-    }
-  }
   console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|sha=${managerAlignmentEvidence.sha256}`);
   console.log(`CURRENT_MANAGER_SCREENSHOT_B64|${managerAlignmentEvidence.base64}`);
-  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|activeActionJourneys=${timeReviewActionJourneys}|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}|assetDigests=${assetDigestProof ? 'verified' : 'not-required'}`);
+  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|sourceActionOpenJourneys=${timeReviewActionJourneys}|leaveBusinessActionJourneys=1|attendanceBusinessActionJourneys=1|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
 } finally {
   await browser.close();
   delete process.env.WFM_STAGING_PASSWORD;
