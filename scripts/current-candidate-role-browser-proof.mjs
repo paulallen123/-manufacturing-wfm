@@ -70,18 +70,19 @@ async function openLeaveRoute(page, expectedRole) {
 async function openWeeklyRoute(page, teamId) {
   const weekly = page.locator('button[data-vector-workflow="weekly"]').first();
   if (!(await weekly.isVisible().catch(() => false))) {
-    const labels = ['Time & Attendance', 'Time review', 'Time', 'Attendance'];
+    const vectorAttendance = page.locator('[data-vector-route="attendance"]:visible').first();
+    const sourceAttendance = page.locator('.app > .sidebar nav .navbtn[data-page="attendance"]:visible, .sidebar:not(.vector-sidebar) nav .navbtn[data-page="attendance"]:visible').first();
     let opened = false;
-    for (const label of labels) {
-      const candidate = page.getByText(label, { exact: true }).first();
+    for (const candidate of [vectorAttendance, sourceAttendance]) {
       try {
-        await candidate.waitFor({ state: 'visible', timeout: 2500 });
+        if (!(await candidate.count())) continue;
+        await candidate.waitFor({ state: 'visible', timeout: 3000 });
         await candidate.click({ timeout: 5000 });
         opened = true;
         break;
       } catch {}
     }
-    assert.equal(opened, true, 'No visible Time/Attendance navigation control could open weekly review.');
+    assert.equal(opened, true, 'No source-bound Attendance route control could open weekly review.');
   }
   await weekly.waitFor({ state: 'visible', timeout: 10000 });
   await weekly.click({ timeout: 5000 });
