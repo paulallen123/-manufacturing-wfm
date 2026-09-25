@@ -4,3 +4,6 @@ rule=update only after live pre-freeze admission
 run=release-assault-20260925T0900Z
 scope=core+reporting+recovery+scheduling-convergence
 pre_freeze=external-health-pass+runtime-contract-pass+railway-one-domain-promotion-blocked
+run=release-assault-20260925-packaging-nav-repair
+scope=core+reporting;recovery=current-proof-after-green
+pre_freeze=core-external-health-pass+runtime-contract-pass+recovery-specialist-rejected+railway-one-domain-promotion-blocked
