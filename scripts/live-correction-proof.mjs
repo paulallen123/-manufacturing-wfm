@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 
-const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
-const expectedRelease = '0.6.76-hosted-staging-rc1';
-const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
+const expectedOrigin = (process.env.WFM_EXPECTED_ORIGIN || '').replace(/\/$/, '');
+const expectedRelease = process.env.WFM_EXPECTED_RELEASE || '0.6.76-hosted-staging-rc1';
+const origin = (process.env.WFM_PUBLIC_ORIGIN || '').replace(/\/$/, '');
 const password = process.env.WFM_STAGING_PASSWORD;
-assert.equal(origin, expectedOrigin);
+assert.ok(expectedOrigin, 'WFM_EXPECTED_ORIGIN must be supplied by the frozen release manifest.');
+assert.ok(origin, 'WFM_PUBLIC_ORIGIN must be supplied by the target runtime.');
+assert.equal(origin, expectedOrigin, 'Hosted proof origin does not match the frozen release manifest.');
 assert.ok(password && password.length >= 20);
 
 const timeoutMs = 20_000;
