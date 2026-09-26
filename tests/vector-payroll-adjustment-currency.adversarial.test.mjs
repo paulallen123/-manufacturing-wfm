@@ -88,3 +88,35 @@ test('legacy pence is shown only under authoritative GBP context and the review 
   assert.match(unknown.workflow.payrollPage(), /adj-unknown[^<]*·[^<]*·[^<]*·[^<]*· —/);
   assert.doesNotMatch(unknown.workflow.payrollPage(), /£123\.45/);
 });
+
+test('an adjustment without authoritative money cannot enter approval', async () => {
+  const pending = loadPayroll({
+    locale: 'en-GB', currency: null,
+    adjustment: {
+      id: 'adj-pending-unknown', employee: 'employee-1', status: 'pending_approval', minutesDelta: 60,
+      grossPenceDelta: 12345, revision: 1, proposed: {}
+    }
+  });
+  assert.match(pending.workflow.payrollPage(), /data-vector-workflow="adjust-review"[^>]* disabled/);
+  await assert.rejects(
+    () => pending.workflow.action('adjust-review', 'adj-pending-unknown'),
+    /authoritative payroll adjustment amount/i
+  );
+  assert.equal(pending.modal(), undefined, 'a blocked review must not open a decision modal');
+});
+
+test('an approved adjustment without authoritative money cannot enter release', async () => {
+  const approved = loadPayroll({
+    locale: 'en-GB', currency: null,
+    adjustment: {
+      id: 'adj-approved-unknown', employee: 'employee-1', status: 'approved', minutesDelta: 60,
+      grossPenceDelta: 12345, revision: 2, proposed: {}
+    }
+  });
+  assert.match(approved.workflow.payrollPage(), /data-vector-workflow="adjust-release"[^>]* disabled/);
+  await assert.rejects(
+    () => approved.workflow.action('adjust-release'),
+    /authoritative payroll adjustment amount/i
+  );
+  assert.equal(approved.modal(), undefined, 'a blocked release must not open a release modal');
+});

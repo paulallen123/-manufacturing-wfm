@@ -83,15 +83,9 @@ test('authoritative matching minor-unit evidence remains visible in list and rev
     authoritative: true,
     currencySource: 'cost_evidence',
     adjustment: {
-      id: 'adj-eur',
-      employee: 'employee-1',
-      status: 'pending_approval',
-      minutesDelta: 60,
-      grossMinorDelta: 12345,
-      minorUnitExponent: 2,
-      currency: 'EUR',
-      revision: 1,
-      proposed: {}
+      id: 'adj-eur', employee: 'employee-1', status: 'pending_approval',
+      minutesDelta: 60, grossMinorDelta: 12345, minorUnitExponent: 2,
+      currency: 'EUR', revision: 1, proposed: {}
     }
   });
 
@@ -100,50 +94,33 @@ test('authoritative matching minor-unit evidence remains visible in list and rev
   assert.match(harness.modal().html, /123,45\s*€/);
 });
 
-test('a non-authoritative display context cannot make a payroll amount look authoritative', async () => {
+test('a non-authoritative display context blocks payroll review', async () => {
   const harness = loadPayroll({
-    currency: 'GBP',
-    authoritative: false,
-    currencySource: 'operating_context',
+    currency: 'GBP', authoritative: false, currencySource: 'operating_context',
     adjustment: {
-      id: 'adj-untrusted-context',
-      employee: 'employee-1',
-      status: 'pending_approval',
-      minutesDelta: 60,
-      grossMinorDelta: 12345,
-      minorUnitExponent: 2,
-      currency: 'GBP',
-      revision: 1,
-      proposed: {}
+      id: 'adj-untrusted-context', employee: 'employee-1', status: 'pending_approval',
+      minutesDelta: 60, grossMinorDelta: 12345, minorUnitExponent: 2,
+      currency: 'GBP', revision: 1, proposed: {}
     }
   });
 
   assert.match(harness.page(), /adj-untrusted-context[^<]*·[^<]*·[^<]*·[^<]*· —/);
   assert.doesNotMatch(harness.page(), /£123\.45/);
-  await harness.review();
-  assert.match(harness.modal().html, /adj-untrusted-context[^<]*·[^<]*· —/);
-  assert.doesNotMatch(harness.modal().html, /£123\.45/);
+  await assert.rejects(harness.review(), /Authoritative payroll adjustment amount evidence is unavailable/);
+  assert.equal(harness.modal(), undefined);
 });
 
-test('an unsafe minor-unit integer is refused instead of rounded into a plausible amount', async () => {
+test('an unsafe minor-unit integer blocks payroll review', async () => {
   const harness = loadPayroll({
-    currency: 'GBP',
-    authoritative: true,
-    currencySource: 'cost_evidence',
+    currency: 'GBP', authoritative: true, currencySource: 'cost_evidence',
     adjustment: {
-      id: 'adj-unsafe-integer',
-      employee: 'employee-1',
-      status: 'pending_approval',
-      minutesDelta: 60,
-      grossMinorDelta: Number.MAX_SAFE_INTEGER + 1,
-      minorUnitExponent: 2,
-      currency: 'GBP',
-      revision: 1,
-      proposed: {}
+      id: 'adj-unsafe-integer', employee: 'employee-1', status: 'pending_approval',
+      minutesDelta: 60, grossMinorDelta: Number.MAX_SAFE_INTEGER + 1,
+      minorUnitExponent: 2, currency: 'GBP', revision: 1, proposed: {}
     }
   });
 
   assert.match(harness.page(), /adj-unsafe-integer[^<]*·[^<]*·[^<]*·[^<]*· —/);
-  await harness.review();
-  assert.match(harness.modal().html, /adj-unsafe-integer[^<]*·[^<]*· —/);
+  await assert.rejects(harness.review(), /Authoritative payroll adjustment amount evidence is unavailable/);
+  assert.equal(harness.modal(), undefined);
 });
