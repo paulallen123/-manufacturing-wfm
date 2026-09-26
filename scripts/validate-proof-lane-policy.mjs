@@ -64,6 +64,14 @@ assert.equal(p.orchestration?.softwareImposedWorkerLimit,null);
 assert.equal(p.orchestration?.softwareImposedManagerLimit,null);
 assert.equal(p.orchestration?.providerAndAccountLimitsStillApply,true);
 
+const identityWorkflow=fs.readFileSync(new URL('../.github/workflows/identity-runtime-guard.yml',import.meta.url),'utf8');
+assert.doesNotMatch(identityWorkflow,/for _ in \$\(seq 1 40\)/,'Identity readiness must not use a fixed attempt count.');
+assert.doesNotMatch(identityWorkflow,/sleep 0\.25/,'Identity readiness must not use a fixed sleep window.');
+assert.match(identityWorkflow,/deadline=\$\(\(SECONDS\+60\)\)/,'Identity readiness must use a bounded wall-clock deadline.');
+assert.match(identityWorkflow,/while :; do/,'Identity readiness must observe the semantic health condition.');
+assert.match(identityWorkflow,/\/api\/health/,'Identity readiness must observe the health endpoint.');
+assert.match(identityWorkflow,/docker logs/,'Identity readiness failure must emit diagnostics.');
+
 const ids=new Set(),providers=new Set(),failureDomains=new Set(),promotionFailureDomains=new Set();
 let exactImage=0;
 for(const lane of p.lanes||[]){
