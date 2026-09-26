@@ -108,7 +108,10 @@ function emit(receipt) {
     status: 'PASS',
     scope: 'fixture-only hosted restart and exact read-back',
     candidateSha,
-    sequence: { beforeDeploymentId, afterDeploymentId, distinctDeployments: true },
+    sequence: [
+      { phase: 'before-restart', deploymentId: beforeDeploymentId, id: persistenceId, digest: expectedDigest, sourceDigest: expectedSourceDigest },
+      { phase: 'after-restart', deploymentId: afterDeploymentId, id: persistenceId, digest: hash(correction), sourceDigest: hash(sourceRecord) },
+    ],
     assertions,
     persistence: {
       id: persistenceId,
@@ -128,7 +131,10 @@ function emit(receipt) {
     status: 'FAIL',
     scope: 'fixture-only hosted restart and exact read-back',
     candidateSha,
-    sequence: { beforeDeploymentId, afterDeploymentId },
+    sequence: [
+      { phase: 'before-restart', deploymentId: beforeDeploymentId },
+      { phase: 'after-restart', deploymentId: afterDeploymentId },
+    ],
     assertions,
     persistence: { id: persistenceId, employee: employeeEmail },
     error: String(error?.message || error).slice(0, 500),
