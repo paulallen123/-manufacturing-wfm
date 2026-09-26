@@ -10,6 +10,7 @@ function unique(values) {
 function assessProofLane(lane = {}, options = {}) {
   const issues = [];
   const candidateSha = options.candidateSha || null;
+  const requireProductionAuthority = options.requireProductionAuthority === true;
   const providerState = String(lane.providerState || 'AVAILABLE').toUpperCase();
   const exactImage = lane.class === 'exact-image';
   const vars = new Set(Array.isArray(lane.variableNames) ? lane.variableNames : []);
@@ -50,6 +51,17 @@ function assessProofLane(lane = {}, options = {}) {
     }
     if (lane.applicationRuntimeUser === 'root' || lane.applicationRuntimeUid === 0) {
       issues.push({code:'APPLICATION_RUNTIME_ROOT_FORBIDDEN'});
+    }
+    if (requireProductionAuthority) {
+      if (lane.productionApproved !== true) {
+        issues.push({code:'PRODUCTION_AUTHORITY_NOT_APPROVED'});
+      }
+      if (lane.stagingOnly === true) {
+        issues.push({code:'STAGING_ARTIFACT_FORBIDDEN_FOR_PRODUCTION'});
+      }
+      if (lane.fixtureOnly === true) {
+        issues.push({code:'FIXTURE_ARTIFACT_FORBIDDEN_FOR_PRODUCTION'});
+      }
     }
     if (!lane.domain) {
       issues.push({code:'PUBLIC_ENDPOINT_MISSING'});
@@ -96,7 +108,8 @@ function simulatePreFreeze(input = {}) {
   const lanes = Array.isArray(input.lanes) ? input.lanes : [];
   const candidateSha = input.candidateSha || null;
   const requiredDomains = Math.max(1, Number(input.requiredIndependentFailureDomains || 2));
-  const assessments = lanes.map(lane => assessProofLane(lane, {candidateSha}));
+  const requireProductionAuthority = input.requireProductionAuthority === true;
+  const assessments = lanes.map(lane => assessProofLane(lane, {candidateSha, requireProductionAuthority}));
   const admitted = assessments.filter(x => x.admitted);
   const rejected = assessments.filter(x => !x.admitted);
   const exactAdmitted = admitted.filter(x => x.class === 'exact-image');
@@ -142,6 +155,7 @@ function simulatePreFreeze(input = {}) {
   return Object.freeze({
     contract:'VECTOR_PRE_FREEZE_SIMULATION_V1',
     candidateSha,
+    requireProductionAuthority,
     idleWaitAllowed:false,
     assessments:Object.freeze(assessments),
     admittedLaneIds:Object.freeze(admitted.map(x => x.id)),
