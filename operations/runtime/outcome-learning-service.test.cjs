@@ -93,3 +93,64 @@ test('verified operational learning persists across restart without granting aut
   service.close();
   fs.rmSync(dir,{recursive:true,force:true});
 });
+
+
+test('HTTP outcome learning route is internal-write and tenant-scoped manager-read',async()=>{
+  const {createHash}=require('node:crypto');
+  const {DatabaseSync}=require('node:sqlite');
+  const http=require('node:http');
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'vector-outcome-learning-http-'));
+  const dbPath=path.join(dir,'proof.sqlite');
+  const engineModulePath=path.resolve(__dirname,'../../adaptive-intelligence/engine.mjs');
+  const db=new DatabaseSync(dbPath);
+  db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT,role TEXT);CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT,expires INTEGER);');
+  const tokenA='a'.repeat(64),tokenB='b'.repeat(64);
+  const hash=v=>createHash('sha256').update(v).digest('hex');
+  db.prepare('INSERT INTO users VALUES(?,?,?)').run('manager-a@example.invalid','A','manager');
+  db.prepare('INSERT INTO users VALUES(?,?,?)').run('manager-b@example.invalid','B','manager');
+  db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(hash(tokenA),'manager-a@example.invalid',Date.now()+60000);
+  db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(hash(tokenB),'manager-b@example.invalid',Date.now()+60000);
+  db.close();
+
+  const service=createOutcomeLearningService({dbPath,engineModulePath,internalToken:'trusted-learning-worker'});
+  await service.ready();
+  const server=http.createServer(async(req,res)=>{
+    if(!await service.handleRequest(req,res)){res.statusCode=404;res.end();}
+  });
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin='http://127.0.0.1:'+server.address().port;
+  async function post(body,headers={}){
+    return fetch(origin+'/api/learning/outcomes/record',{method:'POST',headers:{'content-type':'application/json',...headers},body:JSON.stringify(body)});
+  }
+
+  const denied=await post(verifiedInput('http-denied',320));
+  assert.equal(denied.status,403);
+
+  for(const [trigger,actual] of [['http-1',320],['http-2',315],['http-3',310]]){
+    const response=await post(verifiedInput(trigger,actual),{'x-wfm-learning-internal':'trusted-learning-worker'});
+    assert.equal(response.status,200);
+  }
+
+  const a=await fetch(origin+'/api/learning/outcomes/status',{headers:{cookie:'wfm_session='+tokenA}});
+  assert.equal(a.status,200);
+  const aBody=await a.json();
+  assert.equal(aBody.tenant,'A');
+  assert.equal(aBody.snapshot.outcomes.length,3);
+  assert.equal(aBody.snapshot.skills.length,1);
+  assert.equal(aBody.snapshot.skills[0].authority,'none');
+
+  const b=await fetch(origin+'/api/learning/outcomes/status',{headers:{cookie:'wfm_session='+tokenB}});
+  assert.equal(b.status,200);
+  const bBody=await b.json();
+  assert.equal(bBody.tenant,'B');
+  assert.deepEqual(bBody.snapshot.outcomes,[]);
+  assert.deepEqual(bBody.snapshot.skills,[]);
+
+  const unauth=await fetch(origin+'/api/learning/outcomes/status');
+  assert.equal(unauth.status,401);
+
+  service.close();
+  server.closeAllConnections();
+  await new Promise(resolve=>server.close(resolve));
+  fs.rmSync(dir,{recursive:true,force:true});
+});
