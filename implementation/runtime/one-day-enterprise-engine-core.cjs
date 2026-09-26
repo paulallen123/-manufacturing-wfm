@@ -80,6 +80,99 @@ function ensureLegacyColumn(db, table, column, definition) {
   return true;
 }
 
+function sqlIdentifier(value) {
+  const name = String(value || '');
+  if (!name || !/^[A-Za-z0-9_]+$/.test(name)) {
+    throw new Error('Unsafe SQLite identifier.');
+  }
+  return '"' + name.replace(/"/g, '""') + '"';
+}
+
+function compatibilityDefaultSql(column) {
+  const type = String(column?.type || '').toUpperCase();
+  if (/INT|REAL|FLOA|DOUB|NUM|DEC|BOOL/.test(type)) return '0';
+  if (/BLOB/.test(type)) return "X''";
+  return "''";
+}
+
+function ensureImplementationEventsWriteCompatibility(db) {
+  const table = 'implementation_events';
+  const currentAuditColumns = new Set(['run_id', 'tenant', 'event', 'detail_json', 'created_at']);
+  const columns = db.prepare('PRAGMA table_info(' + sqlIdentifier(table) + ')').all();
+  const blockers = columns.filter(column =>
+    Number(column.notnull) === 1 &&
+    column.dflt_value == null &&
+    Number(column.pk) === 0 &&
+    !currentAuditColumns.has(column.name)
+  );
+  if (blockers.length === 0) return false;
+
+  const blockerNames = new Set(blockers.map(column => column.name));
+  const tableSql = db.prepare(
+    "SELECT sql FROM sqlite_master WHERE type='table' AND name=?"
+  ).get(table)?.sql || '';
+  const triggers = db.prepare(
+    "SELECT name,sql FROM sqlite_master WHERE type='trigger' AND tbl_name=? AND sql IS NOT NULL ORDER BY name"
+  ).all(table);
+  const indexes = db.prepare(
+    "SELECT name,sql FROM sqlite_master WHERE type='index' AND tbl_name=? AND sql IS NOT NULL ORDER BY name"
+  ).all(table);
+  const primaryKeyColumns = columns
+    .filter(column => Number(column.pk) > 0)
+    .sort((left, right) => Number(left.pk) - Number(right.pk));
+  const autoincrement = /\bAUTOINCREMENT\b/i.test(tableSql);
+  const temporaryTable = 'implementation_events__compat_migration';
+
+  const existingTemporary = db.prepare(
+    "SELECT 1 AS present FROM sqlite_master WHERE type='table' AND name=?"
+  ).get(temporaryTable);
+  if (existingTemporary) {
+    throw new Error('Implementation audit compatibility migration found an unfinished temporary table.');
+  }
+
+  const columnDefinitions = columns.map(column => {
+    let definition = sqlIdentifier(column.name);
+    if (column.type) definition += ' ' + String(column.type);
+    if (primaryKeyColumns.length === 1 && Number(column.pk) === 1) {
+      definition += ' PRIMARY KEY';
+      if (autoincrement && /INT/i.test(String(column.type || ''))) definition += ' AUTOINCREMENT';
+    } else if (Number(column.notnull) === 1) {
+      definition += ' NOT NULL';
+    }
+    if (column.dflt_value != null) {
+      definition += ' DEFAULT ' + String(column.dflt_value);
+    } else if (blockerNames.has(column.name)) {
+      definition += ' DEFAULT ' + compatibilityDefaultSql(column);
+    }
+    return definition;
+  });
+
+  if (primaryKeyColumns.length > 1) {
+    columnDefinitions.push(
+      'PRIMARY KEY (' + primaryKeyColumns.map(column => sqlIdentifier(column.name)).join(',') + ')'
+    );
+  }
+
+  const columnList = columns.map(column => sqlIdentifier(column.name)).join(',');
+  db.exec('BEGIN IMMEDIATE;');
+  try {
+    db.exec(
+      'ALTER TABLE ' + sqlIdentifier(table) + ' RENAME TO ' + sqlIdentifier(temporaryTable) + ';' +
+      'CREATE TABLE ' + sqlIdentifier(table) + '(' + columnDefinitions.join(',') + ');' +
+      'INSERT INTO ' + sqlIdentifier(table) + '(' + columnList + ') SELECT ' + columnList +
+        ' FROM ' + sqlIdentifier(temporaryTable) + ';' +
+      'DROP TABLE ' + sqlIdentifier(temporaryTable) + ';'
+    );
+    for (const index of indexes) db.exec(index.sql);
+    for (const trigger of triggers) db.exec(trigger.sql);
+    db.exec('COMMIT;');
+  } catch (error) {
+    try { db.exec('ROLLBACK;'); } catch {}
+    throw error;
+  }
+  return true;
+}
+
 function secureEqual(left, right) {
   const a = Buffer.from(String(left || ''));
   const b = Buffer.from(String(right || ''));
@@ -223,6 +316,11 @@ function createOneDayEnterpriseEngine(options = {}) {
   ]) {
     ensureLegacyColumn(db, 'implementation_events', column, definition);
   }
+
+  // SQLite cannot add defaults to existing NOT NULL legacy columns in place.
+  // Rebuild only when such columns would reject modern audit writes, preserving
+  // every existing row plus explicit index/trigger definition.
+  ensureImplementationEventsWriteCompatibility(db);
 
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
