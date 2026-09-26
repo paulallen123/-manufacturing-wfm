@@ -185,22 +185,24 @@ function emit(receipt) {
   assert.ok(!(other.body?.requests || []).some(item => item.id === correctionId));
   pass('cross_tenant_isolation');
 
+  const persistence = {
+    id: correctionId,
+    employee: employee.email,
+    status: correction.status,
+    revision: correction.revision,
+    history,
+    digest: hash(correction),
+    sourceRecordId: sourceRecord.id,
+    sourceDigest: hash(sourceRecord),
+  };
   emit({
     status: 'PASS',
     scope: 'fixture-only hosted persistence seed',
     candidateSha,
     beforeDeploymentId,
     assertions,
-    persistence: {
-      id: correctionId,
-      employee: employee.email,
-      status: correction.status,
-      revision: correction.revision,
-      history,
-      digest: hash(correction),
-      sourceRecordId: sourceRecord.id,
-      sourceDigest: hash(sourceRecord),
-    },
+    sequence: [{ phase: 'seed', beforeDeploymentId, ...persistence }],
+    persistence,
     sourceAttendanceMutated: false,
     finishedAt: new Date().toISOString(),
   });
