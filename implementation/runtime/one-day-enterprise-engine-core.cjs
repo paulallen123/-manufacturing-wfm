@@ -620,6 +620,20 @@ function createOneDayEnterpriseEngine(options = {}) {
       return writeJson(res, 200, { invitation: { state: 'STARTED', startedRunId: existingRun.id }, implementation: readinessForRun(existingRun) });
     }
 
+    // A trusted signed/activated contract is the implementation start signal.
+    // Do not wait for an email click or other human acknowledgement before
+    // provisioning the implementation run. Notification is advisory only.
+    const started = Date.now();
+    const deadline = started + targetHours * 60 * 60 * 1000;
+    const runId = randomUUID();
+    const runCreatedAt = nowIso();
+    insertRun.run(runId, tenant, contractHash, 'BUILDING', started, deadline, targetHours, runCreatedAt, runCreatedAt);
+    const autoStartedRun = runById.get(runId, tenant);
+    record(runId, tenant, 'CONTRACT_AUTO_STARTED', {
+      targetHours,
+      contractRefDigest: contractHash.slice(0, 16)
+    });
+
     const recipientHash = recipientDigest(recipientEmail);
     const existing = invitationByContract.get(tenant, contractHash);
     if (existing) {
@@ -642,6 +656,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     );
     const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
 
+    let notificationDelivered = false;
     try {
       const delivery = await invitationSender({
         to: recipientEmail,
@@ -650,7 +665,8 @@ function createOneDayEnterpriseEngine(options = {}) {
         tenant,
         invitationId: id
       });
-      record(null, tenant, 'CONTRACT_INVITATION_SENT', {
+      notificationDelivered = true;
+      record(runId, tenant, 'CONTRACT_INVITATION_SENT', {
         invitationId: id,
         targetHours,
         contractRefDigest: contractHash.slice(0, 16),
@@ -658,17 +674,20 @@ function createOneDayEnterpriseEngine(options = {}) {
         messageId: delivery?.messageId || null
       });
     } catch (error) {
+      // Notification failure must never stop a trusted contract from entering
+      // the zero-touch implementation pipeline. Remove the undelivered token,
+      // keep the run, and surface a non-blocking audit event.
       deleteInvitation.run(id);
-      record(null, tenant, 'CONTRACT_INVITATION_FAILED', {
+      record(runId, tenant, 'CONTRACT_INVITATION_FAILED', {
         invitationId: id,
         contractRefDigest: contractHash.slice(0, 16)
       });
-      throw error;
     }
 
     return writeJson(res, 201, {
-      invitation: publicInvitation(invitationByContract.get(tenant, contractHash)),
-      implementation: null
+      invitation: notificationDelivered ? publicInvitation(invitationByContract.get(tenant, contractHash)) : null,
+      implementation: readinessForRun(autoStartedRun),
+      notification: { delivered: notificationDelivered }
     });
   }
 
