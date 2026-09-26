@@ -232,13 +232,27 @@
   function times(initial = {}) {
     if ((initial.breaks || []).length > 1 || (initial.breaks || []).some(item => item.paid)) throw Error('This record contains multiple or paid breaks. Use Attendance corrections with the full source break evidence; this compact editor will not replace them.');
     const context=displayContext();
-    if(context?.timeZoneSource!=='operating_context'||!context.timeZone)throw Error('Site time zone evidence is unavailable. Refresh or select a site with an effective-dated time zone before editing attendance.');
+    if(context?.timeZoneSource!=='operating_context'||context.authoritative!==true||!context.timeZone)throw Error('Authoritative site time-zone evidence is unavailable. Refresh or select a site with an effective-dated time zone before editing attendance.');
     if(typeof globalThis.VectorOperatingContext?.localDateTimeInput!=='function')throw Error('Site-local time formatting is unavailable. Refresh before editing attendance.');
+    if(typeof globalThis.VectorOperatingContext?.timeZoneOffsetLabel!=='function'||typeof globalThis.VectorOperatingContext?.resolveLocalDateTimeInput!=='function')throw Error('Site-local time resolution is unavailable. Refresh before editing attendance.');
     const local = value => { if(!value)return '';const result=globalThis.VectorOperatingContext.localDateTimeInput(value,context);if(!result)throw Error('The source clocking time is invalid. Review the original evidence.');return result; };
-    return `<fieldset id="vw-work-fields"><legend>Verified worked time · ${escape(context.timeZone)}</legend><div class="formrow"><label>Clock-in<input type="datetime-local" name="clockIn" value="${escape(local(initial.clockIn))}" required></label><label>Clock-out<input type="datetime-local" name="clockOut" value="${escape(local(initial.clockOut))}" required></label></div><div class="formrow"><label>Unpaid break start<input type="datetime-local" name="breakStart" value="${escape(local(initial.breaks?.[0]?.start))}"></label><label>Unpaid break end<input type="datetime-local" name="breakEnd" value="${escape(local(initial.breaks?.[0]?.end))}"></label></div>${checked('breaksConfirmed', 'I verified actual unpaid breaks, including no unpaid break when blank.')}</fieldset>`;
+    const offset = value => value?globalThis.VectorOperatingContext.timeZoneOffsetLabel(value,context):'';
+    const field = (label,name,value,required=false) => `<label>${label}<input type="datetime-local" name="${name}" value="${escape(local(value))}"${required?' required':''}>${value?`<small>Source instant · ${escape(offset(value)||'offset unavailable')}</small>`:''}</label>`;
+    return `<fieldset id="vw-work-fields"><legend>Verified worked time · ${escape(context.timeZone)}</legend><p>Times are shown in the selected site's local time. The source UTC offset is retained when a displayed value is unchanged.</p><div class="formrow">${field('Clock-in','clockIn',initial.clockIn,true)}${field('Clock-out','clockOut',initial.clockOut,true)}</div><div class="formrow">${field('Unpaid break start','breakStart',initial.breaks?.[0]?.start)}${field('Unpaid break end','breakEnd',initial.breaks?.[0]?.end)}</div>${checked('breaksConfirmed', 'I verified actual unpaid breaks, including no unpaid break when blank.')}</fieldset>`;
   }
-  function timeInput(form) {
-    return Object.fromEntries(['clockIn', 'clockOut', 'breakStart', 'breakEnd'].map(key => [key, String(form.get(key) || '')]).concat([['breaksConfirmed', form.has('breaksConfirmed')]]));
+  function timeInput(form,initial={}) {
+    const context=displayContext();
+    if(context?.timeZoneSource!=='operating_context'||context.authoritative!==true||!context.timeZone)throw Error('Authoritative site time-zone evidence is unavailable. Refresh before saving attendance.');
+    const originals={clockIn:initial.clockIn,clockOut:initial.clockOut,breakStart:initial.breaks?.[0]?.start,breakEnd:initial.breaks?.[0]?.end};
+    const resolveField=key=>{
+      const value=String(form.get(key)||'');if(!value)return '';
+      const result=globalThis.VectorOperatingContext?.resolveLocalDateTimeInput?.(value,context,originals[key]);
+      if(result?.status==='resolved')return result.instant;
+      if(result?.status==='ambiguous')throw Error('This local time occurs twice because of a daylight-saving change. Keep the source time or choose an unambiguous time.');
+      if(result?.status==='nonexistent')throw Error('This local time does not exist because of a daylight-saving change. Choose a valid site-local time.');
+      throw Error('Enter a valid site-local date and time before saving attendance.');
+    };
+    return Object.fromEntries(['clockIn','clockOut','breakStart','breakEnd'].map(key=>[key,resolveField(key)]).concat([['breaksConfirmed',form.has('breaksConfirmed')]]));
   }
   function workflowModal(title, html, submit) {
     const owner = ownerKey(), period = RF.period;
@@ -249,7 +263,7 @@
   }
   function amend(id) {
     const row = record(id), basis = payload({ record: id });
-    workflowModal('Propose a clock correction', evidence([row]) + times(row.effective) + reason() + '<p>A different authorised manager must approve. Original punches and payable time remain unchanged until approval.</p>' + modalActions('Submit for independent review'), form => mutate('review-amend', { ...basis, ...timeInput(form), reason: String(form.get('reason')) }));
+    workflowModal('Propose a clock correction', evidence([row]) + times(row.effective) + reason() + '<p>A different authorised manager must approve. Original punches and payable time remain unchanged until approval.</p>' + modalActions('Submit for independent review'), form => mutate('review-amend', { ...basis, ...timeInput(form,row.effective), reason: String(form.get('reason')) }));
   }
   function resolve(id) {
     const team = selected(), issue = team?.issues.find(item => item.id === id);
@@ -259,7 +273,7 @@
     if (['missing', 'sync'].includes(issue.type)) fields = '<label>Verified outcome<select name="outcome" id="vw-outcome"><option value="worked">Worked — verified clocking</option><option value="sickness">Confirmed sickness</option><option value="holiday">Approved holiday</option><option value="unpaid">Confirmed unpaid absence</option><option value="off_rota">Not due to work — verified rota</option></select></label>' + times(row.raw) + '<fieldset id="vw-absence-fields" hidden disabled><label>Verified absence hours<input type="number" name="absenceHours" min="0.0167" max="24" step="any" required></label></fieldset>';
     if (issue.type === 'adjustment') fields = `<details open><summary>Proposed correction and its evidence</summary><pre>${escape(JSON.stringify(issue.proposed, null, 2))}</pre><p>${escape(issue.evidence || '')}</p></details><label>Decision<select name="decision"><option value="accept">Accept supported correction</option><option value="decline">Decline; preserve original evidence</option></select></label>`;
     if (issue.type === 'overtime') fields = '<input type="hidden" name="decision" value="approve"><p>Confirm worked overtime and premiums. Actual work must not be deleted to avoid pay.</p>';
-    workflowModal('Review source exception', `<p>${escape(issue.message)}</p>${evidence([row])}${fields}${reason()}${checked('checked', 'I checked source evidence; this is not an assumption copied from the rota.')}<p>Server checks enforce independent approval and reset affected weekly confirmations.</p>${modalActions('Record verified outcome')}`, form => mutate('review-resolve', { ...basis, ...timeInput(form), checked: form.has('checked'), reason: String(form.get('reason')), decision: form.get('decision'), outcome: form.get('outcome'), absenceMinutes: Math.round(Number(form.get('absenceHours')) * 60) }));
+    workflowModal('Review source exception', `<p>${escape(issue.message)}</p>${evidence([row])}${fields}${reason()}${checked('checked', 'I checked source evidence; this is not an assumption copied from the rota.')}<p>Server checks enforce independent approval and reset affected weekly confirmations.</p>${modalActions('Record verified outcome')}`, form => mutate('review-resolve', { ...basis, ...timeInput(form,['missing','sync'].includes(issue.type)?row.raw:{}), checked: form.has('checked'), reason: String(form.get('reason')), decision: form.get('decision'), outcome: form.get('outcome'), absenceMinutes: Math.round(Number(form.get('absenceHours')) * 60) }));
   }
   function check(kind, id) {
     const team = selected(), basis = payload({ [kind]: id });

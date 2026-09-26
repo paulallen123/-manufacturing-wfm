@@ -125,21 +125,55 @@ test('unchanged Tokyo attendance values retain the original instant at the comma
   );
 });
 
-test('Europe/London fall-back instants remain distinguishable in attendance input', () => {
-  const firstOccurrence = operatingContext.localDateTimeInput(
-    '2026-10-25T00:30:00.000Z',
-    { timeZone: 'Europe/London' }
-  );
-  const secondOccurrence = operatingContext.localDateTimeInput(
-    '2026-10-25T01:30:00.000Z',
-    { timeZone: 'Europe/London' }
-  );
+test('Europe/London fall-back preserves the selected source instant and explains its UTC offset', async () => {
+  const cases = [
+    ['2026-10-25T00:30:00.000Z', 'UTC+01:00'],
+    ['2026-10-25T01:30:00.000Z', 'UTC+00:00']
+  ];
 
-  assert.notEqual(
-    firstOccurrence,
-    secondOccurrence,
-    'two distinct source instants must not collapse to the same editable value during the DST fall-back overlap'
-  );
+  for (const [originalClockIn, offsetLabel] of cases) {
+    const harness = loadWorkflow({
+      timeZone: 'Europe/London',
+      row: {
+        id: 'row-fold',
+        employee: 'employee-1',
+        raw: { kind: 'worked', clockIn: originalClockIn, clockOut: '2026-10-25T03:30:00.000Z', breaks: [] },
+        effective: { kind: 'worked', clockIn: originalClockIn, clockOut: '2026-10-25T03:30:00.000Z', breaks: [] }
+      }
+    });
+
+    harness.open();
+    const opened = harness.modal();
+    assert.match(opened.html, new RegExp(offsetLabel.replace('+', '\\+')));
+    await assert.rejects(opened.submit(form({
+      clockIn: '2026-10-25T01:30',
+      clockOut: '2026-10-25T03:30',
+      breaksConfirmed: true,
+      reason: 'Verified against source evidence.'
+    })));
+    assert.equal(harness.command().input.clockIn, originalClockIn);
+  }
+});
+
+test('an edited fall-back wall time is rejected when it identifies two possible instants', async () => {
+  const harness = loadWorkflow({
+    timeZone: 'Europe/London',
+    row: {
+      id: 'row-ambiguous',
+      employee: 'employee-1',
+      raw: { kind: 'worked', clockIn: '2026-10-25T02:30:00.000Z', clockOut: '2026-10-25T04:30:00.000Z', breaks: [] },
+      effective: { kind: 'worked', clockIn: '2026-10-25T02:30:00.000Z', clockOut: '2026-10-25T04:30:00.000Z', breaks: [] }
+    }
+  });
+
+  harness.open();
+  await assert.rejects(harness.modal().submit(form({
+    clockIn: '2026-10-25T01:30',
+    clockOut: '2026-10-25T04:30',
+    breaksConfirmed: true,
+    reason: 'Verified against source evidence.'
+  })), /occurs twice|ambiguous/i);
+  assert.equal(harness.command(), undefined);
 });
 
 test('a non-authoritative operating context cannot open the consequential attendance editor', () => {
@@ -149,18 +183,8 @@ test('a non-authoritative operating context cannot open the consequential attend
     row: {
       id: 'row-unauthorised',
       employee: 'employee-1',
-      raw: {
-        kind: 'worked',
-        clockIn: '2026-12-31T23:30:00.000Z',
-        clockOut: '2027-01-01T07:30:00.000Z',
-        breaks: []
-      },
-      effective: {
-        kind: 'worked',
-        clockIn: '2026-12-31T23:30:00.000Z',
-        clockOut: '2027-01-01T07:30:00.000Z',
-        breaks: []
-      }
+      raw: { kind: 'worked', clockIn: '2026-12-31T23:30:00.000Z', clockOut: '2027-01-01T07:30:00.000Z', breaks: [] },
+      effective: { kind: 'worked', clockIn: '2026-12-31T23:30:00.000Z', clockOut: '2027-01-01T07:30:00.000Z', breaks: [] }
     }
   });
 
@@ -172,37 +196,23 @@ test('a non-authoritative operating context cannot open the consequential attend
   assert.equal(harness.modal(), undefined, 'the edit modal must remain closed');
 });
 
-test('a nonexistent London spring-forward wall time is rejected before the command boundary', async () => {
+test('a spring-forward wall time that does not exist is rejected before mutation', async () => {
   const harness = loadWorkflow({
     timeZone: 'Europe/London',
     row: {
       id: 'row-gap',
       employee: 'employee-1',
-      raw: {
-        kind: 'worked',
-        clockIn: '2026-03-29T00:30:00.000Z',
-        clockOut: '2026-03-29T02:30:00.000Z',
-        breaks: []
-      },
-      effective: {
-        kind: 'worked',
-        clockIn: '2026-03-29T00:30:00.000Z',
-        clockOut: '2026-03-29T02:30:00.000Z',
-        breaks: []
-      }
+      raw: { kind: 'worked', clockIn: '2026-03-29T00:30:00.000Z', clockOut: '2026-03-29T03:30:00.000Z', breaks: [] },
+      effective: { kind: 'worked', clockIn: '2026-03-29T00:30:00.000Z', clockOut: '2026-03-29T03:30:00.000Z', breaks: [] }
     }
   });
 
   harness.open();
-  const opened = harness.modal();
-  await assert.rejects(
-    opened.submit(form({
-      clockIn: '2026-03-29T01:30',
-      clockOut: '2026-03-29T03:30',
-      breaksConfirmed: true,
-      reason: 'Verified against source evidence.'
-    })),
-    /nonexistent|spring.?forward|site time/i
-  );
-  assert.equal(harness.command(), undefined, 'invalid wall time must not reach the authenticated command');
+  await assert.rejects(harness.modal().submit(form({
+    clockIn: '2026-03-29T01:30',
+    clockOut: '2026-03-29T04:30',
+    breaksConfirmed: true,
+    reason: 'Verified against source evidence.'
+  })), /does not exist|daylight-saving/i);
+  assert.equal(harness.command(), undefined);
 });

@@ -130,5 +130,48 @@ function localDateTimeInput(value,context){
     return year&&month&&day&&hour&&minute?`${year}-${month}-${day}T${hour}:${minute}`:null;
   }catch{return null;}
 }
-return Object.freeze({VERSION,resolve,formatMoney,formatDate,localHour,localCalendarParts,isoWeek,localDateTimeInput,validLocale,validTimeZone,validCurrency});
+function zonedMinuteParts(value,context){
+  const date=value instanceof Date?value:new Date(value);if(!Number.isFinite(date.getTime())||!validTimeZone(context?.timeZone))return null;
+  try{
+    const parts=new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZone:context.timeZone}).formatToParts(date);
+    const read=type=>Number(parts.find(part=>part.type===type)?.value),year=read('year'),month=read('month'),day=read('day'),hour=read('hour'),minute=read('minute');
+    return [year,month,day,hour,minute].every(Number.isInteger)?Object.freeze({year,month,day,hour,minute}):null;
+  }catch{return null;}
+}
+function timeZoneOffsetMinutes(value,context){
+  const date=value instanceof Date?value:new Date(value),parts=zonedMinuteParts(date,context);if(!parts)return null;
+  const instantMinute=Math.floor(date.getTime()/60000)*60000;
+  return (Date.UTC(parts.year,parts.month-1,parts.day,parts.hour,parts.minute)-instantMinute)/60000;
+}
+function timeZoneOffsetLabel(value,context){
+  const offset=timeZoneOffsetMinutes(value,context);if(!Number.isInteger(offset))return null;
+  const sign=offset>=0?'+':'-',absolute=Math.abs(offset),hours=String(Math.floor(absolute/60)).padStart(2,'0'),minutes=String(absolute%60).padStart(2,'0');
+  return `UTC${sign}${hours}:${minutes}`;
+}
+function parseLocalDateTimeInput(value){
+  const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);if(!match)return null;
+  const [year,month,day,hour,minute]=match.slice(1).map(Number),utc=Date.UTC(year,month-1,day,hour,minute);
+  const check=new Date(utc);
+  return check.getUTCFullYear()===year&&check.getUTCMonth()===month-1&&check.getUTCDate()===day&&check.getUTCHours()===hour&&check.getUTCMinutes()===minute?Object.freeze({year,month,day,hour,minute,utc}):null;
+}
+function resolveLocalDateTimeInput(value,context,originalInstant){
+  const parsed=parseLocalDateTimeInput(value),timeZone=validTimeZone(context?.timeZone);if(!parsed||!timeZone)return Object.freeze({status:'invalid',instant:null,candidates:Object.freeze([])});
+  const original=originalInstant?new Date(originalInstant):null;
+  if(original&&Number.isFinite(original.getTime())&&localDateTimeInput(original,{timeZone})===value){
+    return Object.freeze({status:'resolved',instant:original.toISOString(),preservedOriginal:true,candidates:Object.freeze([original.toISOString()])});
+  }
+  const offsets=new Set();
+  for(let hour=-48;hour<=48;hour++){
+    const offset=timeZoneOffsetMinutes(parsed.utc+hour*3600000,{timeZone});if(Number.isInteger(offset))offsets.add(offset);
+  }
+  const candidates=[];
+  for(const offset of offsets){
+    const candidate=new Date(parsed.utc-offset*60000);
+    if(localDateTimeInput(candidate,{timeZone})===value)candidates.push(candidate.toISOString());
+  }
+  const unique=Object.freeze([...new Set(candidates)].sort());
+  if(unique.length===1)return Object.freeze({status:'resolved',instant:unique[0],preservedOriginal:false,candidates:unique});
+  return Object.freeze({status:unique.length?'ambiguous':'nonexistent',instant:null,preservedOriginal:false,candidates:unique});
+}
+return Object.freeze({VERSION,resolve,formatMoney,formatDate,localHour,localCalendarParts,isoWeek,localDateTimeInput,timeZoneOffsetMinutes,timeZoneOffsetLabel,resolveLocalDateTimeInput,validLocale,validTimeZone,validCurrency});
 });
