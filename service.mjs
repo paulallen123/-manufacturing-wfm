@@ -56,5 +56,10 @@ for(const path of ['/api/operations/autopilot/status','/api/integrations/autonom
  proof.gateObservations.push({path,httpStatus:x.r.status,contractVersion:x.body?.contractVersion,tenant:x.body?.tenant,eventCount:x.body?.events?.length,connectorCount:x.body?.connections?.length,keys:x.body?Object.keys(x.body):[],body:x.body});
 }
 
+
+const originProbe=await req('/api/operations/autopilot/execute',{method:'POST',headers:{cookie:managerCookie,'content-type':'application/json',origin:'https://untrusted.invalid',referer:'https://untrusted.invalid/'},body:JSON.stringify({permitId:'proof-nonexistent-permit-no-mutation',contextRevision:'proof'})});
+proof.autopilotOriginProbe={expectedStatus:403,observedStatus:originProbe.r.status,body:originProbe.body,mutationRequested:false};
+check('cross_origin_autopilot_execution_denied',()=>assert.equal(originProbe.r.status,403,'Autopilot must reject untrusted request origin before looking up a permit'));
+
 finish('PASS');
 })().catch(e=>finish('FAIL',e));
