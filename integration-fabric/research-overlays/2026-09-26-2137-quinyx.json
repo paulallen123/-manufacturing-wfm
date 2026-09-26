@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-26",
+  "purpose": "Quinyx evidence promotion and reusable scope-bound opaque pagination admission.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "quinyx",
+      "patch": {
+        "protocols": ["REST", "OAuth 2.0", "SOAP-legacy"],
+        "auth": "OAuth-2.0-client-credentials-with-resource-scopes",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developer.quinyx.com/guides/getting-started",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "Quinyx API v3 regional REST",
+            "direction": "Quinyx-to-WFM-read-only",
+            "authentication": "OAuth 2.0 client credentials created as Version 3 integration credentials with exact least-privilege read scopes",
+            "notes": "Pin the exact regional API origin and resource route. Quinyx v3 also exposes create, update and delete operations, but WFM authorises only reviewed GET reads and denies every mutation scope and route."
+          },
+          {
+            "type": "Quinyx API v1 SOAP",
+            "direction": "Quinyx-to-WFM-legacy-read-only",
+            "authentication": "unit-scoped API key kept in the connector secret boundary",
+            "notes": "Legacy compatibility only for customer estates that still require documented SOAP schedules, employees, agreements or time/payroll exports. Unit/main-unit scope, operation version and endpoint form a separate checkpoint namespace from v3."
+          }
+        ],
+        "deploymentVariants": {
+          "cloud-v3": {
+            "customerEdgeRequired": false,
+            "routing": "Exact customer-approved Quinyx regional HTTPS API origin and v3 resource scope."
+          },
+          "legacy-soap": {
+            "customerEdgeRequired": false,
+            "routing": "Provider-hosted legacy SOAP endpoint with exact customer/unit API-key authority; never reuse v3 OAuth credentials or checkpoints."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "customer-account", "region", "api-origin", "api-version", "resource", "credential-revision"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "Quinyx-customer", "region", "api-version", "resource", "group-or-unit", "record-id", "source-version", "schema-fingerprint"]
+        },
+        "opaquePageChain": {
+          "nextPageTokenIsOpaque": true,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "exactScopeDimensions": ["provider", "wfmTenantId", "connectionId", "providerAccountId", "region", "apiOrigin", "apiVersion", "resource", "queryFingerprint", "schemaFingerprint", "credentialRevision"],
+          "receiptPolicy": "Treat nextPageToken as an opaque secret-bound control value: never decode or persist it as business data. Admit only a gapless, terminal, exact-scope page chain with unique page receipts and bounded records; hash token evidence, collapse exact record-version replays and quarantine conflicting duplicates. A successful chain is only a reconciliation candidate and never directly advances a checkpoint or grants deletion authority."
+        },
+        "dataObjects": [
+          "employees", "organisation-groups", "roles", "role-assignments", "agreements-and-employment", "schedules-and-shifts",
+          "attendance-and-time", "leave-and-absence", "skills-and-tags", "cost-centres-and-projects", "salary-and-payroll-input-reference"
+        ],
+        "stableIds": [
+          "Quinyx employee ID with badge number and external cross-reference where configured",
+          "group, unit, section, role and role-assignment IDs",
+          "schedule, absence-schedule, agreement and time-event IDs",
+          "source created/updated timestamp or legacy modification timestamp plus schema fingerprint",
+          "WFM tenant, connection, region, version, resource and checkpoint namespace"
+        ],
+        "readCapability": "Read only the exact approved v3 resources and scopes available in the customer account, such as organisation groups, employees, roles and role assignments. Where a customer still depends on documented v1 SOAP operations, schedules, absence shifts, agreements, employees and payroll/time reference data use a separately governed legacy route.",
+        "writeCapability": "Quinyx documents employee, role-assignment and other create/update/delete routes, but WFM grants no source-write, scheduling, leave-approval, time-approval, employee-management or payroll authority. Mutation scopes and non-GET v3 routes remain denied; legacy SOAP is allowlisted by exact read operation.",
+        "freshnessLatency": "Use bounded polling per resource and provider timestamps. Preserve effective time, provider created/updated or legacy modification time, page observation window and WFM ingestion time separately; do not represent several endpoint reads as one atomic snapshot.",
+        "permissions": [
+          "dedicated Quinyx Version 3 integration credential",
+          "minimum exact read scopes for each approved resource",
+          "exact regional API origin and customer/account binding",
+          "separate credentials and checkpoint namespaces for v3 and legacy SOAP",
+          "no employee, shift, leave, time-approval, payroll or administrative mutation scopes"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "Quinyx v3 list responses expose pagination.nextPageToken. Treat it as opaque, submit it only to the same exact regional origin/version/resource/filter scope, require a gapless terminal chain, hash rather than log the token, and reconcile from the last WFM-committed boundary after any partial or conflicting chain.",
+          "delta": "Use documented updated/modified filters only on endpoints that explicitly support them, with overlap and a closed observation window. A provider timestamp or opaque page token never becomes an unqualified global cursor across resources, groups, regions or API versions.",
+          "events": "No complete public v3 event contract is assumed for this evidence level. Polling and bounded reconciliation remain completeness authority unless an authorised tenant proves a specific signed event route.",
+          "files": "Customer-approved payroll or integration exports remain fallback routes and enter through the existing batch-reconciliation contract; file absence is never deletion evidence.",
+          "queues": "No provider queue is assumed. Internal delivery remains at-least-once with exact record-version deduplication and conflict quarantine."
+        },
+        "customFields": "Quinyx supports external reference IDs, tags and configuration-specific fields, while legacy schedule responses can include agreement additional fields and tag custom fields. Preserve unmapped extensions and their scope/version provenance; quarantine identity, time, pay, type or sensitivity-changing drift.",
+        "regionalApiVersions": "Quinyx identifies v3 as the current OAuth REST API with regional endpoints, v2 as an earlier REST API and v1 as legacy SOAP. New integrations prefer v3. Region, exact origin, API version, customer/account, resource and schema are checkpoint namespace dimensions; switching region or between v3, v2 and v1 SOAP requires a new checkpoint namespace plus overlap replay and reconciliation.",
+        "rateLimits": "Public documentation reviewed does not establish one universal rate-limit contract for every Quinyx resource and customer tier. Discover response headers and tenant limits before live use; use bounded concurrency and jittered recovery, and never switch region, account, version or credential on throttling.",
+        "failureModes": [
+          "client-secret expiry, revocation, wrong OAuth scope or token expiry",
+          "wrong WFM tenant, connection, customer account, region, API origin, version, resource or credential revision",
+          "opaque next-page token reused across resource/filter scope, skipped, repeated, overlong, logged or returned in a loop",
+          "partial or non-terminal pagination chain, duplicate page receipt or record count above the approved bound",
+          "same record ID and source version repeated with conflicting payload evidence",
+          "v3 REST and v1 SOAP identities or checkpoints silently mixed",
+          "legacy unit API key or all-units behaviour broadens scope unexpectedly",
+          "HTTP 401/403/429, transient 5xx/network failure or regional outage",
+          "DST, local-time, overnight-shift or clock-drift mismatch",
+          "badge, email or external-reference identity collision across units or acquisitions",
+          "custom-field, tag, agreement, pay-code or schema drift",
+          "schedule cost or approved hours treated as final payroll authority"
+        ],
+        "reconciliation": "Bind every page request and response to WFM tenant, connection, customer, region, exact origin, API version, resource, filters, credential revision and schema. Require page 1 to start without a token, each next request to use exactly the previous opaque token and the final page to end without a continuation token. Hash token evidence, detect gaps/loops/duplicate pages, collapse exact record-version replays and quarantine conflicts. After interruption or drift, replay the bounded source window with overlap from the last WFM-committed checkpoint; no page chain directly advances a checkpoint or creates deletion authority.",
+        "schemaDrift": "Fingerprint each approved resource and version. Additive reviewed fields retain raw provenance; removed or type-changed IDs, timestamps, groups, agreement/pay fields, new sensitive data and version changes quarantine the affected dataset until mapping and authority are reviewed.",
+        "retriesReconnect": "401/403 stops for credential/scope/account diagnosis. 429 and transient 5xx/network failures use bounded jittered backoff against the same exact regional origin. Resume from the last WFM-committed boundary with overlap; never resume from an uncommitted opaque token or switch region/version to escape failure.",
+        "evidenceUrl": "https://developer.quinyx.com/api",
+        "evidenceNote": "Quinyx documentation reviewed 26 September 2026 establishes v3 as the current regional OAuth 2.0 REST API, Version 3 client credentials with explicit scopes, one-hour bearer-token examples, stable employee/group/role identifiers, pagination.nextPageToken, documented mutation surfaces and legacy v1 SOAP workforce operations. No sandbox or customer tenant was authenticated and no live token, page, employee, schedule, time, leave or payroll read was performed.",
+        "securityEvidenceBlockers": [
+          "OAuth client credentials can receive mutation scopes, so successful authentication does not prove least-privilege read authority; exact scopes, routes and denied writes need tenant proof.",
+          "Regional endpoint and customer/account isolation require authorised multi-connection testing.",
+          "Legacy unit/main-unit API-key reach and all-units behaviour require explicit scope proof before use.",
+          "Employee, schedule, absence, pay and payroll-input retention, residency and cross-border handling remain customer- and country-specific."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["person", "employment", "organisation-unit", "role-skill", "shift", "time-event", "leave-absence", "cost-centre", "payroll-input-reference"],
+          "customerValue": ["faster workforce integration for multi-site and multi-country operators", "schedule-versus-worked reconciliation", "earlier overtime and absence visibility", "better labour-cost attribution by unit and cost centre", "lower implementation effort through scoped regional APIs"],
+          "savingsHypotheses": ["reduce manual employee and schedule reconciliation", "detect time, leave and payroll-input exceptions before payroll close", "reduce avoidable overtime and under-coverage", "map regional organisations and acquired units without collapsing identities"],
+          "automationOpportunities": ["discover approved scopes and resources", "map employees, groups and role assignments with reviewable identity confidence", "reconcile opaque page chains without exposing tokens", "join schedules, worked time, absence and labour cost to production demand while preserving source authority"],
+          "constraintsRisks": ["Quinyx schedule, cost and payroll-input data is not final payroll authority", "v3 resource coverage and scopes must be discovered per authorised tenant", "legacy SOAP operation and unit scope varies by customer configuration", "documentation proof is not sandbox, tenant or production proof"]
+        },
+        "causalOutcomeReadiness": "Preserve employee, group/unit, role, schedule, absence and time identifiers; effective and provider-updated times; page observation windows; WFM recommendation/action IDs; baseline/outcome windows; and competing demand, production, absence, payroll-rule, wage, manager and schedule changes.",
+        "nextBuildAction": "Use an authorised Quinyx test tenant to prove Version 3 client credentials, exact regional origin/account/scopes, denied mutations, real multi-page nextPageToken reads, interrupted/looped/token-drift recovery, employee/group/role identity, schedule/time/leave coverage, DST and overnight shifts, custom fields, throttling and overlap reconciliation without changing employees, schedules, leave, time approval or payroll data."
+      }
+    }
+  ],
+  "systems": []
+}
