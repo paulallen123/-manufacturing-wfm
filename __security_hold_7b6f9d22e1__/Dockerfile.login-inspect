@@ -1,9 +1,0 @@
-FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
-WORKDIR /inspect
-COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
-COPY ux-overlay/ /source/ux-overlay/
-COPY implementation/ui/ /source/implementation-ui/
-COPY learning/ui/ /source/learning-ui/
-RUN tar -xzf /tmp/runtime.tgz -C /inspect \
- && node -e "const fs=require('fs'),path=require('path');const review='/inspect/public/review-ui.js';const names=['PR','RF','amendDialog','banner','issueDialog','payrollActor','payrollPageV4','payrollReport','payrollShell'];const reviewLines=fs.readFileSync(review,'utf8').split('\\n');const files=[];function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);if(e.isDirectory())walk(p);else if(e.name.endsWith('.js')&&p!==review)files.push(p)}}for(const r of ['/inspect/public','/source'])walk(r);for(const name of names){for(let i=0;i<reviewLines.length;i++){const line=reviewLines[i];if(line.includes(name)&&((line.includes('const '+name+'=')||line.includes('let '+name+'=')||line.includes('var '+name+'=')||line.includes('function '+name+'(')||line.includes('async function '+name+'('))))console.log('RETIRED_DECL_LINE='+JSON.stringify({symbol:name,line:i+1,text:line.slice(0,2500)}));}for(const f of files){const lines=fs.readFileSync(f,'utf8').split('\\n');for(let i=0;i<lines.length;i++){if(lines[i].includes(name))console.log('SURVIVING_REF_LINE='+JSON.stringify({symbol:name,file:f,line:i+1,text:lines[i].slice(0,2500)}));}}}"
-CMD ["node","-e","require('http').createServer((req,res)=>{res.statusCode=200;res.end('ok')}).listen(Number(process.env.PORT||3000),'0.0.0.0')"]

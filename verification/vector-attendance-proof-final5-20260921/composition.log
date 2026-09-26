@@ -1,6 +1,0 @@
-SEALED_RUNTIME_PRESENTATION_REPAIR=PASS
-RETIRED_PRESENTATION_PURGE=PASS
-{"status":"PASS","transform":"attendance-integrity-v4","inputSha256":"ec5fa3cd5cb2bc4d2e66694b6211ad3dc8c24ea279bd48b0bc0fa01260eb1200","outputSha256":"b8785062fbed169e26ed070f01deb0721cae1640e117a80642a6b832b5388120"}
-VECTOR_INDEX_COMPOSITION=PASS
-VECTOR_LOCAL_RUNTIME=/tmp/vector-composed-proof-d542RA/runtime
-Start with: WFM_DB=<isolated sqlite path> PORT=4100 node --require /tmp/vector-composed-proof-d542RA/runtime/local-paths.cjs /tmp/vector-composed-proof-d542RA/runtime/security-runtime/bootstrap.cjs

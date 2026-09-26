@@ -1,0 +1,11 @@
+{
+  "name": "vector-hosted-persistence-proof",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node service.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
