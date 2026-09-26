@@ -367,6 +367,10 @@ http.createServer = function guardedCreateServer(listener) {
       });
     } catch (error) {
       implementationEngineInitError = error;
+      const message = String(error?.message || error || 'unknown')
+        .replace(/\s+/g, ' ')
+        .slice(0, 500);
+      console.error('WFM_IMPLEMENTATION_INIT_ERROR=' + message);
     }
   }
 
