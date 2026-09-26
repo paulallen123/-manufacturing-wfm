@@ -160,3 +160,66 @@ test('unknown or expired bearer is denied before the application', () => {
     assert.equal(response.statusCode, 401);
   } finally { f.close(); }
 });
+
+
+test('revocable mobile bearer inherits the same tenant binding and is translated only after guard approval', () => {
+  const f = fixture();
+  try {
+    const token = 'vmb_' + 'm'.repeat(48);
+    const hash = tokenHash(token);
+    const expires = Date.now() + 60_000;
+    f.control.db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(hash,'manager@alpha',expires);
+    f.control.db.prepare('INSERT INTO mobile_device_sessions(token_hash,email,tenant,expires,created_at,revoked_at) VALUES(?,?,?,?,?,NULL)')
+      .run(hash,'manager@alpha','alpha',expires,new Date().toISOString());
+
+    const request = req(null,{headers:{authorization:'Bearer '+token}});
+    const response = res();
+    assert.equal(f.guard.beforeRequest(request,response),false);
+    assert.equal(request.headers.cookie,'wfm_session='+token);
+    const binding = f.control.db.prepare('SELECT tenant FROM identity_session_bindings WHERE token_hash=?').get(hash);
+    assert.equal(binding.tenant,'alpha');
+  } finally { f.close(); }
+});
+
+test('revoked or mismatched mobile bearer is denied before application code', () => {
+  const f = fixture();
+  try {
+    const token = 'vmb_' + 'n'.repeat(48);
+    const hash = tokenHash(token);
+    const expires = Date.now() + 60_000;
+    f.control.db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(hash,'manager@alpha',expires);
+    f.control.db.prepare('INSERT INTO mobile_device_sessions(token_hash,email,tenant,expires,created_at,revoked_at) VALUES(?,?,?,?,?,?)')
+      .run(hash,'manager@alpha','alpha',expires,new Date().toISOString(),new Date().toISOString());
+    const response = res();
+    assert.equal(f.guard.beforeRequest(req(null,{headers:{authorization:'Bearer '+token}}),response),true);
+    assert.equal(response.statusCode,401);
+  } finally { f.close(); }
+});
+
+test('conflicting cookie and mobile bearer authorities fail closed', () => {
+  const f = fixture();
+  try {
+    const token = 'vmb_' + 'p'.repeat(48);
+    const response = res();
+    const request = req(f.tokens.alphaManager,{headers:{authorization:'Bearer '+token}});
+    assert.equal(f.guard.beforeRequest(request,response),true);
+    assert.equal(response.statusCode,400);
+  } finally { f.close(); }
+});
+
+
+test('consumed stale login cookie cannot block a valid mobile bearer', () => {
+  const f = fixture();
+  try {
+    const mobile = 'vmb_' + 'q'.repeat(48);
+    const hash = tokenHash(mobile);
+    const expires = Date.now() + 60_000;
+    f.control.db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(hash,'manager@alpha',expires);
+    f.control.db.prepare('INSERT INTO mobile_device_sessions(token_hash,email,tenant,expires,created_at,revoked_at) VALUES(?,?,?,?,?,NULL)')
+      .run(hash,'manager@alpha','alpha',expires,new Date().toISOString());
+    f.control.db.prepare('DELETE FROM sessions WHERE token_hash=?').run(tokenHash(f.tokens.alphaManager));
+    const request = req(f.tokens.alphaManager,{headers:{authorization:'Bearer '+mobile}});
+    assert.equal(f.guard.beforeRequest(request,res()),false);
+    assert.equal(request.headers.cookie,'wfm_session='+mobile);
+  } finally { f.close(); }
+});

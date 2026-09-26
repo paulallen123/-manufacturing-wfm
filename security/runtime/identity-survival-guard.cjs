@@ -38,6 +38,22 @@ function cookieSessionToken(req) {
   return '';
 }
 
+function mobileBearerToken(req) {
+  const raw = String(req?.headers?.authorization || '').trim();
+  const match = /^Bearer\s+(vmb_[A-Za-z0-9_-]{32,})$/i.exec(raw);
+  return match ? match[1] : '';
+}
+
+function bindMobileBearerAsInternalCookie(req, token) {
+  const retained = String(req?.headers?.cookie || '')
+    .split(';')
+    .map(item => item.trim())
+    .filter(Boolean)
+    .filter(item => !item.startsWith('wfm_session='));
+  retained.push('wfm_session=' + token);
+  req.headers.cookie = retained.join('; ');
+}
+
 function requestPath(req) {
   return String(req?.url || '/').split('?')[0] || '/';
 }
@@ -83,6 +99,14 @@ function createIdentitySurvivalGuard(options = {}) {
       policy_version INTEGER NOT NULL,
       bound_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS mobile_device_sessions(
+      token_hash TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      tenant TEXT NOT NULL,
+      expires INTEGER NOT NULL,
+      created_at TEXT NOT NULL,
+      revoked_at TEXT
+    );
     CREATE TABLE IF NOT EXISTS identity_guard_events(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       tenant TEXT,
@@ -104,6 +128,7 @@ function createIdentitySurvivalGuard(options = {}) {
     FROM sessions s JOIN users u ON u.email=s.email
     WHERE s.token_hash=? AND s.expires>?`);
   const bindingStmt = db.prepare('SELECT * FROM identity_session_bindings WHERE token_hash=?');
+  const mobileSessionStmt = db.prepare('SELECT * FROM mobile_device_sessions WHERE token_hash=? AND expires>? AND revoked_at IS NULL');
   const bindStmt = db.prepare(`INSERT INTO identity_session_bindings
     (token_hash,tenant,issuer,audience,session_epoch,policy_version,bound_at)
     VALUES(?,?,?,?,?,?,?)`);
@@ -139,7 +164,17 @@ function createIdentitySurvivalGuard(options = {}) {
 
   function beforeRequest(req, res) {
     if (rejectInjectedIdentity(req, res)) return true;
-    const token = cookieSessionToken(req);
+    const cookieToken = cookieSessionToken(req);
+    const mobileToken = mobileBearerToken(req);
+    if (cookieToken && mobileToken && cookieToken !== mobileToken) {
+      const cookieStillActive = sessionStmt.get(sha256(cookieToken), now);
+      if (cookieStillActive) {
+        record(cookieStillActive.tenant, null, 'ambiguous-session-authority-blocked', { path: requestPath(req) });
+        return writeJson(res, 400, { error: 'Conflicting active session authorities are not accepted.' });
+      }
+      record(null, sha256(cookieToken), 'stale-cookie-ignored-for-mobile-bearer', { path: requestPath(req) });
+    }
+    const token = mobileToken || cookieToken;
     if (!token) return false; // Public/integration routes remain governed by the sealed server.
 
     const tokenHash = sha256(token);
@@ -148,6 +183,14 @@ function createIdentitySurvivalGuard(options = {}) {
     if (!row) {
       record(null, tokenHash, 'unknown-or-expired-session', { path: requestPath(req) });
       return writeJson(res, 401, { error: 'Session expired. Sign in again.' });
+    }
+
+    if (mobileToken) {
+      const mobile = mobileSessionStmt.get(tokenHash, now);
+      if (!mobile || mobile.email !== row.email || mobile.tenant !== row.tenant) {
+        containSession(row, tokenHash, 'invalid-mobile-session-contained', { path: requestPath(req) });
+        return writeJson(res, 401, { error: 'Mobile session is no longer valid. Sign in again.' });
+      }
     }
 
     ensureControlStmt.run(row.tenant, new Date().toISOString());
@@ -188,6 +231,7 @@ function createIdentitySurvivalGuard(options = {}) {
       return writeJson(res, 403, { error: 'Privileged actions are temporarily frozen for this customer security cell.' });
     }
 
+    if (mobileToken) bindMobileBearerAsInternalCookie(req, mobileToken);
     return false;
   }
 
@@ -221,6 +265,8 @@ function createIdentitySurvivalGuard(options = {}) {
 module.exports = {
   createIdentitySurvivalGuard,
   cookieSessionToken,
+  mobileBearerToken,
+  bindMobileBearerAsInternalCookie,
   privilegedAction,
   FORBIDDEN_IDENTITY_HEADERS,
   DEFAULT_ISSUER,

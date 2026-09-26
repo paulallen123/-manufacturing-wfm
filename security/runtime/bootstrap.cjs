@@ -20,6 +20,9 @@ const { createRealtimeEventService } = require('/app/operations-runtime/realtime
 const { createSchedulingIntelligenceService } = require('/app/operations-runtime/scheduling-intelligence-service.cjs');
 const { createT9CustomerGuardian } = require('/app/operations-runtime/t9-customer-guardian.cjs');
 const { createVectorReportingService } = require('/app/reporting-runtime/vector-reporting-service.cjs');
+const { createMobileRecommendationService } = require('/app/operations-runtime/mobile-recommendation-service.cjs');
+const { createMobileAssistantService } = require('/app/operations-runtime/mobile-assistant-service.cjs');
+const { createMobileSessionService } = require('/app/operations-runtime/mobile-session-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -64,6 +67,12 @@ let t9CustomerGuardian = null;
 let t9CustomerGuardianInitError = null;
 let reportingService = null;
 let reportingServiceInitError = null;
+let mobileRecommendationService = null;
+let mobileRecommendationServiceInitError = null;
+let mobileAssistantService = null;
+let mobileAssistantServiceInitError = null;
+let mobileSessionService = null;
+let mobileSessionServiceInitError = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -110,6 +119,18 @@ function demandDecisionPath(req) {
 
 function reportingPath(req) {
   return requestPath(req).startsWith('/api/reporting');
+}
+
+function mobileRecommendationPath(req) {
+  return requestPath(req).startsWith('/api/mobile/recommendations');
+}
+
+function mobileAssistantPath(req) {
+  return requestPath(req).startsWith('/api/mobile/assistant');
+}
+
+function mobileSessionPath(req) {
+  return requestPath(req) === '/api/mobile/session';
 }
 
 function stagingAccessPath(req) {
@@ -422,6 +443,33 @@ http.createServer = function guardedCreateServer(listener) {
     catch (error) { reportingServiceInitError = error; }
   }
 
+  if (!mobileRecommendationService && !mobileRecommendationServiceInitError && process.env.WFM_DB) {
+    try {
+      mobileRecommendationService = createMobileRecommendationService({
+        dbPath: process.env.WFM_DB,
+        autopilot: autopilotExecutionEngine && !autopilotExecutionEngineInitError ? autopilotExecutionEngine : null
+      });
+    } catch (error) {
+      mobileRecommendationServiceInitError = error;
+    }
+  }
+
+  if (!mobileAssistantService && !mobileAssistantServiceInitError && process.env.WFM_DB) {
+    try {
+      mobileAssistantService = createMobileAssistantService({
+        dbPath: process.env.WFM_DB,
+        decisionService: demandDecisionService && !demandDecisionServiceInitError ? demandDecisionService : null
+      });
+    } catch (error) {
+      mobileAssistantServiceInitError = error;
+    }
+  }
+
+  if (!mobileSessionService && !mobileSessionServiceInitError && process.env.WFM_DB) {
+    try { mobileSessionService = createMobileSessionService({ dbPath: process.env.WFM_DB }); }
+    catch (error) { mobileSessionServiceInitError = error; }
+  }
+
   return originalCreateServer.call(http, async (req, res) => {
     const guardianStarted = process.hrtime.bigint();
     if (t9CustomerGuardian && !t9CustomerGuardianInitError && typeof res.once === 'function') {
@@ -489,6 +537,18 @@ http.createServer = function guardedCreateServer(listener) {
 
     if (reportingPath(req)) {
       if (await routeOverlay(reportingService, reportingServiceInitError, res, 'Reporting', req)) return;
+    }
+
+    if (mobileSessionPath(req)) {
+      if (await routeOverlay(mobileSessionService, mobileSessionServiceInitError, res, 'Mobile session', req)) return;
+    }
+
+    if (mobileRecommendationPath(req)) {
+      if (await routeOverlay(mobileRecommendationService, mobileRecommendationServiceInitError, res, 'Mobile recommendation approval', req)) return;
+    }
+
+    if (mobileAssistantPath(req)) {
+      if (await routeOverlay(mobileAssistantService, mobileAssistantServiceInitError, res, 'Vecta mobile assistant', req)) return;
     }
 
     return listener(req, res);
