@@ -36,6 +36,9 @@ assert.equal(p.rules.specialistProofOnDemandOnly,true);
 assert.equal(p.rules.sameFailureDomainScaleRequiresMeasuredHeadroom,true);
 assert.equal(p.rules.unknownFailureDomainHeadroomCannotTriggerOverflow,true);
 assert.equal(p.rules.sameDomainThroughputNeverCountsAsIndependentResilience,true);
+assert.equal(p.rules.terminalSuccessConsumedImmediately,true);
+assert.equal(p.rules.scheduledCheckpointNeverExecutionGate,true);
+assert.equal(p.rules.proofFanoutOnTerminalSuccess,true);
 assert.equal(p.orchestration?.capacityRouting?.sameDomainPurpose,'THROUGHPUT_ONLY');
 assert.equal(p.orchestration?.capacityRouting?.sameDomainRequiresMeasuredHeadroom,true);
 assert.equal(p.orchestration?.capacityRouting?.unknownHeadroomAction,'ROUTE_DISTINCT_FAILURE_DOMAIN');
@@ -63,6 +66,17 @@ assert.equal(p.orchestration?.softwareImposedLaneLimit,null);
 assert.equal(p.orchestration?.softwareImposedWorkerLimit,null);
 assert.equal(p.orchestration?.softwareImposedManagerLimit,null);
 assert.equal(p.orchestration?.providerAndAccountLimitsStillApply,true);
+assert.deepEqual(p.orchestration?.onSuccess,[
+  'CONSUME_RESULT_IMMEDIATELY',
+  'RUN_PRE_FREEZE_SIMULATION_NOW',
+  'FAN_OUT_DEPENDENT_PROOFS_NOW',
+  'CONTINUE_ALL_INDEPENDENT_WORK'
+]);
+assert.equal(p.orchestration?.resultConsumption?.trigger,'TERMINAL_SUCCESS_EVENT');
+assert.equal(p.orchestration?.resultConsumption?.scheduledCheckpointMayDelayExecution,false);
+assert.equal(p.orchestration?.resultConsumption?.exactCandidateBindingRequired,true);
+assert.equal(p.orchestration?.resultConsumption?.distinctFailureDomainRoutingRequired,true);
+assert.equal(p.orchestration?.resultConsumption?.sameProviderParallelismCountsAsIndependentResilience,false);
 
 const ids=new Set(),providers=new Set(),failureDomains=new Set(),promotionFailureDomains=new Set();
 let exactImage=0;
