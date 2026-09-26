@@ -1,0 +1,431 @@
+{
+  "schemaVersion": 1,
+  "scope": "FORGE correction submission and manager rejection",
+  "target": "https://vector-customer-ready-candidate-production.up.railway.app",
+  "expectedCandidateSha": "c78db2b78a8d655581a65583fa10feec54a810d4",
+  "startedAt": "2026-09-26T09:47:15.152Z",
+  "status": "PASS",
+  "assertions": [
+    {
+      "name": "authenticated_maya@northstar.example",
+      "status": "PASS",
+      "evidence": {
+        "tenant": "northstar-demo",
+        "role": "employee"
+      }
+    },
+    {
+      "name": "approved_FORGE_shell_maya@northstar.example",
+      "status": "PASS"
+    },
+    {
+      "name": "backend_submission_confirmed",
+      "status": "PASS",
+      "evidence": {
+        "id": "AC-e27a8f7006440f68936bd4f1b52f160b",
+        "status": "submitted"
+      }
+    },
+    {
+      "name": "employee_UI_shows_saved_request",
+      "status": "PASS"
+    },
+    {
+      "name": "authenticated_manager@northstar.example",
+      "status": "PASS",
+      "evidence": {
+        "tenant": "northstar-demo",
+        "role": "manager"
+      }
+    },
+    {
+      "name": "approved_FORGE_shell_manager@northstar.example",
+      "status": "PASS"
+    },
+    {
+      "name": "authorised_business_decision",
+      "status": "PASS",
+      "evidence": {
+        "id": "AC-e27a8f7006440f68936bd4f1b52f160b",
+        "status": "rejected",
+        "revision": 2
+      }
+    },
+    {
+      "name": "manager_UI_shows_backend_decision",
+      "status": "PASS"
+    },
+    {
+      "name": "employee_refresh_shows_same_decision",
+      "status": "PASS"
+    },
+    {
+      "name": "persistent_readback_rejected",
+      "status": "PASS",
+      "evidence": {
+        "id": "AC-e27a8f7006440f68936bd4f1b52f160b",
+        "status": "rejected",
+        "revision": 2,
+        "digest": "a44ad3664e5e02ca20bf6a91fb6c8c17f153ff63f2e79c0c9ad2df7e81a5e3b1"
+      }
+    },
+    {
+      "name": "submission_and_decision_history_persisted",
+      "status": "PASS",
+      "evidence": {
+        "history": [
+          {
+            "type": "attendance-correction-submitted",
+            "by": "e0",
+            "at": "2026-09-26T09:47:17.760Z"
+          },
+          {
+            "type": "attendance-correction-reject",
+            "by": "m1",
+            "at": "2026-09-26T09:47:20.695Z"
+          }
+        ]
+      }
+    },
+    {
+      "name": "original_record_unchanged",
+      "status": "PASS",
+      "evidence": {
+        "before": "48ddfbab8aa9116758efdae3b1b0ee2143b691e94bb565e2c0fa9f93cd1c68b1",
+        "after": "48ddfbab8aa9116758efdae3b1b0ee2143b691e94bb565e2c0fa9f93cd1c68b1"
+      }
+    },
+    {
+      "name": "authenticated_maya@northstar.example",
+      "status": "PASS",
+      "evidence": {
+        "tenant": "northstar-demo",
+        "role": "employee"
+      }
+    },
+    {
+      "name": "approved_FORGE_shell_maya@northstar.example",
+      "status": "PASS"
+    },
+    {
+      "name": "fresh_login_matches_persisted_backend",
+      "status": "PASS",
+      "evidence": {
+        "digest": "a44ad3664e5e02ca20bf6a91fb6c8c17f153ff63f2e79c0c9ad2df7e81a5e3b1"
+      }
+    },
+    {
+      "name": "no_browser_runtime_errors",
+      "status": "PASS",
+      "evidence": {
+        "errors": []
+      }
+    }
+  ],
+  "network": [
+    {
+      "path": "/api/operations/intelligence/summary",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/bootstrap",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/learning/training/plan",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/learning/adaptive/plan",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/login",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/bootstrap",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations/intelligence/summary",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/api/attendance-corrections",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/attendance-corrections",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/realtime/stream",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/attendance-corrections/command",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/bootstrap",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/attendance-corrections",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/bootstrap",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/operations/intelligence/summary",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/learning/training/plan",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/learning/adaptive/plan",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/login",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/bootstrap",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations/intelligence/summary",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/analytics",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/readiness",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/attendance-corrections",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/realtime/stream",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/attendance-corrections",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/workforce/lifecycle/action-evidence/time-review",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/workforce/lifecycle/action-evidence/time-review",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/workforce/lifecycle/action-evidence/time-review",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/attendance-corrections/command",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/bootstrap",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/attendance-corrections",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/workforce/lifecycle/action-evidence/time-review",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/bootstrap",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/learning/training/plan",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/learning/adaptive/plan",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations/intelligence/summary",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/api/operations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/attendance-corrections",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations/intelligence/summary",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/api/bootstrap",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/operations/intelligence/summary",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/learning/training/plan",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/learning/adaptive/plan",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/realtime/stream",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/login",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/bootstrap",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/operations/intelligence/summary",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/api/attendance-corrections",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/attendance-corrections",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/realtime/stream",
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Fixture accounts only; this proves one correction journey, not the complete Golden Journey."
+  ],
+  "sourceRecord": {
+    "id": "wr-e0-2026-09-07",
+    "beforeDigest": "48ddfbab8aa9116758efdae3b1b0ee2143b691e94bb565e2c0fa9f93cd1c68b1"
+  },
+  "fixtureNote": "FORGE proof 5232fb16-46bd-47bc-9bc4-142ebb48c61e: verify retained original clock evidence",
+  "correctionId": "AC-e27a8f7006440f68936bd4f1b52f160b",
+  "finishedAt": "2026-09-26T09:47:22.939Z",
+  "releaseBinding": {
+    "status": "PASS",
+    "candidateSha": "c78db2b78a8d655581a65583fa10feec54a810d4",
+    "deploymentId": "d2ce0ffa-b294-46e9-84ea-7a99b7f173bc",
+    "runnerDeploymentId": "6903dd05-7e9e-41ca-931a-3f76b2ada21a",
+    "method": "Target deployment metadata plus target HTTP logs within browser execution window",
+    "confirmedCommandWrites": []
+  }
+}

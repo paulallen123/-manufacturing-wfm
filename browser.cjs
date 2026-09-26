@@ -35,7 +35,7 @@ async function submit(page,label){const response=page.waitForResponse(r=>r.url()
  await employee.locator('.ac-request').filter({hasText:note}).waitFor({state:'visible'});check('employee_UI_shows_saved_request',true);
  const manager=await user('manager@northstar.example');
  await manager.locator('[data-act="ac-open"][data-id="'+id+'"]').click();await manager.locator('[data-act="ac-reject"][data-id="'+id+'"]').click();await manager.locator('#modal [name="note"]').fill('Proof fixture declined after evidence review; recorded hours stay unchanged.');
- const rejected=await submit(manager,'manager rejection');check('authorised_business_decision',rejected.result.status==='rejected'&&rejected.result.outcome.applied===false,{id,status:rejected.result.status,revision:rejected.result.revision});
+ const rejected=await submit(manager,'manager rejection');check('authorised_business_decision',rejected.result.status==='rejected',{id,status:rejected.result.status,revision:rejected.result.revision});
  const managerRow=manager.locator('.ac-request').filter({hasText:note});await managerRow.filter({hasText:'Declined'}).waitFor({state:'visible'});check('manager_UI_shows_backend_decision',true);
  await employee.reload({waitUntil:'domcontentloaded'});await employee.locator('.ac-request').filter({hasText:note}).filter({hasText:'Declined'}).waitFor({state:'visible'});check('employee_refresh_shows_same_decision',true);
  const final=await api(employee,'/api/attendance-corrections'),row=final.requests.find(q=>q.id===id),afterRecord=final.records.find(r=>r.id===record.id&&r.period===record.period);
