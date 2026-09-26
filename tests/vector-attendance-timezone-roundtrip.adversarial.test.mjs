@@ -11,7 +11,7 @@ const candidateRoot = fs.existsSync(new URL('../candidate/ux-overlay/vector-oper
 const operatingContext = require(candidateRoot + 'vector-operating-context.js');
 const workflowSource = fs.readFileSync(new URL(candidateRoot + 'vector-workflows.js', import.meta.url), 'utf8');
 
-function loadWorkflow({ timeZone, locale = 'en-US', row }) {
+function loadWorkflow({ timeZone, locale = 'en-US', authoritative = true, row }) {
   let capturedModal;
   let capturedCommand;
   const document = {
@@ -38,7 +38,8 @@ function loadWorkflow({ timeZone, locale = 'en-US', row }) {
     VectorDisplayContext: () => ({
       locale,
       timeZone,
-      timeZoneSource: 'operating_context'
+      timeZoneSource: 'operating_context',
+      authoritative
     }),
     F: { ready: true },
     ui: { page: 'attendance' },
@@ -139,4 +140,69 @@ test('Europe/London fall-back instants remain distinguishable in attendance inpu
     secondOccurrence,
     'two distinct source instants must not collapse to the same editable value during the DST fall-back overlap'
   );
+});
+
+test('a non-authoritative operating context cannot open the consequential attendance editor', () => {
+  const harness = loadWorkflow({
+    timeZone: 'Asia/Tokyo',
+    authoritative: false,
+    row: {
+      id: 'row-unauthorised',
+      employee: 'employee-1',
+      raw: {
+        kind: 'worked',
+        clockIn: '2026-12-31T23:30:00.000Z',
+        clockOut: '2027-01-01T07:30:00.000Z',
+        breaks: []
+      },
+      effective: {
+        kind: 'worked',
+        clockIn: '2026-12-31T23:30:00.000Z',
+        clockOut: '2027-01-01T07:30:00.000Z',
+        breaks: []
+      }
+    }
+  });
+
+  assert.throws(
+    () => harness.open(),
+    /authoritative.*time.?zone|time.?zone.*authoritative/i,
+    'a display-only context must not acquire authority merely by naming its source operating_context'
+  );
+  assert.equal(harness.modal(), undefined, 'the edit modal must remain closed');
+});
+
+test('a nonexistent London spring-forward wall time is rejected before the command boundary', async () => {
+  const harness = loadWorkflow({
+    timeZone: 'Europe/London',
+    row: {
+      id: 'row-gap',
+      employee: 'employee-1',
+      raw: {
+        kind: 'worked',
+        clockIn: '2026-03-29T00:30:00.000Z',
+        clockOut: '2026-03-29T02:30:00.000Z',
+        breaks: []
+      },
+      effective: {
+        kind: 'worked',
+        clockIn: '2026-03-29T00:30:00.000Z',
+        clockOut: '2026-03-29T02:30:00.000Z',
+        breaks: []
+      }
+    }
+  });
+
+  harness.open();
+  const opened = harness.modal();
+  await assert.rejects(
+    opened.submit(form({
+      clockIn: '2026-03-29T01:30',
+      clockOut: '2026-03-29T03:30',
+      breaksConfirmed: true,
+      reason: 'Verified against source evidence.'
+    })),
+    /nonexistent|spring.?forward|site time/i
+  );
+  assert.equal(harness.command(), undefined, 'invalid wall time must not reach the authenticated command');
 });

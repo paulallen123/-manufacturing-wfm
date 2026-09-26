@@ -6,14 +6,16 @@
     "repository": "paulallen123/-manufacturing-wfm",
     "pullRequest": 225,
     "sourceCommit": "612fffc835f67aa3e27d4722f5b7bac38adb5d86",
-    "operatingContextBlob": "3f2c9876a3a169d6039a0c453f1f6f7c79bf7bac"
+    "operatingContextBlob": "3f2c9876a3a169d6039a0c453f1f6f7c79bf7bac",
+    "workflowBlob": "f9d05025e908bd4b83c74283989a28317bf5510f",
+    "testParentCommit": "46e92fd3f010e73278ccdfa255674023c5ffe578"
   },
   "executed": {
     "command": "node --test tests/vector-attendance-timezone-roundtrip.adversarial.test.mjs",
     "runtime": "Node v24.19.0",
-    "tests": 2,
+    "tests": 4,
     "passed": 0,
-    "failed": 2,
+    "failed": 4,
     "skipped": 0
   },
   "observations": [
@@ -31,10 +33,27 @@
       "firstRenderedValue": "2026-10-25T01:30",
       "secondRenderedValue": "2026-10-25T01:30",
       "requiredInvariant": "Distinct source instants must not collapse to an indistinguishable consequential edit value."
+    },
+    {
+      "case": "non-authoritative operating context",
+      "suppliedContext": {
+        "timeZone": "Asia/Tokyo",
+        "timeZoneSource": "operating_context",
+        "authoritative": false
+      },
+      "observedResult": "The consequential attendance editor opened instead of rejecting the display-only context.",
+      "requiredInvariant": "A source label cannot create authority. Consequential editing requires independently bound authoritative site and effective-dated time-zone evidence."
+    },
+    {
+      "case": "Europe/London spring-forward gap",
+      "submittedWallTime": "2026-03-29T01:30",
+      "observedResult": "The nonexistent local time reached the authenticated command boundary.",
+      "requiredInvariant": "A nonexistent local time must be rejected before any command or payroll-consequential mutation."
     }
   ],
   "releaseGate": {
     "attendanceGlobalTimeZoneRoundTrip": "BLOCKED",
+    "attendanceTimeZoneAuthority": "BLOCKED",
     "hostedProductReadiness": "BLOCKED",
     "marketingVideo": "BLOCKED"
   },
