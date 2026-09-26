@@ -118,19 +118,21 @@ jobs:
             "$image")"
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
 
-          ready=0
-          for _ in $(seq 1 40); do
-            code="$(curl -sS -o /tmp/health.json -w '%{http_code}' http://127.0.0.1:38117/api/health 2>/dev/null || true)"
-            if [ "$code" = '200' ]; then ready=1; break; fi
-            sleep 0.25
+          deadline=$((SECONDS+60))
+          while :; do
+            code="$(curl -sS --max-time 2 -o /tmp/health.json -w '%{http_code}' http://127.0.0.1:38117/api/health 2>/dev/null || true)"
+            if [ "$code" = '200' ]; then
+              echo 'health=PASS'
+              break
+            fi
+            if (( SECONDS >= deadline )); then
+              echo "Guarded staging server did not become healthy before deadline; last_http=$code" >&2
+              cat /tmp/health.json 2>/dev/null || true
+              docker inspect "$cid" >&2 || true
+              docker logs "$cid" >&2 || true
+              exit 1
+            fi
           done
-          if [ "$ready" != '1' ]; then
-            echo 'Guarded staging server did not become healthy.' >&2
-            cat /tmp/health.json 2>/dev/null || true
-            docker logs "$cid" || true
-            exit 1
-          fi
-          echo 'health=PASS'
 
           login_code="$(curl -sS -D /tmp/login.headers -o /tmp/login.body -w '%{http_code}' \
             -H 'Host: staging.identity.test' \
