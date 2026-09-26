@@ -4,6 +4,7 @@ const { simulatePreFreeze } = require('./pre-freeze-simulator.cjs');
 const WAIT_LIKE = new Set(['PENDING','WAITING','QUEUED','RUNNING','BUILDING','DEPLOYING','NEEDS_APPROVAL']);
 const FAILURE_LIKE = new Set(['FAILED','CRASHED','ERROR','CANCELLED']);
 const EVIDENCE_BLOCK = new Set(['INSUFFICIENT_EVIDENCE','STALE','EXPIRED','NO_PROOF']);
+const SUCCESS_LIKE = new Set(['SUCCESS','PASS','SUCCEEDED','COMPLETED']);
 
 function n(v, fallback=0){
   const x = Number(v);
@@ -61,6 +62,27 @@ function planNoIdleWait(input={}){
     actions.push(Object.freeze({type:'CONTINUE_INDEPENDENT_WORK',work:Object.freeze([...independentWork])}));
   }
 
+  if (SUCCESS_LIKE.has(status)) {
+    actions.push(Object.freeze({
+      type:'CONSUME_RESULT_IMMEDIATELY',
+      target:dependency.id || 'dependency',
+      exactCandidateSha:input.candidate?.sha || null,
+      scheduledCheckpointMayDelay:false
+    }));
+    actions.push(Object.freeze({
+      type:'RUN_PRE_FREEZE_SIMULATION_NOW',
+      trigger:'TERMINAL_SUCCESS',
+      exactCandidateSha:input.candidate?.sha || null
+    }));
+    actions.push(Object.freeze({
+      type:'FAN_OUT_DEPENDENT_PROOFS_NOW',
+      trigger:'TERMINAL_SUCCESS',
+      exactCandidateSha:input.candidate?.sha || null,
+      distinctFailureDomainsRequired:true,
+      sameProviderParallelismCountsAsIndependentResilience:false
+    }));
+  }
+
   if (requestedSameDomainLanes > 0) {
     actions.push(Object.freeze({
       type:'PROVISION_THROUGHPUT_LANE',
@@ -107,6 +129,8 @@ function planNoIdleWait(input={}){
     idleWaitAllowed:false,
     blockingState:false,
     simulationAheadRequired:true,
+    terminalSuccessConsumedImmediately:SUCCESS_LIKE.has(status),
+    scheduledCheckpointMayDelayExecution:false,
     promotionBlocked:EVIDENCE_BLOCK.has(status) || FAILURE_LIKE.has(status) || Boolean(preFreeze && !preFreeze.promotionTopologyReady),
     preFreeze,
     prediction:Object.freeze({
@@ -137,10 +161,11 @@ function planNoIdleWait(input={}){
       simulationNeverCountsAsProductionProof:true,
       skippedOrStaleEvidenceNeverCountsAsPass:true,
       falseParallelismNeverCountsAsIndependentCapacity:true,
-      unknownFailureDomainHeadroomNeverCreatesOverflow:true
+      unknownFailureDomainHeadroomNeverCreatesOverflow:true,
+      terminalSuccessNeverWaitsForCheckpoint:true
     }),
     actions:Object.freeze(actions)
   });
 }
 
-module.exports = { planNoIdleWait };
+module.exports = { planNoIdleWait, SUCCESS_LIKE };
