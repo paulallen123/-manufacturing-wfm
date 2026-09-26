@@ -18,6 +18,28 @@
     "failed": 4,
     "skipped": 0
   },
+  "repairVerification": {
+    "status": "BUILT",
+    "verifiedCommit": "e4692ac8f5eb402f1b3ed2d9ea4857f771c53bc4",
+    "repairCommit": "903d35e952e682b58ebb0df68d1533481e57f1d9",
+    "operatingContextBlob": "e5127273345576dc649e79654629d20d31b0a79b",
+    "workflowBlob": "055fe7333009632f60894f17df8e707943a1ccdb",
+    "testBlob": "81c269742a1a2dcc9c5ba0276bdd245ef65a79c3",
+    "command": "node --test tests/vector-attendance-timezone-roundtrip.adversarial.test.mjs",
+    "runtime": "Node v24.19.0",
+    "tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "verifiedBehaviors": [
+      "unchanged Tokyo wall time preserves its exact source instant",
+      "both London fall-back occurrences preserve and explain their source UTC offsets",
+      "an edited ambiguous fall-back wall time is rejected before command",
+      "a non-authoritative operating context cannot open the editor",
+      "a nonexistent spring-forward wall time is rejected before command"
+    ],
+    "boundary": "Independent local source verification only; exact Node 22, packaged browser, server command validation, persistent state, audit, restart and payroll reconciliation were not executed."
+  },
   "observations": [
     {
       "case": "unchanged Tokyo round trip",
@@ -52,8 +74,10 @@
     }
   ],
   "releaseGate": {
-    "attendanceGlobalTimeZoneRoundTrip": "BLOCKED",
-    "attendanceTimeZoneAuthority": "BLOCKED",
+    "attendanceClientTimeZoneRoundTrip": "BUILT",
+    "attendanceClientTimeZoneAuthority": "BUILT",
+    "attendanceServerTimeZoneRevalidation": "BLOCKED",
+    "attendancePackagedBrowserJourney": "BLOCKED",
     "hostedProductReadiness": "BLOCKED",
     "marketingVideo": "BLOCKED"
   },
