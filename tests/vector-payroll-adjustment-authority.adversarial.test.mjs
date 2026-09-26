@@ -5,9 +5,9 @@ import vm from 'node:vm';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const operatingContext = require('../candidate/ux-overlay/vector-operating-context.js');
+const operatingContext = require('../ux-overlay/vector-operating-context.js');
 const workflowSource = fs.readFileSync(
-  new URL('../candidate/ux-overlay/vector-workflows.js', import.meta.url),
+  new URL('../ux-overlay/vector-workflows.js', import.meta.url),
   'utf8'
 );
 
