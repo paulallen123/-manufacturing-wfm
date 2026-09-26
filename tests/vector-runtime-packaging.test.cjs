@@ -116,3 +116,13 @@ test('integration fabric runtime retains its source-relative loader layout', () 
   const registry = fs.readFileSync(path.join(root, 'integration-fabric/runtime/connector-registry.mjs'), 'utf8');
   assert.match(registry, /\.\.\/scripts\/load-catalog\.mjs/);
 });
+
+
+test('packaged lifecycle router preserves the trusted Autopilot execution adapter', () => {
+  const router = fs.readFileSync(path.join(root, 'operations/runtime/workforce-lifecycle-router.cjs'), 'utf8');
+  assert.match(router, /applyTrustedEvent\(input\s*=\s*\{\}\)/, 'packaged lifecycle router must expose trusted lifecycle mutation');
+  assert.match(router, /return lifecycle\.applyTrustedEvent\(input\)/, 'trusted lifecycle mutation must delegate to the authoritative guard');
+  assert.match(router, /getTrustedEvent\(input\s*=\s*\{\}\)/, 'packaged lifecycle router must expose trusted lifecycle readback');
+  assert.match(router, /return lifecycle\.getTrustedEvent\(input\)/, 'trusted lifecycle readback must delegate to the authoritative guard');
+  assert.match(bootstrap, /createAutopilotExecutionEngine\(\{[^}]*lifecycleAdapter\s*:\s*lifecycleGuard/s, 'hosted bootstrap must inject the same authoritative lifecycle guard into Autopilot');
+});
