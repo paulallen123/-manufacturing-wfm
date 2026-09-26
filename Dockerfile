@@ -19,6 +19,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-product-factory.mjs \
  && node scripts/prove-adaptive-intelligence-engine.mjs \
  && node scripts/validate-self-evolution.mjs \
+ && node scripts/validate-vector-operating-context.mjs \
  && node scripts/validate-vector-only-ui.mjs \
  && node --check learning/video-worker/runner.mjs \
  && node integration-fabric/scripts/validate.mjs \
@@ -322,6 +323,7 @@ COPY scripts/prove-vector-built-asset-provenance.mjs /tmp/prove-vector-built-ass
 RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && node --check /app/security-runtime/bootstrap.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
+ && node --check /tmp/wfm-ux-overlay/vector-operating-context.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
  && node --check /tmp/wfm-ux-overlay/vector-realtime.js \
  && node --check /tmp/wfm-reporting-ui/vector-reporting-ui.js \
@@ -346,6 +348,8 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && cat /tmp/wfm-learning-ui/adaptive-coach.js >> /app/public/vector-ui.js \
  && printf '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' >> /app/public/vector-ui.js \
  && cat /tmp/wfm-implementation-ui/implementation-journey.js >> /app/public/vector-ui.js \
+ && printf '\n;/* VECTOR_OPERATING_CONTEXT_V1 */\n' >> /app/public/vector-ui.js \
+ && cat /tmp/wfm-ux-overlay/vector-operating-context.js >> /app/public/vector-ui.js \
  && printf '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' >> /app/public/vector-ui.js \
  && cat /tmp/wfm-ux-overlay/vector-shell.js >> /app/public/vector-ui.js \
  && printf '\n;/* VECTOR_DEMAND_DECISION_INTELLIGENCE_BEGIN */\n' >> /app/public/vector-ui.js \

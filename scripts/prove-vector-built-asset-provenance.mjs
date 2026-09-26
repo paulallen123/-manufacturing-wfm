@@ -36,6 +36,8 @@ export function composeExpectedVectorAssets({ repoRoot, baseCssPath }) {
     read(repoRoot, 'learning/ui/adaptive-coach.js'),
     Buffer.from('\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n'),
     read(repoRoot, 'implementation/ui/implementation-journey.js'),
+    Buffer.from('\n;/* VECTOR_OPERATING_CONTEXT_V1 */\n'),
+    read(repoRoot, 'ux-overlay/vector-operating-context.js'),
     Buffer.from(`\n;/* ${marker} */\n`),
     read(repoRoot, 'ux-overlay/vector-shell.js'),
     Buffer.from('\n;/* VECTOR_DEMAND_DECISION_INTELLIGENCE_BEGIN */\n'),
