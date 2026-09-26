@@ -1,4 +1,5 @@
 const { execFileSync, spawn } = require('node:child_process');
+const assert = require('node:assert/strict');
 const { createHash } = require('node:crypto');
 const fs = require('node:fs');
 const net = require('node:net');
@@ -161,7 +162,7 @@ async function main() {
   const adjustment = dashboard.json.adjustments.find((item) => item.id === proposed.json.result.id);
   const batch = dashboard.json.adjustmentBatches.find((item) => item.id === batchId);
   const digest = createHash('sha256').update(secondDownload.text, 'utf8').digest('hex');
-  console.log(JSON.stringify({
+  const proof = {
     authenticatedHttp: true,
     sqlitePersistence: true,
     safeRestartReadback: Boolean(adjustment && batch && secondDownload.text === firstDownload.text),
@@ -177,7 +178,28 @@ async function main() {
     headerSha256: secondDownload.response.headers.get('x-export-sha256'),
     csv: secondDownload.text,
     auditTypes: dashboard.json.audit.slice(-3).map((item) => item.type),
-  }, null, 2));
+  };
+  assert.equal(proof.safeRestartReadback, true, 'saved adjustment and export must survive a safe restart');
+  assert.equal(adjustment.currency, 'GBP', 'stored adjustment must carry its currency');
+  assert.equal(adjustment.minorUnitExponent, 2, 'stored adjustment must carry its minor-unit exponent');
+  assert.equal(adjustment.currencySource, 'reviewed_cost_evidence', 'stored adjustment must identify authoritative cost evidence');
+  assert.ok(Number.isSafeInteger(adjustment.grossMinorDelta), 'stored money must use safe integer minor units');
+  assert.equal(batch.schema, 'reviewed-pay-adjustment-v2-minor-units', 'export must use the explicit minor-unit schema');
+  assert.deepEqual(batch.reconciliation, {
+    ok: true,
+    rows: 1,
+    storedGrossMinor: adjustment.grossMinorDelta,
+    exportedGrossMinor: adjustment.grossMinorDelta,
+  });
+  assert.equal(digest, proof.headerSha256, 'downloaded export must match its integrity header');
+  assert.match(secondDownload.text, /"gross_amount_delta_minor","currency","minor_unit_exponent","currency_source"/);
+  assert.doesNotMatch(secondDownload.text, /gross_amount_delta_gbp/);
+  assert.deepEqual(proof.auditTypes, [
+    'payroll-post-release-adjustment-proposed',
+    'payroll-post-release-adjustment-approved',
+    'payroll-adjustment-batch-released',
+  ]);
+  console.log(JSON.stringify(proof, null, 2));
   fs.rmSync(proofRoot, { recursive: true, force: true });
 }
 
