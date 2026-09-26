@@ -93,7 +93,7 @@ function vectorCostEvidence(){
   try{const report=typeof VCU!=='undefined'&&VCU?.report?VCU.report():null;if(!report)return null;
     const currencies=[...new Set([report?.currency,report?.summary?.currency,report?.value?.currency,report?.insight?.currency].filter(Boolean).map(value=>String(value).toUpperCase()))];
     const scopeIds=[...new Set([report?.scopeId,report?.siteId,report?.summary?.scopeId,report?.summary?.siteId].filter(Boolean).map(String))];
-    return {currency:currencies.length===1?currencies[0]:null,scopeId:scopeIds.length===1?scopeIds[0]:String(ui?.root||'')};}catch{return null;}
+    return {currency:currencies.length===1?currencies[0]:null,scopeId:scopeIds.length===1?scopeIds[0]:null};}catch{return null;}
 }
 function vectorContext(){
   const actor=(()=>{try{return typeof me==='function'?me()||null:null}catch{return null}})();

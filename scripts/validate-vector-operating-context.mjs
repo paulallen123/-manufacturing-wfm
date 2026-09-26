@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {performance} from 'node:perf_hooks';
+import fs from 'node:fs';
 
 const require=createRequire(import.meta.url);
 const C=require('../ux-overlay/vector-operating-context.js');
@@ -49,6 +50,25 @@ check('mismatched legal/site cost scope cannot leak a currency',()=>{
   assert.equal(result.currencyScopeMismatch,true);
   assert.equal(C.formatMoney(100,result),'\u2014');
   assert.ok(result.missing.includes('cost_scope_match'));
+});
+
+check('unscoped cost evidence cannot supply a plausible currency',()=>{
+  const result=C.resolve({
+    actor:{name:'Alex'},person:{site:'Plant A'},scope:{id:'site-a'},
+    operatingContext:{authoritative:true,scopeId:'site-a',timeZone:'Europe/London',currency:'GBP'},
+    costEvidence:{currency:'GBP'},
+    browser:{locale:'en-GB',timeZone:'Europe/London'}
+  });
+  assert.equal(result.currency,null);
+  assert.equal(result.currencyScopeMismatch,true);
+  assert.equal(C.formatMoney(100,result),'\u2014');
+  assert.ok(result.missing.includes('cost_scope_match'));
+});
+
+check('the shell never invents a missing cost-evidence scope from UI state',()=>{
+  const shell=fs.readFileSync(new URL('../ux-overlay/vector-shell.js',import.meta.url),'utf8');
+  assert.doesNotMatch(shell,/scopeId:scopeIds\.length===1\?scopeIds\[0\]:String\(ui\?\.root\|\|''\)/);
+  assert.match(shell,/scopeId:scopeIds\.length===1\?scopeIds\[0\]:null/);
 });
 
 check('invalid global values fail closed to neutral display defaults',()=>{

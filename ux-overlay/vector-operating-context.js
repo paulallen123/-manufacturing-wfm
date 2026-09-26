@@ -52,8 +52,9 @@ function resolve({actor,person,scope,operatingContext,preference,costEvidence,br
   const contextScope=first(op.scopeId,op.siteId,scope?.id);
   const costScope=first(costEvidence?.scopeId,costEvidence?.siteId);
   const hasCostEvidence=Boolean(costEvidence&&typeof costEvidence==='object');
-  const currencyScopeMismatch=Boolean(contextScope&&costScope&&contextScope!==costScope);
-  const evidenceCurrency=currencyScopeMismatch?null:validCurrency(costEvidence?.currency);
+  const costScopeMatches=Boolean(contextScope&&costScope&&contextScope===costScope);
+  const currencyScopeMismatch=Boolean(hasCostEvidence&&!costScopeMatches);
+  const evidenceCurrency=costScopeMatches?validCurrency(costEvidence?.currency):null;
   const operatingCurrency=validCurrency(op.currency);
   const currency=currencyScopeMismatch?null:(hasCostEvidence?evidenceCurrency:(operatingCurrency||null));
   const currencySource=evidenceCurrency?'cost_evidence':(!hasCostEvidence&&operatingCurrency)?'operating_context':'unknown';
