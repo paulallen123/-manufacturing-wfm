@@ -209,6 +209,14 @@
       "learnedFrom": "Attendance-owned weekly sign-off convergence assault 2026-09-25",
       "prevention": "When source-route ownership changes, update the regression to prove both the protected dirty-state hold and the permitted transition from the new authoritative route; never preserve retired route labels as expected state.",
       "permanentGuard": "workflow regression asserts Attendance hold and vector-weekly-signoff transition"
+    },
+    {
+      "id": "provider-success-skip-status",
+      "class": "CONTROL_PLANE_DESIGN",
+      "symptom": "A provider reports state=success because watched paths were unchanged even though no deployment, test, runtime build or terminal proof executed.",
+      "learnedFrom": "Nine Railway path-filter success statuses on FORGE candidate 7a24662e 2026-09-26",
+      "prevention": "Parse provider status descriptions and executed evidence, not the state field alone. Explicit skip-success is PROVIDER_SKIPPED_NO_PROOF and quarantines promotion while unrelated development continues.",
+      "permanentGuard": "proof blocker classifier + mandatory exact skip-success regression + source-bound terminal proof requirement"
     }
   ]
 }

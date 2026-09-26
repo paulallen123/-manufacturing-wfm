@@ -4,6 +4,8 @@ import fs from 'node:fs';
 export function classifyProofBlocker(input=''){
   const text=String(input||'');
   const hasTestFailure=/\bnot ok\b|ERR_ASSERTION|AssertionError|# fail\s+[1-9]/i.test(text);
+  const providerSkipped=/no deployment needed[^\n]*(?:watched paths? not modified|path filter)|deployment (?:was )?skipped|status-only green/i.test(text) && /(?:"state"\s*:\s*"success"|state\s*[=:]\s*success)/i.test(text);
+  if(providerSkipped) return result('PROVIDER_SKIPPED_NO_PROOF',true,true,true,'Freeze the exact candidate through an admitted trigger or route it to an equivalent executable lane; the provider success status is not proof.');
   const providerOnly=/runner_id=0|no runner allocated|runner allocation|builder unavailable|provider unavailable|scheduling build[^\n]*(?:timeout|failed before execution)/i.test(text) && !hasTestFailure;
   if(providerOnly) return result('PROVIDER_DEGRADED',false,true,true,'Run the identical source SHA through the next executable independent proof lane.');
   if(/ENOENT|MODULE_NOT_FOUND|Cannot find module|no such file or directory/i.test(text)) return result('MISSING_PROOF_DEPENDENCY',true,true,false,'Repair the missing/incorrect proof dependency or package it explicitly; do not skip the gate.');
@@ -22,6 +24,8 @@ function result(blockerClass,blocking,developmentCanContinue,fallbackAllowed,nex
     schemaVersion:1,
     blockerClass,
     blocking,
+    countsAsProof:false,
+    executedEvidence:false,
     developmentCanContinue,
     fallbackAllowed,
     affectedScope:'affected-capability',
