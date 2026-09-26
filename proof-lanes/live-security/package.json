@@ -1,0 +1,8 @@
+{
+  "name": "vector-live-security-proof",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node security.mjs"
+  }
+}
