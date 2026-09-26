@@ -45,6 +45,17 @@ async function readJson(req,max=128*1024){
   catch{const e=new Error('Invalid JSON body.');e.statusCode=400;throw e;}
 }
 function eventPath(req){return String(req?.url||'/').split('?')[0]||'/';}
+function canonical(value){
+  if(Array.isArray(value))return '['+value.map(canonical).join(',')+']';
+  if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+canonical(value[k])).join(',')+'}';
+  return JSON.stringify(value);
+}
+function assertMatchingReplay(row,event){
+  const payload=event.payload&&typeof event.payload==='object'?JSON.parse(JSON.stringify(event.payload)):{};
+  const submitted={kind:compact(event.kind,40).toUpperCase(),employeeId:compact(event.employeeId,120)||null,sourceKey:compact(event.sourceKey,120)||null,effectiveAtMs:toMs(event.effectiveAt),payload};
+  const stored={kind:row.kind,employeeId:row.employee_id||null,sourceKey:row.source_key||null,effectiveAtMs:Number(row.effective_at_ms),payload:JSON.parse(row.payload_json)};
+  if(canonical(submitted)!==canonical(stored))throw Object.assign(new Error('Event key was already used for different lifecycle content.'),{statusCode:409});
+}
 function publicEvent(row){
   return {
     id:row.id,eventKey:row.event_key,kind:row.kind,status:row.status,
@@ -203,7 +214,7 @@ function createWorkforceLifecycleGuard(options={}){
   }
 
   function applyTrustedEvent(input={}){
-    const tenant=compact(input.tenant,120),eventKey=compact(input.eventKey,160);if(!tenant||!eventKey)throw new Error('tenant and eventKey are required.');const existing=byKey.get(tenant,eventKey);if(existing)return{event:publicEvent(existing),decision:JSON.parse(existing.detail_json),idempotent:true};const source=input.event&&typeof input.event==='object'?input.event:{},event={kind:source.kind,employeeId:source.employeeId,sourceKey:source.sourceKey,effectiveAt:source.effectiveAt,payload:source.payload},decision=evaluateEvent(priorForTenant(tenant),event),id='wf-'+sha256(tenant+'|'+eventKey).slice(0,32),effectiveAtMs=toMs(event.effectiveAt)??Date.now();insert.run(id,tenant,eventKey,compact(event.kind,40).toUpperCase(),decision.status,compact(event.employeeId,120)||null,compact(event.sourceKey,120)||null,effectiveAtMs,JSON.stringify(event.payload&&typeof event.payload==='object'?event.payload:{}),decision.reasonCode||null,JSON.stringify(decision),nowIso());const row=byKey.get(tenant,eventKey);return{event:publicEvent(row),decision,idempotent:false};
+    const tenant=compact(input.tenant,120),eventKey=compact(input.eventKey,160);if(!tenant||!eventKey)throw new Error('tenant and eventKey are required.');const source=input.event&&typeof input.event==='object'?input.event:{},event={kind:source.kind,employeeId:source.employeeId,sourceKey:source.sourceKey,effectiveAt:source.effectiveAt,payload:source.payload};const existing=byKey.get(tenant,eventKey);if(existing){assertMatchingReplay(existing,event);return{event:publicEvent(existing),decision:JSON.parse(existing.detail_json),idempotent:true};}const decision=evaluateEvent(priorForTenant(tenant),event),id='wf-'+sha256(tenant+'|'+eventKey).slice(0,32),effectiveAtMs=toMs(event.effectiveAt)??Date.now();insert.run(id,tenant,eventKey,compact(event.kind,40).toUpperCase(),decision.status,compact(event.employeeId,120)||null,compact(event.sourceKey,120)||null,effectiveAtMs,JSON.stringify(event.payload&&typeof event.payload==='object'?event.payload:{}),decision.reasonCode||null,JSON.stringify(decision),nowIso());const row=byKey.get(tenant,eventKey);return{event:publicEvent(row),decision,idempotent:false};
   }
   function getTrustedEvent(input={}){const tenant=compact(input.tenant,120),eventKey=compact(input.eventKey,160),row=tenant&&eventKey?byKey.get(tenant,eventKey):null;return row?publicEvent(row):null;}
 
@@ -211,12 +222,12 @@ function createWorkforceLifecycleGuard(options={}){
     const body=await readJson(req);
     const tenant=compact(body.tenant,120), eventKey=compact(body.eventKey,160);
     if(!tenant||!eventKey) return writeJson(res,400,{error:'tenant and eventKey are required.'});
-    const existing=byKey.get(tenant,eventKey);
-    if(existing) return writeJson(res,200,{event:publicEvent(existing),idempotent:true});
     const event={
       kind:body.kind,employeeId:body.employeeId,sourceKey:body.sourceKey,
       effectiveAt:body.effectiveAt,payload:body.payload
     };
+    const existing=byKey.get(tenant,eventKey);
+    if(existing){assertMatchingReplay(existing,event);return writeJson(res,200,{event:publicEvent(existing),idempotent:true});}
     const decision=evaluateEvent(priorForTenant(tenant),event);
     const id='wf-'+sha256(tenant+'|'+eventKey).slice(0,32);
     const effectiveAtMs=toMs(event.effectiveAt)??Date.now();
