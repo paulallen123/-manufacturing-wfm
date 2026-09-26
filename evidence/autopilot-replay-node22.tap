@@ -7,19 +7,19 @@ TAP version 13
 # Subtest: requires current context and reversible plan
 ok 1 - requires current context and reversible plan
   ---
-  duration_ms: 14.65238
+  duration_ms: 11.772088
   type: 'test'
   ...
 # Subtest: executes verifies and is idempotent
 ok 2 - executes verifies and is idempotent
   ---
-  duration_ms: 3.397899
+  duration_ms: 3.131594
   type: 'test'
   ...
 # Subtest: failed verification rolls back or contains
 ok 3 - failed verification rolls back or contains
   ---
-  duration_ms: 3.213837
+  duration_ms: 2.746183
   type: 'test'
   ...
 # (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
@@ -28,31 +28,31 @@ ok 3 - failed verification rolls back or contains
 # Subtest: cross-origin
 ok 4 - cross-origin
   ---
-  duration_ms: 38.202105
+  duration_ms: 38.81309
   type: 'test'
   ...
 # Subtest: missing origin
 ok 5 - missing origin
   ---
-  duration_ms: 9.682489
+  duration_ms: 10.203672
   type: 'test'
   ...
 # Subtest: non-JSON simple request
 ok 6 - non-JSON simple request
   ---
-  duration_ms: 6.249749
+  duration_ms: 6.643832
   type: 'test'
   ...
 # Subtest: authorised origin retains permit validation
 ok 7 - authorised origin retains permit validation
   ---
-  duration_ms: 6.099906
+  duration_ms: 5.868904
   type: 'test'
   ...
 # Subtest: unknown roles fail closed
 ok 8 - unknown roles fail closed
   ---
-  duration_ms: 4.849242
+  duration_ms: 5.256375
   type: 'test'
   ...
 # (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
@@ -61,78 +61,84 @@ ok 8 - unknown roles fail closed
 # Subtest: a reused event key cannot turn a different event into verified Autopilot execution
 ok 9 - a reused event key cannot turn a different event into verified Autopilot execution
   ---
-  duration_ms: 19.756029
+  duration_ms: 13.836039
   type: 'test'
   ...
 # Subtest: idempotency accepts equivalent payload ordering but rejects changed content
 ok 10 - idempotency accepts equivalent payload ordering but rejects changed content
   ---
-  duration_ms: 2.969624
+  duration_ms: 1.819599
   type: 'test'
   ...
 # Subtest: HTTP retry with changed content returns 409 and preserves the first persisted event
 ok 11 - HTTP retry with changed content returns 409 and preserves the first persisted event
   ---
-  duration_ms: 35.592676
+  duration_ms: 25.191089
+  type: 'test'
+  ...
+# Subtest: caller-supplied expected outcome cannot become authoritative measured savings
+ok 12 - caller-supplied expected outcome cannot become authoritative measured savings
+  ---
+  duration_ms: 5.180653
   type: 'test'
   ...
 # (node:20) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
 # (Use `node --trace-warnings ...` to show where the warning was created)
 # (node:20) ExperimentalWarning: SQLite is an experimental feature and might change at any time
 # Subtest: clocking handles overnight shift evidence and rejects duplicate or post-leaver clocks
-ok 12 - clocking handles overnight shift evidence and rejects duplicate or post-leaver clocks
+ok 13 - clocking handles overnight shift evidence and rejects duplicate or post-leaver clocks
   ---
-  duration_ms: 2.962975
+  duration_ms: 2.266291
   type: 'test'
   ...
 # Subtest: absence windows cannot silently extend beyond employment
-ok 13 - absence windows cannot silently extend beyond employment
+ok 14 - absence windows cannot silently extend beyond employment
   ---
-  duration_ms: 0.21567
+  duration_ms: 0.239185
   type: 'test'
   ...
 # Subtest: overtime override requires explicit approval and never directly mutates payroll
-ok 14 - overtime override requires explicit approval and never directly mutates payroll
+ok 15 - overtime override requires explicit approval and never directly mutates payroll
   ---
-  duration_ms: 0.26297
+  duration_ms: 0.255909
   type: 'test'
   ...
 # Subtest: agency assignments require bounded valid windows and reject overlaps
-ok 15 - agency assignments require bounded valid windows and reject overlaps
+ok 16 - agency assignments require bounded valid windows and reject overlaps
   ---
-  duration_ms: 0.197893
+  duration_ms: 0.234338
   type: 'test'
   ...
 # Subtest: starter transfer leaver are effective-dated and fail closed outside employment
-ok 16 - starter transfer leaver are effective-dated and fail closed outside employment
+ok 17 - starter transfer leaver are effective-dated and fail closed outside employment
   ---
-  duration_ms: 0.41782
+  duration_ms: 0.396738
   type: 'test'
   ...
 # Subtest: retro changes preserve the original event and require evidence
-ok 17 - retro changes preserve the original event and require evidence
+ok 18 - retro changes preserve the original event and require evidence
   ---
-  duration_ms: 0.175069
+  duration_ms: 0.19537
   type: 'test'
   ...
 # Subtest: integration outage cannot delete source data and recovery requires a checkpoint
-ok 18 - integration outage cannot delete source data and recovery requires a checkpoint
+ok 19 - integration outage cannot delete source data and recovery requires a checkpoint
   ---
-  duration_ms: 0.320325
+  duration_ms: 0.32362
   type: 'test'
   ...
 # Subtest: HTTP lifecycle ingestion is idempotent, append-only and tenant isolated
-ok 19 - HTTP lifecycle ingestion is idempotent, append-only and tenant isolated
+ok 20 - HTTP lifecycle ingestion is idempotent, append-only and tenant isolated
   ---
-  duration_ms: 11.852438
+  duration_ms: 9.553217
   type: 'test'
   ...
-1..19
-# tests 19
+1..20
+# tests 20
 # suites 0
-# pass 19
+# pass 20
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 198.179718
+# duration_ms 161.977355

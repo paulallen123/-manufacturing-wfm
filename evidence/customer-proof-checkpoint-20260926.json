@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "currentCandidateSha": "bdfdcd5338870dc6d97d4fd53ad56aff3527dfe5",
+  "candidateDeploymentId": "1a365a32-a4f4-4c63-a869-bc846a98483a",
+  "customerReady": "UNPROVEN",
+  "closedBlockers": [
+    {
+      "id": "security-runner-emits-authoritative-assertions",
+      "status": "PASS",
+      "candidateSha": "c78db2b78a8d655581a65583fa10feec54a810d4",
+      "assertions": 27,
+      "evidence": "evidence/security-c78db2b-20260926.json"
+    },
+    {
+      "id": "forge-correction-browser-roundtrip",
+      "status": "PASS",
+      "candidateSha": "c78db2b78a8d655581a65583fa10feec54a810d4",
+      "assertions": 16,
+      "evidence": "evidence/browser-c78db2b-20260926.json"
+    }
+  ],
+  "repairs": [
+    {
+      "pr": 245,
+      "defect": "Reusing an event key for different lifecycle content caused false Autopilot verification",
+      "sourceRegression": "PASS",
+      "hostedRegression": "UNPROVEN"
+    },
+    {
+      "pr": 246,
+      "defect": "Caller-supplied forecasts acquired measured-outcome authority, including replay of legacy digests",
+      "sourceRegression": "PASS",
+      "hostedRegression": "UNPROVEN"
+    }
+  ],
+  "focusedTests": {
+    "node": "v22.23.2",
+    "passed": 20,
+    "failed": 0,
+    "evidence": "evidence/autopilot-replay-node22.tap"
+  },
+  "nextRuntimeProof": {
+    "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+    "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+    "serviceId": "e38d5baf-b15c-42d0-8c40-54fc62b24a54",
+    "script": "autopilot.cjs",
+    "configured": true,
+    "triggered": false,
+    "prerequisite": "Verify the target is serving currentCandidateSha, then trigger the configured isolated proof service using a variable update with skipDeploys=false. Do not count container health as proof. Bind assertions to target-side HTTP logs and deployment metadata."
+  },
+  "deploymentLesson": "Railway redeploy reused old snapshot/config in observed runs; branch pushes or variable-change deploys used current configuration. Verify actual source SHA and emitted assertion payload.",
+  "remaining": [
+    "Unknown-role and revoked-device hosted security coverage",
+    "Full Golden Journey and zero-touch provisioning",
+    "Server-side stale context, measured outcome, learning and effective rollback",
+    "Autonomous compound recovery and Dark Sky",
+    "Real external provider roundtrip",
+    "Independent failure-domain resilience"
+  ],
+  "creditBoundary": "Further proof-runner launching, deployment observation and evidence collection are normal execution tasks. Resume Astra when an eligible substantive failure appears."
+}
