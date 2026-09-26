@@ -121,5 +121,14 @@ function isoWeek(value,context){
   const firstThursday=new Date(Date.UTC(localDate.getUTCFullYear(),0,4));firstThursday.setUTCDate(firstThursday.getUTCDate()-((firstThursday.getUTCDay()+6)%7)+3);
   return 1+Math.round((localDate-firstThursday)/604800000);
 }
-return Object.freeze({VERSION,resolve,formatMoney,formatDate,localHour,localCalendarParts,isoWeek,validLocale,validTimeZone,validCurrency});
+function localDateTimeInput(value,context){
+  const date=value instanceof Date?value:new Date(value);if(!Number.isFinite(date.getTime()))return null;
+  try{
+    const parts=new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZone:context?.timeZone||'UTC'}).formatToParts(date);
+    const read=type=>parts.find(part=>part.type===type)?.value;
+    const year=read('year'),month=read('month'),day=read('day'),hour=read('hour'),minute=read('minute');
+    return year&&month&&day&&hour&&minute?`${year}-${month}-${day}T${hour}:${minute}`:null;
+  }catch{return null;}
+}
+return Object.freeze({VERSION,resolve,formatMoney,formatDate,localHour,localCalendarParts,isoWeek,localDateTimeInput,validLocale,validTimeZone,validCurrency});
 });

@@ -90,6 +90,8 @@ test('Vector workflow controller uses real authentication, saved checks and rest
       console, URL, setTimeout, clearTimeout, document, OFFLINE: false,
       PR: require(path.join(runtime, 'public/payroll-control.js')),
       WFMCost: require(path.join(runtime, 'public/cost-engine.js')),
+      VectorOperatingContext: require(path.join(root, 'ux-overlay/vector-operating-context.js')),
+      VectorDisplayContext: () => ({ locale: 'en-GB', timeZone: 'Europe/London', timeZoneSource: 'operating_context' }),
       F: { actor: bootstrap.actor, ready: true }, ui: { page: 'overview' }, data: bootstrap.state,
       payrollActor: () => bootstrap.actor,
       request,

@@ -93,6 +93,25 @@ check('local hour, calendar day and ISO week follow the site time zone across th
   assert.equal(C.isoWeek('2027-01-04T12:00:00Z',{timeZone:'Europe/London'}),1);
 });
 
+check('attendance datetime inputs preserve the site wall time across time zones and DST',()=>{
+  const instant='2026-12-31T23:30:00Z';
+  assert.equal(typeof C.localDateTimeInput,'function');
+  assert.equal(C.localDateTimeInput(instant,{timeZone:'Asia/Tokyo'}),'2027-01-01T08:30');
+  assert.equal(C.localDateTimeInput(instant,{timeZone:'America/Los_Angeles'}),'2026-12-31T15:30');
+  assert.equal(C.localDateTimeInput('2026-03-29T01:30:00Z',{timeZone:'Europe/London'}),'2026-03-29T02:30');
+  assert.equal(C.localDateTimeInput('not-a-date',{timeZone:'UTC'}),null);
+});
+
+check('Vector attendance editing consumes authoritative resolved context instead of UK defaults',()=>{
+  const shell=fs.readFileSync(new URL('../ux-overlay/vector-shell.js',import.meta.url),'utf8');
+  const workflows=fs.readFileSync(new URL('../ux-overlay/vector-workflows.js',import.meta.url),'utf8');
+  assert.match(shell,/globalThis\.VectorDisplayContext=/);
+  assert.match(workflows,/timeZoneSource\s*!==\s*'operating_context'/);
+  assert.match(workflows,/VectorOperatingContext\.localDateTimeInput/);
+  assert.doesNotMatch(workflows,/Europe\/London/);
+  assert.doesNotMatch(workflows,/toLocaleString\('en-GB'/);
+});
+
 check('size and topology matrix remains deterministic without fixed hierarchy depth',()=>{
   const sizes=[1,25,100,500,2000,10000];
   const start=performance.now();
@@ -126,6 +145,7 @@ check('formatters preserve unknown rather than inventing money, dates or calenda
   assert.equal(C.formatDate('not-a-date',{locale:'en-GB',timeZone:'UTC'}),'\u2014');
   assert.equal(C.localCalendarParts('not-a-date',{timeZone:'UTC'}),null);
   assert.equal(C.isoWeek('not-a-date',{timeZone:'UTC'}),null);
+  assert.equal(C.localDateTimeInput('not-a-date',{timeZone:'UTC'}),null);
 });
 
 console.log(JSON.stringify({

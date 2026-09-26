@@ -104,6 +104,7 @@ function vectorContext(){
   const browser={locale:typeof navigator!=='undefined'?navigator.language:null,timeZone:(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone}catch{return null}})()};
   return window.VectorOperatingContext.resolve({actor,person:worker,scope,operatingContext,preference,costEvidence:vectorCostEvidence(),browser});
 }
+globalThis.VectorDisplayContext=()=>vectorContext();
 const displayName=()=>vectorContext().displayName||'Signed-in user';
 const firstName=()=>{const name=displayName();return name?name.split(/\s+/)[0]:'there';};
 const siteName=()=>vectorContext().siteName||'Current workspace';

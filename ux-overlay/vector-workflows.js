@@ -11,7 +11,8 @@
   const permitted = permission => !!actor() && PR.has(actor(), permission);
   const reviewer = () => ['manager', 'director', 'supervisor'].includes(actor()?.role);
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-  const hours = minutes => (Number(minutes || 0) / 60).toLocaleString('en-GB', { maximumFractionDigits: 2 }) + ' h';
+  const displayContext = () => { try { return typeof globalThis.VectorDisplayContext === 'function' ? globalThis.VectorDisplayContext() : null; } catch { return null; } };
+  const hours = minutes => (Number(minutes || 0) / 60).toLocaleString(displayContext()?.locale || 'en', { maximumFractionDigits: 2 }) + ' h';
   const selected = () => RF.report?.teams.find(team => team.id === RF.team) || RF.report?.teams[0];
   const control = (label, action, id = '', disabled = false) => `<button type="button" class="btn small" data-vector-workflow="${escape(action)}" data-id="${escape(id)}"${disabled ? ' disabled' : ''}>${escape(label)}</button>`;
   const checked = (name, label) => `<label class="vw-check"><input type="checkbox" name="${name}" required>${escape(label)}</label>`;
@@ -230,8 +231,11 @@
   }
   function times(initial = {}) {
     if ((initial.breaks || []).length > 1 || (initial.breaks || []).some(item => item.paid)) throw Error('This record contains multiple or paid breaks. Use Attendance corrections with the full source break evidence; this compact editor will not replace them.');
-    const local = value => value ? WFMCost.localDay(value) + 'T' + fmt(value) : '';
-    return `<fieldset id="vw-work-fields"><legend>Verified worked time · Europe/London</legend><div class="formrow"><label>Clock-in<input type="datetime-local" name="clockIn" value="${escape(local(initial.clockIn))}" required></label><label>Clock-out<input type="datetime-local" name="clockOut" value="${escape(local(initial.clockOut))}" required></label></div><div class="formrow"><label>Unpaid break start<input type="datetime-local" name="breakStart" value="${escape(local(initial.breaks?.[0]?.start))}"></label><label>Unpaid break end<input type="datetime-local" name="breakEnd" value="${escape(local(initial.breaks?.[0]?.end))}"></label></div>${checked('breaksConfirmed', 'I verified actual unpaid breaks, including no unpaid break when blank.')}</fieldset>`;
+    const context=displayContext();
+    if(context?.timeZoneSource!=='operating_context'||!context.timeZone)throw Error('Site time zone evidence is unavailable. Refresh or select a site with an effective-dated time zone before editing attendance.');
+    if(typeof globalThis.VectorOperatingContext?.localDateTimeInput!=='function')throw Error('Site-local time formatting is unavailable. Refresh before editing attendance.');
+    const local = value => { if(!value)return '';const result=globalThis.VectorOperatingContext.localDateTimeInput(value,context);if(!result)throw Error('The source clocking time is invalid. Review the original evidence.');return result; };
+    return `<fieldset id="vw-work-fields"><legend>Verified worked time · ${escape(context.timeZone)}</legend><div class="formrow"><label>Clock-in<input type="datetime-local" name="clockIn" value="${escape(local(initial.clockIn))}" required></label><label>Clock-out<input type="datetime-local" name="clockOut" value="${escape(local(initial.clockOut))}" required></label></div><div class="formrow"><label>Unpaid break start<input type="datetime-local" name="breakStart" value="${escape(local(initial.breaks?.[0]?.start))}"></label><label>Unpaid break end<input type="datetime-local" name="breakEnd" value="${escape(local(initial.breaks?.[0]?.end))}"></label></div>${checked('breaksConfirmed', 'I verified actual unpaid breaks, including no unpaid break when blank.')}</fieldset>`;
   }
   function timeInput(form) {
     return Object.fromEntries(['clockIn', 'clockOut', 'breakStart', 'breakEnd'].map(key => [key, String(form.get(key) || '')]).concat([['breaksConfirmed', form.has('breaksConfirmed')]]));
