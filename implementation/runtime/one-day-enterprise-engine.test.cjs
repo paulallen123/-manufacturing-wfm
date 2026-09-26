@@ -590,7 +590,8 @@ test('unknown evidence kinds and raw untrusted evidence are rejected', async () 
 });
 
 
-test('legacy implementation_events schema migrates in place without losing audit rows', () => {
+
+test('legacy implementation_events schema migrates every required audit field in place without losing rows or triggers', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-one-day-legacy-'));
   const dbPath = path.join(dir, 'legacy.sqlite');
   const db = new DatabaseSync(dbPath);
@@ -599,36 +600,77 @@ test('legacy implementation_events schema migrates in place without losing audit
     'CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL REFERENCES tenants(id),person_id TEXT NOT NULL,role TEXT NOT NULL,costs INTEGER NOT NULL,salt TEXT NOT NULL,password_hash TEXT NOT NULL,permissions TEXT NOT NULL DEFAULT \'[]\');' +
     'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL REFERENCES users(email),expires INTEGER NOT NULL);' +
     'CREATE TABLE implementation_events(' +
-      'id INTEGER PRIMARY KEY AUTOINCREMENT, event TEXT NOT NULL,' +
-      'detail_json TEXT NOT NULL, created_at TEXT NOT NULL);'
+      'id INTEGER PRIMARY KEY AUTOINCREMENT, legacy_kind TEXT NOT NULL,' +
+      'legacy_payload TEXT NOT NULL, legacy_at TEXT NOT NULL);' +
+    'CREATE TRIGGER legacy_implementation_event_update BEFORE UPDATE ON implementation_events ' +
+      "BEGIN SELECT RAISE(ABORT,'Legacy implementation events are append only.'); END;" +
+    'CREATE TRIGGER legacy_implementation_event_delete BEFORE DELETE ON implementation_events ' +
+      "BEGIN SELECT RAISE(ABORT,'Legacy implementation events are append only.'); END;"
   );
-  db.prepare('INSERT INTO implementation_events(event,detail_json,created_at) VALUES(?,?,?)')
-    .run('legacy-event', '{"kept":true}', new Date().toISOString());
+  const legacyPayload = '{"kept":true,"source":"pre-current-schema"}';
+  db.prepare('INSERT INTO implementation_events(legacy_kind,legacy_payload,legacy_at) VALUES(?,?,?)')
+    .run('legacy-event', legacyPayload, '2026-09-01T00:00:00.000Z');
   db.close();
 
-  const engine = createOneDayEnterpriseEngine({
+  const options = {
     dbPath,
     internalToken: 'implementation-worker-test-token',
     contractWebhookSecret: 'contract-webhook-test-token',
     publicOrigin: 'https://implementation.test',
     sendInvitation: async () => ({ provider: 'test-mailer', messageId: 'legacy-migration' })
-  });
+  };
+
+  const engine = createOneDayEnterpriseEngine(options);
+  engine.close();
+
+  // A second startup proves the migration is idempotent after the columns exist.
+  const second = createOneDayEnterpriseEngine(options);
+  second.close();
 
   try {
     const migrated = new DatabaseSync(dbPath);
     const columns = migrated.prepare('PRAGMA table_info(implementation_events)').all().map(row => row.name);
-    assert.ok(columns.includes('run_id'));
-    assert.ok(columns.includes('tenant'));
+    for (const expected of [
+      'id','legacy_kind','legacy_payload','legacy_at',
+      'run_id','tenant','event','detail_json','created_at'
+    ]) {
+      assert.ok(columns.includes(expected), 'missing migrated column: ' + expected);
+    }
+
     const legacy = migrated.prepare(
-      'SELECT event,detail_json,run_id,tenant FROM implementation_events WHERE id=1'
+      'SELECT legacy_kind,legacy_payload,legacy_at,run_id,tenant,event,detail_json,created_at FROM implementation_events WHERE id=1'
     ).get();
-    assert.equal(legacy.event, 'legacy-event');
-    assert.equal(legacy.detail_json, '{"kept":true}');
+    assert.equal(legacy.legacy_kind, 'legacy-event');
+    assert.equal(legacy.legacy_payload, legacyPayload);
+    assert.equal(legacy.legacy_at, '2026-09-01T00:00:00.000Z');
     assert.equal(legacy.run_id, null);
     assert.equal(legacy.tenant, null);
+    assert.equal(legacy.event, null);
+    assert.equal(legacy.detail_json, null);
+    assert.equal(legacy.created_at, null);
+
+    const legacyTriggers = migrated.prepare(
+      "SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE 'legacy_implementation_event_%' ORDER BY name"
+    ).all().map(row => row.name);
+    assert.deepEqual(legacyTriggers, [
+      'legacy_implementation_event_delete',
+      'legacy_implementation_event_update'
+    ]);
+
+    migrated.prepare(
+      'INSERT INTO implementation_events(run_id,tenant,event,detail_json,created_at) VALUES(?,?,?,?,?)'
+    ).run('run-new','alpha','new-event','{"new":true}','2026-09-26T00:00:00.000Z');
+    const current = migrated.prepare(
+      'SELECT run_id,tenant,event,detail_json,created_at FROM implementation_events WHERE run_id=?'
+    ).get('run-new');
+    assert.equal(current.event, 'new-event');
+
+    assert.throws(
+      () => migrated.exec("UPDATE implementation_events SET legacy_kind='tampered' WHERE id=1"),
+      /append only/i
+    );
     migrated.close();
   } finally {
-    engine.close();
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });

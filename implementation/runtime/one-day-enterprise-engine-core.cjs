@@ -210,11 +210,19 @@ function createOneDayEnterpriseEngine(options = {}) {
       "BEGIN SELECT RAISE(ABORT,'Implementation events are append only.'); END;"
   );
 
-  // Backward-compatible durable-state migration. Earlier hosted candidates
-  // created implementation_events without run_id/tenant. Add only missing
-  // nullable columns in place so existing append-only audit evidence survives.
-  ensureLegacyColumn(db, 'implementation_events', 'run_id', 'TEXT');
-  ensureLegacyColumn(db, 'implementation_events', 'tenant', 'TEXT');
+  // Backward-compatible durable-state migration. Historical hosted candidates
+  // used several implementation_events shapes. Add only the current audit
+  // fields that are absent, as nullable compatibility columns, so existing
+  // legacy columns, rows and append-only triggers remain untouched.
+  for (const [column, definition] of [
+    ['run_id', 'TEXT'],
+    ['tenant', 'TEXT'],
+    ['event', 'TEXT'],
+    ['detail_json', 'TEXT'],
+    ['created_at', 'TEXT']
+  ]) {
+    ensureLegacyColumn(db, 'implementation_events', column, definition);
+  }
 
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
