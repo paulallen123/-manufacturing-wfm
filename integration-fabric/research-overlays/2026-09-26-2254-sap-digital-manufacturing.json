@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-26",
+  "purpose": "SAP Digital Manufacturing evidence promotion and reusable source-authority-aware manufacturing observation admission.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "sap-digital-manufacturing",
+      "patch": {
+        "protocols": ["REST", "OData v4", "OAuth 2.0", "SAP Cloud Integration", "edge APIs"],
+        "auth": "OAuth-2.0-client-credentials-service-key",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.sap.com/docs/sap-digital-manufacturing",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "SAP Digital Manufacturing public APIs",
+            "direction": "SAP-DM-to-WFM-read-only",
+            "authentication": "OAuth 2.0 client credentials from a dedicated SAP Digital Manufacturing service instance/service key, with the exact public-api-endpoint pinned",
+            "notes": "Allow only reviewed GET routes for the exact tenant, plant and API version. Production, quantity, activity, inventory, SFC, work-centre, resource and custom-field mutation routes remain denied."
+          },
+          {
+            "type": "SAP Digital Manufacturing for insights MDO OData",
+            "direction": "SAP-DM-analytics-to-WFM-derived-read-only",
+            "authentication": "dedicated OAuth 2.0 client credentials and exact regional public API endpoint",
+            "notes": "MDOs are analytical projections that SAP says are not immediately consistent. They are never transactional truth and cannot drive a subsequent SAP Digital Manufacturing mutation."
+          },
+          {
+            "type": "SAP Digital Manufacturing for edge computing",
+            "direction": "customer-edge-to-WFM-reviewed-read-only",
+            "authentication": "customer-managed edge API authentication and exact customer-approved host",
+            "notes": "Separate customer-edge route for authorised plants only. Release 2608 added edge availability for several execution APIs, but no cloud credential, checkpoint or write authority is reused at the edge."
+          }
+        ],
+        "deploymentVariants": {
+          "cloud-execution": {
+            "customerEdgeRequired": false,
+            "routing": "Exact service-key public-api-endpoint, SAP Digital Manufacturing tenant, plant, region, service and API version."
+          },
+          "cloud-insights": {
+            "customerEdgeRequired": false,
+            "routing": "Exact MDO OData endpoint and analytical dataset; separate source-authority and checkpoint namespace from execution APIs."
+          },
+          "edge": {
+            "customerEdgeRequired": true,
+            "routing": "Customer-controlled edge host and plant network boundary; read-only reviewed APIs, no machine, SFC, confirmation or inventory mutation."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "SAP-DM-instance", "region", "api-origin", "plant", "service", "api-version", "dataset", "source-kind", "schema"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "SAP-DM-instance", "plant", "work-centre", "resource", "order", "SFC", "operation", "source-record", "source-version", "metric", "unit", "event-time", "schema-fingerprint"]
+        },
+        "manufacturingObservationAuthority": {
+          "sourceKinds": ["transactional-read", "analytic-projection"],
+          "canonicalDecimalStringsRequired": true,
+          "metricUnitAllowlistRequired": true,
+          "derivedObservationGrantsTransactionalAuthority": false,
+          "operationalDecisionAuthority": false,
+          "writeBackAuthority": false,
+          "payrollAuthority": false,
+          "causalClaimAuthority": false,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "exactScopeDimensions": ["provider", "wfmTenantId", "connectionId", "sourceInstanceId", "plantId", "apiOrigin", "apiVersion", "dataset", "sourceKind", "schemaFingerprint"],
+          "receiptPolicy": "Admit only complete exact-scope observation windows. Preserve decimal quantities as strings, require an approved metric/unit pair, reject unapproved resources and out-of-window records, collapse exact source-version-metric replays and quarantine conflicts. Mark delayed analytical projections stale without converting them into transactional, write-back, payroll, deletion or causal authority."
+        },
+        "dataObjects": [
+          "production-orders", "operations-and-sfcs", "plants-work-centres-resources", "materials-and-components",
+          "yield-and-scrap", "quantity-confirmation-postings", "activity-confirmations", "availability-and-performance-losses",
+          "oee-production-summary", "data-collection-measurements", "inventory-and-wip", "custom-fields-and-uom"
+        ],
+        "stableIds": [
+          "SAP Digital Manufacturing tenant/service instance and plant",
+          "order, SFC, operation/activity, material, work-centre and resource identifiers",
+          "quantity/activity confirmation posting and history identifiers where returned",
+          "MDO entity key, source version/update time and analytical dataset",
+          "metric, source unit, source event/effective time, observation window and schema fingerprint",
+          "WFM tenant, connection, route/version and source-authority kind"
+        ],
+        "readCapability": "Use exact reviewed GET routes including Order V2 plant order lists, order details, work centres/resources, quantity confirmation postings and posting history, activity confirmation postings details/summary, OEE production summary and loss endpoints, inventory/WIP reference reads, unit-of-measure definitions and MDO OData analytical reads where licensed and authorised.",
+        "writeCapability": "SAP Digital Manufacturing exposes extensive POST, PATCH and DELETE operations for orders, SFCs, yield/scrap and activity confirmations, inventory, work centres, resources, custom values and units. WFM grants no production release/complete/scrap, quantity/activity confirmation, inventory movement, master-data, edge execution or ERP-synchronising write authority; every non-GET route remains denied.",
+        "freshnessLatency": "Execution GETs and confirmation posting reads are closer to transactional evidence but are still reconciled against source timestamps. SAP states MDO analytical data is not guaranteed to contain every transaction immediately, so preserve data-available-through, observation time and measured lag; stale projections remain analytical only.",
+        "permissions": [
+          "dedicated SAP Digital Manufacturing service instance and service key",
+          "minimum exact read roles/scopes for reviewed services and plants",
+          "pinned public-api-endpoint and regional tenant identity",
+          "separate authority for execution, insights and edge routes",
+          "no production, confirmation, SFC, inventory, work-centre, resource, custom-field or administration mutation authority"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "SAP MDO OData APIs return 1,000 records by default. With $top they return at most 5,000 and can include nextlink/skiptoken, but SAP's documented examples show smaller $top requests may omit nextlink even when more data exists; never infer completeness from nextlink absence alone. Bind skiptoken to the exact tenant/plant/dataset/filter/schema and reconcile counts/windows before admission.",
+          "delta": "No universal delta contract is assumed across execution APIs, OEE and MDO datasets. Use documented update/effective times where present, closed windows and overlap from the last WFM-committed boundary; MDO lag prevents immediate transactional use.",
+          "events": "No universal complete signed event feed is assumed for this evidence level. Customer-proven SAP Cloud Integration or service-registry events remain hints until reconciled against the authoritative read route.",
+          "files": "Customer-approved SAP Cloud Integration/file exports enter through the existing batch-reconciliation contract. A missing export or analytical row is never deletion evidence.",
+          "queues": "No shared production queue is consumed. Any authorised event route uses a dedicated customer-approved subscription and at-least-once deduplication."
+        },
+        "customFields": "Orders, work centres and other SAP Digital Manufacturing objects can expose custom values/definitions, and custom UOMs are supported. Preserve raw extension names, value types, plant/service/version provenance and sensitivity; quarantine identifier, quantity, unit, time, payroll-like or personal-data changes until reviewed.",
+        "regionalApiVersions": "Pin the service-key public-api-endpoint, SAP region/data centre, tenant/service instance, plant, service, API version and schema. V1/V2/V3, MDO OData, cloud execution and edge APIs form separate route and checkpoint namespaces; deprecated endpoints never silently fall back.",
+        "rateLimits": "SAP documents up to 1,000 public API requests per second per tenant and approximately 200 Production Process Designer cloud processes per second per tenant. Sustained excess can return HTTP 429. WFM uses lower customer-approved concurrency, service/resource budgets and bounded exponential backoff and never invokes production processes to escape a read limit.",
+        "failureModes": [
+          "service-key client secret expiry, revocation, wrong role/scope or token endpoint failure",
+          "wrong WFM tenant, connection, SAP DM instance, region, API origin, plant, service, version, dataset, source kind or schema",
+          "MDO analytical lag or partial materialisation represented as current transactional truth",
+          "MDO page capped at 1,000/5,000 records, skiptoken gap/reuse or missing nextlink falsely treated as complete",
+          "OEE window above seven days or more than five resources",
+          "partial result, duplicate source version or conflicting yield/scrap/loss payload",
+          "binary-float rounding, unit mismatch, custom UOM drift or mixed units aggregated together",
+          "order/SFC/operation/work-centre/resource identity collision across plants or acquired tenants",
+          "clock drift, DST/local-time conversion or observation outside its closed source window",
+          "HTTP 401/403/429, transient 5xx/network failure, regional outage or edge disconnection",
+          "deprecated API route or V1/V2/V3 response drift",
+          "production, scrap, downtime or OEE correlation treated as proof that labour caused an outcome"
+        ],
+        "reconciliation": "Bind every observation to WFM tenant, connection, SAP Digital Manufacturing instance, region, exact HTTPS origin, plant, service/version, dataset, source kind and schema. OEE requests are limited to closed windows of at most 7 days and at most 5 resources. Require complete coverage evidence beyond page-shape alone, because MDO pages can omit nextlink for smaller $top requests and MDO data can be delayed. Preserve canonical decimal strings and exact units; collapse identical source-version-metric-resource replays and quarantine conflicts. Delayed MDO observations remain derived and no result directly advances a checkpoint, creates deletion authority, triggers SAP writes or proves labour causation.",
+        "schemaDrift": "Fingerprint each service/version/dataset and its custom fields. Additive reviewed fields retain raw provenance; removed or changed plant/order/SFC/operation/resource IDs, timestamps, decimal quantities, units, confirmation semantics, analytical definitions or new sensitive fields quarantine the affected dataset.",
+        "retriesReconnect": "401/403 stops for credential, role, tenant, plant and route diagnosis. 429 and transient 5xx/network failures use bounded jittered exponential backoff against the same exact endpoint. Edge outage and partial MDO/execution reads resume from the last WFM-committed boundary with overlap; no version, region, service or source-kind switch is automatic.",
+        "evidenceUrl": "https://help.sap.com/docs/sap-digital-manufacturing/service-catalog/apis",
+        "evidenceNote": "SAP Digital Manufacturing documentation reviewed 26 September 2026 establishes OAuth 2.0 client-credential service keys and public-api-endpoint routing; GET routes for orders, work centres/resources, quantity and activity confirmation postings, OEE production summary/losses, UOMs and MDO OData analytics; 1,000/5,000-record MDO paging behavior; MDO availability lag; OEE limits of seven days and five resources; and tenant public-API limits of 1,000 requests per second with HTTP 429. Release 2608 also expands selected edge APIs. No sandbox or customer tenant was authenticated and no live token, order, SFC, confirmation, OEE, MDO, inventory or edge read was performed.",
+        "securityEvidenceBlockers": [
+          "Service-key access and mutation-rich public APIs mean successful authentication does not prove least-privilege read authority; exact roles/routes and denied writes need tenant proof.",
+          "Plant, tenant, region and edge isolation require authorised multi-connection testing.",
+          "MDO and OEE definitions, availability lag, custom fields and units require tenant discovery before semantic promotion.",
+          "Worker/operator, production, quality and precise operational data require customer-specific minimisation, retention, residency and access controls."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["site", "plant", "work-centre", "resource-asset", "order-job", "operation", "product-material", "production-quantity", "scrap-rework", "downtime-loss", "inventory-wip", "outcome-observation"],
+          "customerValue": ["match labour and skills to real order/operation demand", "separate staffing shortages from machine, material and quality constraints", "reduce paid idle time and avoidable overtime", "attribute labour to yield, scrap, downtime and work-centre outcomes", "accelerate SAP manufacturing implementations through governed read routes"],
+          "savingsHypotheses": ["avoid overtime or agency labour for material- or machine-blocked work", "redeploy qualified staff earlier when downtime or scrap rises", "reduce manual production-versus-labour reconciliation", "improve labour cost per good unit and shift outcome analysis", "detect stale analytical data before managers act on it"],
+          "automationOpportunities": ["discover exact tenant/plant/service schemas and custom fields", "map orders, SFCs, operations, work centres and resources", "admit unit-safe production observations", "reconcile MDO analytics against transactional reads", "join workforce interventions to later outcomes with dated evidence and competing changes"],
+          "constraintsRisks": ["derived MDO or OEE data is not transactional authority", "SAP Digital Manufacturing production data is not final payroll authority", "correlation between staffing and production outcomes does not prove labour causation", "mutation-rich APIs require exact GET allowlists and proven denied writes", "documentation proof is not sandbox, tenant or production proof"]
+        },
+        "causalOutcomeReadiness": "Preserve plant, work-centre, resource, order, SFC, operation, material and source-record identifiers; exact quantity/unit; event, effective, data-available-through and observation times; analytical definition/version; WFM recommendation/action/intervention IDs; baseline/outcome windows; and competing machine, maintenance, material, quality, schedule, wage and process changes.",
+        "nextBuildAction": "Use an authorised SAP Digital Manufacturing test tenant to prove service-key OAuth, exact public-api-endpoint/tenant/plant roles, denied mutations, Order V2 and confirmation posting reads, OEE seven-day/five-resource bounds, MDO 1,000/5,000 paging and missing-nextlink behavior, analytical lag, custom UOM/schema drift, 401/403/429 recovery, cloud-versus-edge isolation and overlap reconciliation without releasing/completing/scrapping production, posting confirmations, moving inventory or changing master data."
+      }
+    }
+  ],
+  "systems": []
+}
