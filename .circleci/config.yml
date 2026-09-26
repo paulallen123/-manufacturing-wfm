@@ -5,11 +5,7 @@ commands:
     steps:
       - run:
           name: Admit explicit frozen candidate only
-          command: |
-            if git rev-parse HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- artifact/vector-proof-freeze.trigger; then
-              echo 'No frozen-candidate trigger change; halting heavy proof without marking product failure.'
-              circleci-agent step halt
-            fi
+          command: bash scripts/require-frozen-candidate.sh
 
 jobs:
   forge_core_validation:
@@ -22,6 +18,9 @@ jobs:
       - run:
           name: Verify exact Node runtime
           command: test "$(node --version)" = "v22.23.2"
+      - run:
+          name: Regress frozen-candidate admission false green
+          command: node --test tests/require-frozen-candidate.test.mjs
       - run:
           name: Current FORGE source validation
           command: node scripts/run-forge-ci.mjs

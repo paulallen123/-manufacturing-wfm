@@ -1,0 +1,62 @@
+{
+  "status": "BUILT",
+  "scope": "CircleCI frozen-candidate admission integrity only; not product, hosted runtime, customer journey, or release proof",
+  "date": "2026-09-26",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "candidateReviewed": "3030541675e41157405b933c30d82c8fd4b12927",
+  "defect": {
+    "class": "FALSE_GREEN",
+    "observation": "Both CircleCI proof jobs invoked circleci-agent step halt when artifact/vector-proof-freeze.trigger was unchanged. A halted CircleCI job completes successfully even though source validation and runtime construction did not execute.",
+    "policyConflict": "release/proof-lane-policy.json declares skippedNeverCountsAsPass=true and skipped=NO_PROOF.",
+    "releaseImpact": "A successful CircleCI status could not distinguish executed proof from a deliberately unexecuted candidate."
+  },
+  "repair": {
+    "contract": "VECTOR_FROZEN_CANDIDATE_ADMISSION_V1",
+    "ordinaryCommit": "Emit a source-bound NO_PROOF receipt and exit 78 before expensive work.",
+    "freezeCommit": "Emit a source-bound ADMITTED receipt and allow the existing proof job to continue.",
+    "identityFailure": "Emit FAIL_CLOSED and exit 1.",
+    "heavyProofCostChange": "none; ordinary commits still stop before source/runtime proof"
+  },
+  "verification": {
+    "runtime": "Node v24.19.0",
+    "command": "node --test tests/require-frozen-candidate.test.mjs",
+    "red": {
+      "tests": 3,
+      "pass": 0,
+      "fail": 3,
+      "reason": "admission executable absent before implementation"
+    },
+    "green": {
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skipped": 0
+    },
+    "realGitRepositories": true,
+    "cases": [
+      "ordinary commit cannot return successful proof status",
+      "canonical freeze-trigger change is admitted",
+      "missing Git identity fails closed"
+    ],
+    "exactNode22232Run": false,
+    "circleciExecution": false,
+    "fullRepositorySuite": false,
+    "hostedExecution": false
+  },
+  "releaseGate": {
+    "before": "BLOCKED: successful status could represent an unexecuted CircleCI proof job",
+    "afterSourceRepair": "BUILT: source admission is fail-closed locally; exact CircleCI execution is still required",
+    "promotion": "BLOCKED by hosted durability/restart failure, Golden Journey gaps, exact provider proof, and independent BLACK/Cold Witness evidence"
+  },
+  "boundaries": {
+    "deploymentChanged": false,
+    "customerDataChanged": false,
+    "payrollDataChanged": false,
+    "credentialsChanged": false,
+    "dnsChanged": false,
+    "newSpend": false,
+    "marketingVideoReady": false
+  },
+  "nextProof": "Execute a freeze-trigger commit in CircleCI and verify the two proof contexts cannot become successful until their test/build steps execute and produce source-bound artifacts."
+}
