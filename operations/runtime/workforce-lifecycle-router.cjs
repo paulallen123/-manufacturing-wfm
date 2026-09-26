@@ -27,6 +27,18 @@ function createWorkforceLifecycleGuard(options = {}) {
       }
       return await lifecycle.handleRequest(req, res);
     },
+    applyTrustedEvent(input = {}) {
+      if (typeof lifecycle.applyTrustedEvent !== 'function') {
+        throw new Error('Trusted workforce lifecycle mutation adapter is unavailable.');
+      }
+      return lifecycle.applyTrustedEvent(input);
+    },
+    getTrustedEvent(input = {}) {
+      if (typeof lifecycle.getTrustedEvent !== 'function') {
+        throw new Error('Trusted workforce lifecycle readback adapter is unavailable.');
+      }
+      return lifecycle.getTrustedEvent(input);
+    },
     close() {
       try { actionEvidence.close(); } catch {}
       try { lifecycle.close(); } catch {}
