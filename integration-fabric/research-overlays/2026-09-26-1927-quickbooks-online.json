@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-26",
+  "purpose": "QuickBooks Online evidence promotion and reusable signed-webhook/CDC recovery authority.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "quickbooks-online",
+      "patch": {
+        "protocols": ["REST", "webhooks"],
+        "auth": "OAuth-2.0-accounting-scope",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developer.intuit.com/app/developer/qbo/docs/develop/explore-the-quickbooks-online-api/data-queries",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "QuickBooks Online Accounting API",
+            "direction": "QuickBooks-company-to-WFM-read-only",
+            "authentication": "OAuth 2.0 with the com.intuit.quickbooks.accounting scope and exact realm/company binding",
+            "notes": "Production and sandbox hosts are distinct. WFM permits only exact approved queries and CDC reads; create, update, delete and payment actions remain denied even though the provider API supports them."
+          },
+          {
+            "type": "signed webhook change signal",
+            "direction": "QuickBooks-to-WFM-signal-only",
+            "authentication": "raw-body signature verification using Intuit's intuit-signature header and the configured verifier key revision",
+            "notes": "A webhook is only a low-latency hint. It never supplies canonical record data, deletion authority or a checkpoint; the Accounting API CDC/query path must reconcile the signal."
+          }
+        ],
+        "deploymentVariants": {
+          "production": {
+            "customerEdgeRequired": false,
+            "routing": "Exact Intuit production API host, realm ID and approved regional/customer data route."
+          },
+          "sandbox": {
+            "customerEdgeRequired": false,
+            "routing": "Exact Intuit sandbox API host and non-production realm; never share production checkpoints or credentials."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "intuit-realm-company", "environment", "api-host"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "realm-id", "environment", "api-host", "api-minor-version", "entity-type", "entity-id", "sync-token", "last-updated-time", "schema-fingerprint"]
+        },
+        "changeSignalReconciliation": {
+          "signatureVerificationRequired": true,
+          "webhookRecordAuthority": false,
+          "deletionAuthority": false,
+          "cdcLookbackDays": 30,
+          "maximumCdcObjects": 1000,
+          "fullSnapshotRequiredBeyondLookback": true,
+          "exactScopeDimensions": ["provider", "wfmTenant", "connection", "realmId", "apiHost", "apiMinorVersion", "schemaFingerprint", "signatureKeyRevision"],
+          "receiptPolicy": "Deduplicate out-of-order webhook hints, then issue an overlap CDC read bound to the exact company and API/schema version. Admit only complete, exact-scope CDC results; exact entity ID + SyncToken replays collapse and conflicting versions quarantine. No result directly advances a checkpoint or grants deletion authority."
+        },
+        "dataObjects": [
+          "employees", "time-activities", "items-and-inventory", "purchases-and-suppliers", "bills-and-expenses",
+          "invoices-and-customers", "journals-and-finance", "accounts", "classes-and-departments", "company-reference-data"
+        ],
+        "stableIds": [
+          "Intuit realm ID for the connected QuickBooks company",
+          "entity type plus QuickBooks entity ID",
+          "SyncToken and MetaData.LastUpdatedTime for version evidence",
+          "WFM tenant, connection, environment and checkpoint namespace"
+        ],
+        "readCapability": "Read approved Accounting API entities through bounded queries and Change Data Capture for supported entity types. Employee, TimeActivity, Item, Vendor, Purchase, Bill, Invoice, JournalEntry and reference dimensions are mapped only when returned by the authorised company and scope.",
+        "writeCapability": "The Accounting API supports entity creation and updates, but WFM grants no source-write authority. Payroll, payments, invoices, journals, inventory and employee records remain read-only and every mutation route is denied.",
+        "freshnessLatency": "Signed webhooks provide change hints; CDC and paginated queries provide reconciled source records. Preserve entity effective time, provider last-updated time, webhook observation time, API retrieval time and WFM ingestion time separately.",
+        "permissions": [
+          "dedicated Intuit application registration and OAuth connection",
+          "accounting scope for the exact authorised realm/company",
+          "exact read-route and entity allowlist enforced by WFM",
+          "separate sandbox and production credentials/checkpoints",
+          "no payroll, payment or Accounting API mutation authority"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "Query pages use STARTPOSITION and MAXRESULTS; the provider documents a maximum 1,000 entities per response. Use deterministic entity ordering where supported, page receipts and overlap reconciliation rather than treating a short or missing page as deletion evidence.",
+          "delta": "CDC is bounded to changes within the previous 30 days and a maximum 1,000 objects. Overlap the last WFM-committed checkpoint; if the checkpoint predates the horizon or completeness is uncertain, require a bounded full snapshot before reconciliation.",
+          "events": "Verify the raw webhook body against intuit-signature before use. Duplicate, delayed, out-of-order and missing notifications are expected recovery cases; webhooks are signals, not completeness or deletion authority.",
+          "files": "Customer-approved exports remain a fallback for initial migration, backfill or companies without usable API access and enter through the existing batch-reconciliation contract.",
+          "queues": "No provider queue is assumed. Internal delivery remains at-least-once with exact entity version deduplication and conflict quarantine."
+        },
+        "customFields": "QuickBooks configuration, custom fields, account/class/department usage, tax settings and enabled features vary by company and locale. Preserve unmapped source extensions and schema provenance; quarantine identity, type, currency, unit or authority-changing drift.",
+        "regionalApiVersions": "Pin the exact environment, API host, realm ID and supported minor version. Intuit discontinued API minor versions 1 through 74 beginning 1 August 2025, so a version change creates a new checkpoint namespace and overlap reconciliation rather than silently reusing an incompatible cursor.",
+        "rateLimits": "Intuit documents 500 requests per minute per realm, 10 requests per second per realm and app, and a 60-second wait after HTTP 429. Apply per-realm throttling, bounded concurrency and jittered recovery without switching companies or environments.",
+        "failureModes": [
+          "OAuth refresh-token expiry, revocation, rotation failure or lost company authorisation",
+          "wrong WFM tenant, connection, environment, API host or QuickBooks realm/company",
+          "unverified, duplicated, delayed, out-of-order or missed webhook delivery",
+          "CDC checkpoint older than 30 days or response truncated at the 1,000-object limit",
+          "same entity ID and SyncToken replayed with a conflicting payload",
+          "pagination gap, concurrent source changes or non-deterministic page drift",
+          "HTTP 429 throttling, transient 5xx/network failure or regional outage",
+          "unsupported or discontinued API minor version",
+          "custom-field, tax, currency, locale, class/department or schema drift",
+          "inactive or deleted entity misinterpreted from absence rather than source evidence",
+          "accounting time treated as payroll or production-order authority"
+        ],
+        "reconciliation": "Verify and deduplicate webhook hints, then query CDC from the last committed checkpoint with overlap. Bind the request and result to realm, API host, minor version, schema and entity coverage; collapse exact entity ID + SyncToken replays and quarantine conflicts. A partial or over-limit window cannot move the checkpoint. If the last trusted checkpoint is outside the 30-day CDC horizon, require an authoritative full snapshot and reconciliation before resuming deltas.",
+        "schemaDrift": "Fingerprint approved entity fields and the API minor version. Additive approved fields retain raw provenance; removed or type-changed IDs/SyncTokens/timestamps, new sensitive fields, discontinued versions and currency/tax/class/department semantic changes quarantine the affected dataset.",
+        "retriesReconnect": "401/403 stops for reauthorisation and realm/scope diagnosis. 429 waits at least the documented 60 seconds and observes per-realm limits; 5xx/network failures use bounded jittered backoff. Resume only from the last WFM-committed checkpoint with overlap, never from a webhook or partial page.",
+        "evidenceUrl": "https://developer.intuit.com/app/developer/qbo/docs/learn/explore-the-quickbooks-online-api/change-data-capture",
+        "evidenceNote": "Intuit documentation reviewed 26 September 2026 establishes OAuth 2.0 accounting scope, realm/company identity, Accounting API entities, STARTPOSITION/MAXRESULTS query paging, signed webhooks, 30-day/1,000-object CDC bounds, documented per-realm rate limits and supported minor-version requirements. No sandbox or customer tenant was authenticated and no live read, webhook or reconciliation round-trip was performed.",
+        "securityEvidenceBlockers": [
+          "OAuth accounting scope and provider write capability mean successful authentication does not prove least-privilege read authority; exact WFM route allowlists and denied mutations require tenant proof.",
+          "Webhook evidence is untrusted until raw-body signature verification succeeds with the configured verifier key revision.",
+          "Realm/company, sandbox/production and WFM-tenant isolation require authorised multi-connection testing.",
+          "Tax, payroll, payment and accounting data handling, retention, residency and cross-border routing remain customer- and region-specific."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["person", "time-event", "product-sku", "inventory", "supplier", "finance-ledger-entry", "cost-centre", "site-entity-reference"],
+          "customerValue": ["near-zero-config finance connection for micro and small manufacturers", "faster labour-cost and time reconciliation", "supplier and spend visibility", "inventory and working-capital context", "lower integration effort through one reusable OAuth/query/webhook route"],
+          "savingsHypotheses": ["reduce manual finance/time reconciliation", "identify labour-cost exceptions against accounting outcomes", "avoid workforce actions when inventory or supplier constraints are the real blocker", "reduce implementation effort for small businesses already using QuickBooks Online"],
+          "automationOpportunities": ["discover approved company/entity coverage", "map employees and time activity to WFM identity with reviewable confidence", "reconcile webhook hints through bounded CDC", "join supplier, spend and inventory context to workforce outcomes without claiming causation"],
+          "constraintsRisks": ["QuickBooks Online is accounting authority, not manufacturing execution or production-order authority", "TimeActivity is not automatically payroll truth", "features, objects and custom fields vary by company and locale", "documentation proof is not sandbox, tenant or production proof"]
+        },
+        "causalOutcomeReadiness": "Preserve realm/company, entity ID, SyncToken, provider last-updated time, webhook/API observation and WFM ingestion times, recommendation/action IDs, baseline/outcome windows and competing price, supplier, inventory, production, schedule and payroll changes.",
+        "nextBuildAction": "Use an authorised QuickBooks Online sandbox to prove OAuth connection and refresh, exact realm/company binding, supported minor-version discovery, denied mutations, real STARTPOSITION/MAXRESULTS paging, signed duplicate/out-of-order webhook recovery, 30-day/1,000-object CDC bounds, 429 recovery, multi-company isolation, custom-field drift and full-snapshot reconciliation without payroll, payment or accounting mutation."
+      }
+    }
+  ],
+  "systems": []
+}
