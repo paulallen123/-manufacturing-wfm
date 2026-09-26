@@ -39,3 +39,22 @@ test('HTTP retry with changed content returns 409 and preserves the first persis
  assert.equal(r.status,409);assert.deepEqual(db.prepare('SELECT * FROM workforce_lifecycle_events WHERE tenant=? AND event_key=?').get('A','occupied-key'),before);
  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM workforce_lifecycle_events').get().n,1);
 });
+test('caller-supplied expected outcome cannot become authoritative measured savings',async t=>{
+ const {guard,db,dbPath}=setup(t);
+ const episode=createDecisionEpisode({tenant:'A',site:'S1',decisionType:'absence-recovery',triggerId:'outcome-proof',triggeredAt:'2026-09-26T09:00:00Z',contextRevision:'r1',mode:'SHADOW',sourceEvidence:['attendance:1'],objective:{labourCost:1},options:[{id:'do-nothing',feasible:true,policyAllowed:true,hardConstraintsPassed:true,prediction:{labourCost:500}},{id:'overtime',feasible:true,policyAllowed:true,hardConstraintsPassed:true,prediction:{labourCost:300}}]});
+ db.prepare('INSERT INTO vector_decision_episodes VALUES(?,?,?)').run('A',episode.episodeId,JSON.stringify(episode));
+ const engine=createAutopilotExecutionEngine({dbPath,lifecycleAdapter:guard});t.after(()=>engine.close());
+ const permit=engine.issueHumanPermit({tenant:'A',episodeId:episode.episodeId,optionId:'overtime',actorRef:'manager',contextRevision:'r1',plan:{adapter:'workforce-lifecycle',reversible:true,action:{eventKey:'actual-overtime',kind:'OVERTIME_OVERRIDE',employeeId:'E1',effectiveAt:'2026-09-26T12:00:00Z',payload:{minutes:60}},rollback:{eventKey:'outcome-rollback',reason:'restore'},expectedOutcome:{actual:{labourCost:0,planAttainmentPct:100},evidenceRefs:['caller-invented-savings']}}});
+ const result=await engine.executePermit({tenant:'A',permitId:permit.permitId,currentContextRevision:'r1'});
+ assert.equal(result.state,'VERIFIED');
+ assert.equal(result.detail.outcomeDigest,null,'an approved forecast is not a measured outcome');
+ assert.equal(result.detail.outcomeStatus,'UNPROVEN');
+ assert.equal(engine.statusForTenant('A').find(x=>x.state==='VERIFIED').detail.outcomeDigest,null);
+ // Old releases could append this unsupported digest. Retain the audit but do not promote it.
+ db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)').run(result.executionId,permit.permitId,'A','VERIFIED',JSON.stringify({eventId:result.detail.eventId,outcomeDigest:'legacy-caller-supplied-digest'}),new Date().toISOString());
+ const replay=await engine.executePermit({tenant:'A',permitId:permit.permitId,currentContextRevision:'r1'});
+ assert.equal(replay.detail.outcomeDigest,null,'legacy unverified outcome must not regain authority on replay');
+ assert.equal(replay.detail.outcomeStatus,'UNPROVEN');
+ assert.ok(engine.statusForTenant('A').filter(x=>x.state==='VERIFIED').every(x=>x.detail.outcomeDigest===null&&x.detail.outcomeStatus==='UNPROVEN'));
+ assert.ok(db.prepare('SELECT detail_json FROM vector_autopilot_execution_events ORDER BY id DESC LIMIT 1').get().detail_json.includes('legacy-caller-supplied-digest'),'original audit is retained');
+});

@@ -1,12 +1,13 @@
 'use strict';
 const {createHash}=require('node:crypto');
 const {DatabaseSync}=require('node:sqlite');
-const {createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,digest}=require('./decision-episode.cjs');
+const {createDecisionEpisode,selectDecisionOption,digest}=require('./decision-episode.cjs');
 const PREFIX='/api/operations/autopilot',PERMIT_TTL_MS=15*60*1000;
 const AUTHORISED_ROLES=new Set(['manager','supervisor','director','admin','payroll_admin']);
 function sha256(v){return createHash('sha256').update(String(v)).digest('hex');}
 function compact(v,max=240){return String(v??'').trim().slice(0,max);}
 function iso(v){const n=Date.parse(String(v??''));return Number.isFinite(n)?new Date(n).toISOString():null;}
+function publicDetail(state,detail){return state==='VERIFIED'?{...detail,outcomeDigest:null,outcomeStatus:'UNPROVEN'}:detail;}
 function cookieToken(req){for(const part of String(req?.headers?.cookie||'').split(';')){const p=part.trim();if(p.startsWith('wfm_session='))return p.slice(12);}return '';}
 function pathOf(req){return String(req?.url||'/').split('?')[0]||'/';}
 function writeJson(res,status,body){if(res.headersSent||res.writableEnded)return true;res.statusCode=status;res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.end(JSON.stringify(body));return true;}
@@ -49,7 +50,7 @@ function createAutopilotExecutionEngine(options={}){
   return c;
  }
  function log(executionId,permitId,tenant,state,detail={}){eventI.run(executionId,permitId,tenant,state,JSON.stringify(detail),new Date().toISOString());try{publish?.({tenant,topic:'autopilot.execution.updated',audience:'manager',payload:{executionId,state}});}catch{}}
- function last(executionId){const r=executionQ.all(executionId).at(-1);return r?{state:r.state,detail:JSON.parse(r.detail_json),createdAt:r.created_at}:null;}
+ function last(executionId){const r=executionQ.all(executionId).at(-1);return r?{state:r.state,detail:publicDetail(r.state,JSON.parse(r.detail_json)),createdAt:r.created_at}:null;}
  function issueHumanPermit({tenant,episodeId,optionId,actorRef,contextRevision,plan,now=Date.now()}){
   const row=ep.get(tenant,episodeId);if(!row)throw Object.assign(new Error('Decision episode not found.'),{statusCode:404});
   const shadow=JSON.parse(row.episode_json);if(shadow.mode!=='SHADOW')throw Object.assign(new Error('Only a Shadow decision may enter this approval route.'),{statusCode:409});
@@ -70,14 +71,16 @@ function createAutopilotExecutionEngine(options={}){
    applied=lifecycle.applyTrustedEvent({tenant,eventKey:plan.action.eventKey,event:action});if(applied?.decision?.status!=='ACCEPTED')throw new Error('Authoritative lifecycle adapter rejected the action.');
    log(executionId,permitId,tenant,'APPLIED',{eventId:applied.event.id,reasonCode:applied.decision.reasonCode});
    const verified=lifecycle.getTrustedEvent({tenant,eventKey:plan.action.eventKey});if(!verified||verified.status!=='ACCEPTED')throw new Error('Post-action verification did not confirm authoritative state.');
-   let outcome=null;if(plan.expectedOutcome?.actual&&Array.isArray(plan.expectedOutcome.evidenceRefs)&&plan.expectedOutcome.evidenceRefs.length)outcome=recordDecisionOutcome(selected,{observedAt:new Date().toISOString(),evidenceRefs:plan.expectedOutcome.evidenceRefs,actual:plan.expectedOutcome.actual,notes:'Autopilot post-action outcome supplied by authoritative verifier.'});
-   log(executionId,permitId,tenant,'VERIFIED',{eventId:verified.id,outcomeDigest:outcome?.outcomeDigest||null});return {executionId,idempotent:false,state:'VERIFIED',detail:{eventId:verified.id,outcomeDigest:outcome?.outcomeDigest||null}};
+   // Lifecycle readback verifies the event, not independently measured operational benefit.
+   // The approving caller's forecast must never acquire measured-outcome authority.
+   const detail={eventId:verified.id,outcomeDigest:null,outcomeStatus:'UNPROVEN'};
+   log(executionId,permitId,tenant,'VERIFIED',detail);return {executionId,idempotent:false,state:'VERIFIED',detail};
   }catch(error){
    log(executionId,permitId,tenant,'VERIFY_FAILED',{error:compact(error.message,300)});if(!applied?.event?.id){log(executionId,permitId,tenant,'CONTAINED',{reason:'NO_CONFIRMED_APPLY'});return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:'NO_CONFIRMED_APPLY'}};}
    try{const rb=lifecycle.applyTrustedEvent({tenant,eventKey:plan.rollback.eventKey,event:{kind:'RETRO_CHANGE',employeeId:plan.action.employeeId,effectiveAt:new Date().toISOString(),payload:{targetEventId:applied.event.id,reason:plan.rollback.reason,approvalRef:permitId,correction:{autopilotRollback:true}}}});if(rb?.decision?.status!=='ACCEPTED')throw new Error('Compensating rollback was rejected.');const confirmed=lifecycle.getTrustedEvent({tenant,eventKey:plan.rollback.eventKey});if(!confirmed||confirmed.status!=='ACCEPTED')throw new Error('Rollback verification failed.');log(executionId,permitId,tenant,'ROLLED_BACK',{rollbackEventId:confirmed.id});return {executionId,idempotent:false,state:'ROLLED_BACK',detail:{rollbackEventId:confirmed.id}};}catch(rbError){log(executionId,permitId,tenant,'CONTAINED',{reason:'ROLLBACK_UNCONFIRMED',error:compact(rbError.message,300)});return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:'ROLLBACK_UNCONFIRMED'}};}
   }
  }
- function statusForTenant(tenant,limit=50){return tenantQ.all(tenant,Math.max(1,Math.min(100,Number(limit)||50))).map(r=>({executionId:r.execution_id,permitId:r.permit_id,state:r.state,detail:JSON.parse(r.detail_json),createdAt:r.created_at}));}
+ function statusForTenant(tenant,limit=50){return tenantQ.all(tenant,Math.max(1,Math.min(100,Number(limit)||50))).map(r=>({executionId:r.execution_id,permitId:r.permit_id,state:r.state,detail:publicDetail(r.state,JSON.parse(r.detail_json)),createdAt:r.created_at}));}
  async function handleRequest(req,res){const path=pathOf(req);if(!path.startsWith(PREFIX))return false;try{const c=manager(req,res);if(!c)return true;if(req.method==='GET'&&path===PREFIX+'/status')return writeJson(res,200,{contractVersion:'VECTOR_AUTOPILOT_EXECUTION_V1',tenant:c.tenant,events:statusForTenant(c.tenant)});if(req.method==='POST'&&path===PREFIX+'/permit'){const b=await readJson(req),permit=issueHumanPermit({tenant:c.tenant,episodeId:compact(b.episodeId,180),optionId:compact(b.optionId,120),actorRef:c.email,contextRevision:compact(b.contextRevision,180),plan:b.plan});return writeJson(res,201,{contractVersion:'VECTOR_AUTOPILOT_PERMIT_V1',permit});}if(req.method==='POST'&&path===PREFIX+'/execute'){const b=await readJson(req),result=await executePermit({tenant:c.tenant,permitId:compact(b.permitId,180),currentContextRevision:compact(b.contextRevision,180)});return writeJson(res,result.state==='VERIFIED'?200:409,{contractVersion:'VECTOR_AUTOPILOT_EXECUTION_V1',result});}return writeJson(res,404,{error:'Autopilot execution endpoint not found.'});}catch(error){return writeJson(res,Number(error?.statusCode||500),{error:error?.statusCode?error.message:'Autopilot execution failed safely.'});}}
  return {handleRequest,issueHumanPermit,executePermit,statusForTenant,close(){try{db.close();}catch{}}};
 }
