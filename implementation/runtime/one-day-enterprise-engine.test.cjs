@@ -588,3 +588,47 @@ test('unknown evidence kinds and raw untrusted evidence are rejected', async () 
     f.close();
   }
 });
+
+
+test('legacy implementation_events schema migrates in place without losing audit rows', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-one-day-legacy-'));
+  const dbPath = path.join(dir, 'legacy.sqlite');
+  const db = new DatabaseSync(dbPath);
+  db.exec(
+    'CREATE TABLE tenants(id TEXT PRIMARY KEY, version INTEGER NOT NULL, state TEXT NOT NULL);' +
+    'CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL REFERENCES tenants(id),person_id TEXT NOT NULL,role TEXT NOT NULL,costs INTEGER NOT NULL,salt TEXT NOT NULL,password_hash TEXT NOT NULL,permissions TEXT NOT NULL DEFAULT \'[]\');' +
+    'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL REFERENCES users(email),expires INTEGER NOT NULL);' +
+    'CREATE TABLE implementation_events(' +
+      'id INTEGER PRIMARY KEY AUTOINCREMENT, event TEXT NOT NULL,' +
+      'detail_json TEXT NOT NULL, created_at TEXT NOT NULL);'
+  );
+  db.prepare('INSERT INTO implementation_events(event,detail_json,created_at) VALUES(?,?,?)')
+    .run('legacy-event', '{"kept":true}', new Date().toISOString());
+  db.close();
+
+  const engine = createOneDayEnterpriseEngine({
+    dbPath,
+    internalToken: 'implementation-worker-test-token',
+    contractWebhookSecret: 'contract-webhook-test-token',
+    publicOrigin: 'https://implementation.test',
+    sendInvitation: async () => ({ provider: 'test-mailer', messageId: 'legacy-migration' })
+  });
+
+  try {
+    const migrated = new DatabaseSync(dbPath);
+    const columns = migrated.prepare('PRAGMA table_info(implementation_events)').all().map(row => row.name);
+    assert.ok(columns.includes('run_id'));
+    assert.ok(columns.includes('tenant'));
+    const legacy = migrated.prepare(
+      'SELECT event,detail_json,run_id,tenant FROM implementation_events WHERE id=1'
+    ).get();
+    assert.equal(legacy.event, 'legacy-event');
+    assert.equal(legacy.detail_json, '{"kept":true}');
+    assert.equal(legacy.run_id, null);
+    assert.equal(legacy.tenant, null);
+    migrated.close();
+  } finally {
+    engine.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

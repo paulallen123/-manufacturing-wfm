@@ -70,6 +70,16 @@ function compact(value, max = 200) {
   return String(value ?? '').slice(0, max);
 }
 
+function ensureLegacyColumn(db, table, column, definition) {
+  if (!/^[A-Za-z0-9_]+$/.test(table) || !/^[A-Za-z0-9_]+$/.test(column)) {
+    throw new Error('Unsafe legacy schema identifier.');
+  }
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (columns.some(item => item.name === column)) return false;
+  db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  return true;
+}
+
 function secureEqual(left, right) {
   const a = Buffer.from(String(left || ''));
   const b = Buffer.from(String(right || ''));
@@ -199,6 +209,12 @@ function createOneDayEnterpriseEngine(options = {}) {
     'CREATE TRIGGER IF NOT EXISTS no_implementation_event_delete BEFORE DELETE ON implementation_events ' +
       "BEGIN SELECT RAISE(ABORT,'Implementation events are append only.'); END;"
   );
+
+  // Backward-compatible durable-state migration. Earlier hosted candidates
+  // created implementation_events without run_id/tenant. Add only missing
+  // nullable columns in place so existing append-only audit evidence survives.
+  ensureLegacyColumn(db, 'implementation_events', 'run_id', 'TEXT');
+  ensureLegacyColumn(db, 'implementation_events', 'tenant', 'TEXT');
 
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
