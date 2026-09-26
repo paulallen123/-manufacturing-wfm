@@ -115,3 +115,46 @@ test('measured provider headroom can add throughput without pretending it adds r
   assert.equal(scale.requestedLanes,2);
   assert.equal(scale.countsAsIndependentResilience,false);
 });
+
+
+test('terminal candidate success is consumed immediately and fans out exact-SHA proof', () => {
+  const plan=planNoIdleWait({
+    dependency:{id:'candidate-build',status:'SUCCESS',kind:'deployment',scheduledCheckpoint:'17:00'},
+    candidate:{sha:'abc123'},
+    independentWork:['rollback-prep']
+  });
+  assert.equal(plan.idleWaitAllowed,false);
+  assert.equal(plan.terminalSuccessConsumedImmediately,true);
+  assert.equal(plan.scheduledCheckpointMayDelayExecution,false);
+  assert.ok(plan.actions.some(x=>x.type==='CONSUME_RESULT_IMMEDIATELY'&&x.exactCandidateSha==='abc123'&&x.scheduledCheckpointMayDelay===false));
+  assert.ok(plan.actions.some(x=>x.type==='RUN_PRE_FREEZE_SIMULATION_NOW'&&x.exactCandidateSha==='abc123'));
+  const fanout=plan.actions.find(x=>x.type==='FAN_OUT_DEPENDENT_PROOFS_NOW');
+  assert.equal(fanout.exactCandidateSha,'abc123');
+  assert.equal(fanout.distinctFailureDomainsRequired,true);
+  assert.equal(fanout.sameProviderParallelismCountsAsIndependentResilience,false);
+  assert.ok(plan.actions.some(x=>x.type==='CONTINUE_INDEPENDENT_WORK'));
+});
+
+test('completed result cannot be deferred by a scheduled reporting checkpoint', () => {
+  const plan=planNoIdleWait({
+    dependency:{id:'candidate-build',status:'COMPLETED',kind:'deployment',scheduledCheckpoint:'tomorrow'},
+    candidate:{sha:'def456'}
+  });
+  assert.equal(plan.terminalSuccessConsumedImmediately,true);
+  assert.equal(plan.scheduledCheckpointMayDelayExecution,false);
+  assert.ok(plan.actions.some(x=>x.type==='CONSUME_RESULT_IMMEDIATELY'));
+  assert.ok(plan.actions.some(x=>x.type==='RUN_PRE_FREEZE_SIMULATION_NOW'));
+});
+
+test('terminal PASS preserves exact candidate identity through dependent proof fanout', () => {
+  const plan=planNoIdleWait({
+    dependency:{id:'proof-receipt',status:'PASS',kind:'evidence'},
+    candidate:{sha:'fedcba'}
+  });
+  const consume=plan.actions.find(x=>x.type==='CONSUME_RESULT_IMMEDIATELY');
+  const prefreeze=plan.actions.find(x=>x.type==='RUN_PRE_FREEZE_SIMULATION_NOW');
+  const fanout=plan.actions.find(x=>x.type==='FAN_OUT_DEPENDENT_PROOFS_NOW');
+  assert.equal(consume.exactCandidateSha,'fedcba');
+  assert.equal(prefreeze.exactCandidateSha,'fedcba');
+  assert.equal(fanout.exactCandidateSha,'fedcba');
+});
