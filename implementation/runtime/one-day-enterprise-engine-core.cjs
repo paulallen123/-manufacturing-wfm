@@ -617,7 +617,10 @@ function createOneDayEnterpriseEngine(options = {}) {
     const contractHash = sha256(contractRef);
     const existingRun = runByContract.get(tenant, contractHash);
     if (existingRun) {
-      return writeJson(res, 200, { invitation: { state: 'STARTED', startedRunId: existingRun.id }, implementation: readinessForRun(existingRun) });
+      return writeJson(res, 200, {
+        invitation: publicInvitation(invitationByContract.get(tenant, contractHash)),
+        implementation: readinessForRun(existingRun)
+      });
     }
 
     // A trusted signed/activated contract is the implementation start signal.
@@ -642,7 +645,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       if (existing.status === 'PENDING' && (expired || recipientChanged)) {
         deleteInvitation.run(existing.id);
       } else {
-        return writeJson(res, 200, { invitation: publicInvitation(existing), implementation: null });
+        return writeJson(res, 200, {
+          invitation: publicInvitation(existing),
+          implementation: readinessForRun(autoStartedRun)
+        });
       }
     }
 

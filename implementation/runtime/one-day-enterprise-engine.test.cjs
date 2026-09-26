@@ -240,6 +240,53 @@ test('provider-neutral signed contract webhook starts implementation immediately
   }
 });
 
+test('trusted activation auto-starts a legacy pending invitation without reporting a missing run', async () => {
+  const f = fixture();
+  try {
+    const db = new DatabaseSync(f.dbPath);
+    const now = '2026-09-26T19:00:00.000Z';
+    db.prepare(
+      'INSERT INTO implementation_invitations(id,tenant,contract_ref_hash,recipient_hash,token_hash,status,target_hours,expires_at_ms,started_run_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
+    ).run(
+      'legacy-invitation',
+      'alpha',
+      sha256('legacy-contract'),
+      sha256('manager@alpha'),
+      sha256('legacy-token'),
+      'PENDING',
+      8,
+      Date.now() + 60_000,
+      null,
+      now,
+      now
+    );
+    db.close();
+
+    const activated = await call(
+      f.engine,
+      null,
+      'POST',
+      '/api/implementation/autonomous/contract-activated',
+      { tenant: 'alpha', contractRef: 'legacy-contract', targetHours: 8, recipientEmail: 'manager@alpha' },
+      f.internal
+    );
+
+    assert.equal(activated.status, 200);
+    assert.equal(activated.body.invitation.invitationId, 'legacy-invitation');
+    assert.equal(activated.body.invitation.state, 'AWAITING_CUSTOMER_START');
+    assert.equal(activated.body.implementation.state, 'BUILDING');
+    assert.ok(activated.body.implementation.runId);
+    assert.equal(f.sentInvitations.length, 0);
+
+    const check = new DatabaseSync(f.dbPath);
+    assert.equal(check.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(check.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_AUTO_STARTED'").get().count, 1);
+    check.close();
+  } finally {
+    f.close();
+  }
+});
+
 test('employee cannot inspect enterprise implementation control plane', async () => {
   const f = fixture();
   try {
@@ -316,6 +363,8 @@ test('contract activation is idempotent and auto-starts implementation without a
     );
     assert.equal(first.result.status, 201);
     assert.equal(second.status, 200);
+    assert.equal(second.body.invitation.state, 'AWAITING_CUSTOMER_START');
+    assert.equal(second.body.invitation.startedRunId, null);
     assert.equal(f.sentInvitations.length, 1);
 
     const beforeStart = await call(
