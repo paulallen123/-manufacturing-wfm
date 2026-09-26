@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "claim": "Site-local attendance editing preserves the exact source instant and remains unambiguous across daylight-saving transitions.",
+  "candidate": {
+    "repository": "paulallen123/-manufacturing-wfm",
+    "pullRequest": 225,
+    "sourceCommit": "612fffc835f67aa3e27d4722f5b7bac38adb5d86",
+    "operatingContextBlob": "3f2c9876a3a169d6039a0c453f1f6f7c79bf7bac"
+  },
+  "executed": {
+    "command": "node --test tests/vector-attendance-timezone-roundtrip.adversarial.test.mjs",
+    "runtime": "Node v24.19.0",
+    "tests": 2,
+    "passed": 0,
+    "failed": 2,
+    "skipped": 0
+  },
+  "observations": [
+    {
+      "case": "unchanged Tokyo round trip",
+      "sourceInstant": "2026-12-31T23:30:00.000Z",
+      "renderedWallTime": "2027-01-01T08:30",
+      "submittedValue": "2027-01-01T08:30",
+      "requiredInvariant": "An unchanged edit must preserve the original source instant or submit explicit authoritative time-zone/offset evidence."
+    },
+    {
+      "case": "Europe/London fall-back overlap",
+      "firstInstant": "2026-10-25T00:30:00.000Z",
+      "secondInstant": "2026-10-25T01:30:00.000Z",
+      "firstRenderedValue": "2026-10-25T01:30",
+      "secondRenderedValue": "2026-10-25T01:30",
+      "requiredInvariant": "Distinct source instants must not collapse to an indistinguishable consequential edit value."
+    }
+  ],
+  "releaseGate": {
+    "attendanceGlobalTimeZoneRoundTrip": "BLOCKED",
+    "hostedProductReadiness": "BLOCKED",
+    "marketingVideo": "BLOCKED"
+  },
+  "claimBoundary": "This is source-level independent adversarial evidence. It does not prove the backend has mutated data, and no customer, payroll, provider, deployment, authentication, database, DNS or credential state was changed."
+}
