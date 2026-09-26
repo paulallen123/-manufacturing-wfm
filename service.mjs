@@ -1,202 +1,40 @@
-import assert from 'node:assert/strict';
-import { randomBytes } from 'node:crypto';
-import http from 'node:http';
-
-const mode = process.env.MODE || 'verify';
-const target = String(process.env.TARGET_ORIGIN || '').replace(/\/$/, '');
-const password = process.env.TARGET_PASSWORD || '';
-const expectedRelease = process.env.EXPECTED_RELEASE || '0.6.76-hosted-staging-rc1';
-const seedOrigin = String(process.env.SEED_ORIGIN || '').replace(/\/$/, '');
-const port = Number(process.env.PORT || 3000);
-const timeoutMs = 20_000;
-const openStatuses = new Set(['submitted','information_required','awaiting_approval','payroll_review_required']);
-let latest = { status:'STARTING', mode, startedAt:new Date().toISOString() };
-
-function cookieFrom(response) {
-  const values = typeof response.headers.getSetCookie === 'function'
-    ? response.headers.getSetCookie()
-    : [response.headers.get('set-cookie')].filter(Boolean);
-  return values[0] ? values[0].split(';',1)[0] : '';
-}
-async function request(origin, path, init={}) {
-  const response = await fetch(origin + path, {...init, signal:AbortSignal.timeout(timeoutMs)});
-  const text = await response.text();
-  let body = null;
-  try { body = text ? JSON.parse(text) : null; } catch { body = text; }
-  return { response, body, text };
-}
-async function login(email) {
-  const {response} = await request(target,'/api/login',{
-    method:'POST',
-    headers:{'content-type':'application/json',origin:target,referer:target+'/',accept:'application/json'},
-    body:JSON.stringify({email,password})
-  });
-  assert.equal(response.status,200,email+' login failed: '+response.status);
-  const cookie = cookieFrom(response);
-  assert.ok(cookie,'missing session cookie for '+email);
-  return cookie;
-}
-async function authed(cookie,path,{method='GET',body}={}) {
-  return request(target,path,{
-    method,
-    headers:{
-      cookie,
-      accept:'application/json,text/plain,*/*',
-      referer:target+'/',
-      ...(method==='POST'?{'content-type':'application/json',origin:target}:{})
-    },
-    ...(body===undefined?{}:{body:JSON.stringify(body)})
-  });
-}
-function londonLocalMinute(value) {
-  const d = new Date(value);
-  assert.ok(Number.isFinite(d.getTime()),'invalid attendance timestamp');
-  return new Intl.DateTimeFormat('sv-SE',{
-    timeZone:'Europe/London',
-    year:'numeric',month:'2-digit',day:'2-digit',
-    hour:'2-digit',minute:'2-digit',hour12:false
-  }).format(d).replace(' ','T');
-}
-async function healthCheck() {
-  assert.ok(target.startsWith('https://'),'TARGET_ORIGIN must be https');
-  assert.ok(password.length>=20,'TARGET_PASSWORD missing/too short');
-  const health=await request(target,'/api/health');
-  assert.equal(health.response.status,200,'target health failed');
-  assert.equal(health.body?.release,expectedRelease,'unexpected target release');
-  return health.body;
-}
-async function seed() {
-  const health = await healthCheck();
-  const candidates=[
-    ['maya@northstar.example','e0'],
-    ['leah@northstar.example','e32'],
-    ['quality@northstar.example','e16'],
-    ['leeds-employee@northstar.example','e24']
-  ];
-  let employee=null;
-  for (const [email,personId] of candidates) {
-    const cookie=await login(email);
-    const dash=await authed(cookie,'/api/attendance-corrections');
-    assert.equal(dash.response.status,200,email+' dashboard failed');
-    const blocked=new Set((dash.body?.requests||[])
-      .filter(q=>q.employee===personId && openStatuses.has(q.status))
-      .map(q=>q.record));
-    const record=(dash.body?.records||[]).find(r=>r.employee===personId && r.effective?.clockIn && r.effective?.clockOut && !blocked.has(r.id));
-    if (record) { employee={email,personId,cookie,dash:dash.body,record}; break; }
-  }
-  assert.ok(employee,'no safe attendance record available');
-  const clockIn=londonLocalMinute(employee.record.effective.clockIn);
-  const clockOut=londonLocalMinute(employee.record.effective.clockOut);
-  const submitKey='persist-seed-'+randomBytes(10).toString('hex');
-  const submitted=await authed(employee.cookie,'/api/attendance-corrections/command',{
-    method:'POST',
-    body:{
-      version:employee.dash.version,
-      command:'correction-submit',
-      payload:{
-        period:employee.record.period,
-        record:employee.record.id,
-        clockIn,clockOut,
-        note:'Hosted persistence proof seed. Requested times match existing evidence; no attendance mutation intended.'
-      },
-      idempotencyKey:submitKey
-    }
-  });
-  assert.equal(submitted.response.status,200,'correction submit failed');
-  const correctionId=submitted.body?.result?.id;
-  assert.match(String(correctionId||''),/^AC-[a-f0-9]{32}$/i);
-  assert.equal(submitted.body?.result?.revision,1);
-
-  const managers=['manager@northstar.example','supervisor@northstar.example','director@northstar.example','superuser@northstar.example'];
-  let manager=null;
-  for (const email of managers) {
-    const cookie=await login(email);
-    const dash=await authed(cookie,'/api/attendance-corrections');
-    if (dash.response.status!==200) continue;
-    const visible=(dash.body?.requests||[]).find(q=>q.id===correctionId);
-    if (visible) { manager={email,cookie,dash:dash.body}; break; }
-  }
-  assert.ok(manager,'no authorised reviewer can see seeded correction');
-  const reviewKey='persist-review-'+randomBytes(10).toString('hex');
-  const reviewed=await authed(manager.cookie,'/api/attendance-corrections/command',{
-    method:'POST',
-    body:{
-      version:manager.dash.version,
-      command:'correction-review',
-      payload:{
-        id:correctionId,
-        revision:1,
-        decision:'reject',
-        note:'Hosted persistence proof: rejected by design so original attendance evidence remains unchanged.'
-      },
-      idempotencyKey:reviewKey
-    }
-  });
-  assert.equal(reviewed.response.status,200,'correction review failed');
-  assert.equal(reviewed.body?.result?.status,'rejected');
-  assert.equal(reviewed.body?.result?.revision,2);
-
-  const after=await authed(employee.cookie,'/api/attendance-corrections');
-  const row=(after.body?.requests||[]).find(q=>q.id===correctionId);
-  assert.ok(row,'seeded correction not readable before restart');
-  assert.equal(row.status,'rejected');
-  assert.equal(row.revision,2);
-  assert.equal(row.outcome?.applied,false);
-  const history=(row.history||[]).map(h=>h.type);
-  assert.ok(history.includes('attendance-correction-submitted'));
-  assert.ok(history.includes('attendance-correction-reject'));
-
-  return {
-    status:'PASS',mode:'seed',targetRelease:health.release,
-    correctionId,employeeEmail:employee.email,employeeId:employee.personId,
-    recordId:employee.record.id,period:employee.record.period,
-    finalStatus:row.status,revision:row.revision,history,
-    seededAt:new Date().toISOString()
-  };
-}
-async function verify() {
-  const health=await healthCheck();
-  assert.ok(seedOrigin.startsWith('https://'),'SEED_ORIGIN must be https');
-  const seedResult=await request(seedOrigin,'/');
-  assert.equal(seedResult.response.status,200,'seed service unavailable');
-  assert.equal(seedResult.body?.status,'PASS','seed did not pass');
-  const correctionId=seedResult.body.correctionId;
-  const employeeEmail=seedResult.body.employeeEmail;
-  assert.match(String(correctionId||''),/^AC-[a-f0-9]{32}$/i);
-  assert.ok(String(employeeEmail||'').includes('@'));
-
-  const cookie=await login(employeeEmail);
-  const dash=await authed(cookie,'/api/attendance-corrections');
-  assert.equal(dash.response.status,200,'fresh-login dashboard failed');
-  const row=(dash.body?.requests||[]).find(q=>q.id===correctionId);
-  assert.ok(row,'persisted correction was not found after target restart');
-  assert.equal(row.status,'rejected');
-  assert.equal(row.revision,2);
-  assert.equal(row.outcome?.applied,false);
-  const history=(row.history||[]).map(h=>h.type);
-  assert.ok(history.includes('attendance-correction-submitted'));
-  assert.ok(history.includes('attendance-correction-reject'));
-
-  return {
-    status:'PASS',mode:'verify',targetRelease:health.release,
-    correctionId,employeeEmail,finalStatus:row.status,revision:row.revision,
-    history,verifiedAt:new Date().toISOString(),
-    proof:'fresh external service + fresh login after candidate restart'
-  };
-}
-async function run() {
-  latest={status:'RUNNING',mode,startedAt:new Date().toISOString()};
-  try {
-    latest = mode==='seed' ? await seed() : await verify();
-  } catch (error) {
-    latest={status:'FAIL',mode,error:String(error?.stack||error),finishedAt:new Date().toISOString()};
-  }
-  console.log('VECTOR_HOSTED_PERSISTENCE_PROOF='+JSON.stringify(latest));
-}
-await run();
-
-http.createServer((req,res)=>{
-  const ok=latest.status==='PASS';
-  res.writeHead(ok?200:503,{'content-type':'application/json','cache-control':'no-store'});
-  res.end(JSON.stringify(latest));
-}).listen(port,'0.0.0.0');
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+console.log('VECTOR_PROOF_STARTED');
+'use strict';
+const assert=require('node:assert/strict');
+const crypto=require('node:crypto');
+const http=require('node:http');
+const origin='https://vector-customer-ready-candidate-production.up.railway.app';
+const correctionId='AC-616ddc06b0b3c969aee1b825443a2431';
+const expectedRelease='0.6.76-hosted-staging-rc1';
+const phase='baseline';
+const proof={phase,target:origin,candidateSha:'7d72c52f28e21c5225fcdce19e3e4fcecc6e5adb',startedAt:new Date().toISOString(),assertions:[]};
+const hash=x=>crypto.createHash('sha256').update(typeof x==='string'?x:JSON.stringify(x)).digest('hex');
+async function req(path,options={}){const r=await fetch(origin+path,{...options,redirect:'manual',signal:AbortSignal.timeout(15000)});const text=await r.text();let body;try{body=JSON.parse(text)}catch{body=null}return {r,text,body};}
+function check(name,fn){fn();proof.assertions.push({name,status:'PASS'});}
+async function login(email){const x=await req('/api/login',{method:'POST',headers:{'content-type':'application/json',origin,referer:origin+'/',accept:'application/json'},body:JSON.stringify({email,password:process.env.TARGET_PASSWORD})});assert.equal(x.r.status,200,'fresh fixture login');const raw=x.r.headers.get('set-cookie')||'';assert.ok(/HttpOnly/i.test(raw),'session HttpOnly');assert.ok(/Secure/i.test(raw),'session Secure');return raw.split(';',1)[0];}
+function finish(status,error){proof.status=status;proof.finishedAt=new Date().toISOString();if(error)proof.error=String(error.message||error).slice(0,500);console.log('VECTOR_RELEASE_BOUND_PROOF='+JSON.stringify(proof));http.createServer((q,s)=>{s.writeHead(status==='PASS'?200:503,{'content-type':'application/json'});s.end(JSON.stringify(proof));}).listen(process.env.PORT||3000,'0.0.0.0');}
+(async()=>{
+assert.equal((process.env.TARGET_ORIGIN||'').replace(/\/$/,''),origin,'runner must bind current protected origin');
+assert.ok(process.env.TARGET_PASSWORD?.length>=20,'existing credential required');
+const health=await req('/api/health');
+check('hosted_fixture_boundary',()=>{assert.equal(health.r.status,200);assert.equal(health.body.release,expectedRelease);assert.equal(health.body.fixtureOnly,true);assert.equal(health.body.productionApproved,false);});
+proof.health=health.body;
+const asset=await req('/vector-ui.js');check('served_asset',()=>{assert.equal(asset.r.status,200);assert.ok(asset.text.includes('VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1'));});proof.assetSha256=hash(asset.text);
+const unauth=await req('/api/attendance-corrections');
+check('unauthenticated_records_denied',()=>assert.ok([401,403].includes(unauth.r.status),'unauth status '+unauth.r.status));
+const forged=await req('/api/attendance-corrections',{headers:{'x-user-role':'superuser','x-tenant-id':'northstar','x-user-id':'m1'}});
+check('forged_headers_denied',()=>assert.ok([401,403].includes(forged.r.status),'forged status '+forged.r.status));
+const cookie=await login('maya@northstar.example');
+check('fresh_login_secure_cookie',()=>assert.ok(cookie.length>10));
+const dash=await req('/api/attendance-corrections',{headers:{cookie,referer:origin+'/',accept:'application/json'}});
+check('employee_readback',()=>assert.equal(dash.r.status,200));
+const row=dash.body?.requests?.find(q=>q.id===correctionId);
+check('exact_correction_state',()=>{assert.ok(row,'exact correction missing');assert.equal(row.status,'rejected');assert.equal(row.revision,2);assert.equal(row.outcome?.applied,false);const types=row.history.map(x=>x.type);assert.ok(types.includes('attendance-correction-submitted'));assert.ok(types.includes('attendance-correction-reject'));});
+proof.correction={id:row.id,status:row.status,revision:row.revision,history:row.history.map(x=>x.type),sha256:hash(row)};
+const record=dash.body.records?.find(x=>x.id==='wr-e0-2026-09-07');
+check('source_record_preserved',()=>assert.ok(record));proof.sourceRecordSha256=hash(record);
+proof.recordCount=dash.body.records?.length;proof.requestCount=dash.body.requests?.length;
+finish('PASS');
+})().catch(e=>finish('FAIL',e));
