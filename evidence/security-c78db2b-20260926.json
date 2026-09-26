@@ -1,0 +1,502 @@
+{
+  "schemaVersion": 1,
+  "scope": "hosted fixture HTTP security",
+  "target": "https://vector-customer-ready-candidate-production.up.railway.app",
+  "expectedCandidateSha": "c78db2b78a8d655581a65583fa10feec54a810d4",
+  "expectedDeploymentId": "e3f188e0-d44c-49b5-9108-fe605fa4aac7",
+  "runnerSha": "b7782d7941a43988bbed1e6abdb669b83391e653",
+  "startedAt": "2026-09-26T09:41:25.500Z",
+  "status": "PASS",
+  "assertions": [
+    {
+      "name": "fixture_target_boundary",
+      "status": "PASS",
+      "evidence": {
+        "status": "ok",
+        "mode": "hosted-staging",
+        "fixtureOnly": true,
+        "hosted": true,
+        "productionApproved": false,
+        "pilotReady": false,
+        "release": "0.6.76-hosted-staging-rc1",
+        "traceId": "cf44e3d156298bf7889b17b59a162b49"
+      }
+    },
+    {
+      "name": "unauthenticated_denied:/api/bootstrap",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/bootstrap",
+        "httpStatus": 401,
+        "responseDigest": "570b0fe645c5e5eff3a73aeb53e58deb5cac795a2285d1c27790adef8f0cdc53",
+        "traceId": "671c80328cf4de9b8a502b6272b4d35a"
+      }
+    },
+    {
+      "name": "unauthenticated_denied:/api/attendance-corrections",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/attendance-corrections",
+        "httpStatus": 401,
+        "responseDigest": "570b0fe645c5e5eff3a73aeb53e58deb5cac795a2285d1c27790adef8f0cdc53",
+        "traceId": "c112883441f664f61fedc9747a4465f5"
+      }
+    },
+    {
+      "name": "unauthenticated_denied:/api/operations/autopilot/status",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 401,
+        "responseDigest": "570b0fe645c5e5eff3a73aeb53e58deb5cac795a2285d1c27790adef8f0cdc53",
+        "traceId": null
+      }
+    },
+    {
+      "name": "forged_authority_headers_denied",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 401,
+        "responseDigest": "570b0fe645c5e5eff3a73aeb53e58deb5cac795a2285d1c27790adef8f0cdc53",
+        "traceId": null
+      }
+    },
+    {
+      "name": "invalid_session_denied",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 401,
+        "responseDigest": "c2e69733cb3306602374976c9750e287d62e01a21665b3387dc1280be1108d6d",
+        "traceId": null
+      }
+    },
+    {
+      "name": "manager_secure_login",
+      "status": "PASS",
+      "evidence": {
+        "role": "manager",
+        "tenant": "northstar-demo"
+      }
+    },
+    {
+      "name": "employee_secure_login",
+      "status": "PASS",
+      "evidence": {
+        "role": "employee",
+        "tenant": "northstar-demo"
+      }
+    },
+    {
+      "name": "other_tenant_secure_login",
+      "status": "PASS",
+      "evidence": {
+        "role": "manager",
+        "tenant": "isolation-test"
+      }
+    },
+    {
+      "name": "manager_payroll_denied",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/payroll-run",
+        "httpStatus": 403,
+        "responseDigest": "cbba1bbacb9f2bbfb1347e13bfa3a01a63180db1b2c2b92a790da0bf80be44fc",
+        "traceId": "6de689a276e3e7d8f58197c8e855941d"
+      }
+    },
+    {
+      "name": "employee_autopilot_denied",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 403,
+        "responseDigest": "c13375c0fdbe11438e0c71e03f8078bee4273bd2510384971ec810b8bf6e9239",
+        "traceId": null
+      }
+    },
+    {
+      "name": "primary_tenant_identity",
+      "status": "PASS",
+      "evidence": {
+        "tenant": "northstar-demo",
+        "stateDigest": "07063992c25b2d64090c643ebb9e1873d46715508b3935b8359be0365c328a6d"
+      }
+    },
+    {
+      "name": "primary_tenant_header_query_spoof_ignored",
+      "status": "PASS",
+      "evidence": {
+        "tenant": "northstar-demo",
+        "role": "manager"
+      }
+    },
+    {
+      "name": "other_tenant_identity",
+      "status": "PASS",
+      "evidence": {
+        "tenant": "isolation-test",
+        "stateDigest": "fecb2a44626cfb665c902794c77c3d96ac17e903c9052276a6f18af8d3ab3bba"
+      }
+    },
+    {
+      "name": "other_tenant_header_query_spoof_ignored",
+      "status": "PASS",
+      "evidence": {
+        "tenant": "isolation-test",
+        "role": "manager"
+      }
+    },
+    {
+      "name": "autopilot_invalid_origin",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 403,
+        "responseDigest": "5358033bf9f8ac0da12f800d44e289791a927330eb0f40355dbf5767bb1018c2",
+        "traceId": null
+      }
+    },
+    {
+      "name": "autopilot_null_origin",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 403,
+        "responseDigest": "5358033bf9f8ac0da12f800d44e289791a927330eb0f40355dbf5767bb1018c2",
+        "traceId": null
+      }
+    },
+    {
+      "name": "autopilot_missing_origin",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 403,
+        "responseDigest": "5358033bf9f8ac0da12f800d44e289791a927330eb0f40355dbf5767bb1018c2",
+        "traceId": null
+      }
+    },
+    {
+      "name": "autopilot_wrong_content_type",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 415,
+        "responseDigest": "4d8927006b6aee4f526761c58e4882d335b6b45e949facf9d095804f0b0ac280",
+        "traceId": null
+      }
+    },
+    {
+      "name": "autopilot_malformed_json",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 400,
+        "responseDigest": "6f9d2f46d0cd125ed5f2e599446efa59f62cadb82f788864a91503dedde99492",
+        "traceId": null
+      }
+    },
+    {
+      "name": "autopilot_unknown_permit",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 404,
+        "responseDigest": "0ea4ae2ad2c10d571af7bda68345c1c890b496278b6290c6e7a97d2f2e461744",
+        "traceId": null
+      }
+    },
+    {
+      "name": "autopilot_employee_execution",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 403,
+        "responseDigest": "c13375c0fdbe11438e0c71e03f8078bee4273bd2510384971ec810b8bf6e9239",
+        "traceId": null
+      }
+    },
+    {
+      "name": "autopilot_oversized_json",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 413,
+        "responseDigest": "548b3039afb9c0aa472719a9931e9023b26bfd078ace54d8f02223bbd15063d0",
+        "traceId": null
+      }
+    },
+    {
+      "name": "cross_origin_login_denied",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/login",
+        "httpStatus": 403,
+        "responseDigest": "5358033bf9f8ac0da12f800d44e289791a927330eb0f40355dbf5767bb1018c2",
+        "traceId": "e0759a478251857c179b40379d81c9af"
+      }
+    },
+    {
+      "name": "tenant_state_not_mutated_by_ingress_attacks",
+      "status": "PASS",
+      "evidence": {
+        "primary": {
+          "before": "12143a75d7baab159dbab31c5ef37b8ed01016bb626eb9d77eadf2bd0f6c5781",
+          "after": "12143a75d7baab159dbab31c5ef37b8ed01016bb626eb9d77eadf2bd0f6c5781"
+        },
+        "other": {
+          "before": "d11ce2c4902bcfc092bb580e8c22f3f60aea2e9f8d068a293819773a3e16b6ff",
+          "after": "d11ce2c4902bcfc092bb580e8c22f3f60aea2e9f8d068a293819773a3e16b6ff"
+        }
+      }
+    },
+    {
+      "name": "cross_tenant_correction_read_denied",
+      "status": "PASS",
+      "evidence": {
+        "correctionId": "AC-616ddc06b0b3c969aee1b825443a2431",
+        "primaryDigest": "bc6d77779dc78bc43dec3b6f3611bb8f0f65b89fd21867ac3e29f2129d41b227"
+      }
+    },
+    {
+      "name": "logout_revokes_autopilot_access",
+      "status": "PASS",
+      "evidence": {
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 401,
+        "responseDigest": "c2e69733cb3306602374976c9750e287d62e01a21665b3387dc1280be1108d6d",
+        "traceId": null
+      }
+    }
+  ],
+  "releaseBinding": {
+    "status": "PASS",
+    "method": "Target deployment SHA plus independently retrieved target-side HTTP logs within the exact runner time window",
+    "candidateSha": "c78db2b78a8d655581a65583fa10feec54a810d4",
+    "actualDeploymentId": "d2ce0ffa-b294-46e9-84ea-7a99b7f173bc",
+    "runnerDeploymentId": "c5d08a05-4a0a-4f7e-bf79-e9c02a253303",
+    "note": "Expected deployment ID was stale after an earlier redeploy of the same SHA. Actual serving deployment identified from target logs.",
+    "requests": [
+      {
+        "timestamp": "2026-09-26T09:41:25.581871655Z",
+        "method": "GET",
+        "path": "/api/health",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:25.646476629Z",
+        "method": "GET",
+        "path": "/api/bootstrap",
+        "httpStatus": 401
+      },
+      {
+        "timestamp": "2026-09-26T09:41:25.682080594Z",
+        "method": "GET",
+        "path": "/api/attendance-corrections",
+        "httpStatus": 401
+      },
+      {
+        "timestamp": "2026-09-26T09:41:25.705174994Z",
+        "method": "GET",
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 401
+      },
+      {
+        "timestamp": "2026-09-26T09:41:25.752735807Z",
+        "method": "GET",
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 401
+      },
+      {
+        "timestamp": "2026-09-26T09:41:25.786324572Z",
+        "method": "GET",
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 401
+      },
+      {
+        "timestamp": "2026-09-26T09:41:25.854756269Z",
+        "method": "POST",
+        "path": "/api/login",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:25.929471407Z",
+        "method": "POST",
+        "path": "/api/login",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:25.991127412Z",
+        "method": "POST",
+        "path": "/api/login",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.080442638Z",
+        "method": "GET",
+        "path": "/api/payroll-run",
+        "httpStatus": 403
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.135622990Z",
+        "method": "GET",
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 403
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.222779588Z",
+        "method": "GET",
+        "path": "/api/bootstrap",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.353291422Z",
+        "method": "GET",
+        "path": "/api/bootstrap",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.404303254Z",
+        "method": "GET",
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.513994962Z",
+        "method": "GET",
+        "path": "/api/bootstrap",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.615855940Z",
+        "method": "GET",
+        "path": "/api/bootstrap",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.649389774Z",
+        "method": "GET",
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.685540034Z",
+        "method": "POST",
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 403
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.710251417Z",
+        "method": "POST",
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 403
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.738629741Z",
+        "method": "POST",
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 403
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.774416268Z",
+        "method": "POST",
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 415
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.803949373Z",
+        "method": "POST",
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 400
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.831576406Z",
+        "method": "POST",
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 404
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.860795618Z",
+        "method": "POST",
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 403
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.917128812Z",
+        "method": "POST",
+        "path": "/api/operations/autopilot/execute",
+        "httpStatus": 413
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.946248028Z",
+        "method": "POST",
+        "path": "/api/login",
+        "httpStatus": 403
+      },
+      {
+        "timestamp": "2026-09-26T09:41:26.970629579Z",
+        "method": "GET",
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:27.028847222Z",
+        "method": "GET",
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:27.072459621Z",
+        "method": "GET",
+        "path": "/api/attendance-corrections",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:27.147693523Z",
+        "method": "GET",
+        "path": "/api/attendance-corrections",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:27.189413977Z",
+        "method": "POST",
+        "path": "/api/logout",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:27.221660196Z",
+        "method": "GET",
+        "path": "/api/operations/autopilot/status",
+        "httpStatus": 401
+      },
+      {
+        "timestamp": "2026-09-26T09:41:27.252856057Z",
+        "method": "POST",
+        "path": "/api/logout",
+        "httpStatus": 401
+      },
+      {
+        "timestamp": "2026-09-26T09:41:27.288893487Z",
+        "method": "POST",
+        "path": "/api/logout",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-09-26T09:41:27.340697060Z",
+        "method": "POST",
+        "path": "/api/logout",
+        "httpStatus": 200
+      }
+    ]
+  },
+  "limitations": [
+    "Candidate SHA must be independently bound using target deployment metadata before and after this run.",
+    "Unknown database roles and revoked physical devices are not exercised by this hosted suite."
+  ],
+  "configured": true,
+  "finishedAt": "2026-09-26T09:41:27.348Z",
+  "passed": 27,
+  "failed": 0
+}
