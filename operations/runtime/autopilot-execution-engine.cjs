@@ -3,6 +3,7 @@ const {createHash}=require('node:crypto');
 const {DatabaseSync}=require('node:sqlite');
 const {createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,digest}=require('./decision-episode.cjs');
 const PREFIX='/api/operations/autopilot',PERMIT_TTL_MS=15*60*1000;
+const AUTHORISED_ROLES=new Set(['manager','supervisor','director','admin','payroll_admin']);
 function sha256(v){return createHash('sha256').update(String(v)).digest('hex');}
 function compact(v,max=240){return String(v??'').trim().slice(0,max);}
 function iso(v){const n=Date.parse(String(v??''));return Number.isFinite(n)?new Date(n).toISOString():null;}
@@ -36,7 +37,17 @@ function createAutopilotExecutionEngine(options={}){
  const permitI=db.prepare('INSERT INTO vector_autopilot_permits VALUES(?,?,?,?,?,?,?,?)'),eventI=db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)');
  const executionQ=db.prepare('SELECT state,detail_json,created_at FROM vector_autopilot_execution_events WHERE execution_id=? ORDER BY id'),tenantQ=db.prepare('SELECT execution_id,permit_id,state,detail_json,created_at FROM vector_autopilot_execution_events WHERE tenant=? ORDER BY id DESC LIMIT ?');
  function ctx(req){const t=cookieToken(req);return t?auth.get(sha256(t),Date.now())||null:null;}
- function manager(req,res){const c=ctx(req);if(!c){writeJson(res,401,{error:'Sign in is required.'});return null;}if(String(c.role).toLowerCase()==='employee'){writeJson(res,403,{error:'Autopilot execution requires an authorised manager or administrator.'});return null;}return c;}
+ function manager(req,res){const c=ctx(req);if(!c){writeJson(res,401,{error:'Sign in is required.'});return null;}if(!AUTHORISED_ROLES.has(String(c.role).toLowerCase())){writeJson(res,403,{error:'Autopilot execution requires an authorised manager or administrator.'});return null;}
+  if(req.method==='POST'){
+   const configuredOrigin=options.publicOrigin||process.env.WFM_PUBLIC_ORIGIN;
+   const host=String(req.headers?.host||'');
+   const localOrigin=process.env.WFM_HOSTED_STAGING!=='true'&&/^(127\.0\.0\.1|localhost):\d+$/.test(host)?'http://'+host:null;
+   const expectedOrigin=configuredOrigin||localOrigin;
+   if(!expectedOrigin||req.headers?.origin!==expectedOrigin){writeJson(res,403,{error:'Invalid request origin.'});return null;}
+   if(String(req.headers?.['content-type']||'').split(';',1)[0].trim().toLowerCase()!=='application/json'){writeJson(res,415,{error:'JSON required.'});return null;}
+  }
+  return c;
+ }
  function log(executionId,permitId,tenant,state,detail={}){eventI.run(executionId,permitId,tenant,state,JSON.stringify(detail),new Date().toISOString());try{publish?.({tenant,topic:'autopilot.execution.updated',audience:'manager',payload:{executionId,state}});}catch{}}
  function last(executionId){const r=executionQ.all(executionId).at(-1);return r?{state:r.state,detail:JSON.parse(r.detail_json),createdAt:r.created_at}:null;}
  function issueHumanPermit({tenant,episodeId,optionId,actorRef,contextRevision,plan,now=Date.now()}){

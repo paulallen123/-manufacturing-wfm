@@ -11,18 +11,23 @@ const DEFAULT_STAGES = [
   ['TRAINING',['CONFIGURING']],
   ['PROVING',['SIMULATING','TRAINING']],
   ['ADVERSARIAL_TESTING',['PROVING']],
-  ['READY',['ADVERSARIAL_TESTING']],
+  ['READY',['ADVERSARIAL_TESTING','CONNECTING']],
   ['LIVE',['READY']]
 ];
 
 function createZeroTouchCustomerFactory(options={}) {
   const clock=options.clock||(()=>new Date().toISOString());
-  const execute=options.execute|| (async job=>({status:'PASS',evidence:{jobId:job.id}}));
+  if (typeof options.execute !== 'function') throw new TypeError('A customer provisioning executor is required.');
+  const execute=options.execute;
   const maxConcurrency=Math.max(1,Number(options.maxConcurrency||8));
   const jobs=new Map();
+  let boundCustomerId=null;
 
   function seed(customerId){
+    if (typeof customerId !== 'string' || !customerId.trim()) throw new TypeError('A non-empty customer identity is required.');
+    if (boundCustomerId !== null && customerId !== boundCustomerId) throw new Error('Customer mismatch: this factory is bound to another customer.');
     if(jobs.size) return;
+    boundCustomerId=customerId;
     for(const [stage,deps] of DEFAULT_STAGES) jobs.set(stage,{id:stage,customerId,deps,status:'PENDING',attempts:0,evidence:[],updatedAt:clock()});
   }
   function snapshot(){
