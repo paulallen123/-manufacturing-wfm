@@ -229,7 +229,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   const publicOrigin = String(options.publicOrigin || process.env.WFM_PUBLIC_ORIGIN || '').replace(/\/$/, '');
   const invitationSender = typeof options.sendInvitation === 'function'
     ? options.sendInvitation
-    : async ({ to, startUrl, expiresAt }) => {
+    : async ({ to, startUrl, expiresAt, idempotencyKey }) => {
         const apiKey = process.env.RESEND_API_KEY || '';
         const from = process.env.WFM_IMPLEMENTATION_FROM_EMAIL || '';
         if (!apiKey || !from) {
@@ -241,7 +241,8 @@ function createOneDayEnterpriseEngine(options = {}) {
           method: 'POST',
           headers: {
             Authorization: 'Bearer ' + apiKey,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Idempotency-Key': idempotencyKey
           },
           body: JSON.stringify({
             from,
@@ -664,30 +665,40 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
     let notificationDelivered = false;
     let retryExhausted = false;
+    let id = null;
+    let rawToken = null;
+    let expiresAtMs = null;
+    let startUrl = null;
+    let idempotencyKey = null;
     // Make one automatic recovery attempt within the trusted activation. A
     // third durable attempt remains available to a later provider replay or
     // restart, so a slow outage cannot create an unbounded mail loop.
     for (let localAttempt = 0; localAttempt < 2 && !notificationDelivered; localAttempt += 1) {
       if (Number(reserveInvitationAttempt.run(tenant, contractHash, nowIso()).changes) !== 1) {
+        if (id) deleteInvitation.run(id);
         retryExhausted = true;
         break;
       }
-      const id = randomUUID();
-      const rawToken = randomBytes(32).toString('base64url');
-      const expiresAtMs = Date.now() + 7 * 24 * 60 * 60 * 1000;
-      const ts = nowIso();
-      insertInvitation.run(
-        id, tenant, contractHash, recipientHash, sha256(rawToken), 'PENDING',
-        autoStartedRun.target_hours, expiresAtMs, null, ts, ts
-      );
-      const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
+      if (!id) {
+        id = randomUUID();
+        rawToken = randomBytes(32).toString('base64url');
+        expiresAtMs = Date.now() + 7 * 24 * 60 * 60 * 1000;
+        const ts = nowIso();
+        insertInvitation.run(
+          id, tenant, contractHash, recipientHash, sha256(rawToken), 'PENDING',
+          autoStartedRun.target_hours, expiresAtMs, null, ts, ts
+        );
+        startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
+        idempotencyKey = 'implementation-invite/' + sha256(tenant + ':' + contractHash + ':' + id);
+      }
       try {
         const delivery = await invitationSender({
           to: recipientEmail,
           startUrl,
           expiresAt: new Date(expiresAtMs).toISOString(),
           tenant,
-          invitationId: id
+          invitationId: id,
+          idempotencyKey
         });
         notificationDelivered = true;
         record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_SENT', {
@@ -698,10 +709,11 @@ function createOneDayEnterpriseEngine(options = {}) {
           messageId: delivery?.messageId || null
         });
       } catch (error) {
-        // Notification failure must never stop a trusted contract from entering
-        // the zero-touch implementation pipeline. Remove the undelivered token,
-        // keep the run, and surface a non-blocking audit event.
-        deleteInvitation.run(id);
+        // Keep the same token and provider idempotency identity for the bounded
+        // in-request retry. This protects a customer whose first message was
+        // accepted but whose provider response was lost. Remove the token only
+        // after this request's bounded attempts are exhausted.
+        if (localAttempt === 1) deleteInvitation.run(id);
         record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_FAILED', {
           invitationId: id,
           contractRefDigest: contractHash.slice(0, 16)
