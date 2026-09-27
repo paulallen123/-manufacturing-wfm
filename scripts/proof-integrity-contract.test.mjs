@@ -20,6 +20,9 @@ function runner(overrides = {}) {
     promotionEligible: true,
     identityBinding: 'runtime-identity-endpoint',
     terminalProofOwnsHealth: true,
+    statusSemanticsAudited: true,
+    mutatesTarget: false,
+    stateIsolation: 'read-only',
     deploymentSuccessCountsAsPass: false,
     failureDomain: 'railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac',
     ...overrides
