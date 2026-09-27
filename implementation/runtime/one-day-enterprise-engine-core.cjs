@@ -302,6 +302,8 @@ function createOneDayEnterpriseEngine(options = {}) {
         if (!response.ok) {
           const error = new Error('Implementation invitation email could not be delivered.');
           error.statusCode = 503;
+          error.permanent = [400, 401, 403, 404, 422].includes(Number(response.status));
+          if (error.permanent) error.code = 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED';
           throw error;
         }
         const result = await response.json().catch(() => ({}));
@@ -575,6 +577,13 @@ function createOneDayEnterpriseEngine(options = {}) {
         state: 'BLOCKED', attempts, remainingAttempts,
         automaticActionAvailable: false,
         terminalAction: 'RECOVERY_EVIDENCE_REPAIR_REQUIRED'
+      };
+    }
+    if (outbox?.state === 'PROVIDER_BLOCKED') {
+      return {
+        state: 'BLOCKED', attempts, remainingAttempts,
+        automaticActionAvailable: false,
+        terminalAction: 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED'
       };
     }
     if (outbox?.state === 'EXHAUSTED' || attempts >= 3) {
@@ -868,8 +877,17 @@ function createOneDayEnterpriseEngine(options = {}) {
           recovered: true
         });
         result.delivered += 1;
-      } catch {
+      } catch (error) {
         finishNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
+        if (error?.permanent === true) {
+          updateNotificationOutboxState.run('PROVIDER_BLOCKED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
+          record(run.id, outbox.tenant, 'CONTRACT_INVITATION_PROVIDER_BLOCKED', {
+            invitationId: invitation.id,
+            contractRefDigest: outbox.contract_ref_hash.slice(0, 16)
+          });
+          result.blocked += 1;
+          continue;
+        }
         updateNotificationOutboxState.run('EXHAUSTED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
         record(run.id, outbox.tenant, 'CONTRACT_INVITATION_FAILED', {
           invitationId: invitation.id,
@@ -923,6 +941,16 @@ function createOneDayEnterpriseEngine(options = {}) {
         recoveryOutbox = outboxByContract.get(tenant, contractHash);
         if (existing.status === 'PENDING' && recoveryOutbox?.state === 'PENDING') {
           invitation = existing;
+        } else if (existing.status === 'PENDING' && recoveryOutbox?.state === 'PROVIDER_BLOCKED') {
+          return writeJson(res, 200, {
+            invitation: null,
+            implementation: readinessForRun(autoStartedRun),
+            notification: {
+              delivered: false,
+              blocked: true,
+              reason: 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED'
+            }
+          });
         } else if (existing.status === 'PENDING' && recoveryOutbox?.state === 'EXHAUSTED') {
           return writeJson(res, 200, {
             invitation: null,
@@ -965,6 +993,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     let notificationDelivered = false;
     let retryExhausted = false;
     let retryInProgress = false;
+    let providerBlocked = false;
     let id = invitation?.id || null;
     let rawToken = invitation ? deterministicInvitationToken(invitation) : null;
     let expiresAtMs = invitation?.expires_at_ms || null;
@@ -1027,6 +1056,19 @@ function createOneDayEnterpriseEngine(options = {}) {
         });
       } catch (error) {
         finishNotificationAttempt(tenant, contractHash);
+        if (error?.permanent === true) {
+          if (scheduleNotificationRecovery(invitation, recipientEmail)) {
+            updateNotificationOutboxState.run('PROVIDER_BLOCKED', nowIso(), tenant, contractHash);
+          } else {
+            deleteInvitation.run(id);
+          }
+          providerBlocked = true;
+          record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_PROVIDER_BLOCKED', {
+            invitationId: id,
+            contractRefDigest: contractHash.slice(0, 16)
+          });
+          break;
+        }
         // Keep the same token and provider idempotency identity. After the
         // bounded in-request attempts, persist only an encrypted recipient and
         // reconstructible token identity so recovery survives a safe restart.
@@ -1052,6 +1094,8 @@ function createOneDayEnterpriseEngine(options = {}) {
         delivered: notificationDelivered,
         retryExhausted,
         retryInProgress,
+        blocked: providerBlocked,
+        reason: providerBlocked ? 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED' : undefined,
         pendingRetry: !notificationDelivered && outboxByContract.get(tenant, contractHash)?.state === 'PENDING'
       }
     });
