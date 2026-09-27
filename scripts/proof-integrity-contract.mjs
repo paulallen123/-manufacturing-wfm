@@ -55,6 +55,12 @@ export function validateProofRegistry(registry){
       if(runner.terminalProofOwnsHealth!==true){
         throw new Error('Promotion runner health must be owned by terminal proof PASS: '+runner.id);
       }
+      if(runner.statusSemanticsAudited!==true){
+        throw new Error('Promotion runner status semantics must be audited: '+runner.id);
+      }
+      if(runner.mutatesTarget===true && runner.stateIsolation!=='immutable-seed-per-run'){
+        throw new Error('Mutating promotion proof requires immutable-seed-per-run state isolation: '+runner.id);
+      }
       if(!runner.failureDomain) throw new Error('Promotion runner requires failure domain: '+runner.id);
     }
 
