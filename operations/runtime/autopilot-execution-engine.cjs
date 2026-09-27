@@ -26,6 +26,9 @@ function createAutopilotExecutionEngine(options={}){
  const dbPath=options.dbPath||process.env.WFM_DB,lifecycle=options.lifecycleAdapter,publish=typeof options.publishEvent==='function'?options.publishEvent:null;if(!dbPath)throw new Error('Autopilot execution engine requires WFM_DB.');
  const db=new DatabaseSync(dbPath);
  db.exec("PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;"+
+ "CREATE TABLE IF NOT EXISTS vector_decision_episodes(tenant TEXT NOT NULL,episode_id TEXT NOT NULL,decision_type TEXT NOT NULL,episode_json TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(tenant,episode_id));"+
+ "CREATE TRIGGER IF NOT EXISTS no_vector_decision_episode_update BEFORE UPDATE ON vector_decision_episodes BEGIN SELECT RAISE(ABORT,'Vector decision episodes are append only.'); END;"+
+ "CREATE TRIGGER IF NOT EXISTS no_vector_decision_episode_delete BEFORE DELETE ON vector_decision_episodes BEGIN SELECT RAISE(ABORT,'Vector decision episodes are append only.'); END;"+
  "CREATE TABLE IF NOT EXISTS vector_autopilot_permits(permit_id TEXT PRIMARY KEY,tenant TEXT NOT NULL,episode_id TEXT NOT NULL,selected_episode_json TEXT NOT NULL,plan_json TEXT NOT NULL,actor_ref TEXT NOT NULL,issued_at TEXT NOT NULL,expires_at TEXT NOT NULL);"+
  "CREATE TRIGGER IF NOT EXISTS no_vector_autopilot_permit_update BEFORE UPDATE ON vector_autopilot_permits BEGIN SELECT RAISE(ABORT,'Autopilot permits are append only.'); END;"+
  "CREATE TRIGGER IF NOT EXISTS no_vector_autopilot_permit_delete BEFORE DELETE ON vector_autopilot_permits BEGIN SELECT RAISE(ABORT,'Autopilot permits are append only.'); END;"+
