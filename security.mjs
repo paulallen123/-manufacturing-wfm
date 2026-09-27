@@ -10,7 +10,7 @@ const protectedOrigins=new Set([
  'https://vector-customer-ready-candidate-production.up.railway.app',
  'https://vector-2000-convergence-admission-production.up.railway.app'
 ]);
-const result={schemaVersion:1,scope:'hosted fixture HTTP security',target:origin,expectedCandidateSha:expectedSha,expectedDeploymentId:deploymentId,runnerSha:process.env.RAILWAY_GIT_COMMIT_SHA||null,startedAt:new Date().toISOString(),status:'UNPROVEN',assertions:[],releaseBinding:'UNPROVEN',limitations:['Candidate SHA must be independently bound using target deployment metadata before and after this run.','Unknown database roles and revoked physical devices are not exercised by this hosted suite.']};
+const result={schemaVersion:1,scope:'hosted fixture HTTP security',target:origin,expectedCandidateSha:expectedSha,expectedDeploymentId:deploymentId,runnerSha:process.env.RAILWAY_GIT_COMMIT_SHA||null,startedAt:new Date().toISOString(),status:'UNPROVEN',assertions:[],releaseBinding:'UNPROVEN',limitations:['Target deployment identity is supplied from Railway metadata; response source SHA is independently required to match the sealed build.','Unknown database roles and revoked physical devices are not exercised by this hosted suite.']};
 const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const cookies=[];
 async function request(path,{cookie,headers={},...init}={}){
@@ -88,7 +88,7 @@ async function main(){
  assert.match(expectedSha,/^[a-f0-9]{40}$/,'exact candidate SHA required');
  assert.match(deploymentId,/^[a-f0-9-]{36}$/,'observed target deployment required');
  result.configured=true;
- await check('fixture_target_boundary',async()=>{const x=await request('/api/health');assert.equal(x.status,200);assert.equal(x.body.release,'0.6.76-hosted-staging-rc1');assert.equal(x.body.fixtureOnly,true);assert.equal(x.body.productionApproved,false);return x.body;});
+ await check('fixture_target_boundary',async()=>{const x=await request('/api/health');assert.equal(x.status,200);assert.equal(x.body.release,'0.6.76-hosted-staging-rc1');assert.equal(x.body.fixtureOnly,true);assert.equal(x.body.productionApproved,false);assert.equal(x.headers.get('x-wfm-source-sha'),expectedSha,'target source SHA mismatch');assert.equal(x.headers.get('x-wfm-source-binding'),'build-file-matched','target source binding is not build-derived');assert.equal(x.headers.get('x-wfm-fixture-only'),'true','target fixture boundary header mismatch');result.releaseBinding='SOURCE_BOUND';return{...x.body,sourceSha:x.headers.get('x-wfm-source-sha'),sourceBinding:x.headers.get('x-wfm-source-binding')};});
  for(const path of ['/api/bootstrap','/api/attendance-corrections','/api/operations/autopilot/status'])await check('unauthenticated_denied:'+path,()=>expectStatus(path,{},401));
  await check('forged_authority_headers_denied',()=>expectStatus('/api/operations/autopilot/status',{headers:{'x-user-role':'admin','x-tenant-id':'northstar-demo','x-user-id':'m1'}},401));
  await check('invalid_session_denied',()=>expectStatus('/api/operations/autopilot/status',{cookie:'wfm_session=invalid-security-proof-session'},401));
