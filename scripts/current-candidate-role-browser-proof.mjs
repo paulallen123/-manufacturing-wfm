@@ -61,7 +61,14 @@ async function loginRole(page, email) {
 }
 
 async function openLeaveRoute(page, expectedRole) {
-  const route = page.locator('[data-vector-route="leave"]').first();
+  let route = page.locator('[data-vector-route="leave"]:visible').first();
+  if (await route.count() === 0) {
+    const primary = page.locator('.vector-sidebar [data-vector-nav]').filter({ hasText: /^People$/ }).first();
+    await primary.waitFor({ state: 'visible', timeout: 10000 });
+    assert.equal(await primary.isEnabled(), true, `${expectedRole} People section is unavailable.`);
+    await primary.click({ timeout: 5000 });
+    route = page.locator('.vector-section-tabs [data-vector-route="leave"]:visible').first();
+  }
   await route.waitFor({ state: 'visible', timeout: 10000 });
   await route.click({ timeout: 5000 });
   await page.locator(`[data-vector-leave-route="${expectedRole}"]`).waitFor({ state: 'visible', timeout: 10000 });
