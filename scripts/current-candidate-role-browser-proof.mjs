@@ -1120,10 +1120,23 @@ try {
     }
 
     for (const employee of team.employees.filter(item => !item.checked)) {
-      const action = attendanceManagerPage.locator(`button[data-vector-workflow="employee"][data-id="${employee.id}"]`);
-      await action.evaluate(button => { const details = button.closest('details'); if (details) details.open = true; });
-      await action.waitFor({ state: 'visible', timeout: 10000 });
-      await action.click({ timeout: 5000 });
+      const employeeSelector = `button[data-vector-workflow="employee"][data-id="${employee.id}"]`;
+      let employeeOpened = false;
+      for (let attempt = 0; attempt < 4 && !employeeOpened; attempt += 1) {
+        const action = attendanceManagerPage.locator(employeeSelector);
+        try {
+          await action.evaluate(button => { const details = button.closest('details'); if (details) details.open = true; });
+          await action.waitFor({ state: 'visible', timeout: 10000 });
+          await action.scrollIntoViewIfNeeded({ timeout: 5000 });
+          await action.click({ timeout: 5000 });
+          employeeOpened = true;
+        } catch (error) {
+          const retryable = /detached|not attached|attached to the DOM|not stable|not visible|Timeout/i.test(String(error?.message || error));
+          if (!retryable || attempt === 3) throw error;
+          await attendanceManagerPage.waitForTimeout(150);
+        }
+      }
+      assert.equal(employeeOpened, true, `Weekly employee action ${employee.id} for ${targetTeamId} could not be opened actionably.`);
       await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
       const responsePromise = attendanceManagerPage.waitForResponse(response => {
         if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
@@ -1140,9 +1153,14 @@ try {
     assert.equal(team.issues.every(item => item.status === 'resolved'), true);
     assert.equal(team.categories.every(item => item.confirmed), true);
     assert.equal(team.employees.every(item => item.checked), true);
+    assert.equal(team.canSign, true, `Server weekly state for ${targetTeamId} is not signable after every required review.`);
     const revision = team.revision;
+    await attendanceManagerPage.waitForFunction(() => {
+      const button = document.querySelector('button[data-vector-workflow="sign"]');
+      return button instanceof HTMLButtonElement && !button.disabled;
+    }, null, { timeout: 10000 });
     const sign = attendanceManagerPage.locator('button[data-vector-workflow="sign"]');
-    assert.equal(await sign.isDisabled(), false, `Weekly sign-off for ${targetTeamId} did not unlock.`);
+    assert.equal(await sign.isDisabled(), false, `Weekly sign-off UI for ${targetTeamId} did not unlock after server signability.`);
     await sign.click({ timeout: 5000 });
     await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
     const signPromise = attendanceManagerPage.waitForResponse(response => {
