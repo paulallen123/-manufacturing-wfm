@@ -27,7 +27,7 @@ function cloneInert(value,path='value',seen=new WeakSet()){
   const prototype=Object.getPrototypeOf(value);
   if(prototype!==Object.prototype&&prototype!==null) fail(`${path} must be plain data`);
   const descriptors=Object.getOwnPropertyDescriptors(value);
-  const copy={};
+  const copy=Object.create(null);
   for(const key of Reflect.ownKeys(value)){
     if(typeof key!=='string') fail(`${path} contains symbol data`);
     if(SECRET_KEY.test(key)) fail(`${path}.${key} contains secret or credential material`);
@@ -55,6 +55,12 @@ function text(value,name){
   if(typeof value!=='string'||!value.normalize('NFC').trim()||value.includes('\0')) fail(`${name} is required`);
   const normalized=value.normalize('NFC').trim();
   if(normalized.length>512) fail(`${name} exceeds the text length limit`);
+  return normalized;
+}
+
+function fingerprint(value,name){
+  const normalized=text(value,name);
+  if(!/^sha256:[a-f0-9]{64}$/.test(normalized)) fail(`${name} must be a canonical sha256 fingerprint`);
   return normalized;
 }
 
@@ -99,11 +105,14 @@ function same(actual,expected,name){if(actual!==expected) fail(`${name} does not
 export function createMutablePollWindowAuthority(rawPolicy){
   const policy=cloneInert(rawPolicy,'policy');
   exactKeys(policy,new Set([
-    'provider','wfmTenantId','connectionId','organizationId','apiOrigin','apiVersion','resource',
-    'paginationMode','queryFingerprint','schemaFingerprint','overlapSeconds','maxWindowSeconds',
-    'maxPages','maxRecords','maxClockSkewSeconds'
+    'provider','wfmTenantId','connectionId','organizationId','siteId','apiOrigin','apiVersion','resource',
+    'paginationMode','queryFingerprint','schemaFingerprint','expectedCommittedWatermark','overlapSeconds',
+    'maxWindowSeconds','maxPages','maxRecords','maxClockSkewSeconds'
   ]),'policy');
-  for(const field of ['provider','wfmTenantId','connectionId','apiVersion','queryFingerprint','schemaFingerprint']) policy[field]=text(policy[field],field);
+  for(const field of ['provider','wfmTenantId','connectionId','siteId','apiVersion']) policy[field]=text(policy[field],field);
+  policy.queryFingerprint=fingerprint(policy.queryFingerprint,'queryFingerprint');
+  policy.schemaFingerprint=fingerprint(policy.schemaFingerprint,'schemaFingerprint');
+  policy.expectedCommittedWatermark=instant(policy.expectedCommittedWatermark,'expectedCommittedWatermark').iso;
   policy.organizationId=identifier(policy.organizationId,'organizationId');
   policy.apiOrigin=exactHttpsOrigin(policy.apiOrigin);
   policy.resource=text(policy.resource,'resource');
@@ -120,7 +129,7 @@ export function createMutablePollWindowAuthority(rawPolicy){
 
   const scope={
     provider:policy.provider,wfmTenantId:policy.wfmTenantId,connectionId:policy.connectionId,
-    organizationId:policy.organizationId,apiOrigin:policy.apiOrigin,apiVersion:policy.apiVersion,
+    organizationId:policy.organizationId,siteId:policy.siteId,apiOrigin:policy.apiOrigin,apiVersion:policy.apiVersion,
     resource:policy.resource,paginationMode:policy.paginationMode,queryFingerprint:policy.queryFingerprint,
     schemaFingerprint:policy.schemaFingerprint
   };
@@ -129,13 +138,15 @@ export function createMutablePollWindowAuthority(rawPolicy){
   function admitBatch(rawBatch){
     const batch=cloneInert(rawBatch,'batch');
     exactKeys(batch,new Set([
-      'provider','wfmTenantId','connectionId','organizationId','apiOrigin','apiVersion','resource',
-      'paginationMode','queryFingerprint','schemaFingerprint','windowStartInclusive','observedAt',
-      'complete','paginationComplete','pages'
+      'provider','wfmTenantId','connectionId','organizationId','siteId','apiOrigin','apiVersion','resource',
+      'paginationMode','queryFingerprint','schemaFingerprint','checkpointPredecessor','windowStartInclusive',
+      'observedAt','complete','paginationComplete','pages'
     ]),'batch');
-    for(const field of ['provider','wfmTenantId','connectionId','apiVersion','resource','paginationMode','queryFingerprint','schemaFingerprint']){
+    for(const field of ['provider','wfmTenantId','connectionId','siteId','apiVersion','resource','paginationMode']){
       same(text(batch[field],field),policy[field],field);
     }
+    same(fingerprint(batch.queryFingerprint,'queryFingerprint'),policy.queryFingerprint,'queryFingerprint');
+    same(fingerprint(batch.schemaFingerprint,'schemaFingerprint'),policy.schemaFingerprint,'schemaFingerprint');
     same(identifier(batch.organizationId,'organizationId'),policy.organizationId,'organizationId');
     same(exactHttpsOrigin(batch.apiOrigin),policy.apiOrigin,'apiOrigin');
     if(batch.complete!==true) fail('poll window is incomplete');
@@ -145,6 +156,10 @@ export function createMutablePollWindowAuthority(rawPolicy){
 
     const windowStart=instant(batch.windowStartInclusive,'windowStartInclusive');
     const observedAt=instant(batch.observedAt,'observedAt');
+    const checkpointPredecessor=instant(batch.checkpointPredecessor,'checkpointPredecessor');
+    if(checkpointPredecessor.iso!==policy.expectedCommittedWatermark) fail('checkpoint predecessor does not match approved authority');
+    const expectedWindowStart=new Date(checkpointPredecessor.ms-policy.overlapSeconds*1000).toISOString();
+    if(windowStart.iso!==expectedWindowStart) fail('window lower bound does not match the expected overlap window');
     if(observedAt.ms<windowStart.ms) fail('observation must not precede the window lower bound');
     if((observedAt.ms-windowStart.ms)/1000>policy.maxWindowSeconds) fail('poll window exceeds the approved window limit');
 
@@ -168,7 +183,7 @@ export function createMutablePollWindowAuthority(rawPolicy){
       if(integer(page.pageIndex,`${pagePath}.pageIndex`)!==pageIndex) fail('pageIndex sequence is not gapless');
       const applied=instant(page.lowerBoundApplied,`${pagePath}.lowerBoundApplied`);
       if(applied.iso!==windowStart.iso) fail('window lower bound must be identical on every page');
-      same(text(page.queryFingerprint,`${pagePath}.queryFingerprint`),policy.queryFingerprint,'queryFingerprint');
+      same(fingerprint(page.queryFingerprint,`${pagePath}.queryFingerprint`),policy.queryFingerprint,'queryFingerprint');
       if(!Array.isArray(page.records)) fail(`${pagePath}.records must be an array`);
       reportedRecordCount+=page.records.length;
       if(reportedRecordCount>policy.maxRecords) fail('poll window exceeds the record limit');
@@ -201,7 +216,7 @@ export function createMutablePollWindowAuthority(rawPolicy){
         const updatedAt=instant(item.updatedAt,`${recordPath}.updatedAt`);
         if(updatedAt.ms<windowStart.ms) fail(`${recordPath}.updatedAt is before the applied lower bound`);
         if(updatedAt.ms>observedAt.ms+policy.maxClockSkewSeconds*1000) fail(`${recordPath}.updatedAt exceeds the observation clock-skew limit`);
-        const payloadDigest=text(item.payloadDigest,`${recordPath}.payloadDigest`);
+        const payloadDigest=fingerprint(item.payloadDigest,`${recordPath}.payloadDigest`);
         const versionKey=`${organizationId}\0${id}\0${updatedAt.iso}`;
         const existing=byVersion.get(versionKey);
         if(existing){
@@ -222,7 +237,10 @@ export function createMutablePollWindowAuthority(rawPolicy){
     if(policy.paginationMode==='offset'&&expectedOffset!==null) fail('offset chain is missing its terminal offset');
 
     records.sort((left,right)=>left.updatedAt.localeCompare(right.updatedAt)||left.id.localeCompare(right.id));
-    const watermarkCandidate=records.length?records.reduce((latest,item)=>item.updatedAt>latest?item.updatedAt:latest,records[0].updatedAt):null;
+    const maxSourceUpdatedAt=records.length?records.reduce((latest,item)=>item.updatedAt>latest?item.updatedAt:latest,records[0].updatedAt):null;
+    const watermarkCandidate=maxSourceUpdatedAt
+      ?new Date(Math.max(checkpointPredecessor.ms,Math.min(Date.parse(maxSourceUpdatedAt),observedAt.ms))).toISOString()
+      :null;
     const nextPollMs=watermarkCandidate
       ?Math.max(windowStart.ms,Date.parse(watermarkCandidate)-policy.overlapSeconds*1000)
       :windowStart.ms;
@@ -231,9 +249,10 @@ export function createMutablePollWindowAuthority(rawPolicy){
     return deepFreeze({
       pollWindowReconciliationCandidate:true,checkpointAdvanceAllowed:false,deletionAuthority:false,
       writeBackAuthority:false,payrollAuthority:false,attendanceAuthority:false,
-      ...scope,checkpointNamespace,windowStartInclusive:windowStart.iso,observedAt:observedAt.iso,
+      ...scope,checkpointNamespace,checkpointPredecessor:checkpointPredecessor.iso,
+      windowStartInclusive:windowStart.iso,observedAt:observedAt.iso,
       overlapSeconds:policy.overlapSeconds,reportedRecordCount,uniqueVersionCount:records.length,
-      exactReplayCount,watermarkCandidate,nextPollFromInclusive,records,
+      exactReplayCount,maxSourceUpdatedAt,watermarkCandidate,nextPollFromInclusive,records,
       reconciliationFingerprint:`sha256:${digest({scope,windowStartInclusive:windowStart.iso,observedAt:observedAt.iso,records})}`
     });
   }

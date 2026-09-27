@@ -39,6 +39,12 @@ test('MaintainX webhooks remain signed hints with polling recovery',()=>{
   assert.equal(patch.mutablePollWindowAuthority.payrollAuthority,false);
 });
 
+test('MaintainX binds watermark candidates to trusted predecessor and observation horizons',()=>{
+  assert.match(patch.mutablePollWindowAuthority.receiptPolicy,/committed (?:watermark|predecessor)|checkpoint predecessor/i);
+  assert.match(patch.mutablePollWindowAuthority.receiptPolicy,/observation horizon|observedAt/i);
+  assert.match(patch.mutablePollWindowAuthority.receiptPolicy,/canonical sha256/i);
+});
+
 test('MaintainX maps maintenance constraints to workforce and production value',()=>{
   for(const object of [
     'assets','asset-status-and-downtime','work-orders','work-order-assignees','work-order-time-and-labour-cost',
