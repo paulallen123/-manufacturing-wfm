@@ -86,6 +86,12 @@ function createRuntimeIdentity({
       for (const header of proofHeaders.values()) originalSetHeader(header.name, header.value);
     }
 
+    function clearProofHeaders() {
+      if (!originalRemoveHeader) return false;
+      for (const header of proofHeaders.values()) originalRemoveHeader(header.name);
+      return true;
+    }
+
     function mergeProofHeaders(headers) {
       if (Array.isArray(headers)) {
         const merged = [];
@@ -120,7 +126,10 @@ function createRuntimeIdentity({
     }
     if (originalWriteHead) {
       res.writeHead = function sourceProofWriteHead(statusCode, statusMessage, headers) {
-        enforceProofHeaders();
+        // Node appends raw header-array values to headers already set on the
+        // response. Clear the protected set first so each proof value is emitted
+        // exactly once by the canonical merged writeHead arguments.
+        if (!clearProofHeaders()) enforceProofHeaders();
         if (typeof statusMessage === 'string') {
           return originalWriteHead(statusCode, statusMessage, mergeProofHeaders(headers));
         }
