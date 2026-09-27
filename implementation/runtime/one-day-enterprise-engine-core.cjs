@@ -259,6 +259,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     process.env.WFM_IMPLEMENTATION_INVITATION_SECRET || internalToken;
   const notificationRetryDelayMs = Math.max(0, Number(options.notificationRetryDelayMs ?? 5 * 60 * 1000));
   const notificationRetryPollMs = Math.max(0, Number(options.notificationRetryPollMs ?? 60 * 1000));
+  const notificationAttemptLeaseMs = Math.max(1_000, Number(options.notificationAttemptLeaseMs ?? 60_000));
   const publicOrigin = String(options.publicOrigin || process.env.WFM_PUBLIC_ORIGIN || '').replace(/\/$/, '');
   const invitationSender = typeof options.sendInvitation === 'function'
     ? options.sendInvitation
@@ -318,7 +319,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       'created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(tenant,contract_ref_hash));' +
     'CREATE TABLE IF NOT EXISTS implementation_notification_attempts(' +
       'tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, attempts INTEGER NOT NULL,' +
-      'updated_at TEXT NOT NULL, PRIMARY KEY(tenant,contract_ref_hash));' +
+      'in_flight_until_ms INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL, PRIMARY KEY(tenant,contract_ref_hash));' +
     'CREATE TABLE IF NOT EXISTS implementation_notification_outbox(' +
       'tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, invitation_id TEXT NOT NULL,' +
       'recipient_ciphertext TEXT NOT NULL, next_attempt_at_ms INTEGER NOT NULL, state TEXT NOT NULL,' +
@@ -357,6 +358,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   ]) {
     ensureLegacyColumn(db, 'implementation_events', column, definition);
   }
+  ensureLegacyColumn(db, 'implementation_notification_attempts', 'in_flight_until_ms', 'INTEGER NOT NULL DEFAULT 0');
 
   // SQLite cannot add defaults to existing NOT NULL legacy columns in place.
   // Rebuild only when such columns would reject modern audit writes, preserving
@@ -376,12 +378,16 @@ function createOneDayEnterpriseEngine(options = {}) {
     'INSERT INTO implementation_invitations(id,tenant,contract_ref_hash,recipient_hash,token_hash,status,target_hours,expires_at_ms,started_run_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
   );
   const reserveInvitationAttempt = db.prepare(
-    'INSERT INTO implementation_notification_attempts(tenant,contract_ref_hash,attempts,updated_at) VALUES(?,?,1,?) ' +
-    'ON CONFLICT(tenant,contract_ref_hash) DO UPDATE SET attempts=attempts+1,updated_at=excluded.updated_at ' +
-    'WHERE attempts<3'
+    'INSERT INTO implementation_notification_attempts(tenant,contract_ref_hash,attempts,in_flight_until_ms,updated_at) VALUES(?,?,1,?,?) ' +
+    'ON CONFLICT(tenant,contract_ref_hash) DO UPDATE SET ' +
+      'attempts=attempts+1,in_flight_until_ms=excluded.in_flight_until_ms,updated_at=excluded.updated_at ' +
+    'WHERE attempts<3 AND COALESCE(in_flight_until_ms,0)<=?'
   );
   const notificationAttemptsByContract = db.prepare(
-    'SELECT attempts,updated_at FROM implementation_notification_attempts WHERE tenant=? AND contract_ref_hash=?'
+    'SELECT attempts,in_flight_until_ms,updated_at FROM implementation_notification_attempts WHERE tenant=? AND contract_ref_hash=?'
+  );
+  const completeInvitationAttempt = db.prepare(
+    'UPDATE implementation_notification_attempts SET in_flight_until_ms=0,updated_at=? WHERE tenant=? AND contract_ref_hash=?'
   );
   const startInvitation = db.prepare(
     "UPDATE implementation_invitations SET status='STARTED',started_run_id=?,updated_at=? WHERE id=? AND status='PENDING'"
@@ -770,8 +776,29 @@ function createOneDayEnterpriseEngine(options = {}) {
     return true;
   }
 
+  function claimNotificationAttempt(tenant, contractHash) {
+    const nowMs = Date.now();
+    const result = reserveInvitationAttempt.run(
+      tenant,
+      contractHash,
+      nowMs + notificationAttemptLeaseMs,
+      nowIso(),
+      nowMs
+    );
+    if (Number(result.changes) === 1) return { reserved: true, inProgress: false };
+    const current = notificationAttemptsByContract.get(tenant, contractHash);
+    return {
+      reserved: false,
+      inProgress: Number(current?.in_flight_until_ms || 0) > nowMs
+    };
+  }
+
+  function finishNotificationAttempt(tenant, contractHash) {
+    completeInvitationAttempt.run(nowIso(), tenant, contractHash);
+  }
+
   async function retryDueNotifications({ nowMs = Date.now() } = {}) {
-    const result = { examined: 0, delivered: 0, exhausted: 0, blocked: 0 };
+    const result = { examined: 0, delivered: 0, exhausted: 0, blocked: 0, inProgress: 0 };
     if (!invitationRecoverySecret || !publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
       return { ...result, unavailable: true };
     }
@@ -804,7 +831,12 @@ function createOneDayEnterpriseEngine(options = {}) {
         continue;
       }
 
-      if (Number(reserveInvitationAttempt.run(outbox.tenant, outbox.contract_ref_hash, nowIso()).changes) !== 1) {
+      const claim = claimNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
+      if (!claim.reserved) {
+        if (claim.inProgress) {
+          result.inProgress += 1;
+          continue;
+        }
         updateNotificationOutboxState.run('EXHAUSTED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
         result.exhausted += 1;
         continue;
@@ -812,6 +844,7 @@ function createOneDayEnterpriseEngine(options = {}) {
 
       try {
         const delivery = await deliverInvitation(invitation, recipientEmail, rawToken);
+        finishNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
         deleteNotificationOutbox.run(outbox.tenant, outbox.contract_ref_hash);
         record(run.id, outbox.tenant, 'CONTRACT_INVITATION_SENT', {
           invitationId: invitation.id,
@@ -823,6 +856,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         });
         result.delivered += 1;
       } catch {
+        finishNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
         updateNotificationOutboxState.run('EXHAUSTED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
         record(run.id, outbox.tenant, 'CONTRACT_INVITATION_FAILED', {
           invitationId: invitation.id,
@@ -903,6 +937,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
     let notificationDelivered = false;
     let retryExhausted = false;
+    let retryInProgress = false;
     let id = invitation?.id || null;
     let rawToken = invitation ? deterministicInvitationToken(invitation) : null;
     let expiresAtMs = invitation?.expires_at_ms || null;
@@ -920,10 +955,15 @@ function createOneDayEnterpriseEngine(options = {}) {
     // restart, so a slow outage cannot create an unbounded mail loop.
     const localAttemptLimit = recoveringExisting ? 1 : 2;
     for (let localAttempt = 0; localAttempt < localAttemptLimit && !notificationDelivered; localAttempt += 1) {
-      if (Number(reserveInvitationAttempt.run(tenant, contractHash, nowIso()).changes) !== 1) {
-        if (recoveryOutbox) updateNotificationOutboxState.run('EXHAUSTED', nowIso(), tenant, contractHash);
-        else if (id) deleteInvitation.run(id);
-        retryExhausted = true;
+      const claim = claimNotificationAttempt(tenant, contractHash);
+      if (!claim.reserved) {
+        if (claim.inProgress) {
+          retryInProgress = true;
+        } else {
+          if (recoveryOutbox) updateNotificationOutboxState.run('EXHAUSTED', nowIso(), tenant, contractHash);
+          else if (id) deleteInvitation.run(id);
+          retryExhausted = true;
+        }
         break;
       }
       if (!id) {
@@ -948,6 +988,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
       try {
         const delivery = await deliverInvitation(invitation, recipientEmail, rawToken);
+        finishNotificationAttempt(tenant, contractHash);
         notificationDelivered = true;
         deleteNotificationOutbox.run(tenant, contractHash);
         record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_SENT', {
@@ -958,6 +999,7 @@ function createOneDayEnterpriseEngine(options = {}) {
           messageId: delivery?.messageId || null
         });
       } catch (error) {
+        finishNotificationAttempt(tenant, contractHash);
         // Keep the same token and provider idempotency identity. After the
         // bounded in-request attempts, persist only an encrypted recipient and
         // reconstructible token identity so recovery survives a safe restart.
@@ -982,6 +1024,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       notification: {
         delivered: notificationDelivered,
         retryExhausted,
+        retryInProgress,
         pendingRetry: !notificationDelivered && outboxByContract.get(tenant, contractHash)?.state === 'PENDING'
       }
     });
