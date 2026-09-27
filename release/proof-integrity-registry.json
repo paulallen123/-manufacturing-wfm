@@ -60,7 +60,7 @@
       "claim": "browser-role-e2e",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": false,
+      "promotionEligible": true,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
@@ -68,10 +68,25 @@
       "statusSemanticsAudited": true,
       "mutatesTarget": true,
       "stateIsolation": "immutable-seed-per-run",
-      "promotionBlocker": "LIVE_ISOLATED_BROWSER_PASS_REQUIRED",
+      "promotionBlocker": null,
       "observedFailure": "Strict lifecycle-affordance proof found zero authoritative Needs my action rows after prior shared-state proof mutations.",
       "isolatedTargetService": "vector-browser-isolated-target",
-      "freshTargetDeploymentRequired": true
+      "freshTargetDeploymentRequired": true,
+      "evidence": {
+        "candidateSha": "486606c4269bc8f1a2f24056fec22a6d6ffc7aad",
+        "targetDeploymentId": "f61f389f-642b-4b54-86e4-65795ae1a5d2",
+        "targetService": "vector-browser-isolated-target",
+        "runnerDeploymentId": "61a8f9ea-bbb5-4282-b344-7637e9f51bb1",
+        "runnerService": "vector-2000-browser-proof",
+        "terminalApplicationMarker": "VECTOR_BROWSER_PROOF_RUNNER=PASS",
+        "railwayStatus": "SUCCESS",
+        "sourceBinding": "build-file-matched",
+        "allTeamWeeklySignoff": true,
+        "attendanceJourney": true,
+        "payrollJourney": true,
+        "freshLoginReadback": true,
+        "crossTenantDenial": true
+      }
     },
     {
       "id": "implementation-semantic",
