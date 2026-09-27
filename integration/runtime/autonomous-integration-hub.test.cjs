@@ -312,6 +312,7 @@ test('people sync cannot activate from a connector capability without a people g
     });
 
     const denied = await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', {
+      tenant: 'alpha',
       connectionId: connection.id,
       records: [{ employee_id: 'E-1' }]
     }, internal);
@@ -349,6 +350,7 @@ test('healthy report cannot bypass authorization or an unvalidated mapping versi
     assert.equal(beforeSync.status, 409);
 
     const validated = await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', {
+      tenant: 'alpha',
       connectionId: connection.id, records: [{ employee_id: 'E-1' }]
     }, internal);
     assert.equal(validated.status, 200);
@@ -428,6 +430,7 @@ test('trusted worker can attest authorization, activate mapping, validate sync a
     const validated = await call(
       f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/sync-validate',
       {
+        tenant: 'alpha',
         connectionId: connection.id,
         records: [
           { employee_number: 'E-100', first_name: 'A', last_name: 'One', email: 'a@example.test', department: 'Assembly', location: 'Plant 1' },
@@ -439,6 +442,30 @@ test('trusted worker can attest authorization, activate mapping, validate sync a
     assert.equal(validated.status, 200);
     assert.equal(validated.body.connection.state, 'ACTIVE');
     assert.equal(validated.body.reconciliation.status, 'PASS');
+    assert.equal(validated.body.canonicalImport.recordCount, 2);
+    assert.equal(validated.body.canonicalImport.replayed, false);
+    assert.match(validated.body.canonicalImport.checksum, /^[0-9a-f]{64}$/);
+
+    const replay = await call(
+      f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate',
+      {
+        tenant: 'alpha',
+        connectionId: connection.id,
+        records: [
+          { employee_number: 'E-100', first_name: 'A', last_name: 'One', email: 'a@example.test', department: 'Assembly', location: 'Plant 1' },
+          { employee_number: 'E-101', first_name: 'B', last_name: 'Two', email: 'b@example.test', department: 'Assembly', location: 'Plant 1' }
+        ]
+      },
+      internal
+    );
+    assert.equal(replay.status, 200);
+    assert.equal(replay.body.canonicalImport.replayed, true);
+    assert.equal(replay.body.canonicalImport.checksum, validated.body.canonicalImport.checksum);
+
+    const persisted = new DatabaseSync(f.dbPath);
+    assert.equal(persisted.prepare('SELECT COUNT(*) AS count FROM integration_canonical_batches').get().count, 1);
+    assert.equal(persisted.prepare('SELECT COUNT(*) AS count FROM integration_canonical_people').get().count, 2);
+    persisted.close();
 
     const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
     assert.equal(status.body.readiness.readyForPeopleSync, true);
@@ -468,6 +495,7 @@ test('validation with duplicate identifiers degrades safely instead of silently 
     });
 
     const validated = await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', {
+      tenant: 'alpha',
       connectionId: connection.id,
       records: [
         { employee_id: 'E-1', first_name: 'A', last_name: 'One' },
@@ -530,6 +558,7 @@ test('reconciliation stores only counts and digests, not raw employee payloads',
       mappings: [{ sourceField: 'employee_id', canonicalField: 'employeeId', confidence: 1 }]
     });
     await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', {
+      tenant: 'alpha',
       connectionId: connection.id,
       records: [{ employee_id: 'SECRET-EMPLOYEE-ID', salary: 'VERY-SENSITIVE' }]
     }, internal);
