@@ -30,7 +30,7 @@ const groups = {
   security: ['bootstrap.cjs', 'runtime-identity.cjs', 'identity-survival-guard.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
   integration: ['autonomous-integration-hub.cjs'],
   implementation: [
-    'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs',
+    'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs', 'implementation-work-controller.cjs',
     'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs',
     'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs'
   ],
