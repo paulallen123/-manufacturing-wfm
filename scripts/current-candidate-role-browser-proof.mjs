@@ -907,7 +907,7 @@ try {
         await employeeAction.click({ timeout: 5000 });
         employeeOpened = true;
       } catch (error) {
-        const retryable = /detached|not stable|not visible|Timeout/i.test(String(error?.message || error));
+        const retryable = /detached|not attached|attached to the DOM|not stable|not visible|Timeout/i.test(String(error?.message || error));
         if (!retryable || attempt === 3) throw error;
         await attendanceManagerPage.waitForTimeout(150);
       }
