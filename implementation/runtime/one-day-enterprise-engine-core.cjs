@@ -2,6 +2,7 @@
 
 const { createHash, randomBytes, randomUUID, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { createProofCarryingState, inspectProofCarryingState } = require('../../trust/runtime/proof-carrying-state.cjs');
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -124,6 +125,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
   const contractWebhookSecret = options.contractWebhookSecret || process.env.WFM_CONTRACT_WEBHOOK_SECRET || '';
   const publicOrigin = String(options.publicOrigin || process.env.WFM_PUBLIC_ORIGIN || '').replace(/\/$/, '');
+  const releaseSha = compact(options.releaseSha || process.env.WFM_RELEASE_SHA || process.env.RAILWAY_GIT_COMMIT_SHA, 64).trim().toLowerCase();
   const invitationSender = typeof options.sendInvitation === 'function'
     ? options.sendInvitation
     : async ({ to, startUrl, expiresAt }) => {
@@ -260,6 +262,9 @@ function createOneDayEnterpriseEngine(options = {}) {
   const updateDecision = db.prepare(
     'UPDATE implementation_decisions SET status=?,decision_json=?,updated_at=? WHERE id=? AND tenant=?'
   );
+  const refreshDecision = db.prepare(
+    "UPDATE implementation_decisions SET question=?,proposal_json=?,confidence=?,risk=?,status='PENDING',decision_json=NULL,updated_at=? WHERE id=? AND tenant=?"
+  );
   const eventStmt = db.prepare(
     'INSERT INTO implementation_events(run_id,tenant,event,detail_json,created_at) VALUES(?,?,?,?,?)'
   );
@@ -327,7 +332,54 @@ function createOneDayEnterpriseEngine(options = {}) {
     }, res);
   }
 
-  function parseDecision(row) {
+  function implementationSourceSnapshot(run) {
+    const evidence = latestEvidence.all(run.id, run.tenant).map(row => ({
+      id: Number(row.id), kind: row.kind, status: row.status, confidence: Number(row.confidence),
+      source: row.source, createdAt: row.created_at
+    }));
+    const scope = scopeByRun.get(run.id, run.tenant);
+    const source = {
+      runId: run.id,
+      tenant: run.tenant,
+      scopeUpdatedAt: scope?.updated_at || null,
+      evidence
+    };
+    return {
+      revision: 'implementation:' + sha256(JSON.stringify(source)),
+      evidenceRefs: [
+        'implementation-run:' + run.id,
+        ...(scope ? ['implementation-scope:' + scope.updated_at] : []),
+        ...evidence.map(row => 'implementation-evidence:' + row.kind + ':' + row.id)
+      ],
+      source
+    };
+  }
+
+  function decisionScope(run, row) {
+    return { runId: run.id, decisionKey: row.decision_key, risk: row.risk };
+  }
+
+  function unpackDecisionPayload(row) {
+    if (!row.decision_json) return { decision: null, proof: null };
+    const parsed = JSON.parse(row.decision_json);
+    if (parsed?.contractVersion === 'VECTOR_IMPLEMENTATION_DECISION_RESOLUTION_V1') {
+      return { decision: parsed.detail ?? null, proof: parsed.proofCarryingState || null };
+    }
+    return { decision: parsed, proof: null };
+  }
+
+  function parseDecision(row, run = null) {
+    const resolution = unpackDecisionPayload(row);
+    let proofState = null;
+    if (run && ['HIGH', 'CRITICAL'].includes(row.risk) && ['ACCEPTED', 'CHANGED'].includes(row.status)) {
+      const snapshot = implementationSourceSnapshot(run);
+      proofState = inspectProofCarryingState(resolution.proof, {
+        tenant: run.tenant,
+        sourceRevision: snapshot.revision,
+        releaseSha,
+        scope: decisionScope(run, row)
+      });
+    }
     return {
       id: row.id,
       key: row.decision_key,
@@ -336,7 +388,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       confidence: row.confidence,
       risk: row.risk,
       status: row.status,
-      decision: row.decision_json ? JSON.parse(row.decision_json) : null,
+      decision: resolution.decision,
+      proofCarryingState: resolution.proof,
+      proofCurrent: proofState ? proofState.current : null,
+      proofStaleReasons: proofState?.reasons || [],
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };
@@ -413,11 +468,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       };
     });
 
-    const decisions = listDecisions.all(run.id, run.tenant).map(parseDecision);
+    const decisions = listDecisions.all(run.id, run.tenant).map(row => parseDecision(row, run));
     const blockingDecisions = decisions.filter(item =>
       (item.risk === 'HIGH' || item.risk === 'CRITICAL') &&
-      item.status !== 'ACCEPTED' &&
-      item.status !== 'CHANGED'
+      (item.status !== 'ACCEPTED' && item.status !== 'CHANGED' || item.proofCurrent !== true)
     );
 
     const missing = requirements.filter(item => !item.satisfied);
@@ -779,17 +833,33 @@ function createOneDayEnterpriseEngine(options = {}) {
       return writeJson(res, 400, { error: 'confidence must be between 0 and 1.' });
     }
 
+    const snapshot = implementationSourceSnapshot(run);
+    const proposal = {
+      ...(body.proposal && typeof body.proposal === 'object' && !Array.isArray(body.proposal) ? body.proposal : {}),
+      _proofContext: {
+        sourceRevision: snapshot.revision,
+        evidenceRefs: snapshot.evidenceRefs
+      }
+    };
     const existing = decisionByKey.get(run.id, run.tenant, key);
-    if (existing) return writeJson(res, 200, { decision: parseDecision(existing) });
+    if (existing) {
+      let existingRevision = null;
+      try { existingRevision = JSON.parse(existing.proposal_json)?._proofContext?.sourceRevision || null; } catch {}
+      if (existingRevision !== snapshot.revision || existing.status !== 'PENDING') {
+        refreshDecision.run(question, JSON.stringify(proposal), confidence, risk, nowIso(), existing.id, run.tenant);
+        record(run.id, run.tenant, 'DECISION_REFRESHED', { key, risk, confidence, sourceRevision: snapshot.revision });
+      }
+      return writeJson(res, 200, { decision: parseDecision(decisionByKey.get(run.id, run.tenant, key), run) });
+    }
 
     const id = randomUUID();
     const ts = nowIso();
     insertDecision.run(
-      id, run.id, run.tenant, key, question, JSON.stringify(body.proposal || {}),
+      id, run.id, run.tenant, key, question, JSON.stringify(proposal),
       confidence, risk, 'PENDING', null, ts, ts
     );
-    record(run.id, run.tenant, 'DECISION_REQUIRED', { key, risk, confidence });
-    return writeJson(res, 201, { decision: parseDecision(decisionByKey.get(run.id, run.tenant, key)) });
+    record(run.id, run.tenant, 'DECISION_REQUIRED', { key, risk, confidence, sourceRevision: snapshot.revision });
+    return writeJson(res, 201, { decision: parseDecision(decisionByKey.get(run.id, run.tenant, key), run) });
   }
 
   async function handleDecision(ctx, req, res) {
@@ -805,12 +875,45 @@ function createOneDayEnterpriseEngine(options = {}) {
       return writeJson(res, 400, { error: 'action must be ACCEPTED, CHANGED or REJECTED.' });
     }
 
+    const snapshot = implementationSourceSnapshot(run);
+    let proposalContext = null;
+    try { proposalContext = JSON.parse(decision.proposal_json)?._proofContext || null; } catch {}
+    if (!proposalContext?.sourceRevision || proposalContext.sourceRevision !== snapshot.revision) {
+      return writeJson(res, 409, {
+        error: 'Implementation evidence changed after this decision was prepared. Re-review current evidence before deciding.',
+        reasonCode: 'SOURCE_REVISION_CHANGED',
+        proposalSourceRevision: proposalContext?.sourceRevision || null,
+        currentSourceRevision: snapshot.revision
+      });
+    }
+
     const detail = action === 'CHANGED' ? body.value : body.detail;
-    updateDecision.run(action, JSON.stringify(detail ?? null), nowIso(), decision.id, run.tenant);
+    const actorRef = sha256(ctx.email).slice(0, 24);
+    const proof = createProofCarryingState({
+      tenant: run.tenant,
+      actorRef,
+      actorAuthority: ctx.role,
+      decisionRef: decision.id,
+      sourceRevision: snapshot.revision,
+      releaseSha,
+      scope: decisionScope(run, decision),
+      evidenceRefs: proposalContext.evidenceRefs?.length ? proposalContext.evidenceRefs : snapshot.evidenceRefs,
+      createdAt: nowIso()
+    });
+    const resolution = {
+      contractVersion: 'VECTOR_IMPLEMENTATION_DECISION_RESOLUTION_V1',
+      detail: detail ?? null,
+      proofCarryingState: proof
+    };
+    updateDecision.run(action, JSON.stringify(resolution), nowIso(), decision.id, run.tenant);
     record(run.id, run.tenant, 'DECISION_RESOLVED', {
       key,
       action,
-      by: sha256(ctx.email).slice(0, 16)
+      by: actorRef,
+      actorAuthority: compact(ctx.role, 100),
+      proofDigest: proof.proofDigest,
+      sourceRevision: proof.sourceRevision,
+      releaseSha: proof.releaseSha
     });
     return writeJson(res, 200, recompute(run));
   }
