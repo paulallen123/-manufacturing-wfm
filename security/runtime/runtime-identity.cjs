@@ -59,6 +59,15 @@ function createRuntimeIdentity({
     pilotReady: false
   });
 
+  function applyResponseHeaders(res) {
+    if (!res || typeof res.setHeader !== 'function') {
+      throw new TypeError('WFM_RUNTIME_IDENTITY_RESPONSE_REQUIRED');
+    }
+    if (payload.candidateSha) res.setHeader('X-WFM-Source-SHA', payload.candidateSha);
+    res.setHeader('X-WFM-Source-Binding', payload.sourceBinding);
+    res.setHeader('X-WFM-Fixture-Only', String(payload.fixtureOnly));
+  }
+
   function handleRequest(req, res) {
     if (requestPath(req) !== '/api/runtime-identity') return false;
 
@@ -81,7 +90,11 @@ function createRuntimeIdentity({
     return true;
   }
 
-  return Object.freeze({ candidateSha: payload.candidateSha, handleRequest });
+  return Object.freeze({
+    candidateSha: payload.candidateSha,
+    applyResponseHeaders,
+    handleRequest
+  });
 }
 
 module.exports = { createRuntimeIdentity };
