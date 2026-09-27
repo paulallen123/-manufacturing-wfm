@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Oracle Maintenance documentation promotion and stable dual-pass offset-window reconciliation.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "oracle-maintenance",
+      "patch": {
+        "protocols": ["Oracle Fusion Cloud SCM REST API"],
+        "auth": "Oracle Fusion service identity restricted to documented GET resources and exact maintenance organizations",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/fasrp/index.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {"type":"Oracle Fusion Cloud SCM REST","direction":"Oracle-to-WFM-read-only","authentication":"customer-approved Oracle Fusion service identity with least-privilege maintenance read privileges","notes":"Pin pod origin, quarterly documentation release, resource version 11.13.18.05, organization, projection, filter, order and schema."},
+          {"type":"governed file export fallback","direction":"customer-export-to-WFM-read-only","authentication":"customer-owned secure-file route","notes":"Reuse the same organization, work-order identity, update-window, schema and reconciliation boundaries when REST access is unavailable."}
+        ],
+        "deploymentVariants": {
+          "fusion-cloud":{"customerEdgeRequired":false,"routing":"Exact customer Oracle Fusion pod origin; never accept redirects or silently switch region/pod."},
+          "managed-export":{"customerEdgeRequired":"by-customer","routing":"Customer-controlled outbound export with manifest, organization and closed-window reconciliation."}
+        },
+        "sourceScope": {
+          "requiredDimensions":["wfm-tenant","connection","Oracle-pod-origin","API-version","resource","maintenance-organization","projection","query","stable-order","schema","closed-update-window"],
+          "sourceIdentityDimensions":["wfm-tenant","connection","Oracle-pod-origin","maintenance-organization","resource","WorkOrderId","LastUpdateDate"]
+        },
+        "stableOffsetWindow": {
+          "requiredPasses": 2,
+          "paginationFields": ["offset","limit","count","hasMore"],
+          "orderBy": "LastUpdateDate:asc,WorkOrderId:asc",
+          "windowField": "LastUpdateDate",
+          "windowSemantics": "inclusive-start/exclusive-end",
+          "exactOrganizationRequired": true,
+          "identicalPassesRequired": true,
+          "gaplessTerminalPageChainRequired": true,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "operationalDecisionAuthority": false,
+          "causalClaimAuthority": false,
+          "writeBackAuthority": false,
+          "notes": "Offset pagination over mutable work orders can skip or duplicate records while the collection changes. Read the same closed LastUpdateDate window twice with deterministic WorkOrderId tie-breaking; require identical complete terminal results before emitting reconciliation evidence. Exact replays collapse, conflicts quarantine, and a matching row count alone never proves completeness."
+        },
+        "dataObjects": ["maintenance-organizations","maintenance-work-orders","work-order-status-history","assets-and-route-assets","operations","required-labour-and-equipment-resources","materials-and-parts","resource-and-material-transactions","service-history","maintenance-programs-and-work-requirements","work-order-flexfields","attachments","transaction-history","warranty-claims"],
+        "canonicalObjects": ["legal-entity","site","work-centre","machine-asset","maintenance-work-order","maintenance-operation","maintenance-signal","work-demand","skill-demand","inventory-item","supplier","cost-centre","production-outcome"],
+        "stableIds": "Preserve Oracle pod + maintenance organization + resource + WorkOrderId or child identifier. Preserve documented integer identifiers as canonical precision-18 decimal strings in JavaScript runtimes; LastUpdateDate is update evidence, not cross-organization identity.",
+        "freshness": "Poll closed LastUpdateDate windows with overlap. Current/open work orders need shorter windows; histories, transactions and completed work can use slower reconciliation. Record source update, observation and ingestion time separately.",
+        "permissions": "Grant only documented GET access for required maintenance resources and organizations. Deny POST, PATCH, DELETE, action endpoints, work-order release/completion, resource/material transactions, attachments, forecasts, programs and setup mutation.",
+        "paginationDelta": "Oracle collection responses expose offset, limit, count and hasMore. Require offset 0, one configured limit, truthful count, gapless offsets and one hasMore=false terminal page. Because rows are mutable, repeat the same closed filtered and ordered window and require byte-equivalent normalized results.",
+        "customFields": "Discover work-order descriptive flexfields and runtime Metadata-Context separately. Pin the chosen sandbox/context and schema fingerprint; unknown, inaccessible or changed flexfield projections quarantine the dataset.",
+        "regionalApiVersions": "Pin exact customer pod origin, quarterly Oracle documentation/application release, resource version 11.13.18.05 and REST-Framework-Version where used. A pod, release, metadata context or resource-version change creates a new checkpoint namespace and overlap replay.",
+        "rateLimits": "Use customer and Oracle service limits observed per pod with bounded concurrency, Retry-After-aware backoff where supplied and no pod/organization switching to evade throttling.",
+        "failureModes": ["expired or revoked service identity","missing read privilege or organization access","wrong pod, region, version or maintenance organization","offset gap, repeated page or false hasMore terminal state","collection mutation causing different dual-pass results","non-unique ordering when LastUpdateDate ties are not resolved by WorkOrderId","LastUpdateDate clock or timezone drift","same WorkOrderId and LastUpdateDate with conflicting payload","work-order, operation, resource, material or asset identity collision across organizations","quarterly schema or flexfield drift","429 throttling, transient 5xx or partial Oracle pod outage","attempted mutation or action route"],
+        "reconciliation": "Bind each receipt to tenant, connection, pod, API/resource version, maintenance organization, projection, query, stable order, schema, predecessor and closed LastUpdateDate window. Require two complete identical offset traversals; preserve WorkOrderId, organization, LastUpdateDate and payload digest. Emit reconciliation evidence only with no checkpoint, deletion, operational, causal, attendance, payroll or write authority.",
+        "schemaDrift": "Fingerprint resource version, REST framework version, Metadata-Context, projection, flexfield contexts, field types, links and canonical mapping. Drift quarantines before reconciliation.",
+        "retriesReconnect": "Authentication and authorization failures stop for identity/privilege review. Throttling and transient errors retry the same pod, organization and closed window. Any failed or mismatched pass restarts both passes from the trusted predecessor without moving the checkpoint.",
+        "evidenceUrl": "https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/fasrp/api-maintenance-maintenance-work-orders.html",
+        "evidenceSources": [
+          {"url":"https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/fasrp/index.html","supports":"current Oracle Fusion Cloud SCM REST guide and May 2026 release identity"},
+          {"url":"https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/fasrp/op-maintenanceworkorders-get.html","supports":"maintenance work-order GET collection, query/projection/order/paging fields and work-order schema"},
+          {"url":"https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/fasrp/api-maintenance-maintenance-work-orders.html","supports":"maintenance work-order REST resource family and separate mutation surfaces"},
+          {"url":"https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/fasrp/op-maintenanceworkorders-workorderid-child-workorderoperation-get.html","supports":"work-order operations, required resources and materials"},
+          {"url":"https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/fasrp/op-maintenanceworkordertransactionhistory-get.html","supports":"maintenance transaction history, asset, organization, labour/resource, material, quantity and UOM fields"},
+          {"url":"https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/fasrp/api-maintenance-maintenance-work-order-service-histories.html","supports":"historic services performed against maintenance work orders"},
+          {"url":"https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/fasrp/api-maintenance-asset-warranty-claims.html","supports":"supplier warranty claims and maintenance cost recovery context"},
+          {"url":"https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26b/faumm/overview-of-maintenance-work-management.html","supports":"maintenance work-management and asset-repair business semantics"}
+        ],
+        "evidenceNote": "Documentation-only verification. Official Oracle documentation establishes versioned REST resources for maintenance work orders, organizations, assets, operations, resources, materials, transactions, histories, flexfields and warranty claims plus offset/limit/count/hasMore collection paging and explicit mutation surfaces that remain denied. No sandbox, no customer pod authentication, no live read, no denied mutation, no hosted proof and no production certification are claimed.",
+        "valueOpportunities": ["forecast qualified maintenance labour from planned work orders, operations and resource requirements","redeploy labour around asset downtime instead of treating every throughput loss as a staffing shortage","reduce emergency overtime and agency demand through earlier maintenance workload visibility","align parts/material availability with skills and schedules to avoid paid idle time","attribute labour, asset, material and warranty outcomes without treating maintenance records as attendance or payroll truth"],
+        "causalOutcomeReadiness": "Preserve pod, organization, work order, asset, operation, resource/material, LastUpdateDate, status and transaction lineage. Record recommendation and approved intervention separately from later downtime, quality, production, cost and labour outcomes with competing changes retained.",
+        "nextBuildAction": "Use an authorised Oracle Fusion test pod to prove least-privilege read authentication, exact pod/version/organization routing, real maintenanceWorkOrders dual-pass pagination under concurrent updates, flexfield and quarterly schema drift, throttling/reconnect, child resources, cross-organization isolation and denied POST, PATCH, DELETE and maintenance action calls."
+      }
+    }
+  ]
+}
