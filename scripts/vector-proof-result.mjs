@@ -9,7 +9,8 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     'managerUiDecided',
     'managerStateReadBack',
     'requestAuditLinked',
-    'freshEmployeeLoginSawDecision'
+    'freshEmployeeLoginSawDecision',
+    'freshBalanceReconciled'
   ];
   const attendanceChecks = [
     'managerUiApproved',
@@ -34,6 +35,7 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     missingEvidence: [
       ...(assetBinding?.status === 'BOUND' ? [] : ['exact-deployed-asset-binding']),
       ...(scopedLeaveJourneyVerified ? [] : ['UI-triggered-business-action', 'persisted-state-readback', 'updated-UI-after-reload']),
+      ...(leaveJourney?.freshBalanceReconciled === true ? [] : ['leave-balance-reconciliation']),
       ...(scopedAttendanceJourneyVerified ? [] : ['attendance-correction-business-action']),
       'server-audit-readback',
       'exact-backend-binding',
