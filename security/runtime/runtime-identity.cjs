@@ -4,6 +4,7 @@ const fs = require('node:fs');
 
 const COMMIT_SHA = /^[0-9a-f]{40}$/;
 const DEFAULT_BUILD_SHA_FILE = '/app/.wfm-build-source-sha';
+const RESPONSE_PROOF_BOUND = Symbol('wfm-runtime-source-proof-bound');
 
 function requestPath(req) {
   return String(req?.url || '/').split('?')[0];
@@ -63,9 +64,70 @@ function createRuntimeIdentity({
     if (!res || typeof res.setHeader !== 'function') {
       throw new TypeError('WFM_RUNTIME_IDENTITY_RESPONSE_REQUIRED');
     }
-    if (payload.candidateSha) res.setHeader('X-WFM-Source-SHA', payload.candidateSha);
-    res.setHeader('X-WFM-Source-Binding', payload.sourceBinding);
-    res.setHeader('X-WFM-Fixture-Only', String(payload.fixtureOnly));
+    if (res[RESPONSE_PROOF_BOUND]) return;
+
+    const proofHeaders = new Map([
+      ['x-wfm-source-binding', { name: 'X-WFM-Source-Binding', value: payload.sourceBinding }],
+      ['x-wfm-fixture-only', { name: 'X-WFM-Fixture-Only', value: String(payload.fixtureOnly) }]
+    ]);
+    if (payload.candidateSha) {
+      proofHeaders.set('x-wfm-source-sha', { name: 'X-WFM-Source-SHA', value: payload.candidateSha });
+    }
+
+    const originalSetHeader = res.setHeader.bind(res);
+    const originalRemoveHeader = typeof res.removeHeader === 'function'
+      ? res.removeHeader.bind(res)
+      : null;
+    const originalWriteHead = typeof res.writeHead === 'function'
+      ? res.writeHead.bind(res)
+      : null;
+
+    function enforceProofHeaders() {
+      for (const header of proofHeaders.values()) originalSetHeader(header.name, header.value);
+    }
+
+    function mergeProofHeaders(headers) {
+      if (Array.isArray(headers)) {
+        const merged = [];
+        for (let index = 0; index < headers.length; index += 2) {
+          if (!proofHeaders.has(String(headers[index] || '').toLowerCase())) {
+            merged.push(headers[index], headers[index + 1]);
+          }
+        }
+        for (const header of proofHeaders.values()) merged.push(header.name, header.value);
+        return merged;
+      }
+
+      const merged = {};
+      for (const [name, value] of Object.entries(headers || {})) {
+        if (!proofHeaders.has(String(name).toLowerCase())) merged[name] = value;
+      }
+      for (const header of proofHeaders.values()) merged[header.name] = header.value;
+      return merged;
+    }
+
+    Object.defineProperty(res, RESPONSE_PROOF_BOUND, { value: true });
+    res.setHeader = function sourceProofSetHeader(name, value) {
+      const protectedHeader = proofHeaders.get(String(name || '').toLowerCase());
+      if (protectedHeader) return originalSetHeader(protectedHeader.name, protectedHeader.value);
+      return originalSetHeader(name, value);
+    };
+    if (originalRemoveHeader) {
+      res.removeHeader = function sourceProofRemoveHeader(name) {
+        if (proofHeaders.has(String(name || '').toLowerCase())) return;
+        return originalRemoveHeader(name);
+      };
+    }
+    if (originalWriteHead) {
+      res.writeHead = function sourceProofWriteHead(statusCode, statusMessage, headers) {
+        enforceProofHeaders();
+        if (typeof statusMessage === 'string') {
+          return originalWriteHead(statusCode, statusMessage, mergeProofHeaders(headers));
+        }
+        return originalWriteHead(statusCode, mergeProofHeaders(statusMessage));
+      };
+    }
+    enforceProofHeaders();
   }
 
   function handleRequest(req, res) {
