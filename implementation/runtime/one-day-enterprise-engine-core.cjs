@@ -733,7 +733,29 @@ function createOneDayEnterpriseEngine(options = {}) {
   function environmentMatchesRun(environment, run, customerScope) {
     if (!environment || !customerScope) return false;
     if (environment.state !== 'READY' || environment.runId !== run.id) return false;
-    return JSON.stringify(environment.configuration) === JSON.stringify(environmentScopeShape(customerScope));
+    const actual = environment.configuration || {};
+    const expected = environmentScopeShape(customerScope);
+    const sameList = (left, right) => JSON.stringify(
+      (Array.isArray(left) ? left : []).map(value => normaliseFact(value)).filter(Boolean).sort()
+    ) === JSON.stringify(
+      (Array.isArray(right) ? right : []).map(value => normaliseFact(value)).filter(Boolean).sort()
+    );
+    return (
+      normaliseFact(actual.companyName) === normaliseFact(expected.companyName) &&
+      Number(actual.employeeCount) === Number(expected.employeeCount) &&
+      sameList(actual.countries, expected.countries) &&
+      sameList(actual.sites, expected.sites) &&
+      sameList(actual.sourceSystems, expected.sourceSystems) &&
+      sameList(actual.features, expected.features) &&
+      sameList(actual.workPatterns, expected.workPatterns) &&
+      sameList(actual.clockingMethods, expected.clockingMethods) &&
+      normaliseFact(actual.payrollSystem) === normaliseFact(expected.payrollSystem) &&
+      normaliseFact(actual.hcmSystem) === normaliseFact(expected.hcmSystem) &&
+      normaliseFact(actual.erpSystem) === normaliseFact(expected.erpSystem) &&
+      Boolean(actual.agencyLabour) === Boolean(expected.agencyLabour) &&
+      String(actual.priorities || '') === String(expected.priorities || '') &&
+      String(actual.notes || '') === String(expected.notes || '')
+    );
   }
 
   function readinessForRun(run) {
