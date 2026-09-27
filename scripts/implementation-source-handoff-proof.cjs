@@ -290,3 +290,4 @@ main().catch(error => {
   console.error(error?.stack || error);
   process.exitCode = 1;
 });
+// HOSTED_PROOF_SOURCE_REFRESH_20260927_A
