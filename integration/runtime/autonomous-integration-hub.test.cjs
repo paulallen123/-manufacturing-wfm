@@ -295,6 +295,99 @@ test('browser/admin cannot attest provider authorization without trusted worker'
   }
 });
 
+test('people sync cannot activate from a connector capability without a people grant', async () => {
+  const f = fixture();
+  try {
+    const connection = await configuredConnection(f);
+    const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
+    const attested = await call(f.hub, null, 'POST', '/api/integrations/autonomous/authorize-complete', {
+      connectionId: connection.id,
+      authorizationRef: 'vault://tenant/alpha/workday',
+      grantedScopes: ['organisation.read']
+    }, internal);
+    assert.equal(attested.status, 200);
+    await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/mapping-activate', {
+      connectionId: connection.id,
+      mappings: [{ sourceField: 'employee_id', canonicalField: 'employeeId', confidence: 1 }]
+    });
+
+    const denied = await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', {
+      connectionId: connection.id,
+      records: [{ employee_id: 'E-1' }]
+    }, internal);
+    assert.equal(denied.status, 409);
+    const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(status.body.connections.find(x => x.id === connection.id).state, 'VALIDATING');
+    assert.equal(status.body.readiness.readyForPeopleSync, false);
+  } finally {
+    f.close();
+  }
+});
+
+test('healthy report cannot bypass authorization or an unvalidated mapping version', async () => {
+  const f = fixture();
+  try {
+    const connection = await configuredConnection(f);
+    const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
+    const beforeAuth = await call(f.hub, null, 'POST', '/api/integrations/autonomous/health-report', {
+      connectionId: connection.id, health: 'healthy'
+    }, internal);
+    assert.equal(beforeAuth.status, 409);
+
+    await call(f.hub, null, 'POST', '/api/integrations/autonomous/authorize-complete', {
+      connectionId: connection.id,
+      authorizationRef: 'vault://tenant/alpha/workday',
+      grantedScopes: ['people.read']
+    }, internal);
+    await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/mapping-activate', {
+      connectionId: connection.id,
+      mappings: [{ sourceField: 'employee_id', canonicalField: 'employeeId', confidence: 1 }]
+    });
+    const beforeSync = await call(f.hub, null, 'POST', '/api/integrations/autonomous/health-report', {
+      connectionId: connection.id, health: 'healthy'
+    }, internal);
+    assert.equal(beforeSync.status, 409);
+
+    const validated = await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', {
+      connectionId: connection.id, records: [{ employee_id: 'E-1' }]
+    }, internal);
+    assert.equal(validated.status, 200);
+    const ready = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(ready.body.readiness.readyForPeopleSync, true);
+
+    const outage = await call(f.hub, null, 'POST', '/api/integrations/autonomous/health-report', {
+      connectionId: connection.id, health: 'rate_limited'
+    }, internal);
+    assert.equal(outage.body.connection.state, 'DEGRADED');
+    const recovered = await call(f.hub, null, 'POST', '/api/integrations/autonomous/health-report', {
+      connectionId: connection.id, health: 'healthy'
+    }, internal);
+    assert.equal(recovered.status, 200);
+    assert.equal(recovered.body.connection.state, 'ACTIVE');
+
+    await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/mapping-activate', {
+      connectionId: connection.id,
+      mappings: [{ sourceField: 'new_employee_id', canonicalField: 'employeeId', confidence: 1 }]
+    });
+    const stale = await call(f.hub, null, 'POST', '/api/integrations/autonomous/health-report', {
+      connectionId: connection.id, health: 'healthy'
+    }, internal);
+    assert.equal(stale.status, 409);
+    const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(status.body.readiness.readyForPeopleSync, false);
+
+    await call(f.hub, null, 'POST', '/api/integrations/autonomous/health-report', {
+      connectionId: connection.id, health: 'auth_error'
+    }, internal);
+    const revoked = await call(f.hub, null, 'POST', '/api/integrations/autonomous/health-report', {
+      connectionId: connection.id, health: 'healthy'
+    }, internal);
+    assert.equal(revoked.status, 409);
+  } finally {
+    f.close();
+  }
+});
+
 test('trusted worker can attest authorization, activate mapping, validate sync and reach ACTIVE', async () => {
   const f = fixture();
   try {
