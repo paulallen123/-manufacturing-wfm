@@ -74,9 +74,13 @@ async function openLeaveRoute(page, expectedRole) {
 }
 
 async function openWeeklyRoute(page, teamId) {
-  const timeAttendance = page.getByText('Time & Attendance', { exact: true }).first();
-  await timeAttendance.waitFor({ state: 'visible', timeout: 10000 });
-  await timeAttendance.click({ timeout: 5000 });
+  const people = page.locator('.vector-sidebar [data-vector-nav]').filter({ hasText: /^People$/ }).first();
+  await people.waitFor({ state: 'visible', timeout: 10000 });
+  assert.equal(await people.isEnabled(), true, 'Manager People section is unavailable for weekly review.');
+  await people.click({ timeout: 5000 });
+  const attendance = page.locator('.vector-section-tabs [data-vector-route="attendance"]:visible').first();
+  await attendance.waitFor({ state: 'visible', timeout: 10000 });
+  await attendance.click({ timeout: 5000 });
   const weekly = page.locator('button[data-vector-workflow="weekly"]').first();
   await weekly.waitFor({ state: 'visible', timeout: 10000 });
   await weekly.click({ timeout: 5000 });
