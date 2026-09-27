@@ -187,12 +187,17 @@ function refreshActionSurfaces(){
   const badge=document.querySelector('.vector-notification-count');if(badge){badge.textContent=String(groups.needs.length);badge.hidden=!groups.needs.length;}
 }
 function invalidateTimeReviewEvidence(){state.evidenceEpoch++;state.timeReviewEvidence={status:'idle',items:[]};}
+function timeReviewEvidencePath(){
+  let period='';
+  try{period=String(globalThis.RF?.period||'').trim();}catch{}
+  return /^\d{4}-\d{2}-\d{2}$/.test(period)?TIME_REVIEW_EVIDENCE_PATH+'?period='+encodeURIComponent(period):TIME_REVIEW_EVIDENCE_PATH;
+}
 async function loadTimeReviewEvidence(){
   if(employee()||state.timeReviewEvidence.status!=='idle')return;
   const epoch=state.evidenceEpoch;
   state.timeReviewEvidence={status:'loading',items:[]};
   try{
-    const response=await fetch(TIME_REVIEW_EVIDENCE_PATH,{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
+    const response=await fetch(timeReviewEvidencePath(),{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
     if(!response.ok)throw new Error('time-review evidence unavailable');
     const body=await response.json();
     if(!body||body.contractVersion!==ACTION_EVIDENCE_CONTRACT||body.workflow!=='time-review'||!Array.isArray(body.items))throw new Error('time-review evidence contract mismatch');
@@ -365,5 +370,10 @@ document.addEventListener('input',e=>{if(e.target.matches('[aria-label="Search p
 shellObserver=new MutationObserver(()=>apply());
 shellObserver.observe(document.documentElement,observerConfig);
 setTimeout(apply,0);setTimeout(apply,350);
+document.addEventListener('change',event=>{
+  if(event.target?.id!=='vw-period')return;
+  invalidateTimeReviewEvidence();
+  queueMicrotask(()=>{void loadTimeReviewEvidence();});
+});
 window.VectorWorkforceOperations={marker:MARKER,reviewMarker:REVIEW_MARKER,planningMarker:PLANNING_MARKER,kpiMarker:KPI_MARKER,identityMarker:IDENTITY_MARKER,leaveMarker:LEAVE_MARKER,actionMarker:ACTION_MARKER,actionDisposition,actionQueueGroups,apply,go,askWorkforce};
 })();
