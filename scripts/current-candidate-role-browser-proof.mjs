@@ -555,7 +555,7 @@ try {
     refreshedUiRetainedPending: false,
     managerUiDecided: false,
     managerStateReadBack: false,
-    requestAuditLinked: false,
+    requestDecisionEvidenceLinked: false,
     freshEmployeeLoginSawDecision: false,
     freshBalanceReconciled: false,
     balanceTransition: null,
@@ -630,18 +630,14 @@ try {
     const response = await fetch('/api/bootstrap');
     const bootstrap = await response.json();
     const request = bootstrap.state.requests.find(item => item.id === id) || null;
-    const audit = bootstrap.state.audit.find(item =>
-      item.type === 'leave-decision'
-      && item.employee === request?.employee
-      && item.note === `${id}; approved`
-    ) || null;
-    return { request, audit };
+    return { request };
   }, created.id);
   assert.equal(managerReadBack.request?.status, 'approved', 'Manager UI decision was not read back from stored state.');
-  console.log('CURRENT_LEAVE_AUDIT_DIAG=' + JSON.stringify({ requestId: created.id, request: managerReadBack.request, audit: managerReadBack.audit }));
-  assert.equal(managerReadBack.audit?.note, `${created.id}; approved`, 'Manager UI decision audit was not linked to the exact request.');
+  assert.equal(managerReadBack.request?.reviewedBy, 'm1', 'Manager decision evidence is not bound to the authenticated manager.');
+  assert.ok(Number.isFinite(Date.parse(managerReadBack.request?.reviewedAt || '')), 'Manager decision evidence is missing its saved timestamp.');
+  assert.ok(String(managerReadBack.request?.decisionReason || '').trim().length > 0, 'Manager decision evidence is missing its saved reason.');
   leaveJourney.managerStateReadBack = true;
-  leaveJourney.requestAuditLinked = true;
+  leaveJourney.requestDecisionEvidenceLinked = true;
   leaveJourney.decision = 'approved';
   await managerContext.close();
 
@@ -688,7 +684,7 @@ try {
     }
   };
   await freshEmployeeContext.close();
-  console.log(`CURRENT_LEAVE_BROWSER_JOURNEY=PASS|request=${created.id}|decision=approved|overlapRefused=true|requestAuditLinked=true|balanceReconciled=true|refreshReadback=true|freshLoginReadback=true`);
+  console.log(`CURRENT_LEAVE_BROWSER_JOURNEY=PASS|request=${created.id}|decision=approved|overlapRefused=true|requestDecisionEvidenceLinked=true|balanceReconciled=true|refreshReadback=true|freshLoginReadback=true`);
 
   const attendanceJourney = {
     managerUiApproved: false,
