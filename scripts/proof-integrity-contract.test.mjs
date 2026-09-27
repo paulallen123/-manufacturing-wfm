@@ -111,3 +111,22 @@ test('repository proof registry satisfies the integrity contract', () => {
   const live = JSON.parse(fs.readFileSync(file, 'utf8'));
   assert.doesNotThrow(() => validateProofRegistry(live));
 });
+
+
+test('promotion runners require audited status semantics', () => {
+  assert.throws(
+    () => validateProofRegistry(registry([runner({ statusSemanticsAudited: false })])),
+    /status semantics must be audited/
+  );
+});
+
+test('mutating promotion proofs require immutable per-run state isolation', () => {
+  assert.throws(
+    () => validateProofRegistry(registry([runner({
+      mutatesTarget: true,
+      statusSemanticsAudited: true,
+      stateIsolation: 'shared-durable-tenant'
+    })])),
+    /immutable-seed-per-run/
+  );
+});
