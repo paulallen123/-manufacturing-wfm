@@ -447,10 +447,10 @@ try {
         const contextSourceId = await page.locator('[data-vector-action-context]').first().getAttribute('data-vector-source-id');
         assert.equal(contextSourceId, sourceId, 'Time Review lost the originating source action context.');
 
-        const postOpen = await page.evaluate(async () => {
-          const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(timeReviewPeriod), { cache: 'no-store' });
+        const postOpen = await page.evaluate(async ({ period }) => {
+          const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(period), { cache: 'no-store' });
           return { status: response.status, json: await response.json() };
-        });
+        }, { period: timeReviewPeriod });
         assert.equal(postOpen.status, 200);
         actionJourney.postOpenStillPresent = (Array.isArray(postOpen.json?.items) ? postOpen.json.items : [])
           .some(item => String(item?.sourceId || '') === sourceId && String(item?.confirmation?.state || '').toLowerCase() !== 'resolved');
