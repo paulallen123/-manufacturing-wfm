@@ -10,6 +10,7 @@ const {
   timingSafeEqual
 } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { createImplementationWorkController } = require('./implementation-work-controller.cjs');
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -380,6 +381,8 @@ function createOneDayEnterpriseEngine(options = {}) {
   // Rebuild only when such columns would reject modern audit writes, preserving
   // every existing row plus explicit index/trigger definition.
   ensureImplementationEventsWriteCompatibility(db);
+
+  const workController = createImplementationWorkController({ db, requirements: REQUIREMENTS });
 
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
@@ -846,7 +849,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (!operationalReady && Date.now() > run.deadline_at_ms) state = 'SLA_MISSED';
     else if (!operationalReady && remainingBudgetMinutes > remainingMinutes) state = 'AT_RISK';
 
-    return {
+    const readiness = {
       runId: run.id,
       tenant: run.tenant,
       state,
@@ -870,6 +873,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       customerScope,
       notificationRecovery: notificationRecoveryForRun(run)
     };
+    readiness.workPlan = workController.reconcile({ runId: run.id, tenant: run.tenant, readiness });
+    return readiness;
   }
 
   function recompute(run) {
@@ -1083,6 +1088,31 @@ function createOneDayEnterpriseEngine(options = {}) {
       autoStartedRun = runById.get(runId, tenant);
       record(runId, tenant, 'CONTRACT_AUTO_STARTED', {
         targetHours,
+        contractRefDigest: contractHash.slice(0, 16)
+      });
+    }
+
+    const trustedScopeInput = body.scope && typeof body.scope === 'object'
+      ? body.scope
+      : (body.implementationScope && typeof body.implementationScope === 'object' ? body.implementationScope : null);
+    if (trustedScopeInput) {
+      const scope = normaliseScope(trustedScopeInput);
+      const existingScope = scopeByRun.get(autoStartedRun.id, tenant);
+      const ts = nowIso();
+      upsertScope.run(
+        autoStartedRun.id,
+        tenant,
+        JSON.stringify(scope),
+        sha256('trusted-contract-scope:' + contractHash).slice(0, 16),
+        existingScope?.created_at || ts,
+        ts
+      );
+      record(autoStartedRun.id, tenant, existingScope ? 'TRUSTED_CONTRACT_SCOPE_UPDATED' : 'TRUSTED_CONTRACT_SCOPE_CAPTURED', {
+        employees: scope.employeeCount,
+        countries: scope.countries.length,
+        sites: scope.sites.length,
+        sourceSystems: scope.sourceSystems.length,
+        features: scope.features.length,
         contractRefDigest: contractHash.slice(0, 16)
       });
     }
@@ -1500,6 +1530,93 @@ function createOneDayEnterpriseEngine(options = {}) {
     return writeJson(res, 200, recompute(run));
   }
 
+  function runForInternalWork(body = {}) {
+    const runId = compact(body.runId, 100);
+    const tenant = compact(body.tenant, 120);
+    let run = null;
+    if (runId) run = runByIdAnyTenant.get(runId);
+    else if (tenant) run = currentRun.get(tenant);
+    if (!run) return null;
+    if (tenant && run.tenant !== tenant) return null;
+    return run;
+  }
+
+  async function handleWorkClaim(req, res) {
+    const body = await readJson(req);
+    const run = runForInternalWork(body);
+    if (!run) return writeJson(res, 404, { error: 'Implementation run not found.' });
+    const readiness = recompute(run);
+    const requirementKey = compact(body.requirementKey, 100) || null;
+    const job = workController.claim({ runId: run.id, tenant: run.tenant, requirementKey });
+    if (!job) {
+      return writeJson(res, 200, {
+        job: null,
+        workPlan: readiness.workPlan,
+        reason: readiness.workPlan.runnable.length ? 'CLAIM_RACE_OR_FILTER_MISMATCH' : 'NO_RUNNABLE_WORK'
+      });
+    }
+    record(run.id, run.tenant, 'IMPLEMENTATION_WORK_CLAIMED', {
+      requirementKey: job.requirementKey,
+      intentDigest: job.intentDigest.slice(0, 16),
+      attempts: job.attempts
+    });
+    return writeJson(res, 200, { job, workPlan: workController.plan(run.id, run.tenant) });
+  }
+
+  async function handleWorkResult(req, res) {
+    const body = await readJson(req);
+    const run = runForInternalWork(body);
+    if (!run) return writeJson(res, 404, { error: 'Implementation run not found.' });
+    const jobId = compact(body.jobId, 100);
+    const intentDigest = compact(body.intentDigest, 80);
+    const outcome = compact(body.outcome || body.status, 80).toUpperCase();
+    if (!jobId || !/^[0-9a-f]{64}$/.test(intentDigest)) {
+      return writeJson(res, 400, { error: 'jobId and exact intentDigest are required.' });
+    }
+
+    let result;
+    if (outcome === 'BLOCKED_RESUMABLE') {
+      result = workController.block({
+        jobId, runId: run.id, tenant: run.tenant, intentDigest,
+        reason: compact(body.reason, 160) || 'AUTHORITY_OR_CONFIGURATION_REQUIRED'
+      });
+    } else if (outcome === 'RETRYABLE') {
+      result = workController.fail({
+        jobId, runId: run.id, tenant: run.tenant, intentDigest,
+        error: compact(body.error || body.reason, 300) || 'Transient implementation failure.',
+        retryable: true
+      });
+    } else if (outcome === 'FAILED_CLOSED') {
+      result = workController.fail({
+        jobId, runId: run.id, tenant: run.tenant, intentDigest,
+        error: compact(body.error || body.reason, 300) || 'Implementation work failed closed.',
+        retryable: false
+      });
+    } else if (['EFFECT_RECORDED', 'PASS_EFFECT', 'COMPLETED'].includes(outcome)) {
+      result = workController.complete({
+        jobId, runId: run.id, tenant: run.tenant, intentDigest,
+        outcome: 'EFFECT_RECORDED',
+        detail: body.detail && typeof body.detail === 'object' ? body.detail : {}
+      });
+    } else {
+      return writeJson(res, 400, {
+        error: 'outcome must be EFFECT_RECORDED, BLOCKED_RESUMABLE, RETRYABLE or FAILED_CLOSED.'
+      });
+    }
+
+    record(run.id, run.tenant, 'IMPLEMENTATION_WORK_RESULT', {
+      jobId,
+      outcome,
+      replayed: result?.replayed === true,
+      requirementKey: result?.job?.requirementKey || result?.requirementKey || null
+    });
+    return writeJson(res, 200, {
+      result,
+      readiness: recompute(run),
+      evidenceRequired: outcome === 'EFFECT_RECORDED' || outcome === 'PASS_EFFECT' || outcome === 'COMPLETED'
+    });
+  }
+
   async function handleProposal(req, res) {
     const body = await readJson(req);
     const runId = compact(body.runId, 80);
@@ -1620,6 +1737,14 @@ function createOneDayEnterpriseEngine(options = {}) {
         if (!requireInternal(req, res)) return true;
         return await handleProposal(req, res);
       }
+      if (req.method === 'POST' && path === PREFIX + '/work/claim') {
+        if (!requireInternal(req, res)) return true;
+        return await handleWorkClaim(req, res);
+      }
+      if (req.method === 'POST' && path === PREFIX + '/work/result') {
+        if (!requireInternal(req, res)) return true;
+        return await handleWorkResult(req, res);
+      }
 
       const ctx = requireManager(req, res);
       if (!ctx) return true;
@@ -1654,6 +1779,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     },
     close() {
       if (notificationRetryTimer) clearInterval(notificationRetryTimer);
+      try { workController.close(); } catch {}
       try { db.close(); } catch {}
     }
   };
