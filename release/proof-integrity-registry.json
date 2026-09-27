@@ -173,7 +173,34 @@
       "statusSemanticsAudited": false,
       "mutatesTarget": false,
       "stateIsolation": "unverified",
-      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED",
+      "evidence": {
+        "candidateSha": "486606c4269bc8f1a2f24056fec22a6d6ffc7aad",
+        "targetDeploymentId": "65eddae1-29c4-4f11-9fe6-b4a34b37107d",
+        "verifierService": "vector-live-security-proof-v2",
+        "verifierDeploymentId": "f94534d8-c26b-422a-b65f-29dec09895e8",
+        "terminalApplicationMarker": "VECTOR_SECURITY_ASSERTIONS status=PASS",
+        "scope": "hosted fixture HTTP security",
+        "passed": 27,
+        "failed": 0,
+        "sourceBinding": "build-file-matched",
+        "verified": [
+          "unauthenticated access denied",
+          "forged authority headers denied",
+          "invalid sessions denied",
+          "manager payroll denied",
+          "employee autopilot denied",
+          "tenant spoofing ignored",
+          "cross-origin/malformed/oversized autopilot requests denied",
+          "cross-tenant correction read denied",
+          "logout revokes autopilot access",
+          "ingress attacks did not mutate tenant state"
+        ],
+        "limitations": [
+          "Unknown database roles and revoked physical devices are not exercised by this hosted suite.",
+          "Status-semantics negative control remains unproven, so this scoped PASS is not itself a promotion gate."
+        ]
+      }
     },
     {
       "id": "security-exact",
@@ -183,13 +210,21 @@
       "lifecycle": "active",
       "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
-      "terminalProofOwnsHealth": true,
+      "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
       "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
-      "statusSemanticsAudited": false,
+      "statusSemanticsAudited": true,
       "mutatesTarget": false,
       "stateIsolation": "unverified",
-      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
+      "promotionBlocker": "NO_TERMINAL_APPLICATION_RECEIPT",
+      "evidence": {
+        "verifierService": "vector-2000-security-exact-proof",
+        "verifierDeploymentId": "699417b9-16c7-4972-ab56-d0d8a15c5fbb",
+        "railwayStatus": "SUCCESS",
+        "terminalApplicationMarker": null,
+        "claimStatus": "NO_PROOF",
+        "note": "Railway platform success exists, but no terminal application proof receipt was observed."
+      }
     },
     {
       "id": "autopilot-live",
@@ -205,7 +240,17 @@
       "statusSemanticsAudited": false,
       "mutatesTarget": false,
       "stateIsolation": "unverified",
-      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED",
+      "evidence": {
+        "candidateSha": "486606c4269bc8f1a2f24056fec22a6d6ffc7aad",
+        "verifierService": "vector-autopilot-live-proof",
+        "verifierDeploymentId": "87170b42-c5e7-45d6-b541-69a618086976",
+        "terminalApplicationMarker": "VECTOR_PROOF_RECEIPT status=PASS",
+        "scope": "Hosted fixture Autopilot permit/execute/readback/replay/containment proof",
+        "checkCount": 11,
+        "failedCount": 0,
+        "exactCandidate": true
+      }
     },
     {
       "id": "autopilot-rollback",
@@ -218,10 +263,25 @@
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
       "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
-      "statusSemanticsAudited": false,
+      "statusSemanticsAudited": true,
       "mutatesTarget": false,
       "stateIsolation": "unverified",
-      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
+      "promotionBlocker": "COMPONENT_ONLY_WRONG_CANDIDATE_SHA",
+      "evidence": {
+        "expectedCandidateSha": "fad9432ae975878cb7c13299e4530585a16b87db",
+        "currentCandidateSha": "486606c4269bc8f1a2f24056fec22a6d6ffc7aad",
+        "verifierService": "vector-autopilot-rollback-proof",
+        "verifierDeploymentId": "e80a8dc5-72d2-48ec-b9d0-de3a7816d94d",
+        "terminalStatus": "COMPONENT_ONLY",
+        "sequence": [
+          "PREPARED",
+          "APPLIED",
+          "VERIFY_FAILED",
+          "ROLLED_BACK"
+        ],
+        "replayIdempotent": true,
+        "limitation": "Component proof passed but is not sufficient for the current live customer-runtime release gate."
+      }
     },
     {
       "id": "outcome-learning",
