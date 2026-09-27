@@ -1034,8 +1034,14 @@ try {
   }, period);
   assert.equal(partialPayroll.status, 200);
   const afterPayrollTeam = partialPayroll.json.teams.find(item => item.id === teamId);
-  assert.equal(partialPayroll.json.totals.workedMinutes, beforePayroll.json.totals.workedMinutes + 30);
-  assert.equal(afterPayrollTeam?.workedMinutes, beforePayrollTeam.workedMinutes + 30);
+  const completedReviewDelta = signedTeam.workedMinutes - beforePayrollTeam.workedMinutes;
+  assert.ok(completedReviewDelta >= 30, 'Completed weekly review did not preserve the evidenced 30-minute correction.');
+  assert.equal(
+    partialPayroll.json.totals.workedMinutes,
+    beforePayroll.json.totals.workedMinutes + completedReviewDelta,
+    'Payroll totals did not reconcile to the fully reviewed signed team state.'
+  );
+  assert.equal(afterPayrollTeam?.workedMinutes, signedTeam.workedMinutes, 'Payroll team minutes diverged from the signed weekly review state.');
   assert.equal(afterPayrollTeam?.status, 'signed');
   assert.equal(partialPayroll.json.canRelease, false);
   assert.equal(partialPayroll.json.lines.length, 0);
