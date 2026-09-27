@@ -430,6 +430,7 @@ test('trusted worker can attest authorization, activate mapping, validate sync a
     const validated = await call(
       f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/sync-validate',
       {
+        tenant: 'alpha',
         connectionId: connection.id,
         records: [
           { employee_number: 'E-100', first_name: 'A', last_name: 'One', email: 'a@example.test', department: 'Assembly', location: 'Plant 1' },
