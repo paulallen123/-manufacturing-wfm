@@ -626,6 +626,7 @@ try {
     refreshedUiRetainedCorrection: false,
     weeklySignStillBlocked: false,
     weeklySignOffCompleted: false,
+    weeklySignOffEvidence: null,
     payrollReleaseStillBlocked: false,
     issueId: null,
     recordId: null
@@ -839,6 +840,7 @@ try {
   const readySignButton = attendanceManagerPage.locator('button[data-vector-workflow="sign"]');
   await readySignButton.waitFor({ state: 'visible', timeout: 10000 });
   assert.equal(await readySignButton.isDisabled(), false, 'Weekly sign-off did not unlock after every required review.');
+  const submittedSignRevision = completionTeam.revision;
   await readySignButton.click({ timeout: 5000 });
   await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
   const signResponsePromise = attendanceManagerPage.waitForResponse(response => {
@@ -851,6 +853,8 @@ try {
   await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
   const signResponse = await signResponsePromise;
   assert.equal(signResponse.status(), 200, 'Weekly sign-off business action was rejected.');
+  const submittedSign = signResponse.request().postDataJSON();
+  assert.equal(submittedSign?.payload?.revision, submittedSignRevision, 'Weekly sign-off did not submit the exact reviewed revision.');
   const signResult = await signResponse.json();
   assert.deepEqual({ id: signResult.result?.id, status: signResult.result?.status }, { id: teamId, status: 'signed' });
 
@@ -860,6 +864,7 @@ try {
   const signedTeam = await weeklyTeamState();
   assert.equal(signedTeam?.status, 'signed', 'Signed weekly state did not survive screen refresh.');
   assert.equal(signedTeam?.signature?.by, 'm1');
+  assert.equal(signedTeam?.signature?.revision, submittedSignRevision, 'Persisted signature is not bound to the submitted review revision.');
   assert.equal(signedTeam?.issues.every(item => item.status === 'resolved'), true);
   assert.equal(signedTeam?.categories.every(item => item.confirmed), true);
   assert.equal(signedTeam?.employees.every(item => item.checked), true);
@@ -888,6 +893,13 @@ try {
   assert.equal(correctionAudit?.reason, correctionReason);
   assert.ok(categoryAudit, 'Saved Adjustments verification was not present in domain audit state.');
   assert.ok(signAudit, 'Signed weekly state was not present in domain audit state.');
+  assert.equal(signAudit.revision, submittedSignRevision, 'Sign-off audit is not bound to the submitted review revision.');
+  attendanceJourney.weeklySignOffEvidence = {
+    submittedRevision: submittedSignRevision,
+    signatureRevision: signedTeam.signature.revision,
+    auditRevision: signAudit.revision,
+    refreshedStatus: signedTeam.status
+  };
   attendanceJourney.domainAuditReadBack = true;
   await attendancePayrollPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
   await attendancePayrollPage.waitForFunction(() => document.querySelector('button[data-vector-workflow="release"]'), { timeout: 30000 });

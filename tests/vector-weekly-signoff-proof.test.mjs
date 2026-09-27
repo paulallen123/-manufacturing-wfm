@@ -31,11 +31,39 @@ test('attendance proof rejects a correction-only journey without a completed wee
   assert.ok(result.missingEvidence.includes('weekly-sign-off-business-action'));
 });
 
+test('attendance proof rejects a sign-off whose request, signature and audit revisions do not match', () => {
+  const result = roleProofResult(
+    { status: 'BOUND' },
+    leaveJourney,
+    {
+      ...attendanceJourney,
+      weeklySignOffCompleted: true,
+      weeklySignOffEvidence: {
+        submittedRevision: 27,
+        signatureRevision: 28,
+        auditRevision: 28,
+        refreshedStatus: 'signed'
+      }
+    }
+  );
+  assert.equal(result.scopedAttendanceJourneyVerified, false);
+  assert.ok(result.missingEvidence.includes('weekly-sign-off-version-binding'));
+});
+
 test('attendance proof accepts a source-reviewed weekly sign-off business action', () => {
   const result = roleProofResult(
     { status: 'BOUND' },
     leaveJourney,
-    { ...attendanceJourney, weeklySignOffCompleted: true }
+    {
+      ...attendanceJourney,
+      weeklySignOffCompleted: true,
+      weeklySignOffEvidence: {
+        submittedRevision: 27,
+        signatureRevision: 27,
+        auditRevision: 27,
+        refreshedStatus: 'signed'
+      }
+    }
   );
   assert.equal(result.scopedAttendanceJourneyVerified, true);
   assert.equal(result.missingEvidence.includes('weekly-sign-off-business-action'), false);

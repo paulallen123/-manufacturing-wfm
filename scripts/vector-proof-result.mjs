@@ -22,8 +22,14 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     'weeklySignOffCompleted',
     'payrollReleaseStillBlocked'
   ];
+  const signOffEvidence = attendanceJourney?.weeklySignOffEvidence;
+  const weeklySignOffVersionBound = Number.isInteger(signOffEvidence?.submittedRevision)
+    && signOffEvidence.submittedRevision === signOffEvidence.signatureRevision
+    && signOffEvidence.submittedRevision === signOffEvidence.auditRevision
+    && signOffEvidence.refreshedStatus === 'signed';
   const scopedLeaveJourneyVerified = leaveChecks.every(key => leaveJourney?.[key] === true);
-  const scopedAttendanceJourneyVerified = attendanceChecks.every(key => attendanceJourney?.[key] === true);
+  const scopedAttendanceJourneyVerified = attendanceChecks.every(key => attendanceJourney?.[key] === true)
+    && weeklySignOffVersionBound;
   return {
     status: 'PARTIAL',
     roleChecks: 'PASS',
@@ -39,6 +45,7 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
       ...(leaveJourney?.freshBalanceReconciled === true ? [] : ['leave-balance-reconciliation']),
       ...(scopedAttendanceJourneyVerified ? [] : ['attendance-correction-business-action']),
       ...(attendanceJourney?.weeklySignOffCompleted === true ? [] : ['weekly-sign-off-business-action']),
+      ...(weeklySignOffVersionBound ? [] : ['weekly-sign-off-version-binding']),
       'server-audit-readback',
       'exact-backend-binding',
       'payroll-reconciliation-business-action',
