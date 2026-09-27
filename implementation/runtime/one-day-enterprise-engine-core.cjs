@@ -261,12 +261,14 @@ function createOneDayEnterpriseEngine(options = {}) {
   const notificationRetryPollMs = Math.max(0, Number(options.notificationRetryPollMs ?? 60 * 1000));
   const notificationAttemptLeaseMs = Math.max(1_000, Number(options.notificationAttemptLeaseMs ?? 60_000));
   const publicOrigin = String(options.publicOrigin || process.env.WFM_PUBLIC_ORIGIN || '').replace(/\/$/, '');
-  const invitationSender = typeof options.sendInvitation === 'function'
+  const hasCustomInvitationSender = typeof options.sendInvitation === 'function';
+  const resendApiKey = process.env.RESEND_API_KEY || '';
+  const invitationFromEmail = process.env.WFM_IMPLEMENTATION_FROM_EMAIL || '';
+  const invitationTransportReady = hasCustomInvitationSender || Boolean(resendApiKey && invitationFromEmail);
+  const invitationSender = hasCustomInvitationSender
     ? options.sendInvitation
     : async ({ to, startUrl, expiresAt, idempotencyKey }) => {
-        const apiKey = process.env.RESEND_API_KEY || '';
-        const from = process.env.WFM_IMPLEMENTATION_FROM_EMAIL || '';
-        if (!apiKey || !from) {
+        if (!invitationTransportReady) {
           const error = new Error('Implementation invitation email transport is not configured.');
           error.statusCode = 503;
           throw error;
@@ -274,12 +276,12 @@ function createOneDayEnterpriseEngine(options = {}) {
         const response = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            Authorization: 'Bearer ' + apiKey,
+            Authorization: 'Bearer ' + resendApiKey,
             'Content-Type': 'application/json',
             'Idempotency-Key': idempotencyKey
           },
           body: JSON.stringify({
-            from,
+            from: invitationFromEmail,
             to: [to],
             subject: 'Your implementation workspace is open',
             text: [
@@ -549,6 +551,13 @@ function createOneDayEnterpriseEngine(options = {}) {
         automaticActionAvailable: false, terminalAction: null
       };
     }
+    if (!invitationTransportReady) {
+      return {
+        state: 'UNAVAILABLE', attempts, remainingAttempts,
+        automaticActionAvailable: false,
+        terminalAction: 'MESSAGE_PROVIDER_CONFIGURATION_REQUIRED'
+      };
+    }
     if (outbox?.state === 'PENDING') {
       return {
         state: 'RECOVERING', attempts, remainingAttempts,
@@ -799,7 +808,7 @@ function createOneDayEnterpriseEngine(options = {}) {
 
   async function retryDueNotifications({ nowMs = Date.now() } = {}) {
     const result = { examined: 0, delivered: 0, exhausted: 0, blocked: 0, inProgress: 0 };
-    if (!invitationRecoverySecret || !publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
+    if (!invitationRecoverySecret || !publicOrigin || !/^https:\/\//i.test(publicOrigin) || !invitationTransportReady) {
       return { ...result, unavailable: true };
     }
 
@@ -933,6 +942,20 @@ function createOneDayEnterpriseEngine(options = {}) {
         invitation: null,
         implementation: readinessForRun(autoStartedRun),
         notification: { delivered: false, unavailable: true }
+      });
+    }
+    if (!invitationTransportReady) {
+      record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_UNAVAILABLE', {
+        reason: 'MESSAGE_PROVIDER_NOT_CONFIGURED', contractRefDigest: contractHash.slice(0, 16)
+      });
+      return writeJson(res, createdRun ? 201 : 200, {
+        invitation: null,
+        implementation: readinessForRun(autoStartedRun),
+        notification: {
+          delivered: false,
+          unavailable: true,
+          reason: 'MESSAGE_PROVIDER_NOT_CONFIGURED'
+        }
       });
     }
     let notificationDelivered = false;
