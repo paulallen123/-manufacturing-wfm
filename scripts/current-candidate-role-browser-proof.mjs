@@ -1075,6 +1075,25 @@ try {
     let team = await weeklyTeamState(targetTeamId);
     assert.ok(team, `Weekly team ${targetTeamId} is unavailable to the manager.`);
 
+    if (team.status === 'stale') {
+      const staleReason = 'Synthetic exact-candidate re-review after authoritative source revision changed.';
+      const returnAction = attendanceManagerPage.locator(`button[data-vector-workflow="return"][data-id="${targetTeamId}"]`);
+      await returnAction.waitFor({ state: 'visible', timeout: 10000 });
+      await returnAction.click({ timeout: 5000 });
+      await attendanceManagerPage.locator('#modalform textarea[name="reason"]').fill(staleReason);
+      const returnPromise = attendanceManagerPage.waitForResponse(response => {
+        if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
+        try {
+          const submitted = response.request().postDataJSON();
+          return submitted?.command === 'review-return' && submitted?.payload?.team === targetTeamId;
+        } catch { return false; }
+      }, { timeout: 10000 });
+      await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+      assert.equal((await returnPromise).status(), 200, `Stale weekly team ${targetTeamId} could not be returned for fresh review.`);
+      team = await weeklyTeamState(targetTeamId);
+      assert.equal(team?.status, 'returned', `Stale weekly team ${targetTeamId} did not enter fresh-review state.`);
+    }
+
     for (const issue of team.issues.filter(item => item.status === 'open')) {
       const row = team.records.find(item => item.id === issue.row);
       assert.ok(row, `Source row missing for weekly issue ${issue.id}.`);
@@ -1204,6 +1223,24 @@ try {
   for (const targetTeamId of payrollJourney.expectedTeamIds.filter(id => id !== teamId)) {
     payrollJourney.teamSignOffs.push(await completeWeeklyTeam(targetTeamId));
   }
+
+  let convergedWeekly = await attendanceManagerPage.evaluate(async period => {
+    const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period), { cache: 'no-store' });
+    return await response.json();
+  }, period);
+  const reconfirmIds = convergedWeekly.teams.filter(item => item.status !== 'signed').map(item => item.id);
+  for (const targetTeamId of reconfirmIds) {
+    const evidence = await completeWeeklyTeam(targetTeamId);
+    const existing = payrollJourney.teamSignOffs.findIndex(item => item.teamId === targetTeamId);
+    if (existing >= 0) payrollJourney.teamSignOffs[existing] = evidence;
+    else payrollJourney.teamSignOffs.push(evidence);
+  }
+  convergedWeekly = await attendanceManagerPage.evaluate(async period => {
+    const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period), { cache: 'no-store' });
+    return await response.json();
+  }, period);
+  assert.equal(convergedWeekly.teams.every(item => item.status === 'signed'), true, 'Weekly review did not converge to all signed teams after authoritative source changes.');
+  console.log('CURRENT_ALL_TEAM_WEEKLY_SIGNOFF=PASS|teams=' + convergedWeekly.teams.map(item => item.id + ':' + item.status).join(',') + '|reconfirmed=' + reconfirmIds.join(','));
   assert.equal(payrollJourney.teamSignOffs.length, payrollJourney.expectedTeamIds.length);
   assert.deepEqual(attendancePageErrors, [], `Attendance journey uncaught page errors: ${attendancePageErrors.join(' | ')}`);
   await attendanceManagerContext.close();
