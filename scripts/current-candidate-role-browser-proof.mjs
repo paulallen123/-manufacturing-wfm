@@ -927,9 +927,25 @@ try {
     assert.equal(completionTeam.employees.find(item => item.id === employee.id)?.checked, true);
   }
 
+  assert.equal(
+    completionTeam.canSign,
+    true,
+    `Server weekly state is not signable after required review: ${JSON.stringify({
+      status: completionTeam.status,
+      blockers: completionTeam.blockers,
+      checkedEmployees: completionTeam.checkedEmployees,
+      employees: completionTeam.employees.length,
+      categories: completionTeam.categories.map(item => ({ id: item.id, confirmed: item.confirmed, open: item.open })),
+      openIssues: completionTeam.issues.filter(item => item.status === 'open').map(item => item.id)
+    })}`
+  );
+  await attendanceManagerPage.waitForFunction(() => {
+    const button = document.querySelector('button[data-vector-workflow="sign"]');
+    return button instanceof HTMLButtonElement && !button.disabled;
+  }, null, { timeout: 10000 });
   const readySignButton = attendanceManagerPage.locator('button[data-vector-workflow="sign"]');
   await readySignButton.waitFor({ state: 'visible', timeout: 10000 });
-  assert.equal(await readySignButton.isDisabled(), false, 'Weekly sign-off did not unlock after every required review.');
+  assert.equal(await readySignButton.isDisabled(), false, 'Weekly sign-off did not unlock in the refreshed UI after the server became signable.');
   const submittedSignRevision = completionTeam.revision;
   await readySignButton.click({ timeout: 5000 });
   await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
