@@ -605,7 +605,7 @@ try {
   await overlapError.filter({ hasText: /overlap|already|request/i }).waitFor({ state: 'visible', timeout: 10000 });
   assert.match(await overlapError.innerText(), /overlap|already|request/i, 'Employee UI did not surface the authoritative overlap refusal.');
   leaveJourney.overlapRefusedInUi = true;
-  await employeePage.locator('#modalform [data-act="close"]').click({ timeout: 5000 });
+  await employeePage.locator('#modalform button.close[data-act="close"][aria-label="Close dialog"]').click({ timeout: 5000 });
 
   await employeePage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
   await employeePage.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
