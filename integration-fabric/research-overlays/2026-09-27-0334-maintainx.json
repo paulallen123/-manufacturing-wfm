@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "MaintainX documentation promotion and reusable mutable polling-window reconciliation authority.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "maintainx",
+      "patch": {
+        "protocols": ["REST JSON", "OpenAPI 3.0", "HMAC-SHA256 webhooks", "cursor-or-offset pagination by resource/version", "OT HTTPS connectors"],
+        "auth": "bearer API key scoped to one or explicitly selected MaintainX organization",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.getmaintainx.com/build/build-with-maintainx",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "MaintainX REST API read route",
+            "direction": "MaintainX-to-WFM-read-only",
+            "authentication": "dedicated bearer API key; prefer one-organization scope and otherwise require exact x-organization-id per request",
+            "notes": "Pin https://api.getmaintainx.com, API v1, one organization, exact GET collection, filters, pagination mode, schema and custom-field projection. POST, PATCH, DELETE, webhook administration and token administration remain denied."
+          },
+          {
+            "type": "MaintainX signed webhook hint",
+            "direction": "MaintainX-event-hint-to-WFM-reconciliation",
+            "authentication": "endpoint-specific secret with both documented v1 HMAC-SHA256 timestamped signature headers",
+            "notes": "Verify raw-body and URI signatures with constant-time comparison and a bounded timestamp tolerance. A webhook only wakes the matching organization/resource poll; it never proves completeness or deletion."
+          },
+          {
+            "type": "customer-managed export or middleware fallback",
+            "direction": "MaintainX-export-to-WFM-read-only",
+            "authentication": "customer-controlled export, iPaaS or secure-file route",
+            "notes": "Use existing managed-export or batch-reconciliation controls with explicit organization, site, locale, currency, units, schema, checksums and row totals."
+          }
+        ],
+        "deploymentVariants": {
+          "single-organization-cloud": {
+            "customerEdgeRequired": false,
+            "routing": "One dedicated single-organization key, organization/site map, exact read collections and independent checkpoint namespaces."
+          },
+          "multi-organization-enterprise": {
+            "customerEdgeRequired": false,
+            "routing": "A multi-organization key is permitted only during approved bootstrap. Steady-state reads select exactly one x-organization-id per source scope so identical MX IDs, locations, assets and work orders never collide across sub-organizations."
+          },
+          "global-organization-estate": {
+            "customerEdgeRequired": false,
+            "routing": "Treat each sub-organization/site as independent source authority even when MaintainX global features aggregate them. Global Leader visibility does not grant automatic sub-organization membership or WFM authority."
+          },
+          "OT-connector-adjacent": {
+            "customerEdgeRequired": "by-source",
+            "routing": "MaintainX-managed or customer-managed Ignition, Kepware and MQTT connectors feed MaintainX one-way over outbound HTTPS. WFM reads resulting meter, asset and work-order evidence and receives no PLC, SCADA, connector or industrial-control authority."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "MaintainX-organization", "site", "api-origin", "api-version", "resource", "pagination-mode", "query", "schema"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "MaintainX-organization", "entity-type", "MX-ID", "updatedAt", "external-ID-when-present", "schema-fingerprint"]
+        },
+        "mutablePollWindowAuthority": {
+          "fixedLowerBoundOnEveryPage": true,
+          "resourceScopedPaginationMode": true,
+          "offsetOverlapRequired": true,
+          "organizationIsolationRequired": true,
+          "exactReplayCollapse": true,
+          "conflictingVersionQuarantine": true,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "writeBackAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false,
+          "receiptPolicy": "Bind each poll to WFM tenant, connection, one MaintainX organization, exact HTTPS origin/version/resource, discovered pagination mode, query and schema. Apply the identical updatedAt lower bound to every page, require a complete terminal chain, use overlap for mutable offset collections, scope identity by organization + entity + MX ID, collapse only exact ID + updatedAt + digest replays and quarantine conflicts. Emit a watermark candidate only; never directly commit a checkpoint or infer deletion from absence."
+        },
+        "dataObjects": [
+          "organizations-and-locations", "users-and-teams", "assets", "asset-criticality", "asset-status-and-downtime",
+          "work-orders", "work-order-status-and-priority", "work-order-assignees", "work-order-time-and-labour-cost",
+          "procedures-and-inspections", "maintenance-plans", "meters-and-readings", "meter-triggers", "parts-and-inventory",
+          "purchase-orders", "vendors", "root-cause-reports", "custom-fields", "webhook-event-hints"
+        ],
+        "stableIds": [
+          "MaintainX organization and optional global/sub-organization identity",
+          "MX IDs for locations, users, teams, assets, work orders, meters, parts, purchase orders and vendors",
+          "organization-unique external IDs for supported parts, assets and locations",
+          "work-order sequential ID plus global MX ID",
+          "updatedAt source version, event occurredAt and payload digest",
+          "WFM tenant, connection, site, resource, pagination mode, query and schema fingerprints"
+        ],
+        "readCapability": "Use exact reviewed GET endpoints for organizations, locations, users, teams, assets and status, work orders and expanded assignees/times/time-items/expenditures/estimated time, maintenance plans, procedures, meters/readings/triggers, parts, purchase orders, vendors, root-cause analysis and custom fields where the API key and plan expose them. OpenAPI v1 documents work-order time rows with user, duration and hourly-rate/cost context and asset status with planned/unplanned downtime timing.",
+        "writeCapability": "MaintainX exposes extensive POST, PATCH, DELETE, external-ID upsert, work-order/status/cost/comment, asset, inventory, meter, purchase-order, webhook and API-token mutation routes. WFM grants no create, update, archive/unarchive, delete, status change, work completion, time/cost entry, inventory movement, purchase approval, external-ID upsert, webhook administration, token administration or OT/industrial-control authority.",
+        "freshnessLatency": "Signed webhooks provide low-latency hints for work-order, asset, inventory and other events but can time out after ten seconds and may be deleted after prolonged unsuccessful delivery. Poll with updatedAt[gte] using a fixed lower bound across every page; preserve provider updatedAt, webhook occurredAt, poll observation, asset-status effective times and WFM ingestion time separately.",
+        "permissions": [
+          "dedicated API key labelled for WFM and stored outside evidence",
+          "prefer a token limited to one MaintainX organization",
+          "if a multi-organization token is unavoidable, use exactly one approved x-organization-id and never combine x-organization-id with x-organization-ids",
+          "exact GET collection and field/expand allowlist",
+          "endpoint-specific webhook secret with raw-body and URI signature validation",
+          "no POST, PATCH, DELETE, external-ID upsert, webhook/subscription administration, API-token administration, global-leader or OT-control authority"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "MaintainX's polling guide says work orders use cursor pagination and parts, assets and purchase orders currently use offset pagination, but the current v1 OpenAPI describes nextCursor/nextPageUrl for assets and other collections. Treat this as a live contract disagreement: discover and pin mode per exact resource/schema at connection time, keep updatedAt[gte] identical on every page, require a gapless terminal chain, deduplicate by organization + ID + updatedAt and require overlap for any mutable offset collection.",
+          "delta": "Use updatedAt[gte]=lastSync with the same bound on every page. After complete reconciliation, compute the maximum real updatedAt only as a watermark candidate. Mutable offset collections re-open a small overlap window. Empty, partial, throttled, schema-changed or non-terminal reads keep the last committed checkpoint and never imply deletion.",
+          "events": "MaintainX webhooks carry timestamped v1 HMAC-SHA256 body and URI signatures. Verify both against the endpoint secret within a bounded replay tolerance, acknowledge quickly and process asynchronously. Webhooks are at-least-once wake-up hints because the provider recommends idempotency and polling recovery, and unsuccessful endpoints can eventually be deleted.",
+          "files": "Customer exports enter through checksum, schema, row-count, organization/site, locale, currency, unit and completeness validation. Partial files cannot advance checkpoints or create deletion/payroll authority.",
+          "queues": "No provider queue completeness is assumed. Customer middleware preserves organization/resource/event identity, at-least-once replay keys and poll reconciliation."
+        },
+        "customFields": "Discover definitions for each exact entity and organization before enabling custom fields. MaintainX uses label-shaped keys, including spaces and special characters, and some list filters require a __c suffix when a label collides with a reserved query parameter. Preserve field definition, entity, type, label, locale, sensitivity, raw value and schema version; Unicode-normalized label collisions or newly exposed sensitive/free-text fields quarantine.",
+        "regionalApiVersions": "Pin the current documented https://api.getmaintainx.com/v1 origin, organization/sub-organization and customer-approved data-location evidence. Public material reviewed does not establish customer-selectable regional REST endpoints or contractual residency; never infer residency from organization or site. Cross-border routing/failover requires explicit approval and a new checkpoint namespace with overlap replay.",
+        "rateLimits": "Read X-Rate-Limit-Limit, X-Rate-Limit-Remaining and X-Rate-Limit-Reset on every response. MaintainX documents defaults of 100 requests per 60 seconds for a user globally and per organization, 500 per 60 seconds across users in one organization, 100 per 60 seconds for automated/IoT meter readings, one per 10 seconds on the older per-meter readings route and ten manual meter readings per 24 hours. Stop before exhaustion; HTTP 429 waits for reset plus jitter without switching organization or route.",
+        "failureModes": [
+          "wrong WFM tenant, connection, MaintainX organization, site, API origin/version, resource, pagination mode, query or schema",
+          "multi-organization API key used without x-organization-id, with both organization headers or with an unapproved organization",
+          "polling guide reports offset pagination while the current OpenAPI reports cursor fields for the same mutable collection",
+          "lower-bound filter changes between pages, cursor/offset gap or loop, duplicate page receipt, missing terminal page or over-limit result",
+          "concurrent asset, part or purchase-order update moves records between mutable offset pages without overlap",
+          "same organization + MX ID + updatedAt appears with divergent payloads",
+          "webhook missing either signature, wrong v1 HMAC, stale timestamp, replay, duplicate, out-of-order delivery or endpoint deletion after sustained failures",
+          "webhook interpreted as complete change history or delete authority instead of a poll hint",
+          "custom-field label collides after Unicode normalization or with a reserved query parameter",
+          "archived, deleted, offline and temporarily missing resources collapsed into one semantic state",
+          "work-order assignment or logged time mistaken for attendance, productive work or final payroll truth",
+          "asset downtime or work-order correlation presented as proof that staffing caused the outcome",
+          "HTTP 400/401/403/404/409/429/5xx, TLS/DNS/network interruption or organization outage",
+          "meter-reading rate class confused with general API rate class or manual readings over-produced",
+          "mutation-rich external-ID, work-order, inventory, purchase, webhook or token route accidentally enabled"
+        ],
+        "reconciliation": "Bind every read and webhook hint to WFM tenant, connection, one MaintainX organization, site, exact API origin/version/resource, runtime-proven pagination mode, query and schema. Apply one real UTC updatedAt lower bound to every page; require a complete gapless terminal chain and use overlap for mutable offset pagination. Scope every MX ID by organization/entity, preserve external ID separately, collapse only exact ID + updatedAt + payload-digest replays and quarantine conflicts. Verify signed webhooks, then re-read the affected bounded poll window. Missing, empty, partial, rate-limited, stale, schema-drifted or webhook-only evidence grants no deletion, attendance, payroll, write or direct checkpoint authority.",
+        "schemaDrift": "Fingerprint OpenAPI version, exact resource, response fields, expands, custom-field definitions, enum values and pagination contract per organization. Because the polling guide and current OpenAPI disagree on pagination for assets and related mutable collections, runtime pagination discovery is mandatory and any mode/next-link change quarantines the dataset before checkpoint movement. Approved raw values retain schema and organization provenance.",
+        "retriesReconnect": "401 stops for key validity/rotation; 403 stops for plan/permission review. 429 waits for X-Rate-Limit-Reset plus bounded jitter on the same organization/resource. Network/5xx failures use bounded retry, then resume from the last committed watermark with the approved overlap. Never switch organization, pagination mode or API host automatically. Webhook gaps, stale hints or endpoint loss trigger bounded polling recovery before privileged subscription repair.",
+        "evidenceUrl": "https://help.getmaintainx.com/build/getting-started",
+        "evidenceNote": "MaintainX official documentation and its v1 OpenAPI were reviewed 27 September 2026. They establish Premium/Enterprise REST API access, bearer API keys, single- or multi-organization scope, x-organization-id selection, OpenAPI 3.0 at api.getmaintainx.com/v1, assets/work orders/parts/purchase orders/vendors/meters/root-cause and custom-field resources, work-order time/labour cost data, updatedAt polling, signed webhooks, rate-limit headers/defaults, external IDs and one-way OT connectors. The polling guide currently says assets/parts/purchase orders use offset pagination while the current OpenAPI describes cursor fields, so mode is not assumed. No Premium or Enterprise tenant was authenticated and no customer tenant read, webhook or denied mutation was performed.",
+        "securityEvidenceBlockers": [
+          "API keys can fetch and modify data; a dedicated least-authority identity plus exact denied-mutation proof is required.",
+          "Multi-organization keys can widen scope; single-organization steady-state authority and cross-organization isolation require live proof.",
+          "Webhook secrets are retrievable through privileged interfaces/API routes; steady-state WFM receives verification material but no subscription or secret-management authority.",
+          "Public documentation does not establish customer-selected regional API endpoints or contractual data residency."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["organization", "site", "person-reference", "team", "asset", "asset-status", "downtime", "work-order", "assignee", "maintenance-plan", "procedure", "time-entry", "labour-cost-reference", "part", "inventory", "purchase-order", "vendor", "meter-reading", "root-cause-report"],
+          "customerValue": ["join asset downtime and maintenance demand with qualified worker availability before scheduling overtime or agency cover", "compare work-order assignees and logged labour with WFM schedules and payroll-ready time", "identify material/part or asset constraints that would otherwise be mistaken for labour shortages", "prioritize maintenance by asset criticality and production impact", "measure maintenance labour and downtime outcomes without bespoke point-to-point joins"],
+          "savingsHypotheses": ["reduce unnecessary overtime and agency cover on material-blocked or machine-down work", "reduce paid idle time by aligning maintenance windows and qualified labour", "reduce manual reconciliation of maintenance time and cost", "avoid missed work orders caused by pagination drift or webhook loss", "reuse one low-configuration API-key route from a single site to isolated multi-organization estates"],
+          "automationOpportunities": ["discover organization, exact read collections, pagination mode, expands and custom fields", "map assets/locations to sites, lines and work centres", "reconcile signed webhook hints through overlapping updatedAt polls", "flag work-order versus WFM time/cost exceptions", "separate labour, asset, part and supplier constraints"],
+          "constraintsRisks": ["work order assignment or logged time is not attendance, productive work or final payroll evidence", "maintenance correlation does not prove staffing caused downtime or throughput change", "the public pagination guide and current OpenAPI disagree for mutable collections", "REST API availability is plan-gated", "regional endpoint and residency capabilities are not established by the reviewed public documentation"]
+        },
+        "causalOutcomeReadiness": "Preserve organization, site/location, asset, status interval, work order, assignee, time/cost row, maintenance plan, procedure, part, purchase order, vendor, meter and root-cause identities; source updatedAt/event/observation times; WFM recommendation/action timestamps; baseline and outcome windows; and competing production, material, quality, maintenance, supplier, training, schedule and staffing changes.",
+        "nextBuildAction": "Use an authorised MaintainX Premium or Enterprise test tenant to prove a dedicated read-purpose API key, single- and multi-organization header isolation, exact GET allowlists, denied mutation/write and administration routes, live OpenAPI/schema discovery, actual cursor-versus-offset pagination by resource, fixed updatedAt bounds, overlap recovery during concurrent updates, custom-field collisions, rate-limit recovery, signed duplicate/out-of-order/stale webhook handling, webhook-loss polling recovery and cross-organization MX-ID isolation without deletion, attendance, payroll, checkpoint or write authority."
+      }
+    }
+  ],
+  "systems": []
+}
