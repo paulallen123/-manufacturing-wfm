@@ -324,8 +324,18 @@ function createAutonomousIntegrationHub(options = {}) {
   const listCandidates = db.prepare('SELECT * FROM integration_candidates WHERE tenant=? ORDER BY confidence DESC,display_name');
   const listConnections = db.prepare('SELECT * FROM integration_connections WHERE tenant=? ORDER BY created_at');
   const lastRecon = db.prepare(
-    'SELECT * FROM integration_reconciliation_runs WHERE tenant=? AND connection_id=? ORDER BY created_at DESC LIMIT 1'
+    'SELECT * FROM integration_reconciliation_runs WHERE tenant=? AND connection_id=? ORDER BY rowid DESC LIMIT 1'
   );
+
+  function hasValidatedPeopleSync(connection) {
+    const grants = safeJsonParse(connection.granted_scopes_json, []);
+    const recon = lastRecon.get(connection.tenant, connection.id);
+    return Boolean(connection.credential_ref) && grants.includes('people.read') &&
+      Number(connection.mapping_version) > 0 &&
+      recon?.status === 'PASS' && Number(recon.mapping_version) === Number(connection.mapping_version) &&
+      Number(recon.source_count) > 0 && Number(recon.valid_count) === Number(recon.source_count) &&
+      Number(recon.invalid_count) === 0 && Number(recon.duplicate_count) === 0;
+  }
 
   function record(tenant, connectionId, event, detail = {}) {
     try {
@@ -409,9 +419,13 @@ function createAutonomousIntegrationHub(options = {}) {
 
   function statusForTenant(tenant) {
     const candidates = listCandidates.all(tenant).map(publicCandidate);
-    const connections = listConnections.all(tenant).map(publicConnection);
+    const connectionRows = listConnections.all(tenant);
+    const connections = connectionRows.map(publicConnection);
     const confirmedPeople = candidates.filter(c => c.status === 'CONFIRMED' && c.authoritativeFor.includes('people'));
-    const activePeople = connections.filter(c => c.state === 'ACTIVE' && c.semanticScopes.includes('people.read'));
+    const confirmedIds = new Set(confirmedPeople.map(c => c.id));
+    const activePeople = connectionRows.filter(c =>
+      c.state === 'ACTIVE' && confirmedIds.has(c.candidate_id) && hasValidatedPeopleSync(c)
+    );
     return {
       mode: 'zero-engineer-minimum-admin',
       discovery: {
@@ -661,6 +675,9 @@ function createAutonomousIntegrationHub(options = {}) {
     if (!['VALIDATING', 'ACTIVE', 'DEGRADED'].includes(connection.state)) {
       return writeJson(res, 409, { error: 'Connection is not ready for validation.' });
     }
+    if (!connection.credential_ref || !safeJsonParse(connection.granted_scopes_json, []).includes('people.read')) {
+      return writeJson(res, 409, { error: 'An attested people.read grant is required before validating people records.' });
+    }
     if (!Array.isArray(body.records) || body.records.length > 500) {
       return writeJson(res, 400, { error: 'records must be an array with at most 500 items.' });
     }
@@ -720,6 +737,13 @@ function createAutonomousIntegrationHub(options = {}) {
       source_error: ['DEGRADED', 'SOURCE']
     };
     if (!transitions[health]) return writeJson(res, 400, { error: 'Unsupported health state.' });
+    if (health === 'healthy' && (
+      !['ACTIVE', 'DEGRADED'].includes(connection.state) ||
+      (connection.state === 'DEGRADED' && !['RATE_LIMIT', 'SOURCE'].includes(connection.failure_class)) ||
+      !hasValidatedPeopleSync(connection)
+    )) {
+      return writeJson(res, 409, { error: 'Healthy transport cannot replace source authorization or a successful current mapping validation.' });
+    }
     const [state, failureClass] = transitions[health];
     updateConnectionState.run(state, failureClass, nowIso(), nowIso(), connection.id, connection.tenant);
     const updated = connectionById.get(connection.id, connection.tenant);
