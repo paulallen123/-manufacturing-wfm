@@ -28,6 +28,11 @@ export function validateProofRegistry(registry){
   if(railway.healthRequiresTerminalPass!==true) throw new Error('Railway health must require terminal proof PASS.');
   if(railway.nonPassHealthCode!==503) throw new Error('Non-PASS proof health must be HTTP 503.');
 
+  const readiness=registry?.productReadiness||{};
+  if(readiness.scopePassNeverImpliesProductReady!==true) throw new Error('A scoped PASS must never imply product readiness.');
+  if(readiness.requiresExplicitAggregateGate!==true) throw new Error('Product readiness requires an explicit aggregate gate.');
+  if(readiness.aggregateGateId!=='customer-proof-gate') throw new Error('Product readiness aggregate gate must be customer-proof-gate.');
+
   const ids=new Set();
   const services=new Set();
   const canonicalOwners=new Map();
