@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "AWS IoT SiteWise documentation promotion and quality-aware industrial sample-window authority.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "aws-iot-sitewise",
+      "patch": {
+        "protocols": ["AWS IoT SiteWise HTTPS APIs", "AWS Signature Version 4", "OPC UA through SiteWise Edge", "MQTT through SiteWise Edge", "AWS IoT Core and Greengrass"],
+        "auth": "AWS IAM temporary role credentials signed with Signature Version 4, restricted to exact read-history and describe/list actions in the approved account and region",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/Welcome.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": "by-source",
+        "connectionRoutes": [
+          {"type":"regional AWS IoT SiteWise data-plane API","direction":"SiteWise-to-WFM-read-only","authentication":"customer IAM role with temporary SigV4 credentials and least-privilege history/list/describe actions","notes":"Pin AWS account, region, exact data-plane endpoint, site, asset/property or alias, unit, time window, query and schema."},
+          {"type":"self-hosted SiteWise Edge OPC UA or MQTT gateway","direction":"industrial-source-to-SiteWise-to-WFM-read-only","authentication":"customer-managed Greengrass/edge identity plus separate least-privilege WFM read role","notes":"Preserve gateway, local server/topic, timestamp-source and data-quality configuration. WFM does not control the industrial source or gateway."},
+          {"type":"governed file or historian export fallback","direction":"customer-export-to-WFM-read-only","authentication":"customer-owned secure-file or managed-export identity","notes":"For sites without SiteWise read access, reuse batch reconciliation and the same asset/property/unit/time semantics."}
+        ],
+        "deploymentVariants": {
+          "cloud-api":{"customerEdgeRequired":false,"routing":"Exact regional SiteWise data-plane endpoint; account and region are checkpoint dimensions and never silently fail over."},
+          "sitewise-edge":{"customerEdgeRequired":true,"routing":"Customer-controlled outbound OPC UA or MQTT collection through a named gateway; no inbound public exposure."},
+          "multi-region-estate":{"customerEdgeRequired":"by-site","routing":"Partition every AWS account, region, site, gateway, asset and property even when central IAM or shared services are used."}
+        },
+        "regionalEndpointAuthority": {
+          "endpointVariants": ["standard", "fips"],
+          "fipsDataRegions": ["us-east-2", "us-east-1", "us-west-2", "ca-central-1", "us-gov-west-1"],
+          "customPortsAllowed": false,
+          "notes": "The endpoint variant is an explicit scope dimension. FIPS is accepted only for data-plane regions listed by the current official endpoint reference; future or private endpoints require separately discovered and approved authority rather than hostname inference."
+        },
+        "sourceScope": {
+          "requiredDimensions":["wfm-tenant","connection","AWS-account","AWS-region","endpoint-variant","data-plane-origin","site","edge-gateway","asset","property","property-alias","unit","timestamp-source","read-operation","batch-entry-id","batch-entry-count","provider-window-boundaries","IAM-principal","IAM-policy","query","schema"],
+          "sourceIdentityDimensions":["wfm-tenant","connection","AWS-account","AWS-region","site","asset","property","source-timestamp-seconds","source-timestamp-nanoseconds"]
+        },
+        "industrialSampleWindow": {
+          "nanosecondTimestampPreserved": true,
+          "qualityStatesPreserved": ["GOOD", "UNCERTAIN", "BAD"],
+          "nullValueTypes": ["B", "D", "S", "I", "U"],
+          "providerWindowSemantics": "exclusive-start/inclusive-end",
+          "canonicalWindowSemantics": "inclusive-start/exclusive-end",
+          "providerBoundaryTranslation": "Because the documented request bounds are epoch seconds while returned values carry nanoseconds, request from one whole second before the canonical start through the provider-inclusive second containing the canonical end, then fail closed on every returned sample outside the canonical half-open nanosecond window.",
+          "batchSuccessEntryIdRequired": true,
+          "maximumBatchEntriesPerAuthority": 1,
+          "batchEntryIdPattern": "^[A-Za-z0-9_-]{1,64}$",
+          "gaplessTerminalPageChainRequired": true,
+          "skippedOrErrorEntriesAllowed": false,
+          "checkpointAdvanceAllowed": false,
+          "operationalDecisionAuthority": false,
+          "causalClaimAuthority": false,
+          "writeBackAuthority": false,
+          "notes":"A complete history window preserves source timestamp, nanoseconds, ingestion time, quality, concrete or null value type and digest. This authority permits one BatchGet entry only and binds every success page to that exact approved entryId, so provider skippedEntries cannot ambiguously refer to another property that completed on an earlier page. Multi-entry BatchGet remains a future separately modeled capability. Exact replays collapse; conflicting values at one property timestamp quarantine. Evidence remains observational until reconciled with production, maintenance and workforce sources."
+        },
+        "dataObjects": ["AWS-accounts-regions-and-sites","edge-gateways-and-data-sources","asset-models-assets-and-hierarchies","asset-properties-and-aliases","asset-property-time-series","measurements-transforms-and-metrics","alarms-and-events","OPC-UA-node-and-MQTT-topic-context","data-quality-and-timestamp-source","equipment-state-downtime-and-OEE-signals","energy-power-temperature-speed-pressure-and-count-observations"],
+        "canonicalObjects": ["legal-entity","site","line","work-centre","machine-asset","industrial-data-source","measurement-definition","industrial-observation","energy-observation","downtime-event","production-outcome","quality-event","maintenance-signal"],
+        "stableIds": "Preserve AWS account + region + site + gateway + asset model/asset + property ID or alias + exact source timestamp seconds/nanoseconds. Never merge equal asset/property IDs across accounts or regions, or equal aliases across customer estates.",
+        "freshness": "Use GetAssetPropertyValueHistory or BatchGetAssetPropertyValueHistory for bounded historical windows and current-value APIs only for clearly labelled current state. Edge subscription or polling controls source cadence; WFM preserves device-versus-server timestamp choice and ingestion lag.",
+        "permissions": "Use a dedicated assumable IAM role with temporary credentials and exact read-only SiteWise actions such as BatchGet/Get history plus required List/Describe. Deny BatchPutAssetPropertyValue, asset/model/property updates, gateway/source configuration, alarm actions, portal administration, IAM changes and industrial-control writes.",
+        "paginationDelta": "History APIs return opaque nextToken pagination and can stop at maxResults or 4 MB. Require byte-equivalent token chaining to a terminal page; bind every BatchGet success result to its exact approved entryId; batch skipped/error entries are partial failure, not completeness. The public API maximum is 20,000 results per page for GetAssetPropertyValueHistory, while batch request and service quotas are separately observed and pinned.",
+        "customFields": "Discover asset models, hierarchy, property IDs, aliases, data types, units, transforms, metrics and external IDs per account/region. Any model, alias, unit, formula, hierarchy, gateway, timestamp-source or schema drift quarantines the dataset.",
+        "regionalApiVersions": "Pin AWS partition/account/region, exact standard or documented FIPS data endpoint with no custom port, API model/version, IAM principal/policy, site/gateway and asset-property identity. GovCloud and commercial partitions, regions and private VPC endpoints never share credentials or checkpoints; an unlisted endpoint requires explicit discovery and approval.",
+        "rateLimits": "Use published account/region service quotas plus observed throttling with bounded concurrency and jittered backoff. Never switch account, region, endpoint or property scope to evade a quota. Batch skipped entries and throttled pages restart from the trusted predecessor/window.",
+        "failureModes": ["expired or revoked STS credentials and SigV4 clock skew","wrong AWS account, region, partition or endpoint","IAM role or tag/condition scope drift","OPC UA or MQTT gateway offline, disconnected or backlogged","device-versus-server timestamp configuration change","timestamp outside SiteWise ingestion range","GOOD/UNCERTAIN/BAD quality change","opaque token gap, loop or non-terminal history","batch skipped/error entries despite HTTP success","asset model, hierarchy, property alias, unit or data type drift","duplicate or conflicting values at one nanosecond timestamp","edge cache loss after extended outage","429 throttling, partial regional outage or VPC endpoint failure"],
+        "reconciliation": "Bind every history receipt to WFM tenant, connection, AWS account/region/endpoint variant/origin, site, gateway, asset/property/alias, unit, timestamp source, read operation, BatchGet entryId when applicable, IAM principal/policy, query, schema, trusted predecessor, canonical half-open window, translated provider exclusive-start/inclusive-end bounds and observation horizon. Require a gapless successful terminal page chain with no skipped/error entries; preserve all quality states and concrete/null value types and quarantine conflicts. Grant no checkpoint, deletion, operational-decision, causal, attendance, payroll or write authority.",
+        "schemaDrift": "Fingerprint API model/version, asset model and hierarchy, property ID/alias/type/unit, transform/metric definition, edge source and timestamp/quality settings, IAM scope, query and output schema. Drift quarantines the window before reconciliation.",
+        "retriesReconnect": "Credential/signature failures stop for role, region and clock review; access denial stops for IAM scope review; throttling uses same-scope backoff. Network, gateway and regional recovery restarts from the trusted predecessor and re-reads an overlap window through a new terminal page chain without changing account, region, asset, property, unit or timestamp mode.",
+        "evidenceUrl": "https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/Welcome.html",
+        "evidenceSources": [
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/Welcome.html","supports":"official SiteWise API surface and current publication identity"},
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_GetAssetPropertyValueHistory.html","supports":"history reads, 4 MB/20,000-result page boundary and opaque nextToken"},
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_BatchGetAssetPropertyValueHistory.html","supports":"multi-property history reads with success, skipped and error entry outcomes"},
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_Variant.html","supports":"single-type concrete and BAD/UNCERTAIN null variants"},
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_PropertyValueNullValue.html","supports":"typed nullValue codes D, B, S, I and U"},
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/userguide/configure-opcua-source.html","supports":"OPC UA edge source, quality selection, scan mode and device/server timestamp configuration"},
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/userguide/troubleshooting-gateway.html","supports":"edge outage and accepted timestamp-range failure behavior"},
+          {"url":"https://docs.aws.amazon.com/general/latest/gr/iot-sitewise.html","supports":"regional standard/FIPS control/data endpoints and account-region service quotas"},
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/userguide/security_iam_service-with-iam.html","supports":"IAM resource/action/condition/ABAC and temporary-credential capabilities"},
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/CommonParameters.html","supports":"Signature Version 4 request authentication"},
+          {"url":"https://docs.aws.amazon.com/iot-sitewise/latest/userguide/asset-properties.html","supports":"attributes, measurements, transforms, metrics, units and OEE semantics"}
+        ],
+        "evidenceNote": "Documentation-only verification. Official AWS documentation establishes SigV4/IAM authentication, exact regional standard/FIPS data-plane endpoints, history and batch-history reads, per-result BatchGet entryId, opaque pagination, exclusive-start/inclusive-end request bounds, page/result bounds, timestamp-quality-value data including typed nullValue, GOOD/UNCERTAIN/BAD quality, asset/property/alias identities, OPC UA/MQTT SiteWise Edge routes, device/server timestamps, service quotas and mutation APIs that remain denied. No sandbox, no customer account authentication, no live read, no real edge gateway, no denied mutation and no hosted proof are claimed.",
+        "valueOpportunities": ["align machine state, downtime and throughput signals with shifts and skills to distinguish labour constraints from equipment constraints","combine energy/power observations and tariffs with production and staffing windows to identify lower-cost operating patterns without claiming causation","detect paid idle time caused by machine, material or process interruption rather than workforce shortage","preserve quality and timestamp uncertainty so poor sensor evidence cannot silently drive overtime, maintenance or payroll decisions","reuse one low-configuration cloud role for a small site and independently partition large multi-account multi-region estates"],
+        "causalOutcomeReadiness": "Preserve account, region, endpoint variant, site, gateway, asset/property/alias, BatchGet entryId, unit, source timestamp seconds/nanoseconds, ingestion time, quality, concrete/null value type and translated observation-window lineage. Record recommendation, approval and intervention separately from later production, maintenance, energy and labour outcomes, retaining competing changes and sensor-quality uncertainty.",
+        "nextBuildAction": "Use an authorised AWS test account to prove STS/SigV4 read-only role assumption, exact account/region/FIPS/VPC endpoint routing, asset/property/alias discovery, real Get and BatchGet history pagination, skipped/error entries, service throttling, edge disconnect/backfill, device/server timestamp changes, quality and unit drift, cross-account/region isolation and denied BatchPut, asset/model, gateway, portal and IAM mutations."
+      }
+    }
+  ]
+}
