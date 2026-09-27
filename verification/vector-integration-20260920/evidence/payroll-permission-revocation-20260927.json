@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T05:28:47Z",
+  "status": "BUILT",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "headBeforeEvidenceCommit": "813cc5ce2250716421a62480be0e210af57da984",
+  "candidateSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b",
+  "scope": "Exact sealed runtime; local synthetic authenticated HTTP and SQLite only. One seeded tenant, one payroll account and one administrator. No hosted identity provider, SSO/federation, customer or production proof.",
+  "runtime": {
+    "node": "v24.19.0",
+    "exactNode22DockerExecuted": false,
+    "artifactPath": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "artifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "proof": {
+    "sameSessionCookieReused": true,
+    "beforeRevocation": {
+      "payrollDashboardStatus": 200
+    },
+    "immediateAfterRevocation": {
+      "payrollDashboardStatus": 403,
+      "payrollAdjustmentProposalStatus": 403
+    },
+    "afterControlledRestart": {
+      "payrollDashboardStatus": 403,
+      "payrollAdjustmentProposalStatus": 403
+    },
+    "persistedPermissions": [],
+    "auditEventPresent": true,
+    "auditActor": "d1"
+  },
+  "test": {
+    "path": "tests/payroll-permission-revocation.proof.test.cjs",
+    "localSha256": "2e2adba61780a46241af8c8673714a987f24b3348fad869bc763656d6c79292e",
+    "localGitBlobSha": "49623669a06a06116457435c12937d66c48f9548",
+    "command": "node --test tests/payroll-permission-revocation.proof.test.cjs",
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "claimBoundary": "BUILT only for immediate locally persisted permission revocation on the exact sealed synthetic artifact. It does not prove session-token revocation, external IAM propagation, multi-region identity consistency, hosted enforcement or customer operation.",
+  "releaseGateChange": "The narrow local stale-session permission-revocation control advances to BUILT. Broader identity/session and customer release gates remain BLOCKED.",
+  "nextProof": [
+    "Revoke the session token itself and verify authenticated non-payroll endpoints also fail.",
+    "Exercise external IAM/SSO group revocation and regional propagation in an approved hosted environment.",
+    "Repeat permission revocation during concurrent consequential writes and verify no in-flight mutation commits after revocation."
+  ],
+  "claims": {
+    "localExactArtifactImmediatePermissionRevocation": "BUILT",
+    "externalIamRevocation": "BLOCKED",
+    "hostedMultiRegionIdentityConsistency": "BLOCKED",
+    "customerRelease": "BLOCKED",
+    "threeMinuteMarketingVideo": "BLOCKED"
+  }
+}
