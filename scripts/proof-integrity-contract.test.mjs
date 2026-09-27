@@ -148,3 +148,25 @@ test('scoped PASS cannot imply product readiness without an explicit aggregate g
     /scoped PASS must never imply product readiness/
   );
 });
+
+
+test('mutating proof must name an isolated target service and fresh deployment contract', () => {
+  assert.throws(
+    () => validateProofRegistry(registry([runner({
+      mutatesTarget: true,
+      stateIsolation: 'immutable-seed-per-run',
+      isolatedTargetService: null,
+      freshTargetDeploymentRequired: true
+    })])),
+    /isolated target service/
+  );
+  assert.throws(
+    () => validateProofRegistry(registry([runner({
+      mutatesTarget: true,
+      stateIsolation: 'immutable-seed-per-run',
+      isolatedTargetService: 'vector-browser-isolated-target',
+      freshTargetDeploymentRequired: false
+    })])),
+    /fresh target deployment/
+  );
+});
