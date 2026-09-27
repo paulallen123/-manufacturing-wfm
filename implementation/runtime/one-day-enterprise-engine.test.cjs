@@ -48,6 +48,7 @@ function fixture(options = {}) {
     publicOrigin: options.publicOrigin ?? 'https://implementation.test',
     sendInvitation: async invitation => {
       invitationAttempts += 1;
+      if (Number(options.failInvitationAttempts || 0) >= invitationAttempts) throw new Error('simulated temporary mail outage');
       if (options.failFirstInvitation && invitationAttempts === 1) throw new Error('simulated temporary mail outage');
       if (options.failInvitationDelivery) throw new Error('simulated mail transport failure');
       sentInvitations.push(invitation);
@@ -343,7 +344,7 @@ test('notification transport failure cannot block trusted zero-touch implementat
 
     const db = new DatabaseSync(f.dbPath);
     assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
-    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_FAILED'").get().count, 1);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_FAILED'").get().count, 2);
     db.close();
   } finally {
     f.close();
@@ -351,7 +352,7 @@ test('notification transport failure cannot block trusted zero-touch implementat
 });
 
 test('repeated trusted activation retries a failed invitation without duplicating implementation', async () => {
-  const f = fixture({ failFirstInvitation: true });
+  const f = fixture({ failInvitationAttempts: 2 });
   try {
     const event = { tenant: 'alpha', contractRef: 'contract-mail-retry', targetHours: 8, recipientEmail: 'manager@alpha' };
     const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
@@ -364,10 +365,37 @@ test('repeated trusted activation retries a failed invitation without duplicatin
     assert.equal(repeated.body.notification.delivered, true);
     assert.equal(repeated.body.invitation.state, 'AWAITING_CUSTOMER_START');
     assert.equal(f.sentInvitations.length, 1);
-    assert.equal(f.invitationAttempts, 2);
+    assert.equal(f.invitationAttempts, 3);
     const db = new DatabaseSync(f.dbPath);
     assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
     assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_AUTO_STARTED'").get().count, 1);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_FAILED'").get().count, 2);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_SENT'").get().count, 1);
+    db.close();
+  } finally {
+    f.close();
+  }
+});
+
+test('one trusted contract event automatically recovers a transient invitation failure', async () => {
+  const f = fixture({ failFirstInvitation: true });
+  try {
+    const result = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',
+      {
+        event: 'contract_signed', tenant: 'alpha', contractId: 'external-auto-mail-retry',
+        implementationContactEmail: 'manager@alpha', targetHours: 8
+      },
+      f.contractWebhook
+    );
+    assert.equal(result.status, 201);
+    assert.equal(result.body.notification.delivered, true);
+    assert.equal(result.body.invitation.state, 'AWAITING_CUSTOMER_START');
+    assert.equal(f.invitationAttempts, 2);
+    assert.equal(f.sentInvitations.length, 1);
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(db.prepare('SELECT attempts FROM implementation_notification_attempts').get().attempts, 2);
     assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_FAILED'").get().count, 1);
     assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_SENT'").get().count, 1);
     db.close();
@@ -377,7 +405,7 @@ test('repeated trusted activation retries a failed invitation without duplicatin
 });
 
 test('signed contract webhook replay uses the same bounded notification recovery', async () => {
-  const f = fixture({ failFirstInvitation: true });
+  const f = fixture({ failInvitationAttempts: 2 });
   try {
     const event = {
       event: 'contract_signed', tenant: 'alpha', contractId: 'external-mail-retry',
@@ -390,7 +418,7 @@ test('signed contract webhook replay uses the same bounded notification recovery
     assert.equal(replay.status, 200);
     assert.equal(replay.body.notification.delivered, true);
     assert.equal(replay.body.implementation.runId, first.body.implementation.runId);
-    assert.equal(f.invitationAttempts, 2);
+    assert.equal(f.invitationAttempts, 3);
     const db = new DatabaseSync(f.dbPath);
     assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
     db.close();
@@ -449,7 +477,7 @@ test('failed invitation can be recovered after a safe engine restart', async () 
     assert.equal(delivered.length, 1);
     const db = new DatabaseSync(f.dbPath);
     assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
-    assert.equal(db.prepare('SELECT attempts FROM implementation_notification_attempts').get().attempts, 2);
+    assert.equal(db.prepare('SELECT attempts FROM implementation_notification_attempts').get().attempts, 3);
     db.close();
   } finally {
     restarted?.close();
