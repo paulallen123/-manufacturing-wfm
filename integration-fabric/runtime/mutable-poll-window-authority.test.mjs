@@ -23,6 +23,7 @@ const policy=(overrides={})=>({
   queryFingerprint:QUERY,
   schemaFingerprint:SCHEMA,
   expectedCommittedWatermark:'2026-09-27T01:00:00Z',
+  expectedObservedAt:'2026-09-27T01:10:00Z',
   overlapSeconds:0,
   maxWindowSeconds:86400,
   maxPages:10,
@@ -174,6 +175,22 @@ test('clamps the next watermark to the trusted observation horizon',()=>{
   assert.equal(decision.maxSourceUpdatedAt,'2026-09-27T01:11:00.000Z');
   assert.equal(decision.watermarkCandidate,'2026-09-27T01:10:00.000Z');
   assert.equal(decision.nextPollFromInclusive,'2026-09-27T01:10:00.000Z');
+  assert.throws(
+    ()=>createMutablePollWindowAuthority(policy()).admitBatch(batch({observedAt:'2026-09-28T01:10:00Z'})),
+    /observedAt.*approved authority|observation horizon/i
+  );
+});
+
+test('binds reconciliation identity to checkpoint and replay decisions',()=>{
+  const first=createMutablePollWindowAuthority(policy()).admitBatch(batch());
+  const secondPolicy=policy({expectedCommittedWatermark:'2026-09-27T01:01:00Z',overlapSeconds:60});
+  const secondBatch=batch({checkpointPredecessor:'2026-09-27T01:01:00Z'});
+  const second=createMutablePollWindowAuthority(secondPolicy).admitBatch(secondBatch);
+  assert.equal(first.windowStartInclusive,second.windowStartInclusive);
+  assert.equal(first.observedAt,second.observedAt);
+  assert.deepEqual(first.records,second.records);
+  assert.notEqual(first.nextPollFromInclusive,second.nextPollFromInclusive);
+  assert.notEqual(first.reconciliationFingerprint,second.reconciliationFingerprint);
 });
 
 test('binds the batch to the expected committed watermark and exact overlap window',()=>{

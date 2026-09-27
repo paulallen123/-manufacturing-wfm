@@ -106,13 +106,14 @@ export function createMutablePollWindowAuthority(rawPolicy){
   const policy=cloneInert(rawPolicy,'policy');
   exactKeys(policy,new Set([
     'provider','wfmTenantId','connectionId','organizationId','siteId','apiOrigin','apiVersion','resource',
-    'paginationMode','queryFingerprint','schemaFingerprint','expectedCommittedWatermark','overlapSeconds',
+    'paginationMode','queryFingerprint','schemaFingerprint','expectedCommittedWatermark','expectedObservedAt','overlapSeconds',
     'maxWindowSeconds','maxPages','maxRecords','maxClockSkewSeconds'
   ]),'policy');
   for(const field of ['provider','wfmTenantId','connectionId','siteId','apiVersion']) policy[field]=text(policy[field],field);
   policy.queryFingerprint=fingerprint(policy.queryFingerprint,'queryFingerprint');
   policy.schemaFingerprint=fingerprint(policy.schemaFingerprint,'schemaFingerprint');
   policy.expectedCommittedWatermark=instant(policy.expectedCommittedWatermark,'expectedCommittedWatermark').iso;
+  policy.expectedObservedAt=instant(policy.expectedObservedAt,'expectedObservedAt').iso;
   policy.organizationId=identifier(policy.organizationId,'organizationId');
   policy.apiOrigin=exactHttpsOrigin(policy.apiOrigin);
   policy.resource=text(policy.resource,'resource');
@@ -156,6 +157,7 @@ export function createMutablePollWindowAuthority(rawPolicy){
 
     const windowStart=instant(batch.windowStartInclusive,'windowStartInclusive');
     const observedAt=instant(batch.observedAt,'observedAt');
+    if(observedAt.iso!==policy.expectedObservedAt) fail('observedAt does not match the approved authority observation horizon');
     const checkpointPredecessor=instant(batch.checkpointPredecessor,'checkpointPredecessor');
     if(checkpointPredecessor.iso!==policy.expectedCommittedWatermark) fail('checkpoint predecessor does not match approved authority');
     const expectedWindowStart=new Date(checkpointPredecessor.ms-policy.overlapSeconds*1000).toISOString();
@@ -246,15 +248,16 @@ export function createMutablePollWindowAuthority(rawPolicy){
       :windowStart.ms;
     const nextPollFromInclusive=new Date(nextPollMs).toISOString();
 
-    return deepFreeze({
+    const decision={
       pollWindowReconciliationCandidate:true,checkpointAdvanceAllowed:false,deletionAuthority:false,
       writeBackAuthority:false,payrollAuthority:false,attendanceAuthority:false,
       ...scope,checkpointNamespace,checkpointPredecessor:checkpointPredecessor.iso,
       windowStartInclusive:windowStart.iso,observedAt:observedAt.iso,
       overlapSeconds:policy.overlapSeconds,reportedRecordCount,uniqueVersionCount:records.length,
-      exactReplayCount,maxSourceUpdatedAt,watermarkCandidate,nextPollFromInclusive,records,
-      reconciliationFingerprint:`sha256:${digest({scope,windowStartInclusive:windowStart.iso,observedAt:observedAt.iso,records})}`
-    });
+      exactReplayCount,maxSourceUpdatedAt,watermarkCandidate,nextPollFromInclusive,records
+    };
+    decision.reconciliationFingerprint=`sha256:${digest(decision)}`;
+    return deepFreeze(decision);
   }
 
   return Object.freeze({admitBatch});
