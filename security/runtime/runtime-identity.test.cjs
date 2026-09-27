@@ -3,6 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const http = require('node:http');
 const os = require('node:os');
 const path = require('node:path');
 
@@ -142,4 +143,31 @@ test('every hosted response can be bound to the exact serving source', () => {
   assert.equal(res.headers.get('x-wfm-source-sha'), CANDIDATE_SHA);
   assert.equal(res.headers.get('x-wfm-source-binding'), 'build-file-matched');
   assert.equal(res.headers.get('x-wfm-fixture-only'), 'true');
+});
+
+test('downstream handlers cannot replace or remove source proof headers', async () => {
+  const identity = hostedIdentity();
+  const server = http.createServer((_req, res) => {
+    identity.applyResponseHeaders(res);
+    res.setHeader('X-WFM-Source-SHA', OTHER_SHA);
+    res.removeHeader('X-WFM-Source-Binding');
+    res.writeHead(200, { 'X-WFM-Fixture-Only': 'false' });
+    res.end('ok');
+  });
+
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const response = await new Promise((resolve, reject) => {
+      http.get({ host: '127.0.0.1', port: server.address().port, path: '/' }, resolve)
+        .on('error', reject);
+    });
+    response.resume();
+    await new Promise(resolve => response.once('end', resolve));
+
+    assert.equal(response.headers['x-wfm-source-sha'], CANDIDATE_SHA);
+    assert.equal(response.headers['x-wfm-source-binding'], 'build-file-matched');
+    assert.equal(response.headers['x-wfm-fixture-only'], 'true');
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
 });
