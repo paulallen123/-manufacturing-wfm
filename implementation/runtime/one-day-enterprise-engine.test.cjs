@@ -1063,7 +1063,7 @@ test('readiness is fail-closed until every required evidence item passes at conf
   const f = fixture();
   try {
     const run = await startRun(f);
-    const firstRequirement = REQUIREMENTS.find(item => item.key !== 'configuration-scope');
+    const firstRequirement = REQUIREMENTS.find(item => item.key === 'identity-access');
     const weak = await call(
       f.engine, null, 'POST', '/api/implementation/autonomous/evidence',
       {
