@@ -49,6 +49,9 @@ function fixture(options = {}) {
     notificationRetryDelayMs: options.notificationRetryDelayMs,
     notificationRetryPollMs: options.notificationRetryPollMs ?? 0
   };
+  if (!options.omitDedicatedRecoverySecret) {
+    engineOptions.invitationRecoverySecret = options.invitationRecoverySecret || 'dedicated-invitation-recovery-test-secret';
+  }
   if (!options.useDefaultInvitationSender) {
     engineOptions.sendInvitation = options.sendInvitation || (async invitation => {
       invitationAttempts += 1;
@@ -593,6 +596,7 @@ test('failed invitation is retried automatically after a safe engine restart', a
       dbPath: f.dbPath,
       internalToken: 'implementation-worker-test-token',
       contractWebhookSecret: 'contract-webhook-test-token',
+      invitationRecoverySecret: 'dedicated-invitation-recovery-test-secret',
       publicOrigin: 'https://implementation.test',
       notificationRetryDelayMs: 0,
       notificationRetryPollMs: 5,
@@ -641,6 +645,7 @@ test('tampered delayed-retry evidence fails closed without sending', async () =>
       dbPath: f.dbPath,
       internalToken: 'implementation-worker-test-token',
       contractWebhookSecret: 'contract-webhook-test-token',
+      invitationRecoverySecret: 'dedicated-invitation-recovery-test-secret',
       publicOrigin: 'https://implementation.test',
       notificationRetryPollMs: 0,
       sendInvitation: async invitation => {
@@ -771,6 +776,20 @@ test('implementation entry preflight exposes missing requirements before a contr
     assert.deepEqual(result.body.requiredActions, []);
   } finally {
     ready.close();
+  }
+
+  const sharedSecretFallback = fixture({ omitDedicatedRecoverySecret: true });
+  try {
+    const result = await call(
+      sharedSecretFallback.engine, null, 'GET', '/api/implementation/autonomous/preflight', undefined,
+      sharedSecretFallback.internal
+    );
+    assert.equal(result.status, 200);
+    assert.equal(result.body.state, 'BLOCKED');
+    assert.equal(result.body.checks.restartRecovery, false);
+    assert.deepEqual(result.body.requiredActions, ['INVITATION_RECOVERY_SECRET_CONFIGURATION_REQUIRED']);
+  } finally {
+    sharedSecretFallback.close();
   }
 });
 
