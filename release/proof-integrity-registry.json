@@ -68,7 +68,8 @@
       "statusSemanticsAudited": true,
       "mutatesTarget": true,
       "stateIsolation": "shared-durable-tenant",
-      "promotionBlocker": "MUTATING_PROOF_REQUIRES_IMMUTABLE_SEED_PER_RUN"
+      "promotionBlocker": "MUTATING_PROOF_REQUIRES_IMMUTABLE_SEED_PER_RUN",
+      "observedFailure": "Strict lifecycle-affordance proof found zero authoritative Needs my action rows after prior shared-state proof mutations."
     },
     {
       "id": "implementation-semantic",
@@ -92,15 +93,25 @@
       "claim": "golden-handoff-status",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": false,
+      "promotionEligible": true,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
       "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
-      "statusSemanticsAudited": false,
+      "statusSemanticsAudited": true,
       "mutatesTarget": false,
       "stateIsolation": "read-only",
-      "promotionBlocker": "HEALTH_DOES_NOT_YET_PROVE_TERMINAL_APPLICATION_PASS"
+      "promotionBlocker": null,
+      "statusSemanticsEvidence": {
+        "negativeDeployment": "9a26888b-fc0c-4e36-bcaf-0577f6078f62",
+        "negativeApplicationStatus": "FAIL",
+        "negativeRailwayStatus": "FAILED",
+        "restoredDeployment": "5c7012ad-6dea-43f8-bdbd-f2ddb01c3e23",
+        "restoredApplicationStatus": "PASS",
+        "restoredRailwayStatus": "SUCCESS",
+        "healthcheckPath": "/health",
+        "candidateSha": "486606c4269bc8f1a2f24056fec22a6d6ffc7aad"
+      }
     },
     {
       "id": "persistence-verify",
