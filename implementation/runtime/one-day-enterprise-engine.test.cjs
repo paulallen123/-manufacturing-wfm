@@ -769,6 +769,74 @@ test('provider credential rejection stops after one attempt and requests authori
   }
 });
 
+test('authorised provider recovery resumes the same blocked invitation exactly once', async () => {
+  let providerAuthorised = false;
+  const attemptedInvitations = [];
+  const f = fixture({
+    sendInvitation: async invitation => {
+      attemptedInvitations.push(invitation);
+      if (!providerAuthorised) {
+        const error = new Error('simulated provider credential rejection');
+        error.permanent = true;
+        error.code = 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED';
+        throw error;
+      }
+      return { provider: 'test-mailer', messageId: 'mail-provider-recovered' };
+    }
+  });
+  try {
+    const event = {
+      tenant: 'alpha', contractRef: 'contract-provider-recovery', targetHours: 8,
+      recipientEmail: 'manager@alpha'
+    };
+    const first = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal
+    );
+    assert.equal(first.status, 201);
+    assert.equal(first.body.notification.blocked, true);
+    assert.equal(attemptedInvitations.length, 1);
+
+    const denied = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',
+      { tenant: event.tenant, contractRef: event.contractRef }
+    );
+    assert.equal(denied.status, 403);
+    assert.equal(attemptedInvitations.length, 1);
+
+    providerAuthorised = true;
+    const recovered = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',
+      { tenant: event.tenant, contractRef: event.contractRef }, f.internal
+    );
+    assert.equal(recovered.status, 200);
+    assert.equal(recovered.body.notification.delivered, true);
+    assert.equal(recovered.body.notification.recovered, true);
+    assert.equal(recovered.body.implementation.state, 'BUILDING');
+    assert.equal(attemptedInvitations.length, 2);
+    assert.equal(attemptedInvitations[1].startUrl, attemptedInvitations[0].startUrl);
+    assert.equal(attemptedInvitations[1].idempotencyKey, attemptedInvitations[0].idempotencyKey);
+
+    const repeated = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',
+      { tenant: event.tenant, contractRef: event.contractRef }, f.internal
+    );
+    assert.equal(repeated.status, 409);
+    assert.equal(attemptedInvitations.length, 2);
+
+    const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
+    assert.equal(status.body.notificationRecovery.state, 'DELIVERED');
+    assert.equal(status.body.notificationRecovery.attempts, 2);
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_notification_outbox').get().count, 0);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_PROVIDER_RECOVERED'").get().count, 1);
+    db.close();
+  } finally {
+    f.close();
+  }
+});
+
 test('implementation entry preflight exposes missing requirements before a contract without exposing secrets', async () => {
   const previousApiKey = process.env.RESEND_API_KEY;
   const previousFrom = process.env.WFM_IMPLEMENTATION_FROM_EMAIL;
