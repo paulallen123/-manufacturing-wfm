@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Infor LN documentation promotion and explicit execution-context authority for multi-company REST reads.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "infor-ln",
+      "patch": {
+        "protocols": [
+          "Infor ION API Gateway",
+          "Infor LN REST and OData APIs",
+          "OpenAPI documentation",
+          "Infor BOD messaging",
+          "Data Lake or governed export fallback"
+        ],
+        "auth": "OAuth 2.0 Client Credentials backend-service application through Infor ION API Gateway, with a dedicated LN API identity and company-specific route role",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.infor.com/ln/latest/en-us/lnesolh/lnrestapiag/yqw1698244624331.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": "by-deployment",
+        "connectionRoutes": [
+          {
+            "type": "LN multi-tenant cloud through Infor ION API Gateway",
+            "direction": "LN-to-WFM-read-only",
+            "authentication": "dedicated OAuth 2.0 Client Credentials backend-service app plus LN API service identity",
+            "notes": "Pin the regional gateway, Infor tenant, exact activated LN REST service, company header, API identity mode, company-specific GET route role, content language, metadata, query and schema. Never inherit the svc_ln default company."
+          },
+          {
+            "type": "LN single-tenant cloud or on-premises through customer ION API",
+            "direction": "customer-edge-to-WFM-read-only",
+            "authentication": "customer-managed backend-service app and LN API role over an exact private HTTPS origin",
+            "notes": "Use customer-controlled outbound edge connectivity. Direct SQL, identity switching, generic route access and write or action methods remain denied."
+          },
+          {
+            "type": "Infor BOD, Data Lake or governed export fallback",
+            "direction": "LN-export-to-WFM-read-only",
+            "authentication": "customer-owned ION, Data Lake, secure-file or managed integration identity",
+            "notes": "Use existing event-hint, managed-export and batch-reconciliation controls. BOD events are not completeness, checkpoint or deletion authority."
+          }
+        ],
+        "deploymentVariants": {
+          "LN-multi-tenant-cloud": {
+            "customerEdgeRequired": false,
+            "routing": "Regional Infor ION API Gateway route to one approved tenant, activated service, company and API role per checkpoint namespace."
+          },
+          "LN-single-tenant-cloud-or-on-premises": {
+            "customerEdgeRequired": true,
+            "routing": "Customer-controlled outbound edge route to the exact ION API/LN REST origin; no inbound public exposure or direct database access."
+          },
+          "multi-company-or-acquired-estate": {
+            "customerEdgeRequired": "by-instance",
+            "routing": "Partition every Infor tenant, LN instance, company, site and acquired estate even when one gateway or service identity fronts them."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": [
+            "wfm-tenant",
+            "connection",
+            "Infor-tenant",
+            "api-origin",
+            "api-version",
+            "company",
+            "API-identity",
+            "route",
+            "method",
+            "service-activation",
+            "route-authorization",
+            "content-language",
+            "metadata",
+            "query",
+            "schema"
+          ],
+          "sourceIdentityDimensions": [
+            "wfm-tenant",
+            "connection",
+            "Infor-tenant",
+            "LN-instance",
+            "company",
+            "route",
+            "entity",
+            "stable-source-key",
+            "source-version"
+          ]
+        },
+        "executionContextAuthority": {
+          "explicitCompanyHeaderRequired": true,
+          "defaultCompanyAllowed": false,
+          "identitySwitchAllowed": false,
+          "explicitContentLanguageRequired": true,
+          "serviceActivationFingerprintRequired": true,
+          "routeAuthorizationFingerprintRequired": true,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "writeBackAuthority": false,
+          "notes": "Infor documents that an absent or empty X-Infor-LnCompany header executes in the svc_ln user's default company. WFM therefore requires and fingerprints an explicit company header. X-Infor-LnIdentity is disabled for this route, and Content-Language is explicit so service-user defaults cannot silently change source context."
+        },
+        "routeReadAuthority": {
+          "exactGetRoutesRequired": true,
+          "allMethodsAllowed": false,
+          "allCompaniesAllowed": false,
+          "unreviewedCascadeAllowed": false,
+          "actionRoutesAllowed": false,
+          "notes": "LN route roles can be granted by method and company and can cascade to child routes. WFM permits only reviewed GET collection/entity routes for the named company. POST actions and PUT/PATCH/DELETE routes remain denied even if the OAuth token or parent route is valid."
+        },
+        "dataObjects": [
+          "companies-sites-and-warehouses",
+          "employees-teams-and-work-calendars",
+          "skills-and-labour-reference",
+          "production-orders-and-operations",
+          "work-centres-and-machine-operations",
+          "employee-and-machine-hours",
+          "quantities-complete-and-scrap",
+          "service-and-maintenance-orders",
+          "assets-equipment-and-downtime",
+          "materials-and-inventory",
+          "BOM-routings-and-product-structures",
+          "purchase-orders-and-suppliers",
+          "quality-and-inspection",
+          "production-and-project-costs",
+          "general-ledger-and-cost-centres"
+        ],
+        "canonicalObjects": [
+          "legal-entity",
+          "site",
+          "warehouse",
+          "person",
+          "employment",
+          "skill",
+          "work-centre",
+          "machine-asset",
+          "production-order",
+          "operation",
+          "time-event",
+          "maintenance-order",
+          "material-movement",
+          "inventory-balance",
+          "supplier",
+          "quality-event",
+          "scrap-event",
+          "cost-centre",
+          "labour-cost",
+          "production-outcome"
+        ],
+        "stableIds": "Preserve tenant + LN instance + company + exact route/entity + OData or service key + source version. Keep production order/operation, employee, work centre, machine, item/lot, maintenance order, purchase order/supplier and finance references typed and local; identical values in another company or acquired instance never auto-merge.",
+        "freshness": "Use bounded REST/OData reads for operational data where the exact activated service exposes them. BOD or Data Lake signals can reduce latency but remain hints until reconciled against a complete company-scoped read or governed export.",
+        "permissions": "Use a dedicated backend-service app and LN API role with exact GET route authorization for named companies only. Disable broad all-method, all-company and unreviewed cascade grants. Deny POST actions, PUT, PATCH, DELETE, identity switching, service activation, role administration, credential management, BOD publication and database writes.",
+        "paginationDelta": "No universal public pagination or delta contract is assumed across customer-defined and standard LN OData services. Discover the activated service's downloaded API documentation and metadata per route, fingerprint its paging/filter semantics and use the existing capability-proven page-chain guard where completeness can be proven. Otherwise use bounded key ranges or a governed snapshot/export and do not advance a checkpoint.",
+        "customFields": "Discover the activated OData service, entity keys, property types, actions and Customer Defined Fields per tenant and company. LN documents that CDFs can be exposed through OData extension points. Any service activation, metadata, route, CDF, property or key drift quarantines the dataset.",
+        "regionalApiVersions": "Pin regional ION gateway host, Infor tenant, LN release/API version, activated service, company, API role, identity mode and content language. Multi-tenant cloud, single-tenant and on-premises routes never share credentials or checkpoints and do not silently fail over across regions.",
+        "rateLimits": "No universal LN limit is assumed. Respect ION API Gateway policy and observed 429/retry evidence with bounded concurrency on the same tenant, route and company. Never change company, identity, region or host to evade throttling.",
+        "failureModes": [
+          "OAuth credential expiry, revocation or refresh failure",
+          "wrong regional gateway or Infor tenant",
+          "missing company header silently selecting the service account default company",
+          "company header and route-role company mismatch",
+          "unapproved X-Infor-LnIdentity switching",
+          "Content-Language or service-user language drift",
+          "service not activated, not entitled, admin-only or maintenance mode",
+          "parent-route cascade widening authority to child or action routes",
+          "POST, PUT, PATCH or DELETE accidentally enabled",
+          "OData service, key, metadata or Customer Defined Field drift",
+          "incomplete or mis-scoped pagination",
+          "company/site identity collision",
+          "duplicate or conflicting source versions",
+          "429 throttling, timeout or regional outage",
+          "BOD or Data Lake delay, loss, duplication or reordering"
+        ],
+        "reconciliation": "Bind every receipt to the WFM tenant, connection, Infor tenant, exact HTTPS origin/version, activated service, GET route, explicit company header, service identity mode, explicit content language, route authorization, metadata, query, schema, trusted predecessor and observation horizon. Reject defaults, switching, widening, failures, partial results and conflicts. Preserve exact source identities, collapse only exact version+digest replays and grant no direct checkpoint, deletion, payroll, attendance or write authority.",
+        "schemaDrift": "Fingerprint LN release, activated service, route tree, method/company role grants, cascade setting, entity keys/properties/actions, Customer Defined Fields, query, content language and output schema. Any drift quarantines the dataset before checkpoint consideration.",
+        "retriesReconnect": "401 stops for credential/authorized-app review; 403 stops for API identity, route role and company review; 404/503 distinguishes activation, entitlement, maintenance and unsupported release before retry; 429 uses bounded same-route backoff. Network/5xx recovery restarts from the trusted predecessor or last verified page boundary without changing tenant, company, identity, language, route, metadata or schema.",
+        "evidenceUrl": "https://docs.infor.com/ln/latest/en-us/lnesolh/lnrestapiag/yqw1698244624331.html",
+        "evidenceNote": "Documentation-only verification. Official Infor documentation establishes LN OAuth 2.0 authorized apps including Client Credentials, downloadable API documentation, activated REST/OData services, explicit X-Infor-LnCompany execution context, API identities and company/method-specific route roles. It also documents that an absent company header uses the service account default, identity switching is possible, GET/POST/PATCH/PUT/DELETE surfaces coexist, and Customer Defined Fields can be exposed through OData APIs. LN product documentation establishes production, work-centre, hours, quantity/scrap, service/maintenance, material/inventory, procurement, quality and cost domains. No sandbox, no customer tenant authentication, no live read, no real pagination, no denied mutation and no hosted proof are claimed.",
+        "valueOpportunities": [
+          "combine production-order operation demand, work-centre and machine capacity with WFM skills and availability to target genuine qualified-labour shortages and reduce avoidable overtime or agency use",
+          "separate paid idle time caused by machine, material, maintenance, quality, supplier or queue constraints from workforce capacity shortages",
+          "compare company-scoped employee and machine hours with WFM attendance and payroll-ready time to find missing, duplicated or misattributed labour without treating ERP hours as attendance truth",
+          "attribute labour, scrap, rework and maintenance cost to order, operation, project and good-unit outcomes while preserving source authority and causal uncertainty",
+          "reuse one explicit-context route for a small single-company manufacturer and independently partition global multi-company, regional and acquired LN estates"
+        ],
+        "causalOutcomeReadiness": "Preserve company, site, production order, operation, employee/team, work centre, machine, maintenance, material, quality, scrap, project/cost and source-version identifiers with effective and observation times. Record recommendation, approval, intervention and outcome windows separately and retain competing demand, machine, material, maintenance, quality and supplier changes.",
+        "nextBuildAction": "Use an authorised Infor LN test tenant to prove Client Credentials, exact regional tenant and company isolation, explicit company header versus denied default company execution, dedicated service identity with identity switching disabled, exact GET route roles, service activation and metadata discovery, content-language stability, real paging/filter behaviour, CDF drift, 401/403/404/429/503 recovery, and denied POST/PATCH/PUT/DELETE mutation routes without production or payroll mutation."
+      }
+    }
+  ]
+}
