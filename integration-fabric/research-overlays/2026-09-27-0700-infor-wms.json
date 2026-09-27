@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Infor WMS documentation promotion and facility-scoped event-to-snapshot recovery authority.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "infor-wms",
+      "patch": {
+        "protocols": ["Infor ION API Gateway", "Infor WMS REST APIs", "Infor BOD and integration events", "CSV and governed export fallback"],
+        "auth": "OAuth 2.0 bearer access through Infor ION API Gateway or customer-managed enterprise authentication for the exact cloud/on-premises route",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.infor.com/wms/2026.x/en-us/useradminlib/wmsfrcstug/jcj1757672560877.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": "by-deployment",
+        "connectionRoutes": [
+          {"type":"multi-tenant cloud through Infor ION API Gateway","direction":"WMS-to-WFM-read-only","authentication":"dedicated OAuth 2.0 authorised app and least-privilege API suite","notes":"Pin region, tenant, suite, facility, warehouse, owner, exact GET resource and schema."},
+          {"type":"single-tenant or on-premises WMS through customer edge","direction":"customer-edge-to-WFM-read-only","authentication":"customer-managed ION API or private enterprise route","notes":"Use outbound customer-controlled connectivity; no inbound exposure or direct database writes."},
+          {"type":"BOD, integration event or secure export fallback","direction":"WMS-export-to-WFM-read-only","authentication":"customer-owned ION, middleware or secure-file identity","notes":"Events are hints only and failed/retried deliveries reconcile through a complete scoped snapshot or governed batch."}
+        ],
+        "deploymentVariants": {
+          "cloud":{"customerEdgeRequired":false,"routing":"Regional ION API Gateway route partitioned by Infor tenant, facility, warehouse and owner."},
+          "single-tenant-or-on-premises":{"customerEdgeRequired":true,"routing":"Customer-controlled outbound route to the exact private WMS/ION endpoint."},
+          "multi-facility-or-3pl":{"customerEdgeRequired":"by-instance","routing":"Partition every client owner, facility and warehouse even when one WMS tenant serves all of them."}
+        },
+        "sourceScope": {
+          "requiredDimensions":["wfm-tenant","connection","Infor-tenant","api-origin","api-version","facility","warehouse","owner","resource","route","event-topic","query","event-schema","snapshot-schema"],
+          "sourceIdentityDimensions":["wfm-tenant","connection","Infor-tenant","facility","warehouse","owner","resource","stable-source-key","source-version"]
+        },
+        "eventSnapshotRecovery": {
+          "eventHintsAuthoritative": false,
+          "exactClosedWindowRequired": true,
+          "completeTerminalSnapshotRequired": true,
+          "failedHintsMustReappear": true,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "writeBackAuthority": false,
+          "notes": "Failed, missing, duplicated or retried integration events cannot move state. Each failed hint must be recovered by the exact source identity, version and digest in a complete facility/warehouse/owner-scoped terminal snapshot. The result is reconciliation evidence only."
+        },
+        "dataObjects": [
+          "facilities-warehouses-zones-and-locations","owners-clients-and-trading-partners","items-SKUs-lots-LPNs-and-inventory","purchase-orders-ASNs-receipts-and-putaway","orders-waves-allocation-picks-packs-loads-and-shipments","warehouse-labour-tasks-and-timesheets","users-equipment-and-work-areas","appointments-docks-carriers-and-service-windows","cycle-counts-holds-quality-and-exceptions","replenishment-crossdock-and-work-orders","billing-charges-and-cost-reference","operational-and-labour-forecasts"
+        ],
+        "canonicalObjects": ["legal-entity","site","warehouse","storage-location","product-sku","inventory-balance","material-movement","supplier","carrier","purchase-order","receipt","customer-order","shipment","work-assignment","person-reference","time-event","equipment-asset","quality-event","cost-centre","labour-cost","operational-forecast","production-outcome"],
+        "stableIds": "Preserve tenant + facility + warehouse + owner/client + object type + native key + source version. Lot, LPN, item, order, receipt, wave, task, user, dock, shipment and carrier identifiers remain typed and local; identical values in another owner, warehouse or acquired instance never auto-merge.",
+        "freshness": "Use bounded REST reads for operational snapshots and ION/BOD/integration events as low-latency hints. Failed or retried events recover only through the same closed-window scoped snapshot. CSV or managed exports remain valid for small or legacy estates.",
+        "permissions": "Grant a dedicated read identity only the exact WMS API suite and GET resources required for the named facilities, warehouses and owners. Deny shipment, allocation, inventory, task, billing, configuration, user, credential and integration-log mutation.",
+        "paginationDelta": "Do not assume one universal paging or delta contract across WMS releases and modules. Discover and fingerprint the tenant API documentation per resource. A page chain must terminate and prove the exact window before recovery admission; record count, event delivery or a successful page alone never proves completeness.",
+        "customFields": "Discover owner-specific UDFs, extension fields, BIO rules, item attributes, lot attributes and feature controls per facility. Any route, projection, key, type, UDF or schema drift quarantines the dataset.",
+        "regionalApiVersions": "Pin regional ION host, tenant, WMS release, API suite/version, facility, warehouse, owner and schema. Cloud, single-tenant and on-premises routes never share credentials or checkpoints and never fail over across regions silently.",
+        "rateLimits": "No universal WMS limit is assumed. Honour API Gateway policy and observed 429/Retry-After evidence with bounded concurrency per tenant and route; never switch region, owner or warehouse to evade throttling.",
+        "failureModes": ["OAuth expiry, revocation or wrong ION tenant","wrong facility, warehouse or 3PL owner scope","integration event loss, duplication, reordering or terminal retry failure","integration-log reset before recovery evidence","partial or looping REST pagination","event and snapshot schema drift","owner-specific UDF or feature-control drift","inventory, lot, LPN, order or task identity collision","stale or impossible event timestamps","429 throttling, timeout or regional outage","unit, timezone or local-calendar mismatch","write/action route accidentally enabled"],
+        "reconciliation": "Bind each hint and recovery receipt to WFM tenant, connection, Infor tenant, exact HTTPS origin/version, facility, warehouse, owner, resource, event topic, GET snapshot route, query, schemas, trusted predecessor and closed UTC window. Require a successful complete terminal snapshot and exact recovery of every declared failed event version. Collapse only exact replays, quarantine conflicts and grant no direct checkpoint, deletion, write, attendance or payroll authority.",
+        "schemaDrift": "Fingerprint WMS release/API suite, endpoint documentation, facility/owner configuration, route, projection, event topic, object keys, UDFs, units, query and both event/snapshot schemas. Drift quarantines the dataset before reconciliation.",
+        "retriesReconnect": "401 stops for credential review; 403 stops for role/facility/owner review; 404/503 distinguishes route, entitlement, release and maintenance before retry; 429 uses bounded same-scope backoff. Event failures and partial reads restart from the trusted predecessor and recover via a new complete closed-window snapshot without changing scope.",
+        "evidenceUrl": "https://docs.infor.com/wms/2026.x/en-us/useradminlib/wmsfrcstug/jcj1757672560877.html",
+        "evidenceSources": [
+          {"url":"https://docs.infor.com/wms/2026.x/en-us/useradminlib/wmsfrcstug/jcj1757672560877.html","supports":"REST and CSV inputs for outbound, inbound and labour forecasts; owner-key validation limitation"},
+          {"url":"https://docs.infor.com/wms/2021.x/en-us/wmsbom/index.html","supports":"official WMS REST API, interface, ION integration, BOD, multi-facility, labour, inventory, receiving, shipping and work-order guide inventory"},
+          {"url":"https://docs.infor.com/wms/2023.x/en-us/useradminlib/sceprodug/bev1675332482860.html","supports":"warehouse labour tasks, user assignment, timesheet reference, extensibility and REST task instructions"},
+          {"url":"https://docs.infor.com/wms/2023.x/en-us/useradminlib/release_notes_2022/xxi1666280078281.html","supports":"failed BOD integration-event retry records and warehouse/owner-scoped AltSKU API"},
+          {"url":"https://docs.infor.com/wms/11.5.x/en-us/sceolh/oth1612894256172.html","supports":"cloud/on-premises event and REST integration variants"},
+          {"url":"https://docs.infor.com/inforos/2024.x/en-us/useradminlib_cloud/apigatewayag_cloud/etc1489428684297.html","supports":"OAuth 2.0 bearer validation and tenant/identity context in ION API Gateway"},
+          {"url":"https://docs.infor.com/inforos/2024.x/en-us/useradminlib_cloud/apigatewayag_cloud/ozi1489597327213.html","supports":"tenant API-suite endpoint documentation discovery through secured ionapi-doc routes"}
+        ],
+        "evidenceNote": "Documentation-only verification. Official Infor WMS documentation identifies the WMS REST API guide, REST/CSV import for outbound, inbound and labour forecasts, REST-enabled warehouse tasks, inventory and shipment APIs, cloud/on-premises integration routes, ION/BOD integration events and retryable failed integration-log records. Infor OS documentation establishes OAuth 2.0 bearer validation and tenant/identity context through API Gateway. No sandbox, no customer tenant authentication, no live read, no real event recovery, no denied mutation and no hosted proof are claimed.",
+        "valueOpportunities": ["join waves, picks, tasks, docks and dispatch commitments to WFM skills and availability to target genuine warehouse labour shortages","separate overtime or agency demand caused by inventory, replenishment, dock, carrier, equipment or quality constraints from workforce capacity","compare WMS task/timesheet evidence with WFM attendance and payroll-ready time without treating WMS activity as attendance truth","forecast inbound, outbound and labour workloads by facility while preserving owner and unit boundaries","reduce implementation effort from a single spreadsheet/export warehouse through global multi-owner multi-region WMS estates using one scope model"],
+        "causalOutcomeReadiness": "Preserve facility, warehouse, owner, order, wave, task, item/lot/LPN, user, equipment, dock, carrier, shipment, event/version and observation-window identifiers. Record recommendation, approval, intervention and outcome times separately and retain competing inventory, equipment, carrier, quality and demand changes.",
+        "nextBuildAction": "Use an authorised Infor WMS test tenant to prove OAuth, regional tenant and facility/warehouse/owner isolation, endpoint-document discovery, exact GET permissions, real paging, event loss/duplicate/retry recovery against a closed-window snapshot, integration-log failure handling, UDF/schema drift, 401/403/404/429/503 recovery and denied inventory/order/task/shipment/billing mutations without production or payroll changes."
+      }
+    }
+  ]
+}
