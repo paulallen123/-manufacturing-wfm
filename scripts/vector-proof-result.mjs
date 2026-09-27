@@ -8,6 +8,7 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     'refreshedUiRetainedPending',
     'managerUiDecided',
     'managerStateReadBack',
+    'requestAuditLinked',
     'freshEmployeeLoginSawDecision'
   ];
   const attendanceChecks = [
