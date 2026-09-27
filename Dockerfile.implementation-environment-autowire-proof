@@ -3,9 +3,11 @@ WORKDIR /app
 COPY integration/runtime/ /app/integration/runtime/
 COPY implementation/runtime/ /app/implementation/runtime/
 COPY scripts/implementation-source-handoff-proof.cjs /app/scripts/implementation-source-handoff-proof.cjs
+COPY ux-overlay/vector-shell.js /app/ux-overlay/vector-shell.js
+COPY ux-overlay/vector-action-queue.test.cjs /app/ux-overlay/vector-action-queue.test.cjs
 RUN node --check /app/integration/runtime/autonomous-integration-hub.cjs \
  && node --check /app/implementation/runtime/tenant-environment-provisioner.cjs \
  && node --check /app/implementation/runtime/one-day-enterprise-engine-core.cjs \
  && node --check /app/scripts/implementation-source-handoff-proof.cjs \
- && node --test /app/integration/runtime/autonomous-integration-hub.test.cjs /app/implementation/runtime/one-day-enterprise-engine.test.cjs
+ && node --test /app/integration/runtime/autonomous-integration-hub.test.cjs /app/implementation/runtime/one-day-enterprise-engine.test.cjs /app/ux-overlay/vector-action-queue.test.cjs
 CMD ["node","scripts/implementation-source-handoff-proof.cjs"]
