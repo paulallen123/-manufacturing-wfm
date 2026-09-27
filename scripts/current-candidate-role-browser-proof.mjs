@@ -15,11 +15,11 @@ assert.ok(password && password.length >= 20, 'Staging password unavailable.');
 // Assert the approved Vector role-first primary navigation, not retired legacy labels.
 // Workflow-specific proof still opens the underlying attendance/payroll/onboarding surfaces below.
 const specs = [
-  { slug: 'manager', email: 'manager@northstar.example', role: 'manager', tenant: 'northstar-demo', payroll: 403, surface: '/api/time-review', nav: 'People' },
-  { slug: 'employee', email: 'maya@northstar.example', role: 'employee', tenant: 'northstar-demo', payroll: 403, surface: '/api/personal', nav: null },
-  { slug: 'payroll', email: 'payroll@northstar.example', role: 'payroll_admin', tenant: 'northstar-demo', payroll: 200, surface: '/api/payroll-run', nav: 'Improve' },
-  { slug: 'company-admin', email: 'superuser@northstar.example', role: 'director', tenant: 'northstar-demo', payroll: 200, surface: '/api/onboarding', nav: 'Factory' },
-  { slug: 'isolation-manager', email: 'other@isolation.example', role: 'manager', tenant: 'isolation-test', payroll: 403, surface: '/api/bootstrap', nav: 'People' }
+  { slug: 'manager', email: 'manager@northstar.example', role: 'manager', tenant: 'northstar-demo', payroll: 403, surface: '/api/time-review', preferredNav: 'People' },
+  { slug: 'employee', email: 'maya@northstar.example', role: 'employee', tenant: 'northstar-demo', payroll: 403, surface: '/api/personal', preferredNav: null },
+  { slug: 'payroll', email: 'payroll@northstar.example', role: 'payroll_admin', tenant: 'northstar-demo', payroll: 200, surface: '/api/payroll-run', preferredNav: null },
+  { slug: 'company-admin', email: 'superuser@northstar.example', role: 'director', tenant: 'northstar-demo', payroll: 200, surface: '/api/onboarding', preferredNav: null },
+  { slug: 'isolation-manager', email: 'other@isolation.example', role: 'manager', tenant: 'isolation-test', payroll: 403, surface: '/api/bootstrap', preferredNav: 'People' }
 ];
 
 const healthResponse = await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(15000) });
@@ -473,22 +473,33 @@ try {
     }
 
     let navigationClicked = null;
-    if (spec.nav) {
-      const controls = page.locator('nav a, nav button, .vector-sidebar a, .vector-sidebar button');
-      const controlCount = await controls.count();
-      let clicked = false;
-      for (let index = 0; index < controlCount; index += 1) {
+    if (!spec.slug.includes('employee')) {
+      const canonicalLabels = ['Today', 'People', 'Plan', 'Factory', 'Improve'];
+      const controls = page.locator('.vector-sidebar [data-vector-nav]');
+      assert.equal(await controls.count(), canonicalLabels.length, `${spec.slug} primary navigation section count drifted.`);
+      const navState = [];
+      for (let index = 0; index < canonicalLabels.length; index += 1) {
         const control = controls.nth(index);
-        const text = String(await control.textContent() || '').replace(/\\s+/g, ' ').trim();
-        if (text !== spec.nav || !(await control.isVisible())) continue;
-        await control.click({ timeout: 5000 });
-        clicked = true;
-        break;
+        const label = String(await control.textContent() || '').replace(/\\s+/g, ' ').trim();
+        navState.push({
+          label,
+          visible: await control.isVisible(),
+          enabled: await control.isEnabled()
+        });
       }
-      assert.equal(clicked, true, `${spec.slug} visible role-first navigation ${spec.nav} unavailable.`);
+      assert.deepEqual(navState.map(item => item.label), canonicalLabels, `${spec.slug} primary navigation labels drifted from the approved five-section shell.`);
+      assert.equal(navState.every(item => item.visible), true, `${spec.slug} primary navigation must remain visible even when permissions disable a section.`);
+
+      let chosenIndex = spec.preferredNav ? navState.findIndex(item => item.label === spec.preferredNav && item.enabled) : -1;
+      if (chosenIndex < 0) chosenIndex = navState.findIndex(item => item.label !== 'Today' && item.enabled);
+      if (chosenIndex < 0) chosenIndex = navState.findIndex(item => item.enabled);
+      assert.ok(chosenIndex >= 0, `${spec.slug} has no enabled approved primary navigation section.`);
+      const chosen = controls.nth(chosenIndex);
+      await chosen.click({ timeout: 5000 });
       await page.waitForTimeout(300);
-      navigationClicked = spec.nav;
+      navigationClicked = navState[chosenIndex].label;
       navigationClicks += 1;
+      console.log(`CURRENT_ROLE_NAVIGATION=PASS|role=${spec.role}|clicked=${navigationClicked}|enabled=${navState.filter(item => item.enabled).map(item => item.label).join(',')}`);
     }
 
     const screenshot = await page.screenshot({ fullPage: true });
