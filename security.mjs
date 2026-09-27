@@ -30,6 +30,58 @@ async function login(email){
 }
 const post=(cookie,body,extra={})=>({method:'POST',cookie,headers:{'content-type':'application/json',origin,...extra},body:typeof body==='string'?body:JSON.stringify(body)});
 async function expectStatus(path,options,expected){const x=await request(path,options);assert.equal(x.status,expected,`${path} expected ${expected}, observed ${x.status}`);return{path,httpStatus:x.status,responseDigest:hash(x.body),traceId:x.headers.get('x-correlation-id')};}
+function londonLocalMinute(value){
+ const d=new Date(value);assert.ok(Number.isFinite(d.getTime()),'attendance timestamp invalid');
+ return new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(' ','T');
+}
+async function ensurePrimaryCorrection(managerCookie){
+ const managerInitial=await request('/api/attendance-corrections',{cookie:managerCookie});
+ assert.equal(managerInitial.status,200,'manager correction dashboard required');
+ const existing=Array.isArray(managerInitial.body?.requests)?managerInitial.body.requests:[];
+ if(existing.length) return {id:String(existing[0].id),created:false,status:String(existing[0].status||'')};
+
+ const openStatuses=new Set(['submitted','information_required','awaiting_approval','payroll_review_required']);
+ const candidates=[['maya@northstar.example','e0'],['leah@northstar.example','e32'],['quality@northstar.example','e16'],['leeds-employee@northstar.example','e24']];
+ let chosen=null;
+ for(const [email,personId] of candidates){
+  const cookie=await login(email);
+  const dash=await request('/api/attendance-corrections',{cookie});
+  if(dash.status!==200) continue;
+  const blocked=new Set((Array.isArray(dash.body?.requests)?dash.body.requests:[]).filter(q=>q.employee===personId&&openStatuses.has(q.status)).map(q=>q.record));
+  const record=(Array.isArray(dash.body?.records)?dash.body.records:[]).find(r=>r.employee===personId&&r.effective?.clockIn&&r.effective?.clockOut&&!blocked.has(r.id));
+  if(record){chosen={cookie,dash:dash.body,record};break;}
+ }
+ assert.ok(chosen,'safe fixture attendance record required');
+ const body={
+  version:chosen.dash.version,
+  command:'correction-submit',
+  payload:{
+   period:chosen.record.period,
+   record:chosen.record.id,
+   clockIn:londonLocalMinute(chosen.record.effective.clockIn),
+   clockOut:londonLocalMinute(chosen.record.effective.clockOut),
+   note:'Security verifier isolation fixture; requested times intentionally preserve source attendance.'
+  },
+  idempotencyKey:'security-isolation-submit-'+deploymentId
+ };
+ const submitted=await request('/api/attendance-corrections/command',post(chosen.cookie,body));
+ assert.equal(submitted.status,200,'security fixture correction submit');
+ const id=String(submitted.body?.result?.id||'');assert.match(id,/^AC-[a-f0-9]{32}$/i,'security fixture correction id');
+ const managerDash=await request('/api/attendance-corrections',{cookie:managerCookie});
+ assert.equal(managerDash.status,200,'manager correction dashboard after submit');
+ const visible=(Array.isArray(managerDash.body?.requests)?managerDash.body.requests:[]).find(q=>String(q.id)===id);
+ assert.ok(visible,'manager must see security fixture correction');
+ const review={
+  version:managerDash.body.version,
+  command:'correction-review',
+  payload:{id,revision:visible.revision,decision:'reject',note:'Security isolation fixture rejected by design; source attendance remains unchanged.'},
+  idempotencyKey:'security-isolation-review-'+deploymentId
+ };
+ const rejected=await request('/api/attendance-corrections/command',post(managerCookie,review));
+ assert.equal(rejected.status,200,'security fixture correction rejection');
+ assert.equal(rejected.body?.result?.status,'rejected','security fixture must close without attendance mutation');
+ return {id,created:true,status:'rejected'};
+}
 async function main(){
  assert.equal(protectedOrigins.has(origin),true,'protected target origin required');
  assert.ok(password.length>=20,'existing target credential required');
@@ -66,7 +118,7 @@ async function main(){
  ])await check('autopilot_'+name,()=>expectStatus('/api/operations/autopilot/execute',options,status));
  await check('cross_origin_login_denied',()=>expectStatus('/api/login',post(null,{email:'nobody@example.invalid',password:'invalid'},{origin:'https://untrusted.invalid'}),403));
  await check('tenant_state_not_mutated_by_ingress_attacks',async()=>{const evidence={};for(const [name,cookie] of [['primary',manager],['other',other]]){const after=await request('/api/operations/autopilot/status',{cookie});assert.equal(after.status,200);assert.deepEqual(after.body,before[name].body);evidence[name]={before:hash(before[name].body),after:hash(after.body)};}return evidence;});
- await check('cross_tenant_correction_read_denied',async()=>{const a=await request('/api/attendance-corrections',{cookie:employee}),b=await request('/api/attendance-corrections',{cookie:other});assert.equal(a.status,200);assert.equal(b.status,200);const primary=Array.isArray(a.body?.requests)?a.body.requests:[],foreign=Array.isArray(b.body?.requests)?b.body.requests:[];assert.ok(primary.length>0,'primary fixture correction required');const ids=new Set(foreign.map(x=>String(x?.id||'')).filter(Boolean));const leaked=primary.filter(x=>ids.has(String(x?.id||'')));assert.deepEqual(leaked,[],'primary tenant correction leaked into foreign tenant response');const sample=primary[0];assert.ok(String(sample?.id||''),'primary correction id required');return{correctionId:String(sample.id),primaryCount:primary.length,foreignCount:foreign.length,primaryDigest:hash(sample)};});
+ await check('cross_tenant_correction_read_denied',async()=>{const fixture=await ensurePrimaryCorrection(manager);const a=await request('/api/attendance-corrections',{cookie:manager}),b=await request('/api/attendance-corrections',{cookie:other});assert.equal(a.status,200);assert.equal(b.status,200);const primary=Array.isArray(a.body?.requests)?a.body.requests:[],foreign=Array.isArray(b.body?.requests)?b.body.requests:[];const sample=primary.find(x=>String(x?.id||'')===fixture.id);assert.ok(sample,'primary fixture correction readback required');const ids=new Set(foreign.map(x=>String(x?.id||'')).filter(Boolean));assert.equal(ids.has(fixture.id),false,'primary tenant correction leaked into foreign tenant response');return{correctionId:fixture.id,fixtureCreated:fixture.created,fixtureStatus:fixture.status,primaryCount:primary.length,foreignCount:foreign.length,primaryDigest:hash(sample)};});
  await check('logout_revokes_autopilot_access',async()=>{await expectStatus('/api/logout',post(manager,{}),200);return expectStatus('/api/operations/autopilot/status',{cookie:manager},401);});
  result.status=result.assertions.some(x=>x.status==='FAIL')?'FAIL':result.assertions.length?'PASS':'UNPROVEN';
 }
