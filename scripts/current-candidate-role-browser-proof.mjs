@@ -766,9 +766,11 @@ try {
   assert.equal(beforePayroll.json.canRelease, false, 'Synthetic attendance baseline unexpectedly allowed payroll release.');
   const beforePayrollTeam = beforePayroll.json.teams.find(item => item.id === teamId);
   assert.ok(beforePayrollTeam, 'Synthetic payroll baseline is missing team s1.');
+  const payrollTeamIds = beforePayroll.json.teams.map(item => item.id);
+  assert.ok(payrollTeamIds.length > 0, 'Payroll authority returned no teams for the proof period.');
 
-  const attendanceManagerContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
-  const attendanceManagerPage = await attendanceManagerContext.newPage();
+  let attendanceManagerContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  let attendanceManagerPage = await attendanceManagerContext.newPage();
   const attendancePageErrors = [];
   attendanceManagerPage.on('pageerror', error => attendancePageErrors.push(String(error?.stack || error)));
   await loginRole(attendanceManagerPage, 'manager@northstar.example');
@@ -778,7 +780,7 @@ try {
   }, period);
   assert.equal(beforeAttendance.status, 200, 'Manager could not read the synthetic weekly review.');
   const payrollJourney = {
-    expectedTeamIds: beforeAttendance.json.teams.map(item => item.id),
+    expectedTeamIds: payrollTeamIds,
     teamSignOffs: [],
     release: null
   };
@@ -1220,7 +1222,7 @@ try {
     };
   }
 
-  for (const targetTeamId of payrollJourney.expectedTeamIds.filter(id => id !== teamId)) {
+  for (const targetTeamId of beforeAttendance.json.teams.map(item => item.id).filter(id => id !== teamId)) {
     payrollJourney.teamSignOffs.push(await completeWeeklyTeam(targetTeamId));
   }
 
@@ -1239,9 +1241,45 @@ try {
     const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period), { cache: 'no-store' });
     return await response.json();
   }, period);
-  assert.equal(convergedWeekly.teams.every(item => item.status === 'signed'), true, 'Weekly review did not converge to all signed teams after authoritative source changes.');
-  console.log('CURRENT_ALL_TEAM_WEEKLY_SIGNOFF=PASS|teams=' + convergedWeekly.teams.map(item => item.id + ':' + item.status).join(',') + '|reconfirmed=' + reconfirmIds.join(','));
-  assert.equal(payrollJourney.teamSignOffs.length, payrollJourney.expectedTeamIds.length);
+  assert.equal(convergedWeekly.teams.every(item => item.status === 'signed'), true, 'Primary manager weekly scope did not converge to signed after authoritative source changes.');
+  console.log('CURRENT_PRIMARY_MANAGER_WEEKLY_SIGNOFF=PASS|teams=' + convergedWeekly.teams.map(item => item.id + ':' + item.status).join(',') + '|reconfirmed=' + reconfirmIds.join(','));
+
+  const primaryVisibleTeamIds = new Set(convergedWeekly.teams.map(item => item.id));
+  const uncoveredPayrollTeamIds = payrollTeamIds.filter(id => !primaryVisibleTeamIds.has(id));
+  const scopedReviewerEmails = ['supervisor@northstar.example', 'director@northstar.example', 'superuser@northstar.example'];
+  for (const targetTeamId of uncoveredPayrollTeamIds) {
+    await attendanceManagerContext.close();
+    let matchedReviewer = null;
+    for (const reviewerEmail of scopedReviewerEmails) {
+      const reviewerContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+      const reviewerPage = await reviewerContext.newPage();
+      reviewerPage.on('pageerror', error => attendancePageErrors.push(String(error?.stack || error)));
+      try {
+        await loginRole(reviewerPage, reviewerEmail);
+        const reviewerWeekly = await reviewerPage.evaluate(async period => {
+          const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period), { cache: 'no-store' });
+          return { status: response.status, json: response.status === 200 ? await response.json() : null };
+        }, period);
+        if (reviewerWeekly.status === 200 && reviewerWeekly.json?.teams?.some(item => item.id === targetTeamId)) {
+          attendanceManagerContext = reviewerContext;
+          attendanceManagerPage = reviewerPage;
+          matchedReviewer = reviewerEmail;
+          break;
+        }
+      } catch {}
+      await reviewerContext.close();
+    }
+    assert.ok(matchedReviewer, `No authenticated fixture reviewer can see payroll team ${targetTeamId}; payroll release remains blocked.`);
+    const evidence = await completeWeeklyTeam(targetTeamId);
+    const existing = payrollJourney.teamSignOffs.findIndex(item => item.teamId === targetTeamId);
+    if (existing >= 0) payrollJourney.teamSignOffs[existing] = evidence;
+    else payrollJourney.teamSignOffs.push(evidence);
+    console.log('CURRENT_SCOPED_WEEKLY_REVIEWER=PASS|team=' + targetTeamId + '|reviewer=' + matchedReviewer);
+  }
+
+  const evidencedTeamIds = [...new Set(payrollJourney.teamSignOffs.map(item => item.teamId))].sort();
+  assert.deepEqual(evidencedTeamIds, [...payrollTeamIds].sort(), 'Not every payroll team has independently persisted weekly sign-off evidence.');
+  console.log('CURRENT_ALL_TEAM_WEEKLY_SIGNOFF=PASS|teams=' + evidencedTeamIds.join(',') + '|reconfirmed=' + reconfirmIds.join(',') + '|scoped=' + uncoveredPayrollTeamIds.join(','));
   assert.deepEqual(attendancePageErrors, [], `Attendance journey uncaught page errors: ${attendancePageErrors.join(' | ')}`);
   await attendanceManagerContext.close();
 
