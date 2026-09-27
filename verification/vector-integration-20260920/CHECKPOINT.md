@@ -121,3 +121,18 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 
 - **BUILT — token-specific local payroll logout revocation.** On exact sealed artifact SHA-256 `dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da`, two independent payroll sessions both accessed the dashboard. Logging out the first deleted only its hashed token row; that bearer immediately received 401 and remained denied after controlled restart, while the second session continued to return 200. Proof: 1/1 passed, 0 failed, 0 skipped. Evidence: `tests/payroll-session-token-revocation.proof.test.cjs` and `evidence/payroll-session-token-revocation-20260927.json`.
 - Boundary: this is local self-service revocation of one presented bearer only. Administrator/IdP account-wide revocation, password-reset invalidation, external IAM/SSO propagation, multi-region consistency, the separately reproduced in-flight mutation race and hosted enforcement remain BLOCKED.
+
+
+## 2026-09-27 — all-team weekly sign-off to payroll-release browser slice
+
+- **Objective:** prevent one signed team from standing in for company payroll readiness; carry the approved Vector UI through every returned weekly team and one immutable payroll release.
+- **Acceptance:** every expected team has request/signature/audit revision equality and refreshed signed state; payroll release returns one persisted/audited batch; exported bytes match the server SHA-256 header; refresh and fresh payroll login return the same batch.
+- **Implementation:** `scripts/current-candidate-role-browser-proof.mjs` now completes every returned team through visible issue/category/employee/sign actions, proves the release remains disabled after the first team, then releases through the payroll UI and reads back CSV, audit, refresh and fresh login. `scripts/vector-proof-result.mjs` rejects partial, duplicate, revision-mismatched or checksum/unpersisted payroll evidence. Docker admission includes `tests/vector-payroll-release-proof.test.mjs`.
+- **Tests:** red 0/2 before the classifier change. Fresh local sealed-runtime regression run: 25 passed, 0 failed, 0 skipped; both changed scripts passed Node syntax checks.
+- **Published evidence:** head `3953eb7628ba5e5c8e1dcdd0fc8b9729d796e531`; blobs `375ba391f40ea246f0343a309b267376419bd9f6` (test), `bfaec1b0c53fed477a64feb08de1fb38d506d4df` (classifier), `2893a2891a4a562014d30680723aa96c91a063f5` (browser verifier), `612aa1bd0a4cd449b43fdae0b65706d36080a63d` (Dockerfile).
+- **Deployment/proof:** **BUILT**, not hosted **PROVEN**. Chromium was unavailable locally. GitHub Customer Proof Gate run 36318966536 failed before execution with no steps or logs; Railway success contexts are build/deployment signals only.
+- **Safety:** no customer, production, payroll-provider, DNS, infrastructure or persistent fixture mutation. No jurisdiction claim and no realised-savings claim.
+- **Scale/global:** team discovery is data-driven with no fixed hierarchy depth; the present synthetic fixture still contains four teams and 172 export rows, so larger-scale performance remains unproved.
+- **Dependencies:** exact-candidate browser execution and release identity binding remain separate Trust/Proof work.
+- **Next action:** execute this exact deployed browser journey; if it passes, preserve the batch across a safe restart and verify role/tenant denial on its export without changing the serving SHA.
+- **Active-work check:** built from completed compatible head `0ff5e3b4ce5172711a225fdd6a6d800dc726ecbc`; no in-flight deployment or migration was interrupted.
