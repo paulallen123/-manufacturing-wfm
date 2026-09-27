@@ -4,6 +4,7 @@ import { chromium } from 'playwright';
 
 const origin = new URL(process.env.VECTOR_PROOF_URL).origin;
 const expectedSha = process.env.WFM_EXPECTED_CANDIDATE_SHA;
+const timeReviewPeriod = '2026-09-07';
 const password = process.env.WFM_STAGING_PASSWORD;
 const requireActionAffordanceCoverage = process.env.WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE === 'true';
 export let browserProofEvidence = { leaveJourney: null, attendanceJourney: null, payrollJourney: null };
@@ -214,13 +215,13 @@ try {
     };
 
     if (spec.slug === 'employee') {
-      actionJourney.evidenceStatus = await page.evaluate(async () => (await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' })).status);
+      actionJourney.evidenceStatus = await page.evaluate(async () => (await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(timeReviewPeriod), { cache: 'no-store' })).status);
       assert.equal(actionJourney.evidenceStatus, 403, 'Employee unexpectedly received manager action evidence.');
     }
 
     if (spec.slug === 'manager') {
       const evidence = await page.evaluate(async () => {
-        const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' });
+        const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(timeReviewPeriod), { cache: 'no-store' });
         let json = null;
         try { json = await response.json(); } catch {}
         return { status: response.status, json };
@@ -423,7 +424,7 @@ try {
         assert.equal(contextSourceId, sourceId, 'Time Review lost the originating source action context.');
 
         const postOpen = await page.evaluate(async () => {
-          const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review', { cache: 'no-store' });
+          const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(timeReviewPeriod), { cache: 'no-store' });
           return { status: response.status, json: await response.json() };
         });
         assert.equal(postOpen.status, 200);
@@ -658,7 +659,7 @@ try {
     issueId: null,
     recordId: null
   };
-  const period = '2026-09-07';
+  const period = timeReviewPeriod;
   const teamId = 's1';
   const issueId = 'issue-5';
   const recordId = 'wr-e2-2026-09-09';
