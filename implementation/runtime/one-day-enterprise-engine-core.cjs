@@ -246,14 +246,14 @@ function createOneDayEnterpriseEngine(options = {}) {
           body: JSON.stringify({
             from,
             to: [to],
-            subject: 'Your implementation is ready to start',
+            subject: 'Your implementation workspace is open',
             text: [
               'Your workforce implementation workspace is ready.',
               '',
               'Open your secure implementation link:',
               startUrl,
               '',
-              'Nothing starts until you select “Go ahead and start” inside the workspace.',
+              'Your implementation run opened when your contract was activated. Review progress and outstanding steps in the workspace.',
               'The link expires ' + expiresAt + '.'
             ].join('\n')
           })
@@ -662,58 +662,57 @@ function createOneDayEnterpriseEngine(options = {}) {
         notification: { delivered: false, unavailable: true }
       });
     }
-    // Reserve a durable attempt before calling the mail transport. Replayed
-    // contract events may recover a transient failure, but cannot mail-loop.
-    if (Number(reserveInvitationAttempt.run(tenant, contractHash, nowIso()).changes) !== 1) {
-      return writeJson(res, createdRun ? 201 : 200, {
-        invitation: null,
-        implementation: readinessForRun(autoStartedRun),
-        notification: { delivered: false, retryExhausted: true }
-      });
-    }
-
-    const id = randomUUID();
-    const rawToken = randomBytes(32).toString('base64url');
-    const expiresAtMs = Date.now() + 7 * 24 * 60 * 60 * 1000;
-    const ts = nowIso();
-    insertInvitation.run(
-      id, tenant, contractHash, recipientHash, sha256(rawToken), 'PENDING',
-      autoStartedRun.target_hours, expiresAtMs, null, ts, ts
-    );
-    const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
-
     let notificationDelivered = false;
-    try {
-      const delivery = await invitationSender({
-        to: recipientEmail,
-        startUrl,
-        expiresAt: new Date(expiresAtMs).toISOString(),
-        tenant,
-        invitationId: id
-      });
-      notificationDelivered = true;
-      record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_SENT', {
-        invitationId: id,
-        targetHours: autoStartedRun.target_hours,
-        contractRefDigest: contractHash.slice(0, 16),
-        provider: delivery?.provider || 'configured-sender',
-        messageId: delivery?.messageId || null
-      });
-    } catch (error) {
-      // Notification failure must never stop a trusted contract from entering
-      // the zero-touch implementation pipeline. Remove the undelivered token,
-      // keep the run, and surface a non-blocking audit event.
-      deleteInvitation.run(id);
-      record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_FAILED', {
-        invitationId: id,
-        contractRefDigest: contractHash.slice(0, 16)
-      });
+    let retryExhausted = false;
+    // Make one automatic recovery attempt within the trusted activation. A
+    // third durable attempt remains available to a later provider replay or
+    // restart, so a slow outage cannot create an unbounded mail loop.
+    for (let localAttempt = 0; localAttempt < 2 && !notificationDelivered; localAttempt += 1) {
+      if (Number(reserveInvitationAttempt.run(tenant, contractHash, nowIso()).changes) !== 1) {
+        retryExhausted = true;
+        break;
+      }
+      const id = randomUUID();
+      const rawToken = randomBytes(32).toString('base64url');
+      const expiresAtMs = Date.now() + 7 * 24 * 60 * 60 * 1000;
+      const ts = nowIso();
+      insertInvitation.run(
+        id, tenant, contractHash, recipientHash, sha256(rawToken), 'PENDING',
+        autoStartedRun.target_hours, expiresAtMs, null, ts, ts
+      );
+      const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
+      try {
+        const delivery = await invitationSender({
+          to: recipientEmail,
+          startUrl,
+          expiresAt: new Date(expiresAtMs).toISOString(),
+          tenant,
+          invitationId: id
+        });
+        notificationDelivered = true;
+        record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_SENT', {
+          invitationId: id,
+          targetHours: autoStartedRun.target_hours,
+          contractRefDigest: contractHash.slice(0, 16),
+          provider: delivery?.provider || 'configured-sender',
+          messageId: delivery?.messageId || null
+        });
+      } catch (error) {
+        // Notification failure must never stop a trusted contract from entering
+        // the zero-touch implementation pipeline. Remove the undelivered token,
+        // keep the run, and surface a non-blocking audit event.
+        deleteInvitation.run(id);
+        record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_FAILED', {
+          invitationId: id,
+          contractRefDigest: contractHash.slice(0, 16)
+        });
+      }
     }
 
     return writeJson(res, createdRun ? 201 : 200, {
       invitation: notificationDelivered ? publicInvitation(invitationByContract.get(tenant, contractHash)) : null,
       implementation: readinessForRun(autoStartedRun),
-      notification: { delivered: notificationDelivered }
+      notification: { delivered: notificationDelivered, retryExhausted }
     });
   }
 
