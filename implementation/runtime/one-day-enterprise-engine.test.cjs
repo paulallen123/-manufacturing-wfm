@@ -46,6 +46,8 @@ function fixture(options = {}) {
     internalToken: 'implementation-worker-test-token',
     contractWebhookSecret: 'contract-webhook-test-token',
     publicOrigin: options.publicOrigin ?? 'https://implementation.test',
+    notificationRetryDelayMs: options.notificationRetryDelayMs,
+    notificationRetryPollMs: options.notificationRetryPollMs ?? 0,
     sendInvitation: async invitation => {
       invitationAttempts += 1;
       if (options.acceptThenFailFirstInvitation && invitationAttempts === 1) {
@@ -91,6 +93,15 @@ function response() {
     },
     headers
   };
+}
+
+async function waitFor(predicate, timeoutMs = 500) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (predicate()) return;
+    await new Promise(resolve => setTimeout(resolve, 5));
+  }
+  assert.fail('Timed out waiting for automatic recovery.');
 }
 
 async function call(engine, token, method, url, body, extraHeaders = {}) {
@@ -485,8 +496,8 @@ test('failed invitation retries stop at a durable three-attempt budget', async (
   }
 });
 
-test('failed invitation can be recovered after a safe engine restart', async () => {
-  const f = fixture({ failInvitationDelivery: true });
+test('failed invitation is retried automatically after a safe engine restart', async () => {
+  const f = fixture({ failInvitationDelivery: true, notificationRetryDelayMs: 0 });
   let restarted;
   let originalClosed = false;
   try {
@@ -501,19 +512,69 @@ test('failed invitation can be recovered after a safe engine restart', async () 
       internalToken: 'implementation-worker-test-token',
       contractWebhookSecret: 'contract-webhook-test-token',
       publicOrigin: 'https://implementation.test',
+      notificationRetryDelayMs: 0,
+      notificationRetryPollMs: 5,
       sendInvitation: async invitation => {
         delivered.push(invitation);
         return { provider: 'test-mailer', messageId: 'mail-after-restart' };
       }
     });
-    const second = await call(restarted, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
-    assert.equal(second.status, 200);
-    assert.equal(second.body.implementation.runId, first.body.implementation.runId);
-    assert.equal(second.body.notification.delivered, true);
+    await waitFor(() => delivered.length === 1);
     assert.equal(delivered.length, 1);
+    const recoveredToken = new URL(delivered[0].startUrl).searchParams.get('implementation_invite');
+    const started = await call(
+      restarted, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',
+      { token: recoveredToken }
+    );
+    assert.equal(started.status, 201);
+    assert.equal(started.body.runId, first.body.implementation.runId);
     const db = new DatabaseSync(f.dbPath);
     assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
     assert.equal(db.prepare('SELECT attempts FROM implementation_notification_attempts').get().attempts, 3);
+    db.close();
+  } finally {
+    restarted?.close();
+    if (!originalClosed) f.engine.close();
+    fs.rmSync(f.dir, { recursive: true, force: true });
+  }
+});
+
+test('tampered delayed-retry evidence fails closed without sending', async () => {
+  const f = fixture({ failInvitationDelivery: true, notificationRetryDelayMs: 0 });
+  let restarted;
+  let originalClosed = false;
+  try {
+    const event = { tenant: 'alpha', contractRef: 'contract-mail-tamper', targetHours: 8, recipientEmail: 'manager@alpha' };
+    const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(first.body.notification.pendingRetry, true);
+    f.engine.close();
+    originalClosed = true;
+
+    const tamper = new DatabaseSync(f.dbPath);
+    tamper.prepare('UPDATE implementation_notification_outbox SET recipient_ciphertext=?').run('tampered');
+    tamper.close();
+
+    const delivered = [];
+    restarted = createOneDayEnterpriseEngine({
+      dbPath: f.dbPath,
+      internalToken: 'implementation-worker-test-token',
+      contractWebhookSecret: 'contract-webhook-test-token',
+      publicOrigin: 'https://implementation.test',
+      notificationRetryPollMs: 0,
+      sendInvitation: async invitation => {
+        delivered.push(invitation);
+        return { provider: 'test-mailer', messageId: 'must-not-send' };
+      }
+    });
+    const recovery = await restarted.retryDueNotifications({ nowMs: Date.now() + 60_000 });
+    assert.equal(recovery.blocked, 1);
+    assert.equal(recovery.delivered, 0);
+    assert.equal(delivered.length, 0);
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT state FROM implementation_notification_outbox').get().state, 'BLOCKED');
+    assert.equal(db.prepare('SELECT attempts FROM implementation_notification_attempts').get().attempts, 2);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_RECOVERY_BLOCKED'").get().count, 1);
     db.close();
   } finally {
     restarted?.close();
