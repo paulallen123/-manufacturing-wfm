@@ -128,12 +128,56 @@ try {
     assert.equal(identity.json.actor?.tenant, spec.tenant, `${spec.slug} tenant mismatch.`);
 
     const boundary = await page.evaluate(async ({ surface }) => {
-      const payroll = await fetch('/api/payroll-run');
-      const required = await fetch(surface);
-      return { payroll: payroll.status, surface: required.status };
+      const payroll = await fetch('/api/payroll-run', { cache: 'no-store' });
+      const required = await fetch(surface, { cache: 'no-store' });
+      return {
+        payroll: payroll.status,
+        payrollSha: payroll.headers.get('x-wfm-source-sha'),
+        payrollBinding: payroll.headers.get('x-wfm-source-binding'),
+        surface: required.status,
+        surfaceSha: required.headers.get('x-wfm-source-sha'),
+        surfaceBinding: required.headers.get('x-wfm-source-binding')
+      };
     }, { surface: spec.surface });
     assert.equal(boundary.payroll, spec.payroll, `${spec.slug} payroll boundary mismatch.`);
     assert.equal(boundary.surface, 200, `${spec.slug} required surface failed.`);
+    assert.equal(boundary.payrollSha, expectedSha, `${spec.slug} payroll response was not exact-SHA bound.`);
+    assert.equal(boundary.payrollBinding, 'build-file-matched', `${spec.slug} payroll response was not build-file matched.`);
+    assert.equal(boundary.surfaceSha, expectedSha, `${spec.slug} required surface was not exact-SHA bound.`);
+    assert.equal(boundary.surfaceBinding, 'build-file-matched', `${spec.slug} required surface was not build-file matched.`);
+
+    if (spec.slug === 'manager' || spec.slug === 'employee') {
+      assert.equal(boundary.payroll, 403, `${spec.slug} unexpectedly gained payroll visibility.`);
+      console.log(`CURRENT_PAYROLL_ROLE_DENIAL=PASS|role=${spec.slug}|status=403|candidateSha=${expectedSha}`);
+    }
+
+    if (spec.slug === 'isolation-manager') {
+      const crossTenant = await page.evaluate(async expectedSha => {
+        const injected = await fetch('/api/payroll-run', {
+          cache: 'no-store',
+          headers: { 'x-wfm-tenant': 'northstar-demo' }
+        });
+        const queryAttempt = await fetch('/api/payroll-run?tenant=northstar-demo', { cache: 'no-store' });
+        const bootstrap = await fetch('/api/bootstrap', { cache: 'no-store' });
+        const actor = bootstrap.status === 200 ? (await bootstrap.json()).actor : null;
+        return {
+          injectedStatus: injected.status,
+          injectedSha: injected.headers.get('x-wfm-source-sha'),
+          queryStatus: queryAttempt.status,
+          querySha: queryAttempt.headers.get('x-wfm-source-sha'),
+          actorTenant: actor?.tenant || null,
+          bootstrapSha: bootstrap.headers.get('x-wfm-source-sha'),
+          expectedSha
+        };
+      }, expectedSha);
+      assert.equal(crossTenant.injectedStatus, 400, 'Client-supplied cross-tenant identity header was not rejected.');
+      assert.equal(crossTenant.queryStatus, 403, 'Separate-tenant manager bypassed payroll denial through a tenant query selector.');
+      assert.equal(crossTenant.actorTenant, 'isolation-test', 'Cross-tenant attempts changed the authoritative session tenant.');
+      assert.equal(crossTenant.injectedSha, expectedSha, 'Cross-tenant identity-header denial was not exact-SHA bound.');
+      assert.equal(crossTenant.querySha, expectedSha, 'Cross-tenant payroll denial was not exact-SHA bound.');
+      assert.equal(crossTenant.bootstrapSha, expectedSha, 'Post-attack tenant read-back was not exact-SHA bound.');
+      console.log(`CURRENT_CROSS_TENANT_PAYROLL_DENIAL=PASS|header=400|query=403|tenant=isolation-test|candidateSha=${expectedSha}`);
+    }
 
     const ui = await page.evaluate(async () => {
       const [scriptAsset, styleAsset, workflowAsset] = await Promise.all([
