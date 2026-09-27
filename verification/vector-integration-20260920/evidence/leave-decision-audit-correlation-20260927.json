@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T10:27:48Z",
+  "verifier": "Trust Proof Security Reliability Release Engine independent verifier",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "candidateSourceSha": "a2bb165ac2a3a847737c609dbc41fbd376050be1",
+  "productSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b",
+  "evidenceBoundary": {
+    "environment": "local exact sealed artifact with candidate leave-audit hardener applied",
+    "data": "fictional synthetic SQLite fixture",
+    "hosted": false,
+    "customer": false,
+    "production": false
+  },
+  "runtime": {
+    "artifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "candidateHardenerSha256": "034c746e9e19b30e1685c176500a43d2b2da717e82bce2c9fcb4e9a0255cfe38",
+    "localExecutorNode": "v24.19.0",
+    "exactContainerNode22Executed": false
+  },
+  "attack": {
+    "hypothesis": "Binding a leave decision to its request ID inside the same mutable tenant JSON does not provide independent tamper evidence when both decision and domain audit are rewritten together.",
+    "command": "WFM_SEALED_RUNTIME_ARTIFACT=sealed-runtime-4bd3.tar.gz WFM_LEAVE_AUDIT_HARDENER=scripts/harden-leave-audit-linkage.mjs node --test tests/leave-decision-audit-correlation.adversarial.test.cjs",
+    "testSha256": "d7696cd5386fb08eb625927a34cc8e9fe76367ced9fc3966d2d8b6a569d94531",
+    "result": {
+      "pass": 0,
+      "fail": 1,
+      "skipped": 0,
+      "exitCode": 1
+    },
+    "observed": {
+      "initialDecision": "declined",
+      "rewrittenDecision": "approved",
+      "rewrittenDomainAudit": "<request id>; approved",
+      "appendOnlyCommandAuditFields": ["version", "resultId"],
+      "appendOnlyCommandAuditDecisionPresent": false,
+      "serviceHealthyAfterRestart": true,
+      "bootstrapStatusAfterRestart": 200,
+      "rewrittenDecisionReturned": true
+    }
+  },
+  "rootCause": {
+    "description": "The request outcome and request-bound domain audit are stored together in the mutable tenants.state JSON. The separately append-only audit_events entry contains only version and resultId, so startup and reads cannot correlate or detect a changed decision.",
+    "workingControl": "The leave audit now identifies the exact request and the database audit table is append-only.",
+    "missingControl": "An independently retained decision/reviewer/payload digest or hash-chain checkpoint enforced at startup and before consequential reads."
+  },
+  "claimChanges": {
+    "leaveRequestAuditLinkage": "BUILT",
+    "leaveDecisionAuditTamperResistance": "BLOCKED",
+    "leaveDecisionRecoveryIntegrity": "BLOCKED",
+    "customerRelease": "BLOCKED",
+    "marketingVideoReadiness": "BLOCKED"
+  },
+  "requiredRepair": [
+    "Bind the exact request, decision, employee, reviewer, reviewed time and canonical payload/state digest to independently verifiable append-only evidence.",
+    "Verify the correlation at startup and before returning or exporting consequential leave state.",
+    "Fail closed with recovery evidence when domain state and immutable audit evidence diverge.",
+    "Prove known-good restore and exact reconciliation before reopening service."
+  ],
+  "nextProof": "Make this fail-first regression pass on a newly sealed Node 22 artifact, then repeat the exact hosted leave journey, controlled restart and audit reconciliation on one admitted build.",
+  "safety": "No hosted deployment, live database, customer record, payroll record, credential, DNS or infrastructure was changed."
+}
