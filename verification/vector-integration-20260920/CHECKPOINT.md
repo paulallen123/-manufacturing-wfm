@@ -101,3 +101,10 @@ The following is a requirements index, not a claim that all listed capabilities 
 5. Continue independent implementation, integration and Frontier tasks under their existing owners. Record exact scoped statuses: PROVEN, BUILT, DESIGNED, RESEARCHED or BLOCKED. Use PROVEN only for the approved real environment.
 
 Usage: two bounded independent delegates; reused existing repairs, workstreams and infrastructure. No new paid service or duplicated automation. Token/cost totals are not exposed; savings are not estimated. No live deployment, restart, credential change or external payroll/provider submission has occurred during this integration.
+
+
+## Trust and release delta — 27 September 2026
+
+- **BLOCKED — payroll command replay safety.** On sealed artifact SHA-256 `dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da`, an exact retry of one post-release adjustment proposal with the same idempotency key created `PADJ-2` after `PADJ-1`; both were independently approvable and one export contained two rows. Regression: 0/1 passed, 1/1 failed, 0 skipped. Evidence: `tests/payroll-command-idempotency.adversarial.test.cjs` and `evidence/payroll-command-idempotency-20260927.json`.
+- Root cause: the generic `/api/command` path does not persist and replay consequential payroll commands by tenant, actor, key and canonical command/payload digest. Required next action is a transactional idempotency receipt, different-payload rejection, and proposal/approval/export retry proof under concurrency and restart.
+- **BLOCKED — release admission.** Exact-head GitHub run 36291526749 recorded runner ID 0 and zero steps, so it is infrastructure non-execution rather than a product result. Same-build hosted browser, durable restart/recovery, customer release and the three-minute marketing video remain BLOCKED.
