@@ -41,14 +41,16 @@ function fixture(options = {}) {
 
   const sentInvitations = [];
   let invitationAttempts = 0;
-  const engine = createOneDayEnterpriseEngine({
+  const engineOptions = {
     dbPath,
     internalToken: 'implementation-worker-test-token',
     contractWebhookSecret: 'contract-webhook-test-token',
     publicOrigin: options.publicOrigin ?? 'https://implementation.test',
     notificationRetryDelayMs: options.notificationRetryDelayMs,
-    notificationRetryPollMs: options.notificationRetryPollMs ?? 0,
-    sendInvitation: options.sendInvitation || (async invitation => {
+    notificationRetryPollMs: options.notificationRetryPollMs ?? 0
+  };
+  if (!options.useDefaultInvitationSender) {
+    engineOptions.sendInvitation = options.sendInvitation || (async invitation => {
       invitationAttempts += 1;
       if (options.acceptThenFailFirstInvitation && invitationAttempts === 1) {
         sentInvitations.push(invitation);
@@ -59,8 +61,9 @@ function fixture(options = {}) {
       if (options.failInvitationDelivery) throw new Error('simulated mail transport failure');
       sentInvitations.push(invitation);
       return { provider: 'test-mailer', messageId: 'mail-' + sentInvitations.length };
-    })
-  });
+    });
+  }
+  const engine = createOneDayEnterpriseEngine(engineOptions);
 
   return {
     dir,
@@ -681,6 +684,44 @@ test('missing public origin does not block trusted implementation start or creat
     db.close();
   } finally {
     f.close();
+  }
+});
+
+test('missing message provider configuration fails immediately without wasting retries or storing an invitation', async () => {
+  const previousApiKey = process.env.RESEND_API_KEY;
+  const previousFrom = process.env.WFM_IMPLEMENTATION_FROM_EMAIL;
+  delete process.env.RESEND_API_KEY;
+  delete process.env.WFM_IMPLEMENTATION_FROM_EMAIL;
+  const f = fixture({ useDefaultInvitationSender: true });
+  try {
+    const result = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
+      { tenant: 'alpha', contractRef: 'contract-no-provider', targetHours: 8, recipientEmail: 'manager@alpha' },
+      f.internal
+    );
+    assert.equal(result.status, 201);
+    assert.equal(result.body.implementation.state, 'BUILDING');
+    assert.equal(result.body.notification.unavailable, true);
+    assert.equal(result.body.notification.reason, 'MESSAGE_PROVIDER_NOT_CONFIGURED');
+    assert.equal(result.body.invitation, null);
+
+    const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
+    assert.equal(status.body.notificationRecovery.state, 'UNAVAILABLE');
+    assert.equal(status.body.notificationRecovery.terminalAction, 'MESSAGE_PROVIDER_CONFIGURATION_REQUIRED');
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_invitations').get().count, 0);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_notification_attempts').get().count, 0);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_notification_outbox').get().count, 0);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_UNAVAILABLE'").get().count, 1);
+    db.close();
+  } finally {
+    f.close();
+    if (previousApiKey === undefined) delete process.env.RESEND_API_KEY;
+    else process.env.RESEND_API_KEY = previousApiKey;
+    if (previousFrom === undefined) delete process.env.WFM_IMPLEMENTATION_FROM_EMAIL;
+    else process.env.WFM_IMPLEMENTATION_FROM_EMAIL = previousFrom;
   }
 });
 
