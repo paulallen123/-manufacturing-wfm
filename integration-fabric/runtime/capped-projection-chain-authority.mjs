@@ -10,12 +10,14 @@ function cloneInert(value,path='value',seen=new WeakSet()){
   if(seen.has(value)) fail(`${path} contains cyclic data`);
   seen.add(value);
   if(Array.isArray(value)){
-    const descriptors=Object.getOwnPropertyDescriptors(value);
     const copy=[];
-    for(const key of Object.keys(descriptors)){
+    for(const key of Reflect.ownKeys(value)){
       if(key==='length') continue;
-      const descriptor=descriptors[key];
-      if(!('value' in descriptor)) fail(`${path}[${key}] contains executable or hidden data`);
+      if(typeof key!=='string') fail(`${path} contains symbol data`);
+      if(SECRET_KEY.test(key)) fail(`${path}.${key} contains secret or credential material`);
+      if(!/^(?:0|[1-9]\d*)$/.test(key)||Number(key)>=4294967295) fail(`${path}.${key} is not an array index`);
+      const descriptor=Object.getOwnPropertyDescriptor(value,key);
+      if(!descriptor?.enumerable||!('value' in descriptor)) fail(`${path}[${key}] contains executable or hidden data`);
       copy[key]=cloneInert(descriptor.value,`${path}[${key}]`,seen);
     }
     seen.delete(value);
@@ -43,6 +45,11 @@ function exactKeys(value,allowed,path){
 function text(value,name){
   if(typeof value!=='string'||!value.trim()) fail(`${name} must be a non-empty string`);
   return value.trim().normalize('NFC');
+}
+
+function opaqueIdentity(value,name){
+  if(typeof value!=='string'||value.length===0) fail(`${name} must be a non-empty opaque string`);
+  return value;
 }
 
 function fingerprint(value,name){
@@ -88,6 +95,7 @@ function canonical(value){
 }
 
 function digest(value){return createHash('sha256').update(canonical(value)).digest('hex');}
+function compareOpaque(left,right){return left<right?-1:left>right?1:0;}
 function same(actual,expected,name){if(actual!==expected) fail(`${name} does not match approved authority`);}
 function deepFreeze(value){
   if(value&&typeof value==='object'&&!Object.isFrozen(value)){
@@ -143,7 +151,7 @@ export function createCappedProjectionChainAuthority(rawPolicy){
 
     let expectedBookmark=null;
     const seenBookmarks=new Set();
-    const byVersion=new Map();
+    const byIdentity=new Map();
     const records=[];
     const pageReceipts=[];
     let reportedRecordCount=0;
@@ -183,11 +191,12 @@ export function createCappedProjectionChainAuthority(rawPolicy){
         const rawRecord=rawPage.records[recordIndex];
         const recordPath=`${path}.records[${recordIndex}]`;
         exactKeys(rawRecord,new Set(['id','sourceVersion','payloadDigest']),recordPath);
-        const id=text(rawRecord.id,`${recordPath}.id`);
-        const sourceVersion=text(rawRecord.sourceVersion,`${recordPath}.sourceVersion`);
+        const id=opaqueIdentity(rawRecord.id,`${recordPath}.id`);
+        const sourceVersion=opaqueIdentity(rawRecord.sourceVersion,`${recordPath}.sourceVersion`);
         const payloadDigest=fingerprint(rawRecord.payloadDigest,`${recordPath}.payloadDigest`);
-        const versionKey=`${id}\0${sourceVersion}`;
-        const prior=byVersion.get(versionKey);
+        let byVersion=byIdentity.get(id);
+        if(!byVersion){byVersion=new Map();byIdentity.set(id,byVersion);}
+        const prior=byVersion.get(sourceVersion);
         if(prior){
           if(prior.payloadDigest!==payloadDigest) fail(`${recordPath} is a conflicting duplicate source version`);
           exactReplayCount++;
@@ -197,7 +206,7 @@ export function createCappedProjectionChainAuthority(rawPolicy){
           id,sourceVersion,payloadDigest,
           scopedRecordFingerprint:`sha256:${digest({scope,id})}`
         };
-        byVersion.set(versionKey,normalized);
+        byVersion.set(sourceVersion,normalized);
         records.push(normalized);
       }
 
@@ -209,7 +218,7 @@ export function createCappedProjectionChainAuthority(rawPolicy){
     }
 
     if(expectedBookmark!==null) fail('bookmark chain is incomplete and missing its terminal page');
-    records.sort((left,right)=>left.id.localeCompare(right.id)||left.sourceVersion.localeCompare(right.sourceVersion));
+    records.sort((left,right)=>compareOpaque(left.id,right.id)||compareOpaque(left.sourceVersion,right.sourceVersion));
     const decision={
       projectionReconciliationCandidate:true,checkpointAdvanceAllowed:false,deletionAuthority:false,
       writeBackAuthority:false,payrollAuthority:false,attendanceAuthority:false,

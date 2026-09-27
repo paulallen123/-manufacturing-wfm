@@ -132,6 +132,22 @@ test('collapses exact versions and quarantines conflicting replays',()=>{
   assert.throws(()=>authority.admit(receipt({pages:[page({records:[record(),record({payloadDigest:CONFLICT})]})]})),/conflicting duplicate/i);
 });
 
+test('preserves opaque source identity bytes and uses collision-free identity tuples',()=>{
+  const authority=createCappedProjectionChainAuthority(policy());
+  const whitespaceDistinct=authority.admit(receipt({pages:[page({records:[
+    record({id:'job',sourceVersion:'v1'}),
+    record({id:' job',sourceVersion:'v1',payloadDigest:PAYLOAD_B})
+  ]})]}));
+  assert.equal(whitespaceDistinct.uniqueVersionCount,2);
+  assert.deepEqual(whitespaceDistinct.records.map(item=>item.id).sort(),[' job','job']);
+
+  const tupleDistinct=authority.admit(receipt({pages:[page({records:[
+    record({id:'a\u0000b',sourceVersion:'c'}),
+    record({id:'a',sourceVersion:'b\u0000c',payloadDigest:PAYLOAD_B})
+  ]})]}));
+  assert.equal(tupleDistinct.uniqueVersionCount,2);
+});
+
 test('partitions identical source IDs by site and projection',()=>{
   const leeds=createCappedProjectionChainAuthority(policy()).admit(receipt());
   const york=createCappedProjectionChainAuthority(policy({siteId:'YORK'})).admit(receipt({siteId:'YORK'}));
@@ -145,6 +161,9 @@ test('rejects secrets and executable evidence and returns immutable output',()=>
   const secret=receipt();
   secret.pages[0].apiKey='do-not-store';
   assert.throws(()=>createCappedProjectionChainAuthority(policy()).admit(secret),/secret|credential/i);
+  const arraySecret=receipt();
+  arraySecret.pages.apiKey='do-not-store';
+  assert.throws(()=>createCappedProjectionChainAuthority(policy()).admit(arraySecret),/secret|credential|array/i);
   const executable=receipt();
   Object.defineProperty(executable.pages[0].records[0],'id',{enumerable:true,get(){throw new Error('executed');}});
   assert.throws(()=>createCappedProjectionChainAuthority(policy()).admit(executable),/executable|hidden/i);
