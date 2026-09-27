@@ -8,6 +8,7 @@ const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs')
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
 const { enforceDurableState } = require('./durable-state-guard.cjs');
+const { createRuntimeIdentity } = require('./runtime-identity.cjs');
 const { serveRetiredPresentation } = require('./retired-presentation.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
@@ -41,6 +42,7 @@ function secureEqualHex(left, right) {
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
 installHostedListenGuard(http, { hosted });
 const ownerAccessRecovery = createOwnerAccessRecovery();
+const runtimeIdentity = createRuntimeIdentity({ hosted });
 let guard = null;
 let integrationHub = null;
 let integrationHubInitError = null;
@@ -438,6 +440,7 @@ http.createServer = function guardedCreateServer(listener) {
     }
     forceVectorUiFreshness(req, res);
     if (serveCanonicalVectorAsset(req, res)) return;
+    if (runtimeIdentity.handleRequest(req, res)) return;
     if (await ownerAccessRecovery.handleRequest(req, res)) return;
     if (handleStagingAccess(req, res)) return;
     restoreStagingSession(req, res);

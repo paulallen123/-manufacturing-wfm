@@ -15,7 +15,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \
  && node scripts/validate-capability-superset.mjs \
  && node scripts/validate-research-convergence-ledger.mjs \
- && node --test resilience/research-convergence-theory-simulator.test.cjs policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/authoritative-policy-source-registry.test.cjs policy/runtime/regulatory-change-candidate.test.cjs \
+ && node --test resilience/research-convergence-theory-simulator.test.cjs policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/authoritative-policy-source-registry.test.cjs policy/runtime/regulatory-change-candidate.test.cjs security/runtime/runtime-identity.test.cjs \
  && node scripts/validate-product-factory.mjs \
  && node scripts/prove-adaptive-intelligence-engine.mjs \
  && node scripts/validate-self-evolution.mjs \
@@ -63,6 +63,7 @@ COPY security/runtime/hosted-listen-guard.cjs /app/security-runtime/hosted-liste
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 COPY security/runtime/owner-access-recovery.cjs /app/security-runtime/owner-access-recovery.cjs
 COPY security/runtime/durable-state-guard.cjs /app/security-runtime/durable-state-guard.cjs
+COPY security/runtime/runtime-identity.cjs /app/security-runtime/runtime-identity.cjs
 COPY security/runtime/retired-presentation.cjs /app/security-runtime/retired-presentation.cjs
 
 # Autonomous integration fabric. The control plane is separately reviewable and
