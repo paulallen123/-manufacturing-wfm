@@ -486,6 +486,8 @@ try {
     managerStateReadBack: false,
     requestAuditLinked: false,
     freshEmployeeLoginSawDecision: false,
+    freshBalanceReconciled: false,
+    balanceTransition: null,
     requestId: null,
     decision: null
   };
@@ -513,6 +515,9 @@ try {
   const beforeIds = new Set((beforeLeave.bootstrap?.state?.requests || []).map(item => item.id));
   const created = (afterRequest.bootstrap?.state?.requests || []).find(item => !beforeIds.has(item.id));
   assert.ok(created?.id && created.status === 'pending', 'Employee UI did not create a source-saved pending leave request.');
+  assert.equal(afterRequest.personal.leave.pendingMinutes, beforeLeave.personal.leave.pendingMinutes + 450, 'Employee UI did not add the requested minutes to the pending leave balance.');
+  assert.equal(afterRequest.personal.leave.bookedMinutes, beforeLeave.personal.leave.bookedMinutes, 'A pending leave request changed the approved booked balance.');
+  assert.equal(afterRequest.personal.leave.remainingMinutes, beforeLeave.personal.leave.remainingMinutes, 'A pending leave request changed the remaining-after-bookings balance.');
   assert.equal(afterRequest.personal.leave.availableMinutes, beforeLeave.personal.leave.availableMinutes - 450, 'Employee UI did not read back the reserved leave balance.');
   leaveJourney.employeeUiSubmitted = true;
   leaveJourney.pendingStateReadBack = true;
@@ -575,9 +580,43 @@ try {
   const approvedRow = freshEmployeePage.locator(`[data-vector-leave-id="${created.id}"] [data-vector-leave-status]`);
   await approvedRow.waitFor({ state: 'visible', timeout: 10000 });
   assert.equal((await approvedRow.innerText()).trim().toLowerCase(), 'approved');
+  const freshEmployeeReadBack = await freshEmployeePage.evaluate(async id => {
+    const response = await fetch('/api/personal', { cache: 'no-store' });
+    const personal = await response.json();
+    return {
+      request: personal.requests.find(item => item.id === id) || null,
+      leave: personal.leave
+    };
+  }, created.id);
+  assert.equal(freshEmployeeReadBack.request?.status, 'approved', 'Fresh employee API state did not retain the approved request.');
+  assert.equal(freshEmployeeReadBack.leave.pendingMinutes, afterRequest.personal.leave.pendingMinutes - 450, 'Approval did not release the request from the pending leave balance.');
+  assert.equal(freshEmployeeReadBack.leave.bookedMinutes, afterRequest.personal.leave.bookedMinutes + 450, 'Approval did not transfer the request into the booked leave balance.');
+  assert.equal(freshEmployeeReadBack.leave.remainingMinutes, afterRequest.personal.leave.remainingMinutes - 450, 'Approval did not deduct the booking exactly once from remaining leave.');
+  assert.equal(freshEmployeeReadBack.leave.availableMinutes, afterRequest.personal.leave.availableMinutes, 'Approval debited available leave a second time or released its reservation.');
   leaveJourney.freshEmployeeLoginSawDecision = true;
+  leaveJourney.freshBalanceReconciled = true;
+  leaveJourney.balanceTransition = {
+    before: {
+      bookedMinutes: beforeLeave.personal.leave.bookedMinutes,
+      pendingMinutes: beforeLeave.personal.leave.pendingMinutes,
+      remainingMinutes: beforeLeave.personal.leave.remainingMinutes,
+      availableMinutes: beforeLeave.personal.leave.availableMinutes
+    },
+    pending: {
+      bookedMinutes: afterRequest.personal.leave.bookedMinutes,
+      pendingMinutes: afterRequest.personal.leave.pendingMinutes,
+      remainingMinutes: afterRequest.personal.leave.remainingMinutes,
+      availableMinutes: afterRequest.personal.leave.availableMinutes
+    },
+    approved: {
+      bookedMinutes: freshEmployeeReadBack.leave.bookedMinutes,
+      pendingMinutes: freshEmployeeReadBack.leave.pendingMinutes,
+      remainingMinutes: freshEmployeeReadBack.leave.remainingMinutes,
+      availableMinutes: freshEmployeeReadBack.leave.availableMinutes
+    }
+  };
   await freshEmployeeContext.close();
-  console.log(`CURRENT_LEAVE_BROWSER_JOURNEY=PASS|request=${created.id}|decision=approved|overlapRefused=true|requestAuditLinked=true|refreshReadback=true|freshLoginReadback=true`);
+  console.log(`CURRENT_LEAVE_BROWSER_JOURNEY=PASS|request=${created.id}|decision=approved|overlapRefused=true|requestAuditLinked=true|balanceReconciled=true|refreshReadback=true|freshLoginReadback=true`);
 
   const attendanceJourney = {
     managerUiApproved: false,
