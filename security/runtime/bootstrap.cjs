@@ -429,6 +429,9 @@ http.createServer = function guardedCreateServer(listener) {
   }
 
   return originalCreateServer.call(http, async (req, res) => {
+    // Bind every asset/API response to the exact process source so browser proof
+    // detects mixed revisions during rolling or multi-replica deployments.
+    runtimeIdentity.applyResponseHeaders(res);
     const guardianStarted = process.hrtime.bigint();
     if (t9CustomerGuardian && !t9CustomerGuardianInitError && typeof res.once === 'function') {
       res.once('finish', () => {
@@ -503,4 +506,3 @@ http.createServer = function guardedCreateServer(listener) {
 };
 
 require('/app/server.cjs');
-
