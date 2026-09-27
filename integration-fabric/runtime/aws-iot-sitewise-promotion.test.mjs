@@ -17,6 +17,11 @@ test('AWS IoT SiteWise overlay promotes the existing provider without claiming a
   assert.equal(entry.patch.industrialSampleWindow.maximumBatchEntriesPerAuthority,1);
   assert.equal(entry.patch.industrialSampleWindow.batchEntryIdPattern,'^[A-Za-z0-9_-]{1,64}$');
   assert.deepEqual(entry.patch.industrialSampleWindow.nullValueTypes,['B','D','S','I','U']);
+  assert.equal(entry.patch.industrialBatchWindow.maximumEntries,16);
+  assert.equal(entry.patch.industrialBatchWindow.exactEntryPartitionRequiredPerPage,true);
+  assert.equal(entry.patch.industrialBatchWindow.allowedLifecycle,'success-to-skipped-success');
+  assert.equal(entry.patch.industrialBatchWindow.checkpointAdvanceAllowed,false);
+  assert.match(entry.patch.industrialBatchWindow.scaling,/micro|enterprise/i);
   assert.deepEqual(entry.patch.regionalEndpointAuthority.fipsDataRegions.sort(),['ca-central-1','us-east-1','us-east-2','us-gov-west-1','us-west-2']);
   assert.equal(entry.patch.regionalEndpointAuthority.customPortsAllowed,false);
   assert.ok(entry.patch.dataObjects.includes('asset-property-time-series'));
