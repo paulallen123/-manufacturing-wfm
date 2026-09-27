@@ -1,0 +1,73 @@
+{
+  "schema": "vector-proof-evidence/v1",
+  "observedAt": "2026-09-27T07:27:13Z",
+  "claimStatus": "BUILT",
+  "claim": "Explicit logout revokes the presented payroll session token immediately and durably without revoking a separate session for the same account.",
+  "scope": {
+    "environment": "local synthetic authenticated HTTP and SQLite",
+    "tenant": "northstar-demo",
+    "region": "local only",
+    "scale": "one payroll account with two concurrent sessions",
+    "customerData": false,
+    "hosted": false
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "sourceHeadBeforeEvidenceCommit": "c9c1ddd3a92d6c946a4155116208a9e2938fdfda",
+    "sealedArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedArtifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "sealedRuntimeSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b"
+  },
+  "runtime": {
+    "node": "v24.19.0",
+    "os": "Linux 6.18.44 x86_64",
+    "exactNode22DockerAdmission": "BLOCKED"
+  },
+  "test": {
+    "path": "tests/payroll-session-token-revocation.proof.test.cjs",
+    "localSha256": "397771a5c73390e56d61a95d4317a70f6b46d783671055be9a2df1769585b341",
+    "command": "node --test tests/payroll-session-token-revocation.proof.test.cjs",
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "observed": {
+      "beforeLogout": {
+        "revokedTokenStatus": 200,
+        "retainedTokenStatus": 200,
+        "sessionCount": 2
+      },
+      "immediatelyAfterLogout": {
+        "revokedTokenStatus": 401,
+        "retainedTokenStatus": 200,
+        "sessionCount": 1
+      },
+      "afterRestart": {
+        "revokedTokenStatus": 401,
+        "retainedTokenStatus": 200
+      },
+      "clearCookieHeaderObserved": true,
+      "revokedTokenRowDeleted": true,
+      "retainedTokenRowPreserved": true
+    }
+  },
+  "mutationCheck": "Removing the exact token-row deletion from POST /api/logout would leave the presented bearer usable and fail the proof.",
+  "boundaries": {
+    "proves": [
+      "self-service logout revokes the exact presented token",
+      "revocation is enforced on the next authenticated request",
+      "the deleted token remains absent after controlled service restart",
+      "a separate token for the same account is not unintentionally revoked"
+    ],
+    "doesNotProve": [
+      "administrator or identity-provider account-wide session revocation",
+      "password-reset session revocation",
+      "external IAM or SSO propagation",
+      "multi-region consistency",
+      "in-flight request cancellation",
+      "hosted or customer enforcement",
+      "browser readiness"
+    ],
+    "releaseGate": "BLOCKED",
+    "marketingVideoReadiness": "BLOCKED"
+  }
+}
