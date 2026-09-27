@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T01:28:47Z",
+  "verifier": "Trust Proof Security Reliability Release Engine independent verifier",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "candidateSourceSha": "a29eabb20dafda6fdc6d4d144d3a8f0699b81dfc",
+  "productSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b",
+  "evidenceBoundary": {
+    "environment": "local exact sealed artifact",
+    "data": "fictional synthetic SQLite fixture",
+    "hosted": false,
+    "customer": false,
+    "production": false
+  },
+  "runtime": {
+    "artifactGitBlob": "fa03970c5b324bba02bcc56f2fffe0fdd519eb7f",
+    "artifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "localExecutorNode": "v24.19.0",
+    "exactContainerNode22Executed": false
+  },
+  "attack": {
+    "hypothesis": "Append-only audit_events triggers do not protect or correlate the authoritative payroll business audit embedded in tenant state.",
+    "command": "WFM_SEALED_RUNTIME_ARTIFACT=sealed-runtime-4bd3.tar.gz node --test payroll-audit-tamper-resistance.adversarial.test.cjs",
+    "testSha256": "e2c974d2c24f5cac053295676b4a196a5ee4ab6f6ebf160d05da68579cbe6694",
+    "result": {
+      "pass": 0,
+      "fail": 1,
+      "skipped": 0,
+      "exitCode": 1
+    },
+    "observed": {
+      "separateAuditEventsBeforeTamper": 3,
+      "appendOnlyAuditEventUpdateRejected": true,
+      "appendOnlyAuditEventDeleteRejected": true,
+      "embeddedPayrollBusinessAuditRowsAfterTamper": 0,
+      "approvedAdjustmentStillReturnedAfterRestart": true,
+      "dashboardStatus": 200,
+      "exportStatus": 200,
+      "exportStillServed": true
+    }
+  },
+  "rootCause": {
+    "description": "Payroll business evidence is split between an append-only audit_events table and an unsealed payrollControl.audit array inside mutable tenant JSON. The runtime has no startup/read/export invariant that correlates consequential adjustment/export state with both ledgers, so direct state tampering is not detected.",
+    "workingControl": "Database triggers reject UPDATE and DELETE against audit_events.",
+    "missingControl": "Cryptographic or independently verified correlation between payroll state, embedded business audit, command audit and export identity."
+  },
+  "claimChanges": {
+    "payrollAdjustmentMonetaryProvenance": "BUILT",
+    "payrollAdjustmentAuditExistence": "BUILT",
+    "payrollAuditAppendOnlyTable": "BUILT",
+    "payrollAuditTamperResistance": "BLOCKED",
+    "payrollAuditReplayCorrelation": "BLOCKED",
+    "ransomwareStyleKnownGoodRecovery": "BLOCKED",
+    "customerRelease": "BLOCKED",
+    "marketingVideoReadiness": "BLOCKED"
+  },
+  "requiredRepair": [
+    "Bind each consequential payroll transition to an immutable sequence/hash chain or equivalent independently verifiable ledger.",
+    "Correlate stored adjustment/export identities and checksums with command audit and business audit at startup and before read/download.",
+    "Fail closed and emit recovery evidence when any ledger entry is missing, reordered, forged or inconsistent.",
+    "Add known-good restore and reconciliation proof; a backup alone is insufficient."
+  ],
+  "nextProof": "Make this fail-first regression pass against a newly sealed artifact, then repeat authenticated adjustment, restart, audit correlation, export and known-good restore on the exact Node 22 Docker candidate.",
+  "safety": "No hosted deployment, live database, customer record, payroll record, credential, DNS or infrastructure was changed."
+}
+
