@@ -1,0 +1,21 @@
+{
+  "observed_at_utc": "2026-09-20T01:11:00Z",
+  "repository_private": true,
+  "protected_branch_count_observed": 0,
+  "repository_ruleset_count_observed": 0,
+  "exact_release_candidate_sha": "79e29f3989b2ca4ecb9276ef190addcf74aa76c3",
+  "exact_release_candidate_verified": true,
+  "exact_release_workflow_uses_repository_railway_token": true,
+  "latest_exact_release_run": {
+    "run_id": 35480415953,
+    "conclusion": "failure",
+    "runner_id": 0,
+    "steps_executed": 0
+  },
+  "external_control_boundary": {
+    "github_potentially_malicious_workflow_hold_applies_to_private_repo": false,
+    "source": "GitHub Changelog, 2026-07-28"
+  },
+  "release_decision": "FAIL_CLOSED",
+  "reason": "Private repository has no observed protected branches or rulesets, the latest privileged release run produced no execution telemetry, and the deployment path still references a repository Railway credential."
+}
