@@ -1203,6 +1203,19 @@ test('customer configuration scope is required, persisted and tenant scoped', as
     assert.equal(saved.body.scopeCaptured, true);
     assert.equal(saved.body.customerScope.employeeCount, 10000);
     assert.equal(saved.body.requirements.find(x => x.key === 'configuration-scope').satisfied, true);
+    assert.equal(saved.body.requirements.find(x => x.key === 'tenant-environment').satisfied, true);
+    assert.equal(saved.body.tenantEnvironment.state, 'READY');
+    assert.equal(saved.body.tenantEnvironment.runId, saved.body.runId);
+    assert.equal(saved.body.tenantEnvironment.configuration.employeeCount, 10000);
+
+    const environmentDb = new DatabaseSync(f.dbPath);
+    const persistedEnvironment = environmentDb.prepare(
+      'SELECT run_id,state,configuration_digest FROM tenant_environments WHERE tenant=?'
+    ).get('alpha');
+    assert.equal(persistedEnvironment.run_id, saved.body.runId);
+    assert.equal(persistedEnvironment.state, 'READY');
+    assert.equal(persistedEnvironment.configuration_digest, saved.body.tenantEnvironment.configurationDigest);
+    environmentDb.close();
 
     const fetched = await call(
       f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/scope'
