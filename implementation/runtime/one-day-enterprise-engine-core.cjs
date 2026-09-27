@@ -99,6 +99,14 @@ function compact(value, max = 200) {
   return String(value ?? '').slice(0, max);
 }
 
+function parseJsonSafe(value, fallback) {
+  try { return JSON.parse(value); } catch { return fallback; }
+}
+
+function normaliseFact(value) {
+  return String(value ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
 function ensureLegacyColumn(db, table, column, definition) {
   if (!/^[A-Za-z0-9_]+$/.test(table) || !/^[A-Za-z0-9_]+$/.test(column)) {
     throw new Error('Unsafe legacy schema identifier.');
@@ -637,10 +645,10 @@ function createOneDayEnterpriseEngine(options = {}) {
     const batch = batches.find(item =>
       item.connection_state === 'ACTIVE' &&
       Boolean(item.credential_ref) &&
-      safeJsonParse(item.granted_scopes_json, []).includes('people.read') &&
+      parseJsonSafe(item.granted_scopes_json, []).includes('people.read') &&
       Number(item.mapping_version) === Number(item.connection_mapping_version) &&
       item.candidate_status === 'CONFIRMED' &&
-      safeJsonParse(item.authoritative_for_json, []).includes('people')
+      parseJsonSafe(item.authoritative_for_json, []).includes('people')
     );
     if (!batch) return null;
 
@@ -653,7 +661,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     const departments = new Set();
     const employeeKeys = new Set();
     for (const row of rows) {
-      const canonical = safeJsonParse(row.canonical_json, {});
+      const canonical = parseJsonSafe(row.canonical_json, {});
       if (!row.employee_key || employeeKeys.has(row.employee_key)) return null;
       employeeKeys.add(row.employee_key);
       const site = compact(canonical.location, 180).trim();
@@ -707,8 +715,8 @@ function createOneDayEnterpriseEngine(options = {}) {
               observed: Number(sourceDataSummary.employeeCount)
             });
           }
-          const normalizedDeclaredSites = new Set((customerScope.sites || []).map(value => normalize(value)).filter(Boolean));
-          const unexpectedSites = sourceDataSummary.sites.filter(value => !normalizedDeclaredSites.has(normalize(value)));
+          const normalizedDeclaredSites = new Set((customerScope.sites || []).map(value => normaliseFact(value)).filter(Boolean));
+          const unexpectedSites = sourceDataSummary.sites.filter(value => !normalizedDeclaredSites.has(normaliseFact(value)));
           if (unexpectedSites.length) {
             conflicts.push({ field: 'sites', observedNotDeclared: unexpectedSites });
           }
