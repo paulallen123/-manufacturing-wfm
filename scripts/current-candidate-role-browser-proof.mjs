@@ -246,6 +246,14 @@ try {
       const expectedVisibleNeedsIds = expectedNeedsIds.slice(0, 4);
       const expectedVisibleAwaitingIds = expectedAwaitingIds.slice(0, 3);
       const affordanceCoverage = expectedNeedsIds.length > 0 && expectedAwaitingIds.length > 0 ? 'EXERCISED' : 'UNEXERCISED';
+      console.log('CURRENT_TIME_REVIEW_SOURCE_STATE=' + JSON.stringify({
+        active: active.map(item => ({
+          sourceId: String(item?.sourceId || '').slice(0, 120),
+          confirmationState: String(item?.confirmation?.state || '').slice(0, 80)
+        })),
+        needsCount: expectedNeedsIds.length,
+        awaitingCount: expectedAwaitingIds.length
+      }));
 
       if (requireActionAffordanceCoverage) {
         assert.ok(expectedNeedsIds.length > 0, 'Strict lifecycle-affordance proof requires at least one authoritative Needs my action row.');
