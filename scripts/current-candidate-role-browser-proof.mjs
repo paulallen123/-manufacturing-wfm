@@ -638,6 +638,7 @@ try {
     return { request, audit };
   }, created.id);
   assert.equal(managerReadBack.request?.status, 'approved', 'Manager UI decision was not read back from stored state.');
+  console.log('CURRENT_LEAVE_AUDIT_DIAG=' + JSON.stringify({ requestId: created.id, request: managerReadBack.request, audit: managerReadBack.audit }));
   assert.equal(managerReadBack.audit?.note, `${created.id}; approved`, 'Manager UI decision audit was not linked to the exact request.');
   leaveJourney.managerStateReadBack = true;
   leaveJourney.requestAuditLinked = true;
