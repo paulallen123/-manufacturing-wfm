@@ -439,13 +439,21 @@ try {
 
     let navigationClicked = null;
     if (spec.nav) {
-      const locator = page.getByText(spec.nav, { exact: true }).first();
-      if (await locator.count()) {
-        await locator.click({ timeout: 5000 });
-        await page.waitForTimeout(300);
-        navigationClicked = spec.nav;
-        navigationClicks += 1;
+      const controls = page.locator('nav a, nav button, .vector-sidebar a, .vector-sidebar button');
+      const controlCount = await controls.count();
+      let clicked = false;
+      for (let index = 0; index < controlCount; index += 1) {
+        const control = controls.nth(index);
+        const text = String(await control.textContent() || '').replace(/\\s+/g, ' ').trim();
+        if (text !== spec.nav || !(await control.isVisible())) continue;
+        await control.click({ timeout: 5000 });
+        clicked = true;
+        break;
       }
+      assert.equal(clicked, true, `${spec.slug} visible role-first navigation ${spec.nav} unavailable.`);
+      await page.waitForTimeout(300);
+      navigationClicked = spec.nav;
+      navigationClicks += 1;
     }
 
     const screenshot = await page.screenshot({ fullPage: true });
