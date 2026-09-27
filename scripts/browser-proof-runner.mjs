@@ -1,4 +1,5 @@
 import http from 'node:http';
+// Railway source-rebuild marker: verifier must build from this proof branch, never main.
 
 const port = Number(process.env.PORT || 3000);
 let state = {
