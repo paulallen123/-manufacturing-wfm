@@ -85,7 +85,7 @@ test('authoritative matching minor-unit evidence remains visible in list and rev
     adjustment: {
       id: 'adj-eur', employee: 'employee-1', status: 'pending_approval',
       minutesDelta: 60, grossMinorDelta: 12345, minorUnitExponent: 2,
-      currency: 'EUR', revision: 1, proposed: {}
+      currency: 'EUR', currencySource: 'reviewed_cost_evidence', revision: 1, proposed: {}
     }
   });
 
@@ -94,13 +94,32 @@ test('authoritative matching minor-unit evidence remains visible in list and rev
   assert.match(harness.modal().html, /123,45\s*€/);
 });
 
+test('missing or downgraded adjustment provenance blocks payroll review', async () => {
+  for (const currencySource of [undefined, 'estimated_rate']) {
+    const harness = loadPayroll({
+      currency: 'GBP', authoritative: true, currencySource: 'cost_evidence',
+      adjustment: {
+        id: `adj-${currencySource || 'missing-source'}`,
+        employee: 'employee-1', status: 'pending_approval', minutesDelta: 60,
+        grossMinorDelta: 12345, minorUnitExponent: 2, currency: 'GBP',
+        currencySource, revision: 1, proposed: {}
+      }
+    });
+
+    assert.match(harness.page(), /Authoritative payroll adjustment amount evidence is unavailable/);
+    assert.doesNotMatch(harness.page(), /£123\.45/);
+    await assert.rejects(harness.review(), /Authoritative payroll adjustment amount evidence is unavailable/);
+    assert.equal(harness.modal(), undefined);
+  }
+});
+
 test('a non-authoritative display context blocks payroll review', async () => {
   const harness = loadPayroll({
     currency: 'GBP', authoritative: false, currencySource: 'operating_context',
     adjustment: {
       id: 'adj-untrusted-context', employee: 'employee-1', status: 'pending_approval',
       minutesDelta: 60, grossMinorDelta: 12345, minorUnitExponent: 2,
-      currency: 'GBP', revision: 1, proposed: {}
+      currency: 'GBP', currencySource: 'reviewed_cost_evidence', revision: 1, proposed: {}
     }
   });
 
@@ -116,7 +135,7 @@ test('an unsafe minor-unit integer blocks payroll review', async () => {
     adjustment: {
       id: 'adj-unsafe-integer', employee: 'employee-1', status: 'pending_approval',
       minutesDelta: 60, grossMinorDelta: Number.MAX_SAFE_INTEGER + 1,
-      minorUnitExponent: 2, currency: 'GBP', revision: 1, proposed: {}
+      minorUnitExponent: 2, currency: 'GBP', currencySource: 'reviewed_cost_evidence', revision: 1, proposed: {}
     }
   });
 

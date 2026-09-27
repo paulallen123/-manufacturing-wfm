@@ -49,7 +49,8 @@ test('payroll adjustments render only a source-bound currency and minor-unit def
     locale: 'de-DE', currency: 'EUR',
     adjustment: {
       id: 'adj-eur', employee: 'employee-1', status: 'pending_approval', minutesDelta: 60,
-      grossMinorDelta: 12345, minorUnitExponent: 2, currency: 'EUR', revision: 1, proposed: {}
+      grossMinorDelta: 12345, minorUnitExponent: 2, currency: 'EUR',
+      currencySource: 'reviewed_cost_evidence', revision: 1, proposed: {}
     }
   });
   assert.match(eur.workflow.payrollPage(), /123,45\s*€/);
@@ -59,7 +60,8 @@ test('payroll adjustments render only a source-bound currency and minor-unit def
     locale: 'en-GB', currency: 'GBP',
     adjustment: {
       id: 'adj-usd', employee: 'employee-1', status: 'pending_approval', minutesDelta: 60,
-      grossMinorDelta: 12345, minorUnitExponent: 2, currency: 'USD', revision: 1, proposed: {}
+      grossMinorDelta: 12345, minorUnitExponent: 2, currency: 'USD',
+      currencySource: 'reviewed_cost_evidence', revision: 1, proposed: {}
     }
   });
   assert.match(mismatch.workflow.payrollPage(), /adj-usd[^<]*·[^<]*·[^<]*·[^<]*· —/);

@@ -302,7 +302,7 @@
     const context = displayContext(), contextCurrency = String(context?.currency || '').toUpperCase();
     if (context?.authoritative !== true || context?.currencySource !== 'cost_evidence' || !contextCurrency) return '—';
     let sourceCurrency = String(item?.currency || '').toUpperCase(), minorAmount, exponent;
-    if (Number.isSafeInteger(item?.grossMinorDelta) && Number.isInteger(item?.minorUnitExponent) && item.minorUnitExponent >= 0 && item.minorUnitExponent <= 3 && sourceCurrency) {
+    if (Number.isSafeInteger(item?.grossMinorDelta) && Number.isInteger(item?.minorUnitExponent) && item.minorUnitExponent >= 0 && item.minorUnitExponent <= 3 && sourceCurrency && item?.currencySource === 'reviewed_cost_evidence') {
       minorAmount = item.grossMinorDelta; exponent = item.minorUnitExponent;
     } else if (Number.isSafeInteger(item?.grossPenceDelta) && contextCurrency === 'GBP' && (!sourceCurrency || sourceCurrency === 'GBP')) {
       sourceCurrency = 'GBP'; minorAmount = item.grossPenceDelta; exponent = 2;
