@@ -376,6 +376,29 @@ test('repeated trusted activation retries a failed invitation without duplicatin
   }
 });
 
+test('signed contract webhook replay uses the same bounded notification recovery', async () => {
+  const f = fixture({ failFirstInvitation: true });
+  try {
+    const event = {
+      event: 'contract_signed', tenant: 'alpha', contractId: 'external-mail-retry',
+      implementationContactEmail: 'manager@alpha', targetHours: 8
+    };
+    const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed', event, f.contractWebhook);
+    const replay = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed', event, f.contractWebhook);
+    assert.equal(first.status, 201);
+    assert.equal(first.body.notification.delivered, false);
+    assert.equal(replay.status, 200);
+    assert.equal(replay.body.notification.delivered, true);
+    assert.equal(replay.body.implementation.runId, first.body.implementation.runId);
+    assert.equal(f.invitationAttempts, 2);
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    db.close();
+  } finally {
+    f.close();
+  }
+});
+
 test('failed invitation retries stop at a durable three-attempt budget', async () => {
   const f = fixture({ failInvitationDelivery: true });
   try {
