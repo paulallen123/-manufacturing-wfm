@@ -1091,7 +1091,11 @@ try {
       } else if (issue.type === 'adjustment') {
         await attendanceManagerPage.locator('#modalform select[name="decision"]').selectOption('accept');
       } else if (issue.type === 'overtime') {
-        await attendanceManagerPage.locator('#modalform select[name="decision"]').selectOption('approve');
+        assert.equal(
+          await attendanceManagerPage.locator('#modalform input[name="decision"]').inputValue(),
+          'approve',
+          'Overtime review did not carry the approved fail-closed decision.'
+        );
       }
       await attendanceManagerPage.locator('#modalform textarea[name="reason"]').fill(issue.evidence || reviewReason);
       await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
