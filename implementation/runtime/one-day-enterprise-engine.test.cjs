@@ -837,6 +837,65 @@ test('authorised provider recovery resumes the same blocked invitation exactly o
   }
 });
 
+test('provider recovery becomes exhausted on the third failed send without a fourth action', async () => {
+  let invitationAttempts = 0;
+  const f = fixture({
+    sendInvitation: async () => {
+      invitationAttempts += 1;
+      const error = new Error('simulated persistent provider credential rejection');
+      error.permanent = true;
+      error.code = 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED';
+      throw error;
+    }
+  });
+  try {
+    const event = {
+      tenant: 'alpha', contractRef: 'contract-provider-recovery-budget', targetHours: 8,
+      recipientEmail: 'manager@alpha'
+    };
+    const first = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal
+    );
+    assert.equal(first.status, 201);
+    assert.equal(first.body.notification.blocked, true);
+
+    const second = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',
+      { tenant: event.tenant, contractRef: event.contractRef }, f.internal
+    );
+    assert.equal(second.status, 409);
+    assert.equal(second.body.notification.state, 'BLOCKED');
+
+    const third = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',
+      { tenant: event.tenant, contractRef: event.contractRef }, f.internal
+    );
+    assert.equal(third.status, 409);
+    assert.equal(third.body.notification.state, 'EXHAUSTED');
+    assert.equal(third.body.notification.terminalAction, 'PROVIDER_OR_ADMIN_AUTHORIZATION_REQUIRED');
+    assert.equal(invitationAttempts, 3);
+
+    const fourth = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',
+      { tenant: event.tenant, contractRef: event.contractRef }, f.internal
+    );
+    assert.equal(fourth.status, 409);
+    assert.equal(invitationAttempts, 3);
+
+    const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
+    assert.equal(status.body.notificationRecovery.state, 'EXHAUSTED');
+    assert.equal(status.body.notificationRecovery.attempts, 3);
+    assert.equal(status.body.notificationRecovery.remainingAttempts, 0);
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT state FROM implementation_notification_outbox').get().state, 'EXHAUSTED');
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_RECOVERY_EXHAUSTED'").get().count, 1);
+    db.close();
+  } finally {
+    f.close();
+  }
+});
+
 test('implementation entry preflight exposes missing requirements before a contract without exposing secrets', async () => {
   const previousApiKey = process.env.RESEND_API_KEY;
   const previousFrom = process.env.WFM_IMPLEMENTATION_FROM_EMAIL;
