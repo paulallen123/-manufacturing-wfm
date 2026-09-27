@@ -1213,6 +1213,7 @@ try {
     return { status: response.status, json: await response.json() };
   }, period);
   assert.equal(readyPayroll.status, 200);
+  console.log('CURRENT_READY_PAYROLL_STATE=' + JSON.stringify({ teams: readyPayroll.json.teams.map(item => ({ id: item.id, status: item.status, revision: item.revision, workedMinutes: item.workedMinutes })), canRelease: readyPayroll.json.canRelease, blockers: readyPayroll.json.blockers, reconciliation: readyPayroll.json.reconciliation }));
   assert.equal(readyPayroll.json.teams.every(item => item.status === 'signed'), true);
   assert.equal(readyPayroll.json.canRelease, true, JSON.stringify(readyPayroll.json.blockers));
   assert.equal(readyPayroll.json.reconciliation.ok, true);
