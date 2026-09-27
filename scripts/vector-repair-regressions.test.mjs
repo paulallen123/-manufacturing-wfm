@@ -80,12 +80,15 @@ test('saved leave UI journey removes navigation-only gaps but retains audit and 
     managerStateReadBack: true,
     freshEmployeeLoginSawDecision: true
   });
-  assert.equal(result.scopedLeaveJourneyVerified, true);
+  assert.equal(result.scopedLeaveActionVerified, true);
+  assert.equal(result.scopedLeaveJourneyVerified, false);
   assert.equal(result.endToEndVerified, false);
   assert.equal(result.productReady, false);
   assert.ok(!result.missingEvidence.includes('UI-triggered-business-action'));
   assert.ok(!result.missingEvidence.includes('persisted-state-readback'));
   assert.ok(!result.missingEvidence.includes('updated-UI-after-reload'));
+  assert.ok(result.missingEvidence.includes('leave-request-audit-link'));
+  assert.ok(result.missingEvidence.includes('leave-balance-reconciliation'));
   assert.ok(result.missingEvidence.includes('server-audit-readback'));
   assert.ok(result.missingEvidence.includes('exact-backend-binding'));
   assert.ok(result.missingEvidence.includes('major-workflow-coverage'));
@@ -106,10 +109,12 @@ test('saved attendance correction is reported separately without manufacturing w
     payrollReleaseStillBlocked: true
   };
   const result = roleProofResult({ status: 'BOUND' }, leave, attendance);
-  assert.equal(result.scopedAttendanceJourneyVerified, true);
+  assert.equal(result.scopedAttendanceCorrectionVerified, true);
+  assert.equal(result.scopedAttendanceJourneyVerified, false);
   assert.equal(result.endToEndVerified, false);
   assert.equal(result.productReady, false);
   assert.ok(result.missingEvidence.includes('weekly-sign-off-business-action'));
+  assert.ok(result.missingEvidence.includes('weekly-sign-off-version-binding'));
   assert.ok(result.missingEvidence.includes('payroll-reconciliation-business-action'));
   assert.ok(result.missingEvidence.includes('exact-backend-binding'));
 });
