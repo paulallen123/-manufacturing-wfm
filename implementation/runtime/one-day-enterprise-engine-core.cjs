@@ -891,12 +891,22 @@ function createOneDayEnterpriseEngine(options = {}) {
       } catch (error) {
         finishNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
         if (error?.permanent === true) {
-          updateNotificationOutboxState.run('PROVIDER_BLOCKED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
-          record(run.id, outbox.tenant, 'CONTRACT_INVITATION_PROVIDER_BLOCKED', {
+          const attempts = Number(
+            notificationAttemptsByContract.get(outbox.tenant, outbox.contract_ref_hash)?.attempts || 0
+          );
+          const exhausted = attempts >= 3;
+          updateNotificationOutboxState.run(
+            exhausted ? 'EXHAUSTED' : 'PROVIDER_BLOCKED',
+            nowIso(), outbox.tenant, outbox.contract_ref_hash
+          );
+          record(run.id, outbox.tenant, exhausted
+            ? 'CONTRACT_INVITATION_RECOVERY_EXHAUSTED'
+            : 'CONTRACT_INVITATION_PROVIDER_BLOCKED', {
             invitationId: invitation.id,
             contractRefDigest: outbox.contract_ref_hash.slice(0, 16)
           });
-          result.blocked += 1;
+          if (exhausted) result.exhausted += 1;
+          else result.blocked += 1;
           continue;
         }
         updateNotificationOutboxState.run('EXHAUSTED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
@@ -1154,7 +1164,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
 
     const recovery = notificationRecoveryForRun(run);
-    return writeJson(res, recovery.state === 'BLOCKED' ? 409 : 202, {
+    return writeJson(res, ['BLOCKED', 'EXHAUSTED'].includes(recovery.state) ? 409 : 202, {
       implementation: readinessForRun(run),
       notification: {
         delivered: false,
