@@ -255,8 +255,12 @@ function createOneDayEnterpriseEngine(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
   const contractWebhookSecret = options.contractWebhookSecret || process.env.WFM_CONTRACT_WEBHOOK_SECRET || '';
-  const invitationRecoverySecret = options.invitationRecoverySecret ||
-    process.env.WFM_IMPLEMENTATION_INVITATION_SECRET || internalToken;
+  const dedicatedInvitationRecoverySecret = options.invitationRecoverySecret ||
+    process.env.WFM_IMPLEMENTATION_INVITATION_SECRET || '';
+  // Keep the historical internal-token fallback operational for compatibility,
+  // but never present it as production-ready: rotating an access credential
+  // must not silently make durable invitation recovery unreadable.
+  const invitationRecoverySecret = dedicatedInvitationRecoverySecret || internalToken;
   const notificationRetryDelayMs = Math.max(0, Number(options.notificationRetryDelayMs ?? 5 * 60 * 1000));
   const notificationRetryPollMs = Math.max(0, Number(options.notificationRetryPollMs ?? 60 * 1000));
   const notificationAttemptLeaseMs = Math.max(1_000, Number(options.notificationAttemptLeaseMs ?? 60_000));
@@ -1319,7 +1323,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       contractAuthentication: Boolean(contractWebhookSecret),
       secureCustomerOrigin: Boolean(publicOrigin && /^https:\/\//i.test(publicOrigin)),
       invitationProvider: invitationTransportReady,
-      restartRecovery: Boolean(invitationRecoverySecret)
+      restartRecovery: Boolean(dedicatedInvitationRecoverySecret)
     };
     const requiredActions = [];
     if (!checks.contractAuthentication) requiredActions.push('CONTRACT_AUTHENTICATION_CONFIGURATION_REQUIRED');
