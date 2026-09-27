@@ -155,3 +155,13 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Verification:** After repair, the focused attack passed and the full runtime-identity suite passed 8/8 with syntax checks on local Node v24.19.0. Tested local Git objects exactly matched the published module and test blobs (`5a373e8441f67acd402c9bd4cffaec23ce0ccca6`, `52db0e300ef10b651808e21882c19b206c300cc6`).
 - **Status:** BUILT. No workflow/status check, exact Node 22 Docker admission, hosted execution or browser journey was produced. The fixture remains on `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`; no deployment, restart or customer/payroll state changed.
 - **Dependencies / next action:** Trust/Proof must build the final PR head on exact Node 22 and require the immutable marker on every approved asset and consequential API response throughout the hosted leave, attendance, weekly sign-off and payroll journeys. Missing, changed or inconsistent values fail the proof.
+
+
+## 2026-09-27 — Single-valued raw-header source proof
+
+- **Objective:** Keep response source evidence unambiguous across every supported Node `writeHead` signature.
+- **Root cause / theory test:** Node's raw alternating header-array form appends direct values to headers already stored on the response. The immutable-marker guard therefore transmitted two identical copies of each protected marker as one comma-joined value. A real loopback HTTP regression reproduced the doubled source SHA before repair.
+- **Implementation:** Code head `a45a5cb52b87d4678e04eb49967fa6585ba564cc` clears only the already-stored protected values immediately before `writeHead`, then emits exactly one canonical copy through the sanitised direct-header arguments. Other headers and both object/status-message forms remain intact.
+- **Verification:** The red regression failed with a doubled SHA, then passed after repair. The full focused suite passed 9/9 with syntax checks on local Node v24.19.0. Local Git object hashes exactly matched the published blobs (`3408551239cd1c822b8912dfa00952cd51b3f826`, `ac1d291bce6592ddbfbcd47c0e4a6a59936d2532`).
+- **Status:** BUILT. No CI/status, exact Node 22 Docker execution or hosted proof occurred. The existing fixture, customer, payroll and production state remain unchanged.
+- **Dependencies / next action:** Build the final PR head on exact Node 22, deploy only to the preserved fixture candidate, and require one exact immutable source value on every approved asset and consequential API response during the full hosted journeys.
