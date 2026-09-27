@@ -1,0 +1,73 @@
+{
+  "schema": "vector-adversarial-evidence/v1",
+  "observedAt": "2026-09-27T06:28:05Z",
+  "claimStatus": "BLOCKED",
+  "claim": "Consequential payroll requests already in flight are cancelled when live payroll authority is revoked.",
+  "scope": {
+    "environment": "local synthetic authenticated HTTP and SQLite",
+    "tenant": "northstar-demo",
+    "region": "local only",
+    "scale": "one payroll actor, one administrator, one held request",
+    "customerData": false,
+    "hosted": false
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "sourceHeadBeforeEvidenceCommit": "6ca4a041247be4373a052549f6df9e444952fee3",
+    "sealedArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedArtifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "sealedRuntimeSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b"
+  },
+  "runtime": {
+    "node": "v24.19.0",
+    "os": "Linux 6.18.44 x86_64",
+    "exactNode22DockerAdmission": "BLOCKED"
+  },
+  "test": {
+    "path": "tests/payroll-inflight-permission-revocation.adversarial.test.cjs",
+    "localSha256": "93baf488df5820d7c919705eea6568d5dbbdc78ca643f7374427cc94f3ef5b83",
+    "command": "node --test tests/payroll-inflight-permission-revocation.adversarial.test.cjs",
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "expectedSafeOutcome": {
+      "httpStatus": 403,
+      "adjustmentCountAfter": 0
+    },
+    "observed": {
+      "authorizationObservedAtEpochMs": 1790490473668,
+      "permissionRevocationStatus": 200,
+      "heldRequestStatus": 200,
+      "adjustmentCountBefore": 0,
+      "adjustmentCountAfter": 1,
+      "createdAdjustmentId": "PADJ-1",
+      "createdGrossMinorDelta": 900,
+      "createdCurrency": "GBP"
+    }
+  },
+  "causalOrdering": [
+    "Payroll request headers and half of the JSON body were sent.",
+    "The session last_seen transition proved actor(req) had completed against the pre-revocation user row.",
+    "An authenticated company administrator removed all permissions from that payroll account.",
+    "The held request body was completed only after the revocation returned HTTP 200.",
+    "The held request returned HTTP 200 and persisted one new payroll adjustment."
+  ],
+  "rootCause": "server.cjs snapshots actor permissions before awaiting the request body. The mutation and payroll dispatcher later authorize against that stale actor object and do not re-read live authority immediately before the consequential state transition.",
+  "repairAcceptance": [
+    "Re-read and validate live user/session authority inside the same protected mutation boundary immediately before a consequential state change.",
+    "Reject a request when its permissions, account status or session validity changed after initial authentication.",
+    "Prove no state, audit, lineage or export mutation occurs for the rejected request.",
+    "Repeat under concurrent requests and after restart, then reproduce in the exact Node 22 packaged and hosted candidate."
+  ],
+  "boundaries": {
+    "doesNotProve": [
+      "session-token revocation",
+      "external IAM or SSO propagation",
+      "multi-region consistency",
+      "hosted or customer enforcement",
+      "browser readiness"
+    ],
+    "releaseGate": "BLOCKED",
+    "marketingVideoReadiness": "BLOCKED"
+  }
+}
