@@ -875,45 +875,54 @@ function createOneDayEnterpriseEngine(options = {}) {
       return writeJson(res, 400, { error: 'action must be ACCEPTED, CHANGED or REJECTED.' });
     }
 
-    const snapshot = implementationSourceSnapshot(run);
-    let proposalContext = null;
-    try { proposalContext = JSON.parse(decision.proposal_json)?._proofContext || null; } catch {}
-    if (!proposalContext?.sourceRevision || proposalContext.sourceRevision !== snapshot.revision) {
-      return writeJson(res, 409, {
-        error: 'Implementation evidence changed after this decision was prepared. Re-review current evidence before deciding.',
-        reasonCode: 'SOURCE_REVISION_CHANGED',
-        proposalSourceRevision: proposalContext?.sourceRevision || null,
-        currentSourceRevision: snapshot.revision
-      });
-    }
-
     const detail = action === 'CHANGED' ? body.value : body.detail;
     const actorRef = sha256(ctx.email).slice(0, 24);
-    const proof = createProofCarryingState({
-      tenant: run.tenant,
-      actorRef,
-      actorAuthority: ctx.role,
-      decisionRef: decision.id,
-      sourceRevision: snapshot.revision,
-      releaseSha,
-      scope: decisionScope(run, decision),
-      evidenceRefs: proposalContext.evidenceRefs?.length ? proposalContext.evidenceRefs : snapshot.evidenceRefs,
-      createdAt: nowIso()
-    });
-    const resolution = {
-      contractVersion: 'VECTOR_IMPLEMENTATION_DECISION_RESOLUTION_V1',
-      detail: detail ?? null,
-      proofCarryingState: proof
-    };
+    const proofRequired = ['HIGH', 'CRITICAL'].includes(decision.risk);
+    let resolution = detail ?? null;
+    let proof = null;
+
+    if (proofRequired) {
+      const snapshot = implementationSourceSnapshot(run);
+      let proposalContext = null;
+      try { proposalContext = JSON.parse(decision.proposal_json)?._proofContext || null; } catch {}
+      if (!proposalContext?.sourceRevision || proposalContext.sourceRevision !== snapshot.revision) {
+        return writeJson(res, 409, {
+          error: 'Implementation evidence changed after this decision was prepared. Re-review current evidence before deciding.',
+          reasonCode: 'SOURCE_REVISION_CHANGED',
+          proposalSourceRevision: proposalContext?.sourceRevision || null,
+          currentSourceRevision: snapshot.revision
+        });
+      }
+
+      proof = createProofCarryingState({
+        tenant: run.tenant,
+        actorRef,
+        actorAuthority: ctx.role,
+        decisionRef: decision.id,
+        sourceRevision: snapshot.revision,
+        releaseSha,
+        scope: decisionScope(run, decision),
+        evidenceRefs: proposalContext.evidenceRefs?.length ? proposalContext.evidenceRefs : snapshot.evidenceRefs,
+        createdAt: nowIso()
+      });
+      resolution = {
+        contractVersion: 'VECTOR_IMPLEMENTATION_DECISION_RESOLUTION_V1',
+        detail: detail ?? null,
+        proofCarryingState: proof
+      };
+    }
+
     updateDecision.run(action, JSON.stringify(resolution), nowIso(), decision.id, run.tenant);
     record(run.id, run.tenant, 'DECISION_RESOLVED', {
       key,
       action,
       by: actorRef,
       actorAuthority: compact(ctx.role, 100),
-      proofDigest: proof.proofDigest,
-      sourceRevision: proof.sourceRevision,
-      releaseSha: proof.releaseSha
+      ...(proof ? {
+        proofDigest: proof.proofDigest,
+        sourceRevision: proof.sourceRevision,
+        releaseSha: proof.releaseSha
+      } : {})
     });
     return writeJson(res, 200, recompute(run));
   }
