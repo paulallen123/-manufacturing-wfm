@@ -61,6 +61,12 @@ function fixture(options = {}) {
       }
       if (Number(options.failInvitationAttempts || 0) >= invitationAttempts) throw new Error('simulated temporary mail outage');
       if (options.failFirstInvitation && invitationAttempts === 1) throw new Error('simulated temporary mail outage');
+      if (options.rejectInvitationCredentials) {
+        const error = new Error('simulated provider credential rejection');
+        error.permanent = true;
+        error.code = 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED';
+        throw error;
+      }
       if (options.failInvitationDelivery) throw new Error('simulated mail transport failure');
       sentInvitations.push(invitation);
       return { provider: 'test-mailer', messageId: 'mail-' + sentInvitations.length };
@@ -727,6 +733,39 @@ test('missing message provider configuration fails immediately without wasting r
     else process.env.RESEND_API_KEY = previousApiKey;
     if (previousFrom === undefined) delete process.env.WFM_IMPLEMENTATION_FROM_EMAIL;
     else process.env.WFM_IMPLEMENTATION_FROM_EMAIL = previousFrom;
+  }
+});
+
+test('provider credential rejection stops after one attempt and requests authorised repair', async () => {
+  const f = fixture({ rejectInvitationCredentials: true });
+  try {
+    const event = { tenant: 'alpha', contractRef: 'contract-provider-auth', targetHours: 8, recipientEmail: 'manager@alpha' };
+    const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(first.status, 201);
+    assert.equal(first.body.implementation.state, 'BUILDING');
+    assert.equal(first.body.notification.delivered, false);
+    assert.equal(first.body.notification.blocked, true);
+    assert.equal(first.body.notification.reason, 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED');
+    assert.equal(f.invitationAttempts, 1);
+
+    const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
+    assert.equal(status.body.notificationRecovery.state, 'BLOCKED');
+    assert.equal(status.body.notificationRecovery.attempts, 1);
+    assert.equal(status.body.notificationRecovery.automaticActionAvailable, false);
+    assert.equal(status.body.notificationRecovery.terminalAction, 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED');
+
+    const repeated = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(repeated.body.notification.blocked, true);
+    assert.equal(f.invitationAttempts, 1);
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(db.prepare('SELECT attempts FROM implementation_notification_attempts').get().attempts, 1);
+    assert.equal(db.prepare('SELECT state FROM implementation_notification_outbox').get().state, 'PROVIDER_BLOCKED');
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_PROVIDER_BLOCKED'").get().count, 1);
+    db.close();
+  } finally {
+    f.close();
   }
 });
 
