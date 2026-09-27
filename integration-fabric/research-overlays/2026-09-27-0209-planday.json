@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Planday documentation promotion and reusable DST-safe shift-time reconciliation authority.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "planday",
+      "patch": {
+        "protocols": ["REST JSON", "OAuth 2.0 authorization code", "offset pagination", "payroll/report exports"],
+        "auth": "OAuth-2.0-authorization-code-or-customer-portal-app-with-read-scopes",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developer.planday.com/gettingstarted/overview/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "Planday Open API read application",
+            "direction": "Planday-to-WFM-read-only",
+            "authentication": "portal-authorised OAuth 2.0 application using Authorization bearer and X-ClientId headers with minimum read scopes",
+            "notes": "Create or connect one application per governed customer context. Pin the portal, exact openapi.planday.com origin, resource/version and read scopes; employee, shift, absence, pay and payroll mutations remain denied."
+          },
+          {
+            "type": "Planday schedule and punch-clock reads",
+            "direction": "Planday-schedule-time-to-WFM-read-only",
+            "authentication": "shift:read and the separately reviewed punch-clock or report read scopes required by the exact route",
+            "notes": "Preserve portal/site/department, shift, employee, local wall time, IANA zone, UTC instant and offset. Schedule is not attendance; punch-clock evidence is not final payroll."
+          },
+          {
+            "type": "Planday payroll or report export",
+            "direction": "Planday-payroll-reference-to-WFM-read-only",
+            "authentication": "customer-approved payroll/report read scope or customer-managed export",
+            "notes": "Use for reconciliation reference only. WFM does not post payroll, pay rates, absence balances or adjustments and does not treat provider cost calculations as final payroll truth."
+          }
+        ],
+        "deploymentVariants": {
+          "single-portal-cloud": {
+            "customerEdgeRequired": false,
+            "routing": "One portal, application consent, token generation, site/department map, time zone and checkpoint namespace."
+          },
+          "multi-portal-enterprise": {
+            "customerEdgeRequired": false,
+            "routing": "One application may be connected to multiple authorised portals, but each portal retains separate source identity, scope, department/site mapping, schema, time zone, rate bucket and checkpoint namespace."
+          },
+          "customer-export-fallback": {
+            "customerEdgeRequired": "by-network",
+            "routing": "Customer-approved payroll/report file enters the existing secure-file and batch-reconciliation boundary with explicit locale, currency and time-zone metadata."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "Planday-portal", "site", "department", "api-origin", "api-version", "resource", "query", "schema", "IANA-time-zone"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "Planday-portal", "shift-id", "employee-id", "source-version", "local-wall-time", "UTC-instant", "UTC-offset", "schema-fingerprint"]
+        },
+        "shiftTimeAuthority": {
+          "localWallTimeRequired": true,
+          "utcInstantRequired": true,
+          "ianaTimeZoneRequired": true,
+          "utcOffsetRequired": true,
+          "unicodeNormalisation": "NFC",
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "writeBackAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false,
+          "receiptPolicy": "Bind each batch to WFM tenant, connection, Planday portal, site, department, exact API origin/version, resource, query, schema and IANA time zone. Verify local wall time against the UTC instant and explicit offset, including DST transitions. Collapse only exact shift/source-version replays, quarantine conflicts, preserve overlap evidence and never infer deletion, attendance, payroll or write authority."
+        },
+        "dataObjects": [
+          "people", "departments", "employee-groups", "contract-rules", "shifts", "open-shifts", "shift-types",
+          "positions", "punch-clock-shifts", "absence-accounts-and-balances", "absence-requests-and-adjustments",
+          "time-and-cost", "pay-rates-reference", "payroll-reference", "portal-country-time-zone", "security-group-membership"
+        ],
+        "stableIds": [
+          "Planday portal and application/client identity",
+          "employee, department, employee-group and contract-rule IDs",
+          "shift, shift-type, position and punch-clock-shift IDs",
+          "absence account, request and transaction identifiers",
+          "local wall time, IANA time zone, UTC instant, UTC offset and source version",
+          "WFM tenant, connection, site/department map, query and schema fingerprints"
+        ],
+        "readCapability": "Use reviewed GET endpoints for portal metadata, people, departments, employee groups, contract rules, schedules/shifts, shift types, positions, punch-clock shifts, absence accounts/balances, reports, payroll reference and related data where the exact Planday version and minimum scopes expose them. The Time and Cost route supplies department/time-window shift cost context.",
+        "writeCapability": "Planday exposes employee, shift, contract-rule, absence account/adjustment, pay and other mutation routes. WFM grants no create, update, delete, deactivate, contract assignment, schedule publishing, absence approval/adjustment, pay-rate, payroll, scope, token-revocation or administration authority.",
+        "freshnessLatency": "Preserve schedule effective time and punch-clock event time separately from page observation, source version and WFM observation time. Use UTC elapsed duration while retaining local wall time, IANA zone and offsets so DST changes do not fabricate or remove paid hours. Time-and-cost results are provider calculations for the requested department/window, not universal payroll totals.",
+        "permissions": [
+          "dedicated Planday API application authorised on each exact portal",
+          "minimum read scopes for portal, employee, schedule, punch-clock, absence, report or payroll reference routes",
+          "Authorization bearer plus X-ClientId headers kept outside evidence",
+          "separate portal/site/department/time-zone/query/checkpoint scope",
+          "no employee, shift, contract, absence, pay, payroll, token or administration mutation scopes"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "Most endpoints are offset-paginated with a documented maximum of 50 records per page. Bind offset, page size, filters, portal, resource/version and schema; require a complete gapless bounded chain and reconcile duplicates/totals before any checkpoint candidate.",
+          "delta": "No universal complete change cursor is assumed at this evidence level. Re-read bounded overlapping schedule, punch-clock, absence and payroll windows; deduplicate by stable source ID plus version/payload and separately query provider-deleted-shift surfaces where reviewed. Missing rows never create deletion authority.",
+          "events": "No universal signed complete event stream is assumed. Middleware notifications remain wake-up hints and must reconcile through the same portal-scoped authoritative reads.",
+          "files": "Payroll/report exports enter through checksum, schema, row-count, locale, currency, time-zone and batch-completeness validation. Partial files cannot advance checkpoints or create deletion/payroll authority.",
+          "queues": "No shared provider queue is assumed. Customer middleware uses dedicated subscriptions, at-least-once replay identity and portal-scoped reconciliation."
+        },
+        "customFields": "Discover employee and schedule extensions from the authorised portal and exact API response schema. Preserve field name/ID, type, locale, sensitivity, source resource and schema version. Newly exposed pay, national-ID, health, demographic, free-text or credential fields quarantine until explicitly approved; unknown additive fields do not silently widen ingestion.",
+        "regionalApiVersions": "Pin portal ID, portal country and IANA time zone, exact openapi.planday.com API domain/version and customer data-location evidence. Connected child portals remain separate source scopes. Contract Rules API documentation states it does not support Australian portals, so regional capability must be discovered rather than assumed. Cross-border transfer/failover requires customer approval and a new checkpoint namespace.",
+        "rateLimits": "Planday documents 20 requests/second and 750/minute per portal plus 100/second and 2,000/minute per client ID. Every request consumes both buckets. Read x-ratelimit-limit, x-ratelimit-remaining and x-ratelimit-reset; HTTP 429 waits for reset on the same exact portal/resource without widening scope or switching portals.",
+        "failureModes": [
+          "one-hour OAuth access token expiry, lost refresh token, revoked consent or inactive authorising user",
+          "wrong WFM tenant, connection, Planday portal, site, department, API origin/version, resource, query, schema or time zone",
+          "application authorised with edit/pay/payroll/absence-adjustment scopes broader than WFM purpose",
+          "offset gap, duplicate page, changed filter/page size, concurrent schedule change or 50-row truncation",
+          "ambiguous autumn DST wall time accepted without offset, or nonexistent spring-forward time normalised silently",
+          "local-time subtraction fabricating duration across DST instead of using UTC elapsed time",
+          "overlapping employee shifts collapsed, ignored or treated as worked/paid time",
+          "open, deleted, published and unpublished shifts mixed without source-status provenance",
+          "schedule mistaken for attendance, punch clock mistaken for productive work or cost reference mistaken for final payroll",
+          "Time and Cost omission of open shifts or unsupported daily/weekly supplements mistaken for zero cost",
+          "absence account/balance or transaction writes accidentally enabled",
+          "HTTP 400/401/403/404/409/429/500, TLS/DNS/network failure or portal outage",
+          "multi-portal employee-ID collision or department/site mapping drift",
+          "locale, currency, Unicode, custom-field or contract-rule regional mismatch"
+        ],
+        "reconciliation": "Bind every read to WFM tenant, connection, Planday portal, site, department, exact API origin/version/resource, query, schema and IANA time zone. Preserve local wall time + UTC instant + explicit offset for start/end and calculate elapsed time in UTC; reject ambiguous or nonexistent local times unless the source instant/offset resolves them exactly. Scope employee identity to portal/connection, preserve overlapping shifts as explicit conflicts, collapse only exact shift/source-version replays and quarantine divergent duplicates. Require complete pagination and bounded observation windows. Missing, open, filtered, deleted-route-absent or partial rows grant no deletion, attendance, payroll or checkpoint authority.",
+        "schemaDrift": "Fingerprint the exact endpoint version, response fields and local mapping per portal/resource. Route/version, field, enum, offset/pagination, schedule-status, time-zone, currency or regional-support changes quarantine the affected dataset. Approved raw values retain schema and locale provenance.",
+        "retriesReconnect": "401 performs one generation-fenced access-token refresh using the portal-bound refresh token, then stops for consent/user/client diagnosis; 403 stops for scope review. 429 waits for x-ratelimit-reset while preserving portal/client buckets. 500/network failures use bounded jittered retry against the same route. Resume from the last WFM-committed boundary with overlap; never switch portal, department, zone or query automatically.",
+        "evidenceUrl": "https://developer.planday.com/gettingstarted/overview/",
+        "evidenceNote": "Planday documentation reviewed 27 September 2026 establishes OAuth 2.0 bearer access with Authorization and X-ClientId headers; one-hour access tokens and revocable refresh access; per-portal authorisation and scopes; JSON REST domains for HR, schedules, punch clock, absence, payroll and reports; offset pagination commonly capped at 50 rows; schedule and department/time-window cost data; portal country/time-zone metadata; 20/second and 750/minute portal limits plus 100/second and 2,000/minute client limits with 429/reset headers; and mutation-rich employee, shift, absence and pay surfaces. No demo portal or customer portal was authenticated and no live employee, shift, punch, absence, pay or payroll read was performed.",
+        "securityEvidenceBlockers": [
+          "Portal consent can grant every listed resource for all employees visible to the authorising administrator; live minimum-scope proof is required.",
+          "Long-lived refresh tokens require protected storage, revocation detection and generation-fenced refresh evidence.",
+          "Schedule, absence, pay and payroll APIs expose mutations; exact read-route and denied-operation proof is required.",
+          "Portal country/time zone does not by itself prove contractual data residency or cross-border controls."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["person", "department", "employee-group", "contract-rule", "shift", "shift-type", "position", "punch-event", "absence-account", "absence-request", "time-cost", "payroll-reference", "site-time-zone"],
+          "customerValue": ["compare schedules with actual punch-clock evidence before weekly sign-off", "identify overtime, absence and overlap exceptions earlier", "preserve DST-safe labour hours across UK and European sites", "join department shift demand with employee and contract context", "reconcile labour-cost references by shift, employee and department without manual spreadsheets"],
+          "savingsHypotheses": ["reduce payroll corrections caused by DST, overlap or schedule-versus-punch errors", "reduce unnecessary overtime and agency cover from stale absence or schedule data", "reduce manual weekly sign-off and department cost reconciliation", "prevent multi-portal employee/site identity collisions", "reuse one governed integration pattern from small portals to multi-portal enterprises"],
+          "automationOpportunities": ["discover portal, country, time zone and minimum scopes", "map departments to sites and employee groups to skills/roles", "reconcile schedule, punch and absence windows", "flag DST ambiguity, impossible local time and overlaps", "throttle by portal and client buckets"],
+          "constraintsRisks": ["daily and weekly supplements are not supported by the Time and Cost endpoint", "provider cost is reference evidence rather than final payroll authority", "schedule does not prove attendance or productive work", "punch clock does not prove production output", "documentation evidence is not demo, tenant or production proof"]
+        },
+        "causalOutcomeReadiness": "Preserve portal, site, department, employee, shift, position, contract and absence identities; local/UTC/offset histories; source version, query and schema provenance; WFM recommendation/action timestamps; baseline/outcome windows; and competing pay, absence, manager, training, site, production, maintenance and material changes.",
+        "nextBuildAction": "Use an authorised Planday demo or customer portal to prove exact portal consent, minimum read scopes, Authorization/X-ClientId handling, one-hour token refresh and revocation, denied mutation routes, portal/site/department/time-zone mapping, 50-row pagination, schedule/punch/absence/payroll-reference reads, deleted/open shift semantics, ambiguous and spring-forward DST cases, employee overlaps, 429 reset handling, multi-portal isolation and overlap reconciliation without deletion, attendance, payroll or write authority."
+      }
+    }
+  ],
+  "systems": []
+}
