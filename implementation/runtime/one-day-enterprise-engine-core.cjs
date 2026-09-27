@@ -1314,11 +1314,35 @@ function createOneDayEnterpriseEngine(options = {}) {
     });
   }
 
+  function handleEntryPreflight(res) {
+    const checks = {
+      contractAuthentication: Boolean(contractWebhookSecret),
+      secureCustomerOrigin: Boolean(publicOrigin && /^https:\/\//i.test(publicOrigin)),
+      invitationProvider: invitationTransportReady,
+      restartRecovery: Boolean(invitationRecoverySecret)
+    };
+    const requiredActions = [];
+    if (!checks.contractAuthentication) requiredActions.push('CONTRACT_AUTHENTICATION_CONFIGURATION_REQUIRED');
+    if (!checks.secureCustomerOrigin) requiredActions.push('SECURE_CUSTOMER_ORIGIN_CONFIGURATION_REQUIRED');
+    if (!checks.invitationProvider) requiredActions.push('MESSAGE_PROVIDER_CONFIGURATION_REQUIRED');
+    if (!checks.restartRecovery) requiredActions.push('INVITATION_RECOVERY_SECRET_CONFIGURATION_REQUIRED');
+    return writeJson(res, 200, {
+      state: requiredActions.length === 0 ? 'READY' : 'BLOCKED',
+      ready: requiredActions.length === 0,
+      checks,
+      requiredActions
+    });
+  }
+
   async function handleRequest(req, res) {
     const path = requestPath(req);
     if (!path.startsWith(PREFIX)) return false;
 
     try {
+      if (req.method === 'GET' && path === PREFIX + '/preflight') {
+        if (!requireInternal(req, res)) return true;
+        return handleEntryPreflight(res);
+      }
       if (req.method === 'POST' && path === PREFIX + '/contract-signed') {
         if (!requireContractWebhook(req, res)) return true;
         return await handleContractSigned(req, res);
