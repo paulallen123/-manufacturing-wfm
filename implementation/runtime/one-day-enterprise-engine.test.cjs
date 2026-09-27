@@ -484,6 +484,36 @@ test('high-risk inference exception blocks go-live until customer resolves it', 
   }
 });
 
+test('low-risk decisions preserve the existing path without release proof', async () => {
+  const f = fixture({ releaseSha: '' });
+  try {
+    const run = await startRun(f, 'alpha', 'low-risk-compatible');
+    const proposal = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/proposal',
+      {
+        runId: run.runId,
+        key: 'display-preference',
+        question: 'Use the inferred display preference?',
+        proposal: { compact: true },
+        confidence: 0.8,
+        risk: 'LOW'
+      },
+      f.internal
+    );
+    assert.equal(proposal.status, 201);
+    const resolved = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/decision',
+      { runId: run.runId, key: 'display-preference', action: 'ACCEPTED', detail: { accepted: true } }
+    );
+    assert.equal(resolved.status, 200);
+    const decision = resolved.body.decisions.find(item => item.key === 'display-preference');
+    assert.equal(decision.proofCarryingState, null);
+    assert.equal(decision.proofCurrent, null);
+  } finally {
+    f.close();
+  }
+});
+
 test('implementation runs and decisions are tenant isolated', async () => {
   const f = fixture();
   try {
