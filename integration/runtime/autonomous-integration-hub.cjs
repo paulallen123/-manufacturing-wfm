@@ -780,6 +780,26 @@ function createAutonomousIntegrationHub(options = {}) {
         String(connection.mapping_version),
         ...canonicalRecords.map(item => item.recordChecksum).sort()
       ].join('|'));
+      const expectedCanonicalChecksum = compact(body.expectedCanonicalChecksum, 64).toLowerCase();
+      if (expectedCanonicalChecksum) {
+        if (!/^[0-9a-f]{64}$/.test(expectedCanonicalChecksum)) {
+          return writeJson(res, 400, { error: 'expectedCanonicalChecksum must be a SHA-256 hex digest.' });
+        }
+        if (expectedCanonicalChecksum !== batchChecksum) {
+          const stamp = nowIso();
+          markSync.run('DEGRADED', 'DATA_CHECKSUM', stamp, stamp, stamp, connection.id, connection.tenant);
+          record(connection.tenant, connection.id, 'canonical-checksum-mismatch', {
+            mappingVersion: connection.mapping_version,
+            expectedDigest: expectedCanonicalChecksum.slice(0, 16),
+            observedDigest: batchChecksum.slice(0, 16)
+          });
+          return writeJson(res, 409, {
+            error: 'Canonical import checksum does not match the expected source handoff.',
+            reconciliation: { sourceCount: body.records.length, validCount: valid, invalidCount: invalid, duplicateCount, status },
+            canonicalImport: null
+          });
+        }
+      }
       let batch = canonicalBatchByChecksum.get(
         connection.tenant, connection.id, Number(connection.mapping_version), batchChecksum
       );
