@@ -43,3 +43,5 @@ try {
   console.error('VECTOR_BROWSER_PROOF_RUNNER=FAIL candidateSha=' + state.candidateSha);
   console.error(state.error);
 }
+
+// Clean exact-proof deployment trigger: 2026-09-27.
