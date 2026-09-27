@@ -10,6 +10,7 @@ const {
   timingSafeEqual
 } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { createTenantEnvironmentProvisioner } = require('./tenant-environment-provisioner.cjs');
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -381,6 +382,8 @@ function createOneDayEnterpriseEngine(options = {}) {
   // every existing row plus explicit index/trigger definition.
   ensureImplementationEventsWriteCompatibility(db);
 
+  const environmentProvisioner = createTenantEnvironmentProvisioner({ db });
+
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
   );
@@ -687,6 +690,52 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
   }
 
+  function environmentScopeShape(scope) {
+    if (!scope) return null;
+    return {
+      companyName: compact(scope.companyName, 160).trim(),
+      employeeCount: Number(scope.employeeCount || 0),
+      countries: Array.isArray(scope.countries) ? scope.countries.map(value => compact(value, 80).trim()).filter(Boolean) : [],
+      sites: Array.isArray(scope.sites) ? scope.sites.map(value => compact(value, 120).trim()).filter(Boolean) : [],
+      sourceSystems: Array.isArray(scope.sourceSystems) ? scope.sourceSystems.map(value => compact(value, 120).trim()).filter(Boolean) : [],
+      features: Array.isArray(scope.features) ? scope.features.map(value => compact(value, 120).trim()).filter(Boolean) : [],
+      workPatterns: Array.isArray(scope.workPatterns) ? scope.workPatterns.map(value => compact(value, 120).trim()).filter(Boolean) : [],
+      clockingMethods: Array.isArray(scope.clockingMethods) ? scope.clockingMethods.map(value => compact(value, 120).trim()).filter(Boolean) : [],
+      payrollSystem: compact(scope.payrollSystem, 120).trim(),
+      hcmSystem: compact(scope.hcmSystem, 120).trim(),
+      erpSystem: compact(scope.erpSystem, 120).trim(),
+      agencyLabour: Boolean(scope.agencyLabour),
+      priorities: compact(scope.priorities, 1000),
+      notes: compact(scope.notes, 2000)
+    };
+  }
+
+  function scopeAssessment(customerScope, sourceDataSummary) {
+    const conflicts = [];
+    if (customerScope && sourceDataSummary) {
+      if (Number(customerScope.employeeCount) !== Number(sourceDataSummary.employeeCount)) {
+        conflicts.push({
+          field: 'employeeCount',
+          declared: Number(customerScope.employeeCount),
+          observed: Number(sourceDataSummary.employeeCount)
+        });
+      }
+      const normalizedDeclaredSites = new Set((customerScope.sites || []).map(value => normaliseFact(value)).filter(Boolean));
+      const unexpectedSites = sourceDataSummary.sites.filter(value => !normalizedDeclaredSites.has(normaliseFact(value)));
+      if (unexpectedSites.length) conflicts.push({ field: 'sites', observedNotDeclared: unexpectedSites });
+    }
+    return {
+      conflicts,
+      ok: Boolean(customerScope) && conflicts.length === 0
+    };
+  }
+
+  function environmentMatchesRun(environment, run, customerScope) {
+    if (!environment || !customerScope) return false;
+    if (environment.state !== 'READY' || environment.runId !== run.id) return false;
+    return JSON.stringify(environment.configuration) === JSON.stringify(environmentScopeShape(customerScope));
+  }
+
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
@@ -696,6 +745,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       try { customerScope = JSON.parse(scopeRow.scope_json); } catch {}
     }
     const sourceDataSummary = canonicalSourceSummaryForTenant(run.tenant);
+    const scopeStatus = scopeAssessment(customerScope, sourceDataSummary);
+    const tenantEnvironment = environmentProvisioner.statusForTenant(run.tenant);
     let learningSummary = null;
     if (learningSummaryProvider) {
       try { learningSummary = learningSummaryProvider(run.tenant); } catch {}
@@ -706,22 +757,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       let derived = null;
 
       if (requirement.key === 'configuration-scope') {
-        const conflicts = [];
-        if (customerScope && sourceDataSummary) {
-          if (Number(customerScope.employeeCount) !== Number(sourceDataSummary.employeeCount)) {
-            conflicts.push({
-              field: 'employeeCount',
-              declared: Number(customerScope.employeeCount),
-              observed: Number(sourceDataSummary.employeeCount)
-            });
-          }
-          const normalizedDeclaredSites = new Set((customerScope.sites || []).map(value => normaliseFact(value)).filter(Boolean));
-          const unexpectedSites = sourceDataSummary.sites.filter(value => !normalizedDeclaredSites.has(normaliseFact(value)));
-          if (unexpectedSites.length) {
-            conflicts.push({ field: 'sites', observedNotDeclared: unexpectedSites });
-          }
-        }
-        const ok = Boolean(customerScope) && conflicts.length === 0;
+        const { conflicts, ok } = scopeStatus;
         derived = {
           status: conflicts.length ? 'FAIL' : (ok ? 'PASS' : 'MISSING'),
           confidence: conflicts.length || ok ? 1 : 0,
@@ -748,6 +784,23 @@ function createOneDayEnterpriseEngine(options = {}) {
               systemName: sourceDataSummary.systemName
             }
           } : null)
+        };
+      } else if (requirement.key === 'tenant-environment') {
+        const matches = scopeStatus.ok && environmentMatchesRun(tenantEnvironment, run, customerScope);
+        derived = {
+          status: matches ? 'PASS' : 'MISSING',
+          confidence: matches ? 1 : 0,
+          source: 'tenant-environment-provisioner',
+          detail: tenantEnvironment ? {
+            environmentId: tenantEnvironment.environmentId,
+            namespace: tenantEnvironment.namespace,
+            runId: tenantEnvironment.runId,
+            state: tenantEnvironment.state,
+            configurationDigest: tenantEnvironment.configurationDigest,
+            scopeConflictCount: scopeStatus.conflicts.length
+          } : {
+            missing: ['provisioned-tenant-environment']
+          }
         };
       } else if (requirement.key === 'source-systems' && sourceDataSummary) {
         derived = {
@@ -866,6 +919,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       blockingDecisions,
       learningSummary,
       sourceDataSummary,
+      tenantEnvironment,
       scopeCaptured: Boolean(customerScope),
       customerScope,
       notificationRecovery: notificationRecoveryForRun(run)
@@ -1442,6 +1496,29 @@ function createOneDayEnterpriseEngine(options = {}) {
       sourceSystems: scope.sourceSystems.length,
       features: scope.features.length
     });
+    const afterScope = readinessForRun(run);
+    const scopeRequirement = afterScope.requirements.find(item => item.key === 'configuration-scope');
+    if (scopeRequirement?.satisfied) {
+      const previousEnvironment = environmentProvisioner.statusForTenant(ctx.tenant);
+      const environment = environmentProvisioner.provision({ tenant: ctx.tenant, runId: run.id, scope });
+      if (
+        !previousEnvironment ||
+        previousEnvironment.runId !== environment.runId ||
+        previousEnvironment.configurationDigest !== environment.configurationDigest ||
+        previousEnvironment.state !== environment.state
+      ) {
+        record(run.id, ctx.tenant, 'TENANT_ENVIRONMENT_READY', {
+          environmentId: environment.environmentId,
+          namespace: environment.namespace,
+          configurationDigest: environment.configurationDigest
+        });
+      }
+    } else {
+      record(run.id, ctx.tenant, 'TENANT_ENVIRONMENT_BLOCKED', {
+        reason: 'CONFIGURATION_SCOPE_NOT_VERIFIED',
+        conflicts: scopeRequirement?.detail?.sourceValidation?.conflicts || []
+      });
+    }
     return writeJson(res, existing ? 200 : 201, recompute(run));
   }
 
