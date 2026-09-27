@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "BambooHR documentation promotion and reusable field-minimised workforce projection authority.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "bamboohr",
+      "patch": {
+        "protocols": ["REST v1", "REST dataset v2", "OAuth 2.0", "permissioned signed webhooks", "JSON", "CSV/XML report export"],
+        "auth": "customer-specific-API-key-over-Basic-Authentication-or-approved-OAuth-2.0-application",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://documentation.bamboohr.com/docs/getting-started",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "BambooHR cursor employee API",
+            "direction": "BambooHR-to-WFM-read-only",
+            "authentication": "dedicated least-privilege BambooHR user API key or customer-approved OAuth 2.0 application on the exact company domain",
+            "notes": "Use exact HTTPS GET routes with cursor continuation for employee roster and approved additional fields. Returned restricted-field markers remain evidence of suppression, not empty source values."
+          },
+          {
+            "type": "BambooHR ad-hoc custom report",
+            "direction": "BambooHR-to-WFM-read-only",
+            "authentication": "dedicated least-privilege user API key or approved OAuth scope",
+            "notes": "POST /api/v1/reports/custom is authorised only as a read operation for one immutable field projection and bounded JSON response. HTTP POST never grants mutation authority; create, update, delete, time-off approval, payroll and administration routes remain denied."
+          },
+          {
+            "type": "BambooHR dataset query",
+            "direction": "BambooHR-to-WFM-read-only",
+            "authentication": "approved report scope plus employee population and field permissions",
+            "notes": "Use server pagination up to the documented 1,000-row page maximum, exact field/filter/order projection and restricted-field reconciliation."
+          },
+          {
+            "type": "BambooHR permissioned webhook",
+            "direction": "BambooHR-change-hint-to-WFM",
+            "authentication": "customer-created permissioned webhook with HTTPS and SHA-256 HMAC signature verification",
+            "notes": "Webhook batches are low-latency hints only. Verify raw-body plus timestamp signature, restrict monitor/post fields and reconcile through an authoritative read before any checkpoint decision."
+          }
+        ],
+        "deploymentVariants": {
+          "single-company-cloud": {
+            "customerEdgeRequired": false,
+            "routing": "Exact https://{companyDomain}.bamboohr.com origin with one dedicated identity and one WFM connection scope."
+          },
+          "multi-company-or-acquisition": {
+            "customerEdgeRequired": false,
+            "routing": "Separate company domain, source-account identity, credential, field schema, projection, checkpoint and reconciliation scope per BambooHR account."
+          },
+          "customer-export-fallback": {
+            "customerEdgeRequired": "by-network",
+            "routing": "Customer-approved report export enters the existing secure file and batch-reconciliation boundary; it never inherits API completeness or deletion semantics."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "BambooHR-company", "api-origin", "api-version", "resource", "route", "method", "projection", "field-schema"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "BambooHR-company", "employee-id", "source-version", "projection-fingerprint", "field-schema-fingerprint"]
+        },
+        "fieldProjectionAuthority": {
+          "exactCompanyOriginRequired": true,
+          "immutableFieldAllowlistRequired": true,
+          "restrictedFieldEvidencePreserved": true,
+          "unicodeNormalisation": "NFC",
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "writeBackAuthority": false,
+          "payrollAuthority": false,
+          "presenceAuthority": false,
+          "receiptPolicy": "Bind every read to one WFM tenant, connection, BambooHR company, exact HTTPS origin, version, resource, route, HTTP method, approved field projection and field-schema fingerprint. POST can express read intent only for an exact report/query route. Reject field widening, newly sensitive fields, schema drift, incomplete pagination and conflicting employee-version receipts; preserve restricted-field markers and collapse only exact replays."
+        },
+        "dataObjects": [
+          "people", "employment-status", "departments-and-divisions", "job-titles", "locations", "manager-relations",
+          "skills-and-training", "certifications", "time-off", "time-tracking", "work-schedules", "employment-history",
+          "compensation-reference", "cost-centres", "custom-fields"
+        ],
+        "stableIds": [
+          "BambooHR company domain and source-account identity",
+          "immutable employee ID unique within one company",
+          "department, division, location, job and manager references where exposed",
+          "time-off request/history, time-entry, training and table-row identifiers where exposed",
+          "WFM tenant, connection, route, projection and field-schema fingerprints"
+        ],
+        "readCapability": "Read approved employee identity/job/location/status fields with cursor pagination; execute exact saved or ad-hoc reports and dataset queries for explicitly allowlisted fields; read time-off, time-tracking, training and related workforce datasets only where the subscribed product, caller permissions and reviewed route expose them. Signed permissioned webhooks provide change hints, not completeness authority.",
+        "writeCapability": "BambooHR exposes employee, table, time-off, time-tracking, webhook and other mutation surfaces. WFM grants no create, update, delete, approval, balance adjustment, payroll, compensation-change, employee-file, credential, webhook-management or administration authority. POST is allowed only for exact reviewed read-only report/query operations.",
+        "freshnessLatency": "Preserve source effective dates, changed timestamps, request window, page observation times and WFM observation time separately. Webhooks can reduce latency but require authoritative read catch-up; report and dataset results reflect their extraction time and can contain future-dated or historical values depending on the exact query.",
+        "permissions": [
+          "dedicated least-privilege user API key or approved OAuth application",
+          "exact company-domain HTTPS origin and API route",
+          "exact employee population and field allowlist, including custom fields",
+          "field metadata and restricted-field markers reconciled before admission",
+          "no employee, time-off, time-entry, payroll, compensation, file, credential, webhook-management or administration mutations"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "The current employee list is cursor-paginated and returns next/previous links plus total metadata. Dataset v2 uses page/pageSize with a default of 100 and maximum of 1,000. Follow only exact continuation links or page plans bound to company, route, field/filter/order projection and schema; gaps, loops, partial chains and total mismatches fail closed.",
+          "delta": "Changed employee table data uses an employee-last-changed timestamp: any employee field change can cause all rows for that employee table to reappear. Use overlap replay and exact employee + source-version deduplication; do not infer which field changed or delete rows merely because they are absent from an incremental response.",
+          "events": "Permissioned webhooks are HTTPS POST batches signed with SHA-256 HMAC over raw body plus timestamp. Verify signature and bounded clock skew, allow only configured monitor/post fields, ignore unknown additive properties and reconcile through cursor/report/dataset reads before checkpoint advancement.",
+          "files": "JSON/CSV/XML report exports use approved encoding, delimiter, schema, checksum, row-count and batch-completeness validation. PDF/XLS and employee-file downloads are excluded from generic workforce ingestion.",
+          "queues": "No complete provider queue is assumed. Middleware delivery remains at-least-once and uses the same employee/source-version replay identity and authoritative catch-up rules."
+        },
+        "customFields": "Discover standard and customer custom employee fields through /api/v1/meta/fields and preserve field ID, display name, data type, deprecation state, sensitivity, locale and schema fingerprint. A new, renamed, deprecated or type-changed field quarantines the projection. National ID, tax, bank, health, demographic, dependent, free-text and document fields remain denied until an explicit customer-approved purpose, minimisation and retention rule exists.",
+        "regionalApiVersions": "Pin the exact customer companyDomain host, environment/account identity, REST version, dataset version, locale and field schema. BambooHR documents company-domain-scoped HTTPS endpoints rather than a universal regional failover route; never substitute another company host or infer cross-border failover. Residency and cross-border handling require customer/provider contractual evidence beyond public API documentation.",
+        "rateLimits": "Do not assume a universal numeric rate. From 16 September 2026 BambooHR distinguishes rate limiting as HTTP 429 with Retry-After from HTTP 503 provider unavailability. Honor Retry-After on the same exact route, use bounded jittered retry for transient 5xx/network loss, and never refresh credentials, widen fields or switch company hosts in response to throttling/outage.",
+        "failureModes": [
+          "API key, user, OAuth client, access token or refresh token expiry, revocation or disabled access",
+          "wrong WFM tenant, connection, BambooHR company domain, source account, API version, route, method, resource, projection or field schema",
+          "successful authentication with broader employee or field permissions than WFM purpose permits",
+          "custom report unknown or inaccessible fields silently omitted from a 200 response",
+          "employee/dataset restricted fields returned null or empty and mistaken for real source values",
+          "filtered results hiding employees because the caller cannot read the filter or sort field",
+          "employeeNumber or email incorrectly treated as immutable company employee identity",
+          "custom-field addition, rename, deprecation, type change, sensitivity change or Unicode collision",
+          "cursor/page gap, loop, replay, total mismatch, truncation, unbounded report or incomplete response",
+          "changed-table employee-wide replay incorrectly represented as a field-level delta",
+          "duplicate, out-of-order, forged, stale or missed webhook batch and additive payload drift",
+          "HTTP 429 rate limit confused with HTTP 503 provider outage after the 16 September 2026 change",
+          "401/403 permission or key block, transient 5xx, packet loss or DNS/TLS failure",
+          "HR, time-off or time-tracking data incorrectly treated as final payroll, physical presence or productive-work truth"
+        ],
+        "reconciliation": "Bind each extraction to WFM tenant, connection, BambooHR company, exact HTTPS origin, API version, route/method, resource, immutable field projection and field-schema fingerprint. Use immutable company employee ID, never employeeNumber or email, as the source identity. Require returned fields to match the approved projection; preserve _restrictedFields and distinguish restricted/null from absent/not-requested. Cursor or page chains must be complete and totals reconciled. Collapse exact employee + source-version + payload replays and quarantine conflicts. Empty, filtered, restricted, silently omitted or incremental results grant no absence, deletion or checkpoint authority.",
+        "schemaDrift": "Fingerprint metadata and the exact requested/returned field set. Standard/custom field addition, removal, rename, deprecation, data-type change, new restriction marker, response-shape change, unknown webhook property or route/version change quarantines the affected projection until reviewed. Existing approved rows retain raw field ID/type/schema provenance.",
+        "retriesReconnect": "401/403 stops for key/user/OAuth, employee-population, field-scope, company and route diagnosis. 429 honors Retry-After on the same exact route; 503 and transient network/5xx use bounded jittered backoff without credential refresh or route broadening. Resume cursor/page reads from the last WFM-committed boundary with overlap and reconciliation; missed webhooks trigger authoritative catch-up.",
+        "evidenceUrl": "https://documentation.bamboohr.com/docs/getting-started",
+        "evidenceNote": "BambooHR documentation reviewed 27 September 2026 establishes company-domain HTTPS APIs; API-key Basic authentication and OAuth; user-equivalent employee/field permissions; immutable employee IDs unique within a company; UTF-8; cursor employee listing; metadata-discovered standard/custom fields; custom reports requested by POST with at most 400 fields and silent omission of inaccessible fields; dataset-v2 restricted-field markers and pages up to 1,000 rows; HMAC-signed permissioned webhooks; and the 16 September 2026 change separating 429 Retry-After throttling from 503 unavailability. No sandbox or customer tenant was authenticated and no live employee, time, absence, training, compensation or organisation read was performed.",
+        "securityEvidenceBlockers": [
+          "API permission is inherited from the associated user, so live effective employee-population and field-scope proof is required.",
+          "Custom reports can silently omit unknown or inaccessible fields; exact requested/returned schema reconciliation is required before evidence advances.",
+          "Webhook creation and changes are privileged setup operations; runtime WFM remains receive-and-reconcile only.",
+          "Sensitive HR fields require customer-specific purpose, minimisation, residency, retention and access-boundary evidence."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["person", "employment-status", "organisation", "site-location", "job", "manager", "skill-training", "time-off", "time-entry", "schedule-reference", "cost-centre", "compensation-reference"],
+          "customerValue": ["bootstrap smaller manufacturers quickly from one HR account with an exact minimal field set", "improve starter-mover-leaver, skill and location reconciliation", "improve absence, overtime and schedule decisions with dated HR/time-off context", "reduce duplicate workers and wrong department, job or site assignments", "accelerate multi-company implementation through reusable per-account field schemas"],
+          "savingsHypotheses": ["reduce manual employee master maintenance and onboarding effort", "avoid overtime or agency decisions based on stale worker status, location or skill context", "reduce payroll-preparation exceptions from mismatched worker/job/cost-centre references", "detect missing or restricted data before it contaminates schedules", "avoid bespoke HR report mappings when approved projections can be reused"],
+          "automationOpportunities": ["discover company field metadata and permissions", "propose a minimum purpose-bound field projection", "reconcile restricted, missing and custom fields", "recover cursor/page reads and missed webhooks", "route one or many company accounts without identity collision"],
+          "constraintsRisks": ["BambooHR is HR source evidence, not final payroll authority", "time-off and time-tracking records do not prove physical presence or productive work", "restricted or silently omitted fields are not empty source values", "missing employees or rows do not prove deletion", "documentation evidence is not sandbox, tenant or production proof"]
+        },
+        "causalOutcomeReadiness": "Preserve BambooHR company and employee identity, organisation/job/location/skill/time-off histories, source version and field-schema provenance; WFM recommendation/action timestamps; baseline/outcome windows; and competing schedule, pay, absence, manager, training, site, production, maintenance and material changes.",
+        "nextBuildAction": "Use an authorised BambooHR test company to prove dedicated API-key or OAuth identity, exact employee population and field permissions, denied mutation routes, metadata/custom-field discovery, cursor employee reads, restricted-field and silent-omission behavior, 400-field report rejection, dataset pages at 100/1,000 rows, HMAC webhook duplicate/out-of-order/missed-delivery recovery, Unicode/custom-field drift, 429 Retry-After versus 503 outage handling and overlap reconciliation without granting absence, deletion, payroll or write authority."
+      }
+    }
+  ],
+  "systems": []
+}
