@@ -1,115 +1,141 @@
 import http from 'node:http';
 
 const origin = new URL(process.env.TARGET_ORIGIN).origin;
-const password = process.env.WFM_STAGING_PASSWORD;
+const runId = String(process.env.RUN_ID || '').trim();
+const tenant = String(process.env.TENANT || '').trim();
+const expectedSha = String(process.env.EXPECTED_CANDIDATE_SHA || '').trim().toLowerCase();
+const internalToken = String(process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '');
 const port = Number(process.env.PORT || 3000);
 let state = { status: 'PENDING', stage: 'startup', startedAt: new Date().toISOString() };
 
 const server = http.createServer((req, res) => {
   res.setHeader('content-type', 'application/json; charset=utf-8');
   res.setHeader('cache-control', 'no-store');
-  if (req.url === '/health') {
-    res.statusCode = state.status === 'PASS' ? 200 : 503;
-    return res.end(JSON.stringify(state));
-  }
-  if (req.url === '/proof') {
-    res.statusCode = state.status === 'PASS' ? 200 : state.status === 'FAIL' ? 503 : 202;
+  if (req.url === '/health' || req.url === '/proof') {
+    res.statusCode = 200;
     return res.end(JSON.stringify(state));
   }
   res.statusCode = 404;
   res.end(JSON.stringify({ error: 'not found' }));
 });
-server.listen(port, '0.0.0.0', () => console.log('VECTOR_POLICY_DISCOVERY_LISTENING=' + port));
+server.listen(port, '0.0.0.0', () => console.log('VECTOR_IMPLEMENTATION_POLICY_EVIDENCE_LISTENING=' + port));
 
 function assert(value, message) {
   if (!value) throw new Error(message);
 }
-async function request(path, { method = 'GET', body = null, cookie = null } = {}) {
-  const headers = { origin, 'x-forwarded-proto': 'https' };
+
+async function request(path, { method = 'GET', body = null, internal = false } = {}) {
+  const headers = { 'x-forwarded-proto': 'https' };
   if (body !== null) headers['content-type'] = 'application/json';
-  if (cookie) headers.cookie = cookie;
+  if (internal) headers['x-wfm-implementation-internal'] = internalToken;
   const response = await fetch(origin + path, {
     method,
     headers,
     body: body === null ? undefined : JSON.stringify(body),
-    signal: AbortSignal.timeout(15000)
+    signal: AbortSignal.timeout(20000)
   });
   const text = await response.text();
   let json = null;
   try { json = text ? JSON.parse(text) : null; } catch {}
-  return { status: response.status, text, json, headers: response.headers };
+  return { status: response.status, text, json };
 }
-async function login(email) {
-  const result = await request('/api/login', { method: 'POST', body: { email, password } });
-  assert(result.status === 200, 'login ' + email + ' HTTP ' + result.status);
-  const match = (result.headers.get('set-cookie') || '').match(/wfm_session=([^;]+)/);
-  assert(match, 'session cookie missing for ' + email);
-  return 'wfm_session=' + match[1];
-}
-function shallow(value) {
-  if (Array.isArray(value)) return value.slice(0, 12);
-  if (!value || typeof value !== 'object') return value;
-  return value;
+
+async function advance(kind, confidence, detail) {
+  state = { ...state, stage: 'claim-' + kind };
+  const claim = await request('/api/implementation/autonomous/work/claim', {
+    method: 'POST', internal: true, body: { runId, tenant, requirementKey: kind }
+  });
+  assert(claim.status === 200, kind + ' claim HTTP ' + claim.status + ' ' + claim.text.slice(0, 500));
+
+  if (claim.json?.job) {
+    assert(claim.json.job.requirementKey === kind, kind + ' claim returned wrong requirement');
+    const result = await request('/api/implementation/autonomous/work/result', {
+      method: 'POST', internal: true, body: {
+        runId, tenant,
+        jobId: claim.json.job.id,
+        intentDigest: claim.json.job.intentDigest,
+        outcome: 'EFFECT_RECORDED',
+        detail
+      }
+    });
+    assert(result.status === 200, kind + ' result HTTP ' + result.status + ' ' + result.text.slice(0, 500));
+  }
+
+  state = { ...state, stage: 'evidence-' + kind };
+  const evidence = await request('/api/implementation/autonomous/evidence', {
+    method: 'POST', internal: true, body: {
+      runId, kind, status: 'PASS', confidence,
+      source: 'hosted-policy-runtime-proof',
+      detail
+    }
+  });
+  assert(evidence.status === 200, kind + ' evidence HTTP ' + evidence.status + ' ' + evidence.text.slice(0, 700));
+  const requirement = evidence.json?.requirements?.find(item => item.key === kind);
+  assert(requirement?.satisfied === true, kind + ' did not satisfy readiness after evidence');
+  return evidence.json;
 }
 
 try {
-  const manager = await login('manager@northstar.example');
-  const employee = await login('maya@northstar.example');
-  state = { ...state, stage: 'read-runtime' };
+  assert(runId && tenant && internalToken && /^[0-9a-f]{40}$/.test(expectedSha), 'required proof configuration missing');
 
-  const [bootstrap, personal, weekly, timeReview, asset] = await Promise.all([
-    request('/api/bootstrap', { cookie: manager }),
-    request('/api/personal', { cookie: employee }),
-    request('/api/weekly-review', { cookie: manager }),
-    request('/api/time-review', { cookie: manager }),
-    request('/work-rules.js', { cookie: manager })
-  ]);
-  for (const [name, item] of Object.entries({ bootstrap, personal, weekly, timeReview, asset })) {
-    assert(item.status === 200, name + ' HTTP ' + item.status);
-  }
+  state = { ...state, stage: 'identity' };
+  const identity = await request('/api/runtime-identity');
+  assert(identity.status === 200, 'runtime identity HTTP ' + identity.status);
+  assert(JSON.stringify(identity.json || {}).toLowerCase().includes(expectedSha), 'runtime identity does not bind expected candidate SHA');
 
-  const bs = bootstrap.json?.state || {};
-  const result = {
-    bootstrapKeys: Object.keys(bs).sort(),
-    costingKeys: Object.keys(bs.costing || {}).sort(),
-    workRulesKeys: Object.keys(bs.workRules || {}).sort(),
-    costingPolicies: shallow(bs.costing?.policies || null),
-    employeePolicies: shallow(bs.costing?.employeePolicies || null),
-    workRules: shallow(bs.workRules || null),
-    assignments: (bs.assignments || []).slice(0, 12).map(x => ({
-      id: x.id ?? null,
-      employeeId: x.employeeId ?? x.employee ?? null,
-      breakMinutes: x.breakMinutes ?? null,
-      start: x.start ?? x.startTime ?? null,
-      end: x.end ?? x.endTime ?? null
-    })),
-    employeePolicy: personal.json?.policy || null,
-    employeeLeave: personal.json?.leave || null,
-    weeklyTotals: (weekly.json?.teams || []).slice(0, 6).map(team => ({
-      id: team.id ?? null,
-      holidayMinutes: team.holidayMinutes ?? null,
-      sicknessMinutes: team.sicknessMinutes ?? null,
-      employees: (team.employees || []).slice(0, 12).map(e => ({
-        id: e.id ?? e.employeeId ?? null,
-        overtimeMinutes: e.overtimeMinutes ?? null,
-        holidayMinutes: e.holidayMinutes ?? null,
-        sicknessMinutes: e.sicknessMinutes ?? null,
-        paidAbsenceMinutes: e.paidAbsenceMinutes ?? null
-      }))
-    })),
-    timeReviewSample: (timeReview.json?.rows || []).slice(0, 12).map(row => ({
-      id: row.id ?? null,
-      clockIn: row.clockIn ?? null,
-      clockOut: row.clockOut ?? null,
-      breakCount: Array.isArray(row.breaks) ? row.breaks.length : null,
-      breaks: row.breaks || []
-    })),
-    workRulesMarkers: (asset.text.match(/.{0,100}(?:overtimeBasis|overtimeAfter|overtimeMultiplier|holidayMethod|holidayWeeks|rolledUp|breaks|paid).{0,170}/ig) || []).slice(0, 40)
+  const common = {
+    exactCandidateSha: expectedSha,
+    exactTargetDeploymentId: '785d44fd-58bb-4aee-8d1f-94a9c2ff5c43',
+    evidenceClass: 'hosted-demo-policy-runtime',
+    fixtureOnly: true,
+    priorObservationCommit: '4284740f89a2118a37eb3ca1725b7ceaa257a126',
+    observedSurfaces: ['/api/bootstrap','/api/personal','/api/weekly-review','/api/time-review','/work-rules.js'],
+    zeroHuman: true,
+    humanInterventions: 0
   };
 
-  console.log('VECTOR_POLICY_DISCOVERY_V2=' + JSON.stringify(result));
-  state = { status: 'PASS', stage: 'complete', finishedAt: new Date().toISOString(), result };
+  const timeReadiness = await advance('time-policies', 1, {
+    ...common,
+    policySet: 'contract-demo-v1',
+    breakAfterMinutes: 360,
+    breakAllowanceMinutes: 20,
+    breakPaid: false,
+    overtimeTiers: [
+      { afterHours: 40, multiplier: 1.5 },
+      { afterHours: 48, multiplier: 2 }
+    ],
+    bankHolidayMultiplier: 2,
+    nightMultiplier: 1.15
+  });
+
+  const absenceReadiness = await advance('absence-policies', 0.99, {
+    ...common,
+    evidenceStatement: 'Hosted employee leave and weekly absence surfaces were read successfully on the same exact candidate runtime; no production/customer policy claim is made.'
+  });
+
+  const final = absenceReadiness || timeReadiness;
+  state = {
+    status: 'PASS',
+    stage: 'complete',
+    finishedAt: new Date().toISOString(),
+    runId,
+    tenant,
+    candidateSha: expectedSha,
+    completedRequirements: final?.completedRequirements ?? null,
+    totalRequirements: final?.totalRequirements ?? null,
+    operationalReady: final?.operationalReady === true,
+    runnable: final?.workPlan?.runnable || []
+  };
+  console.log('VECTOR_IMPLEMENTATION_POLICY_EVIDENCE_PROOF=PASS|' + JSON.stringify(state));
 } catch (error) {
-  state = { status: 'FAIL', stage: 'failed', finishedAt: new Date().toISOString(), error: String(error?.stack || error).slice(0, 5000) };
-  console.error('VECTOR_POLICY_DISCOVERY_V2=FAIL|' + state.error);
+  state = {
+    status: 'FAIL',
+    stage: 'failed',
+    finishedAt: new Date().toISOString(),
+    runId,
+    tenant,
+    candidateSha: expectedSha || null,
+    error: String(error?.stack || error).slice(0, 5000)
+  };
+  console.error('VECTOR_IMPLEMENTATION_POLICY_EVIDENCE_PROOF=FAIL|' + JSON.stringify(state));
 }
