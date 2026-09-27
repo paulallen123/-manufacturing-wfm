@@ -44,6 +44,11 @@ function registry(runners) {
       healthRequiresTerminalPass: true,
       nonPassHealthCode: 503
     },
+    productReadiness: {
+      scopePassNeverImpliesProductReady: true,
+      requiresExplicitAggregateGate: true,
+      aggregateGateId: 'customer-proof-gate'
+    },
     runners
   };
 }
@@ -131,5 +136,15 @@ test('mutating promotion proofs require immutable per-run state isolation', () =
       stateIsolation: 'shared-durable-tenant'
     })])),
     /immutable-seed-per-run/
+  );
+});
+
+
+test('scoped PASS cannot imply product readiness without an explicit aggregate gate', () => {
+  const invalid = registry([runner()]);
+  invalid.productReadiness.scopePassNeverImpliesProductReady = false;
+  assert.throws(
+    () => validateProofRegistry(invalid),
+    /scoped PASS must never imply product readiness/
   );
 });
