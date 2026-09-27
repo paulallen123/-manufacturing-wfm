@@ -132,3 +132,14 @@ test('identity endpoint is read-only and leaves unrelated routes alone', () => {
   assert.equal(res.statusCode, 405);
   assert.equal(res.headers.get('allow'), 'GET, HEAD');
 });
+
+test('every hosted response can be bound to the exact serving source', () => {
+  const identity = hostedIdentity();
+  const res = responseRecorder();
+
+  identity.applyResponseHeaders(res);
+
+  assert.equal(res.headers.get('x-wfm-source-sha'), CANDIDATE_SHA);
+  assert.equal(res.headers.get('x-wfm-source-binding'), 'build-file-matched');
+  assert.equal(res.headers.get('x-wfm-fixture-only'), 'true');
+});
