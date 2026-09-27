@@ -267,7 +267,8 @@ try {
         .filter(item => awaitingStates.has(String(item?.confirmation?.state || '').toLowerCase()))
         .map(item => String(item?.sourceId || '').trim())
         .filter(Boolean);
-      const expectedVisibleNeedsIds = expectedNeedsIds.slice(0, 4);
+      // The approved Today priority card intentionally shows five actionable rows; the general queue surface uses four.
+      const expectedVisibleNeedsIds = expectedNeedsIds.slice(0, 5);
       const expectedVisibleAwaitingIds = expectedAwaitingIds.slice(0, 3);
       const affordanceCoverage = expectedNeedsIds.length > 0 && expectedAwaitingIds.length > 0 ? 'EXERCISED' : 'UNEXERCISED';
       console.log('CURRENT_TIME_REVIEW_SOURCE_STATE=' + JSON.stringify({
