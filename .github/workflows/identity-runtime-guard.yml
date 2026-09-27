@@ -6,6 +6,10 @@ on:
       - main
       - identity-runtime-guard
       - 'autonomy/**'
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
 
 permissions:
   contents: read
