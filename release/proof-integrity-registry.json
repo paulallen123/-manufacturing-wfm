@@ -67,9 +67,11 @@
       "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
       "statusSemanticsAudited": true,
       "mutatesTarget": true,
-      "stateIsolation": "shared-durable-tenant",
-      "promotionBlocker": "MUTATING_PROOF_REQUIRES_IMMUTABLE_SEED_PER_RUN",
-      "observedFailure": "Strict lifecycle-affordance proof found zero authoritative Needs my action rows after prior shared-state proof mutations."
+      "stateIsolation": "immutable-seed-per-run",
+      "promotionBlocker": "LIVE_ISOLATED_BROWSER_PASS_REQUIRED",
+      "observedFailure": "Strict lifecycle-affordance proof found zero authoritative Needs my action rows after prior shared-state proof mutations.",
+      "isolatedTargetService": "vector-browser-isolated-target",
+      "freshTargetDeploymentRequired": true
     },
     {
       "id": "implementation-semantic",
@@ -480,6 +482,23 @@
       "mutatesTarget": false,
       "stateIsolation": "unverified",
       "promotionBlocker": "RETIRED_RUNNER"
+    },
+    {
+      "id": "browser-isolated-target",
+      "service": "vector-browser-isolated-target",
+      "claim": "browser-proof-target",
+      "role": "target",
+      "lifecycle": "active",
+      "promotionEligible": false,
+      "identityBinding": "runtime-identity-endpoint",
+      "terminalProofOwnsHealth": false,
+      "statusSemanticsAudited": true,
+      "mutatesTarget": false,
+      "stateIsolation": "ephemeral-filesystem-per-deploy",
+      "freshTargetDeploymentRequired": false,
+      "deploymentSuccessCountsAsPass": false,
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "promotionBlocker": "TARGET_NOT_A_PROOF_GATE"
     }
   ],
   "productReadiness": {
