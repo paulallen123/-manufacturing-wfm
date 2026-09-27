@@ -8,6 +8,7 @@ function exactLane(overrides={}){
     id:'railway-a', provider:'railway', failureDomain:'railway:workspace-a', class:'exact-image',
     variableNames:['WFM_DB','WFM_HOSTED_STAGING','WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD','WFM_REQUIRE_DURABLE_STATE'], hostedModeValue:'true',
     durableStateRequired:true, durableVolumeMountPath:'/data', durableVolumeWritable:true, applicationRuntimeUser:'node',
+    productionApproved:true, stagingOnly:false, fixtureOnly:false,
     healthcheckPath:'/api/health', readinessMode:'condition', sourceSha:'sha-1',
     domain:'https://proof.example', endpointReachable:true, healthcheckReady:true,
     listenAddress:'0.0.0.0', sleepApplication:false, deploymentStatus:'SUCCESS',
@@ -190,4 +191,47 @@ test('full hosted bootstrap contract requires public origin, staging credential 
   assert.equal(result.admitted,false);
   const issue=result.issues.find(x=>x.code==='RUNTIME_VARIABLE_CONTRACT_MISSING');
   assert.deepEqual(issue.missing,['WFM_PUBLIC_ORIGIN','WFM_STAGING_PASSWORD','WFM_REQUIRE_DURABLE_STATE']);
+});
+
+
+test('staging proof remains admissible when production promotion is not requested', () => {
+  const result = assessProofLane(exactLane({
+    productionApproved:false,
+    stagingOnly:true,
+    fixtureOnly:true
+  }), {candidateSha:'sha-1'});
+  assert.equal(result.admitted, true);
+});
+
+test('production freeze rejects staging or fixture artifacts without explicit production authority', () => {
+  const result = assessProofLane(exactLane({
+    productionApproved:false,
+    stagingOnly:true,
+    fixtureOnly:true
+  }), {candidateSha:'sha-1', requireProductionAuthority:true});
+  assert.equal(result.admitted, false);
+  assert.ok(result.issues.some(x => x.code === 'PRODUCTION_AUTHORITY_NOT_APPROVED'));
+  assert.ok(result.issues.some(x => x.code === 'STAGING_ARTIFACT_FORBIDDEN_FOR_PRODUCTION'));
+  assert.ok(result.issues.some(x => x.code === 'FIXTURE_ARTIFACT_FORBIDDEN_FOR_PRODUCTION'));
+});
+
+test('production topology cannot become ready from staging-only exact-image lanes', () => {
+  const result = simulatePreFreeze({
+    candidateSha:'sha-1',
+    requireProductionAuthority:true,
+    requiredIndependentFailureDomains:2,
+    lanes:[
+      exactLane({id:'railway',productionApproved:false,stagingOnly:true,fixtureOnly:true}),
+      exactLane({id:'circleci',provider:'circleci',failureDomain:'circleci:a',productionApproved:false,stagingOnly:true,fixtureOnly:true})
+    ]
+  });
+  assert.equal(result.requireProductionAuthority,true);
+  assert.equal(result.candidateFreezeAdmitted,false);
+  assert.equal(result.promotionTopologyReady,false);
+  assert.deepEqual(new Set(result.rejectedLaneIds),new Set(['railway','circleci']));
+});
+
+test('production-authorised non-fixture exact-image lane can pass the authority check', () => {
+  const result = assessProofLane(exactLane(), {candidateSha:'sha-1', requireProductionAuthority:true});
+  assert.equal(result.admitted, true);
 });
