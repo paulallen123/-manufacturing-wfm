@@ -66,6 +66,12 @@ export function validateProofRegistry(registry){
       if(runner.mutatesTarget===true && runner.stateIsolation!=='immutable-seed-per-run'){
         throw new Error('Mutating promotion proof requires immutable-seed-per-run state isolation: '+runner.id);
       }
+      if(runner.mutatesTarget===true && !runner.isolatedTargetService){
+        throw new Error('Mutating promotion proof requires an isolated target service: '+runner.id);
+      }
+      if(runner.mutatesTarget===true && runner.freshTargetDeploymentRequired!==true){
+        throw new Error('Mutating promotion proof requires a fresh target deployment: '+runner.id);
+      }
       if(!runner.failureDomain) throw new Error('Promotion runner requires failure domain: '+runner.id);
     }
 
