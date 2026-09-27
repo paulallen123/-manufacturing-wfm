@@ -1316,3 +1316,5 @@ try {
 }
 
 // CHAT_CAPTURE_REFRESH_20260920_A
+
+// Exact hosted rerun trigger after payroll-delta proof repair.
