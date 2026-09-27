@@ -92,14 +92,35 @@ test('hosted runtime reads the sealed source identity from disk', () => {
     const identity = createRuntimeIdentity({
       hosted: true,
       env: {
-        WFM_CANDIDATE_SHA: CANDIDATE_SHA,
-        WFM_BUILD_SOURCE_SHA_FILE: buildShaFile
-      }
+        WFM_CANDIDATE_SHA: CANDIDATE_SHA
+      },
+      buildShaFile
     });
     assert.equal(identity.candidateSha, CANDIDATE_SHA);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test('hosted runtime ignores environment attempts to redirect sealed identity', () => {
+  const attemptedPath = '/tmp/attacker-controlled-source-sha';
+  const observedPaths = [];
+  assert.throws(
+    () => createRuntimeIdentity({
+      hosted: true,
+      env: {
+        WFM_CANDIDATE_SHA: CANDIDATE_SHA,
+        WFM_BUILD_SOURCE_SHA_FILE: attemptedPath
+      },
+      readFileSync: file => {
+        observedPaths.push(file);
+        if (file === attemptedPath) return CANDIDATE_SHA;
+        throw new Error('ENOENT');
+      }
+    }),
+    /WFM_RUNTIME_IDENTITY_BUILD_SHA_REQUIRED/
+  );
+  assert.deepEqual(observedPaths, ['/app/.wfm-build-source-sha']);
 });
 
 test('identity endpoint is read-only and leaves unrelated routes alone', () => {

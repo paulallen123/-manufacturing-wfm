@@ -12,10 +12,11 @@ function requestPath(req) {
 function createRuntimeIdentity({
   env = process.env,
   hosted = env.WFM_HOSTED_STAGING === 'true',
+  buildShaFile = DEFAULT_BUILD_SHA_FILE,
   readFileSync = fs.readFileSync
 } = {}) {
   const expectedSha = String(env.WFM_CANDIDATE_SHA || '').trim().toLowerCase();
-  const buildShaFile = String(env.WFM_BUILD_SOURCE_SHA_FILE || DEFAULT_BUILD_SHA_FILE).trim();
+  buildShaFile = String(buildShaFile || DEFAULT_BUILD_SHA_FILE).trim();
   let buildSha = '';
 
   if (hosted && !expectedSha) {
