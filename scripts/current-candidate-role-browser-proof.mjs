@@ -484,6 +484,7 @@ try {
     refreshedUiRetainedPending: false,
     managerUiDecided: false,
     managerStateReadBack: false,
+    requestAuditLinked: false,
     freshEmployeeLoginSawDecision: false,
     requestId: null,
     decision: null
@@ -552,10 +553,18 @@ try {
   const managerReadBack = await managerPage.evaluate(async id => {
     const response = await fetch('/api/bootstrap');
     const bootstrap = await response.json();
-    return bootstrap.state.requests.find(item => item.id === id) || null;
+    const request = bootstrap.state.requests.find(item => item.id === id) || null;
+    const audit = bootstrap.state.audit.find(item =>
+      item.type === 'leave-decision'
+      && item.employee === request?.employee
+      && item.note === `${id}; approved`
+    ) || null;
+    return { request, audit };
   }, created.id);
-  assert.equal(managerReadBack?.status, 'approved', 'Manager UI decision was not read back from stored state.');
+  assert.equal(managerReadBack.request?.status, 'approved', 'Manager UI decision was not read back from stored state.');
+  assert.equal(managerReadBack.audit?.note, `${created.id}; approved`, 'Manager UI decision audit was not linked to the exact request.');
   leaveJourney.managerStateReadBack = true;
+  leaveJourney.requestAuditLinked = true;
   leaveJourney.decision = 'approved';
   await managerContext.close();
 
@@ -568,7 +577,7 @@ try {
   assert.equal((await approvedRow.innerText()).trim().toLowerCase(), 'approved');
   leaveJourney.freshEmployeeLoginSawDecision = true;
   await freshEmployeeContext.close();
-  console.log(`CURRENT_LEAVE_BROWSER_JOURNEY=PASS|request=${created.id}|decision=approved|overlapRefused=true|refreshReadback=true|freshLoginReadback=true`);
+  console.log(`CURRENT_LEAVE_BROWSER_JOURNEY=PASS|request=${created.id}|decision=approved|overlapRefused=true|requestAuditLinked=true|refreshReadback=true|freshLoginReadback=true`);
 
   const attendanceJourney = {
     managerUiApproved: false,
