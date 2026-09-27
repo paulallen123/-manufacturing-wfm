@@ -392,8 +392,32 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  // Decision Intelligence owns the durable decision-episode schema consumed by
+  // Autopilot. Initialise it first so a brand-new customer database cannot mask
+  // this dependency behind historical/persisted tables.
+  if (!demandDecisionService && !demandDecisionServiceInitError && process.env.WFM_DB) {
+    try {
+      demandDecisionService = createDemandDecisionService({
+        dbPath: process.env.WFM_DB,
+        publishEvent: realtimeEventService && !realtimeEventServiceInitError ? event => realtimeEventService.publish(event) : null
+      });
+    } catch (error) {
+      demandDecisionServiceInitError = error;
+    }
+  }
+
   if (!autopilotExecutionEngine && !autopilotExecutionEngineInitError && process.env.WFM_DB) {
-    try { autopilotExecutionEngine=createAutopilotExecutionEngine({dbPath:process.env.WFM_DB,lifecycleAdapter:lifecycleGuard,publishEvent:realtimeEventService&&!realtimeEventServiceInitError?event=>realtimeEventService.publish(event):null}); } catch(error){ autopilotExecutionEngineInitError=error; }
+    try {
+      autopilotExecutionEngine = createAutopilotExecutionEngine({
+        dbPath: process.env.WFM_DB,
+        lifecycleAdapter: lifecycleGuard,
+        publishEvent: realtimeEventService && !realtimeEventServiceInitError ? event => realtimeEventService.publish(event) : null
+      });
+    } catch (error) {
+      autopilotExecutionEngineInitError = error;
+      const message = String(error?.message || error || 'unknown').replace(/\s+/g, ' ').slice(0, 500);
+      console.error('WFM_AUTOPILOT_INIT_ERROR=' + message);
+    }
   }
 
   if (!schedulingIntelligenceService && !schedulingIntelligenceServiceInitError && process.env.WFM_DB) {
@@ -404,17 +428,6 @@ http.createServer = function guardedCreateServer(listener) {
       });
     } catch (error) {
       schedulingIntelligenceServiceInitError = error;
-    }
-  }
-
-  if (!demandDecisionService && !demandDecisionServiceInitError && process.env.WFM_DB) {
-    try {
-      demandDecisionService = createDemandDecisionService({
-        dbPath: process.env.WFM_DB,
-        publishEvent: realtimeEventService && !realtimeEventServiceInitError ? event => realtimeEventService.publish(event) : null
-      });
-    } catch (error) {
-      demandDecisionServiceInitError = error;
     }
   }
 
