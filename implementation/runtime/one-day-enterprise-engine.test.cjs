@@ -48,6 +48,10 @@ function fixture(options = {}) {
     publicOrigin: options.publicOrigin ?? 'https://implementation.test',
     sendInvitation: async invitation => {
       invitationAttempts += 1;
+      if (options.acceptThenFailFirstInvitation && invitationAttempts === 1) {
+        sentInvitations.push(invitation);
+        throw new Error('simulated lost provider response after acceptance');
+      }
       if (Number(options.failInvitationAttempts || 0) >= invitationAttempts) throw new Error('simulated temporary mail outage');
       if (options.failFirstInvitation && invitationAttempts === 1) throw new Error('simulated temporary mail outage');
       if (options.failInvitationDelivery) throw new Error('simulated mail transport failure');
@@ -399,6 +403,38 @@ test('one trusted contract event automatically recovers a transient invitation f
     assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_FAILED'").get().count, 1);
     assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_SENT'").get().count, 1);
     db.close();
+  } finally {
+    f.close();
+  }
+});
+
+test('automatic retry preserves an ambiguously accepted invitation and delivery identity', async () => {
+  const f = fixture({ acceptThenFailFirstInvitation: true });
+  try {
+    const result = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',
+      {
+        event: 'contract_signed', tenant: 'alpha', contractId: 'external-ambiguous-mail',
+        implementationContactEmail: 'manager@alpha', targetHours: 8
+      },
+      f.contractWebhook
+    );
+    assert.equal(result.status, 201);
+    assert.equal(result.body.notification.delivered, true);
+    assert.equal(f.invitationAttempts, 2);
+    assert.equal(f.sentInvitations.length, 2);
+    assert.equal(f.sentInvitations[1].invitationId, f.sentInvitations[0].invitationId);
+    assert.equal(f.sentInvitations[1].startUrl, f.sentInvitations[0].startUrl);
+    assert.equal(f.sentInvitations[1].idempotencyKey, f.sentInvitations[0].idempotencyKey);
+    assert.ok(f.sentInvitations[0].idempotencyKey);
+
+    const firstToken = new URL(f.sentInvitations[0].startUrl).searchParams.get('implementation_invite');
+    const started = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',
+      { token: firstToken }
+    );
+    assert.equal(started.status, 201);
+    assert.equal(started.body.runId, result.body.implementation.runId);
   } finally {
     f.close();
   }
