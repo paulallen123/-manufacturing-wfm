@@ -414,8 +414,16 @@ function createOneDayEnterpriseEngine(options = {}) {
   const dueNotificationOutbox = db.prepare(
     "SELECT * FROM implementation_notification_outbox WHERE state='PENDING' AND next_attempt_at_ms<=? ORDER BY next_attempt_at_ms LIMIT 25"
   );
+  const dueNotificationOutboxForContract = db.prepare(
+    "SELECT * FROM implementation_notification_outbox WHERE tenant=? AND contract_ref_hash=? " +
+      "AND state='PENDING' AND next_attempt_at_ms<=? LIMIT 1"
+  );
   const updateNotificationOutboxState = db.prepare(
     'UPDATE implementation_notification_outbox SET state=?,updated_at=? WHERE tenant=? AND contract_ref_hash=?'
+  );
+  const resumeProviderBlockedOutbox = db.prepare(
+    "UPDATE implementation_notification_outbox SET state='PENDING',next_attempt_at_ms=?,updated_at=? " +
+      "WHERE tenant=? AND contract_ref_hash=? AND state='PROVIDER_BLOCKED'"
   );
   const deleteNotificationOutbox = db.prepare(
     'DELETE FROM implementation_notification_outbox WHERE tenant=? AND contract_ref_hash=?'
@@ -819,13 +827,16 @@ function createOneDayEnterpriseEngine(options = {}) {
     completeInvitationAttempt.run(nowIso(), tenant, contractHash);
   }
 
-  async function retryDueNotifications({ nowMs = Date.now() } = {}) {
+  async function retryDueNotifications({ nowMs = Date.now(), tenant = null, contractHash = null } = {}) {
     const result = { examined: 0, delivered: 0, exhausted: 0, blocked: 0, inProgress: 0 };
     if (!invitationRecoverySecret || !publicOrigin || !/^https:\/\//i.test(publicOrigin) || !invitationTransportReady) {
       return { ...result, unavailable: true };
     }
 
-    for (const outbox of dueNotificationOutbox.all(Number(nowMs))) {
+    const dueOutboxes = tenant && contractHash
+      ? dueNotificationOutboxForContract.all(tenant, contractHash, Number(nowMs))
+      : dueNotificationOutbox.all(Number(nowMs));
+    for (const outbox of dueOutboxes) {
       result.examined += 1;
       const invitation = invitationById.get(outbox.invitation_id, outbox.tenant);
       const run = runByContract.get(outbox.tenant, outbox.contract_ref_hash);
@@ -1103,6 +1114,55 @@ function createOneDayEnterpriseEngine(options = {}) {
 
   async function handleContractActivated(req, res) {
     return await activateContract(await readJson(req), res);
+  }
+
+  async function handleProviderRecoveryResume(req, res) {
+    const body = await readJson(req);
+    const tenant = compact(body.tenant, 120);
+    const contractRef = compact(body.contractRef, 300);
+    if (!tenant || !contractRef) {
+      return writeJson(res, 400, { error: 'tenant and contractRef are required.' });
+    }
+
+    const contractHash = sha256(contractRef);
+    const run = runByContract.get(tenant, contractHash);
+    const outbox = outboxByContract.get(tenant, contractHash);
+    if (!run || outbox?.state !== 'PROVIDER_BLOCKED') {
+      return writeJson(res, 409, { error: 'Provider-blocked invitation recovery is not available.' });
+    }
+
+    const resumedAt = Date.now();
+    const resumed = resumeProviderBlockedOutbox.run(resumedAt, nowIso(), tenant, contractHash);
+    if (Number(resumed.changes) !== 1) {
+      return writeJson(res, 409, { error: 'Provider-blocked invitation recovery is no longer available.' });
+    }
+    record(run.id, tenant, 'CONTRACT_INVITATION_PROVIDER_RECOVERY_STARTED', {
+      invitationId: outbox.invitation_id,
+      contractRefDigest: contractHash.slice(0, 16)
+    });
+
+    const outcome = await retryDueNotifications({ nowMs: resumedAt, tenant, contractHash });
+    if (outcome.delivered === 1) {
+      record(run.id, tenant, 'CONTRACT_INVITATION_PROVIDER_RECOVERED', {
+        invitationId: outbox.invitation_id,
+        contractRefDigest: contractHash.slice(0, 16)
+      });
+      return writeJson(res, 200, {
+        implementation: readinessForRun(run),
+        notification: { delivered: true, recovered: true }
+      });
+    }
+
+    const recovery = notificationRecoveryForRun(run);
+    return writeJson(res, recovery.state === 'BLOCKED' ? 409 : 202, {
+      implementation: readinessForRun(run),
+      notification: {
+        delivered: false,
+        recovered: false,
+        state: recovery.state,
+        terminalAction: recovery.terminalAction
+      }
+    });
   }
 
   function invitationForContext(ctx, token) {
@@ -1398,6 +1458,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       if (req.method === 'POST' && path === PREFIX + '/contract-activated') {
         if (!requireInternal(req, res)) return true;
         return await handleContractActivated(req, res);
+      }
+      if (req.method === 'POST' && path === PREFIX + '/notification-recovery/resume') {
+        if (!requireInternal(req, res)) return true;
+        return await handleProviderRecoveryResume(req, res);
       }
       if (req.method === 'POST' && path === PREFIX + '/evidence') {
         if (!requireInternal(req, res)) return true;
