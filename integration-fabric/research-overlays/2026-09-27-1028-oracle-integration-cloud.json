@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Oracle Integration Cloud documentation promotion and provider-instance plus downstream-delivery reconciliation.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "oracle-integration-cloud",
+      "reason": "Promote the existing Oracle Integration Cloud target from discovery to documentation-backed monitoring and downstream-delivery reconciliation without granting execution, recovery, mutation, checkpoint, payroll or attendance authority.",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.oracle.com/en/cloud/paas/application-integration/rest-api/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": "by-customer-private-resource",
+        "auth": "oauth2-required",
+        "connectionRoutes": [
+          "Oracle Integration 3 Developer API over the customer-selected exact HTTPS Oracle service origin",
+          "OAuth 2.0 bearer access through Oracle Cloud Infrastructure IAM identity domains",
+          "Oracle Integration File Server SFTP/REST as a separately governed file route",
+          "Private-resource connectivity through customer-managed Oracle connectivity agents where authorised"
+        ],
+        "readRoutes": [
+          "GET /ic/api/integration/v1/monitoring/instances",
+          "GET /ic/api/integration/v1/monitoring/instances/{id}",
+          "GET /ic/api/integration/v1/monitoring/instances/{id}/activityStreamDetails",
+          "GET /ic/api/integration/v1/monitoring/errors",
+          "GET /ic/api/integration/v1/monitoring/errors/recoveryJobs/{id}",
+          "GET /ic/api/fileserver/v1/services and governed File Server reads where enabled"
+        ],
+        "deniedMutationRoutes": [
+          "POST /ic/api/integration/v1/monitoring/instances/{id}/replay",
+          "POST /ic/api/integration/v1/monitoring/errors/{id}/resubmit",
+          "POST /ic/api/integration/v1/monitoring/errors/resubmit",
+          "abort/discard instance operations",
+          "activate/deactivate/update/delete integrations, connections, agents, schedules or File Server configuration",
+          "source-system or downstream-system mutations"
+        ],
+        "dataObjects": [
+          "integration-definitions",
+          "integration-instance-observations",
+          "business-identifiers",
+          "activity-stream-diagnostics",
+          "error-and-recovery-job-observations",
+          "file-transfer-metadata",
+          "source-window-and-delivery-receipts"
+        ],
+        "canonicalObjects": [
+          "integration-connection",
+          "integration-run",
+          "integration-delivery-signal",
+          "source-batch",
+          "reconciliation-candidate",
+          "freshness-and-lineage-signal",
+          "provider-failure-signal"
+        ],
+        "stableIds": [
+          "Oracle Integration service-instance plus exact integration-id and integration-version",
+          "opaque integration instance id",
+          "explicit primary business tracking name and value",
+          "WFM tenant plus connection plus dataset plus source-scope fingerprint"
+        ],
+        "freshness": "Instance monitoring exposes creation, last-tracked and observation timestamps. WFM preserves the provider timestamps and its own observation horizon; provider completion is never treated as source completeness or checkpoint authority.",
+        "permissions": [
+          "OAuth is required for Oracle Integration Developer APIs",
+          "Use a least-privilege monitoring principal isolated per customer connection and Oracle service instance",
+          "Do not grant design, activation, replay, resubmit, abort, connection-secret, payload-download or File Server administration permissions to the read-only WFM path",
+          "Treat activity-stream payload access as privileged because Oracle can audit payload viewing and it may contain customer data"
+        ],
+        "paginationAndDelta": [
+          "Instance collections use limit and offset and expose has-more, total-results, total-records-count, time-window and data-fetch-time",
+          "Mutable monitoring collections are diagnostics, not a completeness boundary; bind an exact instance id and poll its detail route",
+          "Exact provider completion must be paired with a complete downstream delivery receipt for the same instance, dataset, source scope, schema, mapping and source window",
+          "File routes require separate immutable file identity, size, digest and atomic-arrival controls"
+        ],
+        "customFields": "Oracle Integration business identifiers and tracking values are customer-designed. WFM accepts only the approved primary tracking name/value required to bind a source batch; additional tracking values and payloads remain minimised and quarantined by default.",
+        "regionalAndVersionNotes": [
+          "Pin the exact customer-selected Oracle Integration HTTPS origin and service-instance name; do not infer or rewrite regions",
+          "Pin Developer API resource paths and schema fingerprints; Oracle Integration classic and Oracle Integration 3 variants must not share an unversioned authority",
+          "File Server, design-time and runtime invocation surfaces remain separately governed",
+          "Preserve customer residency by processing and storing evidence in the approved WFM region"
+        ],
+        "rateLimits": "No universal safe request rate is assumed. Honour HTTP status and Retry-After where present, use bounded polling with jitter, and stop on authentication, permission, schema, origin or service-instance drift rather than amplifying retries.",
+        "failureModes": [
+          "OAuth expiry or revoked scope",
+          "wrong Oracle region, service instance, integration id or version",
+          "FAILED, ABORTED, UNKNOWN, RECOVERING, RESUBMITTED, paused or blocked instance states",
+          "primary business identifier drift or ambiguity",
+          "provider timestamps moving backwards or beyond the observation horizon",
+          "COMPLETED instance with isDataAccurate false",
+          "exact provider replay versus same-time conflicting payload",
+          "provider completion without a successful complete downstream delivery receipt",
+          "delivery dataset, schema, mapping, source scope, source window, digest or record-count mismatch",
+          "activity stream or File Server evidence exposing secrets or unapproved payload data",
+          "recovery jobs creating new or child instance identities that are incorrectly collapsed into the original"
+        ],
+        "reconciliation": [
+          "Bind every observation to the exact WFM tenant, connection, Oracle origin, service instance, integration id/version, instance id and primary business identifier",
+          "Require a monotone observed lifecycle from a nonterminal state to COMPLETED with isDataAccurate true",
+          "Collapse byte-equivalent polling replays and quarantine status, timestamp or payload-digest conflicts",
+          "Require a separately produced successful and complete downstream delivery receipt bound to the same instance, dataset, source scope, schema, mapping and half-open source window",
+          "Emit only an integration-delivery reconciliation candidate; durable checkpoint movement remains a later compare-and-swap decision"
+        ],
+        "schemaDrift": "Pin integration version, monitoring response schema, dataset schema and mapping fingerprints. Quarantine new statuses, missing accuracy/business-identifier fields, changed timestamp semantics, additional unapproved tracking data or mismatched downstream receipts until reviewed.",
+        "retryAndRecovery": [
+          "Use bounded status polling for nonterminal instances and stop at the observation horizon",
+          "FAILED, ABORTED, UNKNOWN, RECOVERING or RESUBMITTED states never self-authorise provider recovery",
+          "Observe recovery jobs read-only; an authorised owner must approve replay/resubmit/abort actions",
+          "After any provider recovery, treat the recovered/new instance as distinct evidence and rerun downstream delivery reconciliation before checkpoint consideration"
+        ],
+        "integrationInstanceObservation": {
+          "allowedReadLifecycle": ["SCHEDULE_WAITING", "IN_PROGRESS", "COMPLETED"],
+          "providerCompletionSufficient": false,
+          "downstreamDeliveryReceiptRequired": true,
+          "exactPrimaryTrackingRequired": true,
+          "isDataAccurateRequiredAtCompletion": true,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "operationalDecisionAuthority": false,
+          "causalClaimAuthority": false,
+          "writeBackAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false,
+          "providerRecoveryAuthority": false
+        },
+        "evidenceSources": [
+          {"title":"Developer API for Oracle Integration 3","url":"https://docs.oracle.com/en/cloud/paas/application-integration/rest-api/"},
+          {"title":"Security, Authentication and Authorization","url":"https://docs.oracle.com/en/cloud/paas/application-integration/rest-api/OAuth_prereq.html"},
+          {"title":"Retrieve Integration Instances","url":"https://docs.oracle.com/en/cloud/paas/application-integration/rest-api/op-ic-api-integration-v1-monitoring-instances-get.html"},
+          {"title":"Retrieve an Integration Instance","url":"https://docs.oracle.com/en/cloud/paas/application-integration/rest-api/op-ic-api-integration-v1-monitoring-instances-id-get.html"},
+          {"title":"Retrieve Integration Instance Activity Stream Details","url":"https://docs.oracle.com/en/cloud/paas/application-integration/rest-api/op-ic-api-integration-v1-monitoring-instances-id-activitystreamdetails-get.html"},
+          {"title":"All Oracle Integration Developer REST Endpoints","url":"https://docs.oracle.com/en/cloud/paas/application-integration/rest-api/rest-endpoints.html"},
+          {"title":"Retrieve an Error Recovery Job","url":"https://docs.oracle.com/en/cloud/paas/application-integration/rest-api/op-ic-api-integration-v1-monitoring-errors-recoveryjobs-id-get.html"},
+          {"title":"Developer API for File Server in Oracle Integration 3","url":"https://docs.oracle.com/en/cloud/paas/application-integration/rest-api-fs/"},
+          {"title":"Oracle Integration 3 Guides","url":"https://docs.oracle.com/en/cloud/paas/application-integration/books.html"}
+        ],
+        "evidenceLevel": "spec-verified",
+        "evidenceNote": "Official Oracle documentation was reachable on 2026-09-27 and supports OAuth-required Developer APIs, exact instance monitoring routes, integration and business identifiers, documented states, timestamps, accuracy flags, activity diagnostics, recovery jobs, offset pagination and File Server variants. No Oracle Integration tenant, sandbox authentication, live instance read, activity stream, file transfer, denied mutation, downstream delivery, hosted proof or production certification was executed.",
+        "valueOpportunities": [
+          "Reuse an enterprise customer's existing Oracle integrations to reduce bespoke ERP, HCM, payroll, MES, maintenance, quality, inventory and finance connector effort",
+          "Detect provider-completed but incompletely delivered workforce/manufacturing batches before schedules, payroll preparation or operational decisions consume them",
+          "Separate provider failure from downstream delivery failure to shorten diagnosis and recovery",
+          "Preserve integration-run identifiers and source windows for implementation evidence, freshness diagnostics and outcome lineage",
+          "Support small customers through one governed integration and large enterprises through separately scoped service instances, regions, integrations, versions, datasets and delegated owners"
+        ],
+        "nextBuildAction": "In an authorised Oracle Integration tenant, authenticate a least-privilege monitoring principal, read one exact non-production integration instance through completion, reconcile it to an immutable downstream delivery receipt, then exercise OAuth expiry, FAILED/ABORTED/recovery states, duplicate polls, identifier drift and a deliberately incomplete delivery without invoking replay, resubmit, abort or any source mutation."
+      }
+    }
+  ]
+}
