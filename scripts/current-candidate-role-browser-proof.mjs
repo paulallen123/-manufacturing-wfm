@@ -215,17 +215,17 @@ try {
     };
 
     if (spec.slug === 'employee') {
-      actionJourney.evidenceStatus = await page.evaluate(async () => (await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(timeReviewPeriod), { cache: 'no-store' })).status);
+      actionJourney.evidenceStatus = await page.evaluate(async period => (await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(period), { cache: 'no-store' })).status, timeReviewPeriod);
       assert.equal(actionJourney.evidenceStatus, 403, 'Employee unexpectedly received manager action evidence.');
     }
 
     if (spec.slug === 'manager') {
-      const evidence = await page.evaluate(async () => {
-        const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(timeReviewPeriod), { cache: 'no-store' });
+      const evidence = await page.evaluate(async period => {
+        const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(period), { cache: 'no-store' });
         let json = null;
         try { json = await response.json(); } catch {}
         return { status: response.status, json };
-      });
+      }, timeReviewPeriod);
       actionJourney.evidenceStatus = evidence.status;
       assert.equal(evidence.status, 200, 'Manager action-evidence bridge unavailable.');
       assert.equal(evidence.json?.contractVersion, 'WFM_WORKFLOW_ACTION_EVIDENCE_V1');
