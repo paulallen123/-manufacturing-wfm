@@ -24,6 +24,17 @@ assert.equal(healthResponse.status, 200);
 const health = await healthResponse.json();
 assert.equal(health.fixtureOnly, true);
 assert.equal(health.productionApproved, false);
+assert.equal(healthResponse.headers.get('x-wfm-source-sha'), expectedSha, 'Health response source SHA is not the exact candidate.');
+assert.equal(healthResponse.headers.get('x-wfm-source-binding'), 'build-file-matched', 'Health response is not build-file matched.');
+
+const identityResponse = await fetch(`${origin}/api/runtime-identity`, { signal: AbortSignal.timeout(15000), cache: 'no-store' });
+assert.equal(identityResponse.status, 200, 'Runtime identity endpoint unavailable.');
+const runtimeIdentity = await identityResponse.json();
+assert.equal(runtimeIdentity.candidateSha, expectedSha, 'Running source identity does not match the expected candidate SHA.');
+assert.equal(runtimeIdentity.sourceBinding, 'build-file-matched', 'Running source identity is not build-file matched.');
+assert.equal(runtimeIdentity.fixtureOnly, true);
+assert.equal(runtimeIdentity.productionApproved, false);
+assert.equal(identityResponse.headers.get('x-wfm-source-sha'), expectedSha, 'Identity response source SHA header mismatch.');
 
 const browser = await chromium.launch({ headless: true });
 const receipts = [];
