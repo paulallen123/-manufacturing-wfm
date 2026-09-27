@@ -145,3 +145,13 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Status:** BUILT. This is source evidence, not hosted proof. The existing fixture remains on `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`; no deployment, restart, customer/payroll mutation, DNS change or spend occurred.
 - **Global / size impact:** The marker is response-level and independent of organisation size, hierarchy, locale, currency, site topology and manufacturing mode. It adds no configuration burden for a one-person site and remains usable across multi-region replica fleets.
 - **Dependencies / next action:** Trust/Proof must admit the final PR head on exact Node 22, deploy only to the preserved fixture candidate, and require the same source SHA on every approved asset and consequential API response through leave, attendance, weekly sign-off and payroll journeys, including refresh, new login and safe restart. Any absent or differing marker is a hard proof failure.
+
+
+## 2026-09-27 — Immutable response source proof
+
+- **Objective:** Prevent downstream asset/API handlers from altering the source marker after the outer runtime binds it.
+- **Root cause / theory test:** The outer bootstrap set the proof headers before routing, but the unguarded Node response still allowed later `setHeader`, `removeHeader` or direct `writeHead` calls to replace them. A real loopback HTTP regression changed the source SHA, removed the binding state and changed the fixture boundary; it failed before repair with the wrong SHA on the transmitted response.
+- **Implementation:** Code head `56d6ecd15a6f2bbbdfd5407c7568d7744feb15a9` preserves the canonical source SHA, binding mode and fixture boundary through all three Node header mutation paths. Other response headers remain untouched.
+- **Verification:** After repair, the focused attack passed and the full runtime-identity suite passed 8/8 with syntax checks on local Node v24.19.0. Tested local Git objects exactly matched the published module and test blobs (`5a373e8441f67acd402c9bd4cffaec23ce0ccca6`, `52db0e300ef10b651808e21882c19b206c300cc6`).
+- **Status:** BUILT. No workflow/status check, exact Node 22 Docker admission, hosted execution or browser journey was produced. The fixture remains on `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`; no deployment, restart or customer/payroll state changed.
+- **Dependencies / next action:** Trust/Proof must build the final PR head on exact Node 22 and require the immutable marker on every approved asset and consequential API response throughout the hosted leave, attendance, weekly sign-off and payroll journeys. Missing, changed or inconsistent values fail the proof.
