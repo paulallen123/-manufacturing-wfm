@@ -620,6 +620,65 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
   }
 
+  function canonicalSourceSummaryForTenant(tenant) {
+    const requiredTables = ['integration_canonical_batches', 'integration_canonical_people', 'integration_connections', 'integration_candidates'];
+    const tableLookup = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?");
+    if (!requiredTables.every(name => Boolean(tableLookup.get(name)))) return null;
+
+    const batches = db.prepare(
+      "SELECT b.*,c.product_key,c.state AS connection_state,c.granted_scopes_json,c.credential_ref," +
+      "c.mapping_version AS connection_mapping_version,k.display_name,k.status AS candidate_status,k.authoritative_for_json " +
+      "FROM integration_canonical_batches b " +
+      "JOIN integration_connections c ON c.id=b.connection_id AND c.tenant=b.tenant " +
+      "JOIN integration_candidates k ON k.id=c.candidate_id AND k.tenant=c.tenant " +
+      "WHERE b.tenant=? AND b.status='PASS' ORDER BY b.rowid DESC"
+    ).all(tenant);
+
+    const batch = batches.find(item =>
+      item.connection_state === 'ACTIVE' &&
+      Boolean(item.credential_ref) &&
+      safeJsonParse(item.granted_scopes_json, []).includes('people.read') &&
+      Number(item.mapping_version) === Number(item.connection_mapping_version) &&
+      item.candidate_status === 'CONFIRMED' &&
+      safeJsonParse(item.authoritative_for_json, []).includes('people')
+    );
+    if (!batch) return null;
+
+    const rows = db.prepare(
+      'SELECT employee_key,record_checksum,canonical_json FROM integration_canonical_people WHERE batch_id=? AND tenant=? ORDER BY employee_key'
+    ).all(batch.id, tenant);
+    if (rows.length !== Number(batch.record_count) || rows.length < 1) return null;
+
+    const sites = new Set();
+    const departments = new Set();
+    const employeeKeys = new Set();
+    for (const row of rows) {
+      const canonical = safeJsonParse(row.canonical_json, {});
+      if (!row.employee_key || employeeKeys.has(row.employee_key)) return null;
+      employeeKeys.add(row.employee_key);
+      const site = compact(canonical.location, 180).trim();
+      const department = compact(canonical.department, 180).trim();
+      if (site) sites.add(site);
+      if (department) departments.add(department);
+    }
+
+    return {
+      batchId: batch.id,
+      connectionId: batch.connection_id,
+      mappingVersion: Number(batch.mapping_version),
+      checksum: batch.batch_checksum,
+      systemKey: batch.product_key,
+      systemName: batch.display_name,
+      employeeCount: rows.length,
+      siteCount: sites.size,
+      departmentCount: departments.size,
+      sites: [...sites].sort(),
+      departments: [...departments].sort(),
+      importedAt: batch.created_at,
+      provenance: 'authorized-validated-canonical-import'
+    };
+  }
+
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
@@ -628,6 +687,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (scopeRow) {
       try { customerScope = JSON.parse(scopeRow.scope_json); } catch {}
     }
+    const sourceDataSummary = canonicalSourceSummaryForTenant(run.tenant);
     let learningSummary = null;
     if (learningSummaryProvider) {
       try { learningSummary = learningSummaryProvider(run.tenant); } catch {}
@@ -638,19 +698,89 @@ function createOneDayEnterpriseEngine(options = {}) {
       let derived = null;
 
       if (requirement.key === 'configuration-scope') {
-        const ok = Boolean(customerScope);
+        const conflicts = [];
+        if (customerScope && sourceDataSummary) {
+          if (Number(customerScope.employeeCount) !== Number(sourceDataSummary.employeeCount)) {
+            conflicts.push({
+              field: 'employeeCount',
+              declared: Number(customerScope.employeeCount),
+              observed: Number(sourceDataSummary.employeeCount)
+            });
+          }
+          const normalizedDeclaredSites = new Set((customerScope.sites || []).map(value => normalize(value)).filter(Boolean));
+          const unexpectedSites = sourceDataSummary.sites.filter(value => !normalizedDeclaredSites.has(normalize(value)));
+          if (unexpectedSites.length) {
+            conflicts.push({ field: 'sites', observedNotDeclared: unexpectedSites });
+          }
+        }
+        const ok = Boolean(customerScope) && conflicts.length === 0;
         derived = {
-          status: ok ? 'PASS' : 'MISSING',
-          confidence: ok ? 1 : 0,
-          source: 'customer-scope',
-          detail: ok ? {
+          status: conflicts.length ? 'FAIL' : (ok ? 'PASS' : 'MISSING'),
+          confidence: conflicts.length || ok ? 1 : 0,
+          source: sourceDataSummary ? 'customer-scope+validated-source' : 'customer-scope',
+          detail: customerScope ? {
             companyName: customerScope.companyName,
             employeeCount: customerScope.employeeCount,
             countryCount: customerScope.countries.length,
             siteCount: customerScope.sites.length,
             systemCount: customerScope.sourceSystems.length,
-            featureCount: customerScope.features.length
-          } : null
+            featureCount: customerScope.features.length,
+            sourceValidation: sourceDataSummary ? {
+              batchId: sourceDataSummary.batchId,
+              checksum: sourceDataSummary.checksum,
+              employeeCount: sourceDataSummary.employeeCount,
+              siteCount: sourceDataSummary.siteCount,
+              conflicts
+            } : null
+          } : (sourceDataSummary ? {
+            missing: ['companyName', 'countries', 'customer-approved-scope'],
+            observed: {
+              employeeCount: sourceDataSummary.employeeCount,
+              siteCount: sourceDataSummary.siteCount,
+              systemName: sourceDataSummary.systemName
+            }
+          } : null)
+        };
+      } else if (requirement.key === 'source-systems' && sourceDataSummary) {
+        derived = {
+          status: 'PASS',
+          confidence: 1,
+          source: 'validated-canonical-import',
+          detail: {
+            systemKey: sourceDataSummary.systemKey,
+            systemName: sourceDataSummary.systemName,
+            connectionId: sourceDataSummary.connectionId,
+            mappingVersion: sourceDataSummary.mappingVersion,
+            batchId: sourceDataSummary.batchId,
+            checksum: sourceDataSummary.checksum
+          }
+        };
+      } else if (requirement.key === 'people-data' && sourceDataSummary) {
+        derived = {
+          status: sourceDataSummary.employeeCount > 0 ? 'PASS' : 'MISSING',
+          confidence: sourceDataSummary.employeeCount > 0 ? 1 : 0,
+          source: 'validated-canonical-import',
+          detail: {
+            batchId: sourceDataSummary.batchId,
+            employeeCount: sourceDataSummary.employeeCount,
+            checksum: sourceDataSummary.checksum
+          }
+        };
+      } else if (requirement.key === 'organisation-model' && sourceDataSummary) {
+        const ok = sourceDataSummary.siteCount > 0 && sourceDataSummary.departmentCount > 0;
+        derived = {
+          status: ok ? 'PASS' : 'MISSING',
+          confidence: ok ? 0.99 : 0,
+          source: 'validated-canonical-import',
+          detail: {
+            batchId: sourceDataSummary.batchId,
+            siteCount: sourceDataSummary.siteCount,
+            departmentCount: sourceDataSummary.departmentCount,
+            missing: [
+              ...(sourceDataSummary.siteCount > 0 ? [] : ['sites']),
+              ...(sourceDataSummary.departmentCount > 0 ? [] : ['departments-or-cost-centres'])
+            ]
+          }
         };
       } else if (learningSummary && requirement.key === 'role-learning') {
         const ok = learningSummary.users > 0 && learningSummary.assignments >= learningSummary.users;
@@ -727,6 +857,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       decisions,
       blockingDecisions,
       learningSummary,
+      sourceDataSummary,
       scopeCaptured: Boolean(customerScope),
       customerScope,
       notificationRecovery: notificationRecoveryForRun(run)
