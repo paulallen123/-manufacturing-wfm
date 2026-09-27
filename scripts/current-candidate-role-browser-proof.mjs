@@ -220,6 +220,29 @@ try {
     }
 
     if (spec.slug === 'manager') {
+      const weeklyShape = await page.evaluate(async period => {
+        const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period), { cache: 'no-store' });
+        const json = await response.json();
+        return {
+          status: response.status,
+          generatedAt: json?.generatedAt || json?.observedAt || null,
+          authorityRequired: json?.authorityRequired || null,
+          open: (Array.isArray(json?.teams) ? json.teams : []).flatMap(team =>
+            (Array.isArray(team?.issues) ? team.issues : [])
+              .filter(issue => String(issue?.status || '').toLowerCase() === 'open')
+              .map(issue => ({
+                id: String(issue?.sourceId || issue?.id || '').slice(0, 120),
+                type: String(issue?.type || '').slice(0, 80),
+                row: String(issue?.row || '').slice(0, 120),
+                reasonCode: String(issue?.reasonCode || '').slice(0, 80),
+                sourceFingerprint: Boolean(String(issue?.sourceFingerprint || '').trim()),
+                proposed: Boolean(issue?.proposed && typeof issue.proposed === 'object'),
+                confirmationState: String(issue?.confirmation?.state || '').slice(0, 80)
+              }))
+          )
+        };
+      }, timeReviewPeriod);
+      console.log('CURRENT_TIME_REVIEW_WEEKLY_SOURCE=' + JSON.stringify(weeklyShape));
       const evidence = await page.evaluate(async period => {
         const response = await fetch('/api/workforce/lifecycle/action-evidence/time-review?period=' + encodeURIComponent(period), { cache: 'no-store' });
         let json = null;
