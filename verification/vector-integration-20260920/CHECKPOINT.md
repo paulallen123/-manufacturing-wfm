@@ -101,3 +101,15 @@ The following is a requirements index, not a claim that all listed capabilities 
 5. Continue independent implementation, integration and Frontier tasks under their existing owners. Record exact scoped statuses: PROVEN, BUILT, DESIGNED, RESEARCHED or BLOCKED. Use PROVEN only for the approved real environment.
 
 Usage: two bounded independent delegates; reused existing repairs, workstreams and infrastructure. No new paid service or duplicated automation. Token/cost totals are not exposed; savings are not estimated. No live deployment, restart, credential change or external payroll/provider submission has occurred during this integration.
+
+
+## 2026-09-27 — Runtime source self-binding
+
+- **Objective:** Bind served Vector proof to the exact deployed GitHub commit without trusting runner configuration alone.
+- **Observed evidence:** Fixture deployment `ce35d486-5db0-4a0a-80e4-24bc1c048220` served release `0.6.76-hosted-staging-rc1` from commit `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`. Hosted browser proof passed one attendance correction journey (16 assertions), security passed 27 assertions, and the independent outside-in verifier passed 9 checks. The security result still recorded `releaseBinding: UNPROVEN` because the target did not self-report its commit.
+- **Acceptance:** Hosted startup rejects missing/malformed candidate SHA; a read-only no-store endpoint returns the full SHA and fixture boundary; unrelated routes remain unchanged; exact Docker admission runs the focused tests and copies the module into runtime.
+- **Implementation:** Draft PR #259, commit `ab12952cc7d880b2179d9ed12491c317511cf874`, adds `security/runtime/runtime-identity.cjs`, focused tests, bootstrap routing and Docker admission.
+- **Verification:** Pre-build test failed on the absent contract. Post-build 3/3 focused tests and syntax checks passed on local Node v24.19.0. Exact GitHub readback repeated the 3/3 tests and syntax checks.
+- **Status:** BUILT. Not deployed; the hosted fixture remains on `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`. Node 22 Docker admission and hosted outside-in endpoint verification remain open.
+- **Active-work check:** The release head was `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`; no open runtime-identity change was found. Existing open PRs #249, #250, #251 and #255 own different areas and were not modified.
+- **Dependencies / next action:** Independently admit PR #259 on Node 22, then deploy only to the existing fixture candidate with the preserved volume and verify the endpoint SHA before and after browser/security journeys. Do not promote to customer or production use.
