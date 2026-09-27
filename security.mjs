@@ -6,7 +6,10 @@ const origin=(process.env.TARGET_ORIGIN||'').replace(/\/$/,'');
 const password=process.env.TARGET_PASSWORD||'';
 const expectedSha=process.env.EXPECTED_CANDIDATE_SHA||'';
 const deploymentId=process.env.EXPECTED_DEPLOYMENT_ID||'';
-const expectedOrigin='https://vector-customer-ready-candidate-production.up.railway.app';
+const protectedOrigins=new Set([
+ 'https://vector-customer-ready-candidate-production.up.railway.app',
+ 'https://vector-2000-convergence-admission-production.up.railway.app'
+]);
 const result={schemaVersion:1,scope:'hosted fixture HTTP security',target:origin,expectedCandidateSha:expectedSha,expectedDeploymentId:deploymentId,runnerSha:process.env.RAILWAY_GIT_COMMIT_SHA||null,startedAt:new Date().toISOString(),status:'UNPROVEN',assertions:[],releaseBinding:'UNPROVEN',limitations:['Candidate SHA must be independently bound using target deployment metadata before and after this run.','Unknown database roles and revoked physical devices are not exercised by this hosted suite.']};
 const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const cookies=[];
@@ -28,7 +31,7 @@ async function login(email){
 const post=(cookie,body,extra={})=>({method:'POST',cookie,headers:{'content-type':'application/json',origin,...extra},body:typeof body==='string'?body:JSON.stringify(body)});
 async function expectStatus(path,options,expected){const x=await request(path,options);assert.equal(x.status,expected,`${path} expected ${expected}, observed ${x.status}`);return{path,httpStatus:x.status,responseDigest:hash(x.body),traceId:x.headers.get('x-correlation-id')};}
 async function main(){
- assert.equal(origin,expectedOrigin,'protected target origin required');
+ assert.equal(protectedOrigins.has(origin),true,'protected target origin required');
  assert.ok(password.length>=20,'existing target credential required');
  assert.match(expectedSha,/^[a-f0-9]{40}$/,'exact candidate SHA required');
  assert.match(deploymentId,/^[a-f0-9-]{36}$/,'observed target deployment required');
