@@ -4,6 +4,7 @@ COPY integration/runtime/ /app/integration/runtime/
 COPY implementation/runtime/ /app/implementation/runtime/
 COPY scripts/implementation-source-handoff-proof.cjs /app/scripts/implementation-source-handoff-proof.cjs
 COPY ux-overlay/vector-shell.js /app/ux-overlay/vector-shell.js
+COPY ux-overlay/vector-shell.css /app/ux-overlay/vector-shell.css
 COPY ux-overlay/vector-action-queue.test.cjs /app/ux-overlay/vector-action-queue.test.cjs
 RUN node --check /app/integration/runtime/autonomous-integration-hub.cjs \
  && node --check /app/implementation/runtime/tenant-environment-provisioner.cjs \
