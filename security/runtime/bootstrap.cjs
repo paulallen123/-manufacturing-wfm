@@ -8,6 +8,7 @@ const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs')
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
 const { enforceDurableState } = require('./durable-state-guard.cjs');
+const { createRuntimeIdentity } = require('./runtime-identity.cjs');
 const { serveRetiredPresentation } = require('./retired-presentation.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
@@ -41,6 +42,7 @@ function secureEqualHex(left, right) {
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
 installHostedListenGuard(http, { hosted });
 const ownerAccessRecovery = createOwnerAccessRecovery();
+const runtimeIdentity = createRuntimeIdentity({ hosted });
 let guard = null;
 let integrationHub = null;
 let integrationHubInitError = null;
@@ -427,6 +429,9 @@ http.createServer = function guardedCreateServer(listener) {
   }
 
   return originalCreateServer.call(http, async (req, res) => {
+    // Bind every asset/API response to the exact process source so browser proof
+    // detects mixed revisions during rolling or multi-replica deployments.
+    runtimeIdentity.applyResponseHeaders(res);
     const guardianStarted = process.hrtime.bigint();
     if (t9CustomerGuardian && !t9CustomerGuardianInitError && typeof res.once === 'function') {
       res.once('finish', () => {
@@ -438,6 +443,7 @@ http.createServer = function guardedCreateServer(listener) {
     }
     forceVectorUiFreshness(req, res);
     if (serveCanonicalVectorAsset(req, res)) return;
+    if (runtimeIdentity.handleRequest(req, res)) return;
     if (await ownerAccessRecovery.handleRequest(req, res)) return;
     if (handleStagingAccess(req, res)) return;
     restoreStagingSession(req, res);
@@ -500,4 +506,3 @@ http.createServer = function guardedCreateServer(listener) {
 };
 
 require('/app/server.cjs');
-

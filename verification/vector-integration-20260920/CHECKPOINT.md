@@ -101,3 +101,67 @@ The following is a requirements index, not a claim that all listed capabilities 
 5. Continue independent implementation, integration and Frontier tasks under their existing owners. Record exact scoped statuses: PROVEN, BUILT, DESIGNED, RESEARCHED or BLOCKED. Use PROVEN only for the approved real environment.
 
 Usage: two bounded independent delegates; reused existing repairs, workstreams and infrastructure. No new paid service or duplicated automation. Token/cost totals are not exposed; savings are not estimated. No live deployment, restart, credential change or external payroll/provider submission has occurred during this integration.
+
+
+## 2026-09-27 — Runtime source self-binding
+
+- **Objective:** Bind served Vector proof to the exact deployed GitHub commit without trusting runner configuration alone.
+- **Observed evidence:** Fixture deployment `ce35d486-5db0-4a0a-80e4-24bc1c048220` served release `0.6.76-hosted-staging-rc1` from commit `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`. Hosted browser proof passed one attendance correction journey (16 assertions), security passed 27 assertions, and the independent outside-in verifier passed 9 checks. The security result still recorded `releaseBinding: UNPROVEN` because the target did not self-report its commit.
+- **Acceptance:** Hosted startup rejects missing/malformed candidate SHA; a read-only no-store endpoint returns the full SHA and fixture boundary; unrelated routes remain unchanged; exact Docker admission runs the focused tests and copies the module into runtime.
+- **Implementation:** Draft PR #259, commit `ab12952cc7d880b2179d9ed12491c317511cf874`, adds `security/runtime/runtime-identity.cjs`, focused tests, bootstrap routing and Docker admission.
+- **Verification:** Pre-build test failed on the absent contract. Post-build 3/3 focused tests and syntax checks passed on local Node v24.19.0. Exact GitHub readback repeated the 3/3 tests and syntax checks.
+- **Status:** BUILT. Not deployed; the hosted fixture remains on `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`. Node 22 Docker admission and hosted outside-in endpoint verification remain open.
+- **Active-work check:** The release head was `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`; no open runtime-identity change was found. Existing open PRs #249, #250, #251 and #255 own different areas and were not modified.
+- **Dependencies / next action:** Independently admit PR #259 on Node 22, then deploy only to the existing fixture candidate with the preserved volume and verify the endpoint SHA before and after browser/security journeys. Do not promote to customer or production use.
+
+
+## 2026-09-27 — Build-derived runtime identity hardening
+
+- **Objective:** Remove the circular proof path in which the runtime identity endpoint could merely echo the verifier-configured expected SHA.
+- **Discovery / theory test:** Adversarial review showed that a valid but incorrect `WFM_CANDIDATE_SHA` was accepted because no independent build identity was required. The new regression failed 2 of 4 focused tests before repair: missing build identity was accepted and the response lacked an independently matched binding state.
+- **Accepted design:** Railway documents `RAILWAY_GIT_COMMIT_SHA` as the triggering commit SHA and provides Railway variables to builds and deployments ([Railway Variables Reference](https://docs.railway.com/variables/reference#git-variables)). The final Docker stage now validates and seals that build-time SHA in `/app/.wfm-build-source-sha`. Hosted startup independently validates the configured expected SHA and sealed build SHA, requires both, and fails closed on missing, malformed or mismatched values.
+- **Implementation:** Commit `cd35b72274ff1efe42b70ae4b8aa4ed7e2b5926d` on draft PR #259. The endpoint reports `sourceBinding: build-file-matched` only after the independent values agree; it remains read-only, no-store and fixture-scoped.
+- **Verification:** After repair, 5/5 focused tests and syntax checks passed on local Node v24.19.0. Tests cover missing/malformed build identity, mismatched expected/build SHAs, real read-only file input, endpoint payload and method/route boundaries. The exact local Git blob hashes matched the three published GitHub blobs. A valid SHA produced a mode-0444 identity file; an invalid SHA was rejected. No workflow or commit status was published.
+- **Status:** BUILT. This is source-level evidence only: Node 22 Docker admission, Railway build execution, hosted endpoint verification and repeated browser/security journeys remain open. No deployment, restart, customer/payroll mutation, DNS change or spend occurred.
+- **Dependencies / next action:** An independent Trust/Proof owner should build the final PR head on exact Node 22, configure `WFM_CANDIDATE_SHA` to that same final head, preserve the existing fixture volume, then verify the self-reported SHA before and after the state-changing Vector journeys. A mismatch must be treated as a blocked deployment, not repaired by weakening the check.
+
+
+## 2026-09-27 — Hosted identity path pinning
+
+- **Objective:** Prevent hosted configuration from redirecting the sealed build identity to a writable or operator-controlled file.
+- **Discovery / theory test:** The first build-derived repair still accepted `WFM_BUILD_SOURCE_SHA_FILE` from the runtime environment. An attacker or mistaken configuration could point it at a file containing the expected SHA and recreate a false source-binding result. The new regression failed against that implementation because the redirected file was accepted.
+- **Implementation:** Commit `ce05fe42945e5d17e7aa3cdc871014c9ee113b92` removes the environment-controlled path. Hosted bootstrap now reads only the fixed root-owned image path `/app/.wfm-build-source-sha`; an explicit path remains injectable only through the internal function argument used for deterministic tests.
+- **Verification:** After repair, 6/6 focused tests and syntax checks passed on local Node v24.19.0. Exact local Git object hashes matched the two published GitHub blobs. Coverage includes the environment-redirection attack, missing/malformed/mismatched identities, real read-only file input, endpoint payload, method restriction and unrelated-route isolation.
+- **Status:** BUILT. Not deployed or Node 22 Docker-admitted; no hosted/customer/payroll state changed. The existing fixture remains on `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`.
+- **Dependencies / next action:** Trust/Proof must build the final PR head with Railway's Git SHA, configure the separate expected SHA to the same final head, preserve the fixture volume, and prove the endpoint plus browser/security journeys outside-in. Any path redirection, missing identity or SHA mismatch is a hard release block.
+
+
+## 2026-09-27 — Per-response source binding
+
+- **Objective:** Detect mixed-build traffic during rolling or multi-replica hosted proof, not only at the beginning and end of a journey.
+- **Discovery / theory test:** A verifier could read the correct runtime identity before and after a workflow while an intervening asset or state-changing API response came from another revision. The new regression failed before repair because the identity contract could not attach source evidence to ordinary responses.
+- **Implementation:** Code head `c9c20c1cc87a42458a59cf8e0c579574a4026a99` adds `X-WFM-Source-SHA`, `X-WFM-Source-Binding` and `X-WFM-Fixture-Only` to every response before asset, API, authentication or overlay routing. The values come from the same independently matched, sealed runtime identity; no business, payroll or tenant data is exposed.
+- **Verification:** After repair, 7/7 focused tests and syntax checks passed on local Node v24.19.0. The three local Git object hashes exactly matched the published GitHub blobs (`c2c2009c2112462b7b5201726926ee1561b3e87a`, `193ada886fb9ed5dccf5ddf13db5db3fb45fd9e7`, `5ca7d05fa9609b68e6f6144512f3b406186a163e`). No workflow or commit status executed.
+- **Status:** BUILT. This is source evidence, not hosted proof. The existing fixture remains on `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`; no deployment, restart, customer/payroll mutation, DNS change or spend occurred.
+- **Global / size impact:** The marker is response-level and independent of organisation size, hierarchy, locale, currency, site topology and manufacturing mode. It adds no configuration burden for a one-person site and remains usable across multi-region replica fleets.
+- **Dependencies / next action:** Trust/Proof must admit the final PR head on exact Node 22, deploy only to the preserved fixture candidate, and require the same source SHA on every approved asset and consequential API response through leave, attendance, weekly sign-off and payroll journeys, including refresh, new login and safe restart. Any absent or differing marker is a hard proof failure.
+
+
+## 2026-09-27 — Immutable response source proof
+
+- **Objective:** Prevent downstream asset/API handlers from altering the source marker after the outer runtime binds it.
+- **Root cause / theory test:** The outer bootstrap set the proof headers before routing, but the unguarded Node response still allowed later `setHeader`, `removeHeader` or direct `writeHead` calls to replace them. A real loopback HTTP regression changed the source SHA, removed the binding state and changed the fixture boundary; it failed before repair with the wrong SHA on the transmitted response.
+- **Implementation:** Code head `56d6ecd15a6f2bbbdfd5407c7568d7744feb15a9` preserves the canonical source SHA, binding mode and fixture boundary through all three Node header mutation paths. Other response headers remain untouched.
+- **Verification:** After repair, the focused attack passed and the full runtime-identity suite passed 8/8 with syntax checks on local Node v24.19.0. Tested local Git objects exactly matched the published module and test blobs (`5a373e8441f67acd402c9bd4cffaec23ce0ccca6`, `52db0e300ef10b651808e21882c19b206c300cc6`).
+- **Status:** BUILT. No workflow/status check, exact Node 22 Docker admission, hosted execution or browser journey was produced. The fixture remains on `f62f1e9f6d993d3f90ff19f8178275803e5b7d3f`; no deployment, restart or customer/payroll state changed.
+- **Dependencies / next action:** Trust/Proof must build the final PR head on exact Node 22 and require the immutable marker on every approved asset and consequential API response throughout the hosted leave, attendance, weekly sign-off and payroll journeys. Missing, changed or inconsistent values fail the proof.
+
+
+## 2026-09-27 — Single-valued raw-header source proof
+
+- **Objective:** Keep response source evidence unambiguous across every supported Node `writeHead` signature.
+- **Root cause / theory test:** Node's raw alternating header-array form appends direct values to headers already stored on the response. The immutable-marker guard therefore transmitted two identical copies of each protected marker as one comma-joined value. A real loopback HTTP regression reproduced the doubled source SHA before repair.
+- **Implementation:** Code head `a45a5cb52b87d4678e04eb49967fa6585ba564cc` clears only the already-stored protected values immediately before `writeHead`, then emits exactly one canonical copy through the sanitised direct-header arguments. Other headers and both object/status-message forms remain intact.
+- **Verification:** The red regression failed with a doubled SHA, then passed after repair. The full focused suite passed 9/9 with syntax checks on local Node v24.19.0. Local Git object hashes exactly matched the published blobs (`3408551239cd1c822b8912dfa00952cd51b3f826`, `ac1d291bce6592ddbfbcd47c0e4a6a59936d2532`).
+- **Status:** BUILT. No CI/status, exact Node 22 Docker execution or hosted proof occurred. The existing fixture, customer, payroll and production state remain unchanged.
+- **Dependencies / next action:** Build the final PR head on exact Node 22, deploy only to the preserved fixture candidate, and require one exact immutable source value on every approved asset and consequential API response during the full hosted journeys.

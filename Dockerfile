@@ -15,7 +15,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-isolated-environment-provisioning-plan.mjs \
  && node scripts/validate-capability-superset.mjs \
  && node scripts/validate-research-convergence-ledger.mjs \
- && node --test resilience/research-convergence-theory-simulator.test.cjs policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/authoritative-policy-source-registry.test.cjs policy/runtime/regulatory-change-candidate.test.cjs \
+ && node --test resilience/research-convergence-theory-simulator.test.cjs policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/authoritative-policy-source-registry.test.cjs policy/runtime/regulatory-change-candidate.test.cjs security/runtime/runtime-identity.test.cjs \
  && node scripts/validate-product-factory.mjs \
  && node scripts/prove-adaptive-intelligence-engine.mjs \
  && node scripts/validate-self-evolution.mjs \
@@ -31,6 +31,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
 
 # Customer-proof staging build: sealed 0.6.76 runtime
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
+ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /app
 
 # Railway volumes are mounted root-owned. gosu is used only by the init wrapper
@@ -63,7 +64,13 @@ COPY security/runtime/hosted-listen-guard.cjs /app/security-runtime/hosted-liste
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 COPY security/runtime/owner-access-recovery.cjs /app/security-runtime/owner-access-recovery.cjs
 COPY security/runtime/durable-state-guard.cjs /app/security-runtime/durable-state-guard.cjs
+COPY security/runtime/runtime-identity.cjs /app/security-runtime/runtime-identity.cjs
 COPY security/runtime/retired-presentation.cjs /app/security-runtime/retired-presentation.cjs
+
+# Railway supplies the triggering Git SHA to builds and deployments. Seal the build-time
+# value into the read-only image so runtime proof cannot be manufactured by echoing the
+# independently configured expected SHA.
+RUN node -e "const fs=require('fs');const sha=String(process.env.RAILWAY_GIT_COMMIT_SHA||'').trim().toLowerCase();if(!/^[0-9a-f]{40}$/.test(sha))throw new Error('WFM_BUILD_SOURCE_SHA_INVALID');fs.writeFileSync('/app/.wfm-build-source-sha',sha+'\\n',{mode:0o444});console.log('WFM_BUILD_SOURCE_SHA=SEALED')"
 
 # Autonomous integration fabric. The control plane is separately reviewable and
 # uses only Node built-ins plus the existing per-tenant SQLite runtime.
@@ -434,4 +441,3 @@ EXPOSE 3000
 CMD ["node","security-runtime/bootstrap.cjs"]
 
 # VECTOR_CANONICAL_REDEPLOY_20260920
-
