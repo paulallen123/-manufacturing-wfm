@@ -144,7 +144,20 @@
       "statusSemanticsAudited": false,
       "mutatesTarget": false,
       "stateIsolation": "unverified",
-      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED",
+      "evidence": {
+        "candidateSha": "486606c4269bc8f1a2f24056fec22a6d6ffc7aad",
+        "verifierService": "vector-persistence-verify-20260926",
+        "verifierDeploymentId": "2456c1c3-f502-4762-8bdd-e6f31b47cb45",
+        "terminalApplicationMarker": "VECTOR_PROOF_FINAL status=PASS",
+        "reportedScope": "exact final hosted restart readback",
+        "restartReadback": true,
+        "persistedHistory": [
+          "attendance-correction-submitted",
+          "attendance-correction-reject"
+        ],
+        "sourceBinding": "build-file-matched"
+      }
     },
     {
       "id": "security-live-v2",
@@ -234,13 +247,52 @@
       "lifecycle": "active",
       "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
-      "terminalProofOwnsHealth": true,
+      "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
       "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
-      "statusSemanticsAudited": false,
-      "mutatesTarget": false,
-      "stateIsolation": "unverified",
-      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
+      "statusSemanticsAudited": true,
+      "mutatesTarget": true,
+      "stateIsolation": "shared-durable-target",
+      "promotionBlocker": "TERMINAL_FAIL_CAN_COEXIST_WITH_RAILWAY_SUCCESS_AND_SHARED_MUTABLE_TARGET",
+      "isolatedTargetService": "vector-customer-ready-candidate",
+      "freshTargetDeploymentRequired": false,
+      "evidence": {
+        "candidateSha": "486606c4269bc8f1a2f24056fec22a6d6ffc7aad",
+        "verifierService": "vector-sandbox-integration-proof",
+        "verifierDeploymentId": "10053e83-6107-4393-baf2-4d281f92d280",
+        "terminalApplicationMarker": "VECTOR_PROOF_FINAL status=PASS",
+        "reportedScope": "Exact hosted fixture autonomous integration proof on the current VECTOR candidate; not live-provider certification.",
+        "checkCount": 8,
+        "failedCount": 0,
+        "runtimeIntegration": true,
+        "replayIdempotent": true,
+        "mappingActivation": true,
+        "canonicalPeopleValidation": true,
+        "crossTenantRejected": true,
+        "readinessRecovered": true,
+        "claimBoundary": "Fixture/demo provider data only; no genuine Workday/SAP/NetSuite/provider certification.",
+        "statusSemanticsNegativeEvidence": [
+          {
+            "deploymentId": "e3c5f32f-0bdd-480a-a15b-d20e19989bb9",
+            "railwayStatus": "SUCCESS",
+            "applicationStatus": "FAIL",
+            "reason": "manager login missing hosted origin binding in proof harness"
+          },
+          {
+            "deploymentId": "41ef25bc-10d7-4e8b-bf8e-5f7fa9ac228a",
+            "railwayStatus": "SUCCESS",
+            "applicationStatus": "FAIL",
+            "reason": "people sync readiness false after earlier incomplete validation"
+          },
+          {
+            "deploymentId": "7d915864-0cc7-45c2-affc-325bef92643a",
+            "railwayStatus": "SUCCESS",
+            "applicationStatus": "FAIL",
+            "reason": "proof records did not match active source mapping"
+          }
+        ],
+        "sourceBinding": "build-file-matched"
+      }
     },
     {
       "id": "zero-touch-hosted",
