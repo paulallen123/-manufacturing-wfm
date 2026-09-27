@@ -40,12 +40,15 @@ function fixture(options = {}) {
   db.close();
 
   const sentInvitations = [];
+  let invitationAttempts = 0;
   const engine = createOneDayEnterpriseEngine({
     dbPath,
     internalToken: 'implementation-worker-test-token',
     contractWebhookSecret: 'contract-webhook-test-token',
-    publicOrigin: 'https://implementation.test',
+    publicOrigin: options.publicOrigin ?? 'https://implementation.test',
     sendInvitation: async invitation => {
+      invitationAttempts += 1;
+      if (options.failFirstInvitation && invitationAttempts === 1) throw new Error('simulated temporary mail outage');
       if (options.failInvitationDelivery) throw new Error('simulated mail transport failure');
       sentInvitations.push(invitation);
       return { provider: 'test-mailer', messageId: 'mail-' + sentInvitations.length };
@@ -58,6 +61,7 @@ function fixture(options = {}) {
     engine,
     tokens,
     sentInvitations,
+    get invitationAttempts() { return invitationAttempts; },
     internal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },
     contractWebhook: { 'x-wfm-contract-webhook': 'contract-webhook-test-token' },
     close() {
@@ -340,6 +344,76 @@ test('notification transport failure cannot block trusted zero-touch implementat
     const db = new DatabaseSync(f.dbPath);
     assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
     assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_FAILED'").get().count, 1);
+    db.close();
+  } finally {
+    f.close();
+  }
+});
+
+test('repeated trusted activation retries a failed invitation without duplicating implementation', async () => {
+  const f = fixture({ failFirstInvitation: true });
+  try {
+    const event = { tenant: 'alpha', contractRef: 'contract-mail-retry', targetHours: 8, recipientEmail: 'manager@alpha' };
+    const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(first.status, 201);
+    assert.equal(first.body.notification.delivered, false);
+    assert.equal(first.body.invitation, null);
+    const repeated = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(repeated.status, 200);
+    assert.equal(repeated.body.implementation.runId, first.body.implementation.runId);
+    assert.equal(repeated.body.notification.delivered, true);
+    assert.equal(repeated.body.invitation.state, 'AWAITING_CUSTOMER_START');
+    assert.equal(f.sentInvitations.length, 1);
+    assert.equal(f.invitationAttempts, 2);
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_AUTO_STARTED'").get().count, 1);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_FAILED'").get().count, 1);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_SENT'").get().count, 1);
+    db.close();
+  } finally {
+    f.close();
+  }
+});
+
+test('failed invitation retries stop at a durable three-attempt budget', async () => {
+  const f = fixture({ failInvitationDelivery: true });
+  try {
+    const event = { tenant: 'alpha', contractRef: 'contract-mail-budget', targetHours: 8, recipientEmail: 'manager@alpha' };
+    const results = [];
+    for (let i = 0; i < 4; i += 1) {
+      results.push(await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal));
+    }
+    assert.deepEqual(results.map(result => result.status), [201, 200, 200, 200]);
+    assert.equal(results[3].body.notification.retryExhausted, true);
+    assert.equal(results[3].body.implementation.runId, results[0].body.implementation.runId);
+    assert.equal(f.invitationAttempts, 3);
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(db.prepare('SELECT attempts FROM implementation_notification_attempts').get().attempts, 3);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_FAILED'").get().count, 3);
+    db.close();
+  } finally {
+    f.close();
+  }
+});
+
+test('missing public origin does not block trusted implementation start or create a token', async () => {
+  const f = fixture({ publicOrigin: '' });
+  try {
+    const result = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
+      { tenant: 'alpha', contractRef: 'contract-no-origin', targetHours: 8, recipientEmail: 'manager@alpha' },
+      f.internal
+    );
+    assert.equal(result.status, 201);
+    assert.equal(result.body.implementation.state, 'BUILDING');
+    assert.equal(result.body.notification.unavailable, true);
+    assert.equal(result.body.invitation, null);
+    assert.equal(f.invitationAttempts, 0);
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_invitations').get().count, 0);
     db.close();
   } finally {
     f.close();
