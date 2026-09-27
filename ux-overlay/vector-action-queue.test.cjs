@@ -66,6 +66,12 @@ test('Time Review action context uses the canonical attendance route end to end'
   assert.match(source, /if\(page\(\)!=='attendance'\|\|!ctx\)/);
 });
 
+test('approved Improve navigation exposes payroll reports without reviving the retired Reports top-level nav', () => {
+  const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
+  assert.match(source, /label:'Improve',icon:'report',routes:\['insights','costs','recommendations','benchmarks','compliance','overtime-watch','reports'\]/);
+  assert.match(source, /\['reports','Reports'\]/);
+});
+
 test('source lifecycle is partitioned without presentation-word inference', () => {
   const vector = loadVectorHelpers();
   assert.equal(vector.actionDisposition({ confirmationState: 'action_required' }), 'needs-action');
