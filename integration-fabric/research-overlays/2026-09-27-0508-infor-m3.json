@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Infor M3 documentation promotion and capability-proven capped-list read authority.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "infor-m3",
+      "patch": {
+        "protocols": [
+          "Infor ION API Gateway",
+          "M3 MI REST",
+          "M3 API Repository metadata",
+          "BOD and Event Hub",
+          "Data Lake or governed export fallback"
+        ],
+        "auth": "OAuth 2.0 backend-service credentials through the regional Infor ION API Gateway, or customer-managed M3 REST/web-service credentials through a private edge route",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.infor.com/m3core/2025.x/en-us/useradminlib_cloud/m3coretechug_cloud/hdb1752047512497.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": "by-deployment",
+        "connectionRoutes": [
+          {
+            "type": "M3 CloudSuite through Infor ION API Gateway",
+            "direction": "M3-to-WFM-read-only",
+            "authentication": "dedicated OAuth 2.0 client-credentials application plus an exact read-only M3 API role",
+            "notes": "Pin the regional gateway, Infor tenant, company, division, facility, M3 version, exact MI program and transaction, transaction metadata, pagination capability, query and output schema."
+          },
+          {
+            "type": "M3 on-premises or private REST/web-service route",
+            "direction": "customer-edge-to-WFM-read-only",
+            "authentication": "customer-managed M3 API identity over an exact private HTTPS origin",
+            "notes": "Use customer-controlled outbound edge connectivity. Direct database access, generic MI authority and update transactions remain denied."
+          },
+          {
+            "type": "Infor BOD, Event Hub, Data Lake or governed export fallback",
+            "direction": "M3-export-to-WFM-read-only",
+            "authentication": "customer-owned ION, Data Lake, secure-file or managed integration identity",
+            "notes": "Use existing event-hint, managed-export and batch-reconciliation controls. Events are freshness hints, not completeness or deletion authority."
+          }
+        ],
+        "deploymentVariants": {
+          "M3-CloudSuite": {
+            "customerEdgeRequired": false,
+            "routing": "Regional Infor ION API Gateway route to one approved tenant and company/division/facility scope per checkpoint namespace."
+          },
+          "M3-on-premises-or-private": {
+            "customerEdgeRequired": true,
+            "routing": "Customer-controlled outbound edge route to one exact M3 REST or web-service origin; no inbound public exposure or direct SQL."
+          },
+          "multi-company-or-acquired-estate": {
+            "customerEdgeRequired": "by-instance",
+            "routing": "Partition each tenant, company, division, facility, warehouse and acquired M3 instance even when one ION layer fronts them."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": [
+            "wfm-tenant",
+            "connection",
+            "Infor-tenant",
+            "company",
+            "division",
+            "facility",
+            "api-origin",
+            "api-version",
+            "MI-program",
+            "MI-transaction",
+            "metadata",
+            "query",
+            "schema"
+          ],
+          "sourceIdentityDimensions": [
+            "wfm-tenant",
+            "connection",
+            "Infor-tenant",
+            "company",
+            "division",
+            "facility",
+            "MI-program",
+            "MI-transaction",
+            "stable-source-ID",
+            "source-version"
+          ]
+        },
+        "miReadAuthority": {
+          "exactReadTransactionsRequired": true,
+          "genericProgramAuthority": false,
+          "updateTransactionAuthority": false,
+          "httpVerbProvesReadSafety": false,
+          "metadataFingerprintRequired": true,
+          "notes": "M3 API access can be broad by default and MI programs contain distinct transactions. Authorise only reviewed list/get/search transactions whose semantics and output metadata have been proven read-only; never infer safety from OAuth success, program name, transaction naming or HTTP method."
+        },
+        "pagedReadAuthority": {
+          "maximumPageSize": 100,
+          "paginationSupportMustBeProvenPerTransaction": true,
+          "continuationContinuityRequired": true,
+          "terminalSignalRequired": true,
+          "recordCountProvesCompleteness": false,
+          "rawContinuationRetained": false,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "writeBackAuthority": false,
+          "receiptPolicy": "Bind every page to one WFM tenant, connection, Infor tenant, company, division, facility, exact origin/version, MI program/transaction, metadata, query, schema, trusted predecessor and observation horizon. Reject transactions without proven pagination, follow opaque continuation state to an explicit terminal result, hash raw state out of evidence, preserve exact source IDs and versions, and emit reconciliation evidence only."
+        },
+        "dataObjects": [
+          "companies-divisions-facilities-and-warehouses",
+          "employees-teams-and-work-schedules",
+          "skills-and-labour-reference",
+          "manufacturing-orders-and-operations",
+          "work-centres-and-capacity",
+          "employee-operation-time",
+          "direct-and-indirect-labour",
+          "quantities-complete-and-scrap",
+          "maintenance-work-orders",
+          "equipment-and-disturbances",
+          "materials-and-inventory",
+          "BOM-routings-and-product-structures",
+          "purchase-orders-and-suppliers",
+          "quality-and-inspection",
+          "job-and-work-centre-costs",
+          "general-ledger-and-cost-centres"
+        ],
+        "canonicalObjects": [
+          "legal-entity",
+          "site",
+          "facility",
+          "warehouse",
+          "person",
+          "employment",
+          "skill",
+          "shift",
+          "work-centre",
+          "machine-asset",
+          "production-order",
+          "operation",
+          "time-event",
+          "maintenance-order",
+          "material-movement",
+          "inventory-balance",
+          "supplier",
+          "quality-event",
+          "scrap-event",
+          "cost-centre",
+          "labour-cost",
+          "production-outcome"
+        ],
+        "stableIds": "Preserve tenant + company + division + facility/warehouse + MI program/transaction + exact source key and version. Keep manufacturing order/operation, employee, work centre, item/lot, maintenance order, PO/supplier and ledger references typed and local; identical codes across divisions or acquired instances never auto-merge.",
+        "freshness": "Use capability-proven bounded MI pagination for targeted operational reads. Event Hub/BOD signals can lower latency but remain hints until reconciled against a complete scoped MI read, Data Lake observation or governed export.",
+        "permissions": "Use a dedicated integration identity restricted by M3 API transaction and role authorization to exact read transactions and approved companies/divisions. Deny update/add/delete transactions, generic programs, batch or scheduler control, Event Hub publication, configuration administration, credential management and database writes.",
+        "paginationDelta": "M3 Test API supports paginated MI reads with a maximum of 100 records per page, but Infor states pagination is not supported for all MI programs. Discover and fingerprint capability per exact program/transaction; require a complete terminal continuation chain. A successful page containing 100 or fewer records never proves dataset completeness. Where pagination is unsupported, use an independently bounded key-range/read projection or governed Data Lake/export route instead of advancing a checkpoint.",
+        "customFields": "Discover MI transaction input/output metadata, customer-defined transactions, field lengths/types/decimals, language-specific labels and approved custom list APIs per tenant and company/division. Exact property and metadata fingerprints prevent custom-field or transaction drift from silently changing WFM semantics.",
+        "regionalApiVersions": "Pin regional ION gateway host, Infor tenant, M3 release, company, division, facility, MI API version and program/transaction metadata. Cloud, private and on-premises routes never share credentials or checkpoints and do not silently fail over across regions.",
+        "rateLimits": "No universal M3 MI rate limit is assumed. Infor API Gateway may apply tenant-specific quotas, smoothing or spike arrest; use bounded concurrency, respect HTTP 429 and observed retry/reset evidence, and never change tenant, company, division or host to evade throttling.",
+        "failureModes": [
+          "OAuth credential expiry or revocation",
+          "wrong regional tenant, company, division or facility",
+          "API program or transaction permission denial",
+          "broad default API authorization",
+          "pagination unsupported for the selected MI transaction",
+          "100-record result mistaken for completeness",
+          "continuation gap, loop or cross-query reuse",
+          "transaction metadata or custom API drift",
+          "field truncation, decimal or local-date interpretation mismatch",
+          "company/division/facility identity collision",
+          "duplicate or conflicting source versions",
+          "429 throttling, timeout or regional outage",
+          "Event Hub/BOD delay, loss, duplication or reordering",
+          "Data Lake projection delay",
+          "update MI transaction accidentally enabled"
+        ],
+        "reconciliation": "Bind all evidence to exact tenant/company/division/facility/program/transaction/metadata/query/schema scope plus trusted predecessor and observation horizon. Require proven pagination support, gapless opaque continuation, successful bounded pages and an explicit terminal result. Preserve exact source identities, collapse only exact version+digest replays, quarantine conflicts, hash continuation material out of evidence and grant no direct checkpoint, deletion, payroll, attendance or write authority. Re-read bounded windows after auth refresh, throttling, timeout, schema drift or event hints.",
+        "schemaDrift": "Fingerprint M3 release/API version, MI program and transaction, operation class, input fields, output field order/types/lengths/decimals, pagination capability, effective cap, query and custom transaction revision per company/division. Any drift quarantines the dataset before checkpoint consideration.",
+        "retriesReconnect": "401 stops for credential/tenant review; 403 stops for role/program/transaction review; 429 uses bounded backoff on the same route and scope. Network/5xx recovery restarts from the trusted predecessor with the approved overlap or from the last verified continuation boundary; never resume continuation under changed metadata, query, schema, cap or company/division.",
+        "evidenceUrl": "https://docs.infor.com/m3core/2025.x/en-us/useradminlib_cloud/m3coretechug_cloud/hdb1752047512497.html",
+        "evidenceNote": "Documentation-only verification. Official Infor documentation establishes M3 REST access through API Gateway/ION API with OAuth 2.0, API Repository metadata, program/transaction authorization, 100-record paginated reads and the warning that pagination is not supported for all MI programs. M3 manufacturing documentation establishes orders/operations, work-centre capacity/cost, employee operation time, quantities/scrap, maintenance, inventory/procurement, quality and finance context. No sandbox, no customer tenant authentication, no live read, no real pagination, no denied mutation and no hosted proof are claimed.",
+        "valueOpportunities": [
+          "combine manufacturing-order operation demand, work-centre capacity and WFM skills/availability to target only genuine qualified-labour shortages and reduce avoidable overtime or agency use",
+          "separate paid idle time caused by material, machine, maintenance, queue, quality or supplier constraints from workforce capacity shortages",
+          "compare employee operation-time evidence with WFM attendance and payroll-ready time to find missing, duplicated, auto-reported or misattributed labour without treating ERP time as attendance truth",
+          "attribute labour and rework cost to order, operation, item, scrap and good-unit outcomes while preserving source authority and causal uncertainty",
+          "reuse one exact MI transaction pattern for a small single-company manufacturer and independently partition global multi-company, division, facility and acquired M3 estates"
+        ],
+        "causalOutcomeReadiness": "Preserve manufacturing order, operation, employee/team, work centre, maintenance, material, quality, scrap, cost and source-version identifiers with effective and observation times. Record recommendation, approval, intervention and outcome windows separately, distinguish manual and auto-reported labour, and retain competing demand/material/machine/maintenance/quality changes before evaluating outcomes.",
+        "nextBuildAction": "Use an authorised Infor M3 test tenant to prove OAuth client credentials, exact regional tenant/company/division/facility isolation, transaction-level read roles, MI metadata discovery, real 100-record pagination and unsupported-pagination fallback, custom transaction drift, 401/403/429/outage recovery, and denied update or mutation transactions without production or payroll mutation."
+      }
+    }
+  ]
+}
