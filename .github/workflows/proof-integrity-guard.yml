@@ -1,0 +1,39 @@
+name: Proof Integrity Guard
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+      - 'autonomy/**'
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: proof-integrity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  proof-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Checkout exact proposed source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Enforce fail-closed proof integrity
+        run: node --test scripts/proof-integrity-contract.test.mjs
