@@ -380,6 +380,9 @@ function createOneDayEnterpriseEngine(options = {}) {
     'ON CONFLICT(tenant,contract_ref_hash) DO UPDATE SET attempts=attempts+1,updated_at=excluded.updated_at ' +
     'WHERE attempts<3'
   );
+  const notificationAttemptsByContract = db.prepare(
+    'SELECT attempts,updated_at FROM implementation_notification_attempts WHERE tenant=? AND contract_ref_hash=?'
+  );
   const startInvitation = db.prepare(
     "UPDATE implementation_invitations SET status='STARTED',started_run_id=?,updated_at=? WHERE id=? AND status='PENDING'"
   );
@@ -527,6 +530,60 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
   }
 
+  function notificationRecoveryForRun(run) {
+    const invitation = invitationByContract.get(run.tenant, run.contract_ref_hash);
+    const outbox = outboxByContract.get(run.tenant, run.contract_ref_hash);
+    const attemptRow = notificationAttemptsByContract.get(run.tenant, run.contract_ref_hash);
+    const attempts = Math.max(0, Number(attemptRow?.attempts || 0));
+    const remainingAttempts = Math.max(0, 3 - attempts);
+
+    if (invitation?.status === 'STARTED') {
+      return {
+        state: 'STARTED', attempts, remainingAttempts,
+        automaticActionAvailable: false, terminalAction: null
+      };
+    }
+    if (outbox?.state === 'PENDING') {
+      return {
+        state: 'RECOVERING', attempts, remainingAttempts,
+        nextRetryAt: new Date(outbox.next_attempt_at_ms).toISOString(),
+        automaticActionAvailable: remainingAttempts > 0,
+        terminalAction: null
+      };
+    }
+    if (outbox?.state === 'BLOCKED') {
+      return {
+        state: 'BLOCKED', attempts, remainingAttempts,
+        automaticActionAvailable: false,
+        terminalAction: 'RECOVERY_EVIDENCE_REPAIR_REQUIRED'
+      };
+    }
+    if (outbox?.state === 'EXHAUSTED' || attempts >= 3) {
+      return {
+        state: 'EXHAUSTED', attempts, remainingAttempts: 0,
+        automaticActionAvailable: false,
+        terminalAction: 'PROVIDER_OR_ADMIN_AUTHORIZATION_REQUIRED'
+      };
+    }
+    if (invitation) {
+      return {
+        state: 'DELIVERED', attempts, remainingAttempts,
+        automaticActionAvailable: false, terminalAction: null
+      };
+    }
+    if (!publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
+      return {
+        state: 'UNAVAILABLE', attempts, remainingAttempts,
+        automaticActionAvailable: false,
+        terminalAction: 'PUBLIC_ORIGIN_CONFIGURATION_REQUIRED'
+      };
+    }
+    return {
+      state: 'NOT_SENT', attempts, remainingAttempts,
+      automaticActionAvailable: false, terminalAction: null
+    };
+  }
+
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
@@ -635,7 +692,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       blockingDecisions,
       learningSummary,
       scopeCaptured: Boolean(customerScope),
-      customerScope
+      customerScope,
+      notificationRecovery: notificationRecoveryForRun(run)
     };
   }
 
