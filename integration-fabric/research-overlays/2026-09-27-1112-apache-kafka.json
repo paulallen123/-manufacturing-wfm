@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Apache Kafka documentation promotion and bounded topic-partition offset-window reconciliation.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "apache-kafka",
+      "reason": "Promote the existing Apache Kafka target from discovery to documentation-backed, read-only partition-window reconciliation without granting offset-commit, topic, producer, checkpoint, payroll or attendance authority.",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": "deployment-dependent",
+        "auth": "deployment-defined-secure-transport-required",
+        "connectionRoutes": [
+          "Native Apache Kafka protocol through an exact customer-approved broker endpoint set",
+          "TLS or SASL over TLS using deployment-specific mTLS, SCRAM, GSSAPI or OAuth bearer identity",
+          "Customer-managed private networking, proxy or edge route where the cluster is not publicly reachable",
+          "Managed Kafka-compatible services remain separately versioned provider variants even when they share the Kafka protocol"
+        ],
+        "readRoutes": [
+          "KafkaConsumer manual assign(Collection<TopicPartition>)",
+          "beginningOffsets and read_committed endOffsets for exact approved partitions",
+          "seek to the approved beginning offset, poll bounded batches, and inspect final consumer position",
+          "cluster metadata and topic configuration reads required to bind cluster, topic UUID, partition, retention and compaction evidence"
+        ],
+        "deniedMutationRoutes": [
+          "producer sends and transactional writes",
+          "automatic or manual consumer offset commits",
+          "topic create, delete, partition expansion or configuration changes",
+          "consumer-group offset reset or deletion",
+          "ACL, credential, quota, broker, replication or cluster configuration changes"
+        ],
+        "dataObjects": [
+          "cluster-and-topic-metadata",
+          "topic-partition-offset-observations",
+          "consumer-record-digests",
+          "beginning-end-and-final-position-watermarks",
+          "schema-and-mapping-fingerprints",
+          "retention-compaction-and-transactional-read-signals"
+        ],
+        "canonicalObjects": [
+          "integration-connection",
+          "source-batch",
+          "provider-event",
+          "reconciliation-candidate",
+          "freshness-and-lineage-signal",
+          "provider-failure-signal"
+        ],
+        "stableIds": [
+          "exact Kafka cluster id",
+          "exact topic name and Kafka topic UUID plus partition plus arbitrary-precision offset",
+          "WFM tenant plus connection plus consumer-group identity",
+          "topic-metadata, topic-configuration, schema, mapping, source-scope and broker-endpoint-set fingerprints"
+        ],
+        "freshness": "Kafka record timestamps are preserved as source evidence but are not assumed to be unique or causal. The authority binds an explicit observation horizon and broker beginning/end offsets for each partition, then proves the consumer position reached the bounded starting end offset.",
+        "permissions": [
+          "Use an isolated read-only principal limited to metadata and consumer fetches for explicitly approved topics",
+          "Require encrypted transport; plaintext broker and SASL_PLAINTEXT routes are not admitted",
+          "Disable automatic offset commits and do not call commitSync, commitAsync or group offset mutation APIs",
+          "Keep topic administration, production, transactions, group resets and security administration outside the WFM reader"
+        ],
+        "paginationAndDelta": [
+          "Kafka polls are bounded pages within one exact topic-partition offset window",
+          "Manual partition assignment prevents dynamic rebalancing from silently changing the approved partition set",
+          "Beginning and read_committed end offsets are captured before reading; the final consumer position must equal the bounded end",
+          "The ending beginning offset must not advance and the ending end offset must not move backwards; concurrent appends beyond the bounded end remain for a later window",
+          "Numeric offset gaps are valid for compacted topics, transaction markers and aborted transactions and must not be fabricated as missing business records"
+        ],
+        "customFields": "Kafka record keys, headers and payloads are schema- and customer-defined. The authority stores only approved decoded schema/mapping fingerprints and whole-record payload digests; raw credentials and unapproved payload data are rejected.",
+        "regionalAndVersionNotes": [
+          "Pin the exact cluster id and customer-approved endpoint-set fingerprint; do not infer regions from hostnames",
+          "Pin Kafka client/broker compatibility, topic configuration, schema registry subject/version where used, and security mechanism",
+          "Self-managed Apache Kafka, Confluent, Amazon MSK, Azure Event Hubs Kafka endpoints and other compatible services require distinct provider overlays and evidence",
+          "Keep consumption and evidence storage in the customer-approved region and treat cross-region replication as a separate source identity"
+        ],
+        "rateLimits": "No universal poll, fetch or metadata rate is assumed. Bound partitions, poll pages and records; honour broker throttling, request timeouts and quota errors; use backoff with jitter and stop on authentication, authorization, cluster, topic, schema or watermark drift.",
+        "failureModes": [
+          "TLS, SASL or ACL failure",
+          "wrong cluster, topic, partition, consumer group or endpoint set",
+          "dynamic assignment or rebalance changing partition ownership",
+          "retention advancing the beginning offset during a bounded read",
+          "log truncation or leader failure moving an end watermark backwards",
+          "read_uncommitted exposure to aborted transactional records",
+          "consumer position stopping before the bounded end",
+          "duplicate offset replay with a conflicting payload digest or timestamp",
+          "out-of-order records within one partition",
+          "schema, mapping, topic configuration or source-scope drift",
+          "offset overflow or precision loss in runtimes that coerce offsets to floating-point numbers",
+          "offset commit occurring before downstream reconciliation"
+        ],
+        "reconciliation": [
+          "Bind every read to the exact WFM tenant, connection, cluster id, topic, consumer group, secure transport, principal, schema, mapping and source scope",
+          "Use arbitrary-precision decimal strings for every broker and record offset",
+          "Require the exact approved partition set, stable beginning watermark, non-regressing end watermark and final position equal to the bounded end",
+          "Preserve increasing record order per partition, collapse byte-equivalent replays at one topic-partition offset and quarantine conflicts",
+          "Allow documented offset gaps without inventing records or declaring data loss solely from non-consecutive offsets",
+          "Emit only a reconciliation candidate; a later compare-and-swap process may consider checkpoint movement after downstream delivery proof"
+        ],
+        "schemaDrift": "Pin topic configuration, raw/decoded record schema and mapping fingerprints. Quarantine unknown serialization, schema-registry identity drift, header/key semantics changes, topic recreation under the same name, partition expansion or security/version changes until reviewed.",
+        "retryAndRecovery": [
+          "Retry transient polls only inside fixed partition and offset boundaries with bounded backoff",
+          "On authentication, authorization, cluster, topic, partition, retention, truncation or schema drift, abandon the candidate and re-observe before retrying",
+          "Exact replay of one offset may collapse only when timestamp type, timestamp and whole-record payload digest match",
+          "Never reset or commit group offsets as an automatic recovery action",
+          "After an outage, resume from the last independently approved WFM checkpoint and establish fresh broker watermarks"
+        ],
+        "partitionOffsetWindow": {
+          "documentedClientVersion": "4.3.1",
+          "isolationLevel": "read_committed",
+          "manualAssignmentRequired": true,
+          "enableAutoCommit": false,
+          "topicUuidRequired": true,
+          "clientAndBrokerCompatibilityBound": true,
+          "arbitraryPrecisionOffsetsRequired": true,
+          "offsetGapsAllowed": true,
+          "beginningOffsetMustRemainStable": true,
+          "endOffsetMustNotRegress": true,
+          "finalPositionMustReachBoundedEnd": true,
+          "checkpointAdvanceAllowed": false,
+          "offsetCommitAuthority": false,
+          "deletionAuthority": false,
+          "operationalDecisionAuthority": false,
+          "causalClaimAuthority": false,
+          "writeBackAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false
+        },
+        "evidenceSources": [
+          {"title":"KafkaConsumer 4.3.1 API","url":"https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html"},
+          {"title":"ConsumerRecord 4.3.1 API","url":"https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/consumer/ConsumerRecord.html"},
+          {"title":"TopicDescription 4.3.1 API","url":"https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/admin/TopicDescription.html"},
+          {"title":"Apache Kafka 4.3 Consumer Configuration","url":"https://kafka.apache.org/43/configuration/consumer-configs/"},
+          {"title":"Apache Kafka 4.3 Design","url":"https://kafka.apache.org/43/design/design/"},
+          {"title":"Apache Kafka 4.3 Security Overview","url":"https://kafka.apache.org/43/security/security-overview/"},
+          {"title":"Apache Kafka Protocol Guide","url":"https://kafka.apache.org/protocol/"},
+          {"title":"Apache Kafka 4.3 Topic Configuration","url":"https://kafka.apache.org/43/configuration/topic-configs/"}
+        ],
+        "evidenceLevel": "spec-verified",
+        "evidenceNote": "Official Apache Kafka documentation was reachable on 2026-09-27 and supports partition-scoped offsets, distinct current and committed positions, manual assignment, beginning/end watermarks, read_committed last-stable-offset behavior, valid offset gaps, secure authentication and topic retention/compaction configuration. No Apache Kafka cluster, managed Kafka tenant, customer authentication, live read, ACL denial, outage recovery, hosted proof or production certification was executed.",
+        "valueOpportunities": [
+          "Reuse one event-stream path across ERP, MES, maintenance, quality, access, IoT, energy, logistics and workforce sources instead of bespoke point-to-point polling",
+          "Scale from one low-volume topic to thousands of partitions while preserving per-partition ordering, replay isolation and regional ownership",
+          "Detect retention loss, truncation, partial reads and conflicting replays before incomplete data reaches schedules, payroll preparation or operational decisions",
+          "Correlate manufacturing events with shifts, skills, labour cost and outcomes while preserving source time, lineage and non-causal boundaries",
+          "Reduce outage recovery time by retaining exact cluster/topic/partition/offset windows and failure diagnostics without mutating provider offsets"
+        ],
+        "nextBuildAction": "In an authorised non-production Kafka cluster, authenticate a least-privilege read-only principal, manually assign two test partitions, capture read_committed beginning/end watermarks, consume to the bounded end without committing offsets, and reconcile duplicates, compaction gaps, aborted transactions, retention movement, broker interruption, partition expansion, schema drift and an exact-offset payload conflict."
+      }
+    }
+  ]
+}
