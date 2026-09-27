@@ -48,7 +48,7 @@ function fixture(options = {}) {
     publicOrigin: options.publicOrigin ?? 'https://implementation.test',
     notificationRetryDelayMs: options.notificationRetryDelayMs,
     notificationRetryPollMs: options.notificationRetryPollMs ?? 0,
-    sendInvitation: async invitation => {
+    sendInvitation: options.sendInvitation || (async invitation => {
       invitationAttempts += 1;
       if (options.acceptThenFailFirstInvitation && invitationAttempts === 1) {
         sentInvitations.push(invitation);
@@ -59,7 +59,7 @@ function fixture(options = {}) {
       if (options.failInvitationDelivery) throw new Error('simulated mail transport failure');
       sentInvitations.push(invitation);
       return { provider: 'test-mailer', messageId: 'mail-' + sentInvitations.length };
-    }
+    })
   });
 
   return {
@@ -492,6 +492,55 @@ test('failed invitation retries stop at a durable three-attempt budget', async (
     assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_FAILED'").get().count, 3);
     db.close();
   } finally {
+    f.close();
+  }
+});
+
+test('simultaneous delayed retry and trusted replay cannot duplicate delivery or falsely exhaust recovery', async () => {
+  let attempts = 0;
+  let releaseFinalAttempt;
+  let finalAttemptStarted;
+  const finalStarted = new Promise(resolve => { finalAttemptStarted = resolve; });
+  const finalRelease = new Promise(resolve => { releaseFinalAttempt = resolve; });
+  const deliveries = [];
+  let sweep;
+  const f = fixture({
+    notificationRetryDelayMs: 0,
+    sendInvitation: async invitation => {
+      attempts += 1;
+      if (attempts <= 2) throw new Error('simulated provider outage');
+      finalAttemptStarted();
+      await finalRelease;
+      deliveries.push(invitation);
+      return { provider: 'test-mailer', messageId: 'mail-race-winner' };
+    }
+  });
+  try {
+    const event = { tenant: 'alpha', contractRef: 'contract-mail-race', targetHours: 8, recipientEmail: 'manager@alpha' };
+    const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(first.body.notification.pendingRetry, true);
+
+    sweep = f.engine.retryDueNotifications({ nowMs: Date.now() + 60_000 });
+    await finalStarted;
+    const replay = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(replay.body.notification.retryInProgress, true);
+    assert.equal(replay.body.notification.retryExhausted, false);
+
+    releaseFinalAttempt();
+    const recovery = await sweep;
+    assert.equal(recovery.delivered, 1);
+    assert.equal(deliveries.length, 1);
+    assert.equal(attempts, 3);
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(db.prepare('SELECT attempts FROM implementation_notification_attempts').get().attempts, 3);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_notification_outbox').get().count, 0);
+    assert.equal(db.prepare("SELECT COUNT(*) AS count FROM implementation_events WHERE event='CONTRACT_INVITATION_SENT'").get().count, 1);
+    db.close();
+  } finally {
+    releaseFinalAttempt?.();
+    await sweep?.catch(() => {});
     f.close();
   }
 });
