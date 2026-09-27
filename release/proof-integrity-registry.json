@@ -16,7 +16,10 @@
     "unregisteredService": "BLOCKED",
     "staleIdentity": "BLOCKED",
     "duplicateCanonicalClaim": "BLOCKED",
-    "railwaySuccessWithoutTerminalPass": "NO_PROOF"
+    "railwaySuccessWithoutTerminalPass": "NO_PROOF",
+    "unauditedPromotionRunner": "BLOCKED",
+    "sharedDurableStateOnMutatingPromotionGate": "BLOCKED",
+    "scopedPassProductReady": "FORBIDDEN"
   },
   "runners": [
     {
@@ -29,7 +32,11 @@
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": true,
+      "mutatesTarget": false,
+      "stateIsolation": "target-runtime",
+      "promotionBlocker": "TARGET_NOT_A_PROOF_GATE"
     },
     {
       "id": "hardening",
@@ -37,11 +44,15 @@
       "claim": "hardening",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "browser-role-e2e",
@@ -49,11 +60,15 @@
       "claim": "browser-role-e2e",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": true,
+      "mutatesTarget": true,
+      "stateIsolation": "shared-durable-tenant",
+      "promotionBlocker": "MUTATING_PROOF_REQUIRES_IMMUTABLE_SEED_PER_RUN"
     },
     {
       "id": "implementation-semantic",
@@ -61,11 +76,15 @@
       "claim": "implementation-semantic",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": true,
+      "mutatesTarget": true,
+      "stateIsolation": "shared-durable-tenant",
+      "promotionBlocker": "MUTATING_PROOF_REQUIRES_IMMUTABLE_SEED_PER_RUN"
     },
     {
       "id": "golden-status",
@@ -73,11 +92,15 @@
       "claim": "golden-handoff-status",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "read-only",
+      "promotionBlocker": "HEALTH_DOES_NOT_YET_PROVE_TERMINAL_APPLICATION_PASS"
     },
     {
       "id": "persistence-verify",
@@ -85,11 +108,15 @@
       "claim": "persistence-restart",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "security-live-v2",
@@ -97,11 +124,15 @@
       "claim": "security-live",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "security-exact",
@@ -109,11 +140,15 @@
       "claim": "security-exact",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "autopilot-live",
@@ -121,11 +156,15 @@
       "claim": "autopilot-execute-verify",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "autopilot-rollback",
@@ -133,11 +172,15 @@
       "claim": "autopilot-rollback",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "outcome-learning",
@@ -145,11 +188,15 @@
       "claim": "outcome-learning",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "sandbox-integration",
@@ -157,11 +204,15 @@
       "claim": "integration-roundtrip",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "zero-touch-hosted",
@@ -169,11 +220,15 @@
       "claim": "zero-touch-implementation",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "convergence-admission",
@@ -181,11 +236,15 @@
       "claim": "convergence-admission",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "implementation-source-handoff",
@@ -193,11 +252,15 @@
       "claim": "implementation-source-handoff",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "implementation-environment-autowire",
@@ -205,11 +268,15 @@
       "claim": "implementation-environment-autowire",
       "role": "canonical",
       "lifecycle": "active",
-      "promotionEligible": true,
+      "promotionEligible": false,
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "persistence-seed-fast",
@@ -221,7 +288,11 @@
       "identityBinding": "service-reference",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "HELPER_RUNNER"
     },
     {
       "id": "persistence-seed-20260926",
@@ -233,7 +304,11 @@
       "identityBinding": "service-reference",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "HELPER_RUNNER"
     },
     {
       "id": "zero-touch-autostart",
@@ -245,7 +320,11 @@
       "identityBinding": "service-reference",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "HELPER_RUNNER"
     },
     {
       "id": "outcome-learning-tdd",
@@ -257,7 +336,11 @@
       "identityBinding": "service-reference",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "HELPER_RUNNER"
     },
     {
       "id": "fresh-browser-c5f",
@@ -269,7 +352,11 @@
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "live-browser",
@@ -281,7 +368,11 @@
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "security-live-fast",
@@ -293,7 +384,11 @@
       "identityBinding": "runtime-identity-endpoint",
       "terminalProofOwnsHealth": true,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "STATUS_SEMANTICS_NOT_AUDITED"
     },
     {
       "id": "external-verifier-fast",
@@ -305,7 +400,11 @@
       "identityBinding": "none",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "RETIRED_RUNNER"
     },
     {
       "id": "implementation-schema",
@@ -317,7 +416,11 @@
       "identityBinding": "none",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "RETIRED_RUNNER"
     },
     {
       "id": "outcome-learning-red",
@@ -329,7 +432,11 @@
       "identityBinding": "none",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "NEGATIVE_RUNNER"
     },
     {
       "id": "outcome-learning-red-v2",
@@ -341,7 +448,11 @@
       "identityBinding": "none",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "NEGATIVE_RUNNER"
     },
     {
       "id": "clean-browser-target",
@@ -353,7 +464,16 @@
       "identityBinding": "none",
       "terminalProofOwnsHealth": false,
       "deploymentSuccessCountsAsPass": false,
-      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac"
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "statusSemanticsAudited": false,
+      "mutatesTarget": false,
+      "stateIsolation": "unverified",
+      "promotionBlocker": "RETIRED_RUNNER"
     }
-  ]
+  ],
+  "productReadiness": {
+    "scopePassNeverImpliesProductReady": true,
+    "requiresExplicitAggregateGate": true,
+    "aggregateGateId": "customer-proof-gate"
+  }
 }
