@@ -5,6 +5,13 @@ import assert from 'node:assert/strict';
 const overlay=JSON.parse(fs.readFileSync(new URL('../research-overlays/2026-09-27-0409-infor-cloudsuite-industrial.json',import.meta.url),'utf8'));
 const patch=overlay.overrides.find(entry=>entry.id==='infor-cloudsuite-industrial')?.patch;
 
+test('Infor research overlay satisfies canonical catalogue admission shape',()=>{
+  assert.equal(overlay.schemaVersion,1);
+  assert.equal(Array.isArray(overlay.protocolFamilies),true);
+  assert.equal(Array.isArray(overlay.overrides),true);
+  assert.equal(Array.isArray(overlay.systems),true);
+});
+
 test('Infor CSI is promoted only to documentation-backed read-only evidence',()=>{
   assert.ok(patch);
   assert.equal(patch.testLevel,'spec-verified');
