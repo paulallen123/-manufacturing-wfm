@@ -246,14 +246,14 @@ function createOneDayEnterpriseEngine(options = {}) {
           body: JSON.stringify({
             from,
             to: [to],
-            subject: 'Your implementation is ready to start',
+            subject: 'Your implementation workspace is open',
             text: [
               'Your workforce implementation workspace is ready.',
               '',
               'Open your secure implementation link:',
               startUrl,
               '',
-              'Nothing starts until you select “Go ahead and start” inside the workspace.',
+              'Your implementation run opened when your contract was activated. Review progress and outstanding steps in the workspace.',
               'The link expires ' + expiresAt + '.'
             ].join('\n')
           })
