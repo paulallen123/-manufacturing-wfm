@@ -38,6 +38,9 @@ jobs:
           node scripts/validate-deployment.mjs
           node scripts/validate-resilience-scenarios.mjs
 
+      - name: Enforce proof integrity contract
+        run: node --test scripts/proof-integrity-contract.test.mjs
+
       - name: Prove guard source uses only reviewed local or Node built-in modules
         shell: bash
         run: |
