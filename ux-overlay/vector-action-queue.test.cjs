@@ -8,7 +8,7 @@ function loadVectorHelpers() {
   const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
   const instrumented = source.replace(
     'window.VectorWorkforceOperations={marker:MARKER',
-    'window.VectorWorkforceOperations={alertsMarkup,marker:MARKER'
+    'window.VectorWorkforceOperations={alertsMarkup,readActionContext,rememberActionContext,marker:MARKER'
   );
   assert.notEqual(instrumented, source, 'Vector action markup test hook could not be attached.');
   const classList = { add() {}, remove() {}, toggle() {} };
@@ -24,7 +24,14 @@ function loadVectorHelpers() {
     MutationObserver: class { observe() {} disconnect() {} },
     setTimeout() { return 0; },
     queueMicrotask() {},
-    sessionStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
+    sessionStorage: (() => {
+      const values = new Map();
+      return {
+        getItem(key) { return values.has(key) ? values.get(key) : null; },
+        setItem(key, value) { values.set(key, String(value)); },
+        removeItem(key) { values.delete(key); }
+      };
+    })(),
     URL,
     Intl,
     Date,
@@ -36,6 +43,28 @@ function loadVectorHelpers() {
   vm.runInContext(instrumented, sandbox, { filename: 'vector-shell.js' });
   return sandbox.window.VectorWorkforceOperations;
 }
+
+test('Time Review action context uses the canonical attendance route end to end', () => {
+  const vector = loadVectorHelpers();
+  assert.equal(vector.rememberActionContext({
+    sourceId: 'issue-1',
+    workflow: 'time-review',
+    route: 'attendance',
+    title: 'Missing clock-out'
+  }), true);
+  const context = vector.readActionContext();
+  assert.equal(context?.workflow, 'time-review');
+  assert.equal(context?.route, 'attendance');
+  assert.equal(context?.sourceId, 'issue-1');
+  assert.equal(vector.rememberActionContext({
+    sourceId: 'issue-2',
+    workflow: 'time-review',
+    route: 'time-review',
+    title: 'Legacy route'
+  }), false);
+  const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
+  assert.match(source, /if\(page\(\)!=='attendance'\|\|!ctx\)/);
+});
 
 test('source lifecycle is partitioned without presentation-word inference', () => {
   const vector = loadVectorHelpers();
@@ -71,7 +100,7 @@ test('rendered action queue keeps source-confirming work collapsed, visible and 
     confirmationState,
     detail: 'Source-owned evidence',
     tone: 'blue',
-    route: 'time-review',
+    route: 'attendance',
     action: 'Review'
   });
   const html = vector.alertsMarkup([
