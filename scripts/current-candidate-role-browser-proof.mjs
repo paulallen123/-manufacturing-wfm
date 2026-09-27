@@ -1213,11 +1213,26 @@ try {
     assert.equal(persisted?.status, 'signed');
     assert.equal(persisted?.signature?.revision, revision);
     assert.match(await attendanceManagerPage.locator('.vw-panel').innerText(), /signed · revision/i);
+
+    // Verify each sign-off's domain audit immediately, before later review activity
+    // can move older events outside the bounded payroll response window.
+    const auditReadBack = await attendancePayrollPage.evaluate(async period => {
+      const response = await fetch('/api/payroll-run?period=' + encodeURIComponent(period), { cache: 'no-store' });
+      return { status: response.status, json: await response.json() };
+    }, period);
+    assert.equal(auditReadBack.status, 200, `Payroll audit readback failed after signing ${targetTeamId}.`);
+    const signAudit = auditReadBack.json.audit.find(item =>
+      item.type === 'team-signed' &&
+      item.team === targetTeamId &&
+      item.actor === persisted.signature.by
+    );
+    assert.ok(signAudit, `Signed team ${targetTeamId} is missing its immediate domain audit.`);
+    assert.equal(signAudit.revision, revision, `Sign-off audit revision mismatch for ${targetTeamId}.`);
     return {
       teamId: targetTeamId,
       submittedRevision: revision,
       signatureRevision: persisted.signature.revision,
-      auditRevision: null,
+      auditRevision: signAudit.revision,
       refreshedStatus: persisted.status
     };
   }
@@ -1294,11 +1309,13 @@ try {
   assert.equal(readyPayroll.json.reconciliation.ok, true);
   assert.ok(readyPayroll.json.lines.length > 0, 'Reconciled payroll has no export rows.');
   for (const evidence of payrollJourney.teamSignOffs) {
-    const audit = readyPayroll.json.audit.find(item => item.type === 'team-signed' && item.team === evidence.teamId && item.actor === 'm1');
-    assert.ok(audit, `Signed team ${evidence.teamId} is missing its domain audit.`);
-    assert.equal(audit.revision, evidence.submittedRevision);
-    evidence.auditRevision = audit.revision;
+    assert.equal(
+      evidence.auditRevision,
+      evidence.submittedRevision,
+      `Signed team ${evidence.teamId} did not retain exact domain-audit evidence from its sign-off readback.`
+    );
   }
+  console.log('CURRENT_ALL_TEAM_DOMAIN_AUDIT=PASS|teams=' + payrollJourney.teamSignOffs.map(item => item.teamId + ':' + item.auditRevision).join(','));
 
   await attendancePayrollPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
   await attendancePayrollPage.waitForFunction(() => document.querySelector('button[data-vector-workflow="release"]'), { timeout: 30000 });
