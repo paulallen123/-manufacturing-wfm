@@ -900,8 +900,8 @@ try {
     let employeeOpened = false;
     for (let attempt = 0; attempt < 4 && !employeeOpened; attempt += 1) {
       const employeeAction = attendanceManagerPage.locator(employeeSelector);
-      await employeeAction.evaluate(button => { const details = button.closest('details'); if (details) details.open = true; });
       try {
+        await employeeAction.evaluate(button => { const details = button.closest('details'); if (details) details.open = true; });
         await employeeAction.waitFor({ state: 'visible', timeout: 10000 });
         await employeeAction.scrollIntoViewIfNeeded({ timeout: 5000 });
         await employeeAction.click({ timeout: 5000 });
