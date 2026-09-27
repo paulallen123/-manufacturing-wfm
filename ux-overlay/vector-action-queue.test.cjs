@@ -8,11 +8,12 @@ function loadVectorHelpers() {
   const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
   const instrumented = source.replace(
     'window.VectorWorkforceOperations={marker:MARKER',
-    'window.VectorWorkforceOperations={alertsMarkup,marker:MARKER'
+    'window.VectorWorkforceOperations={alertsMarkup,timeReviewEvidencePath,marker:MARKER'
   );
   assert.notEqual(instrumented, source, 'Vector action markup test hook could not be attached.');
   const classList = { add() {}, remove() {}, toggle() {} };
   const sandbox = {
+    RF: { period: '2026-09-07' },
     window: { render: undefined, addEventListener() {}, location: { href: 'https://example.test/' } },
     document: {
       addEventListener() {},
@@ -110,4 +111,13 @@ test('action ordering cannot create synthetic urgency styling', () => {
   const css = fs.readFileSync(path.join(__dirname, 'vector-shell.css'), 'utf8');
   assert.doesNotMatch(css, /\.vector-alert-row:first-child>button\s*\{/);
   assert.match(css, /\.vector-alert-row>button\{[^}]*background:#edf3fb;[^}]*color:#355375;/);
+});
+
+
+test('Time Review action evidence follows the active source review period', () => {
+  const vector = loadVectorHelpers();
+  assert.equal(
+    vector.timeReviewEvidencePath(),
+    '/api/workforce/lifecycle/action-evidence/time-review?period=2026-09-07'
+  );
 });
