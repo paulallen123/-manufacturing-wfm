@@ -398,6 +398,43 @@ test('failed invitation retries stop at a durable three-attempt budget', async (
   }
 });
 
+test('failed invitation can be recovered after a safe engine restart', async () => {
+  const f = fixture({ failInvitationDelivery: true });
+  let restarted;
+  let originalClosed = false;
+  try {
+    const event = { tenant: 'alpha', contractRef: 'contract-mail-restart', targetHours: 8, recipientEmail: 'manager@alpha' };
+    const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(first.body.notification.delivered, false);
+    f.engine.close();
+    originalClosed = true;
+    const delivered = [];
+    restarted = createOneDayEnterpriseEngine({
+      dbPath: f.dbPath,
+      internalToken: 'implementation-worker-test-token',
+      contractWebhookSecret: 'contract-webhook-test-token',
+      publicOrigin: 'https://implementation.test',
+      sendInvitation: async invitation => {
+        delivered.push(invitation);
+        return { provider: 'test-mailer', messageId: 'mail-after-restart' };
+      }
+    });
+    const second = await call(restarted, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(second.status, 200);
+    assert.equal(second.body.implementation.runId, first.body.implementation.runId);
+    assert.equal(second.body.notification.delivered, true);
+    assert.equal(delivered.length, 1);
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
+    assert.equal(db.prepare('SELECT attempts FROM implementation_notification_attempts').get().attempts, 2);
+    db.close();
+  } finally {
+    restarted?.close();
+    if (!originalClosed) f.engine.close();
+    fs.rmSync(f.dir, { recursive: true, force: true });
+  }
+});
+
 test('missing public origin does not block trusted implementation start or create a token', async () => {
   const f = fixture({ publicOrigin: '' });
   try {
