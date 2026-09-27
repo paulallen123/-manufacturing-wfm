@@ -5,5 +5,6 @@ COPY implementation/runtime/ /app/implementation/runtime/
 COPY scripts/implementation-source-handoff-proof.cjs /app/scripts/implementation-source-handoff-proof.cjs
 RUN node --check /app/integration/runtime/autonomous-integration-hub.cjs \
  && node --check /app/implementation/runtime/one-day-enterprise-engine-core.cjs \
- && node --check /app/scripts/implementation-source-handoff-proof.cjs
+ && node --check /app/scripts/implementation-source-handoff-proof.cjs \
+ && node --test /app/integration/runtime/autonomous-integration-hub.test.cjs /app/implementation/runtime/one-day-enterprise-engine.test.cjs
 CMD ["node","scripts/implementation-source-handoff-proof.cjs"]
