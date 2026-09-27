@@ -253,6 +253,15 @@ function createAutonomousIntegrationHub(options = {}) {
       'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, connection_id TEXT NOT NULL, mapping_version INTEGER NOT NULL,' +
       'source_count INTEGER NOT NULL, valid_count INTEGER NOT NULL, invalid_count INTEGER NOT NULL,' +
       'duplicate_count INTEGER NOT NULL, id_digest TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL);' +
+    'CREATE TABLE IF NOT EXISTS integration_canonical_batches(' +
+      'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, connection_id TEXT NOT NULL, mapping_version INTEGER NOT NULL,' +
+      'batch_checksum TEXT NOT NULL, source_count INTEGER NOT NULL, record_count INTEGER NOT NULL,' +
+      'site_count INTEGER NOT NULL, department_count INTEGER NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL,' +
+      'UNIQUE(tenant,connection_id,mapping_version,batch_checksum));' +
+    'CREATE TABLE IF NOT EXISTS integration_canonical_people(' +
+      'batch_id TEXT NOT NULL, tenant TEXT NOT NULL, connection_id TEXT NOT NULL, employee_key TEXT NOT NULL,' +
+      'record_checksum TEXT NOT NULL, canonical_json TEXT NOT NULL, created_at TEXT NOT NULL,' +
+      'PRIMARY KEY(batch_id,employee_key));' +
     'CREATE TABLE IF NOT EXISTS integration_events(' +
       'id INTEGER PRIMARY KEY AUTOINCREMENT, tenant TEXT, connection_id TEXT, event TEXT NOT NULL,' +
       'detail_json TEXT NOT NULL, created_at TEXT NOT NULL);' +
@@ -318,6 +327,18 @@ function createAutonomousIntegrationHub(options = {}) {
   const insertRecon = db.prepare(
     'INSERT INTO integration_reconciliation_runs(id,tenant,connection_id,mapping_version,source_count,valid_count,invalid_count,duplicate_count,id_digest,status,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
   );
+  const canonicalBatchByChecksum = db.prepare(
+    'SELECT * FROM integration_canonical_batches WHERE tenant=? AND connection_id=? AND mapping_version=? AND batch_checksum=?'
+  );
+  const latestCanonicalBatch = db.prepare(
+    "SELECT * FROM integration_canonical_batches WHERE tenant=? AND connection_id=? AND status='PASS' ORDER BY rowid DESC LIMIT 1"
+  );
+  const insertCanonicalBatch = db.prepare(
+    'INSERT INTO integration_canonical_batches(id,tenant,connection_id,mapping_version,batch_checksum,source_count,record_count,site_count,department_count,status,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
+  );
+  const insertCanonicalPerson = db.prepare(
+    'INSERT INTO integration_canonical_people(batch_id,tenant,connection_id,employee_key,record_checksum,canonical_json,created_at) VALUES(?,?,?,?,?,?,?)'
+  );
   const eventStmt = db.prepare(
     'INSERT INTO integration_events(tenant,connection_id,event,detail_json,created_at) VALUES(?,?,?,?,?)'
   );
@@ -330,11 +351,14 @@ function createAutonomousIntegrationHub(options = {}) {
   function hasValidatedPeopleSync(connection) {
     const grants = safeJsonParse(connection.granted_scopes_json, []);
     const recon = lastRecon.get(connection.tenant, connection.id);
+    const batch = latestCanonicalBatch.get(connection.tenant, connection.id);
     return Boolean(connection.credential_ref) && grants.includes('people.read') &&
       Number(connection.mapping_version) > 0 &&
       recon?.status === 'PASS' && Number(recon.mapping_version) === Number(connection.mapping_version) &&
       Number(recon.source_count) > 0 && Number(recon.valid_count) === Number(recon.source_count) &&
-      Number(recon.invalid_count) === 0 && Number(recon.duplicate_count) === 0;
+      Number(recon.invalid_count) === 0 && Number(recon.duplicate_count) === 0 &&
+      batch?.status === 'PASS' && Number(batch.mapping_version) === Number(connection.mapping_version) &&
+      Number(batch.record_count) === Number(recon.valid_count);
   }
 
   function record(tenant, connectionId, event, detail = {}) {
@@ -413,7 +437,21 @@ function createAutonomousIntegrationHub(options = {}) {
         duplicateCount: recon.duplicate_count,
         status: recon.status,
         createdAt: recon.created_at
-      } : null
+      } : null,
+      canonicalImport: (() => {
+        const batch = latestCanonicalBatch.get(row.tenant, row.id);
+        if (!batch || Number(batch.mapping_version) !== Number(row.mapping_version)) return null;
+        return {
+          batchId: batch.id,
+          mappingVersion: batch.mapping_version,
+          checksum: batch.batch_checksum,
+          recordCount: batch.record_count,
+          siteCount: batch.site_count,
+          departmentCount: batch.department_count,
+          status: batch.status,
+          createdAt: batch.created_at
+        };
+      })()
     };
   }
 
@@ -670,44 +708,126 @@ function createAutonomousIntegrationHub(options = {}) {
 
   async function handleSyncValidate(req, res) {
     const body = await readJson(req, maxBodyBytes);
+    const requestedTenant = compact(body.tenant, 120);
+    if (!requestedTenant) return writeJson(res, 400, { error: 'tenant is required for source-data validation.' });
     const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
+    if (requestedTenant !== connection.tenant) {
+      record(connection.tenant, connection.id, 'cross-tenant-sync-rejected', {
+        requestedTenantDigest: sha256(requestedTenant).slice(0, 16)
+      });
+      return writeJson(res, 403, { error: 'Connection does not belong to the requested tenant.' });
+    }
     if (!['VALIDATING', 'ACTIVE', 'DEGRADED'].includes(connection.state)) {
       return writeJson(res, 409, { error: 'Connection is not ready for validation.' });
     }
     if (!connection.credential_ref || !safeJsonParse(connection.granted_scopes_json, []).includes('people.read')) {
       return writeJson(res, 409, { error: 'An attested people.read grant is required before validating people records.' });
     }
-    if (!Array.isArray(body.records) || body.records.length > 500) {
-      return writeJson(res, 400, { error: 'records must be an array with at most 500 items.' });
+    if (!Array.isArray(body.records) || body.records.length < 1 || body.records.length > 500) {
+      return writeJson(res, 400, { error: 'records must contain between 1 and 500 items.' });
     }
 
     const mappings = activeMappings.all(connection.tenant, connection.id, Number(connection.mapping_version));
     if (!mappings.length) return writeJson(res, 409, { error: 'Activate mappings before validating a sync.' });
 
     const ids = [];
+    const canonicalRecords = [];
     let invalid = 0;
     const seen = new Set();
     let duplicateCount = 0;
     for (const record of body.records) {
       if (!record || typeof record !== 'object' || Array.isArray(record)) { invalid++; continue; }
       const canonical = {};
-      for (const mapping of mappings) canonical[mapping.canonical_field] = record[mapping.source_field];
+      for (const mapping of mappings) {
+        const value = record[mapping.source_field];
+        if (value === undefined || value === null) continue;
+        canonical[mapping.canonical_field] = typeof value === 'string' ? value.trim() : value;
+      }
       const employeeId = canonical.employeeId === undefined || canonical.employeeId === null ? '' : String(canonical.employeeId).trim();
       if (!employeeId) { invalid++; continue; }
       const hashedId = sha256(employeeId);
-      if (seen.has(hashedId)) duplicateCount++;
+      if (seen.has(hashedId)) {
+        duplicateCount++;
+        continue;
+      }
       seen.add(hashedId);
       ids.push(hashedId);
+      const normalized = {};
+      for (const field of CANONICAL_FIELDS.Person) {
+        if (canonical[field] === undefined || canonical[field] === null || canonical[field] === '') continue;
+        normalized[field] = canonical[field];
+      }
+      canonicalRecords.push({
+        employeeKey: hashedId,
+        recordChecksum: sha256(JSON.stringify(CANONICAL_FIELDS.Person.map(field => [field, normalized[field] ?? null]))),
+        canonical: normalized
+      });
     }
 
-    const valid = Math.max(0, body.records.length - invalid);
-    const status = invalid === 0 && duplicateCount === 0 ? 'PASS' : 'NEEDS_REVIEW';
-    const idDigest = sha256(ids.sort().join('|'));
+    const valid = canonicalRecords.length;
+    const status = invalid === 0 && duplicateCount === 0 && valid === body.records.length ? 'PASS' : 'NEEDS_REVIEW';
+    const idDigest = sha256(ids.slice().sort().join('|'));
     insertRecon.run(
       randomUUID(), connection.tenant, connection.id, Number(connection.mapping_version), body.records.length,
       valid, invalid, duplicateCount, idDigest, status, nowIso()
     );
+
+    let canonicalImport = null;
+    if (status === 'PASS') {
+      const batchChecksum = sha256([
+        connection.id,
+        String(connection.mapping_version),
+        ...canonicalRecords.map(item => item.recordChecksum).sort()
+      ].join('|'));
+      let batch = canonicalBatchByChecksum.get(
+        connection.tenant, connection.id, Number(connection.mapping_version), batchChecksum
+      );
+      let replayed = Boolean(batch);
+      if (!batch) {
+        const batchId = randomUUID();
+        const stamp = nowIso();
+        const sites = new Set(canonicalRecords.map(item => compact(item.canonical.location, 180)).filter(Boolean));
+        const departments = new Set(canonicalRecords.map(item => compact(item.canonical.department, 180)).filter(Boolean));
+        db.exec('BEGIN IMMEDIATE');
+        try {
+          batch = canonicalBatchByChecksum.get(
+            connection.tenant, connection.id, Number(connection.mapping_version), batchChecksum
+          );
+          if (!batch) {
+            insertCanonicalBatch.run(
+              batchId, connection.tenant, connection.id, Number(connection.mapping_version), batchChecksum,
+              body.records.length, canonicalRecords.length, sites.size, departments.size, 'PASS', stamp
+            );
+            for (const item of canonicalRecords) {
+              insertCanonicalPerson.run(
+                batchId, connection.tenant, connection.id, item.employeeKey, item.recordChecksum,
+                JSON.stringify(item.canonical), stamp
+              );
+            }
+            batch = canonicalBatchByChecksum.get(
+              connection.tenant, connection.id, Number(connection.mapping_version), batchChecksum
+            );
+            replayed = false;
+          } else {
+            replayed = true;
+          }
+          db.exec('COMMIT');
+        } catch (error) {
+          try { db.exec('ROLLBACK'); } catch {}
+          throw error;
+        }
+      }
+      canonicalImport = {
+        batchId: batch.id,
+        mappingVersion: batch.mapping_version,
+        checksum: batch.batch_checksum,
+        recordCount: batch.record_count,
+        siteCount: batch.site_count,
+        departmentCount: batch.department_count,
+        replayed
+      };
+    }
 
     const nextState = status === 'PASS' ? 'ACTIVE' : 'DEGRADED';
     const failureClass = status === 'PASS' ? null : 'DATA_VALIDATION';
@@ -716,11 +836,15 @@ function createAutonomousIntegrationHub(options = {}) {
     const updated = connectionById.get(connection.id, connection.tenant);
     record(connection.tenant, connection.id, 'sync-validation-completed', {
       sourceCount: body.records.length, validCount: valid, invalidCount: invalid,
-      duplicateCount, status, mappingVersion: connection.mapping_version
+      duplicateCount, status, mappingVersion: connection.mapping_version,
+      canonicalBatchId: canonicalImport?.batchId || null,
+      canonicalBatchChecksum: canonicalImport?.checksum || null,
+      replayed: canonicalImport?.replayed || false
     });
     return writeJson(res, 200, {
       connection: publicConnection(updated),
-      reconciliation: { sourceCount: body.records.length, validCount: valid, invalidCount: invalid, duplicateCount, status }
+      reconciliation: { sourceCount: body.records.length, validCount: valid, invalidCount: invalid, duplicateCount, status },
+      canonicalImport
     });
   }
 
