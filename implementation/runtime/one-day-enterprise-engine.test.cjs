@@ -496,6 +496,36 @@ test('failed invitation retries stop at a durable three-attempt budget', async (
   }
 });
 
+test('implementation status explains pending and exhausted invitation recovery without exposing secrets', async () => {
+  const f = fixture({ failInvitationDelivery: true });
+  try {
+    const event = { tenant: 'alpha', contractRef: 'contract-mail-health', targetHours: 8, recipientEmail: 'manager@alpha' };
+    const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(first.body.notification.pendingRetry, true);
+
+    const recovering = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
+    assert.equal(recovering.status, 200);
+    assert.equal(recovering.body.notificationRecovery.state, 'RECOVERING');
+    assert.equal(recovering.body.notificationRecovery.attempts, 2);
+    assert.equal(recovering.body.notificationRecovery.remainingAttempts, 1);
+    assert.ok(recovering.body.notificationRecovery.nextRetryAt);
+    assert.equal('recipientEmail' in recovering.body.notificationRecovery, false);
+    assert.equal('startUrl' in recovering.body.notificationRecovery, false);
+    assert.equal('contractRef' in recovering.body.notificationRecovery, false);
+
+    const final = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
+    assert.equal(final.body.notification.retryExhausted, true);
+    const exhausted = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
+    assert.equal(exhausted.body.notificationRecovery.state, 'EXHAUSTED');
+    assert.equal(exhausted.body.notificationRecovery.attempts, 3);
+    assert.equal(exhausted.body.notificationRecovery.remainingAttempts, 0);
+    assert.equal(exhausted.body.notificationRecovery.automaticActionAvailable, false);
+    assert.equal(exhausted.body.notificationRecovery.terminalAction, 'PROVIDER_OR_ADMIN_AUTHORIZATION_REQUIRED');
+  } finally {
+    f.close();
+  }
+});
+
 test('failed invitation is retried automatically after a safe engine restart', async () => {
   const f = fixture({ failInvitationDelivery: true, notificationRetryDelayMs: 0 });
   let restarted;
