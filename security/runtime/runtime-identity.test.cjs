@@ -171,3 +171,32 @@ test('downstream handlers cannot replace or remove source proof headers', async 
     await new Promise(resolve => server.close(resolve));
   }
 });
+
+test('raw writeHead arrays emit each source proof header exactly once', async () => {
+  const identity = hostedIdentity();
+  const server = http.createServer((_req, res) => {
+    identity.applyResponseHeaders(res);
+    res.writeHead(200, 'OK', [
+      'X-WFM-Source-SHA', OTHER_SHA,
+      'X-WFM-Source-Binding', 'wrong',
+      'X-WFM-Fixture-Only', 'false'
+    ]);
+    res.end('ok');
+  });
+
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const response = await new Promise((resolve, reject) => {
+      http.get({ host: '127.0.0.1', port: server.address().port, path: '/' }, resolve)
+        .on('error', reject);
+    });
+    response.resume();
+    await new Promise(resolve => response.once('end', resolve));
+
+    assert.equal(response.headers['x-wfm-source-sha'], CANDIDATE_SHA);
+    assert.equal(response.headers['x-wfm-source-binding'], 'build-file-matched');
+    assert.equal(response.headers['x-wfm-fixture-only'], 'true');
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
+});
