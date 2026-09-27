@@ -896,10 +896,23 @@ try {
   }
 
   for (const employee of completionTeam.employees.filter(item => !item.checked)) {
-    const employeeAction = attendanceManagerPage.locator(`button[data-vector-workflow="employee"][data-id="${employee.id}"]`);
-    await employeeAction.evaluate(button => { const details = button.closest('details'); if (details) details.open = true; });
-    await employeeAction.waitFor({ state: 'visible', timeout: 10000 });
-    await employeeAction.click({ timeout: 5000 });
+    const employeeSelector = `button[data-vector-workflow="employee"][data-id="${employee.id}"]`;
+    let employeeOpened = false;
+    for (let attempt = 0; attempt < 4 && !employeeOpened; attempt += 1) {
+      const employeeAction = attendanceManagerPage.locator(employeeSelector);
+      await employeeAction.evaluate(button => { const details = button.closest('details'); if (details) details.open = true; });
+      try {
+        await employeeAction.waitFor({ state: 'visible', timeout: 10000 });
+        await employeeAction.scrollIntoViewIfNeeded({ timeout: 5000 });
+        await employeeAction.click({ timeout: 5000 });
+        employeeOpened = true;
+      } catch (error) {
+        const retryable = /detached|not stable|not visible|Timeout/i.test(String(error?.message || error));
+        if (!retryable || attempt === 3) throw error;
+        await attendanceManagerPage.waitForTimeout(150);
+      }
+    }
+    assert.equal(employeeOpened, true, `Weekly employee action ${employee.id} could not be opened actionably.`);
     await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
     const checkResponsePromise = attendanceManagerPage.waitForResponse(response => {
       if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
