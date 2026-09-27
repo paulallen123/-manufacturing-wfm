@@ -19,6 +19,7 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     'domainAuditReadBack',
     'refreshedUiRetainedCorrection',
     'weeklySignStillBlocked',
+    'weeklySignOffCompleted',
     'payrollReleaseStillBlocked'
   ];
   const scopedLeaveJourneyVerified = leaveChecks.every(key => leaveJourney?.[key] === true);
@@ -37,9 +38,9 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
       ...(scopedLeaveJourneyVerified ? [] : ['UI-triggered-business-action', 'persisted-state-readback', 'updated-UI-after-reload']),
       ...(leaveJourney?.freshBalanceReconciled === true ? [] : ['leave-balance-reconciliation']),
       ...(scopedAttendanceJourneyVerified ? [] : ['attendance-correction-business-action']),
+      ...(attendanceJourney?.weeklySignOffCompleted === true ? [] : ['weekly-sign-off-business-action']),
       'server-audit-readback',
       'exact-backend-binding',
-      'weekly-sign-off-business-action',
       'payroll-reconciliation-business-action',
       'major-workflow-coverage'
     ]
