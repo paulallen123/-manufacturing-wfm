@@ -1,24 +1,58 @@
 'use strict';
 
+const fs = require('node:fs');
+
 const COMMIT_SHA = /^[0-9a-f]{40}$/;
+const DEFAULT_BUILD_SHA_FILE = '/app/.wfm-build-source-sha';
 
 function requestPath(req) {
   return String(req?.url || '/').split('?')[0];
 }
 
-function createRuntimeIdentity({ env = process.env, hosted = env.WFM_HOSTED_STAGING === 'true' } = {}) {
-  const candidateSha = String(env.WFM_CANDIDATE_SHA || '').trim().toLowerCase();
+function createRuntimeIdentity({
+  env = process.env,
+  hosted = env.WFM_HOSTED_STAGING === 'true',
+  readFileSync = fs.readFileSync
+} = {}) {
+  const expectedSha = String(env.WFM_CANDIDATE_SHA || '').trim().toLowerCase();
+  const buildShaFile = String(env.WFM_BUILD_SOURCE_SHA_FILE || DEFAULT_BUILD_SHA_FILE).trim();
+  let buildSha = '';
 
-  if (hosted && !candidateSha) {
+  if (hosted && !expectedSha) {
     throw new Error('WFM_RUNTIME_IDENTITY_SHA_REQUIRED');
   }
-  if (candidateSha && !COMMIT_SHA.test(candidateSha)) {
+  if (expectedSha && !COMMIT_SHA.test(expectedSha)) {
     throw new Error('WFM_RUNTIME_IDENTITY_SHA_INVALID');
   }
+
+  try {
+    buildSha = String(readFileSync(buildShaFile, 'utf8')).trim().toLowerCase();
+  } catch {
+    if (hosted) throw new Error('WFM_RUNTIME_IDENTITY_BUILD_SHA_REQUIRED');
+  }
+  if (hosted && !buildSha) {
+    throw new Error('WFM_RUNTIME_IDENTITY_BUILD_SHA_REQUIRED');
+  }
+  if (buildSha && !COMMIT_SHA.test(buildSha)) {
+    throw new Error('WFM_RUNTIME_IDENTITY_BUILD_SHA_INVALID');
+  }
+  if (expectedSha && buildSha && expectedSha !== buildSha) {
+    throw new Error('WFM_RUNTIME_IDENTITY_SHA_MISMATCH');
+  }
+
+  const candidateSha = buildSha || expectedSha;
+  const sourceBinding = buildSha && expectedSha
+    ? 'build-file-matched'
+    : buildSha
+      ? 'build-file-only'
+      : expectedSha
+        ? 'configured-only'
+        : 'unbound';
 
   const payload = Object.freeze({
     schemaVersion: 1,
     candidateSha: candidateSha || null,
+    sourceBinding,
     fixtureOnly: Boolean(hosted),
     productionApproved: false,
     pilotReady: false
