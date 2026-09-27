@@ -1,6 +1,14 @@
 'use strict';
 
-const { createHash, randomBytes, randomUUID, timingSafeEqual } = require('node:crypto');
+const {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  createHmac,
+  randomBytes,
+  randomUUID,
+  timingSafeEqual
+} = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 
 const PREFIX = '/api/implementation/autonomous';
@@ -60,6 +68,27 @@ function nowIso() {
 
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
+}
+
+function recoveryKey(secret) {
+  return createHash('sha256').update('wfm-implementation-invitation-recovery:v1:' + String(secret)).digest();
+}
+
+function sealRecoveryValue(value, secret) {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', recoveryKey(secret), iv);
+  const encrypted = Buffer.concat([cipher.update(String(value), 'utf8'), cipher.final()]);
+  return [iv, cipher.getAuthTag(), encrypted].map(part => part.toString('base64url')).join('.');
+}
+
+function openRecoveryValue(value, secret) {
+  const parts = String(value || '').split('.').map(part => Buffer.from(part, 'base64url'));
+  if (parts.length !== 3 || parts[0].length !== 12 || parts[1].length !== 16) {
+    throw new Error('Invalid invitation recovery payload.');
+  }
+  const decipher = createDecipheriv('aes-256-gcm', recoveryKey(secret), parts[0]);
+  decipher.setAuthTag(parts[1]);
+  return Buffer.concat([decipher.update(parts[2]), decipher.final()]).toString('utf8');
 }
 
 function requestPath(req) {
@@ -226,13 +255,24 @@ function createOneDayEnterpriseEngine(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
   const contractWebhookSecret = options.contractWebhookSecret || process.env.WFM_CONTRACT_WEBHOOK_SECRET || '';
+  const dedicatedInvitationRecoverySecret = options.invitationRecoverySecret ||
+    process.env.WFM_IMPLEMENTATION_INVITATION_SECRET || '';
+  // Keep the historical internal-token fallback operational for compatibility,
+  // but never present it as production-ready: rotating an access credential
+  // must not silently make durable invitation recovery unreadable.
+  const invitationRecoverySecret = dedicatedInvitationRecoverySecret || internalToken;
+  const notificationRetryDelayMs = Math.max(0, Number(options.notificationRetryDelayMs ?? 5 * 60 * 1000));
+  const notificationRetryPollMs = Math.max(0, Number(options.notificationRetryPollMs ?? 60 * 1000));
+  const notificationAttemptLeaseMs = Math.max(1_000, Number(options.notificationAttemptLeaseMs ?? 60_000));
   const publicOrigin = String(options.publicOrigin || process.env.WFM_PUBLIC_ORIGIN || '').replace(/\/$/, '');
-  const invitationSender = typeof options.sendInvitation === 'function'
+  const hasCustomInvitationSender = typeof options.sendInvitation === 'function';
+  const resendApiKey = process.env.RESEND_API_KEY || '';
+  const invitationFromEmail = process.env.WFM_IMPLEMENTATION_FROM_EMAIL || '';
+  const invitationTransportReady = hasCustomInvitationSender || Boolean(resendApiKey && invitationFromEmail);
+  const invitationSender = hasCustomInvitationSender
     ? options.sendInvitation
-    : async ({ to, startUrl, expiresAt }) => {
-        const apiKey = process.env.RESEND_API_KEY || '';
-        const from = process.env.WFM_IMPLEMENTATION_FROM_EMAIL || '';
-        if (!apiKey || !from) {
+    : async ({ to, startUrl, expiresAt, idempotencyKey }) => {
+        if (!invitationTransportReady) {
           const error = new Error('Implementation invitation email transport is not configured.');
           error.statusCode = 503;
           throw error;
@@ -240,11 +280,12 @@ function createOneDayEnterpriseEngine(options = {}) {
         const response = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            Authorization: 'Bearer ' + apiKey,
-            'Content-Type': 'application/json'
+            Authorization: 'Bearer ' + resendApiKey,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': idempotencyKey
           },
           body: JSON.stringify({
-            from,
+            from: invitationFromEmail,
             to: [to],
             subject: 'Your implementation workspace is open',
             text: [
@@ -261,6 +302,8 @@ function createOneDayEnterpriseEngine(options = {}) {
         if (!response.ok) {
           const error = new Error('Implementation invitation email could not be delivered.');
           error.statusCode = 503;
+          error.permanent = [400, 401, 403, 404, 422].includes(Number(response.status));
+          if (error.permanent) error.code = 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED';
           throw error;
         }
         const result = await response.json().catch(() => ({}));
@@ -282,6 +325,13 @@ function createOneDayEnterpriseEngine(options = {}) {
       'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, state TEXT NOT NULL,' +
       'started_at_ms INTEGER NOT NULL, deadline_at_ms INTEGER NOT NULL, target_hours INTEGER NOT NULL,' +
       'created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(tenant,contract_ref_hash));' +
+    'CREATE TABLE IF NOT EXISTS implementation_notification_attempts(' +
+      'tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, attempts INTEGER NOT NULL,' +
+      'in_flight_until_ms INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL, PRIMARY KEY(tenant,contract_ref_hash));' +
+    'CREATE TABLE IF NOT EXISTS implementation_notification_outbox(' +
+      'tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, invitation_id TEXT NOT NULL,' +
+      'recipient_ciphertext TEXT NOT NULL, next_attempt_at_ms INTEGER NOT NULL, state TEXT NOT NULL,' +
+      'created_at TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(tenant,contract_ref_hash));' +
     'CREATE TABLE IF NOT EXISTS implementation_evidence(' +
       'id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL, tenant TEXT NOT NULL, kind TEXT NOT NULL,' +
       'status TEXT NOT NULL, confidence REAL NOT NULL, source TEXT NOT NULL, detail_json TEXT NOT NULL,' +
@@ -316,6 +366,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   ]) {
     ensureLegacyColumn(db, 'implementation_events', column, definition);
   }
+  ensureLegacyColumn(db, 'implementation_notification_attempts', 'in_flight_until_ms', 'INTEGER NOT NULL DEFAULT 0');
 
   // SQLite cannot add defaults to existing NOT NULL legacy columns in place.
   // Rebuild only when such columns would reject modern audit writes, preserving
@@ -326,6 +377,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
   );
   const invitationByContract = db.prepare('SELECT * FROM implementation_invitations WHERE tenant=? AND contract_ref_hash=?');
+  const invitationById = db.prepare('SELECT * FROM implementation_invitations WHERE id=? AND tenant=?');
   const invitationByToken = db.prepare('SELECT * FROM implementation_invitations WHERE token_hash=?');
   const latestInvitationForRecipient = db.prepare(
     'SELECT * FROM implementation_invitations WHERE tenant=? AND recipient_hash=? ORDER BY created_at DESC LIMIT 1'
@@ -333,10 +385,49 @@ function createOneDayEnterpriseEngine(options = {}) {
   const insertInvitation = db.prepare(
     'INSERT INTO implementation_invitations(id,tenant,contract_ref_hash,recipient_hash,token_hash,status,target_hours,expires_at_ms,started_run_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
   );
+  const reserveInvitationAttempt = db.prepare(
+    'INSERT INTO implementation_notification_attempts(tenant,contract_ref_hash,attempts,in_flight_until_ms,updated_at) VALUES(?,?,1,?,?) ' +
+    'ON CONFLICT(tenant,contract_ref_hash) DO UPDATE SET ' +
+      'attempts=attempts+1,in_flight_until_ms=excluded.in_flight_until_ms,updated_at=excluded.updated_at ' +
+    'WHERE attempts<3 AND COALESCE(in_flight_until_ms,0)<=?'
+  );
+  const notificationAttemptsByContract = db.prepare(
+    'SELECT attempts,in_flight_until_ms,updated_at FROM implementation_notification_attempts WHERE tenant=? AND contract_ref_hash=?'
+  );
+  const completeInvitationAttempt = db.prepare(
+    'UPDATE implementation_notification_attempts SET in_flight_until_ms=0,updated_at=? WHERE tenant=? AND contract_ref_hash=?'
+  );
   const startInvitation = db.prepare(
     "UPDATE implementation_invitations SET status='STARTED',started_run_id=?,updated_at=? WHERE id=? AND status='PENDING'"
   );
   const deleteInvitation = db.prepare('DELETE FROM implementation_invitations WHERE id=? AND status=\'PENDING\'');
+  const outboxByContract = db.prepare(
+    'SELECT * FROM implementation_notification_outbox WHERE tenant=? AND contract_ref_hash=?'
+  );
+  const upsertNotificationOutbox = db.prepare(
+    'INSERT INTO implementation_notification_outbox(' +
+      'tenant,contract_ref_hash,invitation_id,recipient_ciphertext,next_attempt_at_ms,state,created_at,updated_at' +
+    ') VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(tenant,contract_ref_hash) DO UPDATE SET ' +
+      'invitation_id=excluded.invitation_id,recipient_ciphertext=excluded.recipient_ciphertext,' +
+      'next_attempt_at_ms=excluded.next_attempt_at_ms,state=excluded.state,updated_at=excluded.updated_at'
+  );
+  const dueNotificationOutbox = db.prepare(
+    "SELECT * FROM implementation_notification_outbox WHERE state='PENDING' AND next_attempt_at_ms<=? ORDER BY next_attempt_at_ms LIMIT 25"
+  );
+  const dueNotificationOutboxForContract = db.prepare(
+    "SELECT * FROM implementation_notification_outbox WHERE tenant=? AND contract_ref_hash=? " +
+      "AND state='PENDING' AND next_attempt_at_ms<=? LIMIT 1"
+  );
+  const updateNotificationOutboxState = db.prepare(
+    'UPDATE implementation_notification_outbox SET state=?,updated_at=? WHERE tenant=? AND contract_ref_hash=?'
+  );
+  const resumeProviderBlockedOutbox = db.prepare(
+    "UPDATE implementation_notification_outbox SET state='PENDING',next_attempt_at_ms=?,updated_at=? " +
+      "WHERE tenant=? AND contract_ref_hash=? AND state='PROVIDER_BLOCKED'"
+  );
+  const deleteNotificationOutbox = db.prepare(
+    'DELETE FROM implementation_notification_outbox WHERE tenant=? AND contract_ref_hash=?'
+  );
   const runById = db.prepare('SELECT * FROM implementation_runs WHERE id=? AND tenant=?');
   const runByIdAnyTenant = db.prepare('SELECT * FROM implementation_runs WHERE id=?');
   const currentRun = db.prepare(
@@ -461,6 +552,74 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
   }
 
+  function notificationRecoveryForRun(run) {
+    const invitation = invitationByContract.get(run.tenant, run.contract_ref_hash);
+    const outbox = outboxByContract.get(run.tenant, run.contract_ref_hash);
+    const attemptRow = notificationAttemptsByContract.get(run.tenant, run.contract_ref_hash);
+    const attempts = Math.max(0, Number(attemptRow?.attempts || 0));
+    const remainingAttempts = Math.max(0, 3 - attempts);
+
+    if (invitation?.status === 'STARTED') {
+      return {
+        state: 'STARTED', attempts, remainingAttempts,
+        automaticActionAvailable: false, terminalAction: null
+      };
+    }
+    if (!invitationTransportReady) {
+      return {
+        state: 'UNAVAILABLE', attempts, remainingAttempts,
+        automaticActionAvailable: false,
+        terminalAction: 'MESSAGE_PROVIDER_CONFIGURATION_REQUIRED'
+      };
+    }
+    if (outbox?.state === 'PENDING') {
+      return {
+        state: 'RECOVERING', attempts, remainingAttempts,
+        nextRetryAt: new Date(outbox.next_attempt_at_ms).toISOString(),
+        automaticActionAvailable: remainingAttempts > 0,
+        terminalAction: null
+      };
+    }
+    if (outbox?.state === 'BLOCKED') {
+      return {
+        state: 'BLOCKED', attempts, remainingAttempts,
+        automaticActionAvailable: false,
+        terminalAction: 'RECOVERY_EVIDENCE_REPAIR_REQUIRED'
+      };
+    }
+    if (outbox?.state === 'PROVIDER_BLOCKED') {
+      return {
+        state: 'BLOCKED', attempts, remainingAttempts,
+        automaticActionAvailable: false,
+        terminalAction: 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED'
+      };
+    }
+    if (outbox?.state === 'EXHAUSTED' || attempts >= 3) {
+      return {
+        state: 'EXHAUSTED', attempts, remainingAttempts: 0,
+        automaticActionAvailable: false,
+        terminalAction: 'PROVIDER_OR_ADMIN_AUTHORIZATION_REQUIRED'
+      };
+    }
+    if (invitation) {
+      return {
+        state: 'DELIVERED', attempts, remainingAttempts,
+        automaticActionAvailable: false, terminalAction: null
+      };
+    }
+    if (!publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
+      return {
+        state: 'UNAVAILABLE', attempts, remainingAttempts,
+        automaticActionAvailable: false,
+        terminalAction: 'PUBLIC_ORIGIN_CONFIGURATION_REQUIRED'
+      };
+    }
+    return {
+      state: 'NOT_SENT', attempts, remainingAttempts,
+      automaticActionAvailable: false, terminalAction: null
+    };
+  }
+
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
@@ -569,7 +728,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       blockingDecisions,
       learningSummary,
       scopeCaptured: Boolean(customerScope),
-      customerScope
+      customerScope,
+      notificationRecovery: notificationRecoveryForRun(run)
     };
   }
 
@@ -602,6 +762,165 @@ function createOneDayEnterpriseEngine(options = {}) {
     return /^[^\s@]+@[^\s@]+$/.test(String(email || '').trim());
   }
 
+  function deterministicInvitationToken(invitation) {
+    if (!invitationRecoverySecret) return '';
+    return createHmac('sha256', String(invitationRecoverySecret))
+      .update([
+        'wfm-implementation-invitation:v1', invitation.id, invitation.tenant,
+        invitation.contract_ref_hash, invitation.recipient_hash
+      ].join(':'))
+      .digest('base64url');
+  }
+
+  function invitationDeliveryIdentity(invitation) {
+    return 'implementation-invite/' + sha256(
+      invitation.tenant + ':' + invitation.contract_ref_hash + ':' + invitation.id
+    );
+  }
+
+  async function deliverInvitation(invitation, recipientEmail, rawToken) {
+    const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
+    return await invitationSender({
+      to: recipientEmail,
+      startUrl,
+      expiresAt: new Date(invitation.expires_at_ms).toISOString(),
+      tenant: invitation.tenant,
+      invitationId: invitation.id,
+      idempotencyKey: invitationDeliveryIdentity(invitation)
+    });
+  }
+
+  function scheduleNotificationRecovery(invitation, recipientEmail, nowMs = Date.now()) {
+    if (!invitationRecoverySecret) return false;
+    const ts = nowIso();
+    upsertNotificationOutbox.run(
+      invitation.tenant,
+      invitation.contract_ref_hash,
+      invitation.id,
+      sealRecoveryValue(recipientEmail, invitationRecoverySecret),
+      nowMs + notificationRetryDelayMs,
+      'PENDING',
+      ts,
+      ts
+    );
+    return true;
+  }
+
+  function claimNotificationAttempt(tenant, contractHash) {
+    const nowMs = Date.now();
+    const result = reserveInvitationAttempt.run(
+      tenant,
+      contractHash,
+      nowMs + notificationAttemptLeaseMs,
+      nowIso(),
+      nowMs
+    );
+    if (Number(result.changes) === 1) return { reserved: true, inProgress: false };
+    const current = notificationAttemptsByContract.get(tenant, contractHash);
+    return {
+      reserved: false,
+      inProgress: Number(current?.in_flight_until_ms || 0) > nowMs
+    };
+  }
+
+  function finishNotificationAttempt(tenant, contractHash) {
+    completeInvitationAttempt.run(nowIso(), tenant, contractHash);
+  }
+
+  async function retryDueNotifications({ nowMs = Date.now(), tenant = null, contractHash = null } = {}) {
+    const result = { examined: 0, delivered: 0, exhausted: 0, blocked: 0, inProgress: 0 };
+    if (!invitationRecoverySecret || !publicOrigin || !/^https:\/\//i.test(publicOrigin) || !invitationTransportReady) {
+      return { ...result, unavailable: true };
+    }
+
+    const dueOutboxes = tenant && contractHash
+      ? dueNotificationOutboxForContract.all(tenant, contractHash, Number(nowMs))
+      : dueNotificationOutbox.all(Number(nowMs));
+    for (const outbox of dueOutboxes) {
+      result.examined += 1;
+      const invitation = invitationById.get(outbox.invitation_id, outbox.tenant);
+      const run = runByContract.get(outbox.tenant, outbox.contract_ref_hash);
+      if (!invitation || !run || invitation.status !== 'PENDING' || Number(nowMs) > invitation.expires_at_ms) {
+        updateNotificationOutboxState.run('BLOCKED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
+        result.blocked += 1;
+        continue;
+      }
+
+      let recipientEmail;
+      let rawToken;
+      try {
+        recipientEmail = openRecoveryValue(outbox.recipient_ciphertext, invitationRecoverySecret);
+        rawToken = deterministicInvitationToken(invitation);
+        if (!validEmail(recipientEmail) || !rawToken || !secureEqual(sha256(rawToken), invitation.token_hash)) {
+          throw new Error('Invitation recovery evidence does not match the pending invitation.');
+        }
+      } catch {
+        updateNotificationOutboxState.run('BLOCKED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
+        record(run.id, outbox.tenant, 'CONTRACT_INVITATION_RECOVERY_BLOCKED', {
+          invitationId: invitation.id,
+          contractRefDigest: outbox.contract_ref_hash.slice(0, 16)
+        });
+        result.blocked += 1;
+        continue;
+      }
+
+      const claim = claimNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
+      if (!claim.reserved) {
+        if (claim.inProgress) {
+          result.inProgress += 1;
+          continue;
+        }
+        updateNotificationOutboxState.run('EXHAUSTED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
+        result.exhausted += 1;
+        continue;
+      }
+
+      try {
+        const delivery = await deliverInvitation(invitation, recipientEmail, rawToken);
+        finishNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
+        deleteNotificationOutbox.run(outbox.tenant, outbox.contract_ref_hash);
+        record(run.id, outbox.tenant, 'CONTRACT_INVITATION_SENT', {
+          invitationId: invitation.id,
+          targetHours: invitation.target_hours,
+          contractRefDigest: outbox.contract_ref_hash.slice(0, 16),
+          provider: delivery?.provider || 'configured-sender',
+          messageId: delivery?.messageId || null,
+          recovered: true
+        });
+        result.delivered += 1;
+      } catch (error) {
+        finishNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
+        if (error?.permanent === true) {
+          const attempts = Number(
+            notificationAttemptsByContract.get(outbox.tenant, outbox.contract_ref_hash)?.attempts || 0
+          );
+          const exhausted = attempts >= 3;
+          updateNotificationOutboxState.run(
+            exhausted ? 'EXHAUSTED' : 'PROVIDER_BLOCKED',
+            nowIso(), outbox.tenant, outbox.contract_ref_hash
+          );
+          record(run.id, outbox.tenant, exhausted
+            ? 'CONTRACT_INVITATION_RECOVERY_EXHAUSTED'
+            : 'CONTRACT_INVITATION_PROVIDER_BLOCKED', {
+            invitationId: invitation.id,
+            contractRefDigest: outbox.contract_ref_hash.slice(0, 16)
+          });
+          if (exhausted) result.exhausted += 1;
+          else result.blocked += 1;
+          continue;
+        }
+        updateNotificationOutboxState.run('EXHAUSTED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
+        record(run.id, outbox.tenant, 'CONTRACT_INVITATION_FAILED', {
+          invitationId: invitation.id,
+          contractRefDigest: outbox.contract_ref_hash.slice(0, 16),
+          recovered: true
+        });
+        result.exhausted += 1;
+      }
+    }
+    return result;
+  }
+
   async function activateContract(body, res) {
     const tenant = compact(body.tenant, 120);
     const contractRef = compact(body.contractRef, 300);
@@ -610,95 +929,250 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (!tenant || !contractRef || !validEmail(recipientEmail)) {
       return writeJson(res, 400, { error: 'tenant, contractRef and a valid recipientEmail are required.' });
     }
-    if (!publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
-      return writeJson(res, 503, { error: 'Implementation public origin is not configured.' });
-    }
-
     const contractHash = sha256(contractRef);
-    const existingRun = runByContract.get(tenant, contractHash);
-    if (existingRun) {
-      return writeJson(res, 200, {
-        invitation: publicInvitation(invitationByContract.get(tenant, contractHash)),
-        implementation: readinessForRun(existingRun)
-      });
-    }
-
     // A trusted signed/activated contract is the implementation start signal.
     // Do not wait for an email click or other human acknowledgement before
     // provisioning the implementation run. Notification is advisory only.
-    const started = Date.now();
-    const deadline = started + targetHours * 60 * 60 * 1000;
-    const runId = randomUUID();
-    const runCreatedAt = nowIso();
-    insertRun.run(runId, tenant, contractHash, 'BUILDING', started, deadline, targetHours, runCreatedAt, runCreatedAt);
-    const autoStartedRun = runById.get(runId, tenant);
-    record(runId, tenant, 'CONTRACT_AUTO_STARTED', {
-      targetHours,
-      contractRefDigest: contractHash.slice(0, 16)
-    });
+    let autoStartedRun = runByContract.get(tenant, contractHash);
+    const createdRun = !autoStartedRun;
+    if (!autoStartedRun) {
+      const started = Date.now();
+      const deadline = started + targetHours * 60 * 60 * 1000;
+      const runId = randomUUID();
+      const runCreatedAt = nowIso();
+      insertRun.run(runId, tenant, contractHash, 'BUILDING', started, deadline, targetHours, runCreatedAt, runCreatedAt);
+      autoStartedRun = runById.get(runId, tenant);
+      record(runId, tenant, 'CONTRACT_AUTO_STARTED', {
+        targetHours,
+        contractRefDigest: contractHash.slice(0, 16)
+      });
+    }
 
     const recipientHash = recipientDigest(recipientEmail);
+    let invitation = null;
+    let recoveryOutbox = null;
     const existing = invitationByContract.get(tenant, contractHash);
     if (existing) {
       const expired = Date.now() > existing.expires_at_ms;
       const recipientChanged = !secureEqual(existing.recipient_hash, recipientHash);
       if (existing.status === 'PENDING' && (expired || recipientChanged)) {
         deleteInvitation.run(existing.id);
+        deleteNotificationOutbox.run(tenant, contractHash);
       } else {
-        return writeJson(res, 200, {
-          invitation: publicInvitation(existing),
-          implementation: readinessForRun(autoStartedRun)
+        recoveryOutbox = outboxByContract.get(tenant, contractHash);
+        if (existing.status === 'PENDING' && recoveryOutbox?.state === 'PENDING') {
+          invitation = existing;
+        } else if (existing.status === 'PENDING' && recoveryOutbox?.state === 'PROVIDER_BLOCKED') {
+          return writeJson(res, 200, {
+            invitation: null,
+            implementation: readinessForRun(autoStartedRun),
+            notification: {
+              delivered: false,
+              blocked: true,
+              reason: 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED'
+            }
+          });
+        } else if (existing.status === 'PENDING' && recoveryOutbox?.state === 'EXHAUSTED') {
+          return writeJson(res, 200, {
+            invitation: null,
+            implementation: readinessForRun(autoStartedRun),
+            notification: { delivered: false, retryExhausted: true }
+          });
+        } else {
+          return writeJson(res, 200, {
+            invitation: publicInvitation(existing),
+            implementation: readinessForRun(autoStartedRun)
+          });
+        }
+      }
+    }
+
+    if (!publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
+      record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_UNAVAILABLE', {
+        reason: 'PUBLIC_ORIGIN_UNCONFIGURED', contractRefDigest: contractHash.slice(0, 16)
+      });
+      return writeJson(res, createdRun ? 201 : 200, {
+        invitation: null,
+        implementation: readinessForRun(autoStartedRun),
+        notification: { delivered: false, unavailable: true }
+      });
+    }
+    if (!invitationTransportReady) {
+      record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_UNAVAILABLE', {
+        reason: 'MESSAGE_PROVIDER_NOT_CONFIGURED', contractRefDigest: contractHash.slice(0, 16)
+      });
+      return writeJson(res, createdRun ? 201 : 200, {
+        invitation: null,
+        implementation: readinessForRun(autoStartedRun),
+        notification: {
+          delivered: false,
+          unavailable: true,
+          reason: 'MESSAGE_PROVIDER_NOT_CONFIGURED'
+        }
+      });
+    }
+    let notificationDelivered = false;
+    let retryExhausted = false;
+    let retryInProgress = false;
+    let providerBlocked = false;
+    let id = invitation?.id || null;
+    let rawToken = invitation ? deterministicInvitationToken(invitation) : null;
+    let expiresAtMs = invitation?.expires_at_ms || null;
+    const recoveringExisting = Boolean(invitation && recoveryOutbox);
+    if (invitation && (!rawToken || !secureEqual(sha256(rawToken), invitation.token_hash))) {
+      updateNotificationOutboxState.run('BLOCKED', nowIso(), tenant, contractHash);
+      return writeJson(res, 200, {
+        invitation: null,
+        implementation: readinessForRun(autoStartedRun),
+        notification: { delivered: false, recoveryBlocked: true }
+      });
+    }
+    // Make one automatic recovery attempt within the trusted activation. A
+    // third durable attempt remains available to a later provider replay or
+    // restart, so a slow outage cannot create an unbounded mail loop.
+    const localAttemptLimit = recoveringExisting ? 1 : 2;
+    for (let localAttempt = 0; localAttempt < localAttemptLimit && !notificationDelivered; localAttempt += 1) {
+      const claim = claimNotificationAttempt(tenant, contractHash);
+      if (!claim.reserved) {
+        if (claim.inProgress) {
+          retryInProgress = true;
+        } else {
+          if (recoveryOutbox) updateNotificationOutboxState.run('EXHAUSTED', nowIso(), tenant, contractHash);
+          else if (id) deleteInvitation.run(id);
+          retryExhausted = true;
+        }
+        break;
+      }
+      if (!id) {
+        id = randomUUID();
+        expiresAtMs = Date.now() + 7 * 24 * 60 * 60 * 1000;
+        const ts = nowIso();
+        const pending = {
+          id,
+          tenant,
+          contract_ref_hash: contractHash,
+          recipient_hash: recipientHash,
+          expires_at_ms: expiresAtMs
+        };
+        rawToken = invitationRecoverySecret
+          ? deterministicInvitationToken(pending)
+          : randomBytes(32).toString('base64url');
+        insertInvitation.run(
+          id, tenant, contractHash, recipientHash, sha256(rawToken), 'PENDING',
+          autoStartedRun.target_hours, expiresAtMs, null, ts, ts
+        );
+        invitation = invitationById.get(id, tenant);
+      }
+      try {
+        const delivery = await deliverInvitation(invitation, recipientEmail, rawToken);
+        finishNotificationAttempt(tenant, contractHash);
+        notificationDelivered = true;
+        deleteNotificationOutbox.run(tenant, contractHash);
+        record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_SENT', {
+          invitationId: id,
+          targetHours: autoStartedRun.target_hours,
+          contractRefDigest: contractHash.slice(0, 16),
+          provider: delivery?.provider || 'configured-sender',
+          messageId: delivery?.messageId || null
+        });
+      } catch (error) {
+        finishNotificationAttempt(tenant, contractHash);
+        if (error?.permanent === true) {
+          if (scheduleNotificationRecovery(invitation, recipientEmail)) {
+            updateNotificationOutboxState.run('PROVIDER_BLOCKED', nowIso(), tenant, contractHash);
+          } else {
+            deleteInvitation.run(id);
+          }
+          providerBlocked = true;
+          record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_PROVIDER_BLOCKED', {
+            invitationId: id,
+            contractRefDigest: contractHash.slice(0, 16)
+          });
+          break;
+        }
+        // Keep the same token and provider idempotency identity. After the
+        // bounded in-request attempts, persist only an encrypted recipient and
+        // reconstructible token identity so recovery survives a safe restart.
+        if (localAttempt === localAttemptLimit - 1) {
+          if (recoveringExisting) {
+            updateNotificationOutboxState.run('EXHAUSTED', nowIso(), tenant, contractHash);
+            retryExhausted = true;
+          } else if (!scheduleNotificationRecovery(invitation, recipientEmail)) {
+            deleteInvitation.run(id);
+          }
+        }
+        record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_FAILED', {
+          invitationId: id,
+          contractRefDigest: contractHash.slice(0, 16)
         });
       }
     }
 
-    const id = randomUUID();
-    const rawToken = randomBytes(32).toString('base64url');
-    const expiresAtMs = Date.now() + 7 * 24 * 60 * 60 * 1000;
-    const ts = nowIso();
-    insertInvitation.run(
-      id, tenant, contractHash, recipientHash, sha256(rawToken), 'PENDING',
-      targetHours, expiresAtMs, null, ts, ts
-    );
-    const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
-
-    let notificationDelivered = false;
-    try {
-      const delivery = await invitationSender({
-        to: recipientEmail,
-        startUrl,
-        expiresAt: new Date(expiresAtMs).toISOString(),
-        tenant,
-        invitationId: id
-      });
-      notificationDelivered = true;
-      record(runId, tenant, 'CONTRACT_INVITATION_SENT', {
-        invitationId: id,
-        targetHours,
-        contractRefDigest: contractHash.slice(0, 16),
-        provider: delivery?.provider || 'configured-sender',
-        messageId: delivery?.messageId || null
-      });
-    } catch (error) {
-      // Notification failure must never stop a trusted contract from entering
-      // the zero-touch implementation pipeline. Remove the undelivered token,
-      // keep the run, and surface a non-blocking audit event.
-      deleteInvitation.run(id);
-      record(runId, tenant, 'CONTRACT_INVITATION_FAILED', {
-        invitationId: id,
-        contractRefDigest: contractHash.slice(0, 16)
-      });
-    }
-
-    return writeJson(res, 201, {
+    return writeJson(res, createdRun ? 201 : 200, {
       invitation: notificationDelivered ? publicInvitation(invitationByContract.get(tenant, contractHash)) : null,
       implementation: readinessForRun(autoStartedRun),
-      notification: { delivered: notificationDelivered }
+      notification: {
+        delivered: notificationDelivered,
+        retryExhausted,
+        retryInProgress,
+        blocked: providerBlocked,
+        reason: providerBlocked ? 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED' : undefined,
+        pendingRetry: !notificationDelivered && outboxByContract.get(tenant, contractHash)?.state === 'PENDING'
+      }
     });
   }
 
   async function handleContractActivated(req, res) {
     return await activateContract(await readJson(req), res);
+  }
+
+  async function handleProviderRecoveryResume(req, res) {
+    const body = await readJson(req);
+    const tenant = compact(body.tenant, 120);
+    const contractRef = compact(body.contractRef, 300);
+    if (!tenant || !contractRef) {
+      return writeJson(res, 400, { error: 'tenant and contractRef are required.' });
+    }
+
+    const contractHash = sha256(contractRef);
+    const run = runByContract.get(tenant, contractHash);
+    const outbox = outboxByContract.get(tenant, contractHash);
+    if (!run || outbox?.state !== 'PROVIDER_BLOCKED') {
+      return writeJson(res, 409, { error: 'Provider-blocked invitation recovery is not available.' });
+    }
+
+    const resumedAt = Date.now();
+    const resumed = resumeProviderBlockedOutbox.run(resumedAt, nowIso(), tenant, contractHash);
+    if (Number(resumed.changes) !== 1) {
+      return writeJson(res, 409, { error: 'Provider-blocked invitation recovery is no longer available.' });
+    }
+    record(run.id, tenant, 'CONTRACT_INVITATION_PROVIDER_RECOVERY_STARTED', {
+      invitationId: outbox.invitation_id,
+      contractRefDigest: contractHash.slice(0, 16)
+    });
+
+    const outcome = await retryDueNotifications({ nowMs: resumedAt, tenant, contractHash });
+    if (outcome.delivered === 1) {
+      record(run.id, tenant, 'CONTRACT_INVITATION_PROVIDER_RECOVERED', {
+        invitationId: outbox.invitation_id,
+        contractRefDigest: contractHash.slice(0, 16)
+      });
+      return writeJson(res, 200, {
+        implementation: readinessForRun(run),
+        notification: { delivered: true, recovered: true }
+      });
+    }
+
+    const recovery = notificationRecoveryForRun(run);
+    return writeJson(res, ['BLOCKED', 'EXHAUSTED'].includes(recovery.state) ? 409 : 202, {
+      implementation: readinessForRun(run),
+      notification: {
+        delivered: false,
+        recovered: false,
+        state: recovery.state,
+        terminalAction: recovery.terminalAction
+      }
+    });
   }
 
   function invitationForContext(ctx, token) {
@@ -958,11 +1432,35 @@ function createOneDayEnterpriseEngine(options = {}) {
     });
   }
 
+  function handleEntryPreflight(res) {
+    const checks = {
+      contractAuthentication: Boolean(contractWebhookSecret),
+      secureCustomerOrigin: Boolean(publicOrigin && /^https:\/\//i.test(publicOrigin)),
+      invitationProvider: invitationTransportReady,
+      restartRecovery: Boolean(dedicatedInvitationRecoverySecret)
+    };
+    const requiredActions = [];
+    if (!checks.contractAuthentication) requiredActions.push('CONTRACT_AUTHENTICATION_CONFIGURATION_REQUIRED');
+    if (!checks.secureCustomerOrigin) requiredActions.push('SECURE_CUSTOMER_ORIGIN_CONFIGURATION_REQUIRED');
+    if (!checks.invitationProvider) requiredActions.push('MESSAGE_PROVIDER_CONFIGURATION_REQUIRED');
+    if (!checks.restartRecovery) requiredActions.push('INVITATION_RECOVERY_SECRET_CONFIGURATION_REQUIRED');
+    return writeJson(res, 200, {
+      state: requiredActions.length === 0 ? 'READY' : 'BLOCKED',
+      ready: requiredActions.length === 0,
+      checks,
+      requiredActions
+    });
+  }
+
   async function handleRequest(req, res) {
     const path = requestPath(req);
     if (!path.startsWith(PREFIX)) return false;
 
     try {
+      if (req.method === 'GET' && path === PREFIX + '/preflight') {
+        if (!requireInternal(req, res)) return true;
+        return handleEntryPreflight(res);
+      }
       if (req.method === 'POST' && path === PREFIX + '/contract-signed') {
         if (!requireContractWebhook(req, res)) return true;
         return await handleContractSigned(req, res);
@@ -970,6 +1468,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       if (req.method === 'POST' && path === PREFIX + '/contract-activated') {
         if (!requireInternal(req, res)) return true;
         return await handleContractActivated(req, res);
+      }
+      if (req.method === 'POST' && path === PREFIX + '/notification-recovery/resume') {
+        if (!requireInternal(req, res)) return true;
+        return await handleProviderRecoveryResume(req, res);
       }
       if (req.method === 'POST' && path === PREFIX + '/evidence') {
         if (!requireInternal(req, res)) return true;
@@ -996,13 +1498,25 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
   }
 
+  let notificationRetryTimer = null;
+  if (invitationRecoverySecret && notificationRetryPollMs > 0) {
+    notificationRetryTimer = setInterval(() => {
+      retryDueNotifications().catch(() => {});
+    }, notificationRetryPollMs);
+    notificationRetryTimer.unref?.();
+  }
+
   return {
     handleRequest,
+    retryDueNotifications,
     statusForTenant(tenant) {
       const run = currentRun.get(tenant);
       return run ? recompute(run) : null;
     },
-    close() { try { db.close(); } catch {} }
+    close() {
+      if (notificationRetryTimer) clearInterval(notificationRetryTimer);
+      try { db.close(); } catch {}
+    }
   };
 }
 
