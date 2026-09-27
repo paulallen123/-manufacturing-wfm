@@ -625,6 +625,7 @@ try {
     domainAuditReadBack: false,
     refreshedUiRetainedCorrection: false,
     weeklySignStillBlocked: false,
+    weeklySignOffCompleted: false,
     payrollReleaseStillBlocked: false,
     issueId: null,
     recordId: null
@@ -754,6 +755,116 @@ try {
   const signButton = attendanceManagerPage.locator('button[data-vector-workflow="sign"]');
   assert.equal(await signButton.isDisabled(), true, 'Weekly sign-off became available while source blockers remained.');
   attendanceJourney.weeklySignStillBlocked = true;
+
+  const weeklyTeamState = async () => attendanceManagerPage.evaluate(async ({ period, teamId }) => {
+    const response = await fetch('/api/weekly-review?period=' + encodeURIComponent(period), { cache: 'no-store' });
+    const review = await response.json();
+    return review.teams.find(item => item.id === teamId) || null;
+  }, { period, teamId });
+  const reviewReason = 'Synthetic exact-candidate weekly review evidence for the signed fixture team.';
+
+  let completionTeam = await weeklyTeamState();
+  for (const issue of completionTeam.issues.filter(item => item.status === 'open')) {
+    const row = completionTeam.records.find(item => item.id === issue.row);
+    assert.ok(row, `Source row missing for weekly issue ${issue.id}.`);
+    const issueAction = attendanceManagerPage.locator(`button[data-vector-workflow="issue"][data-id="${issue.id}"]`);
+    await issueAction.waitFor({ state: 'visible', timeout: 10000 });
+    await issueAction.click({ timeout: 5000 });
+    if (['missing', 'sync'].includes(issue.type)) {
+      await attendanceManagerPage.locator('#modalform select[name="outcome"]').selectOption('worked');
+      await attendanceManagerPage.locator('#modalform input[name="clockIn"]').fill(`${row.date}T06:00`);
+      await attendanceManagerPage.locator('#modalform input[name="clockOut"]').fill(`${row.date}T14:00`);
+      await attendanceManagerPage.locator('#modalform input[name="breakStart"]').fill(`${row.date}T10:00`);
+      await attendanceManagerPage.locator('#modalform input[name="breakEnd"]').fill(`${row.date}T10:30`);
+      await attendanceManagerPage.locator('#modalform input[name="breaksConfirmed"]').check();
+    } else if (issue.type === 'adjustment') {
+      await attendanceManagerPage.locator('#modalform select[name="decision"]').selectOption('accept');
+    }
+    await attendanceManagerPage.locator('#modalform textarea[name="reason"]').fill(issue.evidence || reviewReason);
+    await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
+    const issueResponsePromise = attendanceManagerPage.waitForResponse(response => {
+      if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
+      try {
+        const submitted = response.request().postDataJSON();
+        return submitted?.command === 'review-resolve' && submitted?.payload?.issue === issue.id;
+      } catch { return false; }
+    }, { timeout: 10000 });
+    await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+    const issueResponse = await issueResponsePromise;
+    assert.equal(issueResponse.status(), 200, `Weekly issue ${issue.id} was rejected.`);
+    const issueResult = await issueResponse.json();
+    assert.equal(issueResult.result?.id, issue.id);
+    assert.equal(issueResult.result?.status, 'resolved');
+    completionTeam = await weeklyTeamState();
+    assert.equal(completionTeam.issues.find(item => item.id === issue.id)?.status, 'resolved');
+  }
+
+  for (const category of completionTeam.categories.filter(item => !item.confirmed)) {
+    const categoryAction = attendanceManagerPage.locator(`button[data-vector-workflow="category"][data-id="${category.id}"]`);
+    await categoryAction.waitFor({ state: 'visible', timeout: 10000 });
+    await categoryAction.click({ timeout: 5000 });
+    await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
+    const checkResponsePromise = attendanceManagerPage.waitForResponse(response => {
+      if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
+      try {
+        const submitted = response.request().postDataJSON();
+        return submitted?.command === 'review-check' && submitted?.payload?.category === category.id;
+      } catch { return false; }
+    }, { timeout: 10000 });
+    await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+    assert.equal((await checkResponsePromise).status(), 200, `Weekly category ${category.id} was rejected.`);
+    completionTeam = await weeklyTeamState();
+    assert.equal(completionTeam.categories.find(item => item.id === category.id)?.confirmed, true);
+  }
+
+  for (const employee of completionTeam.employees.filter(item => !item.checked)) {
+    const employeeAction = attendanceManagerPage.locator(`button[data-vector-workflow="employee"][data-id="${employee.id}"]`);
+    await employeeAction.evaluate(button => { const details = button.closest('details'); if (details) details.open = true; });
+    await employeeAction.waitFor({ state: 'visible', timeout: 10000 });
+    await employeeAction.click({ timeout: 5000 });
+    await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
+    const checkResponsePromise = attendanceManagerPage.waitForResponse(response => {
+      if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
+      try {
+        const submitted = response.request().postDataJSON();
+        return submitted?.command === 'review-check' && submitted?.payload?.employee === employee.id;
+      } catch { return false; }
+    }, { timeout: 10000 });
+    await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+    assert.equal((await checkResponsePromise).status(), 200, `Weekly employee check ${employee.id} was rejected.`);
+    completionTeam = await weeklyTeamState();
+    assert.equal(completionTeam.employees.find(item => item.id === employee.id)?.checked, true);
+  }
+
+  const readySignButton = attendanceManagerPage.locator('button[data-vector-workflow="sign"]');
+  await readySignButton.waitFor({ state: 'visible', timeout: 10000 });
+  assert.equal(await readySignButton.isDisabled(), false, 'Weekly sign-off did not unlock after every required review.');
+  await readySignButton.click({ timeout: 5000 });
+  await attendanceManagerPage.locator('#modalform input[name="checked"]').check();
+  const signResponsePromise = attendanceManagerPage.waitForResponse(response => {
+    if (!response.url().endsWith('/api/command') || response.request().method() !== 'POST') return false;
+    try {
+      const submitted = response.request().postDataJSON();
+      return submitted?.command === 'review-sign' && submitted?.payload?.team === teamId;
+    } catch { return false; }
+  }, { timeout: 10000 });
+  await attendanceManagerPage.locator('#modalform button[type="submit"]').click({ timeout: 5000 });
+  const signResponse = await signResponsePromise;
+  assert.equal(signResponse.status(), 200, 'Weekly sign-off business action was rejected.');
+  const signResult = await signResponse.json();
+  assert.deepEqual({ id: signResult.result?.id, status: signResult.result?.status }, { id: teamId, status: 'signed' });
+
+  await attendanceManagerPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await attendanceManagerPage.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+  await openWeeklyRoute(attendanceManagerPage, teamId);
+  const signedTeam = await weeklyTeamState();
+  assert.equal(signedTeam?.status, 'signed', 'Signed weekly state did not survive screen refresh.');
+  assert.equal(signedTeam?.signature?.by, 'm1');
+  assert.equal(signedTeam?.issues.every(item => item.status === 'resolved'), true);
+  assert.equal(signedTeam?.categories.every(item => item.confirmed), true);
+  assert.equal(signedTeam?.employees.every(item => item.checked), true);
+  assert.match(await attendanceManagerPage.locator('.vw-panel').innerText(), /signed · revision/i, 'Refreshed weekly UI did not show the signed state.');
+  attendanceJourney.weeklySignOffCompleted = true;
   assert.deepEqual(attendancePageErrors, [], `Attendance journey uncaught page errors: ${attendancePageErrors.join(' | ')}`);
   await attendanceManagerContext.close();
 
@@ -765,15 +876,18 @@ try {
   const afterPayrollTeam = afterPayroll.json.teams.find(item => item.id === teamId);
   assert.equal(afterPayroll.json.totals.workedMinutes, beforePayroll.json.totals.workedMinutes + 30);
   assert.equal(afterPayrollTeam?.workedMinutes, beforePayrollTeam.workedMinutes + 30);
+  assert.equal(afterPayrollTeam?.status, 'signed');
   assert.equal(afterPayroll.json.canRelease, false);
   assert.equal(afterPayroll.json.lines.length, 0);
   assert.equal(afterPayroll.json.reconciliation.ok, false);
   const correctionAudit = afterPayroll.json.audit.find(item => item.type === 'exception-evidence-confirmed' && item.team === teamId && item.record === recordId && item.actor === 'm1');
   const categoryAudit = afterPayroll.json.audit.find(item => item.type === 'category-checked' && item.team === teamId && item.category === 'adjustments' && item.actor === 'm1');
+  const signAudit = afterPayroll.json.audit.find(item => item.type === 'team-signed' && item.team === teamId && item.actor === 'm1');
   assert.equal(correctionAudit?.before?.clockOut, '2026-09-09T13:00:00.000Z');
   assert.equal(correctionAudit?.after?.clockOut, '2026-09-09T13:30:00.000Z');
   assert.equal(correctionAudit?.reason, correctionReason);
   assert.ok(categoryAudit, 'Saved Adjustments verification was not present in domain audit state.');
+  assert.ok(signAudit, 'Signed weekly state was not present in domain audit state.');
   attendanceJourney.domainAuditReadBack = true;
   await attendancePayrollPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
   await attendancePayrollPage.waitForFunction(() => document.querySelector('button[data-vector-workflow="release"]'), { timeout: 30000 });
@@ -783,7 +897,7 @@ try {
   await attendancePayrollContext.close();
 
   browserProofEvidence = { leaveJourney, attendanceJourney };
-  console.log(`CURRENT_ATTENDANCE_BROWSER_JOURNEY=PASS|issue=${issueId}|record=${recordId}|workedMinutes=450->480|weeklyBlocked=true|payrollBlocked=true|domainAudit=true`);
+  console.log(`CURRENT_ATTENDANCE_BROWSER_JOURNEY=PASS|issue=${issueId}|record=${recordId}|workedMinutes=450->480|weeklyInitiallyBlocked=true|weeklySigned=true|payrollBlocked=true|domainAudit=true`);
 
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
