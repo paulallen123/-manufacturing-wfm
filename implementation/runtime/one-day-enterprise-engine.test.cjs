@@ -725,6 +725,55 @@ test('missing message provider configuration fails immediately without wasting r
   }
 });
 
+test('implementation entry preflight exposes missing requirements before a contract without exposing secrets', async () => {
+  const previousApiKey = process.env.RESEND_API_KEY;
+  const previousFrom = process.env.WFM_IMPLEMENTATION_FROM_EMAIL;
+  delete process.env.RESEND_API_KEY;
+  delete process.env.WFM_IMPLEMENTATION_FROM_EMAIL;
+  const f = fixture({ useDefaultInvitationSender: true });
+  try {
+    const denied = await call(f.engine, null, 'GET', '/api/implementation/autonomous/preflight');
+    assert.equal(denied.status, 403);
+
+    const result = await call(
+      f.engine, null, 'GET', '/api/implementation/autonomous/preflight', undefined, f.internal
+    );
+    assert.equal(result.status, 200);
+    assert.equal(result.body.state, 'BLOCKED');
+    assert.equal(result.body.ready, false);
+    assert.deepEqual(result.body.checks, {
+      contractAuthentication: true,
+      secureCustomerOrigin: true,
+      invitationProvider: false,
+      restartRecovery: true
+    });
+    assert.deepEqual(result.body.requiredActions, ['MESSAGE_PROVIDER_CONFIGURATION_REQUIRED']);
+    assert.equal(JSON.stringify(result.body).includes('implementation-worker-test-token'), false);
+    assert.equal(JSON.stringify(result.body).includes('contract-webhook-test-token'), false);
+    assert.equal('apiKey' in result.body, false);
+    assert.equal('fromEmail' in result.body, false);
+  } finally {
+    f.close();
+    if (previousApiKey === undefined) delete process.env.RESEND_API_KEY;
+    else process.env.RESEND_API_KEY = previousApiKey;
+    if (previousFrom === undefined) delete process.env.WFM_IMPLEMENTATION_FROM_EMAIL;
+    else process.env.WFM_IMPLEMENTATION_FROM_EMAIL = previousFrom;
+  }
+
+  const ready = fixture();
+  try {
+    const result = await call(
+      ready.engine, null, 'GET', '/api/implementation/autonomous/preflight', undefined, ready.internal
+    );
+    assert.equal(result.status, 200);
+    assert.equal(result.body.state, 'READY');
+    assert.equal(result.body.ready, true);
+    assert.deepEqual(result.body.requiredActions, []);
+  } finally {
+    ready.close();
+  }
+});
+
 test('contract activation is idempotent and auto-starts implementation without a customer click', async () => {
   const f = fixture();
   try {
