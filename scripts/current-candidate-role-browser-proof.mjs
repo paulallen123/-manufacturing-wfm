@@ -1182,9 +1182,16 @@ try {
   assert.ok(navigationClicks >= 3, 'Insufficient role-first navigation clicks.');
   assert.equal(timeReviewActionJourneys + timeReviewEmptyStateJourneys, 1, 'Manager Time Review source state was not proven exactly once.');
   assert.ok(managerAlignmentEvidence?.base64, 'Manager alignment screenshot unavailable.');
+  const finalIdentityResponse = await fetch(`${origin}/api/runtime-identity`, { signal: AbortSignal.timeout(15000), cache: 'no-store' });
+  assert.equal(finalIdentityResponse.status, 200, 'Final runtime identity endpoint unavailable.');
+  assert.equal(finalIdentityResponse.headers.get('x-wfm-source-sha'), expectedSha, 'Final runtime identity source SHA header mismatch.');
+  assert.equal(finalIdentityResponse.headers.get('x-wfm-source-binding'), 'build-file-matched', 'Final runtime identity lost build-file binding.');
+  const finalRuntimeIdentity = await finalIdentityResponse.json();
+  assert.equal(finalRuntimeIdentity.candidateSha, expectedSha, 'Serving candidate changed during the browser journey.');
+  assert.equal(finalRuntimeIdentity.sourceBinding, 'build-file-matched', 'Final serving candidate is not build-file matched.');
   console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|sha=${managerAlignmentEvidence.sha256}`);
   console.log(`CURRENT_MANAGER_SCREENSHOT_B64|${managerAlignmentEvidence.base64}`);
-  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|sourceActionOpenJourneys=${timeReviewActionJourneys}|leaveBusinessActionJourneys=1|attendanceBusinessActionJourneys=1|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
+  console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|sourceActionOpenJourneys=${timeReviewActionJourneys}|leaveBusinessActionJourneys=1|attendanceBusinessActionJourneys=1|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}|sourceBinding=build-file-matched`);
 } finally {
   await browser.close();
   delete process.env.WFM_STAGING_PASSWORD;
