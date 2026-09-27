@@ -153,3 +153,106 @@ export function createIndustrialSampleWindowAuthority(rawPolicy){
   }
   return Object.freeze({admit});
 }
+
+export function createIndustrialBatchWindowAuthority(rawPolicy){
+  const policy=cloneInert(rawPolicy,'policy');
+  const globalTextFields=['provider','wfmTenantId','connectionId','awsAccountId','awsRegion','endpointVariant','apiVersion','readOperation'];
+  const fingerprintFields=['principalFingerprint','iamPolicyFingerprint','queryFingerprint','schemaFingerprint'];
+  const entryTextFields=['entryId','siteId','assetId','propertyId','unit','sourceTimestampMode'];
+  const entryKeys=new Set([...entryTextFields,'edgeGatewayId','propertyAlias','windowStart','windowEnd','providerStartExclusive','providerEndInclusive']);
+  exactKeys(policy,new Set([...globalTextFields,'dataPlaneOrigin',...fingerprintFields,'expectedCheckpointPredecessor','expectedObservedAt','maxPages','maxSamples','entries']),'policy');
+  for(const field of globalTextFields) policy[field]=text(policy[field],field);
+  if(!/^\d{12}$/.test(policy.awsAccountId)) fail('awsAccountId must be a 12-digit AWS account');
+  if(!/^[a-z]{2}(?:-gov)?-[a-z]+-\d$/.test(policy.awsRegion)) fail('awsRegion must be an exact AWS region');
+  policy.dataPlaneOrigin=exactOrigin(policy.dataPlaneOrigin,policy.awsRegion,policy.endpointVariant);
+  if(policy.readOperation!=='BatchGetAssetPropertyValueHistory') fail('only exact BatchGet history is allowed');
+  for(const field of fingerprintFields) policy[field]=fingerprint(policy[field],field);
+  policy.expectedCheckpointPredecessor=text(policy.expectedCheckpointPredecessor,'expectedCheckpointPredecessor');
+  policy.expectedObservedAt=instant(policy.expectedObservedAt,'expectedObservedAt');
+  policy.maxPages=integer(policy.maxPages,'maxPages',{minimum:1});policy.maxSamples=integer(policy.maxSamples,'maxSamples',{minimum:1});
+
+  function validateEntries(rawEntries,path){
+    if(!Array.isArray(rawEntries)||rawEntries.length<2||rawEntries.length>16) fail(`${path} must contain 2 to 16 batch entries`);
+    const ids=new Set();
+    return rawEntries.map((raw,index)=>{
+      const item=raw,pathItem=`${path}[${index}]`;exactKeys(item,entryKeys,pathItem);
+      for(const field of entryTextFields) item[field]=field==='entryId'?nullableBatchEntryId(item[field],`${pathItem}.${field}`):text(item[field],`${pathItem}.${field}`);
+      if(item.entryId===null) fail(`${pathItem}.entryId is required`);
+      if(ids.has(item.entryId)) fail(`${pathItem}.entryId is duplicated`);ids.add(item.entryId);
+      if(!['device','server'].includes(item.sourceTimestampMode)) fail(`${pathItem}.sourceTimestampMode must be device or server`);
+      item.edgeGatewayId=nullableOpaque(item.edgeGatewayId,`${pathItem}.edgeGatewayId`);item.propertyAlias=nullableOpaque(item.propertyAlias,`${pathItem}.propertyAlias`);
+      item.windowStart=timestamp(item.windowStart,`${pathItem}.windowStart`);item.windowEnd=timestamp(item.windowEnd,`${pathItem}.windowEnd`);
+      if(compareTimestamp(item.windowStart,item.windowEnd)>=0) fail(`${pathItem} sample window must be non-empty`);
+      item.providerStartExclusive=timestamp(item.providerStartExclusive,`${pathItem}.providerStartExclusive`);item.providerEndInclusive=timestamp(item.providerEndInclusive,`${pathItem}.providerEndInclusive`);
+      sameTimestamp(item.providerStartExclusive,providerStartBoundary(item.windowStart),`${pathItem} provider exclusive-start boundary`);
+      sameTimestamp(item.providerEndInclusive,{seconds:item.windowEnd.seconds,offsetInNanos:0},`${pathItem} provider inclusive-end boundary`);
+      return item;
+    });
+  }
+  policy.entries=validateEntries(policy.entries,'entries');deepFreeze(policy);
+  const globalScope=Object.fromEntries(globalTextFields.map(field=>[field,policy[field]]));
+  Object.assign(globalScope,{dataPlaneOrigin:policy.dataPlaneOrigin,...Object.fromEntries(fingerprintFields.map(field=>[field,policy[field]])),entries:policy.entries});
+  const checkpointNamespace=`industrial-batch-window:${digest(globalScope)}`;
+
+  function admit(rawReceipt){
+    const receipt=cloneInert(rawReceipt,'receipt');
+    exactKeys(receipt,new Set([...globalTextFields,'dataPlaneOrigin',...fingerprintFields,'checkpointPredecessor','observedAt','complete','terminal','entries','pages']),'receipt');
+    for(const field of globalTextFields) same(text(receipt[field],field),policy[field],field);
+    same(exactOrigin(receipt.dataPlaneOrigin,receipt.awsRegion,receipt.endpointVariant),policy.dataPlaneOrigin,'data plane origin');
+    for(const field of fingerprintFields) same(fingerprint(receipt[field],field),policy[field],field.replace('Fingerprint',' fingerprint'));
+    same(text(receipt.checkpointPredecessor,'checkpointPredecessor'),policy.expectedCheckpointPredecessor,'checkpoint predecessor');
+    same(instant(receipt.observedAt,'observedAt'),policy.expectedObservedAt,'observation horizon');
+    if(receipt.complete!==true) fail('batch sample window is incomplete');if(receipt.terminal!==true) fail('batch sample window is not terminal');
+    const receiptEntries=validateEntries(receipt.entries,'entries');if(canonical(receiptEntries)!==canonical(policy.entries)) fail('batch entries do not match approved authority');
+    if(!Array.isArray(receipt.pages)||receipt.pages.length===0||receipt.pages.length>policy.maxPages) fail('pages exceed the page limit or are missing');
+
+    const entryById=new Map(policy.entries.map(item=>[item.entryId,item]));
+    const stateById=new Map(policy.entries.map(item=>[item.entryId,{seenSuccess:false,completed:false,byTimestamp:new Map(),samples:[],qualityCounts:{GOOD:0,UNCERTAIN:0,BAD:0},reportedSampleCount:0,exactReplayCount:0}]));
+    let expectedRequestToken=null,totalSamples=0;const seenTokens=new Set();
+    for(let pageOffset=0;pageOffset<receipt.pages.length;pageOffset++){
+      const page=receipt.pages[pageOffset],pagePath=`pages[${pageOffset}]`;
+      exactKeys(page,new Set(['pageIndex','requestTokenDigest','nextTokenDigest','successful','successEntries','skippedEntries','errorEntries']),pagePath);
+      if(integer(page.pageIndex,`${pagePath}.pageIndex`)!==pageOffset) fail(`${pagePath} creates a page gap or reorder`);
+      const requestToken=nullableFingerprint(page.requestTokenDigest,`${pagePath}.requestTokenDigest`),nextToken=nullableFingerprint(page.nextTokenDigest,`${pagePath}.nextTokenDigest`);
+      same(requestToken,expectedRequestToken,'request token');if(page.successful!==true) fail(`${pagePath} failed`);
+      const isLast=pageOffset===receipt.pages.length-1;if(isLast&&nextToken!==null) fail('terminal page must not return a next token');if(!isLast&&nextToken===null) fail('non-terminal page must return a next token');
+      if(nextToken!==null){if(seenTokens.has(nextToken)) fail('page token loop detected');seenTokens.add(nextToken);}expectedRequestToken=nextToken;
+      if(!Array.isArray(page.successEntries)||!Array.isArray(page.skippedEntries)||!Array.isArray(page.errorEntries)) fail(`${pagePath} entry results must be arrays`);
+      if(page.errorEntries.length) fail(`${pagePath} contains failed batch entries`);
+      const pageIds=new Set();
+      for(let offset=0;offset<page.successEntries.length;offset++){
+        const result=page.successEntries[offset],path=`${pagePath}.successEntries[${offset}]`;exactKeys(result,new Set(['entryId','samples']),path);
+        const entryId=nullableBatchEntryId(result.entryId,`${path}.entryId`);if(!entryById.has(entryId)) fail(`${path}.entryId is outside approved batch scope`);if(pageIds.has(entryId)) fail(`${path}.entryId is duplicated on one page`);pageIds.add(entryId);
+        const state=stateById.get(entryId),entryPolicy=entryById.get(entryId);if(state.completed) fail(`${path}.entryId returned success after completion`);state.seenSuccess=true;
+        if(!Array.isArray(result.samples)) fail(`${path}.samples must be an array`);state.reportedSampleCount+=result.samples.length;totalSamples+=result.samples.length;if(totalSamples>policy.maxSamples) fail('samples exceed the sample limit');
+        for(let sampleOffset=0;sampleOffset<result.samples.length;sampleOffset++){
+          const raw=result.samples[sampleOffset],samplePath=`${path}.samples[${sampleOffset}]`;exactKeys(raw,new Set(['sourceTimestamp','ingestedAt','quality','valueType','nullValueType','valueDigest']),samplePath);
+          const sourceTimestamp=timestamp(raw.sourceTimestamp,`${samplePath}.sourceTimestamp`);if(compareTimestamp(sourceTimestamp,entryPolicy.windowStart)<0||compareTimestamp(sourceTimestamp,entryPolicy.windowEnd)>=0) fail(`${samplePath} is outside the exact sample window`);
+          const ingestedAt=instant(raw.ingestedAt,`${samplePath}.ingestedAt`);if(ingestedAt>policy.expectedObservedAt) fail(`${samplePath} ingestion is after the observation horizon`);
+          const quality=text(raw.quality,`${samplePath}.quality`);if(!Object.hasOwn(state.qualityCounts,quality)) fail(`${samplePath}.quality is not documented`);
+          const valueType=text(raw.valueType,`${samplePath}.valueType`);if(!['boolean','double','integer','string','null'].includes(valueType)) fail(`${samplePath}.valueType is unsupported`);
+          const nullValueType=raw.nullValueType===null?null:text(raw.nullValueType,`${samplePath}.nullValueType`);
+          if(valueType==='null'){if(!['B','D','S','I','U'].includes(nullValueType)) fail(`${samplePath}.nullValueType is unsupported`);if(quality==='GOOD') fail(`${samplePath} null value cannot have GOOD quality`);}else if(nullValueType!==null) fail(`${samplePath} non-null value must not carry a null value type`);
+          const valueDigest=fingerprint(raw.valueDigest,`${samplePath}.valueDigest`),entryScope={...entryPolicy};
+          const normalized={sourceTimestamp,ingestedAt,quality,valueType,nullValueType,valueDigest,scopedSampleFingerprint:`sha256:${digest({globalScope,entryScope,sourceTimestamp})}`};
+          const identity=`${sourceTimestamp.seconds}:${sourceTimestamp.offsetInNanos}`,prior=state.byTimestamp.get(identity);
+          if(prior){if(canonical(prior)!==canonical(normalized)) fail(`${samplePath} conflicts at one entry timestamp`);state.exactReplayCount++;continue;}
+          state.byTimestamp.set(identity,normalized);state.samples.push(normalized);state.qualityCounts[quality]++;
+        }
+      }
+      for(let offset=0;offset<page.skippedEntries.length;offset++){
+        const result=page.skippedEntries[offset],path=`${pagePath}.skippedEntries[${offset}]`;exactKeys(result,new Set(['entryId','completionStatus','errorInfo']),path);
+        const entryId=nullableBatchEntryId(result.entryId,`${path}.entryId`);if(!entryById.has(entryId)) fail(`${path}.entryId is outside approved batch scope`);if(pageIds.has(entryId)) fail(`${path}.entryId is duplicated on one page`);pageIds.add(entryId);
+        const state=stateById.get(entryId);if(pageOffset===0||!state.seenSuccess) fail(`${path}.entryId was skipped before a successful page`);if(result.completionStatus!=='SUCCESS'||result.errorInfo!==null) fail(`${path}.entryId did not complete successfully`);state.completed=true;
+      }
+      if(pageIds.size!==entryById.size) fail(`${pagePath} does not partition every approved batch entry`);
+    }
+    const entryDecisions=policy.entries.map(entryPolicy=>{
+      const state=stateById.get(entryPolicy.entryId);state.samples.sort((a,b)=>compareTimestamp(a.sourceTimestamp,b.sourceTimestamp));
+      return {...entryPolicy,reportedSampleCount:state.reportedSampleCount,uniqueSampleCount:state.samples.length,exactReplayCount:state.exactReplayCount,qualityCounts:state.qualityCounts,samples:state.samples};
+    });
+    const decision={batchWindowReconciliationCandidate:true,checkpointAdvanceAllowed:false,deletionAuthority:false,operationalDecisionAuthority:false,causalClaimAuthority:false,writeBackAuthority:false,payrollAuthority:false,attendanceAuthority:false,...Object.fromEntries(globalTextFields.map(field=>[field,policy[field]])),dataPlaneOrigin:policy.dataPlaneOrigin,...Object.fromEntries(fingerprintFields.map(field=>[field,policy[field]])),checkpointNamespace,checkpointPredecessor:policy.expectedCheckpointPredecessor,observedAt:policy.expectedObservedAt,pageCount:receipt.pages.length,entryCount:entryDecisions.length,reportedSampleCount:totalSamples,entries:entryDecisions};
+    decision.reconciliationFingerprint=`sha256:${digest(decision)}`;return deepFreeze(decision);
+  }
+  return Object.freeze({admit});
+}
