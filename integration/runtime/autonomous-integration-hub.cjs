@@ -708,10 +708,9 @@ function createAutonomousIntegrationHub(options = {}) {
 
   async function handleSyncValidate(req, res) {
     const body = await readJson(req, maxBodyBytes);
-    const requestedTenant = compact(body.tenant, 120);
-    if (!requestedTenant) return writeJson(res, 400, { error: 'tenant is required for source-data validation.' });
     const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
+    const requestedTenant = compact(body.tenant || connection.tenant, 120);
     if (requestedTenant !== connection.tenant) {
       record(connection.tenant, connection.id, 'cross-tenant-sync-rejected', {
         requestedTenantDigest: sha256(requestedTenant).slice(0, 16)
