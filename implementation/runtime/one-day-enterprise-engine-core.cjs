@@ -282,6 +282,9 @@ function createOneDayEnterpriseEngine(options = {}) {
       'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, state TEXT NOT NULL,' +
       'started_at_ms INTEGER NOT NULL, deadline_at_ms INTEGER NOT NULL, target_hours INTEGER NOT NULL,' +
       'created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(tenant,contract_ref_hash));' +
+    'CREATE TABLE IF NOT EXISTS implementation_notification_attempts(' +
+      'tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, attempts INTEGER NOT NULL,' +
+      'updated_at TEXT NOT NULL, PRIMARY KEY(tenant,contract_ref_hash));' +
     'CREATE TABLE IF NOT EXISTS implementation_evidence(' +
       'id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL, tenant TEXT NOT NULL, kind TEXT NOT NULL,' +
       'status TEXT NOT NULL, confidence REAL NOT NULL, source TEXT NOT NULL, detail_json TEXT NOT NULL,' +
@@ -332,6 +335,11 @@ function createOneDayEnterpriseEngine(options = {}) {
   );
   const insertInvitation = db.prepare(
     'INSERT INTO implementation_invitations(id,tenant,contract_ref_hash,recipient_hash,token_hash,status,target_hours,expires_at_ms,started_run_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
+  );
+  const reserveInvitationAttempt = db.prepare(
+    'INSERT INTO implementation_notification_attempts(tenant,contract_ref_hash,attempts,updated_at) VALUES(?,?,1,?) ' +
+    'ON CONFLICT(tenant,contract_ref_hash) DO UPDATE SET attempts=attempts+1,updated_at=excluded.updated_at ' +
+    'WHERE attempts<3'
   );
   const startInvitation = db.prepare(
     "UPDATE implementation_invitations SET status='STARTED',started_run_id=?,updated_at=? WHERE id=? AND status='PENDING'"
@@ -610,32 +618,24 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (!tenant || !contractRef || !validEmail(recipientEmail)) {
       return writeJson(res, 400, { error: 'tenant, contractRef and a valid recipientEmail are required.' });
     }
-    if (!publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
-      return writeJson(res, 503, { error: 'Implementation public origin is not configured.' });
-    }
-
     const contractHash = sha256(contractRef);
-    const existingRun = runByContract.get(tenant, contractHash);
-    if (existingRun) {
-      return writeJson(res, 200, {
-        invitation: publicInvitation(invitationByContract.get(tenant, contractHash)),
-        implementation: readinessForRun(existingRun)
-      });
-    }
-
     // A trusted signed/activated contract is the implementation start signal.
     // Do not wait for an email click or other human acknowledgement before
     // provisioning the implementation run. Notification is advisory only.
-    const started = Date.now();
-    const deadline = started + targetHours * 60 * 60 * 1000;
-    const runId = randomUUID();
-    const runCreatedAt = nowIso();
-    insertRun.run(runId, tenant, contractHash, 'BUILDING', started, deadline, targetHours, runCreatedAt, runCreatedAt);
-    const autoStartedRun = runById.get(runId, tenant);
-    record(runId, tenant, 'CONTRACT_AUTO_STARTED', {
-      targetHours,
-      contractRefDigest: contractHash.slice(0, 16)
-    });
+    let autoStartedRun = runByContract.get(tenant, contractHash);
+    const createdRun = !autoStartedRun;
+    if (!autoStartedRun) {
+      const started = Date.now();
+      const deadline = started + targetHours * 60 * 60 * 1000;
+      const runId = randomUUID();
+      const runCreatedAt = nowIso();
+      insertRun.run(runId, tenant, contractHash, 'BUILDING', started, deadline, targetHours, runCreatedAt, runCreatedAt);
+      autoStartedRun = runById.get(runId, tenant);
+      record(runId, tenant, 'CONTRACT_AUTO_STARTED', {
+        targetHours,
+        contractRefDigest: contractHash.slice(0, 16)
+      });
+    }
 
     const recipientHash = recipientDigest(recipientEmail);
     const existing = invitationByContract.get(tenant, contractHash);
@@ -652,13 +652,33 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
     }
 
+    if (!publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
+      record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_UNAVAILABLE', {
+        reason: 'PUBLIC_ORIGIN_UNCONFIGURED', contractRefDigest: contractHash.slice(0, 16)
+      });
+      return writeJson(res, createdRun ? 201 : 200, {
+        invitation: null,
+        implementation: readinessForRun(autoStartedRun),
+        notification: { delivered: false, unavailable: true }
+      });
+    }
+    // Reserve a durable attempt before calling the mail transport. Replayed
+    // contract events may recover a transient failure, but cannot mail-loop.
+    if (Number(reserveInvitationAttempt.run(tenant, contractHash, nowIso()).changes) !== 1) {
+      return writeJson(res, createdRun ? 201 : 200, {
+        invitation: null,
+        implementation: readinessForRun(autoStartedRun),
+        notification: { delivered: false, retryExhausted: true }
+      });
+    }
+
     const id = randomUUID();
     const rawToken = randomBytes(32).toString('base64url');
     const expiresAtMs = Date.now() + 7 * 24 * 60 * 60 * 1000;
     const ts = nowIso();
     insertInvitation.run(
       id, tenant, contractHash, recipientHash, sha256(rawToken), 'PENDING',
-      targetHours, expiresAtMs, null, ts, ts
+      autoStartedRun.target_hours, expiresAtMs, null, ts, ts
     );
     const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
 
@@ -672,9 +692,9 @@ function createOneDayEnterpriseEngine(options = {}) {
         invitationId: id
       });
       notificationDelivered = true;
-      record(runId, tenant, 'CONTRACT_INVITATION_SENT', {
+      record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_SENT', {
         invitationId: id,
-        targetHours,
+        targetHours: autoStartedRun.target_hours,
         contractRefDigest: contractHash.slice(0, 16),
         provider: delivery?.provider || 'configured-sender',
         messageId: delivery?.messageId || null
@@ -684,13 +704,13 @@ function createOneDayEnterpriseEngine(options = {}) {
       // the zero-touch implementation pipeline. Remove the undelivered token,
       // keep the run, and surface a non-blocking audit event.
       deleteInvitation.run(id);
-      record(runId, tenant, 'CONTRACT_INVITATION_FAILED', {
+      record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_FAILED', {
         invitationId: id,
         contractRefDigest: contractHash.slice(0, 16)
       });
     }
 
-    return writeJson(res, 201, {
+    return writeJson(res, createdRun ? 201 : 200, {
       invitation: notificationDelivered ? publicInvitation(invitationByContract.get(tenant, contractHash)) : null,
       implementation: readinessForRun(autoStartedRun),
       notification: { delivered: notificationDelivered }
