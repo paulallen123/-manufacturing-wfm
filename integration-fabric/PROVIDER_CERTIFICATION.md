@@ -1,53 +1,37 @@
 # Genuine provider sandbox certification through VECTOR
 
-This proof lane closes the gap between the Integration Fabric's adapter contract and a real external provider.
+This isolated proof lane closes the gap between the Integration Fabric's adapter contract and genuine external provider environments. It does not modify release authority.
 
-It deliberately runs through:
-1. the Integration Fabric connector registry;
-2. the existing fail-closed `buildSafeConnectionTest` contract;
-3. an exact allowlisted provider sandbox/demo host;
-4. a managed secret reference resolved only at the executor boundary;
-5. a bounded GET/HEAD request;
-6. provider-specific assertions;
-7. the existing `validateConnectionEvidence` gate;
-8. evidence bound to an exact VECTOR candidate SHA.
+Every run passes through the connector registry, the existing fail-closed `buildSafeConnectionTest` contract, an exact allowlisted sandbox/demo host, managed-secret resolution at the executor boundary, a bounded GET/HEAD request, provider assertions, `validateConnectionEvidence`, and an exact VECTOR candidate SHA.
 
-## First executable provider paths
+## Executable customer-free paths
 
-### SAP S/4HANA profile
-Uses SAP Business Accelerator Hub's official sandbox host and a personalised SAP API key. The first probe is deliberately read-only. Passing it earns at most `sandbox-authenticated` evidence.
+- **SAP S/4HANA** — SAP Business Accelerator Hub sandbox; read-only OData service document; maximum claim `sandbox-authenticated`.
+- **Xero** — Xero Accounting API; refuses to run unless the Organisation response says `IsDemoCompany=true`; maximum claim `sandbox-authenticated`.
+- **Gusto Embedded Payroll** — dedicated `api.gusto-demo.com` environment and demo company; read-only company proof first; maximum claim `sandbox-authenticated`.
 
-### Xero profile
-Uses the Xero Accounting API against a connected organisation and refuses to proceed unless the Organisation response independently states `IsDemoCompany=true`. This prevents a real organisation from being used accidentally.
+## Required secret inputs
 
-## What this does not prove
+Credentials must live in the execution environment secret store, never source/evidence/chat:
 
-- customer production;
-- production certification;
-- a write round-trip;
-- provider failure/recovery;
-- a complete workforce semantic mapping;
-- release authority.
-
-Those remain separate gates. A platform/deployment success never upgrades this evidence.
-
-## Required secrets
-
-Do not put credentials in source, evidence or chat.
-
-- SAP: `SAP_API_KEY`
-- Xero demo: `XERO_ACCESS_TOKEN`, `XERO_TENANT_ID`
-- Exact VECTOR candidate: `VECTOR_CANDIDATE_SHA`
+- `SAP_API_KEY`
+- `XERO_ACCESS_TOKEN`, `XERO_TENANT_ID`
+- `GUSTO_ACCESS_TOKEN`, `GUSTO_COMPANY_ID`
+- `VECTOR_CANDIDATE_SHA`
 
 Run:
 
 ```bash
 node integration-fabric/scripts/certify-provider-sandbox.mjs sap-s4hana
 node integration-fabric/scripts/certify-provider-sandbox.mjs xero
+node integration-fabric/scripts/certify-provider-sandbox.mjs gusto-embedded-payroll
 ```
 
-Evidence is written under `integration-fabric/evidence/provider/`.
+Passing this gate proves genuine vendor sandbox/demo authentication and bounded read through the VECTOR Integration Fabric only. It does **not** prove customer production, production certification, write round-trip, provider recovery, full semantic mapping, or release authority.
 
-## Next gates
+## Next evidence gates
 
-After sandbox authentication, add provider-specific canonical WFM mapping and independent reconciliation. Stateful write/read-back is a separate sandbox-only contract and must never weaken the read-only connection proof.
+1. Map representative source data into canonical WFM objects and reconcile it independently.
+2. Add a separate sandbox-only synthetic write/read-back contract where the business case requires writes.
+3. Inject safe credential expiry, timeout/retry, duplicate/idempotency and schema-drift scenarios without abusing provider services.
+4. Only customer-authorised production evidence can later support a production/customer claim.
