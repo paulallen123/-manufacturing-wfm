@@ -188,22 +188,6 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Release:** this closes the newly created leave-decision correlation gate for sealed post-repair decisions only. Docker execution, exact hosted identity, legacy-decision migration, durable restore and the complete approved browser journey remain **BLOCKED**; the marketing video is not ready.
 - **Safety:** no live deployment, customer/payroll/provider mutation, restart, DNS, credential or infrastructure action occurred.
 
-
-## 2026-09-28 — locale-safe leave calendar dates
-
-- **Objective:** reduce date interpretation burden for employee and manager leave tasks while preserving the authoritative local calendar day.
-- **Acceptance:** valid stored `YYYY-MM-DD` leave dates render in the active locale for both roles; a date on a daylight-saving boundary cannot shift day; semantic machine-readable date remains the unchanged stored value; Unicode names and all leave controls remain intact.
-- **Implementation:** `ux-overlay/vector-workflows.js` adds one reusable validated calendar-date renderer. It constructs a UTC calendar value only after exact component validation, formats through the current display locale, and emits semantic `<time datetime="stored-date">` markup. It does not reinterpret a calendar date through the site time zone or alter stored data.
-- **Tests:** fail-first regression observed the raw ISO date. Fresh final checks: 4/4 focused controller tests and 25/25 affected sealed-runtime tests passed with zero failures/skips; Node syntax checks passed. The fixture covers `de-DE`, Europe/Berlin's 29 March 2026 DST transition and the Unicode name `Zoë 山田`.
-- **Published evidence:** source commit `bcab5fac32ce6f367456a12c80954500561a770d`; blobs `4cc587ea9e65bd57feb16a80a79f51eac5725aa5` (controller) and `e16996277cb0085848ea8ddd324d87935cfb972b` (regression).
-- **Status:** **BUILT**, not hosted **PROVEN**. Entitlement, overlap, approval, balance, payroll, tenant and audit logic are unchanged. No customer, production, payroll-provider, DNS, infrastructure or persistent fixture mutation occurred.
-- **Scale/global:** behavior is independent of organisation size and hierarchy depth. This proves one locale and one DST boundary locally; it does not certify any jurisdiction or prove all locales/calendars.
-- **Outcome/savings:** no realised time or financial saving is claimed. The evidence-backed improvement is removal of raw ISO interpretation for the tested role surfaces without calendar-day drift.
-- **Dependencies:** exact hosted browser proof must confirm the serving SHA, rendered locale, semantic date, screen-reader output, refresh and fresh-login state.
-- **Next action:** extend the same validated semantic calendar-date primitive to the weekly period selector only after browser proof confirms no regression in current leave journeys.
-- **Active-work check:** PR #225 advanced through compatible leave-audit evidence commit `f7823a1bd19adde04eb47b7e08207443b8c03e91`; it did not touch the owned workflow files. No deployment or migration was interrupted.
-
-
 ## 2026-09-28 — legacy leave-decision quarantine
 
 - **Reproduced upgrade false green:** a decline was created on the unmodified sealed runtime, producing the historical append-only shape `{version,resultId}`. After applying the immutable-evidence hardener and restarting the same SQLite database, VECTOR still returned HTTP 200 and treated the unsealed decision as authoritative. Fail-first result: 0/1 passed, 1/1 failed, 0 skipped.
@@ -213,19 +197,6 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Release:** silent acceptance of legacy leave decisions is closed locally. Full Docker execution, an authorised legacy-data inventory/reconciliation, exact hosted identity, current-build controlled restart and the complete approved browser journey remain **BLOCKED**.
 - **Evidence:** `evidence/leave-decision-legacy-quarantine-20260928.json`.
 - **Safety:** no live deployment, customer/payroll/provider mutation, restart, DNS, credential or infrastructure action occurred.
-## 2026-09-28 — accessible manager leave decisions
-
-- **Objective:** remove ambiguity from repeated manager leave decision controls so assistive-technology users can identify the employee and date before acting.
-- **Acceptance:** every pending request exposes distinct Approve and Decline accessible names containing the source employee and active-locale calendar date; Unicode and attribute-sensitive names remain intact and safely escaped; visible labels, disabled state, permissions, decision modals and mutations remain unchanged.
-- **Implementation:** `ux-overlay/vector-workflows.js` extends the shared control renderer with an optional escaped accessible label and reuses the validated UTC-safe calendar-date parts for manager leave actions. The employee and localised date are descriptive context only; the existing request ID remains the action binding.
-- **Tests:** red-first regression passed 0/1 before implementation because all decision controls were named only Approve or Decline. Fresh final verification passed 5/5 focused controller tests and 25/25 affected sealed-runtime tests, with zero failures or skips; both changed files passed Node syntax checks. Fixtures include two requests, `de-DE`, the Europe/Berlin DST boundary, Unicode `Zoë 山田`, and escaped `Ana "Müller" & Co`.
-- **Published evidence:** canonical head `84cb8f809b93f16439de262a8a7fb97b5b005fde`; blobs `54119a87276e1940d82b0deb7abb9f90509a48c0` (controller) and `f0ebccb6be888a384e9a2f4278feb3c703cdb57d` (regression).
-- **Status:** **BUILT**, not hosted **PROVEN**. No customer, production, payroll-provider, deployment, DNS, infrastructure or persistent fixture mutation occurred.
-- **Scale/global:** labels are derived from each returned request without fixed organisation size, site, entity or hierarchy assumptions. This locally covers one locale and Unicode/escaping boundaries; it does not certify a jurisdiction, every assistive technology or large-list performance.
-- **Outcome/savings:** no realised time or financial saving is claimed. The evidence-backed change replaces ambiguous repeated accessible names with request-specific names while preserving the same two visible actions.
-- **Dependencies:** exact-candidate hosted browser evidence must confirm the serving SHA, screen-reader name, focus order, disabled state, locale, refresh and fresh-login behavior through the authoritative leave journey.
-- **Next action:** execute the complete exact-head hosted leave journey and retain this increment only if the accessible names, request binding, overlap refusal, decision, balances and audit readback all correlate on one serving SHA.
-- **Active-work check:** PR #225 was open/draft at compatible head `acc4f4c841b6a54d85cadef34d0fec85c83c7175`; its only delta from the previous Product checkpoint was Trust/Proof leave-quarantine evidence and did not touch the owned workflow files. No deployment or migration was interrupted.
 
 ## 2026-09-28 — passkey-first normal sign-in
 
@@ -248,7 +219,6 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Evidence:** `evidence/proof-runner-workload-identity-20260928.json`; overlay `scripts/harden-proof-runner-identity.mjs`; proof `tests/proof-runner-workload-identity.proof.test.cjs`.
 - **Safety:** no live deployment, customer/payroll/provider mutation, restart, DNS, credential or infrastructure action occurred.
 
-
 ## 2026-09-28 — proof-runner atomic action budget
 
 - **Reproduced missing containment:** the proof-only workload configuration rejected `actionBudget` as unsupported, confirming that a stolen otherwise-valid two-minute bearer had no server-enforced action-count ceiling. Fail-first result: 0/1 passed, 1/1 failed, 0 skipped.
@@ -257,7 +227,6 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Exact boundary:** sealed runtime SHA-256 `dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da`; selected PR #225 parent `4458196e879ddcc796a654c2d48aa91bdcf3c27a`; changed-file SHA-256 values are preserved in `evidence/proof-runner-action-budget-20260928.json`. Execution used Node v24.19.0 because Node v22.23.2 and Docker were unavailable in this workspace, so this is local synthetic **BUILT**, not exact-release or hosted **PROVEN**.
 - **Release:** customer readiness remains **BLOCKED** until the same test passes inside the exact Node 22.23.2 Docker candidate and an independently controlled hosted identity executes a minimally budgeted Golden Journey on the deployed SHA. Key custody/rotation, OIDC federation and hosted concurrent-runner isolation remain unproved.
 - **Safety:** no live deployment, customer/payroll/provider mutation, restart, DNS, credential or infrastructure action occurred.
-
 
 ## 2026-09-28 — proof-runner atomic burst-rate containment
 
@@ -298,4 +267,15 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Fresh local verification:** three consecutive fresh-store focused runs each passed 4/4. The affected security suite passed 9/9 with zero failures/skips. The overlay applied twice to a fresh sealed extraction and the resulting server passed syntax validation.
 - **Exact boundary:** sealed runtime SHA-256 `dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da`; selected PR #225 parent `ea175fd7f6609c4d359edf9b76cc28c3addcaccf`; hashes are preserved in `evidence/proof-runner-authority-snapshot-revocation-20260928.json`. Execution used Node v24.19.0 because Node v22.23.2 and Docker were unavailable, so this is local synthetic **BUILT**, not exact-release or hosted **PROVEN**.
 - **Release:** customer readiness remains **BLOCKED** pending exact Node 22.23.2 Docker execution and hosted role/permission propagation across every active instance. Dedicated proof-account governance and OIDC/provider federation remain unproved.
+- **Safety:** no live deployment, customer/payroll/provider mutation, restart, DNS, credential or infrastructure action occurred.
+
+## 2026-09-28 — proof-runner expected-role issuance binding
+
+- **Reproduced fresh-issuance privilege gap:** the linked manager account was changed to administrator with costs access and `system.admin` before the proof-runner challenge exchange. The valid workload assertion returned HTTP 200 and created a session because server configuration did not state which account role was authorised. Fail-first result: 4/5 passed, 1/5 failed, 0 skipped.
+- **BUILT repair:** every proof-runner key now requires a trusted server-configured role. After signature, audience, nonce and lifetime verification, session exchange requires exact email, tenant and role agreement before creating authority; mismatch returns HTTP 503. The regression also proves zero proof-runner sessions and zero issuance audit events after denial.
+- **Defence in depth:** the prior issuance-time authority fingerprint remains in force, so later role, costs or permission changes still revoke an existing bearer with HTTP 401. Exact-key binding, route intersection, monotonic contraction, budgets, rate limits, replay denial and kill switch remain unchanged.
+- **Fresh local verification:** three consecutive fresh-store focused runs each passed 5/5. The affected security suite passed 10/10 with zero failures/skips. The overlay applied twice to a fresh sealed extraction, and the resulting server plus both changed files passed syntax validation.
+- **Preserved harness failures:** the initial focused run omitted the explicit sealed-artifact path and stopped 0/5 at ENOENT. The first affected-suite run used the newer artifact variable but omitted the legacy test's `WFM_TEST_RUNTIME_ARCHIVE`; nine reached tests passed and one stopped at tar ENOENT. Neither run is product evidence.
+- **Exact boundary:** sealed runtime SHA-256 `dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da`; selected PR #225 parent `2804b24e68eec1e798d08d37d200a15ecc2171cd`; hashes are preserved in `evidence/proof-runner-expected-role-binding-20260928.json`. Execution used Node v24.19.0 because Node v22.23.2 and Docker were unavailable, so this is local synthetic **BUILT**, not exact-release or hosted **PROVEN**.
+- **Release:** customer readiness remains **BLOCKED** pending exact Node 22.23.2 Docker execution and hosted denial before session creation on every active instance after an unexpected proof-account role change. Hosted role governance, propagation and identity-provider federation remain unproved.
 - **Safety:** no live deployment, customer/payroll/provider mutation, restart, DNS, credential or infrastructure action occurred.
