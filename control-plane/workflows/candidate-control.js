@@ -1,13 +1,11 @@
-import { defineHook } from 'workflow';
+import { createHook } from 'workflow';
 import { send } from '@vercel/queue';
 import { applyControlEvent, createInitialState } from '../lib/engine.js';
-
-export const controlEventHook = defineHook();
 
 export async function candidateControlWorkflow(seed) {
   'use workflow';
 
-  let state = createInitialState(seed.candidate);
+  let state = await initializeCandidate(seed.candidate);
   const bootstrap = await evaluateEvent(state, {
     eventId: `bootstrap:${state.candidateToken}`,
     type: 'CANDIDATE_STARTED',
@@ -16,7 +14,7 @@ export async function candidateControlWorkflow(seed) {
   state = bootstrap.state;
   await fanOut(bootstrap.emittedTasks);
 
-  const events = controlEventHook.create({ token: state.candidateToken });
+  const events = createHook({ token: state.candidateToken });
   for await (const event of events) {
     const result = await evaluateEvent(state, event);
     state = result.state;
@@ -34,6 +32,11 @@ export async function candidateControlWorkflow(seed) {
   return { candidateToken: state.candidateToken, status: 'HOOK_CLOSED', finalState: state };
 }
 
+async function initializeCandidate(candidate) {
+  'use step';
+  return createInitialState(candidate);
+}
+
 async function evaluateEvent(state, event) {
   'use step';
   return applyControlEvent(state, event);
@@ -42,7 +45,7 @@ async function evaluateEvent(state, event) {
 async function fanOut(tasks) {
   'use step';
   for (const task of tasks) {
-    await send('vector-control-tasks', task);
+    await send('vector-control-tasks', task, { idempotencyKey: task.idempotencyKey });
   }
   return { enqueued: tasks.length };
 }
