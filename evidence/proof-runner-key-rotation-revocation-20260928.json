@@ -1,0 +1,79 @@
+{
+  "evidenceVersion": 1,
+  "recordedAt": "2026-09-28T18:30:17Z",
+  "claim": "A proof-runner bearer is bound to the exact Ed25519 public key that issued it; rotating that key under the same runner ID revokes the previous bearer on its first protected request.",
+  "classification": "BUILT",
+  "evidenceBoundary": {
+    "environment": "local synthetic sealed-runtime extraction with persistent SQLite restart",
+    "customerData": false,
+    "productionMutation": false,
+    "hostedProof": false,
+    "countryOrRegion": "not jurisdiction-specific",
+    "scale": "one runner ID / two Ed25519 keys / one synthetic tenant / one persisted session",
+    "executingNode": "24.19.0",
+    "requiredReleaseNode": "22.23.2"
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "startingHead": "76b9e636cd3f19f6a99c8c7b6eb0a5fe53019ec6",
+    "sealedRuntimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "red": {
+    "tests": 3,
+    "passed": 2,
+    "failed": 1,
+    "skipped": 0,
+    "observation": "A session was issued with one Ed25519 key. After restart with a different trusted public key under the same runner ID, the old bearer reached GET /api/bootstrap and returned HTTP 200 instead of 401.",
+    "rootCause": "The session persisted the runner ID but not the issuing public-key fingerprint, so per-request trust revalidation could not distinguish credentials rotated under the same ID."
+  },
+  "repair": {
+    "exactKeyBinding": "Session issuance stores a SHA-256 fingerprint of the exact DER public key that verified the workload assertion.",
+    "firstRequestRevocation": "Every protected request compares the stored fingerprint with the currently trusted key before scope, rate or action authority is consumed; mismatch returns HTTP 401.",
+    "legacyFailClosed": "A pre-existing proof-runner session with no key fingerprint is treated as mismatched and denied rather than silently grandfathered.",
+    "audit": "The first stale-bearer attempt records proof-runner-credential-revoked with only a hashed session reference and runner ID; repeated attempts do not duplicate the event.",
+    "unchangedControls": "Tenant/account binding, exact route intersection, session contraction, replay denial, action budget, rate limit and kill switch remain enforced."
+  },
+  "green": {
+    "focusedRepeatedFreshStores": {
+      "runs": 3,
+      "testsPerRun": 3,
+      "passedPerRun": 3,
+      "failedPerRun": 0,
+      "skippedPerRun": 0
+    },
+    "observedRotation": {
+      "oldBearerFirstAttemptStatus": 401,
+      "oldBearerSecondAttemptStatus": 401,
+      "revocationAuditEvents": 1,
+      "rawPublicKeyInAudit": false
+    },
+    "affectedRegression": {
+      "tests": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10969.977389,
+      "coverage": [
+        "immutable leave-decision restart/tamper refusal",
+        "legacy leave-decision quarantine",
+        "passkey-only normal sign-in UI",
+        "passkey Origin, user-verification and replay controls",
+        "proof-runner atomic rate/action budgets, scope denial, replay denial, audit and kill switch",
+        "proof-runner authority contraction across persistent restart",
+        "proof-runner exact-key rotation revocation",
+        "leave decision domain-audit request binding"
+      ]
+    },
+    "overlayIdempotence": "The proof-runner hardener applied twice to a fresh sealed extraction and the resulting server passed syntax validation."
+  },
+  "fileSha256": {
+    "scripts/harden-proof-runner-identity.mjs": "856c0f9be41c201d9a8d6d98a38312de584e2bd1d187c799e643dc64f5512e47",
+    "tests/proof-runner-workload-identity.proof.test.cjs": "d29a7243af2eab4cb5819e9ad25ac81c8821d93fae3b3a9825842e2a018c34a8"
+  },
+  "releaseGate": {
+    "status": "BLOCKED",
+    "reason": "This result executed locally on Node 24.19.0 rather than required Node 22.23.2, and key rotation has not been propagated or observed across every active hosted instance. Hosted key custody, rotation atomicity, provider federation and deployed-SHA identity remain unproved.",
+    "nextProof": "Execute the same old-key/new-key restart test inside the exact Node 22.23.2 Docker candidate, then rotate an authorised hosted synthetic runner key across every active instance and verify the old bearer is denied on its first request while the new key can mint a fresh bounded session."
+  }
+}
