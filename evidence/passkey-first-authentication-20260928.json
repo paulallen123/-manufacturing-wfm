@@ -36,12 +36,12 @@
     "runtimeIntegration": "The hardener is wired into both the discarded proof stage and final candidate image construction."
   },
   "green": {
-    "command": "WFM_PASSKEY_HARDENER=scripts/harden-passkey-auth.mjs WFM_SEALED_RUNTIME_ARTIFACT=sealed-runtime-4bd3.tar.gz node --test tests/passkey-authentication.proof.test.cjs",
+    "command": "WFM_LEAVE_AUDIT_HARDENER=scripts/harden-leave-audit-linkage.mjs WFM_PASSKEY_HARDENER=scripts/harden-passkey-auth.mjs WFM_SEALED_RUNTIME_ARTIFACT=sealed-runtime-4bd3.tar.gz node --test tests/passkey-authentication.proof.test.cjs",
     "tests": 2,
     "passed": 2,
     "failed": 0,
     "skipped": 0,
-    "durationMs": 3939.1135,
+    "durationMs": 3783.186083,
     "observations": [
       "The executed normal sign-in UI contains no password text or password input and offers Continue with passkey.",
       "A hostile Origin was rejected with HTTP 403.",
@@ -52,7 +52,7 @@
   },
   "fileSha256": {
     "scripts/harden-passkey-auth.mjs": "9bb8ddae5cb920d5b56ec158b2a67ef89d5368c7e00243c5aed9740b5b61671e",
-    "tests/passkey-authentication.proof.test.cjs": "66cf52d3febea7d250f99f99ab31698413630440f8c4ab8fc66aca0c681c6878"
+    "tests/passkey-authentication.proof.test.cjs": "9d49faf74ab909ae80551981dc9a65c30aa725dd6aa7db4fac752f273e66441c"
   },
   "releaseGate": {
     "status": "BLOCKED",
