@@ -136,11 +136,11 @@ function integrationAccessMarkup(){
     const need=scopes.length?'Read-only access needed for '+scopes.join(', ')+'.':'VECTOR has identified this system and needs its role in the implementation confirmed.';
     let action='';
     if(row.state==='READY_TO_CONNECT'){
-      action='<button type="button" class="btn small primary" data-ij-access-prepare="'+safe(row.candidateId)+'">Prepare secure connection</button>';
+      action='<div class="wfm-ij-access-actions"><button type="button" class="btn small primary" data-ij-access-prepare="'+safe(row.candidateId)+'">I can approve access</button><button type="button" class="btn small" data-ij-route="integrations">I need our system admin</button></div>';
     }else if(row.state==='AUTHORIZATION_REQUIRED'||row.state==='REAUTH_REQUIRED'){
-      action='<button type="button" class="btn small primary" data-ij-route="integrations">'+(row.state==='REAUTH_REQUIRED'?'Reconnect securely':'Continue secure authorisation')+'</button>';
+      action='<div class="wfm-ij-access-actions"><button type="button" class="btn small primary" data-ij-route="integrations">'+(row.state==='REAUTH_REQUIRED'?'Reconnect securely':'Continue secure authorisation')+'</button><button type="button" class="btn small" data-ij-route="integrations">I need our system admin</button></div>';
     }else{
-      action='<button type="button" class="btn small" data-ij-route="integrations">Review this system</button>';
+      action='<div class="wfm-ij-access-actions"><button type="button" class="btn small primary" data-ij-route="integrations">Yes, this is a source system</button><button type="button" class="btn small" data-ij-route="integrations">I am not sure who owns it</button></div>';
     }
     return '<article class="wfm-ij-access-item"><div><div class="wfm-ij-access-title"><b>'+safe(row.name)+'</b><span class="wfm-ij-pill '+safe(String(row.state||'').toLowerCase())+'">'+safe(stateLabel(row.state))+'</span></div><p>'+safe(need)+'</p><small>VECTOR will not ask you to paste a password, API key or secret here.</small></div>'+action+'</article>';
   }).join(''):'<article class="wfm-ij-access-item"><div><div class="wfm-ij-access-title"><b>Secure system access</b><span class="wfm-ij-pill authorization_required">Access needed</span></div><p>Tell VECTOR which systems are authoritative, then an authorised system owner approves the minimum access required.</p><small>Declared systems: '+safe(declared.join(', '))+'. Credentials stay in the provider or managed-secret boundary.</small></div><button type="button" class="btn small primary" data-ij-route="integrations">Review access</button></article>';
