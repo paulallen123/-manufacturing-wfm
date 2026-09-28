@@ -6,7 +6,7 @@ const { createDirectoryOAuthBroker } = require('./directory-oauth-broker.cjs');
 const { discoverDirectorySystems } = require('../worker/directory-discovery-worker.cjs');
 
 const PREFIX = '/api/integrations/autonomous';
-const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
+const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'IMPLEMENTATION_SCOPE', 'USER', 'AGENT']);
 const INTERNAL_HEADER = 'x-wfm-integration-internal';
 const WORKER_PATHS = new Set([
   PREFIX + '/discovery-result',
@@ -38,6 +38,35 @@ const CATALOG = Object.freeze([
 ]);
 
 const CATALOG_BY_KEY = new Map(CATALOG.map(x => [x.key, x]));
+
+const SOURCE_DOMAINS = Object.freeze({
+  people: {
+    label: 'employee master',
+    question: 'Which system is the authoritative source for employees and employment status?',
+    preferredCategories: ['hcm', 'payroll-hcm', 'erp-payroll']
+  },
+  payroll: {
+    label: 'payroll',
+    question: 'Which system calculates or owns payroll?',
+    preferredCategories: ['payroll', 'payroll-hcm', 'erp-payroll']
+  },
+  absence: {
+    label: 'absence and leave',
+    question: 'Which system is authoritative for absence and leave?',
+    preferredCategories: ['hcm', 'payroll-hcm', 'erp-payroll']
+  },
+  time: {
+    label: 'time and attendance',
+    question: 'Which system records authoritative clocking or time and attendance?',
+    preferredCategories: ['payroll-hcm']
+  },
+  production: {
+    label: 'production demand',
+    question: 'Which system contains production demand, work orders or capacity requirements?',
+    preferredCategories: ['erp']
+  }
+});
+
 const CANONICAL_FIELDS = Object.freeze({
   Person: [
     'employeeId', 'firstName', 'lastName', 'email', 'status', 'department',
@@ -182,6 +211,7 @@ function candidateEvidence(app, source, method) {
     method,
     observedIdentifier: compact(app?.appId || app?.id || app?.identifier || app?.domain || '', 160),
     displayName: compact(app?.name || app?.displayName || '', 160),
+    context: compact(app?.scopeRole || app?.context || '', 80) || null,
     observedAt: nowIso()
   };
 }
@@ -261,6 +291,10 @@ function createAutonomousIntegrationHub(options = {}) {
     'CREATE TABLE IF NOT EXISTS integration_discovery_sessions(' +
       'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, provider TEXT NOT NULL, status TEXT NOT NULL,' +
       'expires_at INTEGER NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);' +
+    'CREATE TABLE IF NOT EXISTS integration_source_answers(' +
+      'tenant TEXT NOT NULL, domain TEXT NOT NULL, system_name TEXT NOT NULL, product_key TEXT,' +
+      'access_state TEXT NOT NULL, owner_hint TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,' +
+      'PRIMARY KEY(tenant,domain));' +
     'CREATE TABLE IF NOT EXISTS integration_connections(' +
       'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, candidate_id TEXT NOT NULL, product_key TEXT NOT NULL,' +
       'category TEXT NOT NULL, state TEXT NOT NULL, auth_method TEXT NOT NULL, semantic_scopes_json TEXT NOT NULL,' +
@@ -306,6 +340,13 @@ function createAutonomousIntegrationHub(options = {}) {
   );
   const confirmCandidateStmt = db.prepare(
     'UPDATE integration_candidates SET status=\'CONFIRMED\',authoritative_for_json=?,updated_at=? WHERE id=? AND tenant=?'
+  );
+  const upsertSourceAnswer = db.prepare(
+    'INSERT INTO integration_source_answers(tenant,domain,system_name,product_key,access_state,owner_hint,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?) ' +
+    'ON CONFLICT(tenant,domain) DO UPDATE SET system_name=excluded.system_name,product_key=excluded.product_key,access_state=excluded.access_state,owner_hint=excluded.owner_hint,updated_at=excluded.updated_at'
+  );
+  const listSourceAnswers = db.prepare(
+    'SELECT * FROM integration_source_answers WHERE tenant=? ORDER BY domain'
   );
 
   const connectionById = db.prepare('SELECT * FROM integration_connections WHERE id=? AND tenant=?');
@@ -434,6 +475,139 @@ function createAutonomousIntegrationHub(options = {}) {
     };
   }
 
+  function tableExists(name) {
+    return Boolean(db.prepare("SELECT 1 AS present FROM sqlite_master WHERE type='table' AND name=?").get(name));
+  }
+
+  function latestImplementationScope(tenant) {
+    if (!tableExists('implementation_scope') || !tableExists('implementation_runs')) return null;
+    const row = db.prepare(
+      'SELECT s.scope_json,s.updated_at FROM implementation_scope s ' +
+      'JOIN implementation_runs r ON r.id=s.run_id AND r.tenant=s.tenant ' +
+      'WHERE s.tenant=? ORDER BY r.started_at_ms DESC LIMIT 1'
+    ).get(tenant);
+    if (!row) return null;
+    const scope = safeJsonParse(row.scope_json, null);
+    return scope && typeof scope === 'object' ? { scope, updatedAt: row.updated_at } : null;
+  }
+
+  function scopeDiscoveryApps(scope) {
+    if (!scope || typeof scope !== 'object') return [];
+    const apps = [];
+    const push = (name, role) => {
+      const value = compact(name, 160).trim();
+      if (!value) return;
+      apps.push({ displayName: value, name: value, scopeRole: role });
+    };
+    push(scope.hcmSystem, 'hcm');
+    push(scope.payrollSystem, 'payroll');
+    push(scope.erpSystem, 'erp');
+    for (const name of Array.isArray(scope.sourceSystems) ? scope.sourceSystems : []) push(name, 'other');
+    return apps;
+  }
+
+  function seedCandidatesFromImplementationScope(tenant) {
+    const latest = latestImplementationScope(tenant);
+    if (!latest) return [];
+    const apps = scopeDiscoveryApps(latest.scope);
+    if (!apps.length) return [];
+    return ingestDiscovery(tenant, 'IMPLEMENTATION_SCOPE', apps);
+  }
+
+  function sourceAnswerRows(tenant) {
+    return listSourceAnswers.all(tenant).map(row => ({
+      domain: row.domain,
+      systemName: row.system_name,
+      productKey: row.product_key || null,
+      accessState: row.access_state,
+      ownerHint: row.owner_hint || null,
+      updatedAt: row.updated_at
+    }));
+  }
+
+  function authoritySuggestions(candidates, domain) {
+    const spec = SOURCE_DOMAINS[domain];
+    if (!spec) return [];
+    return candidates
+      .map(candidate => ({ candidate, product: CATALOG_BY_KEY.get(candidate.productKey) }))
+      .filter(({ product }) => product && (
+        product.supports.includes(domain) ||
+        (domain === 'people' && product.supports.includes('people')) ||
+        spec.preferredCategories.includes(product.category)
+      ))
+      .sort((a,b) => b.candidate.confidence - a.candidate.confidence)
+      .slice(0, 3)
+      .map(({ candidate }) => ({
+        candidateId: candidate.id,
+        productKey: candidate.productKey,
+        name: candidate.name,
+        confidence: candidate.confidence
+      }));
+  }
+
+  function sourceFallbackForTenant(tenant, candidates, connections) {
+    const answers = sourceAnswerRows(tenant);
+    const answered = new Map(answers.map(row => [row.domain, row]));
+    const confirmedDomains = new Set(candidates.flatMap(candidate =>
+      candidate.status === 'CONFIRMED' ? candidate.authoritativeFor : []
+    ));
+    const latestScope = latestImplementationScope(tenant)?.scope || {};
+    const featureText = (Array.isArray(latestScope.features) ? latestScope.features : []).join(' ').toLowerCase();
+    const requiredDomains = new Set(['people']);
+    if (latestScope.payrollSystem || /payroll/.test(featureText)) requiredDomains.add('payroll');
+    if (/absence|leave|holiday/.test(featureText)) requiredDomains.add('absence');
+    if (/time|attendance|clock/.test(featureText) || (latestScope.clockingMethods || []).length) requiredDomains.add('time');
+    if (latestScope.erpSystem || /schedul|production|capacity|demand/.test(featureText)) requiredDomains.add('production');
+
+    const questions = [...requiredDomains]
+      .filter(domain => !confirmedDomains.has(domain) && !answered.has(domain))
+      .map(domain => ({
+        domain,
+        label: SOURCE_DOMAINS[domain].label,
+        question: SOURCE_DOMAINS[domain].question,
+        suggestions: authoritySuggestions(candidates, domain)
+      }));
+
+    let independentWork = [];
+    if (tableExists('implementation_runs') && tableExists('implementation_work_jobs')) {
+      const run = db.prepare(
+        'SELECT id FROM implementation_runs WHERE tenant=? ORDER BY started_at_ms DESC LIMIT 1'
+      ).get(tenant);
+      if (run) {
+        independentWork = db.prepare(
+          "SELECT requirement_key,status FROM implementation_work_jobs WHERE tenant=? AND run_id=? " +
+          "AND status IN ('PENDING','RUNNING','AWAITING_EVIDENCE','RETRY_WAIT','BLOCKED_RESUMABLE') " +
+          "AND requirement_key NOT IN ('source-systems','people-data','organisation-model','payroll-mapping','historical-replay','live-data-import') " +
+          'ORDER BY rowid LIMIT 12'
+        ).all(tenant, run.id).map(row => ({ requirementKey: row.requirement_key, status: row.status }));
+      }
+    }
+
+    const directoryConfigured = directoryOAuth.availability().some(item => item.configured === true);
+    const accessBlocked = connections.length === 0 || connections.every(connection =>
+      ['AUTHORIZATION_REQUIRED','REAUTH_REQUIRED','DEGRADED'].includes(connection.state)
+    );
+
+    return {
+      mode: directoryConfigured ? 'DIRECTORY_FIRST_WITH_FALLBACKS' : 'FALLBACK_FIRST',
+      directoryAccessRequired: false,
+      questions,
+      answers,
+      independentWork,
+      implementationCanContinue: independentWork.length > 0,
+      accessBlocked,
+      alternativeAccessMethods: [
+        { key: 'provider-oauth', label: 'Provider OAuth / read-only API', readinessEffect: 'authoritative-connection-candidate' },
+        { key: 'service-account', label: 'Customer-managed read-only service account', readinessEffect: 'authoritative-connection-candidate' },
+        { key: 'sftp-export', label: 'Scheduled SFTP / encrypted file export', readinessEffect: 'requires-source-reconciliation' },
+        { key: 'read-only-view', label: 'Customer-created read-only database view or replica', readinessEffect: 'requires-source-reconciliation' },
+        { key: 'existing-middleware', label: 'Existing iPaaS / integration middleware', readinessEffect: 'requires-source-reconciliation' },
+        { key: 'sample-schema', label: 'Sample file or schema for configuration preparation only', readinessEffect: 'does-not-prove-go-live' }
+      ],
+      goLiveRule: 'Authoritative source access or equivalent reconciled source evidence is still required before source-system readiness can pass.'
+    };
+  }
+
   function publicConnection(row) {
     const product = CATALOG_BY_KEY.get(row.product_key);
     const recon = lastRecon.get(row.tenant, row.id);
@@ -478,6 +652,7 @@ function createAutonomousIntegrationHub(options = {}) {
   }
 
   function statusForTenant(tenant) {
+    seedCandidatesFromImplementationScope(tenant);
     const candidates = listCandidates.all(tenant).map(publicCandidate);
     const connectionRows = listConnections.all(tenant);
     const connections = connectionRows.map(publicConnection);
@@ -495,6 +670,7 @@ function createAutonomousIntegrationHub(options = {}) {
       },
       connections,
       directoryDiscovery: directoryOAuth.availability(),
+      fallback: sourceFallbackForTenant(tenant, candidates, connections),
       readiness: {
         readyForPeopleSync: activePeople.length > 0,
         peopleSourceConfirmed: confirmedPeople.length > 0,
@@ -522,8 +698,8 @@ function createAutonomousIntegrationHub(options = {}) {
         row = candidateById.get(id, tenant);
       } else {
         const evidenceList = safeJsonParse(row.evidence_json, []);
-        const signature = evidence.source + ':' + evidence.observedIdentifier + ':' + evidence.displayName;
-        if (!evidenceList.some(x => (x.source + ':' + x.observedIdentifier + ':' + x.displayName) === signature)) {
+        const signature = evidence.source + ':' + evidence.observedIdentifier + ':' + evidence.displayName + ':' + (evidence.context || '');
+        if (!evidenceList.some(x => (x.source + ':' + x.observedIdentifier + ':' + x.displayName + ':' + (x.context || '')) === signature)) {
           evidenceList.push(evidence);
         }
         updateCandidate.run(
@@ -700,6 +876,75 @@ function createAutonomousIntegrationHub(options = {}) {
     const updated = candidateById.get(candidate.id, ctx.tenant);
     record(ctx.tenant, null, 'candidate-confirmed', { candidateId: candidate.id, productKey: candidate.product_key, authoritativeFor });
     return writeJson(res, 200, { candidate: publicCandidate(updated) });
+  }
+
+  async function handleSourceAnswer(ctx, req, res) {
+    const body = await readJson(req, maxBodyBytes);
+    const domain = compact(body.domain, 40).toLowerCase();
+    const spec = SOURCE_DOMAINS[domain];
+    if (!spec) return writeJson(res, 400, { error: 'Unsupported source-system domain.' });
+
+    const systemName = compact(body.systemName, 160).trim();
+    if (!systemName) return writeJson(res, 400, { error: 'systemName is required.' });
+    const accessState = compact(body.accessState || 'UNKNOWN', 40).toUpperCase();
+    if (!['CAN_AUTHORIZE','NEEDS_ADMIN','NO_DIRECT_ACCESS','UNKNOWN'].includes(accessState)) {
+      return writeJson(res, 400, { error: 'Unsupported accessState.' });
+    }
+    const ownerHint = compact(body.ownerHint, 160).trim() || null;
+
+    const detected = detectProduct({ displayName: systemName, name: systemName }, 'USER');
+    let candidate = null;
+    if (detected) {
+      const found = ingestDiscovery(ctx.tenant, 'USER', [{
+        displayName: systemName,
+        name: systemName,
+        productKey: detected.product.key,
+        context: 'source-answer:' + domain
+      }]);
+      candidate = found.find(item => item.productKey === detected.product.key) || null;
+      if (candidate) {
+        const authority = [...new Set([...(candidate.authoritativeFor || []), domain])];
+        confirmCandidateStmt.run(JSON.stringify(authority), nowIso(), candidate.id, ctx.tenant);
+        candidate = publicCandidate(candidateById.get(candidate.id, ctx.tenant));
+      }
+    }
+
+    const stamp = nowIso();
+    upsertSourceAnswer.run(
+      ctx.tenant, domain, systemName, candidate?.productKey || null,
+      accessState, ownerHint, stamp, stamp
+    );
+    record(ctx.tenant, null, 'source-system-question-answered', {
+      domain,
+      productKey: candidate?.productKey || null,
+      recognized: Boolean(candidate),
+      accessState,
+      ownerHintProvided: Boolean(ownerHint)
+    });
+
+    return writeJson(res, 200, {
+      answer: sourceAnswerRows(ctx.tenant).find(item => item.domain === domain),
+      candidate,
+      recognized: Boolean(candidate),
+      sourceReadinessProven: false,
+      nextAction: candidate
+        ? {
+            type: accessState === 'CAN_AUTHORIZE' ? 'PREPARE_SECURE_CONNECTION' : 'RESOLVE_ACCESS_PATH',
+            candidateId: candidate.id,
+            supportedAuthMethods: CATALOG_BY_KEY.get(candidate.productKey)?.authMethods || [],
+            instruction: 'Identifying the system does not prove access or data readiness. VECTOR still requires a secure, reconciled source path.'
+          }
+        : {
+            type: 'COLLECT_SAFE_SOURCE_EVIDENCE',
+            options: ['sample-schema','sftp-export','read-only-view','existing-middleware'],
+            instruction: 'VECTOR has recorded the system name but does not yet have a recognised connector profile. Continue configuration preparation without marking source readiness green.'
+          },
+      fallback: sourceFallbackForTenant(
+        ctx.tenant,
+        listCandidates.all(ctx.tenant).map(publicCandidate),
+        listConnections.all(ctx.tenant).map(publicConnection)
+      )
+    });
   }
 
   async function handleConnect(ctx, req, res) {
@@ -1044,6 +1289,7 @@ function createAutonomousIntegrationHub(options = {}) {
       }
       if (req.method === 'POST' && path === PREFIX + '/discovery-session') return await handleCreateDiscoverySession(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/discover') return await handleDiscover(ctx, req, res);
+      if (req.method === 'POST' && path === PREFIX + '/source-answer') return await handleSourceAnswer(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/confirm') return await handleConfirm(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/connect') return await handleConnect(ctx, req, res);
       if (req.method === 'POST' && path === PREFIX + '/mapping-preview') return await handleMappingPreview(ctx, req, res);
@@ -1071,5 +1317,6 @@ module.exports = {
   CANONICAL_FIELDS,
   mappingSuggestions,
   detectProduct,
-  validCredentialReference
+  validCredentialReference,
+  SOURCE_DOMAINS
 };
