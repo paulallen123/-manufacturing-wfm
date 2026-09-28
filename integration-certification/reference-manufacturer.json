@@ -20,7 +20,7 @@
     ],
     "sites": [
       {
-        "id": "tamworth-01",
+        "id": "midlands-01",
         "name": "Midlands Assembly",
         "country": "GB",
         "lines": [
@@ -42,7 +42,7 @@
     {
       "id": "wrk-0001",
       "role": "operator",
-      "site": "tamworth-01",
+      "site": "midlands-01",
       "skills": [
         "assembly-a"
       ],
@@ -51,7 +51,7 @@
     {
       "id": "wrk-0002",
       "role": "team-leader",
-      "site": "tamworth-01",
+      "site": "midlands-01",
       "skills": [
         "assembly-a",
         "first-aid"
