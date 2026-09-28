@@ -5,14 +5,16 @@ import {
   candidateToken,
   checkNoIdleInvariant,
   createInitialState,
+  validateCandidateIdentity,
 } from '../lib/engine.js';
 
+const sha = 'a'.repeat(40);
 const candidate = {
   repository: 'paulallen123/-manufacturing-wfm',
   ref: 'release/frozen-candidate',
-  commitSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  commitSha: sha,
   deploymentId: 'railway-deploy-1',
-  runtimeSha: 'runtime-sha-1',
+  runtimeSha: sha,
   releaseId: 'vector-proof-1',
   environment: 'staging-proof',
   provider: 'railway',
@@ -28,7 +30,17 @@ function bootstrap() {
   });
 }
 
-function receiptEvent({ eventId, gateId, sequence, result = 'PASS', applicationState = 'PASS', proofLane = { laneId: 'github-actions', provider: 'github' }, candidateOverride = candidate }) {
+function activeTask(state, gateId) {
+  return Object.values(state.tasks).find((task) => task.gateId === gateId && ['QUEUED', 'RUNNING'].includes(task.status));
+}
+
+function receiptEvent(state, { eventId, gateId, sequence, result = 'PASS', applicationState = 'PASS', proofLane = null, candidateOverride = candidate }) {
+  const task = activeTask(state, gateId);
+  const boundLane = task ? {
+    laneId: task.laneId,
+    provider: task.provider,
+    failureDomainId: task.failureDomainId,
+  } : undefined;
   return {
     eventId,
     type: 'PROOF_RECEIPT',
@@ -41,10 +53,19 @@ function receiptEvent({ eventId, gateId, sequence, result = 'PASS', applicationS
       applicationState,
       candidate: candidateOverride,
       evidenceDigest: `digest-${eventId}`,
-      proofLane,
+      taskId: task?.taskId,
+      idempotencyKey: task?.idempotencyKey,
+      proofLane: proofLane ? { ...boundLane, ...proofLane } : boundLane,
     },
   };
 }
+
+test('candidate identity rejects source/runtime drift before orchestration starts', () => {
+  assert.equal(validateCandidateIdentity(candidate).ok, true);
+  const mismatch = { ...candidate, runtimeSha: 'b'.repeat(40) };
+  assert.equal(validateCandidateIdentity(mismatch).reason, 'SOURCE_RUNTIME_SHA_MISMATCH');
+  assert.throws(() => createInitialState(mismatch), /SOURCE_RUNTIME_SHA_MISMATCH/);
+});
 
 test('bootstrap immediately queues admissible root proof and does not idle', () => {
   const result = bootstrap();
@@ -55,14 +76,14 @@ test('bootstrap immediately queues admissible root proof and does not idle', () 
 
 test('terminal PASS fans out newly runnable work immediately', () => {
   let { state } = bootstrap();
-  const result = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-freeze-pass', gateId: 'pre_freeze', sequence: 1 }));
+  const result = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-freeze-pass', gateId: 'pre_freeze', sequence: 1 }));
   assert.equal(result.state.gates.pre_freeze.state, 'PASS');
   assert.ok(result.emittedTasks.some((task) => task.gateId === 'hosted_runtime'));
 });
 
 test('provider SUCCESS metadata cannot satisfy an application proof gate', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass', gateId: 'pre_freeze', sequence: 1 })).state;
   const result = applyControlEvent(state, {
     eventId: 'evt-railway-success',
     type: 'PROVIDER_STATUS',
@@ -75,8 +96,8 @@ test('provider SUCCESS metadata cannot satisfy an application proof gate', () =>
 
 test('false-green receipt is rejected when terminal application PASS is absent', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass2', gateId: 'pre_freeze', sequence: 1 })).state;
-  const result = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass2', gateId: 'pre_freeze', sequence: 1 })).state;
+  const result = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-false-green',
     gateId: 'hosted_runtime',
     sequence: 1,
@@ -85,13 +106,27 @@ test('false-green receipt is rejected when terminal application PASS is absent',
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   }));
   assert.notEqual(result.state.gates.hosted_runtime.state, 'PASS');
+  assert.equal(result.state.gates.hosted_runtime.latestReceiptSequence, -1);
   assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'FALSE_GREEN_PROVIDER_STATUS'));
+  assert.ok(Object.values(result.state.tasks).some((task) => task.gateId === 'hosted_runtime' && ['QUEUED', 'RUNNING'].includes(task.status)));
+});
+
+test('receipt lane must match the exact dispatched task', () => {
+  const { state } = bootstrap();
+  const result = applyControlEvent(state, receiptEvent(state, {
+    eventId: 'evt-forged-lane',
+    gateId: 'pre_freeze',
+    sequence: 1,
+    proofLane: { laneId: 'forged-lane' },
+  }));
+  assert.equal(result.state.gates.pre_freeze.state, 'UNPROVEN');
+  assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'PROOF_LANE_MISMATCH'));
 });
 
 test('stale receipt cannot overwrite newer accepted progress', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-new', gateId: 'pre_freeze', sequence: 2 })).state;
-  const result = applyControlEvent(state, receiptEvent({ eventId: 'evt-old', gateId: 'pre_freeze', sequence: 1, result: 'FAIL' }));
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-new', gateId: 'pre_freeze', sequence: 2 })).state;
+  const result = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-old', gateId: 'pre_freeze', sequence: 1, result: 'FAIL' }));
   assert.equal(result.state.gates.pre_freeze.state, 'PASS');
   assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'STALE_RECEIPT'));
 });
@@ -99,7 +134,7 @@ test('stale receipt cannot overwrite newer accepted progress', () => {
 test('exact candidate mismatch fails closed before a proof can pass', () => {
   const { state } = bootstrap();
   const wrong = { ...candidate, commitSha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' };
-  const result = applyControlEvent(state, receiptEvent({ eventId: 'evt-wrong-sha', gateId: 'pre_freeze', sequence: 1, candidateOverride: wrong }));
+  const result = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-wrong-sha', gateId: 'pre_freeze', sequence: 1, candidateOverride: wrong }));
   assert.equal(result.state.gates.pre_freeze.state, 'UNPROVEN');
   assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'EXACT_CANDIDATE_MISMATCH'));
 });
@@ -132,21 +167,21 @@ test('provider degradation reroutes to a distinct healthy admitted lane when con
 
 test('product FAIL launches permanent repair/regression work while other independent work remains active', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass3', gateId: 'pre_freeze', sequence: 1 })).state;
-  state = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass3', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-hosted-pass',
     gateId: 'hosted_runtime',
     sequence: 1,
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   })).state;
-  state = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-source-pass',
     gateId: 'exact_source_binding',
     sequence: 1,
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   })).state;
 
-  const result = applyControlEvent(state, receiptEvent({
+  const result = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-golden-fail',
     gateId: 'golden_journey',
     sequence: 1,
