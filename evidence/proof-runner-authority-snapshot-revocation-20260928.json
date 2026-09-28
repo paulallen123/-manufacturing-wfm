@@ -1,7 +1,7 @@
 {
   "evidenceVersion": 1,
   "recordedAt": "2026-09-28T19:30:16Z",
-  "claim": "A proof-runner bearer cannot inherit later role, cost-data or permission escalation from its linked account; any authority-shape change revokes the session on its first protected request.",
+  "claim": "A proof-runner bearer cannot inherit later role or permission escalation from its linked account; any authority-shape change revokes the session on its first protected request.",
   "classification": "BUILT",
   "evidenceBoundary": {
     "environment": "local synthetic sealed-runtime extraction with persistent SQLite restart",
@@ -24,7 +24,7 @@
     "passed": 3,
     "failed": 1,
     "skipped": 0,
-    "observation": "A bearer was issued while the linked account was a manager with no extra permissions. After persistent restart, the account was changed to administrator with costs access and system.admin. The old bearer returned HTTP 200 and its actor inherited the elevated authority.",
+    "observation": "A bearer was issued while the linked account was a manager with costs access and no extra permissions. After persistent restart, the account was changed to administrator, retained costs access and gained system.admin. The old bearer returned HTTP 200 and its actor inherited the elevated role and permission.",
     "rootCause": "The session was bound to runner ID, key, tenant, account and routes, but did not preserve or compare the linked account's issuance-time role, costs flag and permission set."
   },
   "repair": {
@@ -45,7 +45,8 @@
     "observedEscalationContainment": {
       "previousRole": "manager",
       "mutatedRole": "admin",
-      "mutatedCosts": true,
+      "baselineCosts": true,
+      "postMutationCosts": true,
       "mutatedPermissions": ["system.admin"],
       "oldBearerFirstAttemptStatus": 401,
       "oldBearerSecondAttemptStatus": 401,
