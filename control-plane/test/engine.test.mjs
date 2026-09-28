@@ -124,6 +124,7 @@ test('provider degradation reroutes to a distinct healthy admitted lane when con
     type: 'PROVIDER_DEGRADED',
     candidateToken: candidateToken(candidate),
     provider: 'github',
+    sequence: 1,
     reason: 'pre-execution outage',
   });
   assert.equal(result.emittedTasks[0].gateId, 'pre_freeze');
@@ -185,6 +186,7 @@ test('Railway outage blocks the dependent DAG explicitly instead of creating une
     type: 'PROVIDER_DEGRADED',
     candidateToken: candidateToken(candidate),
     provider: 'railway',
+    sequence: 1,
     reason: 'pre-execution provider outage',
   });
   assert.equal(result.state.gates.hosted_runtime.state, 'BLOCKED');
@@ -202,12 +204,14 @@ test('dependency blocks reopen only after the upstream gate is actually proven',
     type: 'PROVIDER_DEGRADED',
     candidateToken: candidateToken(candidate),
     provider: 'railway',
+    sequence: 1,
   }).state;
   state = applyControlEvent(state, {
     eventId: 'evt-railway-back',
     type: 'PROVIDER_RECOVERED',
     candidateToken: candidateToken(candidate),
     provider: 'railway',
+    sequence: 2,
   }).state;
   assert.equal(state.gates.hosted_runtime.state, 'UNPROVEN');
   assert.equal(state.gates.exact_source_binding.state, 'BLOCKED');
@@ -364,4 +368,49 @@ test('valid repair regression completion reopens the failed gate and immediately
   assert.equal(reopened.state.tasks[repairTask.idempotencyKey].status, 'PASS');
   assert.equal(reopened.state.tasks[repairTask.idempotencyKey].regressionCaseId, 'regression-golden-journey-001');
   assert.ok(reopened.emittedTasks.some((task) => task.gateId === 'golden_journey' && task.taskKind === 'proof'));
+});
+
+
+test('stale reordered provider event cannot overwrite newer provider health', () => {
+  let { state } = bootstrap();
+  state = applyControlEvent(state, {
+    eventId: 'evt-provider-down-new',
+    type: 'PROVIDER_DEGRADED',
+    candidateToken: candidateToken(candidate),
+    provider: 'github',
+    sequence: 20,
+    reason: 'newer outage',
+  }).state;
+  const stale = applyControlEvent(state, {
+    eventId: 'evt-provider-recovered-old',
+    type: 'PROVIDER_RECOVERED',
+    candidateToken: candidateToken(candidate),
+    provider: 'github',
+    sequence: 19,
+  });
+  assert.equal(stale.state.providerHealth.github.state, 'DEGRADED');
+  assert.equal(stale.state.providerHealth.github.sequence, 20);
+  assert.ok(stale.state.audit.some((item) => item.type === 'STALE_PROVIDER_EVENT_REJECTED'));
+
+  const current = applyControlEvent(stale.state, {
+    eventId: 'evt-provider-recovered-new',
+    type: 'PROVIDER_RECOVERED',
+    candidateToken: candidateToken(candidate),
+    provider: 'github',
+    sequence: 21,
+  });
+  assert.equal(current.state.providerHealth.github.state, 'HEALTHY');
+  assert.equal(current.state.providerHealth.github.sequence, 21);
+});
+
+test('provider state changes without monotonic sequence fail closed', () => {
+  const { state } = bootstrap();
+  const result = applyControlEvent(state, {
+    eventId: 'evt-provider-no-sequence',
+    type: 'PROVIDER_DEGRADED',
+    candidateToken: candidateToken(candidate),
+    provider: 'github',
+  });
+  assert.equal(result.state.providerHealth.github, undefined);
+  assert.ok(result.state.audit.some((item) => item.reason === 'INVALID_PROVIDER_EVENT_SEQUENCE'));
 });
