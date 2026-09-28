@@ -57,3 +57,6 @@ body.ux-reset-active .content[data-wfm-implementation-journey]{background:#f6f8f
 .wfm-ij-decision-meta span{font-size:9px;line-height:1.2;font-weight:900;letter-spacing:.055em;text-transform:uppercase;color:#8a7043;background:#fff8e8;border:1px solid #f2dfb9;border-radius:999px;padding:4px 6px}
 .wfm-ij-decision-actions{display:flex;gap:7px;flex:0 0 auto}
 @media(max-width:760px){.wfm-ij-access-item,.wfm-ij-decision-list article{align-items:stretch;display:grid}.wfm-ij-access-item .btn,.wfm-ij-decision-actions .btn{width:100%}.wfm-ij-decision-actions{display:grid}}
+
+.wfm-ij-access-actions{display:flex;gap:7px;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:760px){.wfm-ij-access-actions{display:grid;justify-content:stretch}.wfm-ij-access-actions .btn{width:100%}}
