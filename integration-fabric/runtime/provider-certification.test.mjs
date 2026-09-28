@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { certifyProviderSandbox, providerCertificationProfiles } from './provider-certification.mjs';
 
 const SHA = 'a'.repeat(40);
-
 function response(body, status = 200) {
   const encoded = Buffer.from(JSON.stringify(body));
   return {
@@ -14,7 +13,7 @@ function response(body, status = 200) {
 }
 
 test('only explicitly approved provider profiles exist', () => {
-  assert.deepEqual(providerCertificationProfiles().sort(), ['sap-s4hana', 'xero']);
+  assert.deepEqual(providerCertificationProfiles().sort(), ['gusto-embedded-payroll', 'sap-s4hana', 'xero']);
 });
 
 test('SAP S/4HANA proof runs through the VECTOR connection-test contract without exposing the API key', async () => {
@@ -70,6 +69,31 @@ test('Xero demo proof redacts token and tenant identifiers from evidence', async
   assert.equal(serialized.includes('tenant-1'), false);
   assert.equal(result.request.headers.Authorization, '[REDACTED]');
   assert.equal(result.request.headers['xero-tenant-id'], '[REDACTED]');
+});
+
+test('Gusto demo proof uses only the dedicated demo host and redacts company identity', async () => {
+  let observed;
+  const result = await certifyProviderSandbox({
+    providerKey: 'gusto-embedded-payroll',
+    candidateSha: SHA,
+    resolveSecretBundle: async ref => {
+      assert.equal(ref, 'secret://provider/gusto/demo-company');
+      return { accessToken: 'gusto-secret', companyId: 'company-123' };
+    },
+    fetchImpl: async (url, options) => {
+      observed = { url, options };
+      return response({ name: 'Synthetic Demo Manufacturer' });
+    },
+    nowMs: Date.parse('2026-09-28T12:00:00Z')
+  });
+  const serialized = JSON.stringify(result);
+  assert.equal(result.status, 'PASS');
+  assert.equal(result.evidenceLevel, 'sandbox-authenticated');
+  assert.equal(new URL(observed.url).hostname, 'api.gusto-demo.com');
+  assert.equal(result.request.path, '/v1/companies/{company_id}');
+  assert.equal(result.request.headers.Authorization, '[REDACTED]');
+  assert.equal(serialized.includes('gusto-secret'), false);
+  assert.equal(serialized.includes('company-123'), false);
 });
 
 test('candidate identity is mandatory and exact', async () => {
