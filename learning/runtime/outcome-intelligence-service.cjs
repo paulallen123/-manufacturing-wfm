@@ -83,7 +83,7 @@ function createOutcomeIntelligenceService(options = {}) {
     'CREATE TABLE IF NOT EXISTS vector_outcome_eval_resolutions(' +
       'id TEXT PRIMARY KEY,tenant TEXT NOT NULL,evaluation_id TEXT NOT NULL,fingerprint TEXT NOT NULL,' +
       'verification_source TEXT NOT NULL,verification_digest TEXT NOT NULL,evidence_refs_json TEXT NOT NULL,' +
-      'created_at TEXT NOT NULL,UNIQUE(tenant,evaluation_id));' +
+      'verified_win_count_at_resolution INTEGER NOT NULL,created_at TEXT NOT NULL,UNIQUE(tenant,evaluation_id));' +
     'CREATE TRIGGER IF NOT EXISTS no_vector_outcome_resolution_update BEFORE UPDATE ON vector_outcome_eval_resolutions ' +
       "BEGIN SELECT RAISE(ABORT,'Outcome regression resolutions are append only.'); END;" +
     'CREATE TRIGGER IF NOT EXISTS no_vector_outcome_resolution_delete BEFORE DELETE ON vector_outcome_eval_resolutions ' +
@@ -119,7 +119,7 @@ function createOutcomeIntelligenceService(options = {}) {
   const evalById = db.prepare('SELECT * FROM vector_outcome_evals WHERE tenant=? AND id=?');
   const resolutionByEval = db.prepare('SELECT * FROM vector_outcome_eval_resolutions WHERE tenant=? AND evaluation_id=?');
   const insertResolution = db.prepare(
-    'INSERT INTO vector_outcome_eval_resolutions(id,tenant,evaluation_id,fingerprint,verification_source,verification_digest,evidence_refs_json,created_at) VALUES(?,?,?,?,?,?,?,?)'
+    'INSERT INTO vector_outcome_eval_resolutions(id,tenant,evaluation_id,fingerprint,verification_source,verification_digest,evidence_refs_json,verified_win_count_at_resolution,created_at) VALUES(?,?,?,?,?,?,?,?,?)'
   );
   const latestSkill = db.prepare(
     'SELECT * FROM vector_skill_candidates WHERE tenant=? AND fingerprint=? ORDER BY version DESC LIMIT 1'
@@ -289,7 +289,8 @@ function createOutcomeIntelligenceService(options = {}) {
     }
     const createdAt=nowIso();
     const id='resolution-'+sha256(tenant+':'+evaluationId+':'+verificationDigest+':'+evidenceRefs.join('|')).slice(0,32);
-    insertResolution.run(id,tenant,evaluationId,evaluation.fingerprint,verificationSource,verificationDigest,JSON.stringify(evidenceRefs),createdAt);
+    const winsAtResolution=positiveOutcomes.all(tenant,evaluation.fingerprint).length;
+    insertResolution.run(id,tenant,evaluationId,evaluation.fingerprint,verificationSource,verificationDigest,JSON.stringify(evidenceRefs),winsAtResolution,createdAt);
     const row=resolutionByEval.get(tenant,evaluationId);
     return {idempotent:false,resolution:publicResolution(row),releaseAdmission:releaseAdmissionForTenant(tenant),executionAuthority:'NONE'};
   }
@@ -309,7 +310,7 @@ function createOutcomeIntelligenceService(options = {}) {
     if(!skill||Number(skill.verified_win_count)<minRepeatedWins){
       return {eligible:false,reason:'INSUFFICIENT_VERIFIED_WINS',fingerprint,resolution:resolution?publicResolution(resolution):null,advisoryOnly:true,rankingAuthority:false,executionAuthority:'NONE'};
     }
-    if(resolution&&Date.parse(skill.created_at)<=Date.parse(resolution.created_at)){
+    if(resolution&&Number(skill.verified_win_count)<=Number(resolution.verified_win_count_at_resolution)){
       return {eligible:false,reason:'POST_RESOLUTION_WINS_REQUIRED',fingerprint,resolution:publicResolution(resolution),advisoryOnly:true,rankingAuthority:false,executionAuthority:'NONE'};
     }
     return {eligible:true,reason:'REPEATED_VERIFIED_WIN',fingerprint,skillCandidate:publicSkill(skill),resolution:resolution?publicResolution(resolution):null,advisoryOnly:true,rankingAuthority:false,executionAuthority:'NONE'};
@@ -319,7 +320,7 @@ function createOutcomeIntelligenceService(options = {}) {
     return {
       id:row.id,tenant:row.tenant,evaluationId:row.evaluation_id,fingerprint:row.fingerprint,
       verificationSource:row.verification_source,verificationDigest:row.verification_digest,
-      evidenceRefs:JSON.parse(row.evidence_refs_json),createdAt:row.created_at,
+      evidenceRefs:JSON.parse(row.evidence_refs_json),verifiedWinCountAtResolution:Number(row.verified_win_count_at_resolution||0),createdAt:row.created_at,
       executionAuthority:'NONE'
     };
   }
