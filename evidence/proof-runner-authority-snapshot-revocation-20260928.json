@@ -1,0 +1,84 @@
+{
+  "evidenceVersion": 1,
+  "recordedAt": "2026-09-28T19:30:16Z",
+  "claim": "A proof-runner bearer cannot inherit later role, cost-data or permission escalation from its linked account; any authority-shape change revokes the session on its first protected request.",
+  "classification": "BUILT",
+  "evidenceBoundary": {
+    "environment": "local synthetic sealed-runtime extraction with persistent SQLite restart",
+    "customerData": false,
+    "productionMutation": false,
+    "hostedProof": false,
+    "countryOrRegion": "not jurisdiction-specific",
+    "scale": "one proof-runner key / one synthetic tenant / one persisted session / one escalated linked account",
+    "executingNode": "24.19.0",
+    "requiredReleaseNode": "22.23.2"
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "startingHead": "ea175fd7f6609c4d359edf9b76cc28c3addcaccf",
+    "sealedRuntimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "red": {
+    "tests": 4,
+    "passed": 3,
+    "failed": 1,
+    "skipped": 0,
+    "observation": "A bearer was issued while the linked account was a manager with no extra permissions. After persistent restart, the account was changed to administrator with costs access and system.admin. The old bearer returned HTTP 200 and its actor inherited the elevated authority.",
+    "rootCause": "The session was bound to runner ID, key, tenant, account and routes, but did not preserve or compare the linked account's issuance-time role, costs flag and permission set."
+  },
+  "repair": {
+    "authoritySnapshot": "Session issuance stores a SHA-256 fingerprint over normalized email, tenant, person identifiers, role, costs flag and sorted unique permission strings.",
+    "firstRequestRevocation": "Every protected request compares the current actor authority fingerprint with the issuance fingerprint before consuming route, rate or action authority; mismatch returns HTTP 401.",
+    "legacyFailClosed": "A pre-existing proof-runner session with no authority fingerprint is treated as mismatched and denied rather than silently grandfathered.",
+    "audit": "The first stale-authority attempt records proof-runner-authority-revoked with only a hashed session reference and runner ID; repeated attempts do not duplicate the event.",
+    "unchangedControls": "Exact key binding, tenant/account binding, route intersection, monotonic limit contraction, replay denial, action budget, rate limit and kill switch remain enforced."
+  },
+  "green": {
+    "focusedRepeatedFreshStores": {
+      "runs": 3,
+      "testsPerRun": 4,
+      "passedPerRun": 4,
+      "failedPerRun": 0,
+      "skippedPerRun": 0
+    },
+    "observedEscalationContainment": {
+      "previousRole": "manager",
+      "mutatedRole": "admin",
+      "mutatedCosts": true,
+      "mutatedPermissions": ["system.admin"],
+      "oldBearerFirstAttemptStatus": 401,
+      "oldBearerSecondAttemptStatus": 401,
+      "authorityRevocationAuditEvents": 1,
+      "rawPermissionSetInAudit": false
+    },
+    "affectedRegression": {
+      "tests": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 13001.881242,
+      "coverage": [
+        "immutable leave-decision restart/tamper refusal",
+        "legacy leave-decision quarantine",
+        "passkey-only normal sign-in UI",
+        "passkey Origin, user-verification and replay controls",
+        "proof-runner atomic rate/action budgets, scope denial, replay denial, audit and kill switch",
+        "proof-runner authority contraction across persistent restart",
+        "proof-runner exact-key rotation revocation",
+        "proof-runner account-authority escalation revocation",
+        "leave decision domain-audit request binding"
+      ]
+    },
+    "overlayIdempotence": "The proof-runner hardener applied twice to a fresh sealed extraction and the resulting server passed syntax validation."
+  },
+  "fileSha256": {
+    "scripts/harden-proof-runner-identity.mjs": "d530b86b61eb2cf829e8b238e1e8bf5f9ea172412b38bc49f6c1a2ba4c71334a",
+    "tests/proof-runner-workload-identity.proof.test.cjs": "0f79b48f43d8339ba78a07e871f1227ef05100f3f7fcb53eddbafc2acb285db6"
+  },
+  "releaseGate": {
+    "status": "BLOCKED",
+    "reason": "This result executed locally on Node 24.19.0 rather than required Node 22.23.2. Hosted authority-change propagation, all-instance convergence, dedicated proof-account governance and provider federation remain unproved.",
+    "nextProof": "Execute the same manager-to-administrator escalation test inside the exact Node 22.23.2 Docker candidate, then change role or permissions for an authorised hosted synthetic proof account and verify the old bearer is denied on its first request across every active instance."
+  }
+}
