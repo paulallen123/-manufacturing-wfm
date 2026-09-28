@@ -6,14 +6,18 @@ import {
   LANE_DEFINITIONS,
   getGateDefinition,
 } from './policy.js';
+import { validateCandidateIdentity } from './candidate-binding.js';
 
 const CANDIDATE_IDENTITY_FIELDS = [
   'repository',
   'ref',
   'commitSha',
+  'projectId',
+  'serviceId',
   'deploymentId',
   'runtimeSha',
   'releaseId',
+  'publicOrigin',
   'environment',
   'provider',
   'failureDomainId',
@@ -40,6 +44,8 @@ export function identitiesMatch(expected, observed) {
 }
 
 export function createInitialState(candidate) {
+  const validation = validateCandidateIdentity(candidate);
+  if (!validation.ok) throw new Error(`INVALID_CANDIDATE_IDENTITY:${validation.errors.join(',')}`);
   const gates = Object.fromEntries(
     GATE_DEFINITIONS.map((definition) => [
       definition.id,
