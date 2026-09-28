@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "providerId": "gusto-embedded-demo",
+  "targetClaim": "L1",
+  "description": "Read a synthetic Gusto demo company. Upgrade to L2 only after write + independent read-back steps are added and pass.",
+  "steps": [
+    {
+      "name": "gusto-company-read",
+      "method": "GET",
+      "url": "https://api.gusto-demo.com/v1/companies/${ENV:GUSTO_COMPANY_ID}",
+      "headers": {
+        "Accept": "application/json",
+        "Authorization": "Bearer ${ENV:GUSTO_ACCESS_TOKEN}",
+        "X-Gusto-API-Version": "2026-06-15"
+      },
+      "expectStatus": [
+        200
+      ]
+    }
+  ]
+}
