@@ -13,6 +13,7 @@ RUN node /tmp/retire-legacy-presentation.mjs /app/public \
 # add the defence overlay as a separately reviewable layer.
 RUN mkdir -p /app/security-runtime
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
+COPY security/runtime/proof-runner-auth.cjs /app/security-runtime/proof-runner-auth.cjs
 COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
 
 # Vector-only presentation composition.
