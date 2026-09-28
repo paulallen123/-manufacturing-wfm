@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28",
+  "purpose": "Add Gusto Embedded Payroll as a customer-free provider-development target from current official documentation. This is spec verification only; no demo credentials, customer data, writes or production access were used.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "gusto-embedded-payroll",
+      "name": "Gusto Embedded Payroll",
+      "category": "payroll-hcm",
+      "priority": "P1",
+      "protocols": [
+        "REST"
+      ],
+      "auth": "oauth2",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.gusto.com/embedded-payroll/docs/getting-started",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://docs.gusto.com/embedded-payroll/docs/getting-started",
+      "evidenceNote": "Gusto documents a dedicated Demo environment at https://api.gusto-demo.com, OAuth2 application credentials, demo companies, and employee/payroll APIs. VECTOR keeps the connector read-only by default; any later synthetic write/read-back proof must be separately authorised and remain demo-only."
+    }
+  ]
+}
