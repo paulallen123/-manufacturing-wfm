@@ -99,6 +99,9 @@ Every candidate is identified by:
 - environment
 - provider
 - failureDomainId
+- claimBoundary
+
+For this control plane, `claimBoundary` is fixed to `customer-proof-staging`. A staging proof candidate is structurally incapable of receiving production authority from this workflow.
 
 A candidate is inadmissible if any identity field conflicts.
 
@@ -106,7 +109,7 @@ A proof receipt is rejected if its candidate identity does not match the frozen 
 
 ## 5. Gate DAG
 
-Initial production-readiness gates:
+Initial customer-proof authority gates:
 
 1. pre_freeze
 2. hosted_runtime
@@ -123,7 +126,7 @@ Initial production-readiness gates:
 13. outcome_learning_runtime
 14. northstar_assault
 15. failure_domain_independence
-16. production_authority
+16. customer_proof_authority
 
 Each gate has:
 - state: UNPROVEN | RUNNING | PASS | FAIL | BLOCKED
@@ -137,6 +140,10 @@ Each gate has:
 - retentionRequirements
 
 No gate may become PASS from design intent, infrastructure success, copied evidence, stale evidence, another SHA, another environment or another provider target.
+
+`customer_proof_authority` is a derived policy gate: it may PASS only after every required customer-proof dependency is PASS for the exact candidate. It is not a provider job and cannot be satisfied by a Railway/GitHub/Vercel status.
+
+Production or pilot approval is a separate claim boundary and is explicitly outside this customer-proof control plane. Evidence from this workflow must never be relabelled as production approval.
 
 ## 6. Task model
 
@@ -345,7 +352,7 @@ Critical path:
 7. bind outcome-learning to frozen SHA
 8. Northstar assault
 9. second failure-domain proof
-10. production-authority gate
+10. customer-proof-authority gate
 
 All other proof/preflight work runs in parallel where safe.
 
