@@ -344,6 +344,37 @@ function enforceRetention(state) {
   if (state.retention.cleanupRequested) state.retention.cleanupAllowed = true;
 }
 
+function acceptProviderEvent(state, event, nextState) {
+  const provider = event.provider;
+  const sequence = Number(event.sequence);
+  if (!provider || !Number.isInteger(sequence) || sequence < 0) {
+    appendAudit(state, {
+      type: 'EVENT_REJECTED',
+      eventId: event.eventId,
+      provider: provider || null,
+      reason: 'INVALID_PROVIDER_EVENT_SEQUENCE',
+    });
+    return false;
+  }
+  const previousSequence = Number(state.providerHealth[provider]?.sequence ?? -1);
+  if (sequence <= previousSequence) {
+    appendAudit(state, {
+      type: 'STALE_PROVIDER_EVENT_REJECTED',
+      eventId: event.eventId,
+      provider,
+      sequence,
+      previousSequence,
+    });
+    return false;
+  }
+  state.providerHealth[provider] = {
+    ...nextState,
+    sequence,
+    at: nowIso(),
+  };
+  return true;
+}
+
 export function applyControlEvent(inputState, event) {
   const state = clone(inputState);
   const emittedTasks = [];
@@ -381,26 +412,26 @@ export function applyControlEvent(inputState, event) {
     }
     case 'PROVIDER_DEGRADED': {
       const provider = event.provider;
-      state.providerHealth[provider] = { state: 'DEGRADED', at: nowIso(), reason: event.reason || 'PROVIDER_DEGRADED' };
+      if (!acceptProviderEvent(state, event, { state: 'DEGRADED', reason: event.reason || 'PROVIDER_DEGRADED' })) break;
       for (const task of Object.values(state.tasks)) {
         if (task.provider === provider && ACTIVE_TASK_STATES.has(task.status)) {
           task.status = 'PROVIDER_DEGRADED';
           task.completedAt = nowIso();
         }
       }
-      appendAudit(state, { type: 'PROVIDER_DEGRADED', provider, reason: event.reason || null });
+      appendAudit(state, { type: 'PROVIDER_DEGRADED', provider, sequence: event.sequence, reason: event.reason || null });
       break;
     }
     case 'PROVIDER_RECOVERED': {
       const provider = event.provider;
-      state.providerHealth[provider] = { state: 'HEALTHY', at: nowIso() };
+      if (!acceptProviderEvent(state, event, { state: 'HEALTHY' })) break;
       for (const gate of Object.values(state.gates)) {
         if (gate.state === 'BLOCKED' && gate.blockingReason === 'NO_ADMITTED_HEALTHY_FAILURE_DOMAIN') {
           gate.state = 'UNPROVEN';
           gate.blockingReason = null;
         }
       }
-      appendAudit(state, { type: 'PROVIDER_RECOVERED', provider });
+      appendAudit(state, { type: 'PROVIDER_RECOVERED', provider, sequence: event.sequence });
       break;
     }
     case 'REOPEN_GATE': {
