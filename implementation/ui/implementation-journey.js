@@ -4,7 +4,7 @@
 const IMPL='/api/implementation/autonomous';
 const INTEGRATIONS='/api/integrations/autonomous';
 const LEARNING='/api/learning/adaptive';
-const VERSION='version-d-2';
+const VERSION='version-d-3';
 const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',timer:null,lastLoad:0};
 const inviteToken=()=>{try{return new URL(window.location.href).searchParams.get('implementation_invite')||'';}catch{return '';}};
 const currentPage=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
@@ -48,8 +48,31 @@ function learningCounts(){
 }
 function connectionRows(){
   const live=S.integrations?.connections||[];
-  if(live.length)return live.map(x=>({id:x.id,name:x.name||x.productKey,state:x.state,detail:x.failureClass||x.lastReconciliation?.status||'',sourceId:x.id}));
-  return (S.integrations?.discovery?.candidates||[]).map(x=>({id:x.id,name:x.name||x.productKey,state:x.status==='CONFIRMED'?'READY_TO_CONNECT':'IDENTIFIED',detail:Math.round(Number(x.confidence||0)*100)+'% confidence',sourceId:x.id}));
+  const connectedCandidateIds=new Set(live.map(x=>x.candidateId).filter(Boolean));
+  const liveRows=live.map(x=>({
+    id:x.id,
+    candidateId:x.candidateId||null,
+    kind:'connection',
+    name:x.name||x.productKey,
+    state:x.state,
+    detail:x.failureClass||x.lastReconciliation?.status||'',
+    semanticScopes:Array.isArray(x.semanticScopes)?x.semanticScopes:[],
+    sourceId:x.id
+  }));
+  const candidateRows=(S.integrations?.discovery?.candidates||[])
+    .filter(x=>!connectedCandidateIds.has(x.id))
+    .map(x=>({
+      id:x.id,
+      candidateId:x.id,
+      kind:'candidate',
+      name:x.name||x.productKey,
+      state:x.status==='CONFIRMED'?'READY_TO_CONNECT':'IDENTIFIED',
+      detail:Math.round(Number(x.confidence||0)*100)+'% confidence',
+      semanticScopes:[],
+      authoritativeFor:Array.isArray(x.authoritativeFor)?x.authoritativeFor:[],
+      sourceId:x.id
+    }));
+  return [...liveRows,...candidateRows];
 }
 function stateLabel(value){
   const map={complete:'Complete',progress:'In progress',pending:'Pending',ACTIVE:'Connected',VALIDATING:'Validating',DEGRADED:'Needs review',AUTHORIZATION_REQUIRED:'Authorisation needed',REAUTH_REQUIRED:'Reconnect',CONFIRMED:'Confirmed',IDENTIFIED:'Identified',READY_TO_CONNECT:'Ready to connect'};
@@ -80,6 +103,49 @@ function integrationMarkup(){
   return '<div class="wfm-ij-system-list">'+rows.slice(0,8).map(row=>
     '<div class="wfm-ij-system"><div class="wfm-ij-system-name"><span class="wfm-ij-system-glyph">↔</span><div><b>'+safe(row.name)+'</b><small>'+safe(row.detail||'Connection evidence')+'</small></div></div><span class="wfm-ij-pill '+safe(String(row.state||'').toLowerCase())+'">'+safe(stateLabel(row.state))+'</span></div>'
   ).join('')+'</div>';
+}
+function scopeLabel(scope){
+  const map={
+    'people.read':'employees',
+    'organisation.read':'sites and departments',
+    'absence.read':'absence',
+    'time.read':'time and attendance',
+    'payroll.read':'payroll data',
+    'finance.read':'finance data',
+    'cost-centres.read':'cost centres',
+    'production.read':'production data',
+    'procurement.read':'procurement data'
+  };
+  return map[scope]||String(scope||'').replace('.read','').replaceAll('-',' ');
+}
+function integrationAccessRows(){
+  return connectionRows().filter(row=>['AUTHORIZATION_REQUIRED','REAUTH_REQUIRED','READY_TO_CONNECT','IDENTIFIED'].includes(row.state));
+}
+function integrationAccessMarkup(){
+  const rows=integrationAccessRows();
+  const declared=[
+    S.status?.customerScope?.hcmSystem,
+    S.status?.customerScope?.payrollSystem,
+    S.status?.customerScope?.erpSystem,
+    ...(S.status?.customerScope?.sourceSystems||[])
+  ].filter(Boolean);
+  if(!rows.length&&(!declared.length||requirementComplete('source-systems')))return '';
+
+  const content=rows.length?rows.slice(0,8).map(row=>{
+    const scopes=(row.semanticScopes||[]).map(scopeLabel);
+    const need=scopes.length?'Read-only access needed for '+scopes.join(', ')+'.':'VECTOR has identified this system and needs its role in the implementation confirmed.';
+    let action='';
+    if(row.state==='READY_TO_CONNECT'){
+      action='<button type="button" class="btn small primary" data-ij-access-prepare="'+safe(row.candidateId)+'">Prepare secure connection</button>';
+    }else if(row.state==='AUTHORIZATION_REQUIRED'||row.state==='REAUTH_REQUIRED'){
+      action='<button type="button" class="btn small primary" data-ij-route="integrations">'+(row.state==='REAUTH_REQUIRED'?'Reconnect securely':'Continue secure authorisation')+'</button>';
+    }else{
+      action='<button type="button" class="btn small" data-ij-route="integrations">Review this system</button>';
+    }
+    return '<article class="wfm-ij-access-item"><div><div class="wfm-ij-access-title"><b>'+safe(row.name)+'</b><span class="wfm-ij-pill '+safe(String(row.state||'').toLowerCase())+'">'+safe(stateLabel(row.state))+'</span></div><p>'+safe(need)+'</p><small>VECTOR will not ask you to paste a password, API key or secret here.</small></div>'+action+'</article>';
+  }).join(''):'<article class="wfm-ij-access-item"><div><div class="wfm-ij-access-title"><b>Secure system access</b><span class="wfm-ij-pill authorization_required">Access needed</span></div><p>Tell VECTOR which systems are authoritative, then an authorised system owner approves the minimum access required.</p><small>Declared systems: '+safe(declared.join(', '))+'. Credentials stay in the provider or managed-secret boundary.</small></div><button type="button" class="btn small primary" data-ij-route="integrations">Review access</button></article>';
+
+  return '<section class="wfm-ij-panel wfm-ij-access"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">YOUR ACTION · SECURE ACCESS</span><h2>Connect the systems VECTOR needs</h2><p>VECTOR asks for permission, purpose and the minimum data scope — never for credentials in free text. If you cannot approve access, hand this step to the system owner.</p></div><span class="wfm-ij-status '+(rows.some(r=>r.state==='AUTHORIZATION_REQUIRED'||r.state==='REAUTH_REQUIRED')?'blocked':'working')+'">'+safe(rows.length?rows.length+' access item'+(rows.length===1?'':'s'):'Access required')+'</span></div><div class="wfm-ij-access-list">'+content+'</div><div class="wfm-ij-access-rule"><b>Default security:</b> read-only first · write access off · tenant-bound · explicit production approval · auditable authorisation.</div></section>';
 }
 function requirementCard(key,title,description){
   const item=requirement(key);
@@ -145,12 +211,28 @@ function scopeMarkup(){
   return '<section class="wfm-ij-panel wfm-ij-scope required"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">STEP 1 · TELL US WHAT TO BUILD</span><h2>Confirm your configuration scope</h2><p>Give the system the operating boundary. It uses connected source data to propose the detailed configuration; ambiguous or high-risk rules come back to you for confirmation.</p></div><span class="wfm-ij-status blocked">Required</span></div>'+
     '<form data-ij-scope-form>'+scopeFields(scope)+'<div class="wfm-ij-scope-actions"><p>No passwords or API secrets belong here. Payroll rules remain protected until independently reconciled and, where needed, explicitly approved.</p><button class="btn primary" type="submit">Confirm scope and continue</button></div></form></section>';
 }
+function decisionOwner(d){
+  if(d?.proposal?.ownerRole)return String(d.proposal.ownerRole);
+  const key=String(d?.key||'').toLowerCase();
+  if(key.includes('overtime')||key.includes('break')||key.includes('payroll'))return 'Payroll';
+  if(key.includes('absence')||key.includes('leave'))return 'HR';
+  if(key.includes('schedule')||key.includes('shift')||key.includes('structure'))return 'Operations';
+  return 'Authorised owner';
+}
+function decisionEvidence(d){
+  if(d?.proposal?.evidenceSummary)return String(d.proposal.evidenceSummary);
+  if(d?.proposal?.detail?.sampleCount!=null){
+    const confidence=Math.round(Number(d.proposal.detail.confidence||d.confidence||0)*1000)/10;
+    return Number(d.proposal.detail.sampleCount).toLocaleString()+' historical records · '+confidence+'% consistency';
+  }
+  return proposalSummary(d?.proposal);
+}
 function decisionsMarkup(){
   const rows=S.status?.blockingDecisions||[];
   if(!rows.length)return '';
-  return '<section class="wfm-ij-panel wfm-ij-decisions"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">YOUR DECISION</span><h2>'+rows.length+' item'+(rows.length===1?'':'s')+' need confirmation</h2><p>High-risk inferred settings stay blocked until an authorised customer accepts them or reviews the source configuration.</p></div></div><div class="wfm-ij-decision-list">'+rows.map(d=>{
-    const summary=proposalSummary(d.proposal);
-    return '<article><div><b>'+safe(d.question)+'</b><small>'+safe(d.risk)+' risk · '+safe(d.status)+(summary?' · '+safe(summary):'')+'</small></div><div class="wfm-ij-decision-actions"><button class="btn small primary" type="button" data-ij-decision-accept="'+safe(d.key)+'">Accept proposal</button><button class="btn small" type="button" data-ij-decision-review="'+safe(d.key)+'">Review setup</button></div></article>';
+  return '<section class="wfm-ij-panel wfm-ij-decisions"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">POLICY INTERVIEW · ONLY WHAT VECTOR CANNOT PROVE</span><h2>'+rows.length+' decision'+(rows.length===1?'':'s')+' need a human answer</h2><p>VECTOR uses source data and history first. It asks only where evidence is ambiguous, conflicting or too risky to infer safely.</p></div></div><div class="wfm-ij-decision-list">'+rows.map(d=>{
+    const evidence=decisionEvidence(d);
+    return '<article><div class="wfm-ij-decision-copy"><div class="wfm-ij-decision-meta"><span>ASKING · '+safe(decisionOwner(d))+'</span><span>'+safe(d.risk)+' risk</span></div><b>'+safe(d.question)+'</b>'+(evidence?'<small>'+safe(evidence)+'</small>':'')+'</div><div class="wfm-ij-decision-actions"><button class="btn small primary" type="button" data-ij-decision-accept="'+safe(d.key)+'">Yes, use this policy</button><button class="btn small" type="button" data-ij-decision-change="'+safe(d.key)+'">It is different</button></div></article>';
   }).join('')+'</div></section>';
 }
 function welcomeMarkup(){
@@ -183,6 +265,7 @@ function liveMarkup(){
     scopeMarkup()+
     '<section class="wfm-ij-overall"><div class="wfm-ij-overall-top"><div><b>Overall progress</b><span>'+progress+'% · '+Number(S.status?.completedRequirements||0)+' of '+Number(S.status?.totalRequirements||(S.status?.requirements||[]).length)+' controls proven</span></div><strong>'+progress+'%</strong></div><div class="wfm-ij-progress"><span style="width:'+progress+'%"></span></div><div class="wfm-ij-stagebar">'+stageMarkup()+'</div></section>'+
     decisionsMarkup()+
+    integrationAccessMarkup()+
     '<div class="wfm-ij-grid">'+
       '<section class="wfm-ij-panel wfm-ij-activity"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">CURRENT ACTIVITY</span><h2>What the implementation is working through</h2></div></div>'+activeWork()+'</section>'+
       '<section class="wfm-ij-panel wfm-ij-integrations"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">INTEGRATIONS</span><h2>Your connected systems</h2><p>'+Number(S.integrations?.connections?.length||0)+' connections · '+Number(integrationReady.needsAdminAction||0)+' need admin action · '+Number(integrationReady.needsValidation||0)+' validating</p></div><button type="button" class="btn small" data-ij-route="integrations">Manage integrations</button></div>'+integrationMarkup()+'</section>'+
@@ -293,6 +376,40 @@ async function acceptDecision(key,button){
     renderView();
   }
 }
+async function changeDecision(key,button){
+  if(!S.status?.runId||!key)return;
+  const decision=(S.status?.blockingDecisions||[]).find(item=>item.key===key);
+  const answer=window.prompt(
+    decision?.question
+      ? decision.question+'\n\nTell VECTOR what is different. It will remain blocked until the changed rule is tested and reconciled.'
+      : 'Tell VECTOR what is different. The changed rule will remain blocked until it is tested and reconciled.'
+  );
+  if(answer==null||!String(answer).trim())return;
+  if(button){button.disabled=true;button.textContent='Recording…';}
+  try{
+    S.status=await request(IMPL+'/decision',{method:'POST',body:JSON.stringify({
+      runId:S.status.runId,
+      key,
+      action:'CHANGED',
+      value:{customerAnswer:String(answer).trim().slice(0,2000),source:'implementation-dashboard'}
+    })});
+    renderView();
+  }catch(error){
+    S.error=error.message||'The changed policy could not be recorded.';
+    renderView();
+  }
+}
+async function prepareIntegration(candidateId,button){
+  if(!candidateId)return;
+  if(button){button.disabled=true;button.textContent='Preparing…';}
+  try{
+    await request(INTEGRATIONS+'/connect',{method:'POST',body:JSON.stringify({candidateId})});
+    await load(true);
+  }catch(error){
+    S.error=error.message||'The secure connection could not be prepared.';
+    renderView();
+  }
+}
 function apply(){
   if(currentPage()!=='onboarding'||isEmployeeRole()){stop();return;}
   const nav=document.querySelector('.sidebar .navbtn[data-page="onboarding"] span:not(.count):not(.review-count)');
@@ -313,6 +430,8 @@ document.addEventListener('click',event=>{
   const route=event.target.closest('[data-ij-route]');if(route){event.preventDefault();openRoute(route.dataset.ijRoute);return;}
   const training=event.target.closest('[data-ij-training]');if(training){event.preventDefault();document.querySelector('.wfm-coach-trigger')?.click();return;}
   const accept=event.target.closest('[data-ij-decision-accept]');if(accept){event.preventDefault();acceptDecision(accept.dataset.ijDecisionAccept,accept);return;}
+  const change=event.target.closest('[data-ij-decision-change]');if(change){event.preventDefault();changeDecision(change.dataset.ijDecisionChange,change);return;}
+  const prepare=event.target.closest('[data-ij-access-prepare]');if(prepare){event.preventDefault();prepareIntegration(prepare.dataset.ijAccessPrepare,prepare);return;}
   const review=event.target.closest('[data-ij-decision-review]');if(review){event.preventDefault();openRoute('op-settings');return;}
 },true);
 const priorRender=window.render;
