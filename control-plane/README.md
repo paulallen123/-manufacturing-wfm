@@ -33,3 +33,19 @@ npm test
 ```
 
 These tests do not claim hosted durability. Hosted Workflow/Queue execution must be proven separately on the Vercel preview deployment before Phase B can dispatch real proof work.
+
+## Customer-proof freeze and deferred activation lane
+
+The live customer-proof baseline is pinned to commit `3030541675e41157405b933c30d82c8fd4b12927` and Railway deployment `e6399d9c-63ca-4272-ab0d-6d1010e444bd`.
+
+While any customer-proof gate remains open:
+
+- only work that directly closes, unblocks, repairs or accelerates a mandatory proof gate may enter the proof lane;
+- all other product development stays draft/isolated and must not mutate the frozen candidate;
+- deferred work is tracked in `candidates/post-proof-deferred-queue-2026-09-28.json`;
+- the post-proof activation base is `queue/post-proof-activation-303054`, created from the exact frozen SHA;
+- a deferred change cannot become promotion-eligible until every customer-proof gate except `production_authority` is PASS;
+- promotion readiness additionally requires exact frozen-SHA compatibility, isolated tests, verified rollback, a prepared deployment recipe, and a hard activation budget of 60 minutes or less.
+
+This allows development to continue without invalidating proof, while preparing bounded post-proof changes for rapid activation once the live customer environment is genuinely proven.
+
