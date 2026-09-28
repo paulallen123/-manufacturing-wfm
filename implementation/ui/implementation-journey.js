@@ -4,7 +4,7 @@
 const IMPL='/api/implementation/autonomous';
 const INTEGRATIONS='/api/integrations/autonomous';
 const LEARNING='/api/learning/adaptive';
-const VERSION='version-d-3';
+const VERSION='version-d-4';
 const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',timer:null,lastLoad:0};
 const inviteToken=()=>{try{return new URL(window.location.href).searchParams.get('implementation_invite')||'';}catch{return '';}};
 const currentPage=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
@@ -147,6 +147,46 @@ function integrationAccessMarkup(){
 
   return '<section class="wfm-ij-panel wfm-ij-access"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">YOUR ACTION · SECURE ACCESS</span><h2>Connect the systems VECTOR needs</h2><p>VECTOR asks for permission, purpose and the minimum data scope — never for credentials in free text. If you cannot approve access, hand this step to the system owner.</p></div><span class="wfm-ij-status '+(rows.some(r=>r.state==='AUTHORIZATION_REQUIRED'||r.state==='REAUTH_REQUIRED')?'blocked':'working')+'">'+safe(rows.length?rows.length+' access item'+(rows.length===1?'':'s'):'Access required')+'</span></div><div class="wfm-ij-access-list">'+content+'</div><div class="wfm-ij-access-rule"><b>Default security:</b> read-only first · write access off · tenant-bound · explicit production approval · auditable authorisation.</div></section>';
 }
+function fallbackQuestionMarkup(question){
+  const suggestion=question?.suggestions?.[0]?.name||'';
+  return '<form class="wfm-ij-source-question" data-ij-source-form>'+
+    '<input type="hidden" name="domain" value="'+safe(question.domain)+'">'+
+    '<div class="wfm-ij-source-question-copy"><span>'+safe(question.label||question.domain)+'</span><b>'+safe(question.question)+'</b>'+(suggestion?'<small>VECTOR found a likely answer: '+safe(suggestion)+'. Confirm it or replace it.</small>':'<small>Answer the business question; VECTOR handles the technical setup afterwards.</small>')+'</div>'+
+    '<div class="wfm-ij-source-question-fields">'+
+      '<input name="systemName" required maxlength="160" value="'+safe(suggestion)+'" placeholder="System name">'+
+      '<select name="accessState"><option value="UNKNOWN">Not sure about access yet</option><option value="CAN_AUTHORIZE">I can approve access</option><option value="NEEDS_ADMIN">Our system admin must approve</option><option value="NO_DIRECT_ACCESS">We cannot provide direct access</option></select>'+
+      '<input name="ownerHint" maxlength="160" placeholder="System owner/team (optional)">'+
+      '<button class="btn small primary" type="submit">Save answer</button>'+
+    '</div>'+
+  '</form>';
+}
+function sourceFallbackMarkup(){
+  const fallback=S.integrations?.fallback;
+  if(!fallback||requirementComplete('source-systems'))return '';
+  const questions=Array.isArray(fallback.questions)?fallback.questions:[];
+  const answers=Array.isArray(fallback.answers)?fallback.answers:[];
+  const independent=Array.isArray(fallback.independentWork)?fallback.independentWork:[];
+  if(!questions.length&&!answers.length&&!fallback.accessBlocked)return '';
+
+  const answered=answers.length?'<div class="wfm-ij-source-answers">'+answers.map(answer=>
+    '<span><b>'+safe(String(answer.domain||'source').replaceAll('-',' '))+'</b>'+safe(answer.systemName)+' · '+safe(stateLabel(answer.accessState))+'</span>'
+  ).join('')+'</div>':'';
+  const questionMarkup=questions.map(fallbackQuestionMarkup).join('');
+  const workMarkup=independent.length?'<div class="wfm-ij-independent"><b>VECTOR is still working while access is unresolved</b><div>'+independent.slice(0,6).map(item=>{
+    const label=requirement(item.requirementKey)?.label||String(item.requirementKey||'').replaceAll('-',' ');
+    return '<span>• '+safe(label)+'</span>';
+  }).join('')+'</div></div>':'';
+  const methods=(fallback.alternativeAccessMethods||[]).slice(0,6).map(method=>
+    '<span><b>'+safe(method.label)+'</b><small>'+safe(method.readinessEffect==='does-not-prove-go-live'?'Configuration preparation only':'Can become an authoritative route after validation and reconciliation')+'</small></span>'
+  ).join('');
+
+  return '<section class="wfm-ij-panel wfm-ij-fallback"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">NO DIRECTORY ACCESS? IMPLEMENTATION CONTINUES</span><h2>VECTOR only asks for what it still cannot discover</h2><p>Entra/Okta discovery is optional. Tell VECTOR where the missing records live; direct API access can be replaced by an approved read-only feed where necessary.</p></div><span class="wfm-ij-status working">'+safe(questions.length?questions.length+' answer'+(questions.length===1?'':'s')+' needed':'Fallback active')+'</span></div>'+
+    answered+
+    (questionMarkup?'<div class="wfm-ij-source-questions">'+questionMarkup+'</div>':'')+
+    workMarkup+
+    '<details class="wfm-ij-fallback-methods"><summary>Other secure ways to provide source evidence</summary><div>'+methods+'</div><p>'+safe(fallback.goLiveRule||'')+'</p></details>'+
+  '</section>';
+}
 function requirementCard(key,title,description){
   const item=requirement(key);
   const complete=Boolean(item?.satisfied);
@@ -266,6 +306,7 @@ function liveMarkup(){
     '<section class="wfm-ij-overall"><div class="wfm-ij-overall-top"><div><b>Overall progress</b><span>'+progress+'% · '+Number(S.status?.completedRequirements||0)+' of '+Number(S.status?.totalRequirements||(S.status?.requirements||[]).length)+' controls proven</span></div><strong>'+progress+'%</strong></div><div class="wfm-ij-progress"><span style="width:'+progress+'%"></span></div><div class="wfm-ij-stagebar">'+stageMarkup()+'</div></section>'+
     decisionsMarkup()+
     integrationAccessMarkup()+
+    sourceFallbackMarkup()+
     '<div class="wfm-ij-grid">'+
       '<section class="wfm-ij-panel wfm-ij-activity"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">CURRENT ACTIVITY</span><h2>What the implementation is working through</h2></div></div>'+activeWork()+'</section>'+
       '<section class="wfm-ij-panel wfm-ij-integrations"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">INTEGRATIONS</span><h2>Your connected systems</h2><p>'+Number(S.integrations?.connections?.length||0)+' connections · '+Number(integrationReady.needsAdminAction||0)+' need admin action · '+Number(integrationReady.needsValidation||0)+' validating</p></div><button type="button" class="btn small" data-ij-route="integrations">Manage integrations</button></div>'+integrationMarkup()+'</section>'+
@@ -410,6 +451,24 @@ async function prepareIntegration(candidateId,button){
     renderView();
   }
 }
+async function saveSourceAnswer(form){
+  const button=form.querySelector('button[type="submit"]');
+  if(button){button.disabled=true;button.textContent='Saving…';}
+  const data=new FormData(form);
+  const payload={
+    domain:String(data.get('domain')||'').trim(),
+    systemName:String(data.get('systemName')||'').trim(),
+    accessState:String(data.get('accessState')||'UNKNOWN').trim(),
+    ownerHint:String(data.get('ownerHint')||'').trim()
+  };
+  try{
+    await request(INTEGRATIONS+'/source-answer',{method:'POST',body:JSON.stringify(payload)});
+    await load(true);
+  }catch(error){
+    S.error=error.message||'The source-system answer could not be saved.';
+    renderView();
+  }
+}
 function apply(){
   if(currentPage()!=='onboarding'||isEmployeeRole()){stop();return;}
   const nav=document.querySelector('.sidebar .navbtn[data-page="onboarding"] span:not(.count):not(.review-count)');
@@ -419,6 +478,8 @@ function apply(){
   else if(!S.loading&&!S.timer)schedule();
 }
 document.addEventListener('submit',event=>{
+  const sourceForm=event.target.closest('[data-ij-source-form]');
+  if(sourceForm){event.preventDefault();saveSourceAnswer(sourceForm);return;}
   const form=event.target.closest('[data-ij-scope-form]');
   if(!form)return;
   event.preventDefault();
