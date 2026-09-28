@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-28",
+  "mode": "SHADOW",
+  "candidate": {
+    "repository": "paulallen123/-manufacturing-wfm",
+    "ref": "feature/vector-eow-convergence-20260925",
+    "commitSha": "3030541675e41157405b933c30d82c8fd4b12927",
+    "deploymentId": "e6399d9c-63ca-4272-ab0d-6d1010e444bd",
+    "runtimeSha": "sha256:95f355ef7e0af5e65dc3ce63bc6c9a21dfb787a6d61b6a661ff5d5cff91333e2",
+    "releaseId": "vector-forge-proof-3030541675e4",
+    "environment": "6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6",
+    "provider": "railway",
+    "failureDomainId": "railway"
+  },
+  "observed": {
+    "service": "vector-forge-current-proof",
+    "serviceId": "55e288b7-ac40-4856-ad45-16515c74739a",
+    "projectId": "9a774359-37fa-47e8-bde0-932420c32923",
+    "publicOrigin": "https://vector-forge-current-proof-production.up.railway.app",
+    "applicationHealth": {
+      "status": "ok",
+      "mode": "hosted-staging",
+      "fixtureOnly": true,
+      "productionApproved": false,
+      "pilotReady": false,
+      "applicationReleaseLabel": "0.6.76-hosted-staging-rc1"
+    },
+    "deploymentSource": {
+      "branch": "feature/vector-eow-convergence-20260925",
+      "commitSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "providerStatus": "SUCCESS",
+      "containerImageDigest": "sha256:95f355ef7e0af5e65dc3ce63bc6c9a21dfb787a6d61b6a661ff5d5cff91333e2"
+    }
+  },
+  "claimBoundary": {
+    "providerDeploymentBinding": "OBSERVED",
+    "publicApplicationHealth": "OBSERVED",
+    "runtimeSelfAttestedExactCommit": "UNPROVEN",
+    "runtimeSelfAttestedImageDigest": "UNPROVEN",
+    "exactSourceBindingGateMustRemainOpen": true,
+    "releaseAuthority": false
+  }
+}
