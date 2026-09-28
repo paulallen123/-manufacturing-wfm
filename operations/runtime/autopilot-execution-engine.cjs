@@ -88,7 +88,6 @@ function createAutopilotExecutionEngine(options={}){
   }
  }
  function recordMeasuredOutcome({tenant,executionId,observedAt,resultEvidenceRefs,actual,metric,direction,classification,baselineActual,baselineEvidenceRefs,financeEvidenceRefs,currency,measurementWindow}){
-  const existing=outcomeQ.get(tenant,executionId);if(existing)return{executionId,idempotent:true,proof:JSON.parse(existing.proof_json),learning:JSON.parse(existing.learning_json),executionAuthority:'NONE'};
   const terminal=last(executionId);if(!terminal||terminal.state!=='VERIFIED')throw Object.assign(new Error('Measured outcome requires a VERIFIED Autopilot execution.'),{statusCode:409});
   const link=executionPermitQ.get(executionId);if(!link||link.tenant!==tenant)throw Object.assign(new Error('Autopilot execution evidence is unavailable for this tenant.'),{statusCode:404});
   const permit=permitQ.get(tenant,link.permit_id);if(!permit)throw Object.assign(new Error('Autopilot permit evidence is unavailable.'),{statusCode:404});
@@ -96,6 +95,12 @@ function createAutopilotExecutionEngine(options={}){
   const selected=JSON.parse(permit.selected_episode_json),refs=Array.isArray(resultEvidenceRefs)?resultEvidenceRefs.map(x=>compact(x,220)).filter(Boolean).slice(0,50):[];
   const completed=recordDecisionOutcome(selected,{observedAt,evidenceRefs:refs,actual:actual&&typeof actual==='object'&&!Array.isArray(actual)?actual:{}});
   const proof=createDecisionOutcomeProof({episode:completed,metric,direction,classification,baselineActual,baselineEvidenceRefs:Array.isArray(baselineEvidenceRefs)?baselineEvidenceRefs:[],financeEvidenceRefs:Array.isArray(financeEvidenceRefs)?financeEvidenceRefs:[],currency,measurementWindow});
+  const existing=outcomeQ.get(tenant,executionId);
+  if(existing){
+    const existingProof=JSON.parse(existing.proof_json);
+    if(existingProof?.proofDigest!==proof.proofDigest)throw Object.assign(new Error('Autopilot execution is already bound to a different measured outcome.'),{statusCode:409});
+    return{executionId,idempotent:true,proof:existingProof,learning:JSON.parse(existing.learning_json),executionAuthority:'NONE'};
+  }
   const learning=outcomeLearning.ingestAdaptiveInput(toAdaptiveOutcomeInput(proof));
   outcomeI.run(executionId,tenant,link.permit_id,JSON.stringify(proof),JSON.stringify(learning),new Date().toISOString());
   try{publish?.({tenant,topic:'autopilot.outcome.verified',audience:'manager',payload:{executionId,proofDigest:proof.proofDigest,learningCandidateId:learning?.skillCandidate?.id||null,regressionEvaluationId:learning?.regressionEvaluation?.id||null}});}catch{}
