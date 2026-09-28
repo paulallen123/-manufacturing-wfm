@@ -11,7 +11,10 @@
     "releaseId": "vector-forge-proof-3030541675e4",
     "environment": "6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6",
     "provider": "railway",
-    "failureDomainId": "railway"
+    "failureDomainId": "railway",
+    "projectId": "9a774359-37fa-47e8-bde0-932420c32923",
+    "serviceId": "55e288b7-ac40-4856-ad45-16515c74739a",
+    "publicOrigin": "https://vector-forge-current-proof-production.up.railway.app"
   },
   "observed": {
     "service": "vector-forge-current-proof",
