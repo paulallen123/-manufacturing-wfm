@@ -11,7 +11,10 @@
     "releaseId": "vector-forge-proof-3030541675e4",
     "environment": "6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6",
     "provider": "railway",
-    "failureDomainId": "railway"
+    "failureDomainId": "railway",
+    "projectId": "9a774359-37fa-47e8-bde0-932420c32923",
+    "serviceId": "55e288b7-ac40-4856-ad45-16515c74739a",
+    "publicOrigin": "https://vector-forge-current-proof-production.up.railway.app"
   },
   "observed": {
     "service": "vector-forge-current-proof",
@@ -30,7 +33,8 @@
       "branch": "feature/vector-eow-convergence-20260925",
       "commitSha": "3030541675e41157405b933c30d82c8fd4b12927",
       "providerStatus": "SUCCESS",
-      "containerImageDigest": "sha256:95f355ef7e0af5e65dc3ce63bc6c9a21dfb787a6d61b6a661ff5d5cff91333e2"
+      "containerImageDigest": "sha256:95f355ef7e0af5e65dc3ce63bc6c9a21dfb787a6d61b6a661ff5d5cff91333e2",
+      "deploymentId": "e6399d9c-63ca-4272-ab0d-6d1010e444bd"
     }
   },
   "claimBoundary": {
