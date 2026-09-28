@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const { createHash, randomBytes, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
+const { createProofRunnerAuth } = require('./proof-runner-auth.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
 const { enforceDurableState } = require('./durable-state-guard.cjs');
@@ -40,10 +41,12 @@ function secureEqualHex(left, right) {
   return a.length > 0 && a.length === b.length && timingSafeEqual(a, b);
 }
 const enabled = process.env.WFM_IDENTITY_SURVIVAL_GUARD !== 'off';
+const proofRunnerEnabled = process.env.WFM_PROOF_RUNNER_AUTH === 'enabled';
 installHostedListenGuard(http, { hosted });
 const ownerAccessRecovery = createOwnerAccessRecovery();
 const runtimeIdentity = createRuntimeIdentity({ hosted });
 let guard = null;
+let proofRunnerAuth = null;
 let integrationHub = null;
 let integrationHubInitError = null;
 let learningEngine = null;
@@ -66,6 +69,13 @@ let t9CustomerGuardian = null;
 let t9CustomerGuardianInitError = null;
 let reportingService = null;
 let reportingServiceInitError = null;
+
+// The sealed runtime still expects a staging password at bootstrap. When the
+// signed proof runner is enabled, create an internal high-entropy value so no
+// operator or proof runner has to create, store, retrieve or type a password.
+if (hosted && proofRunnerEnabled && !process.env.WFM_STAGING_PASSWORD) {
+  process.env.WFM_STAGING_PASSWORD = randomBytes(32).toString('base64url');
+}
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
@@ -334,6 +344,9 @@ http.createServer = function guardedCreateServer(listener) {
   if (hosted && !guard) {
     throw new Error('Hosted staging refuses to start without the identity survival guard.');
   }
+  if (proofRunnerEnabled && !proofRunnerAuth) {
+    proofRunnerAuth = createProofRunnerAuth({ dbPath: process.env.WFM_DB });
+  }
 
   if (!integrationHub && !integrationHubInitError && process.env.WFM_DB) {
     try {
@@ -458,6 +471,21 @@ http.createServer = function guardedCreateServer(listener) {
           res.setHeader('Cache-Control', 'no-store');
           res.setHeader('X-Content-Type-Options', 'nosniff');
           res.end(JSON.stringify({ error: 'Security control unavailable. Request refused.' }));
+        }
+        return;
+      }
+    }
+
+    if (proofRunnerAuth) {
+      try {
+        if (await proofRunnerAuth.handleRequest(req, res)) return;
+      } catch {
+        if (!res.headersSent && !res.writableEnded) {
+          res.statusCode = 503;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-store');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.end(JSON.stringify({ error: 'Proof authentication control unavailable. Request refused.' }));
         }
         return;
       }
