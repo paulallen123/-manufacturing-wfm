@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { proofRunnerSession } from './proof-runner-auth.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -7,9 +8,7 @@ import { spawn, spawnSync } from 'node:child_process';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || 'https://wfm-customer-proof-0676-production.up.railway.app').replace(/\/$/, '');
 const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
-const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected proof origin.');
-assert.ok(password && password.length >= 20, 'Staging password unavailable.');
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -24,22 +23,8 @@ function executable(names) {
 const chrome = executable(['google-chrome','google-chrome-stable','chromium','chromium-browser']);
 assert.ok(chrome, 'Chrome/Chromium unavailable.');
 
-function cookieFrom(response) {
-  const values = typeof response.headers.getSetCookie === 'function' ? response.headers.getSetCookie() : [response.headers.get('set-cookie')].filter(Boolean);
-  assert.ok(values[0], 'No session cookie.');
-  const pair = values[0].split(';', 1)[0];
-  const split = pair.indexOf('=');
-  return { name: pair.slice(0, split), value: pair.slice(split + 1) };
-}
 async function login() {
-  const response = await fetch(`${origin}/api/login`, {
-    method: 'POST',
-    headers: {'content-type':'application/json', origin, referer:`${origin}/`, accept:'application/json'},
-    body: JSON.stringify({email:'maya@northstar.example', password}),
-    signal: AbortSignal.timeout(15000)
-  });
-  assert.equal(response.status, 200, `Employee login failed ${response.status}`);
-  return cookieFrom(response);
+  return proofRunnerSession({ origin, email: 'maya@northstar.example', timeoutMs: 15_000 });
 }
 
 const sourceResponse = await fetch(`${origin}/value-cockpit-ui.js`, { signal: AbortSignal.timeout(15000) });
@@ -71,7 +56,7 @@ async function runVariant(name, scriptSource, index) {
   const port = 9960 + index * 20 + Math.floor(Math.random() * 8);
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-overlay-${name}-${crypto.randomBytes(3).toString('hex')}`);
   fs.mkdirSync(profile, { recursive: true });
-  const env = {...process.env}; delete env.WFM_STAGING_PASSWORD; delete env.RAILWAY_TOKEN; delete env.WFM_DEMO_PASSWORD;
+  const env = {...process.env}; delete env.WFM_STAGING_PASSWORD; delete env.WFM_PROOF_RUNNER_PRIVATE_KEY_B64; delete env.RAILWAY_TOKEN; delete env.WFM_DEMO_PASSWORD;
   const proc = spawn(chrome, ['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'--window-size=1440,1000','about:blank'], {stdio:['ignore','ignore','ignore'], env});
   let ws;
   try {
