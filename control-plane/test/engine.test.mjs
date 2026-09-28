@@ -16,7 +16,7 @@ const candidate = {
   releaseId: 'vector-proof-1',
   environment: 'staging-proof',
   provider: 'railway',
-  failureDomainId: 'railway-runtime',
+  failureDomainId: 'railway',
 };
 
 function bootstrap() {
