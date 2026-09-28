@@ -7,7 +7,7 @@ export const controlEventHook = defineHook();
 export async function candidateControlWorkflow(seed) {
   'use workflow';
 
-  let state = createInitialState(seed.candidate);
+  let state = await initialiseCandidate(seed.candidate);
   const bootstrap = await evaluateEvent(state, {
     eventId: `bootstrap:${state.candidateToken}`,
     type: 'CANDIDATE_STARTED',
@@ -34,6 +34,11 @@ export async function candidateControlWorkflow(seed) {
   return { candidateToken: state.candidateToken, status: 'HOOK_CLOSED', finalState: state };
 }
 
+async function initialiseCandidate(candidate) {
+  'use step';
+  return createInitialState(candidate);
+}
+
 async function evaluateEvent(state, event) {
   'use step';
   return applyControlEvent(state, event);
@@ -41,8 +46,12 @@ async function evaluateEvent(state, event) {
 
 async function fanOut(tasks) {
   'use step';
-  for (const task of tasks) {
-    await send('vector-control-tasks', task);
-  }
-  return { enqueued: tasks.length };
+  const results = await Promise.all(tasks.map(async (task) => {
+    const result = await send('vector-control-tasks', task, {
+      idempotencyKey: task.idempotencyKey,
+      retentionSeconds: 604800,
+    });
+    return { taskId: task.taskId, messageId: result.messageId };
+  }));
+  return { enqueued: results.length, results };
 }
