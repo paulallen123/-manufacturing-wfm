@@ -13,19 +13,24 @@
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const displayContext = () => { try { return typeof globalThis.VectorDisplayContext === 'function' ? globalThis.VectorDisplayContext() : null; } catch { return null; } };
   const hours = minutes => (Number(minutes || 0) / 60).toLocaleString(displayContext()?.locale || 'en', { maximumFractionDigits: 2 }) + ' h';
-  const calendarDate = value => {
+  const calendarDateParts = value => {
     const raw = String(value || ''), match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
-    if (!match) return escape(raw);
+    if (!match) return { raw, label: raw, valid: false };
     const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
     const date = new Date(Date.UTC(year, month - 1, day));
-    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return escape(raw);
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { raw, label: raw, valid: false };
     try {
       const label = new Intl.DateTimeFormat(displayContext()?.locale || 'en', { dateStyle: 'medium', timeZone: 'UTC' }).format(date);
-      return `<time datetime="${escape(raw)}">${escape(label)}</time>`;
-    } catch { return escape(raw); }
+      return { raw, label, valid: true };
+    } catch { return { raw, label: raw, valid: false }; }
+  };
+  const calendarDateLabel = value => calendarDateParts(value).label;
+  const calendarDate = value => {
+    const date = calendarDateParts(value);
+    return date.valid ? `<time datetime="${escape(date.raw)}">${escape(date.label)}</time>` : escape(date.raw);
   };
   const selected = () => RF.report?.teams.find(team => team.id === RF.team) || RF.report?.teams[0];
-  const control = (label, action, id = '', disabled = false) => `<button type="button" class="btn small" data-vector-workflow="${escape(action)}" data-id="${escape(id)}"${disabled ? ' disabled' : ''}>${escape(label)}</button>`;
+  const control = (label, action, id = '', disabled = false, accessibleLabel = '') => `<button type="button" class="btn small" data-vector-workflow="${escape(action)}" data-id="${escape(id)}"${accessibleLabel ? ` aria-label="${escape(accessibleLabel)}"` : ''}${disabled ? ' disabled' : ''}>${escape(label)}</button>`;
   const checked = (name, label) => `<label class="vw-check"><input type="checkbox" name="${name}" required>${escape(label)}</label>`;
   const reason = () => '<label>Evidence and reason<textarea name="reason" minlength="12" maxlength="500" required placeholder="Reference verified evidence. Do not include medical details."></textarea></label>';
   const payload = extra => {
@@ -240,7 +245,7 @@
       const balanceWarning = balanceEvidenceValid ? '' : '<p class="vw-warning" role="status">Balance evidence unavailable. Refresh or ask a manager to verify the entitlement source before requesting leave.</p>';
       return `<section class="vw-panel" data-vector-leave-route="employee"><h1>Absence &amp; Leave</h1><p>Request scheduled leave and track the saved manager decision.</p>${leaveReceipt()}<div class="personal-grid"><div><b>${balance(leave?.availableMinutes)}</b><small>Available after pending requests</small></div><div><b>${balance(leave?.pendingMinutes)}</b><small>Awaiting a manager decision</small></div></div>${balanceWarning}${control('Request leave', 'leave-request', nextDate, !nextDate || LF.busy || !balanceEvidenceValid)}<h2>My requests</h2>${requests.map(item => `<div class="vw-row" data-vector-leave-id="${escape(item.id)}"><span><b>${escape(item.kind || 'Annual leave')}</b><br>${item.date ? calendarDate(item.date) : escape(item.start)} · ${escape(item.hours)} hours</span><strong data-vector-leave-status>${escape(item.status)}</strong></div>`).join('') || '<p>No leave requests are recorded.</p>'}</section>`;
     }
-    return `<section class="vw-panel" data-vector-leave-route="manager"><h1>Absence &amp; Leave</h1><p>Only source-saved requests in the authenticated scope can be decided.</p>${leaveReceipt()}<h2>Requests awaiting a decision</h2>${requests.map(item => `<div class="vw-row" data-vector-leave-id="${escape(item.id)}"><span><b>${escape(item.employeeName || item.employee)}</b><br>${item.date ? calendarDate(item.date) : escape(item.start)} · ${escape(item.hours)} hours<br><small>${escape(item.id)}</small></span><div>${control('Approve', 'leave-approve', item.id, LF.busy)}${control('Decline', 'leave-decline', item.id, LF.busy)}</div></div>`).join('') || '<p>No pending requests are visible in this reporting scope.</p>'}</section>`;
+    return `<section class="vw-panel" data-vector-leave-route="manager"><h1>Absence &amp; Leave</h1><p>Only source-saved requests in the authenticated scope can be decided.</p>${leaveReceipt()}<h2>Requests awaiting a decision</h2>${requests.map(item => { const name = item.employeeName || item.employee, date = item.date ? calendarDateLabel(item.date) : String(item.start || ''); return `<div class="vw-row" data-vector-leave-id="${escape(item.id)}"><span><b>${escape(name)}</b><br>${item.date ? calendarDate(item.date) : escape(item.start)} · ${escape(item.hours)} hours<br><small>${escape(item.id)}</small></span><div>${control('Approve', 'leave-approve', item.id, LF.busy, `Approve leave request for ${name} on ${date}`)}${control('Decline', 'leave-decline', item.id, LF.busy, `Decline leave request for ${name} on ${date}`)}</div></div>`; }).join('') || '<p>No pending requests are visible in this reporting scope.</p>'}</section>`;
   }
   function evidence(rows) {
     return `<div class="vw-scroll"><table class="table"><thead><tr><th>Employee / date</th><th>Original clocking</th><th>Reviewed outcome</th><th>Worked / absence</th></tr></thead><tbody>${rows.map(row => `<tr><td>${escape(selected()?.employees.find(person => person.id === row.employee)?.name || row.employee)}<br>${escape(row.date)}<br><small>${escape(row.id)}</small></td><td>${escape(row.raw.clockIn || 'Missing')}<br>${escape(row.raw.clockOut || 'Missing')}</td><td>${escape(row.effective.kind)}<br>${escape(row.effective.clockIn || '')}<br>${escape(row.effective.clockOut || '')}${row.correction ? '<br>Correction recorded; original retained' : ''}</td><td>${row.workedMinutes == null ? 'Unverified' : hours(row.workedMinutes)} / ${hours(row.effective.absenceMinutes)}</td></tr>`).join('')}</tbody></table></div>`;
