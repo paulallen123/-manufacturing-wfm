@@ -148,9 +148,40 @@ test('restart refuses jointly rewritten leave state and domain audit without imm
   assert.equal(declined.json.result.status, 'declined');
 
   await stop(running.child);
+  running = await start(runtime, database, port);
+  const beforeAttack = await request(running.origin, '/api/bootstrap', { cookie: managerCookie });
+  assert.equal(beforeAttack.status, 200, beforeAttack.text);
+  assert.equal(
+    beforeAttack.json.state.requests.find(item => item.id === requestId)?.status,
+    'declined',
+    'an untampered sealed decision must survive restart',
+  );
+  await stop(running.child);
   const immutableAudit = rewriteLeaveDecision(database, requestId);
   assert.ok(immutableAudit, 'the append-only command audit must remain present');
-  assert.deepEqual(JSON.parse(immutableAudit.detail), { version: declined.json.version, resultId: requestId });
+  const immutableDetail = JSON.parse(immutableAudit.detail);
+  assert.equal(immutableDetail.version, declined.json.version);
+  assert.equal(immutableDetail.resultId, requestId);
+  assert.deepEqual(
+    {
+      leaveDecisionSealVersion: immutableDetail.leaveDecisionSealVersion,
+      requestId: immutableDetail.requestId,
+      employee: immutableDetail.employee,
+      decision: immutableDetail.decision,
+      reviewedBy: immutableDetail.reviewedBy,
+      decisionReason: immutableDetail.decisionReason,
+    },
+    {
+      leaveDecisionSealVersion: 1,
+      requestId,
+      employee: 'e0',
+      decision: 'declined',
+      reviewedBy: 'm1',
+      decisionReason: 'Synthetic coverage review evidence.',
+    },
+  );
+  assert.match(immutableDetail.reviewedAt, /^\d{4}-\d{2}-\d{2}T/);
+  assert.match(immutableDetail.stateSha256, /^[a-f0-9]{64}$/);
 
   running = await start(runtime, database, port);
   const afterRestart = await request(running.origin, '/api/bootstrap', { cookie: managerCookie });
