@@ -35,7 +35,7 @@ const groups = {
     'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs'
   ],
   learning: [
-    'adaptive-learning-engine.cjs', 'training-workflow-manifest.cjs',
+    'adaptive-learning-engine.cjs', 'outcome-intelligence-service.cjs', 'training-workflow-manifest.cjs',
     'training-twin.cjs', 'training-scenario-engine.cjs',
     'training-delivery-service.cjs', 'training-video-contract.cjs',
     'training-artifact-registry.cjs', 'training-regeneration-planner.cjs'
