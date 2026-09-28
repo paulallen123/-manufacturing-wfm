@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28",
+  "purpose": "Harden the existing Workday specification coverage by binding one customer-configured worker export and one effective-dated read-only worker snapshot to the same tenant, connection, regional host, schema, source window, record count and integration event before admitting reconciliation evidence.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "workday",
+      "reason": "Workday documents a current versioned SOAP directory, REST services, OAuth security, Core Connector: Worker, connector change detection, customer-configured integration systems and unique integration event IDs; VECTOR now composes those boundaries into count-only worker reconciliation evidence without gaining worker or payroll mutation authority.",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://community-content.workday.com/en-us/public/products/platform-and-product-extensions/soap-api-reference.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "auth": "customer-controlled-core-connector-or-tenant-approved-read-only-workday-api-identity",
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          "customer-configured Core Connector: Worker with a dedicated integration system and approved delivery endpoint",
+          "tenant-specific HTTPS Workday Web Services Human Resources Get_Workers read surface where separately entitled",
+          "tenant-specific Workday REST API with OAuth 2.0 and the Workday configurable security model where the required worker resource is available",
+          "RaaS or SFTP worker export only when its exact report, fields, parameters, encryption and delivery route are customer approved"
+        ],
+        "readRoutes": [
+          "Core Connector: Worker full or change-detection output with exact integration system identity",
+          "Workday Web Services Human Resources Get_Workers on a pinned supported production WWS version",
+          "approved Workday REST Person, Staffing, Absence, Time Tracking or Payroll resources as separate least-privilege datasets",
+          "approved RaaS custom report with immutable report identity, schema and parameters",
+          "integration event and Process Monitor evidence for exact launch-to-completion tracking"
+        ],
+        "deniedMutationRoutes": [
+          "Put_Worker and all worker create, update, terminate, rescind, transfer or staffing business-process actions",
+          "payroll calculation, result, payment, tax, time, absence, schedule, benefit or compensation mutation",
+          "integration system, security group, domain permission, API client, report, delivery or endpoint reconfiguration",
+          "inbound EIB, connector, SOAP, REST, Studio or Orchestrate writes",
+          "checkpoint, deletion, attendance, payroll, operational or causal authority"
+        ],
+        "dataObjects": [
+          "workers, employees and contingent workers",
+          "employment, position, job, company, supervisory organisation, location and cost-centre assignments",
+          "effective dates, source versions and customer-selected worker fields",
+          "integration systems, integration event IDs, run status, record counts, page or file manifests and delivery outcomes",
+          "schema, mapping, credential, freshness, completeness and reconciliation diagnostics"
+        ],
+        "canonicalObjects": [
+          "person-source-identity",
+          "worker-assignment-source-identity",
+          "employment",
+          "contract",
+          "site-assignment",
+          "cost-centre-assignment",
+          "workforce-effective-period",
+          "integration-event",
+          "reconciliation-window"
+        ],
+        "stableIdentifiers": [
+          "Workday tenant name scopes every tenant-specific endpoint and export",
+          "Workday ID (WID) and approved reference IDs remain opaque source identifiers",
+          "worker, employment and position identifiers remain separate so concurrent jobs are not collapsed",
+          "integration system ID identifies the configured connector",
+          "integration event ID is unique per invocation and is hashed before VECTOR evidence leaves the connector boundary"
+        ],
+        "freshnessLatency": [
+          "integration systems can be launched manually, on a schedule, by API, subscription or business process",
+          "Core Connector change detection is distinct from date-range filtering and depends on connector-specific transaction-log and effective-date rules",
+          "full snapshots remain the safe bootstrap and periodic reconciliation route",
+          "freshness is measured from the exact source window, integration event completion and VECTOR observation time"
+        ],
+        "permissions": [
+          "integration systems define launch security and execution rights",
+          "Workday configurable security governs REST resources and tenant data",
+          "SOAP and connector access is restricted to the exact required Get/read domains and approved fields",
+          "customer-owned integration configuration remains separate from VECTOR runtime authority",
+          "the normal VECTOR connector cannot configure reports, integrations, endpoints, security groups or worker records"
+        ],
+        "paginationDeltaWebhooks": [
+          "Core Connector output is reconciled using a completed integration event plus a gapless file/page manifest",
+          "direct SOAP or REST paging is enabled only after the tenant proves the exact page/result contract for the pinned resource and version",
+          "connector change detection is not inferred from start/end-date filters",
+          "full worker snapshots and change-detection outputs use separate checkpoint namespaces and are never silently interchanged",
+          "no notification or event signal is accepted as complete worker state without an authenticated read or completed export"
+        ],
+        "regionalApiVersions": [
+          "tenant-specific Workday HTTPS host is discovered from authorised customer configuration and bound exactly",
+          "WWS v47.0 is documented for Workday 2026R2 and earlier supported production versions remain separately listed",
+          "REST service versions are resource-specific and cannot be represented as one account-wide API version",
+          "preview WWS definitions are not production contracts and cannot replace a pinned production version",
+          "regional failover never silently changes tenant host, data location or checkpoint namespace"
+        ],
+        "customFields": [
+          "Core Connector: Worker integration maps, attributes and field overrides are customer configurable",
+          "RaaS fields and calculated fields remain bound to an approved report and schema fingerprint",
+          "customer-specific IDs and local fields remain source-attributed extensions until explicitly mapped",
+          "field addition, removal, type, sensitivity or effective-date semantic changes trigger schema review"
+        ],
+        "rateLimits": [
+          "public documentation reviewed does not establish one universal worker API limit across SOAP, REST, RaaS and connector exports",
+          "tenant-proven limits, timeouts and concurrency are connection policy and evidence bound",
+          "throttling or service unavailability uses bounded backoff without widening identity, version, field or date scope",
+          "large estates partition safe reads by company or approved organisation only when the source contract preserves complete scope"
+        ],
+        "failureModes": [
+          "connector reports completed but a delivery step or external endpoint did not receive the file",
+          "integration event ID, integration system, tenant host, company, schema or source window does not match the approved connection",
+          "Core Connector transaction-log or change-detection configuration is missing or changed",
+          "date filtering is incorrectly treated as change detection",
+          "partial, gapped, duplicated, reordered or count-inconsistent output manifests",
+          "one worker with multiple employment or position assignments is collapsed into one identity",
+          "future-dated, corrected or concurrently effective worker slices overwrite one another",
+          "WWS or REST version, response groups, RaaS fields, maps or integration attributes drift",
+          "OAuth expiry, insufficient domain permissions, tenant-host change, timeout, throttling, regional outage or delivery failure",
+          "secret, credential, raw worker ID or executable data enters evidence"
+        ],
+        "reconciliation": [
+          "bind Workday tenant, VECTOR tenant, connection, company, regional host, export, WWS version, Get_Workers query, schema and source window",
+          "require a completed zero-error integration event and gapless export manifest",
+          "require a complete effective-dated worker snapshot over the exact same source window",
+          "require export and parsed worker record counts to agree",
+          "preserve person, employment and assignment identities independently and retain sequence-numbered corrections",
+          "hash Workday tenant and integration event identity and return only counts and evidence fingerprints",
+          "never infer deletion from this evidence or advance a checkpoint without the durable checkpoint owner",
+          "never grant worker, attendance, payroll, write-back, operational or causal authority"
+        ],
+        "schemaDrift": [
+          "pin WWS or REST resource version, response groups, export revision, approved fields, query, schema, map and scope fingerprints",
+          "quarantine preview-to-production changes, removed fields, sensitive-field additions, type changes and report or connector reconfiguration",
+          "preserve the original schema and export revision with historical evidence so replay is interpreted against the contract that produced it"
+        ],
+        "retriesReconnect": [
+          "refresh OAuth only within the approved Workday API client and security domain where REST is used",
+          "retry a failed read or export only inside the same tenant, integration, version, field set and source window",
+          "use Process Monitor and integration event evidence to distinguish launch, processing and delivery failures",
+          "run a complete read-only worker snapshot after a missed, ambiguous or reconfigured change-detection window",
+          "require customer-controlled repair when integration configuration, security domains, report definitions or delivery endpoints change"
+        ],
+        "workdayWorkerEvidenceAuthority": {
+          "completedExportRequired": true,
+          "exactIntegrationEventRequired": true,
+          "gaplessManifestRequired": true,
+          "zeroExportErrorsRequired": true,
+          "exactSourceWindowRequired": true,
+          "effectiveDatedSnapshotRequired": true,
+          "recordCountAgreementRequired": true,
+          "multipleAssignmentsPreserved": true,
+          "rawWorkerIdsReturned": false,
+          "checkpointAuthority": false,
+          "deletionAuthority": false,
+          "workerMutationAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false,
+          "writeBackAuthority": false,
+          "causalAuthority": false
+        },
+        "customerValueOpportunities": [
+          "prevent missing, duplicated or stale worker assignments from driving unsafe schedules, overtime, access or payroll preparation",
+          "preserve concurrent jobs and positions so skills, availability, cost centre and site decisions use the correct assignment",
+          "distinguish a genuine workforce change from a failed Workday launch, connector configuration or delivery step",
+          "reduce implementation effort by reusing Core Connector: Worker, approved RaaS or Get_Workers rather than bespoke point-to-point exports",
+          "preserve effective history for planned-versus-realised staffing and outcome analysis without pretending correlation is causation"
+        ],
+        "zeroFrictionConnection": [
+          "discover tenant host, supported production WWS versions and existing worker integrations from authorised configuration",
+          "propose Core Connector: Worker as the default enterprise export and a minimum approved worker field set",
+          "pre-fill tenant, integration system, company, export revision, source window, schema and delivery route",
+          "test one bounded non-production export without creating or modifying a worker",
+          "measure configuration questions, manual field mappings, retries and time-to-first-reconciled worker snapshot removed"
+        ],
+        "productHandoff": "Show one assignment-aware workforce source-health card: last reconciled worker snapshot, integration event state, expected versus parsed rows, freshness, affected company/site, multi-job collision count and exact failure layer. Do not show raw WIDs or imply payroll, attendance or worker approval.",
+        "autonomyHandoff": "Detect tenant-host drift, OAuth or domain-permission failure, integration-event failure, connector configuration drift, missing delivery, count mismatch, multi-job collision and stale snapshots. Auto-recover only by bounded token refresh, exact-window read retry or an already-authorised worker export; otherwise prepare the precise customer-controlled repair.",
+        "evidenceSources": [
+          {"title":"Workday SOAP API Reference","url":"https://community-content.workday.com/en-us/public/products/platform-and-product-extensions/soap-api-reference.html","evidenceLevel":"official-provider-documentation"},
+          {"title":"Workday WWS Directory v47.0","url":"https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html","evidenceLevel":"official-provider-documentation"},
+          {"title":"Workday WWS Version Directory","url":"https://community.workday.com/sites/default/files/file-hosting/productionapi/versions/index.html","evidenceLevel":"official-provider-documentation"},
+          {"title":"Workday REST Services Directory","url":"https://community.workday.com/sites/default/files/file-hosting/restapi/index.html","evidenceLevel":"official-provider-documentation"},
+          {"title":"Workday APIs","url":"https://developer.workday.com/documentation/GUID-7b3b1dd7-e3b0-4a34-846b-6e37673226e1-enHYPHENus/WorkdayAPIs","evidenceLevel":"official-provider-documentation"},
+          {"title":"Create Your API Client","url":"https://developer.workday.com/documentation/zwx1518028675482","evidenceLevel":"official-provider-documentation"},
+          {"title":"Workday REST API Security","url":"https://developer.workday.com/documentation/dan1370797986071/ConceptWorkdayRESTAPISecurity","evidenceLevel":"official-provider-documentation"},
+          {"title":"Workday Integrations Overview","url":"https://doc.workday.com/workday-education/en-us/course-manuals/creating-and-securing-integrations/workday-integrations-overview.html","evidenceLevel":"official-provider-documentation"},
+          {"title":"Workday Connectors","url":"https://doc.workday.com/workday-education/en-us/course-manuals/creating-and-securing-integrations/workday-connectors.html","evidenceLevel":"official-provider-documentation"},
+          {"title":"Integration Systems and Events","url":"https://doc.workday.com/admin-guide/en-us/workday-studio/studio-fundamentals/uxa1532597056528.html","evidenceLevel":"official-provider-documentation"},
+          {"title":"Integration Event IDs","url":"https://doc.workday.com/admin-guide/en-us/workday-studio/integration-monitoring-and-troubleshooting/process-monitor/xhh1513008299428.html","evidenceLevel":"official-provider-documentation"},
+          {"title":"Configuring Connectors","url":"https://doc.workday.com/workday-education/en-us/course-manuals/creating-and-securing-integrations/configuring-connectors.html?toc=4","evidenceLevel":"official-provider-documentation"}
+        ],
+        "evidenceNote": "Official Workday documentation reviewed 2026-09-28. No Workday tenant, customer Core Connector, OAuth client, ISU, live Get_Workers call, worker export, delivery, reconciliation, denied mutation, hosted VECTOR proof or provider certification is claimed.",
+        "nextBuildAction": "Use an authorised Workday non-production tenant to prove the exact tenant host and security domains, one Core Connector: Worker or Get_Workers full snapshot, integration event completion, delivery manifest, multi-job/effective-date mapping, count reconciliation, OAuth expiry, permission denial, connector drift, delivery failure, throttling and denied worker/payroll mutations."
+      }
+    }
+  ]
+}
