@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "providerId": "sap-business-accelerator-hub",
+  "targetClaim": "L1",
+  "description": "Official SAP Business Accelerator Hub S/4HANA Business Partner contract read. This is not stateful write/read-back proof.",
+  "steps": [
+    {
+      "name": "sap-business-partner-read",
+      "method": "GET",
+      "url": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner?$top=1&$format=json",
+      "headers": {
+        "Accept": "application/json",
+        "APIKey": "${ENV:SAP_API_KEY}"
+      },
+      "expectStatus": [
+        200
+      ]
+    }
+  ]
+}
