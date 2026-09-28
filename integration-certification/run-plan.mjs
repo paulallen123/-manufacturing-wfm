@@ -18,7 +18,6 @@ const matrix = JSON.parse(fs.readFileSync(matrixPath,'utf8'));
 const provider = matrix.providers.find(p=>p.id===plan.providerId);
 if (!provider) fail('Unknown providerId.');
 
-const productionMarkers = ['production','prod.','api.gusto.com'];
 const stepValues = new Map();
 
 function expandString(value) {
@@ -42,23 +41,19 @@ function expand(v){
   return v;
 }
 function hostAllowed(hostname){
-  if ((provider.allowedHosts||[]).includes(hostname)) return true;
-  return (provider.allowedHostSuffixes||[]).some(s=>hostname===s || hostname.endsWith('.'+s));
+  return (provider.allowedHosts||[]).includes(hostname);
 }
 function assertSafeUrl(raw){
   const u=new URL(raw);
   if (u.protocol!=='https:') fail('Only HTTPS provider endpoints are allowed.');
-  if (!hostAllowed(u.hostname)) fail(`Host not allowlisted for ${provider.id}: ${u.hostname}`);
-  const h=u.hostname.toLowerCase();
-  const full=u.toString().toLowerCase();
-  if (productionMarkers.some(m=>h===m || full.includes(m))) fail(`Production-looking endpoint denied: ${u.hostname}`);
+  if (!hostAllowed(u.hostname)) fail(`Host not explicitly allowlisted for ${provider.id}: ${u.hostname}`);
   return u;
 }
 function jsonPath(obj,p){
   let cur=obj;
   for(const part of p.split('.')){
     if(part==='') continue;
-    cur=cur?.[part];
+    cur=cur?.[/^\d+$/.test(part)?Number(part):part];
   }
   return cur;
 }
@@ -86,6 +81,7 @@ const evidence={
 };
 
 try{
+  if(evidence.vectorCandidateSha==='UNBOUND') fail('VECTOR_CANDIDATE_SHA must bind the exact candidate under test.');
   for(const rawStep of plan.steps){
     const step=expand(rawStep);
     if(!step.name || !step.method || !step.url) fail('Each step requires name, method and url.');
@@ -126,6 +122,15 @@ try{
       fail(`Unexpected status for ${step.name}: ${res.status}`);
     }
     row.assertions.push({type:'status',pass:true,expected,actual:res.status});
+    if(step.assertJson){
+      if(parsed===null) fail(`Step ${step.name} requires JSON assertions but response was not JSON.`);
+      for(const rule of step.assertJson){
+        const actual=jsonPath(parsed,rule.path);
+        const pass=JSON.stringify(actual)===JSON.stringify(rule.equals);
+        row.assertions.push({type:'json-equals',path:rule.path,pass,expectedSha256:sha(JSON.stringify(rule.equals)),actualSha256:sha(JSON.stringify(actual))});
+        if(!pass) fail(`JSON assertion failed for ${step.name}: ${rule.path}`);
+      }
+    }
     const extracted={};
     for(const [key,p] of Object.entries(step.extract||{})){
       if(parsed===null) fail(`Step ${step.name} requires JSON extraction but response was not JSON.`);
