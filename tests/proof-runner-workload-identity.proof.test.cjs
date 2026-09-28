@@ -47,6 +47,7 @@ async function start(runtime, database, port, key, enabled = true, limits = {}) 
         publicKey: key.export({ type: 'spki', format: 'der' }).toString('base64url'),
         email: 'manager@northstar.example',
         tenant: 'northstar-demo',
+        role: 'manager',
         allowed: ['GET /api/bootstrap'],
         maxSessionSeconds: limits.maxSessionSeconds ?? 120,
         actionBudget: limits.actionBudget ?? 3,
@@ -415,5 +416,60 @@ test('a proof-runner session cannot inherit later account privilege escalation',
     sessionRef: tokenHash.slice(0, 24),
     runnerId: 'runner-local-1',
   });
+  db.close();
+});
+
+test('a proof-runner identity cannot mint a session for an unexpectedly privileged account', async t => {
+  assert.equal(createHash('sha256').update(fs.readFileSync(artifact)).digest('hex'), expectedArtifactSha256);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-proof-runner-issuance-role-'));
+  const runtime = path.join(root, 'runtime');
+  const database = path.join(root, 'state.sqlite');
+  fs.mkdirSync(runtime);
+  execFileSync('tar', ['--no-same-owner', '-xzf', artifact, '-C', runtime]);
+  for (const overlay of overlays) if (fs.existsSync(overlay)) execFileSync(process.execPath, [overlay, path.join(runtime, 'public')]);
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  let running = await start(runtime, database, await freePort(), publicKey, true, {
+    maxSessionSeconds: 120,
+    actionBudget: 3,
+    maxRequestsPerSecond: 3,
+  });
+  t.after(() => stop(running.child));
+  await stop(running.child);
+
+  const writable = new DatabaseSync(database);
+  const changed = writable.prepare('UPDATE users SET role=?,costs=?,permissions=? WHERE email=?')
+    .run('admin', 1, JSON.stringify(['system.admin']), 'manager@northstar.example');
+  assert.equal(changed.changes, 1);
+  writable.close();
+
+  running = await start(runtime, database, await freePort(), publicKey, true, {
+    maxSessionSeconds: 120,
+    actionBudget: 3,
+    maxRequestsPerSecond: 3,
+  });
+  const challenge = await request(running.origin, '/api/proof-runner/challenge', {
+    method: 'POST', body: { kid: 'runner-local-1' },
+  });
+  assert.equal(challenge.status, 200, challenge.text);
+  const now = Date.now();
+  const assertion = {
+    kid: 'runner-local-1',
+    challengeId: challenge.json.challengeId,
+    nonce: challenge.json.nonce,
+    audience: running.origin,
+    issuedAt: now,
+    expiresAt: now + 20_000,
+  };
+  const exchanged = await request(running.origin, '/api/proof-runner/session', {
+    method: 'POST',
+    body: { assertion, signature: sign(null, canonical(assertion), privateKey).toString('base64url') },
+  });
+  assert.equal(exchanged.status, 503, exchanged.text);
+
+  const db = new DatabaseSync(database, { readOnly: true });
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sessions WHERE auth_method='proof-runner'").get().n, 0);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM audit_events WHERE action='proof-runner-session-issued'").get().n, 0);
   db.close();
 });
