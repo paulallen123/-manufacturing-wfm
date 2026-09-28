@@ -20,16 +20,11 @@ const PROFILES = Object.freeze({
       return {
         method: 'GET',
         url: 'https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata4/sap/api_bank/srvd_a2x/sap/bank/0002/',
-        headers: {
-          APIKey: bundle.apiKey,
-          Accept: 'application/json'
-        }
+        headers: { APIKey: bundle.apiKey, Accept: 'application/json' }
       };
     },
     verify(payload) {
-      if (!Array.isArray(payload?.value)) {
-        throw new Error('SAP S/4HANA sandbox response is not the expected OData service-document shape.');
-      }
+      if (!Array.isArray(payload?.value)) throw new Error('SAP S/4HANA sandbox response is not the expected OData service-document shape.');
       return { entitySetCount: payload.value.length, assertion: 'odata-v4-service-document' };
     }
   }),
@@ -60,28 +55,58 @@ const PROFILES = Object.freeze({
     },
     verify(payload) {
       const organisation = payload?.Organisations?.[0];
-      if (!organisation || organisation.IsDemoCompany !== true) {
-        throw new Error('Xero target is not independently attested as a Demo Company; proof fails closed.');
-      }
-      if (organisation.OrganisationStatus && organisation.OrganisationStatus !== 'ACTIVE') {
-        throw new Error('Xero Demo Company is not ACTIVE.');
-      }
+      if (!organisation || organisation.IsDemoCompany !== true) throw new Error('Xero target is not independently attested as a Demo Company; proof fails closed.');
+      if (organisation.OrganisationStatus && organisation.OrganisationStatus !== 'ACTIVE') throw new Error('Xero Demo Company is not ACTIVE.');
       return {
         sampleCount: 1,
         assertion: 'organisation-is-demo-company',
         organisationIdDigest: organisation.OrganisationID ? sha256(organisation.OrganisationID) : null
       };
     }
+  }),
+  'gusto-embedded-payroll': Object.freeze({
+    connectorId: 'gusto-embedded-payroll',
+    evidenceLevelOnPass: 'sandbox-authenticated',
+    environment: 'sandbox',
+    adapter: 'http-json',
+    authMethod: 'oauth2',
+    credentialRef: 'secret://provider/gusto/demo-company',
+    exactHost: 'api.gusto-demo.com',
+    dataProbeApproved: true,
+    sourceInstanceId(bundle) {
+      if (!bundle?.companyId) throw new Error('Gusto demo company ID is unavailable.');
+      return 'gusto-demo-' + sha256(bundle.companyId).slice(0, 16);
+    },
+    buildRequest(bundle) {
+      if (!bundle?.accessToken || !bundle?.companyId) throw new Error('Gusto demo credential bundle is incomplete.');
+      return {
+        method: 'GET',
+        url: 'https://api.gusto-demo.com/v1/companies/' + encodeURIComponent(bundle.companyId),
+        headers: {
+          Authorization: 'Bearer ' + bundle.accessToken,
+          'X-Gusto-API-Version': '2026-06-15',
+          Accept: 'application/json'
+        }
+      };
+    },
+    redactPath(pathname) {
+      return pathname.replace(/^\/v1\/companies\/[^/]+$/, '/v1/companies/{company_id}');
+    },
+    verify(payload) {
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Gusto demo company response is not a JSON object.');
+      return { assertion: 'demo-company-read-200', bodyShape: 'object' };
+    }
   })
 });
 
-function redactRequest(request) {
+function redactRequest(profile, request) {
   const headers = {};
   for (const [key, value] of Object.entries(request.headers || {})) {
     headers[key] = /authorization|apikey|api-key|xero-tenant-id|cookie/i.test(key) ? '[REDACTED]' : value;
   }
   const url = new URL(request.url);
-  return { method: request.method, origin: url.origin, path: url.pathname, querySha256: url.search ? sha256(url.search) : null, headers };
+  const path = typeof profile.redactPath === 'function' ? profile.redactPath(url.pathname) : url.pathname;
+  return { method: request.method, origin: url.origin, path, querySha256: url.search ? sha256(url.search) : null, headers };
 }
 
 function assertExactCandidateSha(value) {
@@ -114,17 +139,12 @@ export async function certifyProviderSandbox({
   const exactCandidateSha = assertExactCandidateSha(candidateSha);
   const connector = connectorById(profile.connectorId);
   if (!connector) throw new Error('VECTOR connector is not present in the Integration Fabric registry.');
-  if (connector.security?.readOnlyDefault !== true || connector.security?.writeEnabled === true) {
-    throw new Error('VECTOR connector is not fail-closed read-only.');
-  }
+  if (connector.security?.readOnlyDefault !== true || connector.security?.writeEnabled === true) throw new Error('VECTOR connector is not fail-closed read-only.');
 
   const secretBundle = await resolveSecretBundle(profile.credentialRef);
   if (!secretBundle || typeof secretBundle !== 'object') throw new Error('Managed secret resolver returned no credential bundle.');
 
-  const sourceInstanceId = typeof profile.sourceInstanceId === 'function'
-    ? profile.sourceInstanceId(secretBundle)
-    : profile.sourceInstanceId;
-
+  const sourceInstanceId = typeof profile.sourceInstanceId === 'function' ? profile.sourceInstanceId(secretBundle) : profile.sourceInstanceId;
   const plan = buildSafeConnectionTest({
     providerKey: profile.connectorId,
     sourceInstanceId,
@@ -151,12 +171,8 @@ export async function certifyProviderSandbox({
   const body = Buffer.from(await response.arrayBuffer());
   const contentType = response.headers?.get?.('content-type') || '';
 
-  if (response.status < 200 || response.status >= 300) {
-    throw new Error('Provider sandbox authentication/read failed with HTTP ' + response.status + '.');
-  }
-  if (!contentType.toLowerCase().includes('json')) {
-    throw new Error('Provider sandbox returned a non-JSON response.');
-  }
+  if (response.status < 200 || response.status >= 300) throw new Error('Provider sandbox authentication/read failed with HTTP ' + response.status + '.');
+  if (!contentType.toLowerCase().includes('json')) throw new Error('Provider sandbox returned a non-JSON response.');
 
   let payload;
   try { payload = JSON.parse(body.toString('utf8')); }
@@ -164,7 +180,6 @@ export async function certifyProviderSandbox({
 
   const providerAssertion = profile.verify(payload);
   const observedAt = new Date(nowMs).toISOString();
-  const steps = plan.steps.map(step => ({ id: step.id, status: 'PASS' }));
   const evidence = {
     configurationFingerprint: plan.configurationFingerprint,
     providerKey: plan.configuration.providerKey,
@@ -175,13 +190,10 @@ export async function certifyProviderSandbox({
     employeeOrPayrollDataObserved: false,
     latencyMs,
     observedAt,
-    steps
+    steps: plan.steps.map(step => ({ id: step.id, status: 'PASS' }))
   };
   const validation = validateConnectionEvidence(plan, evidence, { nowMs });
-
-  if (!['CONNECTION_VERIFIED', 'CONNECTION_AND_SAMPLE_VERIFIED'].includes(validation.status)) {
-    throw new Error('VECTOR connection evidence rejected: ' + validation.reasons.join(','));
-  }
+  if (!['CONNECTION_VERIFIED', 'CONNECTION_AND_SAMPLE_VERIFIED'].includes(validation.status)) throw new Error('VECTOR connection evidence rejected: ' + validation.reasons.join(','));
 
   return Object.freeze({
     schemaVersion: 1,
@@ -193,13 +205,8 @@ export async function certifyProviderSandbox({
     connectorRegistryEvidenceLevelBeforeRun: connector.evidenceLevel,
     configurationFingerprint: plan.configurationFingerprint,
     sourceInstanceIdDigest: sha256(sourceInstanceId),
-    request: redactRequest(request),
-    response: {
-      status: response.status,
-      contentType,
-      bodySha256: sha256(body),
-      bodyBytes: body.length
-    },
+    request: redactRequest(profile, request),
+    response: { status: response.status, contentType, bodySha256: sha256(body), bodyBytes: body.length },
     providerAssertion,
     connectionValidation: validation,
     observedAt
