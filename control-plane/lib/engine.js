@@ -151,6 +151,25 @@ function closeActiveTasksForGate(state, gateId, terminalState, proofLane = null)
   }
 }
 
+function validateProofLane(state, gate, receipt) {
+  const definition = getGateDefinition(gate.id);
+  const laneId = receipt.proofLane?.laneId;
+  const lane = laneId ? LANE_DEFINITIONS[laneId] : null;
+  if (!laneId) return { ok: false, reason: 'MISSING_PROOF_LANE' };
+  if (!definition?.lanes.includes(laneId) || !lane?.enabled) return { ok: false, reason: 'UNADMITTED_PROOF_LANE' };
+  if (receipt.proofLane.provider && receipt.proofLane.provider !== lane.provider) {
+    return { ok: false, reason: 'PROOF_LANE_PROVIDER_MISMATCH' };
+  }
+  if (receipt.proofLane.failureDomainId && receipt.proofLane.failureDomainId !== lane.failureDomainId) {
+    return { ok: false, reason: 'PROOF_LANE_FAILURE_DOMAIN_MISMATCH' };
+  }
+  const activeTask = Object.values(state.tasks).find(
+    (task) => task.gateId === gate.id && task.laneId === laneId && ACTIVE_TASK_STATES.has(task.status),
+  );
+  if (!activeTask) return { ok: false, reason: 'NO_ACTIVE_PROOF_TASK' };
+  return { ok: true, lane, activeTask };
+}
+
 function rejectReceipt(state, gate, receipt, reason) {
   state.rejectedReceipts.push({
     receiptId: receipt.receiptId ?? null,
@@ -187,6 +206,20 @@ function processReceipt(state, receipt, emittedTasks) {
   }
   if (!receipt.receiptId || !receipt.evidenceDigest) {
     rejectReceipt(state, gate, receipt, 'MISSING_PROVENANCE');
+    return;
+  }
+
+  const laneValidation = validateProofLane(state, gate, receipt);
+  if (!laneValidation.ok) {
+    rejectReceipt(state, gate, receipt, laneValidation.reason);
+    return;
+  }
+  if (receipt.result === 'PASS' && !dependenciesPass(state, gate.id)) {
+    rejectReceipt(state, gate, receipt, 'DEPENDENCIES_NOT_PROVEN');
+    return;
+  }
+  if (gate.id === 'production_authority' && state.mode !== 'AUTHORITATIVE') {
+    rejectReceipt(state, gate, receipt, 'RELEASE_AUTHORITY_DISABLED_IN_SHADOW');
     return;
   }
 
