@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { detectRegistryDrift, evaluateCandidateBinding } from '../lib/candidate-binding.js';
+import { detectRegistryDrift, evaluateCandidateBinding, validateCandidateIdentity } from '../lib/candidate-binding.js';
 
 const candidate = {
   commitSha: '3030541675e41157405b933c30d82c8fd4b12927',
@@ -66,4 +66,37 @@ test('27 September legacy redirect drift is detected against the stale 17 Septem
   });
   assert.ok(findings.includes('STALE_DEPLOYMENT_ID'));
   assert.ok(findings.includes('RETIRED_RUNTIME_REDIRECT'));
+});
+
+
+test('candidate identity requires exact project, service and HTTPS origin binding', () => {
+  const valid = validateCandidateIdentity({
+    repository: 'paulallen123/-manufacturing-wfm',
+    ref: 'feature/vector-eow-convergence-20260925',
+    commitSha: '3030541675e41157405b933c30d82c8fd4b12927',
+    projectId: '9a774359-37fa-47e8-bde0-932420c32923',
+    environment: '6a33f2c1-bedd-46dc-85e7-2ef5d3b54de6',
+    serviceId: '55e288b7-ac40-4856-ad45-16515c74739a',
+    deploymentId: 'e6399d9c-63ca-4272-ab0d-6d1010e444bd',
+    runtimeSha: 'sha256:95f355ef7e0af5e65dc3ce63bc6c9a21dfb787a6d61b6a661ff5d5cff91333e2',
+    releaseId: 'vector-forge-proof-3030541675e4',
+    publicOrigin: 'https://vector-forge-current-proof-production.up.railway.app',
+    provider: 'railway',
+    failureDomainId: 'railway',
+  });
+  assert.deepEqual(valid, { ok: true, errors: [] });
+});
+
+test('candidate identity rejects malformed source/runtime hashes and Railway pseudo-independence', () => {
+  const invalid = validateCandidateIdentity({
+    repository: 'repo', ref: 'main', commitSha: 'not-a-sha', projectId: 'p', environment: 'e',
+    serviceId: 's', deploymentId: 'd', runtimeSha: 'runtime', releaseId: 'r',
+    publicOrigin: 'http://example.test/path', provider: 'railway', failureDomainId: 'railway-service-a',
+  });
+  assert.equal(invalid.ok, false);
+  assert.ok(invalid.errors.includes('INVALID_REPOSITORY'));
+  assert.ok(invalid.errors.includes('INVALID_COMMIT_SHA'));
+  assert.ok(invalid.errors.includes('INVALID_RUNTIME_SHA'));
+  assert.ok(invalid.errors.includes('INVALID_PUBLIC_ORIGIN'));
+  assert.ok(invalid.errors.includes('RAILWAY_FAILURE_DOMAIN_MUST_BE_RAILWAY'));
 });
