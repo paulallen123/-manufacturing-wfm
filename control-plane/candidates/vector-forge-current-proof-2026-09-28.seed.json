@@ -33,7 +33,8 @@
       "branch": "feature/vector-eow-convergence-20260925",
       "commitSha": "3030541675e41157405b933c30d82c8fd4b12927",
       "providerStatus": "SUCCESS",
-      "containerImageDigest": "sha256:95f355ef7e0af5e65dc3ce63bc6c9a21dfb787a6d61b6a661ff5d5cff91333e2"
+      "containerImageDigest": "sha256:95f355ef7e0af5e65dc3ce63bc6c9a21dfb787a6d61b6a661ff5d5cff91333e2",
+      "deploymentId": "e6399d9c-63ca-4272-ab0d-6d1010e444bd"
     }
   },
   "claimBoundary": {
