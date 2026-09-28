@@ -1,0 +1,83 @@
+{
+  "evidenceVersion": 1,
+  "recordedAt": "2026-09-28T17:28:54Z",
+  "claim": "A previously issued proof-runner bearer immediately contracts to lower server-configured lifetime, action-budget and request-rate authority after restart; configuration expansion cannot enlarge its issuance authority.",
+  "classification": "BUILT",
+  "evidenceBoundary": {
+    "environment": "local synthetic sealed-runtime extraction with persistent SQLite restart",
+    "customerData": false,
+    "productionMutation": false,
+    "hostedProof": false,
+    "countryOrRegion": "not jurisdiction-specific",
+    "scale": "one proof-runner key / one synthetic tenant / one persisted session / two concurrent requests",
+    "executingNode": "24.19.0",
+    "requiredReleaseNode": "22.23.2"
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "startingHead": "b4916d60a3d0fa4be98feab1d1e3608f512e4a9d",
+    "sealedRuntimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "red": {
+    "tests": 2,
+    "passed": 1,
+    "failed": 1,
+    "skipped": 0,
+    "observation": "A bearer issued at 120 seconds, three actions and three requests per second was restarted under configuration reduced to 30 seconds, one action and one request per second. Both concurrent requests still returned HTTP 200, proving that the request path rechecked identity and routes but retained larger issuance-time limits."
+  },
+  "repair": {
+    "sourceOfAuthority": "Every protected request compares the persisted session limits with the current trusted runner configuration.",
+    "monotonicContraction": "Session expiry, total action budget and per-second rate are reduced to the lower of issuance-time and current configuration; later configuration expansion cannot enlarge an existing session.",
+    "sameRequestEnforcement": "The contraction is persisted and checked before rate/action consumption, so an already accepted cookie cannot use old authority on the first request after restart.",
+    "expiredAfterContraction": "If the newly reduced lifetime has already elapsed, the protected request fails closed with HTTP 401.",
+    "audit": "Each actual contraction emits one append-only event containing only the hashed session reference and previous/effective limits. Concurrent requests do not duplicate the event.",
+    "unchangedControls": "Current key trust, account/tenant binding, exact route intersection, replay denial, total action budget, rate limit and kill switch remain enforced."
+  },
+  "green": {
+    "focusedRepeatedFreshStores": {
+      "runs": 3,
+      "testsPerRun": 2,
+      "passedPerRun": 2,
+      "failedPerRun": 0,
+      "skippedPerRun": 0
+    },
+    "observedContraction": {
+      "previousMaxSessionSeconds": 120,
+      "maxSessionSeconds": 30,
+      "previousActionBudget": 3,
+      "actionBudget": 1,
+      "previousMaxRequestsPerSecond": 3,
+      "maxRequestsPerSecond": 1,
+      "concurrentStatusesAfterRestart": [200, 429],
+      "laterAllowedAttemptStatus": 429,
+      "contractionAuditEvents": 1
+    },
+    "affectedRegression": {
+      "tests": 7,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 9941.586831,
+      "coverage": [
+        "immutable leave-decision restart/tamper refusal",
+        "legacy leave-decision quarantine",
+        "passkey-only normal sign-in UI",
+        "passkey Origin, user-verification and replay controls",
+        "proof-runner atomic rate/action budgets, scope denial, replay denial, audit and kill switch",
+        "proof-runner authority contraction across persistent restart",
+        "leave decision domain-audit request binding"
+      ]
+    },
+    "overlayIdempotence": "The proof-runner hardener applied twice to a fresh extraction and the resulting server passed syntax validation."
+  },
+  "fileSha256": {
+    "scripts/harden-proof-runner-identity.mjs": "e7e7c34a4c609e1554de1c1a7961be5e0fb189f6090c7584b4d8e6da2fb6acf0",
+    "tests/proof-runner-workload-identity.proof.test.cjs": "e1d1b5421e04cdce0aa044bec1e929b9039b4989158d0d527ce09be4e11cf71b"
+  },
+  "releaseGate": {
+    "status": "BLOCKED",
+    "reason": "This result executed locally on Node 24.19.0 rather than the required Node 22.23.2 release runtime, and the proof identity remains unconfigured in the approved hosted synthetic lane. Hosted configuration propagation, multi-instance convergence, immediate no-restart contraction and OIDC/provider federation remain unproved.",
+    "nextProof": "Execute the same persistent-session contraction test in the exact Node 22.23.2 Docker candidate, then reduce limits for an authorised hosted synthetic runner and verify first-request enforcement, audit preservation and deployed-SHA identity across every active instance."
+  }
+}
