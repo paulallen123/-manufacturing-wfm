@@ -1,0 +1,71 @@
+{
+  "evidenceVersion": 1,
+  "recordedAt": "2026-09-28T15:29:26Z",
+  "claim": "A stolen proof-runner session cannot execute more protected API operations than the server-configured per-session action budget, including under concurrent requests.",
+  "classification": "BUILT",
+  "evidenceBoundary": {
+    "environment": "local synthetic sealed-runtime extraction",
+    "customerData": false,
+    "productionMutation": false,
+    "hostedProof": false,
+    "countryOrRegion": "not jurisdiction-specific",
+    "scale": "one proof-runner key / one synthetic tenant / one account / two concurrent requests",
+    "executingNode": "24.19.0",
+    "requiredReleaseNode": "22.23.2"
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "startingHead": "4458196e879ddcc796a654c2d48aa91bdcf3c27a",
+    "sealedRuntimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "red": {
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "observation": "The proof-runner configuration rejected actionBudget as unsupported, confirming that issued bearer sessions had no server-enforced action-count limit."
+  },
+  "repair": {
+    "configuration": "Each trusted runner must declare an integer actionBudget from 1 through 100; unsupported, missing or out-of-range values fail closed.",
+    "issuance": "The budget is copied into the session and append-only issuance audit; the runner cannot choose or increase it.",
+    "enforcement": "After method/path authorization, one atomic SQLite update consumes one action. Concurrent requests cannot both consume the final action.",
+    "denial": "The first over-budget request records one append-only exhaustion event and returns HTTP 429; subsequent attempts remain denied without duplicating the event.",
+    "scopeOrdering": "An out-of-scope request is denied with HTTP 403 before budget consumption, preserving the budget for configured proof work.",
+    "killSwitch": "Disabling the runner identity continues to fail closed before budget evaluation."
+  },
+  "green": {
+    "focusedRepeatedFreshStores": {
+      "runs": 3,
+      "testsPerRun": 1,
+      "passedPerRun": 1,
+      "failedPerRun": 0,
+      "skippedPerRun": 0
+    },
+    "affectedRegression": {
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7120.79883,
+      "coverage": [
+        "immutable leave-decision restart/tamper refusal",
+        "legacy leave-decision quarantine",
+        "passkey-only normal sign-in UI",
+        "passkey Origin, user-verification and replay controls",
+        "atomic proof-runner action budget, scope denial, replay denial, audit and kill switch",
+        "leave decision domain-audit request binding"
+      ]
+    },
+    "overlayIdempotence": "The proof-runner hardener applied twice to a fresh extraction and the resulting server passed syntax validation."
+  },
+  "fileSha256": {
+    "scripts/harden-proof-runner-identity.mjs": "a238de0f69c8c241a49a40539e1e2e2e9ca355ac37c90e7ba582dd3762cdc7f3",
+    "tests/proof-runner-workload-identity.proof.test.cjs": "616ae334eb448f53e4a7662c8399e181310479d4a1b6d62b723dc6cb2e9fadc9"
+  },
+  "releaseGate": {
+    "status": "BLOCKED",
+    "reason": "This result executed locally on Node 24.19.0, not the required Node 22.23.2 release runtime, and the proof-runner remains unconfigured in the approved hosted synthetic lane. Hosted concurrency, exact Golden Journey sizing, key custody/rotation and OIDC/provider federation are unproved.",
+    "nextProof": "Execute the same atomic exhaustion regression inside the exact Node 22.23.2 Docker candidate, then size and enforce a minimal route/action budget for one approved hosted Golden Journey and verify kill-switch denial on the deployed SHA."
+  }
+}
