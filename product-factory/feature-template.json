@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "slug": "__FEATURE_SLUG__",
+  "outcome": "__MEASURABLE_USER_OUTCOME__",
+  "primaryRoles": ["__ROLE__"],
+  "valueHypothesis": "__HOW_THIS_CREATES_OR_PROTECTS_VALUE__",
+  "valueMetric": {
+    "name": "__METRIC_NAME__",
+    "unit": "__UNIT__",
+    "baselineSource": "__BASELINE_SOURCE__",
+    "resultSource": "__RESULT_SOURCE__"
+  },
+  "evidenceSources": ["__AUTHORITATIVE_SOURCE__"],
+  "acceptanceCriteria": ["__MACHINE_CHECKABLE_ACCEPTANCE_CRITERION__"],
+  "securityControls": ["least-privilege", "tenant-isolation", "audit-evidence"],
+  "observability": {
+    "signals": ["success", "failure", "latency"],
+    "dashboard": "__DASHBOARD_OR_PROOF__"
+  },
+  "rollback": {
+    "supported": true,
+    "method": "__ROLLBACK_METHOD__"
+  },
+  "reusePlan": "__WHAT_BECOMES_REUSABLE_AFTER_THIS_FEATURE__",
+  "automationPlan": "__WHAT_MANUAL_STEP_IS_REMOVED_FOR_NEXT_TIME__",
+  "claimBoundary": "__WHAT_THIS_CHANGE_DOES_NOT_CLAIM__"
+}

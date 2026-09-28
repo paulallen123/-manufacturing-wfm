@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { proofRunnerLogin } from './proof-runner-auth.mjs';
 
 const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
+const password = process.env.WFM_STAGING_PASSWORD;
 
 assert.equal(origin, expectedOrigin, 'Unexpected staging origin.');
+assert.ok(password && password.length >= 20, 'WFM_STAGING_PASSWORD is unavailable to the proof runner.');
 
 const timeoutMs = 20_000;
 
@@ -32,8 +33,20 @@ function report(label, status, extra = '') {
 }
 
 async function loginAs(email) {
-  const cookie = await proofRunnerLogin({ origin, email, timeoutMs });
-  report('passwordless proof login', 200, email);
+  const login = await fetchText('/api/login', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'origin': origin,
+      'referer': `${origin}/`,
+      'accept': 'application/json,text/plain,*/*',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+  assert.equal(login.response.status, 200, `Live staging login failed for ${email} with HTTP ${login.response.status}.`);
+  const cookie = cookieFrom(login.response);
+  assert.ok(cookie, `Login succeeded for ${email} but no session cookie was returned.`);
+  report('authenticated login', login.response.status, email);
   return cookie;
 }
 

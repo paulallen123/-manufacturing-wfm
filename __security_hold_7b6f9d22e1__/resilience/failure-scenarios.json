@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "updated": "2026-09-17",
+  "principles": {
+    "unknown_means_protect_first": true,
+    "customer_impact_containment_precedes_root_cause_repair": true,
+    "production_experimentation_for_unknown_faults": false,
+    "language_model_direct_execution": false,
+    "every_resolved_incident_becomes_prevention": true
+  },
+  "containment_classes": {
+    "reflex": "Known deterministic condition; target machine-speed containment, normally sub-second where the affected component permits it.",
+    "rapid": "Deterministic containment requiring dependency or state verification; target seconds, not human escalation.",
+    "isolate": "Unknown or high-risk condition; immediately block, preserve or degrade safely while autonomous investigation continues."
+  },
+  "scenarios": [
+    {
+      "id": "integration-transient-failure",
+      "category": "integration",
+      "severity": "high",
+      "signals": ["provider timeout", "temporary 5xx", "connection reset"],
+      "containment_class": "reflex",
+      "autonomous_action": "integration.retry",
+      "preconditions": ["same tenant", "idempotent operation", "verified dry run", "independent evidence"],
+      "verification": ["provider response accepted", "no duplicate business event", "reconciliation green"],
+      "learning": "Persist provider fingerprint, latency distribution and successful retry envelope."
+    },
+    {
+      "id": "integration-stuck-replay",
+      "category": "integration",
+      "severity": "high",
+      "signals": ["accepted outbound event without terminal acknowledgement", "reconciliation gap"],
+      "containment_class": "rapid",
+      "autonomous_action": "integration.replay-idempotent",
+      "preconditions": ["same tenant", "stable idempotency key", "verified dry run", "independent evidence"],
+      "verification": ["single terminal acknowledgement", "no duplicate downstream mutation"],
+      "learning": "Convert provider-specific recovery evidence into a regression fixture."
+    },
+    {
+      "id": "provider-outage",
+      "category": "integration",
+      "severity": "critical",
+      "signals": ["multi-request provider failure", "provider status incident", "circuit-break threshold"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["open circuit", "preserve outbound work", "continue bounded probes", "replay only after recovery evidence"],
+      "verification": ["provider health recovered", "backlog reconciled without duplication"],
+      "learning": "Record outage signature, dependency blast radius and recovery timing."
+    },
+    {
+      "id": "provider-credential-expiry",
+      "category": "integration",
+      "severity": "high",
+      "signals": ["authorisation failures", "token expiry evidence", "credential rotation event"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["stop unauthorised retries", "preserve transactions", "exercise only dedicated credential-refresh capability when separately proven"],
+      "verification": ["new credential accepted", "old credential rejected", "backlog reconciled"],
+      "learning": "Move refresh earlier than observed expiry margin and test rotation path."
+    },
+    {
+      "id": "queue-drift",
+      "category": "messaging",
+      "severity": "high",
+      "signals": ["queue depth diverges from event ledger", "orphan work item", "stale consumer offset"],
+      "containment_class": "rapid",
+      "autonomous_action": "queue.reconcile",
+      "preconditions": ["same tenant", "reversible reconciliation", "verified dry run", "independent evidence"],
+      "verification": ["ledger and queue counts reconcile", "no event loss", "no duplicate terminal processing"],
+      "learning": "Add the divergence pattern to queue health rules."
+    },
+    {
+      "id": "worker-unhealthy",
+      "category": "runtime",
+      "severity": "high",
+      "signals": ["failed health check", "event-loop stall", "repeated worker exception"],
+      "containment_class": "reflex",
+      "autonomous_action": "worker.restart",
+      "preconditions": ["work is durable or replayable", "same tenant where scoped", "verified dry run", "independent evidence"],
+      "verification": ["health restored", "in-flight work reconciled", "error rate returns to baseline"],
+      "learning": "Correlate restart with exception fingerprint and resource profile."
+    },
+    {
+      "id": "worker-memory-exhaustion",
+      "category": "runtime",
+      "severity": "critical",
+      "signals": ["memory pressure", "OOM precursor", "latency plus heap growth"],
+      "containment_class": "reflex",
+      "autonomous_action": "worker.restart",
+      "preconditions": ["durable work", "restart budget not exceeded", "verified dry run", "independent evidence"],
+      "verification": ["replacement healthy", "work reconciled", "memory returns within envelope"],
+      "learning": "Create leak regression using the triggering workload shape."
+    },
+    {
+      "id": "cache-drift",
+      "category": "runtime",
+      "severity": "medium",
+      "signals": ["cache checksum differs from authoritative state", "stale derived value"],
+      "containment_class": "reflex",
+      "autonomous_action": "cache.rebuild",
+      "preconditions": ["authoritative source healthy", "cache disposable", "verified dry run", "independent evidence"],
+      "verification": ["checksum matches source", "dependent reads return expected values"],
+      "learning": "Add stale-key fingerprint and invalidation trigger."
+    },
+    {
+      "id": "bad-release",
+      "category": "release",
+      "severity": "critical",
+      "signals": ["post-deploy error-rate regression", "journey failure", "health SLO breach correlated to release"],
+      "containment_class": "reflex",
+      "autonomous_action": "release.rollback",
+      "preconditions": ["known last-good release", "rollback is schema-compatible", "verified dry run", "independent evidence"],
+      "verification": ["last-good health restored", "failed release quarantined", "customer journey passes"],
+      "learning": "Turn the escaped defect into a pre-deploy regression gate."
+    },
+    {
+      "id": "configuration-drift",
+      "category": "configuration",
+      "severity": "high",
+      "signals": ["configuration checksum drift", "failure correlated with recent config change"],
+      "containment_class": "reflex",
+      "autonomous_action": "configuration.restore-drift",
+      "preconditions": ["last-known-good configuration exists", "change is reversible", "same tenant", "verified dry run", "independent evidence"],
+      "verification": ["configuration checksum restored", "affected workflow passes", "no unrelated setting changed"],
+      "learning": "Add causal config pattern to change-risk model."
+    },
+    {
+      "id": "database-latency-spike",
+      "category": "data",
+      "severity": "high",
+      "signals": ["query latency SLO breach", "connection saturation", "lock wait increase"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["shed non-essential reads", "preserve writes in durable queue where semantics allow", "stop retry storms"],
+      "verification": ["latency normalised", "queued work reconciled", "no lost committed write"],
+      "learning": "Capture slow-query and workload signature for performance regression."
+    },
+    {
+      "id": "database-unavailable",
+      "category": "data",
+      "severity": "critical",
+      "signals": ["connection failure across independent probes", "database health unavailable"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["fail closed for unsafe mutations", "retain replayable inputs", "serve only explicitly safe degraded reads"],
+      "verification": ["database health restored", "durable inputs replayed exactly once", "consistency checks pass"],
+      "learning": "Exercise recovery path in chaos tests and record actual recovery envelope."
+    },
+    {
+      "id": "duplicate-event-delivery",
+      "category": "data",
+      "severity": "high",
+      "signals": ["duplicate idempotency key", "repeated provider event identity"],
+      "containment_class": "reflex",
+      "autonomous_action": null,
+      "safe_state": ["deduplicate before business mutation", "preserve duplicate evidence"],
+      "verification": ["single business outcome", "duplicate recorded in audit"],
+      "learning": "Add producer fingerprint and duplicate-rate alert."
+    },
+    {
+      "id": "data-integrity-mismatch",
+      "category": "data",
+      "severity": "critical",
+      "signals": ["checksum mismatch", "ledger imbalance", "referential invariant failure"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["stop affected writes", "snapshot evidence", "route reads to last verified state where safe"],
+      "verification": ["integrity invariants restored", "repair provenance recorded", "downstream reconciliation passes"],
+      "learning": "Create invariant and corruption-injection regression."
+    },
+    {
+      "id": "cross-tenant-access-attempt",
+      "category": "security",
+      "severity": "critical",
+      "signals": ["target tenant differs from actor tenant", "tenant-scoped authorisation denial"],
+      "containment_class": "reflex",
+      "autonomous_action": null,
+      "safe_state": ["deny", "record tamper-evident evidence", "rate-limit repeated attempts"],
+      "verification": ["no cross-tenant data returned or mutated", "audit evidence complete"],
+      "learning": "Generate tenant-isolation regression for the exact attempted path."
+    },
+    {
+      "id": "prompt-injection-or-untrusted-influence",
+      "category": "ai-security",
+      "severity": "critical",
+      "signals": ["untrusted content requests privileged action", "instruction provenance mismatch", "tool request outside policy"],
+      "containment_class": "reflex",
+      "autonomous_action": null,
+      "safe_state": ["deny tool authority", "separate evidence from instructions", "continue read-only analysis"],
+      "verification": ["no privileged action executed", "untrusted influence recorded"],
+      "learning": "Add adversarial prompt fixture and policy regression."
+    },
+    {
+      "id": "runaway-repair-loop",
+      "category": "ai-security",
+      "severity": "critical",
+      "signals": ["repair budget exceeded", "repeated failed hypothesis", "oscillating remediation"],
+      "containment_class": "reflex",
+      "autonomous_action": null,
+      "safe_state": ["halt mutation capability for incident", "restore last verified state", "continue isolated diagnosis"],
+      "verification": ["production state stable", "repair attempts bounded", "new hypothesis independently tested"],
+      "learning": "Lower loop budget for fingerprint and require new evidence before retry."
+    },
+    {
+      "id": "external-advisory-poisoning",
+      "category": "ai-security",
+      "severity": "high",
+      "signals": ["single untrusted advisory source", "advisory conflicts with authoritative affected-version data"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["treat advisory as evidence only", "require authoritative corroboration", "never execute advisory instructions"],
+      "verification": ["affected version independently established", "source provenance retained"],
+      "learning": "Update source trust and false-positive fingerprints."
+    },
+    {
+      "id": "known-exploited-vulnerability-match",
+      "category": "supply-chain",
+      "severity": "critical",
+      "signals": ["CISA KEV or authoritative exploited status matches deployed component", "affected version confirmed"],
+      "containment_class": "rapid",
+      "autonomous_action": null,
+      "safe_state": ["block vulnerable candidate promotion", "reduce exposed surface", "prepare patched staging candidate"],
+      "verification": ["patched version outside affected range", "security and regression gates pass"],
+      "learning": "Persist affected-version rule and prevent downgrade."
+    },
+    {
+      "id": "new-cve-component-match",
+      "category": "supply-chain",
+      "severity": "high",
+      "signals": ["authoritative CVE affects deployed component", "version match confirmed"],
+      "containment_class": "rapid",
+      "autonomous_action": null,
+      "safe_state": ["risk-rank using exploitability and exposure", "prepare patched candidate when material", "do not auto-assume exposure"],
+      "verification": ["patched or mitigated component verified", "targeted exploit regression added where safe"],
+      "learning": "Add version floor or compensating-control rule."
+    },
+    {
+      "id": "artifact-tampering-or-provenance-drift",
+      "category": "supply-chain",
+      "severity": "critical",
+      "signals": ["runtime SHA mismatch", "manifest/source identity mismatch", "critical module hash mismatch"],
+      "containment_class": "reflex",
+      "autonomous_action": null,
+      "safe_state": ["fail build or promotion", "quarantine candidate", "retain exact mismatched artefacts"],
+      "verification": ["all recorded hashes match immutable candidate", "authoritative build identity agrees"],
+      "learning": "Add any newly discovered identity surface to integrity gate."
+    },
+    {
+      "id": "unsafe-production-mode-attempt",
+      "category": "release",
+      "severity": "critical",
+      "signals": ["staging candidate started with production mode", "production approval claim absent"],
+      "containment_class": "reflex",
+      "autonomous_action": null,
+      "safe_state": ["refuse startup", "record attempted promotion"],
+      "verification": ["process exits non-zero", "no production traffic served"],
+      "learning": "Keep production refusal as immutable CI gate until production architecture is separately approved."
+    },
+    {
+      "id": "browser-customer-journey-regression",
+      "category": "experience",
+      "severity": "high",
+      "signals": ["Playwright journey assertion failure", "navigation action does not change expected view", "browser console error"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["block affected candidate claim", "preserve trace screenshots and video", "classify test defect versus product defect"],
+      "verification": ["same journey passes from clean browser", "trace shows expected state transition"],
+      "learning": "Convert actual DOM/interaction contract into a stable regression assertion."
+    },
+    {
+      "id": "kiosk-or-device-offline",
+      "category": "clocking",
+      "severity": "high",
+      "signals": ["device network loss", "clock submission cannot reach service"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["preserve locally signed clock evidence when supported", "prevent duplicate submission", "reconcile after connectivity returns"],
+      "verification": ["offline records reconciled exactly once", "ordering and device identity preserved"],
+      "learning": "Add network-loss and reconnect journey to clocking tests."
+    },
+    {
+      "id": "clocking-event-flood",
+      "category": "clocking",
+      "severity": "high",
+      "signals": ["abnormal event rate", "repeated identical device submissions", "rate-budget breach"],
+      "containment_class": "reflex",
+      "autonomous_action": null,
+      "safe_state": ["rate-limit abusive source", "preserve legitimate signed events", "deduplicate idempotently"],
+      "verification": ["legitimate clocking remains available", "duplicates do not alter worked time"],
+      "learning": "Tune rate budget using observed legitimate peak profile."
+    },
+    {
+      "id": "timezone-dst-or-clock-skew",
+      "category": "time",
+      "severity": "high",
+      "signals": ["clock source disagreement", "DST boundary", "impossible event ordering"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["retain raw timestamp and source offset", "avoid silently rewriting worked time", "mark ambiguous evidence for deterministic reconciliation"],
+      "verification": ["UTC ordering valid", "local-time rendering matches authoritative zone rules"],
+      "learning": "Add exact transition instant and zone to time regression suite."
+    },
+    {
+      "id": "payroll-calculation-or-export-anomaly",
+      "category": "payroll",
+      "severity": "critical",
+      "signals": ["control-total mismatch", "unexpected variance", "export reconciliation failure"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["block payroll release/write", "preserve calculation inputs and evidence", "continue isolated diagnosis"],
+      "verification": ["recalculation independently matches rules and control totals", "no payroll write occurred during uncertainty"],
+      "learning": "Convert discrepancy into payroll regression without granting autonomous payroll-write authority."
+    },
+    {
+      "id": "permission-or-identity-anomaly",
+      "category": "identity",
+      "severity": "critical",
+      "signals": ["privilege escalation attempt", "role differs from policy", "suspicious session behaviour"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["deny privileged operation", "invalidate only through dedicated identity control when separately proven", "preserve audit evidence"],
+      "verification": ["effective permissions match policy", "no unauthorised mutation occurred"],
+      "learning": "Add attempted path to capability-boundary regression."
+    },
+    {
+      "id": "audit-trail-degraded",
+      "category": "governance",
+      "severity": "critical",
+      "signals": ["audit append failure", "audit integrity mismatch", "missing mandatory evidence"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["block high-risk mutations that require audit", "preserve pending evidence durably", "continue safe reads"],
+      "verification": ["audit append and integrity checks restored", "pending evidence committed in order"],
+      "learning": "Add audit-outage chaos test and mutation gating assertion."
+    },
+    {
+      "id": "monitoring-blind-spot",
+      "category": "observability",
+      "severity": "critical",
+      "signals": ["expected heartbeat absent", "telemetry pipeline disagrees with independent probe"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["assume uncertainty rather than health", "reduce autonomous mutation scope", "use independent health path"],
+      "verification": ["independent telemetry agrees", "missing interval accounted for"],
+      "learning": "Add watchdog for the failed observability dependency itself."
+    },
+    {
+      "id": "regional-or-hosting-outage",
+      "category": "infrastructure",
+      "severity": "critical",
+      "signals": ["independent external probes fail", "hosting provider incident", "regional dependency failures"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["preserve durable work", "fail over only through separately proven deterministic capability", "avoid split-brain writes"],
+      "verification": ["single authoritative writer", "recovery reconciliation complete", "external probes healthy"],
+      "learning": "Use outage timings and dependency graph to improve disaster-recovery simulation."
+    },
+    {
+      "id": "unknown-customer-reported-issue",
+      "category": "support",
+      "severity": "high",
+      "signals": ["customer report not matching known fingerprint", "unexpected product symptom"],
+      "containment_class": "isolate",
+      "autonomous_action": null,
+      "safe_state": ["collect correlated tenant-safe evidence", "protect affected workflow", "reproduce in isolated environment", "do not experiment in production"],
+      "verification": ["reproduction established or symptom independently disproved", "customer-impact state verified", "permanent fix passes regression before promotion"],
+      "learning": "Create a new fingerprint, regression and bounded runbook when the cause is established."
+    },
+    {
+      "id": "repeat-known-customer-issue",
+      "category": "support",
+      "severity": "high",
+      "signals": ["customer symptom matches verified incident fingerprint", "same causal evidence present"],
+      "containment_class": "reflex",
+      "autonomous_action": null,
+      "safe_state": ["execute only the previously proven deterministic runbook if current safety kernel authorises its exact action", "otherwise contain and re-verify"],
+      "verification": ["original symptom absent", "business invariant preserved", "no collateral regression"],
+      "learning": "Measure containment latency and tighten the fingerprint without broadening authority."
+    }
+  ]
+}

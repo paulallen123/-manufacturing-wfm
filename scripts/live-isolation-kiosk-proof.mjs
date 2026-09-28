@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
-import { proofRunnerLogin } from './proof-runner-auth.mjs';
 import { randomBytes } from 'node:crypto';
 
 const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
+const password = process.env.WFM_STAGING_PASSWORD;
 
 assert.equal(origin, expectedOrigin, 'Unexpected staging origin.');
+assert.ok(password && password.length >= 20, 'WFM_STAGING_PASSWORD is unavailable to the proof runner.');
 
 const timeoutMs = 20_000;
 const jsonHeaders = {
@@ -40,8 +41,15 @@ function cookieFrom(response) {
 }
 
 async function login(email) {
-  const cookie = await proofRunnerLogin({ origin, email, timeoutMs });
-  report('passwordless proof login', `${email} -> 200`);
+  const { response } = await request('/api/login', {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify({ email, password }),
+  });
+  assert.equal(response.status, 200, `${email} login failed with HTTP ${response.status}.`);
+  const cookie = cookieFrom(response);
+  assert.ok(cookie, `${email} login returned no session cookie.`);
+  report('login', `${email} -> 200`);
   return cookie;
 }
 

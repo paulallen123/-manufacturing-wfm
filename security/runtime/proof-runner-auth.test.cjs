@@ -8,12 +8,24 @@ const path = require('node:path');
 const { Readable } = require('node:stream');
 const { generateKeyPairSync, sign } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+let proofRunnerModule = null;
+try {
+  proofRunnerModule = require('./proof-runner-auth.cjs');
+} catch (error) {
+  if (error?.code !== 'MODULE_NOT_FOUND') throw error;
+}
 const {
   createProofRunnerAuth,
   canonicalAssertion,
   PROOF_RUNNER_ISSUER,
-} = require('./proof-runner-auth.cjs');
+} = proofRunnerModule || {};
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
+
+test('exact candidate exposes the signed proof runner authentication boundary', () => {
+  assert.ok(proofRunnerModule, 'exact candidate is missing security/runtime/proof-runner-auth.cjs');
+  assert.equal(typeof createProofRunnerAuth, 'function');
+  assert.equal(typeof canonicalAssertion, 'function');
+});
 
 function fixture() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-proof-runner-'));

@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "release": "VECTOR_EOW_2026_09_25",
+  "baseCandidate": "d4121d85f7c01fb76949406c78eeb8c1d47251b6",
+  "policy": {
+    "singleCanonicalUI": true,
+    "preserveSecurityHolds": true,
+    "noProductionAuthorityFromAI": true,
+    "noInventedSavings": true,
+    "noInventedProductionData": true,
+    "failClosedOnUnprovenHighImpactAction": true,
+    "proofRequiredForPromotion": true,
+    "noCapabilityRegression": true,
+    "replacementRequiresSupersetProof": true,
+    "functionalParityMinimum": 1,
+    "valueMustStaySameOrIncrease": true,
+    "noResearchLoss": true,
+    "researchConvergenceLedgerRequired": true,
+    "everyResearchCapabilityMustConvergeOrBeSupersededWithSupersetProof": true,
+    "blockedResearchRequiresResolutionRoute": true,
+    "researchMayNotDisplaceGoldenJourneyProof": true,
+    "unprovenResearchMayNotBypassSecurityEvidenceReleaseGates": true
+  },
+  "target": [
+    {
+      "id": "factory-autopilot",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "digital-twin",
+        "realised-value",
+        "integration-fabric",
+        "realtime-ui"
+      ]
+    },
+    {
+      "id": "digital-twin",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "persistent-storage"
+      ]
+    },
+    {
+      "id": "realised-value",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "payroll-actuals",
+        "production-actuals",
+        "outcome-ledger"
+      ]
+    },
+    {
+      "id": "integration-fabric",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "provider-adapters",
+        "reconciliation",
+        "recovery"
+      ]
+    },
+    {
+      "id": "one-day-implementation",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "tenant-provisioning",
+        "digital-twin",
+        "integration-fabric",
+        "training"
+      ]
+    },
+    {
+      "id": "training",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "adaptive-learning",
+        "role-context",
+        "video-generation"
+      ]
+    },
+    {
+      "id": "mobile-tablet",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "responsive-shell",
+        "mass-clocking",
+        "offline-recovery"
+      ]
+    },
+    {
+      "id": "factory-depth",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "readiness",
+        "site-performance",
+        "simulation",
+        "shutdowns"
+      ]
+    },
+    {
+      "id": "plan-improve-distinct",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "route-specific-data-contracts"
+      ]
+    },
+    {
+      "id": "agency-labour",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "supplier-flow",
+        "worker-readiness",
+        "cost",
+        "invoice-outcome"
+      ]
+    },
+    {
+      "id": "energy-intelligence",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "tariff-evidence",
+        "usage-evidence",
+        "erp-actuals",
+        "production-baseline"
+      ]
+    },
+    {
+      "id": "cash-to-capacity",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "evidence",
+        "decision",
+        "outcome"
+      ]
+    },
+    {
+      "id": "resilience",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "bounded-repair",
+        "canary",
+        "rollback",
+        "forensics"
+      ]
+    },
+    {
+      "id": "self-learning",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "independent-evaluation",
+        "ci",
+        "rollback"
+      ]
+    },
+    {
+      "id": "realtime-ui",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "event-channel",
+        "tenant-scope",
+        "reconnect"
+      ]
+    },
+    {
+      "id": "production-tenant",
+      "target": "PILOT_READY",
+      "dependsOn": [
+        "durable-storage",
+        "backup-restore",
+        "monitoring",
+        "provider-proof"
+      ]
+    },
+    {
+      "id": "autonomous-support",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "incident-detection",
+        "reproduction",
+        "bounded-repair",
+        "proof",
+        "handoff"
+      ]
+    },
+    {
+      "id": "sales-demo",
+      "target": "PROVEN_HOSTED",
+      "dependsOn": [
+        "golden-journey",
+        "screenshots",
+        "narration",
+        "video"
+      ]
+    },
+    {
+      "id": "global-policy",
+      "target": "BUILT_HOSTED",
+      "dependsOn": [
+        "country-policy-registry",
+        "authoritative-country-evidence",
+        "effective-dating",
+        "regional-inheritance",
+        "customer-legal-review",
+        "jurisdiction-policy-graph",
+        "bitemporal-policy-context",
+        "global-site-policy-preflight"
+      ]
+    }
+  ],
+  "reviewLoop": [
+    "delta-scan",
+    "highest-value-gap",
+    "design",
+    "build",
+    "simulate",
+    "break-test",
+    "prove",
+    "measure",
+    "evolve"
+  ],
+  "programName": "VECTOR FORGE",
+  "programTagline": "Forge every capability into one coherent, intelligent manufacturing experience.",
+  "experienceReview": {
+    "principle": "Capability must improve a real user decision or remove work; adding a screen is not success.",
+    "roles": [
+      "employee",
+      "manager",
+      "operations",
+      "finance",
+      "director",
+      "company-admin"
+    ],
+    "stages": [
+      "observe-current",
+      "map-user-job",
+      "measure-friction",
+      "design-enhancement",
+      "prototype-in-canonical-ui",
+      "connect-real-data",
+      "test-role-journey",
+      "compare-before-after",
+      "simplify",
+      "evolve"
+    ],
+    "requiredEvidence": [
+      "real hosted screenshot",
+      "task completion path",
+      "clicks or steps",
+      "time to decision",
+      "data provenance",
+      "role and tenant boundary",
+      "mobile behaviour",
+      "empty/error/loading states",
+      "accessibility",
+      "before-after evidence"
+    ],
+    "antiPatterns": [
+      "duplicate screens",
+      "different navigation labels rendering the same experience",
+      "metrics without an action",
+      "graphs without source data",
+      "AI output without authority or provenance",
+      "features exposed before their journey is complete"
+    ]
+  },
+  "researchContinuity": {
+    "contract": "VECTOR_RESEARCH_CONVERGENCE_CONTINUITY_V1",
+    "ledger": "release/research-convergence-ledger.json",
+    "rule": "Research, prototypes and discovered capabilities may be isolated while unproven, but may never be silently dropped. Every item must remain registered until safely converged into canonical FORGE or superseded by a demonstrably stronger capability with superset proof.",
+    "priorityBoundary": "Registration and isolated development may continue in parallel; merging may not displace the current hosted Golden Journey, security, payroll, tenant, recovery or evidence gates."
+  }
+}

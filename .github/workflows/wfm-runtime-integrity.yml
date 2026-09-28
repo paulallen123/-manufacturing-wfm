@@ -100,7 +100,8 @@ jobs:
           EXPECTED_NODE="v$(node -p "require('./resilience/security-baseline.json').node.minimum")"
           ACTUAL_NODE="$(docker run --rm --entrypoint node "$IMAGE" --version)"
           test "$ACTUAL_NODE" = "$EXPECTED_NODE"
-          test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "node"
+          test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "root"
+            test "$(docker inspect --format '{{json .Config.Entrypoint}}' "$IMAGE")" = '["/usr/local/bin/vector-entrypoint.sh"]'
           docker run --rm \
             -e EXPECTED_CANDIDATE="$EXPECTED_CANDIDATE" \
             -e EXPECTED_RUNTIME_MANIFEST_SHA="$EXPECTED_RUNTIME_MANIFEST_SHA" \

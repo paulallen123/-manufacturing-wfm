@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative-vendor delta adding Mitti (formerly SafetyCulture), Augury and Evotix as manufacturing-relevant integration targets at spec-verified only. Reuses existing REST/webhook/SCIM/file/vendor-thin profiles, records least-privilege and customer-value boundaries, and adds no tenant, round-trip or write evidence.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "mitti-safetyculture",
+      "name": "Mitti (formerly SafetyCulture)",
+      "category": "ehs-frontline-operations",
+      "priority": "P1",
+      "protocols": ["REST", "webhooks"],
+      "auth": "bearer-service-user-or-user-api-token",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://developer.mitti.com/reference",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://developer.mitti.com/reference",
+      "evidenceNote": "Mitti's current developer documentation states that SafetyCulture is now Mitti, documents https://api.mitti.com as the long-term API host, and says the legacy https://api.safetyculture.io host still works with no shutoff date announced. The API uses bearer API tokens, supports service-user tokens for long-running integrations, enforces the token owner's permissions/content access, documents incremental modified-since style synchronisation, webhooks, pagination and 429 rate-limit headers, and exposes inspections, users, issues/actions and assets among other areas. WFM pins the approved hostname rather than silently following a rebrand/redirect, uses only read permissions, and treats webhooks as a signal with scheduled catch-up sync. No account token or tenant data was used.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://developer.mitti.com/reference",
+        "requiredPermissions": [
+          "prefer a dedicated service-user API token for long-running WFM integration rather than a personal user token",
+          "grant only the minimum site/content read access needed for approved inspections, issues/actions, users and assets; avoid Manage all data because it can override narrower access controls",
+          "pin api.mitti.com or an explicitly approved documented legacy host and do not silently follow cross-host redirects during the SafetyCulture-to-Mitti transition",
+          "verify webhook authenticity and use scheduled incremental reconciliation as a fallback for missed events"
+        ],
+        "dataAvailableOrExpected": [
+          "inspections/checklists with template, site, completion/modification timestamps and attached media references",
+          "issues/incidents with site, category, assignee/collaborator, priority, status and timestamps",
+          "actions including due/completion state, assignees, originating inspection or sensor-alert context and site",
+          "users with status and system user fields plus customer-defined user metadata where exposed",
+          "assets with customer codes, type, site, status and custom fields",
+          "near-real-time webhook notifications plus incremental modified-since style polling for reconciliation"
+        ],
+        "wfmObjects": ["worker", "site", "organisation-unit", "safety-event", "risk-signal", "worker-restriction", "asset", "work-centre", "maintenance-event", "integration-event"],
+        "automationOpportunities": [
+          "surface data-minimised safety/risk signals to supervisors when staffing or assigning work while keeping detailed incident narratives outside normal WFM ingestion",
+          "correlate inspections, issues and actions with sites/shifts to identify recurring operational-risk and staffing patterns",
+          "use asset/site identifiers to reconcile maintenance or inspection activity to work centres without making Mitti the production-system master",
+          "reduce duplicate user/site administration by reconciling Mitti identities and sites against HCM/WFM masters",
+          "use webhooks for prompt awareness while scheduled modified-since reconciliation repairs missed or delayed event delivery"
+        ],
+        "customerValue": ["compliance", "safety administration reduction", "absence/risk prevention", "maintenance coordination", "faster implementation", "reduced administration", "site-level executive reporting"],
+        "savingsHypotheses": [
+          "reduce manual safety-to-workforce reconciliation by linking approved risk signals and actions to the correct site and shift",
+          "reduce supervisor administration by reusing existing inspections/issues/actions rather than re-keying safety follow-up into WFM",
+          "improve prevention and staffing decisions by identifying repeated inspection or issue patterns before they become disruption or absence",
+          "reduce integration fragility during the SafetyCulture-to-Mitti transition by explicitly handling documented host aliases and incremental sync"
+        ],
+        "dataGaps": [
+          "Mitti is not the authoritative source for employment contracts, payroll, full absence, production demand or broad qualification rules",
+          "site/content visibility depends on the service user's effective permissions and sharing rules and must be tenant-proven",
+          "custom user fields cannot be used for every server-side filter and customer-defined fields require mapping discovery",
+          "sensitive incident or health content must be reduced to the minimum WFM restriction/risk signal rather than copied wholesale"
+        ],
+        "constraintsRisks": [
+          "Manage all data can override narrower issue/site access and is therefore unsuitable as the default WFM read role",
+          "API throttling returns 429 with rate-limit headers and requires backoff/checkpointing",
+          "the old SafetyCulture hostname still responds while api.mitti.com is the long-term host, so hostname migration must be explicitly pinned and reviewed",
+          "webhooks are not a replacement for reconciliation polling and require authenticity, replay and dedupe controls",
+          "the API is also write-capable, so the read connector must not inherit create/update/delete permissions"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST and signed-webhook profiles. In an authorised Mitti tenant, create a dedicated least-privilege service user, pin the approved API hostname, prove read-only access to representative inspections/issues/actions/users/assets, test cursor/page limits plus 429 handling and modified-since checkpoints, validate webhook authenticity/replay/dedupe, and normalise only data-minimised site/risk/action/asset signals before promotion beyond spec verification."
+      }
+    },
+    {
+      "id": "augury-machine-health",
+      "name": "Augury Machine Health",
+      "category": "iiot-analytics-eam",
+      "priority": "P1",
+      "protocols": ["REST"],
+      "auth": "vendor-specific-api-auth",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.augury.com/partners/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://www.augury.com/partners/",
+      "evidenceNote": "Augury's current vendor material documents public APIs for custom integrations and explicitly states that machine insights can be published to historian/SCADA layers via REST APIs. It also documents closed-loop CMMS/EAM integrations, including SAP PM, IBM Maximo and MaintainX, where machine-health findings can trigger work orders and completed repair information can return to Augury. Public pages do not expose a complete API endpoint/authentication/scope/rate-limit contract, so WFM records only spec verification and keeps all work-order creation, CMMS write-back and Augury agent/action surfaces outside the read connector. No customer environment or credentials were used.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.augury.com/partners/",
+        "requiredPermissions": [
+          "dedicated read access to the minimum machine-health/diagnostic/status data exposed through the customer's approved Augury API integration",
+          "no CMMS/EAM work-order creation authority in the WFM read connector even where Augury supports closed-loop automation",
+          "no Augury agent/autonomous-action authority without a separate action certification and customer approval",
+          "tenant/site and asset scopes must be proven from authorised API documentation or sandbox before authentication evidence advances"
+        ],
+        "dataAvailableOrExpected": [
+          "machine health status and prioritised fault/alarm context",
+          "affected machine/component context, diagnostics, severity/urgency and recommended repair guidance where exposed",
+          "repair/work-order linkage and post-repair validation context in integrated maintenance workflows",
+          "machine/asset and site context used by the customer's Augury deployment",
+          "production/process-health insights where licensed and exposed to the customer's API surface"
+        ],
+        "wfmObjects": ["site", "asset", "machine-state", "downtime-event", "maintenance-event", "production-risk", "production-demand", "shift-outcome", "integration-event"],
+        "automationOpportunities": [
+          "adjust maintenance labour and skill demand from actual machine-health severity rather than calendar maintenance alone",
+          "identify likely downtime windows early enough to redeploy operators or reduce avoidable overtime",
+          "prioritise technician coverage by affected component, severity and recommended action while keeping human approval for work execution",
+          "link machine-health outcomes with labour, shift and maintenance records to measure whether staffing/repair decisions reduced downtime",
+          "after separately certified write paths, coordinate approved CMMS work-order workflows without granting those rights to the read connector"
+        ],
+        "customerValue": ["downtime reduction", "maintenance coordination", "overtime reduction", "skills deployment", "production throughput", "labour-cost reduction", "forecasting", "executive reporting"],
+        "savingsHypotheses": [
+          "reduce emergency overtime by scheduling qualified maintenance labour before predicted failures become unplanned downtime",
+          "reduce paid idle time by redeploying production labour when high-confidence machine-health evidence indicates a constrained line",
+          "improve maintenance productivity by routing the right skill coverage against prioritised diagnostic context instead of broad reactive call-outs",
+          "improve labour-to-downtime attribution by combining WFM shift/cost records with machine-health and repair outcomes"
+        ],
+        "dataGaps": [
+          "public vendor pages do not publish the complete API endpoint, authentication, scope, pagination or rate-limit contract",
+          "Augury is not the source of truth for worker identity, contracts, absence, payroll, broad skills or agency labour",
+          "available machine/process fields depend on purchased Augury products, deployed assets and customer integration configuration",
+          "diagnostic recommendations are operational evidence and must not become automatic machine-control or worker-safety authority"
+        ],
+        "constraintsRisks": [
+          "public APIs are confirmed but least-privilege read scopes must be tenant/sandbox proven before use",
+          "vendor-supported closed-loop maintenance is inherently write-capable and remains separated from WFM's read data plane",
+          "machine-health severity may be derived analytics rather than raw sensor truth, so provenance and observation time must be retained",
+          "asset identity must reconcile to CMMS/MES/WFM work-centre identifiers before staffing automation can be trusted"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST profile only. Obtain authorised Augury API documentation or sandbox credentials, prove the exact read authentication/scope/rate-limit model, enumerate tenant/site/asset identity, retrieve representative machine-health/diagnostic/repair-status records, preserve derived-analytics provenance and timestamps, and normalise machine-state/downtime/maintenance-risk signals before any promotion beyond spec verification. Keep work-order creation and other bidirectional automation behind a separate write evidence path."
+      }
+    },
+    {
+      "id": "evotix-ehs",
+      "name": "Evotix EHS & ESG",
+      "category": "ehs-esg",
+      "priority": "P1",
+      "protocols": ["SCIM 2.0", "files", "connectors"],
+      "auth": "oauth2-or-enterprise-by-product",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://www.evotix.com/integrations",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://www.evotix.com/integrations",
+      "evidenceNote": "Evotix's current integration page documents inbound/outbound APIs, scheduled file-based imports, SCIM for identity lifecycle, middleware/iPaaS patterns and exchange of users/organisational structures, contractor, incident, asset and people data. Evotix has also publicly documented API OAuth support. Because the public integration page does not publish a complete REST/OpenAPI contract, the generic Evotix API is deliberately represented through the vendor-thin adapter rather than guessed as REST; SCIM and file routes reuse their existing protocol profiles. SCIM provisioning and outbound/bidirectional APIs remain write-gated. No tenant or credentials were used.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://www.evotix.com/integrations",
+        "requiredPermissions": [
+          "use the minimum read/reporting API or scheduled export access provided for the customer's Evotix product and subscription",
+          "SCIM may be used for identity/site reconciliation but provisioning/deprovisioning remains separately write-gated",
+          "scheduled files must use customer-approved storage/transfer, integrity checking, idempotency and quarantine before ingestion",
+          "do not assume a generic REST contract until authorised product-specific API documentation proves protocol, OAuth/scopes and rate limits"
+        ],
+        "dataAvailableOrExpected": [
+          "users and organisational structures",
+          "contractor and people data used by the customer's EHS workflows",
+          "incident, audit/inspection, risk, action and asset information exposed through approved reporting/API/export routes",
+          "identity lifecycle data through SCIM where enabled",
+          "environment/sustainability metrics and operational-risk context where licensed and exposed"
+        ],
+        "wfmObjects": ["worker", "external-worker", "site", "organisation-unit", "safety-event", "risk-signal", "worker-restriction", "asset", "compliance-event", "integration-event"],
+        "automationOpportunities": [
+          "reconcile contractor/worker/site identity into WFM to reduce duplicate administration while keeping HCM/VMS authoritative",
+          "surface data-minimised incident/risk/restriction signals to workforce scheduling and compliance workflows",
+          "correlate recurring audit/inspection/risk patterns with shift, overtime and staffing outcomes",
+          "use approved file/API exports to accelerate implementation where direct product APIs are not available to the customer",
+          "after separate write certification, automate approved identity lifecycle or EHS follow-up workflows without granting those permissions to the read connector"
+        ],
+        "customerValue": ["compliance", "contractor administration reduction", "absence/risk prevention", "faster implementation", "reduced administration", "executive reporting", "environment/sustainability attribution"],
+        "savingsHypotheses": [
+          "reduce duplicate worker/contractor/site maintenance by reconciling existing Evotix organisational data with WFM masters",
+          "reduce manual safety reporting and supervisor follow-up by reusing approved incident/risk/action data",
+          "reduce implementation effort by supporting the vendor's documented SCIM, file and middleware/iPaaS integration patterns rather than demanding a bespoke connector",
+          "improve staffing/compliance decisions by using data-minimised risk and restriction evidence instead of separate spreadsheets"
+        ],
+        "dataGaps": [
+          "product-specific API endpoint schemas, OAuth/scopes, pagination and rate limits are not fully public on the current integration page",
+          "Evotix product editions have distinct architectures and availability varies by product/subscription",
+          "employment contract, payroll, broad absence and production truth usually remain outside Evotix",
+          "incident and occupational-health records may contain highly sensitive information and normally require derived/minimised WFM signals"
+        ],
+        "constraintsRisks": [
+          "inbound/outbound APIs and SCIM are write-capable; WFM keeps provisioning and follow-up mutations disabled by default",
+          "scheduled files can be partial, duplicated or stale and require checksum, schema, watermark and quarantine controls",
+          "product/edition differences mean interface availability must be proven per tenant rather than inferred from marketing material",
+          "EHS/occupational-health content requires strict minimisation, retention and role segregation"
+        ],
+        "nextDevelopmentAction": "Reuse the existing SCIM, file-batch and vendor-thin profiles without inventing a REST contract. Obtain authorised Evotix product-specific API documentation or sandbox access, identify the customer's available inbound/outbound/reporting surface and OAuth/scope model, prove read-only user/org/contractor/incident/asset exports, validate SCIM read reconciliation plus file integrity/schema/idempotency controls, and normalise only data-minimised safety/contractor/site signals before promotion beyond spec verification."
+      }
+    }
+  ]
+}

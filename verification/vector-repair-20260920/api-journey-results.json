@@ -1,0 +1,79 @@
+{
+  "scope": "LOCAL composed candidate only; not deployed UI proof",
+  "node": "v24.19.0",
+  "sourceHead": "6667f4217e0c0a8a90cab8d4c7d79f8efd628662",
+  "synthetic": true,
+  "checks": [
+    {
+      "name": "unauthenticated state refused",
+      "status": "PASS"
+    },
+    {
+      "name": "employee leave creates pending saved request",
+      "status": "PASS"
+    },
+    {
+      "name": "refresh returns new leave and reserved balance",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate submission with stale version rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate overlapping request with fresh version rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "employee cannot approve own request",
+      "status": "PASS"
+    },
+    {
+      "name": "other tenant cannot act on request identifier",
+      "status": "PASS"
+    },
+    {
+      "name": "new login sees manager saved decision",
+      "status": "PASS"
+    },
+    {
+      "name": "conflicting concurrent versions commit once",
+      "status": "PASS"
+    },
+    {
+      "name": "employee cannot read payroll",
+      "status": "PASS"
+    },
+    {
+      "name": "payroll cannot release before required sign-offs",
+      "status": "PASS"
+    },
+    {
+      "name": "controlled local process restart retains manager decision",
+      "status": "PASS"
+    },
+    {
+      "name": "audit has saved decision in same persisted database",
+      "status": "PASS"
+    }
+  ],
+  "observations": [
+    {
+      "name": "approval attempt",
+      "status": 200,
+      "result": {
+        "ok": true,
+        "result": {
+          "id": "r-1789946602623-1",
+          "status": "approved"
+        },
+        "version": 3
+      }
+    },
+    {
+      "name": "payroll holds",
+      "canRelease": false,
+      "blockerCount": 6
+    }
+  ]
+}

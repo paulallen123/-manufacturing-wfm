@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { proofRunnerSession } from './proof-runner-auth.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
@@ -8,7 +7,9 @@ const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.ap
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
+const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected browser-proof origin.');
+assert.ok(password && password.length >= 20, 'Staging password is unavailable to browser proof.');
 
 const healthResponse = await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(15_000) });
 assert.equal(healthResponse.status, 200, 'Hosted health endpoint did not return HTTP 200.');
@@ -17,7 +18,6 @@ assert.equal(health.release, expectedRelease);
 assert.equal(health.fixtureOnly, true);
 assert.equal(health.productionApproved, false);
 assert.equal(health.pilotReady, false);
-const proofSession = await proofRunnerSession({ origin, email: 'superuser@northstar.example', timeoutMs: 15_000 });
 
 function executable(candidates) {
   for (const candidate of candidates) {
@@ -37,7 +37,6 @@ fs.mkdirSync(profileDir, { recursive: true });
 
 const chromeEnv = { ...process.env };
 delete chromeEnv.WFM_STAGING_PASSWORD;
-delete chromeEnv.WFM_PROOF_RUNNER_PRIVATE_KEY_B64;
 delete chromeEnv.RAILWAY_TOKEN;
 delete chromeEnv.WFM_DEMO_PASSWORD;
 const debugPort = 9225;
@@ -161,19 +160,22 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Network.enable');
-  const proofCookie = await send('Network.setCookie', {
-    name: proofSession.name,
-    value: proofSession.value,
-    url: origin,
-    secure: true,
-    httpOnly: true,
-    sameSite: 'Strict',
-  });
-  assert.equal(proofCookie.success, true, 'Passwordless proof session could not be bound to Chrome.');
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
   await send('Page.navigate', { url: origin });
   await waitForExpression(`document.readyState === 'complete' || document.readyState === 'interactive'`);
+
+  const login = await evaluate(`(async () => {
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email:'superuser@northstar.example', password:${JSON.stringify(password)}})
+    });
+    return {status:r.status, text:await r.text()};
+  })()`);
+  assert.equal(login.status, 200, `Hosted browser login failed with HTTP ${login.status}`);
+  await send('Page.reload', { ignoreCache: true });
   await waitForAuthenticatedHome();
+  delete process.env.WFM_STAGING_PASSWORD;
 
   const identity = await evaluate(`(async()=>{const r=await fetch('/api/bootstrap'); return {status:r.status,json:await r.json()};})()`);
   assert.equal(identity.status, 200);

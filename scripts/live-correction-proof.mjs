@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { proofRunnerLogin } from './proof-runner-auth.mjs';
 import { randomBytes } from 'node:crypto';
 
 const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
+const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin);
+assert.ok(password && password.length >= 20);
 
 const timeoutMs = 20_000;
 const openStatuses = new Set(['submitted', 'information_required', 'awaiting_approval', 'payroll_review_required']);
@@ -33,7 +34,15 @@ function cookieFrom(response) {
   return values[0] ? values[0].split(';', 1)[0] : '';
 }
 async function login(email) {
-  return proofRunnerLogin({ origin, email, timeoutMs });
+  const { response } = await request('/api/login', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', origin, referer: `${origin}/`, accept: 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  assert.equal(response.status, 200, `${email} login failed: ${response.status}`);
+  const cookie = cookieFrom(response);
+  assert.ok(cookie);
+  return cookie;
 }
 async function authed(cookie, path, { method = 'GET', body } = {}) {
   return request(path, {

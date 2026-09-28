@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { proofRunnerSession } from './proof-runner-auth.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -9,7 +8,9 @@ const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.ap
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
+const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected role-control proof origin.');
+assert.ok(password && password.length >= 20, 'Staging password is unavailable to role-control proof.');
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
@@ -25,6 +26,18 @@ function executable(candidates) {
 const chrome = executable(['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']);
 assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runner.');
 
+function sessionCookieFrom(response) {
+  const values = typeof response.headers.getSetCookie === 'function'
+    ? response.headers.getSetCookie()
+    : [response.headers.get('set-cookie')].filter(Boolean);
+  const first = values[0];
+  assert.ok(first, 'Authenticated login did not return a session cookie.');
+  const pair = first.split(';', 1)[0];
+  const split = pair.indexOf('=');
+  assert.ok(split > 0, 'Session Set-Cookie header is malformed.');
+  return { name: pair.slice(0, split), value: pair.slice(split + 1) };
+}
+
 function safeNavigationCandidate(text) {
   const t = String(text || '').replace(/\s+/g, ' ').trim();
   if (!t || t.length > 120) return false;
@@ -34,7 +47,19 @@ function safeNavigationCandidate(text) {
 }
 
 async function login(email) {
-  return proofRunnerSession({ origin, email, timeoutMs: 15_000 });
+  const response = await fetch(`${origin}/api/login`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      origin,
+      referer: `${origin}/`,
+      accept: 'application/json,text/plain,*/*',
+    },
+    body: JSON.stringify({ email, password }),
+    signal: AbortSignal.timeout(15_000),
+  });
+  assert.equal(response.status, 200, `${email} login failed with HTTP ${response.status}.`);
+  return sessionCookieFrom(response);
 }
 
 async function runRole(spec, index) {
@@ -43,7 +68,6 @@ async function runRole(spec, index) {
   fs.mkdirSync(profile, { recursive: true });
   const chromeEnv = { ...process.env };
   delete chromeEnv.WFM_STAGING_PASSWORD;
-  delete chromeEnv.WFM_PROOF_RUNNER_PRIVATE_KEY_B64;
   delete chromeEnv.RAILWAY_TOKEN;
   delete chromeEnv.WFM_DEMO_PASSWORD;
   const proc = spawn(chrome, [

@@ -1,0 +1,13 @@
+{
+  "Dockerfile": "3ad82fb605e99cec4cc9172278e4044211afa103b5a2677f4182a06fe6681ca1",
+  "scripts/compose-vector-local-runtime.mjs": "1fa61b974555fb39026aa2316f4d0004de429fcc7653820f501c8eae71f7c0a4",
+  "scripts/compose-vector-presentation.mjs": "2df566e22d58fc8e90897a213b5d8a0f6c7613c5afc00053893bd96e33218bb6",
+  "scripts/retire-legacy-presentation.mjs": "5468c9de8c1dd7addf23c066ce20a27e7af416910857b265b68ae39ca381e3af",
+  "ux-overlay/vector-workflows.js": "3c176dcb56f283b7ed8422c08937bdbcf09dc96ec36c4a3d5ecb67c80188a38a",
+  "ux-overlay/vector-workflows.css": "c6192424b7752a5f24a96b76d04cf8257b327de96a842ca5dcc963abaf1adb1f",
+  "ux-overlay/vector-workflows.test.cjs": "63389d50cb0aa31145ce1a8486b695dd6928cded20bfbdb71a86baa16ec839ed",
+  "security/runtime/bootstrap.cjs": "99161894f273c2a6aacac35ed5f16f38d0deaa727ed4a8a214335ccf46c129e3",
+  "security/runtime/owner-access-recovery.cjs": "4f0ff3f3968dea60f5511c0c9b89bbff148463fb37067337dada7c9abdb5475d",
+  "security/runtime/owner-access-recovery.test.cjs": "5c6fdcaf571cba85ba3ba25c643f5dda75c7a9bbf0dede9494821eac72acaccd",
+  "security/runtime/OWNER_ACCESS_RECOVERY.md": "e08fe9254000577b95684f05210b8287c81560c5382e4e5fe676ac570b9053e2"
+}

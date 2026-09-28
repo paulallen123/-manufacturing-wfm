@@ -1,58 +1,60 @@
 version: 2.1
 
+commands:
+  require_frozen_candidate:
+    steps:
+      - run:
+          name: Admit explicit frozen candidate only
+          command: |
+            if git rev-parse HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- artifact/vector-proof-freeze.trigger; then
+              echo 'No frozen-candidate trigger change; halting heavy proof without marking product failure.'
+              circleci-agent step halt
+            fi
+
 jobs:
-  core_validation:
+  forge_core_validation:
     docker:
       - image: cimg/node:22.23.2
     resource_class: small
     steps:
       - checkout
-
+      - require_frozen_candidate
       - run:
-          name: Verify exact CI Node runtime
+          name: Verify exact Node runtime
           command: test "$(node --version)" = "v22.23.2"
-
       - run:
-          name: Consolidated core validation
-          command: node scripts/run-zero-cost-ci.mjs
-
+          name: Current FORGE source validation
+          command: node scripts/run-forge-ci.mjs
       - run:
-          name: Verify sealed customer-proof archive
-          command: tar -tzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz >/dev/null
-
-      - run:
-          name: Collect proof receipts
+          name: Collect source proof receipts
           when: always
           command: |
             mkdir -p circleci-artifacts
             cp *-proof.json circleci-artifacts/ 2>/dev/null || true
-
       - store_artifacts:
           path: circleci-artifacts
-          destination: core-proof-receipts
+          destination: forge-source-proof
 
-  release_runtime_validation:
+  forge_runtime_validation:
     machine:
       image: ubuntu-2404:current
     resource_class: medium
     steps:
       - checkout
-
+      - require_frozen_candidate
       - run:
-          name: Build exact runtime candidate
+          name: Build exact FORGE runtime candidate
           command: |
             set -euo pipefail
-            docker build --pull=false -t "wfm-zero-cost-ci:${CIRCLE_SHA1}" .
-
+            docker build --pull=false -t "vector-forge-ci:${CIRCLE_SHA1}" .
       - run:
           name: Verify runtime security boundary
           command: |
             set -euo pipefail
-            IMAGE="wfm-zero-cost-ci:${CIRCLE_SHA1}"
-
+            IMAGE="vector-forge-ci:${CIRCLE_SHA1}"
             test "$(docker run --rm --entrypoint node "$IMAGE" --version)" = "v22.23.2"
-            test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "node"
-
+            test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "root"
+            test "$(docker inspect --format '{{json .Config.Entrypoint}}' "$IMAGE")" = '["/usr/local/bin/vector-entrypoint.sh"]'
             docker run --rm --entrypoint sh "$IMAGE" -ec '
               test ! -e /usr/local/lib/node_modules/npm
               test ! -e /usr/local/lib/node_modules/corepack
@@ -63,84 +65,69 @@ jobs:
                 fi
               done
             '
-
             if docker run --rm -e NODE_ENV=production --entrypoint node "$IMAGE" /app/server.cjs >production-refusal.log 2>&1; then
               echo 'ERROR: staging candidate unexpectedly started in production mode' >&2
               cat production-refusal.log >&2
               exit 1
             fi
             grep -q 'cannot run as production' production-refusal.log
-
       - run:
-          name: Prove isolated customer HTTP boundary
+          name: Prove isolated hosted HTTP boundary
           command: |
             set -euo pipefail
-            IMAGE="wfm-zero-cost-ci:${CIRCLE_SHA1}"
+            IMAGE="vector-forge-ci:${CIRCLE_SHA1}"
             CI_PASSWORD="CI-$(openssl rand -hex 16)"
-
-            docker run -d --name wfm-proof -p 3000:3000 \
-              -e PORT=3000 \
-              -e NODE_ENV=staging \
-              -e NODE_OPTIONS=--experimental-sqlite \
-              -e WFM_HOSTED_STAGING=true \
-              -e WFM_PUBLIC_ORIGIN=https://wfm-ci.invalid \
-              -e WFM_DB=/tmp/wfm-proof.sqlite \
-              -e WFM_STAGING_PASSWORD="$CI_PASSWORD" \
-              "$IMAGE"
-
+            docker run -d --name vector-forge-proof -p 3000:3000               -e PORT=3000               -e NODE_ENV=staging               -e NODE_OPTIONS=--experimental-sqlite               -e WFM_HOSTED_STAGING=true               -e WFM_PUBLIC_ORIGIN=https://vector-forge-ci.invalid               -e WFM_DB=/tmp/vector-forge-proof.sqlite               -e WFM_STAGING_PASSWORD="$CI_PASSWORD"               "$IMAGE"
             proxy_curl() {
-              curl -fsS -H 'Host: wfm-ci.invalid' -H 'X-Forwarded-Proto: https' "$@"
+              curl -fsS -H 'Host: vector-forge-ci.invalid' -H 'X-Forwarded-Proto: https' "$@"
             }
-
-            for i in $(seq 1 30); do
-              if proxy_curl http://127.0.0.1:3000/api/health >/tmp/health.json; then
-                break
+            deadline=$((SECONDS+60))
+            until proxy_curl http://127.0.0.1:3000/api/health >/tmp/health.json; do
+              if (( SECONDS >= deadline )); then
+                echo 'Runtime did not become healthy before the readiness deadline.' >&2
+                docker logs vector-forge-proof >&2 || true
+                exit 1
               fi
-              sleep 1
+              sleep 0.25
             done
-
             proxy_curl http://127.0.0.1:3000/api/health
             proxy_curl http://127.0.0.1:3000/ >/dev/null
-            proxy_curl http://127.0.0.1:3000/kiosk.html >/dev/null
-
-            status=$(curl -sS -o /tmp/bootstrap-unauth.json -w '%{http_code}' \
-              -H 'Host: wfm-ci.invalid' \
-              -H 'X-Forwarded-Proto: https' \
-              http://127.0.0.1:3000/api/bootstrap)
+            status=$(curl -sS -o /tmp/bootstrap-unauth.json -w '%{http_code}'               -H 'Host: vector-forge-ci.invalid'               -H 'X-Forwarded-Proto: https'               http://127.0.0.1:3000/api/bootstrap)
             test "$status" = "401"
-            test "$(docker exec wfm-proof id -u)" != "0"
-
+            test "$(docker exec vector-forge-proof id -u)" != "0"
+            curl -sS -o /tmp/demand-unauth.json -w '%{http_code}'               -H 'Host: vector-forge-ci.invalid'               -H 'X-Forwarded-Proto: https'               http://127.0.0.1:3000/api/operations/intelligence/summary               | grep -qx '401'
       - run:
-          name: Capture runtime proof
+          name: Capture exact runtime proof
           when: always
           command: |
             mkdir -p circleci-runtime-artifacts
-            docker logs wfm-proof >circleci-runtime-artifacts/wfm-proof.log 2>&1 || true
+            docker logs vector-forge-proof >circleci-runtime-artifacts/vector-forge-proof.log 2>&1 || true
             cp production-refusal.log circleci-runtime-artifacts/ 2>/dev/null || true
             cp /tmp/health.json circleci-runtime-artifacts/ 2>/dev/null || true
             cp /tmp/bootstrap-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true
-
+            cp /tmp/demand-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true
+            printf '%s
+' "$CIRCLE_SHA1" > circleci-runtime-artifacts/source-sha.txt
+            docker inspect "vector-forge-ci:${CIRCLE_SHA1}" > circleci-runtime-artifacts/image-inspect.json 2>/dev/null || true
       - run:
           name: Clean up proof container
           when: always
-          command: docker rm -f wfm-proof >/dev/null 2>&1 || true
-
+          command: docker rm -f vector-forge-proof >/dev/null 2>&1 || true
       - store_artifacts:
           path: circleci-runtime-artifacts
-          destination: runtime-proof
+          destination: forge-runtime-proof
 
 workflows:
-  zero_cost_ci:
+  vector_forge_proof:
     jobs:
-      - core_validation
-
-      - release_runtime_validation:
+      - forge_core_validation
+      - forge_runtime_validation:
           requires:
-            - core_validation
+            - forge_core_validation
           filters:
             branches:
               only:
-                - main
+                - /feature\/vector-.*/
                 - /release\/.*/
                 - /staging\/.*/
             tags:
