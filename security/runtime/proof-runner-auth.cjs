@@ -122,6 +122,7 @@ function createProofRunnerAuth(options = {}) {
   const publicKey = decodePublicKey(options.publicKey || process.env.WFM_PROOF_RUNNER_PUBLIC_KEY_B64);
   const allowedEmails = normalizeAllowedEmails(options.allowedEmails || process.env.WFM_PROOF_RUNNER_ALLOWED_EMAILS);
   const sessionTtlMs = parseSessionTtl(options.sessionTtlMs || process.env.WFM_PROOF_RUNNER_SESSION_TTL_MS);
+  const auditStdout = options.auditStdout ?? process.env.WFM_PROOF_RUNNER_AUDIT_STDOUT === 'enabled';
 
   if (!enabled) throw new Error('Proof runner auth must be explicitly enabled.');
   if (!hosted || nodeEnv !== 'staging') {
@@ -180,6 +181,7 @@ function createProofRunnerAuth(options = {}) {
 
   function reject(res, status, event, detail = {}, email = null, tenant = null) {
     record(email, tenant, event, detail);
+    if (auditStdout) console.warn(`WFM_PROOF_RUNNER_AUTH_EVENT=${event}|status=${status}`);
     return writeJson(res, status, { error: 'Proof runner authentication refused.' });
   }
 
