@@ -120,6 +120,9 @@ function createProofRunnerAuth(options = {}) {
   const publicOrigin = String(options.publicOrigin || process.env.WFM_PUBLIC_ORIGIN || '').replace(/\/$/, '');
   const enabled = options.enabled ?? process.env.WFM_PROOF_RUNNER_AUTH === 'enabled';
   const publicKey = decodePublicKey(options.publicKey || process.env.WFM_PROOF_RUNNER_PUBLIC_KEY_B64);
+  const publicKeyFingerprint = createHash('sha256')
+    .update(publicKey.export({ type: 'spki', format: 'der' }))
+    .digest('hex').slice(0, 16);
   const allowedEmails = normalizeAllowedEmails(options.allowedEmails || process.env.WFM_PROOF_RUNNER_ALLOWED_EMAILS);
   const sessionTtlMs = parseSessionTtl(options.sessionTtlMs || process.env.WFM_PROOF_RUNNER_SESSION_TTL_MS);
   const auditStdout = options.auditStdout ?? process.env.WFM_PROOF_RUNNER_AUDIT_STDOUT === 'enabled';
@@ -256,6 +259,10 @@ function createProofRunnerAuth(options = {}) {
     }
 
     const message = Buffer.from(canonicalAssertion({ email, origin: assertionOrigin, nonce, issuedAt, expiresAt }), 'utf8');
+    if (auditStdout) {
+      const messageFingerprint = createHash('sha256').update(message).digest('hex').slice(0, 16);
+      console.warn(`WFM_PROOF_RUNNER_AUTH_VERIFY=key:${publicKeyFingerprint}|message:${messageFingerprint}|signatureBytes:${signature.length}`);
+    }
     if (!verifySignature(null, message, publicKey, signature)) {
       return reject(res, 401, 'signature-verification-failed', {}, email);
     }
