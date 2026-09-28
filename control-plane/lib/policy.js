@@ -42,12 +42,12 @@ export const LANE_DEFINITIONS = Object.freeze({
   },
   'railway-proof-workers': {
     provider: 'railway',
-    failureDomainId: 'railway-proof-workers',
+    failureDomainId: 'railway',
     enabled: true,
   },
   'northstar-railway': {
     provider: 'railway',
-    failureDomainId: 'railway-proof-workers',
+    failureDomainId: 'railway',
     enabled: true,
     note: 'Northstar currently shares the Railway runtime failure domain and does not count as independent resilience.',
   },
