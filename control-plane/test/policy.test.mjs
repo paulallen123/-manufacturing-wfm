@@ -5,7 +5,7 @@ import { uniqueFailureDomainIds } from '../lib/policy.js';
 test('multiple Railway services count as one failure domain', () => {
   assert.deepEqual(
     uniqueFailureDomainIds(['railway-proof-workers', 'northstar-railway']),
-    ['railway-proof-workers'],
+    ['railway'],
   );
 });
 
