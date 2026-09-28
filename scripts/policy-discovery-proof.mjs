@@ -1,9 +1,11 @@
 import http from 'node:http';
 
 const origin = new URL(process.env.TARGET_ORIGIN).origin;
+const runTargetOrigin = String(process.env.RUN_TARGET_ORIGIN || '').trim();
 const runId = String(process.env.RUN_ID || '').trim();
 const tenant = String(process.env.TENANT || '').trim();
 const expectedSha = String(process.env.EXPECTED_CANDIDATE_SHA || '').trim().toLowerCase();
+const expectedDeploymentId = String(process.env.EXPECTED_DEPLOYMENT_ID || '').trim();
 const internalToken = String(process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '');
 const port = Number(process.env.PORT || 3000);
 let state = { status: 'PENDING', stage: 'startup', startedAt: new Date().toISOString() };
@@ -76,7 +78,11 @@ async function advance(kind, confidence, detail) {
 }
 
 try {
-  assert(runId && tenant && internalToken && /^[0-9a-f]{40}$/.test(expectedSha), 'required proof configuration missing');
+  assert(
+    runId && tenant && runTargetOrigin && expectedDeploymentId && internalToken && /^[0-9a-f]{40}$/.test(expectedSha),
+    'required proof configuration missing'
+  );
+  assert(new URL(runTargetOrigin).origin === origin, 'target origin does not match run origin');
 
   state = { ...state, stage: 'identity' };
   const identity = await request('/api/runtime-identity');
@@ -85,7 +91,7 @@ try {
 
   const common = {
     exactCandidateSha: expectedSha,
-    exactTargetDeploymentId: '785d44fd-58bb-4aee-8d1f-94a9c2ff5c43',
+    exactTargetDeploymentId: expectedDeploymentId,
     evidenceClass: 'hosted-demo-policy-runtime',
     fixtureOnly: true,
     priorObservationCommit: '4284740f89a2118a37eb3ca1725b7ceaa257a126',
