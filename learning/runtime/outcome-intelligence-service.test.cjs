@@ -28,7 +28,7 @@ function fixture() {
 function outcome(n, delta=10) {
   return {
     tenantScope:'alpha', source:'decision-outcome-proof', category:'planAttainmentPct',
-    fingerprint:'absence-recovery:planAttainmentPct', baseline:80+n, result:80+n+delta,
+    fingerprint:'absence-recovery:redeploy:planAttainmentPct', baseline:80+n, result:80+n+delta,
     verified:true, evidenceRef:'proof:'+n, crossTenantRawMemory:false, containsSecret:false,
     memoryGrantsAuthority:false
   };
@@ -129,5 +129,90 @@ test('verified regression blocks release admission while a clean tenant is admit
     assert.equal(cleanHttp.status,200);
     assert.equal(cleanHttp.json.releasePromotionAllowed,true);
     assert.equal(cleanHttp.json.blockerCount,0);
+  } finally { f.close(); }
+});
+
+test('regression resolution is append-only and learned reuse requires a new post-resolution win',async()=>{
+  const f=fixture();
+  try {
+    f.service.ingestAdaptiveInput(outcome(1));
+    f.service.ingestAdaptiveInput(outcome(2));
+    f.service.ingestAdaptiveInput(outcome(3));
+    const before=f.service.recommendationPrior({
+      tenant:'alpha',decisionType:'absence-recovery',optionId:'redeploy',metric:'planAttainmentPct'
+    });
+    assert.equal(before.eligible,true);
+    assert.equal(before.skillCandidate.verifiedWinCount,3);
+    assert.equal(before.rankingAuthority,false);
+    assert.equal(before.executionAuthority,'NONE');
+
+    const regression=f.service.ingestAdaptiveInput(outcome(4,-7));
+    const blocked=f.service.recommendationPrior({
+      tenant:'alpha',decisionType:'absence-recovery',optionId:'redeploy',metric:'planAttainmentPct'
+    });
+    assert.equal(blocked.eligible,false);
+    assert.equal(blocked.reason,'VERIFIED_REGRESSION_BLOCK');
+    assert.equal(f.service.releaseAdmissionForTenant('alpha').releasePromotionAllowed,false);
+
+    assert.throws(()=>f.service.resolveRegression({
+      tenant:'alpha',evaluationId:regression.regressionEvaluation.id,verificationSource:'independent-retest',
+      verificationDigest:hash('resolution-proof'),evidenceRefs:['retest:1'],verified:false
+    }),/Unsafe or unverified/);
+
+    const resolved=f.service.resolveRegression({
+      tenant:'alpha',evaluationId:regression.regressionEvaluation.id,verificationSource:'independent-retest',
+      verificationDigest:hash('resolution-proof'),evidenceRefs:['retest:1','recovery:1'],verified:true,
+      memoryGrantsAuthority:false,containsSecret:false,crossTenantRawMemory:false
+    });
+    assert.equal(resolved.releaseAdmission.releasePromotionAllowed,true);
+    assert.equal(resolved.resolution.verifiedWinCountAtResolution,3);
+    assert.equal(resolved.executionAuthority,'NONE');
+
+    const stalePrior=f.service.recommendationPrior({
+      tenant:'alpha',decisionType:'absence-recovery',optionId:'redeploy',metric:'planAttainmentPct'
+    });
+    assert.equal(stalePrior.eligible,false);
+    assert.equal(stalePrior.reason,'POST_RESOLUTION_WINS_REQUIRED');
+
+    const post=f.service.ingestAdaptiveInput(outcome(5,12));
+    assert.equal(post.skillCandidate.verifiedWinCount,4);
+    const restored=f.service.recommendationPrior({
+      tenant:'alpha',decisionType:'absence-recovery',optionId:'redeploy',metric:'planAttainmentPct'
+    });
+    assert.equal(restored.eligible,true);
+    assert.equal(restored.reason,'REPEATED_VERIFIED_WIN');
+    assert.equal(restored.skillCandidate.verifiedWinCount,4);
+    assert.equal(restored.resolution.verifiedWinCountAtResolution,3);
+
+    const replay=f.service.resolveRegression({
+      tenant:'alpha',evaluationId:regression.regressionEvaluation.id,verificationSource:'independent-retest',
+      verificationDigest:hash('resolution-proof'),evidenceRefs:['retest:1','recovery:1'],verified:true
+    });
+    assert.equal(replay.idempotent,true);
+  } finally { f.close(); }
+});
+
+test('trusted resolution endpoint unblocks only the exact tenant regression',async()=>{
+  const f=fixture();
+  try {
+    const regression=f.service.ingestAdaptiveInput(outcome(1,-5));
+    const denied=await call(f.service,req('POST','/api/learning/outcomes/resolve-regression',{
+      body:{
+        tenant:'alpha',evaluationId:regression.regressionEvaluation.id,verificationSource:'retest',
+        verificationDigest:hash('endpoint-proof'),evidenceRefs:['proof:endpoint'],verified:true
+      },headers:{'x-wfm-learning-internal':'bad'}
+    }));
+    assert.equal(denied.status,403);
+
+    const accepted=await call(f.service,req('POST','/api/learning/outcomes/resolve-regression',{
+      body:{
+        tenant:'alpha',evaluationId:regression.regressionEvaluation.id,verificationSource:'retest',
+        verificationDigest:hash('endpoint-proof'),evidenceRefs:['proof:endpoint'],verified:true
+      },headers:{'x-wfm-learning-internal':'learning-token'}
+    }));
+    assert.equal(accepted.status,200);
+    assert.equal(accepted.json.releaseAdmission.releasePromotionAllowed,true);
+    assert.equal(accepted.json.executionAuthority,'NONE');
+    assert.equal(f.service.releaseAdmissionForTenant('bravo').releasePromotionAllowed,true);
   } finally { f.close(); }
 });
