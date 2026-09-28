@@ -44,6 +44,7 @@ async function start(runtime, database, port, key, enabled = true) {
         tenant: 'northstar-demo',
         allowed: ['GET /api/bootstrap'],
         maxSessionSeconds: 120,
+        actionBudget: 1,
       }]),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -94,7 +95,7 @@ function canonical(assertion) {
   ].join('\n'));
 }
 
-test('short-lived proof-runner identity exchanges once for an audited path-scoped session', async t => {
+test('short-lived proof-runner identity enforces an audited atomic action budget', async t => {
   assert.equal(createHash('sha256').update(fs.readFileSync(artifact)).digest('hex'), expectedArtifactSha256);
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-proof-runner-'));
   const runtime = path.join(root, 'runtime');
@@ -134,15 +135,21 @@ test('short-lived proof-runner identity exchanges once for an audited path-scope
   assert.equal(exchanged.status, 200, exchanged.text);
   assert.equal(exchanged.json.authMethod, 'proof-runner');
   assert.equal(exchanged.json.expiresInSeconds, 120);
+  assert.equal(exchanged.json.actionBudget, 1);
   const cookie = exchanged.response.headers.getSetCookie()[0].split(';')[0];
   assert.match(cookie, /^wfm_session=[a-f0-9]{64}$/);
 
-  const bootstrap = await request(running.origin, '/api/bootstrap', { cookie });
-  assert.equal(bootstrap.status, 200, bootstrap.text);
+  const concurrent = await Promise.all([
+    request(running.origin, '/api/bootstrap', { cookie }),
+    request(running.origin, '/api/bootstrap', { cookie }),
+  ]);
+  assert.deepEqual(concurrent.map(result => result.status).sort(), [200, 429]);
   const forbidden = await request(running.origin, '/api/command', {
     method: 'POST', cookie, body: { version: 1, command: 'leave-request', payload: {} },
   });
   assert.equal(forbidden.status, 403, forbidden.text);
+  const exhaustedAgain = await request(running.origin, '/api/bootstrap', { cookie });
+  assert.equal(exhaustedAgain.status, 429, exhaustedAgain.text);
 
   const replay = await request(running.origin, '/api/proof-runner/session', {
     method: 'POST', body: signed,
@@ -151,11 +158,14 @@ test('short-lived proof-runner identity exchanges once for an audited path-scope
 
   const token = cookie.slice('wfm_session='.length);
   const db = new DatabaseSync(database, { readOnly: true });
-  const session = db.prepare('SELECT expires,auth_method,auth_subject,proof_scope FROM sessions WHERE token_hash=?')
+  const session = db.prepare('SELECT expires,auth_method,auth_subject,proof_scope,proof_budget,proof_used,proof_budget_exhausted_at FROM sessions WHERE token_hash=?')
     .get(createHash('sha256').update(token).digest('hex'));
   assert.equal(session.auth_method, 'proof-runner');
   assert.equal(session.auth_subject, 'runner-local-1');
   assert.deepEqual(JSON.parse(session.proof_scope), ['GET /api/bootstrap']);
+  assert.equal(session.proof_budget, 1);
+  assert.equal(session.proof_used, 1);
+  assert.ok(session.proof_budget_exhausted_at >= now);
   assert.ok(session.expires > now && session.expires <= now + 121_000);
   const audit = db.prepare("SELECT actor,detail FROM audit_events WHERE action='proof-runner-session-issued' ORDER BY id DESC LIMIT 1").get();
   assert.equal(audit.actor, 'proof-runner:runner-local-1');
@@ -163,6 +173,10 @@ test('short-lived proof-runner identity exchanges once for an audited path-scope
   assert.equal(detail.email, 'manager@northstar.example');
   assert.equal(detail.scopeCount, 1);
   assert.match(detail.sessionRef, /^[a-f0-9]{24}$/);
+  const budgetAudit = db.prepare("SELECT actor,detail FROM audit_events WHERE action='proof-runner-budget-exhausted' ORDER BY id DESC LIMIT 1").get();
+  assert.equal(budgetAudit.actor, 'proof-runner:runner-local-1');
+  assert.equal(JSON.parse(budgetAudit.detail).actionBudget, 1);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM audit_events WHERE action='proof-runner-budget-exhausted'").get().n, 1);
   db.close();
 
   await stop(running.child);
