@@ -187,3 +187,18 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Boundary:** **BUILT** in the local synthetic exact-runtime lane, not hosted **PROVEN**. Legacy decisions lacking a version-1 seal remain explicitly unverified and need reviewed reconciliation/migration before release. Full-database replacement or trigger-removal resistance requires external immutable evidence and recovery controls.
 - **Release:** this closes the newly created leave-decision correlation gate for sealed post-repair decisions only. Docker execution, exact hosted identity, legacy-decision migration, durable restore and the complete approved browser journey remain **BLOCKED**; the marketing video is not ready.
 - **Safety:** no live deployment, customer/payroll/provider mutation, restart, DNS, credential or infrastructure action occurred.
+
+
+## 2026-09-28 — locale-safe leave calendar dates
+
+- **Objective:** reduce date interpretation burden for employee and manager leave tasks while preserving the authoritative local calendar day.
+- **Acceptance:** valid stored `YYYY-MM-DD` leave dates render in the active locale for both roles; a date on a daylight-saving boundary cannot shift day; semantic machine-readable date remains the unchanged stored value; Unicode names and all leave controls remain intact.
+- **Implementation:** `ux-overlay/vector-workflows.js` adds one reusable validated calendar-date renderer. It constructs a UTC calendar value only after exact component validation, formats through the current display locale, and emits semantic `<time datetime="stored-date">` markup. It does not reinterpret a calendar date through the site time zone or alter stored data.
+- **Tests:** fail-first regression observed the raw ISO date. Fresh final checks: 4/4 focused controller tests and 25/25 affected sealed-runtime tests passed with zero failures/skips; Node syntax checks passed. The fixture covers `de-DE`, Europe/Berlin's 29 March 2026 DST transition and the Unicode name `Zoë 山田`.
+- **Published evidence:** source commit `bcab5fac32ce6f367456a12c80954500561a770d`; blobs `4cc587ea9e65bd57feb16a80a79f51eac5725aa5` (controller) and `e16996277cb0085848ea8ddd324d87935cfb972b` (regression).
+- **Status:** **BUILT**, not hosted **PROVEN**. Entitlement, overlap, approval, balance, payroll, tenant and audit logic are unchanged. No customer, production, payroll-provider, DNS, infrastructure or persistent fixture mutation occurred.
+- **Scale/global:** behavior is independent of organisation size and hierarchy depth. This proves one locale and one DST boundary locally; it does not certify any jurisdiction or prove all locales/calendars.
+- **Outcome/savings:** no realised time or financial saving is claimed. The evidence-backed improvement is removal of raw ISO interpretation for the tested role surfaces without calendar-day drift.
+- **Dependencies:** exact hosted browser proof must confirm the serving SHA, rendered locale, semantic date, screen-reader output, refresh and fresh-login state.
+- **Next action:** extend the same validated semantic calendar-date primitive to the weekly period selector only after browser proof confirms no regression in current leave journeys.
+- **Active-work check:** PR #225 advanced through compatible leave-audit evidence commit `f7823a1bd19adde04eb47b7e08207443b8c03e91`; it did not touch the owned workflow files. No deployment or migration was interrupted.
