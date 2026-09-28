@@ -17,6 +17,7 @@ export const CANDIDATE_IDENTITY_FIELDS = Object.freeze([
   'environment',
   'provider',
   'failureDomainId',
+  'claimBoundary',
 ]);
 
 function clone(value) {
@@ -44,6 +45,9 @@ export function validateCandidateIdentity(identity) {
   }
   if (identity.commitSha !== identity.runtimeSha) {
     return { ok: false, reason: 'SOURCE_RUNTIME_SHA_MISMATCH', commitSha: identity.commitSha, runtimeSha: identity.runtimeSha };
+  }
+  if (identity.claimBoundary !== 'customer-proof-staging') {
+    return { ok: false, reason: 'UNSUPPORTED_CLAIM_BOUNDARY', claimBoundary: identity.claimBoundary };
   }
   return { ok: true };
 }
@@ -290,6 +294,25 @@ function scheduleRunnable(state, emittedTasks) {
     if (!gate || gate.state !== 'UNPROVEN') continue;
     if (!dependenciesPass(state, definition.id)) continue;
     if (activeTaskForGate(state, definition.id)) continue;
+
+    if (definition.derived) {
+      if (definition.authority !== state.candidate.claimBoundary) {
+        gate.state = 'BLOCKED';
+        gate.blockingReason = 'CLAIM_BOUNDARY_AUTHORITY_MISMATCH';
+        appendAudit(state, { type: 'GATE_BLOCKED', gateId: gate.id, reason: gate.blockingReason });
+        continue;
+      }
+      gate.state = 'PASS';
+      gate.blockingReason = null;
+      gate.latestReceiptId = 'derived:policy';
+      gate.lastEvidenceDigest = digest([
+        state.candidateToken,
+        definition.id,
+        ...definition.deps.map((dep) => state.gates[dep]?.lastEvidenceDigest ?? dep),
+      ]);
+      appendAudit(state, { type: 'DERIVED_AUTHORITY_PASS', gateId: gate.id, authority: definition.authority });
+      continue;
+    }
 
     const lane = selectLane(state, definition);
     if (!lane) {
