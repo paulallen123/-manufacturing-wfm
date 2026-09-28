@@ -22,6 +22,9 @@ export async function POST(request) {
     mode: 'SHADOW',
     candidateToken: token,
     runId: run.runId,
+    claimBoundary: candidate.claimBoundary,
+    customerProofAuthority: false,
+    productionAuthority: false,
     releaseAuthority: false,
   }, { status: 202 });
 }
