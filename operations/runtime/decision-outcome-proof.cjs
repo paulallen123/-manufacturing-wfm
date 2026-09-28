@@ -134,7 +134,7 @@ function toAdaptiveOutcomeInput(proof){
     tenantScope:proof.tenant,
     source:'decision-outcome-proof',
     category:proof.metric,
-    fingerprint:proof.decisionType+':'+proof.metric,
+    fingerprint:proof.decisionType+':'+proof.selectedOptionId+':'+proof.metric,
     baseline:sign*proof.observed.baseline,
     result:sign*proof.observed.result,
     verified:true,
