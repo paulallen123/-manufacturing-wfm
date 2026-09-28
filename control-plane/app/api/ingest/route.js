@@ -18,7 +18,10 @@ export async function POST(request) {
   if (!event?.eventId || !event?.type || !event?.candidateToken) {
     return Response.json({ error: 'eventId, type and candidateToken are required' }, { status: 400 });
   }
+  if (typeof event.eventId !== 'string' || event.eventId.length > 256) {
+    return Response.json({ error: 'eventId must be a string of at most 256 characters' }, { status: 400 });
+  }
 
-  const { messageId } = await send('vector-control-events', event);
+  const { messageId } = await send('vector-control-events', event, { idempotencyKey: event.eventId });
   return Response.json({ accepted: true, messageId }, { status: 202 });
 }
