@@ -30,13 +30,10 @@
         "Workday"
       ],
       "access": "Workday Developer Program personal account + development tenant + API client",
-      "allowedHostSuffixes": [
-        "workday.com",
-        "myworkday.com"
-      ],
+      "allowedHosts": [],
       "currentState": "BLOCKED_ACCOUNT",
       "nextClaim": "L2",
-      "notes": "Personal cloud development tenants are suitable for non-customer hands-on development. Exact tenant host must be explicitly allowlisted at runtime."
+      "notes": "Add only the exact personal development-tenant hostname after provisioning. Broad workday.com allowlisting is deliberately forbidden."
     },
     {
       "id": "gusto-embedded-demo",
@@ -60,12 +57,11 @@
       ],
       "access": "Free Xero account + demo company + OAuth2 app",
       "allowedHosts": [
-        "api.xero.com",
-        "identity.xero.com"
+        "api.xero.com"
       ],
       "currentState": "BLOCKED_ACCOUNT",
       "nextClaim": "L2",
-      "notes": "Use demo company only. Do not place customer information in demo evidence."
+      "notes": "Before any write, the run plan must independently assert Organisation.IsDemoCompany = true."
     },
     {
       "id": "netsuite-sdn-development",
@@ -74,13 +70,10 @@
         "Oracle NetSuite"
       ],
       "access": "SuiteCloud Developer Network-provisioned development/testing account",
-      "allowedHostSuffixes": [
-        "suitetalk.api.netsuite.com",
-        "netsuite.com"
-      ],
+      "allowedHosts": [],
       "currentState": "BLOCKED_VENDOR_PROVISIONING",
       "nextClaim": "L2",
-      "notes": "Account-specific host is required. Never substitute a fake demo host for genuine NetSuite provider proof."
+      "notes": "Add only the exact SDN development/test account hostname after provisioning. Broad netsuite.com allowlisting is deliberately forbidden."
     },
     {
       "id": "northstar-industrial-protocol-lab",
