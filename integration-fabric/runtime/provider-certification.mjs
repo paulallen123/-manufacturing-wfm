@@ -13,23 +13,24 @@ const PROFILES = Object.freeze({
     authMethod: 'api-key',
     credentialRef: 'secret://provider/sap-business-accelerator-hub/api-key',
     exactHost: 'sandbox.api.sap.com',
-    sourceInstanceId: 'sap-business-accelerator-hub-public-sandbox',
+    sourceInstanceId: 'sap-business-accelerator-hub-s4hana-sandbox',
+    dataProbeApproved: false,
     buildRequest(bundle) {
       if (!bundle?.apiKey) throw new Error('SAP API key secret is unavailable.');
       return {
         method: 'GET',
-        url: 'https://sandbox.api.sap.com/sap/c4c/odata/v1/c4codataapi/CampaignCollection?$top=1',
+        url: 'https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata4/sap/api_bank/srvd_a2x/sap/bank/0002/',
         headers: {
           APIKey: bundle.apiKey,
-          Accept: 'application/json',
-          DataServiceVersion: '2.0'
+          Accept: 'application/json'
         }
       };
     },
     verify(payload) {
-      const results = payload?.d?.results;
-      if (!Array.isArray(results)) throw new Error('SAP sandbox response is not the expected OData V2 result shape.');
-      return { sampleCount: results.length, assertion: 'odata-v2-results-array' };
+      if (!Array.isArray(payload?.value)) {
+        throw new Error('SAP S/4HANA sandbox response is not the expected OData service-document shape.');
+      }
+      return { entitySetCount: payload.value.length, assertion: 'odata-v4-service-document' };
     }
   }),
   'xero': Object.freeze({
@@ -40,6 +41,7 @@ const PROFILES = Object.freeze({
     authMethod: 'oauth2',
     credentialRef: 'secret://provider/xero/demo-company',
     exactHost: 'api.xero.com',
+    dataProbeApproved: true,
     sourceInstanceId(bundle) {
       if (!bundle?.tenantId) throw new Error('Xero demo tenant ID is unavailable.');
       return 'xero-demo-' + sha256(bundle.tenantId).slice(0, 16);
@@ -111,7 +113,7 @@ export async function certifyProviderSandbox({
 
   const exactCandidateSha = assertExactCandidateSha(candidateSha);
   const connector = connectorById(profile.connectorId);
-  if (!connector) throw new Error('VECTOR connector is not present in the canonical Integration Fabric registry.');
+  if (!connector) throw new Error('VECTOR connector is not present in the Integration Fabric registry.');
   if (connector.security?.readOnlyDefault !== true || connector.security?.writeEnabled === true) {
     throw new Error('VECTOR connector is not fail-closed read-only.');
   }
@@ -132,7 +134,7 @@ export async function certifyProviderSandbox({
     credentialRef: profile.credentialRef,
     capabilities: ['metadata', 'bounded-read'],
     requestedSemanticScopes: connector.canonicalTargets || [],
-    dataProbeApproved: true,
+    dataProbeApproved: profile.dataProbeApproved === true,
     allowWrites: false
   });
 
@@ -185,7 +187,7 @@ export async function certifyProviderSandbox({
     schemaVersion: 1,
     status: 'PASS',
     evidenceLevel: profile.evidenceLevelOnPass,
-    claimBoundary: 'Genuine vendor sandbox/demo authentication plus bounded read through the VECTOR Integration Fabric. This is not customer-production or production-certified evidence.',
+    claimBoundary: 'Genuine vendor sandbox/demo authentication plus a bounded read through the VECTOR Integration Fabric. This is not customer-production or production-certified evidence.',
     providerKey: profile.connectorId,
     vectorCandidateSha: exactCandidateSha,
     connectorRegistryEvidenceLevelBeforeRun: connector.evidenceLevel,
