@@ -34,7 +34,6 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-role-${slug}-${crypto.randomBytes(4).toString('hex')}`);
   fs.mkdirSync(profile, { recursive: true });
   const chromeEnv = { ...process.env };
-  delete chromeEnv.WFM_STAGING_PASSWORD;
     delete chromeEnv.WFM_PROOF_RUNNER_PRIVATE_KEY_B64;
   delete chromeEnv.RAILWAY_TOKEN;
   delete chromeEnv.WFM_DEMO_PASSWORD;
@@ -182,7 +181,7 @@ for(let i=0;i<specs.length;i++) roles.push(await runRole(specs[i],i));
 fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.stringify({
   capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,
   processIsolation:'five fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
-  authMethod:'real hosted /api/login created the session; CDP bound that server-issued cookie to the corresponding fresh Chrome process; no credential passed to Chrome process environment',
+  authMethod:'signed passwordless proof-runner exchange created the short-lived server session; CDP bound that session to the corresponding fresh Chrome process; signing material was not passed to Chrome',
   renderedEvidence:'manager, employee, payroll, company-admin capability account and separate-tenant manager each produced a hashed non-trivial authenticated DOM after a fresh browser navigation and authenticated browser bootstrap',
   companyAdminFixtureNote:'the account named superuser@northstar.example is represented by the server as role=director; company-level capability is proven by successful onboarding and payroll surfaces rather than relabelling the authoritative role enum',
   mobileVisualEvidence:'separate dedicated authenticated visual gate covers desktop/mobile screenshots, no horizontal overflow, keyboard focus and live navigation on the same frozen release',
@@ -190,4 +189,3 @@ fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.st
   claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts, server-side role/tenant/capability boundaries, and role-specific browser rendering; visual mobile quality is covered separately; not every role-specific task is clicked end-to-end; no production/pilot approval and no real employee/payroll data'
 },null,2));
 console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}|rendered_dom=${roles.length}`);
-delete process.env.WFM_STAGING_PASSWORD;
