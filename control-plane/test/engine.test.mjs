@@ -414,3 +414,61 @@ test('provider state changes without monotonic sequence fail closed', () => {
   assert.equal(result.state.providerHealth.github, undefined);
   assert.ok(result.state.audit.some((item) => item.reason === 'INVALID_PROVIDER_EVENT_SEQUENCE'));
 });
+
+
+test('failure-domain independence stays blocked while the only extra verifier is disabled', () => {
+  let { state } = bootstrap();
+  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass-fd', gateId: 'pre_freeze', sequence: 1 })).state;
+  const result = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-hosted-pass-fd',
+    gateId: 'hosted_runtime',
+    sequence: 1,
+    proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
+  }));
+  assert.equal(result.state.gates.failure_domain_independence.state, 'BLOCKED');
+  assert.equal(result.state.gates.failure_domain_independence.blockingReason, 'NO_ADMITTED_HEALTHY_FAILURE_DOMAIN');
+});
+
+test('full shadow DAG drains all admissible work without unexplained idle and stops at honest external blocks', () => {
+  let { state } = bootstrap();
+  const sequences = new Map();
+  let safety = 0;
+
+  while (safety++ < 100) {
+    const task = Object.values(state.tasks).find((item) => item.status === 'QUEUED' && item.taskKind === 'proof');
+    if (!task) break;
+    const sequence = (sequences.get(task.gateId) || 0) + 1;
+    sequences.set(task.gateId, sequence);
+    const result = applyControlEvent(state, {
+      eventId: `evt-sim-${task.gateId}-${sequence}`,
+      type: 'PROOF_RECEIPT',
+      candidateToken: candidateToken(candidate),
+      receipt: {
+        receiptId: `receipt-sim-${task.gateId}-${sequence}`,
+        gateId: task.gateId,
+        sequence,
+        result: 'PASS',
+        applicationState: 'PASS',
+        candidate,
+        evidenceDigest: `digest-sim-${task.gateId}-${sequence}`,
+        proofLane: {
+          laneId: task.laneId,
+          provider: task.provider,
+          failureDomainId: task.failureDomainId,
+        },
+      },
+    });
+    state = result.state;
+    assert.notEqual(result.invariant?.ok, false, `unexpected idle breach after ${task.gateId}`);
+  }
+
+  assert.ok(safety < 100, 'shadow DAG did not converge');
+  assert.equal(Object.values(state.tasks).some((task) => ['QUEUED', 'RUNNING'].includes(task.status)), false);
+  assert.equal(state.gates.failure_domain_independence.state, 'BLOCKED');
+  assert.equal(state.gates.production_authority.state, 'BLOCKED');
+  assert.equal(checkNoIdleInvariant(state).ok, true);
+  const unexpected = Object.values(state.gates).filter(
+    (gate) => gate.state !== 'PASS' && !gate.blockingReason,
+  );
+  assert.deepEqual(unexpected, []);
+});
