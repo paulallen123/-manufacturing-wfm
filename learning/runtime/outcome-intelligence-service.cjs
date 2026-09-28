@@ -80,6 +80,14 @@ function createOutcomeIntelligenceService(options = {}) {
       "BEGIN SELECT RAISE(ABORT,'Outcome evaluations are append only.'); END;" +
     'CREATE TRIGGER IF NOT EXISTS no_vector_outcome_eval_delete BEFORE DELETE ON vector_outcome_evals ' +
       "BEGIN SELECT RAISE(ABORT,'Outcome evaluations are append only.'); END;" +
+    'CREATE TABLE IF NOT EXISTS vector_outcome_eval_resolutions(' +
+      'id TEXT PRIMARY KEY,tenant TEXT NOT NULL,evaluation_id TEXT NOT NULL,fingerprint TEXT NOT NULL,' +
+      'verification_source TEXT NOT NULL,verification_digest TEXT NOT NULL,evidence_refs_json TEXT NOT NULL,' +
+      'created_at TEXT NOT NULL,UNIQUE(tenant,evaluation_id));' +
+    'CREATE TRIGGER IF NOT EXISTS no_vector_outcome_resolution_update BEFORE UPDATE ON vector_outcome_eval_resolutions ' +
+      "BEGIN SELECT RAISE(ABORT,'Outcome regression resolutions are append only.'); END;" +
+    'CREATE TRIGGER IF NOT EXISTS no_vector_outcome_resolution_delete BEFORE DELETE ON vector_outcome_eval_resolutions ' +
+      "BEGIN SELECT RAISE(ABORT,'Outcome regression resolutions are append only.'); END;" +
     'CREATE TABLE IF NOT EXISTS vector_skill_candidates(' +
       'id TEXT PRIMARY KEY,tenant TEXT NOT NULL,fingerprint TEXT NOT NULL,version INTEGER NOT NULL,status TEXT NOT NULL,' +
       'verified_win_count INTEGER NOT NULL,average_improvement REAL NOT NULL,evidence_refs_json TEXT NOT NULL,' +
@@ -108,6 +116,11 @@ function createOutcomeIntelligenceService(options = {}) {
   const insertEval = db.prepare(
     'INSERT INTO vector_outcome_evals(id,tenant,fingerprint,origin,release_blocking,evidence_ref,detail_json,created_at) VALUES(?,?,?,?,?,?,?,?)'
   );
+  const evalById = db.prepare('SELECT * FROM vector_outcome_evals WHERE tenant=? AND id=?');
+  const resolutionByEval = db.prepare('SELECT * FROM vector_outcome_eval_resolutions WHERE tenant=? AND evaluation_id=?');
+  const insertResolution = db.prepare(
+    'INSERT INTO vector_outcome_eval_resolutions(id,tenant,evaluation_id,fingerprint,verification_source,verification_digest,evidence_refs_json,created_at) VALUES(?,?,?,?,?,?,?,?)'
+  );
   const latestSkill = db.prepare(
     'SELECT * FROM vector_skill_candidates WHERE tenant=? AND fingerprint=? ORDER BY version DESC LIMIT 1'
   );
@@ -115,7 +128,8 @@ function createOutcomeIntelligenceService(options = {}) {
     'INSERT INTO vector_skill_candidates(id,tenant,fingerprint,version,status,verified_win_count,average_improvement,evidence_refs_json,authority,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)'
   );
   const countOutcomes = db.prepare('SELECT COUNT(*) AS count FROM vector_verified_outcomes WHERE tenant=?');
-  const countBlocking = db.prepare('SELECT COUNT(*) AS count FROM vector_outcome_evals WHERE tenant=? AND release_blocking=1');
+  const countBlocking = db.prepare("SELECT COUNT(*) AS count FROM vector_outcome_evals e WHERE e.tenant=? AND e.release_blocking=1 AND NOT EXISTS (SELECT 1 FROM vector_outcome_eval_resolutions r WHERE r.tenant=e.tenant AND r.evaluation_id=e.id)");
+  const countResolved = db.prepare('SELECT COUNT(*) AS count FROM vector_outcome_eval_resolutions WHERE tenant=?');
   const listEvals = db.prepare('SELECT * FROM vector_outcome_evals WHERE tenant=? ORDER BY created_at DESC,id DESC LIMIT ?');
   const listSkills = db.prepare('SELECT * FROM vector_skill_candidates WHERE tenant=? ORDER BY created_at DESC,id DESC LIMIT ?');
 
@@ -243,6 +257,73 @@ function createOutcomeIntelligenceService(options = {}) {
     };
   }
 
+
+  function resolveRegression(input = {}) {
+    const tenant=compact(input.tenant,120);
+    const evaluationId=compact(input.evaluationId,120);
+    const verificationSource=compact(input.verificationSource,160);
+    const verificationDigest=compact(input.verificationDigest,64).toLowerCase();
+    const evidenceRefs=Array.isArray(input.evidenceRefs)
+      ? [...new Set(input.evidenceRefs.map(item=>compact(item,220)).filter(Boolean))].slice(0,50)
+      : [];
+    if(!tenant||!evaluationId||!verificationSource||!evidenceRefs.length||!/^[0-9a-f]{64}$/.test(verificationDigest)){
+      const error=new Error('Regression resolution requires tenant, evaluationId, verificationSource, SHA-256 verificationDigest and evidenceRefs.');
+      error.statusCode=400;throw error;
+    }
+    if(input.verified!==true||input.memoryGrantsAuthority===true||input.containsSecret===true||input.crossTenantRawMemory===true){
+      const error=new Error('Unsafe or unverified regression resolution refused.');
+      error.statusCode=409;throw error;
+    }
+    const evaluation=evalById.get(tenant,evaluationId);
+    if(!evaluation||!Boolean(evaluation.release_blocking)){
+      const error=new Error('Release-blocking regression evaluation was not found for this tenant.');
+      error.statusCode=404;throw error;
+    }
+    const existing=resolutionByEval.get(tenant,evaluationId);
+    if(existing){
+      if(existing.verification_digest!==verificationDigest||existing.verification_source!==verificationSource||JSON.stringify(JSON.parse(existing.evidence_refs_json))!==JSON.stringify(evidenceRefs)){
+        const error=new Error('Regression evaluation was already resolved with different evidence.');
+        error.statusCode=409;throw error;
+      }
+      return {idempotent:true,resolution:publicResolution(existing),releaseAdmission:releaseAdmissionForTenant(tenant),executionAuthority:'NONE'};
+    }
+    const createdAt=nowIso();
+    const id='resolution-'+sha256(tenant+':'+evaluationId+':'+verificationDigest+':'+evidenceRefs.join('|')).slice(0,32);
+    insertResolution.run(id,tenant,evaluationId,evaluation.fingerprint,verificationSource,verificationDigest,JSON.stringify(evidenceRefs),createdAt);
+    const row=resolutionByEval.get(tenant,evaluationId);
+    return {idempotent:false,resolution:publicResolution(row),releaseAdmission:releaseAdmissionForTenant(tenant),executionAuthority:'NONE'};
+  }
+
+  function recommendationPrior({tenant,decisionType,optionId,metric}={}) {
+    const safeTenant=compact(tenant,120),safeDecision=compact(decisionType,120),safeOption=compact(optionId,120),safeMetric=compact(metric,80);
+    const fingerprint=[safeDecision,safeOption,safeMetric].join(':');
+    if(!safeTenant||!safeDecision||!safeOption||!safeMetric){
+      return {eligible:false,reason:'INCOMPLETE_SCOPE',fingerprint,advisoryOnly:true,rankingAuthority:false,executionAuthority:'NONE'};
+    }
+    const evaluation=evalByFingerprint.get(safeTenant,fingerprint);
+    const resolution=evaluation?resolutionByEval.get(safeTenant,evaluation.id):null;
+    if(evaluation&&!resolution){
+      return {eligible:false,reason:'VERIFIED_REGRESSION_BLOCK',fingerprint,evaluation:publicEval(evaluation),advisoryOnly:true,rankingAuthority:false,executionAuthority:'NONE'};
+    }
+    const skill=latestSkill.get(safeTenant,fingerprint);
+    if(!skill||Number(skill.verified_win_count)<minRepeatedWins){
+      return {eligible:false,reason:'INSUFFICIENT_VERIFIED_WINS',fingerprint,resolution:resolution?publicResolution(resolution):null,advisoryOnly:true,rankingAuthority:false,executionAuthority:'NONE'};
+    }
+    if(resolution&&Date.parse(skill.created_at)<=Date.parse(resolution.created_at)){
+      return {eligible:false,reason:'POST_RESOLUTION_WINS_REQUIRED',fingerprint,resolution:publicResolution(resolution),advisoryOnly:true,rankingAuthority:false,executionAuthority:'NONE'};
+    }
+    return {eligible:true,reason:'REPEATED_VERIFIED_WIN',fingerprint,skillCandidate:publicSkill(skill),resolution:resolution?publicResolution(resolution):null,advisoryOnly:true,rankingAuthority:false,executionAuthority:'NONE'};
+  }
+
+  function publicResolution(row) {
+    return {
+      id:row.id,tenant:row.tenant,evaluationId:row.evaluation_id,fingerprint:row.fingerprint,
+      verificationSource:row.verification_source,verificationDigest:row.verification_digest,
+      evidenceRefs:JSON.parse(row.evidence_refs_json),createdAt:row.created_at,
+      executionAuthority:'NONE'
+    };
+  }
+
   function publicOutcome(row) {
     return {
       id: row.id, tenant: row.tenant, source: row.source, category: row.category,
@@ -267,7 +348,7 @@ function createOutcomeIntelligenceService(options = {}) {
     };
   }
   function releaseAdmissionForTenant(tenant) {
-    const blocking=listEvals.all(tenant,100).filter(row=>Boolean(row.release_blocking)).map(publicEval);
+    const blocking=listEvals.all(tenant,100).filter(row=>Boolean(row.release_blocking)&&!resolutionByEval.get(tenant,row.id)).map(publicEval);
     return {
       contractVersion:'VECTOR_OUTCOME_RELEASE_ADMISSION_V1',
       tenant,
@@ -284,6 +365,7 @@ function createOutcomeIntelligenceService(options = {}) {
       tenant,
       verifiedOutcomeCount: Number(countOutcomes.get(tenant)?.count || 0),
       releaseBlockingEvaluationCount: Number(countBlocking.get(tenant)?.count || 0),
+      resolvedRegressionCount: Number(countResolved.get(tenant)?.count || 0),
       skillCandidates: listSkills.all(tenant, 20).map(publicSkill),
       evaluations: listEvals.all(tenant, 20).map(publicEval),
       executionAuthority: 'NONE'
@@ -304,6 +386,10 @@ function createOutcomeIntelligenceService(options = {}) {
         if(!tenant)return writeJson(res,400,{error:'tenant is required for release admission.',executionAuthority:'NONE'});
         const admission=releaseAdmissionForTenant(tenant);
         return writeJson(res,admission.releasePromotionAllowed?200:409,admission);
+      }
+      if (req.method === 'POST' && path === PREFIX + '/resolve-regression') {
+        if (!requireInternal(req, res)) return true;
+        return writeJson(res,200,resolveRegression(await readJson(req)));
       }
       const ctx = requireManager(req, res);
       if (!ctx) return true;
@@ -334,6 +420,8 @@ function createOutcomeIntelligenceService(options = {}) {
     ingestAdaptiveInput,
     summaryForTenant,
     releaseAdmissionForTenant,
+    resolveRegression,
+    recommendationPrior,
     close() { try { db.close(); } catch {} }
   };
 }
