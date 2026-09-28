@@ -266,6 +266,19 @@ function createOutcomeIntelligenceService(options = {}) {
       authority: row.authority, createdAt: row.created_at
     };
   }
+  function releaseAdmissionForTenant(tenant) {
+    const blocking=listEvals.all(tenant,100).filter(row=>Boolean(row.release_blocking)).map(publicEval);
+    return {
+      contractVersion:'VECTOR_OUTCOME_RELEASE_ADMISSION_V1',
+      tenant,
+      releasePromotionAllowed:blocking.length===0,
+      blockerCount:blocking.length,
+      blockerRefs:blocking.map(item=>({id:item.id,fingerprint:item.fingerprint,evidenceRef:item.evidenceRef})),
+      reason:blocking.length?'VERIFIED_OUTCOME_REGRESSION':null,
+      executionAuthority:'NONE'
+    };
+  }
+
   function summaryForTenant(tenant) {
     return {
       tenant,
@@ -285,10 +298,21 @@ function createOutcomeIntelligenceService(options = {}) {
         if (!requireInternal(req, res)) return true;
         return writeJson(res, 200, ingestAdaptiveInput(await readJson(req)));
       }
+      if (req.method === 'POST' && path === PREFIX + '/release-admission') {
+        if (!requireInternal(req, res)) return true;
+        const body=await readJson(req),tenant=compact(body.tenant,120);
+        if(!tenant)return writeJson(res,400,{error:'tenant is required for release admission.',executionAuthority:'NONE'});
+        const admission=releaseAdmissionForTenant(tenant);
+        return writeJson(res,admission.releasePromotionAllowed?200:409,admission);
+      }
       const ctx = requireManager(req, res);
       if (!ctx) return true;
       if (req.method === 'GET' && path === PREFIX + '/summary') {
         return writeJson(res, 200, summaryForTenant(ctx.tenant));
+      }
+      if (req.method === 'GET' && path === PREFIX + '/release-admission') {
+        const admission=releaseAdmissionForTenant(ctx.tenant);
+        return writeJson(res,admission.releasePromotionAllowed?200:409,admission);
       }
       if (req.method === 'GET' && path === PREFIX + '/skills') {
         return writeJson(res, 200, { tenant: ctx.tenant, skills: listSkills.all(ctx.tenant, 50).map(publicSkill), executionAuthority: 'NONE' });
@@ -309,6 +333,7 @@ function createOutcomeIntelligenceService(options = {}) {
     handleRequest,
     ingestAdaptiveInput,
     summaryForTenant,
+    releaseAdmissionForTenant,
     close() { try { db.close(); } catch {} }
   };
 }
