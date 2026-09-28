@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - 'feature/autonomous-integration-fabric-v1'
+      - 'feature/vector-adaptive-policy-integration-access-20260928'
     paths:
       - 'integration/**'
       - 'security/runtime/bootstrap.cjs'
