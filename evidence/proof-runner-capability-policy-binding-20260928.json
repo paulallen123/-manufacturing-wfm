@@ -1,0 +1,91 @@
+{
+  "evidenceVersion": 1,
+  "recordedAt": "2026-09-28T21:35:19Z",
+  "claim": "A proof-runner identity cannot mint a session when its linked account has costs access or permissions different from the complete trusted server-configured authority policy.",
+  "classification": "BUILT",
+  "evidenceBoundary": {
+    "environment": "local synthetic sealed-runtime extraction with persistent SQLite restart",
+    "customerData": false,
+    "productionMutation": false,
+    "hostedProof": false,
+    "countryOrRegion": "not jurisdiction-specific",
+    "scale": "one proof-runner key / one synthetic tenant / one same-role permission-injected account",
+    "executingNode": "24.19.0",
+    "requiredReleaseNode": "22.23.2"
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "startingHead": "581fc6908624de7bc5e657ed3f2a2fef6c285d8e",
+    "sealedRuntimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "red": {
+    "tests": 6,
+    "passed": 5,
+    "failed": 1,
+    "skipped": 0,
+    "observation": "The configured account remained role manager with its normal costs access, but system.admin was injected before challenge exchange. The valid Ed25519 assertion returned HTTP 200 and created a proof-runner session instead of failing closed with HTTP 503.",
+    "rootCause": "Trusted proof-runner configuration specified expected role but not expected costs access or permission set. Issuance therefore accepted and snapshotted pre-existing same-role privilege injection."
+  },
+  "repair": {
+    "completeAuthorityPolicy": "Each proof-runner key configuration now requires a boolean costs value and an explicit normalized permission array in addition to role, email and tenant.",
+    "validation": "Permissions are deduplicated, sorted, limited to 100 entries and constrained to bounded authority identifiers before use.",
+    "issuanceFailClosed": "After cryptographic assertion verification, the linked account must match configured email, tenant, role, costs flag and exact normalized permission set before session creation; mismatch returns HTTP 503.",
+    "noFalseEvidence": "The regression verifies that denial creates neither a proof-runner session nor a proof-runner-session-issued audit event.",
+    "ongoingRevocation": "The existing issuance-time authority fingerprint continues to revoke already-issued sessions if account role, costs or permissions later change."
+  },
+  "green": {
+    "focusedRepeatedFreshStores": {
+      "runs": 3,
+      "testsPerRun": 6,
+      "passedPerRun": 6,
+      "failedPerRun": 0,
+      "skippedPerRun": 0
+    },
+    "observedIssuanceContainment": {
+      "configuredRole": "manager",
+      "linkedAccountRole": "manager",
+      "configuredCosts": true,
+      "linkedAccountCosts": true,
+      "configuredPermissions": [],
+      "linkedAccountPermissions": ["system.admin"],
+      "exchangeStatus": 503,
+      "proofRunnerSessionsCreated": 0,
+      "sessionIssuedAuditEvents": 0
+    },
+    "affectedRegression": {
+      "tests": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 14617.099801,
+      "coverage": [
+        "immutable leave-decision restart/tamper refusal",
+        "legacy leave-decision quarantine",
+        "passkey-only normal sign-in UI",
+        "passkey Origin, user-verification and replay controls",
+        "proof-runner atomic rate/action budgets, scope denial, replay denial, audit and kill switch",
+        "proof-runner authority contraction across persistent restart",
+        "proof-runner exact-key rotation revocation",
+        "proof-runner account-authority escalation revocation",
+        "proof-runner expected-role issuance denial",
+        "proof-runner exact capability-policy issuance denial",
+        "leave decision domain-audit request binding"
+      ]
+    },
+    "overlayIdempotence": "The proof-runner hardener applied twice to a fresh sealed extraction and the resulting server plus changed source files passed syntax validation."
+  },
+  "proofIntegrityCorrection": {
+    "finding": "The seeded manager already had costs access before the earlier account-escalation attacks; only role and system.admin changed.",
+    "action": "The prior authority-snapshot and expected-role evidence plus the shared checkpoint were corrected to distinguish baseline costs access from the observed role and permission escalation. No prior failures or results were removed."
+  },
+  "fileSha256": {
+    "scripts/harden-proof-runner-identity.mjs": "f5ebf8281396847a2887e201f6dc85a7948d316c45cad21b63e46257891596c5",
+    "tests/proof-runner-workload-identity.proof.test.cjs": "355f8450c9c4aef00806e16187ee64409de128bc0b289ff95b4847edf3e2fbc4"
+  },
+  "releaseGate": {
+    "status": "BLOCKED",
+    "reason": "This result executed locally on Node 24.19.0 rather than required Node 22.23.2. Exact hosted capability policy, all-instance propagation and identity-provider federation remain unproved.",
+    "nextProof": "Execute the same-role permission-injection attack inside the exact Node 22.23.2 Docker candidate, then prove hosted synthetic issuance is denied before session creation when costs or permissions differ from trusted policy on every active instance."
+  }
+}
