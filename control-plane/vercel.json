@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "app/api/queues/control-events/route.js": {
+      "experimentalTriggers": [
+        { "type": "queue/v2beta", "topic": "vector-control-events", "retryAfterSeconds": 30 }
+      ]
+    },
+    "app/api/queues/control-tasks/route.js": {
+      "experimentalTriggers": [
+        { "type": "queue/v2beta", "topic": "vector-control-tasks", "retryAfterSeconds": 30 }
+      ]
+    }
+  }
+}
