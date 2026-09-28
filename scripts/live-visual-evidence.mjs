@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { proofRunnerSession } from './proof-runner-auth.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
@@ -8,15 +9,14 @@ const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const expectedDeployment = '2d399257-e7ea-43e8-a728-d563e8cb366b';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
-const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected visual-evidence origin.');
-assert.ok(password && password.length >= 20, 'Staging password is unavailable to visual evidence runner.');
 
 const health = await (await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(15_000) })).json();
 assert.equal(health.release, expectedRelease);
 assert.equal(health.fixtureOnly, true);
 assert.equal(health.productionApproved, false);
 assert.equal(health.pilotReady, false);
+const proofSession = await proofRunnerSession({ origin, email: 'superuser@northstar.example', timeoutMs: 15_000 });
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 const profileDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-chrome-profile');
@@ -41,6 +41,7 @@ assert.ok(ffmpeg, 'ffmpeg is unavailable on the pinned runner; cannot create the
 
 const chromeEnv = { ...process.env };
 delete chromeEnv.WFM_STAGING_PASSWORD;
+delete chromeEnv.WFM_PROOF_RUNNER_PRIVATE_KEY_B64;
 delete chromeEnv.RAILWAY_TOKEN;
 delete chromeEnv.WFM_DEMO_PASSWORD;
 const debugPort = 9223;
@@ -170,30 +171,20 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Network.enable');
+  const proofCookie = await send('Network.setCookie', {
+    name: proofSession.name,
+    value: proofSession.value,
+    url: origin,
+    secure: true,
+    httpOnly: true,
+    sameSite: 'Strict',
+  });
+  assert.equal(proofCookie.success, true, 'Passwordless proof session could not be bound to Chrome.');
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
   await send('Page.navigate', { url: origin });
   await waitForExpression(`document.readyState === 'complete' || document.readyState === 'interactive'`);
   await sleep(1200);
-
-  const loginPresent = await evaluate(`Boolean(document.querySelector('#v2-login'))`);
-  if (loginPresent) {
-    const loginExpression = `(() => {
-      const form = document.querySelector('#v2-login');
-      if (!form) return false;
-      const email = form.querySelector('[name="email"]');
-      const password = form.querySelector('[name="password"]');
-      if (!email || !password) return false;
-      email.value = 'superuser@northstar.example';
-      email.dispatchEvent(new Event('change', { bubbles: true }));
-      password.value = ${JSON.stringify(password)};
-      password.dispatchEvent(new Event('input', { bubbles: true }));
-      form.requestSubmit();
-      return true;
-    })()`;
-    assert.equal(await evaluate(loginExpression), true, 'Could not submit live login form.');
-    await waitForExpression(`!document.querySelector('#v2-login')`, 20_000);
-  }
-  await waitForExpression(`document.body && document.body.innerText.length > 100`);
+  await waitForExpression(`!document.querySelector('#v2-login') && document.body && document.body.innerText.length > 100`, 20_000);
 
   // Start the recording only after authentication so no credential entry can appear in it.
   screencastActive = true;
