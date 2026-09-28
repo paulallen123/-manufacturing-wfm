@@ -30,7 +30,7 @@ async function freePort() {
   return port;
 }
 
-async function start(runtime, database, port, key, enabled = true) {
+async function start(runtime, database, port, key, enabled = true, limits = {}) {
   const origin = `http://127.0.0.1:${port}`;
   const output = [];
   const child = spawn(process.execPath, ['server.cjs'], {
@@ -48,9 +48,9 @@ async function start(runtime, database, port, key, enabled = true) {
         email: 'manager@northstar.example',
         tenant: 'northstar-demo',
         allowed: ['GET /api/bootstrap'],
-        maxSessionSeconds: 120,
-        actionBudget: 3,
-        maxRequestsPerSecond: 1,
+        maxSessionSeconds: limits.maxSessionSeconds ?? 120,
+        actionBudget: limits.actionBudget ?? 3,
+        maxRequestsPerSecond: limits.maxRequestsPerSecond ?? 1,
       }]),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -210,4 +210,79 @@ test('short-lived proof-runner identity atomically enforces rate and action budg
   running = await start(runtime, database, await freePort(), publicKey, false);
   const killed = await request(running.origin, '/api/bootstrap', { cookie });
   assert.equal(killed.status, 503, killed.text);
+});
+
+test('an existing proof-runner session contracts to reduced server authority after restart', async t => {
+  assert.equal(createHash('sha256').update(fs.readFileSync(artifact)).digest('hex'), expectedArtifactSha256);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-proof-runner-contract-'));
+  const runtime = path.join(root, 'runtime');
+  const database = path.join(root, 'state.sqlite');
+  fs.mkdirSync(runtime);
+  execFileSync('tar', ['--no-same-owner', '-xzf', artifact, '-C', runtime]);
+  for (const overlay of overlays) if (fs.existsSync(overlay)) execFileSync(process.execPath, [overlay, path.join(runtime, 'public')]);
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  let running = await start(runtime, database, await freePort(), publicKey, true, {
+    maxSessionSeconds: 120,
+    actionBudget: 3,
+    maxRequestsPerSecond: 3,
+  });
+  t.after(() => stop(running.child));
+
+  const challenge = await request(running.origin, '/api/proof-runner/challenge', {
+    method: 'POST', body: { kid: 'runner-local-1' },
+  });
+  assert.equal(challenge.status, 200, challenge.text);
+  const now = Date.now();
+  const assertion = {
+    kid: 'runner-local-1',
+    challengeId: challenge.json.challengeId,
+    nonce: challenge.json.nonce,
+    audience: running.origin,
+    issuedAt: now,
+    expiresAt: now + 20_000,
+  };
+  const exchanged = await request(running.origin, '/api/proof-runner/session', {
+    method: 'POST',
+    body: { assertion, signature: sign(null, canonical(assertion), privateKey).toString('base64url') },
+  });
+  assert.equal(exchanged.status, 200, exchanged.text);
+  const cookie = exchanged.response.headers.getSetCookie()[0].split(';')[0];
+  const tokenHash = createHash('sha256').update(cookie.slice('wfm_session='.length)).digest('hex');
+
+  await stop(running.child);
+  running = await start(runtime, database, await freePort(), publicKey, true, {
+    maxSessionSeconds: 30,
+    actionBudget: 1,
+    maxRequestsPerSecond: 1,
+  });
+  while (Date.now() % 1000 > 700) await delay(10);
+  const concurrent = await Promise.all([
+    request(running.origin, '/api/bootstrap', { cookie }),
+    request(running.origin, '/api/bootstrap', { cookie }),
+  ]);
+  assert.deepEqual(concurrent.map(result => result.status).sort(), [200, 429]);
+  await nextClockSecond();
+  const exhausted = await request(running.origin, '/api/bootstrap', { cookie });
+  assert.equal(exhausted.status, 429, exhausted.text);
+
+  const db = new DatabaseSync(database, { readOnly: true });
+  const session = db.prepare('SELECT issued_at,expires,proof_budget,proof_used,proof_rate_limit FROM sessions WHERE token_hash=?').get(tokenHash);
+  assert.equal(session.proof_budget, 1);
+  assert.equal(session.proof_used, 1);
+  assert.equal(session.proof_rate_limit, 1);
+  assert.ok(session.expires <= session.issued_at + 30_000);
+  const contractions = db.prepare("SELECT detail FROM audit_events WHERE action='proof-runner-session-contracted'").all();
+  assert.equal(contractions.length, 1);
+  assert.deepEqual(JSON.parse(contractions[0].detail), {
+    sessionRef: tokenHash.slice(0, 24),
+    previousMaxSessionSeconds: 120,
+    maxSessionSeconds: 30,
+    previousActionBudget: 3,
+    actionBudget: 1,
+    previousMaxRequestsPerSecond: 3,
+    maxRequestsPerSecond: 1,
+  });
+  db.close();
 });
