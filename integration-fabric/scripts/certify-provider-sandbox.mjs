@@ -9,12 +9,9 @@ if (!providerKey || !providerCertificationProfiles().includes(providerKey)) {
 }
 
 function secretResolver(ref) {
-  if (ref === 'secret://provider/sap-business-accelerator-hub/api-key') {
-    return { apiKey: process.env.SAP_API_KEY };
-  }
-  if (ref === 'secret://provider/xero/demo-company') {
-    return { accessToken: process.env.XERO_ACCESS_TOKEN, tenantId: process.env.XERO_TENANT_ID };
-  }
+  if (ref === 'secret://provider/sap-business-accelerator-hub/api-key') return { apiKey: process.env.SAP_API_KEY };
+  if (ref === 'secret://provider/xero/demo-company') return { accessToken: process.env.XERO_ACCESS_TOKEN, tenantId: process.env.XERO_TENANT_ID };
+  if (ref === 'secret://provider/gusto/demo-company') return { accessToken: process.env.GUSTO_ACCESS_TOKEN, companyId: process.env.GUSTO_COMPANY_ID };
   throw new Error('Unknown managed secret reference.');
 }
 
