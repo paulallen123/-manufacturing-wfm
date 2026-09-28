@@ -20,10 +20,12 @@ export async function candidateControlWorkflow(seed) {
     state = result.state;
     await fanOut(result.emittedTasks);
 
-    if (state.gates.production_authority.state === 'PASS') {
+    if (state.gates.customer_proof_authority.state === 'PASS') {
       return {
         candidateToken: state.candidateToken,
-        status: 'PRODUCTION_AUTHORITY_PASS',
+        status: 'CUSTOMER_PROOF_AUTHORITY_PASS',
+        claimBoundary: state.candidate.claimBoundary,
+        productionAuthority: false,
         finalState: state,
       };
     }
@@ -44,8 +46,12 @@ async function evaluateEvent(state, event) {
 
 async function fanOut(tasks) {
   'use step';
-  for (const task of tasks) {
-    await send('vector-control-tasks', task, { idempotencyKey: task.idempotencyKey });
-  }
-  return { enqueued: tasks.length };
+  const results = await Promise.all(tasks.map(async (task) => {
+    const result = await send('vector-control-tasks', task, {
+      idempotencyKey: task.idempotencyKey,
+      retentionSeconds: 604800,
+    });
+    return { taskId: task.taskId, messageId: result.messageId };
+  }));
+  return { enqueued: results.length, results };
 }
