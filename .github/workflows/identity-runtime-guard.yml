@@ -52,6 +52,7 @@ jobs:
           builtins.add('node:sqlite');
           const files = [
             'security/runtime/identity-survival-guard.cjs',
+            'security/runtime/proof-runner-auth.cjs',
             'security/runtime/bootstrap.cjs'
           ];
           const external = [];
@@ -70,8 +71,8 @@ jobs:
           assert.deepEqual(external, [], 'Identity guard introduced an unreviewed external runtime module.');
           NODE
 
-      - name: Run identity survival unit and isolation tests
-        run: node --test security/runtime/identity-survival-guard.test.cjs
+      - name: Run identity survival and passwordless proof-runner tests
+        run: node --test security/runtime/identity-survival-guard.test.cjs security/runtime/proof-runner-auth.test.cjs
 
       - name: Build exact guarded staging image
         run: docker build --pull=false -t wfm-identity-guard:${{ github.sha }} .
@@ -89,6 +90,7 @@ jobs:
             test ! -w /app/server.cjs
             test ! -w /app/security-runtime/bootstrap.cjs
             test ! -w /app/security-runtime/identity-survival-guard.cjs
+            test ! -w /app/security-runtime/proof-runner-auth.cjs
             test ! -e /usr/local/lib/node_modules/npm
             test ! -e /usr/local/lib/node_modules/corepack
             for p in npm npx corepack yarn yarnpkg pnpm pnpx; do
@@ -106,13 +108,23 @@ jobs:
         run: |
           set -euo pipefail
           image="wfm-identity-guard:${GITHUB_SHA}"
-          password='Identity-Guard-CI-Only-2026-Long!'
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const { generateKeyPairSync } = require('node:crypto');
+          const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+          fs.writeFileSync('/tmp/proof-public.b64', Buffer.from(publicKey.export({ type:'spki', format:'pem' })).toString('base64'));
+          fs.writeFileSync('/tmp/proof-private.b64', Buffer.from(privateKey.export({ type:'pkcs8', format:'pem' })).toString('base64'));
+          NODE
+          public_key="$(cat /tmp/proof-public.b64)"
+          private_key="$(cat /tmp/proof-private.b64)"
           cid="$(docker run -d --rm \
             -p 127.0.0.1:38117:3000 \
             -e PORT=3000 \
             -e WFM_HOSTED_STAGING=true \
             -e WFM_PUBLIC_ORIGIN=https://staging.identity.test \
-            -e WFM_STAGING_PASSWORD="$password" \
+            -e WFM_PROOF_RUNNER_AUTH=enabled \
+            -e WFM_PROOF_RUNNER_PUBLIC_KEY_B64="$public_key" \
+            -e WFM_PROOF_RUNNER_ALLOWED_EMAILS=manager@northstar.example \
             -e WFM_DB=/tmp/wfm-ci.sqlite \
             "$image")"
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
@@ -131,22 +143,34 @@ jobs:
           fi
           echo 'health=PASS'
 
+          assertion="$(PROOF_PRIVATE_KEY_B64="$private_key" node - <<'NODE'
+          const { createPrivateKey, randomBytes, sign } = require('node:crypto');
+          const email='manager@northstar.example';
+          const origin='https://staging.identity.test';
+          const issuedAt=Date.now();
+          const payload={email,origin,nonce:randomBytes(24).toString('base64url'),issuedAt,expiresAt:issuedAt+45000};
+          const canonical=['VECTOR_PROOF_RUNNER_V1','wfm-proof-runner','wfm-proof-session',email,origin,payload.nonce,String(payload.issuedAt),String(payload.expiresAt)].join('\n');
+          const key=createPrivateKey(Buffer.from(process.env.PROOF_PRIVATE_KEY_B64,'base64').toString('utf8'));
+          payload.signature=sign(null,Buffer.from(canonical,'utf8'),key).toString('base64url');
+          process.stdout.write(JSON.stringify(payload));
+          NODE
+          )"
           login_code="$(curl -sS -D /tmp/login.headers -o /tmp/login.body -w '%{http_code}' \
             -H 'Host: staging.identity.test' \
             -H 'X-Forwarded-Proto: https' \
             -H 'Origin: https://staging.identity.test' \
             -H 'Content-Type: application/json' \
-            --data "{\"email\":\"manager@northstar.example\",\"password\":\"$password\"}" \
-            http://127.0.0.1:38117/api/login)"
+            --data "$assertion" \
+            http://127.0.0.1:38117/api/proof-runner/session)"
           if [ "$login_code" != '200' ]; then
-            echo "login failed with HTTP $login_code" >&2
+            echo "passwordless proof login failed with HTTP $login_code" >&2
             cat /tmp/login.body >&2 || true
             docker logs "$cid" >&2 || true
             exit 1
           fi
           cookie="$(awk 'BEGIN{IGNORECASE=1} /^set-cookie:/ {gsub("\\r",""); print $2; exit}' /tmp/login.headers | cut -d';' -f1)"
           test -n "$cookie"
-          echo 'login=PASS'
+          echo 'passwordless-proof-login=PASS'
 
           bound_code="$(curl -sS -o /tmp/bound.body -w '%{http_code}' \
             -H 'Host: staging.identity.test' -H 'X-Forwarded-Proto: https' \
