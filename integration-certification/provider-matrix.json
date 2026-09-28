@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "claimLevels": {
+    "L0": "simulated",
+    "L1": "official-provider-sandbox-contract",
+    "L2": "stateful-provider-dev-tenant-read-write-readback",
+    "L3": "provider-dev-failure-recovery",
+    "L4": "authorised-customer-production"
+  },
+  "providers": [
+    {
+      "id": "sap-business-accelerator-hub",
+      "domain": "ERP/HCM",
+      "target": [
+        "SAP S/4HANA Cloud",
+        "SAP SuccessFactors"
+      ],
+      "access": "SAP ID + provider API key",
+      "allowedHosts": [
+        "sandbox.api.sap.com"
+      ],
+      "currentState": "BLOCKED_CREDENTIAL",
+      "nextClaim": "L1",
+      "notes": "Official SAP sandbox. Treat AI-generated/mock sandbox responses as L1 contract proof only; do not claim stateful S/4HANA acceptance."
+    },
+    {
+      "id": "workday-personal-developer",
+      "domain": "HCM",
+      "target": [
+        "Workday"
+      ],
+      "access": "Workday Developer Program personal account + development tenant + API client",
+      "allowedHostSuffixes": [
+        "workday.com",
+        "myworkday.com"
+      ],
+      "currentState": "BLOCKED_ACCOUNT",
+      "nextClaim": "L2",
+      "notes": "Personal cloud development tenants are suitable for non-customer hands-on development. Exact tenant host must be explicitly allowlisted at runtime."
+    },
+    {
+      "id": "gusto-embedded-demo",
+      "domain": "Payroll",
+      "target": [
+        "Gusto Embedded Payroll"
+      ],
+      "access": "Gusto Developer Portal organisation/application + demo credentials",
+      "allowedHosts": [
+        "api.gusto-demo.com"
+      ],
+      "currentState": "BLOCKED_ACCOUNT",
+      "nextClaim": "L2",
+      "notes": "Use only synthetic demo companies and employees. Production access remains a separate Gusto approval gate."
+    },
+    {
+      "id": "xero-demo-company",
+      "domain": "Finance/Accounting",
+      "target": [
+        "Xero"
+      ],
+      "access": "Free Xero account + demo company + OAuth2 app",
+      "allowedHosts": [
+        "api.xero.com",
+        "identity.xero.com"
+      ],
+      "currentState": "BLOCKED_ACCOUNT",
+      "nextClaim": "L2",
+      "notes": "Use demo company only. Do not place customer information in demo evidence."
+    },
+    {
+      "id": "netsuite-sdn-development",
+      "domain": "ERP",
+      "target": [
+        "Oracle NetSuite"
+      ],
+      "access": "SuiteCloud Developer Network-provisioned development/testing account",
+      "allowedHostSuffixes": [
+        "suitetalk.api.netsuite.com",
+        "netsuite.com"
+      ],
+      "currentState": "BLOCKED_VENDOR_PROVISIONING",
+      "nextClaim": "L2",
+      "notes": "Account-specific host is required. Never substitute a fake demo host for genuine NetSuite provider proof."
+    },
+    {
+      "id": "northstar-industrial-protocol-lab",
+      "domain": "MES/OT/Files",
+      "target": [
+        "OPC UA",
+        "MQTT",
+        "SFTP"
+      ],
+      "access": "Isolated Northstar environment",
+      "allowedHosts": [],
+      "currentState": "DESIGNED",
+      "nextClaim": "L0",
+      "notes": "Protocol proof only until attached to a genuine third-party vendor test environment."
+    }
+  ]
+}
