@@ -19,6 +19,7 @@ const candidate = {
   environment: 'staging-proof',
   provider: 'railway',
   failureDomainId: 'railway-runtime',
+  claimBoundary: 'customer-proof-staging',
 };
 
 function bootstrap() {
@@ -65,6 +66,12 @@ test('candidate identity rejects source/runtime drift before orchestration start
   const mismatch = { ...candidate, runtimeSha: 'b'.repeat(40) };
   assert.equal(validateCandidateIdentity(mismatch).reason, 'SOURCE_RUNTIME_SHA_MISMATCH');
   assert.throws(() => createInitialState(mismatch), /SOURCE_RUNTIME_SHA_MISMATCH/);
+});
+
+test('production claim boundary is structurally rejected by the customer-proof control plane', () => {
+  const production = { ...candidate, claimBoundary: 'production' };
+  assert.equal(validateCandidateIdentity(production).reason, 'UNSUPPORTED_CLAIM_BOUNDARY');
+  assert.throws(() => createInitialState(production), /UNSUPPORTED_CLAIM_BOUNDARY/);
 });
 
 test('bootstrap immediately queues admissible root proof and does not idle', () => {
@@ -209,4 +216,25 @@ test('cleanup is refused while dependent proof remains unfinished', () => {
 test('open gates plus empty work with no explicit block is an orchestration breach', () => {
   const state = createInitialState(candidate);
   assert.deepEqual(checkNoIdleInvariant(state), { ok: false, code: 'ORCHESTRATION_INVARIANT_BREACH' });
+});
+
+
+test('customer-proof authority is derived only after every required evidence gate passes', () => {
+  const state = createInitialState(candidate);
+  for (const [id, gate] of Object.entries(state.gates)) {
+    if (id === 'customer_proof_authority') continue;
+    gate.state = 'PASS';
+    gate.lastEvidenceDigest = `evidence-${id}`;
+  }
+  const result = applyControlEvent(state, {
+    eventId: 'evt-derive-customer-proof-authority',
+    type: 'PROVIDER_STATUS',
+    candidateToken: candidateToken(candidate),
+    provider: 'railway',
+    status: 'SUCCESS',
+  });
+  assert.equal(result.state.gates.customer_proof_authority.state, 'PASS');
+  assert.equal(result.state.gates.customer_proof_authority.latestReceiptId, 'derived:policy');
+  assert.ok(result.state.audit.some((item) => item.type === 'DERIVED_AUTHORITY_PASS'));
+  assert.equal(result.emittedTasks.length, 0);
 });
