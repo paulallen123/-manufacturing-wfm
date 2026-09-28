@@ -1,0 +1,356 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28",
+  "purpose": "Harden the existing UKG Pro WFM and UKG Pro HCM specification coverage by treating HMAC webhooks and successful provider replay as signals only, requiring a complete read-only fallback snapshot before workforce reconciliation evidence can be admitted.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "ukg-pro-wfm",
+      "reason": "UKG documents near-real-time WFM fat events, regional webhook services, HMAC validation, event-loss caveats, 14-day retention, failed-message replay, cursor-paginated replay audit and explicit secondary-polling guidance for zero-tolerance integrations.",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developer.ukg.com/proplatform/docs/ukg-webhooks-user-guide",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "auth": "oauth2-client-credentials-audience-global-tenant-header-plus-webhook-hmac",
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          "UKG Developer Console machine-to-machine credentials governed by existing role-based permissions",
+          "OAuth 2.0 client_credentials token request using the issued organisation, token URL and API audience",
+          "exact global-tenant-id on every Webhooks Premium API call",
+          "regional UKG Webhooks service for US, Canada, EU or Australia selected from customer tenancy rather than inferred",
+          "HTTPS callback subscription protected by a revision-bound HMAC secret of at least 24 characters"
+        ],
+        "readRoutes": [
+          "GET /webhooks/v1/events with count and index for event metadata discovery",
+          "GET /webhooks/v2/subscriptions with count and index for subscription discovery",
+          "GET /webhooks/v3/subscriptions/{subscriptionId}/messages/replays using cursor pagination for replay history",
+          "GET /webhooks/v3/subscriptions/{subscriptionId}/messages/replays/{replayId}/audit-logs using pagination-current-token and pagination-next-token",
+          "customer-entitled read-only WFM people, punch, shift and integration snapshot route discovered from the exact tenant API catalog or approved report"
+        ],
+        "deniedMutationRoutes": [
+          "subscription create, update, patch, deactivate or delete outside privileged bootstrap",
+          "POST failed-message replay outside the separately authorised deterministic recovery worker",
+          "employee, shift, timecard, punch, pay-code, schedule, accrual or payroll mutation",
+          "role, Function Access Profile, service-account, HMAC secret or API credential mutation",
+          "payroll, attendance, leave, scheduling or operational write-back"
+        ],
+        "dataObjects": [
+          "WFM work-shift, time-punch and integration-completion event payloads",
+          "event catalog metadata and subscribed aliases",
+          "subscription identity, enabled state and regional endpoint",
+          "message delivery status, first and last attempt time, replay identity and replay audit status",
+          "read-only fallback snapshots of exact customer-entitled people, time and schedule state",
+          "credential, schema, mapping, freshness, delivery and reconciliation diagnostics"
+        ],
+        "canonicalObjects": [
+          "person-source-identity",
+          "schedule-change-signal",
+          "time-event-evidence",
+          "shift-outcome-observation",
+          "integration-event",
+          "provider-delivery-diagnostic",
+          "reconciliation-window"
+        ],
+        "stableIdentifiers": [
+          "global-tenant-id scopes every UKG Pro tenant API call",
+          "subscriptionId scopes messages, replay requests and audit logs",
+          "replayId scopes one asynchronous replay attempt",
+          "messageId identifies one provider subscription message inside replay audit",
+          "webhook_id and exact event alias identify callback delivery evidence",
+          "employee, job, location, punch, shift and integration identifiers remain opaque and tenant-scoped"
+        ],
+        "freshnessLatency": [
+          "UKG describes webhook delivery as near real time rather than guaranteed complete",
+          "WFM fat events can carry employee, job, location, punch type and pay-code context",
+          "replay is asynchronous and must be observed through terminal audit status",
+          "business-critical zero-tolerance consumers require secondary polling or a nightly report",
+          "all webhook events have a documented retention horizon of 14 days"
+        ],
+        "permissions": [
+          "Developer Console credentials inherit existing UKG role-based access and are independently revocable and rotatable",
+          "Webhooks Admin is a distinct Pro WFM Function Access Profile permission",
+          "read-only Viewer, subscription Editor and Admin roles remain separated",
+          "Webhooks Premium is required for REST retry and audit resources",
+          "fallback snapshot access is field-minimised to approved people, time, shift and integration data"
+        ],
+        "paginationDeltaWebhooks": [
+          "event and subscription catalogs use count plus index pagination",
+          "replay audit uses stateful page tokens and terminates only when pagination-next-token is absent",
+          "replay requests must use status failed and a source window shorter than 24 hours",
+          "HMAC-verified webhook retries collapse only when provider identity and payload evidence match exactly",
+          "successful replay is reconciled to a complete exact-window fallback snapshot before admission"
+        ],
+        "regionalApiVersions": [
+          "US, Canadian, EU and Australian webhook regions are documented and remain connection-bound",
+          "global-tenant-id prevents cross-tenant reuse of a regional endpoint or bearer token",
+          "v1 event and subscription routes, v2 failed-message replay and v3 replay-audit routes are pinned independently",
+          "customer WFM API or report routes remain tenant/version-specific and cannot be guessed from the webhook hostname"
+        ],
+        "customFields": [
+          "event aliases and schemas are discovered from the tenant event catalog and fingerprinted",
+          "fat-event fields are selected per alias and quarantined when undocumented fields expand authority",
+          "customer-specific employee, job, location, pay-code and shift mappings require explicit approval",
+          "fallback snapshot schemas remain independently fingerprinted from webhook schemas"
+        ],
+        "rateLimits": [
+          "the standard webhook tier documents up to 10000 event notifications per calendar month",
+          "Webhooks Premium supports higher-volume estates and exposes retry and audit APIs",
+          "page count, audit-page, message and snapshot-record caps are connection policy and fingerprint bound",
+          "429, transient 5xx and provider-outage recovery uses bounded backoff without widening tenant, subscription, region or time scope"
+        ],
+        "failureModes": [
+          "event source triggers removed or disabled by consultants or internal developers",
+          "database restore temporarily disables triggers so an event never reaches UKG Webhooks",
+          "subscription intentionally inactive during a mass update and not reactivated",
+          "HMAC missing, invalid, stale or rotated without matching revision evidence",
+          "duplicate or conflicting callback retries after timeout",
+          "failed-message replay accepted but still processing, partially failed or never terminal",
+          "replay audit cursor gap, loop, page overflow, message duplication or cross-subscription identity",
+          "replay succeeds but the fallback snapshot is partial, stale or disagrees with the latest replayed source state",
+          "OAuth expiry, missing global-tenant-id, 403 permission drift, 429 throttling, regional outage or route-version drift",
+          "shift-boundary burst exceeds expected volume or the 14-day retention horizon expires before recovery"
+        ],
+        "reconciliation": [
+          "treat every HMAC webhook and successful replay only as delivery evidence",
+          "bind tenant, connection, region, subscription, event aliases, principal, HMAC revision, schemas, mapping, window and caps",
+          "require failed-only replay for an exact window shorter than 24 hours",
+          "require a gapless terminal cursor chain where every audit message is success",
+          "require HMAC-verified delivery coverage for every audited message and reject conflicting retries",
+          "require a complete terminal fallback snapshot covering the same window and matching each source latest replayed version and payload digest",
+          "return scoped hashes and counts rather than raw employee, message or wage identifiers",
+          "never grant checkpoint, deletion, payroll, attendance, operational, replay, write-back or causal authority"
+        ],
+        "schemaDrift": [
+          "pin event catalog aliases, callback schema, fallback snapshot schema, query, mapping, routes and principal fingerprints",
+          "quarantine alias disappearance, new sensitive fields, field-type changes, regional-route migration or version changes",
+          "separate event-schema drift from fallback-read drift so Support can identify the broken layer"
+        ],
+        "retriesReconnect": [
+          "refresh a short-lived bearer token only inside the approved machine identity and audience",
+          "use failed-only replay to avoid deliberately redelivering successful messages",
+          "poll replay audit until terminal inside the bounded observation horizon without fixed sleeps",
+          "use complete read-only polling or an approved nightly report when an event may never have been created",
+          "rotate HMAC and OAuth credentials through privileged bootstrap with predecessor and audit evidence"
+        ],
+        "webhookReplaySnapshotAuthority": {
+          "webhookIsSignalOnly": true,
+          "failedOnlyReplayRequired": true,
+          "lessThanTwentyFourHourWindowRequired": true,
+          "fourteenDayRetentionBound": true,
+          "terminalAuditCursorChainRequired": true,
+          "hmacDeliveryCoverageRequired": true,
+          "completeFallbackSnapshotRequired": true,
+          "latestSourceStateMustMatch": true,
+          "rawSourceIdsReturned": false,
+          "checkpointAuthority": false,
+          "deletionAuthority": false,
+          "replayAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false,
+          "operationalAuthority": false,
+          "writeBackAuthority": false,
+          "causalAuthority": false
+        },
+        "customerValueOpportunities": [
+          "detect missing punch and shift events before staffing, overtime or payroll-readiness decisions use incomplete data",
+          "distinguish a provider delivery failure from a genuine absence, no-show or scheduling change",
+          "preserve reliable shift-boundary evidence during large-site event bursts and regional outages",
+          "reduce support tickets by identifying HMAC, entitlement, subscription, replay, cursor and fallback-snapshot failure domains",
+          "compare planned, changed, punched and observed outcomes without treating a single event as causation or attendance truth"
+        ],
+        "zeroFrictionConnection": [
+          "discover region, global tenant, event aliases and existing subscriptions after OAuth connection",
+          "propose the minimum WFM alias set and fallback fields from tenant metadata",
+          "pre-fill exact versioned routes, page count, 14-day retention and sub-24-hour recovery windows",
+          "test the callback and HMAC revision without creating business records",
+          "measure manual alias selections, field mappings, retries and time-to-first-reconciled event stream removed"
+        ],
+        "productHandoff": "Show one decision-ready event health card: latest authoritative snapshot time, failed/replayed/reconciled message counts, affected shift or time domain, freshness and exact failure layer. Do not expose raw callback tables or imply attendance or payroll approval.",
+        "autonomyHandoff": "Detect inactive subscriptions, missing event windows, HMAC rotation, token expiry, tenant/region drift, failed replays, cursor loops, provider outages and snapshot mismatch; auto-recover only by bounded token refresh, failed-only replay, backoff and read-only fallback polling, otherwise prepare the exact safest corrective action.",
+        "evidenceSources": [
+          {"title":"UKG Webhooks User Guide","url":"https://developer.ukg.com/proplatform/docs/ukg-webhooks-user-guide","evidenceLevel":"official-provider-documentation"},
+          {"title":"Welcome to UKG Webhooks","url":"https://developer.ukg.com/proplatform/docs/welcome-to-ukg-webhooks","evidenceLevel":"official-provider-documentation"},
+          {"title":"UKG Webhooks Events Catalog","url":"https://developer.ukg.com/proplatform/docs/ukg-webhooks-events-catalog","evidenceLevel":"official-provider-documentation"},
+          {"title":"Webhooks Premium","url":"https://developer.ukg.com/proplatform/docs/webhooks-premium","evidenceLevel":"official-provider-documentation"},
+          {"title":"UKG Webhooks Premium API","url":"https://developer.ukg.com/proplatform/reference/welcome-to-the-webhooks-api","evidenceLevel":"official-provider-documentation"},
+          {"title":"Obtain OAuth Bearer Tokens","url":"https://developer.ukg.com/proplatform/docs/obtaining-bearer-tokens","evidenceLevel":"official-provider-documentation"},
+          {"title":"Developer Console Quick Start","url":"https://developer.ukg.com/proplatform/docs/developer-console-quick-start","evidenceLevel":"official-provider-documentation"},
+          {"title":"Retrieve All Webhook Events","url":"https://developer.ukg.com/proplatform/reference/retrieve-all-webhook-events","evidenceLevel":"official-provider-documentation"},
+          {"title":"Create Subscription","url":"https://developer.ukg.com/proplatform/reference/create-subscription","evidenceLevel":"official-provider-documentation"},
+          {"title":"Retrieve All Webhook Message Subscriptions","url":"https://developer.ukg.com/proplatform/reference/retrieve-all-webhook-message-subscriptions","evidenceLevel":"official-provider-documentation"},
+          {"title":"Replay Messages by Subscription ID","url":"https://developer.ukg.com/proplatform/reference/replay-messages-by-subscription-id","evidenceLevel":"official-provider-documentation"},
+          {"title":"Retrieve Replay Audit Log by Subscription","url":"https://developer.ukg.com/proplatform/reference/retrieve-message-replay-audit-log-by-subscription-id","evidenceLevel":"official-provider-documentation"},
+          {"title":"Retrieve Replay Audit Entries","url":"https://developer.ukg.com/proplatform/reference/retrieve-replay-log-by-subscription-and-replay-id","evidenceLevel":"official-provider-documentation"}
+        ],
+        "evidenceNote": "Official UKG documentation was reviewed for OAuth machine credentials, tenant headers, regional endpoints, HMAC subscriptions, WFM fat events, missed-event caveats, 14-day retention, failed-message replay, cursor-paginated audit and secondary polling. No UKG tenant, customer subscription, OAuth credential, HMAC callback, live WFM read, actual replay, denied write, hosted VECTOR proof or production certification is claimed.",
+        "nextBuildAction": "In an authorised UKG Pro WFM non-production tenant with Webhooks Premium, prove machine OAuth and global-tenant scope, discover the regional event catalog and minimum aliases, receive HMAC-verified shift/punch events, exercise a failed-only sub-24-hour replay through terminal cursor audit, reconcile to a complete read-only WFM snapshot, then test disabled triggers, inactive subscription, HMAC rotation, token expiry, 403/429, duplicate/conflicting callbacks, cursor gaps, 14-day expiry, regional outage and denial of time, shift, payroll and subscription mutations."
+      }
+    },
+    {
+      "id": "ukg-pro-hcm",
+      "reason": "The same UKG Webhooks security, loss, replay, audit and retention contract applies to Pro HCM events; HCM evidence requires independently scoped event aliases and a complete authoritative worker fallback read.",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developer.ukg.com/proplatform/docs/ukg-webhooks-user-guide",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "auth": "oauth2-client-credentials-audience-global-tenant-header-plus-webhook-hmac",
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          "UKG Developer Console role-bound machine credentials and OAuth 2.0 client_credentials",
+          "exact API audience and global-tenant-id on every request",
+          "regional HTTPS webhook service selected from customer tenancy",
+          "HMAC-protected subscription using a separately revision-bound secret"
+        ],
+        "readRoutes": [
+          "GET /webhooks/v1/events and GET /webhooks/v2/subscriptions for HCM event and subscription discovery",
+          "GET /webhooks/v3/subscriptions/{subscriptionId}/messages/replays and /{replayId}/audit-logs for terminal recovery evidence",
+          "customer-entitled read-only HCM worker or approved report snapshot used for authoritative recovery"
+        ],
+        "deniedMutationRoutes": [
+          "employee, employment, job, compensation, tax, direct-deposit, benefit, payroll or identity mutation",
+          "subscription or failed-message replay outside privileged deterministic recovery",
+          "role, service account, HMAC secret or API credential mutation",
+          "payroll, workforce-master, attendance or access-control write-back"
+        ],
+        "dataObjects": [
+          "HCM hire, change, transfer and termination event signals",
+          "event and subscription metadata",
+          "message delivery and replay audit status",
+          "read-only effective worker, employment, job, organisation and status snapshot",
+          "provider delivery, schema, mapping and reconciliation diagnostics"
+        ],
+        "canonicalObjects": [
+          "person-source-identity",
+          "employment-status",
+          "organisation-assignment",
+          "effective-dated-workforce-change",
+          "integration-event",
+          "provider-delivery-diagnostic",
+          "reconciliation-window"
+        ],
+        "stableIdentifiers": [
+          "global-tenant-id, subscriptionId, replayId, messageId and webhook_id remain exact provider scopes",
+          "person, employee, employment and job identifiers remain opaque tenant-scoped identities",
+          "event alias and effective time remain bound to the versioned event schema"
+        ],
+        "freshnessLatency": [
+          "HCM webhook events are near-real-time signals, not completeness proof",
+          "failed replay is asynchronous and requires terminal audit evidence",
+          "secondary polling or a nightly report is required for zero-tolerance recovery",
+          "events are retained for 14 days"
+        ],
+        "permissions": [
+          "Developer Console credentials use existing role permissions and support revocation and rotation",
+          "webhook Viewer, Editor and Admin responsibilities remain separated",
+          "Webhooks Premium is required for retry and audit APIs",
+          "fallback worker reads are field-minimised and exclude sensitive pay, tax and direct-deposit fields by default"
+        ],
+        "paginationDeltaWebhooks": [
+          "event and subscription discovery use count/index",
+          "replay audit uses stateful page tokens to a terminal page",
+          "failed-only replay windows must be shorter than 24 hours",
+          "duplicate delivery collapses only with identical provider identity and payload",
+          "authoritative HCM fallback read closes gaps for events that were never emitted"
+        ],
+        "regionalApiVersions": [
+          "US, Canada, EU and Australia are distinct documented webhook regions",
+          "v1 discovery, v2 replay and v3 audit routes are independently pinned",
+          "HCM read APIs and reports remain tenant/version-specific and separately fingerprinted"
+        ],
+        "customFields": [
+          "HCM event aliases and schemas are metadata-discovered and fingerprinted",
+          "customer custom fields require explicit mapping and sensitivity review",
+          "effective dates remain source evidence and do not become current state early",
+          "fallback snapshot schema remains independent from callback schema"
+        ],
+        "rateLimits": [
+          "standard webhooks document 10000 events per calendar month and Premium supports higher volume",
+          "page, message and snapshot caps are connection-policy bound",
+          "429 and transient 5xx recovery uses bounded backoff without widening scope"
+        ],
+        "failureModes": [
+          "disabled source triggers, database restore or intentionally inactive subscription produces no event",
+          "invalid or rotated HMAC, duplicate/conflicting callback, token expiry or permission drift",
+          "replay remains processing or has failed audit entries",
+          "audit cursor gap, loop, overflow or cross-subscription replay",
+          "fallback worker snapshot is incomplete, stale or disagrees with latest replayed evidence",
+          "regional outage, 429 throttling, schema drift or 14-day retention expiry",
+          "person or employment identity collision across companies, instances or acquisitions"
+        ],
+        "reconciliation": [
+          "bind tenant, connection, region, subscription, aliases, HMAC revision, routes, schemas, mapping, window and caps",
+          "require failed-only replay, terminal successful audit coverage and HMAC-verified delivery",
+          "require a complete exact-window HCM fallback snapshot matching the latest replayed source state",
+          "preserve effective time and multiple employment identities",
+          "return scoped hashes and counts only",
+          "grant no checkpoint, deletion, replay, payroll, attendance, operational, write-back or causal authority"
+        ],
+        "schemaDrift": [
+          "pin event catalog, callback schema, worker snapshot schema, query, mapping, route and principal fingerprints",
+          "quarantine alias, effective-date, identity, sensitivity, field-type or regional-route drift",
+          "diagnose callback and fallback-read drift independently"
+        ],
+        "retriesReconnect": [
+          "refresh bearer tokens only inside the approved identity and audience",
+          "use failed-only replay and terminal cursor audit within retention",
+          "fall back to a complete read-only worker query or approved report when events may be absent",
+          "rotate credentials and HMAC through privileged bootstrap with audit evidence"
+        ],
+        "webhookReplaySnapshotAuthority": {
+          "webhookIsSignalOnly": true,
+          "failedOnlyReplayRequired": true,
+          "lessThanTwentyFourHourWindowRequired": true,
+          "fourteenDayRetentionBound": true,
+          "terminalAuditCursorChainRequired": true,
+          "hmacDeliveryCoverageRequired": true,
+          "completeFallbackSnapshotRequired": true,
+          "latestSourceStateMustMatch": true,
+          "rawSourceIdsReturned": false,
+          "checkpointAuthority": false,
+          "deletionAuthority": false,
+          "replayAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false,
+          "operationalAuthority": false,
+          "writeBackAuthority": false,
+          "causalAuthority": false
+        },
+        "customerValueOpportunities": [
+          "prevent missed hires, transfers, terminations and job changes from creating unsafe schedules or access assumptions",
+          "distinguish provider delivery gaps from genuine workforce-master changes",
+          "preserve effective-dated identity needed for skills, cost, scheduling and payroll-readiness decisions",
+          "reduce support effort through exact HMAC, entitlement, replay, cursor and fallback diagnostics"
+        ],
+        "zeroFrictionConnection": [
+          "discover tenant, region, HCM aliases and subscriptions after OAuth",
+          "propose minimum aliases and worker fields while excluding sensitive sections",
+          "pre-fill routes, pagination, retention and recovery windows",
+          "generate mappings from metadata and stop on identity or effective-date ambiguity",
+          "measure manual alias, field and identity mapping removed"
+        ],
+        "productHandoff": "Show decision-ready workforce-master freshness and exceptions: affected worker/change domain, authoritative snapshot time, failed/replayed/reconciled counts and exact failure layer. Do not expose raw events or imply employment, payroll or access approval.",
+        "autonomyHandoff": "Detect missed HCM event windows, inactive subscriptions, HMAC/token rotation, permission or region drift, replay failure, cursor gaps and worker-snapshot mismatch; auto-recover only through bounded refresh, failed-only replay, backoff and read-only fallback, otherwise prepare the safest corrective action.",
+        "evidenceSources": [
+          {"title":"UKG Webhooks User Guide","url":"https://developer.ukg.com/proplatform/docs/ukg-webhooks-user-guide","evidenceLevel":"official-provider-documentation"},
+          {"title":"Welcome to UKG Webhooks","url":"https://developer.ukg.com/proplatform/docs/welcome-to-ukg-webhooks","evidenceLevel":"official-provider-documentation"},
+          {"title":"UKG Webhooks Events Catalog","url":"https://developer.ukg.com/proplatform/docs/ukg-webhooks-events-catalog","evidenceLevel":"official-provider-documentation"},
+          {"title":"Webhooks Premium","url":"https://developer.ukg.com/proplatform/docs/webhooks-premium","evidenceLevel":"official-provider-documentation"},
+          {"title":"UKG Webhooks Premium API","url":"https://developer.ukg.com/proplatform/reference/welcome-to-the-webhooks-api","evidenceLevel":"official-provider-documentation"},
+          {"title":"Obtain OAuth Bearer Tokens","url":"https://developer.ukg.com/proplatform/docs/obtaining-bearer-tokens","evidenceLevel":"official-provider-documentation"},
+          {"title":"Developer Console Quick Start","url":"https://developer.ukg.com/proplatform/docs/developer-console-quick-start","evidenceLevel":"official-provider-documentation"},
+          {"title":"Retrieve All Webhook Events","url":"https://developer.ukg.com/proplatform/reference/retrieve-all-webhook-events","evidenceLevel":"official-provider-documentation"},
+          {"title":"Create Subscription","url":"https://developer.ukg.com/proplatform/reference/create-subscription","evidenceLevel":"official-provider-documentation"},
+          {"title":"Retrieve All Webhook Message Subscriptions","url":"https://developer.ukg.com/proplatform/reference/retrieve-all-webhook-message-subscriptions","evidenceLevel":"official-provider-documentation"},
+          {"title":"Replay Messages by Subscription ID","url":"https://developer.ukg.com/proplatform/reference/replay-messages-by-subscription-id","evidenceLevel":"official-provider-documentation"},
+          {"title":"Retrieve Replay Audit Log by Subscription","url":"https://developer.ukg.com/proplatform/reference/retrieve-message-replay-audit-log-by-subscription-id","evidenceLevel":"official-provider-documentation"},
+          {"title":"Retrieve Replay Audit Entries","url":"https://developer.ukg.com/proplatform/reference/retrieve-replay-log-by-subscription-and-replay-id","evidenceLevel":"official-provider-documentation"}
+        ],
+        "evidenceNote": "Official UKG documentation was reviewed for OAuth machine credentials, global tenant scoping, HMAC subscriptions, HCM event catalogs, regional delivery, missed-event caveats, 14-day retention, failed-message replay, cursor audit and secondary polling. No UKG tenant, customer subscription, OAuth credential, HMAC callback, live HCM worker read, actual replay, denied write, hosted VECTOR proof or production certification is claimed.",
+        "nextBuildAction": "In an authorised UKG Pro HCM non-production tenant with Webhooks Premium, prove OAuth and global-tenant scope, discover HCM aliases and subscriptions, receive HMAC-verified hire/change/transfer/termination events, exercise failed-only replay to terminal audit, reconcile to a complete effective-dated worker snapshot, then test disabled triggers, inactive subscription, HMAC rotation, token expiry, 403/429, duplicate/conflicting delivery, cursor gaps, retention expiry, regional outage, identity collisions and denial of worker, payroll, role and subscription mutations."
+      }
+    }
+  ]
+}
