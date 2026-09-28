@@ -52,7 +52,9 @@
     "canonicalCandidateMustContainRequiredCapabilities": true,
     "productionAuthorityRequiredForProductionFreeze": true,
     "stagingArtifactNeverCountsAsProductionReady": true,
-    "fixtureArtifactNeverCountsAsProductionReady": true
+    "fixtureArtifactNeverCountsAsProductionReady": true,
+    "verifiedOutcomeRegressionBlocksAffectedCapabilityPromotion": true,
+    "learningEvidenceCannotSelfPromoteAuthority": true
   },
   "lanes": [
     {
@@ -145,7 +147,7 @@
     "github-actions-ui"
   ],
   "developmentRule": "Continue coding and proving without idle waits. A pending or broken provider changes only that lane state: simulate ahead, preserve exact candidate identity, continue all independent work, and route/provision equivalent lanes before saturation.",
-  "promotionRule": "Promote to production only when an exact-image PASS is SHA-bound, explicitly production-approved, non-staging, non-fixture, and independent evidence exists from at least two providers; no skipped, stale, weaker, simulated, provider-only, or staging-only success may substitute for required proof.",
+  "promotionRule": "Promote to production only when an exact-image PASS is SHA-bound, explicitly production-approved, non-staging, non-fixture, has no verified outcome-regression blocker for the affected scope, and independent evidence exists from at least two providers; no skipped, stale, weaker, simulated, provider-only, staging-only or self-promoted learning success may substitute for required proof.",
   "orchestration": {
     "contract": "VECTOR_NO_IDLE_WAIT_V1",
     "scope": [
@@ -220,7 +222,8 @@
         "CANONICAL_CAPABILITY_COMPLETENESS",
         "PRODUCTION_AUTHORITY",
         "NON_STAGING_ARTIFACT",
-        "NON_FIXTURE_ARTIFACT"
+        "NON_FIXTURE_ARTIFACT",
+        "VERIFIED_OUTCOME_REGRESSION_ADMISSION"
       ],
       "candidateIdentity": {
         "authoritativeSources": [
@@ -236,6 +239,16 @@
         "stagingOnlyForbidden": true,
         "fixtureOnlyForbidden": true,
         "stagingProofMayContinueWithoutProductionPromotion": true
+      },
+      "outcomeLearningAdmission": {
+        "required": true,
+        "contract": "VECTOR_OUTCOME_RELEASE_ADMISSION_V1",
+        "blockingHttpStatus": 409,
+        "scope": "affected-tenant-and-capability",
+        "regressionBlocksPromotion": true,
+        "unrelatedDevelopmentContinues": true,
+        "unrelatedProofContinues": true,
+        "learningMayNotGrantExecutionAuthority": true
       }
     },
     "triggerRouting": {
