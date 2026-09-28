@@ -1,7 +1,7 @@
 export function validateCandidateIdentity(candidate) {
   const errors = [];
   if (!candidate || typeof candidate !== 'object') return { ok: false, errors: ['CANDIDATE_REQUIRED'] };
-  const required = ['repository', 'ref', 'commitSha', 'projectId', 'environment', 'serviceId', 'deploymentId', 'runtimeSha', 'releaseId', 'publicOrigin', 'provider', 'failureDomainId'];
+  const required = ['repository', 'ref', 'commitSha', 'projectId', 'environment', 'serviceId', 'deploymentId', 'runtimeSha', 'releaseId', 'publicOrigin', 'provider', 'failureDomainId', 'claimBoundary'];
   for (const field of required) {
     if (typeof candidate[field] !== 'string' || candidate[field].trim() === '') errors.push(`MISSING_${field.toUpperCase()}`);
   }
@@ -17,6 +17,7 @@ export function validateCandidateIdentity(candidate) {
     }
   }
   if (candidate.provider === 'railway' && candidate.failureDomainId !== 'railway') errors.push('RAILWAY_FAILURE_DOMAIN_MUST_BE_RAILWAY');
+  if (candidate.claimBoundary && candidate.claimBoundary !== 'customer-proof-staging') errors.push('UNSUPPORTED_CLAIM_BOUNDARY');
   return { ok: errors.length === 0, errors: [...new Set(errors)] };
 }
 
