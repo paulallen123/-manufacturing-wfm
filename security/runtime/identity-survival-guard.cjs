@@ -5,6 +5,7 @@ const { DatabaseSync } = require('node:sqlite');
 
 const DEFAULT_ISSUER = 'wfm-local-auth';
 const DEFAULT_AUDIENCE = 'wfm-api';
+const PROOF_RUNNER_ISSUER = 'wfm-proof-runner';
 const FORBIDDEN_IDENTITY_HEADERS = Object.freeze([
   'x-wfm-tenant',
   'x-wfm-role',
@@ -83,6 +84,14 @@ function createIdentitySurvivalGuard(options = {}) {
       policy_version INTEGER NOT NULL,
       bound_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS proof_runner_sessions(
+      token_hash TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      tenant TEXT NOT NULL,
+      role TEXT NOT NULL,
+      issued_at INTEGER NOT NULL,
+      expires INTEGER NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS identity_guard_events(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       tenant TEXT,
@@ -104,6 +113,7 @@ function createIdentitySurvivalGuard(options = {}) {
     FROM sessions s JOIN users u ON u.email=s.email
     WHERE s.token_hash=? AND s.expires>?`);
   const bindingStmt = db.prepare('SELECT * FROM identity_session_bindings WHERE token_hash=?');
+  const proofRunnerSessionStmt = db.prepare('SELECT token_hash FROM proof_runner_sessions WHERE token_hash=? AND expires>?');
   const bindStmt = db.prepare(`INSERT INTO identity_session_bindings
     (token_hash,tenant,issuer,audience,session_epoch,policy_version,bound_at)
     VALUES(?,?,?,?,?,?,?)`);
@@ -150,21 +160,24 @@ function createIdentitySurvivalGuard(options = {}) {
       return writeJson(res, 401, { error: 'Session expired. Sign in again.' });
     }
 
+    const proofRunnerSession = proofRunnerSessionStmt.get(tokenHash, now);
+    const expectedIssuer = proofRunnerSession ? PROOF_RUNNER_ISSUER : issuer;
+
     ensureControlStmt.run(row.tenant, new Date().toISOString());
     const control = controlStmt.get(row.tenant);
     let binding = bindingStmt.get(tokenHash);
     if (!binding) {
-      bindStmt.run(tokenHash, row.tenant, issuer, audience,
+      bindStmt.run(tokenHash, row.tenant, expectedIssuer, audience,
         Number(control.session_epoch), Number(control.policy_version), new Date().toISOString());
       binding = bindingStmt.get(tokenHash);
       record(row.tenant, tokenHash, 'session-resource-bound', {
-        issuer, audience, sessionEpoch: control.session_epoch, policyVersion: control.policy_version
+        issuer: expectedIssuer, audience, sessionEpoch: control.session_epoch, policyVersion: control.policy_version
       });
     }
 
     const mismatch =
       binding.tenant !== row.tenant ||
-      binding.issuer !== issuer ||
+      binding.issuer !== expectedIssuer ||
       binding.audience !== audience ||
       Number(binding.session_epoch) !== Number(control.session_epoch) ||
       Number(binding.policy_version) !== Number(control.policy_version);
@@ -173,7 +186,7 @@ function createIdentitySurvivalGuard(options = {}) {
       containSession(row, tokenHash, 'session-binding-mismatch-contained', {
         path: requestPath(req),
         tenantMatch: binding.tenant === row.tenant,
-        issuerMatch: binding.issuer === issuer,
+        issuerMatch: binding.issuer === expectedIssuer,
         audienceMatch: binding.audience === audience,
         sessionEpochMatch: Number(binding.session_epoch) === Number(control.session_epoch),
         policyVersionMatch: Number(binding.policy_version) === Number(control.policy_version)
@@ -224,5 +237,6 @@ module.exports = {
   privilegedAction,
   FORBIDDEN_IDENTITY_HEADERS,
   DEFAULT_ISSUER,
-  DEFAULT_AUDIENCE
+  DEFAULT_AUDIENCE,
+  PROOF_RUNNER_ISSUER
 };
