@@ -12,6 +12,7 @@ const { createRuntimeIdentity } = require('./runtime-identity.cjs');
 const { serveRetiredPresentation } = require('./retired-presentation.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
+const { createOutcomeIntelligenceService } = require('/app/learning-runtime/outcome-intelligence-service.cjs');
 const { createTrainingDeliveryService } = require('/app/learning-runtime/training-delivery-service.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
@@ -48,6 +49,8 @@ let integrationHub = null;
 let integrationHubInitError = null;
 let learningEngine = null;
 let learningEngineInitError = null;
+let outcomeIntelligenceService = null;
+let outcomeIntelligenceServiceInitError = null;
 let trainingDeliveryService = null;
 let trainingDeliveryServiceInitError = null;
 let implementationEngine = null;
@@ -86,6 +89,10 @@ function integrationPath(req) {
 
 function learningPath(req) {
   return requestPath(req).startsWith('/api/learning/adaptive');
+}
+
+function outcomeIntelligencePath(req) {
+  return requestPath(req).startsWith('/api/learning/outcomes');
 }
 
 function trainingPath(req) {
@@ -351,6 +358,14 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!outcomeIntelligenceService && !outcomeIntelligenceServiceInitError && process.env.WFM_DB) {
+    try {
+      outcomeIntelligenceService = createOutcomeIntelligenceService({ dbPath: process.env.WFM_DB });
+    } catch (error) {
+      outcomeIntelligenceServiceInitError = error;
+    }
+  }
+
   if (!trainingDeliveryService && !trainingDeliveryServiceInitError && process.env.WFM_DB) {
     try { trainingDeliveryService = createTrainingDeliveryService({ dbPath: process.env.WFM_DB }); }
     catch (error) { trainingDeliveryServiceInitError = error; }
@@ -393,7 +408,7 @@ http.createServer = function guardedCreateServer(listener) {
   }
 
   if (!autopilotExecutionEngine && !autopilotExecutionEngineInitError && process.env.WFM_DB) {
-    try { autopilotExecutionEngine=createAutopilotExecutionEngine({dbPath:process.env.WFM_DB,lifecycleAdapter:lifecycleGuard,publishEvent:realtimeEventService&&!realtimeEventServiceInitError?event=>realtimeEventService.publish(event):null}); } catch(error){ autopilotExecutionEngineInitError=error; }
+    try { autopilotExecutionEngine=createAutopilotExecutionEngine({dbPath:process.env.WFM_DB,lifecycleAdapter:lifecycleGuard,outcomeLearningAdapter:outcomeIntelligenceService&&!outcomeIntelligenceServiceInitError?outcomeIntelligenceService:null,publishEvent:realtimeEventService&&!realtimeEventServiceInitError?event=>realtimeEventService.publish(event):null}); } catch(error){ autopilotExecutionEngineInitError=error; }
   }
 
   if (!schedulingIntelligenceService && !schedulingIntelligenceServiceInitError && process.env.WFM_DB) {
@@ -473,6 +488,10 @@ http.createServer = function guardedCreateServer(listener) {
 
     if (learningPath(req)) {
       if (await routeOverlay(learningEngine, learningEngineInitError, res, 'Adaptive learning', req)) return;
+    }
+
+    if (outcomeIntelligencePath(req)) {
+      if (await routeOverlay(outcomeIntelligenceService, outcomeIntelligenceServiceInitError, res, 'Outcome intelligence', req)) return;
     }
 
     if (trainingPath(req)) {
