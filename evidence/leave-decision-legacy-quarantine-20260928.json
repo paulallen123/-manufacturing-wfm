@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-28T12:36:00Z",
+  "status": "BUILT",
+  "boundary": "local synthetic exact sealed runtime; not hosted, provider, production or customer proof",
+  "candidate": {
+    "repository": "paulallen123/-manufacturing-wfm",
+    "pullRequest": 225,
+    "parentHead": "f7823a1bd19adde04eb47b7e08207443b8c03e91",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "node": "v22.23.2"
+  },
+  "risk": "The immutable-evidence validator skipped every pre-seal leave-decision command row. After upgrading an existing database, an approved or declined legacy request therefore remained authoritative even though no immutable evidence bound its decision, reviewer, timestamp, reason or digest.",
+  "failFirst": {
+    "test": "upgrade quarantines a decided leave request that predates immutable evidence",
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "observedHttpStatus": 200,
+    "legacyImmutableDetail": [
+      "version",
+      "resultId"
+    ]
+  },
+  "repair": {
+    "policy": "Fail closed instead of manufacturing trust from mutable historical state.",
+    "requirements": [
+      "Every approved or declined request has exactly one version-1 append-only seal.",
+      "The generic result ID and sealed request ID agree.",
+      "Duplicate immutable seals are rejected.",
+      "Every sealed request exists and its exact decision fields and canonical digest agree."
+    ],
+    "failureStatus": 503,
+    "operatorAction": "Reviewed reconciliation or quarantine is required before legacy decisions can return to service."
+  },
+  "freshVerification": {
+    "tests": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "legacyUpgradeHttpStatus": 503,
+    "untamperedSealedRestartHttpStatus": 200,
+    "tamperedSealedRestartHttpStatus": 503
+  },
+  "sourceSha256": {
+    "scripts/harden-leave-audit-linkage.mjs": "9db320870584970ba35fbc30c684b26a820fbfacf7e4e9ce22f2fcf9f4d601fc",
+    "tests/leave-decision-audit-correlation.adversarial.test.cjs": "2eb6ec7e3c10543ba3569481c499101c13a81edc421fa9d7573f9a2b084f7d53",
+    "Dockerfile": "fdfb7bf51263f7a7d2a7c9a9bd3dc996862db37b47933c70a7004dff590aa1b0"
+  },
+  "limitations": [
+    "This intentionally provides no automatic migration: copying mutable legacy fields into a new seal would falsely upgrade unverified history.",
+    "A separately authorised reconciliation workflow and evidence source are required for any real legacy records.",
+    "Full Docker and exact hosted execution did not run in this workspace.",
+    "No customer, production, provider, payroll, deployment, DNS, credential or infrastructure mutation occurred."
+  ]
+}

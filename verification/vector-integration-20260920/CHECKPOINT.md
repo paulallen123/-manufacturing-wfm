@@ -202,3 +202,14 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Dependencies:** exact hosted browser proof must confirm the serving SHA, rendered locale, semantic date, screen-reader output, refresh and fresh-login state.
 - **Next action:** extend the same validated semantic calendar-date primitive to the weekly period selector only after browser proof confirms no regression in current leave journeys.
 - **Active-work check:** PR #225 advanced through compatible leave-audit evidence commit `f7823a1bd19adde04eb47b7e08207443b8c03e91`; it did not touch the owned workflow files. No deployment or migration was interrupted.
+
+
+## 2026-09-28 — legacy leave-decision quarantine
+
+- **Reproduced upgrade false green:** a decline was created on the unmodified sealed runtime, producing the historical append-only shape `{version,resultId}`. After applying the immutable-evidence hardener and restarting the same SQLite database, VECTOR still returned HTTP 200 and treated the unsealed decision as authoritative. Fail-first result: 0/1 passed, 1/1 failed, 0 skipped.
+- **BUILT repair:** reads now require every approved or declined leave request to have exactly one version-1 append-only seal. Legacy rows, missing seals, mismatched generic/sealed IDs and duplicate seals fail closed with HTTP 503. There is intentionally no automatic backfill because copying mutable historical fields into a new seal would manufacture trust.
+- **Fresh focused verification:** 3/3 passed, 0 failed, 0 skipped on Node v22.23.2. Untampered sealed decision restart returned HTTP 200; jointly rewritten sealed state returned 503; pre-seal database upgrade returned 503. The existing Docker proof-stage command executes the expanded real server/SQLite test file.
+- **Boundary:** **BUILT** in the local synthetic exact-runtime lane, not hosted **PROVEN**. Any real legacy record requires separately authorised reviewed reconciliation or explicit quarantine using independent evidence before promotion.
+- **Release:** silent acceptance of legacy leave decisions is closed locally. Full Docker execution, an authorised legacy-data inventory/reconciliation, exact hosted identity, current-build controlled restart and the complete approved browser journey remain **BLOCKED**.
+- **Evidence:** `evidence/leave-decision-legacy-quarantine-20260928.json`.
+- **Safety:** no live deployment, customer/payroll/provider mutation, restart, DNS, credential or infrastructure action occurred.

@@ -202,3 +202,71 @@ test('restart refuses jointly rewritten leave state and domain audit without imm
     'service accepted a rewritten leave decision and matching mutable domain audit without immutable decision correlation',
   );
 });
+
+test('upgrade quarantines a decided leave request that predates immutable evidence', async t => {
+  assert.equal(createHash('sha256').update(fs.readFileSync(artifact)).digest('hex'), expectedArtifactSha256);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'leave-audit-legacy-upgrade-'));
+  const runtime = path.join(root, 'runtime');
+  const database = path.join(root, 'state.sqlite');
+  fs.mkdirSync(runtime);
+  execFileSync('tar', ['--no-same-owner', '-xzf', artifact, '-C', runtime]);
+  const port = await freePort();
+  let running;
+  t.after(async () => {
+    await stop(running?.child);
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  running = await start(runtime, database, port);
+  const employeeCookie = await login(running.origin, 'maya@northstar.example');
+  const managerCookie = await login(running.origin, 'manager@northstar.example');
+  const employeeBootstrap = await request(running.origin, '/api/bootstrap', { cookie: employeeCookie });
+  const personal = await request(running.origin, '/api/personal', { cookie: employeeCookie });
+  assert.equal(employeeBootstrap.status, 200, employeeBootstrap.text);
+  assert.equal(personal.status, 200, personal.text);
+  const requestedDates = new Set(employeeBootstrap.json.state.requests.map(item => item.date));
+  const shift = personal.json.shifts.find(item => item.start && !requestedDates.has(item.start.slice(0, 10)));
+  assert.ok(shift, 'a synthetic unrequested shift is required');
+
+  const submitted = await command(
+    running.origin,
+    employeeCookie,
+    employeeBootstrap.json.state.version,
+    'leave-request',
+    { date: shift.start.slice(0, 10), hours: 7.5 },
+  );
+  assert.equal(submitted.status, 200, submitted.text);
+  const requestId = submitted.json.result.id;
+
+  const managerBootstrap = await request(running.origin, '/api/bootstrap', { cookie: managerCookie });
+  assert.equal(managerBootstrap.status, 200, managerBootstrap.text);
+  const declined = await command(
+    running.origin,
+    managerCookie,
+    managerBootstrap.json.state.version,
+    'leave-decision',
+    { id: requestId, decision: 'declined', reviewed: true, reason: 'Legacy synthetic review evidence.' },
+  );
+  assert.equal(declined.status, 200, declined.text);
+
+  await stop(running.child);
+  const legacyDb = new DatabaseSync(database);
+  const legacyAudit = legacyDb.prepare("SELECT detail FROM audit_events WHERE tenant=? AND action='leave-decision' ORDER BY id DESC LIMIT 1").get('northstar-demo');
+  legacyDb.close();
+  assert.deepEqual(JSON.parse(legacyAudit.detail), { version: declined.json.version, resultId: requestId });
+
+  execFileSync(process.execPath, [hardener, path.join(runtime, 'public')]);
+  running = await start(runtime, database, port);
+  const afterUpgrade = await request(running.origin, '/api/bootstrap', { cookie: managerCookie });
+  console.log(JSON.stringify({
+    afterUpgradeStatus: afterUpgrade.status,
+    requestId,
+    legacyImmutableDetail: JSON.parse(legacyAudit.detail),
+    exactArtifactSha256: expectedArtifactSha256,
+  }, null, 2));
+  assert.equal(
+    afterUpgrade.status,
+    503,
+    'an unsealed historical decision remained authoritative after the immutable-evidence upgrade',
+  );
+});
