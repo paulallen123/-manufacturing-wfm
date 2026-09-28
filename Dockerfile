@@ -279,6 +279,7 @@ COPY operations/runtime/realtime-event-service.cjs /tmp/wfm-tests/operations/run
 COPY operations/runtime/realtime-event-service.test.cjs /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs
 COPY operations/runtime/autopilot-execution-engine.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.cjs
 COPY operations/runtime/autopilot-execution-engine.test.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs
+COPY operations/runtime/outcome-learning-closed-loop.integration.test.cjs /tmp/wfm-tests/operations/runtime/outcome-learning-closed-loop.integration.test.cjs
 COPY operations/runtime/t9-customer-guardian.cjs /tmp/wfm-tests/operations/runtime/t9-customer-guardian.cjs
 COPY operations/runtime/t9-customer-guardian.test.cjs /tmp/wfm-tests/operations/runtime/t9-customer-guardian.test.cjs
 COPY reporting/runtime/vector-reporting-service.cjs /tmp/wfm-tests/reporting/runtime/vector-reporting-service.cjs
@@ -325,6 +326,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/decision-outcome-proof.test.cjs \
       /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs \
       /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs \
+      /tmp/wfm-tests/operations/runtime/outcome-learning-closed-loop.integration.test.cjs \
       /tmp/wfm-tests/reporting/runtime/vector-reporting-service.test.cjs \
  && rm -rf /tmp/wfm-tests
 
