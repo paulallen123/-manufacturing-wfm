@@ -5,6 +5,7 @@ import {
   candidateToken,
   checkNoIdleInvariant,
   createInitialState,
+  validateCandidateIdentity,
 } from '../lib/engine.js';
 
 const candidate = {
@@ -17,6 +18,7 @@ const candidate = {
   environment: 'staging-proof',
   provider: 'railway',
   failureDomainId: 'railway-runtime',
+  claimBoundary: 'customer-proof-staging',
 };
 
 function bootstrap() {
@@ -28,7 +30,22 @@ function bootstrap() {
   });
 }
 
-function receiptEvent({ eventId, gateId, sequence, result = 'PASS', applicationState = 'PASS', proofLane = { laneId: 'github-actions', provider: 'github' }, candidateOverride = candidate }) {
+function activeTaskBinding(state, gateId) {
+  for (const [idempotencyKey, task] of Object.entries(state.tasks)) {
+    if (task.gateId === gateId && ['QUEUED', 'RUNNING'].includes(task.status)) {
+      return { idempotencyKey, task };
+    }
+  }
+  return { idempotencyKey: null, task: null };
+}
+
+function receiptEvent(state, { eventId, gateId, sequence, result = 'PASS', applicationState = 'PASS', proofLane = null, candidateOverride = candidate }) {
+  const { idempotencyKey, task } = activeTaskBinding(state, gateId);
+  const boundLane = task ? {
+    laneId: task.laneId,
+    provider: task.provider,
+    failureDomainId: task.failureDomainId,
+  } : {};
   return {
     eventId,
     type: 'PROOF_RECEIPT',
@@ -41,7 +58,9 @@ function receiptEvent({ eventId, gateId, sequence, result = 'PASS', applicationS
       applicationState,
       candidate: candidateOverride,
       evidenceDigest: `digest-${eventId}`,
-      proofLane,
+      taskId: task?.taskId,
+      idempotencyKey,
+      proofLane: { ...boundLane, ...(proofLane || {}) },
     },
   };
 }
@@ -55,14 +74,14 @@ test('bootstrap immediately queues admissible root proof and does not idle', () 
 
 test('terminal PASS fans out newly runnable work immediately', () => {
   let { state } = bootstrap();
-  const result = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-freeze-pass', gateId: 'pre_freeze', sequence: 1 }));
+  const result = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-freeze-pass', gateId: 'pre_freeze', sequence: 1 }));
   assert.equal(result.state.gates.pre_freeze.state, 'PASS');
   assert.ok(result.emittedTasks.some((task) => task.gateId === 'hosted_runtime'));
 });
 
 test('provider SUCCESS metadata cannot satisfy an application proof gate', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass', gateId: 'pre_freeze', sequence: 1 })).state;
   const result = applyControlEvent(state, {
     eventId: 'evt-railway-success',
     type: 'PROVIDER_STATUS',
@@ -75,8 +94,8 @@ test('provider SUCCESS metadata cannot satisfy an application proof gate', () =>
 
 test('false-green receipt is rejected when terminal application PASS is absent', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass2', gateId: 'pre_freeze', sequence: 1 })).state;
-  const result = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass2', gateId: 'pre_freeze', sequence: 1 })).state;
+  const result = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-false-green',
     gateId: 'hosted_runtime',
     sequence: 1,
@@ -85,13 +104,17 @@ test('false-green receipt is rejected when terminal application PASS is absent',
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   }));
   assert.notEqual(result.state.gates.hosted_runtime.state, 'PASS');
+  assert.equal(result.state.gates.hosted_runtime.latestReceiptSequence, -1);
   assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'FALSE_GREEN_PROVIDER_STATUS'));
+  assert.ok(Object.values(result.state.tasks).some(
+    (task) => task.gateId === 'hosted_runtime' && ['QUEUED', 'RUNNING'].includes(task.status),
+  ));
 });
 
 test('stale receipt cannot overwrite newer accepted progress', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-new', gateId: 'pre_freeze', sequence: 2 })).state;
-  const result = applyControlEvent(state, receiptEvent({ eventId: 'evt-old', gateId: 'pre_freeze', sequence: 1, result: 'FAIL' }));
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-new', gateId: 'pre_freeze', sequence: 2 })).state;
+  const result = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-old', gateId: 'pre_freeze', sequence: 1, result: 'FAIL' }));
   assert.equal(result.state.gates.pre_freeze.state, 'PASS');
   assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'STALE_RECEIPT'));
 });
@@ -99,7 +122,7 @@ test('stale receipt cannot overwrite newer accepted progress', () => {
 test('exact candidate mismatch fails closed before a proof can pass', () => {
   const { state } = bootstrap();
   const wrong = { ...candidate, commitSha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' };
-  const result = applyControlEvent(state, receiptEvent({ eventId: 'evt-wrong-sha', gateId: 'pre_freeze', sequence: 1, candidateOverride: wrong }));
+  const result = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-wrong-sha', gateId: 'pre_freeze', sequence: 1, candidateOverride: wrong }));
   assert.equal(result.state.gates.pre_freeze.state, 'UNPROVEN');
   assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'EXACT_CANDIDATE_MISMATCH'));
 });
@@ -133,21 +156,21 @@ test('provider degradation reroutes to a distinct healthy admitted lane when con
 
 test('product FAIL launches permanent repair/regression work while other independent work remains active', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass3', gateId: 'pre_freeze', sequence: 1 })).state;
-  state = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass3', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-hosted-pass',
     gateId: 'hosted_runtime',
     sequence: 1,
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   })).state;
-  state = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-source-pass',
     gateId: 'exact_source_binding',
     sequence: 1,
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   })).state;
 
-  const result = applyControlEvent(state, receiptEvent({
+  const result = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-golden-fail',
     gateId: 'golden_journey',
     sequence: 1,
@@ -180,7 +203,7 @@ test('open gates plus empty work with no explicit block is an orchestration brea
 
 test('Railway outage blocks the dependent DAG explicitly instead of creating unexplained idle', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass4', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass4', gateId: 'pre_freeze', sequence: 1 })).state;
   const result = applyControlEvent(state, {
     eventId: 'evt-railway-down',
     type: 'PROVIDER_DEGRADED',
@@ -198,7 +221,7 @@ test('Railway outage blocks the dependent DAG explicitly instead of creating une
 
 test('dependency blocks reopen only after the upstream gate is actually proven', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass5', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass5', gateId: 'pre_freeze', sequence: 1 })).state;
   state = applyControlEvent(state, {
     eventId: 'evt-railway-down2',
     type: 'PROVIDER_DEGRADED',
@@ -216,7 +239,7 @@ test('dependency blocks reopen only after the upstream gate is actually proven',
   assert.equal(state.gates.hosted_runtime.state, 'UNPROVEN');
   assert.equal(state.gates.exact_source_binding.state, 'BLOCKED');
 
-  const result = applyControlEvent(state, receiptEvent({
+  const result = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-hosted-pass-after-recovery',
     gateId: 'hosted_runtime',
     sequence: 1,
@@ -228,7 +251,7 @@ test('dependency blocks reopen only after the upstream gate is actually proven',
 
 test('Railway SKIPPED remains provider metadata and never earns a proof PASS', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass6', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass6', gateId: 'pre_freeze', sequence: 1 })).state;
   const result = applyControlEvent(state, {
     eventId: 'evt-railway-skipped',
     type: 'PROVIDER_STATUS',
@@ -255,8 +278,8 @@ test('durable state survives JSON serialization without losing candidate or task
 
 test('receipt from a lane not admitted for the gate is rejected', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass7', gateId: 'pre_freeze', sequence: 1 })).state;
-  const result = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass7', gateId: 'pre_freeze', sequence: 1 })).state;
+  const result = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-hosted-unadmitted',
     gateId: 'hosted_runtime',
     sequence: 1,
@@ -270,12 +293,20 @@ test('downstream PASS receipt cannot bypass unproven dependencies', () => {
   const { state } = bootstrap();
   state.tasks.fake = {
     taskId: 'task-forged-golden',
+    candidateToken: state.candidateToken,
+    candidateSha: state.candidate.commitSha,
     gateId: 'golden_journey',
+    taskKind: 'proof',
+    targetDeploymentId: state.candidate.deploymentId,
+    targetRuntimeSha: state.candidate.runtimeSha,
+    failureDomainId: 'railway-proof-workers',
     laneId: 'railway-proof-workers',
     provider: 'railway',
+    idempotencyKey: 'fake',
+    attempt: 1,
     status: 'QUEUED',
   };
-  const result = applyControlEvent(state, receiptEvent({
+  const result = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-golden-dependency-bypass',
     gateId: 'golden_journey',
     sequence: 1,
@@ -285,41 +316,45 @@ test('downstream PASS receipt cannot bypass unproven dependencies', () => {
   assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'DEPENDENCIES_NOT_PROVEN'));
 });
 
-test('shadow mode cannot grant production authority even with a terminal-looking PASS', () => {
-  let state = createInitialState(candidate);
+test('production claim boundary is structurally rejected by the customer-proof control plane', () => {
+  const production = { ...candidate, claimBoundary: 'production' };
+  assert.equal(validateCandidateIdentity(production).reason, 'UNSUPPORTED_CLAIM_BOUNDARY');
+  assert.throws(() => createInitialState(production), /UNSUPPORTED_CLAIM_BOUNDARY/);
+});
+
+test('customer-proof authority is derived only after every required evidence gate passes', () => {
+  const state = createInitialState(candidate);
   for (const [gateId, gate] of Object.entries(state.gates)) {
-    if (gateId !== 'production_authority') gate.state = 'PASS';
+    if (gateId === 'customer_proof_authority') continue;
+    gate.state = 'PASS';
+    gate.lastEvidenceDigest = `evidence-${gateId}`;
   }
-  state.tasks.authority = {
-    taskId: 'task-authority',
-    gateId: 'production_authority',
-    laneId: 'github-actions',
-    provider: 'github',
-    status: 'QUEUED',
-  };
-  const result = applyControlEvent(state, receiptEvent({
-    eventId: 'evt-shadow-authority',
-    gateId: 'production_authority',
-    sequence: 1,
-    proofLane: { laneId: 'github-actions', provider: 'github' },
-  }));
-  assert.notEqual(result.state.gates.production_authority.state, 'PASS');
-  assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'RELEASE_AUTHORITY_DISABLED_IN_SHADOW'));
+  const result = applyControlEvent(state, {
+    eventId: 'evt-derive-customer-proof-authority',
+    type: 'PROVIDER_STATUS',
+    candidateToken: candidateToken(candidate),
+    provider: 'railway',
+    status: 'SUCCESS',
+  });
+  assert.equal(result.state.gates.customer_proof_authority.state, 'PASS');
+  assert.equal(result.state.gates.customer_proof_authority.latestReceiptId, 'derived:policy');
+  assert.ok(result.state.audit.some((item) => item.type === 'DERIVED_AUTHORITY_PASS'));
+  assert.equal(result.emittedTasks.length, 0);
 });
 
 
 test('failed gate cannot be reopened without its completed repair regression evidence', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass8', gateId: 'pre_freeze', sequence: 1 })).state;
-  state = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass8', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-hosted-pass2', gateId: 'hosted_runtime', sequence: 1,
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   })).state;
-  state = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-source-pass2', gateId: 'exact_source_binding', sequence: 1,
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   })).state;
-  state = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-golden-fail2', gateId: 'golden_journey', sequence: 1,
     result: 'FAIL', applicationState: 'FAIL',
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
@@ -338,16 +373,16 @@ test('failed gate cannot be reopened without its completed repair regression evi
 
 test('valid repair regression completion reopens the failed gate and immediately schedules fresh proof', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass9', gateId: 'pre_freeze', sequence: 1 })).state;
-  state = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass9', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-hosted-pass3', gateId: 'hosted_runtime', sequence: 1,
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   })).state;
-  state = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-source-pass3', gateId: 'exact_source_binding', sequence: 1,
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
   })).state;
-  const failed = applyControlEvent(state, receiptEvent({
+  const failed = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-golden-fail3', gateId: 'golden_journey', sequence: 1,
     result: 'FAIL', applicationState: 'FAIL',
     proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
@@ -418,8 +453,8 @@ test('provider state changes without monotonic sequence fail closed', () => {
 
 test('failure-domain independence stays blocked while the only extra verifier is disabled', () => {
   let { state } = bootstrap();
-  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass-fd', gateId: 'pre_freeze', sequence: 1 })).state;
-  const result = applyControlEvent(state, receiptEvent({
+  state = applyControlEvent(state, receiptEvent(state, { eventId: 'evt-pre-pass-fd', gateId: 'pre_freeze', sequence: 1 })).state;
+  const result = applyControlEvent(state, receiptEvent(state, {
     eventId: 'evt-hosted-pass-fd',
     gateId: 'hosted_runtime',
     sequence: 1,
@@ -451,6 +486,8 @@ test('full shadow DAG drains all admissible work without unexplained idle and st
         applicationState: 'PASS',
         candidate,
         evidenceDigest: `digest-sim-${task.gateId}-${sequence}`,
+        taskId: task.taskId,
+        idempotencyKey: task.idempotencyKey,
         proofLane: {
           laneId: task.laneId,
           provider: task.provider,
@@ -465,7 +502,7 @@ test('full shadow DAG drains all admissible work without unexplained idle and st
   assert.ok(safety < 100, 'shadow DAG did not converge');
   assert.equal(Object.values(state.tasks).some((task) => ['QUEUED', 'RUNNING'].includes(task.status)), false);
   assert.equal(state.gates.failure_domain_independence.state, 'BLOCKED');
-  assert.equal(state.gates.production_authority.state, 'BLOCKED');
+  assert.equal(state.gates.customer_proof_authority.state, 'BLOCKED');
   assert.equal(checkNoIdleInvariant(state).ok, true);
   const unexpected = Object.values(state.gates).filter(
     (gate) => gate.state !== 'PASS' && !gate.blockingReason,
