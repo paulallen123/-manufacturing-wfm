@@ -1,0 +1,3 @@
+VECTOR_OUTCOME_LEARNING_RUNTIME_CHECKPOINT_V1
+base=486606c4269bc8f1a2f24056fec22a6d6ffc7aad
+purpose=isolated outcome-learning runtime and Improve proof
