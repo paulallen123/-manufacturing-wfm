@@ -66,3 +66,12 @@ export const TERMINAL_TASK_STATES = new Set(['PASS', 'FAIL', 'BLOCKED', 'PROVIDE
 export function getGateDefinition(gateId) {
   return GATE_DEFINITIONS.find((gate) => gate.id === gateId) ?? null;
 }
+
+
+export function uniqueFailureDomainIds(laneIds) {
+  return [...new Set(
+    laneIds
+      .map((laneId) => LANE_DEFINITIONS[laneId]?.failureDomainId)
+      .filter(Boolean),
+  )];
+}
