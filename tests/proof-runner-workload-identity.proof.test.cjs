@@ -286,3 +286,66 @@ test('an existing proof-runner session contracts to reduced server authority aft
   });
   db.close();
 });
+
+test('rotating a proof-runner key revokes sessions issued by the previous key', async t => {
+  assert.equal(createHash('sha256').update(fs.readFileSync(artifact)).digest('hex'), expectedArtifactSha256);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-proof-runner-rotate-'));
+  const runtime = path.join(root, 'runtime');
+  const database = path.join(root, 'state.sqlite');
+  fs.mkdirSync(runtime);
+  execFileSync('tar', ['--no-same-owner', '-xzf', artifact, '-C', runtime]);
+  for (const overlay of overlays) if (fs.existsSync(overlay)) execFileSync(process.execPath, [overlay, path.join(runtime, 'public')]);
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  const oldKey = generateKeyPairSync('ed25519');
+  const newKey = generateKeyPairSync('ed25519');
+  let running = await start(runtime, database, await freePort(), oldKey.publicKey, true, {
+    maxSessionSeconds: 120,
+    actionBudget: 3,
+    maxRequestsPerSecond: 3,
+  });
+  t.after(() => stop(running.child));
+
+  const challenge = await request(running.origin, '/api/proof-runner/challenge', {
+    method: 'POST', body: { kid: 'runner-local-1' },
+  });
+  assert.equal(challenge.status, 200, challenge.text);
+  const now = Date.now();
+  const assertion = {
+    kid: 'runner-local-1',
+    challengeId: challenge.json.challengeId,
+    nonce: challenge.json.nonce,
+    audience: running.origin,
+    issuedAt: now,
+    expiresAt: now + 20_000,
+  };
+  const exchanged = await request(running.origin, '/api/proof-runner/session', {
+    method: 'POST',
+    body: { assertion, signature: sign(null, canonical(assertion), oldKey.privateKey).toString('base64url') },
+  });
+  assert.equal(exchanged.status, 200, exchanged.text);
+  const cookie = exchanged.response.headers.getSetCookie()[0].split(';')[0];
+  const tokenHash = createHash('sha256').update(cookie.slice('wfm_session='.length)).digest('hex');
+
+  await stop(running.child);
+  running = await start(runtime, database, await freePort(), newKey.publicKey, true, {
+    maxSessionSeconds: 120,
+    actionBudget: 3,
+    maxRequestsPerSecond: 3,
+  });
+  const firstAttempt = await request(running.origin, '/api/bootstrap', { cookie });
+  assert.equal(firstAttempt.status, 401, firstAttempt.text);
+  const secondAttempt = await request(running.origin, '/api/bootstrap', { cookie });
+  assert.equal(secondAttempt.status, 401, secondAttempt.text);
+
+  const db = new DatabaseSync(database, { readOnly: true });
+  const session = db.prepare('SELECT proof_credential_revoked_at FROM sessions WHERE token_hash=?').get(tokenHash);
+  assert.ok(session.proof_credential_revoked_at >= now);
+  const revocations = db.prepare("SELECT detail FROM audit_events WHERE action='proof-runner-credential-revoked'").all();
+  assert.equal(revocations.length, 1);
+  assert.deepEqual(JSON.parse(revocations[0].detail), {
+    sessionRef: tokenHash.slice(0, 24),
+    runnerId: 'runner-local-1',
+  });
+  db.close();
+});
