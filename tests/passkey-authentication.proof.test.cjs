@@ -9,6 +9,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const artifact = path.resolve(process.env.WFM_SEALED_RUNTIME_ARTIFACT || 'sealed-runtime-4bd3.tar.gz');
+const leaveHardener = path.resolve(process.env.WFM_LEAVE_AUDIT_HARDENER || 'scripts/harden-leave-audit-linkage.mjs');
 const hardener = path.resolve(process.env.WFM_PASSKEY_HARDENER || 'scripts/harden-passkey-auth.mjs');
 const expectedArtifactSha256 = 'dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da';
 const password = 'Factory-local-demo-2026!';
@@ -53,6 +54,7 @@ function runtimeFixture(t) {
   const database = path.join(root, 'state.sqlite');
   fs.mkdirSync(runtime);
   execFileSync('tar', ['--no-same-owner', '-xzf', artifact, '-C', runtime]);
+  if (fs.existsSync(leaveHardener)) execFileSync(process.execPath, [leaveHardener, path.join(runtime, 'public')]);
   if (fs.existsSync(hardener)) execFileSync(process.execPath, [hardener, path.join(runtime, 'public')]);
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   return { root, runtime, database };
