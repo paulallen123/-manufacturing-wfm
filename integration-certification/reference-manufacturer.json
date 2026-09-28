@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "syntheticOnly": true,
+  "organisation": {
+    "id": "vector-reference-mfg",
+    "name": "Vector Reference Manufacturing Ltd",
+    "country": "GB",
+    "timezone": "Europe/London",
+    "entities": [
+      {
+        "id": "vrm-uk",
+        "name": "VRM UK Ltd",
+        "country": "GB"
+      },
+      {
+        "id": "vrm-de",
+        "name": "VRM Deutschland GmbH",
+        "country": "DE"
+      }
+    ],
+    "sites": [
+      {
+        "id": "tamworth-01",
+        "name": "Midlands Assembly",
+        "country": "GB",
+        "lines": [
+          "assembly-a",
+          "assembly-b"
+        ]
+      },
+      {
+        "id": "stuttgart-01",
+        "name": "Stuttgart Components",
+        "country": "DE",
+        "lines": [
+          "components-a"
+        ]
+      }
+    ]
+  },
+  "workforce": [
+    {
+      "id": "wrk-0001",
+      "role": "operator",
+      "site": "tamworth-01",
+      "skills": [
+        "assembly-a"
+      ],
+      "contractHours": 40
+    },
+    {
+      "id": "wrk-0002",
+      "role": "team-leader",
+      "site": "tamworth-01",
+      "skills": [
+        "assembly-a",
+        "first-aid"
+      ],
+      "contractHours": 40
+    },
+    {
+      "id": "wrk-0003",
+      "role": "maintenance",
+      "site": "stuttgart-01",
+      "skills": [
+        "electrical",
+        "mechanical"
+      ],
+      "contractHours": 38
+    }
+  ],
+  "scenarios": [
+    "new-starter-import",
+    "skill-expiry",
+    "planned-shift-publication",
+    "absence-and-replacement",
+    "overtime-export",
+    "payroll-run-export",
+    "provider-timeout-and-retry",
+    "duplicate-event-idempotency",
+    "credential-expiry-and-reconnect",
+    "schema-drift-detection",
+    "write-then-independent-readback"
+  ],
+  "evidenceRules": {
+    "pii": "No real people, contact details, bank details, tax identifiers or customer data.",
+    "providerData": "Persist only non-secret identifiers and cryptographic digests in evidence.",
+    "releaseAuthority": false
+  }
+}
