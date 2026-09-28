@@ -247,3 +247,58 @@ test('durable state survives JSON serialization without losing candidate or task
   assert.equal(duplicate.state.candidateToken, candidateToken(candidate));
   assert.equal(Object.keys(duplicate.state.tasks).length, Object.keys(initial.state.tasks).length);
 });
+
+
+test('receipt from a lane not admitted for the gate is rejected', () => {
+  let { state } = bootstrap();
+  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass7', gateId: 'pre_freeze', sequence: 1 })).state;
+  const result = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-hosted-unadmitted',
+    gateId: 'hosted_runtime',
+    sequence: 1,
+    proofLane: { laneId: 'github-actions', provider: 'github' },
+  }));
+  assert.notEqual(result.state.gates.hosted_runtime.state, 'PASS');
+  assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'UNADMITTED_PROOF_LANE'));
+});
+
+test('downstream PASS receipt cannot bypass unproven dependencies', () => {
+  const { state } = bootstrap();
+  state.tasks.fake = {
+    taskId: 'task-forged-golden',
+    gateId: 'golden_journey',
+    laneId: 'railway-proof-workers',
+    provider: 'railway',
+    status: 'QUEUED',
+  };
+  const result = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-golden-dependency-bypass',
+    gateId: 'golden_journey',
+    sequence: 1,
+    proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
+  }));
+  assert.notEqual(result.state.gates.golden_journey.state, 'PASS');
+  assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'DEPENDENCIES_NOT_PROVEN'));
+});
+
+test('shadow mode cannot grant production authority even with a terminal-looking PASS', () => {
+  let state = createInitialState(candidate);
+  for (const [gateId, gate] of Object.entries(state.gates)) {
+    if (gateId !== 'production_authority') gate.state = 'PASS';
+  }
+  state.tasks.authority = {
+    taskId: 'task-authority',
+    gateId: 'production_authority',
+    laneId: 'github-actions',
+    provider: 'github',
+    status: 'QUEUED',
+  };
+  const result = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-shadow-authority',
+    gateId: 'production_authority',
+    sequence: 1,
+    proofLane: { laneId: 'github-actions', provider: 'github' },
+  }));
+  assert.notEqual(result.state.gates.production_authority.state, 'PASS');
+  assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'RELEASE_AUTHORITY_DISABLED_IN_SHADOW'));
+});
