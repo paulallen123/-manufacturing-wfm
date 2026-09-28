@@ -15,7 +15,7 @@ export const GATE_DEFINITIONS = Object.freeze([
   { id: 'northstar_assault', deps: ['exact_source_binding', 'security'], lanes: ['northstar-railway'] },
   { id: 'failure_domain_independence', deps: ['hosted_runtime'], lanes: ['non-railway-verifier'] },
   {
-    id: 'production_authority',
+    id: 'customer_proof_authority',
     deps: [
       'golden_journey',
       'autonomous_implementation',
@@ -30,7 +30,9 @@ export const GATE_DEFINITIONS = Object.freeze([
       'northstar_assault',
       'failure_domain_independence',
     ],
-    lanes: ['github-actions'],
+    lanes: [],
+    derived: true,
+    authority: 'customer-proof-staging',
   },
 ]);
 
