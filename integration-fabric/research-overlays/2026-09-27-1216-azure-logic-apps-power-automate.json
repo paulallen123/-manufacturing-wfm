@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Microsoft Azure Logic Apps and Power Automate documentation promotion with workflow-run plus downstream-delivery reconciliation.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "azure-logic-apps-power-automate",
+      "reason": "Promote the existing Microsoft integration target to documentation-backed, read-only workflow-run and downstream-delivery reconciliation without granting resubmit, cancellation, workflow, connection, checkpoint, payroll or attendance authority.",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://learn.microsoft.com/en-us/azure/logic-apps/logic-apps-overview",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": "by-on-premises-data-source",
+        "auth": "microsoft-entra-oauth2-rbac-or-managed-identity",
+        "connectionRoutes": [
+          "Azure Resource Manager read APIs over the exact public Azure management origin with a least-privilege Microsoft Entra principal",
+          "Consumption workflow management routes under Microsoft.Logic API version 2019-05-01",
+          "Standard workflow management routes under Microsoft.Web App Service API version 2026-03-15",
+          "Managed identities for supported workflow connections to Microsoft Entra-protected Azure resources",
+          "On-premises data gateway or Standard Hybrid as separately governed customer-edge routes",
+          "Power Automate cloud flow history as a separately governed Power Platform environment route"
+        ],
+        "readRoutes": [
+          "GET workflow runs and one exact workflow run",
+          "GET workflow run actions with documented nextLink pagination",
+          "GET workflow run action request histories where explicitly approved",
+          "Read-only workflow and connection metadata needed to bind definition and connection-set fingerprints",
+          "Power Automate run history and Dataverse FlowRun metadata where customer policy and licensing permit"
+        ],
+        "deniedMutationRoutes": [
+          "resubmit, cancel, enable, disable, start or delete workflow runs",
+          "create, update or delete workflows, triggers, actions, connections, custom connectors, gateways or integration accounts",
+          "edit workflow definitions or environment variables",
+          "source-system, downstream-system, schedule, payroll or attendance mutations"
+        ],
+        "dataObjects": [
+          "workflow-run-observations",
+          "workflow-run-actions",
+          "action-request-history-metadata",
+          "workflow-definition-and-connection-fingerprints",
+          "trigger-and-client-tracking-identifiers",
+          "source-window-and-downstream-delivery-receipts",
+          "provider-failure-and-throttling-signals"
+        ],
+        "canonicalObjects": [
+          "integration-connection",
+          "integration-run",
+          "integration-delivery-signal",
+          "source-batch",
+          "reconciliation-candidate",
+          "freshness-and-lineage-signal",
+          "provider-failure-signal"
+        ],
+        "stableIds": [
+          "Microsoft Entra tenant plus Azure subscription",
+          "resource group plus Logic App resource plus workflow name",
+          "opaque workflow run name and action name",
+          "WFM tenant plus connection plus dataset plus source-scope fingerprint"
+        ],
+        "freshness": "Preserve provider run/action start and end times, the WFM observation horizon and a later downstream delivery timestamp. A provider Succeeded state is never treated as source completeness or checkpoint authority.",
+        "permissions": [
+          "Use Logic Apps Standard Reader or a narrower custom read role for Standard run history",
+          "Use a least-privilege Azure Resource Manager read principal isolated per customer tenant, subscription and workflow scope",
+          "Do not grant Operator, Developer, Contributor, resubmit, cancellation, workflow-editing, connection-secret or gateway-administration privileges to the WFM read path",
+          "Secure or omit workflow inputs and outputs because run history can expose sensitive customer data"
+        ],
+        "paginationAndDelta": [
+          "Workflow run-action list responses expose nextLink and value arrays; reconcile one gapless terminal cursor-fingerprint chain",
+          "Bind one exact run name, workflow definition fingerprint and approved action-name set",
+          "Require every approved action to be present exactly once and Succeeded",
+          "Require a separately produced successful complete downstream delivery receipt for the same run, delivery action, payload digest, dataset, schema, mapping, source scope and closed source window",
+          "Power Automate and Logic Apps history retention is not a durable source checkpoint; preserve governed WFM evidence before provider expiry"
+        ],
+        "customFields": "Workflow action names, tracking identifiers, connector configuration and customer expressions are deployment-specific. WFM stores only approved bounded identifiers and fingerprints; raw action inputs, outputs, secrets and arbitrary expressions remain excluded.",
+        "regionalAndVersionNotes": [
+          "Bind the exact customer-selected Azure tenant, subscription, resource group, region and hosting model",
+          "Standard, Consumption, App Service Environment, Hybrid and Power Automate routes remain separate authorities",
+          "Standard data stays in the selected deployment region, while connector and paired-region behavior must be checked for the customer's exact design",
+          "Multi-region disaster recovery requires separately deployed workflows, connections, gateways and dependent resources; never collapse primary and secondary run identities",
+          "Preserve customer-chosen WFM residency and cross-border transfer policy independently of the provider deployment"
+        ],
+        "rateLimits": "No universal safe request rate is assumed. Honour HTTP throttling and Retry-After, provider and connector concurrency limits, bounded page/action caps and environment-specific Power Platform allocations. Stop on tenant, subscription, region, workflow definition, connection-set, schema or permission drift.",
+        "failureModes": [
+          "expired or revoked Microsoft Entra credentials and insufficient RBAC",
+          "wrong tenant, subscription, resource group, region, hosting model, Logic App resource or workflow",
+          "workflow definition or connection-set drift",
+          "Running, Waiting, Skipped, Suspended, Cancelled, Failed, Faulted, TimedOut, Aborted or Ignored run/action states",
+          "incomplete, repeated, conflicting, looping or nonterminal action pagination",
+          "missing, duplicate, unexpected or failed approved actions",
+          "run/action timestamps outside the closed source window or observation horizon",
+          "workflow Succeeded without a later successful complete downstream delivery receipt",
+          "delivery dataset, action, digest, record count, schema, mapping, source scope or source window mismatch",
+          "connector throttling, a continuously throttled Power Automate flow being turned off, gateway outage or regional partial outage",
+          "run history exposing raw credentials, tokens, personal data or unapproved payloads"
+        ],
+        "reconciliation": [
+          "Bind every receipt to the exact WFM tenant, connection, Azure tenant, subscription, resource group, region, hosting model, Logic App resource and workflow",
+          "Pin management API version, principal, workflow definition, connection set, dataset schema, mapping and source scope fingerprints",
+          "Require one Succeeded run and a complete terminal action-page chain containing the exact approved action set once",
+          "Require a later independently produced complete downstream delivery receipt bound to the delivery action payload digest and closed source window",
+          "Emit only an integration-delivery reconciliation candidate; durable checkpoint movement remains a later compare-and-swap decision"
+        ],
+        "schemaDrift": "Pin hosting model, API version, workflow definition, connection set, approved action set, management response schema, dataset schema and mapping fingerprints. Quarantine new statuses, action names, routes, connector variants, missing tracking fields or changed pagination semantics.",
+        "retryAndRecovery": [
+          "Retry read-only management queries with bounded exponential backoff and Retry-After handling",
+          "Do not use provider run resubmit as automated data recovery because it can repeat source or downstream side effects",
+          "After connection, gateway or regional recovery, observe a distinct new run and repeat downstream-delivery reconciliation",
+          "Recover missed provider history from the authoritative source window when still available; otherwise require a governed source snapshot or backfill"
+        ],
+        "workflowRunReconciliation": {
+          "supportedHostingModels": ["consumption", "standard"],
+          "providerRunSuccessSufficient": false,
+          "downstreamDeliveryReceiptRequired": true,
+          "exactApprovedActionSetRequired": true,
+          "terminalActionPaginationRequired": true,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "workflowMutationAuthority": false,
+          "workflowResubmitAuthority": false,
+          "connectionMutationAuthority": false,
+          "operationalDecisionAuthority": false,
+          "causalClaimAuthority": false,
+          "writeBackAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false
+        },
+        "evidenceSources": [
+          {"title":"What is Azure Logic Apps?","url":"https://learn.microsoft.com/en-us/azure/logic-apps/logic-apps-overview"},
+          {"title":"Secure access and data in workflows","url":"https://learn.microsoft.com/en-us/azure/logic-apps/set-up-security-permissions"},
+          {"title":"Secure connections with managed identities","url":"https://learn.microsoft.com/en-us/azure/logic-apps/authenticate-with-managed-identity"},
+          {"title":"Workflow Run Actions - List (Consumption)","url":"https://learn.microsoft.com/en-us/rest/api/logic/workflow-run-actions/list?view=rest-logic-2019-05-01"},
+          {"title":"Workflow Run Action Request Histories - List","url":"https://learn.microsoft.com/en-us/rest/api/logic/workflow-run-action-request-histories/list?view=rest-logic-2019-05-01"},
+          {"title":"Workflow Run Actions - List (Standard)","url":"https://learn.microsoft.com/en-us/rest/api/appservice/workflow-run-actions/list?view=rest-appservice-2026-03-15"},
+          {"title":"Workflow Runs - List (Standard)","url":"https://learn.microsoft.com/en-us/rest/api/appservice/workflow-runs/list?view=rest-appservice-2026-03-15"},
+          {"title":"Azure Logic Apps limits and configuration","url":"https://learn.microsoft.com/en-us/azure/logic-apps/logic-apps-limits-and-config"},
+          {"title":"Connect to on-premises data sources","url":"https://learn.microsoft.com/en-us/azure/logic-apps/connect-on-premises-data-sources"},
+          {"title":"Multi-region disaster recovery","url":"https://learn.microsoft.com/en-us/azure/logic-apps/multi-region-disaster-recovery"},
+          {"title":"Power Automate flow limits","url":"https://learn.microsoft.com/en-us/power-automate/limits-and-config"},
+          {"title":"Power Platform data storage and governance","url":"https://learn.microsoft.com/en-us/power-platform/admin/security/data-storage"}
+        ],
+        "evidenceLevel": "spec-verified",
+        "evidenceNote": "Official Microsoft documentation was reachable on 2026-09-27 and supports Consumption and Standard workflow management routes, run/action states, nextLink pagination, Microsoft Entra/RBAC and managed-identity security, regional and on-premises variants, limits, disaster recovery and Power Automate environment constraints. No Azure subscription, Power Platform environment, customer authentication, live workflow read, downstream delivery, denied mutation, gateway outage, regional failover, hosted proof or production certification was executed.",
+        "valueOpportunities": [
+          "Reuse existing customer workflows across ERP, HCM, payroll, MES, maintenance, quality, inventory, logistics and finance instead of building duplicate point-to-point connectors",
+          "Detect workflow-Succeeded but incompletely delivered data before schedules, payroll preparation or operational decisions consume it",
+          "Separate workflow, connector, gateway, throttling and downstream-delivery failures to shorten diagnosis and recovery",
+          "Preserve workflow/run/action identifiers and source windows for implementation evidence, freshness diagnostics and outcome lineage",
+          "Support small customers through one low-configuration workflow and global enterprises through isolated tenants, subscriptions, regions, hosting models, workflows, datasets and delegated owners"
+        ],
+        "nextBuildAction": "In an authorised Azure Logic Apps non-production subscription, authenticate a least-privilege read principal, observe one exact Consumption or Standard workflow through Succeeded, enumerate its terminal action history, reconcile it to an immutable WFM delivery receipt, then exercise token expiry, throttling, failed/skipped actions, continuation gaps, workflow-definition drift and a deliberately incomplete delivery without resubmitting or mutating the workflow."
+      }
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Infor CloudSuite Industrial documentation promotion and reusable capped bookmark projection-chain authority.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "infor-cloudsuite-industrial",
+      "patch": {
+        "protocols": ["Infor ION API Gateway", "Mongoose REST v2", "IDO LoadCollection", "bookmark pagination", "BOD or secure export fallback"],
+        "auth": "OAuth 2.0 bearer token through Infor ION API Gateway or a directly issued Mongoose security token for an approved private endpoint",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.infor.com/mg/latest/en-us/mongooseolh/mgiiea/dwn1576796415221.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": "by-deployment",
+        "connectionRoutes": [
+          {
+            "type": "Infor OS cloud ION API route",
+            "direction": "Infor-CSI-to-WFM-read-only",
+            "authentication": "dedicated backend-service OAuth 2.0 client credentials with enforced app scopes and a constrained Infor user/role where required",
+            "notes": "Pin the regional gateway host, Infor tenant, Mongoose configuration, site, REST version, exact IDO LoadCollection route, property projection, filter/order, effective record cap and schema. X-Infor-MongooseConfig is part of source authority."
+          },
+          {
+            "type": "direct or on-premises Mongoose REST route",
+            "direction": "customer-edge-to-WFM-read-only",
+            "authentication": "customer-managed Mongoose security token over an exact private HTTPS origin",
+            "notes": "Use the customer-controlled edge route. No public ingress, direct database access, token evidence, UpdateCollection or Invoke authority is granted."
+          },
+          {
+            "type": "Infor ION BOD, governed export or middleware fallback",
+            "direction": "Infor-export-to-WFM-read-only",
+            "authentication": "customer-owned ION, secure-file or managed integration identity",
+            "notes": "Use existing managed-export and batch-reconciliation controls with exact document type, accounting entity/site, schema, checksums, row totals and replay identifiers."
+          }
+        ],
+        "deploymentVariants": {
+          "Infor-OS-cloud": {
+            "customerEdgeRequired": false,
+            "routing": "Regional Infor OS API Gateway to one authorised tenant, Mongoose configuration and site per checkpoint namespace."
+          },
+          "direct-or-on-premises-Mongoose": {
+            "customerEdgeRequired": true,
+            "routing": "Customer-controlled outbound edge connection to one exact HTTPS Mongoose origin/configuration; direct SQL remains denied."
+          },
+          "multi-site-or-acquired-estate": {
+            "customerEdgeRequired": "by-instance",
+            "routing": "Partition every tenant, configuration, site and acquired instance independently even when Infor OS provides one shared access layer."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "Infor-tenant", "Mongoose-configuration", "site", "api-origin", "api-version", "IDO-collection", "query", "schema"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "Infor-tenant", "Mongoose-configuration", "site", "IDO-collection", "stable-ID", "source-version", "schema-fingerprint"]
+        },
+        "idoReadAuthority": {
+          "loadCollectionAllowed": true,
+          "updateCollectionAllowed": false,
+          "invokeIDOMethodAllowed": false,
+          "wildcardPropertiesAllowed": false,
+          "directSqlAllowed": false,
+          "notes": "Allow only reviewed LoadCollection projections. Infor documents separate UpdateCollection and Invoke surfaces, so successful OAuth or Mongoose authentication never implies safe read authority."
+        },
+        "cappedProjectionChainAuthority": {
+          "configurationIsolationRequired": true,
+          "siteIsolationRequired": true,
+          "moreRowsExistRequired": true,
+          "bookmarkContinuityRequired": true,
+          "recordCountProvesCompleteness": false,
+          "querySchemaScopeFingerprintRequired": true,
+          "trustedCheckpointPredecessorRequired": true,
+          "trustedObservationHorizonRequired": true,
+          "rawBookmarkRetained": false,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "writeBackAuthority": false,
+          "receiptPolicy": "Bind every page to one WFM tenant, connection, Infor tenant, Mongoose configuration, site, exact HTTPS origin/version, IDO collection, property/filter/order query, schema, scope and effective record cap. Follow MoreRowsExist and byte-exact bookmark continuity to a terminal false value; row count alone never proves completeness. Hash but do not retain raw bookmarks, collapse only exact stable-ID + source-version + payload-digest replays and quarantine conflicts. Emit reconciliation evidence only."
+        },
+        "dataObjects": [
+          "sites-and-departments", "employees-and-teams", "skills-and-labour-reference", "shifts-and-calendars",
+          "jobs-and-operations", "work-centres-and-resources", "job-labour-transactions", "direct-and-indirect-labour",
+          "quantities-complete-and-scrap", "machine-and-queue-time", "materials-and-inventory", "BOM-and-routings",
+          "purchase-orders-and-suppliers", "quality-and-nonconformance", "WIP-and-job-cost", "general-ledger-and-cost-centres"
+        ],
+        "canonicalObjects": [
+          "legal-entity", "site", "department", "person", "employment", "skill", "shift", "work-centre", "machine-asset",
+          "production-order", "operation", "time-event", "material-movement", "inventory-balance", "supplier", "quality-event",
+          "scrap-event", "cost-centre", "labour-cost", "production-outcome"
+        ],
+        "stableIds": "Preserve tenant + configuration + site + IDO collection + source stable ID and source version. Keep job/operation, employee, work-centre, item, lot, PO/vendor and ledger keys as typed local references; never join identical codes across sites or acquired configurations without explicit mapping.",
+        "freshness": "Use bounded polling with provider bookmarks and MoreRowsExist. Optional ION/BOD signals may lower latency but remain hints until reconciled against the authoritative scoped read or complete governed export.",
+        "permissions": "A dedicated integration principal needs only IDO-level and property-level read permission plus required licensing. Deny UpdateCollection, InvokeIDOMethod, upload/download control surfaces, configuration discovery beyond bootstrap, token administration, reports with side effects and all database writes.",
+        "paginationDelta": "REST v2 LoadCollection returns MoreRowsExist and bookmark-based continuation. Effective record caps are administrator/farm/user dependent and can differ from the typical 200; discover and pin the effective cap, continue until MoreRowsExist=false, and quarantine bookmark/query/schema/cap drift. Delta fields are IDO- and customer-specific and must be schema-discovered; otherwise use bounded overlapping windows or governed snapshots.",
+        "customFields": "Discover approved standard and customer-extended IDO properties per configuration. Exact property allowlists and schema fingerprints prevent wildcard expansion, renamed fields or custom-load-method drift from silently changing WFM semantics.",
+        "regionalApiVersions": "Pin the customer-specific regional Infor OS gateway host, tenant identifier, Mongoose configuration, CSI/Mongoose release and REST version. Cloud, single-tenant and on-premises routes do not share checkpoints or fail over across regions automatically.",
+        "rateLimits": "No universal CSI read rate is assumed. Infor API Gateway can apply tenant-specific smoothing, quotas and spike arrest with HTTP 429; use bounded concurrency, respect observed policy/reset evidence and never widen scope or switch hosts after throttling.",
+        "failureModes": [
+          "OAuth or Mongoose token expiry/revocation", "wrong Infor tenant or Mongoose configuration", "IDO or property permission denial",
+          "administrator record-cap change", "MoreRowsExist true without a usable bookmark", "bookmark gap, loop or cross-query replay",
+          "query/filter/order drift between pages", "custom load method does not support bookmarking", "partial 200-row result mistaken for completeness",
+          "schema/custom-property drift", "site or accounting-entity collision", "429 throttling or regional gateway outage",
+          "source clock/version drift", "duplicate or conflicting job/labour/material versions", "BOD/export delay or replay",
+          "InvokeIDOMethod or UpdateCollection accidentally enabled"
+        ],
+        "reconciliation": "Require exact tenant/configuration/site/projection/query/schema/scope/cap identity on every page, trusted checkpoint predecessor and trusted observation horizon, MessageCode success, gapless bookmark succession and a terminal MoreRowsExist=false. Row count never proves completeness. Collapse exact stable-ID + source-version + payload-digest replays, quarantine conflicts, hash raw bookmarks out of evidence and keep missing rows non-deleting. Re-read bounded windows after auth refresh, 429, outage, schema drift or BOD hint.",
+        "schemaDrift": "Fingerprint REST version, IDO name, explicit property list, property types/labels, custom properties, stable key, filter/order contract, effective cap and bookmark behavior per configuration and site. Any drift quarantines the dataset before checkpoint consideration.",
+        "retriesReconnect": "401 stops for credential/tenant review; 403 stops for IDO/property licensing or permission review; 429 uses bounded backoff under the same host/tenant/configuration/query. Network/5xx recovery restarts from the last committed predecessor with the approved overlap or complete bookmark chain; never resume a bookmark under a changed query/schema/cap.",
+        "evidenceUrl": "https://docs.infor.com/mg/latest/en-us/mongooseolh/mgiiea/dwn1576796415221.html",
+        "evidenceNote": "Documentation-only verification. Official Infor documentation establishes ION OAuth 2.0 client credentials, Mongoose security-token alternatives, configuration headers, IDO/property permissions, LoadCollection/UpdateCollection/Invoke separation, administrator-dependent record caps, MoreRowsExist and bookmark continuation. No sandbox, no customer tenant authentication, no live read, no real pagination, no denied mutation and no hosted proof are claimed.",
+        "valueOpportunities": [
+          "combine open jobs, operation demand, work-centre constraints and WFM skills/availability to target only genuine qualified-labour shortages and reduce avoidable overtime or agency use",
+          "separate paid idle time caused by material, machine, queue, quality or supplier constraints from labour-capacity shortages",
+          "compare job labour transactions, WFM attendance and payroll-ready time to find missing, duplicated, backflushed or misattributed hours without treating ERP labour as attendance truth",
+          "attribute labour and rework cost to job, operation, item, scrap and good-unit outcomes while preserving source authority and causal uncertainty",
+          "reuse one governed IDO projection pattern across small single-site SyteLine customers and global multi-configuration Infor estates"
+        ],
+        "causalOutcomeReadiness": "Preserve job, operation, employee/team, work-centre, material, quality, scrap, cost and source-version identifiers with effective/observation times. Record recommendation, approval, intervention and outcome windows separately; distinguish direct labour, indirect labour, backflushed labour and machine time, and never claim a labour action caused throughput or cost movement without controlling competing material, machine, quality and demand changes.",
+        "nextBuildAction": "Use an authorised Infor CSI test tenant to prove backend-service OAuth, exact regional tenant/configuration/site binding, reviewed IDO and property discovery, LoadCollection bookmark recovery across an effective cap, custom property drift, 401/403/429/outage recovery, and denied UpdateCollection and InvokeIDOMethod calls without production or payroll mutation."
+      }
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-26",
+  "purpose": "HID Origo evidence promotion and reusable payroll-safe presence-signal reconciliation.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "hid-origo",
+      "patch": {
+        "protocols": ["REST", "OpenAPI 3", "SCIM 2", "CloudEvents", "webhooks"],
+        "auth": "OAuth-2.0-client-credentials-or-PKI-system-account",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://doc.origo.hidglobal.com/api/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "HID Origo read APIs",
+            "direction": "HID-Origo-to-WFM-read-only",
+            "authentication": "OAuth 2.0 bearer token for an organisation-scoped System Account using client credentials or PKI, plus approved Application-ID and Application-Version headers",
+            "notes": "Pin the exact organisation, service origin, application revision and reviewed GET route. User, credential, pass, reader and location mutations remain denied even though the provider APIs expose them."
+          },
+          {
+            "type": "CloudEvents callback plus Event Management history",
+            "direction": "HID-Origo-to-WFM-signal-and-recovery",
+            "authentication": "customer-approved static header or OAuth client-credentials callback authentication, verified before admission",
+            "notes": "Callbacks are low-latency hints only. WFM requires a complete Event Management history query for the same filter and closed time window before reconciliation; callback registration writes remain privileged bootstrap, not steady-state data authority."
+          }
+        ],
+        "deploymentVariants": {
+          "origo-cloud": {
+            "customerEdgeRequired": false,
+            "routing": "Exact HID Origo service origins, organisation ID, application headers and customer-approved data route."
+          },
+          "identity-positioning": {
+            "customerEdgeRequired": false,
+            "routing": "Separate Identity Positioning authentication and API origins with organisation/site/location scope; never inherit broader credential-management authority."
+          },
+          "access-control-estate": {
+            "customerEdgeRequired": true,
+            "routing": "Reader/controller/PACS data not exposed by the authorised Origo cloud APIs requires a separate customer-controlled edge or incumbent PACS integration; no direct controller write is enabled."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "HID-organisation", "service-origin", "application-revision", "filter", "callback-registration", "schema"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "organisation", "site", "building", "floor", "zone", "reader", "provider-event-id", "event-type", "provider-time", "schema-fingerprint"]
+        },
+        "presenceSignalReconciliation": {
+          "callbackIsSignalOnly": true,
+          "completeHistoryRequired": true,
+          "subjectsPseudonymizedPerTenantConnection": true,
+          "attendanceAuthority": false,
+          "payrollAuthority": false,
+          "accessDecisionAuthority": false,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "exactScopeDimensions": ["provider", "wfmTenantId", "connectionId", "organizationId", "apiOrigin", "applicationRevision", "filterId", "callbackRegistrationId", "eventSource", "schemaFingerprint"],
+          "receiptPolicy": "Admit only authenticated callbacks that reappear in a complete closed-window history query. Recover missed callbacks from history, collapse exact event-ID replays, quarantine conflicts, enforce approved event/site/zone scope and clock-skew limits, and pseudonymise subjects within the WFM tenant plus connection boundary. Output is presence evidence only."
+        },
+        "dataObjects": [
+          "users", "credentials-and-passes", "credential-containers", "sites-buildings-floors-zones", "readers",
+          "occupancy-utilization", "proximity-signals", "lifecycle-events", "callback-and-filter-reference"
+        ],
+        "stableIds": [
+          "HID Origo organisation ID",
+          "user, pass, credential and credential-container IDs where authorised",
+          "site, building, floor, zone and organisation-unique reader IDs",
+          "CloudEvents event ID, source, type, subject and time",
+          "filter ID, callback registration ID, Application-ID/version revision and schema fingerprint",
+          "WFM tenant, connection and scope-specific pseudonymous subject fingerprint"
+        ],
+        "readCapability": "Read only approved organisation-scoped GET resources. Identity Positioning documents sites, buildings, floors, zones, readers, occupancy, utilisation and proximity for bounded time ranges; Event Management documents filter/time-based event history. User and credential reference reads are included only where the authorised API and System Account roles expose them.",
+        "writeCapability": "HID Origo exposes user, pass, credential, site, reader, filter and callback lifecycle operations. WFM grants no user/credential provisioning, access grant/revoke, reader/location configuration, callback/filter management, door/control or delete authority. Callback/filter setup and renewal are a separately approved bootstrap workflow.",
+        "freshnessLatency": "Callbacks can provide close-to-real-time CloudEvents hints, while Event Management history and bounded Identity Positioning queries provide recovery/reconciliation. Preserve provider event time, device/reader time context, callback receipt, history-query window and WFM ingestion time separately.",
+        "permissions": [
+          "dedicated organisation-scoped HID Origo System Account",
+          "minimum read roles for exact approved services",
+          "approved Application-ID and pinned Application-Version",
+          "exact service-origin and GET-route allowlist",
+          "separate callback receiver authentication and verifier revision",
+          "no user, credential, pass, reader, location, callback, filter or access-control mutation authority"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "Discover and pin the documented pagination contract for each authorised service/version. Page gaps, duplicated page receipts, cross-service cursors and partial location trees fail closed and cannot imply absence or deletion.",
+          "delta": "Use Event Management filter/time history and bounded Identity Positioning time ranges with overlap from the last WFM-committed boundary. Provider events or proximity samples do not directly move a checkpoint.",
+          "events": "Callbacks use application/cloudevents-batch+json and may use static-header or OAuth client-credentials delivery authentication. Verify authentication, exact callback/filter/event source, CloudEvents identifiers and approved event types; reconcile every hint against complete history for the same closed window.",
+          "files": "No file route is assumed for this proof level. Customer-approved exports enter through the existing batch-reconciliation contract and never create absence/deletion evidence by omission.",
+          "queues": "No provider queue is assumed. Internal delivery remains at-least-once; exact provider event IDs collapse, conflicting duplicates quarantine and out-of-order events sort by provider time plus event ID."
+        },
+        "customFields": "HID User Management provides limited SCIM v2 and HID services/versioned schemas may expose extensions. Preserve allowed source extensions and schema provenance, minimise personal/location data, and quarantine new identifiers, precise-location fields, credential material or sensitivity/type changes until reviewed.",
+        "regionalApiVersions": "Pin exact service origin, organisation, API/media version, Application-ID/version and schema. Authentication, Events, User Management, Credential Management, Mobile Identities and Identity Positioning have distinct endpoints and versions; no cursor, credential, checkpoint or role authority crosses those service boundaries without explicit proof and reconciliation.",
+        "rateLimits": "HID documents organisation-scoped limits including 300 requests per 5 minutes for Events and Callbacks, 50 per 5 minutes for Authentication, 5,000 per 5 minutes for Identity Positioning/User/Credential APIs and 300 per 5 minutes for Mobile Identities. Exceeding a limit returns HTTP 403, so 403 requires permission-versus-throttle diagnosis rather than blind token refresh.",
+        "failureModes": [
+          "System Account secret/certificate expiry, revocation, role drift or token expiry/idle timeout",
+          "wrong WFM tenant, connection, HID organisation, service origin, application revision, filter, callback or schema",
+          "unverified callback authentication or unexpected CloudEvents source/type",
+          "callback SUSPENDED after consecutive delivery failures, EXPIRED, deleted after grace period or nearing validity end",
+          "callback event absent from a complete history window or history event missed by callback",
+          "duplicate/out-of-order event, same event ID with conflicting subject/location/payload, or pagination gap",
+          "unknown site, building, floor, zone or reader mapping",
+          "device/reader clock drift, DST/local-time mismatch or event outside the closed source window",
+          "HTTP 403 ambiguity between rate limit and permission, 401 expiry, transient 5xx/network failure or service outage",
+          "SCIM/service-version/schema drift or new sensitive precise-location fields",
+          "user/credential deletion or absence misread as workforce termination",
+          "occupancy, proximity or access evidence treated as exact attendance, worked time, payroll or authorisation truth"
+        ],
+      "reconciliation": "Verify callback authentication and exact organisation/application/filter/callback scope, then query complete Event Management event history for the same closed time window. Every callback hint must appear in complete history; history-only events reveal missed callbacks. Collapse exact event-ID replays, quarantine conflicts, enforce approved event/site/zone and clock-skew bounds, and pseudonymise subjects per WFM tenant/connection. If a registration is SUSPENDED, EXPIRED or past validity, complete history recovery can still yield presence-signal candidates while the callback is marked for privileged repair. No result directly advances a checkpoint or grants attendance, payroll, access-decision or deletion authority.",
+        "schemaDrift": "Fingerprint the exact API/media version, CloudEvents envelope, event type set and location mapping. Additive approved fields retain raw provenance; changed IDs, event/source semantics, location hierarchy, time formats, credential fields or personal-data sensitivity quarantine the affected dataset.",
+        "retriesReconnect": "401 stops for token renewal and System Account diagnosis. HID uses HTTP 403 for documented rate-limit breaches as well as possible permission denial, so inspect safe response metadata and enforce service/organisation budgets before retrying with bounded jitter. Callback failure triggers complete history recovery; resume only from the last WFM-committed boundary with overlap and never switch organisation/service origin to escape failure.",
+        "evidenceUrl": "https://doc.origo.hidglobal.com/api/events-callbacks/",
+        "evidenceNote": "HID Origo documentation reviewed 26 September 2026 establishes organisation-scoped OAuth 2.0 System Accounts, one-hour bearer tokens with a five-minute unused-token timeout, Application-ID/version headers, TLS 1.2+, service-specific rate limits, CloudEvents batch callbacks, filter/time Event Management history, callback SUSPENDED/EXPIRED recovery states, and Identity Positioning site/building/floor/zone/reader/occupancy/utilisation/proximity resources. No sandbox or customer tenant was authenticated and no live token, callback, event-history, occupancy, proximity, user or credential read was performed.",
+        "securityEvidenceBlockers": [
+          "System Account roles and broad provisioning APIs mean successful authentication does not prove least-privilege read authority; exact roles, routes and denied mutations require tenant proof.",
+          "Callback endpoint whitelisting and delivery authentication require HID/customer-approved setup; WFM does not expose a public unauthenticated receiver.",
+          "Presence, proximity and credential data is security-sensitive personal data; minimisation, retention, lawful basis, residency, worker notice and cross-border controls remain customer- and country-specific.",
+          "Identity Positioning coverage and event types vary by licensed solution, reader estate and configuration and require tenant discovery."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["person-reference", "credential-reference", "site", "building", "floor", "zone", "reader-asset", "presence-signal", "occupancy-sample", "access-lifecycle-event"],
+          "customerValue": ["safer site and zone occupancy awareness", "earlier missing-worker and muster/safety signals", "more accurate labour presence investigation without claiming time worked", "capacity and congestion insight by production area", "lower integration effort through CloudEvents and governed history recovery"],
+          "savingsHypotheses": ["reduce manual access-versus-attendance investigation", "detect likely absence or wrong-area coverage earlier", "improve emergency muster and site occupancy evidence", "avoid scheduling or overtime reactions based on stale access callbacks", "reduce duplicate integration work across HID-enabled sites"],
+          "automationOpportunities": ["discover organisation/site/zone/reader scope", "map credential/user references to WFM identities with reviewable confidence", "reconcile callback hints through complete history", "flag callback suspension/expiry and recover safely", "join privacy-minimised occupancy/presence signals to shifts and production outcomes without pretending causation"],
+          "constraintsRisks": ["access, occupancy and proximity evidence is not attendance, worked-time or payroll truth", "credential possession does not prove the named employee was present", "entry does not prove continued presence or productive work", "precise location can require enhanced privacy controls", "documentation proof is not sandbox, tenant or production proof"]
+        },
+        "causalOutcomeReadiness": "Preserve provider event, organisation/site/zone/reader and pseudonymous subject identifiers; event/device/receipt/history-window times; callback status; source completeness; WFM recommendation/action IDs; baseline/outcome windows; and competing shift, leave, access-policy, reader outage, production, maintenance and safety changes.",
+        "nextBuildAction": "Use an authorised HID Origo partner/customer test organisation to prove System Account roles, password/PKI token renewal and idle expiry, Application-ID/version binding, denied mutations, exact service origins, callback authentication/whitelisting, CloudEvents duplicates/out-of-order delivery, SUSPENDED/EXPIRED recovery through complete event history, rate-limit 403 diagnosis, site/zone/reader mapping, clock drift, privacy minimisation and multi-organisation isolation without changing users, credentials, passes, readers, locations, filters, callbacks or access decisions."
+      }
+    }
+  ],
+  "systems": []
+}

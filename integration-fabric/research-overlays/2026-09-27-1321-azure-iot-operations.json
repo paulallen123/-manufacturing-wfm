@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "Azure IoT Operations documentation promotion with MQTT QoS 1 delivery recovery and OPC UA key-frame state reconciliation.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "azure-iot-operations",
+      "reason": "Promote the existing industrial-edge target to documentation-backed read-only MQTT and OPC UA key-frame observation without claiming stream completeness, checkpoint, control or write authority.",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://learn.microsoft.com/en-us/azure/iot-operations/overview-iot-operations",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "auth": "azure-arc-workload-identity-kubernetes-service-account-token-x509-or-provider-endpoint-auth",
+        "connectionRoutes": [
+          "Azure IoT Operations instance on an Azure Arc-enabled Kubernetes cluster at the customer edge",
+          "Built-in local MQTT v5 broker endpoint aio-broker with TLS and K8S-SAT or an explicitly governed X.509 listener",
+          "Connector for OPC UA using a customer-approved server endpoint, trust list and username/password or X.509 user identity",
+          "Data flows from the local MQTT broker to governed MQTT, Kafka, Event Hubs, storage, Azure Data Explorer, OpenTelemetry or local destinations",
+          "Layered-network and private-connectivity topologies as separately bound customer-edge routes"
+        ],
+        "readRoutes": [
+          "Subscribe to one exact approved MQTT data topic at QoS 1 with a persistent session",
+          "Observe JSON OPC UA PubSub payloads and CloudEvents-compatible MQTT user properties",
+          "Read asset, device, schema, data-flow configuration and unified health metadata needed to bind evidence fingerprints",
+          "Read data-flow and broker metrics for received, sent, retried, expired, filtered, processing-error and busy-drop signals"
+        ],
+        "deniedMutationRoutes": [
+          "publish OPC UA write requests, management actions, MQTT RPC calls or control messages",
+          "write OPC UA nodes, change asset or device configuration, edit data flows, endpoints, broker listeners, authentication, authorization or persistence",
+          "create, update or delete Azure, Arc, Kubernetes, schema registry or Device Registry resources",
+          "mutate schedules, attendance, payroll, maintenance work orders, production orders or machine control state"
+        ],
+        "dataObjects": [
+          "opc-ua-keyframes",
+          "opc-ua-source-timestamps-and-value-digests",
+          "mqtt-topic-source-subject-sequence-identities",
+          "asset-device-dataset-and-schema-fingerprints",
+          "data-flow-health-and-loss-signals",
+          "broker-persistence-expiry-and-queue-policy"
+        ],
+        "canonicalObjects": [
+          "integration-connection",
+          "industrial-asset",
+          "industrial-state-snapshot-candidate",
+          "industrial-sample",
+          "freshness-and-lineage-signal",
+          "provider-failure-signal"
+        ],
+        "stableIds": [
+          "Microsoft Entra tenant plus Azure subscription, resource group and Azure IoT Operations instance",
+          "Arc cluster plus custom location plus Azure IoT Operations namespace",
+          "OPC UA source plus external asset id plus dataset and point name",
+          "exact MQTT topic plus CloudEvents source, subject and unsigned 64-bit sequence string"
+        ],
+        "freshness": "Preserve OPC UA SourceTimestamp, CloudEvents time and recordedtime, the exact source sequence string, WFM observation horizon and scoped health interval. Key frames recover current dataset state after missed messages but do not prove that every change was delivered.",
+        "permissions": [
+          "Use a dedicated least-privilege subscriber identity authorized only for the exact approved data topic",
+          "Keep the WFM identity separate from connector write topics, asset-operation topics, MQTT RPC, Azure Contributor and Kubernetes administration",
+          "Use TLS, customer-approved OPC UA trust, Azure Key Vault-backed secret synchronization where needed and per-tenant connection isolation",
+          "Never copy raw credentials, service-account tokens, private keys or OPC UA passwords into reconciliation evidence"
+        ],
+        "paginationAndDelta": [
+          "MQTT QoS 1 is at-least-once, so collapse only semantically identical replays at one source-subject-sequence coordinate",
+          "Bind one stable MQTT client id, cleanStart false and a nonzero session expiry that covers the complete observation horizon",
+          "Reject conflicting reuse of a sequence identity and preserve out-of-order arrival as evidence rather than rewriting event time",
+          "Quarantine chronological sequence reset or regression while allowing the connector's documented repeated CloudEvents id across distinct sequences",
+          "Require one exact full point set in each admitted ua-keyframe and select current state by event time, not arrival order",
+          "Do not infer a gapless stream, source completeness or durable checkpoint from MQTT packet identifiers, QoS acknowledgments, health colour or key frames",
+          "Use broker and per-data-flow persistence for restart recovery, subject to queue, storage, session and message-expiry bounds"
+        ],
+        "customFields": "Asset, dataset, point names, OPC UA node identities, browse paths, namespaces, schemas and CloudEvents metadata are customer-specific. Bind exact approved names and fingerprints; preserve local extensions without allowing arbitrary payload fields or executable transforms into the authority boundary.",
+        "regionalAndVersionNotes": [
+          "Bind the exact Azure tenant, subscription, resource group, region, Arc cluster, custom location, instance and namespace",
+          "Azure IoT Operations 1.2 is the current deployment line documented on 2026-09-27; pin the deployed extension and resource API versions during tenant proof",
+          "Data flows may target other Azure regions, so customer residency and cross-border policy must bind the destination independently of the edge instance",
+          "Layered networks, disconnected edges, AKS Edge Essentials and Kubernetes distributions require separate topology, persistence and capacity evidence",
+          "Multiple acquired sites or regional instances keep separate connection, asset, topic and authority namespaces"
+        ],
+        "rateLimits": "No universal safe throughput is assumed. Bind broker memory profile, maximum packet size, receive maximum, partitions, subscriber queue length and strategy, persistence volume, message/session expiry and destination limits. Stop on configuration, schema, topic, identity, storage-capacity or expiry drift.",
+        "failureModes": [
+          "expired SAT or X.509 credentials, lost authorization, TLS trust failure or OPC UA endpoint authentication failure",
+          "wrong tenant, subscription, Arc cluster, custom location, instance, namespace, broker endpoint, topic, asset or dataset",
+          "QoS 0 delivery, clean or expired sessions, missing persistence, full disk, queue expiry or a DropOldest policy",
+          "connector reconnection or HA failover with missing data; HA explicitly does not guarantee zero loss",
+          "duplicate, conflicting, out-of-order or sequence-reset messages and retained stale key frames",
+          "missing, duplicate or unknown key-frame points; source/event/recorded clock drift; schema or mapping drift",
+          "data-flow messages expired, filtered, dropped by processing errors, dropped when busy or sent without target acknowledgment",
+          "destination outage, partial regional outage, layered-network interruption or stale health reporting"
+        ],
+        "reconciliation": [
+          "Bind every receipt to the exact WFM tenant, connection, Azure/Arc/instance scope, broker security and persistence policy, data flow, topic, OPC UA endpoint, asset, dataset, schema, mapping and source scope",
+          "Require TLS, MQTT v5 QoS 1, one stable persistent client session, broker plus subscriber-queue persistence, a non-dropping queue strategy and zero scoped loss/error metric deltas",
+          "Collapse only semantically identical source-subject-sequence replays and quarantine conflicts",
+          "Require a non-retained ua-keyframe with the exact approved point set and bounded source, event and recorded timestamps",
+          "Emit only an industrial current-state snapshot candidate; source completeness and checkpoint movement remain unproven"
+        ],
+        "schemaDrift": "Pin broker, data-flow, OPC UA endpoint, asset model, schema, mapping and source-scope fingerprints. Quarantine new topics, CloudEvents types or versions, point sets, data types, identities, endpoint modes, compression formats, WASM transforms or persistence behavior until explicitly reviewed.",
+        "retryAndRecovery": [
+          "Let the QoS 1 data-flow subscriber withhold acknowledgment until successful target delivery and use bounded provider retry",
+          "Configure broker persistence and requestDiskPersistence when queued messages must survive restart, with capacity and expiry sized to the approved outage window",
+          "After connector failover, session loss, queue loss or expiry, wait for a fresh complete key frame before exposing current-state evidence",
+          "Use an authoritative source backfill or governed snapshot for historical completeness; never manufacture missing changes from the latest key frame"
+        ],
+        "keyframeReconciliation": {
+          "mqttVersion": "5.0",
+          "qos": 1,
+          "stableClientIdRequired": true,
+          "cleanStartRequired": false,
+          "sessionExpiryMustCoverObservationHorizon": true,
+          "persistentSubscriberQueueRequired": true,
+          "nonDroppingQueuePolicyRequired": true,
+          "exactPointSetRequired": true,
+          "stateSnapshotCandidate": true,
+          "sourceCompletenessProven": false,
+          "deliveryCompletenessProven": false,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "controlAuthority": false,
+          "operationalDecisionAuthority": false,
+          "causalClaimAuthority": false,
+          "writeBackAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false
+        },
+        "evidenceSources": [
+          {"title":"What is Azure IoT Operations?","url":"https://learn.microsoft.com/en-us/azure/iot-operations/overview-iot-operations"},
+          {"title":"Connector for OPC UA overview and message format","url":"https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/overview-opc-ua-connector"},
+          {"title":"Process and route data with data flows","url":"https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/overview-dataflow"},
+          {"title":"Configure data flow endpoints","url":"https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/howto-configure-dataflow-endpoint"},
+          {"title":"Configure MQTT data flow endpoints","url":"https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/howto-configure-mqtt-endpoint"},
+          {"title":"Configure data buffering and disk persistence","url":"https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/howto-configure-disk-persistence"},
+          {"title":"MQTT broker persistence","url":"https://learn.microsoft.com/en-us/azure/iot-operations/manage-mqtt-broker/howto-broker-persistence"},
+          {"title":"Advanced MQTT options","url":"https://learn.microsoft.com/en-us/azure/iot-operations/deployment-plan/deployment-planning-mqtt-options"},
+          {"title":"MQTT feature support","url":"https://learn.microsoft.com/en-us/azure/iot-operations/reference/mqtt-support"},
+          {"title":"Configure MQTT broker authentication","url":"https://learn.microsoft.com/en-us/azure/iot-operations/manage-mqtt-broker/howto-configure-authentication"},
+          {"title":"Data flow metrics","url":"https://learn.microsoft.com/en-us/azure/iot-operations/reference/observability-metrics-data-flows"},
+          {"title":"Unified health status reporting","url":"https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/health-status-reporting"},
+          {"title":"Health status reason codes","url":"https://learn.microsoft.com/en-us/azure/iot-operations/reference/health-status-reason-codes"},
+          {"title":"Deployment overview","url":"https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/overview-deploy"}
+        ],
+        "evidenceLevel": "spec-verified",
+        "evidenceNote": "Official Microsoft Learn documentation was reachable on 2026-09-27 and supports Azure Arc deployment, local MQTT v5, QoS 0/1, persistent sessions, bounded queue and expiry behavior, data-flow retry and persistence, OPC UA PubSub key frames and CloudEvents metadata, authentication, metrics and health diagnostics. No Azure subscription, Arc cluster, customer authentication, live MQTT or OPC UA read, persistence restart, outage, failover, denied write, hosted proof or production certification was executed.",
+        "valueOpportunities": [
+          "Reuse one governed edge route for machine, line, asset, downtime, maintenance, quality, energy and production state without connecting WFM directly to control networks",
+          "Recover current equipment state from a fresh full key frame after disconnects while keeping historical gaps visible",
+          "Correlate industrial state with shifts, skills, work orders and maintenance windows to diagnose labour, equipment, quality and energy constraints without treating machine data as attendance or payroll truth",
+          "Separate credential, OPC UA endpoint, broker queue, persistence, data-flow transform, destination and regional failures to shorten support diagnosis",
+          "Support one-asset sites and multi-site estates with the same tenant/instance/topic/asset authority boundaries and horizontal edge deployment model"
+        ],
+        "nextBuildAction": "In an authorised Azure IoT Operations non-production instance, authenticate a dedicated QoS 1 subscriber, read one exact OPC UA asset topic through a fresh key frame, reconcile its point set and health deltas, then exercise SAT expiry, destination outage, duplicate and out-of-order delivery, queue persistence across restart, message expiry, connector failover, schema drift and a denied OPC UA write topic without changing control state."
+      }
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-26",
+  "purpose": "Deputy evidence promotion and reusable rotating OAuth compare-and-swap authority.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "deputy",
+      "patch": {
+        "protocols": ["REST", "webhooks", "SFTP-CSV"],
+        "auth": "OAuth-2.0-authorization-code-with-rotating-refresh-token",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developer.deputy.com/docs/getting-started-with-the-deputy-api",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "Deputy public API read connection",
+            "direction": "Deputy-installation-to-WFM-read-only",
+            "authentication": "OAuth 2.0 authorization-code flow with longlife_refresh_token and one installation-bound endpoint",
+            "notes": "Preferred zero-touch route. Store the exact installation/region endpoint returned by OAuth, rotate the refresh token atomically and permit only approved read endpoints. Permanent user tokens are excluded from the default production route."
+          },
+          {
+            "type": "Deputy Resource API read projection",
+            "direction": "Deputy-resource-query-to-WFM-ingress",
+            "authentication": "Bearer access token on the exact installation host",
+            "notes": "POST is permitted only for exact /api/v1/resource/{approved-object}/QUERY read operations. The HTTP verb never grants mutation authority; supervise, management, payroll-write, roster-write and employee-write routes remain denied."
+          },
+          {
+            "type": "Deputy webhook change signal",
+            "direction": "Deputy-to-WFM-signal-only",
+            "authentication": "X-Deputy-Secret HMAC verification where the installation provides Enterprise signing, otherwise untrusted signal plus API re-query",
+            "notes": "Each configured action is a separate signal. A webhook is never canonical record, checkpoint, payroll or deletion authority."
+          }
+        ],
+        "deploymentVariants": {
+          "premium": {
+            "customerEdgeRequired": false,
+            "routing": "Exact customer installation host in AU, EU, UK or US; available objects/features depend on the subscribed plan."
+          },
+          "enterprise": {
+            "customerEdgeRequired": false,
+            "routing": "Same public API pattern with possible customer-specific data and signed webhooks. Discover extensions per installation and retain them as local provenance, never global schema assumptions."
+          },
+          "trial": {
+            "customerEdgeRequired": false,
+            "routing": "Provider trial installation for non-production proof, isolated from customer and production credentials/checkpoints."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "deputy-installation", "geographic-region", "api-host"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "installation", "region", "api-host", "api-version", "resource-object", "record-id", "modified-time", "schema-fingerprint", "credential-generation"]
+        },
+        "rotatingOAuthAuthority": {
+          "accessTokenTtlSeconds": 86400,
+          "refreshTokenRotatesOnUse": true,
+          "storeWriteAuthority": "compare-and-swap-only",
+          "supportedRegions": ["AU", "EU", "UK", "US"],
+          "requiredScope": "longlife_refresh_token",
+          "exactScopeDimensions": ["provider", "wfmTenant", "connection", "installation", "region", "apiHost", "clientRevision", "credentialGeneration"],
+          "receiptPolicy": "A secret-owning executor returns fingerprints only. The fabric admits one exact installation-bound transition from generation N to N+1 when the response is successful, the access and refresh fingerprints are distinct, the refresh fingerprint changed, the token TTL is bounded and a durable store can compare-and-swap the expected generation. The helper never persists or exposes raw credentials."
+        },
+        "resourceReadAuthority": {
+          "readViaPostAllowed": true,
+          "maximumRecordsPerResponse": 500,
+          "mutationAuthorityAllowed": false,
+          "allowedPattern": "/api/v1/resource/{approved-object}/QUERY",
+          "pagination": "Use stable filters plus start and max. A 500-row response can be truncated and never proves completeness; retain page/window evidence and re-query overlap before advancing the checkpoint.",
+          "deniedPatterns": ["/supervise/*-mutation", "/management/*-mutation", "/oauth/*-management", "DeXML-execution", "pay-rate-write", "roster-or-timesheet-write"]
+        },
+        "webhookAuthority": {
+          "recordAuthority": false,
+          "deletionAuthority": false,
+          "enterpriseHmacHeader": "X-Deputy-Secret",
+          "generationTimeHeader": "X-Deputy-Generation-Time",
+          "unsignedSignalPolicy": "re-query-only",
+          "completenessPolicy": "No webhook count or delivery is treated as complete. Filter to required actions, deduplicate signals and reconcile through bounded Resource/API reads."
+        },
+        "dataObjects": [
+          "employees", "employee-profiles", "rosters-and-shifts", "timesheets", "timesheet-pay-return",
+          "leave-and-availability", "payroll-ready-time-and-cost", "locations-and-areas", "employment-contracts",
+          "training-and-compliance-reference", "custom-fields", "webhook-delivery-evidence"
+        ],
+        "stableIds": [
+          "Deputy installation name plus geographic region",
+          "resource object plus Deputy Id within the installation",
+          "Created and Modified timestamps where the resource supplies them",
+          "employee, roster, timesheet, leave, location and area foreign-key relationships",
+          "WFM tenant, connection, credential generation and checkpoint namespace"
+        ],
+        "readCapability": "Read approved Employee/EmployeeProfile, Roster, Timesheet, TimesheetPayReturn, Leave, Location/OperationalUnit, EmploymentContract and CustomFieldData resources where enabled. TimesheetPayReturn provides payroll-ready hours/value/cost evidence; it remains a reconciliation source rather than WFM payroll authority.",
+        "writeCapability": "Deputy exposes writes for nearly all platform objects and actions, including employee, roster, timesheet, leave and pay-related operations. WFM denies all source mutations, provisioning, clock-on/off, approvals, pay-rate changes, shift offers, roster publication/discard and DeXML execution.",
+        "freshnessLatency": "Webhooks can provide near-real-time change signals; bounded API reads provide reconciled source records. Deputy Analytics is documented as a separate four-hour-refresh read route and is not treated as live operational evidence. Preserve roster/timesheet effective time, Deputy Created/Modified time, webhook generation/observation time, API retrieval time and WFM ingestion time separately.",
+        "permissions": [
+          "dedicated OAuth client using authorization-code flow",
+          "one-to-one access token and Deputy installation endpoint binding",
+          "exact read-object and route allowlist enforced by WFM",
+          "atomic rotating-refresh-token compare-and-swap storage",
+          "no Advanced HR onboarding, bank, tax, pay-write or management authority by default",
+          "no permanent profile token in the zero-touch production route"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "Resource API responses are limited to 500 records and use start/max for paging. V2 endpoints can have their own cursor/limit contract and must be discovered and checkpointed separately rather than inheriting V1 offsets.",
+          "delta": "Use explicit Modified or business-time filters only where the selected resource documents and returns them. Query bounded windows with overlap and stable identity; a default endpoint window or a short page is not deletion evidence.",
+          "events": "Configure only necessary event/action webhooks. Verify Enterprise HMAC over the raw body where available, validate generation time, deduplicate, then re-query the exact resource/record or bounded window. Unsigned Premium signals can trigger re-query but cannot supply data authority.",
+          "files": "Headless SFTP CSV is documented as an upload/write route, so it is excluded from steady-state WFM ingestion. Customer-approved read exports may enter only through the existing secure batch-reconciliation contract.",
+          "queues": "No queue completeness is assumed. Internal event handling remains at-least-once with source identity/version/payload conflict quarantine."
+        },
+        "customFields": "Deputy documents up to 128 custom fields on Employee and 128 on Timesheet per installation. Discover used slots and definitions before mapping; never allocate or overwrite a field. Preserve slot, label, object, value, installation and schema fingerprint as local extensions.",
+        "regionalApiVersions": "OAuth identifies one installation and exact regional endpoint; Deputy documents AU, EU, UK and US regions and warns not to assume the region. Most endpoints are under /api/v1, with selected capabilities under /api/v2. Partition checkpoints by installation, region, host, resource, version and schema; any route/version change requires overlap reconciliation.",
+        "rateLimits": "No universal numeric API rate limit is claimed from the reviewed public documentation. Bound per-installation concurrency and response size, prefer targeted Resource API joins/filters, and honour provider 429/Retry-After behavior without changing installation or region.",
+        "failureModes": [
+          "OAuth consent removed, access token expired after 24 hours or refresh token reused after rotation",
+          "concurrent refresh attempts overwrite the newest one-time refresh token",
+          "wrong WFM tenant, connection, installation, geographic region, API host or client revision",
+          "POST /QUERY incorrectly treated as mutation or broad POST authority",
+          "Resource API response truncated at 500 rows or offset page drift during concurrent updates",
+          "default roster call returns only the next 36 and previous 12 hours and is mistaken for a full schedule",
+          "webhook action omitted, duplicated, delayed, out of order, over-broad or unsigned",
+          "Enterprise HMAC checked against reconstructed rather than raw request bytes",
+          "Premium/Enterprise, V1/V2 or customer-specific schema differences",
+          "employee/timesheet custom-field slot collision or semantic change",
+          "inactive/deleted object inferred from absence rather than authoritative evidence",
+          "leave/timesheet/pay-cost state treated as final payroll truth",
+          "sensitive Advanced HR tax or bank data ingested without separate approval",
+          "429, 5xx, network failure, provider outage or regional latency"
+        ],
+        "reconciliation": "Bind every read to WFM tenant, connection, installation, region, host, API/resource version and schema. Use targeted Resource API filters and 500-row start/max pages with overlap; detect gaps, duplicates and concurrent page drift. Webhooks are low-latency hints only and must re-query the source. The default roster window is never a complete snapshot. Exact ID + source version/payload replays collapse, conflicts quarantine, and no partial or unsigned path can advance a checkpoint or create deletion authority.",
+        "schemaDrift": "Fingerprint each resource/version/custom-field projection per installation. Additive approved fields retain raw provenance; removed/type-changed IDs, timestamps or relationships, V1/V2 pagination changes, custom-field reassignment, new sensitive HR/pay data and Enterprise extensions quarantine the affected dataset.",
+        "retriesReconnect": "401 after expected expiry can enter one generation-fenced refresh attempt; a used refresh token is never retried blindly because Deputy invalidates it on successful rotation. Consent removal requires full reauthorization. 429/5xx/network failures use bounded jittered backoff; replay the last WFM-committed source window with overlap and exact identity deduplication without switching region/install.",
+        "evidenceUrl": "https://developer.deputy.com/docs/using-oauth-20",
+        "evidenceNote": "Deputy documentation reviewed 26 September 2026 establishes OAuth authorization-code connection, 24-hour access tokens, one-time rotating refresh tokens, one installation-bound endpoint, AU/EU/UK/US regional hosts, REST/JSON and read-via-POST Resource queries, 500-record paging, V1/V2 routes, Employee/Roster/Timesheet/TimesheetPayReturn/Leave data, webhooks, Enterprise raw-body HMAC headers and 128 Employee/Timesheet custom fields. No trial or customer tenant was authenticated and no live OAuth, webhook or read/reconciliation round-trip was performed.",
+        "securityEvidenceBlockers": [
+          "Deputy public APIs expose broad write/action capability, so successful OAuth never proves read-only authority; exact route/object allowlists and denied mutations require tenant proof.",
+          "Refresh tokens rotate and invalidate the predecessor, so multi-worker durable compare-and-swap storage and crash recovery must be proven before authentication evidence advances.",
+          "Enterprise webhook signing is not assumed for every Premium installation; unsigned signals remain re-query-only.",
+          "Advanced HR onboarding can expose tax and bank details and requires separate vendor security review; WFM excludes it by default.",
+          "Regional residency, retention, payroll identifiers and employment data controls require customer-country review."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["person", "employment", "availability", "shift", "time-event", "absence", "leave", "site", "work-area", "payroll-ready-time", "labour-cost", "qualification-reference"],
+          "customerValue": ["faster workforce and scheduling connection for small and distributed employers", "earlier overtime and attendance exception detection", "less manual payroll-ready timesheet reconciliation", "clearer labour cost by shift, location and area", "lower integration effort through one reusable OAuth and Resource API route"],
+          "savingsHypotheses": ["reduce schedule/time import effort", "catch missing or conflicting approved time before payroll handoff", "compare scheduled versus worked labour and cost", "reduce duplicate processing after webhook retries or OAuth recovery"],
+          "automationOpportunities": ["discover installation, region and readable resources after OAuth", "map employees, locations, areas, leave, rosters and timesheets with provenance", "reconcile live webhook hints through bounded API reads", "rotate OAuth credentials without human intervention using generation-fenced compare-and-swap"],
+          "constraintsRisks": ["Deputy is workforce authority, not manufacturing production-order or machine-state authority", "payroll-ready time/cost is not final payroll authority", "Premium and Enterprise data/customisations vary", "signed webhooks are not universal", "documentation proof is not trial, tenant or production proof"]
+        },
+        "causalOutcomeReadiness": "Preserve installation/region, employee/roster/timesheet/leave/location/area IDs, created/modified/effective times, approval/pay states, credential generation, webhook/API observation and WFM ingestion times, recommendation/action IDs, baseline/outcome windows and competing production, material, machine, quality, schedule and payroll changes.",
+        "nextBuildAction": "Use an authorised Deputy trial to prove OAuth consent, exact AU/EU/UK/US installation endpoint binding, generation-fenced access/refresh rotation with durable compare-and-swap and crash recovery, denied supervise/management/payroll mutations, real 500-row Resource paging, explicit roster windows, V1/V2 differences, custom-field drift, signed and unsigned duplicate/out-of-order webhook reconciliation, consent removal and 401/429/5xx recovery without employee, roster, timesheet, leave or payroll mutation."
+      }
+    }
+  ],
+  "systems": []
+}

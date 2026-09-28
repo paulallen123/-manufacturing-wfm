@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28",
+  "purpose": "Promote Paylocity to documentation-backed specification coverage and bind payroll-processed events to two stable, complete employee-by-employee pay-statement reads without granting payroll authority.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "paylocity",
+      "reason": "Promote the existing Paylocity HCM/payroll target using current official developer documentation while keeping partner-restricted payroll detail, employee scope, webhook delivery and every write surface separately governed.",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developer.paylocity.com/integrations/docs/getting-started",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "auth": "oauth2-client-credentials-short-lived-bearer",
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          "Paylocity NextGen HTTPS APIs using OAuth 2.0 client credentials and short-lived bearer tokens",
+          "Paylocity Web Link v2 HTTPS APIs where a customer-approved legacy resource is required",
+          "HTTPS payroll-processed, employee-change, new-hire, termination and time-off webhook callbacks protected by TLS and separately configured callback authentication",
+          "Partner-restricted Pay Details endpoints only after the exact company and partnership entitlement are approved"
+        ],
+        "readRoutes": [
+          "GET /coreHr/v1/companies/{companyId}/employees with a maximum page size of 20 and opaque nextToken pagination",
+          "GET /apiHub/payroll/v1/companies/{companyId}/employees/{employeeId}/payStatements with check-date range, offset, limit and optional total-count evidence",
+          "GET /apiHub/payroll/v1/companies/{companyId}/employees/{employeeId}/payStatements/{payStatementId}",
+          "GET /apiHub/time/v2/companies/{companyId}/employees/{employeeId}/punchDetails for employee-scoped work and non-work punch evidence",
+          "GET /apiHub/time/v2/companies/{companyId}/punchDetails/{resourceId} only after the asynchronous company-punch operation completes"
+        ],
+        "deniedMutationRoutes": [
+          "POST payroll batch creation and every payroll finalisation or recalculation action",
+          "POST punch imports, employee creation, employee updates and time-off changes",
+          "recurring earning, deduction, tax, direct-deposit or pay-rate mutation",
+          "webhook subscription or callback credential mutation outside the privileged bootstrap workflow",
+          "payroll, attendance, leave-balance or employee-master write-back"
+        ],
+        "dataObjects": [
+          "companies-and-payroll-entities",
+          "employees-status-position-cost-centre-and-effective-dated-workforce-context",
+          "payroll-processed-run-hints",
+          "pay-statements-check-runs-pay-periods-hours-earnings-deductions-taxes-benefits-and-payment-breakdowns",
+          "time-and-labour-punches-work-and-non-work-time",
+          "new-hire-transfer-change-termination-time-off-and-future-dated-change-events",
+          "provider-api-version-entitlement-rate-limit-and-schema-metadata"
+        ],
+        "canonicalObjects": [
+          "person-source-identity",
+          "employment-status",
+          "organisation-assignment",
+          "cost-centre",
+          "time-event-evidence",
+          "payroll-run-observation",
+          "payroll-statement-evidence",
+          "labour-cost-observation",
+          "absence-change-signal",
+          "provider-delivery-diagnostic"
+        ],
+        "stableIdentifiers": [
+          "companyId identifies a Paylocity payroll entity",
+          "employeeId is unique only within its companyId and remains an opaque source identity",
+          "payStatementId is a nonzero UUID and cannot be reassigned across employees",
+          "payroll run identity is the exact companyId plus processId plus checkDate plus runId",
+          "punch identity uses companyId plus shift start date plus punch ID as recommended by Paylocity"
+        ],
+        "freshnessLatency": [
+          "payroll-processed webhooks are near-real-time hints emitted when Paylocity detects all payroll processes complete",
+          "employee and payroll detail are re-read from authoritative APIs after the event",
+          "hybrid webhook plus scheduled polling is the provider-recommended recovery pattern",
+          "punch reads should wait approximately 10 to 15 minutes after shift end to reduce incomplete synchronisation"
+        ],
+        "permissions": [
+          "OAuth client credentials must be entitled only to the exact required read APIs and company IDs",
+          "Pay Details is partner-restricted and requires an approved Paylocity Technology Partnership Agreement",
+          "webhook callback authentication is separately revision-bound and never becomes API or payroll authority",
+          "sensitive Core HR sections are excluded unless separately approved and field-minimised"
+        ],
+        "paginationDeltaWebhooks": [
+          "Core HR v1 employee batches use an opaque nextToken and a maximum limit of 20",
+          "Pay Details employee/date-range reads use offset plus limit and optional total-count headers",
+          "company punch detail reads use an asynchronous resourceId followed by offset pagination",
+          "webhooks are hints rather than complete snapshots and must be reconciled to API reads",
+          "polling overlap and exact source identity prevent missed events and duplicate application"
+        ],
+        "regionalApiVersions": [
+          "API versions are encoded in resource URLs and must be pinned per connection",
+          "the exact demo or production HTTPS origin is discovered and bound rather than inferred",
+          "company time zone is authoritative for relative punch windows that deliberately omit time-zone suffixes",
+          "company and employee identities remain company-scoped across transfers and multi-company estates"
+        ],
+        "customFields": [
+          "employee custom fields and company-specific lookup values exist but require explicit field mapping and schema fingerprints",
+          "sensitive, compensation, tax, direct-deposit, work-authorisation and demographic sections are not included by default",
+          "future-dated status, department and pay changes retain their effective dates and do not become current early"
+        ],
+        "rateLimits": [
+          "Paylocity can return HTTP 429 and reserves the right to impose endpoint-specific limits",
+          "Punch Detail documents 300 requests per minute with a burst limit of 5 requests per second",
+          "only one company-level punch detail operation can run at once; later operations queue FIFO",
+          "backoff honours provider limits and never widens tenant, company, employee, route or date scope"
+        ],
+        "failureModes": [
+          "webhook delivered before all employee pay statements are consistently readable",
+          "missed or delayed webhook, callback authentication failure or a delivery path that does not retry every HTTPS error",
+          "employee roster or pay-statement pagination gap, total-count drift, duplicate page or mutable offset window",
+          "employee transfer causing company-scoped identity collision",
+          "payStatementId reassigned across employees or payload changes between reconciliation passes",
+          "401 token expiry, 403 missing entitlement, 429 throttling, 5xx provider outage or regional endpoint drift",
+          "API-version deprecation, custom-field change or sensitive-field expansion",
+          "relative-time, DST or overnight-shift misinterpretation in punch reads"
+        ],
+        "reconciliation": [
+          "treat payroll-processed webhook data only as a trigger keyed by companyId, processId, checkDate and runId",
+          "require a complete roster snapshot and exactly two stable employee-by-employee Pay Details passes",
+          "require gapless offset pages, constant total counts, exact roster coverage and identical statement UUID plus payload digests across both passes",
+          "pseudonymise employee identities in the authority result and return counts and evidence fingerprints rather than wage values",
+          "never advance a checkpoint or grant payroll, attendance, deletion, causal or write authority from this observation"
+        ],
+        "schemaDrift": [
+          "pin API URL version, employee schema, pay-statement schema, mapping and principal fingerprints",
+          "quarantine new fields, sensitive section expansion, route migration or partnership-entitlement changes until reviewed",
+          "use the Paylocity changelog and version lifecycle to prepare migrations before an endpoint is retired"
+        ],
+        "retriesReconnect": [
+          "refresh short-lived OAuth access tokens within the approved client identity",
+          "back off on 429 and transient 5xx responses without creating duplicate payroll reads or write attempts",
+          "recover missed events through scheduled polling and re-run both stable coverage passes",
+          "credential renewal, partnership changes and webhook callback changes require privileged evidence-bound approval"
+        ],
+        "payrollRunCoverageAuthority": {
+          "webhookIsHintOnly": true,
+          "exactRosterCoverageRequired": true,
+          "twoStablePassesRequired": true,
+          "crossEmployeeStatementCollisionRejected": true,
+          "rawEmployeeIdsReturned": false,
+          "checkpointAuthority": false,
+          "deletionAuthority": false,
+          "payrollAuthority": false,
+          "attendanceAuthority": false,
+          "writeBackAuthority": false,
+          "causalAuthority": false
+        },
+        "customerValueOpportunities": [
+          "reconcile processed payroll coverage before presenting payroll-ready exceptions",
+          "compare scheduled, punched and paid hours without treating any one source as self-proving attendance truth",
+          "identify missing statements, unexpected zero-statement employees, duplicate identities and cost-centre mapping breaks before finance close",
+          "separate overtime caused by demand or skill constraints from payroll coding and time-capture defects",
+          "reduce support tickets by diagnosing webhook, entitlement, pagination, rate-limit and provider-outage failure domains automatically"
+        ],
+        "zeroFrictionConnection": [
+          "discover the company IDs and entitled read APIs after OAuth connection",
+          "propose the minimum field projection excluding sensitive Core HR sections",
+          "pre-fill the company time zone, currency, API versions and exact callback route",
+          "generate roster, pay-statement and punch mappings from provider schemas and stop for review on ambiguity",
+          "measure manual company mappings, field approvals, retries and time-to-first reconciled payroll run removed"
+        ],
+        "productHandoff": "Show a decision-ready payroll coverage card after each processed run: employees covered, statements found, zero-statement exceptions, schedule-versus-punch-versus-paid anomalies, freshness and exact failure domain. Do not expose raw API tables or imply payroll approval.",
+        "autonomyHandoff": "Detect webhook gaps, expiring credentials, entitlement drift, 429 throttling, route/version changes, employee-company identity moves, unstable pagination and statement mismatches; auto-recover only by bounded token refresh, backoff and read-only polling, otherwise prepare the exact safest corrective action.",
+        "evidenceSources": [
+          {
+            "title": "Paylocity Getting Started",
+            "url": "https://developer.paylocity.com/integrations/docs/getting-started",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Integrations FAQ",
+            "url": "https://developer.paylocity.com/integrations/docs/integrations-faq",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity API Versioning",
+            "url": "https://developer.paylocity.com/integrations/reference/versioning",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Synchronization and Webhooks",
+            "url": "https://developer.paylocity.com/integrations/docs/synchronization-webhooks",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Payroll Processed Webhooks",
+            "url": "https://developer.paylocity.com/integrations/reference/payroll-processed-webhooks",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Get Employees Batch",
+            "url": "https://developer.paylocity.com/integrations/reference/get_corehr-v1-companies-companyid-employees",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Pay Details Overview",
+            "url": "https://developer.paylocity.com/integrations/reference/pay-detail-api-overview",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Get Pay Statements by Employee and Date Range",
+            "url": "https://developer.paylocity.com/integrations/reference/get_apihub_payroll_v1_companies_companyid_employees_employeeid_paystatements",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Get Pay Statement by ID",
+            "url": "https://developer.paylocity.com/integrations/reference/get_apihub_payroll_v1_companies_companyid_employees_employeeid_paystatements_paystatementid",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Get Employee Punch Details",
+            "url": "https://developer.paylocity.com/integrations/reference/get_apihub_time_v2_companies_companyid_employees_employeeid_punchdetails",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Punch Detail Best Practices",
+            "url": "https://developer.paylocity.com/integrations/reference/punch-detail-best-practices",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity Errors",
+            "url": "https://developer.paylocity.com/integrations/reference/errors",
+            "evidenceLevel": "official-provider-documentation"
+          },
+          {
+            "title": "Paylocity APIs and Developer Resources",
+            "url": "https://www.paylocity.com/products/capabilities/integrations/apis-developer-resources/",
+            "evidenceLevel": "official-provider-documentation"
+          }
+        ],
+        "evidenceNote": "Official Paylocity documentation was reviewed for authentication, versioning, employee batches, payroll-processed webhooks, Pay Details, punch details, rate limits, recovery and partnership requirements. No Paylocity sandbox, customer company, OAuth credential, webhook callback, tenant authentication, live employee or payroll read, denied write, hosted VECTOR proof or production certification is claimed.",
+        "nextBuildAction": "In an authorised Paylocity sandbox under an approved company and partnership entitlement, prove OAuth client credentials, enumerate exact company and read scopes, complete one roster plus two stable Pay Details passes after a payroll-processed webhook, verify empty-employee coverage and statement UUIDs, then test token expiry, callback authentication failure, missed webhook recovery, 403 entitlement loss, 429 backoff, page drift, route/version change and denial of payroll, punch and employee mutations."
+      }
+    }
+  ]
+}

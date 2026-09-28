@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-26",
+  "purpose": "Celigo integrator.io evidence promotion and reusable managed-export authority.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "celigo-integrator-io",
+      "patch": {
+        "protocols": ["REST", "webhooks", "files"],
+        "auth": "bearer-api-token-custom-export-scope-or-user-bound-pat",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.celigo.com/hc/en-us/articles/360019782431-Managing-API-and-Personal-Access-tokens",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "integrator.io REST API with custom-scoped API token",
+            "direction": "approved-export-to-wfm-ingress-only",
+            "authentication": "Bearer token custom-scoped to exact approved exports with auto-purge/rotation and optional network policy",
+            "notes": "Preferred steady-state route. Celigo documents that custom export scopes can invoke selected exports but cannot perform CRUD on export resources. Full-access tokens, flow/import invocation and error resolution are denied."
+          },
+          {
+            "type": "customer-owned scheduled or delta export",
+            "direction": "source-system-to-wfm-ingress-only",
+            "authentication": "customer-managed Celigo source connection plus WFM-owned bounded sink",
+            "notes": "Use where a customer already operates Celigo for NetSuite or another source. Export configuration and source authority remain customer-owned; WFM admits only exact versioned export output and completion evidence."
+          }
+        ],
+        "deploymentVariants": {
+          "cloudRegions": {
+            "customerEdgeRequired": false,
+            "regions": ["provider-default", "Europe", "Australia", "Canada"],
+            "routing": "Discover and pin the exact account/API host. Never infer a cross-region failover or move checkpoints between environments."
+          },
+          "onPremiseAgent": {
+            "customerEdgeRequired": true,
+            "routing": "Customer-controlled Celigo agent for private sources; WFM receives only an approved export at its bounded ingress and never inherits agent or source-system administration."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["account", "environment", "integration", "export"],
+          "sourceIdentityDimensions": ["connection", "account", "environment", "integration", "export", "exportRevision", "dataset"]
+        },
+        "managedExportAuthority": {
+          "customScopedTokenRequired": true,
+          "fullAccessTokenAllowed": false,
+          "allowedResourceKinds": ["export"],
+          "allowedAction": "invoke-read-ingress",
+          "deniedAuthorities": ["imports", "flows", "connections", "error-resolution", "topics", "api-management"],
+          "exactScopeDimensions": ["wfmTenant", "connection", "account", "environment", "regionalHost", "integration", "export", "dataset", "sink", "credentialRevision", "exportRevision", "schemaFingerprint"],
+          "receiptPolicy": "A completed, error-free, gapless, count-consistent receipt creates only a reconciliation candidate. It never directly advances a checkpoint or grants deletion authority."
+        },
+        "dataObjects": [
+          "workers", "skills-and-qualifications", "contracts-and-availability", "shifts", "time-and-attendance",
+          "production-orders", "work-centres", "machines-and-maintenance", "quality-and-scrap", "inventory",
+          "suppliers-and-agencies", "finance-and-cost-centres", "integration-run-and-error-evidence"
+        ],
+        "stableIds": [
+          "Celigo account/environment/integration/export/run identifiers",
+          "source-system stable IDs preserved by the approved export mapping",
+          "WFM tenant/connection/dataset/checkpoint namespace",
+          "export revision and schema fingerprint"
+        ],
+        "readCapability": "Read approved resource definitions/monitoring where separately authorised and invoke only exact custom-scoped exports into a WFM-owned ingress. Source records remain governed by the configured customer export.",
+        "writeCapability": "Celigo APIs can manage connections, integrations, flows, exports/imports, errors and executions. WFM denies CRUD, imports, general flow execution, error resolution/retry, topics and API management; successful authentication never implies write authority.",
+        "freshnessLatency": "Supports scheduled, delta and real-time/webhook patterns according to each configured source connector. Freshness is recorded per export and source window; provider run state is not completeness proof by itself.",
+        "permissions": [
+          "dedicated custom-scoped API token limited to exact approved exports",
+          "no Full access token and no owner/admin steady-state identity",
+          "WFM-owned bounded ingress sink",
+          "exact account/environment/region/integration/export scope",
+          "token auto-purge/rotation and network policy where available"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "Celigo supports multiple source paging strategies and independently pages records through a flow. Bind the configured paging contract to the export revision; require gapless page sequence, unique digest and count/byte consistency before reconciliation.",
+          "delta": "Delta semantics are connector/export specific and may depend on a last-successful-run timestamp or source field. Preserve the source window and overlap on replay; never treat a provider cursor alone as WFM checkpoint authority.",
+          "events": "Webhook/listener output is low-latency evidence, not completeness authority without a documented source contract and reconciliation.",
+          "files": "Customer-owned file/SFTP routes remain valid for low-complexity estates and backfills; admit them through the existing batch reconciliation contract.",
+          "queues": "Any internal or source queue is Celigo/customer managed; WFM requires explicit export/run evidence and cannot infer exactly-once delivery."
+        },
+        "customFields": "Mappings, saved searches, transforms and hooks are customer/environment specific. Preserve source field identity and approved extensions, fingerprint the output schema per export revision and quarantine breaking, sensitive or authority-changing drift.",
+        "regionalApiVersions": "Official documentation identifies provider account regions including Europe, Australia and Canada. Discover and pin the exact regional account/API host and environment; legacy shared sandbox/production resources and newer multiple-environment estates must never share checkpoint or credential authority implicitly.",
+        "rateLimits": "No single universal limit contract is claimed across Celigo APIs and all connected sources. Bound concurrency, pages, bytes and elapsed time per export; Celigo documents a 25 MB maximum response for HTTP-based exports and separate flow page-size limits.",
+        "failureModes": [
+          "full-access or over-broad token supplied instead of an exact custom export scope",
+          "wrong account, region, environment, integration, export, dataset or sink",
+          "export revision or mapping/schema drift",
+          "partial, failed, gapped, duplicated or out-of-order export pages",
+          "record/page/byte totals inconsistent with receipt evidence",
+          "delta cursor or last-successful-run window advanced despite record errors",
+          "source API pagination or payload-size failure",
+          "provider auto-retry producing duplicate or delayed records",
+          "token expiry/revocation, disabled PAT owner, rate limiting or regional outage",
+          "private-source/on-premise-agent disconnect"
+        ],
+        "reconciliation": "Only successful complete and error-free export evidence with exact plan, scope, revision, schema, source window, gapless pages and consistent totals becomes a candidate for the existing batch reconciliation layer. That later layer controls durable checkpoint advancement; missing rows never become deletion evidence from a delta, webhook, failed or partial run.",
+        "schemaDrift": "Fingerprint each approved export output. Additive approved fields retain source provenance; removed/type-changed identifiers, changed units/currencies/timezones, new sensitive fields or mapping/hook changes quarantine the dataset until reviewed.",
+        "retriesReconnect": "401/403 stops for token/scope diagnosis; 429/5xx/network failures use bounded backoff without widening credentials or changing regions. Retry from the last WFM committed checkpoint with overlap and stable-ID dedupe. Provider auto-retry or a repeated run ID cannot independently advance a checkpoint.",
+        "evidenceUrl": "https://docs.celigo.com/hc/en-us/articles/360019782431-Managing-API-and-Personal-Access-tokens",
+        "evidenceNote": "Celigo documentation updated 14 September 2026 establishes Bearer API/PAT access, custom resource scopes, auto-purge, network policy and the crucial rule that custom-scoped export/import/connection tokens can invoke selected resources but cannot perform CRUD. Provider documentation also establishes managed flows/exports/imports, delta/scheduled/webhook patterns, monitoring/errors, regional account variants and paging/payload constraints. No sandbox or customer tenant was authenticated and no live export/read round-trip was performed.",
+        "securityEvidenceBlockers": [
+          "Custom export scope and denied CRUD are documented but must be observed with an authorised tenant token before authentication evidence advances.",
+          "An approved export can still contain a customer-authored transform/hook or target an unsafe sink; export revision, source mapping, sink ownership and denied import/flow routes require tenant proof.",
+          "Regional API hostname, environment isolation, source-connector delta behavior, run receipt fields and rate limits require authorised discovery.",
+          "Tokens, source credentials, payload samples and provider error bodies must never enter generic evidence."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["person", "skill", "contract", "availability", "shift", "time-event", "site", "work-centre", "machine", "production-order", "quality-event", "inventory", "supplier", "agency", "finance-ledger-entry", "cost-centre"],
+          "customerValue": ["faster NetSuite and mid-market implementation", "reuse of customer-managed integrations", "lower bespoke connector cost", "safer cross-system onboarding", "better labour/production/material/cost decisions", "regional and multi-environment isolation"],
+          "savingsHypotheses": ["reduce integration implementation effort by reusing a governed existing Celigo export", "reduce overtime and paid idle time by joining workforce capacity to production/material constraints", "reduce reconciliation effort by quarantining partial/error runs before checkpoints move"],
+          "automationOpportunities": [
+            "discover approved Celigo exports and propose canonical mappings without granting flow/import administration",
+            "join NetSuite or other ERP production/inventory/finance exports to WFM people, time, skills and cost semantics",
+            "monitor export freshness and receipt integrity, replaying safely from the last WFM checkpoint after failures"
+          ],
+          "constraintsRisks": ["Celigo subscription and configured connectors vary by customer", "existing flows may include unsafe writes or custom scripts", "source authority and delta semantics remain connector specific", "documentation proof is not live tenant proof"]
+        },
+        "causalOutcomeReadiness": "Preserve Celigo account/environment/integration/export/run IDs, source-system IDs, export/schema revisions, source/effective/observation/ingestion times, source window, recommendation/action IDs, baseline/outcome windows and competing schedule/material/machine/quality/finance changes.",
+        "nextBuildAction": "Use an authorised Celigo sandbox or non-production tenant to create an auto-purging custom token scoped only to one approved export; prove denied CRUD/import/flow/error actions, exact regional/environment scope, a real paged/delta export into a WFM-owned sink, mapping drift, token expiry/revocation, 401/403/429/5xx recovery and complete receipt-to-batch reconciliation without production or payroll mutation."
+      }
+    }
+  ],
+  "systems": []
+}

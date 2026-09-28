@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-26",
+  "purpose": "SnapLogic evidence promotion and reusable managed-task ingress authority.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "snaplogic",
+      "patch": {
+        "protocols": ["REST", "webhooks", "database", "files"],
+        "auth": "dedicated-service-account-jwt-or-task-bearer-header",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.snaplogic.com/manager/run-triggered-task.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "customer-owned Triggered Task read projection",
+            "direction": "approved-source-projection-to-wfm-ingress-only",
+            "authentication": "dedicated task bearer token in the Authorization header",
+            "notes": "Preferred steady-state route where a customer already operates SnapLogic. Query-string bearer tokens are denied because they can leak through URLs and logs. The task contract, pipeline revision, parameters and WFM sink are exact and immutable."
+          },
+          {
+            "type": "read-only Runtime monitoring API",
+            "direction": "SnapLogic execution evidence to WFM reconciliation",
+            "authentication": "dedicated API-only service account or JWT with read access to approved assets",
+            "notes": "Retrieve one exact Runtime ID (RUUID) and its terminal status. Runtime start/stop, project migration, task/pipeline/account changes and other management APIs remain denied."
+          }
+        ],
+        "deploymentVariants": {
+          "cloudplex": {
+            "customerEdgeRequired": false,
+            "routing": "SnapLogic-managed data plane using the exact customer control-plane region and approved task URL."
+          },
+          "groundplex": {
+            "customerEdgeRequired": true,
+            "routing": "Customer-self-managed Snaplex inside the customer network or private cloud. WFM invokes only the approved task route and receives bounded output; it never receives Groundplex or source-network administration."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["environment-org", "project-space", "project", "task", "pipeline", "snaplex-route"],
+          "sourceIdentityDimensions": ["connection", "environment-org", "control-plane-region", "task-path", "task-revision", "pipeline-revision", "schema-fingerprint", "ruuid", "source-record-id", "source-version"]
+        },
+        "managedTaskIngressAuthority": {
+          "headerAuthenticationRequired": true,
+          "queryCredentialAllowed": false,
+          "mutationAuthorityAllowed": false,
+          "allowedAction": "invoke-exact-read-projection-to-wfm-ingress",
+          "deniedAuthorities": ["task-management", "pipeline-management", "runtime-start-stop", "project-migration", "account-management", "source-write", "arbitrary-destination"],
+          "exactScopeDimensions": ["wfmTenant", "connection", "environment", "controlPlaneHost", "taskPath", "taskRevision", "pipelineRevision", "schemaFingerprint", "credentialRevision", "method", "parameterSet"],
+          "receiptPolicy": "Only an exact Completed RUUID with zero error documents, zero failed Snaps, matching task/pipeline/schema revisions and conflict-free record identities becomes a reconciliation candidate. It never directly advances a checkpoint or grants deletion authority."
+        },
+        "dataObjects": [
+          "workers", "skills-and-qualifications", "contracts-and-availability", "shifts", "time-and-attendance",
+          "sites-and-entities", "production-orders", "work-centres", "machines-and-maintenance", "quality-and-scrap",
+          "inventory", "suppliers-and-agencies", "finance-and-cost-centres", "pipeline-run-and-error-evidence"
+        ],
+        "stableIds": [
+          "SnapLogic environment/org, project, task and pipeline asset identity",
+          "RUUID for each pipeline execution",
+          "source-system stable record ID and source version retained by the approved pipeline",
+          "task/pipeline revision and output schema fingerprint",
+          "WFM tenant, connection and checkpoint namespace"
+        ],
+        "readCapability": "Invoke one exact customer-owned read-projection Triggered Task and retrieve the matching execution status by RUUID. Source objects depend on the customer's installed Snap Packs and approved pipeline mapping.",
+        "writeCapability": "SnapLogic tasks and public APIs can execute arbitrary pipeline logic, accept mutation verbs, stop/resume executions and manage assets. WFM denies all source writes and management operations; HTTP GET/POST and successful authentication never prove read-only semantics.",
+        "freshnessLatency": "Triggered Tasks support request/response invocation and Ultra Tasks support low-latency processing. Record execution start/completion, source/effective time and WFM ingestion time separately; provider task status alone is not completeness evidence.",
+        "permissions": [
+          "dedicated API-only service account or task bearer credential",
+          "read access only to exact approved monitoring assets",
+          "exact task URL and immutable read-only pipeline contract",
+          "Authorization-header credential transport only",
+          "no Environment admin, project Full Access or runtime control authority for steady-state WFM"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "Paging is source Snap/pipeline specific. The pipeline must emit stable source IDs/versions and bounded output with explicit completion evidence; the RUUID does not prove every source page was read.",
+          "delta": "Delta/watermark logic is customer-pipeline specific. Bind the source window and task/pipeline revision to reconciliation and replay with overlap from the last WFM-committed checkpoint.",
+          "events": "Triggered and Ultra Tasks provide request/response or low-latency delivery, but Ultra Tasks have a documented duplicate-message failure mode. Treat delivery as at-least-once and deduplicate exact source ID + version + payload digest.",
+          "files": "File/SFTP outputs remain valid for backfills and small estates and enter through the existing batch-reconciliation contract.",
+          "queues": "FeedMaster/Ultra delivery is not assumed exactly-once. Exact duplicate records are collapsed; the same source identity/version with different payload digests is quarantined."
+        },
+        "customFields": "Pipeline transforms, expressions, parameters, child pipelines, error pipelines and Snap versions are customer/environment specific. Preserve source field identity and local extensions, fingerprint output per pipeline revision, and quarantine authority-changing or incompatible drift.",
+        "regionalApiVersions": "SnapLogic documents US and EMEA control-plane hosts and region-bound credentials, plus UAT variants and control-plane migration for data residency. Pin the exact host/environment and require a new checkpoint namespace plus overlap reconciliation after any route or environment change.",
+        "rateLimits": "No universal limit is claimed across customer tasks, Snap Packs, source APIs and licensing. Bound concurrent invocations, runtime, output records/bytes and polling; use provider execution metrics where authorised without requiring Environment admin in steady state.",
+        "failureModes": [
+          "bearer token passed in a query string and leaked through logs, history or proxies",
+          "task owner password expiry affecting cloud task execution",
+          "wrong environment/org, control plane, project, task, pipeline, Snaplex route or WFM tenant",
+          "task or pipeline revision changed without schema revalidation",
+          "pipeline accepts write verbs or performs hidden source/target mutations",
+          "task reports Completed while error documents or failed Snaps exist",
+          "Ultra/FeedMaster duplicate message delivery or overlapping instances after pipeline change",
+          "same source identity/version replayed with conflicting payload",
+          "runtime list query omits executions outside its time window",
+          "Groundplex, FeedMaster or source endpoint disconnect",
+          "credential expiry/revocation, permission change, throttling or regional outage"
+        ],
+        "reconciliation": "Bind each invocation to an exact immutable plan and one RUUID. Admit only Completed, revision/schema-matching executions with zero error documents and failed Snaps. Collapse exact replays by source ID + source version + payload digest, but quarantine any conflicting duplicate identity. The result is only a candidate for the existing reconciliation layer; no task receipt directly advances a checkpoint or creates deletion authority.",
+        "schemaDrift": "Fingerprint the output schema and task/pipeline revisions. Additive approved fields retain provenance; removed/type-changed IDs, new sensitive fields, changed units/currencies/timezones, modified parameters, child/error-pipeline changes or Snap-version drift quarantine the dataset.",
+        "retriesReconnect": "401/403 stops for credential/permission diagnosis; 429/5xx/network failures use bounded backoff without changing region or task. Retry from the last WFM-committed checkpoint with overlap and stable identity dedupe. A new RUUID or provider retry does not imply a new business record or permit checkpoint advancement.",
+        "evidenceUrl": "https://docs.snaplogic.com/manager/run-triggered-task.html",
+        "evidenceNote": "SnapLogic documentation reviewed 26 September 2026 establishes Triggered/Ultra task invocation, bearer authentication, task-owner execution, Runtime IDs and statuses, US/EMEA control-plane hosts, Cloudplex/Groundplex variants, project permissions and the documented Ultra duplicate-message issue. No sandbox or customer tenant was authenticated and no live task or source read round-trip was performed.",
+        "securityEvidenceBlockers": [
+          "A Triggered Task can use POST/PUT/PATCH/DELETE and runs as its owner, so tenant proof must inspect the exact pipeline and source/target accounts rather than infer safety from the HTTP method.",
+          "Anyone with a task bearer token can execute the task; WFM requires header-only transport, rotation/revocation proof and secret-free evidence.",
+          "The Runtime API exposes start/stop operations alongside reads; steady-state credentials must prove denied runtime control and asset management.",
+          "Groundplex network placement, region binding, source paging/delta behavior and error-pipeline completeness require authorised tenant discovery."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["person", "skill", "contract", "availability", "shift", "time-event", "site", "entity", "production-order", "work-centre", "machine", "quality-event", "inventory", "supplier", "agency", "finance-ledger-entry", "cost-centre"],
+          "customerValue": ["reuse of customer-managed iPaaS", "faster multi-system implementation", "less bespoke connector code", "safe cloud/on-premise integration", "better workforce-production-material-cost decisions", "duplicate-safe low-latency ingestion"],
+          "savingsHypotheses": ["reduce integration implementation effort by reusing one governed customer pipeline", "reduce overtime and paid idle time by joining workforce capacity with production/material constraints", "reduce reconciliation effort by collapsing exact replays and quarantining identity conflicts before checkpoints move"],
+          "automationOpportunities": [
+            "discover a customer-approved task contract and propose canonical mappings without acquiring pipeline administration",
+            "reuse existing ERP/HCM/MES/maintenance/quality/finance pipelines for WFM semantic ingestion",
+            "monitor exact RUUID freshness and failure evidence, replaying safely after partial or duplicate delivery"
+          ],
+          "constraintsRisks": ["installed Snap Packs and pipeline logic vary by customer", "task owner authority can exceed WFM needs", "Ultra delivery is not assumed exactly-once", "documentation proof is not live tenant proof"]
+        },
+        "causalOutcomeReadiness": "Preserve environment/org, project, task, pipeline and RUUID identity; source record/version, task/pipeline/schema revisions, source/effective/observation/ingestion times, recommendation/action IDs, baseline/outcome windows and competing schedule/material/machine/quality/finance changes.",
+        "nextBuildAction": "Use an authorised SnapLogic non-production environment to create one dedicated API-only service account and one exact read-only Triggered Task; prove header-only credential use, denied task/pipeline/runtime-control operations, US/EMEA and Cloudplex/Groundplex route binding, real source paging/delta output, RUUID monitoring, task-owner expiry, duplicate/conflicting Ultra delivery, schema drift and complete reconciliation without production, payroll or source mutation."
+      }
+    }
+  ],
+  "systems": []
+}

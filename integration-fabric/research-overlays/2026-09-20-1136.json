@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-20",
+  "purpose": "Authoritative-vendor connected-worker integration delta adding Operations1 Connected Worker Platform at spec-verified only. Reuses the existing REST/OpenAPI path, pins tenant and API version semantics, records effective-role and webhook-origin security boundaries, and keeps Manufacturing WFM read-only. No customer credentials, customer data, write/control calls, webhook registrations, MCP actions, external-request actions or plant-network probes were used.",
+  "protocolFamilies": [],
+  "overrides": [],
+  "systems": [
+    {
+      "id": "operations1-connected-worker",
+      "name": "Operations1 Connected Worker Platform",
+      "category": "frontline-operations-learning-skills",
+      "priority": "P1",
+      "protocols": [
+        "REST"
+      ],
+      "auth": "bearer-token-technical-api-user-with-role-scoped-permissions",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://developer.operations1.com/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "customerEdgeRequired": false,
+      "evidenceUrl": "https://developer.operations1.com/reference/get-started",
+      "evidenceNote": "Operations1 documents a tenant-scoped REST API at api.operations1.app using a technical API user bearer token whose effective privileges come from the technical user's role. Calls require a dated Accept-Version header; the vendor explicitly advises against `latest` in production. Orders and tasks support pageIndex/pageSize paging, updatedAt range filters and stable ordering fields suitable for bounded incremental reads. Current API history also exposes users, groups, roles, qualifications, documents/work instructions, reports and execution data, while the same API includes mutative role/user/task/order/report operations. Operations1 also publishes webhooks and external-request/IoT capabilities, but the public webhook guidance reviewed does not establish a cryptographic sender-authentication contract and includes a Power Automate example configured for an HTTP trigger callable by Anyone. WFM therefore keeps the trusted Operations1 route REST-only until authenticated webhook-origin/replay evidence or a customer-controlled authenticated gateway is proven. No tenant credentials were used.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://developer.operations1.com/",
+        "requiredPermissions": [
+          "dedicated Operations1 technical API user with a customer-approved role constrained to the reviewed read resources only; successful bearer authentication alone is not least-privilege proof",
+          "bearer token created with an explicit expiry/rotation policy, injected only at the executor boundary and never written to logs or evidence",
+          "exact tenantId binding to the approved Operations1 tenant/subdomain; do not allow tenant substitution or cross-tenant reuse of a token",
+          "pin a reviewed dated Accept-Version value in production and reject silent use of `latest`; treat version change as compatibility evidence requiring revalidation",
+          "GET/read access only for the minimum approved users, groups, roles, qualifications, documents, reports, orders, tasks, classes/characteristics and related files needed for the mapped WFM workflows",
+          "deny user/role/qualification mutation, document/report interaction writes, task messaging/mutation, order creation/update, connector execution, webhook administration, MCP/agent actions and external-request/IoT actions in the normal WFM connector",
+          "direct webhook ingestion disabled until vendor-supported sender authentication/signature/mTLS/JWT/HMAC or a customer-controlled authenticated gateway plus replay/idempotency and schema-version proof is available"
+        ],
+        "dataAvailableOrExpected": [
+          "tenant-scoped users, user groups, roles and qualification assignments/qualification catalogue",
+          "digital work instructions/documents, nested steps/process steps, language variants, required/granted qualification context and document structure/classification",
+          "orders covering production, manufacturing, maintenance or service work with state, assignments, custom order identifiers, class characteristics and updated timestamps",
+          "tasks with state, priority, due/created/updated timestamps, assignments and external classifiers",
+          "reports/execution records and exported report data including operator/execution context, order relationships, interactions and outcome evidence where authorised",
+          "customer-specific classes/characteristics and external identifiers used to reconcile equipment, locations, orders, products or other local structure",
+          "report PDF/media/feedback files only where required by an approved workflow; avoid copying rich media when a compact status/result is sufficient",
+          "versioned webhook schemas exist for real-time events, but direct webhook business-data ingestion remains disabled until sender-authentication evidence is proven"
+        ],
+        "wfmObjects": [
+          "worker",
+          "team",
+          "skill",
+          "qualification",
+          "qualification-requirement",
+          "training-completion",
+          "work-centre",
+          "production-demand",
+          "maintenance-demand",
+          "worker-activity-context",
+          "production-event",
+          "quality-event",
+          "disruption-event",
+          "shift-outcome",
+          "integration-event"
+        ],
+        "automationOpportunities": [
+          "join Operations1 worker qualifications and role/group context to WFM availability and order/task demand to identify qualified-coverage gaps before they turn into overtime or agency demand",
+          "use orders/tasks/reports updatedAt filters with overlap and reconciliation to refresh production/maintenance labour demand without full rescans",
+          "compare payable WFM attendance with Operations1 execution/report evidence to identify paid-but-nonproductive or administration time while keeping WFM/payroll authoritative for payable time",
+          "detect recurring quality, maintenance or instruction-execution patterns that imply a training/qualification gap and schedule learning before future demand",
+          "recommend qualified redeployment between work centres when task/order priority or disruption changes, without mutating Operations1 execution state",
+          "poll the authenticated REST API for completion/state changes until webhook sender-authentication and replay controls are proven; only then consider event-driven acceleration",
+          "future controlled task/order automation is technically possible, but every Operations1 write remains disabled until a separate authorised write-roundtrip programme proves scope, idempotency, rollback and customer approval"
+        ],
+        "customerValue": [
+          "labour-cost reduction",
+          "payroll accuracy",
+          "overtime reduction",
+          "scheduling efficiency",
+          "agency-labour reduction",
+          "compliance",
+          "skills deployment",
+          "production throughput",
+          "downtime reduction",
+          "maintenance coordination",
+          "inventory/logistics improvements",
+          "faster implementation",
+          "reduced administration",
+          "improved forecasting",
+          "finance attribution",
+          "executive reporting"
+        ],
+        "savingsHypotheses": [
+          "reduce overtime and agency labour by detecting upcoming qualification/coverage gaps from real order/task demand before the shift starts",
+          "reduce onboarding and training administration by reconciling qualification and digital-instruction evidence into auditable WFM readiness rather than manually comparing systems",
+          "reduce paid idle time and throughput loss by redeploying appropriately qualified workers when tasks, orders or disruption status changes",
+          "reduce quality/rework labour by correlating report execution outcomes and recurring exceptions with skill/training gaps",
+          "reduce maintenance downtime by combining maintenance/service tasks with real worker availability and qualification readiness",
+          "reduce bespoke integration cost by reusing the existing REST adapter, deterministic version pinning and bounded page/updatedAt incremental-read pattern rather than creating an Operations1-specific transport stack"
+        ],
+        "dataGaps": [
+          "Operations1 is not normally authoritative for employment contracts, absence/leave balances, payable time, payroll rules, agency commercials or complete workforce availability",
+          "Operations1 qualification evidence must not automatically be treated as legal/regulatory work eligibility; each qualification source and expiry/competence rule needs an explicit customer mapping",
+          "the accessible public documentation confirms 429 responses but does not establish a universal numeric rate limit for all endpoints, so quotas and Retry-After behaviour require authorised-environment evidence",
+          "the public webhook material reviewed establishes versioned event schemas but not a cryptographic sender-authentication/signature contract, so direct webhook business-data ingestion cannot yet be trusted",
+          "effective read-only role behaviour must be proven in a sandbox/tenant because a technical API user's bearer token can inherit read-only or full-control permissions",
+          "offline mobile execution can delay synchronisation; source timestamps and staleness must be preserved so late data cannot masquerade as live workforce state",
+          "customer-defined classes, characteristics, external identifiers and group/site structures require versioned customer-specific mappings",
+          "multi-site/multi-entity and regional tenant structure must be proven per customer rather than inferred from a single tenantId"
+        ],
+        "constraintsRisks": [
+          "the same REST API includes mutative user, role, qualification, task, order, document/report and connector operations; GET-only intent does not substitute for effective role proof",
+          "bearer tokens can be created with an optional expiry; production WFM must enforce customer-approved expiry/rotation rather than accepting indefinite reusable tokens",
+          "the tenantId is part of the request path and must be pinned to the connection identity to prevent cross-tenant substitution",
+          "the API requires Accept-Version and the vendor warns that `latest` can fall forward to breaking changes; production connectors must pin a dated version and fail/degrade on unreviewed schema drift",
+          "pageIndex/pageSize reads over moving datasets require deterministic ordering, updatedAt overlap, stable-id/digest deduplication and final reconciliation before checkpoints advance",
+          "429 is documented but a universal numeric limit is not; use adaptive backoff and provider headers/observed limits rather than a guessed fixed quota",
+          "direct webhook ingestion is withheld because current public guidance does not prove sender authentication and demonstrates an Anyone-callable Power Automate receiver; use authenticated polling or a customer-controlled authenticated gateway until stronger evidence exists",
+          "Operations1 external-request and IoT patterns can reach external/local infrastructure or devices; the WFM connector must not inherit those outbound automation or plant-control capabilities",
+          "Operations1 MCP exposes report search/analytics to AI clients, but the WFM integration plane must not automatically expose bearer tokens or grant MCP/agent action authority",
+          "offline/intermittent shop-floor use can produce late or partial state; event/source time, synchronisation time and completeness must be retained and stale data must not silently trigger real-time staffing actions"
+        ],
+        "nextDevelopmentAction": "Reuse the existing REST/OpenAPI adapter. In an authorised Operations1 sandbox or customer tenant, provision a dedicated technical API user with an explicitly read-only role, pin tenantId and a dated Accept-Version, then prove representative GET reads for users/qualifications, orders, tasks, reports and documents. Validate pageIndex/pageSize pagination, updatedAt overlap/reconciliation, stable-ID deduplication, 429/backoff behaviour, token expiry/rotation, permission denials, custom classes/characteristics, multi-site mappings, offline/late-data semantics and version/schema drift before promotion. Keep webhook ingestion disabled until authenticated sender integrity plus replay/idempotency/schema-version evidence is available; do not invoke MCP, external requests, connector execution, user/role/qualification mutations, order/task/report writes or any plant/device action."
+      }
+    }
+  ]
+}

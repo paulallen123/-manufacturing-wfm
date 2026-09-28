@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28",
+  "purpose": "Promote Plex Smart Manufacturing Platform to documentation-backed spec verification and bind provider-side API collection entitlement to exact read operations.",
+  "protocolFamilies": [],
+  "systems": [],
+  "overrides": [
+    {
+      "id": "plex-smart-manufacturing",
+      "reason": "Promote the existing Plex target using the provider developer portal and Rockwell Automation documentation while keeping API collection entitlement, production/MES coverage and all mutations separately governed.",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developers.plex.com/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "auth": "plex-developer-portal-api-key-static-credential",
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          "HTTPS REST APIs on the documented Plex Connect host through API collections enabled for the customer's Developer Portal application",
+          "Provider developer portal API definitions/OpenAPI as the preferred route for operation and schema discovery",
+          "Legacy SOAP, ODBC, custom data-source and plant-device routes remain separate authorities and are not inherited by this REST profile"
+        ],
+        "readRoutes": [
+          "GET operations from explicitly approved Plex Connect API collections only",
+          "Current public Developer Portal collections include Customers, Inventory Operations Management, Purchase Orders, Suppliers and IAM",
+          "Accounts payable invoice reads are separately documented under the accounting API",
+          "Manufacturing/MES collections are admitted only after the customer's entitled collection and exact read operation are discovered and reviewed"
+        ],
+        "deniedMutationRoutes": [
+          "POST, PUT, PATCH and DELETE operations that create, modify, link, unlink or delete Plex business records",
+          "IAM administration, user or role mutation",
+          "plant-floor control, tooling writes, DNC/program delivery, machine commands or PLC authority",
+          "provider-app subscription changes or API collection entitlement changes",
+          "payroll, attendance or workforce write-back"
+        ],
+        "dataObjects": [
+          "customers-and-organisations",
+          "inventory-and-material-availability",
+          "purchase-orders-and-inbound-supply",
+          "suppliers-and-supplier-identities",
+          "accounts-payable-invoice-context",
+          "provider-api-collection-and-operation-metadata",
+          "manufacturing-and-MES-data-only-where-an-authorised-entitled-read-collection-is-proven"
+        ],
+        "canonicalObjects": [
+          "entity",
+          "supplier",
+          "inventory-item",
+          "inventory-position",
+          "purchase-order",
+          "material-readiness-signal",
+          "finance-cost-context",
+          "integration-capability"
+        ],
+        "stableIds": [
+          "WFM tenant plus Plex connection",
+          "provider-returned immutable record IDs/UUIDs where documented by the selected API",
+          "exact API collection plus version plus operation ID",
+          "customer-approved source scope and schema fingerprint"
+        ],
+        "freshness": "Prefer provider timestamps and bounded incremental filters when the exact entitled API documents them. Where a collection does not expose a proven delta contract, use bounded polling with overlap and reconciliation; never infer deletion from a partial list.",
+        "permissions": [
+          "Use a dedicated customer-approved Developer Portal application/key rather than a human UI session",
+          "Bind runtime reads to the exact approved API collection and operation allowlist",
+          "Treat provider-side collection entitlement expansion or contraction as security/configuration drift requiring review",
+          "Do not grant mutation, IAM administration, tooling, plant-control or broad provider-management authority"
+        ],
+        "paginationAndDelta": [
+          "Discover pagination, ordering and delta semantics per API collection from the provider definition before enabling incremental checkpoints",
+          "A collection without a proven complete pagination contract cannot create deletion authority",
+          "Checkpoint identity includes provider, connection, API collection, API version, operation, source scope, schema and credential revision",
+          "Changing API entitlement or operation definition forces overlap replay and reconciliation before checkpoint advancement"
+        ],
+        "customFields": "Plex is configurable and exposes custom API/data-source options. Custom fields or customer-specific APIs are preserved as versioned source extensions only after their exact schema and authority are discovered; they are not inferred from UI availability.",
+        "regionalAndVersionNotes": [
+          "Plex is a cloud manufacturing platform; bind the exact customer-approved HTTPS API origin rather than following redirects or inferred hosts",
+          "Do not assume one Plex API collection or version has the same pagination, filtering, rate-limit or permission semantics as another",
+          "Legacy Plex Classic/SOAP and newer Developer Portal REST routes remain separately versioned integration authorities",
+          "Customer data-residency and cross-border policy remains independently enforced by VECTOR even where the public provider documentation does not expose a regional API-host matrix"
+        ],
+        "rateLimits": "No universal public rate limit is assumed for all Plex API collections. Honour provider throttling and Retry-After where present, use bounded concurrency, and treat a rate-limit or entitlement failure as a provider condition rather than a reason to widen authority or switch credentials.",
+        "failureModes": [
+          "expired, rotated or revoked API key",
+          "API collection not enabled for the customer application",
+          "provider-side capability expansion or contraction without review",
+          "wrong API host, version, collection or operation",
+          "read operation becoming mutative or schema-changing",
+          "pagination, ordering or delta semantics absent or changed",
+          "custom-field/API schema drift",
+          "material/supplier/reference identity mismatch across collections",
+          "provider throttling or partial outage",
+          "partial dataset being mistaken for a complete snapshot"
+        ],
+        "reconciliation": [
+          "Bind every observation to the exact WFM tenant, Plex connection, API collection/version/operation, credential revision and source-scope fingerprint",
+          "Resolve supplier, item, order and inventory references only through exact provider identifiers within the same approved source scope; unresolved references remain unresolved rather than fuzzy-matched",
+          "Use overlap replay for incremental reads and quarantine conflicting record versions",
+          "Provider list success does not imply complete source coverage unless the exact collection's terminal pagination and scope are proven"
+        ],
+        "schemaDrift": "Fingerprint each enabled API collection/operation schema separately. Additive optional fields may enter local extensions after review; removed, renamed, required, type, cardinality, identifier, unit/currency or sensitive-field changes fail closed for remapping.",
+        "retryAndRecovery": [
+          "Retry read-only operations only with bounded backoff and provider throttling guidance",
+          "Do not rotate or replace credentials automatically on 403/entitlement errors",
+          "After API-collection, credential, schema or host changes, re-discover the exact operation set and replay from the last trusted checkpoint with overlap",
+          "When an API collection is unavailable, advance other integrations or use a separately authorised export/file path rather than inventing a hidden endpoint"
+        ],
+        "capabilityEntitlementAuthority": {
+          "exactCollectionBindingRequired": true,
+          "exactReadOperationAllowlistRequired": true,
+          "providerCapabilityExpansionRequiresReview": true,
+          "providerCapabilityContractionBlocksRequiredReads": true,
+          "mutationAuthority": false,
+          "capabilityExpansionAuthority": false,
+          "checkpointAuthority": false
+        },
+        "evidenceSources": [
+          {"title":"Plex Developer Portal","url":"https://developers.plex.com/"},
+          {"title":"Plex Developer Portal API documentation","url":"https://developers.plex.com/docs"},
+          {"title":"Rockwell Automation Plex technical documentation","url":"https://docs.plex.com/welcome"},
+          {"title":"Plex ERP Custom APIs","url":"https://plex.rockwellautomation.com/en-us/resources/10301-plex-datasheet-e-r-p-custom-a-p-is.html"},
+          {"title":"Plex Manufacturing Execution System","url":"https://plex.rockwellautomation.com/en-us/products/manufacturing-execution-system.html"},
+          {"title":"Plex Inventory Management","url":"https://plex.rockwellautomation.com/en-us/products/manufacturing-execution-system/inventory-management.html"},
+          {"title":"Plex Suppliers and Purchasing Management","url":"https://plex.rockwellautomation.com/en-us/products/enterprise-resource-planning/suppliers-and-purchasing-management.html"},
+          {"title":"Plex Production Planning, Scheduling and Management","url":"https://plex.rockwellautomation.com/en-us/products/manufacturing-execution-system/production-planning-scheduling-and-management-software.html"},
+          {"title":"FactoryTalk Optix Plex APM Library Object Reference Manual","url":"https://literature.rockwellautomation.com/idc/groups/literature/documents/rm/info-rm005_-en-p.pdf"}
+        ],
+        "evidenceLevel": "spec-verified",
+        "evidenceNote": "Current provider-owned Plex/Rockwell pages were reachable in September 2026 and establish the public Developer Portal, named REST API families, HTTPS Plex Connect operations, API-key use for Plex HTTP integration, integrated ERP/MES/inventory/purchasing capabilities and a broader platform that also contains mutative and plant-facing functions. No Plex customer application, subscription, API key, tenant authentication, live read, denied mutation, pagination round-trip, hosted VECTOR proof or production certification was used in this review.",
+        "valueOpportunities": [
+          "Join inventory and inbound purchase-order/supplier state to workforce availability so VECTOR can distinguish a real labour shortage from a material or supplier constraint before recommending overtime or agency labour",
+          "Use inventory/WIP and purchasing context to avoid allocating scarce skilled labour to jobs that cannot start, reducing paid idle time and schedule churn",
+          "Correlate approved supplier, inventory and finance context with WFM labour cost for order/unit and working-capital attribution without treating Plex as payroll truth",
+          "Reuse a customer's existing Plex API collections instead of building bespoke point-to-point integrations, reducing implementation questions, custom mappings and time-to-usable-data",
+          "When authorised production/MES collections are discovered, combine work-centre, production, quality and inventory state with skills/availability for qualified redeployment and throughput decisions"
+        ],
+        "productHandoff": "Show decision-ready constraint intelligence such as 'labour-constrained vs material-constrained', supplier/inbound risk, available qualified cover and expected labour impact; do not surface raw API tables.",
+        "autonomyHandoff": "Auto-discover the customer's enabled Plex API collections and schemas, propose the minimum read allowlist and mappings, and stop for review on capability expansion, missing required collections, schema drift or ambiguous identities.",
+        "nextBuildAction": "In an authorised Plex non-production customer application, enumerate the exact enabled Developer Portal API collections and operations, prove a dedicated read-only key/identity, execute one bounded inventory plus purchase-order/supplier read, verify provider identifiers and pagination/filter semantics, then test key revocation, missing collection entitlement, capability expansion, throttling, schema drift and overlap recovery before mapping any production/MES collection."
+      }
+    }
+  ]
+}

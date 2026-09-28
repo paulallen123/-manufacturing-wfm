@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-20",
+  "purpose": "Authoritative-provider delta promoting the existing MRPeasy base-catalog target after its August 2026 REST API v2 expansion. This file must override the base record rather than add a duplicate system ID. No credentials, customer data, production mutation, payroll mutation, private-network access or paid services were used.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "mrpeasy",
+      "patch": {
+        "name": "MRPeasy",
+        "category": "manufacturing-erp-mrp-production-inventory-procurement-finance-quality-supply-chain",
+        "priority": "P1",
+        "protocols": ["REST", "OpenAPI"],
+        "auth": "basic-api-key-secret",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://mrpeasy.readme.io/v2.0/reference/mrpeasy-api",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://mrpeasy.readme.io/v2.0/reference/mrpeasy-api",
+        "evidenceNote": "Provider-owned MRPeasy documentation confirms HTTPS REST/OpenAPI APIs, Basic HTTP authentication using API key and secret, v1 plus an expanding v2 API, provider-recommended per-resource fallback from v2 to v1, v1 Range/206 pagination, v2 limit/offset pagination, 429 throttling, multi-site identifiers, custom manufacturing-order fields, manufacturing orders/production reports/workstations/routings, inventory, vendors, user action logs and v2 accounting/general-ledger data. August 2026 release notes confirm substantial new v2 endpoints for reports, dashboard data, production resources and stock. Exact API-key authority granularity, tenant/account identity, practical rate limits and complete endpoint parity require an authorised account.",
+        "providerIdentity": {
+          "canonicalName": "MRPeasy",
+          "aliases": ["MRPeasy Manufacturing ERP", "MRPeasy MRP"],
+          "canonicalApiHosts": ["api.mrpeasy.com"],
+          "transitionalApiHosts": [],
+          "regionalHostModel": "single-public-api-host-documented-residency-not-publicly-proven",
+          "crossHostRedirectApproved": false
+        },
+        "staticCredentialAuthority": {
+          "credentialType": "basic-api-key-secret",
+          "canonicalHost": "api.mrpeasy.com",
+          "steadyStateRoute": "reviewed-rest-read-allowlist",
+          "resourceCoverage": "account-scope-granularity-not-publicly-established",
+          "broadReadScopeRequiresCustomerApproval": true,
+          "rotationProofRequired": true,
+          "revocationProofRequired": true,
+          "credentialMaterialMayEnterEvidence": false
+        },
+        "apiVersionRouting": {
+          "preferredPolicy": "v2-where-provider-documents-resource-otherwise-v1",
+          "preferredVersion": "v2",
+          "fallbackVersion": "v1",
+          "fallbackRequiresProviderDeclaration": true,
+          "authFailureMayTriggerDowngrade": false,
+          "rateLimitMayTriggerDowngrade": false,
+          "checkpointNamespaceIncludesVersion": true,
+          "versionSwitchRequiresReconciliation": true,
+          "paginationByVersion": {
+            "v1": "range-header-and-206-partial-content",
+            "v2": "limit-offset-up-to-endpoint-bounds"
+          }
+        },
+        "datasetCoverage": [
+          {
+            "dataset": "manufacturing-orders-and-reports",
+            "kind": "incremental-delta",
+            "absenceMeaning": "unchanged-or-outside-filter-window",
+            "entityUniverse": "orders-visible-to-the-authorised-account-and-site-scope",
+            "scopeProven": false,
+            "pageComplete": false,
+            "reconciliationComplete": false,
+            "authoritativeForExistence": false
+          },
+          {
+            "dataset": "inventory-snapshots",
+            "kind": "complete-snapshot",
+            "absenceMeaning": "unknown-until-account-site-and-pagination-completeness-are-proven",
+            "entityUniverse": "inventory-visible-to-the-authorised-account-and-site-scope",
+            "scopeProven": false,
+            "pageComplete": false,
+            "reconciliationComplete": false,
+            "authoritativeForExistence": false
+          }
+        ],
+        "securityEvidenceBlockers": [
+          "Public documentation establishes an account API key/secret but does not prove a separately scoped read-only API credential. Before authentication evidence advances, prove the effective authority of a dedicated integration credential and denied POST/PUT/DELETE paths.",
+          "The same API surface exposes production and commercial mutations. WFM must use an explicit GET/read route allowlist and never infer safety from successful Basic authentication.",
+          "MRPeasy v2 is explicitly incomplete and evolving. Version fallback must be resource-specific and provider-declared; 401/403/429/5xx responses must not trigger silent downgrade to v1."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://mrpeasy.readme.io/v2.0/reference/mrpeasy-api",
+          "requiredPermissions": [
+            "use a dedicated API key/secret and keep it executor-boundary-only",
+            "pin HTTPS host api.mrpeasy.com and exact reviewed read routes",
+            "keep POST/PUT/DELETE disabled",
+            "prove credential rotation/revocation and denied writes before tenant-authenticated evidence",
+            "namespace checkpoints by API version and pagination contract"
+          ],
+          "dataAvailableOrExpected": [
+            "manufacturing orders, production timing, products/BOM/routings, workstations and sites",
+            "inventory, lots/serials, stock snapshots, units and product groups",
+            "supplier/procurement information including lead-time/on-time/rejection context",
+            "v2 accounting/general-ledger manufacturing material, overhead and labour-cost evidence",
+            "read-only user action logs and customer-defined manufacturing-order custom fields"
+          ],
+          "stableIdentifiers": [
+            "preserve MRPeasy database IDs for orders, products, BOMs, routings, workstations, sites, vendors and transactions",
+            "namespace IDs by customer account/connection and site where applicable"
+          ],
+          "freshnessLatency": {
+            "rest": "polling-based and constrained by provider throttling/response size",
+            "reports": "bounded date-window reconciliation/backfill",
+            "webhooks": "no webhook contract relied on; scheduled reads remain completeness mechanism"
+          },
+          "paginationDeltaEvents": {
+            "v1": "Range request header plus 206 Partial Content",
+            "v2": "limit/offset with endpoint bounds",
+            "delta": "object-specific timestamps/filters plus overlap reads and stable-ID dedupe",
+            "versionTransition": "v2 preferred where provider documents coverage; v1 only for declared gaps"
+          },
+          "rateLimitsAndRetries": [
+            "429 requires adaptive bounded retry rather than increased concurrency",
+            "401/403 stop blind retry and never trigger API-version downgrade",
+            "413 reduces page size without changing semantic checkpoint",
+            "large backfills partition by object/site/date window and reconcile overlap"
+          ],
+          "versionsRegionsCustomFields": [
+            "v1 and v2 differ in route and pagination semantics; API version stays in provenance",
+            "preserve site, currency, timezone, locale and units explicitly",
+            "custom_<id> fields remain source extensions until mapped",
+            "public material does not prove customer-selectable API data residency"
+          ],
+          "wfmObjects": [
+            "site", "legal-entity", "work-centre", "production-order", "production-operation", "production-demand", "production-output", "worker-activity-context", "product", "bill-of-material", "routing", "inventory-item", "inventory-lot", "warehouse", "inventory-snapshot", "supplier", "purchase-order", "customer-order", "quality-evidence", "cost-centre", "finance-dimension", "production-cost-evidence", "integration-event"
+          ],
+          "automationOpportunities": [
+            "forecast overtime/agency need from backlog and real-vs-planned production duration joined to WFM skills/availability",
+            "avoid assigning paid labour to jobs that cannot run because inventory/BOM material is unavailable",
+            "separate supplier-driven schedule risk from labour-driven risk",
+            "reconcile manufacturing labour/overhead evidence against authoritative WFM pay cost for labour-per-order/unit",
+            "bootstrap production, inventory, supplier and finance dimensions from one cloud source for faster SMB implementation"
+          ],
+          "customerValue": [
+            "faster implementation", "reduced administration", "labour-cost reduction", "overtime reduction", "agency-labour reduction", "scheduling efficiency", "production throughput", "inventory/logistics improvements", "quality/rework attribution", "procurement resilience", "finance attribution", "working-capital visibility", "improved forecasting", "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce paid idle time by detecting material-blocked work before labour is assigned",
+            "reduce overtime/agency spend by identifying production-capacity gaps earlier",
+            "improve costing accuracy by reconciling ERP production-cost evidence with authoritative WFM pay and output",
+            "reduce integration maintenance through resource-scoped v1/v2 routing instead of customer-specific forks"
+          ],
+          "causalOutcomeReadiness": [
+            "preserve account/connection, site, object ID, API version, schema fingerprint, source/effective time and ingestion time",
+            "retain competing changes such as material receipts, order priority, routing/workstation and supplier delay when assessing workforce interventions"
+          ],
+          "dataGaps": [
+            "no authorised tenant available to prove credential scope, real schemas, practical limits, multi-site behaviour or denied writes",
+            "no universal modified-since/change-token contract across all objects",
+            "not an authoritative HCM/payroll source",
+            "customer-selectable API data residency not publicly established"
+          ],
+          "constraintsRisks": [
+            "REST API availability depends on plan entitlement",
+            "API key/secret authority is potentially broad until tenant evidence proves otherwise",
+            "v1/v2 coexistence can mask failures if fallback is not fail-closed",
+            "custom fields and separate customer accounts can collide without connection/site/version provenance"
+          ],
+          "nextDevelopmentAction": "Obtain an authorised MRPeasy Unlimited test account and prove account identity, credential authority, denied writes, v1/v2 discovery, pagination, 413/429 recovery, multi-site identity, custom-field drift, time/currency/UOM semantics and overlap/backfill reconciliation."
+        }
+      }
+    }
+  ],
+  "systems": []
+}

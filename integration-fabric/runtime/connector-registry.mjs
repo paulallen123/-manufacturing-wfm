@@ -62,6 +62,90 @@ function nextEvidence(level,evidenceBlockers=[]){
   }
 }
 
+function providerIdentityFor(system){
+  const identity=system.providerIdentity||{};
+  return {
+    canonicalName:identity.canonicalName||system.name,
+    aliases:unique(identity.aliases||[]),
+    rebrandDate:identity.rebrandDate||null,
+    canonicalApiHosts:unique(identity.canonicalApiHosts||[]),
+    transitionalApiHosts:unique(identity.transitionalApiHosts||[]),
+    regionalHostModel:identity.regionalHostModel||null,
+    customerDomainMigration:identity.customerDomainMigration||null,
+    crossHostRedirectApproved:identity.crossHostRedirectApproved===true
+  };
+}
+
+function versionRoutingFor(system){
+  const provider=system.apiVersionRouting||{};
+  return {
+    strategy:provider.preferredPolicy||'provider-recommended-per-resource',
+    preferredVersion:provider.preferredVersion||null,
+    fallbackVersion:provider.fallbackVersion||null,
+    fallbackRequiresProviderDeclaration:provider.fallbackRequiresProviderDeclaration!==false,
+    authFailureMayTriggerDowngrade:false,
+    rateLimitMayTriggerDowngrade:false,
+    checkpointNamespaceIncludesVersion:true,
+    versionSwitchRequiresReconciliation:true,
+    paginationByVersion:provider.paginationByVersion?structuredClone(provider.paginationByVersion):null
+  };
+}
+
+function dataCoverageFor(system){
+  return Array.isArray(system.datasetCoverage)
+    ? system.datasetCoverage.map(entry=>structuredClone(entry))
+    : [];
+}
+
+function sourceScopeFor(system){
+  const source=system.sourceScope||{};
+  const byVariant=source.requiredDimensionsByVariant&&typeof source.requiredDimensionsByVariant==='object'
+    ? Object.fromEntries(Object.entries(source.requiredDimensionsByVariant).map(([variant,dimensions])=>[
+        variant,
+        unique(Array.isArray(dimensions)?dimensions:[])
+      ]))
+    : null;
+  return {
+    namespaceVersion:1,
+    requiredDimensions:unique(source.requiredDimensions||[]),
+    requiredDimensionsByVariant:byVariant,
+    sourceIdentityDimensions:unique(source.sourceIdentityDimensions||[]),
+    checkpointIncludes:unique([
+      'providerId','connectionId','resource','apiVersion','dataset',
+      ...(source.requiredDimensions||[]),
+      ...Object.values(byVariant||{}).flat()
+    ]),
+    crossScopeCheckpointReuseAllowed:false,
+    crossEntityIdAssumptionAllowed:false,
+    missingRequiredDimension:'fail-closed',
+    scopeChangeRecovery:'new-checkpoint-namespace-and-overlap-replay'
+  };
+}
+
+function deploymentVariantsFor(system){
+  if(!system.deploymentVariants||typeof system.deploymentVariants!=='object'||Array.isArray(system.deploymentVariants)) return null;
+  return structuredClone(system.deploymentVariants);
+}
+
+function regionalRoutingFor(system){
+  const regional=system.regionalRouting&&typeof system.regionalRouting==='object'&&!Array.isArray(system.regionalRouting)
+    ? system.regionalRouting
+    : {};
+  return {
+    regionPinningRequired:regional.regionPinningRequired!==false,
+    exactEndpointAuthorityRequired:true,
+    approvedRegions:unique(regional.approvedRegions||[]),
+    customerChosenDataLocation:regional.customerChosenDataLocation===true,
+    residencyEvidence:regional.residencyEvidence||'tenant-contract-or-provider-evidence-required',
+    crossBorderTransferAllowed:regional.crossBorderTransferAllowed===true,
+    customerApprovalRequiredForCrossBorder:true,
+    silentCrossRegionFailoverAllowed:false,
+    checkpointIncludes:['region','dataLocation','routeId'],
+    routeChangeRecovery:'new-checkpoint-namespace-and-overlap-replay',
+    routes:Array.isArray(regional.routes)?structuredClone(regional.routes):[]
+  };
+}
+
 export function buildConnectorRegistry(){
   const catalog=loadCatalog();
   const connectors=catalog.systems.map(system=>{
@@ -83,9 +167,27 @@ export function buildConnectorRegistry(){
       protocols:[...system.protocols],
       adapters,
       canonicalTargets:canonicalTargets(system),
+      providerIdentity:providerIdentityFor(system),
+      deploymentVariants:deploymentVariantsFor(system),
+      regionalRouting:regionalRoutingFor(system),
+      sourceScope:sourceScopeFor(system),
+      bootstrapAuthority:system.bootstrapAuthority?structuredClone(system.bootstrapAuthority):null,
+      staticCredentialAuthority:system.staticCredentialAuthority?structuredClone(system.staticCredentialAuthority):null,
+      sessionReadAuthority:system.sessionReadAuthority?structuredClone(system.sessionReadAuthority):null,
+      versionRouting:versionRoutingFor(system),
+      dataCoverage:dataCoverageFor(system),
       discoveryStrategy:discoveryStrategy(profileIds,edgeRequired),
       nextEvidenceGate:nextEvidence(system.testLevel,evidenceBlockers),
       evidenceBlockers,
+      schemaNegotiation:{
+        fingerprintRequired:true,
+        preserveOptionalExtensions:true,
+        silentBreakingChangeAllowed:false,
+        credentialLikeExtensionsAllowed:false,
+        historicalFingerprintRetentionRequired:true,
+        coverageSemanticsRequiredForDeletion:true,
+        sourceScopeLineageRequired:true
+      },
       security:{
         readOnlyDefault:true,
         writeEnabled:false,
@@ -100,11 +202,24 @@ export function buildConnectorRegistry(){
         remoteProvisioningEnabled:false,
         agentActionEnabled:false,
         crossScopeReadEnabled:false,
+        crossScopeCheckpointReuseAllowed:false,
         unauthenticatedDataSurfaceEnabled:false,
+        unauthenticatedWebhookAllowed:false,
+        webhookAuthenticationRequired:true,
+        webhookReplayProtectionRequired:true,
+        webhookSchemaVersionPinRequired:true,
         rawSensitiveHealthDataAllowed:false,
         superAdminCredentialAllowed:false,
         oauthPasswordGrantEnabled:false,
-        oauthImplicitGrantEnabled:false
+        oauthImplicitGrantEnabled:false,
+        bootstrapCredentialRetentionAllowed:false,
+        bootstrapCredentialReuseAtRuntimeAllowed:false,
+        customerControlledBootstrapAllowed:true,
+        missingRecordDeletionRequiresAuthoritativeCoverage:true,
+        partialDatasetMayInferDeletion:false,
+        silentCrossRegionFailoverAllowed:false,
+        crossBorderTransferRequiresExplicitApproval:true,
+        dataResidencyOverrideAllowed:false
       }
     };
   });

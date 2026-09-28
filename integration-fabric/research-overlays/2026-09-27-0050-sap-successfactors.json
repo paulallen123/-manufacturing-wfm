@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27",
+  "purpose": "SAP SuccessFactors evidence hardening and reusable effective-dated workforce identity reconciliation.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "sap-successfactors",
+      "patch": {
+        "protocols": ["OData v2", "OData v4 by supported API", "SOAP CompoundEmployee", "Integration Center files", "SFTP"],
+        "auth": "OAuth-2.0-registered-client-and-dedicated-API-user-or-customer-approved-mTLS",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.sap.com/docs/successfactors-platform/sap-successfactors-api-reference-guide-odata-v2",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {
+            "type": "SAP SuccessFactors OData API",
+            "direction": "SuccessFactors-to-WFM-read-only",
+            "authentication": "registered OAuth 2.0 client and dedicated least-privilege API user, with the exact company and regional API-server hostname pinned",
+            "notes": "Use metadata-discovered exact GET entity routes only. Upsert, create, update, delete, workflow, import and administrative operations remain denied."
+          },
+          {
+            "type": "Employee Central CompoundEmployee API",
+            "direction": "SuccessFactors-employee-master-to-WFM-read-only",
+            "authentication": "customer-approved OAuth 2.0 or mTLS/API-user route on the exact tenant API server",
+            "notes": "SOAP query/queryMore supports full, snapshot and effective-dated or period-based delta transmission. Each independent consumer receives its own checkpoint namespace."
+          },
+          {
+            "type": "SuccessFactors Integration Center export",
+            "direction": "SuccessFactors-file-to-WFM-read-only",
+            "authentication": "customer-managed scheduled export to an approved SFTP/file route",
+            "notes": "Near-zero-code fallback for smaller or heavily governed tenants. Files enter through the existing batch-reconciliation guard and never imply deletion from missing rows."
+          }
+        ],
+        "deploymentVariants": {
+          "production-cloud": {
+            "customerEdgeRequired": false,
+            "routing": "Exact production company and SAP data-centre API host; no preview, sales-demo or migrated alias is silently substituted."
+          },
+          "preview-or-test": {
+            "customerEdgeRequired": false,
+            "routing": "Separate preview/test company, credential, host, schema, checkpoint and evidence namespace."
+          },
+          "customer-file-route": {
+            "customerEdgeRequired": "by-network",
+            "routing": "Customer-approved SFTP or managed-file boundary with batch integrity and residency controls."
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": ["wfm-tenant", "connection", "SuccessFactors-company", "consumer", "region", "api-origin", "api-version", "entity", "query-mode", "query-fingerprint", "schema"],
+          "sourceIdentityDimensions": ["wfm-tenant", "connection", "SuccessFactors-company", "person", "employment", "assignment", "effective-start-date", "sequence-number", "source-version", "last-modified-time", "schema-fingerprint"]
+        },
+        "effectiveDatedWorkforceAuthority": {
+          "queryModes": ["odata-effective-delta", "compound-effective-delta", "compound-period-delta", "as-of-snapshot"],
+          "unicodeNormalisation": "NFC",
+          "compositeIdentityRequired": true,
+          "consumerScopedCheckpointRequired": true,
+          "checkpointAdvanceAllowed": false,
+          "deletionAuthority": false,
+          "writeBackAuthority": false,
+          "payrollAuthority": false,
+          "accessDecisionAuthority": false,
+          "receiptPolicy": "Bind every batch to one exact company, consumer, regional API origin, API version, entity, query mode, query fingerprint and schema. Preserve person, employment, assignment, effective-start date and sequence number; collapse only exact source-version replays and quarantine conflicts. A complete batch is a reconciliation candidate only."
+        },
+        "dataObjects": [
+          "people", "employments", "job-assignments", "organisations", "legal-entities", "departments-and-divisions",
+          "locations", "skills-and-qualifications", "work-schedules", "time-and-absence", "employment-status",
+          "compensation-reference", "cost-centres", "manager-relations", "custom-fields-and-MDF-extensions"
+        ],
+        "stableIds": [
+          "SuccessFactors company and regional API-server identity",
+          "person external ID and user/person keys where exposed",
+          "employment and assignment/external assignment identifiers",
+          "job, legal entity, business unit, division, department, location and cost-centre identifiers",
+          "effective start/end date, sequence number, lastModifiedDateTime and source version",
+          "WFM tenant, connection, consumer, entity/query/schema fingerprints"
+        ],
+        "readCapability": "Use reviewed OData GET entities and metadata for person, employment, job, organisation, location, schedule, skills/qualifications, time/absence and compensation-reference data where the tenant modules and role-based permissions expose them. Use CompoundEmployee query/queryMore when its hierarchical employee-master delta semantics are the safer fit.",
+        "writeCapability": "SuccessFactors OData and import surfaces can upsert or mutate employee, job, time, compensation, workflow and configuration records. WFM grants no upsert, create, update, delete, import, workflow approval, time-account adjustment, compensation, payroll, role or administration authority.",
+        "freshnessLatency": "Preserve effective time separately from lastModifiedDateTime, extraction window and observation time. Future-dated HR changes must not become currently effective merely because they were recently modified; late corrections require overlap replay and historical reconciliation.",
+        "permissions": [
+          "dedicated non-human API identity and registered OAuth 2.0 client",
+          "minimum role-based permissions for exact entities, fields, populations and target company",
+          "exact production or preview API-server host and data-centre route",
+          "separate credentials and checkpoint namespaces for independent consumers",
+          "no upsert, import, workflow, payroll, compensation-change, time-account-adjustment or administration authority"
+        ],
+        "paginationDeltaEventsFilesQueues": {
+          "pagination": "An OData GET returns at most 1,000 records. Prefer provider cursor-based or snapshot-based server pagination and follow only exact returned continuation links bound to the company, entity, query and schema; client-side $skip is not completeness proof under concurrent changes. CompoundEmployee query/queryMore defaults to 200 rows and permits a configured maxRows from 1 to 800.",
+          "delta": "OData effective-dated entities can combine lastModifiedDateTime with fromDate, toDate or asOfDate. CompoundEmployee supports effective-dated and period-based delta transmission plus snapshot mode. These modes are not interchangeable: bind the query mode, dates, filters and consumer to the checkpoint, replay an overlap and reconcile before advancement.",
+          "events": "No universal complete signed change-event stream is assumed at this evidence level. Notifications or middleware events remain wake-up hints until authoritative OData, CompoundEmployee or file reconciliation succeeds.",
+          "files": "Integration Center exports enter through checksum, schema, row-count, source-scope and batch-completeness validation. Partial or missed files cannot advance checkpoints or create deletion authority.",
+          "queues": "No shared tenant queue is assumed. Customer middleware routes use dedicated subscriptions and at-least-once deduplication with the same effective-dated composite identity."
+        },
+        "customFields": "Discover fields from the tenant OData metadata/API Data Dictionary and CompoundEmployee configuration. Preserve custom/MDF field name, type, effective-dating behavior, locale, sensitivity, source entity and schema version; new identity, payroll, national-ID, bank, health or free-text fields quarantine until explicitly approved.",
+        "regionalApiVersions": "Pin the exact SAP SuccessFactors company, production/preview environment, current data-centre API hostname, country/region and protocol path such as /odata/v2, /odatav4, /rest or /sfapi/v1/soap. SAP documents different hosts across Europe, China, Australia, Canada, Brazil, India, Saudi Arabia, Singapore and the US, including migrated data-centre aliases; host or residency changes require customer approval, a new checkpoint namespace and overlap reconciliation.",
+        "rateLimits": "Do not assume one global tenant rate. SAP documents API-specific access limits and throttling behavior, OData pages of at most 1,000 records, CompoundEmployee maxRows of 1-800 and OData batch requests capped at 180 operations. Use customer-approved concurrency, bounded page sizes, Retry-After where supplied and jittered backoff for 429/transient failures without broadening the query.",
+        "failureModes": [
+          "OAuth certificate/assertion, API user, client registration or mTLS expiry/revocation",
+          "wrong WFM tenant, connection, SuccessFactors company, consumer, region, API host, version, entity, query or schema",
+          "person identifier collision across employments, concurrent assignments, global assignments or acquisitions",
+          "employment or assignment rows collapsed because person ID alone was treated as unique",
+          "future-dated change represented as currently effective, or effective time confused with modification time",
+          "same-date sequence-number correction dropped or conflicting source version silently accepted",
+          "OData cursor/next-link gap, loop, query drift or 1,000-row truncation",
+          "CompoundEmployee queryMore gap, wrong maxRows, shared-consumer last-sync state or filter change",
+          "select conditions in delta mode excluding records an independent consumer expected",
+          "data purge or retention behavior causing a missing employee/time slice to be mistaken for deletion",
+          "partial export, schema drift, custom/MDF field change or locale/Unicode identity mismatch",
+          "clock drift, invalid calendar date, DST/local-time conversion or late historical correction",
+          "HTTP 401/403/429, transient 5xx/network failure or regional outage",
+          "HCM data incorrectly treated as final payroll, attendance, access-control or production authority"
+        ],
+        "reconciliation": "Bind each extraction to WFM tenant, connection, SuccessFactors company, independent consumer, regional host, API version, entity, query mode/fingerprint and schema. Preserve the full person + employment + assignment identity, effective start/end date, same-day sequence, source version and last-modified time so multiple employments and assignments remain distinct. Effective-dated, period-based delta and as-of snapshot checkpoints never cross. Use bounded overlap, exact replay collapse and conflict quarantine. Missing or absent rows, including after purge/retention effects, are not deletion evidence; checkpoint and tombstone candidates require separate complete authoritative reconciliation.",
+        "schemaDrift": "Fingerprint tenant metadata per entity and query. Additive approved fields retain raw provenance; changed keys, effective-date/sequence semantics, navigation paths, enumerations, custom/MDF types or newly sensitive fields quarantine the affected entity. OData v2/v4 and CompoundEmployee schemas never silently substitute for one another.",
+        "retriesReconnect": "401/403 stops for client, certificate, API-user, role, population, company and host diagnosis. 429 and transient 5xx/network errors use bounded jittered backoff against the same exact route. Cursor, queryMore, file or regional interruption resumes from the last WFM-committed boundary with overlap; no environment, company, region, entity, protocol or consumer switch is automatic.",
+        "evidenceUrl": "https://help.sap.com/docs/successfactors-platform/sap-successfactors-api-reference-guide-odata-v2",
+        "evidenceNote": "SAP SuccessFactors documentation reviewed 27 September 2026 establishes registered OAuth 2.0 API clients and company/data-centre-specific API servers; OData v2 effective-date and lastModifiedDateTime queries; asOfDate/fromDate/toDate semantics; cursor/snapshot pagination with a 1,000-record page maximum; and CompoundEmployee full, snapshot, effective-dated and period-based delta modes with query/queryMore and maxRows of 1-800. No sandbox or customer tenant was authenticated and no live employee, job, time, absence, skill, compensation or organisation read was performed.",
+        "securityEvidenceBlockers": [
+          "Role-based field and population permissions require tenant proof; successful authentication alone does not prove minimum read authority.",
+          "Person, employment, assignment, national identifier, compensation, absence and health-related fields require customer-specific minimisation and retention.",
+          "Regional hosts and migrated aliases require customer-approved residency and cross-border routing evidence.",
+          "Mutation-rich OData/import surfaces require exact GET allowlists and demonstrated denied upsert/import/workflow/time-account/payroll operations."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "wfmObjects": ["person", "employment", "assignment", "contract-reference", "organisation", "site-location", "skill-qualification", "work-schedule", "time-absence", "cost-centre", "compensation-reference"],
+          "customerValue": ["match qualified labour to factory demand using authoritative worker, job, skill and location history", "improve absence, availability and overtime decisions without collapsing concurrent employments", "reduce payroll and onboarding exceptions through dated HR-versus-WFM reconciliation", "preserve multi-country legal-entity and regional workforce context", "accelerate enterprise implementation through reusable effective-dated identity handling"],
+          "savingsHypotheses": ["avoid overtime or agency labour caused by stale worker availability or skills", "reduce duplicate-worker and wrong-assignment corrections", "cut manual HR-to-WFM reconciliation for starters, movers, leavers and future-dated changes", "identify schedule and absence exceptions before payroll close", "reduce bespoke mapping effort across acquired companies and regional tenants"],
+          "automationOpportunities": ["discover exact company/entity metadata and permitted fields", "map person-employment-assignment composite identities", "reconcile effective-dated and period-based deltas", "detect future-dated changes and same-date corrections", "route country-specific fields and sensitive data under regional policies"],
+          "constraintsRisks": ["SuccessFactors is HCM source evidence, not final production truth", "compensation references are not final payroll authority", "absence or schedule records do not prove physical presence or productive work", "missing rows do not prove deletion", "documentation proof is not sandbox, tenant or production proof"]
+        },
+        "causalOutcomeReadiness": "Preserve person, employment, assignment, organisation, location, job and skill identifiers; effective and modification histories; source version and query/schema provenance; WFM recommendation/action timestamps; baseline/outcome windows; and competing schedule, absence, pay, training, manager, site, production, maintenance and material changes.",
+        "nextBuildAction": "Use an authorised SAP SuccessFactors test company to prove the registered OAuth client and dedicated API user, exact regional host and population/field permissions, denied upsert/import/workflow/payroll/time-account actions, OData metadata, cursor/snapshot pagination, 1,000-record boundaries, CompoundEmployee queryMore at 200-800 rows, effective-dated versus period-based delta behavior, multiple employments/assignments, same-day sequence corrections, purge/retention handling, custom/MDF drift, Unicode/locales, 401/403/429 recovery and consumer-scoped overlap reconciliation."
+      }
+    }
+  ],
+  "systems": []
+}
