@@ -17,6 +17,11 @@ const overlays = [
 const expectedArtifactSha256 = 'dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da';
 const delay = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
 
+async function nextClockSecond() {
+  const current = Math.floor(Date.now() / 1000);
+  while (Math.floor(Date.now() / 1000) === current) await delay(10);
+}
+
 async function freePort() {
   const server = net.createServer();
   await new Promise((resolve, reject) => server.once('error', reject).listen(0, '127.0.0.1', resolve));
@@ -44,7 +49,8 @@ async function start(runtime, database, port, key, enabled = true) {
         tenant: 'northstar-demo',
         allowed: ['GET /api/bootstrap'],
         maxSessionSeconds: 120,
-        actionBudget: 1,
+        actionBudget: 3,
+        maxRequestsPerSecond: 1,
       }]),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -95,7 +101,7 @@ function canonical(assertion) {
   ].join('\n'));
 }
 
-test('short-lived proof-runner identity enforces an audited atomic action budget', async t => {
+test('short-lived proof-runner identity atomically enforces rate and action budgets', async t => {
   assert.equal(createHash('sha256').update(fs.readFileSync(artifact)).digest('hex'), expectedArtifactSha256);
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-proof-runner-'));
   const runtime = path.join(root, 'runtime');
@@ -135,10 +141,12 @@ test('short-lived proof-runner identity enforces an audited atomic action budget
   assert.equal(exchanged.status, 200, exchanged.text);
   assert.equal(exchanged.json.authMethod, 'proof-runner');
   assert.equal(exchanged.json.expiresInSeconds, 120);
-  assert.equal(exchanged.json.actionBudget, 1);
+  assert.equal(exchanged.json.actionBudget, 3);
+  assert.equal(exchanged.json.maxRequestsPerSecond, 1);
   const cookie = exchanged.response.headers.getSetCookie()[0].split(';')[0];
   assert.match(cookie, /^wfm_session=[a-f0-9]{64}$/);
 
+  while (Date.now() % 1000 > 700) await delay(10);
   const concurrent = await Promise.all([
     request(running.origin, '/api/bootstrap', { cookie }),
     request(running.origin, '/api/bootstrap', { cookie }),
@@ -148,8 +156,17 @@ test('short-lived proof-runner identity enforces an audited atomic action budget
     method: 'POST', cookie, body: { version: 1, command: 'leave-request', payload: {} },
   });
   assert.equal(forbidden.status, 403, forbidden.text);
-  const exhaustedAgain = await request(running.origin, '/api/bootstrap', { cookie });
-  assert.equal(exhaustedAgain.status, 429, exhaustedAgain.text);
+  const rateLimitedAgain = await request(running.origin, '/api/bootstrap', { cookie });
+  assert.equal(rateLimitedAgain.status, 429, rateLimitedAgain.text);
+  await nextClockSecond();
+  const secondAllowed = await request(running.origin, '/api/bootstrap', { cookie });
+  assert.equal(secondAllowed.status, 200, secondAllowed.text);
+  await nextClockSecond();
+  const thirdAllowed = await request(running.origin, '/api/bootstrap', { cookie });
+  assert.equal(thirdAllowed.status, 200, thirdAllowed.text);
+  await nextClockSecond();
+  const exhausted = await request(running.origin, '/api/bootstrap', { cookie });
+  assert.equal(exhausted.status, 429, exhausted.text);
 
   const replay = await request(running.origin, '/api/proof-runner/session', {
     method: 'POST', body: signed,
@@ -158,24 +175,34 @@ test('short-lived proof-runner identity enforces an audited atomic action budget
 
   const token = cookie.slice('wfm_session='.length);
   const db = new DatabaseSync(database, { readOnly: true });
-  const session = db.prepare('SELECT expires,auth_method,auth_subject,proof_scope,proof_budget,proof_used,proof_budget_exhausted_at FROM sessions WHERE token_hash=?')
+  const session = db.prepare('SELECT expires,auth_method,auth_subject,proof_scope,proof_budget,proof_used,proof_budget_exhausted_at,proof_rate_limit,proof_rate_window,proof_rate_used,proof_rate_limited_window FROM sessions WHERE token_hash=?')
     .get(createHash('sha256').update(token).digest('hex'));
   assert.equal(session.auth_method, 'proof-runner');
   assert.equal(session.auth_subject, 'runner-local-1');
   assert.deepEqual(JSON.parse(session.proof_scope), ['GET /api/bootstrap']);
-  assert.equal(session.proof_budget, 1);
-  assert.equal(session.proof_used, 1);
+  assert.equal(session.proof_budget, 3);
+  assert.equal(session.proof_used, 3);
   assert.ok(session.proof_budget_exhausted_at >= now);
+  assert.equal(session.proof_rate_limit, 1);
+  assert.equal(session.proof_rate_used, 1);
+  assert.ok(Number.isInteger(session.proof_rate_window));
+  assert.ok(Number.isInteger(session.proof_rate_limited_window));
   assert.ok(session.expires > now && session.expires <= now + 121_000);
   const audit = db.prepare("SELECT actor,detail FROM audit_events WHERE action='proof-runner-session-issued' ORDER BY id DESC LIMIT 1").get();
   assert.equal(audit.actor, 'proof-runner:runner-local-1');
   const detail = JSON.parse(audit.detail);
   assert.equal(detail.email, 'manager@northstar.example');
   assert.equal(detail.scopeCount, 1);
+  assert.equal(detail.actionBudget, 3);
+  assert.equal(detail.maxRequestsPerSecond, 1);
   assert.match(detail.sessionRef, /^[a-f0-9]{24}$/);
+  const rateAudit = db.prepare("SELECT actor,detail FROM audit_events WHERE action='proof-runner-rate-limited' ORDER BY id DESC LIMIT 1").get();
+  assert.equal(rateAudit.actor, 'proof-runner:runner-local-1');
+  assert.equal(JSON.parse(rateAudit.detail).maxRequestsPerSecond, 1);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM audit_events WHERE action='proof-runner-rate-limited'").get().n, 1);
   const budgetAudit = db.prepare("SELECT actor,detail FROM audit_events WHERE action='proof-runner-budget-exhausted' ORDER BY id DESC LIMIT 1").get();
   assert.equal(budgetAudit.actor, 'proof-runner:runner-local-1');
-  assert.equal(JSON.parse(budgetAudit.detail).actionBudget, 1);
+  assert.equal(JSON.parse(budgetAudit.detail).actionBudget, 3);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM audit_events WHERE action='proof-runner-budget-exhausted'").get().n, 1);
   db.close();
 
