@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-28",
+  "status": "DRIFT_DETECTED_AND_CONTAINED",
+  "oldRegistryClaim": {
+    "source": "CUSTOMER_PROOF_STATUS.md",
+    "claimedLatestDeploymentId": "2d399257-e7ea-43e8-a728-d563e8cb366b",
+    "claimedService": "wfm-customer-proof-0676",
+    "claimedRelease": "0.6.76-hosted-staging-rc1"
+  },
+  "liveProviderObservation": {
+    "service": "wfm-customer-proof-0676",
+    "latestDeploymentId": "102724ed-98e3-44e3-ad32-f223f6fd2b50",
+    "latestDeploymentStatus": "SUCCESS",
+    "sourceCommit": "b63cf119dcc294cd7cbb0681e26f5bdf081e77dc",
+    "buildPath": "legacy-redirect/Dockerfile",
+    "deployMarker": "LEGACY_UI_REDIRECT_ACTIVE",
+    "redirectTarget": "https://wfm-one-day-enterprise-v1-production.up.railway.app"
+  },
+  "containment": [
+    "Reject wfm-customer-proof-0676 as the durable-control-plane seed.",
+    "Do not reuse evidence from deployment 2d399257-e7ea-43e8-a728-d563e8cb366b as proof of the current service state.",
+    "Resolve the current canonical hosted owner independently from live provider metadata.",
+    "Keep exact_source_binding UNPROVEN until the active runtime self-attests the exact source/deployment/image identity."
+  ],
+  "currentCanonicalCandidate": {
+    "service": "vector-forge-current-proof",
+    "deploymentId": "e6399d9c-63ca-4272-ab0d-6d1010e444bd",
+    "sourceCommit": "3030541675e41157405b933c30d82c8fd4b12927",
+    "branch": "feature/vector-eow-convergence-20260925",
+    "containerImageDigest": "sha256:95f355ef7e0af5e65dc3ce63bc6c9a21dfb787a6d61b6a661ff5d5cff91333e2",
+    "publicOrigin": "https://vector-forge-current-proof-production.up.railway.app",
+    "providerDeploymentStatus": "SUCCESS",
+    "publicHealthObserved": true,
+    "exactRuntimeSourceAttestation": "UNPROVEN"
+  },
+  "proofRule": "Provider SUCCESS and a healthy HTTP response are metadata. Neither can close exact_source_binding without terminal application identity evidence."
+}
