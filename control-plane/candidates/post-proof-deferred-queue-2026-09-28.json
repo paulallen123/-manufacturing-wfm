@@ -1,0 +1,599 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-28",
+  "frozenCandidate": {
+    "repository": "paulallen123/-manufacturing-wfm",
+    "branch": "feature/vector-eow-convergence-20260925",
+    "commitSha": "3030541675e41157405b933c30d82c8fd4b12927",
+    "railwayProjectId": "9a774359-37fa-47e8-bde0-932420c32923",
+    "railwayServiceId": "55e288b7-ac40-4856-ad45-16515c74739a",
+    "deploymentId": "e6399d9c-63ca-4272-ab0d-6d1010e444bd",
+    "publicOrigin": "https://vector-forge-current-proof-production.up.railway.app",
+    "postProofActivationBranch": "queue/post-proof-activation-303054"
+  },
+  "policy": {
+    "activationSloMinutes": 60,
+    "rule": "No deferred product change may touch or promote into the frozen customer-proof candidate until every customer-proof gate is PASS.",
+    "allowedDuringFreeze": "Only work that directly closes, unblocks, repairs or accelerates a mandatory customer-proof gate.",
+    "deferredWork": "May continue only in isolated branches/environments and must prepare a bounded activation package against the frozen base SHA."
+  },
+  "proofAcceleration": [
+    {
+      "prNumber": 278,
+      "title": "Genuine provider sandbox certification",
+      "gate": "integrations"
+    },
+    {
+      "prNumber": 273,
+      "title": "Exact-candidate outcome learning proof",
+      "gate": "outcome_learning_runtime"
+    },
+    {
+      "prNumber": 271,
+      "title": "Authoritative time and absence policy evidence",
+      "gate": "autonomous_implementation"
+    },
+    {
+      "prNumber": 270,
+      "title": "Proof integrity hardening",
+      "gate": "exact_source_binding"
+    },
+    {
+      "prNumber": 262,
+      "title": "No-idle proof fanout",
+      "gate": "orchestration"
+    },
+    {
+      "prNumber": 251,
+      "title": "Immediate terminal-result proof fanout",
+      "gate": "orchestration"
+    },
+    {
+      "prNumber": 234,
+      "title": "Blocker Autopilot continuity guards",
+      "gate": "orchestration"
+    },
+    {
+      "prNumber": 231,
+      "title": "Launch Autopilot convergence",
+      "gate": "autopilot_execute"
+    },
+    {
+      "prNumber": 224,
+      "title": "Adaptive implementation and implementation twin",
+      "gate": "autonomous_implementation"
+    },
+    {
+      "prNumber": 223,
+      "title": "Onboarding environment provisioning",
+      "gate": "autonomous_implementation"
+    },
+    {
+      "prNumber": 217,
+      "title": "Zero useful foothold security gate",
+      "gate": "security"
+    }
+  ],
+  "deferred": [
+    {
+      "id": "pr-277",
+      "prNumber": 277,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-276",
+      "prNumber": 276,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-275",
+      "prNumber": 275,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-269",
+      "prNumber": 269,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-243",
+      "prNumber": 243,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-242",
+      "prNumber": 242,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-241",
+      "prNumber": 241,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-240",
+      "prNumber": 240,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-239",
+      "prNumber": 239,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-238",
+      "prNumber": 238,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-235",
+      "prNumber": 235,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-233",
+      "prNumber": 233,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-232",
+      "prNumber": 232,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-230",
+      "prNumber": 230,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-229",
+      "prNumber": 229,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-226",
+      "prNumber": 226,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-218",
+      "prNumber": 218,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-216",
+      "prNumber": 216,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-215",
+      "prNumber": 215,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-214",
+      "prNumber": 214,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-212",
+      "prNumber": 212,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-211",
+      "prNumber": 211,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-210",
+      "prNumber": 210,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-205",
+      "prNumber": 205,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-204",
+      "prNumber": 204,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    },
+    {
+      "id": "pr-203",
+      "prNumber": 203,
+      "status": "DEVELOPING_ISOLATED",
+      "readiness": "NOT_READY",
+      "isolated": true,
+      "touchesFrozenCandidate": false,
+      "frozenBaseSha": "3030541675e41157405b933c30d82c8fd4b12927",
+      "activation": {
+        "maxMinutes": 60,
+        "strategy": "cherry-pick-set",
+        "testCommand": "run branch-specific regression plus exact hosted smoke before activation",
+        "rollback": "restore frozen deployment e6399d9c-63ca-4272-ab0d-6d1010e444bd or revert activation commit",
+        "migrationRisk": "prevalidated",
+        "validatedAgainstFrozenSha": null,
+        "isolatedTestsPassed": false,
+        "rollbackVerified": false,
+        "deploymentRecipeReady": false
+      }
+    }
+  ]
+}
