@@ -154,6 +154,34 @@ test('leave dates render in the active locale without shifting the stored calend
   assert.match(managerPage, /Zoë 山田/);
   assert.match(managerPage, /<time datetime="2026-03-29">29\.03\.2026<\/time>/);
 });
+
+test('manager leave decision actions have unique locale-aware accessible names', async () => {
+  const actor = { tenant: 'northstar-demo', email: 'manager@northstar.example', personId: 'm1', role: 'manager' };
+  const bootstrap = {
+    state: {
+      requests: [
+        { id: 'leave-1', employee: 'e1', employeeName: 'Zoë 山田', date: '2026-03-29', hours: 7.5, status: 'pending' },
+        { id: 'leave-2', employee: 'e2', employeeName: 'Ana "Müller" & Co', date: '2026-03-30', hours: 4, status: 'pending' }
+      ]
+    }
+  };
+  const context = vm.createContext({
+    console, URL, setTimeout, clearTimeout, OFFLINE: false, F: { actor, ready: true }, ui: { page: 'leave' },
+    payrollActor: () => actor, PR: { has: () => true },
+    VectorDisplayContext: () => ({ locale: 'de-DE', timeZone: 'Europe/Berlin', authoritative: true }),
+    request: async () => structuredClone(bootstrap), command: async () => { throw Error('No mutation expected.'); },
+    document: { addEventListener() {}, querySelector() { return null; }, getElementById() { return { innerHTML: '' }; } },
+    modal() {}, modalActions: label => label, toast() {}, shell: html => html, render: async () => {}, showLogin() {}
+  });
+  vm.runInContext(source, context, { filename: 'vector-workflows.js' });
+
+  await context.VectorWorkflow.leaveRefresh();
+  const page = context.VectorWorkflow.leavePage();
+  assert.match(page, /aria-label="Approve leave request for Zoë 山田 on 29\.03\.2026"/);
+  assert.match(page, /aria-label="Decline leave request for Zoë 山田 on 29\.03\.2026"/);
+  assert.match(page, /aria-label="Approve leave request for Ana &quot;Müller&quot; &amp; Co on 30\.03\.2026"/);
+  assert.match(page, /aria-label="Decline leave request for Ana &quot;Müller&quot; &amp; Co on 30\.03\.2026"/);
+});
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const reservePort = () => new Promise((resolve, reject) => {
   const server = net.createServer();
