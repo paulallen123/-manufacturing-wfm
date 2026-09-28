@@ -132,6 +132,122 @@ async function configuredConnection(f) {
   return connected.body.connection;
 }
 
+test('implementation scope seeds likely systems when directory discovery is unavailable', async () => {
+  const f = fixture();
+  try {
+    const db = new DatabaseSync(f.dbPath);
+    db.exec(
+      'CREATE TABLE implementation_runs(id TEXT PRIMARY KEY,tenant TEXT NOT NULL,started_at_ms INTEGER NOT NULL);' +
+      'CREATE TABLE implementation_scope(run_id TEXT PRIMARY KEY,tenant TEXT NOT NULL,scope_json TEXT NOT NULL,updated_at TEXT NOT NULL);' +
+      'CREATE TABLE implementation_work_jobs(run_id TEXT NOT NULL,tenant TEXT NOT NULL,requirement_key TEXT NOT NULL,status TEXT NOT NULL);'
+    );
+    db.prepare('INSERT INTO implementation_runs VALUES(?,?,?)').run('run-alpha', 'alpha', Date.now());
+    db.prepare('INSERT INTO implementation_scope VALUES(?,?,?,?)').run(
+      'run-alpha',
+      'alpha',
+      JSON.stringify({
+        hcmSystem: 'Workday',
+        payrollSystem: 'ADP Workforce',
+        erpSystem: 'Oracle NetSuite',
+        sourceSystems: ['Legacy access control'],
+        features: ['Scheduling', 'Time & attendance', 'Absence', 'Payroll output'],
+        clockingMethods: ['Existing access control']
+      }),
+      new Date().toISOString()
+    );
+    db.prepare('INSERT INTO implementation_work_jobs VALUES(?,?,?,?)').run('run-alpha', 'alpha', 'tenant-environment', 'PENDING');
+    db.prepare('INSERT INTO implementation_work_jobs VALUES(?,?,?,?)').run('run-alpha', 'alpha', 'identity-access', 'PENDING');
+    db.prepare('INSERT INTO implementation_work_jobs VALUES(?,?,?,?)').run('run-alpha', 'alpha', 'source-systems', 'BLOCKED_RESUMABLE');
+    db.close();
+
+    const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(status.status, 200);
+    const keys = status.body.discovery.candidates.map(item => item.productKey);
+    assert.ok(keys.includes('workday'));
+    assert.ok(keys.includes('adp'));
+    assert.ok(keys.includes('netsuite'));
+    const workday = status.body.discovery.candidates.find(item => item.productKey === 'workday');
+    assert.ok(workday.evidence.some(item => item.source === 'IMPLEMENTATION_SCOPE' && item.context === 'hcm'));
+    assert.equal(status.body.fallback.directoryAccessRequired, false);
+    assert.equal(status.body.fallback.implementationCanContinue, true);
+    assert.deepEqual(
+      status.body.fallback.independentWork.map(item => item.requirementKey),
+      ['tenant-environment', 'identity-access']
+    );
+    assert.ok(status.body.fallback.questions.some(item => item.domain === 'people' && item.suggestions.some(s => s.productKey === 'workday')));
+  } finally {
+    f.close();
+  }
+});
+
+test('targeted source answer confirms system authority without falsely proving source readiness', async () => {
+  const f = fixture();
+  try {
+    const answered = await call(
+      f.hub,
+      f.tokens.manager,
+      'POST',
+      '/api/integrations/autonomous/source-answer',
+      {
+        domain: 'people',
+        systemName: 'Workday',
+        accessState: 'NEEDS_ADMIN',
+        ownerHint: 'HR systems team'
+      }
+    );
+    assert.equal(answered.status, 200);
+    assert.equal(answered.body.recognized, true);
+    assert.equal(answered.body.candidate.productKey, 'workday');
+    assert.deepEqual(answered.body.candidate.authoritativeFor, ['people']);
+    assert.equal(answered.body.sourceReadinessProven, false);
+    assert.equal(answered.body.nextAction.type, 'RESOLVE_ACCESS_PATH');
+
+    const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(status.body.readiness.peopleSourceConfirmed, true);
+    assert.equal(status.body.readiness.readyForPeopleSync, false);
+    assert.equal(status.body.fallback.questions.some(item => item.domain === 'people'), false);
+  } finally {
+    f.close();
+  }
+});
+
+test('unknown or inaccessible source is recorded without blocking alternative evidence routes or creating a false green', async () => {
+  const f = fixture();
+  try {
+    const answered = await call(
+      f.hub,
+      f.tokens.manager,
+      'POST',
+      '/api/integrations/autonomous/source-answer',
+      {
+        domain: 'time',
+        systemName: 'Factory Clock 42',
+        accessState: 'NO_DIRECT_ACCESS'
+      }
+    );
+    assert.equal(answered.status, 200);
+    assert.equal(answered.body.recognized, false);
+    assert.equal(answered.body.sourceReadinessProven, false);
+    assert.equal(answered.body.nextAction.type, 'COLLECT_SAFE_SOURCE_EVIDENCE');
+    assert.ok(answered.body.nextAction.options.includes('sample-schema'));
+
+    const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(status.body.discovery.candidateCount, 0);
+    assert.equal(status.body.readiness.readyForPeopleSync, false);
+    assert.ok(status.body.fallback.answers.some(item =>
+      item.domain === 'time' &&
+      item.systemName === 'Factory Clock 42' &&
+      item.accessState === 'NO_DIRECT_ACCESS'
+    ));
+    assert.ok(status.body.fallback.alternativeAccessMethods.some(item =>
+      item.key === 'sample-schema' && item.readinessEffect === 'does-not-prove-go-live'
+    ));
+    assert.match(status.body.fallback.goLiveRule, /Authoritative source access/i);
+  } finally {
+    f.close();
+  }
+});
+
 test('deterministic product discovery recognises common enterprise systems', () => {
   assert.equal(detectProduct({ displayName: 'Workday Production' }, 'ENTRA').product.key, 'workday');
   assert.equal(detectProduct({ name: 'Oracle NetSuite ERP' }, 'OKTA').product.key, 'netsuite');
