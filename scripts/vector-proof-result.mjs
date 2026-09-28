@@ -45,6 +45,11 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
       && item.refreshedStatus === 'signed');
   const release = payrollJourney?.release;
   const checksum = typeof release?.computedChecksum === 'string' ? release.computedChecksum : '';
+  const authoritativeChecksum = typeof release?.authoritativeCsvChecksum === 'string'
+    ? release.authoritativeCsvChecksum
+    : '';
+  const payrollExportContentBound = /^[0-9a-f]{64}$/.test(authoritativeChecksum)
+    && authoritativeChecksum === checksum;
   const payrollReleaseBound = release?.responseStatus === 200
     && typeof release.batchId === 'string' && release.batchId.length > 0
     && release.status === 'released'
@@ -54,7 +59,8 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     && release.persistedBatchId === release.batchId
     && release.auditBatchId === release.batchId
     && release.freshLoginBatchId === release.batchId
-    && release.reconciliationOk === true;
+    && release.reconciliationOk === true
+    && payrollExportContentBound;
   const scopedPayrollJourneyVerified = allTeamWeeklySignOffBound && payrollReleaseBound;
   return {
     status: 'PARTIAL',
@@ -76,6 +82,7 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
       ...(allTeamWeeklySignOffBound ? [] : ['all-team-weekly-sign-off']),
       'server-audit-readback',
       'exact-backend-binding',
+      ...(payrollExportContentBound ? [] : ['payroll-export-content-reconciliation']),
       ...(scopedPayrollJourneyVerified ? [] : ['payroll-reconciliation-business-action']),
       'major-workflow-coverage'
     ]

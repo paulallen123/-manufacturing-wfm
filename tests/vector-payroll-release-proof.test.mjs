@@ -51,6 +51,7 @@ const completePayrollJourney = {
     rowCount: 172,
     checksumHeader: checksum,
     computedChecksum: checksum,
+    authoritativeCsvChecksum: checksum,
     reconciliationOk: true
   }
 };
@@ -82,4 +83,22 @@ test('payroll proof accepts exact all-team sign-offs and one checksum-bound pers
   assert.equal(result.scopedPayrollJourneyVerified, true);
   assert.equal(result.missingEvidence.includes('all-team-weekly-sign-off'), false);
   assert.equal(result.missingEvidence.includes('payroll-reconciliation-business-action'), false);
+});
+
+test('payroll proof rejects a rehashed export whose bytes differ from the authoritative payroll lines', () => {
+  const result = roleProofResult(
+    { status: 'BOUND' },
+    leaveJourney,
+    attendanceJourney,
+    {
+      ...completePayrollJourney,
+      release: {
+        ...completePayrollJourney.release,
+        authoritativeCsvChecksum: 'b'.repeat(64)
+      }
+    }
+  );
+
+  assert.equal(result.scopedPayrollJourneyVerified, false);
+  assert.ok(result.missingEvidence.includes('payroll-export-content-reconciliation'));
 });

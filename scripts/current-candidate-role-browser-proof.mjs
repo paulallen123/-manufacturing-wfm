@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { chromium } from 'playwright';
+import { authoritativePayrollCsv } from './vector-payroll-csv-proof.mjs';
 
 const origin = new URL(process.env.VECTOR_PROOF_URL).origin;
 const expectedSha = process.env.WFM_EXPECTED_CANDIDATE_SHA;
@@ -1093,6 +1094,10 @@ try {
   assert.ok(releaseAudit, 'Payroll release audit is missing the returned batch identity.');
   const computedChecksum = crypto.createHash('sha256').update(releasedReadBack.csv).digest('hex');
   assert.equal(releasedReadBack.checksum, computedChecksum);
+  const authoritativeCsv = authoritativePayrollCsv(batchId, readyPayroll.json);
+  const authoritativeCsvChecksum = crypto.createHash('sha256').update(authoritativeCsv).digest('hex');
+  assert.equal(releasedReadBack.csv, authoritativeCsv, 'Released payroll CSV differs from the authoritative pre-release payroll lines.');
+  assert.equal(computedChecksum, authoritativeCsvChecksum);
   const rowCount = releasedReadBack.csv.trim().split(/\r?\n/).length - 1;
   assert.equal(rowCount, persistedBatch.rowCount);
 
@@ -1119,6 +1124,7 @@ try {
     rowCount,
     checksumHeader: releasedReadBack.checksum,
     computedChecksum,
+    authoritativeCsvChecksum,
     reconciliationOk: readyPayroll.json.reconciliation.ok
   };
   assert.deepEqual(payrollPageErrors, [], `Payroll readback uncaught page errors: ${payrollPageErrors.join(' | ')}`);
