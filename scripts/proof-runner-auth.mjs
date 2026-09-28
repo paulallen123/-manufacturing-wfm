@@ -34,6 +34,13 @@ function canonicalAssertion(input) {
   ].join('\n');
 }
 
+export function proofRunnerCookieParts(cookie) {
+  const pair = String(cookie || '').split(';', 1)[0];
+  const split = pair.indexOf('=');
+  if (split <= 0) throw new Error('Proof runner session cookie is malformed.');
+  return { name: pair.slice(0, split), value: pair.slice(split + 1) };
+}
+
 function sessionCookieFrom(response) {
   const values = typeof response.headers.getSetCookie === 'function'
     ? response.headers.getSetCookie()
@@ -80,6 +87,11 @@ export async function proofRunnerLogin({ origin, email, timeoutMs = 20_000 }) {
   const cookie = sessionCookieFrom(response);
   if (!cookie) throw new Error(`Passwordless proof runner login for ${normalizedEmail} returned no session cookie.`);
   return cookie;
+}
+
+export async function proofRunnerSession(options) {
+  const cookie = await proofRunnerLogin(options);
+  return { cookie, ...proofRunnerCookieParts(cookie) };
 }
 
 export { canonicalAssertion };
