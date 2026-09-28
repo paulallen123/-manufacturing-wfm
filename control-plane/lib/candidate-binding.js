@@ -1,3 +1,25 @@
+export function validateCandidateIdentity(candidate) {
+  const errors = [];
+  if (!candidate || typeof candidate !== 'object') return { ok: false, errors: ['CANDIDATE_REQUIRED'] };
+  const required = ['repository', 'ref', 'commitSha', 'projectId', 'environment', 'serviceId', 'deploymentId', 'runtimeSha', 'releaseId', 'publicOrigin', 'provider', 'failureDomainId'];
+  for (const field of required) {
+    if (typeof candidate[field] !== 'string' || candidate[field].trim() === '') errors.push(`MISSING_${field.toUpperCase()}`);
+  }
+  if (candidate.repository && !/^[^/\\s]+\\/[^/\\s]+$/.test(candidate.repository)) errors.push('INVALID_REPOSITORY');
+  if (candidate.commitSha && !/^[0-9a-f]{40}$/.test(candidate.commitSha)) errors.push('INVALID_COMMIT_SHA');
+  if (candidate.runtimeSha && !/^sha256:[0-9a-f]{64}$/.test(candidate.runtimeSha)) errors.push('INVALID_RUNTIME_SHA');
+  if (candidate.publicOrigin) {
+    try {
+      const url = new URL(candidate.publicOrigin);
+      if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) errors.push('INVALID_PUBLIC_ORIGIN');
+    } catch {
+      errors.push('INVALID_PUBLIC_ORIGIN');
+    }
+  }
+  if (candidate.provider === 'railway' && candidate.failureDomainId !== 'railway') errors.push('RAILWAY_FAILURE_DOMAIN_MUST_BE_RAILWAY');
+  return { ok: errors.length === 0, errors: [...new Set(errors)] };
+}
+
 function normalizeDigest(value) {
   if (!value) return null;
   const text = String(value).trim().toLowerCase();
