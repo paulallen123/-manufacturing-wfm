@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-26T23:34:29Z",
+  "claimUnderTest": "The authenticated payroll-adjustment backend must reject proposal, approval and export when currency, minor-unit exponent and authoritative cost-evidence provenance are absent.",
+  "release": {
+    "pullRequest": 225,
+    "candidateCommit": "3b33d3f4187da5db2b736434bf6c9a8cf4462485",
+    "artifactPath": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "artifactGitBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+    "artifactSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+    "extractedPayrollControlSha256": "ec5fa3cd5cb2bc4d2e66694b6211ad3dc8c24ea279bd48b0bc0fa01260eb1200",
+    "adversarialTestSha256": "6df4fb098a3d360dc20b8180d3161ae400af888e9ca83568bd4efe9e9f8740f4",
+    "authenticatedHttpReproductionSha256": "18c30f7165b792aa600aca9984749523d09c14f7f534b25db1a2e45ca8d5448e",
+    "runtime": "Node v24.19.0"
+  },
+  "scope": {
+    "environment": "independent local execution of the exact repository-sealed runtime artifact",
+    "data": "fictional synthetic fixture only",
+    "authenticatedHttp": true,
+    "sqlitePersistence": true,
+    "safeRestartReadback": true,
+    "hosted": false,
+    "customerData": false,
+    "customerPayrollMutation": false,
+    "deploymentMutation": false
+  },
+  "executed": [
+    {
+      "command": "WFM_SEALED_RUNTIME_ARTIFACT=sealed-runtime.tar.gz node --test payroll-adjustment-server-provenance.adversarial.test.cjs",
+      "tests": 3,
+      "passed": 0,
+      "failed": 3,
+      "skipped": 0,
+      "result": "EXPECTED RED REGRESSION"
+    },
+    {
+      "command": "node payroll-adjustment-server-provenance.observe.cjs",
+      "result": "ATTACK REPRODUCED"
+    },
+    {
+      "command": "WFM_SEALED_RUNTIME_ARTIFACT=sealed-runtime.tar.gz node payroll-adjustment-authenticated-http.observe.cjs",
+      "authenticatedIdentities": 2,
+      "sqlitePersistence": true,
+      "safeRestartReadback": true,
+      "result": "AUTHENTICATED ATTACK REPRODUCED"
+    }
+  ],
+  "observedAttack": {
+    "proposal": {
+      "id": "PADJ-1",
+      "status": "pending_approval",
+      "minutesDelta": 30,
+      "grossPenceDelta": 900
+    },
+    "approval": {
+      "actorDifferentFromProposer": true,
+      "status": "approved"
+    },
+    "export": {
+      "batch": "AB-UNBOUND",
+      "status": "released",
+      "schema": "reviewed-pay-adjustment-v1",
+      "rows": 1,
+      "column": "gross_amount_delta_gbp",
+      "renderedAmount": "9.00"
+    },
+    "storedProvenance": {
+      "currency": false,
+      "minorUnitExponent": false,
+      "currencySource": false
+    },
+    "auditTypes": [
+      "payroll-post-release-adjustment-proposed",
+      "payroll-post-release-adjustment-approved",
+      "payroll-adjustment-batch-released"
+    ],
+    "authenticatedHttpPersistence": {
+      "proposalVersion": 3,
+      "approvalVersion": 4,
+      "exportVersion": 5,
+      "safeRestartReadback": true,
+      "exportChecksumVerified": true,
+      "exportSha256": "e82f195256829d7568c051af85965fe2091ebd82967c25d9ad23ee3f1fccb933"
+    }
+  },
+  "rootCause": "The sealed payroll adjustment contract derives and persists grossPenceDelta under an implicit GBP-only model. Proposal, approval and export validate roles, revision and source fingerprints but never bind the amount to currency, minor-unit exponent or an authoritative cost-evidence source. The server dispatches these domain actions directly, so the repaired client guard is not a security or integrity boundary.",
+  "gateDelta": {
+    "clientPayrollAdjustmentCurrencyAuthority": "BUILT",
+    "serverPayrollAdjustmentCurrencyProvenance": "BLOCKED",
+    "serverPayrollAdjustmentMinorUnitIntegrity": "BLOCKED",
+    "serverPayrollAdjustmentExportReconciliation": "BLOCKED",
+    "globalMultiCurrencyPayrollAdjustment": "BLOCKED",
+    "customerRelease": "BLOCKED",
+    "marketingVideoReadiness": "BLOCKED"
+  },
+  "requiredRepair": [
+    "Bind every stored adjustment to an authoritative currency code, minor-unit exponent and immutable cost-evidence source.",
+    "Reject absent, mismatched, unsupported or unsafe monetary provenance independently at proposal, approval and export.",
+    "Replace the implicit GBP CSV contract with an explicit versioned schema and independently reconcile exported integer minor units.",
+    "Retain separation of duties, source-fingerprint checks, revision checks and audit linkage while adding provenance enforcement."
+  ],
+  "requiredRetest": "Make all three adversarial tests pass against a newly sealed exact artifact, then repeat the authenticated HTTP proposal-to-export attack and prove rejection at proposal, approval and export while SQLite save/readback, safe restart, audit verification and independently reconciled valid-currency exports remain intact.",
+  "claimStatus": "BLOCKED"
+}

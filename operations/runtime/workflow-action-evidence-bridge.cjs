@@ -10,7 +10,7 @@ const {
 
 const PREFIX = '/api/workforce/lifecycle/action-evidence';
 const TIME_REVIEW_PATH = PREFIX + '/time-review';
-const SOURCE_TIME_REVIEW_PATH = '/api/time-review';
+const SOURCE_TIME_REVIEW_PATH = '/api/weekly-review';
 const MAX_SOURCE_BYTES = 512 * 1024;
 const SOURCE_TIMEOUT_MS = 3000;
 
@@ -38,6 +38,24 @@ function cookieSessionToken(req) {
 
 function requestPath(req) {
   return String(req?.url || '/').split('?')[0] || '/';
+}
+
+function requestedReviewPeriod(req) {
+  let value = '';
+  try {
+    value = new URL(String(req?.url || TIME_REVIEW_PATH), 'http://wfm.invalid').searchParams.get('period') || '';
+  } catch {
+    throw sourceError('Requested review period is invalid.');
+  }
+  value = compact(value, 32);
+  if (!value) return '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw sourceError('Requested review period is invalid.');
+  return value;
+}
+
+function sourceTimeReviewPath(req) {
+  const period = requestedReviewPeriod(req);
+  return period ? SOURCE_TIME_REVIEW_PATH + '?period=' + encodeURIComponent(period) : SOURCE_TIME_REVIEW_PATH;
 }
 
 function writeJson(res, status, body) {
@@ -94,7 +112,7 @@ function fetchAuthoritativeTimeReview(req, options = {}) {
     const sourceReq = http.request({
       host: '127.0.0.1',
       port,
-      path: SOURCE_TIME_REVIEW_PATH,
+      path: sourceTimeReviewPath(req),
       method: 'GET',
       headers: sourceHeaders
     }, sourceRes => {
@@ -219,6 +237,8 @@ module.exports = Object.freeze({
   TIME_REVIEW_PATH,
   SOURCE_TIME_REVIEW_PATH,
   cookieSessionToken,
+  requestedReviewPeriod,
+  sourceTimeReviewPath,
   fetchAuthoritativeTimeReview,
   createWorkflowActionEvidenceBridge
 });

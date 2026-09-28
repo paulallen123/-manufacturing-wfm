@@ -6,32 +6,218 @@ const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
 const { spawn, execFileSync } = require('node:child_process');
+const net = require('node:net');
 const { once } = require('node:events');
 const { DatabaseSync } = require('node:sqlite');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(__dirname, 'vector-workflows.js'), 'utf8');
+const shellSource = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
+
+test('Vector keeps Time Review source-bound inside registered Attendance navigation', () => {
+  assert.doesNotMatch(shellSource, /\['time-review','Time review'\]/);
+  assert.match(shellSource, /'time-review':'attendance'/);
+  assert.match(source, /ui\.page !== 'attendance'/);
+  assert.match(source, /time: 'attendance'/);
+});
+
+test('payroll blocker action opens the exact next incomplete team without weakening review gates', async () => {
+  const actor = { tenant: 'northstar-demo', email: 'manager@northstar.example', personId: 'm1', role: 'manager' };
+  const incomplete = { id: 'team-incomplete', name: 'Assembly', status: 'draft', checkedEmployees: 0, employees: [{ id: 'e1' }] };
+  const signed = { id: 'team-signed', name: 'Packing', status: 'signed', checkedEmployees: 1, employees: [{ id: 'e2' }] };
+  const company = {
+    periods: [{ id: '2026-09-07', start: '2026-09-07', end: '2026-09-13' }], teams: [signed, incomplete],
+    totals: { employees: 2, workedMinutes: 900 }, blockers: ['Assembly is not signed.'], discrepancies: [],
+    schema: 'source-controlled', reconciliation: {}, lines: [], batches: [], adjustments: [], adjustmentCandidates: [],
+    adjustmentBatches: [], audit: [], exportNote: 'Provider acceptance remains separate.', canRelease: false, reminders: []
+  };
+  const report = {
+    periods: company.periods,
+    teams: [
+      { ...signed, revision: 2, issues: [], records: [], categories: [], blockers: [], workedMinutes: 450, canSign: false },
+      { ...incomplete, revision: 1, issues: [], records: [], categories: [], blockers: ['Review required'], workedMinutes: 450, canSign: false }
+    ]
+  };
+  const rootNode = { innerHTML: '' };
+  const context = vm.createContext({
+    console, URL, setTimeout, clearTimeout, OFFLINE: false, F: { actor, ready: true }, ui: { page: 'payroll-run' },
+    payrollActor: () => actor, PR: { has: () => true },
+    request: async url => url.startsWith('/api/weekly-review') ? structuredClone(report) : structuredClone(company),
+    command: async () => { throw Error('No mutation expected.'); },
+    document: { addEventListener() {}, querySelector() { return null; }, getElementById() { return rootNode; } },
+    modal() {}, modalActions: label => label, toast() {}, shell: html => html, render: async () => {}, showLogin() {}
+  });
+  vm.runInContext(source, context, { filename: 'vector-workflows.js' });
+  await context.VectorWorkflow.refresh();
+  const page = context.VectorWorkflow.payrollPage();
+  assert.match(page, /data-vector-workflow="next-review" data-id="team-incomplete"/);
+  assert.match(page, /Review and release CSV[^<]*|disabled/, 'release remains visibly gated');
+  await context.VectorWorkflow.action('next-review', 'team-incomplete');
+  assert.equal(context.RF.team, 'team-incomplete');
+  assert.equal(context.ui.page, 'vector-weekly-signoff');
+  assert.equal(context.RF.report.teams.find(item => item.id === 'team-incomplete').canSign, false);
+  assert.equal(context.RF.company.canRelease, false);
+  await assert.rejects(() => context.VectorWorkflow.action('next-review', 'team-outside-scope'), /changed or is outside your scope/);
+  actor.role = 'payroll_admin';
+  assert.doesNotMatch(context.VectorWorkflow.payrollPage(), /data-vector-workflow="next-review"/, 'payroll-only users cannot acquire manager review access');
+});
+
+test('weekly review continuation opens each next required existing action without auto-confirming it', async () => {
+  const actor = { tenant: 'northstar-demo', email: 'manager@northstar.example', personId: 'm1', role: 'manager' };
+  const team = {
+    id: 'assembly', name: 'Assembly', status: 'draft', revision: 7, checkedEmployees: 0, workedMinutes: 450,
+    employees: [{ id: 'e1', name: 'Áda Example', checked: false, workedMinutes: 450, holidayMinutes: 0 }],
+    records: [{
+      id: 'r1', employee: 'e1', date: '2026-09-07', workedMinutes: 450,
+      raw: { clockIn: '2026-09-07T08:00:00.000Z', clockOut: '2026-09-07T15:30:00.000Z' },
+      effective: { kind: 'worked', clockIn: '2026-09-07T08:00:00.000Z', clockOut: '2026-09-07T15:30:00.000Z', absenceMinutes: 0 }
+    }],
+    issues: [{ id: 'issue-1', status: 'open', employee: 'e1', row: 'r1', type: 'overtime', message: 'Verify overtime evidence.' }],
+    categories: [{ id: 'clocking', name: 'Clocking', description: 'Verify source clocking.', confirmed: false, open: 0 }],
+    blockers: [], canSign: false
+  };
+  let dialog;
+  const context = vm.createContext({
+    console, URL, setTimeout, clearTimeout, OFFLINE: false, F: { actor, ready: true }, ui: { page: 'vector-weekly-signoff' },
+    payrollActor: () => actor, PR: { has: () => true }, VectorDisplayContext: () => ({ locale: 'en-GB' }),
+    request: async () => { throw Error('No source refresh expected.'); }, command: async () => { throw Error('No mutation expected.'); },
+    document: { addEventListener() {}, querySelector() { return null; }, getElementById() { return { innerHTML: '' }; } },
+    modal: (title, html, submit) => { dialog = { title, html, submit }; }, modalActions: label => label,
+    toast() {}, shell: html => html, render: async () => {}, showLogin() {}
+  });
+  vm.runInContext(source, context, { filename: 'vector-workflows.js' });
+  context.RF.report = { periods: [{ id: '2026-09-07', start: '2026-09-07', end: '2026-09-13' }], teams: [team] };
+  context.RF.company = { teams: [team] };
+  context.RF.team = team.id;
+
+  assert.match(context.VectorWorkflow.weeklyPage(), /data-vector-workflow="continue-review"/);
+  await context.VectorWorkflow.action('continue-review');
+  assert.equal(dialog.title, 'Review source exception');
+  assert.equal(team.issues[0].status, 'open', 'opening the next action must not resolve it');
+
+  team.issues[0].status = 'resolved';
+  await context.VectorWorkflow.action('continue-review');
+  assert.equal(dialog.title, 'Verify Clocking');
+  assert.equal(team.categories[0].confirmed, false, 'opening the next action must not confirm it');
+
+  team.categories[0].confirmed = true;
+  await context.VectorWorkflow.action('continue-review');
+  assert.equal(dialog.title, 'Verify employee totals');
+  assert.equal(team.employees[0].checked, false, 'opening the next action must not verify an employee');
+
+  team.employees[0].checked = true;
+  team.checkedEmployees = 1;
+  team.canSign = true;
+  await context.VectorWorkflow.action('continue-review');
+  assert.equal(dialog.title, 'Sign and lock this week');
+  assert.equal(team.status, 'draft', 'opening the final action must not sign the week');
+
+  team.status = 'signed';
+  team.canSign = false;
+  assert.doesNotMatch(context.VectorWorkflow.weeklyPage(), /data-vector-workflow="continue-review"/);
+  await assert.rejects(() => context.VectorWorkflow.action('continue-review'), /No currently reviewable action/);
+
+  team.status = 'draft';
+  team.canSign = true;
+  actor.role = 'payroll_admin';
+  assert.doesNotMatch(context.VectorWorkflow.weeklyPage(), /data-vector-workflow="continue-review"/, 'payroll-only users cannot acquire manager review actions');
+  await assert.rejects(() => context.VectorWorkflow.action('continue-review'), /manager role is required/);
+});
+
+test('leave dates render in the active locale without shifting the stored calendar day', async () => {
+  const actor = { tenant: 'northstar-demo', email: 'employee@northstar.example', personId: 'e1', role: 'employee' };
+  const bootstrap = {
+    state: {
+      requests: [{ id: 'leave-1', employee: 'e1', employeeName: 'Zoë 山田', date: '2026-03-29', hours: 7.5, status: 'pending', kind: 'Annual leave' }]
+    }
+  };
+  const personal = { leave: { availableMinutes: 900, pendingMinutes: 450 }, shifts: [] };
+  const context = vm.createContext({
+    console, URL, setTimeout, clearTimeout, OFFLINE: false, F: { actor, ready: true }, ui: { page: 'leave' },
+    payrollActor: () => actor, PR: { has: () => true },
+    VectorDisplayContext: () => ({ locale: 'de-DE', timeZone: 'Europe/Berlin', authoritative: true }),
+    request: async url => url === '/api/bootstrap' ? structuredClone(bootstrap) : structuredClone(personal),
+    command: async () => { throw Error('No mutation expected.'); }, reload: async () => {},
+    document: { addEventListener() {}, querySelector() { return null; }, getElementById() { return { innerHTML: '' }; } },
+    modal() {}, modalActions: label => label, toast() {}, shell: html => html, render: async () => {}, showLogin() {}
+  });
+  vm.runInContext(source, context, { filename: 'vector-workflows.js' });
+
+  await context.VectorWorkflow.leaveRefresh();
+  assert.match(context.VectorWorkflow.leavePage(), /<time datetime="2026-03-29">29\.03\.2026<\/time>/);
+
+  actor.role = 'manager';
+  actor.email = 'manager@northstar.example';
+  actor.personId = 'm1';
+  await context.VectorWorkflow.leaveRefresh();
+  const managerPage = context.VectorWorkflow.leavePage();
+  assert.match(managerPage, /Zoë 山田/);
+  assert.match(managerPage, /<time datetime="2026-03-29">29\.03\.2026<\/time>/);
+});
+
+test('manager leave decision actions have unique locale-aware accessible names', async () => {
+  const actor = { tenant: 'northstar-demo', email: 'manager@northstar.example', personId: 'm1', role: 'manager' };
+  const bootstrap = {
+    state: {
+      requests: [
+        { id: 'leave-1', employee: 'e1', employeeName: 'Zoë 山田', date: '2026-03-29', hours: 7.5, status: 'pending' },
+        { id: 'leave-2', employee: 'e2', employeeName: 'Ana "Müller" & Co', date: '2026-03-30', hours: 4, status: 'pending' }
+      ]
+    }
+  };
+  const context = vm.createContext({
+    console, URL, setTimeout, clearTimeout, OFFLINE: false, F: { actor, ready: true }, ui: { page: 'leave' },
+    payrollActor: () => actor, PR: { has: () => true },
+    VectorDisplayContext: () => ({ locale: 'de-DE', timeZone: 'Europe/Berlin', authoritative: true }),
+    request: async () => structuredClone(bootstrap), command: async () => { throw Error('No mutation expected.'); },
+    document: { addEventListener() {}, querySelector() { return null; }, getElementById() { return { innerHTML: '' }; } },
+    modal() {}, modalActions: label => label, toast() {}, shell: html => html, render: async () => {}, showLogin() {}
+  });
+  vm.runInContext(source, context, { filename: 'vector-workflows.js' });
+
+  await context.VectorWorkflow.leaveRefresh();
+  const page = context.VectorWorkflow.leavePage();
+  assert.match(page, /aria-label="Approve leave request for Zoë 山田 on 29\.03\.2026"/);
+  assert.match(page, /aria-label="Decline leave request for Zoë 山田 on 29\.03\.2026"/);
+  assert.match(page, /aria-label="Approve leave request for Ana &quot;Müller&quot; &amp; Co on 30\.03\.2026"/);
+  assert.match(page, /aria-label="Decline leave request for Ana &quot;Müller&quot; &amp; Co on 30\.03\.2026"/);
+});
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+const reservePort = () => new Promise((resolve, reject) => {
+  const server = net.createServer();
+  server.once('error', reject);
+  server.listen(0, '127.0.0.1', () => {
+    const address = server.address();
+    const port = typeof address === 'object' && address ? address.port : 0;
+    server.close(error => error ? reject(error) : resolve(port));
+  });
+});
 
 test('Vector workflow controller uses real authentication, saved checks and restart recovery', async t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-workflow-'));
   const runtime = path.join(directory, 'runtime');
   execFileSync(process.execPath, [path.join(root, 'scripts/compose-vector-local-runtime.mjs'), runtime], { stdio: 'pipe' });
   const dbPath = path.join(directory, 'test.sqlite');
-  const port = 43217, origin = 'http://127.0.0.1:' + port;
+  const port = await reservePort(), origin = 'http://127.0.0.1:' + port;
   let child;
   async function start() {
     child = spawn(process.execPath, ['--require', path.join(runtime, 'local-paths.cjs'), path.join(runtime, 'security-runtime/bootstrap.cjs')], {
       env: { ...process.env, WFM_DB: dbPath, PORT: String(port), WFM_HOSTED_STAGING: 'false', NODE_ENV: 'test' },
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    let diagnostics = ''; child.stderr.on('data', data => { diagnostics += data; });
-    for (let attempt = 0; attempt < 80; attempt++) {
-      if (child.exitCode !== null) throw Error('Runtime exited: ' + diagnostics);
+    let diagnostics = '';
+    child.stdout.on('data', data => { diagnostics += '[stdout] ' + data; });
+    child.stderr.on('data', data => { diagnostics += '[stderr] ' + data; });
+    const startupBudgetMs = Number(process.env.WFM_PROOF_STARTUP_BUDGET_MS || 30000);
+    const deadline = Date.now() + startupBudgetMs;
+    while (Date.now() <= deadline) {
+      if (child.exitCode !== null) throw Error('Runtime exited before ready: ' + diagnostics);
       try { if ((await fetch(origin + '/api/health')).ok) return; } catch {}
-      await delay(50);
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      await delay(Math.min(100, remaining));
     }
-    throw Error('Runtime did not start: ' + diagnostics);
+    throw Error('Runtime did not become ready within condition budget ' + startupBudgetMs + 'ms: ' + diagnostics);
   }
   async function stop() { if (child && child.exitCode === null) { child.kill('SIGTERM'); await once(child, 'exit'); } }
   t.after(async () => { await stop(); fs.rmSync(directory, { recursive: true, force: true }); });
@@ -66,6 +252,8 @@ test('Vector workflow controller uses real authentication, saved checks and rest
       console, URL, setTimeout, clearTimeout, document, OFFLINE: false,
       PR: require(path.join(runtime, 'public/payroll-control.js')),
       WFMCost: require(path.join(runtime, 'public/cost-engine.js')),
+      VectorOperatingContext: require(path.join(root, 'ux-overlay/vector-operating-context.js')),
+      VectorDisplayContext: () => ({ locale: 'en-GB', timeZone: 'Europe/London', timeZoneSource: 'operating_context' }),
       F: { actor: bootstrap.actor, ready: true }, ui: { page: 'overview' }, data: bootstrap.state,
       payrollActor: () => bootstrap.actor,
       request,
@@ -192,10 +380,21 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.match(leaveEmployee.workflow.leavePage(), /Saved and read back from the service/);
     assert.doesNotMatch(leaveEmployee.workflow.leavePage(), /workflow preview|demo does not certify/i);
   });
-  await t.test('employee leave route surfaces authoritative overlap refusal without a false receipt', async () => {
-    await assert.rejects(() => leaveEmployee.workflow.leaveRequest({ date: leaveDate, hours: 7.5 }), error => error.status === 409);
-    assert.equal(leaveEmployee.workflow.leaveState().receipt, null);
-    assert.equal(leaveEmployee.workflow.leaveState().bootstrap.state.requests.filter(request => request.id === leaveRequestId).length, 1);
+  await t.test('employee leave route surfaces authoritative overlap refusal without remounting the active modal', async () => {
+    const originalReload = leaveEmployee.context.reload;
+    let reloads = 0;
+    leaveEmployee.context.reload = async (...args) => { reloads++; return originalReload(...args); };
+    try {
+      await assert.rejects(
+        () => leaveEmployee.workflow.leaveRequest({ date: leaveDate, hours: 7.5 }),
+        error => error.status === 409 && /overlap|already|request/i.test(String(error.message || ''))
+      );
+      assert.equal(reloads, 0, '409 conflict recovery must not remount the active modal before its error can render.');
+      assert.equal(leaveEmployee.workflow.leaveState().receipt, null);
+      assert.equal(leaveEmployee.workflow.leaveState().bootstrap.state.requests.filter(request => request.id === leaveRequestId).length, 1);
+    } finally {
+      leaveEmployee.context.reload = originalReload;
+    }
   });
   await t.test('a rejected stale leave write refreshes the next action context without replaying it', async () => {
     const state = leaveEmployee.workflow.leaveState();
@@ -374,7 +573,19 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.ok(payroll.context.RF.company.teams.length);
     assert.match(payroll.workflow.payrollPage(), /Payroll preparation/);
     assert.match(payroll.workflow.payrollPage(), /disabled[^>]*>Review and release CSV|Review and release CSV/);
+    assert.doesNotMatch(payroll.workflow.payrollPage(), /data-vector-workflow="next-review"/, 'payroll-only users cannot acquire manager review access');
     assert.ok(payroll.context.RF.company.blockers.length, 'release remains blocked, not bypassed');
+  });
+  await t.test('authorised manager can jump from payroll blockers to the exact next incomplete team in one action', async () => {
+    const incomplete = manager.context.RF.company.teams.find(item => !['signed', 'stale'].includes(item.status));
+    assert.ok(incomplete, 'fixture contains an incomplete team');
+    const page = manager.workflow.payrollPage();
+    assert.match(page, new RegExp(`data-vector-workflow="next-review" data-id="${incomplete.id}"`));
+    manager.context.ui.page = 'payroll-run';
+    manager.context.RF.team = '';
+    await manager.workflow.action('next-review', incomplete.id);
+    assert.equal(manager.context.RF.team, incomplete.id);
+    assert.equal(manager.context.ui.page, 'vector-weekly-signoff');
   });
   await t.test('accepted command without observed saved result cannot produce success receipt', async () => {
     const uncertain = await client('manager@northstar.example');
@@ -400,10 +611,13 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     await assert.rejects(() => changed.workflow.mutate('review-check', { period: '2026-09-07', team: team.id, revision: team.revision, category: category.id, checked: true }), /account or review period changed/);
     assert.equal(changed.workflow.state().receipt, null);
   });
-  await t.test('unsaved Time Review is protected when entering weekly sign-off', async () => {
-    manager.context.ui.page = 'time-review';
+  await t.test('unsaved Attendance review is protected when entering weekly sign-off', async () => {
+    manager.context.ui.page = 'attendance';
     manager.context.triClean = () => false;
     await manager.workflow.action('weekly');
-    assert.equal(manager.context.ui.page, 'time-review');
+    assert.equal(manager.context.ui.page, 'attendance');
+    manager.context.triClean = () => true;
+    await manager.workflow.action('weekly');
+    assert.equal(manager.context.ui.page, 'vector-weekly-signoff');
   });
 });

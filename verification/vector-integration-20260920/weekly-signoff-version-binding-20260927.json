@@ -1,0 +1,50 @@
+{
+  "schema": "wfm-independent-proof-evidence/v1",
+  "capturedAt": "2026-09-27T11:34:54Z",
+  "candidateBaseSha": "a73b94585740e24417e4220ebcd064aa32d385db",
+  "scope": "local source-level proof harness hardening; fictional fixture only",
+  "risk": "weekly sign-off could be classified as exact-version proof from a signed status without binding the submitted browser revision to the persisted signature and domain audit revisions",
+  "red": {
+    "command": "node --test tests/vector-weekly-signoff-version-binding.test.mjs",
+    "passed": 1,
+    "failed": 1,
+    "skipped": 0,
+    "failure": "mismatched submitted revision 27 versus signature/audit revision 28 was accepted"
+  },
+  "green": {
+    "commands": [
+      "node --check scripts/current-candidate-role-browser-proof.mjs",
+      "node --check scripts/vector-proof-result.mjs",
+      "node --test tests/vector-weekly-signoff-proof.test.mjs tests/vector-weekly-signoff-version-binding.test.mjs"
+    ],
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0
+  },
+  "controlsAdded": [
+    "capture the exact review revision before the browser submits review-sign",
+    "assert the browser request payload carries that revision",
+    "assert the refreshed persisted signature carries that revision",
+    "assert the domain audit carries that revision",
+    "reject scoped attendance proof unless all three revisions match and refreshed state is signed"
+  ],
+  "files": {
+    "scripts/current-candidate-role-browser-proof.mjs": {
+      "gitBlob": "c9c7deba528e6a0f79f474698f1a2e9f34bafe9a",
+      "sha256": "46f4f8f05934789a2fb6942a656137e1ef3889ce859595693b030deb686ed940"
+    },
+    "scripts/vector-proof-result.mjs": {
+      "gitBlob": "fd53f77ef9da2b1ac10948e0a9a9ebf36315e20e",
+      "sha256": "c9bc612cbe61ad9f1a1864d9bec7b141d310d9e60589de5ba039a2dd8cfd97a3"
+    },
+    "tests/vector-weekly-signoff-proof.test.mjs": {
+      "gitBlob": "bc6cead88a6b89301993d731c20c30e4afbb3a68",
+      "sha256": "ac4657775ed0312c374ee5971919def9b9d8730b8393eb849b23177a08070e68"
+    }
+  },
+  "claim": "BUILT",
+  "releaseGate": "still BLOCKED pending execution on the exact deployed build and the existing leave-audit tamper repair",
+  "customerDataMutation": false,
+  "productionMutation": false,
+  "hostedExecution": false
+}

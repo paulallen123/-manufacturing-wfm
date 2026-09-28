@@ -20,6 +20,55 @@ test('local proof assembly includes the same required bootstrap dependencies', (
   const group = composer.match(/security:\s*\[([^\]]+)\]/)?.[1] || '';
   for (const file of relativeRequires) assert.ok(group.includes(`'${file}'`), `local proof omitted required module: ${file}`);
 });
+
+test('local proof assembly includes absolute bootstrap runtime dependencies and training closure', () => {
+  const composer = fs.readFileSync(path.join(root, 'scripts/compose-vector-local-runtime.mjs'), 'utf8');
+  const absoluteRequires = Array.from(bootstrap.matchAll(/require\(['"]\/app\/([^'"]+)['"]\)/g), m => m[1]);
+  const runtimeGroups = {
+    'integration-runtime': 'integration',
+    'implementation-runtime': 'implementation',
+    'learning-runtime': 'learning',
+    'operations-runtime': 'operations',
+    'reporting-runtime': 'reporting',
+    'trust-runtime': 'trust'
+  };
+  for (const required of absoluteRequires) {
+    if (required === 'server.cjs') {
+      assert.match(composer, /artifact\/wfm-0\.6\.76-hosted-staging-rc1\.tar\.gz/, 'base server must remain sourced from the pinned sealed runtime artifact');
+      continue;
+    }
+    const [runtimeGroup, ...rest] = required.split('/');
+    const sourceGroup = runtimeGroups[runtimeGroup];
+    assert.ok(sourceGroup, `unmapped bootstrap runtime group: ${runtimeGroup}`);
+    const file = rest.join('/');
+    if (runtimeGroup === 'operations-runtime' && file === 'workforce-lifecycle-guard.cjs') {
+      assert.match(composer, /workforce-lifecycle-router\.cjs'\s*,\s*'operations-runtime\/workforce-lifecycle-guard\.cjs'/);
+      continue;
+    }
+    const group = composer.match(new RegExp(sourceGroup + ':\\s*\\[([\\s\\S]*?)\\n\\s*\\]'))?.[1]
+      || composer.match(new RegExp(sourceGroup + ':\\s*\\[([^\\]]+)\\]'))?.[1]
+      || '';
+    assert.ok(group.includes(`'${file}'`), `local proof omitted absolute bootstrap dependency: ${required}`);
+  }
+
+  const training = fs.readFileSync(path.join(root, 'learning/runtime/training-delivery-service.cjs'), 'utf8');
+  const trainingRelatives = Array.from(training.matchAll(/require\(['"]\.\/([^'"]+)['"]\)/g), m => m[1]);
+  const learningGroup = composer.match(/learning:\s*\[([\s\S]*?)\n\s*\]/)?.[1] || '';
+  for (const file of trainingRelatives) {
+    assert.ok(learningGroup.includes(`'${file}'`), `local proof omitted training dependency: ${file}`);
+  }
+});
+test('local proof assembly includes scheduling runtime dependency closure', () => {
+  const composer = fs.readFileSync(path.join(root, 'scripts/compose-vector-local-runtime.mjs'), 'utf8');
+  const scheduling = fs.readFileSync(path.join(root, 'operations/runtime/scheduling-intelligence-service.cjs'), 'utf8');
+  const relatives = Array.from(scheduling.matchAll(/require\(['"]\.\/([^'"]+)['"]\)/g), m => m[1]);
+  const operationsGroup = composer.match(/operations:\s*\[([\s\S]*?)\n\s*\]/)?.[1] || '';
+  assert.ok(operationsGroup.includes("'scheduling-intelligence-service.cjs'"), 'local proof omitted scheduling service');
+  for (const file of relatives) {
+    assert.ok(operationsGroup.includes(`'${file}'`), `local proof omitted scheduling dependency: ${file}`);
+  }
+});
+
 test('retired presentation serves 410 for direct and encoded paths, and never intercepts the real API', async t => {
   const { serveRetiredPresentation } = require('../security/runtime/retired-presentation.cjs');
   const server = http.createServer((req, res) => {
@@ -40,4 +89,28 @@ test('retired presentation serves 410 for direct and encoded paths, and never in
   for (const route of ['/api/health', '/api/login', '/vector-ui.js', '/vector-workflows.js']) {
     assert.equal((await fetch(base + route)).status, 204);
   }
+});
+
+
+test('legacy local-data writes are redirected outside immutable app root', () => {
+  const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
+  assert.match(docker, /mkdir -p \/tmp\/vector-local-data/);
+  assert.match(docker, /ln -s \/tmp\/vector-local-data \/app\/local-data/);
+  assert.match(docker, /chmod 0700 \/tmp\/vector-local-data/);
+  assert.match(docker, /USER node/);
+  assert.match(docker, /find \/app -type d -exec chmod 0555/);
+});
+
+
+test('integration fabric runtime retains its source-relative loader layout', () => {
+  const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
+  assert.match(docker, /COPY integration-fabric\/runtime\/ \/app\/integration-fabric\/runtime\//);
+  assert.match(docker, /COPY integration-fabric\/scripts\/load-catalog\.mjs \/app\/integration-fabric\/scripts\/load-catalog\.mjs/);
+  assert.match(docker, /COPY integration-fabric\/systems\.json \/app\/integration-fabric\/systems\.json/);
+  assert.match(docker, /COPY integration-fabric\/systems-research\.json \/app\/integration-fabric\/systems-research\.json/);
+  assert.match(docker, /COPY integration-fabric\/research-overlays\/ \/app\/integration-fabric\/research-overlays\//);
+  assert.match(docker, /COPY integration-fabric\/protocol-profiles\.json \/app\/integration-fabric\/protocol-profiles\.json/);
+  assert.match(docker, /COPY integration-fabric\/opportunity-profiles\.json \/app\/integration-fabric\/opportunity-profiles\.json/);
+  const registry = fs.readFileSync(path.join(root, 'integration-fabric/runtime/connector-registry.mjs'), 'utf8');
+  assert.match(registry, /\.\.\/scripts\/load-catalog\.mjs/);
 });

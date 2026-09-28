@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T02:28:03Z",
+  "verifier": "Trust Proof Security Reliability Release Engine independent verifier",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "candidateHeadAtStart": "8d5ff5197f05e4d2fa5da4e514af8f44761493e3",
+  "productSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b",
+  "evidenceBoundary": {
+    "environment": "local exact sealed artifact",
+    "data": "fictional synthetic SQLite fixture",
+    "hosted": false,
+    "customer": false,
+    "production": false
+  },
+  "runtime": {
+    "artifactGitBlob": "fa03970c5b324bba02bcc56f2fffe0fdd519eb7f",
+    "artifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "localExecutorNode": "v24.19.0",
+    "exactContainerNode22Executed": false,
+    "dockerAvailable": false
+  },
+  "attack": {
+    "hypothesis": "The runtime does not verify a restored database against an independently retained monotonic state/audit checkpoint before serving consequential payroll.",
+    "command": "WFM_SEALED_RUNTIME_ARTIFACT=sealed-runtime-4bd3.tar.gz node --test payroll-stale-restore-detection.adversarial.test.cjs",
+    "testSha256": "adcb002f64853a5530edb97c4da999f2dffdc961eb1ab2efb2c8cb006f1c0386",
+    "result": {
+      "pass": 0,
+      "fail": 1,
+      "skipped": 0,
+      "exitCode": 1
+    },
+    "observed": {
+      "verifiedVersionBeforeRollback": 5,
+      "restoredStaleVersion": 2,
+      "expectedStateSha256": "911a372f9b89a9c0a94d3c684371aa48a85ad9b47dcbfd38619b9e203dcfe485",
+      "restoredStateSha256": "3d316c61635163c9f021ac2dfe63292b5bcf91388c9ad04a190f82324627819b",
+      "expectedAuditEventId": 4,
+      "runtimeHealthyAfterRollback": true,
+      "payrollDashboardStatus": 200,
+      "previouslyVerifiedExportStatus": 404
+    }
+  },
+  "rootCause": {
+    "description": "The database is the only authoritative location for tenant version, payroll state and audit sequence. Startup ignores the independently supplied expected version, state digest and audit checkpoint, so a stale-but-well-formed database is indistinguishable from current state.",
+    "consequence": "A stale restore or ransomware rollback can silently erase an approved/exported payroll transition while health remains green and payroll reads continue."
+  },
+  "claimChanges": {
+    "localSealedAttendanceToAdjustmentJourney": "BUILT",
+    "payrollAuditTamperResistance": "BLOCKED",
+    "staleRestoreDetection": "BLOCKED",
+    "knownGoodRestoreVerification": "BLOCKED",
+    "ransomwareRollbackRecovery": "BLOCKED",
+    "exactNode22DockerAdmission": "BLOCKED",
+    "customerRelease": "BLOCKED",
+    "marketingVideoReadiness": "BLOCKED"
+  },
+  "requiredRepair": [
+    "Persist a monotonic tenant version, audit sequence and consequential-state digest outside the mutable database or in independently immutable evidence.",
+    "Verify the restored database against that checkpoint before health becomes ready or payroll endpoints are served.",
+    "Fail closed with explicit recovery status on version regression, digest mismatch, missing audit sequence or lost export identity.",
+    "Execute reconciliation and prove the exact restored payroll/export state before reopening service."
+  ],
+  "nextProof": "Make this fail-first regression pass against a newly sealed artifact, then execute a known-good backup restore, reconciliation and exact export readback in the Node 22 Docker candidate.",
+  "safety": "Only an isolated temporary SQLite database was rolled back. No hosted deployment, live/customer/payroll data, credentials, DNS or infrastructure was changed."
+}
+

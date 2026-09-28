@@ -1,0 +1,68 @@
+{
+  "evidenceVersion": 1,
+  "recordedAt": "2026-09-28T14:26:51Z",
+  "claim": "A configured synthetic proof runner can exchange a one-time Ed25519 assertion for a short-lived, tenant/account-bound, exact-route-scoped browser session without entering a password.",
+  "classification": "BUILT",
+  "evidenceBoundary": {
+    "environment": "local synthetic exact-runtime extraction",
+    "customerData": false,
+    "productionMutation": false,
+    "hostedProof": false,
+    "countryOrRegion": "not jurisdiction-specific",
+    "scale": "one proof-runner key / one synthetic tenant / one account"
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "startingHead": "2d382448dbdc2abef6139cace86b52bbe33216e4",
+    "sealedRuntimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "node": "22.23.2"
+  },
+  "red": {
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "observation": "POST /api/proof-runner/challenge reached the protected API catch-all and returned HTTP 401 Sign in is required; no cryptographic workload exchange existed."
+  },
+  "repair": {
+    "authority": "Only explicitly configured Ed25519 public keys are trusted; runner-controlled claims cannot select tenant, account, role or routes.",
+    "assertion": "A 30-second assertion is bound to a one-time random challenge, runtime audience, key ID and Ed25519 signature; the challenge is consumed before signature validation.",
+    "session": "The tested session lasts 120 seconds; configuration is constrained to 30–300 seconds and inherits the server-bound synthetic user's tenant, role and permissions.",
+    "leastPrivilege": "Every proof-runner API request is checked against the exact method/path allowlist stored in the session and the current server configuration.",
+    "containment": "Disabling or removing the configured key makes existing proof-runner sessions fail closed on their next protected request.",
+    "evidence": "Issuance is appended to the immutable audit table with runner identity, account, expiry, route count and only a hashed session reference."
+  },
+  "green": {
+    "focused": {
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3821.436286
+    },
+    "affectedRegression": {
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7129.948963,
+      "coverage": [
+        "immutable leave decision restart/tamper refusal",
+        "legacy leave decision quarantine",
+        "passkey-only normal sign-in UI",
+        "passkey Origin, user-verification and replay controls",
+        "proof-runner exchange, route denial, replay denial, audit and kill switch"
+      ]
+    }
+  },
+  "fileSha256": {
+    "scripts/harden-proof-runner-identity.mjs": "9aa3d9524f94a0ea521586b625c9af222417e01dea60961ea1d2c410c58a4178",
+    "tests/proof-runner-workload-identity.proof.test.cjs": "1a236d1955e56d4893eb28a33a545236d9463c244d3a5494d388e94c28dc1e11"
+  },
+  "releaseGate": {
+    "status": "BLOCKED",
+    "reason": "The exchange is not configured or executed in the approved hosted environment. Runner key custody/rotation, hosted audience binding, exact Golden Journey route scope, concurrent runners and provider/OIDC federation are unproved. This does not prove customer passkey/SSO authentication.",
+    "nextProof": "Provision one controlled proof-runner key or approved OIDC workload identity in the synthetic hosted lane, allow only the exact Golden Journey endpoints, execute the journey on the deployed SHA, then disable the identity and verify immediate denial plus preserved audit evidence."
+  }
+}

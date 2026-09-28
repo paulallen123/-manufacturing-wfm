@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T01:30:44Z",
+  "verifier": "Trust Proof Security Reliability Release Engine independent verifier",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "sourceCommit": "1717e64749c072d3022a38ff882ad46fe6658839",
+  "productSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b",
+  "evidenceBoundary": {
+    "environment": "local exact sealed artifact",
+    "data": "fictional synthetic SQLite fixture",
+    "hosted": false,
+    "browser": false,
+    "provider": false,
+    "customer": false,
+    "production": false
+  },
+  "runtime": {
+    "artifactGitBlob": "fa03970c5b324bba02bcc56f2fffe0fdd519eb7f",
+    "artifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "localExecutorNode": "v24.19.0",
+    "exactContainerNode22Executed": false
+  },
+  "executed": {
+    "command": "WFM_SEALED_RUNTIME_ARTIFACT=sealed-runtime-4bd3.tar.gz node prove-sealed-attendance-to-adjustment-journey.cjs",
+    "scriptGitBlob": "1e3e2b1a0ad0d7f32450e81573e53e68834066ab",
+    "scriptSha256": "6e0d85bd3c4b19f8e30b33ddabc43134b1edd8e8e113c9d6bf02e6b1ee06de01",
+    "exitCode": 0,
+    "status": "PASS"
+  },
+  "observed": {
+    "attendanceExceptionsResolved": 7,
+    "teamsSigned": 4,
+    "payrollExport": {
+      "rows": 172,
+      "sha256": "3e2a2645e1972bae24e3aebb1cbbdb63694d60fdcdd96f918e4a3d8a82140885",
+      "checksumHeaderMatched": true
+    },
+    "adjustmentExport": {
+      "rows": 1,
+      "sha256": "1e7afe90c8db80a8186cba59b6a87ae782b4f42b2193d32a967bbbeecfa81275",
+      "schema": "reviewed-pay-adjustment-v2-minor-units",
+      "currency": "GBP",
+      "minorUnitExponent": 2,
+      "currencySource": "reviewed_cost_evidence",
+      "independentlyApproved": true,
+      "checksumHeaderMatched": true
+    },
+    "tenantIsolation": true,
+    "freshLoginAfterSafeRestart": true
+  },
+  "claims": {
+    "continuousAttendanceToAdjustmentJourney": "BUILT",
+    "payrollAuditTamperResistance": "BLOCKED",
+    "exactNode22DockerAdmission": "BLOCKED",
+    "hostedBrowserJourney": "BLOCKED",
+    "providerReconciliation": "BLOCKED",
+    "customerRelease": "BLOCKED",
+    "marketingVideoReadiness": "BLOCKED"
+  },
+  "companionFailureEvidence": "verification/vector-integration-20260920/evidence/payroll-audit-tamper-resistance-20260927.json",
+  "limitations": [
+    "The journey ran locally against the exact sealed artifact, not in the approved hosted environment.",
+    "The executable runtime was Node v24.19.0, not the exact Node v22.23.2 container.",
+    "The companion attack proved embedded payroll business audit can be erased without detection while the approved adjustment and export remain available."
+  ],
+  "nextProof": "Repair and independently retest audit correlation, then execute this same journey in the exact Node 22 Docker image and deployed browser-bound candidate."
+}
+

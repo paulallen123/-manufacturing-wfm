@@ -1,0 +1,81 @@
+{
+  "evidenceVersion": 1,
+  "recordedAt": "2026-09-28T16:33:01Z",
+  "claim": "A proof-runner session cannot burst all permitted actions at once; exact route scope, a per-second rate ceiling and the total action budget are enforced together atomically.",
+  "classification": "BUILT",
+  "evidenceBoundary": {
+    "environment": "local synthetic sealed-runtime extraction",
+    "customerData": false,
+    "productionMutation": false,
+    "hostedProof": false,
+    "countryOrRegion": "not jurisdiction-specific",
+    "scale": "one proof-runner key / one synthetic tenant / one account / two concurrent requests",
+    "executingNode": "24.19.0",
+    "requiredReleaseNode": "22.23.2"
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "startingHead": "c531dbb5510281ac17969a0f8fec0f5411047aab",
+    "sealedRuntimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "red": {
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "observation": "The runner configuration rejected maxRequestsPerSecond as unsupported, confirming that total action budget existed but no server-enforced burst-rate control existed."
+  },
+  "repair": {
+    "configuration": "Each trusted runner must declare an integer maxRequestsPerSecond from 1 through 20; missing or out-of-range limits fail closed.",
+    "issuance": "The server copies the rate ceiling into the session and append-only issuance audit; the runner cannot choose or increase it.",
+    "atomicEnforcement": "One SQLite update admits an exact-route request only when both the current one-second window and the total action budget permit it, then consumes both counters atomically.",
+    "scopeOrdering": "An out-of-scope request is rejected with HTTP 403 before either rate or action authority is consumed.",
+    "detection": "The first rejected request in a rate window records one append-only proof-runner-rate-limited event; repeats in that window do not flood the audit.",
+    "budgetCompatibility": "Allowed requests in later windows continue until the total budget is exhausted; exhaustion remains independently audited and denied with HTTP 429.",
+    "killSwitch": "Disabling the runner identity continues to fail closed before rate or budget evaluation."
+  },
+  "green": {
+    "focusedRepeatedFreshStores": {
+      "runs": 3,
+      "testsPerRun": 1,
+      "passedPerRun": 1,
+      "failedPerRun": 0,
+      "skippedPerRun": 0
+    },
+    "observed": {
+      "sameSecondConcurrentStatuses": [200, 429],
+      "forbiddenRouteStatus": 403,
+      "laterWindowAllowedActions": 2,
+      "totalBudget": 3,
+      "postBudgetStatus": 429,
+      "rateLimitedAuditEvents": 1,
+      "budgetExhaustedAuditEvents": 1
+    },
+    "affectedRegression": {
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 12340.674261,
+      "coverage": [
+        "immutable leave-decision restart/tamper refusal",
+        "legacy leave-decision quarantine",
+        "passkey-only normal sign-in UI",
+        "passkey Origin, user-verification and replay controls",
+        "proof-runner atomic rate/action budget, scope denial, replay denial, audit and kill switch",
+        "leave decision domain-audit request binding"
+      ]
+    },
+    "overlayIdempotence": "The proof-runner hardener applied twice to a fresh extraction and the resulting server passed syntax validation."
+  },
+  "fileSha256": {
+    "scripts/harden-proof-runner-identity.mjs": "911af8163ef165822bf06af1c03ac92e72e821f417c06118cfb3f971baa9ac25",
+    "tests/proof-runner-workload-identity.proof.test.cjs": "49a1c9e6cbd587d01f1102c437983839bb341ae051e12c18b52441e617f58303"
+  },
+  "releaseGate": {
+    "status": "BLOCKED",
+    "reason": "This result executed locally on Node 24.19.0, not the required Node 22.23.2 release runtime, and the proof runner remains unconfigured in the approved hosted synthetic lane. Hosted burst behavior, multi-instance counter consistency, Golden Journey sizing and provider/OIDC federation remain unproved.",
+    "nextProof": "Execute the same burst regression inside the exact Node 22.23.2 Docker candidate, then size the lowest workable action and rate budgets for one hosted Golden Journey and test two concurrent runner instances against the deployed SHA."
+  }
+}

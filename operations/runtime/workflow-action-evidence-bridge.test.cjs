@@ -69,13 +69,57 @@ test('read-only bridge emits only contract-valid Time Review actions from the au
     assert.equal(result.status,200);
     assert.equal(result.body.contractVersion,'WFM_WORKFLOW_ACTION_EVIDENCE_V1');
     assert.equal(result.body.workflow,'time-review');
-    assert.equal(result.body.source,'/api/time-review');
+    assert.equal(result.body.source,'/api/weekly-review');
     assert.equal(result.body.items.length,1);
     assert.equal(result.body.items[0].sourceId,'issue-1');
     assert.equal(result.body.items[0].reasonCode,'MISSED_CLOCK_OUT');
     assert.equal(result.body.items[0].freshness.state,'unknown');
     assert.equal(result.body.items[0].confirmation.state,'action_required');
     assert.deepEqual(seen,[{tenant:'alpha',role:'manager',email:'manager@alpha'}]);
+  }finally{f.close();}
+});
+
+test('bridge exposes the sealed saved-adjustment shape while preserving fail-closed evidence rules',async()=>{
+  const f=fixture(async()=>({status:200,body:report({
+    teams:[{id:'team-a',issues:[{
+      id:'issue-adjustment-1',
+      status:'open',
+      type:'adjustment',
+      row:'row-17',
+      sourceFingerprint:'sha256:fixture-source',
+      proposed:{clockOut:'2026-09-19T17:05:00.000Z'},
+      message:'Manager proposed a five-minute correction.'
+    }]}]
+  })}));
+  try{
+    const result=await call(f.engine,f.manager,'GET',TIME_REVIEW_PATH+'?period=2026-09-07');
+    assert.equal(result.status,200);
+    assert.equal(result.body.items.length,1);
+    assert.equal(result.body.items[0].sourceId,'issue-adjustment-1');
+    assert.equal(result.body.items[0].reasonCode,'TIME_REVIEW_ADJUSTMENT');
+    assert.equal(result.body.items[0].confirmation.state,'action_required');
+  }finally{f.close();}
+});
+
+test('bridge simulation keeps unrelated reasonless issues suppressed beside a valid adjustment',async()=>{
+  const f=fixture(async()=>({status:200,body:report({
+    teams:[{id:'team-a',issues:[
+      {id:'copy-only',status:'open',title:'Urgent-looking presentation copy only'},
+      {
+        id:'issue-adjustment-sim',
+        status:'open',
+        type:'adjustment',
+        row:'row-sim',
+        sourceFingerprint:'sha256:simulated-source',
+        proposed:{clockOut:'2026-09-19T17:10:00.000Z'},
+        message:'Manager proposed a bounded correction.'
+      }
+    ]}]
+  })}));
+  try{
+    const result=await call(f.engine,f.manager,'GET',TIME_REVIEW_PATH+'?period=2026-09-07');
+    assert.equal(result.status,200);
+    assert.deepEqual(result.body.items.map(item=>item.sourceId),['issue-adjustment-sim']);
   }finally{f.close();}
 });
 
@@ -125,7 +169,7 @@ test('source failure and non-GET access fail closed without exposing a synthetic
 test('default source reader preserves hosted reverse-proxy protocol context',async()=>{
   let seen=null;
   const source=http.createServer((req,res)=>{
-    seen={host:req.headers.host,proto:req.headers['x-forwarded-proto'],cookie:req.headers.cookie};
+    seen={host:req.headers.host,proto:req.headers['x-forwarded-proto'],cookie:req.headers.cookie,url:req.url};
     res.statusCode=200;
     res.setHeader('content-type','application/json');
     res.end(JSON.stringify(report()));
@@ -142,15 +186,44 @@ test('default source reader preserves hosted reverse-proxy protocol context',asy
         cookie:'wfm_session=test-session',
         'x-forwarded-proto':'https'
       },
-      socket:{localPort:port}
+      socket:{localPort:port},
+      url:TIME_REVIEW_PATH+'?period=2026-09-07'
     },{port,timeoutMs:1000});
     assert.equal(result.status,200);
     assert.equal(result.body.tenant,'alpha');
     assert.deepEqual(seen,{
       host:'wfm-ci.invalid',
       proto:'https',
-      cookie:'wfm_session=test-session'
+      cookie:'wfm_session=test-session',
+      url:'/api/weekly-review?period=2026-09-07'
     });
+  }finally{
+    await new Promise(resolve=>source.close(resolve));
+  }
+});
+
+
+test('default source reader binds action evidence to weekly review and forwards the requested period',async()=>{
+  let seenUrl=null;
+  const source=http.createServer((req,res)=>{
+    seenUrl=req.url;
+    res.statusCode=200;
+    res.setHeader('content-type','application/json');
+    res.end(JSON.stringify(report()));
+  });
+  await new Promise((resolve,reject)=>{
+    source.once('error',reject);
+    source.listen(0,'127.0.0.1',resolve);
+  });
+  try{
+    const port=source.address().port;
+    const result=await fetchAuthoritativeTimeReview({
+      headers:{host:'wfm-ci.invalid',cookie:'wfm_session=test-session','x-forwarded-proto':'https'},
+      socket:{localPort:port},
+      url:TIME_REVIEW_PATH+'?period=2026-09-07'
+    },{port,timeoutMs:1000});
+    assert.equal(result.status,200);
+    assert.equal(seenUrl,'/api/weekly-review?period=2026-09-07');
   }finally{
     await new Promise(resolve=>source.close(resolve));
   }

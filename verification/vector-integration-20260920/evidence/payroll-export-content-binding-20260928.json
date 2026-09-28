@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-28T10:26:44Z",
+  "claim": "Payroll browser proof rejects an internally rehashed export unless its exact bytes reproduce the authoritative pre-release payroll lines.",
+  "status": "BUILT",
+  "boundary": {
+    "source": "PR #225 payroll verifier files at bc333a24382a0a1017f7fe6dfe8d5253d4129b6a, confirmed unchanged through integration parent 86acdd5424b7570b3bea8e6d1549ea1203d7c8e0",
+    "runtimeArtifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "serverPayrollControlSha256": "ec5fa3cd5cb2bc4d2e66694b6211ad3dc8c24ea279bd48b0bc0fa01260eb1200",
+    "environment": "local synthetic source/evidence verifier",
+    "hostedExecuted": false,
+    "providerExecuted": false,
+    "customerExecuted": false
+  },
+  "threat": {
+    "assumption": "A matching download checksum header, persisted checksum, row count and reconciliationOk flag prove that exported payroll content equals the authoritative payroll lines.",
+    "attack": "Substitute semantically different CSV bytes, recompute their checksum, and keep all IDs, row count, persistence fields and reconciliationOk internally consistent.",
+    "observedBeforeRepair": "The classifier returned scopedPayrollJourneyVerified=true.",
+    "impact": "A self-consistent but wrong payroll export could be promoted as browser proof."
+  },
+  "red": {
+    "command": "node --test tests/vector-payroll-release-proof.test.mjs",
+    "tests": 3,
+    "passed": 2,
+    "failed": 1,
+    "skipped": 0,
+    "failure": "Expected false but received true for a release whose authoritativeCsvChecksum differed from computedChecksum."
+  },
+  "repair": {
+    "browser": "Reconstruct the server CSV contract from the authoritative pre-release payroll lines, compare the full downloaded text byte-for-byte, and compare independent SHA-256 values.",
+    "classifier": "Require authoritativeCsvChecksum to be a valid SHA-256 and equal computedChecksum.",
+    "gate": "Emit payroll-export-content-reconciliation as missing evidence when the binding is absent or mismatched.",
+    "test": "Preserve the rehashed-content attack and literal byte-contract/formula-safety regressions."
+  },
+  "green": {
+    "command": "node --check scripts/vector-payroll-csv-proof.mjs && node --check scripts/vector-proof-result.mjs && node --check scripts/current-candidate-role-browser-proof.mjs && node --test tests/vector-payroll-csv-proof.test.mjs tests/vector-payroll-release-proof.test.mjs tests/vector-weekly-signoff-proof.test.mjs",
+    "syntaxChecks": 3,
+    "tests": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "node": "v24.19.0",
+    "dockerAdmissionWired": true,
+    "dockerBuildExecuted": false,
+    "dockerBuildBoundary": "Docker CLI is unavailable in this workspace."
+  },
+  "files": {
+    "scripts/vector-proof-result.mjs": "77842a45c72d7c76562106000cf0eda7a852bf17776862a265da1ca1298c4c0c",
+    "scripts/vector-payroll-csv-proof.mjs": "8eee517a8b71f9731f9ec89bd40b55088adf5747a3a55b6626c817143b5f9b8a",
+    "scripts/current-candidate-role-browser-proof.mjs": "5cc5912a7f183e2a2d627780df64e4e5e47bed95087ba10f72405524e4bbfbd8",
+    "tests/vector-payroll-release-proof.test.mjs": "7e010e0472d47a0cf71228761bc07b97de00462eb91d9a5abdb98134f76de0c0",
+    "tests/vector-payroll-csv-proof.test.mjs": "8e21cbfd9fa2b6752b4a6066d99575f3a6176c3d49134d7c02cdb1a94a8b1b15",
+    "Dockerfile": "d1c88e4ce339ffa2bcba15641a31a58f211868cca72ea285ef44bcff163c7799",
+    "Dockerfile.current-vector-browser-proof": "31ed20330d1968bd7e8e6df5110ca7a63a69e6d9bc9271bf4b18d9eddc4e8781"
+  },
+  "releaseGate": {
+    "payrollExportContentBinding": "BUILT",
+    "exactHostedBrowserProof": "BLOCKED",
+    "customerRelease": "BLOCKED",
+    "marketingVideo": "BLOCKED"
+  },
+  "unchangedBlockers": [
+    "leave decision and its request-bound audit remain vulnerable to joint state substitution",
+    "in-flight payroll authority revocation remains vulnerable",
+    "post-approval payroll adjustment substitution remains vulnerable",
+    "same-build hosted browser, restart and release admission are not complete"
+  ],
+  "safety": "No live deployment, customer data, payroll data, provider handoff, restart, DNS, credential or infrastructure state was changed."
+}

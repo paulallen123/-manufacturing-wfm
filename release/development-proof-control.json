@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "name": "VECTOR_DEVELOPMENT_TO_PROOF_CONTROL_V1",
+  "objective": "Keep the path from development to trustworthy proof continuously executable without weakening product, security, evidence or customer safeguards.",
+  "rules": {
+    "everyChangeHasProofRoute": true,
+    "preflightBeforeExpensiveProof": true,
+    "classifyBeforeRetry": true,
+    "rootCauseRepairBeforeRetry": true,
+    "neverWeakenGateToGetGreen": true,
+    "exactSourceShaAcrossFallbackLanes": true,
+    "providerFailureTriggersFallback": true,
+    "productFailureNeverMaskedByFallback": true,
+    "staleProofContractIsAFirstClassBlocker": true,
+    "missingProofDependencyFailsEarly": true,
+    "learnedBlockerBecomesPermanentGuard": true,
+    "unknownBlockerFailsClosed": true,
+    "blockerIsolationByCapability": true,
+    "unaffectedDevelopmentAlwaysContinues": true,
+    "unaffectedProofStagesAlwaysContinue": true,
+    "blockedCapabilityDiagnosticsContinue": true,
+    "neverGloballyFreezeForSingleCapabilityBlocker": true,
+    "promotionStopsOnlyAtExplicitDependencyBoundary": true,
+    "researchDesignRequiredBeforeImplementation": true,
+    "researchTheoryTestRequiredBeforeImplementation": true,
+    "falsifiedResearchRetainedWithResolutionRoute": true,
+    "researchMustReuseCanonicalOwner": true,
+    "researchMayNotCreateDuplicateLoopOrSourceOfTruth": true,
+    "researchMayNotDisplaceGoldenJourney": true
+  },
+  "phases": [
+    "source-and-contract",
+    "exact-image",
+    "hosted-runtime",
+    "authenticated-golden-journey",
+    "refresh-new-login-persistence",
+    "restart-recovery",
+    "security-destructive",
+    "customer-quality-demonstration",
+    "independent-promotion"
+  ],
+  "pathRules": [
+    {
+      "prefix": "clocking-security-v2/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "restart-recovery",
+        "security-destructive"
+      ]
+    },
+    {
+      "prefix": "integration-fabric/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "security-destructive"
+      ]
+    },
+    {
+      "prefix": "learning/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "authenticated-golden-journey"
+      ]
+    },
+    {
+      "prefix": "operations/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "authenticated-golden-journey",
+        "refresh-new-login-persistence",
+        "restart-recovery"
+      ]
+    },
+    {
+      "prefix": "implementation/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "restart-recovery"
+      ]
+    },
+    {
+      "prefix": "security/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "security-destructive"
+      ]
+    },
+    {
+      "prefix": "src/frontier/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "authenticated-golden-journey",
+        "customer-quality-demonstration"
+      ]
+    },
+    {
+      "prefix": "ux-overlay/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "authenticated-golden-journey"
+      ]
+    },
+    {
+      "prefix": "release/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "independent-promotion"
+      ]
+    },
+    {
+      "prefix": "policy/",
+      "required": [
+        "source-and-contract",
+        "exact-image",
+        "hosted-runtime",
+        "authenticated-golden-journey",
+        "security-destructive"
+      ]
+    }
+  ],
+  "blockerClasses": [
+    "PROVIDER_DEGRADED",
+    "MISSING_PROOF_DEPENDENCY",
+    "PACKAGING_DRIFT",
+    "STALE_PROOF_CONTRACT",
+    "EVIDENCE_OR_CATALOG_DRIFT",
+    "SECURITY_INVARIANT",
+    "PRODUCT_REGRESSION",
+    "MISSING_EVIDENCE",
+    "UNKNOWN_FAIL_CLOSED"
+  ],
+  "retryPolicy": {
+    "sameFailureSameShaMaxBlindRetries": 0,
+    "requireClassificationBeforeRetry": true,
+    "requireChangedCauseOrDifferentExecutableLane": true
+  },
+  "learningPolicy": {
+    "resolutionMustRecordCause": true,
+    "resolutionMustAddRegressionOrPreflightGuard": true,
+    "rawCustomerDataMayEnterSharedLearning": false,
+    "modelOutputMayNotBecomeAuthority": true
+  },
+  "stageIsolationPolicy": {
+    "executionModel": "parallel-and-scoped",
+    "onBlocker": "QUARANTINE_AFFECTED_SCOPE",
+    "unaffectedDevelopment": "CONTINUE",
+    "unaffectedProofStages": "CONTINUE",
+    "affectedCapabilityDevelopment": "CONTINUE",
+    "affectedCapabilityLaterDiagnostics": "CONTINUE_DIAGNOSTIC_ONLY",
+    "affectedCapabilityPromotion": "BLOCK_UNTIL_REPAIRED",
+    "globalPromotion": "CONTINUE_FOR_UNAFFECTED_SCOPES",
+    "propagationAllowedOnlyWhen": [
+      "explicit-dependency",
+      "shared-security-invariant",
+      "shared-authority-boundary",
+      "shared-data-integrity-boundary"
+    ],
+    "rule": "A blocker may reduce authority or proof state for its exact dependency scope, but it must not halt unrelated development, testing or proof."
+  },
+  "blockerReceiptContract": {
+    "required": [
+      "blockerClass",
+      "affectedScope",
+      "affectedStage",
+      "dependencyBoundary",
+      "globalStop",
+      "unaffectedDevelopment",
+      "unaffectedProof",
+      "affectedScopeMode",
+      "nextAction"
+    ],
+    "globalStopDefault": false,
+    "affectedScopeModeDefault": "DIAGNOSTIC_ONLY",
+    "promotionStateDefault": "QUARANTINED"
+  }
+}

@@ -25,21 +25,41 @@ const run = (file, args = []) => { recordInput(file); return execFileSync(proces
 const publicRoot = path.join(output, 'public');
 run('scripts/retire-legacy-presentation.mjs', [publicRoot]);
 run('scripts/harden-attendance-integrity.mjs', [publicRoot]);
+run('scripts/harden-leave-audit-linkage.mjs', [publicRoot]);
 const copy = (source, destination) => { recordInput(source); const target = path.join(output, destination); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(path.join(root, source), target); };
 const groups = {
-  security: ['bootstrap.cjs', 'identity-survival-guard.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'retired-presentation.cjs'],
+  security: ['bootstrap.cjs', 'identity-survival-guard.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
   integration: ['autonomous-integration-hub.cjs'],
-  implementation: ['one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs', 'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs'],
-  learning: ['adaptive-learning-engine.cjs'],
-  operations: ['workflow-action-evidence-contract.cjs', 'workflow-action-evidence-bridge.cjs']
+  implementation: [
+    'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs',
+    'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs',
+    'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs'
+  ],
+  learning: [
+    'adaptive-learning-engine.cjs', 'training-workflow-manifest.cjs',
+    'training-twin.cjs', 'training-scenario-engine.cjs',
+    'training-delivery-service.cjs', 'training-video-contract.cjs',
+    'training-artifact-registry.cjs', 'training-regeneration-planner.cjs'
+  ],
+  operations: [
+    'workflow-action-evidence-contract.cjs', 'workflow-action-evidence-bridge.cjs',
+    'decision-episode.cjs', 'customer-demand-intelligence.cjs',
+    'absence-recovery-shadow.cjs', 'demand-decision-service.cjs',
+    'decision-outcome-proof.cjs', 'realtime-event-service.cjs',
+    'autopilot-execution-engine.cjs', 't9-customer-guardian.cjs',
+    'manufacturing-scheduling-engine.cjs', 'manufacturing-demand-forecast.cjs',
+    'schedule-attendance-reconciliation.cjs', 'scheduling-intelligence-service.cjs'
+  ],
+  reporting: ['vector-reporting-service.cjs'],
+  trust: ['vector-trust-spine.cjs']
 };
 for (const [group, files] of Object.entries(groups)) for (const file of files) copy(`${group}/runtime/${file}`, `${group}-runtime/${file}`);
 copy('operations/runtime/workforce-lifecycle-guard.cjs', 'operations-runtime/workforce-lifecycle-core.cjs');
 copy('operations/runtime/workforce-lifecycle-router.cjs', 'operations-runtime/workforce-lifecycle-guard.cjs');
 copy('ux-overlay/vector-workflows.js', 'public/vector-workflows.js');
 const read = file => { recordInput(file); return fs.readFileSync(path.join(root, file), 'utf8'); };
-const css = '/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' + fs.readFileSync(path.join(publicRoot, 'factory-control-ui.css'), 'utf8') + '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' + read('learning/ui/adaptive-coach.css') + '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' + read('implementation/ui/implementation-journey.css') + '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' + read('ux-overlay/vector-shell.css') + read('ux-overlay/vector-workflows.css');
-const js = "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" + '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' + read('learning/ui/adaptive-coach.js') + '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' + read('implementation/ui/implementation-journey.js') + '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' + read('ux-overlay/vector-shell.js');
+const css = '/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' + fs.readFileSync(path.join(publicRoot, 'factory-control-ui.css'), 'utf8') + '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' + read('learning/ui/adaptive-coach.css') + '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' + read('implementation/ui/implementation-journey.css') + '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' + read('ux-overlay/vector-shell.css') + read('ux-overlay/vector-workflows.css') + '\n/* VECTOR_REPORTING_UI_V1 */\n' + read('reporting/ui/vector-reporting-ui.css');
+const js = "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" + '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' + read('learning/ui/adaptive-coach.js') + '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' + read('implementation/ui/implementation-journey.js') + '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' + read('ux-overlay/vector-shell.js') + '\n;/* VECTOR_REPORTING_UI_V1 */\n' + read('reporting/ui/vector-reporting-ui.js');
 fs.writeFileSync(path.join(publicRoot, 'vector-ui.css'), css);
 fs.writeFileSync(path.join(publicRoot, 'vector-ui.js'), js);
 run('scripts/compose-vector-presentation.mjs', [publicRoot]);

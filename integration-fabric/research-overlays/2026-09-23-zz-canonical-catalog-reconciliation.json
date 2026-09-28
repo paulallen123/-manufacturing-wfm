@@ -1,0 +1,1158 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-23",
+  "purpose": "Canonical FORGE catalogue reconciliation: re-apply the richest previously reviewed provider evidence after convergence overlays, without increasing maturity beyond existing evidence or granting write authority.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "safetychain-qms",
+      "patch": {
+        "name": "SafetyChain",
+        "category": "qms-quality-production",
+        "priority": "P1",
+        "protocols": [
+          "REST"
+        ],
+        "auth": "user-bound-bearer-token-password-grant-documented-for-rde",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developers.safetychain.com/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "securityEvidenceBlockers": [
+          "SafetyChain's documented Record Data Extract access-token endpoint requires grant_type=password; the WFM connector plane forbids OAuth resource-owner password grants.",
+          "SafetyChain documents that Access to Integration API Scope can view all records and resources; WFM forbids broad cross-scope reads unless a narrower effective scope or customer-controlled constrained projection is proven."
+        ],
+        "evidenceUrl": "https://developers.safetychain.com/reference/overview",
+        "evidenceNote": "SafetyChain's current Developer Hub documents Record Data Extract, Supplier Onboarding and Process APIs. Read-oriented endpoints include locations, resources, forms, records, requirements and tasks, and several read operations are transported as POST with Take/Skip/PageSize pagination, so HTTP verb alone cannot determine mutation authority. The same API family also exposes mutative form, resource, record, task, supplier-document and workflow operations; those remain outside WFM authority. SafetyChain states that bearer tokens are environment-bound and its RDE token endpoint currently requires the password grant. Its Integration API Scope is documented as able to view all records and resources. WFM therefore reuses the existing REST adapter only for an explicit route allowlist of verified read/extract operations, keeps writes and cross-scope reads disabled, and blocks evidence promotion to authenticated stages until a vendor-supported non-password least-privilege identity or a customer-controlled constrained read projection is proven. Plant-floor connectivity described by SafetyChain is not inherited as PLC/SCADA authority by this cloud/application connector.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://safetychain.com/platform/integrations",
+          "requiredPermissions": [
+            "dedicated SafetyChain integration identity or customer-controlled read projection restricted to the approved tenant, sites, locations, resources and record families",
+            "explicit allowlist of documented read/extract operations only; POST transport does not by itself confer mutation authority",
+            "no form/resource/record/task creation, supplier-document approval, hold release, corrective-action mutation or other process write authority",
+            "no plant-floor, PLC, MES-control or equipment-write authority inherited from SafetyChain's broader integration capabilities",
+            "a vendor-supported authentication route that does not require the resource-owner password grant, or a customer-controlled facade that terminates that legacy credential outside WFM and exposes a separately authenticated constrained read API"
+          ],
+          "dataAvailableOrExpected": [
+            "locations and location hierarchy plus customer-defined location attributes",
+            "resources such as equipment, items, suppliers and related customer-defined attributes",
+            "forms, form definitions, quality checks, audits and record data intentionally exposed through the integration APIs",
+            "tasks, requirement status, supplier/compliance records and corrective-action context where the licensed API/module exposes them",
+            "production and process-quality observations recorded in SafetyChain, including out-of-spec and hold/corrective-action context",
+            "user references and audit/change context tied to API activity where exposed"
+          ],
+          "wfmObjects": [
+            "site",
+            "production-event",
+            "production-risk",
+            "compliance-event",
+            "change-event",
+            "skill",
+            "qualification-requirement",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "use current quality/hold/non-conformance state to warn planners when production demand is constrained or additional QA labour is likely to be required",
+            "join controlled quality and training evidence to customer-defined schedule-readiness checks without treating a SafetyChain record as automatic legal work eligibility",
+            "use supplier/certification and receiving-quality status to anticipate inspection workload and receiving labour demand",
+            "reuse location, resource and form metadata during implementation to reduce manual site/resource mapping and duplicate administration",
+            "correlate paid labour, overtime and skills mix with quality records, scrap/rework and production outcomes for finance and executive reporting",
+            "after separate write certification only, consider narrowly scoped task or workflow hand-offs without granting generic Process API mutation authority"
+          ],
+          "customerValue": [
+            "labour-cost reduction",
+            "overtime reduction",
+            "scheduling efficiency",
+            "compliance",
+            "skills deployment",
+            "production throughput",
+            "quality/rework reduction",
+            "inventory/logistics improvements",
+            "faster implementation",
+            "reduced administration",
+            "forecasting",
+            "finance attribution",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce paid idle time and avoidable overtime by exposing quality holds, out-of-spec conditions and inspection workload to labour planning sooner",
+            "reduce duplicate quality/compliance administration by reusing governed SafetyChain locations, resources, forms and record evidence",
+            "reduce rework and quality-loss cost by correlating recurring quality outcomes with staffing level, skill mix and shift conditions",
+            "reduce receiving and supplier-compliance administration by reusing supplier requirement/certification status where licensed and safely scoped",
+            "shorten implementation mapping by reusing established plant, location and resource hierarchies rather than rebuilding them manually"
+          ],
+          "dataGaps": [
+            "SafetyChain is not normally the authoritative source for payroll, employment contracts, absence, agency-worker commercials or payable time",
+            "the publicly documented RDE authentication path uses a password grant and therefore cannot currently satisfy the normal WFM connector authentication policy",
+            "the documented Integration API Scope can see all records and resources, so least-privilege site/entity scope is not proven by the role name alone",
+            "public documentation does not establish one universal rate-limit contract across every API family; per-endpoint throttling and retry behaviour require authorised validation",
+            "customer-defined forms, resources, attributes and location structures require schema fingerprints and deterministic mapping versioning",
+            "quality/training evidence does not automatically establish legal qualification or work eligibility"
+          ],
+          "constraintsRisks": [
+            "many semantically read-only SafetyChain operations use HTTP POST, while mutative operations also use POST; connector safety must use an operation allowlist rather than an HTTP-verb heuristic",
+            "the RDE access-token endpoint documents grant_type=password, which remains disabled globally for WFM connectors",
+            "the Integration API Scope is documented as broad enough to view all records and resources, so cross-scope reads remain blocked until effective narrowing is proven",
+            "tokens are environment-bound and Live/Train or other environments must be pinned independently rather than reusing credentials or assuming identical data/configuration",
+            "legacy and current API base URLs/versions may coexist; endpoint/version changes must fail closed and be explicitly reviewed",
+            "the platform can drive holds, tasks and corrective actions; read-only WFM evidence must not silently inherit those operational write capabilities",
+            "plant-floor integration described by the vendor may connect to equipment/process data, but the WFM cloud connector must not scan or control plant networks through SafetyChain"
+          ],
+          "nextDevelopmentAction": "Keep SafetyChain at spec verification. Reuse the existing REST adapter with a semantic read-operation allowlist, pagination/custom-field/schema-drift handling and environment-specific endpoint pinning. Before any sandbox or tenant authentication, obtain vendor confirmation of a non-password least-privilege authentication option with narrower effective record/resource scope, or deploy a customer-controlled constrained read projection that terminates the legacy/broad credential outside WFM. Then prove effective site/entity scope, enumerate the licensed read endpoints, validate rate limits/retry/token-refresh behaviour, normalise representative location/resource/quality/compliance records and only promote evidence after an authorised read round-trip."
+        }
+      }
+    },
+    {
+      "id": "aspentech-inmation",
+      "patch": {
+        "name": "AspenTech Inmation OT Data Fabric",
+        "category": "iiot-historian",
+        "priority": "P1",
+        "protocols": [
+          "REST",
+          "OPC UA",
+          "MQTT",
+          "Kafka",
+          "JDBC/ODBC",
+          "files",
+          "Modbus"
+        ],
+        "auth": "token-basic-or-windows-profile-by-deployment",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.inmation.com/api/1.110/webapi/authentication.html",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "evidenceUrl": "https://www.aspentech.com/en/products/idf/aspentech-inmation",
+        "evidenceNote": "AspenTech documents Inmation as an industrial data fabric spanning cloud, edge and on-premises estates with OPC/OPC UA, ODBC, files, MQTT, Kafka, HTTP, Modbus and other OT/IT connectivity plus store-and-forward buffering for intermittent networks. Its Web API documentation exposes controlled read endpoints for current values, quality/timestamps, model hierarchy, files and historical data. Authentication supports Profile Credentials or Windows accounts with Basic or bearer-token modes. Endpoint permissions explicitly separate READ/LIST from WRITE/MODIFY and executable-function surfaces. No Inmation sandbox or tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://docs.inmation.com/api/1.110/webapi/authentication.html",
+          "requiredPermissions": [
+            "dedicated customer-authorised profile limited to READ and only the minimum LIST access required for model/path discovery",
+            "site/model scope restricted to approved industrial objects and histories",
+            "read current values, quality, timestamps, hierarchy and historical data only where required",
+            "customer-edge termination for OPC UA, MQTT, Modbus and other plant-network protocols",
+            "explicit denial of WRITE, MODIFY, upload, batch-update, execfunction and process/control operations"
+          ],
+          "dataAvailableOrExpected": [
+            "current industrial values with source quality and timestamps",
+            "hierarchical asset/model and connector/core/parent/system paths",
+            "raw and processed historical telemetry",
+            "industrial events/signals exposed through the customer model",
+            "files and metadata stored in authorised file stores",
+            "batch production records where a customer model exposes the documented read surface",
+            "context from legacy and modern upstream sources including OPC, PI/PHD, MQTT, Kafka, ODBC and files"
+          ],
+          "wfmObjects": [
+            "machine-state",
+            "downtime-event",
+            "production-event",
+            "production-demand",
+            "work-centre",
+            "maintenance-window",
+            "production-risk",
+            "site",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "use current and historical machine/production state to refresh staffing requirements and downtime redeployment recommendations",
+            "coordinate maintenance windows and skill demand from industrial state without direct cloud scanning of plant networks",
+            "reuse an existing customer OT data fabric to connect legacy plants and reduce separate point-to-point OT integrations",
+            "preserve source quality and event time so low-quality or delayed telemetry cannot silently drive live staffing automation",
+            "resume buffered site ingestion after outages using per-site watermarks and deterministic dedupe",
+            "correlate cross-site production and labour outcomes for forecasting and executive reporting"
+          ],
+          "customerValue": [
+            "faster legacy-plant integration",
+            "downtime reduction",
+            "production throughput",
+            "maintenance coordination",
+            "labour efficiency",
+            "reduced OT integration administration",
+            "multi-site operational visibility",
+            "improved forecasting"
+          ],
+          "savingsHypotheses": [
+            "reduce connector engineering by reusing the customer's governed industrial data fabric",
+            "reduce paid idle labour through earlier trustworthy downtime/recovery signals",
+            "reduce emergency maintenance overtime through better operational-state coordination",
+            "reduce data-loss reconciliation effort at intermittently connected sites through store-and-forward aware ingestion",
+            "reduce manual cross-system reporting by retaining source lineage and canonical industrial mappings"
+          ],
+          "dataGaps": [
+            "industrial namespaces, paths, tags, files and model semantics are customer-specific",
+            "workforce identity, payroll, absence and authoritative roster data usually remain outside the OT data fabric",
+            "legacy source quality and timestamps can vary materially across connected systems",
+            "a secure tunnel or aggregated fabric does not prove that each upstream tag is semantically suitable for a WFM decision",
+            "exact availability of batch, event and model content depends on customer configuration and connected sources"
+          ],
+          "constraintsRisks": [
+            "store-and-forward can replay old data after connectivity returns; delayed telemetry must never be mistaken for current machine state",
+            "Basic or Windows-integrated authentication requires deployment-specific hardening; bearer/profile credentials are preferred when they can be scoped safely",
+            "large historical reads require bounded time windows, checkpoints and backpressure",
+            "duplicate observations can enter through multiple upstream collectors and must be deduplicated with source lineage intact",
+            "the Web API exposes WRITE, MODIFY and executable-function capabilities; the WFM credential must be technically prevented from reaching them",
+            "edge and plant protocols require a customer-controlled gateway and no direct cloud plant-network access"
+          ],
+          "nextDevelopmentAction": "Reuse the existing REST, OPC UA, MQTT, Kafka, database, file and Modbus profiles rather than building new transports. Add a thin Inmation Web API adapter that discovers only authorised model paths, enforces READ/LIST-only operation allowlists, preserves value/quality/source timestamp, reads bounded history, tracks per-site watermarks, deduplicates buffered replay, fingerprints customer model mappings and records source lineage. Keep all plant protocols at the customer edge and prohibit WRITE/MODIFY/execfunction routes. Then obtain an authorised test profile for sandbox/tenant authentication and a read round-trip."
+        }
+      }
+    },
+    {
+      "id": "highbyte-intelligence-hub",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OpenAPI",
+          "MQTT",
+          "OPC UA"
+        ],
+        "auth": "bearer-token-api-key-rbac-or-protocol-specific-tls-x509",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://guide.highbyte.com/dev/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://guide.highbyte.com/dev/configuration/servers/restdata/",
+        "evidenceNote": "Current HighByte documentation confirms a REST Data Server, MQTT, OPC UA, role/claim-based access control and API keys. Claims distinguish read/list/execute-read from execute-write/publish and can scope selected resources by tags. The same product also exposes API-trigger pipelines, MCP tools and i3X surfaces that can execute writes/configuration. Manufacturing WFM therefore uses only explicitly allowlisted read/list/execute-read data paths behind the customer edge. API-trigger pipelines, MCP tools, i3X write-capable paths, configuration APIs and central-management operations remain excluded until separately authorised and evidenced. No HighByte instance was authenticated or queried.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://guide.highbyte.com/configuration/administration/users_and_roles/",
+          "requiredPermissions": [
+            "dedicated HighByte user/API key with only read, list and execute-read claims for customer-approved connections, instances, namespaces and tags",
+            "tag-scoped resource claims where available so the connector cannot browse unrelated factory/site content",
+            "HTTPS plus customer-approved certificate trust; MQTT subscribe-only and OPC UA Browse/Read/Subscribe only with named authenticated sessions where those transports are used",
+            "no execute-write, publish, create, update, delete, pipeline action, MCP configuration/action, central-hub administration or project import/export authority"
+          ],
+          "dataAvailableOrExpected": [
+            "modelled industrial instances and namespace hierarchy representing sites, lines, assets and processes",
+            "raw or contextualised operational values from connected OT/IT sources through REST Data Server reads",
+            "MQTT/Sparkplug-style telemetry and OPC UA values/events when customers expose approved read-only projections",
+            "connection/model/instance metadata needed to map source tags and hierarchy into canonical WFM objects",
+            "historical or calculated values where the customer's configured source and model expose them, marked with transformation provenance"
+          ],
+          "wfmObjects": [
+            "site",
+            "work-centre",
+            "machine-state",
+            "downtime-event",
+            "production-event",
+            "production-demand",
+            "maintenance-window",
+            "energy-event",
+            "shift-outcome",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "reuse customer-built industrial models and namespaces to auto-suggest site, line and work-centre mappings during implementation",
+            "adjust staffing and redeployment recommendations from actual line/machine availability without direct PLC access",
+            "correlate labour cost, downtime, throughput and energy through one governed OT projection",
+            "use common REST/MQTT/OPC UA abstractions across factories whose underlying PLC, historian, SQL or MES technologies differ",
+            "accelerate diagnostics through connection/model metadata without granting project or management-plane authority"
+          ],
+          "customerValue": [
+            "faster brownfield implementation",
+            "reduced bespoke integration engineering",
+            "paid-idle-time reduction",
+            "overtime reduction",
+            "downtime reduction",
+            "production throughput",
+            "maintenance coordination",
+            "energy-to-labour attribution",
+            "multi-site reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce connector build/support effort by consuming HighByte's normalized industrial projection rather than integrating each machine/source separately",
+            "reduce paid idle time by matching labour recommendations to actual equipment availability",
+            "reduce overtime caused by delayed visibility of production recovery or line constraints",
+            "reduce implementation mapping effort by reusing model, instance and namespace hierarchy",
+            "improve labour-to-output and labour-to-energy attribution without expanding control authority"
+          ],
+          "dataGaps": [
+            "worker, payroll, absence, roster and skills truth normally remains in HCM/WFM/payroll systems",
+            "semantic quality depends on the customer's HighByte model/tagging design and upstream sources",
+            "calculated/contextualised values require raw-versus-derived provenance and cannot automatically be treated as raw machine truth",
+            "central-hub views can span multiple remote hubs and therefore require explicit site/tenant scope review",
+            "API-trigger pipelines are customer-defined and cannot be assumed read-only from their names"
+          ],
+          "constraintsRisks": [
+            "REST Data Server and i3X/MCP surfaces are bidirectional-capable; WFM must enforce technical read-only operation allowlists rather than relying on intent",
+            "HighByte MCP tools can execute operations/configuration and remain behind the separate agent-action gate",
+            "HighByte i3X can support writes when a write pipeline is configured, so it is not enabled as a WFM production route until operation-level read-only enforcement is proven",
+            "Allow Anonymous must remain disabled for production data access; unauthenticated schema/help endpoints do not establish permission to consume business data",
+            "customer/site edge remains mandatory because HighByte commonly bridges protected OT networks"
+          ],
+          "nextDevelopmentAction": "Reuse existing REST/OpenAPI, MQTT and OPC UA profiles for a thin HighByte adapter. Discover version/capabilities read-only, verify dedicated claims contain no execute-write/publish/configuration actions, bind allowed models/instances/tags to a customer/site mapping, preserve source/event and ingestion time plus raw-versus-derived provenance, and keep API-trigger pipelines, MCP, i3X writes and central-management APIs disabled until separately authorised. Obtain an authorised lab/customer instance before promotion beyond spec verification."
+        }
+      }
+    },
+    {
+      "id": "highbyte-intelligence-hub",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OpenAPI",
+          "MQTT",
+          "Sparkplug B",
+          "OPC UA"
+        ]
+      }
+    },
+    {
+      "id": "microsoft-dynamics-365-business-central",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OpenAPI",
+          "OData",
+          "webhooks"
+        ],
+        "auth": "oauth2-s2s-or-delegated-with-onprem-variant",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/",
+        "evidenceNote": "Microsoft documents Business Central API v2.0 over REST/OData, cloud environment and company scoping, OAuth/S2S access, server-driven paging, throttling/recovery guidance and webhook subscriptions. Online APIs are enabled by default; on-premises endpoints are customer-managed and APIs must be enabled by an administrator. No sandbox or tenant authentication was performed, so this promotion is specification evidence only.",
+        "providerIdentity": {
+          "canonicalName": "Microsoft Dynamics 365 Business Central",
+          "aliases": [
+            "Dynamics 365 Business Central",
+            "Business Central",
+            "Dynamics NAV successor"
+          ],
+          "canonicalApiHosts": [
+            "api.businesscentral.dynamics.com"
+          ],
+          "transitionalApiHosts": [],
+          "regionalHostModel": "cloud-environment-discovery-returns-country-code-and-service-url-onprem-customer-managed-host",
+          "crossHostRedirectApproved": false
+        },
+        "deploymentVariants": {
+          "cloud": {
+            "customerEdgeRequired": false,
+            "transport": "https",
+            "auth": "oauth2-s2s-or-delegated",
+            "endpointModel": "api.businesscentral.dynamics.com/v2.0/{tenant-or-domain}/{environment}/api/v2.0"
+          },
+          "onPrem": {
+            "customerEdgeRequired": true,
+            "transport": "customer-managed-https-via-edge",
+            "auth": "oauth2-s2s-when-entra-openid-connect-is-configured-or-legacy-deployment-auth",
+            "endpointModel": "customer-managed-host/{serverInstance}/api/{apiVersion}",
+            "directCloudToPrivateNetworkAllowed": false
+          }
+        },
+        "apiVersionRouting": {
+          "preferredPolicy": "pinned-per-resource",
+          "preferredVersion": "v2.0",
+          "fallbackVersion": null,
+          "fallbackRequiresProviderDeclaration": true,
+          "paginationByVersion": {
+            "v2.0": "odata-server-driven-next-link"
+          }
+        },
+        "sourceScope": {
+          "requiredDimensionsByVariant": {
+            "cloud": [
+              "tenant",
+              "environment",
+              "company"
+            ],
+            "onPrem": [
+              "serverInstance",
+              "company"
+            ]
+          },
+          "sourceIdentityDimensions": [
+            "tenant",
+            "environment",
+            "serverInstance",
+            "company",
+            "countryCode",
+            "apiVersion",
+            "dataset"
+          ]
+        },
+        "bootstrapAuthority": {
+          "purpose": "optional-webhook-subscription-create-and-renew",
+          "customerControlledBootstrapPreferred": true,
+          "runtimeCredentialReuseAllowed": false,
+          "runtimeVerificationMaterial": "clientState-plus-source-scope-binding",
+          "fallbackWhenUnsafe": "authenticated-rest-odata-polling-and-reconciliation"
+        },
+        "datasetCoverage": [
+          {
+            "dataset": "standard-api-company-resources",
+            "kind": "incremental-delta",
+            "absenceMeaning": "unchanged-outside-filter-window-or-not-visible-in-current-company-scope",
+            "entityUniverse": "standard-api-v2-resources-visible-to-the-authorised-application-and-company",
+            "scopeProven": false,
+            "pageComplete": false,
+            "reconciliationComplete": false,
+            "authoritativeForExistence": false
+          },
+          {
+            "dataset": "webhook-events",
+            "kind": "event-signal",
+            "absenceMeaning": "no-notification-observed-is-not-proof-of-no-source-change",
+            "entityUniverse": "resources-covered-by-the-active-business-central-subscription",
+            "scopeProven": false,
+            "pageComplete": false,
+            "reconciliationComplete": false,
+            "authoritativeForExistence": false,
+            "freshnessSeconds": 30
+          },
+          {
+            "dataset": "custom-manufacturing-api",
+            "kind": "incremental-delta",
+            "absenceMeaning": "customer-extension-specific-until-custom-api-contract-and-company-scope-are-proven",
+            "entityUniverse": "production-manufacturing-objects-exposed-by-an-authorised-customer-custom-api-or-published-odata-surface",
+            "scopeProven": false,
+            "pageComplete": false,
+            "reconciliationComplete": false,
+            "authoritativeForExistence": false
+          }
+        ],
+        "securityEvidenceBlockers": [
+          "Service-to-service access requires an Entra application permission named API.ReadWrite.All even for a read-only WFM integration. Before authentication evidence advances, prove a dedicated Business Central application identity with narrowly assigned Business Central permission sets and effective denied mutations; the Entra scope name itself is not proof of read authority.",
+          "Business Central resource APIs can expose POST, PATCH, DELETE and business actions as well as GET. Steady-state WFM must use executor-enforced exact read-route and method allowlists; successful bearer authentication is not evidence of least privilege.",
+          "On-premises Business Central endpoints are customer-managed and may sit behind private networks/firewalls. WFM must use an authorised customer-edge/TLS route and never directly scan or bridge the private network; legacy Basic/access-key authentication must not be preferred when an approved OAuth/S2S deployment is available.",
+          "The Business Central application contains manufacturing data such as production orders, BOMs, routings, work centres and machine centres, but standard API v2 documentation does not establish complete standard endpoints for those objects. WFM must not infer API availability from application functionality; manufacturing enrichment requires a separately verified custom API, published OData/query, analytics/export or middleware route.",
+          "Webhook subscription creation and three-day renewal are mutating control-plane operations. Normal read-only runtime cannot silently acquire that authority; use customer-controlled provisioning/renewal or continue polling and reconciliation."
+        ],
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/",
+          "requiredPermissions": [
+            "dedicated Microsoft Entra application or delegated identity authorised for the intended Business Central tenant/environment only",
+            "narrow Business Central application permission sets for required read objects; do not assign SUPER and prove mutations are denied",
+            "pin api.businesscentral.dynamics.com for cloud or an explicitly approved customer-edge endpoint for on-premises; prohibit arbitrary hosts and redirects",
+            "scope every read and checkpoint by connection plus tenant/environment/company for cloud, or serverInstance/company for on-premises",
+            "if webhooks are used, separate customer-approved subscription creation/renewal authority from steady-state read credentials and bind clientState to the expected source scope"
+          ],
+          "dataAvailableOrExpected": [
+            "companies/environments including tenant/environment identity and environment country code for source routing/provenance",
+            "employee reference records from the standard API where authorised; these enrich identity/organisation but do not replace authoritative HCM contracts, skills, absence or payroll",
+            "items/SKUs and item ledger entries including posting date, quantity, source/document references, actual sales amount, actual cost amount and last-modified timestamp",
+            "general ledger entries including account, posting date, document references, debit/credit and last-modified timestamp for finance attribution",
+            "purchase orders and lines plus related vendor/procurement context available through standard API resources",
+            "standard company-scoped master/transaction resources supported by API v2.0, subject to the assigned Business Central permission sets",
+            "production orders, BOMs, routings, work centres, machine centres, material consumption/output and production cost context only when an authorised customer custom API/OData/query/export surface explicitly exposes them; do not assume standard v2 coverage"
+          ],
+          "stableIdentifiers": [
+            "preserve provider SystemId/GUID identifiers from API v2.0 as source keys where supplied",
+            "namespace every source ID by connection plus tenant/environment/company or on-prem serverInstance/company because the same business number can exist in multiple companies/environments",
+            "preserve document numbers, item numbers, employee numbers and account numbers as business matching aids, never as cross-company global IDs"
+          ],
+          "freshnessLatency": {
+            "restOData": "WFM-controlled polling bounded by Business Central throttling and server-driven paging; use last-modified filters only where the specific resource contract exposes them",
+            "webhooks": "default delivery is delayed about 30 seconds and may collapse high-volume changes into a collection notification; subscriptions expire after three days and provider retries qualifying failures for up to 36 hours, so read reconciliation remains mandatory",
+            "onPrem": "latency and limits are deployment-configured and must be measured in the customer environment rather than inherited from cloud assumptions"
+          },
+          "paginationDeltaEvents": {
+            "pagination": "use provider server-driven paging/next links; do not implement deep client paging with $top/$skip",
+            "delta": "use reviewed lastModifiedDateTime or equivalent filters only on resources that publish them, with overlap windows, stable-ID dedupe and checkpoint scope binding",
+            "webhooks": "validationToken handshake is mandatory; optional clientState can authenticate/bind notifications but events remain a low-latency signal rather than completeness authority",
+            "reconciliation": "checkpoint only after complete provider pages; a scope, company, environment, API version or dataset change creates a new checkpoint namespace and requires overlap replay/reconciliation"
+          },
+          "rateLimitsAndRetries": [
+            "429 and 503 require bounded cool-off/backoff with jitter for idempotent reads; do not broaden scope, switch company or alter auth in response to throttling",
+            "504 requires splitting long-running reads into smaller bounded requests rather than blind repetition",
+            "queue bursty shift-change/backfill traffic so small tenants stay lightweight while large multi-company tenants do not amplify provider throttling",
+            "401/403 enter credential/permission diagnostics and stop blind retry; they never trigger API downgrade or permission expansion"
+          ],
+          "versionsRegionsCustomFields": [
+            "pin standard API v2.0 or an explicitly versioned custom API route and preserve version in lineage/checkpoints",
+            "cloud environment discovery returns tenant identity, environment type/name and countryCode; preserve these values as provenance but do not infer contractual data-residency guarantees from countryCode alone",
+            "on-premises API availability/auth/limits are deployment-specific and APIs are disabled by default until an administrator enables them",
+            "standard Business Central APIs cannot be extended with additional fields; custom/customer fields require a separately versioned custom API or other authorised published surface",
+            "preserve source currency, units, locale, timezone and date semantics; conversion or FX normalisation stays in the canonical semantic layer with dated provenance"
+          ],
+          "wfmObjects": [
+            "legal-entity",
+            "source-environment",
+            "source-country",
+            "employee-reference",
+            "product",
+            "sku",
+            "inventory-movement",
+            "inventory-cost-evidence",
+            "supplier",
+            "purchase-order",
+            "finance-ledger-entry",
+            "cost-centre",
+            "financial-dimension",
+            "production-order",
+            "bill-of-material",
+            "routing",
+            "work-centre",
+            "machine-centre",
+            "material-consumption",
+            "production-output",
+            "production-cost-evidence"
+          ],
+          "automationOpportunities": [
+            "bootstrap company, item, supplier, procurement and finance dimensions from one common SMB/mid-market ERP connection to reduce implementation mapping effort",
+            "join item/material and purchase-order context to workforce availability/skills to distinguish material-constrained work from labour-constrained work before overtime or agency labour is committed",
+            "join authoritative WFM pay/attendance cost to Business Central item/production/finance evidence for labour-per-order, labour-per-good-unit and cost-centre attribution without treating ERP employee or ledger records as payroll truth",
+            "use company/environment discovery to configure multi-entity integrations without assuming one Business Central environment equals one legal entity",
+            "use read reconciliation after throttling, webhook collection notifications or regional/environment outages so executive reporting exposes data freshness rather than silently presenting partial data"
+          ],
+          "customerValue": [
+            "faster implementation",
+            "reduced administration",
+            "labour-cost reduction",
+            "overtime reduction",
+            "agency-labour reduction",
+            "scheduling efficiency",
+            "production throughput",
+            "inventory/logistics improvements",
+            "procurement resilience",
+            "working-capital visibility",
+            "finance attribution",
+            "improved forecasting",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce implementation effort for Business Central manufacturers by auto-discovering environments/companies and reusing the same REST/OData fabric instead of building company-specific point integrations",
+            "reduce paid idle time and avoidable overtime by separating material/procurement blockers from genuine workforce-capacity constraints before shifts are finalised",
+            "improve payroll/finance reconciliation and labour-cost attribution by preserving Business Central company/account/item/document IDs alongside authoritative WFM attendance and pay evidence",
+            "reduce multi-entity reporting errors by preventing checkpoints and source identifiers from leaking across tenants, environments or companies after acquisitions, sandbox-to-production moves or regional restructuring"
+          ],
+          "causalOutcomeReadiness": [
+            "preserve connection, tenant, environment/serverInstance, company, source SystemId, API version, dataset, source/effective timestamp, ingestion timestamp and schema fingerprint on every mapped record",
+            "preserve recommendation/action identifiers and baseline/outcome windows when labour is redeployed in response to inventory, procurement or production signals",
+            "retain competing changes such as purchase receipts, inventory movements, order releases, production status, cost postings and company/environment changes so an outcome is not falsely attributed to a staffing recommendation"
+          ],
+          "dataGaps": [
+            "no authorised Business Central sandbox/tenant was available to prove Entra application binding, effective Business Central permission sets, denied writes, real company visibility, paging, throttling or read round trips",
+            "standard API v2.0 does not establish complete manufacturing/MRP object coverage; production objects require a customer custom API/OData/query/export or middleware surface and separate evidence",
+            "standard APIs cannot simply be extended with customer fields, so custom field coverage is tenant-extension specific",
+            "webhooks require mutating subscription create/renew operations and can emit collection notifications, so polling/reconciliation remains required for completeness",
+            "on-premises hosts, auth, API enablement, network topology and limits vary by deployment and require customer-edge proof"
+          ],
+          "constraintsRisks": [
+            "S2S tokens use an Entra application scope named API.ReadWrite.All, making effective Business Central object permissions and exact runtime method allowlists critical for a genuinely read-only integration",
+            "company/environment ambiguity can create silent cross-entity corruption if source IDs or checkpoints are reused without scope partitioning",
+            "on-premises Business Central may use legacy auth and private network exposure patterns that WFM must not normalize into direct cloud connectivity",
+            "429/503/504 and webhook collection notifications require queueing, backoff and reconciliation at enterprise scale",
+            "manufacturing functionality visible in the Business Central application must never be presented as API-integrated until its custom/published interface has separate evidence"
+          ],
+          "nextDevelopmentAction": "Use an authorised Business Central sandbox to prove a dedicated Microsoft Entra application plus narrow Business Central permission sets, environment/company discovery, exact GET-only route authority, v2.0 server-driven paging, 401/403/429/503/504 recovery, source-scope checkpoint isolation, and real item-ledger/general-ledger/purchase-order reads. Prove mutations are denied. Only test webhook subscription bootstrap or manufacturing custom APIs when separately authorised; keep on-premises access behind a customer edge and keep all business/payroll mutations disabled."
+        }
+      }
+    },
+    {
+      "id": "intelex",
+      "patch": {
+        "auth": "basic-or-api-key-or-v6-oauth2-client-credentials",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developers.intelex.com/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "evidenceUrl": "https://developers.intelex.com/",
+        "evidenceNote": "Intelex's current developer documentation verifies a REST/JSON API over each customer's configured application model. V2 supports Basic and API-key authentication; the newer V6 secure API supports client-credentials bearer tokens when enabled. API requests preserve platform security settings for the effective user, but API-key and secure-token setup is limited to Admin/Full Access users, so authenticated evidence must prove the resulting technical identity is actually constrained to the approved records. The API is tenant/custom-object driven rather than a fixed EHS schema, caps sequential result pages at 500 records with @odata.nextLink paging, and documents a platform rate limit of 6 requests per second with 429/Retry-After semantics. WFM therefore reuses the existing REST adapter with customer-model discovery, explicit field/object allowlists, bounded paging and adaptive backoff; mutative object/user/task operations remain outside normal connector authority.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://developers.intelex.com/",
+          "requiredPermissions": [
+            "Intelex REST API enabled for the target tenant and required applications only",
+            "dedicated integration identity whose effective platform permissions are limited to the approved sites, applications, objects and records",
+            "prefer short-lived V6 bearer tokens where available; do not assume Admin/Full Access ability to create credentials means broad business-data access is acceptable",
+            "read-only access to the specific EHS/QMS/training/reference objects needed by WFM; no record creation, workflow action, task reassignment, user provisioning or archive/revoke authority",
+            "HTTPS with tenant hostname pinned; no arbitrary instance URLs or cross-host redirects"
+          ],
+          "dataAvailableOrExpected": [
+            "tenant-defined and standard application objects exposed through the Intelex Object Data API, including customer custom fields and relations",
+            "employees, users, groups and locations used to reconcile people/site context where the customer permits them",
+            "incident, hazard, inspection, audit, corrective-action, compliance and quality records where those applications are installed and exposed",
+            "training, competency or qualification evidence where implemented in the customer's application model",
+            "task/workflow references and responsible-person context where read access is approved, without taking workflow action"
+          ],
+          "wfmObjects": [
+            "worker",
+            "site",
+            "safety-event",
+            "risk-signal",
+            "compliance-event",
+            "qualification-requirement",
+            "training-completion",
+            "worker-restriction",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "pre-shift readiness checks using approved training, qualification, safety and restriction signals without copying unnecessary sensitive incident or health records",
+            "identify sites, jobs or shifts with recurring EHS/quality risk and feed that evidence into staffing, supervision and training planning",
+            "reuse employee/location/group reference data to reduce implementation mapping and duplicate administration",
+            "use incident, corrective-action and task state to forecast temporary safety/compliance workload or specialist coverage needs",
+            "correlate skills mix, staffing level, overtime and shift outcomes with safety/quality events for executive and finance analysis",
+            "after separate write certification only, consider tightly scoped task/workflow hand-offs rather than generic object mutation"
+          ],
+          "customerValue": [
+            "labour-cost reduction",
+            "overtime reduction",
+            "scheduling efficiency",
+            "compliance",
+            "skills deployment",
+            "quality/rework reduction",
+            "faster implementation",
+            "reduced administration",
+            "forecasting",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce avoidable overtime and schedule churn by surfacing training, qualification and safety-readiness gaps before shift assignment",
+            "reduce duplicate EHS administration by reusing approved Intelex employee, location and compliance records instead of re-keying them",
+            "reduce incident/rework cost by correlating risk and quality outcomes with staffing, skill mix and shift conditions",
+            "shorten implementation by discovering the customer's existing application/object model and mapping custom fields once with versioned fingerprints",
+            "reduce API support effort through bounded 500-record paging, adaptive 6-request-per-second throttling and Retry-After-aware backoff"
+          ],
+          "dataGaps": [
+            "Intelex is configurable, so public documentation cannot establish which EHS/QMS/training objects or custom fields exist in a specific customer tenant",
+            "the platform is not normally authoritative for payroll, contractual hours, absence, agency commercials or production demand",
+            "API-key and secure-token setup is available only to Admin/Full Access users; effective least-privilege data scope must therefore be demonstrated rather than assumed",
+            "V2 and V6 authentication/API surfaces may coexist by tenant/version and must be discovered explicitly",
+            "health-sensitive or detailed incident narrative fields must not be ingested unless separately justified; WFM normally needs only a derived restriction/risk/eligibility signal"
+          ],
+          "constraintsRisks": [
+            "the documented platform API limit is 6 requests per second and 429 responses may include Retry-After; connectors must throttle and back off rather than retry aggressively",
+            "sequential result sets page after 500 records using @odata.nextLink; next-link hosts must remain pinned to the approved tenant and cannot bypass cross-host redirect policy",
+            "custom objects and fields create schema drift across tenants and environments, requiring schema fingerprints and versioned customer mappings",
+            "Object Data, User Management and workflow/task APIs can mutate business data and identities; WFM must allowlist read routes/verbs and keep those mutations disabled",
+            "tenant security is user-dependent; a successful token does not prove least privilege unless allowed applications, objects, records and fields are tested"
+          ],
+          "nextDevelopmentAction": "Keep Intelex at spec verification. Reuse the existing REST fabric; in an authorised sandbox/tenant, discover the exact API version and application/object model, prove the effective integration identity is least-privilege, exercise a bounded read-only page including @odata.nextLink handling, validate 6-rps throttling and Retry-After behaviour, fingerprint custom fields/relations, and normalise only approved worker/site/safety/qualification/restriction signals before promoting evidence."
+        }
+      }
+    },
+    {
+      "id": "epicor-kinetic",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OData",
+          "OpenAPI"
+        ],
+        "auth": "api-key-access-scopes-or-provider-standard-auth-by-deployment",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+        "evidenceNote": "Epicor provider documentation establishes versioned, discoverable, OData v4-compliant REST services across Kinetic business objects, processes, reports, BAQs and Epicor Functions, with API keys/access scopes/standard authentication methods and security aligned to ERP user/data permissions. Provider documentation also establishes cloud, on-premises and hybrid Kinetic deployment choices. No sandbox or customer tenant was authenticated and no live read round-trip was performed, so this is specification evidence only.",
+        "providerIdentity": {
+          "canonicalName": "Epicor Kinetic",
+          "aliases": [
+            "Epicor ERP",
+            "Epicor Kinetic ERP"
+          ],
+          "canonicalApiHosts": [],
+          "transitionalApiHosts": [],
+          "regionalHostModel": "provider-managed cloud region or customer-managed on-prem/hybrid instance; endpoint is deployment-specific",
+          "crossHostRedirectApproved": false
+        },
+        "deploymentVariants": {
+          "epicorCloud": {
+            "customerEdgeRequired": false,
+            "transport": "https",
+            "endpointModel": "provider-managed Kinetic cloud REST instance",
+            "directCloudToPrivateNetworkAllowed": false
+          },
+          "onPremises": {
+            "customerEdgeRequired": true,
+            "transport": "customer-managed HTTPS through authorised edge",
+            "endpointModel": "customer-managed Kinetic REST instance",
+            "directCloudToPrivateNetworkAllowed": false,
+            "featureReleaseLifecycle": "Epicor states 2028.1 is the final on-premises Kinetic feature release, followed by support phases"
+          },
+          "hybrid": {
+            "customerEdgeRequired": true,
+            "transport": "provider cloud plus authorised customer edge for private components",
+            "directCloudToPrivateNetworkAllowed": false
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": [
+            "instance"
+          ],
+          "requiredDimensionsByVariant": {
+            "epicorCloud": [
+              "instance"
+            ],
+            "onPremises": [
+              "instance"
+            ],
+            "hybrid": [
+              "instance"
+            ]
+          },
+          "sourceIdentityDimensions": [
+            "instance",
+            "company",
+            "site",
+            "service",
+            "serviceVersion",
+            "projection",
+            "dataset"
+          ]
+        },
+        "governedReadProjection": {
+          "preferredSurface": "BAQ-or-provider-defined-read-projection",
+          "requireExactProjectionAllowlist": true,
+          "providerReadOnlySemanticsRequired": true,
+          "arbitraryQueryAllowed": false,
+          "directSqlAllowed": false,
+          "mutationProjectionAllowed": false,
+          "parameterAllowlistRequired": true,
+          "fieldAllowlistRequired": true,
+          "stableIdsRequired": true,
+          "scopeFieldsRequired": true,
+          "schemaFingerprintRequired": true,
+          "pageContinuityRequired": true,
+          "coverageSemanticsRequired": true,
+          "note": "Epicor documents BAQs as reusable governed data views exposed through REST. Prefer a reviewed BAQ/read projection for WFM extraction when it narrows data and authority versus full business-object/process/function services."
+        },
+        "datasetCoverage": [
+          {
+            "dataset": "reviewed-baq-or-read-projection-incremental",
+            "kind": "incremental-delta",
+            "absenceMeaning": "row may be unchanged, outside the projection/filter/window, hidden by ERP permissions, or outside company/site scope; absence is not deletion",
+            "entityUniverse": "records visible through the exact reviewed projection and constrained integration identity",
+            "scopeProven": false,
+            "pageComplete": false,
+            "reconciliationComplete": false,
+            "authoritativeForExistence": false
+          },
+          {
+            "dataset": "bounded-authoritative-projection-snapshot",
+            "kind": "complete-snapshot",
+            "absenceMeaning": "candidate absence only after exact company/site/projection scope, every page and reconciliation are proven complete",
+            "entityUniverse": "exact reviewed complete projection for the approved source scope",
+            "scopeProven": false,
+            "pageComplete": false,
+            "reconciliationComplete": false,
+            "authoritativeForExistence": false
+          }
+        ],
+        "securityEvidenceBlockers": [
+          "Epicor states that all Kinetic services, business objects, processes, reports, BAQs and Epicor Functions are accessible through REST. Full service parity therefore includes mutating and executable surfaces; WFM must prove exact read-only service/projection authority and keep processes/functions/actions outside steady-state runtime authority.",
+          "Public provider material reviewed establishes API keys, access scopes and standard authentication methods but does not prove the exact customer deployment flow, effective scopes, rotation/revocation behaviour or denied writes. Advance authentication evidence only in an authorised sandbox/tenant with a dedicated least-privilege identity.",
+          "BAQs and user-defined fields can expose customer-specific schemas. Exact projection ids, parameters, fields, company/site scope and stable identifiers must be reviewed, fingerprinted and fail closed on breaking drift.",
+          "Public provider material reviewed does not establish one universal pagination, delta-token, rate-limit or webhook completeness contract for every Kinetic deployment/service. Discover those contracts from the authorised tenant REST help/metadata and keep bounded polling/reconciliation authoritative until proven.",
+          "On-premises/private Kinetic deployments require an authorised customer-edge route. WFM must not scan, bridge or directly expose customer private networks.",
+          "Epicor Functions execute custom server-side logic and are excluded from the default connector authority even though they are REST-accessible. Enabling any function/action/write path requires separate explicit approval and proof."
+        ]
+      }
+    },
+    {
+      "id": "epicor-kinetic",
+      "patch": {
+        "integrationDataReview": {
+          "requiredPermissions": [
+            "dedicated least-privilege Kinetic integration identity constrained by ERP user/data permissions and provider-supported access scopes",
+            "exact reviewed REST service or BAQ/read-projection allowlist; no wildcard service, process, Function or action authority",
+            "explicit approved Kinetic instance plus company/site scope discovered from the authorised environment",
+            "customer-edge HTTPS route for on-premises/private components; no direct cloud-to-private-network exposure",
+            "separate approval for any future write/process/Function surface; steady-state WFM ingestion remains read-only"
+          ],
+          "dataAvailableOrExpected": [
+            "manufacturing jobs/orders, operations, methods/routings, resource groups/work centres and production status where exposed to the reviewed identity",
+            "production data collection including labour reporting, completed quantities and plant-floor transaction evidence where the customer uses those Kinetic modules",
+            "planning/MRP/APS demand, capacity and resource-scheduling evidence, including skill/capability-based scheduling where configured",
+            "materials, inventory, WIP, purchasing, suppliers and real-time material-availability context",
+            "quality inspections, non-conformance, scrap/rework and quality-cost evidence where Quality Management/Epicor QMS is installed",
+            "assets/equipment, maintenance requests and preventive/break-fix maintenance context where Service & Asset Management or related modules are installed",
+            "products/parts/SKUs, bills of material, bills of operations/routings and engineering/product data where exposed",
+            "finance, job costing, project/cost-centre/accounting dimensions and actual manufacturing cost evidence",
+            "multi-company, multi-site, multi-currency, multi-language and country-specific configuration/context",
+            "customer-defined UD fields and customer-created data views/BAQs exposed through the reviewed REST surface"
+          ],
+          "stableIdentifiers": [
+            "preserve provider-native business-object keys only as source identifiers namespaced by connection, Kinetic instance, company/site, service/projection and service version",
+            "preserve company, site/plant and source service/projection identity on every record; never assume job, part, employee or resource identifiers are globally unique across companies/instances",
+            "preserve schema fingerprint and UD-field/projection version lineage so customer customisations and upgrades cannot silently reinterpret historical records"
+          ],
+          "freshnessLatency": {
+            "rest": "WFM-controlled bounded reads from the reviewed REST/OData or BAQ surface; Epicor positions Kinetic data/services as real-time, but WFM records actual observation/ingestion timestamps and never substitutes marketing freshness for measured latency",
+            "baq": "prefer narrow provider/customer-governed BAQ projections for recurring reads when they reduce authority and payload; preserve projection id, parameters and schema fingerprint",
+            "events": "no generic provider webhook/event completeness contract is claimed by this evidence delta; polling/reconciliation remains authoritative unless separately proven"
+          },
+          "paginationDeltaEvents": {
+            "pagination": "discover the exact service/projection paging contract from authorised Kinetic REST help/metadata; require continuous page chains and checkpoint only after a complete bounded sequence",
+            "delta": "use provider/customer proven update timestamps or projection parameters only after their semantics are observed; use overlap replay and stable-id dedupe",
+            "events": "none claimed generically; customer BPM/Automation Studio/iPaaS events require separate interface/security evidence",
+            "reconciliation": "never infer deletion from BAQ, filtered, incremental, permission-limited or partial reads; authoritative absence requires a deliberately complete projection with proven source scope, page completeness and reconciliation"
+          },
+          "rateLimitsAndRetries": [
+            "the public provider material reviewed here does not establish one universal Kinetic rate-limit contract; discover/measure the authorised deployment and keep concurrency bounded",
+            "401/403 stop blind retry and enter identity/scope/ERP-permission diagnostics; never broaden identity or fall back to executable service surfaces",
+            "429/retryable 5xx/network interruption use bounded exponential backoff with jitter for idempotent reads while preserving the source checkpoint",
+            "paging interruption, partial regional/site availability or projection errors trigger overlap replay/reconciliation before downstream data is treated as current"
+          ],
+          "versionsRegionsCustomFields": [
+            "Epicor documents versioned REST services; exact service versions available to a customer must be discovered from the authorised Kinetic environment rather than globally assumed",
+            "Kinetic supports cloud, on-premises and hybrid deployments; Epicor announced on 6 January 2026 that Kinetic 2028.1 is planned as the final on-premises feature release, with active support through 31 December 2029 and sustaining support thereafter",
+            "Kinetic supports multiple companies, sites, currencies and languages plus country-specific functionality; preserve original locale/currency/timezone/unit context and source authority",
+            "Epicor UD fields and user-defined services can add customer-specific fields/objects exposed through REST; schema negotiation and extension provenance are mandatory",
+            "cloud customers may be deployed in different provider regions while on-prem data location is customer controlled; connection/source identity must retain region/instance/company/site rather than collapsing them"
+          ],
+          "dataGaps": [
+            "no authorised Kinetic sandbox/customer tenant was available to prove authentication, exact URL/service/version discovery, effective API-key/access-scope behaviour, company/site isolation, denied writes or real read round-trips",
+            "public provider pages establish OData v4/query/metadata support but do not provide one universal customer-independent pagination, delta, rate-limit or webhook contract for every service",
+            "exact BAQ identifiers, parameters, fields, update timestamps and stable-key semantics are tenant-specific and must be discovered/reviewed before canonical mappings are certified",
+            "worker/skill data available inside Kinetic varies by licensed/configured modules and customer design; external HCM may remain the source authority",
+            "regional residency/cross-border controls depend on the chosen Epicor cloud region/customer architecture and require tenant/contract evidence before certification"
+          ],
+          "constraintsRisks": [
+            "full UI/service parity is powerful but broad: a generic REST identity can reach business objects, processes and Functions, so least-privilege read projection/service allowlists are mandatory",
+            "BAQs and custom UD fields improve implementation speed but can drift independently of standard services; schema fingerprints and projection lineage are required",
+            "multi-company/multi-site estates and acquisitions can reuse business identifiers; source scoping must prevent cross-company collisions and checkpoint reuse",
+            "on-prem/hybrid deployments add network, certificate, version and availability variance and must remain behind customer-controlled edge connectivity",
+            "no generic event completeness claim is made; treating automation/BPM callbacks as authoritative without recovery polling would risk silent gaps"
+          ]
+        }
+      }
+    },
+    {
+      "id": "epicor-kinetic",
+      "patch": {
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/",
+          "wfmObjects": [
+            "person",
+            "employee",
+            "skill",
+            "certification",
+            "legal-entity",
+            "site",
+            "work-centre",
+            "resource",
+            "machine",
+            "asset",
+            "production-order",
+            "work-order",
+            "operation",
+            "routing",
+            "product",
+            "sku",
+            "bill-of-material",
+            "capacity-demand",
+            "labour-transaction-evidence",
+            "maintenance-request",
+            "downtime-evidence",
+            "quality-check",
+            "non-conformance",
+            "scrap-rework-evidence",
+            "inventory",
+            "wip",
+            "inventory-movement",
+            "supplier",
+            "purchase-order",
+            "finance-ledger-entry",
+            "cost-centre",
+            "job-cost-evidence"
+          ],
+          "automationOpportunities": [
+            "use a customer-reviewed BAQ/read projection to bootstrap manufacturing, material, quality, maintenance and costing mappings without granting WFM broad business-object/process/Function authority",
+            "join APS/MRP job-operation/resource demand to WFM availability and skill/certification data to identify qualified labour shortages before overtime or agency labour is committed",
+            "join plant-floor labour/quantity evidence to authoritative WFM attendance/pay calculations to detect payroll/costing exceptions while preserving Kinetic labour transactions as production evidence rather than payroll truth",
+            "join material availability/WIP/purchasing to workforce capacity so material-constrained work is not misdiagnosed as a labour shortage, reducing paid idle time and avoidable overtime",
+            "join equipment/maintenance and production status to shift/resource plans to redeploy labour away from unavailable machines and coordinate maintenance windows",
+            "join quality/non-conformance/scrap evidence to operation, resource, skill and labour context for rework-labour attribution and targeted training hypotheses without claiming causation",
+            "join job/product/finance dimensions to authoritative labour cost for labour-per-order/good-unit, margin attribution and executive reporting across companies/sites",
+            "use company/site/currency/language metadata and governed projections to configure one-site manufacturers simply while isolating multinational/acquisition estates on the same fabric"
+          ],
+          "customerValue": [
+            "faster implementation",
+            "reduced administration",
+            "labour-cost reduction",
+            "overtime reduction",
+            "agency-labour reduction",
+            "payroll accuracy",
+            "scheduling efficiency",
+            "skills deployment",
+            "production throughput",
+            "downtime reduction",
+            "maintenance coordination",
+            "quality/rework reduction",
+            "inventory/logistics improvements",
+            "working-capital visibility",
+            "finance attribution",
+            "improved forecasting",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce implementation effort by extracting only reviewed cross-domain BAQ/read projections rather than building and maintaining many broad point-to-point service integrations",
+            "reduce avoidable overtime and agency labour by combining job/resource demand with qualified WFM capacity and separating labour constraints from material/equipment constraints",
+            "reduce paid idle time and missed throughput by detecting jobs that are blocked by material, machine or maintenance conditions before labour is allocated",
+            "reduce payroll and job-cost discrepancies by reconciling WFM attendance/pay authority with Epicor plant-floor labour and job-cost evidence",
+            "reduce rework cost by linking non-conformance/scrap to operation, resource and workforce-skill context while preserving competing changes and causal uncertainty"
+          ],
+          "causalOutcomeReadiness": [
+            "preserve connection, instance, company, site, service/projection id, service version, source record key, schema fingerprint and source/effective/ingestion timestamps on every mapped record",
+            "preserve recommendation/action ids plus baseline and outcome windows when labour is redeployed, overtime changes, training is assigned or maintenance timing changes",
+            "retain competing changes such as material receipts, schedule changes, machine downtime, maintenance completion, routing/BOM changes, quality events, quantity changes, price/currency changes and Kinetic/BAQ/UD-field schema revisions"
+          ],
+          "nextDevelopmentAction": "Use an authorised Epicor Kinetic test environment to prove a dedicated least-privilege integration identity, actual REST help/metadata and service versions, exact BAQ/read-projection ids/parameters/fields, company/site isolation, denied process/Function/write calls, real paginated reads, stable identifiers/update timestamps, API-key/auth rotation-revocation where applicable, 401/403/429/5xx/network diagnostics, schema/UD-field drift, overlap replay/reconciliation and representative job/operation/resource/labour/material/quality/maintenance/finance reads. Test on-prem/private variants only through an authorised customer edge and keep all production/payroll mutations disabled."
+        }
+      }
+    },
+    {
+      "id": "ifs-cloud",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OData",
+          "OpenAPI"
+        ],
+        "auth": "oauth2-client-credentials-preferred",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.ifs.com/techdocs/26r1/040_tailoring/300_extensibility/020_api_explorer/",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "evidenceUrl": "https://docs.ifs.com/techdocs/26r1/040_tailoring/300_extensibility/020_api_explorer/",
+        "evidenceNote": "IFS documentation establishes OAuth2 REST/OData projections discoverable in API Explorer with OpenAPI v2/v3 and OData metadata. Premium APIs are preferred for stable scenarios. Client Credentials uses a service account and bearer access tokens. Projection permission sets support Read Only access and Data Access Control can further restrict entity data. No sandbox or customer tenant was authenticated and no live read round-trip was performed.",
+        "providerIdentity": {
+          "canonicalName": "IFS Cloud",
+          "aliases": [
+            "IFS Applications Cloud"
+          ],
+          "canonicalApiHosts": [],
+          "transitionalApiHosts": [],
+          "regionalHostModel": "customer-specific IFS Cloud system URL and provider/customer deployment region",
+          "crossHostRedirectApproved": false
+        },
+        "deploymentVariants": {
+          "providerManagedCloud": {
+            "customerEdgeRequired": false,
+            "transport": "https",
+            "endpointModel": "customer-specific IFS Cloud system URL",
+            "directCloudToPrivateNetworkAllowed": false
+          },
+          "privateLegacyOrAdjacentSources": {
+            "customerEdgeRequired": true,
+            "transport": "customer-controlled edge",
+            "endpointModel": "separate private source or middleware route",
+            "directCloudToPrivateNetworkAllowed": false
+          }
+        },
+        "sourceScope": {
+          "requiredDimensions": [
+            "instance"
+          ],
+          "requiredDimensionsByVariant": {
+            "providerManagedCloud": [
+              "instance"
+            ],
+            "privateLegacyOrAdjacentSources": [
+              "instance"
+            ]
+          },
+          "sourceIdentityDimensions": [
+            "instance",
+            "company",
+            "site",
+            "region",
+            "projection",
+            "apiVersion",
+            "dataset"
+          ]
+        },
+        "regionalRouting": {
+          "regionPinningRequired": true,
+          "approvedRegions": [],
+          "customerChosenDataLocation": false,
+          "residencyEvidence": "authorised tenant and provider/customer deployment evidence required",
+          "crossBorderTransferAllowed": false,
+          "routes": []
+        },
+        "governedReadProjection": {
+          "preferredSurface": "Premium API or exact reviewed read-only projection",
+          "providerReadOnlySemanticsRequired": true,
+          "arbitraryQueryAllowed": false,
+          "directSqlAllowed": false,
+          "mutationProjectionAllowed": false,
+          "fieldAllowlistRequired": true,
+          "stableIdsRequired": true,
+          "scopeFieldsRequired": true,
+          "schemaFingerprintRequired": true,
+          "coverageSemanticsRequired": true
+        },
+        "bootstrapAuthority": {
+          "purpose": "optional Entity Service activation or IAM setup",
+          "customerControlledOnly": true,
+          "runtimeCredentialReuseAllowed": false,
+          "retentionAllowed": false,
+          "steadyStateAuthorityMayExpand": false
+        },
+        "securityEvidenceBlockers": [
+          "IFS projections may expose mutation actions; WFM requires a dedicated service identity with exact Read Only projection grants and observed denied mutations before evidence advances.",
+          "Projection access alone does not prove company/site/entity isolation; effective Data Access Control or an equivalently constrained projection must be observed where source scope needs narrowing.",
+          "Entity Service activation is customer-controlled setup and does not become steady-state runtime authority.",
+          "Exact system URL, deployment region, projection versions, paging/delta behaviour, rate limits and custom schemas are tenant/release dependent and must be discovered without cross-host or cross-region inference.",
+          "No generic event completeness contract is claimed for all IFS projections; bounded reads and reconciliation remain the completeness path."
+        ]
+      }
+    },
+    {
+      "id": "ifs-cloud",
+      "patch": {
+        "integrationDataReview": {
+          "requiredPermissions": [
+            "dedicated IFS service identity using Client Credentials",
+            "exact reviewed Read Only projection grants for the required Premium/Standard APIs",
+            "effective data-scope restriction for approved company/site/entity boundaries where required",
+            "approved customer-specific system URL and deployment region",
+            "separate customer-controlled setup for any optional Entity Service activation; steady-state ingestion remains read-only"
+          ],
+          "dataAvailableOrExpected": [
+            "shop orders, operations, routing/execution detail, planned dates, completed and scrap quantities where the reviewed manufacturing projections expose them",
+            "work centers, work center resources, labor classes, resource calendars/capacity and scheduling assignments",
+            "shop-floor employees, teams, operation clockings, labor/machine time and production reporting",
+            "skills, competencies, qualifications and certificates where the relevant HCM/resource capabilities are installed and exposed",
+            "maintenance work, equipment/assets, machine downtime and maintenance-related scheduling context where installed",
+            "quality/control-plan results, non-conformance and scrap/rework evidence where installed",
+            "parts/SKUs, inventory on hand/reserved/in-transit/available, material requirements, WIP and inventory movements",
+            "suppliers, purchasing and delivery/requested-date context",
+            "resource/work-center/labor/material/overhead costs, cost centres and finance/job-cost dimensions where exposed",
+            "custom fields and configuration/customization-layer projection fields visible to the reviewed identity"
+          ],
+          "stableIdentifiers": [
+            "preserve IFS native keys as source identifiers namespaced by connection, instance, company/site, projection, API version and dataset",
+            "preserve composite shop-order/operation keys and work-order/resource/part/site identifiers rather than assuming one globally unique numeric key",
+            "retain projection/API class/layer/version and schema fingerprint so release and customization changes cannot reinterpret history"
+          ],
+          "freshnessLatency": {
+            "rest": "bounded WFM-controlled reads; record observed/effective/ingestion timestamps and measured latency",
+            "manufacturing": "use provider-supported updated-time filters only where their semantics are established by the selected API; overlap replay and stable-id dedupe remain required",
+            "events": "no generic event completeness claim is made for all IFS projections; polling/reconciliation remains authoritative"
+          },
+          "paginationDeltaEvents": {
+            "pagination": "discover per-projection paging from API Explorer/OpenAPI/OData metadata; require a continuous bounded page chain before advancing completeness",
+            "delta": "prefer documented updated-time or provider cursor semantics per projection; otherwise use bounded overlap windows and stable-id dedupe",
+            "events": "specific IFS Connect/middleware/event paths require separate route/security evidence",
+            "reconciliation": "filtered, incremental, permission-limited or partial reads never imply deletion; authoritative absence needs proven complete scope, pages and reconciliation"
+          },
+          "rateLimitsAndRetries": [
+            "discover and measure the authorised tenant limits rather than assuming one universal public rate-limit contract",
+            "401/403 stop blind retry and enter identity/projection/data-scope diagnostics",
+            "429/retryable 5xx/network interruption use bounded backoff for idempotent reads while preserving checkpoint state",
+            "regional/site interruption or partial page failure requires overlap replay/reconciliation before affected data is treated as current"
+          ],
+          "versionsRegionsCustomFields": [
+            "API Explorer exposes API class, layer, deprecation and OpenAPI/OData metadata per projection",
+            "Premium API version handling retains an older projection version alongside a new version until the next release and publishes breaking-change guidance",
+            "custom fields can be exposed through IFS APIs; configuration/customization-layer changes require schema negotiation and extension provenance",
+            "multi-company, multi-site, multi-currency, locale, language, calendar, timezone and unit context must be preserved from the source rather than normalised without evidence",
+            "exact region/data location is customer deployment evidence, not inferred from hostname naming; any regional route change requires a new checkpoint namespace and reconciliation"
+          ],
+          "dataGaps": [
+            "no authorised IFS Cloud sandbox/customer tenant was available to prove token issuance, exact projection grants, data-scope isolation, denied writes or real reads",
+            "exact manufacturing/HCM/maintenance/quality/finance projections depend on installed components, release and customer configuration",
+            "no universal public pagination/delta/rate-limit/event-completeness contract was established for every projection",
+            "custom projections/fields and customer-defined data access policies are tenant-specific",
+            "regional residency and transfer controls require tenant/contract evidence before production certification"
+          ],
+          "constraintsRisks": [
+            "standard APIs are atomic and cross-domain consistency may span multiple calls; temporal observation windows and reconciliation are required",
+            "Entity Service APIs can expose CRUD and should not be activated merely to avoid selecting a narrower existing read surface",
+            "multi-company/site estates and acquisitions may reuse business identifiers; instance/company/site/projection namespacing is mandatory",
+            "custom fields and release updates can change schemas independently; fingerprints and review-required breaking drift are mandatory",
+            "regional outage must reduce freshness instead of silently moving data to another location without approved transfer authority"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ifs-cloud",
+      "patch": {
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://docs.ifs.com/ifsclouddocs/26r1/lang/en/Manufacturing/AboutMSO.htm",
+          "wfmObjects": [
+            "person",
+            "employee",
+            "skill",
+            "certification",
+            "legal-entity",
+            "site",
+            "work-centre",
+            "resource",
+            "machine",
+            "asset",
+            "production-order",
+            "work-order",
+            "operation",
+            "routing",
+            "product",
+            "sku",
+            "capacity-demand",
+            "labour-transaction-evidence",
+            "maintenance-request",
+            "downtime-evidence",
+            "quality-check",
+            "non-conformance",
+            "scrap-rework-evidence",
+            "inventory",
+            "wip",
+            "inventory-movement",
+            "supplier",
+            "purchase-order",
+            "finance-ledger-entry",
+            "cost-centre",
+            "job-cost-evidence"
+          ],
+          "automationOpportunities": [
+            "join shop-order/operation/resource demand to WFM availability plus skills/qualifications to identify qualified shortages before overtime or agency labour is committed",
+            "join material availability/WIP/purchasing to workforce capacity so material-constrained work is not misdiagnosed as a labour shortage",
+            "join machine downtime and maintenance schedules to workforce plans to redeploy qualified labour and coordinate maintenance windows",
+            "reconcile IFS shop-floor clockings/labor reports to authoritative WFM attendance/pay calculations to surface payroll and job-cost exceptions without treating ERP clockings as payroll truth",
+            "join scrap/non-conformance and operation/resource context to workforce skills/training history to prioritize training hypotheses while preserving competing changes",
+            "join resource, work-center, labor/material/overhead costs and production output to WFM labor cost for labor-per-order and labor-per-good-unit finance attribution",
+            "use one reviewed cross-domain IFS connection to accelerate implementation for smaller manufacturers while source-scoped instance/company/site/projection namespaces support global multi-entity estates"
+          ],
+          "customerValue": [
+            "faster implementation",
+            "reduced administration",
+            "labour-cost reduction",
+            "overtime reduction",
+            "agency-labour reduction",
+            "payroll accuracy",
+            "scheduling efficiency",
+            "skills deployment",
+            "production throughput",
+            "downtime reduction",
+            "maintenance coordination",
+            "quality/rework reduction",
+            "inventory/logistics improvements",
+            "working-capital visibility",
+            "finance attribution",
+            "improved forecasting",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce avoidable overtime and agency spend by separating genuine qualified-labour shortages from material, machine and maintenance constraints",
+            "reduce paid idle time by preventing scarce labor from being allocated to operations that are not materially or mechanically ready",
+            "reduce payroll/job-cost discrepancies by reconciling WFM attendance/pay authority with shop-floor labor/clocking evidence",
+            "reduce rework cost by linking scrap/non-conformance to operation/resource/skills context while retaining causal uncertainty",
+            "reduce implementation effort where one IFS estate can populate workforce, production, maintenance, quality, inventory/procurement and finance semantic domains through reviewed APIs"
+          ],
+          "causalOutcomeReadiness": [
+            "preserve connection, instance, company, site, region, projection, API version, source key, schema fingerprint and source/effective/ingestion timestamps on every mapped record",
+            "preserve recommendation/action identifiers and baseline/outcome windows for redeployment, overtime, training or maintenance interventions",
+            "retain competing changes including schedule changes, material receipts, machine downtime, maintenance completion, shop-order revisions, quality events, cost/currency changes and API/custom-field schema revisions"
+          ],
+          "nextDevelopmentAction": "Use an authorised IFS Cloud test tenant with a dedicated Client Credentials service identity to prove token lifecycle, exact API Explorer metadata, Read Only projection grants, effective company/site/entity data scope, denied mutation/actions, real paginated and updated-time reads, stable identifiers, custom-field schema drift, multi-company/site isolation, regional route pinning, and recovery from expiry, 401/403/429/5xx/network/partial-page failures. Keep all production and payroll mutations disabled."
+        }
+      }
+    }
+  ],
+  "systems": []
+}

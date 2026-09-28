@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Hourly authoritative-vendor research delta. Adds a newly verified industrial data platform and evidence/value upgrades for manufacturing integration targets. No tenant credentials were used and connector writes remain disabled.",
+  "protocolFamilies": [
+    "Sparkplug B"
+  ],
+  "overrides": [
+    {
+      "id": "highbyte-intelligence-hub",
+      "patch": {
+        "protocols": ["REST", "MQTT", "Sparkplug B", "OPC UA", "Modbus", "database", "files", "SFTP", "Kafka"],
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.highbyte.com/intelligence-hub",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://www.highbyte.com/intelligence-hub/rest-data-server",
+        "evidenceNote": "HighByte documents a REST Data Server that can browse and request contextualized industrial data, plus native MQTT v3.1.1/v5 with Sparkplug support, OPC UA, Modbus, SQL, files/SFTP and Kafka/cloud connections. Its REST surface can be read/write, so WFM must use role-based read-only access and keep OT writes disabled. No tenant or edge authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.highbyte.com/intelligence-hub/rest-data-server",
+          "requiredPermissions": ["role-scoped REST Data Server read access", "MQTT/Sparkplug subscription rights limited to required namespaces", "OPC UA browse/read/subscribe only", "no underlying OT write or callable-pipeline mutation rights"],
+          "dataAvailableOrExpected": ["contextualized industrial datasets", "raw or modeled OT values", "MQTT/Sparkplug metrics", "OPC UA tags and alarms/conditions", "time-series, transactional and master data exposed through configured HighByte connections"],
+          "wfmObjects": ["machine-state", "downtime-event", "production-event", "work-centre", "shift-outcome", "connector-health"],
+          "automationOpportunities": ["machine-stop and recovery signals can trigger labour redeployment/recovery recommendations", "use one governed OT API/UNS route instead of bespoke direct machine integrations", "correlate staffed time, output and equipment state by work centre"],
+          "customerValue": ["faster plant integration", "reduced bespoke OT connector maintenance", "paid-idle-time visibility", "downtime response", "labour-to-output evidence"],
+          "savingsHypotheses": ["reduce paid idle labour during equipment disruption", "reduce site-integration engineering effort by reusing an existing industrial data layer", "reduce duplicated point-to-point OT integrations"],
+          "dataGaps": ["customer namespaces, models and tag semantics are site-specific", "available data depends on connections already configured in the customer's HighByte deployment"],
+          "constraintsRisks": ["REST Data Server can write to underlying connections, so read-only policy must be technically enforced", "Sparkplug birth/death and session semantics must be preserved", "plant connectivity must stay behind the customer-controlled edge boundary"],
+          "nextDevelopmentAction": "Build a HighByte thin adapter on the existing REST/MQTT/OPC UA profiles, validate Sparkplug birth/death handling with fixtures, then seek a customer sandbox or lab tenant for authenticated read round-trip proof."
+        }
+      }
+    },
+    {
+      "id": "tulip",
+      "patch": {
+        "protocols": ["REST", "connectors", "OPC UA", "MQTT", "database"],
+        "auth": "scoped-service-account-basic-auth",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://support.tulip.co/docs/work-with-apis",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://support.tulip.co/apidocs/look-up-a-tulip-table",
+        "evidenceNote": "Tulip documents scoped REST APIs for Tables, Users/Operators, Stations and Machine Attributes, plus HTTP/SQL/MQTT connectors and OPC UA-backed machine data. API service accounts use key/secret credentials via HTTP Basic Auth with granular scopes such as tables:read; write endpoints and documented endpoint rate limits remain separately gated. No tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://support.tulip.co/docs/work-with-apis",
+          "requiredPermissions": ["workspace-scoped service account", "read scopes for tables/users/stations required by the workflow", "machine/production read access only", "no users:write or machine write scope during discovery"],
+          "dataAvailableOrExpected": ["Tulip table records and schemas", "users/operators, roles and groups", "station/workspace context", "machine attributes and machine data configured in Tulip", "shop-floor application data exposed through customer tables"],
+          "wfmObjects": ["worker", "work-centre", "production-event", "machine-state", "site", "shift-outcome"],
+          "automationOpportunities": ["operator/worker reconciliation", "shop-floor station and work-centre mapping", "production/machine events can refresh labour demand and shift outcome evidence", "approved operator provisioning only after write certification"],
+          "customerValue": ["stronger frontline-to-WFM data continuity", "less duplicate operator administration", "labour-to-production visibility", "faster implementation where Tulip already models machines and stations"],
+          "savingsHypotheses": ["reduce duplicate shop-floor data entry", "reduce manual operator reconciliation", "identify labour/machine mismatch using Tulip production context"],
+          "dataGaps": ["customer tables are configurable and require schema discovery", "not every app or machine attribute is semantically suitable for workforce decisions"],
+          "constraintsRisks": ["service-account keys are reusable secrets and must be vaulted/rotated", "write-capable scopes must remain excluded from discovery", "documented endpoint-specific rate limits require adapter throttling"],
+          "nextDevelopmentAction": "Generate a Tulip thin adapter over the existing REST profile with table-schema discovery, pagination/rate-limit handling and canonical worker/station/machine mapping; then prove read-only access in an authorised tenant."
+        }
+      }
+    },
+    {
+      "id": "celigo-integrator-io",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "evidenceUrl": "https://docs.celigo.com/hc/en-us/articles/52487952583067-Celigo-platform-MCP-and-CLI",
+        "evidenceNote": "Celigo's 2026 platform documentation adds a hosted MCP management surface over Streamable HTTP using bearer API tokens, operating on the same integration resources as the REST API. Celigo also documents network policies and scoped token/access controls. This is useful for autonomous implementation orchestration, but it is a management plane and must not be treated as permission for unsupervised production mutations. No Celigo tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://docs.celigo.com/hc/en-us/articles/52487952583067-Celigo-platform-MCP-and-CLI",
+          "requiredPermissions": ["custom-scoped API token rather than full access", "network policy restricting allowed callers", "read-only/account-observation capabilities during discovery", "separate approval for flow, connection or resource mutations"],
+          "dataAvailableOrExpected": ["integration/flow/connection metadata", "logs and execution state exposed by integrator.io APIs", "MCP tool/resource metadata for configured Celigo capabilities"],
+          "wfmObjects": ["integration-event", "connector-health", "implementation-evidence"],
+          "automationOpportunities": ["autonomous implementation can inspect existing Celigo integration resources", "reuse customer flows/connectors rather than create duplicate point-to-point integrations", "surface integration failures into WFM support automation"],
+          "customerValue": ["faster zero-human implementation where Celigo is already present", "reduced integration support administration", "reuse of existing customer iPaaS investment"],
+          "savingsHypotheses": ["reduce implementation engineering time", "reduce duplicate connector build/maintenance", "shorten diagnosis of integration failures"],
+          "dataGaps": ["available MCP tools depend on account configuration and entitlements", "business data semantics still depend on connected upstream systems"],
+          "constraintsRisks": ["MCP/REST management capabilities can mutate production integration resources", "unrestricted tokens or servers may expose more capability than WFM needs", "regional Celigo environments must be bound explicitly"],
+          "nextDevelopmentAction": "Model Celigo MCP as a separately governed management-plane adapter, first with tool/resource discovery only; add a reusable MCP transport profile only after read-only capability enforcement and sandbox behaviour are verified."
+        }
+      }
+    }
+  ],
+  "systems": [
+    {
+      "id": "cognite-data-fusion",
+      "name": "Cognite Data Fusion",
+      "category": "iiot-industrial-data",
+      "priority": "P1",
+      "protocols": ["REST", "OData"],
+      "auth": "oauth2-oidc-service-account",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://docs.cognite.com/",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "evidenceUrl": "https://docs.cognite.com/cdf/dashboards/references/odata",
+      "evidenceNote": "Cognite Data Fusion documents REST APIs and an OData service over industrial assets, time series, events, files and related data, authenticated with OAuth 2.0/OIDC bearer tokens. Data point subscriptions support incremental time-series updates, and current documentation recommends the flexible Data Modeling service for new projects while legacy asset-centric resources remain supported. No customer project authentication was attempted.",
+      "valueReview": {
+        "basis": "vendor-docs",
+        "evidenceUrl": "https://docs.cognite.com/dev/concepts/resource_types/index",
+        "requiredPermissions": ["service-account OAuth/OIDC token", "project-scoped read capabilities for required assets/time series/events or data-model instances", "no create/update/delete capabilities during discovery"],
+        "dataAvailableOrExpected": ["industrial asset hierarchies", "time-series measurements", "events such as alarms/process logs", "files and contextual metadata", "data-model instances", "incremental data-point subscription updates"],
+        "wfmObjects": ["machine-state", "downtime-event", "production-event", "asset", "maintenance-work", "work-centre", "shift-outcome"],
+        "automationOpportunities": ["incremental machine-state updates can trigger labour redeployment/recovery recommendations", "contextualized asset/event data can correlate maintenance and production disruption with staffed time", "reuse Cognite as an enterprise OT data layer instead of direct plant integrations"],
+        "customerValue": ["faster industrial integration", "labour/machine/maintenance correlation", "downtime visibility", "less bespoke OT data plumbing", "better cross-site industrial data consistency"],
+        "savingsHypotheses": ["reduce duplicate OT integration engineering", "reduce paid idle labour by reacting to contextualized downtime", "reduce analysis time by linking asset, event and time-series context before WFM ingestion"],
+        "dataGaps": ["customer data models and external IDs are implementation-specific", "worker/operator identity may not exist in CDF unless upstream systems publish it", "production semantics require customer model mapping"],
+        "constraintsRisks": ["legacy asset-centric and newer Data Modeling projects require different mapping paths", "high-volume time series should use subscriptions/appropriate APIs rather than naive polling", "write-capable APIs exist and remain disabled by default"],
+        "nextDevelopmentAction": "Add a Cognite thin adapter using OAuth/OIDC plus REST/OData discovery, support both Data Modeling and legacy asset-centric paths, then validate incremental time-series subscription normalization in a sandbox or authorised project."
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "status": "BUILT",
+  "scope": "Provider-status classification for release evidence; not hosted product or customer-journey proof",
+  "date": "2026-09-26",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "candidateReviewed": "7a24662e55700f14eb6b46417cc9117d9dadddf3",
+  "observedProviderEvidence": {
+    "railwayStatusCount": 9,
+    "state": "success",
+    "description": "No deployment needed - watched paths not modified",
+    "classificationBeforeRepair": "UNKNOWN_FAIL_CLOSED",
+    "classificationAfterRepair": "PROVIDER_SKIPPED_NO_PROOF",
+    "executedDeployment": false,
+    "countsAsProof": false,
+    "githubWorkflowRun": 36259572539,
+    "githubJob": 108452687929,
+    "githubRecordedSteps": null
+  },
+  "rootCause": "Provider commit statuses expose successful path-filter handling through the same state field used for executed deployments. The repository policy rejected status-only green, but the executable blocker classifier lacked the exact skip-success signature.",
+  "repair": {
+    "classifier": "scripts/classify-proof-blocker.mjs",
+    "mandatoryValidator": "scripts/validate-proof-blocker-classifier.mjs",
+    "regression": "tests/provider-status-proof-classification.test.mjs",
+    "behaviour": "Explicit provider skip-success receipts are promotion-blocking, development may continue, fallback execution is allowed, and the receipt states countsAsProof=false and executedEvidence=false. All other blocker classifications also state these evidence fields explicitly."
+  },
+  "verification": {
+    "runtime": "Node v24.19.0",
+    "red": {
+      "command": "node --test tests/provider-status-proof-classification.test.mjs",
+      "tests": 2,
+      "pass": 0,
+      "fail": 2,
+      "observedWrongClass": "UNKNOWN_FAIL_CLOSED",
+      "observedMissingEvidenceFlags": true
+    },
+    "green": {
+      "commands": [
+        "node --check scripts/classify-proof-blocker.mjs",
+        "node --test tests/provider-status-proof-classification.test.mjs",
+        "node scripts/validate-proof-blocker-classifier.mjs"
+      ],
+      "nodeTests": 2,
+      "nodePass": 2,
+      "nodeFail": 0,
+      "nodeSkipped": 0,
+      "classifierCases": 8,
+      "classifierPass": 8
+    },
+    "exactNode22232Run": false,
+    "providerExecution": false,
+    "fullRepositorySuite": false
+  },
+  "releaseGate": {
+    "before": "BLOCKED: provider state=success required manual interpretation to distinguish a skipped deployment",
+    "afterSourceRepair": "BUILT: the existing executable blocker classifier now rejects the exact observed skip-success receipt",
+    "promotion": "BLOCKED until an admitted exact candidate produces executed, source-bound terminal proof and the hosted durability/Golden Journey/Cold Witness gates pass"
+  },
+  "boundaries": {
+    "deploymentChanged": false,
+    "customerDataChanged": false,
+    "payrollDataChanged": false,
+    "credentialsChanged": false,
+    "dnsChanged": false,
+    "newSpend": false,
+    "marketingVideoReady": false
+  },
+  "nextProof": "Run the exact classifier and admitted proof lane under Node v22.23.2 on a deliberate freeze-trigger candidate; verify provider skip-success cannot satisfy promotion and terminal execution artifacts bind to the exact source SHA."
+}

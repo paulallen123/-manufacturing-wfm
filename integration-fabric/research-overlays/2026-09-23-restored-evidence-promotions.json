@@ -1,0 +1,830 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-23",
+  "purpose": "Restore documentation-backed Integration Fabric promotions and inline vendor value reviews lost during FORGE convergence. Entries are copied from previously reviewed evidence overlays; no maturity inflation, tenant certification or write authority is introduced.",
+  "protocolFamilies": [
+    "Sparkplug B"
+  ],
+  "overrides": [
+    {
+      "id": "ifs-cloud",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OData",
+          "OpenAPI"
+        ],
+        "auth": "oauth2-preferred",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.ifs.com/techdocs/25R2/040_tailoring/300_extensibility/020_api_explorer/",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://docs.ifs.com/techdocs/25R2/040_tailoring/300_extensibility/020_api_explorer/040_entity_services/",
+        "evidenceNote": "IFS Cloud officially exposes REST APIs using OData, with OpenAPI v2/v3 specifications available from API Explorer. Premium and Integration APIs are preferred for system integrations; Entity Service APIs can expose entity models for CRUD/state transitions but require administrator activation. Projection permission sets support read-only access, which is the required WFM starting posture. No tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://docs.ifs.com/techdocs/25R2/040_tailoring/300_extensibility/020_api_explorer/",
+          "requiredPermissions": [
+            "OAuth 2.0 identity scoped to required API projections",
+            "read-only projection permission sets wherever available",
+            "no Entity Service mutation permissions during discovery"
+          ],
+          "dataAvailableOrExpected": [
+            "tenant-exposed OData entity sets and projection data",
+            "ERP/manufacturing entity data exposed by authorised Premium, Integration or Entity Service APIs"
+          ],
+          "wfmObjects": [
+            "organisation-unit",
+            "production-demand",
+            "labour-cost",
+            "site",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "production-demand refresh from authorised ERP projections",
+            "cost-centre and organisation synchronisation",
+            "approved labour/cost export only after write-roundtrip certification"
+          ],
+          "customerValue": [
+            "faster ERP integration through published OData/OpenAPI contracts",
+            "labour-to-production and finance attribution",
+            "less bespoke IFS integration maintenance"
+          ],
+          "savingsHypotheses": [
+            "reduce manual finance and production-data reconciliation",
+            "reduce implementation effort by reusing stable published projections",
+            "reduce overstaffing when production demand can be read from IFS"
+          ],
+          "dataGaps": [
+            "exact enabled projections and manufacturing objects are tenant/version specific",
+            "custom projections require customer-specific mapping"
+          ],
+          "constraintsRisks": [
+            "Entity Service APIs require administrator activation",
+            "deprecated API versions must not be selected for new adapters",
+            "write-capable entity services remain disabled in WFM"
+          ]
+        }
+      }
+    },
+    {
+      "id": "epicor-kinetic",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OData"
+        ],
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+        "evidenceNote": "Epicor documents Kinetic Open REST API as platform-level access to ERP services, data and business logic. The API is OData v4-compliant, versioned, discoverable through built-in REST help, and protected by API keys, access scopes and ERP user/data permissions. This provides a usable route for manufacturing orders, resources, costs and related ERP context once a customer tenant is authorised. No tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/kinetic/tools-and-technology/open-rest-api/",
+          "requiredPermissions": [
+            "API key restricted by access scope",
+            "ERP user/data permissions limited to required read services",
+            "no business-logic execution permission during discovery unless separately required"
+          ],
+          "dataAvailableOrExpected": [
+            "authorised Kinetic ERP service data",
+            "manufacturing/order/resource/cost context exposed by the customer's enabled ERP services"
+          ],
+          "wfmObjects": [
+            "production-demand",
+            "work-centre",
+            "labour-cost",
+            "organisation-unit",
+            "site"
+          ],
+          "automationOpportunities": [
+            "production/order changes can trigger labour-plan recalculation once representative reads are proven",
+            "approved labour/cost feedback can be considered only after controlled write certification"
+          ],
+          "customerValue": [
+            "production-driven staffing",
+            "labour-cost attribution",
+            "reduced manual ERP/WFM reconciliation",
+            "faster implementation through OData-compatible service discovery"
+          ],
+          "savingsHypotheses": [
+            "identify labour variance against manufacturing demand",
+            "reduce duplicate production-data entry",
+            "reduce planning latency between ERP order changes and workforce schedules"
+          ],
+          "dataGaps": [
+            "available business objects and customisations vary by Kinetic tenant/version",
+            "resource and labour semantics require canonical mapping validation"
+          ],
+          "constraintsRisks": [
+            "API key access must also be constrained by Epicor access scopes and ERP permissions",
+            "service versions and customer customisations require compatibility testing"
+          ]
+        }
+      }
+    },
+    {
+      "id": "inductive-automation-ignition",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OpenAPI",
+          "OPC UA",
+          "MQTT",
+          "database"
+        ],
+        "auth": "api-token-or-industrial-trust",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.docs.inductiveautomation.com/docs/8.3/platform/gateway/openapi",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://www.docs.inductiveautomation.com/docs/8.3/platform/gateway/openapi",
+        "evidenceNote": "Ignition 8.3 documents a dynamically generated OpenAPI/REST interface at /openapi and /openapi.json, OPC UA client/server connectivity, and Edge IIoT MQTT publication. HTTP API tokens can reach mutative routes and vendor guidance warns they can modify configuration, tags or projects, so WFM must use a segregated read-only facade or equivalent gateway controls rather than assuming a token alone is least privilege. No plant or tenant connection was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.docs.inductiveautomation.com/docs/8.3/platform/gateway/openapi",
+          "requiredPermissions": [
+            "read-only tag/telemetry access through a segregated facade or equivalent policy boundary",
+            "OPC UA/MQTT subscription rights limited to required namespaces/topics",
+            "no Gateway configuration/project/tag mutation rights"
+          ],
+          "dataAvailableOrExpected": [
+            "industrial tags and machine/process state made available through OPC UA",
+            "MQTT-published edge telemetry",
+            "Gateway API metadata exposed through documented OpenAPI routes"
+          ],
+          "wfmObjects": [
+            "machine-state",
+            "downtime-event",
+            "production-event",
+            "work-centre",
+            "shift-outcome"
+          ],
+          "automationOpportunities": [
+            "machine-stop events can trigger labour redeployment recommendations",
+            "machine restart/recovery can trigger staffing recall recommendations",
+            "correlate staffed time with machine state and output evidence"
+          ],
+          "customerValue": [
+            "downtime reduction",
+            "paid-idle-time visibility",
+            "real-time labour/machine alignment",
+            "better shift productivity evidence"
+          ],
+          "savingsHypotheses": [
+            "reduce paid idle time during equipment stops",
+            "reduce labour waiting for unavailable machines",
+            "quantify labour cost of downtime by shift/work centre"
+          ],
+          "dataGaps": [
+            "tag names and semantics are site-specific",
+            "machine output/OEE meaning requires customer asset mapping",
+            "timestamps and historian retention require site validation"
+          ],
+          "constraintsRisks": [
+            "Ignition API tokens may reach mutative HTTP API routes",
+            "plant-network connectivity must terminate at a controlled site-edge boundary",
+            "WFM must not issue PLC/tag writes or control methods by default"
+          ]
+        }
+      }
+    },
+    {
+      "id": "highbyte-intelligence-hub",
+      "patch": {
+        "protocols": [
+          "REST",
+          "MQTT",
+          "Sparkplug B",
+          "OPC UA",
+          "Modbus",
+          "database",
+          "files",
+          "SFTP",
+          "Kafka"
+        ],
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://www.highbyte.com/intelligence-hub",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://www.highbyte.com/intelligence-hub/rest-data-server",
+        "evidenceNote": "HighByte documents a REST Data Server that can browse and request contextualized industrial data, plus native MQTT v3.1.1/v5 with Sparkplug support, OPC UA, Modbus, SQL, files/SFTP and Kafka/cloud connections. Its REST surface can be read/write, so WFM must use role-based read-only access and keep OT writes disabled. No tenant or edge authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.highbyte.com/intelligence-hub/rest-data-server",
+          "requiredPermissions": [
+            "role-scoped REST Data Server read access",
+            "MQTT/Sparkplug subscription rights limited to required namespaces",
+            "OPC UA browse/read/subscribe only",
+            "no underlying OT write or callable-pipeline mutation rights"
+          ],
+          "dataAvailableOrExpected": [
+            "contextualized industrial datasets",
+            "raw or modeled OT values",
+            "MQTT/Sparkplug metrics",
+            "OPC UA tags and alarms/conditions",
+            "time-series, transactional and master data exposed through configured HighByte connections"
+          ],
+          "wfmObjects": [
+            "machine-state",
+            "downtime-event",
+            "production-event",
+            "work-centre",
+            "shift-outcome",
+            "connector-health"
+          ],
+          "automationOpportunities": [
+            "machine-stop and recovery signals can trigger labour redeployment/recovery recommendations",
+            "use one governed OT API/UNS route instead of bespoke direct machine integrations",
+            "correlate staffed time, output and equipment state by work centre"
+          ],
+          "customerValue": [
+            "faster plant integration",
+            "reduced bespoke OT connector maintenance",
+            "paid-idle-time visibility",
+            "downtime response",
+            "labour-to-output evidence"
+          ],
+          "savingsHypotheses": [
+            "reduce paid idle labour during equipment disruption",
+            "reduce site-integration engineering effort by reusing an existing industrial data layer",
+            "reduce duplicated point-to-point OT integrations"
+          ],
+          "dataGaps": [
+            "customer namespaces, models and tag semantics are site-specific",
+            "available data depends on connections already configured in the customer's HighByte deployment"
+          ],
+          "constraintsRisks": [
+            "REST Data Server can write to underlying connections, so read-only policy must be technically enforced",
+            "Sparkplug birth/death and session semantics must be preserved",
+            "plant connectivity must stay behind the customer-controlled edge boundary"
+          ],
+          "nextDevelopmentAction": "Build a HighByte thin adapter on the existing REST/MQTT/OPC UA profiles, validate Sparkplug birth/death handling with fixtures, then seek a customer sandbox or lab tenant for authenticated read round-trip proof."
+        }
+      }
+    },
+    {
+      "id": "sap-fieldglass",
+      "patch": {
+        "protocols": [
+          "REST",
+          "SCIM",
+          "files"
+        ],
+        "auth": "oauth2-client-credentials-or-certificate",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.sap.com/doc/a5fdbd31ebe94832aef0eb79066a8087/cloud/en-US/SAPFieldglassRESTAPIIntegrationGeneralReferenceGuide.pdf",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://help.sap.com/doc/a5fdbd31ebe94832aef0eb79066a8087/cloud/en-US/SAPFieldglassRESTAPIIntegrationGeneralReferenceGuide.pdf",
+        "evidenceNote": "SAP's 2026 Fieldglass REST API General Reference Guide documents authenticated GET/POST/PUT integration resources over HTTPS with OAuth 2.0, client credentials, certificate and SAML-based authentication options. It explicitly references Connector, Identity (SCIM) and Reporting APIs, with an optional x-ApplicationKey depending on tenant/API. SAP's connector library also documents active-worker downloads and customer-specific contingent-workforce configurations such as custom fields, qualifications, rates and accounting mappings. No SAP Fieldglass sandbox or tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://help.sap.com/doc/a5fdbd31ebe94832aef0eb79066a8087/cloud/en-US/SAPFieldglassRESTAPIIntegrationGeneralReferenceGuide.pdf",
+          "requiredPermissions": [
+            "OAuth 2.0 client scoped to required Fieldglass REST/connector/reporting reads",
+            "optional tenant/application key only where the selected API requires it",
+            "worker/download permissions limited to required contingent-workforce data",
+            "PII, rates and accounting data minimised to the implemented WFM workflow",
+            "no upload, approval or worker mutation permission during discovery"
+          ],
+          "dataAvailableOrExpected": [
+            "active and contingent worker records exposed by authorised downloads/APIs",
+            "worker status and assignment context",
+            "custom fields and qualifications where configured",
+            "rates and cost/accounting references where authorised",
+            "integration/reporting metadata",
+            "identity records through Fieldglass identity/SCIM integration where enabled"
+          ],
+          "wfmObjects": [
+            "worker",
+            "employment",
+            "external-worker",
+            "skill",
+            "labour-cost",
+            "cost-centre",
+            "site",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "contingent-worker joiner/mover/leaver synchronisation",
+            "agency-labour availability and cost visibility",
+            "qualification-aware external-worker scheduling",
+            "approved worker/time/cost lifecycle write-back only after separate sandbox and write-roundtrip certification",
+            "integration exception monitoring through audit/reporting data"
+          ],
+          "customerValue": [
+            "agency-labour reduction",
+            "faster contingent-worker onboarding",
+            "external-labour compliance",
+            "better agency and worker cost attribution",
+            "less duplicate worker administration",
+            "improved visibility of contingent workforce alongside employed labour"
+          ],
+          "savingsHypotheses": [
+            "reduce manual contingent-worker setup and reconciliation",
+            "reduce avoidable agency spend by exposing worker/rate/qualification context to planning",
+            "reduce compliance risk from incomplete qualification or worker-status data",
+            "reduce payroll/invoice exceptions caused by inconsistent external-worker master data"
+          ],
+          "dataGaps": [
+            "enabled connector/API resources and fields vary by buyer configuration",
+            "custom fields, qualifications, security IDs, rates and accounting mappings are customer-specific",
+            "some Fieldglass integrations remain file/connector based rather than a single normalized REST object model"
+          ],
+          "constraintsRisks": [
+            "REST resources support POST/PUT as well as GET, so read-only access must be enforced by permission and connector design",
+            "worker/rate/accounting data is sensitive and requires narrow retention and logging",
+            "OAuth tokens can have varying API access and must not be treated as least privilege by default",
+            "tenant region/environment URLs and test-environment availability vary",
+            "duplicate worker records can arise from customer segmentation/configuration and require deterministic identity reconciliation"
+          ],
+          "nextDevelopmentAction": "Build a Fieldglass thin adapter over the existing REST/SCIM/file profiles, starting with OAuth token acquisition and read-only connector/reporting discovery; add canonical external-worker, qualification and rate mappings plus duplicate/segmentation handling, then seek an authorised SAP Fieldglass test tenant for authenticated read-roundtrip proof."
+        }
+      }
+    },
+    {
+      "id": "sap-business-one",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OData"
+        ],
+        "auth": "service-layer-session-or-enterprise",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.sap.com/doc/056f69366b5345a386bb8149f1700c19/10.0/en-US/Service%20Layer%20API%20Reference.html",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://help.sap.com/doc/056f69366b5345a386bb8149f1700c19/10.0/en-US/Service%20Layer%20API%20Reference.html",
+        "evidenceNote": "SAP Business One Service Layer exposes OData/REST business entities and actions. SAP states OData v3 is deprecated and OData v4 is the primary Service Layer protocol from FP 2405; new WFM adapters should use v4.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://help.sap.com/doc/056f69366b5345a386bb8149f1700c19/10.0/en-US/Service%20Layer%20API%20Reference.html",
+          "requiredPermissions": [
+            "read-only Service Layer identity limited to required company/entities"
+          ],
+          "dataAvailableOrExpected": [
+            "production-order and ERP entities exposed by Service Layer",
+            "business partners/orders/inventory/finance context exposed by authorised entities",
+            "OData metadata and queryable entity sets"
+          ],
+          "wfmObjects": [
+            "production-demand",
+            "organisation-unit",
+            "labour-cost",
+            "site",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "production-demand and cost-context refresh",
+            "approved write-back only after sandbox write/read-back proof"
+          ],
+          "customerValue": [
+            "reuse SAP Business One operational data for staffing demand",
+            "reduce manual production/finance reconciliation",
+            "faster implementation through OData metadata"
+          ],
+          "savingsHypotheses": [
+            "reduce planner administration",
+            "reduce over/under staffing against production demand",
+            "improve labour-to-order cost attribution"
+          ],
+          "dataGaps": [
+            "enabled entities, user-defined fields and company databases are customer specific"
+          ],
+          "constraintsRisks": [
+            "OData v3 is deprecated; v4 is the required new-build path",
+            "Service Layer is write-capable, so WFM discovery must remain read-only"
+          ]
+        }
+      }
+    },
+    {
+      "id": "microsoft-dynamics-365-business-central",
+      "patch": {
+        "protocols": [
+          "REST",
+          "OData",
+          "OpenAPI"
+        ],
+        "auth": "entra-online-or-onprem-credential",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/endpoints-apis-for-dynamics",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/endpoints-apis-for-dynamics",
+        "evidenceNote": "Business Central online exposes standard/custom REST API v2.0 endpoints authenticated with Microsoft Entra ID. On-premises API services are disabled by default and use installation-specific authentication. Microsoft recommends APIs over older OData web-service patterns for new integrations.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/endpoints-apis-for-dynamics",
+          "requiredPermissions": [
+            "Entra/application permissions or customer-scoped user permissions for required companies",
+            "on-prem API enablement where applicable"
+          ],
+          "dataAvailableOrExpected": [
+            "standard Business Central API entities",
+            "company/finance/purchasing/sales/inventory context",
+            "custom API entities where manufacturing-specific data is not present in the standard API"
+          ],
+          "wfmObjects": [
+            "organisation-unit",
+            "site",
+            "labour-cost",
+            "production-demand",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "finance/cost-centre synchronisation",
+            "inventory/order-driven demand enrichment",
+            "customer custom API ingestion for manufacturing-specific objects"
+          ],
+          "customerValue": [
+            "reuse Business Central data without bespoke database access",
+            "faster finance attribution",
+            "lower implementation effort through standard APIs"
+          ],
+          "savingsHypotheses": [
+            "reduce manual finance exports",
+            "reduce bespoke integration maintenance",
+            "improve staffing decisions when customer manufacturing/order signals are exposed"
+          ],
+          "dataGaps": [
+            "manufacturing-specific objects may require customer/partner custom API pages",
+            "online and on-prem authentication/enablement differ"
+          ],
+          "constraintsRisks": [
+            "on-prem APIs can be disabled and version lag is partner-controlled",
+            "custom API schema/version must be fingerprinted per tenant"
+          ]
+        }
+      }
+    },
+    {
+      "id": "quickbooks-online",
+      "patch": {
+        "protocols": [
+          "REST",
+          "webhooks"
+        ],
+        "auth": "oauth2",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developer.intuit.com/app/developer/qbo/docs/get-started",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://developer.intuit.com/app/developer/qbo/docs/get-started",
+        "evidenceNote": "Intuit documents the QuickBooks Online Accounting API as REST-based with OAuth 2.0, webhooks and sandbox companies. WFM should use it for finance/cost attribution rather than infer manufacturing execution data from QBO."
+      }
+    },
+    {
+      "id": "deputy",
+      "patch": {
+        "protocols": [
+          "REST",
+          "webhooks"
+        ],
+        "auth": "oauth2-or-permanent-token",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://developer.deputy.com/docs/getting-started-with-the-deputy-api",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://developer.deputy.com/docs/public-api-facts-and-overview",
+        "evidenceNote": "Deputy documents a JSON REST API, OAuth 2.0, webhooks for resources/actions, employee and timesheet integrations and sales-data ingestion. Advanced employee information requires additional vendor security review.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://developer.deputy.com/docs/getting-started-with-the-deputy-api",
+          "requiredPermissions": [
+            "OAuth scopes/token access limited to employees, schedules/timesheets and required business metrics"
+          ],
+          "dataAvailableOrExpected": [
+            "employees",
+            "timesheets",
+            "agreed hours",
+            "sales/workload metrics where customer uses them",
+            "webhook change events"
+          ],
+          "wfmObjects": [
+            "worker",
+            "time-event",
+            "shift",
+            "availability",
+            "labour-demand-signal"
+          ],
+          "automationOpportunities": [
+            "real-time timesheet/employee change ingestion",
+            "schedule/time reconciliation",
+            "sales/workload-informed labour demand"
+          ],
+          "customerValue": [
+            "reduce duplicate time administration",
+            "improve payroll reconciliation",
+            "reuse existing workforce data during migration/coexistence"
+          ],
+          "savingsHypotheses": [
+            "reduce payroll corrections and manual imports",
+            "reduce implementation effort where Deputy is already present"
+          ],
+          "dataGaps": [
+            "confidential employee data requires additional vendor approval",
+            "not all customer scheduling rules map one-to-one"
+          ],
+          "constraintsRisks": [
+            "webhook delivery must be idempotent/deduplicated",
+            "per-install custom scripts are not a portable integration strategy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "adp-workforce-suite",
+      "patch": {
+        "protocols": [
+          "REST",
+          "SOAP",
+          "files"
+        ],
+        "auth": "enterprise",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://workforcesoftware.com/workforce-suite/hcm-and-erp-integrations/",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://workforcesoftware.com/workforce-suite/hcm-and-erp-integrations/",
+        "evidenceNote": "Current ADP WorkForce Suite product documentation explicitly describes RESTful APIs, SOAP APIs and file-based CSV/XML interfaces, plus integrations with HCM/ERP systems. This closes protocol discovery only; no sandbox or customer tenant authentication was performed.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://workforcesoftware.com/workforce-suite/hcm-and-erp-integrations/",
+          "requiredPermissions": [
+            "read-only API/feed access to required workforce objects",
+            "employee population/site scope restricted to WFM implementation needs",
+            "no time/schedule/absence mutations during discovery"
+          ],
+          "dataAvailableOrExpected": [
+            "employee/core-HR inbound data",
+            "time and attendance transactions",
+            "employee schedules",
+            "absence/leave data",
+            "gross hours/pay and labour-cost outputs",
+            "labour allocation dimensions such as cost centres/departments/projects",
+            "labour budgets and demand inputs through configured integrations"
+          ],
+          "wfmObjects": [
+            "worker",
+            "shift",
+            "time-event",
+            "absence",
+            "labour-cost",
+            "labour-allocation",
+            "production-demand",
+            "site"
+          ],
+          "automationOpportunities": [
+            "parallel-run time/schedule reconciliation",
+            "migration/coexistence feeds",
+            "labour-budget versus gross-hours/pay exception detection",
+            "demand-signal ingestion where customer exposes sales/order/operations data"
+          ],
+          "customerValue": [
+            "lower migration effort from an incumbent WFM",
+            "payroll/time reconciliation",
+            "accurate labour-cost visibility",
+            "reduced duplicate administration",
+            "coexistence during phased rollout"
+          ],
+          "savingsHypotheses": [
+            "reduce manual time/payroll exports and reconciliation",
+            "reduce labour-budget overruns through earlier exception visibility",
+            "reduce migration effort by consuming existing standard interfaces",
+            "reduce duplicate workforce-data maintenance"
+          ],
+          "dataGaps": [
+            "public product material confirms interface families but not a complete endpoint/authentication/version catalogue",
+            "customer configuration and licensed modules determine available objects and feeds"
+          ],
+          "constraintsRisks": [
+            "REST/SOAP/file integrations may be customer-configured and version-specific",
+            "incumbent WFM data must not automatically override the WFM system of record without explicit source-of-truth rules",
+            "write-back remains disabled until sandbox round-trip proof"
+          ]
+        }
+      }
+    },
+    {
+      "id": "tulip",
+      "patch": {
+        "protocols": [
+          "REST",
+          "connectors",
+          "OPC UA",
+          "MQTT",
+          "database"
+        ],
+        "auth": "scoped-service-account-basic-auth",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://support.tulip.co/docs/work-with-apis",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://support.tulip.co/apidocs/look-up-a-tulip-table",
+        "evidenceNote": "Tulip documents scoped REST APIs for Tables, Users/Operators, Stations and Machine Attributes, plus HTTP/SQL/MQTT connectors and OPC UA-backed machine data. API service accounts use key/secret credentials via HTTP Basic Auth with granular scopes such as tables:read; write endpoints and documented endpoint rate limits remain separately gated. No tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://support.tulip.co/docs/work-with-apis",
+          "requiredPermissions": [
+            "workspace-scoped service account",
+            "read scopes for tables/users/stations required by the workflow",
+            "machine/production read access only",
+            "no users:write or machine write scope during discovery"
+          ],
+          "dataAvailableOrExpected": [
+            "Tulip table records and schemas",
+            "users/operators, roles and groups",
+            "station/workspace context",
+            "machine attributes and machine data configured in Tulip",
+            "shop-floor application data exposed through customer tables"
+          ],
+          "wfmObjects": [
+            "worker",
+            "work-centre",
+            "production-event",
+            "machine-state",
+            "site",
+            "shift-outcome"
+          ],
+          "automationOpportunities": [
+            "operator/worker reconciliation",
+            "shop-floor station and work-centre mapping",
+            "production/machine events can refresh labour demand and shift outcome evidence",
+            "approved operator provisioning only after write certification"
+          ],
+          "customerValue": [
+            "stronger frontline-to-WFM data continuity",
+            "less duplicate operator administration",
+            "labour-to-production visibility",
+            "faster implementation where Tulip already models machines and stations"
+          ],
+          "savingsHypotheses": [
+            "reduce duplicate shop-floor data entry",
+            "reduce manual operator reconciliation",
+            "identify labour/machine mismatch using Tulip production context"
+          ],
+          "dataGaps": [
+            "customer tables are configurable and require schema discovery",
+            "not every app or machine attribute is semantically suitable for workforce decisions"
+          ],
+          "constraintsRisks": [
+            "service-account keys are reusable secrets and must be vaulted/rotated",
+            "write-capable scopes must remain excluded from discovery",
+            "documented endpoint-specific rate limits require adapter throttling"
+          ],
+          "nextDevelopmentAction": "Generate a Tulip thin adapter over the existing REST profile with table-schema discovery, pagination/rate-limit handling and canonical worker/station/machine mapping; then prove read-only access in an authorised tenant."
+        }
+      }
+    },
+    {
+      "id": "celigo-integrator-io",
+      "patch": {
+        "researchStatus": "docs-verified",
+        "evidenceUrl": "https://docs.celigo.com/hc/en-us/articles/52487952583067-Celigo-platform-MCP-and-CLI",
+        "evidenceNote": "Celigo's 2026 platform documentation adds a hosted MCP management surface over Streamable HTTP using bearer API tokens, operating on the same integration resources as the REST API. Celigo also documents network policies and scoped token/access controls. This is useful for autonomous implementation orchestration, but it is a management plane and must not be treated as permission for unsupervised production mutations. No Celigo tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://docs.celigo.com/hc/en-us/articles/52487952583067-Celigo-platform-MCP-and-CLI",
+          "requiredPermissions": [
+            "custom-scoped API token rather than full access",
+            "network policy restricting allowed callers",
+            "read-only/account-observation capabilities during discovery",
+            "separate approval for flow, connection or resource mutations"
+          ],
+          "dataAvailableOrExpected": [
+            "integration/flow/connection metadata",
+            "logs and execution state exposed by integrator.io APIs",
+            "MCP tool/resource metadata for configured Celigo capabilities"
+          ],
+          "wfmObjects": [
+            "integration-event",
+            "connector-health",
+            "implementation-evidence"
+          ],
+          "automationOpportunities": [
+            "autonomous implementation can inspect existing Celigo integration resources",
+            "reuse customer flows/connectors rather than create duplicate point-to-point integrations",
+            "surface integration failures into WFM support automation"
+          ],
+          "customerValue": [
+            "faster zero-human implementation where Celigo is already present",
+            "reduced integration support administration",
+            "reuse of existing customer iPaaS investment"
+          ],
+          "savingsHypotheses": [
+            "reduce implementation engineering time",
+            "reduce duplicate connector build/maintenance",
+            "shorten diagnosis of integration failures"
+          ],
+          "dataGaps": [
+            "available MCP tools depend on account configuration and entitlements",
+            "business data semantics still depend on connected upstream systems"
+          ],
+          "constraintsRisks": [
+            "MCP/REST management capabilities can mutate production integration resources",
+            "unrestricted tokens or servers may expose more capability than WFM needs",
+            "regional Celigo environments must be bound explicitly"
+          ],
+          "nextDevelopmentAction": "Model Celigo MCP as a separately governed management-plane adapter, first with tool/resource discovery only; add a reusable MCP transport profile only after read-only capability enforcement and sandbox behaviour are verified."
+        }
+      }
+    },
+    {
+      "id": "sap-successfactors",
+      "patch": {
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://help.sap.com/docs/SAP_SUCCESSFACTORS_LEARNING/5aab9bef78fc4c4fa199c1f7aa142720/user-userlearning-service-v1-metadata",
+          "requiredPermissions": [
+            "OAuth bearer access to required SuccessFactors/Learning OData services",
+            "learning-history/competency scopes only where needed"
+          ],
+          "dataAvailableOrExpected": [
+            "employee/organisation data",
+            "learning history and completion dates/status",
+            "learning item revisions",
+            "competency assessments/mastery levels",
+            "certification links where exposed"
+          ],
+          "wfmObjects": [
+            "worker",
+            "organisation-unit",
+            "skill",
+            "qualification",
+            "training-completion",
+            "competency",
+            "eligibility-rule"
+          ],
+          "automationOpportunities": [
+            "remove scheduling eligibility when required training expires or changes revision",
+            "restore eligibility when verified completion arrives",
+            "assign/recommend retraining after engineering or safety change; write only after separate proof"
+          ],
+          "customerValue": [
+            "skills-based scheduling",
+            "compliance automation",
+            "fewer unqualified assignments",
+            "faster qualification reconciliation"
+          ],
+          "savingsHypotheses": [
+            "reduce manual training checks",
+            "avoid production disruption from missing qualifications",
+            "reduce compliance administration"
+          ],
+          "dataGaps": [
+            "customer learning item taxonomy must map to WFM skills/roles",
+            "learning write-back has documented limits and permissions"
+          ],
+          "constraintsRisks": [
+            "learning-event writes have call/array limits and do not support e-signatures or attachments",
+            "training history is qualification evidence only when customer policy maps it to a role/skill requirement"
+          ]
+        }
+      }
+    },
+    {
+      "id": "infor-workforce-management",
+      "patch": {
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://docs.infor.com/wfm/2026/en-us/wfmclolh/api_config_cloud/jlp1696352204318.html",
+          "requiredPermissions": [
+            "ION API authorised app with Infor-WFMPublic or required suite scope",
+            "team hierarchy limited to required employees",
+            "View/GET-only API Suite permission during discovery"
+          ],
+          "dataAvailableOrExpected": [
+            "employees",
+            "employee schedule details",
+            "clock/reader-group data where WFM Clocks is used",
+            "configured public API resources documented by tenant Swagger/OpenAPI"
+          ],
+          "wfmObjects": [
+            "worker",
+            "shift",
+            "time-event",
+            "availability",
+            "clock-device"
+          ],
+          "automationOpportunities": [
+            "schedule/time coexistence import",
+            "clock estate migration/reconciliation",
+            "employee/schedule delta ingestion"
+          ],
+          "customerValue": [
+            "faster migration from Infor WFM",
+            "lower implementation effort",
+            "payroll/time comparison during parallel run"
+          ],
+          "savingsHypotheses": [
+            "reduce manual migration and parallel-run reconciliation",
+            "reduce duplicate clock/time administration"
+          ],
+          "dataGaps": [
+            "available API suites and versions depend on deployment/configuration",
+            "team hierarchy/security determines visible employees"
+          ],
+          "constraintsRisks": [
+            "cloud and on-prem setup differ",
+            "multi-tenant customers may require Cloud Ops configuration",
+            "GET and POST permissions are distinct and WFM should request View only initially"
+          ]
+        }
+      }
+    }
+  ],
+  "systems": []
+}

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-20",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "sap-fieldglass",
+      "patch": {
+        "protocols": ["SOAP", "SFTP", "OData"],
+        "auth": "fieldglass-configuration-manager-or-webservice-license-key",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.sap.com/docs/SAP_Fieldglass",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": false,
+        "connectionRoutes": [
+          {"type":"SOAP","direction":"download-preferred","endpointPattern":"https://[CompanyCode].[datacenter].fieldglass.cloud.sap/ws2/services/connectorn","authentication":"username-and-license-key","notes":"WSDL-defined connector invocation; production, test and sandbox endpoint patterns are provider-documented."},
+          {"type":"SFTP","direction":"subscription-push-or-pull","authentication":"customer-configured-endpoint","notes":"Configuration Manager supports scheduled connector subscriptions against customer-managed SFTP endpoints."},
+          {"type":"OData","direction":"customer-configured-endpoint","authentication":"tenant-configured","notes":"Configuration Manager exposes OData as an endpoint category; exact objects and auth remain tenant-specific until authenticated proof."}
+        ],
+        "dataObjects": ["external-workers","worker-profiles","work-orders","statements-of-work-workers","cost-centres","task-codes","rate-categories-and-uom","time-sheets","expense-sheets","suppliers","invoices"],
+        "stableIds": ["Worker ID","Person ID","Job Seeker ID","connector-specific work-order and company identifiers"],
+        "readCapability": "Provider supports download connectors over web services and subscription/file routes. WFM remains read-only.",
+        "writeCapability": "Provider supports upload connectors, including time-sheet and work-order mutations, but all Fieldglass mutations remain disabled in WFM.",
+        "freshnessLatency": "Connector/schedule dependent. Delta worker downloads can use provider-maintained Last Run Date/history; subscriptions may be scheduled multiple times depending customer configuration.",
+        "permissions": ["Company integration setting must be enabled for the chosen connector.","User role requires Upload Data / Download Data permissions where documented.","Dedicated least-privilege integration identity required before authentication evidence can advance."],
+        "paginationDeltaEventsFilesQueues": {"pagination":"Batch connector semantics rather than one universal page contract; verify per connector.","delta":"Some downloads are delta/last-run based and can use selected Delta Compare fields/history.","events":"Publish/Subscribe is a Configuration Manager endpoint category but is not treated as a proven exactly-once event source.","files":"CSV/XML and connector-specific formats over web service or SFTP subscription.","queues":"No generic queue contract claimed."},
+        "deploymentVariants": ["SAP Fieldglass cloud production","test","base sandbox","premium sandbox"],
+        "customFields": "Download connectors can include customer-selected custom fields, often appended after native columns; schema fingerprint must therefore be connector-and-tenant scoped.",
+        "regionalApiVersions": "Endpoints are data-centre specific. Connector versions include API, API-A, BULK and DELTA variants depending connector; preserve company, datacentre, connector and version in lineage/checkpoints.",
+        "rateLimits": "No single public universal rate-limit contract verified; measure in authorised tenant and obey connector-specific limits.",
+        "failureModes": ["web-service transport succeeds but asynchronous upload processing later fails at record level","missed or partial file while provider Last Run Date advances","custom-field/column layout drift","duplicate or multi-row worker records across cost centre/task/rate dimensions","stale delta-history or reset/truncation causing replay/full download","regional endpoint or credential misrouting"],
+        "reconciliation": "Maintain a WFM-owned run manifest, checksum/schema evidence, scoped watermark and overlap/backfill policy. Never advance a watermark on partial/corrupt transfer and never infer deletion from a delta feed.",
+        "schemaDrift": "Fingerprint each connector/version/custom-field layout; quarantine incompatible column/type drift until remapped.",
+        "retriesReconnect": "Retry read/download operations idempotently with bounded backoff; preserve prior watermark until integrity/reconciliation completes.",
+        "evidenceUrl": "https://help.sap.com/docs/SAP_FIELDGLASS_INTEGRATION/19bd369173524cacb58b6a2b0ca91bab/1ea2c42f418e4f88b875fe9cfb93bff4.html",
+        "evidenceNote": "SAP documents Fieldglass WSDL web-service connector invocation, username/license-key auth, production/test/sandbox endpoints, SFTP and OData endpoint categories, delta worker downloads, custom fields and connector-specific permissions. No sandbox or tenant authentication has been performed.",
+        "valueReview": {"wfmObjects":["worker","employment","time-event","organisation-unit","labour-cost","agency-assignment","agency-rate","supplier"],"customerValue":["reduce agency and contingent-labour overspend","compare planned versus approved contingent hours and rates","detect supplier/rate/time exceptions before payroll or invoice reconciliation","accelerate contingent-worker onboarding/offboarding and site allocation"]},
+        "causalOutcomeReadiness": "Preserve worker/work-order/supplier/time-sheet identifiers plus effective timestamps so recommendations about agency reduction can later be compared with staffing, overtime, throughput and cost outcomes without treating correlation as causation.",
+        "nextBuildAction": "Use an authorised Fieldglass test/sandbox tenant to prove a download-only connector identity, real worker/work-order/time-sheet reads, delta replay, custom-field drift, datacentre scoping and failed-transfer recovery; keep all uploads denied."
+      }
+    }
+  ],
+  "systems": []
+}

@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "name": "VECTOR_PROOF_LANE_INDEPENDENCE_V1",
+  "principle": "Development and testing continue through another executable lane when any CI or hosting provider is unavailable. Provider degradation never counts as product PASS or FAIL.",
+  "states": {
+    "providerUnavailable": "PROVIDER_DEGRADED",
+    "noRunner": "PROVIDER_DEGRADED",
+    "skipped": "NO_PROOF",
+    "productGateFailure": "PRODUCT_FAILURE",
+    "exactPass": "PASS"
+  },
+  "rules": {
+    "neverSkipTestsToUnblock": true,
+    "skippedNeverCountsAsPass": true,
+    "noRunnerNeverCountsAsProductFailure": true,
+    "providerFailureNeverCountsAsPass": true,
+    "exactSourceShaRequired": true,
+    "immutableEvidenceRequired": true,
+    "developmentContinuesIfAnyExecutableLaneExists": true,
+    "productionPromotionRequiresIndependentProviders": 2,
+    "noIdleWaitAllowed": true,
+    "simulateAheadOnEveryPendingDependency": true,
+    "predictQueueSaturationBeforeBlock": true,
+    "provisionEquivalentLaneBeforeSaturation": true,
+    "fixedLaneLimit": false,
+    "fixedWorkerLimit": false,
+    "fixedManagerLimit": false,
+    "failedLaneMustNotBlockHealthyLanes": true,
+    "simulationNeverCountsAsProductionProof": true,
+    "weakerEvidenceMayNotSubstitute": true,
+    "proofDeploysRequireExplicitFreezeTrigger": true,
+    "preFreezeSimulationRequired": true,
+    "sharedFailureDomainNeverCountsAsIndependent": true,
+    "fixedReadinessWindowsForbidden": true,
+    "liveRuntimeContractRequiredBeforeLaneAdmission": true,
+    "confirmedFailuresBecomeRegressionRules": true,
+    "manualCandidateShaVariableNeverAuthoritative": true,
+    "minimalFreezeFanoutRequired": true,
+    "overflowLanesOnDemandOnly": true,
+    "specialistProofOnDemandOnly": true,
+    "sameFailureDomainScaleRequiresMeasuredHeadroom": true,
+    "unknownFailureDomainHeadroomCannotTriggerOverflow": true,
+    "sameDomainThroughputNeverCountsAsIndependentResilience": true,
+    "sleepingLaneNeverCountsAsProof": true,
+    "domainPresenceNeverSubstitutesForReachability": true,
+    "outsideInEndpointReachabilityRequired": true,
+    "hostedListenMustBePublic": true,
+    "skippedOrSleepingDeploymentNeverAdmitted": true,
+    "proofReadinessMustReflectTerminalPass": true,
+    "proofObserversMustWaitForSemanticCondition": true,
+    "ambiguousProofLocatorsForbidden": true,
+    "canonicalCandidateMustContainRequiredCapabilities": true
+  },
+  "lanes": [
+    {
+      "id": "github-actions-ui",
+      "provider": "github-actions",
+      "class": "supplemental",
+      "exactSourceSha": true,
+      "requiredForDevelopment": false,
+      "requiredForPromotion": false,
+      "failureDomain": "github:repo:paulallen123/-manufacturing-wfm"
+    },
+    {
+      "id": "circleci-core",
+      "provider": "circleci",
+      "class": "source-proof",
+      "exactSourceSha": true,
+      "requiredForDevelopment": false,
+      "requiredForPromotion": true,
+      "failureDomain": "circleci:project:manufacturing-wfm"
+    },
+    {
+      "id": "circleci-runtime",
+      "provider": "circleci",
+      "class": "exact-image",
+      "exactSourceSha": true,
+      "requiredForDevelopment": false,
+      "requiredForPromotion": true,
+      "failureDomain": "circleci:project:manufacturing-wfm",
+      "runtimeContract": {
+        "requiredVariables": [],
+        "hostedModeRequired": false,
+        "healthcheckPath": "/api/health",
+        "readinessMode": "condition"
+      }
+    },
+    {
+      "id": "railway-forge-candidate",
+      "provider": "railway",
+      "class": "exact-image",
+      "exactSourceSha": true,
+      "watchPattern": "artifact/vector-proof-freeze.trigger",
+      "requiredForDevelopment": false,
+      "requiredForPromotion": true,
+      "triggerMode": "explicit-frozen-candidate",
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "runtimeContract": {
+        "requiredVariables": [
+          "WFM_DB",
+          "WFM_HOSTED_STAGING",
+          "WFM_PUBLIC_ORIGIN",
+          "WFM_STAGING_PASSWORD"
+        ],
+        "hostedModeRequired": true,
+        "healthcheckPath": "/api/health",
+        "readinessMode": "condition",
+        "stagingPasswordMinLength": 20,
+        "publicOriginHttpsRequired": true
+      }
+    },
+    {
+      "id": "railway-forge-current-proof",
+      "provider": "railway",
+      "class": "exact-image",
+      "exactSourceSha": true,
+      "watchPattern": "artifact/vector-proof-freeze.trigger",
+      "requiredForDevelopment": false,
+      "requiredForPromotion": true,
+      "triggerMode": "explicit-frozen-candidate",
+      "failureDomain": "railway:workspace:e70c27e3-38a3-47d9-acce-db6029d9f2ac",
+      "runtimeContract": {
+        "requiredVariables": [
+          "WFM_DB",
+          "WFM_HOSTED_STAGING",
+          "WFM_PUBLIC_ORIGIN",
+          "WFM_STAGING_PASSWORD"
+        ],
+        "hostedModeRequired": true,
+        "healthcheckPath": "/api/health",
+        "readinessMode": "condition",
+        "stagingPasswordMinLength": 20,
+        "publicOriginHttpsRequired": true
+      }
+    }
+  ],
+  "fallbackOrder": [
+    "railway-forge-current-proof",
+    "circleci-runtime",
+    "railway-forge-candidate",
+    "circleci-core",
+    "github-actions-ui"
+  ],
+  "developmentRule": "Continue coding and proving without idle waits. A pending or broken provider changes only that lane state: simulate ahead, preserve exact candidate identity, continue all independent work, and route/provision equivalent lanes before saturation.",
+  "promotionRule": "Promote only when an exact-image PASS is SHA-bound and independent evidence exists from at least two providers; no skipped, stale, weaker, simulated, or provider-only success may substitute for required proof.",
+  "orchestration": {
+    "contract": "VECTOR_NO_IDLE_WAIT_V1",
+    "scope": [
+      "development",
+      "proof",
+      "release",
+      "implementation",
+      "integration",
+      "support",
+      "customer-operations"
+    ],
+    "idleWaitState": "FORBIDDEN",
+    "capacityMode": "ELASTIC",
+    "softwareImposedLaneLimit": null,
+    "softwareImposedWorkerLimit": null,
+    "softwareImposedManagerLimit": null,
+    "providerAndAccountLimitsStillApply": true,
+    "managerSpanTarget": 8,
+    "predict": {
+      "queueDepth": true,
+      "arrivalRate": true,
+      "drainRate": true,
+      "providerHealth": true,
+      "branchDrift": true,
+      "staleEvidence": true,
+      "likelyDownstreamFailures": true,
+      "runtimeVariableContract": true,
+      "failureDomainIndependence": true,
+      "startupReadinessCondition": true,
+      "endpointReachability": true,
+      "exactCandidateBinding": true,
+      "failureSignatureRegression": true
+    },
+    "onPending": [
+      "SIMULATE_SUCCESS_AND_FAILURE_PATHS",
+      "PREPARE_PREFLIGHT_AND_DOWNSTREAM_PROOF",
+      "PREPARE_FIX_AND_ROLLBACK",
+      "CONTINUE_ALL_INDEPENDENT_WORK",
+      "PROVISION_OR_ROUTE_EQUIVALENT_LANE"
+    ],
+    "onFailure": [
+      "ISOLATE_FAILED_LANE",
+      "PRESERVE_EVIDENCE",
+      "ASSIGN_REPAIR_WORK",
+      "KEEP_HEALTHY_LANES_RUNNING",
+      "RETEST_EXACT_CANDIDATE"
+    ],
+    "preFreezeAdmission": {
+      "required": true,
+      "simulatorContract": "VECTOR_PRE_FREEZE_SIMULATION_V1",
+      "rejectInadmissibleLanesBeforeFreeze": true,
+      "sharedFailureDomainsCountOnce": true,
+      "fixedReadinessWindowsForbidden": true,
+      "liveConfigMustMatchContract": true,
+      "confirmedFailuresBecomeRegressionRules": true,
+      "checks": [
+        "EXACT_CANDIDATE_BINDING",
+        "RUNTIME_VARIABLE_CONTRACT",
+        "HOSTED_LISTEN_MODE",
+        "PUBLIC_ORIGIN_CONTRACT",
+        "STAGING_CREDENTIAL_CONTRACT",
+        "HEALTHCHECK_CONTRACT",
+        "CONDITION_BASED_READINESS",
+        "ENDPOINT_REACHABILITY",
+        "FAILURE_DOMAIN_INDEPENDENCE",
+        "DEPLOYMENT_EXECUTION_STATE",
+        "SLEEP_DISABLED",
+        "OUTSIDE_IN_HEALTH_READY",
+        "TERMINAL_PROOF_READINESS",
+        "SEMANTIC_PROOF_OBSERVATION",
+        "UNIQUE_PROOF_LOCATORS",
+        "CANONICAL_CAPABILITY_COMPLETENESS"
+      ],
+      "candidateIdentity": {
+        "authoritativeSources": [
+          "immutable freeze receipt",
+          "deployment commit metadata",
+          "source-bound build evidence"
+        ],
+        "serviceEnvironmentVariableAuthoritative": false,
+        "exactMatchRequired": true
+      }
+    },
+    "triggerRouting": {
+      "canonicalFreezeTrigger": "artifact/vector-proof-freeze.trigger",
+      "canonicalAutoLanes": [
+        "railway-forge-candidate",
+        "railway-forge-current-proof"
+      ],
+      "reportingSpecialistTrigger": "artifact/vector-reporting-proof.trigger",
+      "overflowTriggers": {
+        "railway-overflow-a": "artifact/vector-proof-overflow-a.trigger",
+        "railway-overflow-b": "artifact/vector-proof-overflow-b.trigger",
+        "railway-overflow-c": "artifact/vector-proof-overflow-c.trigger"
+      },
+      "rule": "A frozen candidate starts only the minimum canonical proof set. Specialist and overflow lanes are activated only when simulation assigns them; existence of a lane never implies eager execution.",
+      "releaseAssaultTrigger": "artifact/vector-release-assault.trigger",
+      "releaseAssaultRule": "On explicit release-assault assignment, the two admissible exact-image core lanes plus reporting lanes may share one trigger commit so proof runs the same immutable source SHA. Any unreachable specialist lane is rejected before freeze; destructive recovery is executed on the healthy current-proof exact-image lane until the specialist recovery lane is independently admissible. This does not change normal minimal freeze fanout."
+    },
+    "capacityRouting": {
+      "sameDomainPurpose": "THROUGHPUT_ONLY",
+      "sameDomainRequiresMeasuredHeadroom": true,
+      "unknownHeadroomAction": "ROUTE_DISTINCT_FAILURE_DOMAIN",
+      "exhaustedHeadroomAction": "ROUTE_DISTINCT_FAILURE_DOMAIN",
+      "sameDomainCountsAsIndependentResilience": false,
+      "distinctFailureDomainPreferredForProviderQueueOrDegradation": true
+    }
+  }
+}

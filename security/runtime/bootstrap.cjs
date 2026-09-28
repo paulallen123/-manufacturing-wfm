@@ -7,11 +7,19 @@ const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
+const { enforceDurableState } = require('./durable-state-guard.cjs');
 const { serveRetiredPresentation } = require('./retired-presentation.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
+const { createTrainingDeliveryService } = require('/app/learning-runtime/training-delivery-service.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
+const { createDemandDecisionService } = require('/app/operations-runtime/demand-decision-service.cjs');
+const { createAutopilotExecutionEngine } = require('/app/operations-runtime/autopilot-execution-engine.cjs');
+const { createRealtimeEventService } = require('/app/operations-runtime/realtime-event-service.cjs');
+const { createSchedulingIntelligenceService } = require('/app/operations-runtime/scheduling-intelligence-service.cjs');
+const { createT9CustomerGuardian } = require('/app/operations-runtime/t9-customer-guardian.cjs');
+const { createVectorReportingService } = require('/app/reporting-runtime/vector-reporting-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -38,13 +46,32 @@ let integrationHub = null;
 let integrationHubInitError = null;
 let learningEngine = null;
 let learningEngineInitError = null;
+let trainingDeliveryService = null;
+let trainingDeliveryServiceInitError = null;
 let implementationEngine = null;
 let implementationEngineInitError = null;
 let lifecycleGuard = null;
 let lifecycleGuardInitError = null;
+let realtimeEventService = null;
+let realtimeEventServiceInitError = null;
+let autopilotExecutionEngine = null;
+let autopilotExecutionEngineInitError = null;
+let demandDecisionService = null;
+let demandDecisionServiceInitError = null;
+let schedulingIntelligenceService = null;
+let schedulingIntelligenceServiceInitError = null;
+let t9CustomerGuardian = null;
+let t9CustomerGuardianInitError = null;
+let reportingService = null;
+let reportingServiceInitError = null;
 
 if (hosted && !process.env.WFM_DB) {
   throw new Error('Hosted staging refuses to start without WFM_DB for identity survival enforcement.');
+}
+
+const durableState = enforceDurableState();
+if (durableState.required) {
+  console.log('WFM_DURABLE_STATE=PASS mount=' + durableState.mountPoint);
 }
 
 function requestPath(req) {
@@ -59,12 +86,30 @@ function learningPath(req) {
   return requestPath(req).startsWith('/api/learning/adaptive');
 }
 
+function trainingPath(req) {
+  return requestPath(req).startsWith('/api/learning/training');
+}
+
 function implementationPath(req) {
   return requestPath(req).startsWith('/api/implementation/autonomous');
 }
 
 function lifecyclePath(req) {
   return requestPath(req).startsWith('/api/workforce/lifecycle');
+}
+
+function autopilotPath(req) { return requestPath(req).startsWith('/api/operations/autopilot'); }
+
+function realtimePath(req) {
+  return requestPath(req).startsWith('/api/realtime');
+}
+
+function demandDecisionPath(req) {
+  return requestPath(req).startsWith('/api/operations/intelligence');
+}
+
+function reportingPath(req) {
+  return requestPath(req).startsWith('/api/reporting');
 }
 
 function stagingAccessPath(req) {
@@ -304,6 +349,11 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!trainingDeliveryService && !trainingDeliveryServiceInitError && process.env.WFM_DB) {
+    try { trainingDeliveryService = createTrainingDeliveryService({ dbPath: process.env.WFM_DB }); }
+    catch (error) { trainingDeliveryServiceInitError = error; }
+  }
+
   if (!implementationEngine && !implementationEngineInitError && process.env.WFM_DB) {
     try {
       implementationEngine = createOneDayEnterpriseEngine({
@@ -328,7 +378,60 @@ http.createServer = function guardedCreateServer(listener) {
     }
   }
 
+  if (!realtimeEventService && !realtimeEventServiceInitError && process.env.WFM_DB) {
+    try {
+      realtimeEventService = createRealtimeEventService({ dbPath: process.env.WFM_DB });
+    } catch (error) {
+      realtimeEventServiceInitError = error;
+    }
+  }
+
+  if (!autopilotExecutionEngine && !autopilotExecutionEngineInitError && process.env.WFM_DB) {
+    try { autopilotExecutionEngine=createAutopilotExecutionEngine({dbPath:process.env.WFM_DB,lifecycleAdapter:lifecycleGuard,publishEvent:realtimeEventService&&!realtimeEventServiceInitError?event=>realtimeEventService.publish(event):null}); } catch(error){ autopilotExecutionEngineInitError=error; }
+  }
+
+  if (!schedulingIntelligenceService && !schedulingIntelligenceServiceInitError && process.env.WFM_DB) {
+    try {
+      schedulingIntelligenceService = createSchedulingIntelligenceService({
+        dbPath: process.env.WFM_DB,
+        publishEvent: realtimeEventService && !realtimeEventServiceInitError ? event => realtimeEventService.publish(event) : null
+      });
+    } catch (error) {
+      schedulingIntelligenceServiceInitError = error;
+    }
+  }
+
+  if (!demandDecisionService && !demandDecisionServiceInitError && process.env.WFM_DB) {
+    try {
+      demandDecisionService = createDemandDecisionService({
+        dbPath: process.env.WFM_DB,
+        publishEvent: realtimeEventService && !realtimeEventServiceInitError ? event => realtimeEventService.publish(event) : null
+      });
+    } catch (error) {
+      demandDecisionServiceInitError = error;
+    }
+  }
+
+  if (!t9CustomerGuardian && !t9CustomerGuardianInitError && process.env.WFM_DB) {
+    try { t9CustomerGuardian = createT9CustomerGuardian({ dbPath: process.env.WFM_DB }); }
+    catch (error) { t9CustomerGuardianInitError = error; }
+  }
+
+  if (!reportingService && !reportingServiceInitError && process.env.WFM_DB) {
+    try { reportingService = createVectorReportingService({ dbPath: process.env.WFM_DB }); }
+    catch (error) { reportingServiceInitError = error; }
+  }
+
   return originalCreateServer.call(http, async (req, res) => {
+    const guardianStarted = process.hrtime.bigint();
+    if (t9CustomerGuardian && !t9CustomerGuardianInitError && typeof res.once === 'function') {
+      res.once('finish', () => {
+        const elapsedMs = Number(process.hrtime.bigint() - guardianStarted) / 1e6;
+        queueMicrotask(() => {
+          try { t9CustomerGuardian.observeHttpCompletion({ req, statusCode: res.statusCode, durationMs: elapsedMs }); } catch {}
+        });
+      });
+    }
     forceVectorUiFreshness(req, res);
     if (serveCanonicalVectorAsset(req, res)) return;
     if (await ownerAccessRecovery.handleRequest(req, res)) return;
@@ -350,6 +453,10 @@ http.createServer = function guardedCreateServer(listener) {
       }
     }
 
+    if (requestPath(req).startsWith('/api/operations/scheduling')) {
+      if (await routeOverlay(schedulingIntelligenceService, schedulingIntelligenceServiceInitError, res, 'Scheduling intelligence', req)) return;
+    }
+
     if (integrationPath(req)) {
       if (await routeOverlay(integrationHub, integrationHubInitError, res, 'Autonomous integration', req)) return;
     }
@@ -358,12 +465,30 @@ http.createServer = function guardedCreateServer(listener) {
       if (await routeOverlay(learningEngine, learningEngineInitError, res, 'Adaptive learning', req)) return;
     }
 
+    if (trainingPath(req)) {
+      if (await routeOverlay(trainingDeliveryService, trainingDeliveryServiceInitError, res, 'Training delivery', req)) return;
+    }
+
     if (implementationPath(req)) {
       if (await routeOverlay(implementationEngine, implementationEngineInitError, res, 'Autonomous implementation', req)) return;
     }
 
     if (lifecyclePath(req)) {
       if (await routeOverlay(lifecycleGuard, lifecycleGuardInitError, res, 'Workforce lifecycle', req)) return;
+    }
+
+    if (autopilotPath(req)) { if (await routeOverlay(autopilotExecutionEngine, autopilotExecutionEngineInitError, res, 'Autopilot execution', req)) return; }
+
+    if (realtimePath(req)) {
+      if (await routeOverlay(realtimeEventService, realtimeEventServiceInitError, res, 'Realtime events', req)) return;
+    }
+
+    if (demandDecisionPath(req)) {
+      if (await routeOverlay(demandDecisionService, demandDecisionServiceInitError, res, 'Decision intelligence', req)) return;
+    }
+
+    if (reportingPath(req)) {
+      if (await routeOverlay(reportingService, reportingServiceInitError, res, 'Reporting', req)) return;
     }
 
     return listener(req, res);

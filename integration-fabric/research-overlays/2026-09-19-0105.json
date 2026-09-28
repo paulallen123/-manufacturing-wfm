@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-19",
+  "purpose": "Authoritative SAP Fieldglass protocol/evidence upgrade. Spec-level only: no sandbox or tenant credentials were used and writes remain disabled.",
+  "protocolFamilies": [],
+  "overrides": [
+    {
+      "id": "sap-fieldglass",
+      "patch": {
+        "protocols": ["REST", "SCIM", "files"],
+        "auth": "oauth2-client-credentials-or-certificate",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://help.sap.com/doc/a5fdbd31ebe94832aef0eb79066a8087/cloud/en-US/SAPFieldglassRESTAPIIntegrationGeneralReferenceGuide.pdf",
+        "testLevel": "spec-verified",
+        "evidenceUrl": "https://help.sap.com/doc/a5fdbd31ebe94832aef0eb79066a8087/cloud/en-US/SAPFieldglassRESTAPIIntegrationGeneralReferenceGuide.pdf",
+        "evidenceNote": "SAP's 2026 Fieldglass REST API General Reference Guide documents authenticated GET/POST/PUT integration resources over HTTPS with OAuth 2.0, client credentials, certificate and SAML-based authentication options. It explicitly references Connector, Identity (SCIM) and Reporting APIs, with an optional x-ApplicationKey depending on tenant/API. SAP's connector library also documents active-worker downloads and customer-specific contingent-workforce configurations such as custom fields, qualifications, rates and accounting mappings. No SAP Fieldglass sandbox or tenant authentication was attempted.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://help.sap.com/doc/a5fdbd31ebe94832aef0eb79066a8087/cloud/en-US/SAPFieldglassRESTAPIIntegrationGeneralReferenceGuide.pdf",
+          "requiredPermissions": ["OAuth 2.0 client scoped to required Fieldglass REST/connector/reporting reads", "optional tenant/application key only where the selected API requires it", "worker/download permissions limited to required contingent-workforce data", "PII, rates and accounting data minimised to the implemented WFM workflow", "no upload, approval or worker mutation permission during discovery"],
+          "dataAvailableOrExpected": ["active and contingent worker records exposed by authorised downloads/APIs", "worker status and assignment context", "custom fields and qualifications where configured", "rates and cost/accounting references where authorised", "integration/reporting metadata", "identity records through Fieldglass identity/SCIM integration where enabled"],
+          "wfmObjects": ["worker", "employment", "external-worker", "skill", "labour-cost", "cost-centre", "site", "integration-event"],
+          "automationOpportunities": ["contingent-worker joiner/mover/leaver synchronisation", "agency-labour availability and cost visibility", "qualification-aware external-worker scheduling", "approved worker/time/cost lifecycle write-back only after separate sandbox and write-roundtrip certification", "integration exception monitoring through audit/reporting data"],
+          "customerValue": ["agency-labour reduction", "faster contingent-worker onboarding", "external-labour compliance", "better agency and worker cost attribution", "less duplicate worker administration", "improved visibility of contingent workforce alongside employed labour"],
+          "savingsHypotheses": ["reduce manual contingent-worker setup and reconciliation", "reduce avoidable agency spend by exposing worker/rate/qualification context to planning", "reduce compliance risk from incomplete qualification or worker-status data", "reduce payroll/invoice exceptions caused by inconsistent external-worker master data"],
+          "dataGaps": ["enabled connector/API resources and fields vary by buyer configuration", "custom fields, qualifications, security IDs, rates and accounting mappings are customer-specific", "some Fieldglass integrations remain file/connector based rather than a single normalized REST object model"],
+          "constraintsRisks": ["REST resources support POST/PUT as well as GET, so read-only access must be enforced by permission and connector design", "worker/rate/accounting data is sensitive and requires narrow retention and logging", "OAuth tokens can have varying API access and must not be treated as least privilege by default", "tenant region/environment URLs and test-environment availability vary", "duplicate worker records can arise from customer segmentation/configuration and require deterministic identity reconciliation"],
+          "nextDevelopmentAction": "Build a Fieldglass thin adapter over the existing REST/SCIM/file profiles, starting with OAuth token acquisition and read-only connector/reporting discovery; add canonical external-worker, qualification and rate mappings plus duplicate/segmentation handling, then seek an authorised SAP Fieldglass test tenant for authenticated read-roundtrip proof."
+        }
+      }
+    }
+  ],
+  "systems": []
+}

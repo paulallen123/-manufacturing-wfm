@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/playwright:v1.63.0-noble
+WORKDIR /worker
+COPY learning/video-worker/package.json ./package.json
+RUN npm install --omit=dev --ignore-scripts
+COPY learning/video-worker/runner.mjs ./runner.mjs
+RUN mkdir -p /worker/runtime /data/training-output \
+ && chown -R pwuser:pwuser /data
+COPY learning/runtime/training-workflow-manifest.cjs /worker/runtime/training-workflow-manifest.cjs
+COPY learning/runtime/training-video-contract.cjs /worker/runtime/training-video-contract.cjs
+USER pwuser
+ENV NODE_ENV=production
+ENV TRAINING_OUTPUT_ROOT=/data/training-output
+EXPOSE 3000
+CMD ["node","runner.mjs"]

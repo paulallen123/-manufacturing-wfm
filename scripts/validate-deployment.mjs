@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 
 const manifest = JSON.parse(fs.readFileSync('DEPLOYMENT_MANIFEST.json', 'utf8'));
 const baseline = JSON.parse(fs.readFileSync('resilience/security-baseline.json', 'utf8'));
@@ -64,6 +65,35 @@ assert.ok(fs.existsSync(artifactPath), 'Sealed runtime artifact is missing from 
 const artifactBytes = fs.readFileSync(artifactPath);
 assert.equal(sha256(artifactBytes), manifest.runtime_sha256, 'Private repository runtime artifact checksum mismatch.');
 assert.equal(artifactBytes.length, manifest.runtime_size_bytes, 'Private repository runtime artifact size mismatch.');
+
+// Match the deployment record to the actual files inside the sealed package.
+// A valid outer checksum does not make stale inner provenance claims true.
+const archiveFile = name => execFileSync('tar', ['-xOzf', artifactPath, `./${name}`], {
+  maxBuffer: 4 * 1024 * 1024
+});
+const runtimeManifestBytes = archiveFile('RUNTIME_MANIFEST.json');
+const packageManifestBytes = archiveFile('PACKAGE_MANIFEST_SHA256.json');
+assert.equal(sha256(runtimeManifestBytes), manifest.runtime_manifest_sha256, 'Runtime file manifest differs from the sealed package.');
+assert.equal(sha256(packageManifestBytes), manifest.runtime_package_manifest_sha256, 'Runtime package manifest differs from the sealed package.');
+const packageManifest = JSON.parse(packageManifestBytes);
+assert.equal(packageManifest.files?.['RUNTIME_MANIFEST.json'], manifest.runtime_manifest_sha256, 'Package file index disagrees with the runtime file manifest.');
+const buildInfo = JSON.parse(archiveFile('BUILD_INFO.json'));
+const hostedBuildInfo = JSON.parse(archiveFile('BUILD_INFO_HOSTED.json'));
+const stagingProvenance = JSON.parse(archiveFile('STAGING_PROVENANCE.json'));
+for (const [key, actual] of [
+  ['BUILD_INFO.json source', buildInfo.source_content_sha256],
+  ['BUILD_INFO_HOSTED.json source', hostedBuildInfo.runtimeSourceContentSha256],
+  ['STAGING_PROVENANCE.json source', stagingProvenance.runtimeSourceContentSha256]
+]) assert.equal(actual, manifest.runtime_source_content_sha256, `${key} differs from deployment source identity.`);
+assert.equal(buildInfo.release, manifest.candidate, 'Sealed build release differs from deployment candidate.');
+assert.equal(hostedBuildInfo.release, manifest.candidate, 'Sealed hosted release differs from deployment candidate.');
+assert.equal(stagingProvenance.release, manifest.candidate, 'Sealed provenance release differs from deployment candidate.');
+if (hostedBuildInfo.fullSourceRegressionPending || stagingProvenance.runtimeRepairVerification?.fullSourceRegressionPending) {
+  assert.equal(manifest.tests?.current_full_source_regression, 'PENDING', 'Current full-source regression must remain pending.');
+}
+if (hostedBuildInfo.hostedAcceptancePending || stagingProvenance.runtimeRepairVerification?.hostedAcceptancePending) {
+  assert.equal(manifest.tests?.current_hosted_acceptance, 'PENDING', 'Current hosted acceptance must remain pending.');
+}
 
 const dockerRuntimeSha = dockerfile.match(/echo\s+"([a-f0-9]{64})\s+\/tmp\/runtime\.tgz"/i)?.[1];
 assert.equal(dockerRuntimeSha, manifest.runtime_sha256, 'Docker runtime checksum must equal the deployment manifest checksum.');

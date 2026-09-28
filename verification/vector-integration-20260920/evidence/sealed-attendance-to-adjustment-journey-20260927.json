@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T01:28:37.649Z",
+  "status": "PASS",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "candidateSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b",
+  "scope": "Exact sealed runtime; local synthetic authenticated HTTP and SQLite only. No hosted browser, provider, customer or production proof.",
+  "node": "v24.19.0",
+  "exactNode22Executed": false,
+  "artifact": {
+    "path": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "checks": [
+    "seven attendance exceptions resolved through authenticated rules",
+    "four teams signed only after category and employee checks",
+    "172-row payroll export reconciled with an integrity checksum",
+    "post-release adjustment used independently approved exact monetary provenance",
+    "both exports remained tenant-isolated",
+    "fresh login after safe restart returned both exact exports and adjustment audit"
+  ],
+  "attendanceExceptionsResolved": 7,
+  "teamsSigned": 4,
+  "payrollExport": {
+    "id": "B-250c4aee3cd80c96",
+    "rows": 172,
+    "sha256": "0010d606534e88c7d8c1ec416f220fa235bf01a4441bd00fd767805e8236ec28",
+    "checksumHeaderMatched": true
+  },
+  "adjustmentExport": {
+    "id": "B-a373930110f1a268",
+    "rows": 1,
+    "sha256": "ed5f335ef43174eeaa1e36413b5f61e62c7fc950833fbd478c758cf557d222de",
+    "schema": "reviewed-pay-adjustment-v2-minor-units",
+    "currency": "GBP",
+    "minorUnitExponent": 2,
+    "currencySource": "reviewed_cost_evidence",
+    "independentlyApproved": true,
+    "checksumHeaderMatched": true
+  },
+  "claims": {
+    "continuousAttendanceToAdjustmentJourney": "BUILT",
+    "exactNode22DockerAdmission": "BLOCKED",
+    "hostedBrowserJourney": "BLOCKED",
+    "providerReconciliation": "BLOCKED",
+    "customerRelease": "BLOCKED"
+  }
+}

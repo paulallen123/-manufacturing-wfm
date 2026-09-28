@@ -202,6 +202,11 @@ function createWorkforceLifecycleGuard(options={}){
     }));
   }
 
+  function applyTrustedEvent(input={}){
+    const tenant=compact(input.tenant,120),eventKey=compact(input.eventKey,160);if(!tenant||!eventKey)throw new Error('tenant and eventKey are required.');const existing=byKey.get(tenant,eventKey);if(existing)return{event:publicEvent(existing),decision:JSON.parse(existing.detail_json),idempotent:true};const source=input.event&&typeof input.event==='object'?input.event:{},event={kind:source.kind,employeeId:source.employeeId,sourceKey:source.sourceKey,effectiveAt:source.effectiveAt,payload:source.payload},decision=evaluateEvent(priorForTenant(tenant),event),id='wf-'+sha256(tenant+'|'+eventKey).slice(0,32),effectiveAtMs=toMs(event.effectiveAt)??Date.now();insert.run(id,tenant,eventKey,compact(event.kind,40).toUpperCase(),decision.status,compact(event.employeeId,120)||null,compact(event.sourceKey,120)||null,effectiveAtMs,JSON.stringify(event.payload&&typeof event.payload==='object'?event.payload:{}),decision.reasonCode||null,JSON.stringify(decision),nowIso());const row=byKey.get(tenant,eventKey);return{event:publicEvent(row),decision,idempotent:false};
+  }
+  function getTrustedEvent(input={}){const tenant=compact(input.tenant,120),eventKey=compact(input.eventKey,160),row=tenant&&eventKey?byKey.get(tenant,eventKey):null;return row?publicEvent(row):null;}
+
   async function ingest(req,res){
     const body=await readJson(req);
     const tenant=compact(body.tenant,120), eventKey=compact(body.eventKey,160);
@@ -256,7 +261,7 @@ function createWorkforceLifecycleGuard(options={}){
     }
   }
 
-  return {handleRequest,close(){try{db.close();}catch{}}};
+  return {handleRequest,applyTrustedEvent,getTrustedEvent,close(){try{db.close();}catch{}}};
 }
 
 module.exports={createWorkforceLifecycleGuard,evaluateEvent,EVENT_KINDS};

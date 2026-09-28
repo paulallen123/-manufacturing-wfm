@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T04:27:08Z",
+  "status": "BLOCKED",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "headBeforeEvidenceCommit": "d849a1d63642467d4b5ece22c2e2fb9f041f253f",
+  "candidateSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b",
+  "scope": "Exact sealed runtime; local synthetic authenticated HTTP and SQLite only. No hosted, provider, customer, production or real payroll mutation.",
+  "runtime": {
+    "node": "v24.19.0",
+    "exactNode22DockerExecuted": false,
+    "artifactPath": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "artifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "attack": {
+    "name": "post-approval consequential-state substitution",
+    "originalGrossMinor": 900,
+    "substitutedGrossMinor": 123456,
+    "stateVersionChangedByAttack": false,
+    "approvalRepeatedAfterAttack": false,
+    "runtimeHealthyAfterSubstitution": true,
+    "exportStatus": 200,
+    "exportedRows": 1,
+    "substitutedValueReachedExport": true,
+    "contained": false
+  },
+  "test": {
+    "path": "tests/payroll-approved-state-substitution.adversarial.test.cjs",
+    "localSha256": "4e6761929edc37a02f9947ea0f264eefdd99339494d99494ab605db320f3fb0d",
+    "localGitBlobSha": "b4eac81350b642298226dbfe63f496fd31557054",
+    "command": "node --test tests/payroll-approved-state-substitution.adversarial.test.cjs",
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "failure": "An adjustment approved at 900 GBP minor units was changed to 123456 inside persisted tenant state; the runtime restarted healthy and exported the substituted amount with HTTP 200 without reapproval."
+  },
+  "rootCause": [
+    "Approval validates current monetary field shape but records no digest binding the reviewer decision to the exact proposal, calculated amount, source batches and evidence.",
+    "Export validates currency, exponent and integer consistency but does not recompute the amount from the reviewed proposal or verify an approval seal.",
+    "The generated CSV checksum protects only the post-substitution CSV bytes and therefore cannot prove that the exported value is the value the reviewer approved."
+  ],
+  "releaseGateChange": "Post-approval payroll-state integrity is BLOCKED. Structurally valid persisted-state substitution can change an approved amount and reach an integrity-checksummed export without renewed authority.",
+  "requiredRepair": [
+    "At proposal and approval, bind the exact calculation inputs, source-record fingerprint, source batch identities, amount, currency provenance and reviewer decision into an independently verifiable digest or signed/append-only receipt.",
+    "Before readiness, payroll dashboard, export creation and export download, verify the approved state against that receipt and deterministic recalculation.",
+    "Fail closed and require reconciliation/reapproval on any mismatch.",
+    "Retest changed amount, proposal, source batch, reviewer identity and audit order across restart and known-good restore."
+  ],
+  "claims": {
+    "localExactArtifactApprovalIntegrity": "BLOCKED",
+    "localExactArtifactPayrollExportIntegrity": "BLOCKED",
+    "hostedBrowserJourney": "BLOCKED",
+    "customerRelease": "BLOCKED",
+    "threeMinuteMarketingVideo": "BLOCKED"
+  }
+}

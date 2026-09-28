@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T03:27:28Z",
+  "status": "BLOCKED",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 225,
+  "headBeforeEvidenceCommit": "135d2b06b8d0ac44f4506e94eedafb7ec665846b",
+  "candidateSourceSha": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b",
+  "scope": "Exact sealed runtime; local synthetic authenticated HTTP and SQLite only. No hosted, provider, customer, production or real payroll mutation.",
+  "runtime": {
+    "node": "v24.19.0",
+    "exactNode22DockerExecuted": false,
+    "artifactPath": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "artifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "attack": {
+    "name": "lost-response replay of a consequential payroll proposal",
+    "idempotencyKey": "payroll-proposal-replay-0001",
+    "sameCommand": true,
+    "samePayload": true,
+    "clientRefreshedVersionBeforeRetry": true,
+    "firstAdjustmentId": "PADJ-1",
+    "retryIdentifiedAsReplay": false,
+    "retryAdjustmentId": "PADJ-2",
+    "matchingAuthoritativeAdjustments": 2,
+    "bothIndependentlyApproved": true,
+    "exportedRows": 2,
+    "expectedExportedRows": 1
+  },
+  "test": {
+    "path": "tests/payroll-command-idempotency.adversarial.test.cjs",
+    "localSha256": "83038db33c8bd1de7ca62b310f1aa9739b506b8273da6bde41b368c1229be865",
+    "localGitBlobSha": "e3a58395fa62ee5412c814b4a0d39ba2722ce87a",
+    "command": "node --test tests/payroll-command-idempotency.adversarial.test.cjs",
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "failure": "The exact retry was accepted as PADJ-2 rather than replaying PADJ-1; both adjustments were independently approvable and a single export contained two rows."
+  },
+  "rootCause": "The generic /api/command path accepts an idempotencyKey field but does not bind or replay consequential payroll mutations by tenant, actor, key and canonical payload digest.",
+  "releaseGateChange": "Consequential payroll command replay safety is BLOCKED. Network retry after an ambiguous response can duplicate an adjustment and double its export rows.",
+  "requiredRepair": [
+    "Require a valid idempotency key for consequential payroll writes.",
+    "Persist a tenant-and-actor-scoped canonical command/payload digest and immutable result in the same transaction as the mutation.",
+    "Return the original result for an exact replay without incrementing version or adding audit/export state.",
+    "Reject reuse of the key with a different command or payload.",
+    "Retest proposal, approval and export retries, including concurrent requests and restart durability."
+  ],
+  "claims": {
+    "localExactArtifactPayrollReplaySafety": "BLOCKED",
+    "hostedBrowserJourney": "BLOCKED",
+    "customerRelease": "BLOCKED",
+    "threeMinuteMarketingVideo": "BLOCKED"
+  }
+}

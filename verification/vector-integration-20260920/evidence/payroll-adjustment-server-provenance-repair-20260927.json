@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-26T23:50:06Z",
+  "claimUnderTest": "An authenticated post-release payroll adjustment may be proposed, approved and exported only when the exact integer amount is bound to authoritative currency evidence and rechecked at each server boundary.",
+  "release": {
+    "pullRequest": 225,
+    "repositoryParentCommit": "a35887c29cd5db438cc66bc54d1c1a4f2d42aa39",
+    "artifactPath": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "artifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "packageManifestSha256": "a9fdf12c7283ed580b6883f57de7770fcbc868eda68bb1208370afb0bded4d12",
+    "runtimeSourceContentSha256": "4a09eaaf4bd7ea1e57a282a7c8b9791f2f89847f6b2f764d410f2258171b4956",
+    "extractedPayrollControlSha256": "827e4b9d2cccf9f740eab364ff8b9568dd048c2b5a592ef454f25bb09559fa90",
+    "adversarialTestSha256": "1068b2bc9c91154170a7864f46ec97be74bc4a392aed7d5d8e79e7e62ea88bc9",
+    "authenticatedHttpProofSha256": "bfcaf4cc7c1bccea3d24d6bb0603d3963880708da50af154fa3a2872959bab08",
+    "runtime": "Node v24.19.0"
+  },
+  "scope": {
+    "environment": "independent local execution of the newly sealed runtime candidate",
+    "data": "fictional synthetic fixture only",
+    "authenticatedHttp": true,
+    "sqlitePersistence": true,
+    "safeRestartReadback": true,
+    "hosted": false,
+    "customerData": false,
+    "customerPayrollMutation": false,
+    "deploymentMutation": false
+  },
+  "redGreen": {
+    "originalArtifact": {
+      "focusedTests": 6,
+      "passed": 1,
+      "failed": 5,
+      "authenticatedHttpProofExit": 1,
+      "firstFailure": "stored adjustment must carry its currency"
+    },
+    "repairedArtifact": {
+      "focusedTests": 6,
+      "passed": 6,
+      "failed": 0,
+      "authenticatedHttpProofExit": 0
+    }
+  },
+  "verifiedResult": {
+    "proposal": {
+      "currency": "GBP",
+      "minorUnitExponent": 2,
+      "currencySource": "reviewed_cost_evidence",
+      "grossMinorDelta": 900
+    },
+    "approval": {
+      "separateReviewer": true,
+      "moneyEvidenceRechecked": true
+    },
+    "export": {
+      "schema": "reviewed-pay-adjustment-v2-minor-units",
+      "integerMinorUnits": 900,
+      "storedAndExportedTotalsMatch": true,
+      "downloadChecksumMatches": true
+    },
+    "persistence": {
+      "savedToSqlite": true,
+      "safeRestartReadback": true,
+      "auditTypes": [
+        "payroll-post-release-adjustment-proposed",
+        "payroll-post-release-adjustment-approved",
+        "payroll-adjustment-batch-released"
+      ]
+    },
+    "packageIntegrity": {
+      "buildIdentityVerified": true,
+      "packageManifestVerified": true,
+      "runtimeManifestMatchesExecutableSource": true,
+      "javascriptSyntaxFilesChecked": 102
+    }
+  },
+  "gateDelta": {
+    "clientPayrollAdjustmentCurrencyAuthority": "BUILT",
+    "serverPayrollAdjustmentCurrencyProvenance": "BUILT",
+    "serverPayrollAdjustmentMinorUnitIntegrity": "BUILT",
+    "serverPayrollAdjustmentExportReconciliation": "BUILT",
+    "authenticatedLocalSqliteRestartJourney": "BUILT",
+    "globalMultiCurrencyPayrollAdjustment": "BLOCKED",
+    "hostedExactCandidateAcceptance": "BLOCKED",
+    "customerRelease": "BLOCKED"
+  },
+  "remainingProof": "Run the exact committed artifact through the approved hosted candidate with authenticated browser and server evidence, preserve and restore-check the hosted database, and repeat the proposal, independent approval, export, audit and restart readback before any PROVEN claim."
+}

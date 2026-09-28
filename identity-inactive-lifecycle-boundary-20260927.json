@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T08:31:18Z",
+  "claimState": "BLOCKED",
+  "claim": "Enterprise identity lifecycle deprovisioning",
+  "candidate": {
+    "pullRequest": 225,
+    "headAtSelection": "c62727c1b7363fc475e0a96843112e983c6d7fc0",
+    "branch": "feature/vector-eow-convergence-20260925",
+    "sealedSourceCommit": "4bd3ebcd51809d5190187b47a87e7f88f5beec0b",
+    "sealedArtifact": "sealed-runtime-4bd3.tar.gz",
+    "sealedArtifactSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "execution": {
+    "environment": "local synthetic connector + authenticated HTTP + SQLite",
+    "node": "v24.19.0",
+    "test": "identity-inactive-lifecycle-boundary.proof.test.cjs",
+    "testSha256": "71c7284232d46a6d22e9bc8eb10f75a091c8a4980d319ca3adfcafe2e0401c44",
+    "runs": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0
+  },
+  "observed": {
+    "beforeInactiveSignal": {
+      "existingPayrollSessionHttpStatus": 200
+    },
+    "inactiveSignal": {
+      "ingestHttpStatus": 200,
+      "batchStatus": "staged",
+      "validRecords": 1,
+      "heldRecords": 0,
+      "canonicalStatus": "inactive",
+      "canonicalAuthority": "identity-reference-only",
+      "reviewedApplyHttpStatus": 501,
+      "appliedRecords": 0
+    },
+    "afterInactiveSignal": {
+      "existingPayrollSessionHttpStatus": 200,
+      "newPayrollLoginHttpStatus": 200
+    },
+    "afterControlledRestart": {
+      "existingPayrollSessionHttpStatus": 200,
+      "newPayrollLoginHttpStatus": 200
+    }
+  },
+  "interpretation": {
+    "safeBoundary": "The connector stages identity data for review and does not grant the external record authority to mutate a local user or sessions.",
+    "blockedCapability": "There is no reviewed identity application handler or local account/session enforcement path for enterprise deprovisioning.",
+    "notProven": [
+      "SSO or federation",
+      "authoritative IdP disable propagation",
+      "account-wide session revocation",
+      "multi-region revocation consistency",
+      "hosted/provider/customer enforcement"
+    ]
+  }
+}

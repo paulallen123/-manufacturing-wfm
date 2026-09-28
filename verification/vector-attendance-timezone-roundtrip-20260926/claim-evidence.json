@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "claim": "Site-local attendance editing preserves the exact source instant and remains unambiguous across daylight-saving transitions.",
+  "candidate": {
+    "repository": "paulallen123/-manufacturing-wfm",
+    "pullRequest": 225,
+    "sourceCommit": "612fffc835f67aa3e27d4722f5b7bac38adb5d86",
+    "operatingContextBlob": "3f2c9876a3a169d6039a0c453f1f6f7c79bf7bac",
+    "workflowBlob": "f9d05025e908bd4b83c74283989a28317bf5510f",
+    "testParentCommit": "46e92fd3f010e73278ccdfa255674023c5ffe578"
+  },
+  "executed": {
+    "command": "node --test tests/vector-attendance-timezone-roundtrip.adversarial.test.mjs",
+    "runtime": "Node v24.19.0",
+    "tests": 4,
+    "passed": 0,
+    "failed": 4,
+    "skipped": 0
+  },
+  "repairVerification": {
+    "status": "BUILT",
+    "verifiedCommit": "e4692ac8f5eb402f1b3ed2d9ea4857f771c53bc4",
+    "repairCommit": "903d35e952e682b58ebb0df68d1533481e57f1d9",
+    "operatingContextBlob": "e5127273345576dc649e79654629d20d31b0a79b",
+    "workflowBlob": "055fe7333009632f60894f17df8e707943a1ccdb",
+    "testBlob": "81c269742a1a2dcc9c5ba0276bdd245ef65a79c3",
+    "command": "node --test tests/vector-attendance-timezone-roundtrip.adversarial.test.mjs",
+    "runtime": "Node v24.19.0",
+    "tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "verifiedBehaviors": [
+      "unchanged Tokyo wall time preserves its exact source instant",
+      "both London fall-back occurrences preserve and explain their source UTC offsets",
+      "an edited ambiguous fall-back wall time is rejected before command",
+      "a non-authoritative operating context cannot open the editor",
+      "a nonexistent spring-forward wall time is rejected before command"
+    ],
+    "boundary": "Independent local source verification only; exact Node 22, packaged browser, server command validation, persistent state, audit, restart and payroll reconciliation were not executed."
+  },
+  "observations": [
+    {
+      "case": "unchanged Tokyo round trip",
+      "sourceInstant": "2026-12-31T23:30:00.000Z",
+      "renderedWallTime": "2027-01-01T08:30",
+      "submittedValue": "2027-01-01T08:30",
+      "requiredInvariant": "An unchanged edit must preserve the original source instant or submit explicit authoritative time-zone/offset evidence."
+    },
+    {
+      "case": "Europe/London fall-back overlap",
+      "firstInstant": "2026-10-25T00:30:00.000Z",
+      "secondInstant": "2026-10-25T01:30:00.000Z",
+      "firstRenderedValue": "2026-10-25T01:30",
+      "secondRenderedValue": "2026-10-25T01:30",
+      "requiredInvariant": "Distinct source instants must not collapse to an indistinguishable consequential edit value."
+    },
+    {
+      "case": "non-authoritative operating context",
+      "suppliedContext": {
+        "timeZone": "Asia/Tokyo",
+        "timeZoneSource": "operating_context",
+        "authoritative": false
+      },
+      "observedResult": "The consequential attendance editor opened instead of rejecting the display-only context.",
+      "requiredInvariant": "A source label cannot create authority. Consequential editing requires independently bound authoritative site and effective-dated time-zone evidence."
+    },
+    {
+      "case": "Europe/London spring-forward gap",
+      "submittedWallTime": "2026-03-29T01:30",
+      "observedResult": "The nonexistent local time reached the authenticated command boundary.",
+      "requiredInvariant": "A nonexistent local time must be rejected before any command or payroll-consequential mutation."
+    }
+  ],
+  "releaseGate": {
+    "attendanceClientTimeZoneRoundTrip": "BUILT",
+    "attendanceClientTimeZoneAuthority": "BUILT",
+    "attendanceServerTimeZoneRevalidation": "BLOCKED",
+    "attendancePackagedBrowserJourney": "BLOCKED",
+    "hostedProductReadiness": "BLOCKED",
+    "marketingVideo": "BLOCKED"
+  },
+  "claimBoundary": "This is source-level independent adversarial evidence. It does not prove the backend has mutated data, and no customer, payroll, provider, deployment, authentication, database, DNS or credential state was changed."
+}

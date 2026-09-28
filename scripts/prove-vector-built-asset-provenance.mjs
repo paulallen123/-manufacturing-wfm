@@ -23,7 +23,11 @@ export function composeExpectedVectorAssets({ repoRoot, baseCssPath }) {
     read(repoRoot, 'implementation/ui/implementation-journey.css'),
     Buffer.from(`\n/* ${marker} */\n`),
     read(repoRoot, 'ux-overlay/vector-shell.css'),
-    read(repoRoot, 'ux-overlay/vector-workflows.css')
+    read(repoRoot, 'ux-overlay/vector-workflows.css'),
+    Buffer.from('\n/* VECTOR_DEMAND_DECISION_INTELLIGENCE_BEGIN */\n'),
+    read(repoRoot, 'ux-overlay/vector-demand-intelligence.css'),
+    Buffer.from('\n/* VECTOR_REPORTING_UI_V1 */\n'),
+    read(repoRoot, 'reporting/ui/vector-reporting-ui.css')
   ]);
 
   const js = Buffer.concat([
@@ -32,8 +36,16 @@ export function composeExpectedVectorAssets({ repoRoot, baseCssPath }) {
     read(repoRoot, 'learning/ui/adaptive-coach.js'),
     Buffer.from('\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n'),
     read(repoRoot, 'implementation/ui/implementation-journey.js'),
+    Buffer.from('\n;/* VECTOR_OPERATING_CONTEXT_V1 */\n'),
+    read(repoRoot, 'ux-overlay/vector-operating-context.js'),
     Buffer.from(`\n;/* ${marker} */\n`),
-    read(repoRoot, 'ux-overlay/vector-shell.js')
+    read(repoRoot, 'ux-overlay/vector-shell.js'),
+    Buffer.from('\n;/* VECTOR_DEMAND_DECISION_INTELLIGENCE_BEGIN */\n'),
+    read(repoRoot, 'ux-overlay/vector-demand-intelligence.js'),
+    Buffer.from('\n;/* VECTOR_REALTIME_BEGIN */\n'),
+    read(repoRoot, 'ux-overlay/vector-realtime.js'),
+    Buffer.from('\n;/* VECTOR_REPORTING_UI_V1 */\n'),
+    read(repoRoot, 'reporting/ui/vector-reporting-ui.js')
   ]);
 
   return { js, css, workflows: read(repoRoot, 'ux-overlay/vector-workflows.js') };

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "slug": "self-evolving-customer-intelligence",
+  "outcome": "Vector learns from each customer's verified operational outcomes and product failures to improve recommendations, workflows, skills, automations and future product candidates without allowing learning memory or an LLM to directly grant itself production authority.",
+  "primaryRoles": [
+    "employee",
+    "manager",
+    "operations-manager",
+    "finance",
+    "implementation",
+    "support",
+    "product"
+  ],
+  "valueHypothesis": "A governed observe-evaluate-improve loop compounds customer value, reduces repeated support/implementation work, improves decision quality and shortens the time from discovered weakness to verified capability.",
+  "valueMetric": {
+    "name": "verified-improvement-delta",
+    "unit": "multi-objective",
+    "baselineSource": "versioned eval/outcome baseline",
+    "resultSource": "post-change holdout and customer outcome evidence"
+  },
+  "evidenceSources": [
+    "decision-and-outcome receipts",
+    "value attribution evidence",
+    "support and resilience incidents",
+    "integration health",
+    "user interaction friction",
+    "versioned agent traces and evals"
+  ],
+  "acceptanceCriteria": [
+    "Learning state cannot directly issue production execution authority.",
+    "Every candidate improvement is compared to a versioned baseline on holdout evaluations.",
+    "Every production-affecting promotion has an independent authority path and rollback.",
+    "A regression or customer failure can be converted into a persistent evaluation case.",
+    "A successful repeated pattern can become a versioned reusable skill only after validation.",
+    "Raw cross-tenant customer memory is never used as shared training context.",
+    "Product code changes are branch/PR/release-gated rather than edited directly in production."
+  ],
+  "securityControls": [
+    "tenant-isolated-memory",
+    "memory-poisoning-defense",
+    "separate-learning-and-execution-authority",
+    "signed-bounded-action-authority",
+    "provenance-and-expiry",
+    "no-secrets-in-learning-memory"
+  ],
+  "observability": {
+    "signals": [
+      "learning-candidate-created",
+      "eval-pass-rate",
+      "holdout-delta",
+      "candidate-rejected",
+      "candidate-promoted",
+      "rollback-triggered",
+      "outcome-delta",
+      "skill-version"
+    ],
+    "dashboard": "adaptive intelligence evidence ledger"
+  },
+  "rollback": {
+    "supported": true,
+    "method": "versioned candidate rollback to the last independently verified skill/configuration/code release"
+  },
+  "reusePlan": "Every verified improvement becomes a versioned skill, test, rule, template or product-factory primitive instead of remaining one-off knowledge.",
+  "automationPlan": "Automatically convert failures and repeated successful trajectories into candidate evals and improvement proposals; automatically test and iterate isolated candidates; never bypass release authority.",
+  "claimBoundary": "This contract establishes the governed self-evolution architecture and deterministic validation rules. It does not claim the frozen customer-proof runtime is already autonomously modifying production code or models."
+}

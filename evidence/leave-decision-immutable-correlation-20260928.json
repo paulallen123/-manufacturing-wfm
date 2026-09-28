@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-28T11:36:00Z",
+  "status": "BUILT",
+  "boundary": "local synthetic exact sealed runtime; not hosted, provider, production or customer proof",
+  "candidate": {
+    "repository": "paulallen123/-manufacturing-wfm",
+    "pullRequest": 225,
+    "parentHead": "2e05fa3af4326a3283604286ede7cd4a62250f50",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "node": "v22.23.2"
+  },
+  "risk": "A writer able to change mutable tenant JSON could rewrite a leave decision and its mutable domain audit together. The surviving append-only command audit recorded only version and request ID, so restart returned the substituted decision as authoritative.",
+  "failFirst": [
+    {
+      "test": "restart refuses jointly rewritten leave state and domain audit without immutable decision linkage",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "observedHttpStatus": 200,
+      "observedSubstitutedDecision": "approved"
+    },
+    {
+      "contract": "immutable decision seal fields",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "missingFields": [
+        "leaveDecisionSealVersion",
+        "requestId",
+        "employee",
+        "decision",
+        "reviewedBy",
+        "reviewedAt",
+        "decisionReason",
+        "stateSha256"
+      ]
+    }
+  ],
+  "repair": {
+    "immutableFields": [
+      "requestId",
+      "employee",
+      "decision",
+      "reviewedBy",
+      "reviewedAt",
+      "decisionReason"
+    ],
+    "digest": "SHA-256 over a fixed-order canonical object containing the seal version and immutable fields",
+    "readInvariant": "Every version-1 append-only leave-decision seal must have one matching request whose exact fields and recomputed digest agree; otherwise reads fail closed with HTTP 503.",
+    "scaleControl": "SQLite index audit_events(tenant, action)",
+    "buildAdmission": "The real server/SQLite restart-and-tamper regression is executed in the discarded proof stage before runtime admission."
+  },
+  "freshVerification": {
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "untamperedRestartHttpStatus": 200,
+    "tamperedRestartHttpStatus": 503
+  },
+  "sourceSha256": {
+    "scripts/harden-leave-audit-linkage.mjs": "ae9dfe1e4f7c6a83d7cec8fd46745e584e0f8ad607893a72984bb1d9b80e6d24",
+    "tests/leave-decision-audit-correlation.adversarial.test.cjs": "8df201d7224536d02d451802f39d045ac2a406707345a6130616eb82223f5cb2",
+    "Dockerfile": "fdfb7bf51263f7a7d2a7c9a9bd3dc996862db37b47933c70a7004dff590aa1b0"
+  },
+  "limitations": [
+    "Legacy decisions without a version-1 immutable seal remain explicitly unverified and require a reviewed migration or reconciliation before release.",
+    "This does not protect against an operator with authority to drop SQLite append-only triggers or replace the entire database and its external evidence together.",
+    "Docker and exact hosted execution did not run in this workspace.",
+    "No customer, production, provider, payroll, deployment, DNS, credential or infrastructure mutation occurred."
+  ]
+}
