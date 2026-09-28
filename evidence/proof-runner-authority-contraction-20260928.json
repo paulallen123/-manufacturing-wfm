@@ -58,7 +58,7 @@
       "passed": 7,
       "failed": 0,
       "skipped": 0,
-      "durationMs": 9941.586831,
+      "durationMs": 9104.009443,
       "coverage": [
         "immutable leave-decision restart/tamper refusal",
         "legacy leave-decision quarantine",
@@ -69,7 +69,12 @@
         "leave decision domain-audit request binding"
       ]
     },
-    "overlayIdempotence": "The proof-runner hardener applied twice to a fresh extraction and the resulting server passed syntax validation."
+    "overlayIdempotence": "The proof-runner hardener applied twice to a fresh extraction and the resulting server passed syntax validation.",
+    "verificationCommandIntegrity": {
+      "preservedFailure": "The first final-suite invocation incorrectly assigned the proof-runner overlay to WFM_LEAVE_AUDIT_HARDENER. Six fixtures stopped at the passkey-overlay prerequisite before exercising this candidate; result 1/7 passed and 6/7 failed.",
+      "correction": "The rerun bound WFM_LEAVE_AUDIT_HARDENER to scripts/harden-leave-audit-linkage.mjs and WFM_PROOF_RUNNER_HARDENER to scripts/harden-proof-runner-identity.mjs.",
+      "correctedResult": "7/7 passed, 0 failed, 0 skipped. The miswired run is classified as harness-command failure, not product evidence."
+    }
   },
   "fileSha256": {
     "scripts/harden-proof-runner-identity.mjs": "e7e7c34a4c609e1554de1c1a7961be5e0fb189f6090c7584b4d8e6da2fb6acf0",
