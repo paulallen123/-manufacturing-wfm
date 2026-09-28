@@ -24,7 +24,7 @@
     "passed": 4,
     "failed": 1,
     "skipped": 0,
-    "observation": "The configured manager account was changed to administrator with costs access and system.admin before challenge exchange. The valid Ed25519 assertion returned HTTP 200 and created a proof-runner session instead of failing closed with HTTP 503.",
+    "observation": "The configured manager account was changed to administrator before challenge exchange, retaining its existing costs access and gaining system.admin. The valid Ed25519 assertion returned HTTP 200 and created a proof-runner session instead of failing closed with HTTP 503.",
     "rootCause": "Trusted configuration bound key, email, tenant, routes and budgets but contained no expected account role. Issuance therefore snapshotted whatever role the linked email had at exchange time, including an unexpected privileged role."
   },
   "repair": {
