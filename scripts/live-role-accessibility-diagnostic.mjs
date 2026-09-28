@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { proofRunnerSession } from './proof-runner-auth.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -8,9 +9,7 @@ const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.ap
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
-const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected diagnostic origin.');
-assert.ok(password && password.length >= 20, 'Staging password unavailable.');
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -27,23 +26,15 @@ function executable(candidates) {
 const chrome = executable(['google-chrome','google-chrome-stable','chromium','chromium-browser']);
 assert.ok(chrome, 'Chrome/Chromium unavailable.');
 
-function sessionCookieFrom(response) {
-  const values = typeof response.headers.getSetCookie === 'function' ? response.headers.getSetCookie() : [response.headers.get('set-cookie')].filter(Boolean);
-  const first = values[0]; assert.ok(first, 'No session cookie.');
-  const pair = first.split(';',1)[0]; const split = pair.indexOf('=');
-  return { name: pair.slice(0,split), value: pair.slice(split+1) };
-}
-
 async function login(email) {
-  const r = await fetch(`${origin}/api/login`, {method:'POST', headers:{'content-type':'application/json',origin,referer:`${origin}/`,accept:'application/json'}, body:JSON.stringify({email,password}), signal:AbortSignal.timeout(15000)});
-  assert.equal(r.status,200,`${email} login ${r.status}`); return sessionCookieFrom(r);
+  return proofRunnerSession({ origin, email, timeoutMs: 15_000 });
 }
 
 async function inspectRole(spec,index) {
   const port=9850+index*20+Math.floor(Math.random()*10);
   const profile=path.join(process.env.RUNNER_TEMP||'/tmp',`wfm-a11y-${spec.slug}-${crypto.randomBytes(3).toString('hex')}`);
   fs.mkdirSync(profile,{recursive:true});
-  const env={...process.env}; delete env.WFM_STAGING_PASSWORD; delete env.RAILWAY_TOKEN; delete env.WFM_DEMO_PASSWORD;
+  const env={...process.env}; delete env.WFM_STAGING_PASSWORD; delete env.WFM_PROOF_RUNNER_PRIVATE_KEY_B64; delete env.RAILWAY_TOKEN; delete env.WFM_DEMO_PASSWORD;
   const proc=spawn(chrome,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'--window-size=1440,1000','about:blank'],{stdio:['ignore','ignore','ignore'],env});
   let ws;
   try {
