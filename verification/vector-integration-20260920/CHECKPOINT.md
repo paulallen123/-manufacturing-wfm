@@ -162,3 +162,19 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Claim:** **BUILT** in the local synthetic verifier only. Chromium, a Docker build and hosted exact-candidate execution did not occur in this checkpoint; Docker CLI is unavailable in this workspace.
 - **Release:** customer release and the marketing video remain **BLOCKED**. Existing leave-audit substitution, in-flight payroll authority, post-approval payroll substitution and exact hosted/restart gates remain unchanged.
 - **Safety:** no live deployment, customer/payroll mutation, provider handoff, restart, DNS, credential or infrastructure action occurred.
+
+
+## 2026-09-28 — source-bound weekly-review continuation
+
+- **Objective:** remove repeated hunting across exceptions, review sections, employee totals and the final signature while retaining every mandatory evidence check.
+- **Acceptance:** one manager-only control opens the next existing required action in source order; opening it cannot resolve, confirm, verify or sign anything; signed/stale teams expose no continuation; payroll-only roles cannot render or execute it.
+- **Implementation:** `ux-overlay/vector-workflows.js` derives a next-required action from the authenticated selected team: open source exception → reviewable unconfirmed category → unchecked employee when blockers are clear → existing sign workflow. `continue-review` recalculates the action from current in-memory source readback on every click and delegates to the existing modal/action; it performs no mutation itself.
+- **Task compression:** the next required task now has one stable first-click target rather than requiring the manager to interpret and search up to all returned issue/category/employee rows. Exact time and click savings remain a hosted-browser measurement, not a claim.
+- **Tests:** fail-first regression reproduced the missing continuation. A second red-first attack exposed payroll-only rendering and was repaired. Fresh final checks: 3/3 focused controller checks plus 25/25 affected sealed-runtime tests passed, zero failures or skips; both changed files passed Node syntax checks.
+- **Published evidence:** source commit `42b9669080341e605abe8fe9385595e83825a3a1`; blobs `5c01a2c381c838a45e467e32904ff10d05541107` (controller) and `42a277d066a2bb636e2e6b294275e788982c85ce` (regression).
+- **Status:** **BUILT**, not hosted **PROVEN**. No customer, production, payroll-provider, DNS, infrastructure or persistent fixture mutation was performed.
+- **Scale/global:** routing is derived from returned arrays and Unicode labels without fixed employee, site, entity or hierarchy counts. The focused fixture includes a Unicode employee name; the retained affected suite covers four teams and 172 export rows. Large-estate performance and locale-specific browser rendering remain unproved.
+- **Outcome/savings:** no financial or realised time saving is claimed. The measurable hypothesis is one fixed first-click target and no manual next-row selection for each required review stage.
+- **Dependencies:** exact-candidate browser execution must verify focus order, accessible naming, mobile/tablet layout, source refresh between actions, fresh login and unchanged sign/payroll holds.
+- **Next action:** exercise the complete continuation sequence on the exact hosted candidate and capture per-step first-click success, route/action identity, source readback and final unchanged release controls.
+- **Active-work check:** PR #225 advanced only through the compatible payroll-export proof commit `a2dd28fd02e7467a5a79b8a36f0d4877ec5366bd`; it did not touch the owned workflow files. No deployment or migration was interrupted.
