@@ -136,3 +136,19 @@ Usage: two bounded independent delegates; reused existing repairs, workstreams a
 - **Dependencies:** exact-candidate browser execution and release identity binding remain separate Trust/Proof work.
 - **Next action:** execute this exact deployed browser journey; if it passes, preserve the batch across a safe restart and verify role/tenant denial on its export without changing the serving SHA.
 - **Active-work check:** built from completed compatible head `0ff5e3b4ce5172711a225fdd6a6d800dc726ecbc`; no in-flight deployment or migration was interrupted.
+
+
+## 2026-09-28 — payroll blocker task compression
+
+- **Objective:** reduce the high-frequency manager path from Payroll preparation to the exact next incomplete weekly team without bypassing source review.
+- **Acceptance:** an authorised manager sees one contextual action for the first source-returned incomplete team; one action selects that exact team and opens Weekly sign-off; stale/signed or out-of-scope team identifiers are refused; payroll-only users cannot acquire the action; weekly sign and payroll release gates remain unchanged.
+- **Implementation:** `ux-overlay/vector-workflows.js` now derives the next reviewable team from the authenticated payroll report and exposes `next-review` only to manager-review roles. The action revalidates the team in both payroll and weekly-review scopes before changing UI context. It performs no business mutation.
+- **Task compression:** the normal blocker path falls from two controls (open Weekly sign-off, then find/select a team) to one contextual control, removing team hunting while preserving the same stable navigation and destination.
+- **Tests:** fail-first customer-effort regression reproduced the missing action. Final focused controller/syntax checks passed 2/2; the affected local sealed-runtime suite passed 25/25 with zero skips. Adversarial assertions cover out-of-scope IDs and payroll-only role denial. The larger `vector-workflows.test.cjs` integration suite was not rerun in this partial checkout because its local runtime composer source set is absent; the added regression remains in that canonical suite for full-checkout admission.
+- **Published evidence:** source commit `d7aa40bdcb0635ecf63ee1d3078236c74711b9cf`; blobs `695d4980ecc4a1008b6c20a3b87e708f18fc88d5` (controller) and `cffc29061aba0d593862ee2435a4a870291242f8` (regression).
+- **Status:** **BUILT**, not hosted **PROVEN**. No customer, production, payroll-provider, deployment, DNS, infrastructure or persistent fixture mutation occurred.
+- **Scale/global:** the action is derived from returned team IDs and names with no fixed site, entity or hierarchy count. The focused fixture used two teams and the retained affected suite covers the existing four-team/172-row payroll proof; large-estate UI/performance remains unproved.
+- **Outcome/savings:** no financial saving is claimed. The measurable product hypothesis is one fewer control plus zero manual team search per incomplete-team entry.
+- **Dependencies:** exact-candidate hosted browser evidence, refresh/new-login behavior, accessibility, and large-team-list performance remain Trust/Proof work.
+- **Next action:** execute the exact hosted manager journey from Payroll preparation into the selected incomplete team, assert the served SHA, visible selection, unchanged sign/release holds and keyboard/screen-reader naming, then retain the measurement only if the one-action path passes.
+- **Active-work check:** PR #225 was still open/draft and unchanged at `bc333a24382a0a1017f7fe6dfe8d5253d4129b6a` before editing; no deployment or migration was in flight or interrupted.
