@@ -106,3 +106,28 @@ test('internal ingestion requires the learning worker credential',async()=>{
     assert.equal(accepted.json.receipt.verified,true);
   } finally { f.close(); }
 });
+
+test('verified regression blocks release admission while a clean tenant is admitted',async()=>{
+  const f=fixture();
+  try {
+    f.service.ingestAdaptiveInput(outcome(1,-7));
+    const blocked=f.service.releaseAdmissionForTenant('alpha');
+    assert.equal(blocked.releasePromotionAllowed,false);
+    assert.equal(blocked.blockerCount,1);
+    assert.equal(blocked.reason,'VERIFIED_OUTCOME_REGRESSION');
+    assert.equal(blocked.executionAuthority,'NONE');
+
+    const blockedHttp=await call(f.service,req('POST','/api/learning/outcomes/release-admission',{
+      body:{tenant:'alpha'},headers:{'x-wfm-learning-internal':'learning-token'}
+    }));
+    assert.equal(blockedHttp.status,409);
+    assert.equal(blockedHttp.json.releasePromotionAllowed,false);
+
+    const cleanHttp=await call(f.service,req('POST','/api/learning/outcomes/release-admission',{
+      body:{tenant:'bravo'},headers:{'x-wfm-learning-internal':'learning-token'}
+    }));
+    assert.equal(cleanHttp.status,200);
+    assert.equal(cleanHttp.json.releasePromotionAllowed,true);
+    assert.equal(cleanHttp.json.blockerCount,0);
+  } finally { f.close(); }
+});
