@@ -302,3 +302,66 @@ test('shadow mode cannot grant production authority even with a terminal-looking
   assert.notEqual(result.state.gates.production_authority.state, 'PASS');
   assert.ok(result.state.rejectedReceipts.some((item) => item.reason === 'RELEASE_AUTHORITY_DISABLED_IN_SHADOW'));
 });
+
+
+test('failed gate cannot be reopened without its completed repair regression evidence', () => {
+  let { state } = bootstrap();
+  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass8', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-hosted-pass2', gateId: 'hosted_runtime', sequence: 1,
+    proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
+  })).state;
+  state = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-source-pass2', gateId: 'exact_source_binding', sequence: 1,
+    proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
+  })).state;
+  state = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-golden-fail2', gateId: 'golden_journey', sequence: 1,
+    result: 'FAIL', applicationState: 'FAIL',
+    proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
+  })).state;
+
+  const result = applyControlEvent(state, {
+    eventId: 'evt-forged-reopen',
+    type: 'REOPEN_GATE',
+    candidateToken: candidateToken(candidate),
+    gateId: 'golden_journey',
+    regressionCaseId: 'regression-1',
+  });
+  assert.equal(result.state.gates.golden_journey.state, 'FAIL');
+  assert.ok(result.state.audit.some((item) => item.reason === 'INVALID_REOPEN_EVIDENCE'));
+});
+
+test('valid repair regression completion reopens the failed gate and immediately schedules fresh proof', () => {
+  let { state } = bootstrap();
+  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass9', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-hosted-pass3', gateId: 'hosted_runtime', sequence: 1,
+    proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
+  })).state;
+  state = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-source-pass3', gateId: 'exact_source_binding', sequence: 1,
+    proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
+  })).state;
+  const failed = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-golden-fail3', gateId: 'golden_journey', sequence: 1,
+    result: 'FAIL', applicationState: 'FAIL',
+    proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
+  }));
+  state = failed.state;
+  const repairTask = failed.emittedTasks.find((task) => task.gateId === 'golden_journey' && task.taskKind === 'repair_regression');
+  assert.ok(repairTask);
+
+  const reopened = applyControlEvent(state, {
+    eventId: 'evt-valid-reopen',
+    type: 'REOPEN_GATE',
+    candidateToken: candidateToken(candidate),
+    gateId: 'golden_journey',
+    idempotencyKey: repairTask.idempotencyKey,
+    regressionCaseId: 'regression-golden-journey-001',
+  });
+  assert.equal(reopened.state.gates.golden_journey.state, 'UNPROVEN');
+  assert.equal(reopened.state.tasks[repairTask.idempotencyKey].status, 'PASS');
+  assert.equal(reopened.state.tasks[repairTask.idempotencyKey].regressionCaseId, 'regression-golden-journey-001');
+  assert.ok(reopened.emittedTasks.some((task) => task.gateId === 'golden_journey' && task.taskKind === 'proof'));
+});
