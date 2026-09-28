@@ -20,6 +20,47 @@ test('Vector keeps Time Review source-bound inside registered Attendance navigat
   assert.match(source, /ui\.page !== 'attendance'/);
   assert.match(source, /time: 'attendance'/);
 });
+
+test('payroll blocker action opens the exact next incomplete team without weakening review gates', async () => {
+  const actor = { tenant: 'northstar-demo', email: 'manager@northstar.example', personId: 'm1', role: 'manager' };
+  const incomplete = { id: 'team-incomplete', name: 'Assembly', status: 'draft', checkedEmployees: 0, employees: [{ id: 'e1' }] };
+  const signed = { id: 'team-signed', name: 'Packing', status: 'signed', checkedEmployees: 1, employees: [{ id: 'e2' }] };
+  const company = {
+    periods: [{ id: '2026-09-07', start: '2026-09-07', end: '2026-09-13' }], teams: [signed, incomplete],
+    totals: { employees: 2, workedMinutes: 900 }, blockers: ['Assembly is not signed.'], discrepancies: [],
+    schema: 'source-controlled', reconciliation: {}, lines: [], batches: [], adjustments: [], adjustmentCandidates: [],
+    adjustmentBatches: [], audit: [], exportNote: 'Provider acceptance remains separate.', canRelease: false, reminders: []
+  };
+  const report = {
+    periods: company.periods,
+    teams: [
+      { ...signed, revision: 2, issues: [], records: [], categories: [], blockers: [], workedMinutes: 450, canSign: false },
+      { ...incomplete, revision: 1, issues: [], records: [], categories: [], blockers: ['Review required'], workedMinutes: 450, canSign: false }
+    ]
+  };
+  const rootNode = { innerHTML: '' };
+  const context = vm.createContext({
+    console, URL, setTimeout, clearTimeout, OFFLINE: false, F: { actor, ready: true }, ui: { page: 'payroll-run' },
+    payrollActor: () => actor, PR: { has: () => true },
+    request: async url => url.startsWith('/api/weekly-review') ? structuredClone(report) : structuredClone(company),
+    command: async () => { throw Error('No mutation expected.'); },
+    document: { addEventListener() {}, querySelector() { return null; }, getElementById() { return rootNode; } },
+    modal() {}, modalActions: label => label, toast() {}, shell: html => html, render: async () => {}, showLogin() {}
+  });
+  vm.runInContext(source, context, { filename: 'vector-workflows.js' });
+  await context.VectorWorkflow.refresh();
+  const page = context.VectorWorkflow.payrollPage();
+  assert.match(page, /data-vector-workflow="next-review" data-id="team-incomplete"/);
+  assert.match(page, /Review and release CSV[^<]*|disabled/, 'release remains visibly gated');
+  await context.VectorWorkflow.action('next-review', 'team-incomplete');
+  assert.equal(context.RF.team, 'team-incomplete');
+  assert.equal(context.ui.page, 'vector-weekly-signoff');
+  assert.equal(context.RF.report.teams.find(item => item.id === 'team-incomplete').canSign, false);
+  assert.equal(context.RF.company.canRelease, false);
+  await assert.rejects(() => context.VectorWorkflow.action('next-review', 'team-outside-scope'), /changed or is outside your scope/);
+  actor.role = 'payroll_admin';
+  assert.doesNotMatch(context.VectorWorkflow.payrollPage(), /data-vector-workflow="next-review"/, 'payroll-only users cannot acquire manager review access');
+});
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const reservePort = () => new Promise((resolve, reject) => {
   const server = net.createServer();
@@ -411,7 +452,19 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.ok(payroll.context.RF.company.teams.length);
     assert.match(payroll.workflow.payrollPage(), /Payroll preparation/);
     assert.match(payroll.workflow.payrollPage(), /disabled[^>]*>Review and release CSV|Review and release CSV/);
+    assert.doesNotMatch(payroll.workflow.payrollPage(), /data-vector-workflow="next-review"/, 'payroll-only users cannot acquire manager review access');
     assert.ok(payroll.context.RF.company.blockers.length, 'release remains blocked, not bypassed');
+  });
+  await t.test('authorised manager can jump from payroll blockers to the exact next incomplete team in one action', async () => {
+    const incomplete = manager.context.RF.company.teams.find(item => !['signed', 'stale'].includes(item.status));
+    assert.ok(incomplete, 'fixture contains an incomplete team');
+    const page = manager.workflow.payrollPage();
+    assert.match(page, new RegExp(`data-vector-workflow="next-review" data-id="${incomplete.id}"`));
+    manager.context.ui.page = 'payroll-run';
+    manager.context.RF.team = '';
+    await manager.workflow.action('next-review', incomplete.id);
+    assert.equal(manager.context.RF.team, incomplete.id);
+    assert.equal(manager.context.ui.page, 'vector-weekly-signoff');
   });
   await t.test('accepted command without observed saved result cannot produce success receipt', async () => {
     const uncertain = await client('manager@northstar.example');
