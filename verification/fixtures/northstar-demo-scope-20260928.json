@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "state": "PREPARED_NOT_SUBMITTED",
+  "fixtureOnly": true,
+  "tenant": "northstar-demo",
+  "expectedSourceSha": "486606c4269bc8f1a2f24056fec22a6d6ffc7aad",
+  "expectedDeploymentId": "fb2f780a-417f-4e72-a7b2-87816cef0556",
+  "formRoute": "onboarding",
+  "formSelector": "[data-ij-scope-form]",
+  "submitEndpoint": "/api/implementation/autonomous/scope",
+  "genuineCustomerApproval": false,
+  "customerReady": false,
+  "mandatoryGatesClosed": 0,
+  "payload": {
+    "companyName": "Northstar Manufacturing - SYNTHETIC PROOF ONLY",
+    "employeeCount": 2,
+    "countries": ["United Kingdom"],
+    "sites": ["Tamworth"],
+    "payrollSystem": "",
+    "hcmSystem": "Northstar Workday simulator - fixture only",
+    "erpSystem": "",
+    "sourceSystems": ["Northstar Workday simulator"],
+    "features": ["Scheduling", "Time and attendance", "Absence", "Approvals", "Clocking", "Payroll reconciliation", "Integration handoff", "Role-based training", "Autopilot", "Recovery"],
+    "workPatterns": [],
+    "clockingMethods": [],
+    "priorities": "Prove persisted configuration, authorised end-to-end journeys, payroll integrity, tenant isolation and recovery without weakening any mandatory release gate.",
+    "notes": "SYNTHETIC PROOF ONLY. Two-person UK test scenario, using the previously observed Tamworth fixture import. The company name and country selection define a test case, not verified customer facts. No genuine provider connection, payroll policy, customer contract or approval is asserted. Blank payroll, ERP, work-pattern and clocking inputs are unresolved, not not-applicable. This small scenario does not replace the global/all-size proof matrix. No production, security, recovery, competency or release gate may be closed from this form alone.",
+    "agencyLabour": true
+  },
+  "executionPreconditions": [
+    "Use supported authorised form/session access; no credential retrieval or authentication bypass.",
+    "Recheck exact candidate identity, fixture-only boundary, current imported employee count and northstar-demo tenant before any write.",
+    "Do not overwrite another actor's different or approved scope. Use a single authorised writer.",
+    "Submit only the payload through the existing form; preserve readback, refreshed UI and fresh-session evidence.",
+    "Prepared inputs and form acceptance must not be promoted to customer-ready or provider-acceptance evidence."
+  ]
+}
