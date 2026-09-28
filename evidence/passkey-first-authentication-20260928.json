@@ -1,0 +1,62 @@
+{
+  "evidenceVersion": 1,
+  "recordedAt": "2026-09-28T13:41:38Z",
+  "claim": "Normal VECTOR sign-in is passkey-first and does not render password content; the local sealed candidate accepts a verified ES256 passkey assertion once.",
+  "classification": "BUILT",
+  "evidenceBoundary": {
+    "environment": "local synthetic exact-runtime extraction",
+    "customerData": false,
+    "productionMutation": false,
+    "hostedProof": false,
+    "countryOrRegion": "not jurisdiction-specific",
+    "scale": "single account / single local runtime"
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "startingHead": "acc4f4c841b6a54d85cadef34d0fec85c83c7175",
+    "sealedRuntimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da",
+    "node": "22.23.2"
+  },
+  "red": {
+    "tests": 2,
+    "passed": 0,
+    "failed": 2,
+    "observations": [
+      "Executed company-ui.js rendered a populated password input in the normal sign-in view.",
+      "POST /api/passkeys/register/options returned 404 because no passkey ceremony existed."
+    ]
+  },
+  "repair": {
+    "normalSignIn": "Passkey-only UI; no password field or password wording is rendered.",
+    "credential": "P-256 / ES256 public-key credential stored per account.",
+    "registration": "Existing authenticated session, exact origin, RP ID hash, user-presence and user-verification flags, one-time challenge, and session binding are required.",
+    "authentication": "Exact origin, RP ID hash, user-presence and user-verification flags, ES256 signature, one-time challenge, and monotonic non-zero authenticator counter are checked.",
+    "audit": "Credential identifiers are hashed before passkey registration/authentication audit events.",
+    "runtimeIntegration": "The hardener is wired into both the discarded proof stage and final candidate image construction."
+  },
+  "green": {
+    "command": "WFM_PASSKEY_HARDENER=scripts/harden-passkey-auth.mjs WFM_SEALED_RUNTIME_ARTIFACT=sealed-runtime-4bd3.tar.gz node --test tests/passkey-authentication.proof.test.cjs",
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 3939.1135,
+    "observations": [
+      "The executed normal sign-in UI contains no password text or password input and offers Continue with passkey.",
+      "A hostile Origin was rejected with HTTP 403.",
+      "An assertion without the user-verification flag was rejected with HTTP 403.",
+      "An independently generated and signed P-256 assertion created an authenticated session.",
+      "Exact assertion replay was rejected after the one-time challenge was consumed."
+    ]
+  },
+  "fileSha256": {
+    "scripts/harden-passkey-auth.mjs": "9bb8ddae5cb920d5b56ec158b2a67ef89d5368c7e00243c5aed9740b5b61671e",
+    "tests/passkey-authentication.proof.test.cjs": "66cf52d3febea7d250f99f99ab31698413630440f8c4ab8fc66aca0c681c6878"
+  },
+  "releaseGate": {
+    "status": "BLOCKED",
+    "reason": "This is local synthetic proof only. Existing accounts have no proven passwordless enrollment, recovery, credential replacement/revocation, or hosted ceremony on the exact deployed build. The legacy password API remains available solely as a migration bootstrap and has not been retired.",
+    "nextProof": "Build and adversarially verify a no-password enrollment/recovery ceremony with independent approval, then execute register -> sign out -> passkey sign in -> refresh/new login in the approved hosted environment on the exact build."
+  }
+}
