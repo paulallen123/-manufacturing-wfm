@@ -19,7 +19,7 @@ function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
 }
 
-function fixture() {
+function fixture(options = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-integration-hub-'));
   const dbPath = path.join(dir, 'test.sqlite');
   const db = new DatabaseSync(dbPath);
@@ -45,7 +45,13 @@ function fixture() {
   db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(tokens.bravo), 'manager@bravo', expires);
   db.close();
 
-  const hub = createAutonomousIntegrationHub({ dbPath, internalToken: 'integration-worker-test-token' });
+  const hub = createAutonomousIntegrationHub({
+    dbPath,
+    internalToken: 'integration-worker-test-token',
+    directoryOAuthBroker: options.directoryOAuthBroker,
+    directoryDiscover: options.directoryDiscover,
+    fetchImpl: options.fetchImpl
+  });
   return {
     dir,
     dbPath,
@@ -211,6 +217,87 @@ test('trusted directory worker is bound to a short-lived server-side discovery s
       apps: [{ appId: 'replay', displayName: 'Oracle NetSuite' }]
     }, internal);
     assert.equal(replay.status, 409);
+  } finally {
+    f.close();
+  }
+});
+
+test('configured Entra consent discovers recognised enterprise systems without storing provider credentials', async () => {
+  let issuedSessionId = '';
+  const oauth = {
+    availability() {
+      return [{ key: 'ENTRA', label: 'Microsoft 365 / Entra', configured: true, mode: 'oauth-readonly', adminApprovalRequired: true, persistsProviderToken: false }];
+    },
+    buildAuthorization({ sessionId, provider }) {
+      issuedSessionId = sessionId;
+      assert.equal(provider, 'ENTRA');
+      return {
+        authorizationUrl: 'https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize?state=state-' + sessionId,
+        expiresAt: Date.now() + 60_000
+      };
+    },
+    verifyState(state) {
+      assert.equal(state, 'state-' + issuedSessionId);
+      return { sessionId: issuedSessionId, provider: 'ENTRA', expiresAt: Date.now() + 60_000 };
+    },
+    async redeemAuthorizationCode({ provider, state, code }) {
+      assert.equal(provider, 'ENTRA');
+      assert.equal(state, 'state-' + issuedSessionId);
+      assert.equal(code, 'provider-code');
+      return { sessionId: issuedSessionId, provider: 'ENTRA', accessToken: 'ephemeral-access-token', expiresIn: 3600 };
+    }
+  };
+  const discovered = [];
+  const f = fixture({
+    directoryOAuthBroker: oauth,
+    directoryDiscover: async ({ provider, accessToken }) => {
+      discovered.push({ provider, accessToken });
+      return {
+        provider: 'ENTRA',
+        apps: [
+          { appId: 'wd-1', displayName: 'Workday Production' },
+          { appId: 'ns-1', displayName: 'Oracle NetSuite ERP' },
+          { appId: 'other-1', displayName: 'Unrelated Collaboration Tool' }
+        ],
+        pages: 1,
+        truncated: false
+      };
+    }
+  });
+  try {
+    const session = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/discovery-session', {
+      provider: 'ENTRA'
+    });
+    assert.equal(session.status, 201);
+    assert.equal(session.body.requiredAction.type, 'OPEN_PROVIDER_CONSENT');
+    assert.match(session.body.requiredAction.authorizationUrl, /^https:\/\/login\.microsoftonline\.com\//);
+    assert.equal(session.body.requiredAction.authorizationUrl.includes('ephemeral-access-token'), false);
+
+    const callback = await call(
+      f.hub,
+      f.tokens.manager,
+      'GET',
+      '/api/integrations/autonomous/oauth/callback/entra?state=' + encodeURIComponent('state-' + issuedSessionId) + '&code=provider-code'
+    );
+    assert.equal(callback.status, 302);
+    assert.equal(callback.body, null);
+    assert.equal(callback.headers.location, '/?vector_home=1&integration_discovery=complete');
+    assert.equal(discovered.length, 1);
+    assert.deepEqual(discovered[0], { provider: 'ENTRA', accessToken: 'ephemeral-access-token' });
+
+    const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(status.body.discovery.candidateCount, 2);
+    assert.deepEqual(
+      status.body.discovery.candidates.map(item => item.productKey).sort(),
+      ['netsuite', 'workday']
+    );
+    assert.equal(JSON.stringify(status.body).includes('ephemeral-access-token'), false);
+
+    const db = new DatabaseSync(f.dbPath);
+    const event = db.prepare("SELECT detail_json FROM integration_events WHERE event='directory-oauth-discovery-completed' ORDER BY id DESC LIMIT 1").get();
+    assert.ok(event);
+    assert.equal(event.detail_json.includes('ephemeral-access-token'), false);
+    db.close();
   } finally {
     f.close();
   }
