@@ -33,6 +33,19 @@ async function freePort() {
 async function start(runtime, database, port, key, enabled = true, limits = {}) {
   const origin = `http://127.0.0.1:${port}`;
   const output = [];
+  const defaultConfig = {
+    kid: 'runner-local-1',
+    publicKey: key.export({ type: 'spki', format: 'der' }).toString('base64url'),
+    email: 'manager@northstar.example',
+    tenant: 'northstar-demo',
+    role: 'manager',
+    costs: true,
+    permissions: [],
+    allowed: ['GET /api/bootstrap'],
+    maxSessionSeconds: limits.maxSessionSeconds ?? 120,
+    actionBudget: limits.actionBudget ?? 3,
+    maxRequestsPerSecond: limits.maxRequestsPerSecond ?? 1,
+  };
   const child = spawn(process.execPath, ['server.cjs'], {
     cwd: runtime,
     env: {
@@ -42,19 +55,7 @@ async function start(runtime, database, port, key, enabled = true, limits = {}) 
       WFM_DB: database,
       WFM_PROOF_RUNNER_ENABLED: enabled ? 'true' : 'false',
       WFM_PROOF_RUNNER_AUDIENCE: origin,
-      WFM_PROOF_RUNNER_KEYS_JSON: JSON.stringify([{
-        kid: 'runner-local-1',
-        publicKey: key.export({ type: 'spki', format: 'der' }).toString('base64url'),
-        email: 'manager@northstar.example',
-        tenant: 'northstar-demo',
-        role: 'manager',
-        costs: true,
-        permissions: [],
-        allowed: ['GET /api/bootstrap'],
-        maxSessionSeconds: limits.maxSessionSeconds ?? 120,
-        actionBudget: limits.actionBudget ?? 3,
-        maxRequestsPerSecond: limits.maxRequestsPerSecond ?? 1,
-      }]),
+      WFM_PROOF_RUNNER_KEYS_JSON: JSON.stringify(limits.configs || [defaultConfig]),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -529,5 +530,45 @@ test('a proof-runner identity cannot mint a session with unexpected permissions'
   const db = new DatabaseSync(database, { readOnly: true });
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sessions WHERE auth_method='proof-runner'").get().n, 0);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM audit_events WHERE action='proof-runner-session-issued'").get().n, 0);
+  db.close();
+});
+
+test('one proof-runner public key cannot represent multiple identities', async t => {
+  assert.equal(createHash('sha256').update(fs.readFileSync(artifact)).digest('hex'), expectedArtifactSha256);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-proof-runner-key-alias-'));
+  const runtime = path.join(root, 'runtime');
+  const database = path.join(root, 'state.sqlite');
+  fs.mkdirSync(runtime);
+  execFileSync('tar', ['--no-same-owner', '-xzf', artifact, '-C', runtime]);
+  for (const overlay of overlays) if (fs.existsSync(overlay)) execFileSync(process.execPath, [overlay, path.join(runtime, 'public')]);
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  const { publicKey } = generateKeyPairSync('ed25519');
+  const sharedPublicKey = publicKey.export({ type: 'spki', format: 'der' }).toString('base64url');
+  const baseConfig = {
+    publicKey: sharedPublicKey,
+    role: 'manager',
+    costs: true,
+    permissions: [],
+    allowed: ['GET /api/bootstrap'],
+    maxSessionSeconds: 120,
+    actionBudget: 3,
+    maxRequestsPerSecond: 1,
+  };
+  const configs = [
+    { ...baseConfig, kid: 'runner-local-1', email: 'manager@northstar.example', tenant: 'northstar-demo' },
+    { ...baseConfig, kid: 'runner-remote-2', email: 'runner@other.example', tenant: 'other-tenant' },
+  ];
+  const running = await start(runtime, database, await freePort(), publicKey, true, { configs });
+  t.after(() => stop(running.child));
+
+  const challenge = await request(running.origin, '/api/proof-runner/challenge', {
+    method: 'POST', body: { kid: 'runner-local-1' },
+  });
+  assert.equal(challenge.status, 503, challenge.text);
+
+  const db = new DatabaseSync(database, { readOnly: true });
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM proof_runner_challenges').get().n, 0);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sessions WHERE auth_method='proof-runner'").get().n, 0);
   db.close();
 });
