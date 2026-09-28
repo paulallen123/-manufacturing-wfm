@@ -405,11 +405,31 @@ export function applyControlEvent(inputState, event) {
     }
     case 'REOPEN_GATE': {
       const gate = state.gates[event.gateId];
-      if (gate && ['FAIL', 'BLOCKED'].includes(gate.state)) {
-        gate.state = 'UNPROVEN';
-        gate.blockingReason = null;
-        appendAudit(state, { type: 'GATE_REOPENED', gateId: gate.id, regressionCaseId: event.regressionCaseId || null });
+      const repairTask = event.idempotencyKey ? state.tasks[event.idempotencyKey] : null;
+      const validRepair = Boolean(
+        gate
+        && gate.state === 'FAIL'
+        && event.regressionCaseId
+        && repairTask
+        && repairTask.gateId === gate.id
+        && repairTask.taskKind === 'repair_regression'
+        && ACTIVE_TASK_STATES.has(repairTask.status)
+      );
+      if (!validRepair) {
+        appendAudit(state, {
+          type: 'EVENT_REJECTED',
+          eventId: event.eventId,
+          gateId: event.gateId || null,
+          reason: 'INVALID_REOPEN_EVIDENCE',
+        });
+        break;
       }
+      repairTask.status = 'PASS';
+      repairTask.completedAt = nowIso();
+      repairTask.regressionCaseId = event.regressionCaseId;
+      gate.state = 'UNPROVEN';
+      gate.blockingReason = null;
+      appendAudit(state, { type: 'GATE_REOPENED', gateId: gate.id, regressionCaseId: event.regressionCaseId });
       break;
     }
     case 'CLEANUP_REQUEST':
