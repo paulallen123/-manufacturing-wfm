@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { proofRunnerSession } from './proof-runner-auth.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -8,9 +9,7 @@ const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.ap
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
-const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected role-browser proof origin.');
-assert.ok(password && password.length >= 20, 'Staging password is unavailable to role-browser proof.');
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
@@ -26,18 +25,6 @@ const chrome = executable(['google-chrome', 'google-chrome-stable', 'chromium', 
 assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runner.');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-function sessionCookieFrom(response) {
-  const values = typeof response.headers.getSetCookie === 'function'
-    ? response.headers.getSetCookie()
-    : [response.headers.get('set-cookie')].filter(Boolean);
-  const first = values[0];
-  assert.ok(first, 'Authenticated login did not return a session cookie.');
-  const pair = first.split(';', 1)[0];
-  const split = pair.indexOf('=');
-  assert.ok(split > 0, 'Session Set-Cookie header is malformed.');
-  return { name: pair.slice(0, split), value: pair.slice(split + 1) };
-}
-
 function digest(text) {
   return crypto.createHash('sha256').update(String(text)).digest('hex');
 }
@@ -48,6 +35,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
   fs.mkdirSync(profile, { recursive: true });
   const chromeEnv = { ...process.env };
   delete chromeEnv.WFM_STAGING_PASSWORD;
+    delete chromeEnv.WFM_PROOF_RUNNER_PRIVATE_KEY_B64;
   delete chromeEnv.RAILWAY_TOKEN;
   delete chromeEnv.WFM_DEMO_PASSWORD;
   const proc = spawn(chrome, [
@@ -100,15 +88,8 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
     assert.equal(beforeCookies.cookies?.length || 0, 0, `${slug} fresh browser unexpectedly contained cookies.`);
     const pre = await fetch(`${origin}/api/bootstrap`, { signal: AbortSignal.timeout(15000) });
     assert.equal(pre.status,401,`${slug} unauthenticated bootstrap did not fail closed.`);
-
-    const loginResponse = await fetch(`${origin}/api/login`,{
-      method:'POST',
-      headers:{'content-type':'application/json','origin':origin,'referer':`${origin}/`,'accept':'application/json,text/plain,*/*'},
-      body:JSON.stringify({email,password}),signal:AbortSignal.timeout(15000)
-    });
-    assert.equal(loginResponse.status,200,`${slug} login failed.`);
-    const session = sessionCookieFrom(loginResponse);
-    const cookieSet = await send('Network.setCookie',{name:session.name,value:session.value,url:origin,secure:true,httpOnly:true,sameSite:'Lax'});
+    const session = await proofRunnerSession({ origin, email, timeoutMs: 15_000 });
+    const cookieSet = await send('Network.setCookie',{name:session.name,value:session.value,url:origin,secure:true,httpOnly:true,sameSite:'Strict'});
     assert.equal(cookieSet.success,true,`${slug} server-issued session could not be bound to the fresh browser.`);
     const browserCookies = await send('Network.getCookies',{urls:[origin]});
     assert.ok(browserCookies.cookies?.some(c=>c.name===session.name),`${slug} authenticated browser session cookie missing.`);
