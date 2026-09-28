@@ -240,6 +240,27 @@ function processReceipt(state, receipt, emittedTasks) {
   }
 }
 
+function reconcileDependencyBlocks(state) {
+  for (const definition of GATE_DEFINITIONS) {
+    const gate = state.gates[definition.id];
+    if (!gate || gate.state === 'PASS' || activeTaskForGate(state, definition.id)) continue;
+
+    const blockingDependency = definition.deps.find((dep) => ['FAIL', 'BLOCKED'].includes(state.gates[dep]?.state));
+    if (blockingDependency) {
+      if (gate.state === 'UNPROVEN' || String(gate.blockingReason || '').startsWith('DEPENDENCY_BLOCKED:')) {
+        gate.state = 'BLOCKED';
+        gate.blockingReason = `DEPENDENCY_BLOCKED:${blockingDependency}`;
+      }
+      continue;
+    }
+
+    if (gate.state === 'BLOCKED' && String(gate.blockingReason || '').startsWith('DEPENDENCY_BLOCKED:') && dependenciesPass(state, definition.id)) {
+      gate.state = 'UNPROVEN';
+      gate.blockingReason = null;
+    }
+  }
+}
+
 function scheduleRunnable(state, emittedTasks) {
   for (const definition of GATE_DEFINITIONS) {
     const gate = state.gates[definition.id];
@@ -375,7 +396,9 @@ export function applyControlEvent(inputState, event) {
       return { state, emittedTasks, rejected: true, reason: 'UNKNOWN_EVENT_TYPE' };
   }
 
+  reconcileDependencyBlocks(state);
   scheduleRunnable(state, emittedTasks);
+  reconcileDependencyBlocks(state);
   enforceRetention(state);
 
   const invariant = checkNoIdleInvariant(state);
