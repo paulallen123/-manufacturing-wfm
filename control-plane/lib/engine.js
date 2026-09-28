@@ -7,7 +7,7 @@ import {
   getGateDefinition,
 } from './policy.js';
 
-const CANDIDATE_IDENTITY_FIELDS = [
+export const CANDIDATE_IDENTITY_FIELDS = Object.freeze([
   'repository',
   'ref',
   'commitSha',
@@ -17,7 +17,7 @@ const CANDIDATE_IDENTITY_FIELDS = [
   'environment',
   'provider',
   'failureDomainId',
-];
+]);
 
 function clone(value) {
   return structuredClone(value);
@@ -31,15 +31,39 @@ function digest(parts) {
   return crypto.createHash('sha256').update(parts.join('|')).digest('hex');
 }
 
+export function validateCandidateIdentity(identity) {
+  if (!identity || typeof identity !== 'object') {
+    return { ok: false, reason: 'CANDIDATE_IDENTITY_MISSING', missingFields: [...CANDIDATE_IDENTITY_FIELDS] };
+  }
+  const missingFields = CANDIDATE_IDENTITY_FIELDS.filter((field) => {
+    const value = identity[field];
+    return typeof value !== 'string' || value.trim() === '';
+  });
+  if (missingFields.length > 0) {
+    return { ok: false, reason: 'CANDIDATE_IDENTITY_INCOMPLETE', missingFields };
+  }
+  if (identity.commitSha !== identity.runtimeSha) {
+    return { ok: false, reason: 'SOURCE_RUNTIME_SHA_MISMATCH', commitSha: identity.commitSha, runtimeSha: identity.runtimeSha };
+  }
+  return { ok: true };
+}
+
 export function candidateToken(identity) {
   return digest(CANDIDATE_IDENTITY_FIELDS.map((field) => String(identity[field] ?? ''))).slice(0, 40);
 }
 
 export function identitiesMatch(expected, observed) {
+  if (!expected || !observed) return false;
   return CANDIDATE_IDENTITY_FIELDS.every((field) => String(expected[field] ?? '') === String(observed[field] ?? ''));
 }
 
 export function createInitialState(candidate) {
+  const validation = validateCandidateIdentity(candidate);
+  if (!validation.ok) {
+    const details = validation.missingFields?.length ? `: ${validation.missingFields.join(',')}` : '';
+    throw new Error(`${validation.reason}${details}`);
+  }
+
   const gates = Object.fromEntries(
     GATE_DEFINITIONS.map((definition) => [
       definition.id,
@@ -56,7 +80,7 @@ export function createInitialState(candidate) {
   );
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     mode: 'SHADOW',
     candidate: clone(candidate),
     candidateToken: candidateToken(candidate),
@@ -97,15 +121,16 @@ function activeTaskForGate(state, gateId) {
   return Object.values(state.tasks).find((task) => task.gateId === gateId && ACTIVE_TASK_STATES.has(task.status));
 }
 
-function selectLane(state, definition) {
-  for (const laneId of definition.lanes) {
-    const lane = LANE_DEFINITIONS[laneId];
-    if (!lane?.enabled) continue;
-    const providerState = state.providerHealth[lane.provider]?.state;
-    if (providerState === 'DEGRADED') continue;
-    return { laneId, ...lane };
-  }
-  return null;
+function selectLane(state, definition, excludedFailureDomainId = null) {
+  const admitted = definition.lanes
+    .map((laneId) => {
+      const lane = LANE_DEFINITIONS[laneId];
+      if (!lane?.enabled) return null;
+      if (state.providerHealth[lane.provider]?.state === 'DEGRADED') return null;
+      return { laneId, ...lane };
+    })
+    .filter(Boolean);
+  return admitted.find((lane) => lane.failureDomainId !== excludedFailureDomainId) ?? admitted[0] ?? null;
 }
 
 function createProofTask(state, gateId, lane, kind = 'proof') {
@@ -142,13 +167,33 @@ function createProofTask(state, gateId, lane, kind = 'proof') {
   return task;
 }
 
-function closeActiveTasksForGate(state, gateId, terminalState, proofLane = null) {
-  for (const task of Object.values(state.tasks)) {
-    if (task.gateId !== gateId || !ACTIVE_TASK_STATES.has(task.status)) continue;
-    if (proofLane && task.laneId !== proofLane) continue;
-    task.status = terminalState;
-    task.completedAt = nowIso();
+function closeBoundTask(state, task, terminalState) {
+  const current = state.tasks[task.idempotencyKey];
+  if (!current) return;
+  current.status = terminalState;
+  current.completedAt = nowIso();
+}
+
+function boundTaskForReceipt(state, gate, receipt) {
+  if (!receipt.idempotencyKey || !receipt.taskId) return { ok: false, reason: 'MISSING_TASK_BINDING' };
+  const task = state.tasks[receipt.idempotencyKey];
+  if (!task || task.taskId !== receipt.taskId) return { ok: false, reason: 'UNKNOWN_TASK_BINDING' };
+  if (task.gateId !== gate.id || task.candidateToken !== state.candidateToken) return { ok: false, reason: 'TASK_GATE_OR_CANDIDATE_MISMATCH' };
+  if (!ACTIVE_TASK_STATES.has(task.status)) return { ok: false, reason: 'TASK_NOT_ACTIVE' };
+  const lane = receipt.proofLane;
+  if (!lane || lane.laneId !== task.laneId || lane.provider !== task.provider || lane.failureDomainId !== task.failureDomainId) {
+    return { ok: false, reason: 'PROOF_LANE_MISMATCH' };
   }
+  if (task.targetDeploymentId !== state.candidate.deploymentId || task.targetRuntimeSha !== state.candidate.runtimeSha) {
+    return { ok: false, reason: 'TASK_TARGET_DRIFT' };
+  }
+  return { ok: true, task };
+}
+
+function markAcceptedReceipt(gate, receipt, sequence) {
+  gate.latestReceiptSequence = sequence;
+  gate.latestReceiptId = receipt.receiptId;
+  gate.lastEvidenceDigest = receipt.evidenceDigest;
 }
 
 function rejectReceipt(state, gate, receipt, reason) {
@@ -189,54 +234,53 @@ function processReceipt(state, receipt, emittedTasks) {
     rejectReceipt(state, gate, receipt, 'MISSING_PROVENANCE');
     return;
   }
-
-  gate.latestReceiptSequence = sequence;
-  gate.latestReceiptId = receipt.receiptId;
-  gate.lastEvidenceDigest = receipt.evidenceDigest;
-
+  const binding = boundTaskForReceipt(state, gate, receipt);
+  if (!binding.ok) {
+    rejectReceipt(state, gate, receipt, binding.reason);
+    return;
+  }
+  const task = binding.task;
   if (receipt.result === 'PASS' && receipt.applicationState !== 'PASS') {
-    closeActiveTasksForGate(state, gate.id, 'REJECTED', receipt.proofLane?.laneId ?? null);
-    gate.state = 'UNPROVEN';
-    gate.blockingReason = 'NO_TERMINAL_APPLICATION_PASS';
+    closeBoundTask(state, task, 'REJECTED');
     rejectReceipt(state, gate, receipt, 'FALSE_GREEN_PROVIDER_STATUS');
     return;
   }
-
-  if (receipt.result === 'PASS') {
-    closeActiveTasksForGate(state, gate.id, 'PASS', receipt.proofLane?.laneId ?? null);
-    gate.state = 'PASS';
-    gate.blockingReason = null;
-    appendAudit(state, { type: 'GATE_PASS', gateId: gate.id, receiptId: receipt.receiptId });
+  if (receipt.result === 'FAIL' && receipt.applicationState !== 'FAIL') {
+    closeBoundTask(state, task, 'REJECTED');
+    rejectReceipt(state, gate, receipt, 'FAIL_WITHOUT_TERMINAL_APPLICATION_FAIL');
     return;
   }
-
+  markAcceptedReceipt(gate, receipt, sequence);
+  if (receipt.result === 'PASS') {
+    closeBoundTask(state, task, 'PASS');
+    gate.state = 'PASS';
+    gate.blockingReason = null;
+    appendAudit(state, { type: 'GATE_PASS', gateId: gate.id, receiptId: receipt.receiptId, taskId: task.taskId });
+    return;
+  }
   if (receipt.result === 'FAIL') {
-    closeActiveTasksForGate(state, gate.id, 'FAIL', receipt.proofLane?.laneId ?? null);
+    closeBoundTask(state, task, 'FAIL');
     gate.state = 'FAIL';
     gate.blockingReason = 'PRODUCT_ASSERTION_FAILED_AWAITING_REPAIR_REGRESSION';
-    appendAudit(state, { type: 'GATE_FAIL', gateId: gate.id, receiptId: receipt.receiptId });
-    const repairLane = selectLane(state, { lanes: ['github-actions', 'railway-proof-workers'] });
+    appendAudit(state, { type: 'GATE_FAIL', gateId: gate.id, receiptId: receipt.receiptId, taskId: task.taskId });
+    const definition = getGateDefinition(gate.id);
+    const repairLane = definition ? selectLane(state, definition, task.failureDomainId) : null;
     if (repairLane) emittedTasks.push(createProofTask(state, gate.id, repairLane, 'repair_regression'));
     return;
   }
-
   if (receipt.result === 'BLOCKED') {
-    closeActiveTasksForGate(state, gate.id, 'BLOCKED', receipt.proofLane?.laneId ?? null);
+    closeBoundTask(state, task, 'BLOCKED');
     gate.state = 'BLOCKED';
     gate.blockingReason = receipt.blockingReason || 'EXPLICIT_SAFETY_OR_EVIDENCE_BLOCK';
-    appendAudit(state, { type: 'GATE_BLOCKED', gateId: gate.id, reason: gate.blockingReason });
+    appendAudit(state, { type: 'GATE_BLOCKED', gateId: gate.id, reason: gate.blockingReason, taskId: task.taskId });
     return;
   }
-
   if (receipt.result === 'PROVIDER_DEGRADED') {
-    closeActiveTasksForGate(state, gate.id, 'PROVIDER_DEGRADED', receipt.proofLane?.laneId ?? null);
-    const provider = receipt.proofLane?.provider || receipt.provider;
-    if (provider) {
-      state.providerHealth[provider] = { state: 'DEGRADED', at: nowIso(), reason: receipt.blockingReason || 'PROOF_LANE_PREEXECUTION_FAILURE' };
-    }
+    closeBoundTask(state, task, 'PROVIDER_DEGRADED');
+    state.providerHealth[task.provider] = { state: 'DEGRADED', at: nowIso(), reason: receipt.blockingReason || 'PROOF_LANE_PREEXECUTION_FAILURE' };
     gate.state = 'UNPROVEN';
     gate.blockingReason = null;
-    appendAudit(state, { type: 'PROVIDER_DEGRADED', provider, gateId: gate.id });
+    appendAudit(state, { type: 'PROVIDER_DEGRADED', provider: task.provider, gateId: gate.id, taskId: task.taskId });
   }
 }
 
