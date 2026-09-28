@@ -2,6 +2,8 @@
 
 const { createHash, randomUUID, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { createDirectoryOAuthBroker } = require('./directory-oauth-broker.cjs');
+const { discoverDirectorySystems } = require('../worker/directory-discovery-worker.cjs');
 
 const PREFIX = '/api/integrations/autonomous';
 const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
@@ -89,6 +91,21 @@ function writeJson(res, status, body) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.end(JSON.stringify(body));
+  return true;
+}
+
+function queryValue(req, name) {
+  try { return new URL(String(req?.url || '/'), 'https://vector.invalid').searchParams.get(name) || ''; }
+  catch { return ''; }
+}
+
+function writeRedirect(res, location) {
+  if (res.headersSent || res.writableEnded) return true;
+  res.statusCode = 302;
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Location', location);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.end('');
   return true;
 }
 
@@ -226,6 +243,11 @@ function createAutonomousIntegrationHub(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   const internalToken = options.internalToken || process.env.WFM_INTEGRATION_INTERNAL_TOKEN || '';
   const maxBodyBytes = Number(options.maxBodyBytes || 256 * 1024);
+  const directoryOAuth = options.directoryOAuthBroker || createDirectoryOAuthBroker({
+    env: options.env || process.env,
+    fetchImpl: options.fetchImpl
+  });
+  const directoryDiscover = options.directoryDiscover || discoverDirectorySystems;
   if (!dbPath) throw new Error('Autonomous integration hub requires WFM_DB.');
 
   const db = new DatabaseSync(dbPath);
@@ -472,6 +494,7 @@ function createAutonomousIntegrationHub(options = {}) {
         candidates
       },
       connections,
+      directoryDiscovery: directoryOAuth.availability(),
       readiness: {
         readyForPeopleSync: activePeople.length > 0,
         peopleSourceConfirmed: confirmedPeople.length > 0,
@@ -543,14 +566,98 @@ function createAutonomousIntegrationHub(options = {}) {
     const now = nowIso();
     insertDiscoverySession.run(id, ctx.tenant, provider, 'PENDING', expiresAt, now, now);
     record(ctx.tenant, null, 'discovery-session-created', { discoverySessionId: id, provider, expiresAt });
+
+    const availability = directoryOAuth.availability().find(item => item.key === provider) || null;
+    let authorization = null;
+    if (availability?.configured === true) {
+      try { authorization = directoryOAuth.buildAuthorization({ sessionId: id, provider }); }
+      catch (error) {
+        record(ctx.tenant, null, 'discovery-authorization-unavailable', {
+          discoverySessionId: id,
+          provider,
+          reason: compact(error?.message || 'authorization unavailable', 160)
+        });
+      }
+    }
+
     return writeJson(res, 201, {
       discoverySession: { id, provider, expiresAt },
-      requiredAction: {
+      requiredAction: authorization ? {
+        type: 'OPEN_PROVIDER_CONSENT',
+        provider,
+        authorizationUrl: authorization.authorizationUrl,
+        expiresAt: new Date(authorization.expiresAt).toISOString(),
+        instruction: 'An authorised administrator approves read-only application inventory access in the provider. VECTOR never receives a password.'
+      } : {
         type: 'AUTHORIZE_DIRECTORY',
         provider,
-        instruction: 'An authorised administrator approves read-only application inventory access. The worker returns metadata against this short-lived session.'
+        available: false,
+        reason: availability?.reason || 'Provider discovery authorization is not configured.',
+        instruction: 'An authorised administrator must approve read-only application inventory access before VECTOR can discover systems.'
       }
     });
+  }
+
+  async function handleDirectoryOAuthCallback(ctx, req, res) {
+    const state = queryValue(req, 'state');
+    const code = queryValue(req, 'code');
+    if (!state || !code) return writeJson(res, 400, { error: 'OAuth state and authorization code are required.' });
+
+    let verified;
+    try { verified = directoryOAuth.verifyState(state); }
+    catch (error) { return writeJson(res, 400, { error: compact(error?.message || 'Invalid OAuth state.', 180) }); }
+
+    const session = discoverySessionById.get(compact(verified.sessionId, 80));
+    if (!session) return writeJson(res, 404, { error: 'Discovery session not found.' });
+    if (session.tenant !== ctx.tenant) return writeJson(res, 403, { error: 'Discovery session belongs to another tenant.' });
+    if (session.provider !== verified.provider) return writeJson(res, 409, { error: 'Discovery provider does not match the authorized session.' });
+    if (session.status !== 'PENDING') return writeJson(res, 409, { error: 'Discovery session has already been used.' });
+    const nowMs = Date.now();
+    if (Number(session.expires_at) <= nowMs) return writeJson(res, 410, { error: 'Discovery session has expired.' });
+
+    const claimed = claimDiscoverySession.run(nowIso(), session.id, nowMs);
+    if (Number(claimed.changes) !== 1) {
+      return writeJson(res, 409, { error: 'Discovery session is already being processed or is no longer valid.' });
+    }
+
+    try {
+      const oauth = await directoryOAuth.redeemAuthorizationCode({
+        provider: verified.provider,
+        state,
+        code
+      });
+      if (oauth.sessionId !== session.id || oauth.provider !== session.provider) {
+        throw new Error('OAuth result does not match the claimed discovery session.');
+      }
+      const inventory = await directoryDiscover({
+        provider: session.provider,
+        accessToken: oauth.accessToken,
+        fetchImpl: options.fetchImpl,
+        maxPages: 20
+      });
+      const apps = Array.isArray(inventory?.apps) ? inventory.apps : [];
+      const recognised = apps.filter(app => detectProduct(app, session.provider)).slice(0, 2000);
+      const found = ingestDiscovery(session.tenant, session.provider, recognised);
+      const completed = completeDiscoverySession.run(nowIso(), session.id);
+      if (Number(completed.changes) !== 1) throw new Error('Discovery session completion state changed unexpectedly.');
+      record(session.tenant, null, 'directory-oauth-discovery-completed', {
+        discoverySessionId: session.id,
+        provider: session.provider,
+        inventoryCount: apps.length,
+        recognisedCount: recognised.length,
+        detected: found.length,
+        inventoryTruncated: inventory?.truncated === true
+      });
+      return writeRedirect(res, '/?vector_home=1&integration_discovery=complete');
+    } catch (error) {
+      failDiscoverySession.run(nowIso(), session.id);
+      record(session.tenant, null, 'directory-oauth-discovery-failed', {
+        discoverySessionId: session.id,
+        provider: session.provider,
+        reason: compact(error?.message || 'discovery failed', 180)
+      });
+      return writeJson(res, 502, { error: 'Directory discovery failed safely. No source-system credentials or business data were stored.' });
+    }
   }
 
   async function handleWorkerDiscoveryResult(req, res) {
@@ -926,6 +1033,9 @@ function createAutonomousIntegrationHub(options = {}) {
 
       const ctx = requireManager(req, res);
       if (!ctx) return true;
+      if (req.method === 'GET' && path === PREFIX + '/oauth/callback/entra') {
+        return await handleDirectoryOAuthCallback(ctx, req, res);
+      }
       if (req.method === 'GET' && path === PREFIX + '/catalog') {
         return writeJson(res, 200, { systems: publicCatalog(), discoverySources: [...DISCOVERY_SOURCES] });
       }
