@@ -22,10 +22,12 @@ export async function candidateControlWorkflow(seed) {
     state = result.state;
     await fanOut(result.emittedTasks);
 
-    if (state.gates.production_authority.state === 'PASS') {
+    if (state.gates.customer_proof_authority.state === 'PASS') {
       return {
         candidateToken: state.candidateToken,
-        status: 'PRODUCTION_AUTHORITY_PASS',
+        status: 'CUSTOMER_PROOF_AUTHORITY_PASS',
+        claimBoundary: state.candidate.claimBoundary,
+        productionAuthority: false,
         finalState: state,
       };
     }
