@@ -1,0 +1,47 @@
+name: VECTOR durable control plane shadow CI
+
+# Owner-originated branch pushes only. This validates the isolated control plane
+# without executing or modifying the frozen VECTOR customer-proof candidate.
+on:
+  push:
+    branches:
+      - design/vector-control-plane-20260928
+    paths:
+      - 'control-plane/**'
+      - 'docs/superpowers/specs/2026-09-28-vector-durable-control-plane-design.md'
+      - 'docs/superpowers/plans/2026-09-28-vector-durable-control-plane-implementation.md'
+      - '.github/workflows/vector-control-plane-shadow.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vector-control-plane-shadow-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deterministic-test-and-build:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: control-plane
+    steps:
+      - name: Checkout trusted owner push
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Install isolated control-plane dependencies without lifecycle scripts
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run deterministic orchestration regressions
+        run: npm test
+      - name: Build Vercel-targeted shadow application
+        run: npm run build
