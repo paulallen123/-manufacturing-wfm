@@ -215,3 +215,61 @@ test('proof runner refuses non-staging activation', () => {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('audit failure rolls back session issuance and permits a clean retry after repair', async () => {
+  const f = fixture();
+  const db = new DatabaseSync(f.dbPath);
+  try {
+    db.exec("CREATE TRIGGER fail_proof_audit BEFORE INSERT ON proof_runner_auth_events BEGIN SELECT RAISE(ABORT,'audit unavailable'); END;");
+    const payload = signedPayload(f);
+    const refused = response();
+    await f.auth.handleRequest(request(payload, f.origin), refused);
+    assert.equal(refused.statusCode, 503);
+    assert.equal(refused.headers['set-cookie'], undefined);
+    for (const table of ['sessions', 'proof_runner_sessions', 'proof_runner_nonces']) {
+      assert.equal(db.prepare('SELECT count(*) AS count FROM ' + table).get().count, 0);
+    }
+
+    db.exec('DROP TRIGGER fail_proof_audit');
+    const retry = response();
+    await f.auth.handleRequest(request(payload, f.origin), retry);
+    assert.equal(retry.statusCode, 200);
+    assert.equal(db.prepare("SELECT count(*) AS count FROM proof_runner_auth_events WHERE event='passwordless-proof-session-minted'").get().count, 1);
+    const replay = response();
+    await f.auth.handleRequest(request(payload, f.origin), replay);
+    assert.equal(replay.statusCode, 409);
+  } finally {
+    db.close();
+    f.close();
+  }
+});
+
+for (const changedAuthority of ['tenant', 'role']) {
+  test('proof session refuses ' + changedAuthority + ' drift before first product request', async () => {
+    const f = fixture();
+    const db = new DatabaseSync(f.dbPath);
+    let control;
+    try {
+      const minted = response();
+      await f.auth.handleRequest(request(signedPayload(f), f.origin), minted);
+      assert.equal(minted.statusCode, 200);
+      const token = cookieToken(minted);
+      if (changedAuthority === 'tenant') {
+        db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('another-tenant', 1, '{}');
+        db.prepare('UPDATE users SET tenant=? WHERE email=?').run('another-tenant', 'superuser@northstar.example');
+      } else {
+        db.prepare('UPDATE users SET role=? WHERE email=?').run('payroll', 'superuser@northstar.example');
+      }
+      const guard = createIdentitySurvivalGuard({ dbPath: f.dbPath });
+      control = guard.securityControlForTests();
+      const denied = response();
+      assert.equal(guard.beforeRequest({ method:'GET', url:'/api/bootstrap', headers:{ cookie:`wfm_session=${token}` } }, denied), true);
+      assert.equal(denied.statusCode, 401);
+      assert.equal(db.prepare('SELECT count(*) AS count FROM sessions').get().count, 0);
+    } finally {
+      control?.db.close();
+      db.close();
+      f.close();
+    }
+  });
+}

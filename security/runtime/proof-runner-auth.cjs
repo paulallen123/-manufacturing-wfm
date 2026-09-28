@@ -284,6 +284,15 @@ function createProofRunnerAuth(options = {}) {
       nonceStmt.run(nonceHash, expiresAt + CLOCK_SKEW_MS, new Date(now).toISOString());
       sessionStmt.run(tokenHash, user.email, sessionExpires);
       proofSessionStmt.run(tokenHash, user.email, user.tenant, user.role, now, sessionExpires);
+      // Issuance and its durable audit record must succeed or roll back together.
+      eventStmt.run(user.email, user.tenant, 'passwordless-proof-session-minted', JSON.stringify({
+        role: user.role,
+        issuer: PROOF_RUNNER_ISSUER,
+        audience: PROOF_RUNNER_AUDIENCE,
+        sessionExpires,
+        nonceHashPrefix: nonceHash.slice(0, 16),
+        tokenHashPrefix: tokenHash.slice(0, 16),
+      }), new Date(now).toISOString());
       db.exec('COMMIT');
     } catch (error) {
       try { db.exec('ROLLBACK'); } catch {}
@@ -292,15 +301,6 @@ function createProofRunnerAuth(options = {}) {
         replay,
       }, user.email, user.tenant);
     }
-
-    record(user.email, user.tenant, 'passwordless-proof-session-minted', {
-      role: user.role,
-      issuer: PROOF_RUNNER_ISSUER,
-      audience: PROOF_RUNNER_AUDIENCE,
-      sessionExpires,
-      nonceHashPrefix: nonceHash.slice(0, 16),
-      tokenHashPrefix: tokenHash.slice(0, 16),
-    });
 
     const maxAge = Math.floor(sessionTtlMs / 1000);
     res.setHeader('Set-Cookie', `wfm_session=${token}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`);

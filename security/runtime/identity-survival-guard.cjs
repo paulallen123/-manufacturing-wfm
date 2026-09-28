@@ -113,7 +113,7 @@ function createIdentitySurvivalGuard(options = {}) {
     FROM sessions s JOIN users u ON u.email=s.email
     WHERE s.token_hash=? AND s.expires>?`);
   const bindingStmt = db.prepare('SELECT * FROM identity_session_bindings WHERE token_hash=?');
-  const proofRunnerSessionStmt = db.prepare('SELECT token_hash FROM proof_runner_sessions WHERE token_hash=? AND expires>?');
+  const proofRunnerSessionStmt = db.prepare('SELECT * FROM proof_runner_sessions WHERE token_hash=?');
   const bindStmt = db.prepare(`INSERT INTO identity_session_bindings
     (token_hash,tenant,issuer,audience,session_epoch,policy_version,bound_at)
     VALUES(?,?,?,?,?,?,?)`);
@@ -160,7 +160,16 @@ function createIdentitySurvivalGuard(options = {}) {
       return writeJson(res, 401, { error: 'Session expired. Sign in again.' });
     }
 
-    const proofRunnerSession = proofRunnerSessionStmt.get(tokenHash, now);
+    const proofRunnerSession = proofRunnerSessionStmt.get(tokenHash);
+    if (proofRunnerSession && (
+      proofRunnerSession.email !== row.email ||
+      proofRunnerSession.tenant !== row.tenant ||
+      proofRunnerSession.role !== row.role ||
+      Number(proofRunnerSession.expires) <= now
+    )) {
+      containSession(row, tokenHash, 'proof-session-scope-mismatch-contained', { path: requestPath(req) });
+      return writeJson(res, 401, { error: 'Proof session security context changed. Authenticate again.' });
+    }
     const expectedIssuer = proofRunnerSession ? PROOF_RUNNER_ISSUER : issuer;
 
     ensureControlStmt.run(row.tenant, new Date().toISOString());
