@@ -1,0 +1,76 @@
+name: Frontier Convergence Gate
+
+on:
+  pull_request:
+    branches: [feature/vector-eow-convergence-20260925]
+    paths:
+      - 'trust/runtime/**'
+      - 'integration-fabric/runtime/**'
+      - 'ux-overlay/vector-workflows.js'
+      - 'ux-overlay/vector-workflows.test.cjs'
+      - 'scripts/harden-leave-audit-linkage.mjs'
+      - '.github/workflows/frontier-convergence-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-frontier-convergence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up approved Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Prove Frontier primitives and manager routing
+        run: |
+          set -euo pipefail
+          node --test \
+            trust/runtime/authoritative-artifact-binding.test.mjs \
+            integration-fabric/runtime/workforce-constraint-evidence-bridge.test.mjs \
+            ux-overlay/vector-workflows.test.cjs
+
+      - name: Parse immutable leave-evidence hardener
+        run: node --check scripts/harden-leave-audit-linkage.mjs
+
+      - name: Fail closed if OT bridge authority expands
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { buildWorkforceConstraintEvidenceCandidate } from './integration-fabric/runtime/workforce-constraint-evidence-bridge.mjs';
+          const denied = {
+            operationalDecisionAuthority:false,
+            controlAuthority:false,
+            writeBackAuthority:false,
+            payrollAuthority:false,
+            attendanceAuthority:false,
+            causalClaimAuthority:false,
+            checkpointAdvanceAllowed:false,
+            deletionAuthority:false
+          };
+          const result = buildWorkforceConstraintEvidenceCandidate({
+            tenantId:'tenant-ci',
+            evidenceType:'azure-iot-operations-keyframe',
+            siteId:'plant-ci',
+            evidence:{
+              ...denied,
+              stateSnapshotCandidate:true,
+              sourceCompletenessProven:false,
+              deliveryCompletenessProven:false,
+              wfmTenantId:'tenant-ci',
+              connectionId:'aio-ci',
+              externalAssetId:'asset-ci',
+              reconciliationFingerprint:'sha256:' + 'a'.repeat(64)
+            }
+          });
+          for (const field of Object.keys(denied)) {
+            if (result[field] !== false) throw new Error(`authority expanded: ${field}`);
+          }
+          NODE
