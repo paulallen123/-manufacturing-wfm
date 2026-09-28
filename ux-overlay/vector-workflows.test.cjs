@@ -61,6 +61,68 @@ test('payroll blocker action opens the exact next incomplete team without weaken
   actor.role = 'payroll_admin';
   assert.doesNotMatch(context.VectorWorkflow.payrollPage(), /data-vector-workflow="next-review"/, 'payroll-only users cannot acquire manager review access');
 });
+
+test('weekly review continuation opens each next required existing action without auto-confirming it', async () => {
+  const actor = { tenant: 'northstar-demo', email: 'manager@northstar.example', personId: 'm1', role: 'manager' };
+  const team = {
+    id: 'assembly', name: 'Assembly', status: 'draft', revision: 7, checkedEmployees: 0, workedMinutes: 450,
+    employees: [{ id: 'e1', name: 'Áda Example', checked: false, workedMinutes: 450, holidayMinutes: 0 }],
+    records: [{
+      id: 'r1', employee: 'e1', date: '2026-09-07', workedMinutes: 450,
+      raw: { clockIn: '2026-09-07T08:00:00.000Z', clockOut: '2026-09-07T15:30:00.000Z' },
+      effective: { kind: 'worked', clockIn: '2026-09-07T08:00:00.000Z', clockOut: '2026-09-07T15:30:00.000Z', absenceMinutes: 0 }
+    }],
+    issues: [{ id: 'issue-1', status: 'open', employee: 'e1', row: 'r1', type: 'overtime', message: 'Verify overtime evidence.' }],
+    categories: [{ id: 'clocking', name: 'Clocking', description: 'Verify source clocking.', confirmed: false, open: 0 }],
+    blockers: [], canSign: false
+  };
+  let dialog;
+  const context = vm.createContext({
+    console, URL, setTimeout, clearTimeout, OFFLINE: false, F: { actor, ready: true }, ui: { page: 'vector-weekly-signoff' },
+    payrollActor: () => actor, PR: { has: () => true }, VectorDisplayContext: () => ({ locale: 'en-GB' }),
+    request: async () => { throw Error('No source refresh expected.'); }, command: async () => { throw Error('No mutation expected.'); },
+    document: { addEventListener() {}, querySelector() { return null; }, getElementById() { return { innerHTML: '' }; } },
+    modal: (title, html, submit) => { dialog = { title, html, submit }; }, modalActions: label => label,
+    toast() {}, shell: html => html, render: async () => {}, showLogin() {}
+  });
+  vm.runInContext(source, context, { filename: 'vector-workflows.js' });
+  context.RF.report = { periods: [{ id: '2026-09-07', start: '2026-09-07', end: '2026-09-13' }], teams: [team] };
+  context.RF.company = { teams: [team] };
+  context.RF.team = team.id;
+
+  assert.match(context.VectorWorkflow.weeklyPage(), /data-vector-workflow="continue-review"/);
+  await context.VectorWorkflow.action('continue-review');
+  assert.equal(dialog.title, 'Review source exception');
+  assert.equal(team.issues[0].status, 'open', 'opening the next action must not resolve it');
+
+  team.issues[0].status = 'resolved';
+  await context.VectorWorkflow.action('continue-review');
+  assert.equal(dialog.title, 'Verify Clocking');
+  assert.equal(team.categories[0].confirmed, false, 'opening the next action must not confirm it');
+
+  team.categories[0].confirmed = true;
+  await context.VectorWorkflow.action('continue-review');
+  assert.equal(dialog.title, 'Verify employee totals');
+  assert.equal(team.employees[0].checked, false, 'opening the next action must not verify an employee');
+
+  team.employees[0].checked = true;
+  team.checkedEmployees = 1;
+  team.canSign = true;
+  await context.VectorWorkflow.action('continue-review');
+  assert.equal(dialog.title, 'Sign and lock this week');
+  assert.equal(team.status, 'draft', 'opening the final action must not sign the week');
+
+  team.status = 'signed';
+  team.canSign = false;
+  assert.doesNotMatch(context.VectorWorkflow.weeklyPage(), /data-vector-workflow="continue-review"/);
+  await assert.rejects(() => context.VectorWorkflow.action('continue-review'), /No currently reviewable action/);
+
+  team.status = 'draft';
+  team.canSign = true;
+  actor.role = 'payroll_admin';
+  assert.doesNotMatch(context.VectorWorkflow.weeklyPage(), /data-vector-workflow="continue-review"/, 'payroll-only users cannot acquire manager review actions');
+  await assert.rejects(() => context.VectorWorkflow.action('continue-review'), /manager role is required/);
+});
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const reservePort = () => new Promise((resolve, reject) => {
   const server = net.createServer();
