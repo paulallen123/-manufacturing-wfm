@@ -123,6 +123,37 @@ test('weekly review continuation opens each next required existing action withou
   assert.doesNotMatch(context.VectorWorkflow.weeklyPage(), /data-vector-workflow="continue-review"/, 'payroll-only users cannot acquire manager review actions');
   await assert.rejects(() => context.VectorWorkflow.action('continue-review'), /manager role is required/);
 });
+
+test('leave dates render in the active locale without shifting the stored calendar day', async () => {
+  const actor = { tenant: 'northstar-demo', email: 'employee@northstar.example', personId: 'e1', role: 'employee' };
+  const bootstrap = {
+    state: {
+      requests: [{ id: 'leave-1', employee: 'e1', employeeName: 'Zoë 山田', date: '2026-03-29', hours: 7.5, status: 'pending', kind: 'Annual leave' }]
+    }
+  };
+  const personal = { leave: { availableMinutes: 900, pendingMinutes: 450 }, shifts: [] };
+  const context = vm.createContext({
+    console, URL, setTimeout, clearTimeout, OFFLINE: false, F: { actor, ready: true }, ui: { page: 'leave' },
+    payrollActor: () => actor, PR: { has: () => true },
+    VectorDisplayContext: () => ({ locale: 'de-DE', timeZone: 'Europe/Berlin', authoritative: true }),
+    request: async url => url === '/api/bootstrap' ? structuredClone(bootstrap) : structuredClone(personal),
+    command: async () => { throw Error('No mutation expected.'); }, reload: async () => {},
+    document: { addEventListener() {}, querySelector() { return null; }, getElementById() { return { innerHTML: '' }; } },
+    modal() {}, modalActions: label => label, toast() {}, shell: html => html, render: async () => {}, showLogin() {}
+  });
+  vm.runInContext(source, context, { filename: 'vector-workflows.js' });
+
+  await context.VectorWorkflow.leaveRefresh();
+  assert.match(context.VectorWorkflow.leavePage(), /<time datetime="2026-03-29">29\.03\.2026<\/time>/);
+
+  actor.role = 'manager';
+  actor.email = 'manager@northstar.example';
+  actor.personId = 'm1';
+  await context.VectorWorkflow.leaveRefresh();
+  const managerPage = context.VectorWorkflow.leavePage();
+  assert.match(managerPage, /Zoë 山田/);
+  assert.match(managerPage, /<time datetime="2026-03-29">29\.03\.2026<\/time>/);
+});
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const reservePort = () => new Promise((resolve, reject) => {
   const server = net.createServer();
