@@ -1,7 +1,7 @@
 # VECTOR Durable Control Plane — Design
 
 Date: 2026-09-28
-Status: Proposed
+Status: Approved 2026-09-28
 Branch: `design/vector-control-plane-20260928`
 Scope: Orchestration only. No VECTOR product feature expansion.
 
