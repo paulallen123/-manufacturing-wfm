@@ -17,7 +17,7 @@ test('only explicitly approved provider profiles exist', () => {
   assert.deepEqual(providerCertificationProfiles().sort(), ['sap-s4hana', 'xero']);
 });
 
-test('SAP proof runs through the VECTOR connection-test contract without exposing the API key', async () => {
+test('SAP S/4HANA proof runs through the VECTOR connection-test contract without exposing the API key', async () => {
   let observed;
   const result = await certifyProviderSandbox({
     providerKey: 'sap-s4hana',
@@ -28,16 +28,17 @@ test('SAP proof runs through the VECTOR connection-test contract without exposin
     },
     fetchImpl: async (url, options) => {
       observed = { url, options };
-      return response({ d: { results: [{ CampaignID: '1' }] } });
+      return response({ value: [{ name: 'A_Bank', kind: 'EntitySet', url: 'A_Bank' }] });
     },
     nowMs: Date.parse('2026-09-28T12:00:00Z')
   });
   assert.equal(result.status, 'PASS');
   assert.equal(result.evidenceLevel, 'sandbox-authenticated');
-  assert.equal(result.connectionValidation.status, 'CONNECTION_AND_SAMPLE_VERIFIED');
+  assert.equal(result.connectionValidation.status, 'CONNECTION_VERIFIED');
   assert.equal(result.request.headers.APIKey, '[REDACTED]');
   assert.equal(JSON.stringify(result).includes('top-secret-sap-key'), false);
   assert.equal(new URL(observed.url).hostname, 'sandbox.api.sap.com');
+  assert.match(new URL(observed.url).pathname, /s4hanacloud/);
   assert.equal(observed.options.method, 'GET');
 });
 
@@ -64,6 +65,7 @@ test('Xero demo proof redacts token and tenant identifiers from evidence', async
   });
   const serialized = JSON.stringify(result);
   assert.equal(result.status, 'PASS');
+  assert.equal(result.connectionValidation.status, 'CONNECTION_AND_SAMPLE_VERIFIED');
   assert.equal(serialized.includes('secret-token'), false);
   assert.equal(serialized.includes('tenant-1'), false);
   assert.equal(result.request.headers.Authorization, '[REDACTED]');
@@ -76,7 +78,7 @@ test('candidate identity is mandatory and exact', async () => {
       providerKey: 'sap-s4hana',
       candidateSha: 'not-a-sha',
       resolveSecretBundle: async () => ({ apiKey: 'x' }),
-      fetchImpl: async () => response({ d: { results: [] } })
+      fetchImpl: async () => response({ value: [] })
     }),
     /Exact 40-character VECTOR candidate SHA/
   );
