@@ -54,3 +54,19 @@ Only after Phase B proves exact-candidate durable orchestration under duplicate/
 - Configure and prove a genuinely non-Railway verifier/runtime lane.
 - Do not count Northstar-on-Railway as independent until its runtime/control/data failure domain is truly separate.
 - Prove provider-loss failover before the `failure_domain_independence` gate can pass.
+
+
+## Current checkpoint — 2026-09-28
+
+- Phase A deterministic policy/state-machine suite: **32/32 PASS** locally.
+- Static syntax checks: **PASS**.
+- Current Workflow/Queue API contract updated to Workflow `4.8.9`, Queue `0.5.1`, Node `>=22.23.2`.
+- Shadow mode is structurally unable to grant `production_authority`.
+- Failed gates require the exact active repair/regression task plus a regression-case ID before reopening.
+- Reordered provider health events use monotonic sequence protection.
+- GitHub-hosted Actions are currently **PROVIDER_DEGRADED before execution** (jobs expose no steps); this is not counted as a product/control-plane test failure.
+- Vercel hosted durability remains **UNPROVEN** because no Vercel team/project is currently visible through the connected Vercel account.
+- The non-Railway verifier remains intentionally disabled, so failure-domain independence cannot be claimed.
+- Evidence checkpoint: `control-plane/evidence/phase-a-shadow-checkpoint-2026-09-28.json`.
+
+Do not advance to Phase B mutation-capable dispatch until the Vercel-hosted Phase A acceptance evidence is terminal PASS.
