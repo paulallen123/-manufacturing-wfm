@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Isolated hosted proof candidate for Outcome -> Learning convergence",
+  "parentProductSha": "7fb4dd344dadde54ea0b869996a331ac5cca1825",
+  "promotionAuthority": "NONE",
+  "protectedReleaseMutation": false,
+  "requiredGates": [
+    "exact hosted runtime identity",
+    "authenticated outcome-intelligence API",
+    "tenant isolation",
+    "regression release block",
+    "restart durability",
+    "Golden Journey non-regression"
+  ]
+}

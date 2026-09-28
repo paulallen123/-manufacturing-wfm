@@ -26,7 +26,9 @@
     "falsifiedResearchRetainedWithResolutionRoute": true,
     "researchMustReuseCanonicalOwner": true,
     "researchMayNotCreateDuplicateLoopOrSourceOfTruth": true,
-    "researchMayNotDisplaceGoldenJourney": true
+    "researchMayNotDisplaceGoldenJourney": true,
+    "verifiedOutcomeRegressionBlocksAffectedCapabilityPromotion": true,
+    "learningEvidenceNeverSelfPromotesAuthority": true
   },
   "phases": [
     "source-and-contract",
@@ -151,7 +153,10 @@
     "resolutionMustRecordCause": true,
     "resolutionMustAddRegressionOrPreflightGuard": true,
     "rawCustomerDataMayEnterSharedLearning": false,
-    "modelOutputMayNotBecomeAuthority": true
+    "modelOutputMayNotBecomeAuthority": true,
+    "verifiedRegressionMustBlockAffectedCapabilityPromotion": true,
+    "repeatableWinCandidateRequiresIndependentPromotionProof": true,
+    "unrelatedDevelopmentContinuesDuringScopedRegression": true
   },
   "stageIsolationPolicy": {
     "executionModel": "parallel-and-scoped",

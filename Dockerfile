@@ -23,7 +23,7 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node --check learning/video-worker/runner.mjs \
  && node integration-fabric/scripts/validate.mjs \
  && node scripts/run-critical-attendance-assault.mjs \
- && node --test tests/critical-proof-gates.test.cjs tests/vector-payroll-release-proof.test.mjs tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-workflows.test.cjs ux-overlay/vector-scheduling-simplicity-contract.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs operations/runtime/scheduling-intelligence-service.test.cjs operations/runtime/manufacturing-demand-forecast.test.cjs operations/runtime/schedule-attendance-reconciliation.test.cjs operations/runtime/scheduling-forecast-reconciliation-service.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-ingress.security.test.cjs operations/runtime/autopilot-replay.regression.test.cjs implementation/runtime/zero-touch-customer-factory.test.cjs implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs operations/runtime/t9-customer-guardian.test.cjs reporting/runtime/vector-reporting-service.test.cjs trust/runtime/vector-trust-spine.test.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/owner-access-recovery.test.cjs security/runtime/durable-state-guard.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
+ && node --test tests/critical-proof-gates.test.cjs tests/vector-payroll-release-proof.test.mjs tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-workflows.test.cjs ux-overlay/vector-scheduling-simplicity-contract.test.cjs ux-overlay/vector-outcome-intelligence-ui.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs operations/runtime/scheduling-intelligence-service.test.cjs operations/runtime/manufacturing-demand-forecast.test.cjs operations/runtime/schedule-attendance-reconciliation.test.cjs operations/runtime/scheduling-forecast-reconciliation-service.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-ingress.security.test.cjs operations/runtime/autopilot-replay.regression.test.cjs implementation/runtime/zero-touch-customer-factory.test.cjs implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs operations/runtime/t9-customer-guardian.test.cjs reporting/runtime/vector-reporting-service.test.cjs trust/runtime/vector-trust-spine.test.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/owner-access-recovery.test.cjs security/runtime/durable-state-guard.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
@@ -122,6 +122,7 @@ COPY implementation/runtime/configuration-inference-engine.cjs /app/implementati
 COPY implementation/runtime/implementation-digital-twin.cjs /app/implementation-runtime/implementation-digital-twin.cjs
 COPY implementation/runtime/tenant-environment-provisioner.cjs /app/implementation-runtime/tenant-environment-provisioner.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
+COPY learning/runtime/outcome-intelligence-service.cjs /app/learning-runtime/outcome-intelligence-service.cjs
 COPY learning/runtime/training-workflow-manifest.cjs /app/learning-runtime/training-workflow-manifest.cjs
 COPY learning/runtime/training-twin.cjs /app/learning-runtime/training-twin.cjs
 COPY learning/runtime/training-scenario-engine.cjs /app/learning-runtime/training-scenario-engine.cjs
@@ -223,6 +224,8 @@ COPY implementation/runtime/configuration-inference-engine.test.cjs /tmp/wfm-tes
 COPY implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.cjs
 COPY learning/runtime/adaptive-learning-engine.test.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs
+COPY learning/runtime/outcome-intelligence-service.cjs /tmp/wfm-tests/learning/runtime/outcome-intelligence-service.cjs
+COPY learning/runtime/outcome-intelligence-service.test.cjs /tmp/wfm-tests/learning/runtime/outcome-intelligence-service.test.cjs
 COPY learning/runtime/training-workflow-manifest.cjs /tmp/wfm-tests/learning/runtime/training-workflow-manifest.cjs
 COPY learning/runtime/training-workflow-manifest.test.cjs /tmp/wfm-tests/learning/runtime/training-workflow-manifest.test.cjs
 COPY learning/runtime/training-twin.cjs /tmp/wfm-tests/learning/runtime/training-twin.cjs
@@ -276,6 +279,7 @@ COPY operations/runtime/realtime-event-service.cjs /tmp/wfm-tests/operations/run
 COPY operations/runtime/realtime-event-service.test.cjs /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs
 COPY operations/runtime/autopilot-execution-engine.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.cjs
 COPY operations/runtime/autopilot-execution-engine.test.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs
+COPY operations/runtime/outcome-learning-closed-loop.integration.test.cjs /tmp/wfm-tests/operations/runtime/outcome-learning-closed-loop.integration.test.cjs
 COPY operations/runtime/t9-customer-guardian.cjs /tmp/wfm-tests/operations/runtime/t9-customer-guardian.cjs
 COPY operations/runtime/t9-customer-guardian.test.cjs /tmp/wfm-tests/operations/runtime/t9-customer-guardian.test.cjs
 COPY reporting/runtime/vector-reporting-service.cjs /tmp/wfm-tests/reporting/runtime/vector-reporting-service.cjs
@@ -294,6 +298,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/implementation/runtime/implementation-digital-twin.test.cjs \
       /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.test.cjs \
       /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs \
+      /tmp/wfm-tests/learning/runtime/outcome-intelligence-service.test.cjs \
       /tmp/wfm-tests/learning/runtime/training-workflow-manifest.test.cjs \
       /tmp/wfm-tests/learning/runtime/training-twin.test.cjs \
       /tmp/wfm-tests/learning/runtime/training-scenario-engine.test.cjs \
@@ -321,6 +326,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/decision-outcome-proof.test.cjs \
       /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs \
       /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs \
+      /tmp/wfm-tests/operations/runtime/outcome-learning-closed-loop.integration.test.cjs \
       /tmp/wfm-tests/reporting/runtime/vector-reporting-service.test.cjs \
  && rm -rf /tmp/wfm-tests
 
@@ -340,6 +346,8 @@ COPY scripts/compose-vector-presentation.mjs /tmp/compose-vector-presentation.mj
 COPY scripts/prove-vector-built-asset-provenance.mjs /tmp/prove-vector-built-asset-provenance.mjs
 RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && node --check /app/security-runtime/bootstrap.cjs \
+ && node --check /app/learning-runtime/outcome-intelligence-service.cjs \
+ && node --check /app/operations-runtime/autopilot-execution-engine.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
  && node --check /tmp/wfm-ux-overlay/vector-realtime.js \

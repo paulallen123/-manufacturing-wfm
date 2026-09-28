@@ -25,7 +25,7 @@ const NAV=[
 const DESIGN_ID='VECTOR_FIVE_SECTION_2026_09_19';
 let navigationEpoch=0,historyReady=false;
 const RETIRED_ROUTE_REDIRECTS=Object.freeze({'weekly-review':'attendance','time-review':'attendance','savings-decisions':'costs'});
-const state={queued:false,evidenceEpoch:0,readinessEpoch:0,timeReviewEvidence:{status:'idle',items:[]},readinessEvidence:{status:'idle',departments:[],summary:null,asOf:null,limitations:[]},returnFocus:false};
+const state={queued:false,evidenceEpoch:0,readinessEpoch:0,outcomeEpoch:0,timeReviewEvidence:{status:'idle',items:[]},readinessEvidence:{status:'idle',departments:[],summary:null,asOf:null,limitations:[]},outcomeLearning:{status:'idle',summary:null,error:null},returnFocus:false};
 const observerConfig={subtree:true,childList:true};
 let shellObserver=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -331,7 +331,48 @@ function sectionTabs(content){
  const n=document.createElement('nav');n.className='vector-section-tabs';n.setAttribute('aria-label','Section pages');
  n.innerHTML=tabs.map(([r,t])=>`<button type="button" data-vector-route="${esc(r)}" aria-current="${page()===r?'page':'false'}">${esc(t)}</button>`).join('');content.prepend(n);
 }
-function generalPage(content){if(content.dataset.vectorHome==='1')return;content.classList.add('vector-page-content');sectionTabs(content);ensureActionContext(content);
+
+function outcomeLabel(value){
+  return String(value||'').replace(/[:_-]+/g,' ').replace(/\s+/g,' ').trim().replace(/\b\w/g,m=>m.toUpperCase())||'Verified pattern';
+}
+function outcomeIntelligenceMarkup(){
+  const source=state.outcomeLearning,summary=source&&source.summary,status=String(source&&source.status||'idle');
+  if(status==='loading')return '<section class="vector-card vector-outcome-intelligence" data-vector-outcome-intelligence="loading"><div class="vector-card-head"><div><span class="vector-card-kicker">Verified learning</span><h2>What VECTOR has learned</h2><p>Checking independently verified operational outcomes...</p></div></div></section>';
+  if(status==='error')return '<section class="vector-card vector-outcome-intelligence" data-vector-outcome-intelligence="unavailable"><div class="vector-card-head"><div><span class="vector-card-kicker">Verified learning</span><h2>What VECTOR has learned</h2><p>Verified outcome learning is unavailable. No fallback insight is being invented.</p></div></div></section>';
+  const outcomes=Number(summary&&summary.verifiedOutcomeCount||0),blockers=Number(summary&&summary.releaseBlockingEvaluationCount||0);
+  const skills=Array.isArray(summary&&summary.skillCandidates)?summary.skillCandidates:[],evaluations=Array.isArray(summary&&summary.evaluations)?summary.evaluations:[];
+  const skill=skills.find(item=>Number(item&&item.verifiedWinCount)>=3&&String(item&&item.authority||'').toLowerCase()==='none')||skills[0]||null;
+  const regression=evaluations.find(item=>item&&item.releaseBlocking===true)||null;
+  const skillText=skill?(Number(skill.verifiedWinCount||0)+' verified wins · '+outcomeLabel(skill.fingerprint)):'No repeatable verified win is ready to reuse.';
+  const regressionText=regression?('Review required · '+outcomeLabel(regression.fingerprint)):'No verified regression is blocking release.';
+  return '<section class="vector-card vector-outcome-intelligence" data-vector-outcome-intelligence="ready" aria-label="Verified outcome intelligence. Learning evidence never grants execution authority."><div class="vector-card-head"><div><span class="vector-card-kicker">Verified learning</span><h2>What VECTOR has learned</h2><p>Only independently verified outcomes appear here. Learning can recommend and block unsafe promotion; it cannot grant itself execution authority.</p></div></div><div class="vector-value-grid"><div><small>Verified outcomes</small><strong>'+esc(outcomes)+'</strong><span>Measured result evidence accepted into tenant-scoped learning memory.</span></div><div><small>Repeatable wins</small><strong>'+esc(skills.length)+'</strong><span>'+esc(skillText)+'</span></div><div><small>Release-blocking regressions</small><strong>'+esc(blockers)+'</strong><span>'+esc(regressionText)+'</span></div></div></section>';
+}
+function ensureOutcomeIntelligence(content){
+  const existing=content&&content.querySelector&&content.querySelector(':scope > [data-vector-outcome-intelligence]');
+  if(page()!=='insights'||employee()){if(existing)existing.remove();return;}
+  const holder=document.createElement('div');holder.innerHTML=outcomeIntelligenceMarkup();const card=holder.firstElementChild;if(!card)return;
+  if(existing){existing.replaceWith(card);return;}
+  const tabs=content.querySelector(':scope > .vector-section-tabs');if(tabs)tabs.after(card);else content.prepend(card);
+}
+async function loadOutcomeIntelligence(){
+  if(page()!=='insights'||employee()){state.outcomeEpoch++;state.outcomeLearning={status:'idle',summary:null,error:null};return;}
+  const epoch=++state.outcomeEpoch;state.outcomeLearning={status:'loading',summary:null,error:null};
+  const initial=document.querySelector('.content');if(initial)ensureOutcomeIntelligence(initial);
+  try{
+    const response=await fetch('/api/learning/outcomes/summary',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
+    if(!response.ok)throw new Error('outcome intelligence unavailable');
+    const body=await response.json();
+    if(body&&body.executionAuthority!=='NONE'||!Number.isFinite(Number(body&&body.verifiedOutcomeCount))||!Array.isArray(body&&body.skillCandidates)||!Array.isArray(body&&body.evaluations))throw new Error('outcome intelligence contract mismatch');
+    if(epoch!==state.outcomeEpoch||page()!=='insights'||employee())return;
+    state.outcomeLearning={status:'ready',summary:body,error:null};
+  }catch(error){
+    if(epoch!==state.outcomeEpoch||page()!=='insights'||employee())return;
+    state.outcomeLearning={status:'error',summary:null,error:String(error&&error.message||error)};
+  }
+  const current=document.querySelector('.content');if(current)ensureOutcomeIntelligence(current);
+}
+
+function generalPage(content){if(content.dataset.vectorHome==='1')return;content.classList.add('vector-page-content');sectionTabs(content);ensureActionContext(content);ensureOutcomeIntelligence(content);
  if(page()==='leave'){
   const table=[...content.querySelectorAll('h2')].find(h=>h.textContent.trim()==='Employee balances')?.closest('section');
   if(table&&!table.closest('details')){const d=document.createElement('details');d.className='vector-balances';d.innerHTML='<summary>Employee balances</summary>';table.before(d);d.append(table);}
@@ -355,7 +396,7 @@ function settingsMenu(){
  const existing=content.querySelector('.vector-settings');if(existing){existing.remove();return;}
  const panel=document.createElement('section');panel.className='vector-card vector-settings';panel.innerHTML='<div class="vector-card-head"><h2>Settings & more</h2><button type="button" data-vector-settings>Close</button></div><div class="vector-settings-links">'+sourceButtons().filter(b=>!NAV.some(n=>n.routes.includes(b.dataset.page))).map(b=>`<button type="button" data-vector-route="${esc(b.dataset.page)}">${esc(text(b))}</button>`).join('')+'</div>';content.prepend(panel);panel.scrollIntoView({block:'start'});
 }
-function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(page()==='overview'&&!employee())renderHome(content);else generalPage(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
+function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(page()==='overview'&&!employee())renderHome(content);else generalPage(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();void loadOutcomeIntelligence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
 document.addEventListener('click',e=>{if(e.target.closest('[data-vector-close-review]')){document.getElementById('modal').close();return;}const review=e.target.closest('[data-vector-review-coverage]');if(review){const id=review.dataset.vectorReviewCoverage;const r=data.requests?.find(r=>String(r.id)===id);if(r&&visiblePeople().some(p=>String(p.id)===String(r.employee)))void approveRequest(id);return;}if(e.target.closest('[data-vector-settings]')){settingsMenu();return;}const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec){const r=firstRoute(spec.routes);if(r)go(r);}return;}if(e.target.closest('[data-vector-return-context]')){clearActionContext();state.returnFocus=true;go('overview');return;}const actionButton=e.target.closest('[data-vector-source-id][data-vector-workflow][data-vector-route]');if(actionButton){if(actionButton.dataset.vectorWorkflow==='leave'){openLeaveReview(actionButton.dataset.vectorSourceId);return;}rememberActionContext({sourceId:actionButton.dataset.vectorSourceId,workflow:actionButton.dataset.vectorWorkflow,route:actionButton.dataset.vectorRoute,title:actionButton.closest('.vector-alert-row')?.querySelector('b')?.textContent||'Time Review item'});go(actionButton.dataset.vectorRoute);return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('attendance');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askWorkforce(input.value.trim());}});
 const previousRender=window.render;

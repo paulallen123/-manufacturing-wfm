@@ -17,7 +17,8 @@ for(const key of [
   'learnedBlockerBecomesPermanentGuard','unknownBlockerFailsClosed',
   'blockerIsolationByCapability','unaffectedDevelopmentAlwaysContinues',
   'unaffectedProofStagesAlwaysContinue','blockedCapabilityDiagnosticsContinue',
-  'neverGloballyFreezeForSingleCapabilityBlocker','promotionStopsOnlyAtExplicitDependencyBoundary'
+  'neverGloballyFreezeForSingleCapabilityBlocker','promotionStopsOnlyAtExplicitDependencyBoundary',
+  'verifiedOutcomeRegressionBlocksAffectedCapabilityPromotion','learningEvidenceNeverSelfPromotesAuthority'
 ]) assert.equal(control.rules[key],true,key);
 assert.equal(control.stageIsolationPolicy?.onBlocker,'QUARANTINE_AFFECTED_SCOPE');
 assert.equal(control.stageIsolationPolicy?.unaffectedDevelopment,'CONTINUE');
@@ -25,6 +26,15 @@ assert.equal(control.stageIsolationPolicy?.unaffectedProofStages,'CONTINUE');
 assert.equal(control.stageIsolationPolicy?.affectedCapabilityLaterDiagnostics,'CONTINUE_DIAGNOSTIC_ONLY');
 assert.equal(control.stageIsolationPolicy?.affectedCapabilityPromotion,'BLOCK_UNTIL_REPAIRED');
 assert.equal(control.blockerReceiptContract?.globalStopDefault,false);
+assert.equal(control.learningPolicy?.verifiedRegressionMustBlockAffectedCapabilityPromotion,true);
+assert.equal(control.learningPolicy?.repeatableWinCandidateRequiresIndependentPromotionProof,true);
+assert.equal(control.learningPolicy?.unrelatedDevelopmentContinuesDuringScopedRegression,true);
+const lanePolicy=JSON.parse(fs.readFileSync(path.join(ROOT,'release/proof-lane-policy.json'),'utf8'));
+assert.equal(lanePolicy.rules?.verifiedOutcomeRegressionBlocksAffectedCapabilityPromotion,true);
+assert.equal(lanePolicy.rules?.learningEvidenceCannotSelfPromoteAuthority,true);
+assert.ok(lanePolicy.orchestration?.preFreezeAdmission?.checks?.includes('VERIFIED_OUTCOME_REGRESSION_ADMISSION'));
+assert.equal(lanePolicy.orchestration?.preFreezeAdmission?.outcomeLearningAdmission?.contract,'VECTOR_OUTCOME_RELEASE_ADMISSION_V1');
+assert.equal(lanePolicy.orchestration?.preFreezeAdmission?.outcomeLearningAdmission?.blockingHttpStatus,409);
 assert.ok(Array.isArray(control.pathRules)&&control.pathRules.length>=8);
 assert.ok(Array.isArray(knowledge.entries)&&knowledge.entries.length>=5);
 for(const item of knowledge.entries){
