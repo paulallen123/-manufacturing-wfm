@@ -175,3 +175,75 @@ test('open gates plus empty work with no explicit block is an orchestration brea
   const state = createInitialState(candidate);
   assert.deepEqual(checkNoIdleInvariant(state), { ok: false, code: 'ORCHESTRATION_INVARIANT_BREACH' });
 });
+
+
+test('Railway outage blocks the dependent DAG explicitly instead of creating unexplained idle', () => {
+  let { state } = bootstrap();
+  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass4', gateId: 'pre_freeze', sequence: 1 })).state;
+  const result = applyControlEvent(state, {
+    eventId: 'evt-railway-down',
+    type: 'PROVIDER_DEGRADED',
+    candidateToken: candidateToken(candidate),
+    provider: 'railway',
+    reason: 'pre-execution provider outage',
+  });
+  assert.equal(result.state.gates.hosted_runtime.state, 'BLOCKED');
+  assert.equal(result.state.gates.hosted_runtime.blockingReason, 'NO_ADMITTED_HEALTHY_FAILURE_DOMAIN');
+  assert.equal(result.state.gates.exact_source_binding.state, 'BLOCKED');
+  assert.match(result.state.gates.exact_source_binding.blockingReason, /^DEPENDENCY_BLOCKED:/);
+  assert.equal(result.invariant.ok, true);
+});
+
+test('dependency blocks reopen only after the upstream gate is actually proven', () => {
+  let { state } = bootstrap();
+  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass5', gateId: 'pre_freeze', sequence: 1 })).state;
+  state = applyControlEvent(state, {
+    eventId: 'evt-railway-down2',
+    type: 'PROVIDER_DEGRADED',
+    candidateToken: candidateToken(candidate),
+    provider: 'railway',
+  }).state;
+  state = applyControlEvent(state, {
+    eventId: 'evt-railway-back',
+    type: 'PROVIDER_RECOVERED',
+    candidateToken: candidateToken(candidate),
+    provider: 'railway',
+  }).state;
+  assert.equal(state.gates.hosted_runtime.state, 'UNPROVEN');
+  assert.equal(state.gates.exact_source_binding.state, 'BLOCKED');
+
+  const result = applyControlEvent(state, receiptEvent({
+    eventId: 'evt-hosted-pass-after-recovery',
+    gateId: 'hosted_runtime',
+    sequence: 1,
+    proofLane: { laneId: 'railway-proof-workers', provider: 'railway' },
+  }));
+  assert.equal(result.state.gates.exact_source_binding.state, 'UNPROVEN');
+  assert.ok(result.emittedTasks.some((task) => task.gateId === 'exact_source_binding'));
+});
+
+test('Railway SKIPPED remains provider metadata and never earns a proof PASS', () => {
+  let { state } = bootstrap();
+  state = applyControlEvent(state, receiptEvent({ eventId: 'evt-pre-pass6', gateId: 'pre_freeze', sequence: 1 })).state;
+  const result = applyControlEvent(state, {
+    eventId: 'evt-railway-skipped',
+    type: 'PROVIDER_STATUS',
+    candidateToken: candidateToken(candidate),
+    provider: 'railway',
+    status: 'SKIPPED',
+  });
+  assert.notEqual(result.state.gates.hosted_runtime.state, 'PASS');
+});
+
+test('durable state survives JSON serialization without losing candidate or task idempotency', () => {
+  const initial = bootstrap();
+  const restored = JSON.parse(JSON.stringify(initial.state));
+  const duplicate = applyControlEvent(restored, {
+    eventId: 'evt-bootstrap',
+    type: 'CANDIDATE_STARTED',
+    candidateToken: candidateToken(candidate),
+  });
+  assert.equal(duplicate.duplicate, true);
+  assert.equal(duplicate.state.candidateToken, candidateToken(candidate));
+  assert.equal(Object.keys(duplicate.state.tasks).length, Object.keys(initial.state.tasks).length);
+});
