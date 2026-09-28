@@ -122,6 +122,7 @@ COPY implementation/runtime/configuration-inference-engine.cjs /app/implementati
 COPY implementation/runtime/implementation-digital-twin.cjs /app/implementation-runtime/implementation-digital-twin.cjs
 COPY implementation/runtime/tenant-environment-provisioner.cjs /app/implementation-runtime/tenant-environment-provisioner.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
+COPY learning/runtime/outcome-intelligence-service.cjs /app/learning-runtime/outcome-intelligence-service.cjs
 COPY learning/runtime/training-workflow-manifest.cjs /app/learning-runtime/training-workflow-manifest.cjs
 COPY learning/runtime/training-twin.cjs /app/learning-runtime/training-twin.cjs
 COPY learning/runtime/training-scenario-engine.cjs /app/learning-runtime/training-scenario-engine.cjs
@@ -223,6 +224,8 @@ COPY implementation/runtime/configuration-inference-engine.test.cjs /tmp/wfm-tes
 COPY implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs
 COPY learning/runtime/adaptive-learning-engine.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.cjs
 COPY learning/runtime/adaptive-learning-engine.test.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs
+COPY learning/runtime/outcome-intelligence-service.cjs /tmp/wfm-tests/learning/runtime/outcome-intelligence-service.cjs
+COPY learning/runtime/outcome-intelligence-service.test.cjs /tmp/wfm-tests/learning/runtime/outcome-intelligence-service.test.cjs
 COPY learning/runtime/training-workflow-manifest.cjs /tmp/wfm-tests/learning/runtime/training-workflow-manifest.cjs
 COPY learning/runtime/training-workflow-manifest.test.cjs /tmp/wfm-tests/learning/runtime/training-workflow-manifest.test.cjs
 COPY learning/runtime/training-twin.cjs /tmp/wfm-tests/learning/runtime/training-twin.cjs
@@ -294,6 +297,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/implementation/runtime/implementation-digital-twin.test.cjs \
       /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.test.cjs \
       /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs \
+      /tmp/wfm-tests/learning/runtime/outcome-intelligence-service.test.cjs \
       /tmp/wfm-tests/learning/runtime/training-workflow-manifest.test.cjs \
       /tmp/wfm-tests/learning/runtime/training-twin.test.cjs \
       /tmp/wfm-tests/learning/runtime/training-scenario-engine.test.cjs \
@@ -340,6 +344,8 @@ COPY scripts/compose-vector-presentation.mjs /tmp/compose-vector-presentation.mj
 COPY scripts/prove-vector-built-asset-provenance.mjs /tmp/prove-vector-built-asset-provenance.mjs
 RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && node --check /app/security-runtime/bootstrap.cjs \
+ && node --check /app/learning-runtime/outcome-intelligence-service.cjs \
+ && node --check /app/operations-runtime/autopilot-execution-engine.cjs \
  && node --check /tmp/wfm-implementation-ui/implementation-journey.js \
  && node --check /tmp/wfm-ux-overlay/vector-shell.js \
  && node --check /tmp/wfm-ux-overlay/vector-realtime.js \
