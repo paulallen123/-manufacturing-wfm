@@ -41,6 +41,7 @@ test('operational proof requires independent baseline and result evidence',()=>{
   const learning=toAdaptiveOutcomeInput(proof);
   assert.equal(learning.result-learning.baseline,15);
   assert.equal(learning.verified,true);
+  assert.equal(learning.fingerprint,'absence-recovery:redeploy:planAttainmentPct');
 });
 
 test('cost improvement maps lower actual cost to positive learning delta',()=>{
@@ -51,6 +52,7 @@ test('cost improvement maps lower actual cost to positive learning delta',()=>{
   assert.equal(proof.observed.improvement,200);
   const learning=toAdaptiveOutcomeInput(proof);
   assert.equal(learning.result-learning.baseline,200);
+  assert.equal(learning.fingerprint,'absence-recovery:redeploy:labourCost');
 });
 
 test('realised financial value requires finance evidence currency and a bounded window',()=>{
@@ -75,4 +77,22 @@ test('non-financial KPI cannot be labelled realised financial value',()=>{
     baselineActual:82,baselineEvidenceRefs:['mes:baseline'],financeEvidenceRefs:['finance:x'],
     currency:'GBP',measurementWindow:{start:'2026-09-22T08:00:00Z',end:'2026-09-22T16:00:00Z'}
   }),/supported financial metric/);
+});
+
+test('learning fingerprint separates different selected actions for the same decision and metric',()=>{
+  const redeploy=createDecisionOutcomeProof({
+    episode:completed('labourCost'),metric:'labourCost',direction:'MINIMIZE',classification:'VERIFIED_OPERATIONAL',
+    baselineActual:520,baselineEvidenceRefs:['payroll:baseline']
+  });
+  const base=completed('labourCost');
+  const overtimeEpisode={...base,selection:{...base.selection,optionId:'overtime'},options:[
+    ...base.options.filter(x=>x.id!=='redeploy'),
+    {id:'overtime',label:'Overtime',feasible:true,policyAllowed:true,hardConstraintsPassed:true,uncertainty:.1,prediction:{labourCost:330,planAttainmentPct:96,riskScore:1},evidenceRefs:['sim:overtime'],reasonCodes:[]}
+  ]};
+  const overtime=createDecisionOutcomeProof({
+    episode:overtimeEpisode,metric:'labourCost',direction:'MINIMIZE',classification:'VERIFIED_OPERATIONAL',
+    baselineActual:520,baselineEvidenceRefs:['payroll:baseline']
+  });
+  assert.notEqual(toAdaptiveOutcomeInput(redeploy).fingerprint,toAdaptiveOutcomeInput(overtime).fingerprint);
+  assert.equal(toAdaptiveOutcomeInput(overtime).fingerprint,'absence-recovery:overtime:labourCost');
 });
