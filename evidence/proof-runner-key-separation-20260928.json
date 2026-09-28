@@ -1,0 +1,97 @@
+{
+  "evidenceVersion": 1,
+  "recordedAt": "2026-09-28T22:25:58Z",
+  "claim": "One proof-runner public key cannot represent more than one workload identity, including identities scoped to different tenants.",
+  "classification": "BUILT",
+  "evidenceBoundary": {
+    "environment": "local synthetic sealed-runtime extraction with persistent SQLite",
+    "customerData": false,
+    "productionMutation": false,
+    "hostedProof": false,
+    "countryOrRegion": "not jurisdiction-specific",
+    "scale": "two configured proof-runner identities / two tenant labels / one deliberately reused Ed25519 public key",
+    "executingNode": "24.19.0",
+    "requiredReleaseNode": "22.23.2"
+  },
+  "candidate": {
+    "pullRequest": 225,
+    "startingHead": "ed512e537e60d27f1f38522b942ab590d365eccb",
+    "sealedRuntimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "sealedRuntimeSha256": "dd0b0d5673247cc64c59c0cd873a1b413129e905a19f05c7f2d863f1ad0555da"
+  },
+  "red": {
+    "tests": 7,
+    "passed": 6,
+    "failed": 1,
+    "skipped": 0,
+    "durationMs": 18688.955062,
+    "observation": "Two otherwise valid proof-runner configurations used different runner IDs and tenant labels but the same Ed25519 public key. A challenge request returned HTTP 200 instead of failing closed with HTTP 503.",
+    "rootCause": "Configuration validation enforced unique runner IDs but did not enforce unique public-key fingerprints. One compromised credential could therefore be assigned to multiple workload principals."
+  },
+  "repair": {
+    "keySeparation": "Configuration now computes every validated Ed25519 public-key fingerprint and requires the fingerprint set cardinality to equal the configured identity count.",
+    "failClosed": "Any duplicate key assignment returns HTTP 503 before selecting a runner identity, issuing a challenge or creating a session.",
+    "boundary": "The check is applied to the complete configured identity set on every configuration read, rather than only to the requested runner ID."
+  },
+  "green": {
+    "focusedRepeatedFreshStores": {
+      "runs": 3,
+      "testsPerRun": 7,
+      "passedPerRun": 7,
+      "failedPerRun": 0,
+      "skippedPerRun": 0,
+      "durationsMs": [17443.631481, 17561.467748, 17783.526492]
+    },
+    "observedContainment": {
+      "configuredIdentities": 2,
+      "configuredTenantLabels": ["northstar-demo", "other-tenant"],
+      "uniquePublicKeys": 1,
+      "challengeStatus": 503,
+      "challengesCreated": 0,
+      "proofRunnerSessionsCreated": 0
+    },
+    "affectedRegression": {
+      "tests": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 17534.351515,
+      "coverage": [
+        "immutable leave-decision restart/tamper refusal",
+        "legacy leave-decision quarantine",
+        "passkey-only normal sign-in UI",
+        "passkey Origin, user-verification and replay controls",
+        "proof-runner atomic rate/action budgets, scope denial, replay denial, audit and kill switch",
+        "proof-runner authority contraction across persistent restart",
+        "proof-runner exact-key rotation revocation",
+        "proof-runner account-authority escalation revocation",
+        "proof-runner expected-role issuance denial",
+        "proof-runner exact capability-policy issuance denial",
+        "proof-runner public-key separation",
+        "leave decision domain-audit request binding"
+      ]
+    },
+    "overlayIdempotence": {
+      "result": "PASS",
+      "generatedServerSha256": "073314aae603cd2b1f7e69f7d39060ebf9d925fe8f557e1861ff912ec5bfdc24",
+      "observation": "The proof-runner hardener applied twice to a fresh sealed extraction without changing the generated server; the generated runtime and changed source/test passed syntax validation."
+    }
+  },
+  "preservedHarnessFailure": {
+    "tests": 12,
+    "passed": 10,
+    "failed": 2,
+    "skipped": 0,
+    "classification": "harness path error; excluded from product evidence",
+    "cause": "The first affected-suite invocation omitted WFM_LEAVE_AUDIT_HARDENER, so two legacy leave fixtures referenced the absent candidate-bc4 path. All ten tests that reached candidate behavior passed; explicit overlay bindings produced the recorded 12/12 result."
+  },
+  "fileSha256": {
+    "scripts/harden-proof-runner-identity.mjs": "b7a55db19c713f43ed79c054336fe4e808790cf065b9caa81ed83cd5bc7610f8",
+    "tests/proof-runner-workload-identity.proof.test.cjs": "6b061ecc448fc39366dcf9374b5eb66bd2632534545fc44aee482c4c4176991a"
+  },
+  "releaseGate": {
+    "status": "BLOCKED",
+    "reason": "This result executed locally on Node 24.19.0 rather than required Node 22.23.2. Exact Docker execution, hosted configuration validation and all-instance key separation remain unproved.",
+    "nextProof": "Execute duplicate-key configuration rejection inside the exact Node 22.23.2 Docker candidate, then prove the approved hosted synthetic lane fails closed on every active instance when one key fingerprint is assigned to two runner identities."
+  }
+}
