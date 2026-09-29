@@ -128,7 +128,10 @@ test('bootstrap tool outputs are fresh sanitized read-only state', async () => {
         return new Response(JSON.stringify({id:'sess_route_tools',status:'idle',required_actions:[]}),{status:200});
       }
       if(url.endsWith('/sess_route_tools/events') && init.method==='POST'){
-        const body=JSON.parse(init.body); outputs.push(...body.events.map(x=>JSON.parse(x.output)));
+        const body=JSON.parse(init.body);
+        outputs.push(...body.events
+          .filter(x=>x.type==='agent.session.input.tool_result')
+          .map(x=>JSON.parse(x.output)));
         return new Response('',{status:202});
       }
       if(url.includes('/sess_route_tools/items?'))
