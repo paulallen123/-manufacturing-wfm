@@ -384,6 +384,46 @@ test('learning summary is tenant isolated and employee cannot view aggregate ana
   }
 });
 
+
+test('director receives privileged curriculum after earlier employee assignments', async () => {
+  const f = fixture();
+  try {
+    const db = new DatabaseSync(f.dbPath);
+    db.prepare("UPDATE users SET role='employee' WHERE email='admin@alpha'").run();
+    await call(f.engine, f.tokens.admin, 'GET', '/api/learning/adaptive/plan');
+    db.prepare("UPDATE users SET role='director' WHERE email='admin@alpha'").run();
+    const plan = await call(f.engine, f.tokens.admin, 'GET', '/api/learning/adaptive/plan');
+    assert.equal(plan.body.role, 'admin');
+    assert.equal(plan.body.all.some(x => x.competencyKey === 'configuration.roles'), true);
+    assert.equal(plan.body.all.some(x => x.competencyKey === 'profile.manage'), false);
+    const assigned = db.prepare("SELECT role FROM learning_assignments WHERE email='admin@alpha' AND competency_key='time.clock'").get();
+    assert.equal(assigned.role, 'admin');
+    const summary = await call(f.engine, f.tokens.admin, 'GET', '/api/learning/adaptive/tenant-summary');
+    assert.equal(summary.status, 200);
+    assert.equal(summary.body.privilegedReady, false);
+    db.close();
+  } finally { f.close(); }
+});
+
+test('role demotion hides retired privileged assignments and rejects their practice and help', async () => {
+  const f = fixture();
+  try {
+    await call(f.engine, f.tokens.admin, 'GET', '/api/learning/adaptive/plan');
+    const db = new DatabaseSync(f.dbPath);
+    db.prepare("UPDATE users SET role='employee' WHERE email='admin@alpha'").run();
+    const plan = await call(f.engine, f.tokens.admin, 'GET', '/api/learning/adaptive/plan');
+    assert.equal(plan.body.all.some(x => x.competencyKey === 'configuration.policy'), false);
+    const practice = await call(f.engine, f.tokens.admin, 'POST', '/api/learning/adaptive/practice', {competencyKey:'configuration.policy',answer:0});
+    assert.equal(practice.status,403);
+    const help = await call(f.engine,f.tokens.admin,'POST','/api/learning/adaptive/help',{competencyKey:'configuration.policy',event:'OPENED'});
+    assert.equal(help.status,403);
+    const evidence = await call(f.engine,null,'POST','/api/learning/adaptive/evidence',{tenant:'alpha',email:'admin@alpha',competencyKey:'configuration.policy',evidenceType:'OBSERVED_SUCCESS',result:'PASS'},f.internal);
+    assert.equal(evidence.status,409);
+    assert.ok(db.prepare("SELECT COUNT(*) AS n FROM learning_assignments WHERE email='admin@alpha' AND role='admin'").get().n>0, 'retired assignments retained for audit');
+    db.close();
+  } finally { f.close(); }
+});
+
 test('learning event evidence is append only', async () => {
   const f = fixture();
   try {
@@ -406,4 +446,58 @@ test('learning event evidence is append only', async () => {
   } finally {
     f.close();
   }
+});
+
+test('training-first read reconciles director role and reopens stale unsupported mastery', () => {
+  const f=fixture();
+  const {createTrainingTwin}=require('./training-twin.cjs');
+  const db=new DatabaseSync(f.dbPath);
+  let twin;
+  try {
+    f.engine.planForUser({tenant:'alpha',email:'admin@alpha',role:'employee'});
+    const row=db.prepare('SELECT * FROM learning_assignments WHERE email=? AND competency_key=?').get('admin@alpha','time.clock');
+    db.prepare('UPDATE learning_assignments SET status=?,score=?,due_at_ms=?,mastered_at_ms=? WHERE id=?').run('MASTERED',85,Date.now()+86400000,Date.now(),row.id);
+    db.prepare('INSERT INTO learning_evidence(assignment_id,tenant,email,evidence_type,result,score_value,detail_json,created_at) VALUES(?,?,?,?,?,?,?,?)').run(row.id,'alpha','admin@alpha','GUIDED_PRACTICE','PASS',55,'{}',new Date().toISOString());
+    db.prepare('UPDATE users SET role=? WHERE email=?').run('director','admin@alpha');
+    twin=createTrainingTwin({dbPath:f.dbPath});
+    const profile=twin.profileForUser({tenant:'alpha',email:'admin@alpha',role:'director'});
+    assert.equal(profile.role,'admin');
+    assert.ok(profile.competencies.some(x=>x.competencyKey==='configuration.roles'));
+    assert.equal(profile.competencies.some(x=>x.competencyKey==='profile.manage'),false);
+    const clock=profile.competencies.find(x=>x.competencyKey==='time.clock');
+    assert.equal(clock.status,'DUE');assert.equal(clock.score,0);assert.notEqual(clock.recommendedMode,'NONE');
+    assert.equal(db.prepare('SELECT COUNT(*) n FROM learning_evidence WHERE assignment_id=?').get(row.id).n,1);
+  } finally { twin?.close();db.close();f.close(); }
+});
+
+test('feature assignments survive only while their recorded feature authorizes the current role', async () => {
+ const f=fixture(),db=new DatabaseSync(f.dbPath);
+ try {
+  await call(f.engine,null,'POST','/api/learning/adaptive/feature-change',{tenant:'alpha',featureKey:'delta',title:'Delta',affectedRoles:['manager'],competencies:['feature.enablement']},f.internal);
+  let plan=f.engine.planForUser({tenant:'alpha',email:'manager@alpha',role:'manager'});
+  assert.ok(plan.all.some(x=>x.competencyKey==='feature.enablement'));
+  db.prepare('UPDATE users SET role=? WHERE email=?').run('employee','manager@alpha');
+  plan=f.engine.planForUser({tenant:'alpha',email:'manager@alpha',role:'employee'});
+  assert.equal(plan.all.some(x=>x.competencyKey==='feature.enablement'),false);
+  assert.ok(db.prepare('SELECT id FROM learning_assignments WHERE email=? AND competency_key=?').get('manager@alpha','feature.enablement'));
+ } finally {db.close();f.close();}
+});
+
+test('training reads preserve an explicit refresh until fresh independent success', async()=>{
+ const f=fixture(); const {createTrainingTwin}=require('./training-twin.cjs'); let twin;
+ try {
+  await call(f.engine,f.tokens.employee,'POST','/api/learning/adaptive/practice',{competencyKey:'time.clock',answer:0});
+  const body={tenant:'alpha',email:'employee@alpha',competencyKey:'time.clock',evidenceType:'INDEPENDENT_TASK',result:'PASS'};
+  await call(f.engine,null,'POST','/api/learning/adaptive/evidence',body,f.internal);
+  for(let n=0;n<3;n++) await call(f.engine,f.tokens.employee,'POST','/api/learning/adaptive/help',{competencyKey:'time.clock',event:'OPENED'});
+  twin=createTrainingTwin({dbPath:f.dbPath});
+  let item=twin.profileForUser({tenant:'alpha',email:'employee@alpha',role:'employee'}).competencies.find(x=>x.competencyKey==='time.clock');
+  assert.equal(item.status,'REFRESH_DUE');assert.ok(Date.parse(item.dueAt)<=Date.now());
+  await call(f.engine,f.tokens.employee,'POST','/api/learning/adaptive/practice',{competencyKey:'time.clock',answer:0});
+  item=twin.profileForUser({tenant:'alpha',email:'employee@alpha',role:'employee'}).competencies.find(x=>x.competencyKey==='time.clock');
+  assert.equal(item.status,'REFRESH_DUE');
+  const renewed=await call(f.engine,null,'POST','/api/learning/adaptive/evidence',body,f.internal);
+  assert.equal(renewed.body.assignment.status,'MASTERED');
+  assert.ok(Date.parse(renewed.body.assignment.dueAt)>Date.now());
+ } finally {twin?.close();f.close();}
 });

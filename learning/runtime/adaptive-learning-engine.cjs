@@ -158,7 +158,7 @@ async function readJson(req, maxBytes = 128 * 1024) {
 function canonicalRole(role) {
   const value = String(role || '').toLowerCase();
   if (value.includes('payroll')) return 'payroll';
-  if (value.includes('admin') || value.includes('super')) return 'admin';
+  if (value === 'director' || value.includes('admin') || value.includes('super')) return 'admin';
   if (value.includes('manager') || value.includes('leader')) return 'manager';
   return 'employee';
 }
@@ -301,17 +301,32 @@ function createAdaptiveLearningEngine(options = {}) {
 
   function ensureAssignments(user, source = 'role-curriculum') {
     const role = canonicalRole(user.role);
-    const ts = nowIso();
-    for (const key of curriculumForRole(role)) {
-      insertAssignment.run(
-        randomUUID(), user.tenant, user.email, role, key, 'DUE', 0, Date.now(), null,
-        source, ts, ts
-      );
+    const eligible = new Set(curriculumForRole(role));
+    const featureSource = new Map();
+    for (const feature of db.prepare('SELECT feature_key,affected_roles_json,competencies_json FROM learning_feature_changes WHERE tenant=?').all(user.tenant)) {
+      const roles = JSON.parse(feature.affected_roles_json);
+      if (!roles.includes(role)) continue;
+      for (const key of JSON.parse(feature.competencies_json)) {
+        if (!COMPETENCIES[key]) continue;
+        eligible.add(key);
+        featureSource.set(key, 'feature:' + feature.feature_key);
+      }
     }
-    return assignmentsForUser.all(user.tenant, user.email);
+    const ts = nowIso();
+    for (const key of eligible) {
+      const existing = assignmentByKey.get(user.tenant, user.email, key);
+      if (!existing) insertAssignment.run(
+        randomUUID(), user.tenant, user.email, role, key, 'DUE', 0, Date.now(), null,
+        featureSource.get(key) || source, ts, ts
+      );
+      else if (existing.role !== role) db.prepare('UPDATE learning_assignments SET role=?,updated_at=? WHERE id=?').run(role, ts, existing.id);
+    }
+    // Keep obsolete assignments and evidence for audit, but never grant access
+    // or report certification from a user's former role.
+    return assignmentsForUser.all(user.tenant, user.email).filter(row => eligible.has(row.competency_key));
   }
 
-  function recomputeAssignment(row) {
+  function recomputeAssignment(row, freshIndependentSuccess = false) {
     const evidence = evidenceForAssignment.all(row.id);
     const best = new Map();
     for (const item of evidence) {
@@ -332,11 +347,12 @@ function createAdaptiveLearningEngine(options = {}) {
     const score = Math.min(100, [...best.values()].reduce((sum, value) => sum + value, 0));
     const requiresTeachBack = Boolean(COMPETENCIES[row.competency_key]?.teachBack);
     const independentSuccess = best.has('INDEPENDENT_TASK') || best.has('OBSERVED_SUCCESS');
-    const mastered = score >= 80 && independentSuccess && (!requiresTeachBack || best.has('TEACH_BACK'));
+    const refreshPending = row.status === 'REFRESH_DUE' && freshIndependentSuccess !== true;
+    const mastered = !refreshPending && score >= 80 && independentSuccess && (!requiresTeachBack || best.has('TEACH_BACK'));
     const currentMasteredAt = row.mastered_at_ms || null;
-    const masteredAt = mastered ? (currentMasteredAt || Date.now()) : null;
-    const dueAt = mastered ? masteredAt + nextRefreshMs(score) : Date.now();
-    const status = mastered ? 'MASTERED' : 'DUE';
+    const masteredAt = mastered ? (freshIndependentSuccess === true ? Date.now() : currentMasteredAt || Date.now()) : (refreshPending ? currentMasteredAt : null);
+    const dueAt = refreshPending ? row.due_at_ms : mastered ? masteredAt + nextRefreshMs(score) : Date.now();
+    const status = refreshPending ? 'REFRESH_DUE' : mastered ? 'MASTERED' : 'DUE';
     updateAssignment.run(status, score, dueAt, masteredAt, nowIso(), row.id);
     return assignmentByKey.get(row.tenant, row.email, row.competency_key);
   }
@@ -384,8 +400,7 @@ function createAdaptiveLearningEngine(options = {}) {
 
   function summaryForTenant(tenant) {
     const users = usersForTenant.all(tenant);
-    for (const user of users) ensureAssignments(user);
-    const rows = assignmentsForTenant.all(tenant).map(recomputeAssignment);
+    const rows = users.flatMap(user => ensureAssignments(user)).map(recomputeAssignment);
     const total = rows.length;
     const mastered = rows.filter(row => row.status === 'MASTERED').length;
     const critical = rows.filter(row => COMPETENCIES[row.competency_key]?.critical);
@@ -432,8 +447,7 @@ function createAdaptiveLearningEngine(options = {}) {
     }
     const user = usersForTenant.all(tenant).find(item => item.email === email);
     if (!user) return writeJson(res, 404, { error: 'User not found.' });
-    ensureAssignments(user, 'observed-task');
-    const assignment = assignmentByKey.get(tenant, email, competencyKey);
+    const assignment = ensureAssignments(user, 'observed-task').find(row => row.competency_key === competencyKey);
     if (!assignment) return writeJson(res, 409, { error: 'Competency is not assigned to this role.' });
 
     insertEvidence.run(
@@ -442,7 +456,8 @@ function createAdaptiveLearningEngine(options = {}) {
       JSON.stringify(body.detail || {}),
       nowIso()
     );
-    const updated = recomputeAssignment(assignment);
+    const freshIndependentSuccess = result === 'PASS' && ['INDEPENDENT_TASK', 'OBSERVED_SUCCESS'].includes(evidenceType);
+    const updated = recomputeAssignment(assignment, freshIndependentSuccess);
     record(tenant, email, result === 'PASS' ? 'passed' : 'failed', competencyKey, {
       evidenceType,
       score: updated.score
@@ -455,8 +470,7 @@ function createAdaptiveLearningEngine(options = {}) {
     const competencyKey = compact(body.competencyKey, 120);
     const scenario = PRACTICE[competencyKey];
     if (!scenario) return writeJson(res, 400, { error: 'No guided practice is available for this competency.' });
-    ensureAssignments(ctx, 'role-curriculum');
-    const assignment = assignmentByKey.get(ctx.tenant, ctx.email, competencyKey);
+    const assignment = ensureAssignments(ctx, 'role-curriculum').find(row => row.competency_key === competencyKey);
     if (!assignment) return writeJson(res, 403, { error: 'This competency is not assigned to your role.' });
 
     const answer = body.answer;
@@ -492,8 +506,7 @@ function createAdaptiveLearningEngine(options = {}) {
     if (!COMPETENCIES[competencyKey] || !['OPENED', 'SEARCHED', 'FAILED_ATTEMPT'].includes(event)) {
       return writeJson(res, 400, { error: 'Valid competencyKey and help event are required.' });
     }
-    ensureAssignments(ctx);
-    const assignment = assignmentByKey.get(ctx.tenant, ctx.email, competencyKey);
+    const assignment = ensureAssignments(ctx).find(row => row.competency_key === competencyKey);
     if (!assignment) return writeJson(res, 403, { error: 'This competency is not assigned to your role.' });
 
     const now = Date.now();

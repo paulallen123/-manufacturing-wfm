@@ -1,6 +1,7 @@
 'use strict';
 
 const { DatabaseSync } = require('node:sqlite');
+const { createAdaptiveLearningEngine } = require('./adaptive-learning-engine.cjs');
 const { canonicalRole, workflowFor } = require('./training-workflow-manifest.cjs');
 
 const DAY=24*60*60*1000;
@@ -27,6 +28,7 @@ function recommendation(row,helpCount,skipExplanation){
 function createTrainingTwin(options={}){
   const dbPath=options.dbPath||process.env.WFM_DB;
   if(!dbPath) throw new Error('Training Twin requires WFM_DB.');
+  const learning=createAdaptiveLearningEngine({dbPath});
   const db=new DatabaseSync(dbPath);
   db.exec(
     'PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;'+
@@ -59,7 +61,8 @@ function createTrainingTwin(options={}){
     return next;
   }
   function profileForUser(user){
-    const pref=preferencesFor(user),role=canonicalRole(user.role),rows=assignments.all(user.tenant,user.email);
+    const active=new Set(learning.planForUser(user).all.map(item=>item.competencyKey));
+    const pref=preferencesFor(user),role=canonicalRole(user.role),rows=assignments.all(user.tenant,user.email).filter(row=>active.has(row.competency_key));
     const competencies=rows.map(row=>{
       const recentHelp=Number(help.get(user.tenant,user.email,row.competency_key,Date.now()-7*DAY)?.count||0);
       const workflow=workflowFor(row.competency_key);
@@ -82,7 +85,8 @@ function createTrainingTwin(options={}){
       due:competencies.filter(x=>x.recommendedMode!=='NONE')
     };
   }
-  return {profileForUser,preferencesFor,setPreferences,close(){try{db.close();}catch{}}};
+  return {profileForUser,preferencesFor,setPreferences,close(){learning.close();try{db.close();}catch{}}};
 }
 
 module.exports={createTrainingTwin,recommendation,EXPLANATION_MODES};
+
