@@ -56,6 +56,10 @@ test('trusted HTTP bootstrap creates the read-only session and returns exact bin
     assert.equal(body.binding.candidateSha, 'a'.repeat(40));
     assert.equal(body.binding.deploymentId, 'deployment-1');
     assert.match(JSON.parse(calls[0].init.body).input, /ACTIVE READ-ONLY|customer-proof/i);
+    assert.equal(calls.some(call =>
+      call.url.endsWith('/sess_route/events') &&
+      JSON.parse(call.init.body).events?.[0]?.type === 'agent.session.input.message'
+    ), true);
   } finally { f.close(); }
 });
 

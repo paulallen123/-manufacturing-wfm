@@ -154,7 +154,7 @@ function createAgentsApiBootstrapRoute(options = {}) {
       sessionId: session.sessionId,
       runId,
       tenant,
-      startTurn: session.reused,
+      startTurn: true,
       toolHandler
     });
     console.log('VECTOR_AGENTS_ANALYSIS=' + JSON.stringify({
