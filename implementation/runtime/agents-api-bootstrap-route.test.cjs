@@ -30,7 +30,7 @@ function fixture(fetchImpl) {
   const route = createAgentsApiBootstrapRoute({
     dbPath, internalToken: 'internal-token', candidateSha: 'a'.repeat(40), deploymentId: 'deployment-1',
     apiKey: 'test-key', model: 'gpt-6-sol', fetchImpl,
-    pollIntervalMs: 0, maxPolls: 2,
+    pollIntervalMs: 0, maxPolls: 8,
     statusForTenant: tenant => tenant === 'northstar-demo'
       ? { state: 'BUILDING', operationalReady: false, requirements: [{ key: 'time-policies', satisfied: false }] }
       : null
@@ -40,12 +40,30 @@ function fixture(fetchImpl) {
 
 test('trusted HTTP bootstrap creates the read-only session and returns exact binding', async () => {
   const calls = [];
+  let sessionReads = 0;
   const f = fixture(async (url, init = {}) => {
-    calls.push({ url: String(url), init });
-    if (String(url).endsWith('/items?order=asc&limit=100')) {
+    url = String(url);
+    calls.push({ url, init });
+    if (url.endsWith('/v1/agents/sessions') && init.method === 'POST') {
+      return new Response(JSON.stringify({ id: 'sess_route', status: 'idle' }), { status: 200 });
+    }
+    if (url.endsWith('/sess_route') && init.method === 'GET') {
+      sessionReads += 1;
+      if (sessionReads === 1) return new Response(JSON.stringify({ id:'sess_route', status:'idle', required_actions:[] }), { status:200 });
+      if (sessionReads === 2) return new Response(JSON.stringify({
+        id:'sess_route', status:'requires_action', required_actions:[
+          {type:'function_call',turn_id:'turn',call_id:'1',name:'get_vector_binding',arguments:{}},
+          {type:'function_call',turn_id:'turn',call_id:'2',name:'get_implementation_status',arguments:{}},
+          {type:'function_call',turn_id:'turn',call_id:'3',name:'get_customer_proof_gaps',arguments:{}}
+        ]
+      }), { status:200 });
+      return new Response(JSON.stringify({ id:'sess_route', status:'idle', required_actions:[] }), { status:200 });
+    }
+    if (url.endsWith('/sess_route/events') && init.method === 'POST') return new Response('', { status:202 });
+    if (url.endsWith('/items?order=asc&limit=100')) {
       return new Response(JSON.stringify({ data: [{ type:'message', role:'assistant', content:[{type:'output_text',text:'read-only report'}] }] }), { status: 200 });
     }
-    return new Response(JSON.stringify({ id: 'sess_route', status: 'idle', required_actions: [] }), { status: 200 });
+    throw new Error('unexpected '+init.method+' '+url);
   });
   try {
     const res = response();
@@ -75,11 +93,29 @@ test('wrong internal token fails before contacting OpenAI', async () => {
 });
 
 test('server startup uses the same bootstrap without copying internal credentials', async () => {
+  let sessionReads = 0;
   const f = fixture(async (url, init={}) => {
-    if (String(url).endsWith('/items?order=asc&limit=100')) {
+    url=String(url);
+    if (url.endsWith('/v1/agents/sessions') && init.method === 'POST') {
+      return new Response(JSON.stringify({ id:'sess_startup', status:'idle' }), { status:200 });
+    }
+    if (url.endsWith('/sess_startup') && init.method === 'GET') {
+      sessionReads += 1;
+      if (sessionReads === 1) return new Response(JSON.stringify({ id:'sess_startup', status:'idle', required_actions:[] }), { status:200 });
+      if (sessionReads === 2) return new Response(JSON.stringify({
+        id:'sess_startup', status:'requires_action', required_actions:[
+          {type:'function_call',turn_id:'turn',call_id:'1',name:'get_vector_binding',arguments:{}},
+          {type:'function_call',turn_id:'turn',call_id:'2',name:'get_implementation_status',arguments:{}},
+          {type:'function_call',turn_id:'turn',call_id:'3',name:'get_customer_proof_gaps',arguments:{}}
+        ]
+      }), { status:200 });
+      return new Response(JSON.stringify({ id:'sess_startup', status:'idle', required_actions:[] }), { status:200 });
+    }
+    if (url.endsWith('/sess_startup/events') && init.method === 'POST') return new Response('', { status:202 });
+    if (url.endsWith('/items?order=asc&limit=100')) {
       return new Response(JSON.stringify({ data: [{ type:'message', role:'assistant', content:[{type:'output_text',text:'startup report'}] }] }), { status: 200 });
     }
-    return new Response(JSON.stringify({ id:'sess_startup', status:'idle', required_actions:[] }), { status:200 });
+    throw new Error('unexpected '+init.method+' '+url);
   });
   try {
     const result = await f.route.bootstrap({ runId:'run-1', tenant:'northstar-demo' });
