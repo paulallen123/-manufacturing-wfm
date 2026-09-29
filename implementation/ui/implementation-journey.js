@@ -4,8 +4,8 @@
 const IMPL='/api/implementation/autonomous';
 const INTEGRATIONS='/api/integrations/autonomous';
 const LEARNING='/api/learning/adaptive';
-const VERSION='version-d-2';
-const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',timer:null,lastLoad:0};
+const VERSION='version-d-3';
+const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',decisionError:'',timer:null,lastLoad:0};
 const inviteToken=()=>{try{return new URL(window.location.href).searchParams.get('implementation_invite')||'';}catch{return '';}};
 const currentPage=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
 const isEmployeeRole=()=>{try{return typeof isEmployee==='function'&&isEmployee();}catch{return false;}};
@@ -145,13 +145,51 @@ function scopeMarkup(){
   return '<section class="wfm-ij-panel wfm-ij-scope required"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">STEP 1 · TELL US WHAT TO BUILD</span><h2>Confirm your configuration scope</h2><p>Give the system the operating boundary. It uses connected source data to propose the detailed configuration; ambiguous or high-risk rules come back to you for confirmation.</p></div><span class="wfm-ij-status blocked">Required</span></div>'+
     '<form data-ij-scope-form>'+scopeFields(scope)+'<div class="wfm-ij-scope-actions"><p>No passwords or API secrets belong here. Payroll rules remain protected until independently reconciled and, where needed, explicitly approved.</p><button class="btn primary" type="submit">Confirm scope and continue</button></div></form></section>';
 }
+function policyCheck(name,label,required=true){
+  return '<label class="wfm-ij-policy-check"><input type="checkbox" name="'+safe(name)+'" '+(required?'required':'')+'><span>'+safe(label)+'</span></label>';
+}
+function policyDecisionMarkup(d){
+  const time=d.key==='time-policy-authority';
+  const absence=d.key==='absence-policy-authority';
+  if(!time&&!absence)return '';
+  const checks=time
+    ? [
+        ['breakRulesVerified','Break rules are verified against the authoritative source'],
+        ['overtimeRulesVerified','Overtime rules and thresholds are verified'],
+        ['workingTimeRulesVerified','Working-time limits and related rules are verified'],
+        ['timeZoneVerified','Site timezone and DST handling are verified']
+      ]
+    : [
+        ['leaveYearVerified','Leave year is verified'],
+        ['entitlementMethodVerified','Entitlement method is verified'],
+        ['approvalRulesVerified','Approval and delegation rules are verified'],
+        ['absenceTypesVerified','Absence types and their rules are verified']
+      ];
+  const absenceFields=absence
+    ? '<div class="wfm-ij-policy-opening"><label><span>Opening leave balance</span><select name="usesOpeningBalance"><option value="no">No opening balance is being relied on</option><option value="yes">Yes, an opening balance is required</option></select></label>'+policyCheck('openingBalanceSourceVerified','If an opening balance is used, I have verified its authoritative source',false)+'</div>'
+    : '';
+  return '<article class="wfm-ij-policy-decision"><div class="wfm-ij-policy-head"><div><b>'+safe(d.question)+'</b><small>HIGH risk · VECTOR will not guess or activate this policy without your confirmation.</small></div></div>'+
+    '<form data-ij-policy-form="'+safe(d.key)+'"><div class="wfm-ij-policy-fields">'+
+      '<label><span>Authoritative source reference</span><input name="sourceRef" required maxlength="300" placeholder="e.g. approved HR policy, payroll rule set, contract schedule"></label>'+
+      '<label><span>Effective from</span><input name="effectiveDate" required type="date"></label>'+
+    '</div><div class="wfm-ij-policy-checks">'+
+      checks.map(([name,label])=>policyCheck(name,label)).join('')+
+      policyCheck('policyComplete','I confirm there are no unresolved rules or unknown policy fields')+
+      policyCheck('authoritativeConfirmation','I am authorised to confirm this policy for this implementation')+
+    '</div>'+absenceFields+
+    '<div class="wfm-ij-policy-actions"><span>VECTOR records the source and effective date; it does not treat a click alone as evidence.</span><button class="btn small primary" type="submit">Confirm authoritative policy</button></div></form></article>';
+}
 function decisionsMarkup(){
   const rows=S.status?.blockingDecisions||[];
   if(!rows.length)return '';
-  return '<section class="wfm-ij-panel wfm-ij-decisions"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">YOUR DECISION</span><h2>'+rows.length+' item'+(rows.length===1?'':'s')+' need confirmation</h2><p>High-risk inferred settings stay blocked until an authorised customer accepts them or reviews the source configuration.</p></div></div><div class="wfm-ij-decision-list">'+rows.map(d=>{
-    const summary=proposalSummary(d.proposal);
-    return '<article><div><b>'+safe(d.question)+'</b><small>'+safe(d.risk)+' risk · '+safe(d.status)+(summary?' · '+safe(summary):'')+'</small></div><div class="wfm-ij-decision-actions"><button class="btn small primary" type="button" data-ij-decision-accept="'+safe(d.key)+'">Accept proposal</button><button class="btn small" type="button" data-ij-decision-review="'+safe(d.key)+'">Review setup</button></div></article>';
-  }).join('')+'</div></section>';
+  return '<section class="wfm-ij-panel wfm-ij-decisions"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">YOUR DECISION</span><h2>'+rows.length+' item'+(rows.length===1?'':'s')+' need confirmation</h2><p>High-risk settings stay blocked until an authorised customer supplies or confirms the required source evidence.</p></div></div>'+
+    (S.decisionError?'<div class="wfm-ij-decision-error">'+safe(S.decisionError)+'</div>':'')+
+    '<div class="wfm-ij-decision-list">'+rows.map(d=>{
+      const policy=policyDecisionMarkup(d);
+      if(policy)return policy;
+      const summary=proposalSummary(d.proposal);
+      return '<article><div><b>'+safe(d.question)+'</b><small>'+safe(d.risk)+' risk · '+safe(d.status)+(summary?' · '+safe(summary):'')+'</small></div><div class="wfm-ij-decision-actions"><button class="btn small primary" type="button" data-ij-decision-accept="'+safe(d.key)+'">Accept proposal</button><button class="btn small" type="button" data-ij-decision-review="'+safe(d.key)+'">Review setup</button></div></article>';
+    }).join('')+'</div></section>';
 }
 function welcomeMarkup(){
   const invitation=S.invitation?.invitation||S.status?.invitation||null;
@@ -277,10 +315,55 @@ async function saveScope(form){
     renderView();
   }
 }
+async function submitPolicyDecision(form){
+  if(!S.status?.runId)return;
+  const key=String(form.dataset.ijPolicyForm||'');
+  const data=new FormData(form);
+  const button=form.querySelector('button[type="submit"]');
+  if(button){button.disabled=true;button.textContent='Confirming policy…';}
+  const complete=data.get('policyComplete')==='on';
+  const detail={
+    authoritativeConfirmation:data.get('authoritativeConfirmation')==='on',
+    sourceRef:String(data.get('sourceRef')||'').trim(),
+    effectiveDate:String(data.get('effectiveDate')||'').trim(),
+    unresolvedRules:complete?0:1,
+    unknownPolicyFields:complete?0:1
+  };
+  if(key==='time-policy-authority'){
+    Object.assign(detail,{
+      breakRulesVerified:data.get('breakRulesVerified')==='on',
+      overtimeRulesVerified:data.get('overtimeRulesVerified')==='on',
+      workingTimeRulesVerified:data.get('workingTimeRulesVerified')==='on',
+      timeZoneVerified:data.get('timeZoneVerified')==='on'
+    });
+  }else if(key==='absence-policy-authority'){
+    const usesOpeningBalance=data.get('usesOpeningBalance')==='yes';
+    Object.assign(detail,{
+      leaveYearVerified:data.get('leaveYearVerified')==='on',
+      entitlementMethodVerified:data.get('entitlementMethodVerified')==='on',
+      approvalRulesVerified:data.get('approvalRulesVerified')==='on',
+      absenceTypesVerified:data.get('absenceTypesVerified')==='on',
+      usesOpeningBalance,
+      openingBalanceFictional:false,
+      openingBalanceSourceVerified:data.get('openingBalanceSourceVerified')==='on'
+    });
+  }
+  try{
+    S.decisionError='';
+    S.status=await request(IMPL+'/decision',{method:'POST',body:JSON.stringify({
+      runId:S.status.runId,key,action:'ACCEPTED',detail
+    })});
+    renderView();
+  }catch(error){
+    S.decisionError=error.message||'The policy confirmation could not be recorded.';
+    renderView();
+  }
+}
 async function acceptDecision(key,button){
   if(!S.status?.runId||!key)return;
   if(button){button.disabled=true;button.textContent='Confirming…';}
   try{
+    S.decisionError='';
     S.status=await request(IMPL+'/decision',{method:'POST',body:JSON.stringify({
       runId:S.status.runId,
       key,
@@ -289,7 +372,7 @@ async function acceptDecision(key,button){
     })});
     renderView();
   }catch(error){
-    S.error=error.message||'The decision could not be recorded.';
+    S.decisionError=error.message||'The decision could not be recorded.';
     renderView();
   }
 }
@@ -302,6 +385,8 @@ function apply(){
   else if(!S.loading&&!S.timer)schedule();
 }
 document.addEventListener('submit',event=>{
+  const policyForm=event.target.closest('[data-ij-policy-form]');
+  if(policyForm){event.preventDefault();submitPolicyDecision(policyForm);return;}
   const form=event.target.closest('[data-ij-scope-form]');
   if(!form)return;
   event.preventDefault();

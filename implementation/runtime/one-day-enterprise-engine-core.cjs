@@ -1053,11 +1053,14 @@ function createOneDayEnterpriseEngine(options = {}) {
     });
 
     const decisions = listDecisions.all(run.id, run.tenant).map(parseDecision);
-    const blockingDecisions = decisions.filter(item =>
-      (item.risk === 'HIGH' || item.risk === 'CRITICAL') &&
-      item.status !== 'ACCEPTED' &&
-      item.status !== 'CHANGED'
-    );
+    const satisfiedRequirementKeys = new Set(requirements.filter(item => item.satisfied).map(item => item.key));
+    const blockingDecisions = decisions.filter(item => {
+      const policyKind = POLICY_DECISIONS[item.key]?.kind || null;
+      if (policyKind && satisfiedRequirementKeys.has(policyKind)) return false;
+      return (item.risk === 'HIGH' || item.risk === 'CRITICAL') &&
+        item.status !== 'ACCEPTED' &&
+        item.status !== 'CHANGED';
+    });
 
     const missing = requirements.filter(item => !item.satisfied);
     const elapsedMinutes = Math.max(0, (Date.now() - run.started_at_ms) / 60000);

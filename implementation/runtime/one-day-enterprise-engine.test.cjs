@@ -1236,7 +1236,11 @@ test('implementation runs and decisions are tenant isolated', async () => {
     );
     assert.equal(bravoStatus.status, 200);
     assert.equal(bravoStatus.body.tenant, 'bravo');
-    assert.equal(bravoStatus.body.decisions.length, 0);
+    assert.deepEqual(
+      bravoStatus.body.decisions.map(item => item.key).sort(),
+      ['absence-policy-authority', 'time-policy-authority']
+    );
+    assert.equal(bravoStatus.body.decisions.some(item => item.key === 'alpha-only'), false);
 
     const crossTenant = await call(
       f.engine, f.tokens.bravo, 'POST', '/api/implementation/autonomous/decision',
