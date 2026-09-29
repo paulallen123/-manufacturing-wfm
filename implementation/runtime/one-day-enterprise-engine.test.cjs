@@ -1523,19 +1523,14 @@ test('tenant-environment PASS is validator-bound, fresh, and reopened by a later
       tenantExists: true,
       environmentId: 'cloud-env-alpha',
       provisioningMode: 'cloud-runtime',
-      runtimeHealthPassed: true,
       healthcheckPassed: true,
       tenantIsolationVerified: true,
-      crossTenantNegativeTests: 1,
       durableStateVerified: true,
       exactCandidateSha: candidateSha,
       exactTargetDeploymentId: deploymentId,
       tenant: 'alpha',
-      implementationRunId: run.runId,
-      verifierRunId,
-      proofRunnerIdentity: 'scoped-tenant-verifier-test',
-      targetDeploymentCreatedAt: new Date(Date.now() - 60000).toISOString(),
-      evidenceGeneratedAt: new Date().toISOString()
+      runId: run.runId,
+      verifierDeploymentId: verifierRunId
     });
     const forged = makeDetail('forged-verifier');
     const db = new DatabaseSync(f.dbPath);
@@ -1550,7 +1545,7 @@ test('tenant-environment PASS is validator-bound, fresh, and reopened by a later
     const passDetail = makeDetail('verifier-pass-001');
     const pass = await call(f.engine, null, 'POST', '/api/implementation/autonomous/evidence', {
       runId: run.runId, kind: 'tenant-environment', status: 'PASS', confidence: 1,
-      source: 'hosted-proof', detail: passDetail
+      source: 'independent-hosted-tenant-environment-verifier', detail: passDetail
     }, f.internal);
     assert.equal(pass.status, 200);
     const passedTenant = pass.body.requirements.find(item => item.key === 'tenant-environment');
@@ -1559,7 +1554,7 @@ test('tenant-environment PASS is validator-bound, fresh, and reopened by a later
 
     const failure = await call(f.engine, null, 'POST', '/api/implementation/autonomous/evidence', {
       runId: run.runId, kind: 'tenant-environment', status: 'FAIL', confidence: 1,
-      source: 'hosted-proof', detail: { verifierRunId: 'verifier-fail-002', terminalFailure: true, error: 'TENANT_RUNTIME_HEALTH_FAILED' }
+      source: 'independent-hosted-tenant-environment-verifier', detail: { verifierDeploymentId: 'verifier-fail-002', terminalFailure: true, error: 'TENANT_RUNTIME_HEALTH_FAILED' }
     }, f.internal);
     assert.equal(failure.status, 200);
     const failedTenant = failure.body.requirements.find(item => item.key === 'tenant-environment');
@@ -1568,7 +1563,7 @@ test('tenant-environment PASS is validator-bound, fresh, and reopened by a later
 
     const replay = await call(f.engine, null, 'POST', '/api/implementation/autonomous/evidence', {
       runId: run.runId, kind: 'tenant-environment', status: 'PASS', confidence: 1,
-      source: 'hosted-proof', detail: passDetail
+      source: 'independent-hosted-tenant-environment-verifier', detail: passDetail
     }, f.internal);
     assert.equal(replay.status, 409);
     const reopened = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
