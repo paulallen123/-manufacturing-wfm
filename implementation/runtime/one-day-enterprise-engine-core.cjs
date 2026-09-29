@@ -660,13 +660,20 @@ function createOneDayEnterpriseEngine(options = {}) {
       ])
     })
   });
+  const POLICY_REQUIREMENT_KINDS = new Set(
+    Object.values(POLICY_DECISIONS).map(spec => spec.kind)
+  );
 
   function currentStoredPass(run, kind) {
     const row = evidenceByKind.get(run.id, run.tenant, kind);
     if (!row || row.status !== 'PASS') return false;
     const detail = parseJsonSafe(row.detail_json, {});
     const binding = evidenceBindingFor(detail, run);
-    return !binding?.reason;
+    if (binding?.reason) return false;
+    if (POLICY_REQUIREMENT_KINDS.has(kind)) {
+      return !validateStrictReadinessEvidence(kind, 'PASS', detail);
+    }
+    return true;
   }
 
   function ensurePolicyQuestions(run, scope = null) {
@@ -1038,7 +1045,12 @@ function createOneDayEnterpriseEngine(options = {}) {
       // Stored proof survives deployment for audit, but never retains authority
       // for a different candidate. Derived configuration is read from current state.
       const evidenceBinding = !derived && row?.status === 'PASS' ? evidenceBindingFor(detail, run) : null;
-      const status = evidenceBinding?.reason ? 'REVALIDATION_REQUIRED' : (derived?.status || row?.status || 'MISSING');
+      const policyValidationError = !derived && row?.status === 'PASS' && POLICY_REQUIREMENT_KINDS.has(requirement.key)
+        ? validateStrictReadinessEvidence(requirement.key, 'PASS', detail || {})
+        : null;
+      const status = evidenceBinding?.reason || policyValidationError
+        ? 'REVALIDATION_REQUIRED'
+        : (derived?.status || row?.status || 'MISSING');
       const confidence = derived ? derived.confidence : (row ? Number(row.confidence) : 0);
       return {
         ...requirement,
@@ -1048,7 +1060,8 @@ function createOneDayEnterpriseEngine(options = {}) {
         source: derived?.source || row?.source || null,
         observedAt: derived ? nowIso() : (row?.created_at || null),
         detail,
-        ...(evidenceBinding ? { evidenceBinding } : {})
+        ...(evidenceBinding ? { evidenceBinding } : {}),
+        ...(policyValidationError ? { evidenceValidation: { reason: policyValidationError } } : {})
       };
     });
 
@@ -1729,6 +1742,16 @@ function createOneDayEnterpriseEngine(options = {}) {
         error: 'Implementation evidence must be revalidated on the current candidate and deployment.',
         readinessEvidenceAccepted: false, kind, evidenceBinding
       });
+    }
+    if (status === 'PASS' && POLICY_REQUIREMENT_KINDS.has(kind)) {
+      const policyValidationError = validateStrictReadinessEvidence(kind, status, detail);
+      if (policyValidationError) {
+        return writeJson(res, 409, {
+          error: policyValidationError,
+          readinessEvidenceAccepted: false,
+          kind
+        });
+      }
     }
     if (status === 'PASS' && kind === 'scenario-validation') {
       const total = Number(detail.totalScenarios);

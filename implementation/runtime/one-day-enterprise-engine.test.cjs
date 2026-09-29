@@ -138,6 +138,41 @@ async function call(engine, token, method, url, body, extraHeaders = {}) {
 }
 
 function evidenceDetail(kind) {
+  if (kind === 'time-policies') {
+    return {
+      fixtureOnly: false,
+      evidenceClass: 'contract-authorised',
+      sourceAuthoritative: true,
+      sourceRef: 'test-contract/time-policy-v1',
+      effectiveDated: true,
+      effectiveDate: '2026-01-01',
+      unresolvedRules: 0,
+      unknownPolicyFields: 0,
+      breakRulesVerified: true,
+      overtimeRulesVerified: true,
+      workingTimeRulesVerified: true,
+      timeZoneVerified: true
+    };
+  }
+  if (kind === 'absence-policies') {
+    return {
+      fixtureOnly: false,
+      evidenceClass: 'contract-authorised',
+      sourceAuthoritative: true,
+      sourceRef: 'test-contract/absence-policy-v1',
+      effectiveDated: true,
+      effectiveDate: '2026-01-01',
+      unresolvedRules: 0,
+      unknownPolicyFields: 0,
+      leaveYearVerified: true,
+      entitlementMethodVerified: true,
+      approvalRulesVerified: true,
+      absenceTypesVerified: true,
+      usesOpeningBalance: false,
+      openingBalanceFictional: false,
+      openingBalanceSourceVerified: false
+    };
+  }
   if (kind === 'scenario-validation') {
     return { totalScenarios: 2400, passedScenarios: 2400, criticalFailures: 0 };
   }
