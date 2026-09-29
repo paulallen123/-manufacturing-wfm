@@ -262,6 +262,27 @@ async function readJson(req, maxBytes = 256 * 1024) {
 
 function createOneDayEnterpriseEngine(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
+  const requireCandidateBinding = options.requireCandidateBinding === true || process.env.WFM_HOSTED_STAGING === 'true';
+  const candidateSha = String(options.candidateSha ?? process.env.WFM_CANDIDATE_SHA ?? '').trim();
+  const deploymentId = String(options.deploymentId ?? process.env.RAILWAY_DEPLOYMENT_ID ?? '').trim();
+
+  function evidenceBindingFor(detail, run) {
+    if (!requireCandidateBinding) return null;
+    const item = detail && typeof detail === 'object' ? detail : {};
+    const observedSha = String(item.exactCandidateSha || item.candidateSha || '');
+    const observedDeployment = String(item.exactTargetDeploymentId || item.deploymentId || '');
+    let reason = null;
+    if (!/^[0-9a-f]{40}$/.test(candidateSha) || !deploymentId) reason = 'CURRENT_CANDIDATE_IDENTITY_UNAVAILABLE';
+    else if (!observedSha || !observedDeployment) reason = 'EVIDENCE_CANDIDATE_IDENTITY_MISSING';
+    else if (observedSha !== candidateSha || observedDeployment !== deploymentId) reason = 'EVIDENCE_CANDIDATE_IDENTITY_MISMATCH';
+    else if (item.tenant && item.tenant !== run.tenant) reason = 'EVIDENCE_TENANT_MISMATCH';
+    else if (item.runId && item.runId !== run.id) reason = 'EVIDENCE_RUN_MISMATCH';
+    return {
+      status: reason ? 'REVALIDATION_REQUIRED' : 'MATCHED', reason,
+      expected: { candidateSha, deploymentId, tenant: run.tenant, runId: run.id },
+      observed: { candidateSha: observedSha || null, deploymentId: observedDeployment || null }
+    };
+  }
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
   const contractWebhookSecret = options.contractWebhookSecret || process.env.WFM_CONTRACT_WEBHOOK_SECRET || '';
   const dedicatedInvitationRecoverySecret = options.invitationRecoverySecret ||
@@ -819,7 +840,11 @@ function createOneDayEnterpriseEngine(options = {}) {
         };
       }
 
-      const status = derived?.status || row?.status || 'MISSING';
+      const detail = derived?.detail || (row ? JSON.parse(row.detail_json) : null);
+      // Stored proof survives deployment for audit, but never retains authority
+      // for a different candidate. Derived configuration is read from current state.
+      const evidenceBinding = !derived && row?.status === 'PASS' ? evidenceBindingFor(detail, run) : null;
+      const status = evidenceBinding?.reason ? 'REVALIDATION_REQUIRED' : (derived?.status || row?.status || 'MISSING');
       const confidence = derived ? derived.confidence : (row ? Number(row.confidence) : 0);
       return {
         ...requirement,
@@ -828,7 +853,8 @@ function createOneDayEnterpriseEngine(options = {}) {
         satisfied: status === 'PASS' && confidence >= requirement.minConfidence,
         source: derived?.source || row?.source || null,
         observedAt: derived ? nowIso() : (row?.created_at || null),
-        detail: derived?.detail || (row ? JSON.parse(row.detail_json) : null)
+        detail,
+        ...(evidenceBinding ? { evidenceBinding } : {})
       };
     });
 
@@ -1495,6 +1521,13 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
 
     const detail = body.detail && typeof body.detail === 'object' ? body.detail : {};
+    const evidenceBinding = status === 'PASS' ? evidenceBindingFor(detail, run) : null;
+    if (evidenceBinding?.reason) {
+      return writeJson(res, 409, {
+        error: 'Implementation evidence must be revalidated on the current candidate and deployment.',
+        readinessEvidenceAccepted: false, kind, evidenceBinding
+      });
+    }
     if (status === 'PASS' && kind === 'scenario-validation') {
       const total = Number(detail.totalScenarios);
       const passed = Number(detail.passedScenarios);

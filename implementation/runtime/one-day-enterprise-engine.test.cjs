@@ -46,6 +46,9 @@ function fixture(options = {}) {
     internalToken: 'implementation-worker-test-token',
     contractWebhookSecret: 'contract-webhook-test-token',
     publicOrigin: options.publicOrigin ?? 'https://implementation.test',
+    requireCandidateBinding: options.requireCandidateBinding,
+    candidateSha: options.candidateSha,
+    deploymentId: options.deploymentId,
     notificationRetryDelayMs: options.notificationRetryDelayMs,
     notificationRetryPollMs: options.notificationRetryPollMs ?? 0
   };
@@ -216,6 +219,85 @@ async function passAllEvidence(f, runId) {
   }
   return last.body;
 }
+
+test('hosted readiness reopens persisted evidence from a different candidate deployment', async () => {
+  const candidateSha = 'a'.repeat(40);
+  const f = fixture({ requireCandidateBinding: true, candidateSha, deploymentId: 'deployment-current' });
+  try {
+    const run = await startRun(f);
+    const db = new DatabaseSync(f.dbPath);
+    for (const [kind, detail] of [
+      ['identity-access', { exactCandidateSha: 'b'.repeat(40), exactTargetDeploymentId: 'deployment-old' }],
+      ['security-controls', { exactCandidateSha: candidateSha, exactTargetDeploymentId: 'deployment-old' }],
+      ['tenant-environment', { environmentId: 'another-service' }],
+      ['time-policies', { exactCandidateSha: candidateSha, exactTargetDeploymentId: 'deployment-current' }]
+    ]) {
+      db.prepare('INSERT INTO implementation_evidence(run_id,tenant,kind,status,confidence,source,detail_json,created_at) VALUES(?,?,?,?,?,?,?,?)')
+        .run(run.runId, 'alpha', kind, 'PASS', 1, 'hosted-proof', JSON.stringify(detail), new Date().toISOString());
+    }
+    db.close();
+    const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
+    const requirements = new Map(status.body.requirements.map(item => [item.key,item]));
+    for(const kind of ['identity-access','security-controls','tenant-environment']) {
+      assert.equal(requirements.get(kind).satisfied, false, kind + ' must reopen');
+      assert.equal(requirements.get(kind).status, 'REVALIDATION_REQUIRED');
+      assert.ok(requirements.get(kind).evidenceBinding.reason);
+    }
+    assert.equal(requirements.get('time-policies').satisfied, true);
+    const preserved = new DatabaseSync(f.dbPath);
+    assert.equal(preserved.prepare('SELECT COUNT(*) AS n FROM implementation_evidence WHERE source=?').get('hosted-proof').n, 4);
+    preserved.close();
+  } finally { f.close(); }
+});
+
+test('deployment change reopens previously satisfied work without deleting evidence', async () => {
+  const candidateSha = 'a'.repeat(40);
+  const f = fixture({ requireCandidateBinding: true, candidateSha, deploymentId: 'deployment-first' });
+  let restarted;
+  try {
+    const run = await startRun(f);
+    const accepted = await call(f.engine,null,'POST','/api/implementation/autonomous/evidence',
+      {runId:run.runId,kind:'identity-access',status:'PASS',confidence:1,source:'hosted-proof',
+        detail:{exactCandidateSha:candidateSha,exactTargetDeploymentId:'deployment-first'}},f.internal);
+    assert.equal(accepted.status,200);
+    const before = new DatabaseSync(f.dbPath);
+    assert.equal(before.prepare('SELECT status FROM implementation_work_jobs WHERE run_id=? AND requirement_key=?').get(run.runId,'identity-access').status,'SATISFIED');
+    before.close();
+    f.engine.close();
+    restarted=createOneDayEnterpriseEngine({dbPath:f.dbPath,requireCandidateBinding:true,candidateSha,deploymentId:'deployment-next',notificationRetryPollMs:0});
+    const status=await call(restarted,f.tokens.manager,'GET','/api/implementation/autonomous/status');
+    assert.equal(status.body.requirements.find(item=>item.key==='identity-access').satisfied,false);
+    const after = new DatabaseSync(f.dbPath);
+    assert.notEqual(after.prepare('SELECT status FROM implementation_work_jobs WHERE run_id=? AND requirement_key=?').get(run.runId,'identity-access').status,'SATISFIED');
+    assert.equal(after.prepare('SELECT COUNT(*) AS n FROM implementation_evidence WHERE kind=?').get('identity-access').n,1);
+    after.close();
+  } finally { restarted?.close(); f.close(); }
+});
+
+test('hosted evidence admission refuses another candidate without recording a PASS', async () => {
+  const candidateSha = 'a'.repeat(40);
+  const f = fixture({ requireCandidateBinding: true, candidateSha, deploymentId: 'deployment-current' });
+  try {
+    const run = await startRun(f);
+    for(const detail of [{}, {exactCandidateSha:'b'.repeat(40),exactTargetDeploymentId:'deployment-current'},
+      {exactCandidateSha:candidateSha,exactTargetDeploymentId:'deployment-other'},
+      {exactCandidateSha:candidateSha,exactTargetDeploymentId:'deployment-current',tenant:'bravo'},
+      {exactCandidateSha:candidateSha,exactTargetDeploymentId:'deployment-current',runId:'another-run'}]) {
+      const denied = await call(f.engine,null,'POST','/api/implementation/autonomous/evidence',
+        {runId:run.runId,kind:'identity-access',status:'PASS',confidence:1,source:'hosted-proof',detail},f.internal);
+      assert.equal(denied.status,409);
+      assert.equal(denied.body.readinessEvidenceAccepted,false);
+    }
+    const accepted = await call(f.engine,null,'POST','/api/implementation/autonomous/evidence',
+      {runId:run.runId,kind:'identity-access',status:'PASS',confidence:1,source:'hosted-proof',
+        detail:{exactCandidateSha:candidateSha,exactTargetDeploymentId:'deployment-current',tenant:'alpha',runId:run.runId}},f.internal);
+    assert.equal(accepted.status,200);
+    assert.equal(accepted.body.requirements.find(item=>item.key==='identity-access').satisfied,true);
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM implementation_evidence WHERE kind=?').get('identity-access').n,1);
+    db.close();
+  } finally { f.close(); }
+});
 
 test('provider-neutral signed contract webhook starts implementation immediately and sends one invitation', async () => {
   const f = fixture();
