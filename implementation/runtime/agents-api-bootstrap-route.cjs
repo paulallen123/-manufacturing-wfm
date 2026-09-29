@@ -1,7 +1,7 @@
 'use strict';
 
 const { timingSafeEqual } = require('node:crypto');
-const { createAgentsApiAdapter } = require('./agents-api-adapter.cjs');
+const { createAgentsApiAdapter, ACTIVE_READONLY_PROFILE } = require('./agents-api-adapter.cjs');
 
 const BOOTSTRAP_PATH = '/api/implementation/autonomous/agents/bootstrap';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -53,6 +53,52 @@ function writeJson(res, status, body) {
   return true;
 }
 
+function sanitizedStatus(status) {
+  const requirements = Array.isArray(status?.requirements) ? status.requirements.map(item => ({
+    key: text(item.key, 100),
+    satisfied: item.satisfied === true,
+    status: text(item.status, 40) || null,
+    source: text(item.source, 100) || null
+  })) : [];
+  const jobs = Array.isArray(status?.workPlan?.jobs) ? status.workPlan.jobs.map(item => ({
+    requirementKey: text(item.requirementKey, 100),
+    status: text(item.status, 40) || null,
+    blockedReason: text(item.blockedReason, 160) || null,
+    attempts: Number(item.attempts || 0)
+  })) : [];
+  const decisions = Array.isArray(status?.blockingDecisions) ? status.blockingDecisions
+    .filter(item => String(item.status || '').toUpperCase() === 'PENDING')
+    .map(item => ({
+      key: text(item.key, 120),
+      status: 'PENDING',
+      risk: text(item.risk, 40) || null
+    })) : [];
+  return {
+    state: text(status?.state, 80) || null,
+    operationalReady: status?.operationalReady === true,
+    requirements,
+    jobs,
+    blockingDecisions: decisions
+  };
+}
+
+function proofGaps(status) {
+  const safe = sanitizedStatus(status);
+  return {
+    operationalReady: safe.operationalReady,
+    unsatisfiedRequirements: safe.requirements.filter(item => !item.satisfied).map(item => item.key),
+    runnable: Array.isArray(status?.workPlan?.runnable) ? status.workPlan.runnable.map(item => text(item, 100)).filter(Boolean) : [],
+    blocked: Array.isArray(status?.workPlan?.blocked) ? status.workPlan.blocked.map(item => ({
+      requirementKey: text(item.requirementKey, 100),
+      reason: text(item.reason, 160) || null
+    })) : [],
+    failedClosed: Array.isArray(status?.workPlan?.failedClosed) ? status.workPlan.failedClosed.map(item => text(item, 100)).filter(Boolean) : [],
+    pendingDecisions: safe.blockingDecisions.map(item => ({ key: item.key, risk: item.risk })),
+    writeEnabled: false,
+    customerProof: safe.operationalReady ? 'READINESS_REPORTED_NOT_INDEPENDENTLY_PROVEN' : 'NOT_READY'
+  };
+}
+
 function createAgentsApiBootstrapRoute(options = {}) {
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
   const candidateSha = text(options.candidateSha || process.env.RAILWAY_GIT_COMMIT_SHA || process.env.WFM_CANDIDATE_SHA, 64).toLowerCase();
@@ -64,7 +110,9 @@ function createAgentsApiBootstrapRoute(options = {}) {
     candidateSha,
     deploymentId,
     model: options.model || process.env.WFM_AGENTS_MODEL || 'gpt-6-sol',
-    fetchImpl: options.fetchImpl
+    fetchImpl: options.fetchImpl,
+    pollIntervalMs: options.pollIntervalMs,
+    maxPolls: options.maxPolls
   });
 
   async function bootstrap({ runId, tenant }) {
@@ -76,25 +124,55 @@ function createAgentsApiBootstrapRoute(options = {}) {
       throw error;
     }
 
-    const status = statusForTenant(tenant);
-    const requirements = Array.isArray(status?.requirements)
-      ? status.requirements.map(item => ({ key: text(item.key, 100), satisfied: item.satisfied === true }))
-      : [];
     const initialInput = [
-      'READ-ONLY VECTOR CUSTOMER-PROOF BOOTSTRAP.',
+      'ACTIVE READ-ONLY VECTOR CUSTOMER-PROOF CONTROL.',
       'Canonical binding: ' + JSON.stringify({ candidateSha, deploymentId, runId, tenant }) + '.',
-      'Current readiness: ' + JSON.stringify({
-        state: status?.state || null,
-        operationalReady: status?.operationalReady === true,
-        requirements
-      }) + '.',
-      'Acknowledge the binding and current blockers only. Do not call tools, mutate VECTOR, invent policy authority, or claim customer-ready.'
+      'Use all three read-only VECTOR functions before answering.',
+      'Report current binding alignment, readiness blockers, proof gaps, drift and the next safe actions.',
+      'Do not mutate VECTOR, invent policy or payroll authority, submit evidence, deploy, create alternate implementations or claim customer-ready.'
     ].join(' ');
     const session = await adapter.ensureSession({ runId, tenant, initialInput });
+
+    const toolHandler = async name => {
+      const status = statusForTenant(tenant);
+      if (name === 'get_vector_binding') {
+        return {
+          candidateSha, deploymentId, runId, tenant,
+          profile: ACTIVE_READONLY_PROFILE,
+          writeEnabled: false,
+          environment: 'none'
+        };
+      }
+      if (name === 'get_implementation_status') return sanitizedStatus(status);
+      if (name === 'get_customer_proof_gaps') return proofGaps(status);
+      const error = new Error('VECTOR_AGENTS_UNSUPPORTED_READONLY_TOOL');
+      error.statusCode = 409;
+      throw error;
+    };
+
+    const analysis = await adapter.analyzeSession({
+      sessionId: session.sessionId,
+      runId,
+      tenant,
+      startTurn: session.reused,
+      toolHandler
+    });
+    console.log('VECTOR_AGENTS_ANALYSIS=' + JSON.stringify({
+      status: analysis.status,
+      sessionId: session.sessionId,
+      profile: ACTIVE_READONLY_PROFILE,
+      toolCalls: analysis.toolCalls,
+      writeEnabled: false,
+      report: analysis.report ? analysis.report.slice(0, 4000) : null
+    }));
+
     return {
       agentsApi: session,
+      profile: ACTIVE_READONLY_PROFILE,
+      analysis,
       binding: { candidateSha, deploymentId, runId, tenant },
-      operationalReady: status?.operationalReady === true
+      operationalReady: statusForTenant(tenant)?.operationalReady === true,
+      writeEnabled: false
     };
   }
 
@@ -129,4 +207,9 @@ function createAgentsApiBootstrapRoute(options = {}) {
   };
 }
 
-module.exports = { createAgentsApiBootstrapRoute, BOOTSTRAP_PATH };
+module.exports = {
+  createAgentsApiBootstrapRoute,
+  BOOTSTRAP_PATH,
+  sanitizedStatus,
+  proofGaps
+};
