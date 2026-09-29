@@ -664,11 +664,11 @@ function createOneDayEnterpriseEngine(options = {}) {
     Object.values(POLICY_DECISIONS).map(spec => spec.kind)
   );
 
-  function tenantEnvironmentEvidenceError(run, row, requireAttestation = true, evidenceDetail = null) {
+  function tenantEnvironmentEvidenceError(run, row, requireAttestation = true, evidenceDetail = null, enforceFreshAdmission = false) {
     const detail = evidenceDetail || parseJsonSafe(row.detail_json, {});
     const error = validateStrictReadinessEvidence('tenant-environment', 'PASS', detail, {
       tenant: run.tenant, implementationRunId: run.id, candidateSha, deploymentId,
-      source: row.source, evidenceCreatedAt: row.created_at, requireCandidateIdentity: true
+      source: row.source, evidenceCreatedAt: row.created_at, requireCandidateIdentity: true, enforceFreshAdmission
     });
     if (error) return error;
     if (!requireAttestation) return null;
@@ -1772,7 +1772,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     const evidenceRecordedAt = nowIso();
     if (status === 'PASS' && (kind === 'tenant-environment' || POLICY_REQUIREMENT_KINDS.has(kind))) {
       const policyValidationError = kind === 'tenant-environment'
-        ? tenantEnvironmentEvidenceError(run, { source, created_at: evidenceRecordedAt }, false, detail)
+        ? tenantEnvironmentEvidenceError(run, { source, created_at: evidenceRecordedAt }, false, detail, true)
         : validateStrictReadinessEvidence(kind, status, detail);
       if (policyValidationError) {
         return writeJson(res, 409, { error: policyValidationError, readinessEvidenceAccepted: false, kind });
