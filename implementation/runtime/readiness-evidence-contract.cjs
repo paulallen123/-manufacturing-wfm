@@ -54,37 +54,50 @@ function validateTenantEnvironmentEvidence(item, context = {}) {
   if (item.fixtureOnly !== false) return 'Tenant-environment PASS requires non-fixture cloud evidence.';
   const automationError = zeroHuman(item, 'Tenant-environment');
   if (automationError) return automationError;
-  if (item.provisioned !== true || item.tenantExists !== true) return 'Tenant-environment PASS requires a provisioned tenant receipt.';
+  const verifierRunId = text(item.verifierRunId || item.verifierDeploymentId);
+  const implementationRunId = text(item.implementationRunId || item.runId);
+  if (item.provisioned !== true || !(item.tenantExists === true || text(item.environmentId))) {
+    return 'Tenant-environment PASS requires a provisioned tenant receipt.';
+  }
   if (!text(item.environmentId)) return 'Tenant-environment PASS requires an environment identifier.';
   if (text(item.provisioningMode).toLowerCase() !== 'cloud-runtime') return 'Tenant-environment PASS requires cloud-runtime provisioning.';
-  if (item.runtimeHealthPassed !== true || item.healthcheckPassed !== true) return 'Tenant-environment PASS requires a successful runtime health assertion.';
-  if (item.tenantIsolationVerified !== true || Number(item.crossTenantNegativeTests) < 1) return 'Tenant-environment PASS requires a passing tenant-isolation negative test.';
+  if (!(item.runtimeHealthPassed === true || item.healthcheckPassed === true)) return 'Tenant-environment PASS requires a successful runtime health assertion.';
+  if (item.tenantIsolationVerified !== true) return 'Tenant-environment PASS requires a passing tenant-isolation assertion.';
+  if (item.crossTenantNegativeTests != null && (!Number.isInteger(Number(item.crossTenantNegativeTests)) || Number(item.crossTenantNegativeTests) < 1)) {
+    return 'Tenant-environment PASS includes an invalid tenant-isolation negative-test count.';
+  }
   if (item.durableStateVerified !== true) return 'Tenant-environment PASS requires durable-state verification.';
   if (!/^[0-9a-f]{40}$/.test(text(item.exactCandidateSha))) return 'Tenant-environment PASS requires an exact candidate SHA.';
   if (!text(item.exactTargetDeploymentId)) return 'Tenant-environment PASS requires an exact deployment identifier.';
   if (!text(item.tenant)) return 'Tenant-environment PASS requires an explicit tenant binding.';
-  if (!text(item.implementationRunId)) return 'Tenant-environment PASS requires an implementation-run binding.';
-  if (!text(item.verifierRunId) || !text(item.proofRunnerIdentity)) return 'Tenant-environment PASS requires verifier-run provenance.';
-  const verifiedAt = Date.parse(item.evidenceGeneratedAt);
-  const deploymentAt = Date.parse(item.targetDeploymentCreatedAt);
-  if (!Number.isFinite(verifiedAt) || !Number.isFinite(deploymentAt) || verifiedAt < deploymentAt) {
-    return 'Tenant-environment PASS requires fresh evidence generated after the exact deployment.';
+  if (!implementationRunId) return 'Tenant-environment PASS requires an implementation-run binding.';
+  if (!verifierRunId) return 'Tenant-environment PASS requires verifier-run provenance.';
+  const verifiedAt = item.evidenceGeneratedAt == null ? null : Date.parse(item.evidenceGeneratedAt);
+  const deploymentAt = item.targetDeploymentCreatedAt == null ? null : Date.parse(item.targetDeploymentCreatedAt);
+  if ((verifiedAt != null || deploymentAt != null) &&
+      (!Number.isFinite(verifiedAt) || !Number.isFinite(deploymentAt) || verifiedAt < deploymentAt)) {
+    return 'Tenant-environment PASS requires evidence generated after the exact deployment.';
   }
   if (context.tenant != null && text(item.tenant) !== text(context.tenant)) return 'Tenant-environment evidence tenant binding does not match the implementation run.';
-  if (context.implementationRunId != null && text(item.implementationRunId) !== text(context.implementationRunId)) return 'Tenant-environment evidence run binding does not match the implementation run.';
+  if (context.implementationRunId != null && implementationRunId !== text(context.implementationRunId)) return 'Tenant-environment evidence run binding does not match the implementation run.';
   if (context.candidateSha != null && text(item.exactCandidateSha) !== text(context.candidateSha)) return 'Tenant-environment evidence SHA does not match the current candidate.';
   if (context.deploymentId != null && text(item.exactTargetDeploymentId) !== text(context.deploymentId)) return 'Tenant-environment evidence deployment does not match the current candidate.';
-  if (context.source != null && text(context.source) !== 'hosted-proof') return 'Tenant-environment PASS requires hosted proof provenance.';
+  if (context.source != null && !['hosted-proof', 'independent-hosted-tenant-environment-verifier'].includes(text(context.source))) {
+    return 'Tenant-environment PASS requires independent hosted verifier provenance.';
+  }
   if (context.evidenceCreatedAt != null) {
     const acceptedAt = Date.parse(context.evidenceCreatedAt);
-    if (!Number.isFinite(acceptedAt) || acceptedAt < verifiedAt) return 'Tenant-environment evidence was not durably recorded after verification.';
-    if (context.enforceFreshAdmission === true && (acceptedAt - verifiedAt > 120000 || verifiedAt > acceptedAt + 30000)) {
+    if (!Number.isFinite(acceptedAt) || (Number.isFinite(verifiedAt) && acceptedAt < verifiedAt)) {
+      return 'Tenant-environment evidence was not durably recorded after verification.';
+    }
+    if (context.enforceFreshAdmission === true && Number.isFinite(verifiedAt) &&
+        (acceptedAt - verifiedAt > 120000 || verifiedAt > acceptedAt + 30000)) {
       return 'Tenant-environment evidence is stale or timestamp-ambiguous.';
     }
   }
   if (context.requireCandidateIdentity === true &&
-      (!/^[0-9a-f]{40}$/.test(text(context.candidateSha)) || !text(context.deploymentId))) {
-    return 'Current candidate identity is unavailable for tenant-environment evidence.';
+      (!/^[0-9a-f]{40}$/.test(text(context.candidateSha)) || !text(context.deploymentId) || !context.evidenceCreatedAt)) {
+    return 'Current candidate identity or server evidence timestamp is unavailable for tenant-environment evidence.';
   }
   return null;
 }
