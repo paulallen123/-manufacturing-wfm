@@ -30,7 +30,8 @@ const groups = {
   security: ['bootstrap.cjs', 'runtime-identity.cjs', 'identity-survival-guard.cjs', 'proof-runner-auth.cjs', 'passkey-schema.cjs', 'passkey-auth.cjs', 'passkey-entry.html', 'passkey-ui.js', 'passkey-ui.css', 'package.json', 'package-lock.json', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
   integration: ['autonomous-integration-hub.cjs'],
   implementation: [
-    'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs', 'implementation-work-controller.cjs',
+    'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs',
+    'agents-api-adapter.cjs', 'agents-api-bootstrap-route.cjs', 'implementation-work-controller.cjs',
     'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs',
     'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs'
   ],
