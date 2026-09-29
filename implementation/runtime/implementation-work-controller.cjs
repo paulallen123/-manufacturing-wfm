@@ -5,6 +5,7 @@ const { DatabaseSync } = require('node:sqlite');
 
 const TERMINAL = new Set(['SATISFIED', 'FAILED_CLOSED', 'EXHAUSTED']);
 const ACTIVE = new Set(['PENDING', 'RUNNING', 'AWAITING_EVIDENCE', 'RETRY_WAIT', 'WAITING_DEPENDENCY', 'BLOCKED_RESUMABLE']);
+const DEPENDENCY_INDEPENDENT_BLOCKERS = new Set(['CUSTOMER_POLICY_AUTHORITY_REQUIRED']);
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -152,6 +153,7 @@ function createImplementationWorkController(options = {}) {
 
         let desired;
         if (item.satisfied) desired = 'SATISFIED';
+        else if (blockReason && DEPENDENCY_INDEPENDENT_BLOCKERS.has(blockReason)) desired = 'BLOCKED_RESUMABLE';
         else if (!dependenciesSatisfied) desired = 'WAITING_DEPENDENCY';
         else if (blockReason) desired = 'BLOCKED_RESUMABLE';
         else desired = 'PENDING';
@@ -184,6 +186,10 @@ function createImplementationWorkController(options = {}) {
         }
         if (existing.status === 'BLOCKED_RESUMABLE' && !blockReason && dependenciesSatisfied) {
           updateState.run('PENDING', 0, 0, null, null, stamp, existing.id);
+          continue;
+        }
+        if (existing.status === 'WAITING_DEPENDENCY' && blockReason && DEPENDENCY_INDEPENDENT_BLOCKERS.has(blockReason)) {
+          updateState.run('BLOCKED_RESUMABLE', 0, 0, blockReason, null, stamp, existing.id);
           continue;
         }
         if (existing.status === 'WAITING_DEPENDENCY' && dependenciesSatisfied) {
