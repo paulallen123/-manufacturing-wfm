@@ -63,7 +63,9 @@ RUN node /tmp/retire-legacy-presentation.mjs /app/public \
 RUN mkdir -p /app/security-runtime
 COPY security/runtime/package.json security/runtime/package-lock.json /app/security-runtime/
 RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund
-COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
+COPY security/runtime/passkey-schema.cjs /app/security-runtime/passkey-schema.cjs
+COPY security/runtime/passkey-auth.cjs /app/security-runtime/passkey-auth.cjs
+COPY security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
 COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
 COPY security/runtime/proof-runner-auth.cjs /app/security-runtime/proof-runner-auth.cjs

@@ -27,7 +27,7 @@ run('scripts/retire-legacy-presentation.mjs', [publicRoot]);
 run('scripts/harden-attendance-integrity.mjs', [publicRoot]);
 const copy = (source, destination) => { recordInput(source); const target = path.join(output, destination); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(path.join(root, source), target); };
 const groups = {
-  security: ['bootstrap.cjs', 'runtime-identity.cjs', 'identity-survival-guard.cjs', 'proof-runner-auth.cjs', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
+  security: ['bootstrap.cjs', 'runtime-identity.cjs', 'identity-survival-guard.cjs', 'proof-runner-auth.cjs', 'passkey-schema.cjs', 'passkey-auth.cjs', 'passkey-entry.html', 'passkey-ui.js', 'passkey-ui.css', 'package.json', 'package-lock.json', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
   integration: ['autonomous-integration-hub.cjs'],
   implementation: [
     'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs', 'implementation-work-controller.cjs',
@@ -53,6 +53,11 @@ const groups = {
   trust: ['vector-trust-spine.cjs']
 };
 for (const [group, files] of Object.entries(groups)) for (const file of files) copy(`${group}/runtime/${file}`, `${group}-runtime/${file}`);
+// Copy the lockfile-installed dependency closure; never install from the proof process.
+const securityDependencies = path.join(root, 'security/runtime/node_modules');
+if (!fs.existsSync(path.join(securityDependencies, '@simplewebauthn/server/package.json'))) throw Error('PASSKEY_DEPENDENCIES_MISSING: run npm ci --prefix security/runtime --ignore-scripts before composing proof.');
+fs.cpSync(securityDependencies, path.join(output, 'security-runtime/node_modules'), {recursive:true,dereference:true});
+copy('security/runtime/passkey-session-ui.js', 'public/passkey-session-ui.js');
 copy('operations/runtime/workforce-lifecycle-guard.cjs', 'operations-runtime/workforce-lifecycle-core.cjs');
 copy('operations/runtime/workforce-lifecycle-router.cjs', 'operations-runtime/workforce-lifecycle-guard.cjs');
 copy('ux-overlay/vector-workflows.js', 'public/vector-workflows.js');
@@ -62,6 +67,8 @@ const js = "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" + '\
 fs.writeFileSync(path.join(publicRoot, 'vector-ui.css'), css);
 fs.writeFileSync(path.join(publicRoot, 'vector-ui.js'), js);
 run('scripts/compose-vector-presentation.mjs', [publicRoot]);
+const entryPath=path.join(publicRoot,'index.html');
+fs.writeFileSync(entryPath,fs.readFileSync(entryPath,'utf8').replace('</head>','<script src="/passkey-session-ui.js" defer></script></head>'));
 for (const file of ['factory-control-ui.js', 'factory-control-ui.css', 'value-cockpit-ui.js', 'value-cockpit-ui.css', 'review-ui.js', 'review-ui.css', 'ui-evolution.css', 'vector-shell.js']) fs.rmSync(path.join(publicRoot, file), { force: true });
 execFileSync(process.execPath, ['--check', path.join(publicRoot, 'vector-ui.js')]);
 execFileSync(process.execPath, ['--check', path.join(publicRoot, 'vector-workflows.js')]);
@@ -93,3 +100,4 @@ fs.writeFileSync(path.join(output, 'LOCAL_PROOF_PROVENANCE.json'), JSON.stringif
 }, null, 2) + '\n');
 console.log('VECTOR_LOCAL_RUNTIME=' + output);
 console.log('Start with: WFM_DB=<isolated sqlite path> PORT=4100 node --require ' + path.join(output, 'local-paths.cjs') + ' ' + path.join(output, 'security-runtime/bootstrap.cjs'));
+
