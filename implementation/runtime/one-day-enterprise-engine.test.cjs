@@ -47,8 +47,8 @@ function fixture(options = {}) {
     contractWebhookSecret: 'contract-webhook-test-token',
     publicOrigin: options.publicOrigin ?? 'https://implementation.test',
     requireCandidateBinding: options.requireCandidateBinding,
-    candidateSha: options.candidateSha,
-    deploymentId: options.deploymentId,
+    candidateSha: options.candidateSha || 'a'.repeat(40),
+    deploymentId: options.deploymentId || 'deployment-test',
     notificationRetryDelayMs: options.notificationRetryDelayMs,
     notificationRetryPollMs: options.notificationRetryPollMs ?? 0
   };
@@ -80,6 +80,8 @@ function fixture(options = {}) {
   return {
     dir,
     dbPath,
+    candidateSha: engineOptions.candidateSha,
+    deploymentId: engineOptions.deploymentId,
     engine,
     tokens,
     sentInvitations,
@@ -237,17 +239,29 @@ async function startRun(f, tenant = 'alpha', contractRef = 'contract-001', targe
 
 async function passAllEvidence(f, runId) {
   let last;
+  const db = new DatabaseSync(f.dbPath);
+  const run = db.prepare('SELECT tenant FROM implementation_runs WHERE id=?').get(runId);
+  db.close();
   for (const item of REQUIREMENTS) {
+    let detail = evidenceDetail(item.key);
+    let source = 'deterministic-test';
+    if (item.key === 'tenant-environment') {
+      source = 'hosted-proof';
+      detail = {
+        fixtureOnly: false, zeroHuman: true, humanInterventions: 0,
+        provisioned: true, tenantExists: true, environmentId: 'test-cloud-environment',
+        provisioningMode: 'cloud-runtime', runtimeHealthPassed: true, healthcheckPassed: true,
+        tenantIsolationVerified: true, crossTenantNegativeTests: 1, durableStateVerified: true,
+        exactCandidateSha: f.candidateSha, exactTargetDeploymentId: f.deploymentId,
+        tenant: run.tenant, implementationRunId: runId, verifierRunId: 'unit-' + runId,
+        proofRunnerIdentity: 'unit-test-runner',
+        targetDeploymentCreatedAt: new Date(Date.now() - 60000).toISOString(),
+        evidenceGeneratedAt: new Date().toISOString()
+      };
+    }
     last = await call(
       f.engine, null, 'POST', '/api/implementation/autonomous/evidence',
-      {
-        runId,
-        kind: item.key,
-        status: 'PASS',
-        confidence: 1,
-        source: 'deterministic-test',
-        detail: evidenceDetail(item.key)
-      },
+      { runId, kind: item.key, status: 'PASS', confidence: 1, source, detail },
       f.internal
     );
     assert.equal(last.status, 200);
