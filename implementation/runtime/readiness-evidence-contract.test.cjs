@@ -11,15 +11,16 @@ test('tenant environment refuses weak, fixture or human-assisted evidence', () =
     zeroHuman: false,
     humanInterventions: 1
   }), /zero-human/);
+  const deploymentCreatedAt = new Date(Date.now() - 60000).toISOString();
   assert.equal(validateStrictReadinessEvidence('tenant-environment', 'PASS', {
-    fixtureOnly: false,
-    zeroHuman: true,
-    humanInterventions: 0,
-    provisioned: true,
-    environmentId: 'railway-runtime/tenant-alpha',
-    provisioningMode: 'cloud-runtime',
-    healthcheckPassed: true,
-    tenantIsolationVerified: true
+    fixtureOnly: false, zeroHuman: true, humanInterventions: 0,
+    provisioned: true, tenantExists: true, environmentId: 'railway-runtime/tenant-alpha',
+    provisioningMode: 'cloud-runtime', runtimeHealthPassed: true, healthcheckPassed: true,
+    tenantIsolationVerified: true, crossTenantNegativeTests: 1, durableStateVerified: true,
+    exactCandidateSha: 'a'.repeat(40), exactTargetDeploymentId: 'deployment-current',
+    tenant: 'alpha', implementationRunId: 'run-1', verifierRunId: 'verifier-1',
+    proofRunnerIdentity: 'unit-test-runner', targetDeploymentCreatedAt: deploymentCreatedAt,
+    evidenceGeneratedAt: new Date().toISOString()
   }), null);
 });
 
