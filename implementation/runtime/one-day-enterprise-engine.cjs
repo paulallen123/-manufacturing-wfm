@@ -57,7 +57,7 @@ function writeJson(res, status, body) {
 function createOneDayEnterpriseEngine(options = {}) {
   const engine = core.createOneDayEnterpriseEngine(options);
   const strictEvidence = options.strictEvidence === true || process.env.WFM_HOSTED_STAGING === 'true';
-  const agentsApiEnabled = options.agentsApiEnabled === true || process.env.WFM_AGENTS_API_ENABLED === 'true';
+  const agentsApiEnabled = options.agentsApiEnabled === true || (process.env.WFM_AGENTS_API_ENABLED === 'true' && process.env.NODE_ENV === 'staging');
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
   let agentsRoute = null;
   let agentsInitError = null;
