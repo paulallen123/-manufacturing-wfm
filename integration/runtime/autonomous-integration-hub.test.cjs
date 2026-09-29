@@ -148,6 +148,66 @@ test('credential references accept managed pointers and reject raw credentials',
   assert.equal(validCredentialReference('password123'), false);
 });
 
+
+test('mobile can start a safe SAP connection without putting credentials on the device', async () => {
+  const f = fixture();
+  try {
+    const result = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/mobile-connect', {
+      productKey: 'sap-s4hana',
+      authMethod: 'oauth2',
+      sourceInstanceId: 'sap-alpha-production',
+      authoritativeFor: ['finance', 'production']
+    });
+    assert.equal(result.status, 200);
+    assert.equal(result.body.connection.productKey, 'sap-s4hana');
+    assert.equal(result.body.connection.state, 'AUTHORIZATION_REQUIRED');
+    assert.equal(result.body.connection.sourceInstanceId, 'sap-alpha-production');
+    assert.ok(result.body.connection.semanticScopes.includes('finance.read'));
+    assert.ok(result.body.connection.semanticScopes.includes('production.read'));
+    assert.deepEqual(result.body.candidate.authoritativeFor, ['finance', 'production']);
+    assert.equal(result.body.requiredAction.type, 'OPEN_SECURE_AUTHORIZATION');
+    assert.equal(result.body.requiredAction.mode, 'server-brokered-oauth');
+    assert.equal(result.body.requiredAction.secretsOnDevice, false);
+    assert.equal(result.body.requiredAction.credentialSubmissionAllowed, false);
+    assert.equal(result.body.requiredAction.readOnlyDefault, true);
+    assert.equal(result.body.mobile.connectionRunsServerSide, true);
+    assert.equal(result.body.mobile.appMayCloseAfterAuthorization, true);
+    assert.equal(result.body.mobile.deviceRevocationDoesNotDisconnectSource, true);
+
+    const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(status.body.discovery.candidateCount, 1);
+    assert.equal(status.body.connections.length, 1);
+    assert.equal(status.body.connections[0].productKey, 'sap-s4hana');
+  } finally {
+    f.close();
+  }
+});
+
+test('mobile integration endpoint rejects raw credential material and employee access', async () => {
+  const f = fixture();
+  try {
+    const rawSecret = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/mobile-connect', {
+      productKey: 'sap-s4hana',
+      authMethod: 'oauth2',
+      clientSecret: 'must-never-reach-vecta-mobile-control-plane'
+    });
+    assert.equal(rawSecret.status, 400);
+    assert.match(rawSecret.body.error, /credentials are not accepted/i);
+
+    const employee = await call(f.hub, f.tokens.employee, 'POST', '/api/integrations/autonomous/mobile-connect', {
+      productKey: 'sap-s4hana',
+      authMethod: 'oauth2'
+    });
+    assert.equal(employee.status, 403);
+
+    const status = await call(f.hub, f.tokens.manager, 'GET', '/api/integrations/autonomous/status');
+    assert.equal(status.body.discovery.candidateCount, 0);
+    assert.equal(status.body.connections.length, 0);
+  } finally {
+    f.close();
+  }
+});
+
 test('employee role cannot inspect or configure integration control plane', async () => {
   const f = fixture();
   try {
