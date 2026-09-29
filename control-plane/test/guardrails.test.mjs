@@ -8,6 +8,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const readinessFiles = [
   'lib/engine.js',
+  'lib/dispatch.js',
   'workflows/candidate-control.js',
   'app/api/candidates/start/route.js',
   'app/api/ingest/route.js',
@@ -23,9 +24,18 @@ test('readiness orchestration contains no fixed sleep/timer readiness loops', ()
   }
 });
 
-test('Phase A task consumer remains shadow-only and has no outbound mutation primitive', () => {
-  const source = fs.readFileSync(path.join(root, 'app/api/queues/control-tasks/route.js'), 'utf8');
-  assert.match(source, /SHADOW_WOULD_DISPATCH/);
-  assert.doesNotMatch(source, /\bfetch\s*\(/);
-  assert.doesNotMatch(source, /child_process|execFile|spawn\s*\(/);
+test('task consumer delegates only to the bounded signed dispatcher', () => {
+  const route = fs.readFileSync(path.join(root, 'app/api/queues/control-tasks/route.js'), 'utf8');
+  const dispatcher = fs.readFileSync(path.join(root, 'lib/dispatch.js'), 'utf8');
+
+  assert.match(route, /dispatchProofTask\(task\)/);
+  assert.doesNotMatch(route, /\bfetch\s*\(/);
+  assert.doesNotMatch(route, /child_process|execFile|spawn\s*\(/);
+
+  assert.match(dispatcher, /VECTOR_CONTROL_PLANE_DISPATCH_MODE/);
+  assert.match(dispatcher, /DISPATCH_ENDPOINT_REQUIRES_HTTPS/);
+  assert.match(dispatcher, /createHmac\('sha256'/);
+  assert.match(dispatcher, /LANE_DEFINITIONS\[task\.laneId\]/);
+  assert.doesNotMatch(dispatcher, /task\.(?:url|endpoint|callbackUrl)/);
+  assert.doesNotMatch(dispatcher, /child_process|execFile|spawn\s*\(/);
 });

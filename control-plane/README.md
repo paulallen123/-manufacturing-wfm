@@ -2,9 +2,9 @@
 
 This directory is an isolated, Vercel-targeted control-plane application. It does not alter the sealed VECTOR runtime or the frozen customer-proof candidate.
 
-Current mode: **Phase A / SHADOW**.
+Current mode: **Phase B-capable / fail-closed dispatch**.
 
-Implemented in this slice:
+Implemented:
 
 - Vercel Workflow candidate controller with durable per-candidate state.
 - Vercel Queues fan-in for provider/proof events and fan-out for control-plane tasks.
@@ -19,7 +19,11 @@ Implemented in this slice:
 - Provider degradation rerouting to another admitted healthy lane where one exists.
 - Frozen-target retention protection.
 - `OPEN GATES + EMPTY QUEUE = ORCHESTRATION_INVARIANT_BREACH` unless every remaining gate has an explicit block.
-- Shadow-only task consumer: no external product/provider mutations yet.
+- Signed, allow-listed proof dispatch for admitted lanes.
+- Exact candidate, provider, failure-domain, deployment and runtime binding revalidated immediately before every outbound dispatch.
+- No task may supply its own callback URL; endpoints come only from server-side lane configuration.
+- HTTPS-only outbound proof dispatch with HMAC-SHA256 provenance and idempotency headers.
+- Fail-closed shadow behaviour unless `VECTOR_CONTROL_PLANE_DISPATCH_MODE=LIVE_PROOF` is explicitly configured.
 
 ## Security boundary
 
@@ -29,12 +33,21 @@ Implemented in this slice:
 
 Queue callback routes are private Vercel queue consumers configured in `vercel.json`.
 
-## Local deterministic tests
+Outbound proof lanes require server-side endpoint + signing secret pairs:
+
+- Railway proof workers: `VECTOR_DISPATCH_RAILWAY_URL` + `VECTOR_DISPATCH_RAILWAY_SECRET`
+- GitHub proof lane: `VECTOR_DISPATCH_GITHUB_URL` + `VECTOR_DISPATCH_GITHUB_SECRET`
+- Northstar lane: `VECTOR_DISPATCH_NORTHSTAR_URL` + `VECTOR_DISPATCH_NORTHSTAR_SECRET`
+- Independent verifier lane: `VECTOR_DISPATCH_EXTERNAL_URL` + `VECTOR_DISPATCH_EXTERNAL_SECRET`
+
+No outbound dispatch occurs unless `VECTOR_CONTROL_PLANE_DISPATCH_MODE=LIVE_PROOF`.
+
+## Deterministic tests
 
 ```bash
 npm test
 ```
 
-Current deterministic state-machine verification: **31/31 affected control-plane tests passing** in an isolated execution harness while GitHub Actions is degraded. This is logic verification only, not hosted/release proof.
+The dispatcher test suite verifies shadow fail-closed behaviour, exact-candidate drift rejection, admitted lane/provider/failure-domain binding, HTTPS-only endpoints, HMAC provenance, idempotency, task-supplied URL rejection and provider-rejection handling.
 
-These tests do not claim hosted durability. Hosted Workflow/Queue execution must be proven separately on the Vercel preview deployment before Phase B can dispatch real proof work.
+Hosted Workflow/Queue durability still requires a Vercel preview deployment and interruption/recovery proof before this control plane can be called hosted-proven or authoritative for customer-proof execution.
