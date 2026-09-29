@@ -3,6 +3,7 @@
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS autonomy-proof
 WORKDIR /proof
 COPY . ./
+RUN node --test ux-overlay/vector-gusto.test.cjs
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
 RUN node scripts/validate-development-proof-readiness.mjs \
@@ -87,6 +88,8 @@ RUN node -e "const fs=require('fs');const sha=String(process.env.RAILWAY_GIT_COM
 # uses only Node built-ins plus the existing per-tenant SQLite runtime.
 RUN mkdir -p /app/integration-runtime
 COPY integration/runtime/autonomous-integration-hub.cjs /app/integration-runtime/autonomous-integration-hub.cjs
+COPY integration/runtime/gusto-company-connector.cjs /app/integration-runtime/gusto-company-connector.cjs
+COPY integration/runtime/gusto-oauth-landing.cjs /app/integration-runtime/gusto-oauth-landing.cjs
 RUN mkdir -p /app/integration-fabric-runtime /app/integration-fabric-catalog
 COPY integration-fabric/runtime/api-version-routing.mjs /app/integration-fabric-runtime/api-version-routing.mjs
 COPY integration-fabric/runtime/batch-reconciliation.mjs /app/integration-fabric-runtime/batch-reconciliation.mjs
@@ -269,6 +272,11 @@ COPY security/runtime/hosted-listen-guard.cjs /tmp/wfm-tests/security/runtime/ho
 COPY security/runtime/hosted-listen-guard.test.cjs /tmp/wfm-tests/security/runtime/hosted-listen-guard.test.cjs
 COPY integration/runtime/autonomous-integration-hub.cjs /tmp/wfm-tests/integration/runtime/autonomous-integration-hub.cjs
 COPY integration/runtime/autonomous-integration-hub.test.cjs /tmp/wfm-tests/integration/runtime/autonomous-integration-hub.test.cjs
+COPY integration/runtime/gusto-company-connector.cjs /tmp/wfm-tests/integration/runtime/gusto-company-connector.cjs
+COPY integration/runtime/gusto-company-connector.test.cjs /tmp/wfm-tests/integration/runtime/gusto-company-connector.test.cjs
+COPY integration/runtime/gusto-oauth-landing.cjs /tmp/wfm-tests/integration/runtime/gusto-oauth-landing.cjs
+COPY integration/runtime/gusto-oauth-landing.test.cjs /tmp/wfm-tests/integration/runtime/gusto-oauth-landing.test.cjs
+COPY integration/runtime/gusto-integration-hub.test.cjs /tmp/wfm-tests/integration/runtime/gusto-integration-hub.test.cjs
 COPY integration/runtime/directory-oauth-broker.cjs /tmp/wfm-tests/integration/runtime/directory-oauth-broker.cjs
 COPY integration/runtime/directory-oauth-broker.test.cjs /tmp/wfm-tests/integration/runtime/directory-oauth-broker.test.cjs
 COPY integration/worker/directory-discovery-worker.cjs /tmp/wfm-tests/integration/worker/directory-discovery-worker.cjs
@@ -325,6 +333,9 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs \
       /tmp/wfm-tests/security/runtime/hosted-listen-guard.test.cjs \
       /tmp/wfm-tests/integration/runtime/autonomous-integration-hub.test.cjs \
+      /tmp/wfm-tests/integration/runtime/gusto-company-connector.test.cjs \
+      /tmp/wfm-tests/integration/runtime/gusto-oauth-landing.test.cjs \
+      /tmp/wfm-tests/integration/runtime/gusto-integration-hub.test.cjs \
       /tmp/wfm-tests/integration/runtime/directory-oauth-broker.test.cjs \
       /tmp/wfm-tests/integration/worker/directory-discovery-worker.test.cjs \
       /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.test.cjs \
@@ -470,4 +481,3 @@ EXPOSE 3000
 CMD ["node","security-runtime/bootstrap.cjs"]
 
 # VECTOR_CANONICAL_REDEPLOY_20260920
-

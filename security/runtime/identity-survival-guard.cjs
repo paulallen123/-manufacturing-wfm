@@ -49,6 +49,8 @@ function requestPath(req) {
 function privilegedAction(req, role) {
   const method = String(req?.method || 'GET').toUpperCase();
   const path = requestPath(req);
+  // This provider redirect exchanges an authorization code and stores credentials.
+  if (method === 'GET' && path === '/api/integrations/autonomous/oauth/callback/gusto') return true;
   if (method === 'GET' || method === 'HEAD' || path === '/api/logout') return false;
   if (HIGH_RISK_PREFIXES.some(prefix => path.startsWith(prefix))) return true;
   return role !== 'employee';

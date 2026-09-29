@@ -37,6 +37,185 @@ const clearVectorHomeRequest=()=>{try{const u=new URL(window.location.href);if(!
 const employee=()=>{try{return typeof isEmployee==='function'&&isEmployee()}catch{return false}};
 const sourceButtons=()=>[...document.querySelectorAll('.app > .sidebar nav .navbtn[data-page], .sidebar:not(.vector-sidebar) nav .navbtn[data-page]')];
 
+const GUSTO_API='/api/integrations/autonomous';
+const GUSTO_HOSTS=Object.freeze({sandbox:'api.gusto-demo.com',production:'api.gusto.com'});
+const GUSTO_UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+let gustoPanel=null,gustoEpoch=0;
+function gustoIdentity(){
+ try{
+  const own=typeof me==='function'?me():null;
+  if(!own||employee()||!available('integrations')||!(own.id||own.email))return null;
+  const tenant=own.tenant??own.tenantId??(typeof data!=='undefined'?(data.tenant??data.tenantId):'');
+  return JSON.stringify([String(own.id||''),String(own.email||''),String(tenant||''),String(own.role||''),String(typeof ui!=='undefined'?ui.root||'':'')]);
+ }catch{return null;}
+}
+function invalidateGustoPanel(){
+ gustoEpoch++;gustoPanel?.controller.abort();gustoPanel?.card.remove();gustoPanel=null;
+}
+function gustoCurrent(panel){
+ return gustoPanel===panel&&panel.epoch===gustoEpoch&&page()==='integrations'&&gustoIdentity()===panel.identity&&panel.card.isConnected;
+}
+function gustoStale(panel){
+ if(gustoPanel===panel)invalidateGustoPanel();
+ const error=new Error('Connection context changed.');error.stale=true;return error;
+}
+async function gustoRequest(panel,path,body){
+ if(!gustoCurrent(panel))throw gustoStale(panel);
+ const response=await fetch(GUSTO_API+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',
+  headers:{Accept:'application/json',...(body===undefined?{}:{'Content-Type':'application/json'})},
+  ...(body===undefined?{}:{body:JSON.stringify(body)}),signal:panel.controller.signal});
+ if(!gustoCurrent(panel))throw gustoStale(panel);
+ if(!response.ok){
+  const error=new Error('Gusto request failed.');error.status=response.status;
+  let failure;try{failure=await response.json();}catch{}
+  if(!gustoCurrent(panel))throw gustoStale(panel);
+  if(typeof failure?.code==='string'&&/^GUSTO_[A-Z_]{1,64}$/.test(failure.code))error.code=failure.code;
+  throw error;
+ }
+ const result=await response.json();
+ if(!gustoCurrent(panel))throw gustoStale(panel);
+ return result;
+}
+function gustoConnection(value){
+ if(!value||value.productKey!=='gusto'||typeof value.id!=='string')return null;
+ const metadata=value.gusto;
+ return {id:value.id,state:String(value.state||''),sourceInstanceId:String(value.sourceInstanceId||''),
+  workforceImported:value.canonicalImport?.status==='PASS'?true:value.canonicalImport===null?false:null,gusto:metadata&&typeof metadata==='object'?{
+  companyUuid:String(metadata.companyUuid||''),companyName:String(metadata.companyName||''),environment:String(metadata.environment||''),verifiedAt:String(metadata.verifiedAt||'')
+ }:null};
+}
+function gustoSnapshot(panel,configuration,status){
+ const expected=String(configuration?.expectedCompanyUuid||'').trim().toLowerCase();
+ panel.configuration={configured:configuration?.configured===true&&Boolean(GUSTO_HOSTS[configuration.environment])&&(!expected||GUSTO_UUID.test(expected)),
+  environment:String(configuration?.environment||''),expectedCompanyUuid:expected};
+ panel.connection=(Array.isArray(status?.connections)?status.connections:[]).map(gustoConnection).find(Boolean)||null;
+ panel.candidates=(Array.isArray(status?.discovery?.candidates)?status.discovery.candidates:[])
+  .filter(row=>row.productKey==='gusto'&&typeof row.id==='string').map(row=>({id:row.id,status:String(row.status||'')}));
+ panel.companyUuid=expected||panel.companyUuid||panel.connection?.gusto?.companyUuid||panel.connection?.sourceInstanceId||'';
+ panel.loaded=true;panel.needsCheck=false;panel.error='';
+}
+async function readGustoSnapshot(panel){
+ const [configuration,status]=await Promise.all([gustoRequest(panel,'/gusto/configuration'),gustoRequest(panel,'/status')]);
+ if(!gustoCurrent(panel))throw gustoStale(panel);
+ gustoSnapshot(panel,configuration,status);
+}
+function renderGustoPanel(panel){
+ if(!gustoCurrent(panel))return;
+ const config=panel.configuration,connection=panel.connection,metadata=connection?.gusto;
+ const configured=config?.configured===true,busy=Boolean(panel.busy);
+ const verifiedAt=metadata?.verifiedAt?new Date(metadata.verifiedAt):null;
+ const verified=Boolean(configured&&!panel.needsCheck&&metadata&&GUSTO_UUID.test(metadata.companyUuid)&&
+  metadata.environment===config.environment&&(!config.expectedCompanyUuid||config.expectedCompanyUuid===metadata.companyUuid.toLowerCase())&&
+  !['AUTHORIZATION_REQUIRED','REAUTH_REQUIRED'].includes(connection.state)&&verifiedAt&&Number.isFinite(verifiedAt.getTime()));
+ let description=!panel.loaded?'Checking Gusto connection…':!config?'Gusto connection status is unavailable.':
+  !configured?'VECTOR’s Gusto authorization needs to be configured by an administrator.':
+  verified?'Company access verified':panel.needsCheck?'Gusto access needs to be checked.':'Authorize access to your Gusto company.';
+ const heading=panel.loaded&&config&&!configured?'Gusto setup required':'Gusto';
+ let details=verified?'<p><strong>'+esc(metadata.companyName||'Gusto company')+'</strong></p><p>'+esc(metadata.environment==='sandbox'?'Sandbox':'Production')+
+  ' · Last checked <time datetime="'+esc(verifiedAt.toISOString())+'">'+esc(verifiedAt.toLocaleString())+'</time></p><p>This check verifies company access.</p>'+
+  (connection.workforceImported===false?'<p>Workforce data has not been imported.</p>':''):'';
+ if(configured&&!config.expectedCompanyUuid)details+='<label>Gusto company UUID <input type="text" data-vector-gusto-company value="'+esc(panel.companyUuid)+
+  '" maxlength="36" autocomplete="off" spellcheck="false" '+(busy?'disabled':'')+'></label><p>Choose the company you want to connect to this workspace.</p>';
+ else if(configured&&!verified)details+='<p>The Gusto company for this workspace is selected.</p>';
+ const reconnect=Boolean(connection?.gusto||connection?.state==='REAUTH_REQUIRED'||panel.needsCheck);
+ panel.card.setAttribute('aria-busy',String(busy));
+ panel.card.innerHTML='<div class="vector-card-head"><div><h2>'+heading+'</h2><p aria-live="polite">'+esc(description)+'</p></div></div>'+
+  '<div class="vector-empty">'+details+(panel.error?'<p role="alert">'+esc(panel.error)+'</p>':'')+'</div>'+
+  '<div class="vector-card-head"><button type="button" class="btn primary" data-vector-gusto-connect '+(!configured||busy?'disabled':'')+'>'+
+  (panel.busy==='authorize'?'Opening Gusto…':reconnect?'Reconnect Gusto':'Connect Gusto')+'</button>'+
+  '<button type="button" class="btn" data-vector-gusto-refresh '+(busy?'disabled':'')+'>'+(panel.busy==='check'?'Checking…':'Check connection')+'</button></div>';
+}
+function gustoFailure(panel,error,action){
+ if(!gustoCurrent(panel)||error?.stale||error?.name==='AbortError')return;
+ panel.loaded=true;
+ const providerFailure=typeof error?.code==='string'&&/^GUSTO_[A-Z_]{1,64}$/.test(error.code);
+ if((error?.status===401||error?.status===403)&&!providerFailure){
+  panel.configuration=null;panel.connection=null;panel.candidates=[];panel.companyUuid='';
+  panel.error='Sign in with an administrator account to manage this connection.';
+ }else{
+  if(action==='verify'||providerFailure){
+   panel.needsCheck=true;
+   if(panel.connection)panel.connection.gusto=null;
+  }
+  panel.error=action==='authorize'?'Gusto authorization could not be started. Check the company selection and try again.':
+   action==='verify'?'Gusto access could not be verified. Reconnect Gusto or check again.':'Gusto connection status could not be checked. Try again.';
+ }
+}
+async function checkGustoPanel(panel,verify=false){
+ if(!gustoCurrent(panel)||panel.busy)return;
+ panel.busy='check';panel.error='';renderGustoPanel(panel);
+ try{
+  if(verify&&panel.configuration?.configured&&(panel.connection?.gusto||panel.connection?.sourceInstanceId)){
+   const result=await gustoRequest(panel,'/gusto/verify',{connectionId:panel.connection.id});
+   const connection=gustoConnection(result?.connection);
+   if(!connection||connection.id!==panel.connection.id)throw new Error('Unexpected connection.');
+   panel.connection=connection;panel.needsCheck=false;
+  }else await readGustoSnapshot(panel);
+ }catch(error){gustoFailure(panel,error,verify?'verify':'status');}
+ finally{if(gustoCurrent(panel)){panel.busy='';renderGustoPanel(panel);}}
+}
+function syncGustoPanel(content){
+ const identity=page()==='integrations'?gustoIdentity():null;
+ if(!identity){if(gustoPanel)invalidateGustoPanel();return;}
+ if(gustoPanel&&gustoPanel.identity===identity&&gustoPanel.card.parentElement===content)return;
+ invalidateGustoPanel();
+ const card=document.createElement('section');card.className='vector-card';card.dataset.vectorGustoCard='1';card.style.margin='0 0 16px';
+ card.setAttribute('aria-label','Gusto connection');content.prepend(card);
+ const panel={card,identity,epoch:gustoEpoch,controller:new AbortController(),configuration:null,connection:null,candidates:[],companyUuid:'',loaded:false,needsCheck:false,busy:'',error:''};
+ gustoPanel=panel;renderGustoPanel(panel);void checkGustoPanel(panel);
+}
+async function authorizeGusto(panel){
+ if(!gustoCurrent(panel)||panel.busy||!panel.configuration?.configured)return;
+ const input=panel.card.querySelector('[data-vector-gusto-company]');
+ const selected=String(panel.configuration.expectedCompanyUuid||input?.value||panel.companyUuid||'').trim().toLowerCase();
+ if(!GUSTO_UUID.test(selected)){panel.error='Enter the Gusto company UUID you want to connect.';renderGustoPanel(panel);return;}
+ panel.companyUuid=selected;panel.busy='authorize';panel.error='';renderGustoPanel(panel);
+ let navigating=false;
+ try{
+  await readGustoSnapshot(panel);
+  if(!panel.configuration.configured)return;
+  const expected=panel.configuration.expectedCompanyUuid||selected;
+  if(expected!==selected){panel.error='The selected company changed. Review the connection and try again.';return;}
+  let connection=panel.connection;
+  if(!connection){
+   let candidate=panel.candidates[0];
+   if(!candidate){
+    await gustoRequest(panel,'/discover',{source:'USER',apps:[{productKey:'gusto',name:'Gusto'}]});
+    const status=await gustoRequest(panel,'/status');
+    gustoSnapshot(panel,panel.configuration,status);
+    connection=panel.connection;candidate=panel.candidates[0];
+   }
+   if(!connection){
+    if(!candidate)throw new Error('Gusto candidate unavailable.');
+    if(candidate.status!=='CONFIRMED')await gustoRequest(panel,'/confirm',{candidateId:candidate.id,authoritativeFor:['people','payroll']});
+    const result=await gustoRequest(panel,'/connect',{candidateId:candidate.id,authMethod:'oauth2'});
+    connection=gustoConnection(result?.connection);
+    if(!connection)throw new Error('Gusto connection unavailable.');
+    panel.connection=connection;
+   }
+  }
+  const result=await gustoRequest(panel,'/gusto/authorize',{connectionId:connection.id,expectedCompanyUuid:expected});
+  const url=new URL(result.authorizationUrl),host=GUSTO_HOSTS[result.environment];
+  if(!host||result.environment!==panel.configuration.environment||url.origin!=='https://'+host||url.username||url.password||url.hash||url.pathname!=='/oauth/authorize')throw new Error('Invalid Gusto authorization URL.');
+  if(!gustoCurrent(panel))throw gustoStale(panel);
+  window.location.assign(url.href);navigating=true;
+ }catch(error){gustoFailure(panel,error,'authorize');}
+ finally{if(gustoCurrent(panel)&&!navigating){panel.busy='';renderGustoPanel(panel);}}
+}
+document.addEventListener('click',event=>{
+ const connect=event.target.closest('[data-vector-gusto-connect]'),refresh=event.target.closest('[data-vector-gusto-refresh]');
+ if(!connect&&!refresh)return;
+ event.preventDefault();
+ const panel=gustoPanel;
+ if(!panel||!gustoCurrent(panel)||(connect||refresh).closest('[data-vector-gusto-card]')!==panel.card)return;
+ if(connect)void authorizeGusto(panel);else void checkGustoPanel(panel,true);
+});
+document.addEventListener('input',event=>{
+ const input=event.target.closest('[data-vector-gusto-company]'),panel=gustoPanel;
+ if(input&&panel&&gustoCurrent(panel)&&input.closest('[data-vector-gusto-card]')===panel.card)panel.companyUuid=input.value;
+});
+window.addEventListener('pagehide',invalidateGustoPanel);
+
 function icon(name){
   const paths={
     home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V21h14V10.5"/><path d="M9 21v-6h6v6"/>',
@@ -355,11 +534,11 @@ function settingsMenu(){
  const existing=content.querySelector('.vector-settings');if(existing){existing.remove();return;}
  const panel=document.createElement('section');panel.className='vector-card vector-settings';panel.innerHTML='<div class="vector-card-head"><h2>Settings & more</h2><button type="button" data-vector-settings>Close</button></div><div class="vector-settings-links">'+sourceButtons().filter(b=>!NAV.some(n=>n.routes.includes(b.dataset.page))).map(b=>`<button type="button" data-vector-route="${esc(b.dataset.page)}">${esc(text(b))}</button>`).join('')+'</div>';content.prepend(panel);panel.scrollIntoView({block:'start'});
 }
-function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(page()==='overview'&&!employee())renderHome(content);else generalPage(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
+function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);syncGustoPanel(content);if(page()==='overview'&&!employee())renderHome(content);else generalPage(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
 document.addEventListener('click',e=>{if(e.target.closest('[data-vector-close-review]')){document.getElementById('modal').close();return;}const review=e.target.closest('[data-vector-review-coverage]');if(review){const id=review.dataset.vectorReviewCoverage;const r=data.requests?.find(r=>String(r.id)===id);if(r&&visiblePeople().some(p=>String(p.id)===String(r.employee)))void approveRequest(id);return;}if(e.target.closest('[data-vector-settings]')){settingsMenu();return;}const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec){const r=firstRoute(spec.routes);if(r)go(r);}return;}if(e.target.closest('[data-vector-return-context]')){clearActionContext();state.returnFocus=true;go('overview');return;}const actionButton=e.target.closest('[data-vector-source-id][data-vector-workflow][data-vector-route]');if(actionButton){if(actionButton.dataset.vectorWorkflow==='leave'){openLeaveReview(actionButton.dataset.vectorSourceId);return;}rememberActionContext({sourceId:actionButton.dataset.vectorSourceId,workflow:actionButton.dataset.vectorWorkflow,route:actionButton.dataset.vectorRoute,title:actionButton.closest('.vector-alert-row')?.querySelector('b')?.textContent||'Time Review item'});go(actionButton.dataset.vectorRoute);return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('attendance');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askWorkforce(input.value.trim());}});
 const previousRender=window.render;
-if(typeof previousRender==='function')window.render=async function(...args){invalidateTimeReviewEvidence();invalidateReadinessEvidence();let result;if(page()==='vector-people'&&!employee()){document.getElementById('root').innerHTML=shell(peoplePage());}else result=await previousRender.apply(this,args);document.body.classList.remove('vector-menu-open');queueMicrotask(apply);return result;};
+if(typeof previousRender==='function')window.render=async function(...args){invalidateGustoPanel();invalidateTimeReviewEvidence();invalidateReadinessEvidence();let result;if(page()==='vector-people'&&!employee()){document.getElementById('root').innerHTML=shell(peoplePage());}else result=await previousRender.apply(this,args);document.body.classList.remove('vector-menu-open');queueMicrotask(apply);return result;};
 window.nav=go;
 document.addEventListener('input',e=>{if(e.target.matches('[aria-label="Search people"]')){const q=e.target.value.trim().toLowerCase();let count=0;document.querySelectorAll('[data-vector-person-row]').forEach(r=>{r.hidden=!r.dataset.search.includes(q);if(!r.hidden)count++;});const empty=document.querySelector('.vector-no-results');if(empty)empty.hidden=count>0;}});
 shellObserver=new MutationObserver(()=>apply());

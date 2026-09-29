@@ -2,6 +2,8 @@
 
 const { createHash, randomUUID, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { createGustoCompanyConnector } = require('./gusto-company-connector.cjs');
+const { serveGustoOAuthLanding } = require('./gusto-oauth-landing.cjs');
 
 const PREFIX = '/api/integrations/autonomous';
 const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
@@ -24,6 +26,7 @@ const CATALOG = Object.freeze([
   { key: 'xero', name: 'Xero', category: 'accounting', aliases: ['xero'], authMethods: ['oauth2'], supports: ['finance', 'cost-centres'] },
   { key: 'quickbooks', name: 'QuickBooks', category: 'accounting', aliases: ['quickbooks', 'intuit quickbooks'], authMethods: ['oauth2'], supports: ['finance', 'cost-centres'] },
   { key: 'adp', name: 'ADP', category: 'payroll-hcm', aliases: ['adp workforce', 'adp'], authMethods: ['oauth2', 'service-account'], supports: ['people', 'payroll', 'absence'] },
+  { key: 'gusto', name: 'Gusto', category: 'payroll-hcm', aliases: ['gusto'], authMethods: ['oauth2'], supports: ['people', 'organisation', 'payroll', 'time'] },
   { key: 'ukg', name: 'UKG', category: 'payroll-hcm', aliases: ['ukg pro', 'ukg ready', 'kronos', 'ultimate kronos', 'ukg'], authMethods: ['oauth2', 'service-account'], supports: ['people', 'payroll', 'absence', 'time'] },
   { key: 'dayforce', name: 'Dayforce', category: 'payroll-hcm', aliases: ['ceridian', 'dayforce'], authMethods: ['oauth2', 'service-account'], supports: ['people', 'payroll', 'absence', 'time'] },
   { key: 'personio', name: 'Personio', category: 'hcm', aliases: ['personio'], authMethods: ['oauth2', 'api-key'], supports: ['people', 'organisation', 'absence'] },
@@ -271,6 +274,9 @@ function createAutonomousIntegrationHub(options = {}) {
       'BEGIN SELECT RAISE(ABORT,\'Integration events are append only.\'); END;'
   );
 
+  const gustoEnv = options.env || process.env;
+  const gusto = createGustoCompanyConnector({ db, env: gustoEnv, fetchImpl: options.fetchImpl || globalThis.fetch, now: options.now || Date.now });
+
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
   );
@@ -349,6 +355,13 @@ function createAutonomousIntegrationHub(options = {}) {
   );
 
   function hasValidatedPeopleSync(connection) {
+    if (connection.product_key === 'gusto') {
+      const configuration = gustoConfigurationFor(connection.tenant);
+      const provider = gusto.getConnectionStatus({ tenant: connection.tenant, connectionId: connection.id });
+      if (!configuration.configured || !provider || provider.companyUuid !== connection.source_instance_id ||
+          (configuration.expectedCompanyUuid && configuration.expectedCompanyUuid !== provider.companyUuid) ||
+          !provider.grantedScopes.includes('people.read')) return false;
+    }
     const grants = safeJsonParse(connection.granted_scopes_json, []);
     const recon = lastRecon.get(connection.tenant, connection.id);
     const batch = latestCanonicalBatch.get(connection.tenant, connection.id);
@@ -415,6 +428,8 @@ function createAutonomousIntegrationHub(options = {}) {
   function publicConnection(row) {
     const product = CATALOG_BY_KEY.get(row.product_key);
     const recon = lastRecon.get(row.tenant, row.id);
+    const gustoMetadata = row.product_key === 'gusto' ? gusto.getConnectionStatus({ tenant: row.tenant, connectionId: row.id }) : null;
+    const selectedGustoCompany = row.product_key === 'gusto' ? gustoConfigurationFor(row.tenant).expectedCompanyUuid : null;
     return {
       id: row.id,
       candidateId: row.candidate_id,
@@ -430,6 +445,7 @@ function createAutonomousIntegrationHub(options = {}) {
       lastHealthAt: row.last_health_at,
       lastSyncAt: row.last_sync_at,
       failureClass: row.failure_class,
+      ...(row.product_key === 'gusto' ? { gusto: gustoMetadata?.companyUuid === row.source_instance_id && (!selectedGustoCompany || selectedGustoCompany === row.source_instance_id) ? gustoMetadata : null } : {}),
       lastReconciliation: recon ? {
         sourceCount: recon.source_count,
         validCount: recon.valid_count,
@@ -615,7 +631,7 @@ function createAutonomousIntegrationHub(options = {}) {
       insertConnection.run(
         id, ctx.tenant, candidate.id, product.key, product.category, 'AUTHORIZATION_REQUIRED',
         requestedAuth, JSON.stringify(semanticScopesFor(product)), '[]', null,
-        compact(body.sourceInstanceId, 160) || null, 0, null, null, null, now, now
+        product.key === 'gusto' ? null : compact(body.sourceInstanceId, 160) || null, 0, null, null, null, now, now
       );
       connection = connectionById.get(id, ctx.tenant);
       record(ctx.tenant, id, 'connection-created', { productKey: product.key, authMethod: requestedAuth });
@@ -632,10 +648,146 @@ function createAutonomousIntegrationHub(options = {}) {
     });
   }
 
+  function requireGustoAdministrator(ctx, res) {
+    if (!['manager', 'admin'].includes(String(ctx.role).toLowerCase())) {
+      writeJson(res, 403, { error: 'Gusto setup requires an authorised administrator.' });
+      return false;
+    }
+    return true;
+  }
+
+  function gustoConfigurationFor(tenant) {
+    const availability = gusto.availability();
+    const raw = gustoEnv.WFM_GUSTO_TENANT_COMPANIES_JSON;
+    if (raw === undefined || raw === '') return { ...availability, expectedCompanyUuid: null };
+    try {
+      if (typeof raw !== 'string' || raw.length > 65536) throw new Error();
+      const bindings = JSON.parse(raw);
+      if (!bindings || Array.isArray(bindings) || typeof bindings !== 'object' || Object.values(bindings).some(value => typeof value !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value))) throw new Error();
+      return { ...availability, expectedCompanyUuid: Object.hasOwn(bindings, tenant) ? bindings[tenant] : null };
+    } catch {
+      return { ...availability, configured: false, expectedCompanyUuid: null, missingConfiguration: [...availability.missingConfiguration, 'WFM_GUSTO_TENANT_COMPANIES_JSON'] };
+    }
+  }
+
+  function requireGustoOrigin(req, res) {
+    let origin = '';
+    try { origin = new URL(gustoEnv.WFM_PUBLIC_ORIGIN).origin; } catch {}
+    if (!origin || req.headers?.origin !== origin) {
+      writeJson(res, 403, { error: 'Start Gusto setup from this VECTOR site.', code: 'GUSTO_ORIGIN_REQUIRED' });
+      return false;
+    }
+    return true;
+  }
+
+  function gustoConnection(ctx, res, connectionId) {
+    const connection = connectionById.get(compact(connectionId, 80), ctx.tenant);
+    if (!connection || connection.product_key !== 'gusto' || connection.auth_method !== 'oauth2') {
+      writeJson(res, 404, { error: 'Gusto connection not found.' });
+      return null;
+    }
+    return connection;
+  }
+
+  function saveGustoVerification(ctx, verified, preserveActive = false) {
+    const connection = connectionById.get(verified.connectionId, ctx.tenant);
+    if (!connection || connection.product_key !== 'gusto') {
+      throw Object.assign(new Error('Gusto connection not found.'), { statusCode: 404 });
+    }
+    const configuredCompany = gustoConfigurationFor(ctx.tenant).expectedCompanyUuid;
+    if ((connection.source_instance_id && connection.source_instance_id !== verified.companyUuid) || (configuredCompany && configuredCompany !== verified.companyUuid)) {
+      throw Object.assign(new Error('The Gusto company does not match this connection.'), { statusCode: 409, code: 'GUSTO_COMPANY_MISMATCH' });
+    }
+    const keepActive = preserveActive && connection.state === 'ACTIVE' && hasValidatedPeopleSync(connection) && verified.grantedScopes.includes('people.read');
+    authorizeConnection.run(JSON.stringify(verified.grantedScopes), verified.authorizationRef, verified.companyUuid, nowIso(), connection.id, ctx.tenant);
+    updateConnectionState.run(keepActive ? 'ACTIVE' : 'VALIDATING', null, verified.verifiedAt, nowIso(), connection.id, ctx.tenant);
+    record(ctx.tenant, connection.id, 'gusto-company-verified', {
+      companyUuid: verified.companyUuid, environment: verified.environment,
+      grantedScopeCount: verified.grantedScopes.length, verifiedAt: verified.verifiedAt
+    });
+    return publicConnection(connectionById.get(connection.id, ctx.tenant));
+  }
+
+  async function handleGustoAuthorize(ctx, req, res) {
+    if (!requireGustoAdministrator(ctx, res)) return true;
+    const body = await readJson(req, maxBodyBytes);
+    const connection = gustoConnection(ctx, res, body.connectionId);
+    if (!connection) return true;
+    const availability = gustoConfigurationFor(ctx.tenant);
+    if (!availability.configured) return writeJson(res, 503, {
+      error: 'Gusto connection setup is required on this VECTOR site.', code: 'GUSTO_NOT_CONFIGURED', ...availability
+    });
+    if (!requireGustoOrigin(req, res)) return true;
+    const expectedCompanyUuid = body.expectedCompanyUuid || availability.expectedCompanyUuid || connection.source_instance_id;
+    if ((connection.source_instance_id && expectedCompanyUuid !== connection.source_instance_id) || (availability.expectedCompanyUuid && expectedCompanyUuid !== availability.expectedCompanyUuid)) {
+      return writeJson(res, 409, { error: 'Reconnect the Gusto company already selected for this connection.', code: 'GUSTO_COMPANY_MISMATCH' });
+    }
+    const authorization = gusto.beginAuthorization({ tenant: ctx.tenant, connectionId: connection.id, sessionHash: sha256(cookieSessionToken(req)), expectedCompanyUuid });
+    record(ctx.tenant, connection.id, 'gusto-authorization-started', { environment: authorization.environment });
+    return writeJson(res, 200, authorization);
+  }
+
+  async function handleGustoComplete(ctx, req, res) {
+    if (!requireGustoAdministrator(ctx, res)) return true;
+    const configuration = gustoConfigurationFor(ctx.tenant);
+    if (!configuration.configured) return writeJson(res, 503, {
+      error: 'Gusto connection setup is required on this VECTOR site.', code: 'GUSTO_NOT_CONFIGURED', ...configuration
+    });
+    if (!requireGustoOrigin(req, res)) return true;
+    const body = await readJson(req, 8192);
+    if ((body.code && body.providerError) || typeof body.state !== 'string' ||
+        (body.code !== undefined && body.code !== null && typeof body.code !== 'string') ||
+        (body.providerError !== undefined && body.providerError !== null && typeof body.providerError !== 'string')) {
+      return writeJson(res, 400, { error: 'The Gusto authorization response is invalid.', code: 'GUSTO_INVALID_CALLBACK' });
+    }
+    const verified = await gusto.completeAuthorization({
+      tenant: ctx.tenant, sessionHash: sha256(cookieSessionToken(req)),
+      state: body.state, code: body.code, providerError: body.providerError,
+      expectedCompanyUuid: configuration.expectedCompanyUuid || undefined
+    });
+    saveGustoVerification(ctx, verified);
+    return writeJson(res, 200, { verified: true });
+  }
+
+  async function handleGustoVerify(ctx, req, res) {
+    if (!requireGustoAdministrator(ctx, res)) return true;
+    const configuration = gustoConfigurationFor(ctx.tenant);
+    if (!configuration.configured) return writeJson(res, 503, {
+      error: 'Gusto connection setup is required on this VECTOR site.', code: 'GUSTO_NOT_CONFIGURED', ...configuration
+    });
+    if (!requireGustoOrigin(req, res)) return true;
+    const body = await readJson(req, maxBodyBytes);
+    const connection = gustoConnection(ctx, res, body.connectionId);
+    if (!connection) return true;
+    try {
+      if (configuration.expectedCompanyUuid && connection.source_instance_id && configuration.expectedCompanyUuid !== connection.source_instance_id) {
+        throw Object.assign(new Error('The selected Gusto company does not match this connection.'), { statusCode: 409, code: 'GUSTO_COMPANY_MISMATCH' });
+      }
+      const verified = await gusto.verifyConnection({ tenant: ctx.tenant, connectionId: connection.id });
+      return writeJson(res, 200, { connection: saveGustoVerification(ctx, verified, true), dataSynced: false, payrollProof: false });
+    } catch (error) {
+      if (['GUSTO_REAUTHORIZATION_REQUIRED', 'GUSTO_UNAUTHORIZED', 'GUSTO_FORBIDDEN', 'GUSTO_COMPANY_MISMATCH', 'GUSTO_TOKEN_SUBJECT_INVALID', 'GUSTO_SCOPE_REQUIRED', 'GUSTO_ENVIRONMENT_MISMATCH', 'GUSTO_CLIENT_MISMATCH'].includes(error?.code)) {
+        const current = gusto.getConnectionStatus({ tenant: ctx.tenant, connectionId: connection.id });
+        const stillVerified = current && current.companyUuid === connection.source_instance_id &&
+          (!configuration.expectedCompanyUuid || current.companyUuid === configuration.expectedCompanyUuid);
+        // A newer successful authorization can finish while the failed provider
+        // request is in flight. Its current verification must survive that error.
+        if (!stillVerified) {
+          updateConnectionState.run('REAUTH_REQUIRED', error.code, connection.last_health_at, nowIso(), connection.id, ctx.tenant);
+          record(ctx.tenant, connection.id, 'gusto-reauthorization-required', { code: error.code });
+        }
+      }
+      throw error;
+    }
+  }
+
   async function handleAuthorizeComplete(req, res) {
     const body = await readJson(req, maxBodyBytes);
     const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
+    if (connection.product_key === 'gusto') {
+      return writeJson(res, 409, { error: 'Complete Gusto authorization through the verified company connector.', code: 'GUSTO_PROVIDER_VERIFICATION_REQUIRED' });
+    }
     const authorizationRef = compact(body.authorizationRef, 220);
     if (!validCredentialReference(authorizationRef)) {
       return writeJson(res, 400, { error: 'authorizationRef must be an opaque managed secret reference, never a credential value.' });
@@ -914,8 +1066,14 @@ function createAutonomousIntegrationHub(options = {}) {
   async function handleRequest(req, res) {
     const path = requestPath(req);
     if (!path.startsWith(PREFIX)) return false;
+    const gustoRoute = path.startsWith(PREFIX + '/gusto/') || path === PREFIX + '/oauth/callback/gusto';
+    if (gustoRoute) res.setHeader('Referrer-Policy', 'no-referrer');
 
     try {
+      // Gusto returns through a cross-site navigation. A minimal local document
+      // establishes this site's origin before the session-bound POST, preserving
+      // the application's existing SameSite=Strict session cookie.
+      if (req.method === 'GET' && path === PREFIX + '/oauth/callback/gusto') return serveGustoOAuthLanding(req, res);
       if (req.method === 'POST' && WORKER_PATHS.has(path)) {
         if (!requireInternal(req, res)) return true;
         if (path === PREFIX + '/discovery-result') return await handleWorkerDiscoveryResult(req, res);
@@ -926,6 +1084,13 @@ function createAutonomousIntegrationHub(options = {}) {
 
       const ctx = requireManager(req, res);
       if (!ctx) return true;
+      if (req.method === 'GET' && path === PREFIX + '/gusto/configuration') {
+        if (!requireGustoAdministrator(ctx, res)) return true;
+        return writeJson(res, 200, gustoConfigurationFor(ctx.tenant));
+      }
+      if (req.method === 'POST' && path === PREFIX + '/gusto/authorize') return await handleGustoAuthorize(ctx, req, res);
+      if (req.method === 'POST' && path === PREFIX + '/gusto/complete') return await handleGustoComplete(ctx, req, res);
+      if (req.method === 'POST' && path === PREFIX + '/gusto/verify') return await handleGustoVerify(ctx, req, res);
       if (req.method === 'GET' && path === PREFIX + '/catalog') {
         return writeJson(res, 200, { systems: publicCatalog(), discoverySources: [...DISCOVERY_SOURCES] });
       }
@@ -942,7 +1107,8 @@ function createAutonomousIntegrationHub(options = {}) {
       return writeJson(res, 404, { error: 'Autonomous integration endpoint not found.' });
     } catch (error) {
       return writeJson(res, Number(error?.statusCode || 500), {
-        error: error?.statusCode ? error.message : 'Integration control plane failed safely.'
+        error: error?.statusCode ? error.message : 'Integration control plane failed safely.',
+        ...(gustoRoute && /^GUSTO_[A-Z_]{1,64}$/.test(error?.code || '') ? { code: error.code } : {})
       });
     }
   }

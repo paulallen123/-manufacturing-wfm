@@ -140,6 +140,32 @@ test('privileged freeze blocks manager mutation but preserves employee low-risk 
   } finally { f.close(); }
 });
 
+test('Gusto callback respects the tenant privileged freeze and audit events exclude OAuth query values', () => {
+  const f = fixture();
+  try {
+    const callbackPath = '/api/integrations/autonomous/oauth/callback/gusto';
+    const callback = { method: 'GET', url: callbackPath + '?state=private-state&code=private-code',
+      headers: { 'sec-fetch-site': 'cross-site', 'sec-fetch-mode': 'navigate' } };
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaManager, callback), res()), false,
+      'the normal provider redirect must be allowed before the freeze');
+    f.control.setFreeze('alpha', true);
+
+    const frozenCallback = res();
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaManager, callback), frozenCallback), true);
+    assert.equal(frozenCallback.statusCode, 403);
+    assert.equal(f.guard.beforeRequest(req(f.tokens.bravoManager, callback), res()), false,
+      'the freeze must not block another tenant');
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaManager, {
+      method: 'GET', url: '/api/integrations/autonomous/status'
+    }), res()), false, 'integration status remains readable during the freeze');
+
+    const audit = f.control.db.prepare("SELECT tenant,detail FROM identity_guard_events WHERE event='privileged-action-frozen' ORDER BY id DESC LIMIT 1").get();
+    assert.equal(audit.tenant, 'alpha');
+    assert.equal(JSON.parse(audit.detail).path, callbackPath);
+    assert.doesNotMatch(audit.detail, /private-state|private-code|state=|code=/);
+  } finally { f.close(); }
+});
+
 test('policy version change forces re-authentication rather than silently changing authority', () => {
   const f = fixture();
   try {
