@@ -12,6 +12,7 @@ const {
 const { DatabaseSync } = require('node:sqlite');
 const { createImplementationWorkController } = require('./implementation-work-controller.cjs');
 const { createTenantEnvironmentProvisioner } = require('./tenant-environment-provisioner.cjs');
+const { validateStrictReadinessEvidence } = require('./readiness-evidence-contract.cjs');
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -640,6 +641,134 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
   }
 
+  const POLICY_DECISIONS = Object.freeze({
+    'time-policy-authority': Object.freeze({
+      kind: 'time-policies',
+      question: 'Please confirm the authoritative source and effective rules for breaks, overtime, working-time limits and site timezone/DST handling.',
+      requiredFields: Object.freeze([
+        'authoritativeConfirmation','sourceRef','effectiveDate','unresolvedRules','unknownPolicyFields',
+        'breakRulesVerified','overtimeRulesVerified','workingTimeRulesVerified','timeZoneVerified'
+      ])
+    }),
+    'absence-policy-authority': Object.freeze({
+      kind: 'absence-policies',
+      question: 'Please confirm the authoritative source and effective rules for the leave year, entitlement method, approvals/delegation and absence types.',
+      requiredFields: Object.freeze([
+        'authoritativeConfirmation','sourceRef','effectiveDate','unresolvedRules','unknownPolicyFields',
+        'leaveYearVerified','entitlementMethodVerified','approvalRulesVerified','absenceTypesVerified',
+        'usesOpeningBalance','openingBalanceFictional','openingBalanceSourceVerified'
+      ])
+    })
+  });
+
+  function currentStoredPass(run, kind) {
+    const row = evidenceByKind.get(run.id, run.tenant, kind);
+    if (!row || row.status !== 'PASS') return false;
+    const detail = parseJsonSafe(row.detail_json, {});
+    const binding = evidenceBindingFor(detail, run);
+    return !binding?.reason;
+  }
+
+  function ensurePolicyQuestions(run, scope = null) {
+    if (!run) return [];
+    const created = [];
+    for (const [key, spec] of Object.entries(POLICY_DECISIONS)) {
+      if (currentStoredPass(run, spec.kind) || decisionByKey.get(run.id, run.tenant, key)) continue;
+      const id = randomUUID();
+      const ts = nowIso();
+      const proposal = {
+        requirement: spec.kind,
+        answerMode: 'AUTHORITATIVE_CONFIRMATION',
+        requiredFields: [...spec.requiredFields],
+        customerContext: {
+          companyName: scope?.companyName || null,
+          countries: Array.isArray(scope?.countries) ? scope.countries : [],
+          sites: Array.isArray(scope?.sites) ? scope.sites : [],
+          connectedSystems: Array.isArray(scope?.sourceSystems) ? scope.sourceSystems : []
+        },
+        safety: {
+          doNotGuess: true,
+          incompleteAnswerCannotPass: true,
+          customerAuthorityRequired: true
+        }
+      };
+      insertDecision.run(
+        id, run.id, run.tenant, key, spec.question, JSON.stringify(proposal),
+        0, 'HIGH', 'PENDING', null, ts, ts
+      );
+      record(run.id, run.tenant, 'DECISION_REQUIRED', {
+        key, risk: 'HIGH', confidence: 0, requirement: spec.kind,
+        reason: 'CUSTOMER_POLICY_AUTHORITY_REQUIRED'
+      });
+      created.push(key);
+    }
+    return created;
+  }
+
+  function customerPolicyEvidence(key, answer, run) {
+    const spec = POLICY_DECISIONS[key];
+    if (!spec) return null;
+    if (!answer || typeof answer !== 'object' || Array.isArray(answer)) {
+      const error = new Error('Policy confirmation requires a structured answer.');
+      error.statusCode = 409;
+      throw error;
+    }
+    if (answer.authoritativeConfirmation !== true) {
+      const error = new Error('Policy confirmation must explicitly confirm customer authority.');
+      error.statusCode = 409;
+      throw error;
+    }
+    const sourceRef = compact(answer.sourceRef, 300);
+    const effectiveDate = compact(answer.effectiveDate, 40);
+    if (!sourceRef || !/^\d{4}-\d{2}-\d{2}(?:$|T)/.test(effectiveDate)) {
+      const error = new Error('Policy confirmation requires a traceable sourceRef and effectiveDate.');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    const detail = {
+      exactCandidateSha: candidateSha,
+      exactTargetDeploymentId: deploymentId,
+      tenant: run.tenant,
+      runId: run.id,
+      fixtureOnly: false,
+      evidenceClass: 'customer-authorised',
+      sourceAuthoritative: true,
+      sourceRef,
+      effectiveDated: true,
+      effectiveDate,
+      unresolvedRules: Number(answer.unresolvedRules),
+      unknownPolicyFields: Number(answer.unknownPolicyFields)
+    };
+
+    if (spec.kind === 'time-policies') {
+      Object.assign(detail, {
+        breakRulesVerified: answer.breakRulesVerified === true,
+        overtimeRulesVerified: answer.overtimeRulesVerified === true,
+        workingTimeRulesVerified: answer.workingTimeRulesVerified === true,
+        timeZoneVerified: answer.timeZoneVerified === true
+      });
+    } else {
+      Object.assign(detail, {
+        leaveYearVerified: answer.leaveYearVerified === true,
+        entitlementMethodVerified: answer.entitlementMethodVerified === true,
+        approvalRulesVerified: answer.approvalRulesVerified === true,
+        absenceTypesVerified: answer.absenceTypesVerified === true,
+        usesOpeningBalance: answer.usesOpeningBalance === true,
+        openingBalanceFictional: answer.openingBalanceFictional === true,
+        openingBalanceSourceVerified: answer.openingBalanceSourceVerified === true
+      });
+    }
+
+    const validationError = validateStrictReadinessEvidence(spec.kind, 'PASS', detail);
+    if (validationError) {
+      const error = new Error(validationError);
+      error.statusCode = 409;
+      throw error;
+    }
+    return { kind: spec.kind, detail };
+  }
+
   function notificationRecoveryForRun(run) {
     const invitation = invitationByContract.get(run.tenant, run.contract_ref_hash);
     const outbox = outboxByContract.get(run.tenant, run.contract_ref_hash);
@@ -1208,6 +1337,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         contractRefDigest: contractHash.slice(0, 16)
       });
       executeTenantEnvironmentEffect(autoStartedRun, scope, 'trusted-contract-scope');
+      ensurePolicyQuestions(autoStartedRun, scope);
     }
 
     const recipientHash = recipientDigest(recipientEmail);
@@ -1566,6 +1696,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       features: scope.features.length
     });
     executeTenantEnvironmentEffect(run, scope, existing ? 'customer-scope-update' : 'customer-scope-submit');
+    ensurePolicyQuestions(run, scope);
     return writeJson(res, existing ? 200 : 201, recompute(run));
   }
 
@@ -1768,12 +1899,37 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
 
     const detail = action === 'CHANGED' ? body.value : body.detail;
+    let policyEvidence = null;
+    if (action !== 'REJECTED' && POLICY_DECISIONS[key]) {
+      policyEvidence = customerPolicyEvidence(key, detail, run);
+    }
+
     updateDecision.run(action, JSON.stringify(detail ?? null), nowIso(), decision.id, run.tenant);
     record(run.id, run.tenant, 'DECISION_RESOLVED', {
       key,
       action,
       by: sha256(ctx.email).slice(0, 16)
     });
+
+    if (policyEvidence) {
+      insertEvidence.run(
+        run.id,
+        run.tenant,
+        policyEvidence.kind,
+        'PASS',
+        1,
+        'customer-authorised-policy-confirmation',
+        JSON.stringify(policyEvidence.detail),
+        nowIso()
+      );
+      record(run.id, run.tenant, 'CUSTOMER_POLICY_AUTHORITY_CONFIRMED', {
+        key,
+        kind: policyEvidence.kind,
+        sourceRefDigest: sha256(policyEvidence.detail.sourceRef).slice(0, 16),
+        effectiveDate: policyEvidence.detail.effectiveDate,
+        by: sha256(ctx.email).slice(0, 16)
+      });
+    }
     return writeJson(res, 200, recompute(run));
   }
 
@@ -1885,6 +2041,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     try {
       const scope = JSON.parse(scopeRow.scope_json);
       executeTenantEnvironmentEffect(recoverableRun, scope, 'runtime-recovery');
+      ensurePolicyQuestions(recoverableRun, scope);
     } catch (error) {
       record(recoverableRun.id, recoverableRun.tenant, 'TENANT_ENVIRONMENT_EFFECT_FAILED', {
         reason: compact(error?.message || 'tenant-environment-effect-failed', 160)

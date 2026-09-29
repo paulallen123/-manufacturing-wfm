@@ -204,3 +204,103 @@ test('automated tenant environment effect remains unproven until independent evi
     f.close();
   }
 });
+
+
+test('missing policy authority creates blocking questions and only complete authorised answers satisfy policy gates', async () => {
+  const f = fixture();
+  try {
+    const activated = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
+      {
+        tenant: 'alpha',
+        contractRef: 'policy-authority-contract',
+        targetHours: 8,
+        recipientEmail: 'manager@alpha',
+        scope: scopeFixture()
+      },
+      f.internal
+    );
+    const runId = activated.body.implementation.runId;
+    const decisions = activated.body.implementation.decisions;
+    assert.deepEqual(
+      decisions.map(item => item.key).sort(),
+      ['absence-policy-authority', 'time-policy-authority']
+    );
+    assert.ok(decisions.every(item => item.risk === 'HIGH' && item.status === 'PENDING'));
+    const initialWork = activated.body.implementation.workPlan.jobs;
+    assert.equal(initialWork.find(item => item.requirementKey === 'time-policies').status, 'BLOCKED_RESUMABLE');
+    assert.equal(initialWork.find(item => item.requirementKey === 'absence-policies').status, 'BLOCKED_RESUMABLE');
+
+    const incomplete = await call(
+      f.engine, f.token, 'POST', '/api/implementation/autonomous/decision',
+      {
+        runId,
+        key: 'time-policy-authority',
+        action: 'ACCEPTED',
+        detail: { authoritativeConfirmation: true, sourceRef: 'customer-policy/time-v1' }
+      }
+    );
+    assert.equal(incomplete.status, 409);
+
+    const time = await call(
+      f.engine, f.token, 'POST', '/api/implementation/autonomous/decision',
+      {
+        runId,
+        key: 'time-policy-authority',
+        action: 'ACCEPTED',
+        detail: {
+          authoritativeConfirmation: true,
+          sourceRef: 'customer-policy/time-v1',
+          effectiveDate: '2026-01-01',
+          unresolvedRules: 0,
+          unknownPolicyFields: 0,
+          breakRulesVerified: true,
+          overtimeRulesVerified: true,
+          workingTimeRulesVerified: true,
+          timeZoneVerified: true
+        }
+      }
+    );
+    assert.equal(time.status, 200);
+    assert.equal(time.body.requirements.find(item => item.key === 'time-policies').satisfied, true);
+    assert.equal(
+      time.body.requirements.find(item => item.key === 'time-policies').source,
+      'customer-authorised-policy-confirmation'
+    );
+
+    const absence = await call(
+      f.engine, f.token, 'POST', '/api/implementation/autonomous/decision',
+      {
+        runId,
+        key: 'absence-policy-authority',
+        action: 'ACCEPTED',
+        detail: {
+          authoritativeConfirmation: true,
+          sourceRef: 'customer-policy/absence-v1',
+          effectiveDate: '2026-01-01',
+          unresolvedRules: 0,
+          unknownPolicyFields: 0,
+          leaveYearVerified: true,
+          entitlementMethodVerified: true,
+          approvalRulesVerified: true,
+          absenceTypesVerified: true,
+          usesOpeningBalance: false,
+          openingBalanceFictional: false,
+          openingBalanceSourceVerified: false
+        }
+      }
+    );
+    assert.equal(absence.status, 200);
+    assert.equal(absence.body.requirements.find(item => item.key === 'absence-policies').satisfied, true);
+    assert.equal(
+      absence.body.requirements.find(item => item.key === 'absence-policies').source,
+      'customer-authorised-policy-confirmation'
+    );
+    assert.equal(absence.body.blockingDecisions.length, 0);
+    const finalWork = absence.body.workPlan.jobs;
+    assert.equal(finalWork.find(item => item.requirementKey === 'time-policies').status, 'SATISFIED');
+    assert.equal(finalWork.find(item => item.requirementKey === 'absence-policies').status, 'SATISFIED');
+  } finally {
+    f.close();
+  }
+});

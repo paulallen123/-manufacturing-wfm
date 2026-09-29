@@ -103,6 +103,9 @@ function createImplementationWorkController(options = {}) {
         return 'IDENTITY_AUTHORITY_OR_CONFIGURATION_REQUIRED';
       case 'source-systems':
         return 'SOURCE_AUTHORIZATION_OR_VALIDATION_REQUIRED';
+      case 'time-policies':
+      case 'absence-policies':
+        return 'CUSTOMER_POLICY_AUTHORITY_REQUIRED';
       case 'payroll-mapping':
         return 'PAYROLL_MAPPING_OR_AUTHORITY_REQUIRED';
       case 'privileged-competency':
