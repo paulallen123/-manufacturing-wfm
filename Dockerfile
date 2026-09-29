@@ -4,7 +4,7 @@ FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317f
 WORKDIR /proof
 COPY . ./
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
- && node --test security/runtime/passkey-auth.test.cjs
+ && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs
 RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-proof-blocker-classifier.mjs \
  && node scripts/validate-proof-stage-router.mjs \
