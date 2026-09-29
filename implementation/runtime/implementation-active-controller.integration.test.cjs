@@ -97,7 +97,7 @@ function fixture() {
   };
 }
 
-test('trusted activation captures authoritative scope and opens safe independent work', async () => {
+test('trusted activation captures scope and autonomously provisions one tenant environment', async () => {
   const f = fixture();
   try {
     const activated = await call(
@@ -115,72 +115,72 @@ test('trusted activation captures authoritative scope and opens safe independent
     assert.equal(activated.body.implementation.scopeCaptured, true);
     const config = activated.body.implementation.requirements.find(item => item.key === 'configuration-scope');
     assert.equal(config.satisfied, true);
+    assert.equal(activated.body.implementation.tenantEnvironment.state, 'READY');
+    assert.equal(activated.body.implementation.tenantEnvironment.runId, activated.body.implementation.runId);
+    assert.match(activated.body.implementation.tenantEnvironment.environmentId, /^[0-9a-f-]{36}$/);
+
     const work = activated.body.implementation.workPlan;
     assert.equal(work.jobs.find(item => item.requirementKey === 'configuration-scope').status, 'SATISFIED');
-    assert.equal(work.jobs.find(item => item.requirementKey === 'tenant-environment').status, 'PENDING');
+    assert.equal(work.jobs.find(item => item.requirementKey === 'tenant-environment').status, 'AWAITING_EVIDENCE');
+
+    const internalStatus = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/work/status',
+      { runId: activated.body.implementation.runId, tenant: 'alpha' },
+      f.internal
+    );
+    assert.equal(internalStatus.status, 200);
+    assert.equal(
+      internalStatus.body.tenantEnvironment.environmentId,
+      activated.body.implementation.tenantEnvironment.environmentId
+    );
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM tenant_environments WHERE tenant=?').get('alpha').count, 1);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM tenant_environment_events WHERE tenant=?').get('alpha').count, 1);
+    db.close();
   } finally {
     f.close();
   }
 });
 
-test('completed implementation effect remains unproven until evidence is independently recorded', async () => {
+test('automated tenant environment effect remains unproven until independent evidence is recorded', async () => {
   const f = fixture();
   try {
+    const request = {
+      tenant: 'alpha',
+      contractRef: 'effect-receipt-contract',
+      targetHours: 8,
+      recipientEmail: 'manager@alpha',
+      scope: scopeFixture()
+    };
     const activated = await call(
       f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
-      {
-        tenant: 'alpha',
-        contractRef: 'effect-receipt-contract',
-        targetHours: 8,
-        recipientEmail: 'manager@alpha',
-        scope: scopeFixture()
-      },
+      request,
       f.internal
     );
     const runId = activated.body.implementation.runId;
-
-    const claimed = await call(
-      f.engine, null, 'POST', '/api/implementation/autonomous/work/claim',
-      { runId, tenant: 'alpha', requirementKey: 'tenant-environment' },
-      f.internal
-    );
-    assert.equal(claimed.status, 200);
-    assert.equal(claimed.body.job.status, 'RUNNING');
-
-    const result = await call(
-      f.engine, null, 'POST', '/api/implementation/autonomous/work/result',
-      {
-        runId,
-        tenant: 'alpha',
-        jobId: claimed.body.job.id,
-        intentDigest: claimed.body.job.intentDigest,
-        outcome: 'EFFECT_RECORDED',
-        detail: { providerRequestId: 'provision-1' }
-      },
-      f.internal
-    );
-    assert.equal(result.status, 200);
-    assert.equal(result.body.evidenceRequired, true);
-    assert.equal(result.body.readiness.requirements.find(item => item.key === 'tenant-environment').satisfied, false);
+    const environmentId = activated.body.implementation.tenantEnvironment.environmentId;
     assert.equal(
-      result.body.readiness.workPlan.jobs.find(item => item.requirementKey === 'tenant-environment').status,
+      activated.body.implementation.workPlan.jobs.find(item => item.requirementKey === 'tenant-environment').status,
       'AWAITING_EVIDENCE'
+    );
+    assert.equal(
+      activated.body.implementation.requirements.find(item => item.key === 'tenant-environment').satisfied,
+      false
     );
 
     const replay = await call(
-      f.engine, null, 'POST', '/api/implementation/autonomous/work/result',
-      {
-        runId,
-        tenant: 'alpha',
-        jobId: claimed.body.job.id,
-        intentDigest: claimed.body.job.intentDigest,
-        outcome: 'EFFECT_RECORDED',
-        detail: { providerRequestId: 'provision-1' }
-      },
+      f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',
+      request,
       f.internal
     );
     assert.equal(replay.status, 200);
-    assert.equal(replay.body.result.replayed, true);
+    assert.equal(replay.body.implementation.tenantEnvironment.environmentId, environmentId);
+
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM tenant_environments WHERE tenant=?').get('alpha').count, 1);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM tenant_environment_events WHERE tenant=?').get('alpha').count, 1);
+    db.close();
 
     const evidenced = await call(
       f.engine, null, 'POST', '/api/implementation/autonomous/evidence',

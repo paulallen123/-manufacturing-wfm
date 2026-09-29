@@ -11,6 +11,7 @@ const {
 } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createImplementationWorkController } = require('./implementation-work-controller.cjs');
+const { createTenantEnvironmentProvisioner } = require('./tenant-environment-provisioner.cjs');
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -404,6 +405,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   ensureImplementationEventsWriteCompatibility(db);
 
   const workController = createImplementationWorkController({ db, requirements: REQUIREMENTS });
+  const tenantEnvironmentProvisioner = createTenantEnvironmentProvisioner({ db });
 
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
@@ -510,6 +512,60 @@ function createOneDayEnterpriseEngine(options = {}) {
     try {
       eventStmt.run(runId || null, tenant || null, event, JSON.stringify(detail), nowIso());
     } catch {}
+  }
+
+  function executeTenantEnvironmentEffect(run, scope, trigger = 'implementation-orchestrator') {
+    if (!run || !scope || typeof scope !== 'object') return null;
+
+    const before = tenantEnvironmentProvisioner.statusForTenant(run.tenant);
+    const environment = tenantEnvironmentProvisioner.provision({
+      tenant: run.tenant,
+      runId: run.id,
+      scope
+    });
+    const changed = !before ||
+      before.runId !== environment.runId ||
+      before.configurationDigest !== environment.configurationDigest ||
+      before.state !== environment.state;
+
+    const readiness = readinessForRun(run);
+    let job = readiness.workPlan.jobs.find(item => item.requirementKey === 'tenant-environment') || null;
+    let effectRecorded = false;
+    if (job?.status === 'PENDING') {
+      const claimed = workController.claim({
+        runId: run.id,
+        tenant: run.tenant,
+        requirementKey: 'tenant-environment'
+      });
+      if (claimed) {
+        const completed = workController.complete({
+          jobId: claimed.id,
+          runId: run.id,
+          tenant: run.tenant,
+          intentDigest: claimed.intentDigest,
+          outcome: 'EFFECT_RECORDED',
+          detail: {
+            environmentId: environment.environmentId,
+            namespace: environment.namespace,
+            configurationDigest: environment.configurationDigest,
+            trigger: compact(trigger, 80)
+          }
+        });
+        job = completed.job;
+        effectRecorded = true;
+      }
+    }
+
+    if (changed || effectRecorded) {
+      record(run.id, run.tenant, 'TENANT_ENVIRONMENT_EFFECT_RECORDED', {
+        environmentId: environment.environmentId,
+        configurationDigest: environment.configurationDigest,
+        trigger: compact(trigger, 80),
+        effectRecorded,
+        evidenceRequired: true
+      });
+    }
+    return { environment, job, effectRecorded };
   }
 
   function authContext(req) {
@@ -720,6 +776,15 @@ function createOneDayEnterpriseEngine(options = {}) {
       try { customerScope = JSON.parse(scopeRow.scope_json); } catch {}
     }
     const sourceDataSummary = canonicalSourceSummaryForTenant(run.tenant);
+    const tenantEnvironmentState = tenantEnvironmentProvisioner.statusForTenant(run.tenant);
+    const tenantEnvironment = tenantEnvironmentState ? {
+      environmentId: tenantEnvironmentState.environmentId,
+      namespace: tenantEnvironmentState.namespace,
+      runId: tenantEnvironmentState.runId,
+      state: tenantEnvironmentState.state,
+      configurationDigest: tenantEnvironmentState.configurationDigest,
+      isolation: tenantEnvironmentState.isolation
+    } : null;
     let learningSummary = null;
     if (learningSummaryProvider) {
       try { learningSummary = learningSummaryProvider(run.tenant); } catch {}
@@ -897,6 +962,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       sourceDataSummary,
       scopeCaptured: Boolean(customerScope),
       customerScope,
+      tenantEnvironment,
       notificationRecovery: notificationRecoveryForRun(run)
     };
     readiness.workPlan = workController.reconcile({ runId: run.id, tenant: run.tenant, readiness });
@@ -1141,6 +1207,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         features: scope.features.length,
         contractRefDigest: contractHash.slice(0, 16)
       });
+      executeTenantEnvironmentEffect(autoStartedRun, scope, 'trusted-contract-scope');
     }
 
     const recipientHash = recipientDigest(recipientEmail);
@@ -1498,6 +1565,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       sourceSystems: scope.sourceSystems.length,
       features: scope.features.length
     });
+    executeTenantEnvironmentEffect(run, scope, existing ? 'customer-scope-update' : 'customer-scope-submit');
     return writeJson(res, existing ? 200 : 201, recompute(run));
   }
 
@@ -1572,6 +1640,13 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (!run) return null;
     if (tenant && run.tenant !== tenant) return null;
     return run;
+  }
+
+  async function handleWorkStatus(req, res) {
+    const body = await readJson(req);
+    const run = runForInternalWork(body);
+    if (!run) return writeJson(res, 404, { error: 'Implementation run not found.' });
+    return writeJson(res, 200, recompute(run));
   }
 
   async function handleWorkClaim(req, res) {
@@ -1770,6 +1845,10 @@ function createOneDayEnterpriseEngine(options = {}) {
         if (!requireInternal(req, res)) return true;
         return await handleProposal(req, res);
       }
+      if (req.method === 'POST' && path === PREFIX + '/work/status') {
+        if (!requireInternal(req, res)) return true;
+        return await handleWorkStatus(req, res);
+      }
       if (req.method === 'POST' && path === PREFIX + '/work/claim') {
         if (!requireInternal(req, res)) return true;
         return await handleWorkClaim(req, res);
@@ -1795,6 +1874,24 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
   }
 
+  // Resume safe in-process implementation effects for an existing canonical run
+  // after deployment/restart. The effect is idempotent; readiness remains blocked
+  // until an independent verifier records exact-candidate evidence.
+  for (const recoverableRun of db.prepare(
+    "SELECT * FROM implementation_runs WHERE state IN ('BUILDING','AT_RISK','SLA_MISSED') ORDER BY started_at_ms"
+  ).all()) {
+    const scopeRow = scopeByRun.get(recoverableRun.id, recoverableRun.tenant);
+    if (!scopeRow) continue;
+    try {
+      const scope = JSON.parse(scopeRow.scope_json);
+      executeTenantEnvironmentEffect(recoverableRun, scope, 'runtime-recovery');
+    } catch (error) {
+      record(recoverableRun.id, recoverableRun.tenant, 'TENANT_ENVIRONMENT_EFFECT_FAILED', {
+        reason: compact(error?.message || 'tenant-environment-effect-failed', 160)
+      });
+    }
+  }
+
   let notificationRetryTimer = null;
   if (invitationRecoverySecret && notificationRetryPollMs > 0) {
     notificationRetryTimer = setInterval(() => {
@@ -1812,6 +1909,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     },
     close() {
       if (notificationRetryTimer) clearInterval(notificationRetryTimer);
+      try { tenantEnvironmentProvisioner.close(); } catch {}
       try { workController.close(); } catch {}
       try { db.close(); } catch {}
     }
