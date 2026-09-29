@@ -20,3 +20,18 @@ test('dependency impact graph identifies only affected competencies',()=>{
   assert.ok(affected.includes('schedule.recover'));
   assert.ok(!affected.includes('time.clock'));
 });
+
+
+test('director is an administrator for training delivery',()=>{
+ const module=buildTrainingModule({competencyKey:'configuration.policy',role:'director',mode:'GUIDE_ME',productSha:'abc'});
+ assert.equal(module.role,'admin');
+});
+
+test('every assigned base competency has a usable guide for its role',()=>{
+ const {ROLE_CURRICULA}=require('./adaptive-learning-engine.cjs');
+ for(const [role,keys] of Object.entries(ROLE_CURRICULA)) for(const competencyKey of keys){
+  const module=buildTrainingModule({competencyKey,role,mode:'GUIDE_ME',productSha:'abc'});
+  assert.ok(module.steps.length>=3,role+' '+competencyKey);
+  assert.equal(module.evidencePolicy,'NO_MASTERY_FROM_DELIVERY');
+ }
+});

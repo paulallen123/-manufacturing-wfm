@@ -8,6 +8,415 @@ const UI_VERSION = 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1';
 const DELIVERY_MODES = Object.freeze(['SHOW_ME','GUIDE_ME','PRACTISE','TEST_ME']);
 
 const WORKFLOWS = Object.freeze({
+  "schedule.read": {
+    "revision": "1",
+    "title": "Understand your schedule",
+    "roles": [
+      "employee",
+      "manager",
+      "payroll",
+      "admin"
+    ],
+    "dependencies": [
+      "schedule"
+    ],
+    "surface": "Plan",
+    "scenario": null,
+    "steps": [
+      [
+        "open",
+        "Open your schedule",
+        "Use the schedule for your own role and permitted site."
+      ],
+      [
+        "review",
+        "Review the published shift",
+        "Check the date, start, finish, location and any published change."
+      ],
+      [
+        "resolve",
+        "Resolve a discrepancy",
+        "Raise a conflict through the permitted workflow; a draft or proposal is not a published shift."
+      ]
+    ]
+  },
+  "absence.decide": {
+    "revision": "1",
+    "title": "Decide absence requests",
+    "roles": [
+      "manager",
+      "admin"
+    ],
+    "dependencies": [
+      "absence",
+      "entitlement",
+      "coverage"
+    ],
+    "surface": "Absence",
+    "scenario": null,
+    "steps": [
+      [
+        "open",
+        "Open the pending leave request",
+        "Check the employee, dates, request status and policy evidence."
+      ],
+      [
+        "impact",
+        "Review coverage and entitlement",
+        "Check overlaps, available entitlement and required staffing before deciding."
+      ],
+      [
+        "decide",
+        "Record the authorised decision",
+        "Approve or decline within your role and provide the required reason. Do not change source facts to clear a warning."
+      ],
+      [
+        "verify",
+        "Verify the saved result",
+        "Reload the request and confirm its status and recorded decision. Escalate unresolved coverage or policy conflicts."
+      ]
+    ]
+  },
+  "time.correct": {
+    "revision": "1",
+    "title": "Correct time safely",
+    "roles": [
+      "employee",
+      "manager",
+      "payroll",
+      "admin"
+    ],
+    "dependencies": [
+      "attendance",
+      "corrections",
+      "audit"
+    ],
+    "surface": "Time",
+    "scenario": null,
+    "steps": [
+      [
+        "inspect",
+        "Inspect the time evidence",
+        "Identify the actual missing or incorrect event and its date."
+      ],
+      [
+        "request",
+        "Use the correction workflow",
+        "Provide the proposed correction and reason within your permission. Keep original clock evidence intact."
+      ],
+      [
+        "verify",
+        "Verify the correction status",
+        "Check the saved request and approval status. A pending request is not an approved change to payable time."
+      ]
+    ]
+  },
+  "profile.manage": {
+    "revision": "1",
+    "title": "Manage your details",
+    "roles": [
+      "employee"
+    ],
+    "dependencies": [
+      "people",
+      "profile"
+    ],
+    "surface": "People",
+    "scenario": null,
+    "steps": [
+      [
+        "open",
+        "Open your own details",
+        "Review only the personal fields available to your role."
+      ],
+      [
+        "change",
+        "Update an allowed field",
+        "Use accurate information and the permitted edit or request process. Restricted fields require an authorised owner."
+      ],
+      [
+        "verify",
+        "Verify the saved information",
+        "Reopen the record and confirm the change or request status."
+      ]
+    ]
+  },
+  "team.coach": {
+    "revision": "1",
+    "title": "Coach your team",
+    "roles": [
+      "manager"
+    ],
+    "dependencies": [
+      "learning",
+      "audit"
+    ],
+    "surface": "Guide",
+    "scenario": null,
+    "steps": [
+      [
+        "review",
+        "Identify the learning need",
+        "Review assigned role skills and the task that needs support."
+      ],
+      [
+        "demonstrate",
+        "Explain and demonstrate",
+        "Explain the purpose, source evidence and authority boundary before guiding the task."
+      ],
+      [
+        "observe",
+        "Observe independent performance",
+        "Have the learner complete the task and explain their decision. Guidance alone is not mastery."
+      ],
+      [
+        "verify",
+        "Verify recorded evidence",
+        "Confirm authoritative task evidence is recorded; never self-award competence from viewing a guide."
+      ]
+    ]
+  },
+  "payroll.exception": {
+    "revision": "1",
+    "title": "Resolve payroll exceptions",
+    "roles": [
+      "payroll",
+      "admin"
+    ],
+    "dependencies": [
+      "payroll",
+      "attendance",
+      "exceptions"
+    ],
+    "surface": "Payroll",
+    "scenario": null,
+    "steps": [
+      [
+        "review",
+        "Review blocked payroll items",
+        "Identify the affected employee, period and source exception."
+      ],
+      [
+        "trace",
+        "Trace the discrepancy",
+        "Compare time, corrections and policy evidence without overwriting original events."
+      ],
+      [
+        "resolve",
+        "Resolve within your authority",
+        "Use the authorised correction or approval process and retain the reason."
+      ],
+      [
+        "verify",
+        "Verify recalculated readiness",
+        "Reload payroll readiness and confirm material exceptions are resolved before release."
+      ]
+    ]
+  },
+  "payroll.export": {
+    "revision": "1",
+    "title": "Control payroll output",
+    "roles": [
+      "payroll",
+      "admin"
+    ],
+    "dependencies": [
+      "payroll",
+      "reconciliation",
+      "audit"
+    ],
+    "surface": "Payroll",
+    "scenario": null,
+    "steps": [
+      [
+        "check",
+        "Check payroll readiness",
+        "Confirm the period, scope and approved time evidence."
+      ],
+      [
+        "reconcile",
+        "Reconcile the output",
+        "Compare generated totals with expected outcomes and resolve material variances."
+      ],
+      [
+        "release",
+        "Use the authorised release control",
+        "Do not release while consequential exceptions or approvals are unresolved."
+      ],
+      [
+        "verify",
+        "Retain release evidence",
+        "Confirm the actual output and release record. Downloading a preview does not prove provider acceptance."
+      ]
+    ]
+  },
+  "audit.trace": {
+    "revision": "1",
+    "title": "Trace decisions",
+    "roles": [
+      "payroll",
+      "admin"
+    ],
+    "dependencies": [
+      "audit"
+    ],
+    "surface": "Audit",
+    "scenario": null,
+    "steps": [
+      [
+        "identify",
+        "Identify the decision",
+        "Locate the affected record, period and action within your permitted scope."
+      ],
+      [
+        "trace",
+        "Follow the recorded evidence",
+        "Review actor, reason, source revision and resulting state."
+      ],
+      [
+        "verify",
+        "Check the outcome",
+        "Compare the audit record with current authoritative state and report any unexplained difference."
+      ]
+    ]
+  },
+  "configuration.roles": {
+    "revision": "1",
+    "title": "Configure roles safely",
+    "roles": [
+      "admin"
+    ],
+    "dependencies": [
+      "configuration",
+      "roles",
+      "security"
+    ],
+    "surface": "Configuration",
+    "scenario": null,
+    "steps": [
+      [
+        "review",
+        "Review the access need",
+        "Identify the named user, tenant, job responsibilities and minimum required permissions."
+      ],
+      [
+        "change",
+        "Use the authorised role workflow",
+        "Assign only required access and preserve any necessary approval record."
+      ],
+      [
+        "verify",
+        "Verify allowed and denied access",
+        "Test the intended permissions and confirm unrelated or cross-tenant access remains denied."
+      ]
+    ]
+  },
+  "site.setup": {
+    "revision": "1",
+    "title": "Configure a site",
+    "roles": [
+      "admin"
+    ],
+    "dependencies": [
+      "configuration",
+      "sites",
+      "calendars"
+    ],
+    "surface": "Configuration",
+    "scenario": null,
+    "steps": [
+      [
+        "scope",
+        "Confirm the site scope",
+        "Check the source-approved site, departments, time zone and calendar."
+      ],
+      [
+        "configure",
+        "Configure supported fields",
+        "Enter approved values and resolve missing source information before activation."
+      ],
+      [
+        "verify",
+        "Verify downstream behaviour",
+        "Confirm schedules and policy use the expected site settings and retain change evidence."
+      ]
+    ]
+  },
+  "security.audit": {
+    "revision": "1",
+    "title": "Operate security controls",
+    "roles": [
+      "admin"
+    ],
+    "dependencies": [
+      "security",
+      "identity",
+      "audit"
+    ],
+    "surface": "Security",
+    "scenario": null,
+    "steps": [
+      [
+        "review",
+        "Review identity and access evidence",
+        "Check named users, active roles and permitted tenant scope."
+      ],
+      [
+        "investigate",
+        "Investigate the actual event",
+        "Trace the source event and recorded action without altering the audit trail."
+      ],
+      [
+        "contain",
+        "Apply the authorised control",
+        "Use the established revocation or recovery workflow within your authority."
+      ],
+      [
+        "verify",
+        "Verify the boundary",
+        "Confirm access and recovery behave as intended and preserve the result."
+      ]
+    ]
+  },
+  "feature.enablement": {
+    "revision": "1",
+    "title": "Enable new functionality",
+    "roles": [
+      "employee",
+      "manager",
+      "payroll",
+      "admin"
+    ],
+    "dependencies": [
+      "configuration",
+      "learning",
+      "feature-enablement"
+    ],
+    "surface": "Configuration",
+    "scenario": null,
+    "steps": [
+      [
+        "review",
+        "Review the assigned change",
+        "Understand the capability, affected roles, dependencies and approved scope."
+      ],
+      [
+        "validate",
+        "Validate the workflow",
+        "Complete assigned guidance and an independent task using the verified environment."
+      ],
+      [
+        "enable",
+        "Respect activation authority",
+        "Only the authorised owner may enable the feature after its required evidence passes."
+      ],
+      [
+        "verify",
+        "Verify the outcome",
+        "Confirm actual behaviour and retain recovery evidence; reading guidance is not certification."
+      ]
+    ]
+  },
   'time.clock': {
     revision: '1',
     title: 'Clock accurately',
@@ -197,7 +606,7 @@ const CAPTURE_PLANS = Object.freeze({
 function canonicalRole(role){
   const v=String(role||'').toLowerCase();
   if(v.includes('payroll')) return 'payroll';
-  if(v.includes('admin')||v.includes('super')) return 'admin';
+  if(v==='director'||v.includes('admin')||v.includes('super')) return 'admin';
   if(v.includes('manager')||v.includes('leader')) return 'manager';
   return 'employee';
 }
@@ -292,3 +701,4 @@ module.exports=Object.freeze({
   CONTRACT_VERSION,GENERATOR_VERSION,UI_VERSION,DELIVERY_MODES,WORKFLOWS,
   canonicalRole,workflowFor,roleCanUse,captureFor,buildArtifactFingerprint,buildTrainingModule,affectedCompetencies
 });
+
