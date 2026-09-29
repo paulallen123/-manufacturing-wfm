@@ -11,6 +11,7 @@ async function exercise(url,status){
   assert.equal(await window.fetch(url),response);return redirects;
 }
 test('expired in-app API sessions return to passwordless entry',async()=>assert.deepEqual(await exercise('/api/bootstrap',401),['/']));
+test('URL objects preserve the expired-session redirect',async()=>assert.deepEqual(await exercise(new URL('https://vector.test/api/bootstrap'),401),['/']));
 test('successful logout returns to passwordless entry',async()=>assert.deepEqual(await exercise('/api/logout',200),['/']));
 test('role denials and external response failures preserve the current screen',async()=>{
   assert.deepEqual(await exercise('/api/payroll-run',403),[]);

@@ -3,7 +3,7 @@
   const originalFetch=window.fetch;
   window.fetch=async function(input,init){
     const response=await originalFetch.apply(this,arguments);
-    const url=new URL(typeof input==='string'?input:input.url,location.href);
+    const url=new URL(typeof input==='string'||input instanceof URL?input:input.url,location.href);
     if(url.origin===location.origin&&((url.pathname==='/api/logout'&&response.ok)||(url.pathname.startsWith('/api/')&&response.status===401)))location.replace('/');
     return response;
   };
