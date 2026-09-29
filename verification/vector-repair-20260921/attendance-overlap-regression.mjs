@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { once } from 'node:events';
+import {createAttendanceRuntime} from './attendance-runtime-harness.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -9,30 +8,14 @@ assert.ok(process.env.WFM_RUNTIME,'WFM_RUNTIME is required.');
 const runtime=path.resolve(process.env.WFM_RUNTIME);
 const directory=fs.mkdtempSync(path.join(os.tmpdir(),'vector-attendance-overlap-'));
 const database=path.join(directory,'state.sqlite');
-const port=43821;
-const origin='http://127.0.0.1:'+port;
-let server;
+let origin;
+const harness=createAttendanceRuntime({runtime,database});
 
-const delay=milliseconds=>new Promise(resolve=>setTimeout(resolve,milliseconds));
 async function start(){
-  const loader=path.join(runtime,'local-paths.cjs');
-  const args=[...(fs.existsSync(loader)?['--require',loader]:[]),path.join(runtime,'security-runtime/bootstrap.cjs')];
-  server=spawn(process.execPath,args,{
-    cwd:runtime,
-    env:{...process.env,PORT:String(port),WFM_DB:database,WFM_HOSTED_STAGING:'false',NODE_ENV:'test'},
-    stdio:['ignore','pipe','pipe']
-  });
-  let diagnostics='';
-  server.stderr.on('data',data=>{diagnostics+=data;});
-  for(let attempt=0;attempt<100;attempt++){
-    if(server.exitCode!==null)throw Error('Runtime exited: '+diagnostics);
-    try{if((await fetch(origin+'/api/health')).ok)return;}catch{}
-    await delay(50);
-  }
-  throw Error('Runtime did not become healthy: '+diagnostics);
+  origin=await harness.start();
 }
 async function stop(){
-  if(server&&server.exitCode===null){server.kill('SIGTERM');await once(server,'exit');}
+  await harness.stop();
 }
 async function login(email){
   const response=await fetch(origin+'/api/login',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({email,password:'Factory-local-demo-2026!'})});

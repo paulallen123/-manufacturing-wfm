@@ -422,7 +422,8 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
 COPY verification/vector-repair-20260921/attendance-overlap-regression.mjs /tmp/wfm-attendance-tests/attendance-overlap-regression.mjs
 COPY verification/vector-repair-20260921/attendance-payroll-acceptance.mjs /tmp/wfm-attendance-tests/attendance-payroll-acceptance.mjs
 COPY verification/vector-repair-20260921/attendance-guardrails.test.cjs /tmp/wfm-attendance-tests/attendance-guardrails.test.cjs
-RUN WFM_RUNTIME=/app node --test /tmp/wfm-attendance-tests/attendance-guardrails.test.cjs \
+COPY verification/vector-repair-20260921/attendance-runtime-harness.mjs verification/vector-repair-20260921/attendance-runtime-harness.test.mjs /tmp/wfm-attendance-tests/
+RUN WFM_RUNTIME=/app node --test /tmp/wfm-attendance-tests/attendance-guardrails.test.cjs /tmp/wfm-attendance-tests/attendance-runtime-harness.test.mjs \
  && WFM_RUNTIME=/app node /tmp/wfm-attendance-tests/attendance-overlap-regression.mjs \
  && WFM_RUNTIME=/app node /tmp/wfm-attendance-tests/attendance-payroll-acceptance.mjs \
  && rm -rf /tmp/wfm-attendance-tests

@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {spawn} from 'node:child_process';
-import {once} from 'node:events';
+import {createAttendanceRuntime} from './attendance-runtime-harness.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -14,31 +13,16 @@ const digest=value=>createHash('sha256').update(value).digest('hex');
 assert.equal(digest(fs.readFileSync(path.join(runtime,'public/payroll-control.js'))),expectedPayrollControl,'Unexpected hardened payroll-control source.');
 
 const directory=fs.mkdtempSync(path.join(os.tmpdir(),'vector-attendance-payroll-'));
-const origin='http://127.0.0.1:43822';
+let origin;
 const period='2026-09-07';
 const database=path.join(directory,'state.sqlite');
 const checks=[];
-let server;
-const wait=milliseconds=>new Promise(resolve=>setTimeout(resolve,milliseconds));
+const harness=createAttendanceRuntime({runtime,database});
 
 async function start(){
-  const loader=path.join(runtime,'local-paths.cjs');
-  const args=[...(fs.existsSync(loader)?['--require',loader]:[]),path.join(runtime,'security-runtime/bootstrap.cjs')];
-  server=spawn(process.execPath,args,{
-    cwd:runtime,
-    env:{...process.env,PORT:'43822',WFM_DB:database,WFM_HOSTED_STAGING:'false',NODE_ENV:'test'},
-    stdio:['ignore','pipe','pipe']
-  });
-  let diagnostics='';
-  server.stderr.on('data',data=>{diagnostics+=data;});
-  for(let attempt=0;attempt<100;attempt++){
-    if(server.exitCode!==null)throw Error('Runtime exited: '+diagnostics);
-    try{if((await fetch(origin+'/api/health')).ok)return;}catch{}
-    await wait(50);
-  }
-  throw Error('Runtime did not become healthy: '+diagnostics);
+  origin=await harness.start();
 }
-async function stop(){if(server&&server.exitCode===null){server.kill('SIGTERM');await once(server,'exit');}}
+async function stop(){await harness.stop();}
 async function request(url,cookie,body){
   const response=await fetch(origin+url,{method:body?'POST':'GET',headers:{origin,'content-type':'application/json',...(cookie?{cookie}:{})},...(body?{body:JSON.stringify(body)}:{})});
   const text=await response.text();
