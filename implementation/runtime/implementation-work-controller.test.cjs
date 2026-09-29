@@ -80,13 +80,14 @@ test('claimed work is effect-once and stale results fail closed', () => {
     },
     blockerFor: () => null
   });
-  const claimed = controller.claim({ runId: 'run-3', tenant: 'tenant-a', requirementKey: 'tenant-environment' });
+  const claimed = controller.claim({ runId: 'run-3', tenant: 'tenant-a', requirementKey: 'tenant-environment', ownerId: 'test-worker' });
   assert.equal(claimed.status, 'RUNNING');
   const first = controller.complete({
     jobId: claimed.id,
     runId: 'run-3',
     tenant: 'tenant-a',
     intentDigest: claimed.intentDigest,
+    ownerId: claimed.ownerId, fence: claimed.fence, leaseToken: claimed.leaseToken,
     outcome: 'PROVISION_REQUESTED',
     detail: { requestId: 'req-1' }
   });
@@ -96,6 +97,7 @@ test('claimed work is effect-once and stale results fail closed', () => {
     runId: 'run-3',
     tenant: 'tenant-a',
     intentDigest: claimed.intentDigest,
+    ownerId: claimed.ownerId, fence: claimed.fence, leaseToken: claimed.leaseToken,
     outcome: 'PROVISION_REQUESTED',
     detail: { requestId: 'req-1' }
   });
@@ -117,6 +119,7 @@ test('claimed work is effect-once and stale results fail closed', () => {
     runId: 'run-3',
     tenant: 'tenant-a',
     intentDigest: claimed.intentDigest,
+    ownerId: claimed.ownerId, fence: claimed.fence, leaseToken: claimed.leaseToken,
     outcome: 'PROVISION_REQUESTED',
     detail: { requestId: 'req-1' }
   }), /stale result/i);
@@ -151,11 +154,11 @@ test('retry and blocked states survive restart without idling unrelated work', (
     },
     blockerFor: () => null
   });
-  const first = controller.claim({ runId: 'run-4', tenant: 'tenant-a', requirementKey: 'tenant-environment' });
-  controller.fail({ jobId: first.id, runId: 'run-4', tenant: 'tenant-a', intentDigest: first.intentDigest, error: 'temporary provider outage', retryable: true });
-  const second = controller.claim({ runId: 'run-4', tenant: 'tenant-a', requirementKey: 'security-controls' });
+  const first = controller.claim({ runId: 'run-4', tenant: 'tenant-a', requirementKey: 'tenant-environment', ownerId: 'test-worker' });
+  controller.fail({ jobId: first.id, runId: 'run-4', tenant: 'tenant-a', intentDigest: first.intentDigest, ownerId: first.ownerId, fence: first.fence, leaseToken: first.leaseToken, error: 'temporary provider outage', retryable: true });
+  const second = controller.claim({ runId: 'run-4', tenant: 'tenant-a', requirementKey: 'security-controls', ownerId: 'test-worker' });
   assert.equal(second.requirementKey, 'security-controls');
-  controller.block({ jobId: second.id, runId: 'run-4', tenant: 'tenant-a', intentDigest: second.intentDigest, reason: 'EXTERNAL_AUTHORITY_REQUIRED' });
+  controller.block({ jobId: second.id, runId: 'run-4', tenant: 'tenant-a', intentDigest: second.intentDigest, ownerId: second.ownerId, fence: second.fence, leaseToken: second.leaseToken, reason: 'EXTERNAL_AUTHORITY_REQUIRED' });
   controller.close();
 
   controller = createImplementationWorkController({ dbPath, requirements: customRequirements, clock: () => now, retryDelayMs: 100 });
@@ -180,3 +183,4 @@ test('retry and blocked states survive restart without idling unrelated work', (
   controller.close();
   fs.rmSync(dir, { recursive: true, force: true });
 });
+

@@ -61,7 +61,7 @@ function scopeFixture() {
   };
 }
 
-function fixture() {
+function fixture(options = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-active-implementation-'));
   const dbPath = path.join(dir, 'state.sqlite');
   const db = new DatabaseSync(dbPath);
@@ -82,7 +82,8 @@ function fixture() {
     contractWebhookSecret: 'contract-token',
     invitationRecoverySecret: 'recovery-token',
     publicOrigin: 'https://implementation.test',
-    sendInvitation: async () => ({ provider: 'test' })
+    sendInvitation: async () => ({ provider: 'test' }),
+    ...options
   });
   return {
     dir,
@@ -96,6 +97,68 @@ function fixture() {
     }
   };
 }
+
+test('unregistered workers cannot claim with the shared internal token or a claimed owner label', async () => {
+  const f=fixture();
+  try {
+    const result=await call(f.engine,null,'POST','/api/implementation/autonomous/work/claim',
+      {tenant:'alpha',runId:'not-needed',ownerId:'canonical-executor'},f.internal);
+    assert.equal(result.status,503);
+    assert.match(result.body.error,/registered|worker/i);
+  } finally {f.close();}
+});
+
+test('work result authentication is checked before looking up a run', async () => {
+  const f=fixture({workOwnerId:'canonical-executor',workOwnerToken:'w'.repeat(32),
+    workOwnerTenant:'alpha',workOwnerRunId:'run-authorized'});
+  try {
+    const result=await call(f.engine,null,'POST','/api/implementation/autonomous/work/result',
+      {tenant:'alpha',runId:'not-needed',ownerId:'canonical-executor'},
+      {...f.internal,'x-wfm-implementation-worker':'incorrect'});
+    assert.equal(result.status,403);
+  } finally {f.close();}
+});
+
+test('registered worker routes enforce exact scope, private claim tokens and result ownership', async () => {
+  const f=fixture(); let engine;
+  try {
+    const activated=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',
+      {tenant:'alpha',contractRef:'worker-route',recipientEmail:'manager@alpha',scope:scopeFixture()},f.internal);
+    assert.equal(activated.status,201);
+    const runId=activated.body.implementation.runId;
+    f.engine.close();
+    const candidateSha='a'.repeat(40), deploymentId='deployment-a';
+    engine=createOneDayEnterpriseEngine({dbPath:f.dbPath,internalToken:'worker-token',
+      workOwnerId:'canonical-executor',workOwnerToken:'w'.repeat(32),workOwnerTenant:'alpha',workOwnerRunId:runId,
+      candidateSha,deploymentId,requireCandidateBinding:true});
+    const headers={...f.internal,'x-wfm-implementation-worker':'w'.repeat(32)};
+    const body={runId,tenant:'alpha',candidateSha,deploymentId,requirementKey:'tenant-environment'};
+    for(const changed of [{tenant:'other'},{runId:'other'},{candidateSha:'b'.repeat(40)},
+      {deploymentId:'other'},{ownerId:'forged-worker'}]) {
+      const refused=await call(engine,null,'POST','/api/implementation/autonomous/work/claim',{...body,...changed},headers);
+      assert.equal(refused.status,409);
+    }
+    // Re-open the existing fixture job for one external execution attempt.
+    const db=new DatabaseSync(f.dbPath);
+    db.prepare("UPDATE implementation_work_jobs SET status='PENDING' WHERE run_id=? AND requirement_key='tenant-environment'").run(runId);
+    db.close();
+    const claim=await call(engine,null,'POST','/api/implementation/autonomous/work/claim',body,headers);
+    assert.equal(claim.status,200);assert.equal(claim.body.job.ownerId,'canonical-executor');
+    const job=claim.body.job;
+    assert.match(job.leaseToken,/^[0-9a-f]{64}$/);
+    assert.equal(JSON.stringify(claim.body.workPlan).includes(job.leaseToken),false);
+    const duplicate=await call(engine,null,'POST','/api/implementation/autonomous/work/claim',body,headers);
+    assert.equal(duplicate.body.job,null);
+    const result={...body,jobId:job.id,intentDigest:job.intentDigest,fence:job.fence,leaseToken:job.leaseToken,
+      outcome:'EFFECT_RECORDED',detail:{fixtureOnly:true}};
+    const stale=await call(engine,null,'POST','/api/implementation/autonomous/work/result',{...result,fence:job.fence+1},headers);
+    assert.equal(stale.status,409);
+    const accepted=await call(engine,null,'POST','/api/implementation/autonomous/work/result',result,headers);
+    assert.equal(accepted.status,200);assert.equal(accepted.body.evidenceRequired,true);
+    assert.equal(accepted.body.result.job.status,'AWAITING_EVIDENCE');
+    assert.equal(accepted.body.readiness.operationalReady,false);
+  } finally {engine?.close();f.close();}
+});
 
 test('trusted activation captures scope and autonomously provisions one tenant environment', async () => {
   const f = fixture();

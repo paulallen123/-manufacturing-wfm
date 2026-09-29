@@ -1,6 +1,6 @@
 'use strict';
 
-const { createHash, randomUUID } = require('node:crypto');
+const { createHash, randomUUID, randomBytes, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 
 const TERMINAL = new Set(['SATISFIED', 'FAILED_CLOSED', 'EXHAUSTED']);
@@ -36,6 +36,41 @@ function createImplementationWorkController(options = {}) {
     dependsOn: Array.isArray(item.dependsOn) ? item.dependsOn.map(dep => text(dep, 100)).filter(Boolean) : []
   })).filter(item => item.key) : [];
   const order = new Map(requirements.map((item, index) => [item.key, index]));
+  const candidateSha = String(options.candidateSha || '').trim();
+  const deploymentId = String(options.deploymentId || '').trim();
+  if (options.requireCandidateBinding === true &&
+      (!/^[0-9a-f]{40}$/.test(candidateSha) || !deploymentId)) {
+    if (ownsDb) db.close();
+    throw new Error('Implementation work candidate binding is required.');
+  }
+  const bindingDigest = digest({ candidateSha: candidateSha || null, deploymentId: deploymentId || null });
+
+  function atomic(fn) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const result = fn();
+      db.exec('COMMIT');
+      return result;
+    } catch (error) {
+      try { db.exec('ROLLBACK'); } catch {}
+      throw error;
+    }
+  }
+
+  function refused(message) {
+    const error = new Error(message);
+    error.statusCode = 409;
+    return error;
+  }
+
+  function requireOwner(value) {
+    // The caller must derive this from a trusted worker identity, not model text.
+    if (typeof value !== 'string' || !/^[A-Za-z0-9_.:@-]{1,128}$/.test(value)) {
+      throw refused('Implementation work claim requires an explicit owner.');
+    }
+    return value;
+  }
+
 
   db.exec(
     'PRAGMA busy_timeout=1500;' +
@@ -53,6 +88,19 @@ function createImplementationWorkController(options = {}) {
     'CREATE INDEX IF NOT EXISTS idx_implementation_work_runnable ON implementation_work_jobs(run_id,tenant,status,next_attempt_at_ms,lease_until_ms);'
   );
 
+  // Additive migration: old unowned claims never acquire new authority implicitly.
+  atomic(() => {
+    const columns = new Set(db.prepare('PRAGMA table_info(implementation_work_jobs)').all().map(x => x.name));
+    for (const [name, definition] of [
+      ['claim_owner', 'TEXT'],
+      ['claim_fence', 'INTEGER NOT NULL DEFAULT 0'],
+      ['claim_token_hash', 'TEXT'],
+      ['claim_binding', 'TEXT']
+    ]) {
+      if (!columns.has(name)) db.exec('ALTER TABLE implementation_work_jobs ADD COLUMN ' + name + ' ' + definition);
+    }
+  });
+
   const jobByRequirement = db.prepare(
     'SELECT * FROM implementation_work_jobs WHERE run_id=? AND tenant=? AND requirement_key=?'
   );
@@ -63,13 +111,13 @@ function createImplementationWorkController(options = {}) {
     'INSERT INTO implementation_work_jobs(id,run_id,tenant,requirement_key,intent_digest,status,attempts,lease_until_ms,next_attempt_at_ms,blocked_reason,last_error,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)'
   );
   const resetJob = db.prepare(
-    'UPDATE implementation_work_jobs SET intent_digest=?,status=?,attempts=0,lease_until_ms=0,next_attempt_at_ms=0,blocked_reason=?,last_error=NULL,updated_at=? WHERE id=?'
+    'UPDATE implementation_work_jobs SET intent_digest=?,status=?,attempts=0,lease_until_ms=0,next_attempt_at_ms=0,blocked_reason=?,last_error=NULL,claim_owner=NULL,claim_token_hash=NULL,claim_binding=NULL,updated_at=? WHERE id=?'
   );
   const updateState = db.prepare(
     'UPDATE implementation_work_jobs SET status=?,lease_until_ms=?,next_attempt_at_ms=?,blocked_reason=?,last_error=?,updated_at=? WHERE id=?'
   );
   const claimJob = db.prepare(
-    "UPDATE implementation_work_jobs SET status='RUNNING',attempts=attempts+1,lease_until_ms=?,updated_at=? WHERE id=? AND status='PENDING'"
+    "UPDATE implementation_work_jobs SET status='RUNNING',attempts=attempts+1,lease_until_ms=?,updated_at=?,claim_owner=?,claim_fence=claim_fence+1,claim_token_hash=?,claim_binding=? WHERE id=? AND status='PENDING' AND claim_fence<9007199254740991"
   );
   const receiptByDigest = db.prepare(
     'SELECT * FROM implementation_work_receipts WHERE job_id=? AND intent_digest=? AND outcome_digest=?'
@@ -87,6 +135,8 @@ function createImplementationWorkController(options = {}) {
       intentDigest: row.intent_digest,
       status: row.status,
       attempts: Number(row.attempts || 0),
+      ownerId: row.claim_owner || null,
+      fence: Number(row.claim_fence || 0),
       leaseUntilMs: Number(row.lease_until_ms || 0),
       nextAttemptAtMs: Number(row.next_attempt_at_ms || 0),
       blockedReason: row.blocked_reason || null,
@@ -176,12 +226,22 @@ function createImplementationWorkController(options = {}) {
           updateState.run('SATISFIED', 0, 0, null, null, stamp, existing.id);
           continue;
         }
+        if (existing.status === 'RUNNING' && existing.claim_binding && existing.claim_binding !== bindingDigest) {
+          resetJob.run(intentDigest, desired, blockReason || null, stamp, existing.id);
+          continue;
+        }
+        // Revoked/missing authority outranks lease expiry and retry scheduling.
+        if (['BLOCKED_RESUMABLE', 'WAITING_DEPENDENCY'].includes(desired) &&
+            ['PENDING', 'RUNNING', 'RETRY_WAIT', 'AWAITING_EVIDENCE'].includes(existing.status)) {
+          resetJob.run(intentDigest, desired, blockReason || null, stamp, existing.id);
+          continue;
+        }
         if (existing.status === 'RUNNING' && Number(existing.lease_until_ms || 0) <= nowMs) {
-          updateState.run('PENDING', 0, 0, null, 'LEASE_EXPIRED', stamp, existing.id);
+          updateState.run(desired, 0, 0, blockReason || null, 'LEASE_EXPIRED', stamp, existing.id);
           continue;
         }
         if (existing.status === 'RETRY_WAIT' && Number(existing.next_attempt_at_ms || 0) <= nowMs) {
-          updateState.run('PENDING', 0, 0, null, existing.last_error || null, stamp, existing.id);
+          updateState.run(desired, 0, 0, blockReason || null, existing.last_error || null, stamp, existing.id);
           continue;
         }
         if (existing.status === 'BLOCKED_RESUMABLE' && !blockReason && dependenciesSatisfied) {
@@ -226,64 +286,118 @@ function createImplementationWorkController(options = {}) {
     };
   }
 
-  function claim({ runId, tenant, requirementKey = null }) {
-    const p = plan(runId, tenant);
-    const candidates = p.jobs.filter(job => job.status === 'PENDING' && (!requirementKey || job.requirementKey === requirementKey));
-    const nowMs = Number(clock());
-    const stamp = new Date(nowMs).toISOString();
-    for (const candidate of candidates) {
-      const result = claimJob.run(nowMs + leaseMs, stamp, candidate.id);
-      if (Number(result.changes) === 1) return publicJob(jobByRequirement.get(runId, tenant, candidate.requirementKey));
+  function claim({ runId, tenant, requirementKey = null, ownerId }) {
+    ownerId = requireOwner(ownerId);
+    runId = text(runId, 100);
+    tenant = text(tenant, 120);
+    return atomic(() => {
+      const candidates = plan(runId, tenant).jobs.filter(job =>
+        job.status === 'PENDING' && (!requirementKey || job.requirementKey === requirementKey));
+      const nowMs = Number(clock());
+      const stamp = new Date(nowMs).toISOString();
+      for (const candidate of candidates) {
+        const leaseToken = randomBytes(32).toString('hex');
+        const tokenHash = createHash('sha256').update(leaseToken).digest('hex');
+        const result = claimJob.run(nowMs + leaseMs, stamp, ownerId, tokenHash, bindingDigest, candidate.id);
+        if (Number(result.changes) === 1) {
+          // Only the successful claimant receives the token; plan/status never do.
+          return { ...publicJob(jobByRequirement.get(runId, tenant, candidate.requirementKey)), leaseToken };
+        }
+      }
+      return null;
+    });
+  }
+
+  function ownedRow({ jobId, runId, tenant, intentDigest, ownerId, fence, leaseToken }) {
+    const row = jobsForRun.all(text(runId, 100), text(tenant, 120)).find(item => item.id === jobId);
+    if (!row) throw refused('Implementation work job not found.');
+    if (row.intent_digest !== intentDigest) throw refused('Implementation work intent changed; stale result rejected.');
+    if (requireOwner(ownerId) !== row.claim_owner || !Number.isSafeInteger(fence) || fence < 1 || fence !== row.claim_fence) {
+      throw refused('Implementation work owner or fence is stale.');
     }
-    return null;
-  }
-
-  function complete({ jobId, runId, tenant, intentDigest, outcome = 'EFFECT_RECORDED', detail = {} }) {
-    const rows = jobsForRun.all(text(runId, 100), text(tenant, 120));
-    const row = rows.find(item => item.id === jobId);
-    if (!row) throw new Error('Implementation work job not found.');
-    if (row.intent_digest !== intentDigest) throw new Error('Implementation work intent changed; stale result rejected.');
-    const outcomeDigest = digest({ outcome, detail });
-    const prior = receiptByDigest.get(row.id, row.intent_digest, outcomeDigest);
-    if (prior) return { replayed: true, job: publicJob(row), receiptId: prior.id };
-
-    const stamp = new Date(Number(clock())).toISOString();
-    insertReceipt.run(
-      randomUUID(), row.id, row.run_id, row.tenant, row.requirement_key,
-      row.intent_digest, text(outcome, 80) || 'EFFECT_RECORDED', outcomeDigest, JSON.stringify(detail || {}), stamp
-    );
-    updateState.run('AWAITING_EVIDENCE', 0, 0, null, null, stamp, row.id);
-    return { replayed: false, job: publicJob(jobByRequirement.get(row.run_id, row.tenant, row.requirement_key)) };
-  }
-
-  function block({ jobId, runId, tenant, intentDigest, reason }) {
-    const rows = jobsForRun.all(text(runId, 100), text(tenant, 120));
-    const row = rows.find(item => item.id === jobId);
-    if (!row) throw new Error('Implementation work job not found.');
-    if (row.intent_digest !== intentDigest) throw new Error('Implementation work intent changed; stale block rejected.');
-    const stamp = new Date(Number(clock())).toISOString();
-    updateState.run('BLOCKED_RESUMABLE', 0, 0, text(reason, 160) || 'AUTHORITY_OR_CONFIGURATION_REQUIRED', null, stamp, row.id);
-    return publicJob(jobByRequirement.get(row.run_id, row.tenant, row.requirement_key));
-  }
-
-  function fail({ jobId, runId, tenant, intentDigest, error, retryable = false }) {
-    const rows = jobsForRun.all(text(runId, 100), text(tenant, 120));
-    const row = rows.find(item => item.id === jobId);
-    if (!row) throw new Error('Implementation work job not found.');
-    if (row.intent_digest !== intentDigest) throw new Error('Implementation work intent changed; stale failure rejected.');
-    const attempts = Number(row.attempts || 0);
-    const stampMs = Number(clock());
-    const stamp = new Date(stampMs).toISOString();
-    let status = 'FAILED_CLOSED';
-    let nextAttemptAt = 0;
-    if (retryable && attempts < maxAttempts) {
-      status = 'RETRY_WAIT';
-      nextAttemptAt = stampMs + retryDelayMs;
-    } else if (retryable && attempts >= maxAttempts) {
-      status = 'EXHAUSTED';
+    if (typeof leaseToken !== 'string' || !/^[0-9a-f]{64}$/.test(leaseToken) ||
+        !/^[0-9a-f]{64}$/.test(row.claim_token_hash || '')) {
+      throw refused('Implementation work lease token is required.');
     }
-    updateState.run(status, 0, nextAttemptAt, null, text(error, 300) || null, stamp, row.id);
-    return publicJob(jobByRequirement.get(row.run_id, row.tenant, row.requirement_key));
+    const observed = createHash('sha256').update(leaseToken).digest();
+    if (!timingSafeEqual(observed, Buffer.from(row.claim_token_hash, 'hex'))) {
+      throw refused('Implementation work claim token is stale.');
+    }
+    if (row.claim_binding !== bindingDigest) throw refused('Implementation work claim binding is stale.');
+    return row;
+  }
+
+  function requireLiveLease(row) {
+    if (row.status !== 'RUNNING' || Number(row.lease_until_ms) <= Number(clock())) {
+      throw refused('Implementation work requires the current RUNNING lease.');
+    }
+  }
+
+  function complete(args) {
+    return atomic(() => completeOwned(args, ownedRow(args)));
+  }
+
+  function completeOwned(args, row) {
+      const outcome = text(args.outcome || 'EFFECT_RECORDED', 80);
+      const detail = args.detail || {};
+      // Receipt identity also binds the attempt; older attempts cannot replay it.
+      const outcomeDigest = digest({ outcome, detail, ownerId: row.claim_owner,
+        fence: row.claim_fence, tokenHash: row.claim_token_hash, binding: row.claim_binding });
+      const prior = receiptByDigest.get(row.id, row.intent_digest, outcomeDigest);
+      // A confirmed exact replay is read-only, even after the original lease expired.
+      if (prior) return { replayed: true, job: publicJob(row), receiptId: prior.id };
+      requireLiveLease(row);
+      const stamp = new Date(Number(clock())).toISOString();
+      const receiptId = randomUUID();
+      insertReceipt.run(receiptId, row.id, row.run_id, row.tenant, row.requirement_key,
+        row.intent_digest, outcome, outcomeDigest, JSON.stringify(detail), stamp);
+      updateState.run('AWAITING_EVIDENCE', 0, 0, null, null, stamp, row.id);
+      return { replayed: false, receiptId,
+        job: publicJob(jobByRequirement.get(row.run_id, row.tenant, row.requirement_key)) };
+  }
+
+  // Only synchronous writes to this controller's SQLite connection belong in
+  // this boundary. Network/provider effects require their own durable fencing.
+  function executeLocalEffect(args, effect) {
+    return atomic(() => {
+      const row = ownedRow(args);
+      requireLiveLease(row);
+      const detail = effect();
+      if (detail && typeof detail.then === 'function') throw refused('Local effect must be synchronous.');
+      requireLiveLease(row);
+      return completeOwned({ ...args, outcome: 'EFFECT_RECORDED', detail }, row);
+    });
+  }
+
+  function block(args) {
+    return atomic(() => {
+      const row = ownedRow(args);
+      requireLiveLease(row);
+      const stamp = new Date(Number(clock())).toISOString();
+      updateState.run('BLOCKED_RESUMABLE', 0, 0,
+        text(args.reason, 160) || 'AUTHORITY_OR_CONFIGURATION_REQUIRED', null, stamp, row.id);
+      return publicJob(jobByRequirement.get(row.run_id, row.tenant, row.requirement_key));
+    });
+  }
+
+  function fail(args) {
+    return atomic(() => {
+      const row = ownedRow(args);
+      requireLiveLease(row);
+      const attempts = Number(row.attempts || 0);
+      const stampMs = Number(clock());
+      const stamp = new Date(stampMs).toISOString();
+      let status = 'FAILED_CLOSED';
+      let nextAttemptAt = 0;
+      if (args.retryable === true && attempts < maxAttempts) {
+        status = 'RETRY_WAIT';
+        nextAttemptAt = stampMs + retryDelayMs;
+      } else if (args.retryable === true && attempts >= maxAttempts) {
+        status = 'EXHAUSTED';
+      }
+      updateState.run(status, 0, nextAttemptAt, null, text(args.error, 300) || null, stamp, row.id);
+      return publicJob(jobByRequirement.get(row.run_id, row.tenant, row.requirement_key));
+    });
   }
 
   return {
@@ -291,6 +405,7 @@ function createImplementationWorkController(options = {}) {
     plan,
     claim,
     complete,
+    executeLocalEffect,
     block,
     fail,
     close() { if (ownsDb) try { db.close(); } catch {} }

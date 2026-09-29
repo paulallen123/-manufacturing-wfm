@@ -405,7 +405,9 @@ function createOneDayEnterpriseEngine(options = {}) {
   // every existing row plus explicit index/trigger definition.
   ensureImplementationEventsWriteCompatibility(db);
 
-  const workController = createImplementationWorkController({ db, requirements: REQUIREMENTS });
+  const workController = createImplementationWorkController({
+    db, requirements: REQUIREMENTS, candidateSha, deploymentId, requireCandidateBinding
+  });
   const tenantEnvironmentProvisioner = createTenantEnvironmentProvisioner({ db });
 
   const authStmt = db.prepare(
@@ -518,52 +520,40 @@ function createOneDayEnterpriseEngine(options = {}) {
   function executeTenantEnvironmentEffect(run, scope, trigger = 'implementation-orchestrator') {
     if (!run || !scope || typeof scope !== 'object') return null;
 
-    const before = tenantEnvironmentProvisioner.statusForTenant(run.tenant);
-    const environment = tenantEnvironmentProvisioner.provision({
-      tenant: run.tenant,
-      runId: run.id,
-      scope
-    });
-    const changed = !before ||
-      before.runId !== environment.runId ||
-      before.configurationDigest !== environment.configurationDigest ||
-      before.state !== environment.state;
-
+    // Claim before provisioning and validate ownership at the same SQLite
+    // transaction boundary as the configuration and effect receipt.
+    let environment = tenantEnvironmentProvisioner.statusForTenant(run.tenant);
     const readiness = readinessForRun(run);
     let job = readiness.workPlan.jobs.find(item => item.requirementKey === 'tenant-environment') || null;
     let effectRecorded = false;
     if (job?.status === 'PENDING') {
       const claimed = workController.claim({
-        runId: run.id,
-        tenant: run.tenant,
-        requirementKey: 'tenant-environment'
+        runId: run.id, tenant: run.tenant, requirementKey: 'tenant-environment',
+        ownerId: 'implementation-orchestrator'
       });
       if (claimed) {
-        const completed = workController.complete({
-          jobId: claimed.id,
-          runId: run.id,
-          tenant: run.tenant,
-          intentDigest: claimed.intentDigest,
-          outcome: 'EFFECT_RECORDED',
-          detail: {
+        const completed = workController.executeLocalEffect({
+          jobId: claimed.id, runId: run.id, tenant: run.tenant,
+          intentDigest: claimed.intentDigest, ownerId: claimed.ownerId,
+          fence: claimed.fence, leaseToken: claimed.leaseToken
+        }, () => {
+          environment = tenantEnvironmentProvisioner.provision({ tenant: run.tenant, runId: run.id, scope });
+          return {
             environmentId: environment.environmentId,
             namespace: environment.namespace,
             configurationDigest: environment.configurationDigest,
             trigger: compact(trigger, 80)
-          }
+          };
         });
         job = completed.job;
         effectRecorded = true;
       }
     }
-
-    if (changed || effectRecorded) {
+    if (effectRecorded) {
       record(run.id, run.tenant, 'TENANT_ENVIRONMENT_EFFECT_RECORDED', {
         environmentId: environment.environmentId,
         configurationDigest: environment.configurationDigest,
-        trigger: compact(trigger, 80),
-        effectRecorded,
-        evidenceRequired: true
+        trigger: compact(trigger, 80), effectRecorded, evidenceRequired: true
       });
     }
     return { environment, job, effectRecorded };
@@ -1842,13 +1832,42 @@ function createOneDayEnterpriseEngine(options = {}) {
     return writeJson(res, 200, recompute(run));
   }
 
+  // The shared evidence/status credential is not an execution identity. Only
+  // the configured existing worker receives this additional scoped credential.
+  const workOwnerId = String(options.workOwnerId || process.env.WFM_IMPLEMENTATION_WORKER_ID || '');
+  const workOwnerToken = String(options.workOwnerToken || process.env.WFM_IMPLEMENTATION_WORKER_TOKEN || '');
+  const workOwnerTenant = String(options.workOwnerTenant || process.env.WFM_IMPLEMENTATION_WORKER_TENANT || '');
+  const workOwnerRunId = String(options.workOwnerRunId || process.env.WFM_IMPLEMENTATION_WORKER_RUN_ID || '');
+  function requireWorkOwner(req, res, body) {
+    if (!/^[A-Za-z0-9_.:@-]{1,128}$/.test(workOwnerId) || workOwnerToken.length < 32 || !workOwnerTenant || !workOwnerRunId) {
+      writeJson(res, 503, {error: 'No exclusive implementation worker is registered.'});
+      return null;
+    }
+    if (!secureEqual(req.headers?.['x-wfm-implementation-worker'], workOwnerToken)) {
+      writeJson(res, 403, {error: 'Implementation worker credential rejected.'});
+      return null;
+    }
+    if (body.tenant !== workOwnerTenant || body.runId !== workOwnerRunId ||
+        (body.ownerId !== undefined && body.ownerId !== workOwnerId)) {
+      writeJson(res, 409, {error: 'Implementation worker tenant/run/owner binding mismatch.'});
+      return null;
+    }
+    if (requireCandidateBinding && (body.candidateSha !== candidateSha || body.deploymentId !== deploymentId)) {
+      writeJson(res, 409, {error: 'Implementation worker candidate/deployment binding mismatch.'});
+      return null;
+    }
+    return workOwnerId;
+  }
+
   async function handleWorkClaim(req, res) {
     const body = await readJson(req);
+    const ownerId = requireWorkOwner(req, res, body);
+    if (!ownerId) return true;
     const run = runForInternalWork(body);
     if (!run) return writeJson(res, 404, { error: 'Implementation run not found.' });
     const readiness = recompute(run);
     const requirementKey = compact(body.requirementKey, 100) || null;
-    const job = workController.claim({ runId: run.id, tenant: run.tenant, requirementKey });
+    const job = workController.claim({ runId: run.id, tenant: run.tenant, requirementKey, ownerId });
     if (!job) {
       return writeJson(res, 200, {
         job: null,
@@ -1866,6 +1885,10 @@ function createOneDayEnterpriseEngine(options = {}) {
 
   async function handleWorkResult(req, res) {
     const body = await readJson(req);
+    const ownerId = requireWorkOwner(req, res, body);
+    if (!ownerId) return true;
+    const fence = body.fence;
+    const leaseToken = body.leaseToken;
     const run = runForInternalWork(body);
     if (!run) return writeJson(res, 404, { error: 'Implementation run not found.' });
     const jobId = compact(body.jobId, 100);
@@ -1878,24 +1901,24 @@ function createOneDayEnterpriseEngine(options = {}) {
     let result;
     if (outcome === 'BLOCKED_RESUMABLE') {
       result = workController.block({
-        jobId, runId: run.id, tenant: run.tenant, intentDigest,
+        jobId, runId: run.id, tenant: run.tenant, intentDigest, ownerId, fence, leaseToken,
         reason: compact(body.reason, 160) || 'AUTHORITY_OR_CONFIGURATION_REQUIRED'
       });
     } else if (outcome === 'RETRYABLE') {
       result = workController.fail({
-        jobId, runId: run.id, tenant: run.tenant, intentDigest,
+        jobId, runId: run.id, tenant: run.tenant, intentDigest, ownerId, fence, leaseToken,
         error: compact(body.error || body.reason, 300) || 'Transient implementation failure.',
         retryable: true
       });
     } else if (outcome === 'FAILED_CLOSED') {
       result = workController.fail({
-        jobId, runId: run.id, tenant: run.tenant, intentDigest,
+        jobId, runId: run.id, tenant: run.tenant, intentDigest, ownerId, fence, leaseToken,
         error: compact(body.error || body.reason, 300) || 'Implementation work failed closed.',
         retryable: false
       });
     } else if (['EFFECT_RECORDED', 'PASS_EFFECT', 'COMPLETED'].includes(outcome)) {
       result = workController.complete({
-        jobId, runId: run.id, tenant: run.tenant, intentDigest,
+        jobId, runId: run.id, tenant: run.tenant, intentDigest, ownerId, fence, leaseToken,
         outcome: 'EFFECT_RECORDED',
         detail: body.detail && typeof body.detail === 'object' ? body.detail : {}
       });
@@ -2140,3 +2163,4 @@ module.exports = {
   REQUIREMENTS,
   criticalPathRemainingMinutes
 };
+
