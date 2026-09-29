@@ -137,6 +137,66 @@ test('plan is generated automatically for the signed-in role', async () => {
   }
 });
 
+
+test('malformed practice answers cannot earn credit or create evidence', async () => {
+  const invalid = [null, '', '0', false, true, [], [0], {}, -1, 3, 0.5, undefined];
+  for (const answer of invalid) {
+    const f = fixture();
+    try {
+      const result = await call(f.engine, f.tokens.employee, 'POST', '/api/learning/adaptive/practice',
+        { competencyKey: 'time.clock', answer });
+      assert.equal(result.status, 400, 'reject malformed answer ' + JSON.stringify(answer));
+      const state = new DatabaseSync(f.dbPath);
+      try { assert.equal(state.prepare('SELECT COUNT(*) AS n FROM learning_evidence').get().n, 0); }
+      finally { state.close(); }
+      const plan = await call(f.engine, f.tokens.employee, 'GET', '/api/learning/adaptive/plan');
+      assert.equal(plan.body.all.find(x => x.competencyKey === 'time.clock').score, 0);
+    } finally { f.close(); }
+  }
+});
+
+test('guidance and retrieval cannot certify without independently observed task success', async () => {
+  const f = fixture();
+  try {
+    await call(f.engine, f.tokens.employee, 'POST', '/api/learning/adaptive/practice',
+      { competencyKey: 'time.clock', answer: 0 });
+    const result = await call(f.engine, null, 'POST', '/api/learning/adaptive/evidence', {
+      tenant: 'alpha', email: 'employee@alpha', competencyKey: 'time.clock',
+      evidenceType: 'RETRIEVAL_CHECK', result: 'PASS'
+    }, f.internal);
+    assert.equal(result.body.assignment.score, 85);
+    assert.equal(result.body.assignment.status, 'DUE');
+    const observed = await call(f.engine, null, 'POST', '/api/learning/adaptive/evidence', {
+      tenant: 'alpha', email: 'employee@alpha', competencyKey: 'time.clock',
+      evidenceType: 'INDEPENDENT_TASK', result: 'PASS',
+      detail: { sourceClass: 'synthetic-test', taskId: 'test-clock-correction' }
+    }, f.internal);
+    assert.equal(observed.body.assignment.status, 'MASTERED');
+  } finally { f.close(); }
+});
+
+test('legacy practice without a validated answer is retained but cannot contribute credit', async () => {
+  const f = fixture();
+  try {
+    await call(f.engine, f.tokens.employee, 'GET', '/api/learning/adaptive/plan');
+    const state = new DatabaseSync(f.dbPath);
+    try {
+      const assignment = state.prepare("SELECT id FROM learning_assignments WHERE email='employee@alpha' AND competency_key='time.clock'").get();
+      state.prepare('INSERT INTO learning_evidence(assignment_id,tenant,email,evidence_type,result,score_value,detail_json,created_at) VALUES(?,?,?,?,?,?,?,?)')
+        .run(assignment.id, 'alpha', 'employee@alpha', 'GUIDED_PRACTICE', 'PASS', 55, JSON.stringify({scenario:'time.clock'}), new Date().toISOString());
+    } finally { state.close(); }
+    const result = await call(f.engine, f.tokens.employee, 'GET', '/api/learning/adaptive/plan');
+    assert.equal(result.body.all.find(x => x.competencyKey === 'time.clock').score, 0);
+    const retained = new DatabaseSync(f.dbPath);
+    try { assert.equal(retained.prepare('SELECT COUNT(*) AS n FROM learning_evidence').get().n, 1); }
+    finally { retained.close(); }
+    const corrected = await call(f.engine, f.tokens.employee, 'POST', '/api/learning/adaptive/practice',
+      { competencyKey:'time.clock', answer:0 });
+    assert.equal(corrected.body.assignment.score,55);
+    assert.equal(corrected.body.assignment.status,'DUE');
+  } finally { f.close(); }
+});
+
 test('guided practice teaches but cannot alone certify durable competence', async () => {
   const f = fixture();
   try {
