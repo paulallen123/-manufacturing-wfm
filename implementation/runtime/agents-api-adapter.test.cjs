@@ -20,13 +20,13 @@ function seed(dbPath) {
     .run('run-1', 'northstar-demo', 'contract', 'BUILDING', now, now + 3600000, 1, new Date(now).toISOString(), new Date(now).toISOString());
   db.close();
 }
-function fixture(fetchImpl) {
+function fixture(fetchImpl, options = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-agents-adapter-'));
   const dbPath = path.join(dir, 'test.sqlite');
   seed(dbPath);
   const adapter = createAgentsApiAdapter({
     dbPath, apiKey: 'test-key', candidateSha: 'a'.repeat(40), deploymentId: 'deployment-1',
-    model: 'gpt-6-sol', fetchImpl
+    model: 'gpt-6-sol', fetchImpl, ...options
   });
   return { dir, dbPath, adapter, close() { adapter.close(); fs.rmSync(dir, { recursive: true, force: true }); } };
 }
@@ -129,4 +129,46 @@ test('new canonical build supersedes the previous build session', async () => {
     assert.equal(rows[0].status, 'SUPERSEDED');
     assert.equal(rows[1].status, 'idle');
   } finally { b.close(); fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+
+test('active analysis ignores transient idle until all read-only tools run and a report exists', async () => {
+  let read = 0;
+  const submitted = [];
+  const f = fixture(async (url, init = {}) => {
+    url = String(url);
+    if (url.endsWith('/sessions/sess_active') && init.method === 'GET') {
+      read += 1;
+      if (read <= 2) return new Response(JSON.stringify({ id:'sess_active', status:'idle', required_actions:[] }), { status:200 });
+      if (read === 3) return new Response(JSON.stringify({
+        id:'sess_active', status:'requires_action', required_actions:[
+          { type:'function_call', turn_id:'turn-1', call_id:'call-1', name:'get_vector_binding', arguments:{} },
+          { type:'function_call', turn_id:'turn-1', call_id:'call-2', name:'get_implementation_status', arguments:{} },
+          { type:'function_call', turn_id:'turn-1', call_id:'call-3', name:'get_customer_proof_gaps', arguments:{} }
+        ]
+      }), { status:200 });
+      return new Response(JSON.stringify({ id:'sess_active', status:'idle', required_actions:[] }), { status:200 });
+    }
+    if (url.endsWith('/sessions/sess_active/events') && init.method === 'POST') {
+      submitted.push(...JSON.parse(init.body).events);
+      return new Response('', { status:202 });
+    }
+    if (url.includes('/sessions/sess_active/items?')) {
+      return new Response(JSON.stringify({
+        data:[{ id:'msg-new', type:'message', role:'assistant', content:[{type:'output_text',text:'fresh active report'}] }]
+      }), { status:200 });
+    }
+    throw new Error('unexpected ' + init.method + ' ' + url);
+  }, { pollIntervalMs:0, maxPolls:8 });
+  try {
+    const result = await f.adapter.analyzeSession({
+      sessionId:'sess_active', runId:'run-1', tenant:'northstar-demo', startTurn:true,
+      toolHandler: async name => ({ name, readOnly:true })
+    });
+    assert.equal(result.status,'PASS');
+    assert.equal(result.toolCalls,3);
+    assert.equal(result.report,'fresh active report');
+    assert.equal(submitted.some(event => event.type === 'agent.session.input.message'), true);
+    assert.equal(submitted.filter(event => event.type === 'agent.session.input.tool_result').length,3);
+  } finally { f.close(); }
 });

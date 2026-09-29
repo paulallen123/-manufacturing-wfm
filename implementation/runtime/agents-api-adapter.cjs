@@ -273,6 +273,7 @@ function createAgentsApiAdapter(options = {}) {
     if (typeof toolHandler !== 'function') throw new Error('VECTOR_AGENTS_READONLY_TOOL_HANDLER_REQUIRED');
 
     const allowed = new Set(ACTIVE_READONLY_TOOLS.map(item => item.name));
+    const calledTools = new Set();
     let toolCalls = 0;
     let started = !startTurn;
 
@@ -304,6 +305,7 @@ function createAgentsApiAdapter(options = {}) {
             throw error;
           }
           toolCalls += 1;
+          calledTools.add(action.name);
           if (toolCalls > 12) {
             const error = new Error('VECTOR_AGENTS_READONLY_TOOL_BUDGET_EXCEEDED');
             error.code = 'AGENTS_READONLY_TOOL_BUDGET_EXCEEDED';
@@ -369,6 +371,12 @@ function createAgentsApiAdapter(options = {}) {
       }
 
       if (status === 'idle') {
+        // A message starts a turn asynchronously. A transient idle read immediately
+        // after submission is not completion and must never be accepted as success.
+        if (started && calledTools.size === 0) {
+          await sleep(pollIntervalMs || 1);
+          continue;
+        }
         const items = await request('/sessions/' + encodeURIComponent(sessionId) + '/items?order=asc&limit=100');
         if (!items.response.ok) {
           const error = new Error('VECTOR_AGENTS_ANALYSIS_ITEMS_FAILED');
@@ -377,15 +385,23 @@ function createAgentsApiAdapter(options = {}) {
           throw error;
         }
         const report = extractAssistantReport(items.payload);
-        if (report) {
-          upsertReport.run(
-            sessionId, runId, tenant, candidateSha, deploymentId, ACTIVE_READONLY_PROFILE,
-            report.slice(0, 32 * 1024), new Date().toISOString()
-          );
+        if (!report) {
+          await sleep(pollIntervalMs || 1);
+          continue;
         }
+        if ([...allowed].some(name => !calledTools.has(name))) {
+          const error = new Error('VECTOR_AGENTS_READONLY_TOOL_REQUIREMENT_UNMET');
+          error.code = 'AGENTS_READONLY_TOOL_REQUIREMENT_UNMET';
+          error.statusCode = 409;
+          throw error;
+        }
+        upsertReport.run(
+          sessionId, runId, tenant, candidateSha, deploymentId, ACTIVE_READONLY_PROFILE,
+          report.slice(0, 32 * 1024), new Date().toISOString()
+        );
         updateSessionStatus.run('idle', new Date().toISOString(), runId, tenant, candidateSha, deploymentId);
         return {
-          status: report ? 'PASS' : 'COMPLETED_NO_REPORT',
+          status: 'PASS',
           sessionId,
           profile: ACTIVE_READONLY_PROFILE,
           toolCalls,
