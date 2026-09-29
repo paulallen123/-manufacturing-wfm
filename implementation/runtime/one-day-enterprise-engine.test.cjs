@@ -1494,3 +1494,74 @@ test('legacy implementation_events schema migrates every required audit field in
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('tenant-environment PASS is validator-bound, fresh, and reopened by a later terminal failure', async () => {
+  const candidateSha = 'a'.repeat(40);
+  const deploymentId = 'deployment-current';
+  const f = fixture({ requireCandidateBinding: true, candidateSha, deploymentId });
+  try {
+    const run = await startRun(f);
+    const makeDetail = (verifierRunId) => ({
+      fixtureOnly: false,
+      zeroHuman: true,
+      humanInterventions: 0,
+      provisioned: true,
+      tenantExists: true,
+      environmentId: 'cloud-env-alpha',
+      provisioningMode: 'cloud-runtime',
+      runtimeHealthPassed: true,
+      healthcheckPassed: true,
+      tenantIsolationVerified: true,
+      crossTenantNegativeTests: 1,
+      durableStateVerified: true,
+      exactCandidateSha: candidateSha,
+      exactTargetDeploymentId: deploymentId,
+      tenant: 'alpha',
+      implementationRunId: run.runId,
+      verifierRunId,
+      proofRunnerIdentity: 'scoped-tenant-verifier-test',
+      targetDeploymentCreatedAt: new Date(Date.now() - 60000).toISOString(),
+      evidenceGeneratedAt: new Date().toISOString()
+    });
+    const forged = makeDetail('forged-verifier');
+    const db = new DatabaseSync(f.dbPath);
+    db.prepare('INSERT INTO implementation_evidence(run_id,tenant,kind,status,confidence,source,detail_json,created_at) VALUES(?,?,?,?,?,?,?,?)')
+      .run(run.runId, 'alpha', 'tenant-environment', 'PASS', 1, 'hosted-proof', JSON.stringify(forged), new Date().toISOString());
+    db.close();
+    const before = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
+    const beforeTenant = before.body.requirements.find(item => item.key === 'tenant-environment');
+    assert.equal(beforeTenant.satisfied, false);
+    assert.equal(beforeTenant.status, 'REVALIDATION_REQUIRED');
+
+    const passDetail = makeDetail('verifier-pass-001');
+    const pass = await call(f.engine, null, 'POST', '/api/implementation/autonomous/evidence', {
+      runId: run.runId, kind: 'tenant-environment', status: 'PASS', confidence: 1,
+      source: 'hosted-proof', detail: passDetail
+    }, f.internal);
+    assert.equal(pass.status, 200);
+    const passedTenant = pass.body.requirements.find(item => item.key === 'tenant-environment');
+    assert.equal(passedTenant.satisfied, true);
+    assert.equal(passedTenant.status, 'PASS');
+
+    const failure = await call(f.engine, null, 'POST', '/api/implementation/autonomous/evidence', {
+      runId: run.runId, kind: 'tenant-environment', status: 'FAIL', confidence: 1,
+      source: 'hosted-proof', detail: { verifierRunId: 'verifier-fail-002', terminalFailure: true, error: 'TENANT_RUNTIME_HEALTH_FAILED' }
+    }, f.internal);
+    assert.equal(failure.status, 200);
+    const failedTenant = failure.body.requirements.find(item => item.key === 'tenant-environment');
+    assert.equal(failedTenant.satisfied, false);
+    assert.equal(failedTenant.status, 'FAIL');
+
+    const replay = await call(f.engine, null, 'POST', '/api/implementation/autonomous/evidence', {
+      runId: run.runId, kind: 'tenant-environment', status: 'PASS', confidence: 1,
+      source: 'hosted-proof', detail: passDetail
+    }, f.internal);
+    assert.equal(replay.status, 409);
+    const reopened = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
+    const reopenedTenant = reopened.body.requirements.find(item => item.key === 'tenant-environment');
+    assert.equal(reopenedTenant.satisfied, false);
+    assert.equal(reopenedTenant.status, 'FAIL');
+  } finally {
+    f.close();
+  }
+});
