@@ -4,6 +4,8 @@ const { createHash, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { normaliseDemandSignal, rankDemandProblems } = require('./customer-demand-intelligence.cjs');
 const { buildAbsenceRecoveryShadow } = require('./absence-recovery-shadow.cjs');
+const { buildCapacityRescueShadow } = require('./capacity-rescue-shadow.cjs');
+const { evaluateCapacityRescueOutcome } = require('./capacity-rescue-learning.cjs');
 
 const PREFIX = '/api/operations/intelligence';
 const INTERNAL_HEADER = 'x-wfm-demand-internal';
@@ -112,7 +114,21 @@ function createDemandDecisionService(options={}){
     'CREATE TRIGGER IF NOT EXISTS no_vector_decision_episode_update BEFORE UPDATE ON vector_decision_episodes '+
       "BEGIN SELECT RAISE(ABORT,'Vector decision episodes are append only.'); END;"+
     'CREATE TRIGGER IF NOT EXISTS no_vector_decision_episode_delete BEFORE DELETE ON vector_decision_episodes '+
-      "BEGIN SELECT RAISE(ABORT,'Vector decision episodes are append only.'); END;"
+      "BEGIN SELECT RAISE(ABORT,'Vector decision episodes are append only.'); END;"+
+    'CREATE TABLE IF NOT EXISTS vector_capacity_rescue_cases('+
+      'tenant TEXT NOT NULL,case_id TEXT NOT NULL,episode_id TEXT NOT NULL,case_json TEXT NOT NULL,created_at TEXT NOT NULL,'+
+      'PRIMARY KEY(tenant,case_id));'+
+    'CREATE TRIGGER IF NOT EXISTS no_vector_capacity_rescue_case_update BEFORE UPDATE ON vector_capacity_rescue_cases '+
+      "BEGIN SELECT RAISE(ABORT,'Vector Capacity Rescue cases are append only.'); END;"+
+    'CREATE TRIGGER IF NOT EXISTS no_vector_capacity_rescue_case_delete BEFORE DELETE ON vector_capacity_rescue_cases '+
+      "BEGIN SELECT RAISE(ABORT,'Vector Capacity Rescue cases are append only.'); END;"+
+    'CREATE TABLE IF NOT EXISTS vector_capacity_rescue_outcomes('+
+      'tenant TEXT NOT NULL,outcome_id TEXT NOT NULL,case_id TEXT NOT NULL,outcome_json TEXT NOT NULL,created_at TEXT NOT NULL,'+
+      'PRIMARY KEY(tenant,outcome_id));'+
+    'CREATE TRIGGER IF NOT EXISTS no_vector_capacity_rescue_outcome_update BEFORE UPDATE ON vector_capacity_rescue_outcomes '+
+      "BEGIN SELECT RAISE(ABORT,'Vector Capacity Rescue outcomes are append only.'); END;"+
+    'CREATE TRIGGER IF NOT EXISTS no_vector_capacity_rescue_outcome_delete BEFORE DELETE ON vector_capacity_rescue_outcomes '+
+      "BEGIN SELECT RAISE(ABORT,'Vector Capacity Rescue outcomes are append only.'); END;"
   );
 
   const auth=db.prepare('SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?');
@@ -122,6 +138,12 @@ function createDemandDecisionService(options={}){
   const episodeById=db.prepare('SELECT episode_json FROM vector_decision_episodes WHERE tenant=? AND episode_id=?');
   const insertEpisode=db.prepare('INSERT INTO vector_decision_episodes(tenant,episode_id,decision_type,episode_json,created_at) VALUES(?,?,?,?,?)');
   const tenantEpisodes=db.prepare('SELECT episode_json FROM vector_decision_episodes WHERE tenant=? ORDER BY created_at DESC,episode_id DESC LIMIT ?');
+  const capacityCaseById=db.prepare('SELECT case_json FROM vector_capacity_rescue_cases WHERE tenant=? AND case_id=?');
+  const insertCapacityCase=db.prepare('INSERT INTO vector_capacity_rescue_cases(tenant,case_id,episode_id,case_json,created_at) VALUES(?,?,?,?,?)');
+  const tenantCapacityCases=db.prepare('SELECT case_json FROM vector_capacity_rescue_cases WHERE tenant=? ORDER BY created_at DESC,case_id DESC LIMIT ?');
+  const capacityOutcomeById=db.prepare('SELECT outcome_json FROM vector_capacity_rescue_outcomes WHERE tenant=? AND outcome_id=?');
+  const insertCapacityOutcome=db.prepare('INSERT INTO vector_capacity_rescue_outcomes(tenant,outcome_id,case_id,outcome_json,created_at) VALUES(?,?,?,?,?)');
+  const tenantCapacityOutcomes=db.prepare('SELECT outcome_json FROM vector_capacity_rescue_outcomes WHERE tenant=? ORDER BY created_at DESC,outcome_id DESC LIMIT ?');
 
   function ctx(req){
     const token=cookieToken(req);
@@ -165,6 +187,12 @@ function createDemandDecisionService(options={}){
   function recentEpisodes(tenant,limit=20){
     return tenantEpisodes.all(tenant,Math.max(1,Math.min(50,Number(limit)||20))).map(r=>JSON.parse(r.episode_json));
   }
+  function recentCapacityCases(tenant,limit=20){
+    return tenantCapacityCases.all(tenant,Math.max(1,Math.min(50,Number(limit)||20))).map(r=>JSON.parse(r.case_json));
+  }
+  function recentCapacityOutcomes(tenant,limit=20){
+    return tenantCapacityOutcomes.all(tenant,Math.max(1,Math.min(50,Number(limit)||20))).map(r=>JSON.parse(r.outcome_json));
+  }
   async function ingestSignal(req,res){
     if(!requireInternal(req,res)) return true;
     const body=await readJson(req);
@@ -190,10 +218,50 @@ function createDemandDecisionService(options={}){
     try{publishEvent?.({tenant,topic:'autopilot.shadow.updated',audience:'manager',payload:{episodeId:episode.episodeId}});}catch{}
     return writeJson(res,201,{shadow,idempotent:false});
   }
+  async function ingestCapacityRescueShadow(req,res){
+    if(!requireInternal(req,res)) return true;
+    const body=await readJson(req);
+    const tenant=compact(body.tenant,120);
+    if(!tenant) return writeJson(res,400,{error:'tenant is required.'});
+    const shadow=buildCapacityRescueShadow({...body.input,tenant});
+    const episode=shadow.episode;
+    const caseId='cr-'+sha256(tenant+'|'+episode.episodeId).slice(0,40);
+    const existingCase=capacityCaseById.get(tenant,caseId);
+    if(existingCase) return writeJson(res,200,{case:JSON.parse(existingCase.case_json),idempotent:true});
+    const existingEpisode=episodeById.get(tenant,episode.episodeId);
+    if(!existingEpisode) insertEpisode.run(tenant,episode.episodeId,episode.decisionType,JSON.stringify(episode),nowIso());
+    const record={...shadow,caseId};
+    insertCapacityCase.run(tenant,caseId,episode.episodeId,JSON.stringify(record),nowIso());
+    try{publishEvent?.({tenant,topic:'autopilot.capacity-rescue.shadow.updated',audience:'manager',payload:{caseId,episodeId:episode.episodeId}});}catch{}
+    return writeJson(res,201,{case:record,idempotent:false});
+  }
+  async function ingestCapacityRescueOutcome(req,res){
+    if(!requireInternal(req,res)) return true;
+    const body=await readJson(req);
+    const tenant=compact(body.tenant,120), caseId=compact(body.caseId,180);
+    if(!tenant||!caseId) return writeJson(res,400,{error:'tenant and caseId are required.'});
+    const row=capacityCaseById.get(tenant,caseId);
+    if(!row) return writeJson(res,404,{error:'Capacity Rescue case not found.'});
+    const caseRecord=JSON.parse(row.case_json), outcomeInput=body.outcome||{};
+    const planId=compact(outcomeInput.planId,120);
+    const plan=caseRecord.interventionGraph?.plans?.find(p=>p.id===planId)||null;
+    if(!plan) return writeJson(res,400,{error:'Capacity Rescue outcome planId must reference a case plan.'});
+    const outcome=evaluateCapacityRescueOutcome({
+      ...outcomeInput,tenant,caseId,
+      actionTypes:plan.actions?.map(a=>a.type)||[],
+      primaryConstraintDomain:caseRecord.constraintAssessment?.primaryConstraint?.domain||'unknown'
+    });
+    const existing=capacityOutcomeById.get(tenant,outcome.outcomeId);
+    if(existing) return writeJson(res,200,{outcome:JSON.parse(existing.outcome_json),idempotent:true});
+    insertCapacityOutcome.run(tenant,outcome.outcomeId,caseId,JSON.stringify(outcome),nowIso());
+    try{publishEvent?.({tenant,topic:'autopilot.capacity-rescue.outcome.updated',audience:'manager',payload:{caseId,outcomeId:outcome.outcomeId,causalStatus:outcome.causalStatus}});}catch{}
+    return writeJson(res,201,{outcome,idempotent:false});
+  }
   function summary(req,res){
     const c=requireManager(req,res); if(!c) return true;
     const demand=demandForTenant(c.tenant);
     const recent=recentEpisodes(c.tenant,1)[0]||null;
+    const recentCapacity=recentCapacityCases(c.tenant,1)[0]||null;
     return writeJson(res,200,{
       contractVersion:'VECTOR_DEMAND_DECISION_SUMMARY_V1',
       tenant:c.tenant,
@@ -205,6 +273,13 @@ function createDemandDecisionService(options={}){
         triggeredAt:recent.triggeredAt,
         mode:recent.mode,
         recommendation:recent.recommendation
+      }:null,
+      recentCapacityRescue:recentCapacity?{
+        caseId:recentCapacity.caseId,
+        triggerKind:recentCapacity.triggerKind,
+        primaryConstraint:recentCapacity.constraintAssessment?.primaryConstraint||null,
+        recommendedPlan:recentCapacity.recommendedPlan||null,
+        executionPermitted:false
       }:null,
       executionAuthority:'UNCHANGED_EXISTING_GATES'
     });
@@ -227,20 +302,33 @@ function createDemandDecisionService(options={}){
       episodes:recentEpisodes(c.tenant,20)
     });
   }
+  function capacityRescue(req,res){
+    const c=requireManager(req,res); if(!c) return true;
+    return writeJson(res,200,{
+      contractVersion:'VECTOR_CAPACITY_RESCUE_LIST_V1',
+      tenant:c.tenant,
+      cases:recentCapacityCases(c.tenant,20),
+      outcomes:recentCapacityOutcomes(c.tenant,20),
+      executionAuthority:'SHADOW_ONLY_UNTIL_TYPED_ADAPTERS_AND_ROLLBACK_PROOF'
+    });
+  }
   async function handleRequest(req,res){
     const path=pathOf(req); if(!path.startsWith(PREFIX)) return false;
     try{
       if(req.method==='GET'&&path===PREFIX+'/summary') return summary(req,res);
       if(req.method==='GET'&&path===PREFIX+'/demand') return demand(req,res);
       if(req.method==='GET'&&path===PREFIX+'/decisions') return decisions(req,res);
+      if(req.method==='GET'&&path===PREFIX+'/capacity-rescue') return capacityRescue(req,res);
       if(req.method==='POST'&&path===PREFIX+'/demand/signal') return await ingestSignal(req,res);
       if(req.method==='POST'&&path===PREFIX+'/absence-recovery/shadow') return await ingestAbsenceShadow(req,res);
+      if(req.method==='POST'&&path===PREFIX+'/capacity-rescue/shadow') return await ingestCapacityRescueShadow(req,res);
+      if(req.method==='POST'&&path===PREFIX+'/capacity-rescue/outcome') return await ingestCapacityRescueOutcome(req,res);
       return writeJson(res,404,{error:'Decision intelligence endpoint not found.'});
     }catch(error){
       return writeJson(res,Number(error?.statusCode||500),{error:error?.statusCode?error.message:'Decision intelligence failed safely.'});
     }
   }
-  return {handleRequest,close(){try{db.close();}catch{}},demandForTenant,recentEpisodes};
+  return {handleRequest,close(){try{db.close();}catch{}},demandForTenant,recentEpisodes,recentCapacityCases,recentCapacityOutcomes};
 }
 
 module.exports={createDemandDecisionService,lifecycleDemandSignal};
