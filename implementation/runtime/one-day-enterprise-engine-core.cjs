@@ -664,12 +664,35 @@ function createOneDayEnterpriseEngine(options = {}) {
     Object.values(POLICY_DECISIONS).map(spec => spec.kind)
   );
 
+  function tenantEnvironmentEvidenceError(run, row, requireAttestation = true, evidenceDetail = null) {
+    const detail = evidenceDetail || parseJsonSafe(row.detail_json, {});
+    const error = validateStrictReadinessEvidence('tenant-environment', 'PASS', detail, {
+      tenant: run.tenant, implementationRunId: run.id, candidateSha, deploymentId,
+      source: row.source, evidenceCreatedAt: row.created_at, requireCandidateIdentity: true
+    });
+    if (error) return error;
+    if (!requireAttestation) return null;
+    const attestation = detail._tenantEnvironmentValidation;
+    const proof = { ...detail };
+    delete proof._tenantEnvironmentValidation;
+    if (!attestation || attestation.version !== 1 ||
+        attestation.validator !== 'tenant-environment-v1' ||
+        attestation.proofDigest !== sha256(JSON.stringify(proof)) ||
+        attestation.tenant !== run.tenant || attestation.implementationRunId !== run.id ||
+        attestation.candidateSha !== candidateSha || attestation.deploymentId !== deploymentId ||
+        attestation.verifierRunId !== detail.verifierRunId || attestation.acceptedAt !== row.created_at) {
+      return 'Tenant-environment evidence lacks a current server validation receipt.';
+    }
+    return null;
+  }
+
   function currentStoredPass(run, kind) {
     const row = evidenceByKind.get(run.id, run.tenant, kind);
     if (!row || row.status !== 'PASS') return false;
     const detail = parseJsonSafe(row.detail_json, {});
     const binding = evidenceBindingFor(detail, run);
     if (binding?.reason) return false;
+    if (kind === 'tenant-environment') return !tenantEnvironmentEvidenceError(run, row, true, detail);
     if (POLICY_REQUIREMENT_KINDS.has(kind)) {
       return !validateStrictReadinessEvidence(kind, 'PASS', detail);
     }
@@ -1045,10 +1068,13 @@ function createOneDayEnterpriseEngine(options = {}) {
       // Stored proof survives deployment for audit, but never retains authority
       // for a different candidate. Derived configuration is read from current state.
       const evidenceBinding = !derived && row?.status === 'PASS' ? evidenceBindingFor(detail, run) : null;
+      const tenantValidationError = !derived && row?.status === 'PASS' && requirement.key === 'tenant-environment'
+        ? tenantEnvironmentEvidenceError(run, row, true, detail || {})
+        : null;
       const policyValidationError = !derived && row?.status === 'PASS' && POLICY_REQUIREMENT_KINDS.has(requirement.key)
         ? validateStrictReadinessEvidence(requirement.key, 'PASS', detail || {})
         : null;
-      const status = evidenceBinding?.reason || policyValidationError
+      const status = evidenceBinding?.reason || tenantValidationError || policyValidationError
         ? 'REVALIDATION_REQUIRED'
         : (derived?.status || row?.status || 'MISSING');
       const confidence = derived ? derived.confidence : (row ? Number(row.confidence) : 0);
@@ -1061,7 +1087,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         observedAt: derived ? nowIso() : (row?.created_at || null),
         detail,
         ...(evidenceBinding ? { evidenceBinding } : {}),
-        ...(policyValidationError ? { evidenceValidation: { reason: policyValidationError } } : {})
+        ...(tenantValidationError || policyValidationError ? { evidenceValidation: { reason: tenantValidationError || policyValidationError } } : {})
       };
     });
 
@@ -1743,14 +1769,23 @@ function createOneDayEnterpriseEngine(options = {}) {
         readinessEvidenceAccepted: false, kind, evidenceBinding
       });
     }
-    if (status === 'PASS' && POLICY_REQUIREMENT_KINDS.has(kind)) {
-      const policyValidationError = validateStrictReadinessEvidence(kind, status, detail);
+    const evidenceRecordedAt = nowIso();
+    if (status === 'PASS' && (kind === 'tenant-environment' || POLICY_REQUIREMENT_KINDS.has(kind))) {
+      const policyValidationError = kind === 'tenant-environment'
+        ? tenantEnvironmentEvidenceError(run, { source, created_at: evidenceRecordedAt }, false, detail)
+        : validateStrictReadinessEvidence(kind, status, detail);
       if (policyValidationError) {
-        return writeJson(res, 409, {
-          error: policyValidationError,
-          readinessEvidenceAccepted: false,
-          kind
-        });
+        return writeJson(res, 409, { error: policyValidationError, readinessEvidenceAccepted: false, kind });
+      }
+    }
+    if (status === 'PASS' && kind === 'tenant-environment') {
+      if (Object.prototype.hasOwnProperty.call(detail, '_tenantEnvironmentValidation')) {
+        return writeJson(res, 409, { error: 'Tenant-environment validation receipts are server-issued only.', readinessEvidenceAccepted: false, kind });
+      }
+      const previous = db.prepare('SELECT detail_json FROM implementation_evidence WHERE run_id=? AND tenant=? AND kind=?')
+        .all(run.id, run.tenant, kind);
+      if (previous.some(item => parseJsonSafe(item.detail_json, {}).verifierRunId === detail.verifierRunId)) {
+        return writeJson(res, 409, { error: 'Tenant-environment verifier-run evidence cannot be replayed.', readinessEvidenceAccepted: false, kind });
       }
     }
     if (status === 'PASS' && kind === 'scenario-validation') {
@@ -1774,16 +1809,17 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
     }
 
-    insertEvidence.run(
-      run.id,
-      run.tenant,
-      kind,
-      status,
-      confidence,
-      source,
-      JSON.stringify(detail),
-      nowIso()
-    );
+    let storedDetail = detail;
+    if (status === 'PASS' && kind === 'tenant-environment') {
+      storedDetail = { ...detail, _tenantEnvironmentValidation: {
+        version: 1, validator: 'tenant-environment-v1',
+        proofDigest: sha256(JSON.stringify(detail)),
+        tenant: run.tenant, implementationRunId: run.id,
+        candidateSha, deploymentId, verifierRunId: detail.verifierRunId,
+        acceptedAt: evidenceRecordedAt
+      }};
+    }
+    insertEvidence.run(run.id, run.tenant, kind, status, confidence, source, JSON.stringify(storedDetail), evidenceRecordedAt);
     record(run.id, run.tenant, 'EVIDENCE_RECORDED', { kind, status, confidence, source });
     return writeJson(res, 200, recompute(run));
   }
