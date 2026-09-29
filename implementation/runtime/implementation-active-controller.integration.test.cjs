@@ -194,12 +194,22 @@ test('automated tenant environment effect remains unproven until independent evi
       },
       f.internal
     );
-    assert.equal(evidenced.status, 200);
-    assert.equal(evidenced.body.requirements.find(item => item.key === 'tenant-environment').satisfied, true);
-    assert.equal(
-      evidenced.body.workPlan.jobs.find(item => item.requirementKey === 'tenant-environment').status,
-      'SATISFIED'
+    assert.equal(evidenced.status, 409);
+    const unchanged = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/work/status',
+      { runId, tenant: 'alpha' },
+      f.internal
     );
+    assert.equal(unchanged.status, 200);
+    assert.equal(unchanged.body.requirements.find(item => item.key === 'tenant-environment').satisfied, false);
+    assert.equal(
+      unchanged.body.workPlan.jobs.find(item => item.requirementKey === 'tenant-environment').status,
+      'AWAITING_EVIDENCE'
+    );
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_evidence WHERE run_id=? AND kind=?')
+      .get(runId, 'tenant-environment').count, 0);
+    db.close();
   } finally {
     f.close();
   }
