@@ -98,6 +98,8 @@ function fixture() {
     dbPath,
     internalToken: 'implementation-worker-test-token',
     publicOrigin: 'https://implementation.test',
+    candidateSha: 'a'.repeat(40),
+    deploymentId: 'deployment-learning-test',
     sendInvitation: async invitation => {
       sentInvitations.push(invitation);
       return { provider: 'test-mailer', messageId: 'mail-' + sentInvitations.length };
@@ -108,6 +110,8 @@ function fixture() {
   return {
     dir,
     dbPath,
+    candidateSha: 'a'.repeat(40),
+    deploymentId: 'deployment-learning-test',
     learning,
     implementation,
     tokens,
@@ -175,19 +179,25 @@ async function passTechnicalEvidence(f, runId) {
   let latest = null;
   for (const item of REQUIREMENTS) {
     if (training.has(item.key)) continue;
+    const tenant = item.key === 'tenant-environment';
+    const detail = tenant ? {
+      fixtureOnly: false, zeroHuman: true, humanInterventions: 0,
+      provisioned: true, tenantExists: true, environmentId: 'test-cloud-environment',
+      provisioningMode: 'cloud-runtime', runtimeHealthPassed: true, healthcheckPassed: true,
+      tenantIsolationVerified: true, crossTenantNegativeTests: 1, durableStateVerified: true,
+      exactCandidateSha: f.candidateSha, exactTargetDeploymentId: f.deploymentId,
+      tenant: 'alpha', implementationRunId: runId, verifierRunId: 'unit-learning-' + runId,
+      proofRunnerIdentity: 'unit-test-runner',
+      targetDeploymentCreatedAt: new Date(Date.now() - 60000).toISOString(),
+      evidenceGeneratedAt: new Date().toISOString()
+    } : evidenceDetail(item.key);
     const result = await call(
       f.implementation,
       null,
       'POST',
       '/api/implementation/autonomous/evidence',
-      {
-        runId,
-        kind: item.key,
-        status: 'PASS',
-        confidence: 1,
-        source: 'deterministic-technical-proof',
-        detail: evidenceDetail(item.key)
-      },
+      { runId, kind: item.key, status: 'PASS', confidence: 1,
+        source: tenant ? 'hosted-proof' : 'deterministic-technical-proof', detail },
       f.implementationInternal
     );
     assert.equal(result.status, 200);
