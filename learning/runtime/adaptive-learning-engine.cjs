@@ -316,11 +316,23 @@ function createAdaptiveLearningEngine(options = {}) {
     const best = new Map();
     for (const item of evidence) {
       if (item.result !== 'PASS') continue;
+      if (item.evidence_type === 'GUIDED_PRACTICE') {
+        let detail;
+        try { detail = JSON.parse(item.detail_json || '{}'); } catch { continue; }
+        const scenario = PRACTICE[row.competency_key];
+        // Older practice receipts did not preserve the answer and may contain
+        // credit awarded by coercing null, false or an empty string to zero.
+        // Preserve the audit row, but require a validated answer for credit.
+        if (!scenario || detail?.validationVersion !== 1 ||
+            detail.scenario !== row.competency_key ||
+            !Number.isInteger(detail.answer) || detail.answer !== scenario.answer) continue;
+      }
       best.set(item.evidence_type, Math.max(best.get(item.evidence_type) || 0, item.score_value));
     }
     const score = Math.min(100, [...best.values()].reduce((sum, value) => sum + value, 0));
     const requiresTeachBack = Boolean(COMPETENCIES[row.competency_key]?.teachBack);
-    const mastered = score >= 80 && (!requiresTeachBack || best.has('TEACH_BACK'));
+    const independentSuccess = best.has('INDEPENDENT_TASK') || best.has('OBSERVED_SUCCESS');
+    const mastered = score >= 80 && independentSuccess && (!requiresTeachBack || best.has('TEACH_BACK'));
     const currentMasteredAt = row.mastered_at_ms || null;
     const masteredAt = mastered ? (currentMasteredAt || Date.now()) : null;
     const dueAt = mastered ? masteredAt + nextRefreshMs(score) : Date.now();
@@ -447,13 +459,16 @@ function createAdaptiveLearningEngine(options = {}) {
     const assignment = assignmentByKey.get(ctx.tenant, ctx.email, competencyKey);
     if (!assignment) return writeJson(res, 403, { error: 'This competency is not assigned to your role.' });
 
-    const answer = Number(body.answer);
-    const pass = Number.isInteger(answer) && answer === scenario.answer;
+    const answer = body.answer;
+    if (!Number.isInteger(answer) || answer < 0 || answer >= scenario.options.length) {
+      return writeJson(res, 400, { error: 'Select a valid practice answer.' });
+    }
+    const pass = answer === scenario.answer;
     insertEvidence.run(
       assignment.id, ctx.tenant, ctx.email, 'GUIDED_PRACTICE',
       pass ? 'PASS' : 'FAIL',
       pass ? EVIDENCE_WEIGHTS.GUIDED_PRACTICE : 0,
-      JSON.stringify({ scenario: competencyKey }),
+      JSON.stringify({ scenario: competencyKey, answer, validationVersion: 1 }),
       nowIso()
     );
     const updated = recomputeAssignment(assignment);
