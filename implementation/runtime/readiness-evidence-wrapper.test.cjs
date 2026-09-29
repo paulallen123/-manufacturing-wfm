@@ -49,7 +49,10 @@ function fixture() {
   const engine = createOneDayEnterpriseEngine({
     dbPath,
     internalToken: 'strict-worker',
-    strictEvidence: true
+    strictEvidence: true,
+    requireCandidateBinding: true,
+    candidateSha: 'a'.repeat(40),
+    deploymentId: 'deployment-current'
   });
 
   const seed = new DatabaseSync(dbPath);
@@ -111,15 +114,16 @@ test('strict wrapper admits structured zero-human cloud environment evidence and
   try {
     const result = await submit(f.engine, {
       runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,
-      source: 'railway-cloud-proof', detail: {
-        fixtureOnly: false,
-        zeroHuman: true,
-        humanInterventions: 0,
-        provisioned: true,
-        environmentId: 'railway/tenant-alpha',
-        provisioningMode: 'cloud-runtime',
-        healthcheckPassed: true,
-        tenantIsolationVerified: true
+      source: 'hosted-proof', detail: {
+        fixtureOnly: false, zeroHuman: true, humanInterventions: 0,
+        provisioned: true, tenantExists: true, environmentId: 'railway/tenant-alpha',
+        provisioningMode: 'cloud-runtime', runtimeHealthPassed: true, healthcheckPassed: true,
+        tenantIsolationVerified: true, crossTenantNegativeTests: 1, durableStateVerified: true,
+        exactCandidateSha: 'a'.repeat(40), exactTargetDeploymentId: 'deployment-current',
+        tenant: 'alpha', implementationRunId: 'run-1', verifierRunId: 'verifier-wrapper-1',
+        proofRunnerIdentity: 'unit-test-runner',
+        targetDeploymentCreatedAt: new Date(Date.now() - 60000).toISOString(),
+        evidenceGeneratedAt: new Date().toISOString()
       }
     });
     assert.equal(result.status, 200);
