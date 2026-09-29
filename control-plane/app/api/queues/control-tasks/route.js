@@ -1,10 +1,10 @@
 import { handleCallback } from '@vercel/queue';
+import { dispatchProofTask } from '../../../../lib/dispatch.js';
 
 export const POST = handleCallback(async (task, metadata) => {
-  // Phase A shadow mode is deliberately non-mutating. Provider dispatch is added only
-  // after deterministic policy/invariant tests pass and the preview deployment is proven.
+  const result = await dispatchProofTask(task);
   console.log(JSON.stringify({
-    type: 'SHADOW_WOULD_DISPATCH',
+    type: result.status,
     messageId: metadata.messageId,
     taskId: task.taskId,
     gateId: task.gateId,
@@ -12,4 +12,5 @@ export const POST = handleCallback(async (task, metadata) => {
     candidateSha: task.candidateSha,
     idempotencyKey: task.idempotencyKey,
   }));
+  return result;
 });
