@@ -28,7 +28,7 @@ run('scripts/harden-attendance-integrity.mjs', [publicRoot]);
 const copy = (source, destination) => { recordInput(source); const target = path.join(output, destination); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(path.join(root, source), target); };
 const groups = {
   security: ['bootstrap.cjs', 'runtime-identity.cjs', 'identity-survival-guard.cjs', 'proof-runner-auth.cjs', 'passkey-schema.cjs', 'passkey-auth.cjs', 'passkey-entry.html', 'passkey-ui.js', 'passkey-ui.css', 'package.json', 'package-lock.json', 'hosted-listen-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
-  integration: ['autonomous-integration-hub.cjs'],
+  integration: ['autonomous-integration-hub.cjs', 'gusto-company-connector.cjs', 'gusto-oauth-landing.cjs'],
   implementation: [
     'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs',
     'agents-api-adapter.cjs', 'agents-api-bootstrap-route.cjs', 'implementation-work-controller.cjs',
