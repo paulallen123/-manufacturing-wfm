@@ -118,9 +118,11 @@ function createImplementationWorkController(options = {}) {
       key: item.key,
       source: item.source || null,
       detail: item.detail || null,
+      ...(item.evidenceBinding ? { evidenceBinding: item.evidenceBinding } : {}),
       dependencies: (item.dependsOn || []).map(key => {
         const dep = byKey.get(key);
-        return { key, satisfied: dep?.satisfied === true, source: dep?.source || null, detail: dep?.detail || null };
+        return { key, satisfied: dep?.satisfied === true, source: dep?.source || null, detail: dep?.detail || null,
+          ...(dep?.evidenceBinding ? { evidenceBinding: dep.evidenceBinding } : {}) };
       })
     });
   }

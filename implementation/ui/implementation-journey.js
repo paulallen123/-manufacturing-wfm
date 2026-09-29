@@ -52,7 +52,7 @@ function connectionRows(){
   return (S.integrations?.discovery?.candidates||[]).map(x=>({id:x.id,name:x.name||x.productKey,state:x.status==='CONFIRMED'?'READY_TO_CONNECT':'IDENTIFIED',detail:Math.round(Number(x.confidence||0)*100)+'% confidence',sourceId:x.id}));
 }
 function stateLabel(value){
-  const map={complete:'Complete',progress:'In progress',pending:'Pending',ACTIVE:'Connected',VALIDATING:'Validating',DEGRADED:'Needs review',AUTHORIZATION_REQUIRED:'Authorisation needed',REAUTH_REQUIRED:'Reconnect',CONFIRMED:'Confirmed',IDENTIFIED:'Identified',READY_TO_CONNECT:'Ready to connect'};
+  const map={complete:'Complete',progress:'In progress',pending:'Pending',ACTIVE:'Connected',VALIDATING:'Validating',DEGRADED:'Needs review',AUTHORIZATION_REQUIRED:'Authorisation needed',REAUTH_REQUIRED:'Reconnect',CONFIRMED:'Confirmed',IDENTIFIED:'Identified',READY_TO_CONNECT:'Ready to connect',REVALIDATION_REQUIRED:'Evidence needs rechecking for this deployment'};
   return map[value]||String(value||'Pending').replaceAll('_',' ').toLowerCase().replace(/^./,c=>c.toUpperCase());
 }
 function stateIcon(value){return value==='complete'||value==='ACTIVE'?'✓':value==='progress'||value==='VALIDATING'?'●':'○';}
