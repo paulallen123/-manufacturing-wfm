@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-29T06:49:00Z",
+  "scope": "VECTOR durable control plane Phase B dispatch boundary",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "branch": "hardening/vector-control-plane-proof-contract-v3-20260928",
+  "mergeCommit": "4be21e91f520df0f95c26b313b6e7f6e7156bd9e",
+  "pullRequest": 286,
+  "frozenVectorCandidateModified": false,
+  "localVerification": {
+    "status": "PASS",
+    "executedTests": 9,
+    "passed": 9,
+    "failed": 0,
+    "coverage": [
+      "fail-closed shadow default",
+      "server-side allow-listed dispatch endpoint",
+      "HMAC-SHA256 signed dispatch payload",
+      "idempotency key propagation",
+      "HTTPS-only dispatch",
+      "missing secret rejection",
+      "exact-candidate drift rejection before outbound request",
+      "lane/provider/failure-domain binding",
+      "repair-regression task routing",
+      "provider rejection fails dispatch attempt"
+    ],
+    "syntaxChecks": [
+      "control-plane/lib/dispatch.js",
+      "control-plane/app/api/queues/control-tasks/route.js"
+    ]
+  },
+  "githubActions": {
+    "runId": 36532671570,
+    "headSha": "83eaa5e77370df2ccce86239ad973c0ea7a797e1",
+    "conclusion": "failure",
+    "classification": "PROVIDER_DEGRADED_PREEXECUTION",
+    "observedJobSteps": null,
+    "countedAsCodeFailure": false
+  },
+  "hostedVercelProof": {
+    "status": "UNPROVEN",
+    "blocker": "Connected Vercel scope exposes no teams/projects and deploy_to_vercel is unavailable in the active connector.",
+    "requiredBeforeAuthority": [
+      "isolated Vercel preview deployment",
+      "Workflow durable wait/resume proof",
+      "Queues event fan-in and task fan-out proof",
+      "process/redeploy interruption recovery",
+      "duplicate/reordered delivery idempotency",
+      "signed Railway proof-worker end-to-end receipt"
+    ]
+  },
+  "claimBoundary": "The signed allow-listed dispatch implementation is built and locally tested on the isolated control-plane branch. This evidence does not claim hosted Vercel durability, live proof-worker dispatch, release authority, or VECTOR customer readiness."
+}
