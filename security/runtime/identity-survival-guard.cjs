@@ -2,6 +2,7 @@
 
 const { createHash } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { ensurePasskeySchema } = require('./passkey-schema.cjs');
 
 const DEFAULT_ISSUER = 'wfm-local-auth';
 const DEFAULT_AUDIENCE = 'wfm-api';
@@ -23,7 +24,9 @@ const HIGH_RISK_PREFIXES = Object.freeze([
   '/api/onboarding',
   '/api/org',
   '/api/admin',
-  '/api/command'
+  '/api/command',
+  '/api/passkeys/register',
+  '/api/passkeys/revoke'
 ]);
 
 function sha256(value) {
@@ -106,6 +109,9 @@ function createIdentitySurvivalGuard(options = {}) {
       BEFORE DELETE ON identity_guard_events BEGIN SELECT RAISE(ABORT,'Identity guard events are append only.'); END;
   `);
 
+  ensurePasskeySchema(db);
+  const passkeySessionStmt = db.prepare('SELECT * FROM passkey_sessions WHERE token_hash=?');
+  const passkeyCredentialStmt = db.prepare('SELECT id FROM passkey_credentials WHERE id=? AND tenant=? AND email=? AND revoked_at IS NULL');
   const ensureControlStmt = db.prepare(`INSERT OR IGNORE INTO identity_tenant_control
     (tenant,session_epoch,policy_version,privileged_freeze,updated_at) VALUES(?,1,1,0,?)`);
   const controlStmt = db.prepare('SELECT * FROM identity_tenant_control WHERE tenant=?');
@@ -170,7 +176,14 @@ function createIdentitySurvivalGuard(options = {}) {
       containSession(row, tokenHash, 'proof-session-scope-mismatch-contained', { path: requestPath(req) });
       return writeJson(res, 401, { error: 'Proof session security context changed. Authenticate again.' });
     }
-    const expectedIssuer = proofRunnerSession ? PROOF_RUNNER_ISSUER : issuer;
+    const passkeySession = passkeySessionStmt.get(tokenHash);
+    if (passkeySession && (passkeySession.email !== row.email || passkeySession.tenant !== row.tenant ||
+      passkeySession.role !== row.role || passkeySession.expires <= now ||
+      !passkeyCredentialStmt.get(passkeySession.credential_id,row.tenant,row.email))) {
+      containSession(row,tokenHash,'passkey-session-scope-mismatch-contained',{path:requestPath(req)});
+      return writeJson(res,401,{error:'Passkey security context changed. Sign in again.'});
+    }
+    const expectedIssuer = passkeySession ? 'wfm-passkey' : proofRunnerSession ? PROOF_RUNNER_ISSUER : issuer;
 
     ensureControlStmt.run(row.tenant, new Date().toISOString());
     const control = controlStmt.get(row.tenant);

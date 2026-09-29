@@ -3,6 +3,8 @@
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS autonomy-proof
 WORKDIR /proof
 COPY . ./
+RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
+ && node --test security/runtime/passkey-auth.test.cjs
 RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-proof-blocker-classifier.mjs \
  && node scripts/validate-proof-stage-router.mjs \
@@ -59,6 +61,10 @@ RUN node /tmp/retire-legacy-presentation.mjs /app/public \
 # Resource-side identity survival overlay. Keep the original sealed artifact intact and
 # add the defence overlay as a separately reviewable layer.
 RUN mkdir -p /app/security-runtime
+COPY security/runtime/package.json security/runtime/package-lock.json /app/security-runtime/
+RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund
+COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
+COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
 COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
 COPY security/runtime/proof-runner-auth.cjs /app/security-runtime/proof-runner-auth.cjs
 COPY security/runtime/hosted-listen-guard.cjs /app/security-runtime/hosted-listen-guard.cjs
@@ -67,6 +73,8 @@ COPY security/runtime/owner-access-recovery.cjs /app/security-runtime/owner-acce
 COPY security/runtime/durable-state-guard.cjs /app/security-runtime/durable-state-guard.cjs
 COPY security/runtime/runtime-identity.cjs /app/security-runtime/runtime-identity.cjs
 COPY security/runtime/retired-presentation.cjs /app/security-runtime/retired-presentation.cjs
+RUN node -e "const fs=require('fs');const p='/app/public/index.html';let s=fs.readFileSync(p,'utf8');s=s.replace('</head>','<script src=\"/passkey-session-ui.js\" defer></script></head>');fs.writeFileSync(p,s);" \
+ && node --check /app/security-runtime/passkey-auth.cjs
 
 # Railway supplies the triggering Git SHA to builds and deployments. Seal the build-time
 # value into the read-only image so runtime proof cannot be manufactured by echoing the

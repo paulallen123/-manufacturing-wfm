@@ -6,6 +6,7 @@ const { createHash, randomBytes, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
 const { createProofRunnerAuth } = require('./proof-runner-auth.cjs');
+const { createPasskeyAuth } = require('./passkey-auth.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
 const { enforceDurableState } = require('./durable-state-guard.cjs');
@@ -47,6 +48,7 @@ const ownerAccessRecovery = createOwnerAccessRecovery();
 const runtimeIdentity = createRuntimeIdentity({ hosted });
 let guard = null;
 let proofRunnerAuth = null;
+let passkeyAuth = null;
 let integrationHub = null;
 let integrationHubInitError = null;
 let learningEngine = null;
@@ -347,6 +349,9 @@ http.createServer = function guardedCreateServer(listener) {
   if (proofRunnerEnabled && !proofRunnerAuth) {
     proofRunnerAuth = createProofRunnerAuth({ dbPath: process.env.WFM_DB });
   }
+  if (hosted && !passkeyAuth) {
+    passkeyAuth = createPasskeyAuth({ dbPath: process.env.WFM_DB });
+  }
 
   if (!integrationHub && !integrationHubInitError && process.env.WFM_DB) {
     try {
@@ -457,6 +462,19 @@ http.createServer = function guardedCreateServer(listener) {
     forceVectorUiFreshness(req, res);
     if (serveCanonicalVectorAsset(req, res)) return;
     if (runtimeIdentity.handleRequest(req, res)) return;
+    if (passkeyAuth && passkeyAuth.serveEntry(req, res)) return;
+    // A fresh passkey assertion authenticates independently of a stale session.
+    // Enrolment and device removal still pass the resource identity guard below.
+    if (passkeyAuth && requestPath(req).startsWith('/api/passkeys/authenticate/')) {
+      if (await passkeyAuth.handleRequest(req, res)) return;
+    }
+    if (passkeyAuth && requestPath(req) === '/api/login') {
+      res.statusCode = 410;
+      res.setHeader('Content-Type','application/json; charset=utf-8');
+      res.setHeader('Cache-Control','no-store');
+      res.end(JSON.stringify({error:'Use your passkey to sign in.',signInPath:'/'}));
+      return;
+    }
     if (await ownerAccessRecovery.handleRequest(req, res)) return;
     if (handleStagingAccess(req, res)) return;
     restoreStagingSession(req, res);
@@ -490,6 +508,8 @@ http.createServer = function guardedCreateServer(listener) {
         return;
       }
     }
+
+    if (passkeyAuth && await passkeyAuth.handleRequest(req, res)) return;
 
     if (requestPath(req).startsWith('/api/operations/scheduling')) {
       if (await routeOverlay(schedulingIntelligenceService, schedulingIntelligenceServiceInitError, res, 'Scheduling intelligence', req)) return;
