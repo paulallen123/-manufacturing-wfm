@@ -206,10 +206,10 @@ test('automated tenant environment effect remains unproven until independent evi
       unchanged.body.workPlan.jobs.find(item => item.requirementKey === 'tenant-environment').status,
       'AWAITING_EVIDENCE'
     );
-    const db = new DatabaseSync(f.dbPath);
-    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_evidence WHERE run_id=? AND kind=?')
+    const evidenceDb = new DatabaseSync(f.dbPath);
+    assert.equal(evidenceDb.prepare('SELECT COUNT(*) AS count FROM implementation_evidence WHERE run_id=? AND kind=?')
       .get(runId, 'tenant-environment').count, 0);
-    db.close();
+    evidenceDb.close();
   } finally {
     f.close();
   }
