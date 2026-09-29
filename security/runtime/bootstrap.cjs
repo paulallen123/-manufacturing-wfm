@@ -156,7 +156,9 @@ function serveCanonicalVectorAsset(req, res) {
       ? { file: '/app/public/vector-ui.css', type: 'text/css; charset=utf-8' }
       : path === '/vector-workflows.js'
         ? { file: '/app/public/vector-workflows.js', type: 'text/javascript; charset=utf-8' }
-        : null;
+        : path === '/passkey-session-ui.js'
+          ? { file: '/app/public/passkey-session-ui.js', type: 'text/javascript; charset=utf-8' }
+          : null;
   if (!asset) return false;
 
   const method = String(req.method || 'GET').toUpperCase();
