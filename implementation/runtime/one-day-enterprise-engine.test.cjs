@@ -255,7 +255,7 @@ async function passAllEvidence(f, runId) {
   return last.body;
 }
 
-test('hosted readiness reopens persisted evidence from a different candidate deployment', async () => {
+test('hosted readiness reopens persisted evidence from a different candidate deployment or invalid policy authority', async () => {
   const candidateSha = 'a'.repeat(40);
   const f = fixture({ requireCandidateBinding: true, candidateSha, deploymentId: 'deployment-current' });
   try {
@@ -278,7 +278,9 @@ test('hosted readiness reopens persisted evidence from a different candidate dep
       assert.equal(requirements.get(kind).status, 'REVALIDATION_REQUIRED');
       assert.ok(requirements.get(kind).evidenceBinding.reason);
     }
-    assert.equal(requirements.get('time-policies').satisfied, true);
+    assert.equal(requirements.get('time-policies').satisfied, false);
+    assert.equal(requirements.get('time-policies').status, 'REVALIDATION_REQUIRED');
+    assert.match(requirements.get('time-policies').evidenceValidation.reason, /policy evidence|authoritative policy/i);
     const preserved = new DatabaseSync(f.dbPath);
     assert.equal(preserved.prepare('SELECT COUNT(*) AS n FROM implementation_evidence WHERE source=?').get('hosted-proof').n, 4);
     preserved.close();
