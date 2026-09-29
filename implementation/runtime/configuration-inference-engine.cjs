@@ -281,6 +281,17 @@ function inferOvertimePolicy(timecards) {
   };
 }
 
+function percentage(value) {
+  return Math.round(Math.max(0, Math.min(1, Number(value) || 0)) * 1000) / 10;
+}
+
+function breakBandLabel(band) {
+  if (band === 'UNDER_6H') return 'shifts under 6 hours';
+  if (band === '6_TO_9H') return 'shifts between 6 and 9 hours';
+  if (band === '9H_PLUS') return 'shifts of 9 hours or more';
+  return String(band || 'this shift group').toLowerCase().replaceAll('_', ' ');
+}
+
 function buildConfigurationProposal(input = {}) {
   const people = Array.isArray(input.people) ? input.people : [];
   const punches = Array.isArray(input.punches) ? input.punches : [];
@@ -293,15 +304,55 @@ function buildConfigurationProposal(input = {}) {
   const overtime = inferOvertimePolicy(timecards);
 
   const decisions = [];
-  if (!organisation.autoApply) decisions.push({ key: 'organisation-structure', risk: 'MEDIUM', reason: 'STRUCTURE_EXCEPTIONS', detail: organisation });
-  if (!workforce.autoApply) decisions.push({ key: 'employee-assignment', risk: 'MEDIUM', reason: 'EMPLOYEE_EXCEPTIONS', detail: { exceptions: workforce.exceptions } });
+  if (!organisation.autoApply) decisions.push({
+    key: 'organisation-structure',
+    risk: 'MEDIUM',
+    reason: 'STRUCTURE_EXCEPTIONS',
+    ownerRole: 'HR / Operations',
+    question: 'I found structure exceptions in the employee data. Which site, department or reporting relationship should VECTOR use?',
+    evidenceSummary: organisation.orphanManagers.length + ' orphan manager reference(s) and ' + organisation.duplicateEmployeeIds.length + ' duplicate employee ID(s) need review.',
+    answerMode: 'CONFIRM_OR_CHANGE',
+    confidence: organisation.confidence,
+    detail: organisation
+  });
+  if (!workforce.autoApply) decisions.push({
+    key: 'employee-assignment',
+    risk: 'MEDIUM',
+    reason: 'EMPLOYEE_EXCEPTIONS',
+    ownerRole: 'HR / Operations',
+    question: 'Some employees could not be assigned safely from the connected data. How should these exceptions be handled?',
+    evidenceSummary: workforce.exceptions.length + ' employee assignment exception(s) remain after automatic cohorting.',
+    answerMode: 'CONFIRM_OR_CHANGE',
+    confidence: workforce.coverage,
+    detail: { exceptions: workforce.exceptions }
+  });
   for (const rule of breaks.rules) {
-    if (rule.requiresDecision) decisions.push({ key: 'break-' + rule.band.toLowerCase(), risk: 'HIGH', reason: 'AMBIGUOUS_BREAK_PATTERN', detail: rule });
+    if (!rule.requiresDecision) continue;
+    decisions.push({
+      key: 'break-' + rule.band.toLowerCase(),
+      risk: 'HIGH',
+      reason: 'AMBIGUOUS_BREAK_PATTERN',
+      ownerRole: 'HR / Payroll',
+      question: 'Historical time records most often show a ' + rule.breakMinutes + '-minute break for ' + breakBandLabel(rule.band) + '. Is that the intended policy?',
+      evidenceSummary: rule.sampleCount + ' historical record(s); ' + percentage(rule.confidence) + '% consistency.',
+      answerMode: 'CONFIRM_OR_CHANGE',
+      confidence: rule.confidence,
+      detail: rule
+    });
   }
   decisions.push({
     key: 'overtime-threshold',
     risk: 'HIGH',
     reason: overtime.requiresDecision ? 'PAYROLL_RULE_CONFIRMATION_REQUIRED' : 'HISTORICAL_REPLAY_REQUIRED',
+    ownerRole: 'Payroll',
+    question: overtime.thresholdHours == null
+      ? 'I could not determine a reliable overtime threshold from historical pay data. What rule should VECTOR use?'
+      : 'Historical payroll shows overtime beginning after ' + overtime.thresholdHours + ' hours. Is that your intended overtime policy?',
+    evidenceSummary: overtime.thresholdHours == null
+      ? 'No reliable overtime threshold was found; payroll confirmation is required.'
+      : (overtime.sampleCount + ' overtime record(s); ' + percentage(overtime.confidence) + '% consistency. Historical replay is still required before activation.'),
+    answerMode: 'CONFIRM_OR_CHANGE',
+    confidence: overtime.confidence,
     detail: overtime
   });
 

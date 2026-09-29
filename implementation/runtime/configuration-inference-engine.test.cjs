@@ -154,5 +154,11 @@ test('one proposal combines structure, mass onboarding, schedules and policy exc
   assert.equal(proposal.metrics.massAssignmentCoverage, 1);
   assert.equal(proposal.metrics.shiftTemplateCoverage, 1);
   assert.equal(proposal.safety.payrollRulesAutoApplied, false);
-  assert.ok(proposal.decisions.some(item => item.key === 'overtime-threshold'));
+  const overtimeDecision = proposal.decisions.find(item => item.key === 'overtime-threshold');
+  assert.ok(overtimeDecision);
+  assert.equal(overtimeDecision.ownerRole, 'Payroll');
+  assert.equal(overtimeDecision.answerMode, 'CONFIRM_OR_CHANGE');
+  assert.match(overtimeDecision.question, /overtime/i);
+  assert.match(overtimeDecision.evidenceSummary, /historical replay/i);
+  assert.equal(overtimeDecision.confidence, 1);
 });

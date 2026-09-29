@@ -75,8 +75,10 @@ RUN node -e "const fs=require('fs');const sha=String(process.env.RAILWAY_GIT_COM
 
 # Autonomous integration fabric. The control plane is separately reviewable and
 # uses only Node built-ins plus the existing per-tenant SQLite runtime.
-RUN mkdir -p /app/integration-runtime
+RUN mkdir -p /app/integration-runtime /app/worker
 COPY integration/runtime/autonomous-integration-hub.cjs /app/integration-runtime/autonomous-integration-hub.cjs
+COPY integration/runtime/directory-oauth-broker.cjs /app/integration-runtime/directory-oauth-broker.cjs
+COPY integration/worker/directory-discovery-worker.cjs /app/worker/directory-discovery-worker.cjs
 RUN mkdir -p /app/integration-fabric-runtime /app/integration-fabric-catalog
 COPY integration-fabric/runtime/api-version-routing.mjs /app/integration-fabric-runtime/api-version-routing.mjs
 COPY integration-fabric/runtime/batch-reconciliation.mjs /app/integration-fabric-runtime/batch-reconciliation.mjs
