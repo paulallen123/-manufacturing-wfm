@@ -1,0 +1,132 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { DatabaseSync } = require('node:sqlite');
+const { createAgentsApiAdapter } = require('./agents-api-adapter.cjs');
+
+function seed(dbPath) {
+  const db = new DatabaseSync(dbPath);
+  db.exec(
+    'CREATE TABLE implementation_runs(' +
+      'id TEXT PRIMARY KEY,tenant TEXT NOT NULL,contract_ref_hash TEXT NOT NULL,state TEXT NOT NULL,' +
+      'started_at_ms INTEGER NOT NULL,deadline_at_ms INTEGER NOT NULL,target_hours INTEGER NOT NULL,' +
+      'created_at TEXT NOT NULL,updated_at TEXT NOT NULL);'
+  );
+  const now = Date.now();
+  db.prepare('INSERT INTO implementation_runs VALUES(?,?,?,?,?,?,?,?,?)')
+    .run('run-1', 'northstar-demo', 'contract', 'BUILDING', now, now + 3600000, 1, new Date(now).toISOString(), new Date(now).toISOString());
+  db.close();
+}
+function fixture(fetchImpl) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-agents-adapter-'));
+  const dbPath = path.join(dir, 'test.sqlite');
+  seed(dbPath);
+  const adapter = createAgentsApiAdapter({
+    dbPath, apiKey: 'test-key', candidateSha: 'a'.repeat(40), deploymentId: 'deployment-1',
+    model: 'gpt-6-sol', fetchImpl
+  });
+  return { dir, dbPath, adapter, close() { adapter.close(); fs.rmSync(dir, { recursive: true, force: true }); } };
+}
+
+test('creates and persists one no-sandbox session bound to exact VECTOR identity', async () => {
+  const calls = [];
+  const f = fixture(async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    return new Response(JSON.stringify({ id: 'sess_123', status: 'idle' }), { status: 200 });
+  });
+  try {
+    const result = await f.adapter.ensureSession({ runId: 'run-1', tenant: 'northstar-demo', initialInput: 'Read-only bootstrap.' });
+    assert.equal(result.sessionId, 'sess_123');
+    assert.equal(result.reused, false);
+    assert.equal(calls.length, 1);
+    const body = JSON.parse(calls[0].init.body);
+    assert.equal(body.environment.type, 'none');
+    assert.equal(body.agent.model, 'gpt-6-sol');
+    assert.equal(body.metadata.vector_sha, 'a'.repeat(40));
+    assert.equal(body.metadata.vector_deployment, 'deployment-1');
+    const db = new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT session_id FROM vector_agents_sessions').get().session_id, 'sess_123');
+    db.close();
+  } finally { f.close(); }
+});
+
+test('reuses only after retrieving the persisted session and never blindly recreates', async () => {
+  let phase = 'create';
+  const calls = [];
+  const f = fixture(async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    if (phase === 'create') return new Response(JSON.stringify({ id: 'sess_reuse', status: 'idle' }), { status: 200 });
+    if (phase === 'reuse') return new Response(JSON.stringify({ id: 'sess_reuse', status: 'idle' }), { status: 200 });
+    return new Response(JSON.stringify({ error: { type: 'server_error' } }), { status: 503 });
+  });
+  try {
+    await f.adapter.ensureSession({ runId: 'run-1', tenant: 'northstar-demo', initialInput: 'first' });
+    phase = 'reuse'; calls.length = 0;
+    const reused = await f.adapter.ensureSession({ runId: 'run-1', tenant: 'northstar-demo', initialInput: 'ignored' });
+    assert.equal(reused.reused, true);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].init.method, 'GET');
+    phase = 'fail'; calls.length = 0;
+    await assert.rejects(
+      () => f.adapter.ensureSession({ runId: 'run-1', tenant: 'northstar-demo', initialInput: 'no duplicate' }),
+      error => error?.code === 'AGENTS_SESSION_RECONCILIATION_REQUIRED'
+    );
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].init.method, 'GET');
+  } finally { f.close(); }
+});
+
+test('concurrent bootstrap reserves the exact identity before calling OpenAI', async () => {
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  let posts = 0;
+  const f = fixture(async url => {
+    if (String(url).endsWith('/v1/agents/sessions')) {
+      posts += 1;
+      if (posts === 1) { await gate; return new Response(JSON.stringify({ id: 'sess_one', status: 'idle' }), { status: 200 }); }
+    }
+    return new Response('{}', { status: 409 });
+  });
+  try {
+    const first = f.adapter.ensureSession({ runId: 'run-1', tenant: 'northstar-demo', initialInput: 'first' });
+    await new Promise(resolve => setTimeout(resolve, 10));
+    await assert.rejects(
+      () => f.adapter.ensureSession({ runId: 'run-1', tenant: 'northstar-demo', initialInput: 'second' }),
+      error => error?.code === 'AGENTS_SESSION_CREATION_IN_PROGRESS'
+    );
+    assert.equal(posts, 1);
+    release();
+    assert.equal((await first).sessionId, 'sess_one');
+  } finally { release?.(); f.close(); }
+});
+
+test('wrong tenant is rejected before any OpenAI call', async () => {
+  let calls = 0;
+  const f = fixture(async () => { calls += 1; return new Response('{}', { status: 500 }); });
+  try {
+    await assert.rejects(() => f.adapter.ensureSession({ runId: 'run-1', tenant: 'other', initialInput: 'x' }), /IDENTITY_MISMATCH/);
+    assert.equal(calls, 0);
+  } finally { f.close(); }
+});
+
+test('new canonical build supersedes the previous build session', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-agents-rebind-'));
+  const dbPath = path.join(dir, 'test.sqlite'); seed(dbPath);
+  let n = 0;
+  const fetchImpl = async url => String(url).endsWith('/v1/agents/sessions')
+    ? new Response(JSON.stringify({ id: 'sess_' + (++n), status: 'idle' }), { status: 200 })
+    : new Response('{}', { status: 404 });
+  const a = createAgentsApiAdapter({ dbPath, apiKey: 'k', candidateSha: 'a'.repeat(40), deploymentId: 'd1', fetchImpl });
+  await a.ensureSession({ runId: 'run-1', tenant: 'northstar-demo', initialInput: 'a' }); a.close();
+  const b = createAgentsApiAdapter({ dbPath, apiKey: 'k', candidateSha: 'b'.repeat(40), deploymentId: 'd2', fetchImpl });
+  try {
+    await b.ensureSession({ runId: 'run-1', tenant: 'northstar-demo', initialInput: 'b' });
+    const db = new DatabaseSync(dbPath);
+    const rows = db.prepare('SELECT candidate_sha,status FROM vector_agents_sessions ORDER BY candidate_sha').all(); db.close();
+    assert.equal(rows[0].status, 'SUPERSEDED');
+    assert.equal(rows[1].status, 'idle');
+  } finally { b.close(); fs.rmSync(dir, { recursive: true, force: true }); }
+});

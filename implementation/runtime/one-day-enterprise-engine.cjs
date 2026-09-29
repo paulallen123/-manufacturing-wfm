@@ -4,6 +4,7 @@ const { Readable } = require('node:stream');
 const { timingSafeEqual } = require('node:crypto');
 const core = require('./one-day-enterprise-engine-core.cjs');
 const { validateStrictReadinessEvidence } = require('./readiness-evidence-contract.cjs');
+const { createAgentsApiBootstrapRoute, BOOTSTRAP_PATH } = require('./agents-api-bootstrap-route.cjs');
 
 const EVIDENCE_PATH = '/api/implementation/autonomous/evidence';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -56,14 +57,60 @@ function writeJson(res, status, body) {
 function createOneDayEnterpriseEngine(options = {}) {
   const engine = core.createOneDayEnterpriseEngine(options);
   const strictEvidence = options.strictEvidence === true || process.env.WFM_HOSTED_STAGING === 'true';
-  if (!strictEvidence) return engine;
-
+  const agentsApiEnabled = options.agentsApiEnabled === true || process.env.WFM_AGENTS_API_ENABLED === 'true';
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
+  let agentsRoute = null;
+  let agentsInitError = null;
+
+  if (agentsApiEnabled) {
+    try {
+      agentsRoute = createAgentsApiBootstrapRoute({
+        dbPath: options.dbPath || process.env.WFM_DB,
+        internalToken,
+        candidateSha: options.candidateSha || process.env.RAILWAY_GIT_COMMIT_SHA || process.env.WFM_CANDIDATE_SHA,
+        deploymentId: options.deploymentId || process.env.RAILWAY_DEPLOYMENT_ID,
+        apiKey: options.openAIApiKey || process.env.OPENAI_API_KEY,
+        model: options.agentsModel || process.env.WFM_AGENTS_MODEL || 'gpt-6-sol',
+        fetchImpl: options.agentsFetchImpl,
+        statusForTenant: tenant => engine.statusForTenant(tenant)
+      });
+    } catch (error) {
+      agentsInitError = error;
+      console.error('WFM_AGENTS_INIT=BLOCKED code=' + String(error?.code || error?.message || 'INITIALIZATION_FAILED').replace(/\s+/g, '_').slice(0, 160));
+    }
+  }
+
+  const autoRunId = String(options.agentsAutoBootstrapRunId || process.env.WFM_AGENTS_BOOTSTRAP_RUN_ID || '').trim();
+  const autoTenant = String(options.agentsAutoBootstrapTenant || process.env.WFM_AGENTS_BOOTSTRAP_TENANT || '').trim();
+  if (agentsRoute && autoRunId && autoTenant) {
+    queueMicrotask(() => {
+      agentsRoute.bootstrap({ runId: autoRunId, tenant: autoTenant })
+        .then(result => console.log('VECTOR_AGENTS_SESSION=' + JSON.stringify({
+          status: 'PASS',
+          sessionId: result.agentsApi.sessionId,
+          reused: result.agentsApi.reused,
+          binding: result.binding
+        })))
+        .catch(error => console.error('VECTOR_AGENTS_BOOTSTRAP=' + JSON.stringify({
+          status: 'BLOCKED',
+          code: String(error?.code || error?.message || 'BOOTSTRAP_FAILED').slice(0, 160)
+        })));
+    });
+  }
+
+  if (!strictEvidence && !agentsApiEnabled) return engine;
 
   return {
     ...engine,
     async handleRequest(req, res) {
-      if (String(req?.method || '').toUpperCase() !== 'POST' || requestPath(req) !== EVIDENCE_PATH) {
+      if (requestPath(req) === BOOTSTRAP_PATH) {
+        if (agentsInitError || !agentsRoute) {
+          return writeJson(res, 503, { error: 'Agents API control plane is unavailable.' });
+        }
+        return agentsRoute.handleRequest(req, res);
+      }
+
+      if (!strictEvidence || String(req?.method || '').toUpperCase() !== 'POST' || requestPath(req) !== EVIDENCE_PATH) {
         return engine.handleRequest(req, res);
       }
 
@@ -75,8 +122,6 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
       const replay = replayRequest(req, raw);
 
-      // Preserve the core engine's authentication response and avoid exposing
-      // readiness-contract details to an unauthorised caller.
       if (!internalToken || !secureEqual(req?.headers?.[INTERNAL_HEADER], internalToken)) {
         return engine.handleRequest(replay, res);
       }
@@ -98,6 +143,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
 
       return engine.handleRequest(replay, res);
+    },
+    close() {
+      try { agentsRoute?.close(); } catch {}
+      return engine.close?.();
     }
   };
 }

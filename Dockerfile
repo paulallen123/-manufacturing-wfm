@@ -127,6 +127,8 @@ COPY integration-fabric/openapi.yaml /app/integration-fabric/openapi.yaml
 RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
 COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-runtime/one-day-enterprise-engine.cjs
 COPY implementation/runtime/one-day-enterprise-engine-core.cjs /app/implementation-runtime/one-day-enterprise-engine-core.cjs
+COPY implementation/runtime/agents-api-adapter.cjs /app/implementation-runtime/agents-api-adapter.cjs
+COPY implementation/runtime/agents-api-bootstrap-route.cjs /app/implementation-runtime/agents-api-bootstrap-route.cjs
 COPY implementation/runtime/implementation-work-controller.cjs /app/implementation-runtime/implementation-work-controller.cjs
 COPY implementation/runtime/readiness-evidence-contract.cjs /app/implementation-runtime/readiness-evidence-contract.cjs
 COPY implementation/runtime/configuration-inference-engine.cjs /app/implementation-runtime/configuration-inference-engine.cjs
@@ -218,6 +220,10 @@ COPY implementation/proof/cloud-scale-proof-runner.cjs /app/proof-runtime/cloud-
 RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime /tmp/wfm-tests/security/runtime /tmp/wfm-tests/integration/runtime /tmp/wfm-tests/integration/worker /tmp/wfm-tests/operations/runtime /tmp/wfm-tests/reporting/runtime /tmp/wfm-tests/trust/runtime
 COPY implementation/runtime/one-day-enterprise-engine.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.cjs
 COPY implementation/runtime/one-day-enterprise-engine-core.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine-core.cjs
+COPY implementation/runtime/agents-api-adapter.cjs /tmp/wfm-tests/implementation/runtime/agents-api-adapter.cjs
+COPY implementation/runtime/agents-api-adapter.test.cjs /tmp/wfm-tests/implementation/runtime/agents-api-adapter.test.cjs
+COPY implementation/runtime/agents-api-bootstrap-route.cjs /tmp/wfm-tests/implementation/runtime/agents-api-bootstrap-route.cjs
+COPY implementation/runtime/agents-api-bootstrap-route.test.cjs /tmp/wfm-tests/implementation/runtime/agents-api-bootstrap-route.test.cjs
 COPY implementation/runtime/implementation-work-controller.cjs /tmp/wfm-tests/implementation/runtime/implementation-work-controller.cjs
 COPY implementation/runtime/implementation-work-controller.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-work-controller.test.cjs
 COPY implementation/runtime/implementation-active-controller.integration.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-active-controller.integration.test.cjs
@@ -298,6 +304,8 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
       /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.test.cjs \
       /tmp/wfm-tests/implementation/runtime/readiness-evidence-wrapper.test.cjs \
+      /tmp/wfm-tests/implementation/runtime/agents-api-adapter.test.cjs \
+      /tmp/wfm-tests/implementation/runtime/agents-api-bootstrap-route.test.cjs \
       /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs \
       /tmp/wfm-tests/implementation/runtime/implementation-work-controller.test.cjs \
       /tmp/wfm-tests/implementation/runtime/implementation-active-controller.integration.test.cjs \
