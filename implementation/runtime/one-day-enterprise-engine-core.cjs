@@ -680,7 +680,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         attestation.proofDigest !== sha256(JSON.stringify(proof)) ||
         attestation.tenant !== run.tenant || attestation.implementationRunId !== run.id ||
         attestation.candidateSha !== candidateSha || attestation.deploymentId !== deploymentId ||
-        attestation.verifierRunId !== detail.verifierRunId || attestation.acceptedAt !== row.created_at) {
+        attestation.verifierRunId !== (detail.verifierRunId || detail.verifierDeploymentId) || attestation.acceptedAt !== row.created_at) {
       return 'Tenant-environment evidence lacks a current server validation receipt.';
     }
     return null;
@@ -1784,7 +1784,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
       const previous = db.prepare('SELECT detail_json FROM implementation_evidence WHERE run_id=? AND tenant=? AND kind=?')
         .all(run.id, run.tenant, kind);
-      if (previous.some(item => parseJsonSafe(item.detail_json, {}).verifierRunId === detail.verifierRunId)) {
+      if (previous.some(item => { const prior = parseJsonSafe(item.detail_json, {}); return (prior.verifierRunId || prior.verifierDeploymentId) === (detail.verifierRunId || detail.verifierDeploymentId); })) {
         return writeJson(res, 409, { error: 'Tenant-environment verifier-run evidence cannot be replayed.', readinessEvidenceAccepted: false, kind });
       }
     }
@@ -1815,7 +1815,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         version: 1, validator: 'tenant-environment-v1',
         proofDigest: sha256(JSON.stringify(detail)),
         tenant: run.tenant, implementationRunId: run.id,
-        candidateSha, deploymentId, verifierRunId: detail.verifierRunId,
+        candidateSha, deploymentId, verifierRunId: detail.verifierRunId || detail.verifierDeploymentId,
         acceptedAt: evidenceRecordedAt
       }};
     }
