@@ -1,0 +1,38 @@
+Evidence recorded: 2026-10-01 UTC
+Attachment path: /tmp/user_uploaded_attachments/image_1.png
+Attachment filesystem SHA256: 47c1dc0eaf2989dcadf52e1130877009f25800d63bb619f85f52808e3ee643d5
+Declared original PNG SHA256: 1ae027ff3f0fb944708aa4e3806f9c637a099527e202081088304db97980ff4e
+PNG byte identity result: MISMATCH (the attached filesystem representation is not claimed to be the declared original PNG bytes)
+Decoded RGB carrier magic: STAFPKG1
+Decoded payload length: 4747856
+Embedded payload SHA256: 32aea01b8038453633c583c507d7a9d5b5e4d3a95b404d0a6a46fded69a17818
+Computed payload SHA256: 32aea01b8038453633c583c507d7a9d5b5e4d3a95b404d0a6a46fded69a17818
+ZIP validation: PASS (1080 unique entries; no absolute, traversal, backslash, NUL, duplicate or symlink entries; each entry <= 20 MiB; total uncompressed 11610827 bytes; CRC test PASS)
+SOURCE_MANIFEST validation: PASS (1061 files; size, SHA256 and Git blob SHA1 recomputed; 785 unique blob identities)
+Snapshot source commit: 96b64d5b3d19c87163ffc274ee12749c3d19cf61
+Snapshot actual root tree: 9a76ec10418e26543a5c832032222ec130a103ef
+Snapshot base/merge base (handoff receipt): dedf7b307464c513f418bb7c95f37e53660b56a1
+Snapshot ancestry limitation: source snapshot and remote receipts, not a native Git bundle.
+Runtime: /root/.nvm/versions/node/v22.22.2/bin/node (v22.22.2); prescribed v22.23.2 unavailable.
+
+Commands and exits:
+STAFFOLOGY_REVIEW_SOURCE_DIR=/tmp/canonical-source-handoff/source/integrations/staffology /root/.nvm/versions/node/v22.22.2/bin/node --test /tmp/canonical-source-handoff/metadata/original-eight-compatible-independent.test.cjs
+exit=0 tests=9 pass=9 fail=0
+
+/root/.nvm/versions/node/v22.22.2/bin/node --test /tmp/canonical-source-handoff/source/integrations/staffology/*.test.cjs
+exit=0 tests=104 pass=104 fail=0
+
+(cd /tmp/canonical-source-handoff/source && /root/.nvm/versions/node/v22.22.2/bin/node --test scripts/compose-vector-local-runtime.contract.test.cjs)
+exit=1 tests=2 pass=1 fail=1
+failure=absent-directory caller requires security/runtime/node_modules/@simplewebauthn/server/package.json; pre-extracted container caller passed
+
+(cd /tmp/canonical-source-handoff/source && /root/.nvm/versions/node/v22.22.2/bin/node scripts/validate-staffology-canonical-assembly.mjs)
+exit=0 STAFFOLOGY_CANONICAL_ASSEMBLY=PASS
+
+(cd /tmp/canonical-source-handoff/source && /root/.nvm/versions/node/v22.22.2/bin/node scripts/run-forge-ci.mjs)
+exit=0 VECTOR_FORGE_CORE_CI=PASS
+
+CANONICAL_SOURCE_DIR=/tmp/canonical-source-handoff/source /root/.nvm/versions/node/v22.22.2/bin/node --test integrations/staffology/canonical-http-employee-journey.test.cjs
+exit=0 tests=1 pass=1 fail=0
+
+Image build: BLOCKED/NOT RUN. No Docker/Podman/Buildah executable and no controller admission in this task. The protected trigger was not modified and no deployment route was invoked.

@@ -9,6 +9,7 @@ const checks = [
   'scripts/validate-support-incident-recovery-proof.mjs',
   'scripts/validate-provider-recovery-authority-proof.mjs',
   'scripts/validate-provider-recovery-handoff-prototype.mjs',
+  'scripts/validate-staffology-canonical-assembly.mjs',
   'scripts/validate-vector-only-ui.mjs',
   'scripts/validate-onedrive-sync-guardian.mjs',
   'scripts/validate-release-policy.mjs'

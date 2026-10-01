@@ -143,5 +143,6 @@ workflows:
                 - main
                 - /release\/.*/
                 - /staging\/.*/
+                - /review\/staffology-.*/
             tags:
               ignore: /.*/

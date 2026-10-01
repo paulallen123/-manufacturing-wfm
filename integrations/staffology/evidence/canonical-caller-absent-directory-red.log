@@ -1,0 +1,15 @@
+node:internal/fs/promises:639
+  return new FileHandle(await PromisePrototypeThen(
+                        ^
+
+Error: ENOENT: no such file or directory, open '/tmp/tmp.3oQ5fSOnNG/absent/runtime/PACKAGE_MANIFEST_SHA256.json'
+    at async open (node:internal/fs/promises:639:25)
+    at async readFile (node:internal/fs/promises:1249:14)
+    at async file:///tmp/tmp.3oQ5fSOnNG/compose-old.mjs:17:34 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/tmp/tmp.3oQ5fSOnNG/absent/runtime/PACKAGE_MANIFEST_SHA256.json'
+}
+
+Node.js v22.22.2

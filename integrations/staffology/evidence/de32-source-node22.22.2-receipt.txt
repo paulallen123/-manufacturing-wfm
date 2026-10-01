@@ -1,0 +1,48 @@
+Evidence recorded: 2026-10-01 UTC
+Attachment path: /tmp/user_uploaded_attachments/image_1.png
+Attachment filesystem SHA256: 5deb620a266645dc1a974d09a1a82eeed45a156b51b6d5c9eb9fee51cf6f0985
+Decoded carrier magic: STAFPKG1
+Decoded payload length: 153078
+Embedded/computed ZIP SHA256: 59b579c508235bd942785cea215872e04773431cc70376e11c9d5ac7bb6f9489
+ZIP validation: PASS (5 unique safe regular entries; no absolute/traversal/backslash/NUL/duplicate/symlink; total uncompressed 808914 bytes; bounded entries; CRC PASS)
+Overlay validation: PASS (exact Dockerfile and staffology-employee-persistence.test.cjs over immutable 96b64d5 snapshot)
+DE32_SOURCE_MANIFEST validation: PASS (1062 exact files; size, SHA256 and Git blob SHA1 recomputed; 786 unique blobs)
+Snapshot source commit: de32f6d663a530ddccffc6e8d1d0e641e68e039a
+Snapshot actual root tree: 19003afa7798e993c27668a0202a338d920cd883
+Snapshot prior source: 96b64d5b3d19c87163ffc274ee12749c3d19cf61
+Snapshot base/merge-base receipt: dedf7b307464c513f418bb7c95f37e53660b56a1
+Ancestry boundary: verified source snapshot plus remote receipt; not a native Git bundle.
+Available runtime: Node v22.22.2; prescribed Node v22.23.2 unavailable.
+
+Exact Docker pre-extraction reproduction:
+(cd /tmp/canonical-de32-source && /root/.nvm/versions/node/v22.22.2/bin/node --test integrations/staffology/*.test.cjs)
+exit=1 tests=105 pass=104 fail=1 MODULE_NOT_FOUND=/tmp/canonical-de32-source/lib/integration-gateway.cjs
+
+Supported dependency installation attempt:
+(cd /tmp/canonical-de32-source && npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund)
+result=BLOCKED; registry connection made no progress and was terminated after the bounded attempt; required @simplewebauthn/server/package.json remains absent.
+
+Composer callers:
+(cd /tmp/canonical-de32-source && /root/.nvm/versions/node/v22.22.2/bin/node --test scripts/compose-vector-local-runtime.contract.test.cjs)
+exit=1 tests=2 pass=1 fail=1 PASSKEY_DEPENDENCIES_MISSING; extracted-runtime caller passed.
+
+Current published Staffology suites with explicit sealed runtime:
+WFM_RUNTIME=/tmp/de32-runtime-inspect /root/.nvm/versions/node/v22.22.2/bin/node --test /tmp/canonical-de32-source/integrations/staffology/*.test.cjs
+exit=0 tests=105 pass=105 fail=0 skipped=0
+
+Exact original eight plus positive control:
+STAFFOLOGY_REVIEW_SOURCE_DIR=/tmp/canonical-de32-source/integrations/staffology /root/.nvm/versions/node/v22.22.2/bin/node --test /tmp/canonical-source-handoff/metadata/original-eight-compatible-independent.test.cjs
+exit=0 tests=9 pass=9 fail=0 skipped=0
+
+Native Staffology acquisition/bridge -> sealed HTTP identity/configuration/rate/readiness -> restart/readback:
+CANONICAL_SOURCE_DIR=/tmp/canonical-de32-source /root/.nvm/versions/node/v22.22.2/bin/node --test integrations/staffology/canonical-http-employee-journey.test.cjs
+exit=0 tests=1 pass=1 fail=0 skipped=0
+scope=sealed server with bounded pre-extracted composer; complete absent-directory bootstrap execution remains blocked by dependency closure.
+
+Canonical assembly validation: exit=0 STAFFOLOGY_CANONICAL_ASSEMBLY=PASS
+Forge core validation: exit=0 VECTOR_FORGE_CORE_CI=PASS
+Image build: BLOCKED/NOT RUN (Docker/Podman/Buildah and legitimate non-deploy controller admission unavailable; protected trigger unchanged).
+
+Repaired review delta suites with explicit runtime and source:
+WFM_RUNTIME=/tmp/de32-runtime-inspect CANONICAL_SOURCE_DIR=/tmp/canonical-de32-source /root/.nvm/versions/node/v22.22.2/bin/node --test integrations/staffology/*.test.cjs
+exit=0 tests=106 pass=106 fail=0 skipped=0

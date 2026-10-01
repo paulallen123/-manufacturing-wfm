@@ -1,0 +1,66 @@
+TAP version 13
+# (node:11369) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: R01 a different tenant cannot issue payroll authority for this tenant
+ok 1 - R01 a different tenant cannot issue payroll authority for this tenant
+  ---
+  duration_ms: 12.270764
+  type: 'test'
+  ...
+# Subtest: R02 an approval for another binding cannot dispatch this delivery
+ok 2 - R02 an approval for another binding cannot dispatch this delivery
+  ---
+  duration_ms: 4.437968
+  type: 'test'
+  ...
+# Subtest: R03 a differently bound store cannot read another tenant private delivery
+ok 3 - R03 a differently bound store cannot read another tenant private delivery
+  ---
+  duration_ms: 1.597568
+  type: 'test'
+  ...
+# Subtest: R04 dispatch rejects a request outside the approved employer and method
+ok 4 - R04 dispatch rejects a request outside the approved employer and method
+  ---
+  duration_ms: 4.849208
+  type: 'test'
+  ...
+# Subtest: R05 acknowledged financial receipt cannot be overwritten
+ok 5 - R05 acknowledged financial receipt cannot be overwritten
+  ---
+  duration_ms: 3.054079
+  type: 'test'
+  ...
+# Subtest: R06 released gross amount and retained CSV must agree with exported hours and rate
+ok 6 - R06 released gross amount and retained CSV must agree with exported hours and rate
+  ---
+  duration_ms: 4.392254
+  type: 'test'
+  ...
+# Subtest: R07 another worker cannot recover an unexpired active delivery lease
+ok 7 - R07 another worker cannot recover an unexpired active delivery lease
+  ---
+  duration_ms: 1.917691
+  type: 'test'
+  ...
+# Subtest: R08 duplicate acquired employee cannot hide an extra unused mapping
+ok 8 - R08 duplicate acquired employee cannot hide an extra unused mapping
+  ---
+  duration_ms: 0.501281
+  type: 'test'
+  ...
+# Subtest: positive control exact tenant permit and request dispatch once
+ok 9 - positive control exact tenant permit and request dispatch once
+  ---
+  duration_ms: 2.117545
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 285.876193

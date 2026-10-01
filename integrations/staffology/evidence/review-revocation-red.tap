@@ -1,0 +1,33 @@
+TAP version 13
+# (node:5361) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: approval revocation is tenant scoped and fails closed without trusted tenant
+not ok 1 - approval revocation is tenant scoped and fails closed without trusted tenant
+  ---
+  duration_ms: 14.868485
+  type: 'test'
+  location: '/tmp/tmp.3oQ5fSOnNG/canonical-production-boundaries.test.cjs:36:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    code: 'STAFFOLOGY_WRITE_NOT_AUTHORIZED'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/tmp/tmp.3oQ5fSOnNG/canonical-production-boundaries.test.cjs:36:217)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 245.603454

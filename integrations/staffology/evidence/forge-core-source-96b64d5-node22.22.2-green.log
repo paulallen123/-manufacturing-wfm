@@ -1,0 +1,730 @@
+
+=== node scripts/validate-deployment.mjs ===
+{
+  "ok": true,
+  "schemaVersion": 4,
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "runtimeSizeBytes": 562434,
+  "runtimeManifestSha256": "8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce",
+  "canonicalSourceSha256": "52e6f77d39fd71bc3240f05a763e77c790f6937b2614638db4bda51d43328219",
+  "hostedSourceSha256": "0eff86d3034c6493aba130ec052bce8ee98e2205c37baae7c89ac6bd01ea84d9",
+  "nodeImage": "node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96",
+  "runtimeUser": "node",
+  "nodeSecurityFloor": "22.23.2",
+  "packageManagersPresent": false,
+  "productionApproved": false,
+  "stagingOnly": true
+}
+
+=== node scripts/validate-proof-lane-policy.mjs ===
+VECTOR_PROOF_LANE_INDEPENDENCE=PASS providers=3 exactImageLanes=3
+
+=== node scripts/validate-research-convergence-ledger.mjs ===
+VECTOR_RESEARCH_CONVERGENCE_GATE=PASS items=16 pending=13 registeredSources=15
+
+=== node --test resilience/research-convergence-theory-simulator.test.cjs ===
+TAP version 13
+# Subtest: country policy research routes into existing engines and creates no seventh loop
+ok 1 - country policy research routes into existing engines and creates no seventh loop
+  ---
+  duration_ms: 4.245175
+  type: 'test'
+  ...
+# Subtest: implementation cannot start before design and theory pass
+ok 2 - implementation cannot start before design and theory pass
+  ---
+  duration_ms: 0.75086
+  type: 'test'
+  ...
+# Subtest: a falsified theory is retained and routed to redesign rather than dropped
+ok 3 - a falsified theory is retained and routed to redesign rather than dropped
+  ---
+  duration_ms: 0.610049
+  type: 'test'
+  ...
+# Subtest: high-impact country policy implementation must remain advisory or use independent authority
+ok 4 - high-impact country policy implementation must remain advisory or use independent authority
+  ---
+  duration_ms: 0.561447
+  type: 'test'
+  ...
+# Subtest: implementation does not equal convergence until exact hosted Golden Journey and value proof pass
+ok 5 - implementation does not equal convergence until exact hosted Golden Journey and value proof pass
+  ---
+  duration_ms: 0.618564
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 231.357053
+
+=== node scripts/validate-product-factory.mjs ===
+PRODUCT_FACTORY_VALIDATION=PASS|features=2
+
+=== node scripts/validate-isolated-environment-provisioning-plan.mjs ===
+{"validator":"isolated-environment-provisioning-plan","result":"PASS","scaleCases":[{"siteCount":1,"employeeCount":1,"regions":1,"planningStepsRemoved":5,"actions":9},{"siteCount":1,"employeeCount":25,"regions":1,"planningStepsRemoved":5,"actions":9},{"siteCount":2,"employeeCount":100,"regions":1,"planningStepsRemoved":6,"actions":10},{"siteCount":5,"employeeCount":500,"regions":2,"planningStepsRemoved":13,"actions":21},{"siteCount":10,"employeeCount":2000,"regions":2,"planningStepsRemoved":18,"actions":26},{"siteCount":50,"employeeCount":10000,"regions":3,"planningStepsRemoved":62,"actions":74},{"siteCount":120,"employeeCount":25000,"regions":4,"planningStepsRemoved":136,"actions":152}],"edgeCases":19,"humanTouch":{"planningQuestionsAdded":0,"smallCustomerPlanningStepsRemoved":5,"enterprise10000PlanningStepsRemoved":62,"stress25000PlanningStepsRemoved":136,"providerExecutionStepsRemoved":0},"proofBoundary":{"realProvisioningExecuted":false,"autonomousProvisioningProven":false,"permitIssued":false,"llmExecutionAuthority":false}}
+
+=== node scripts/validate-resilience-scenarios.mjs ===
+{
+  "ok": true,
+  "scenarios": 33,
+  "categories": [
+    "ai-security",
+    "clocking",
+    "configuration",
+    "data",
+    "experience",
+    "governance",
+    "identity",
+    "infrastructure",
+    "integration",
+    "messaging",
+    "observability",
+    "payroll",
+    "release",
+    "runtime",
+    "security",
+    "supply-chain",
+    "support",
+    "time"
+  ],
+  "critical": 16
+}
+
+=== node scripts/validate-autonomous-recovery-proof.mjs ===
+{
+  "schemaVersion": 1,
+  "proof": "zero-human-known-worker-recovery",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "scenario": "worker-unhealthy",
+  "runbook": "worker-unhealthy",
+  "action": "worker.restart",
+  "humanInteractionRequired": false,
+  "productionMutation": false,
+  "faultInjected": true,
+  "faultDetected": true,
+  "independentDryRunVerified": true,
+  "safetyKernelApproved": true,
+  "replacementVerifiedHealthy": true,
+  "originalPid": 8099,
+  "replacementPid": 8113,
+  "detectionMs": 10,
+  "recoveryMs": 372,
+  "referenceRecoveryGateMs": 2500,
+  "evidenceDigest": "afbdbd8541a2acff01a5e42372f86096d905317bc5d5bd96abb88866eed02024",
+  "verificationDigest": "778f264f153bf4dd334a17a9e1a2e8ef18305086df42431aa44f6243fb7816c6",
+  "safetyDecisionDigest": "0e52323bddf32de82971cc06919267de99ae23daeb45ae69a1c1f9f336b1b765",
+  "negativeAuthorityTests": {
+    "payrollWriteDenied": true,
+    "languageModelDirectExecutionDenied": true,
+    "crossTenantExecutionDenied": true,
+    "unknownFaultFailsClosed": true
+  },
+  "learning": {
+    "knownFingerprint": "runtime:worker-unhealthy:failed-health-check",
+    "prevention": "Keep worker.restart deterministic, reversible, same-tenant where scoped, dry-run verified and evidence-bound.",
+    "unknownFaultPolicy": "Protect/preserve/isolate and continue diagnosis; never invent an autonomous production repair."
+  },
+  "generatedAt": "2026-10-01T09:52:43.027Z"
+}
+
+=== node scripts/validate-autonomous-recovery-matrix.mjs ===
+{
+  "schemaVersion": 1,
+  "proof": "zero-human-deterministic-recovery-matrix",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "humanInteractionRequired": false,
+  "productionMutation": false,
+  "scenariosPassed": 6,
+  "scenarios": [
+    {
+      "scenario": "integration-transient-failure",
+      "fingerprint": "integration:transient:retry-idempotent",
+      "runbook": "integration-transient",
+      "action": "integration.retry",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 88,
+      "evidenceDigest": "a3834c502e4697f699d9295f3291413596fc8361c0aee5cde798541aea95418d",
+      "verificationDigest": "b178ded3109b666b0908387f28f032f40f4d09d452281cb8de6bf6496048a712",
+      "safetyDecisionDigest": "4cbf340cb5fbd8fce115f216ddeed17c0bdfe24d27699eca50dbe20fd56b4831"
+    },
+    {
+      "scenario": "integration-stuck-replay",
+      "fingerprint": "integration:stuck:checkpoint-replay",
+      "runbook": "integration-stuck-replay",
+      "action": "integration.replay-idempotent",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 5,
+      "evidenceDigest": "57b602032cc5dc982db6ddcffb03290096247b58f8b9a943a24f92070d218ed9",
+      "verificationDigest": "7286387940e655744a0b6f7cacab8ce2a96983155d487a25c266b2cf8be31b12",
+      "safetyDecisionDigest": "1d6d9cb280f9026cc3e0734738d838b92aa263244d86e7a09a2b5c4eac73028a"
+    },
+    {
+      "scenario": "queue-drift",
+      "fingerprint": "messaging:queue-drift:ledger-mismatch",
+      "runbook": "queue-drift",
+      "action": "queue.reconcile",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 2,
+      "evidenceDigest": "3ec862b46fda9495c73c7b37f504ba8953ed7dc69f4d8d7e6edb5e6e70aee9d1",
+      "verificationDigest": "ba67b2f27d05f767b50d69b9c28e3584f4802c84b056be496872ffc1e9d9bade",
+      "safetyDecisionDigest": "16556d448a157f47c0215149bb3c8d24f0809a15390787463e6c2bd04bd79541"
+    },
+    {
+      "scenario": "cache-drift",
+      "fingerprint": "runtime:cache-drift:checksum-mismatch",
+      "runbook": "cache-drift",
+      "action": "cache.rebuild",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 8,
+      "evidenceDigest": "e494b72fd3af19c27b49c6f030f1426fc23c6af28a4f1cf0eec0fc790daec050",
+      "verificationDigest": "c0343069b5f231c2a84a99904ff014ad2ee4c055e0e137b6db59eeaff914b508",
+      "safetyDecisionDigest": "37694f0478ac26a1efd893e336ad0cab5e500eca19138e0719a6e778f19aa72c"
+    },
+    {
+      "scenario": "configuration-drift",
+      "fingerprint": "configuration:drift:last-known-good",
+      "runbook": "configuration-drift",
+      "action": "configuration.restore-drift",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 7,
+      "evidenceDigest": "fad869417cf6269e50e875a3921ac25e74ee52b0b499deb6535a284be775a996",
+      "verificationDigest": "9f949a19602640743d1398f8ec4094ebb360afef9aaeac06548a064ec9db0be4",
+      "safetyDecisionDigest": "c42664603dbaeb4b6ec53a167f0db00f59a33b0212fefe8875d0f2da48fff868"
+    },
+    {
+      "scenario": "bad-release",
+      "fingerprint": "release:bad-release:last-good-rollback",
+      "runbook": "bad-release",
+      "action": "release.rollback",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 2,
+      "evidenceDigest": "ee8cf53da8fefe3fc39e70372dd856a7f4fa333d1a283c01e7408bd8f6a0abe3",
+      "verificationDigest": "340a17310aa3c3317232574a5a4ffc42efbd66e35517aff4d5ca35f04d18603f",
+      "safetyDecisionDigest": "19c5c55d098d1598125ae74fe1711c20c6f8525f92684303da7a5f5ce8490da2"
+    }
+  ],
+  "negativeAuthorityTests": {
+    "payrollWriteDenied": true,
+    "languageModelDirectExecutionDenied": true,
+    "crossTenantExecutionDenied": true,
+    "unknownFaultFailsClosed": true
+  },
+  "learning": {
+    "policy": "Known, independently verified, reversible faults become deterministic machine reflexes. Unknown or high-impact faults remain isolate/protect/preserve only.",
+    "nextProof": "Connect these runbooks to real support incidents and provider/runtime executors in hosted staging without widening authority."
+  },
+  "claimBoundary": "Disposable CI proof using the exact sealed runtime remediation and safety modules plus isolated deterministic state primitives. This does not claim live customer, provider or production execution.",
+  "generatedAt": "2026-10-01T09:52:44.289Z"
+}
+
+=== node scripts/validate-support-incident-recovery-proof.mjs ===
+{
+  "schemaVersion": 1,
+  "proof": "customer-report-to-bounded-recovery",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "humanInteractionRequired": false,
+  "productionMutation": false,
+  "customerReportStored": true,
+  "supportInvestigationJobCreated": true,
+  "customerTextGrantsAuthority": false,
+  "instructionShapedCustomerTextIgnoredForAuthority": true,
+  "corroboratingSystemFindingRequired": true,
+  "selectionSource": "retained-deterministic-system-finding",
+  "selectedRunbook": "integration-transient",
+  "selectedAction": "integration.retry",
+  "blockedBeforeIndependentProof": true,
+  "independentDryRunVerified": true,
+  "safetyKernelApproved": true,
+  "isolatedRecoveryVerified": true,
+  "idempotencyVerified": true,
+  "evidenceDigest": "844c3451a394921b8c763c6a565ca36470368cd483b768d37e501621e75cbdb3",
+  "verificationDigest": "cbec8f0c310fd330fb4ecbebc69137c988e877c50f499df2a117cac41108439b",
+  "safetyDecisionDigest": "4cbf340cb5fbd8fce115f216ddeed17c0bdfe24d27699eca50dbe20fd56b4831",
+  "findingToBoundedRecoveryMicros": 3353,
+  "executorMicros": 30,
+  "negativeAuthorityTests": {
+    "payrollWriteDenied": true,
+    "languageModelDirectExecutionDenied": true,
+    "crossTenantExecutionDenied": true,
+    "unknownFaultFailsClosed": true
+  },
+  "learning": {
+    "customerReportsAreSensorsNotAuthority": true,
+    "policy": "Customer reports create evidence and investigation work. Only corroborated deterministic same-tenant system evidence plus independent verification can select an allowlisted reversible repair.",
+    "nextProof": "Replace the isolated executor with the sealed provider-recovery authority path and then prove the same chain in hosted staging."
+  },
+  "claimBoundary": "Disposable CI proof using the exact sealed support store, remediation library and safety kernel. The bounded executor is isolated test state; this is not a live provider, Railway customer environment or production repair.",
+  "generatedAt": "2026-10-01T09:52:44.552Z"
+}
+(node:8129) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+=== node scripts/validate-provider-recovery-authority-proof.mjs ===
+{
+  "schemaVersion": 1,
+  "proof": "attested-signed-provider-recovery-authority",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "buildIdentity": {
+    "release": "0.6.76-hosted-staging-rc1",
+    "sourceContentSha256": "456e8f6961525e0dd9d4449db94772c0902a4e6743b312cf09070ce611014781",
+    "artifactManifestSha256": "b0c435abc6bf1ea6fa38d8fbb8f8eabdfac846dba3380c4b0cd4eab52099213a",
+    "manifestRelease": "0.6.76-hosted-staging-rc1",
+    "manifestFiles": 137
+  },
+  "humanInteractionRequired": false,
+  "productionMutation": false,
+  "customerReportRetained": true,
+  "providerSystemFindingLinkedToSupport": true,
+  "realProviderJobStore": true,
+  "realProviderInvestigation": true,
+  "attestedIndependentVerification": true,
+  "attestationPolicy": {
+    "predicateType": "https://slsa.dev/provenance/v1",
+    "keyType": "ephemeral-ed25519-ci-only",
+    "repository": "paulallen123/-manufacturing-wfm",
+    "workflowRef": "wfm-autonomous-recovery-proof"
+  },
+  "signedExternalObservationVerified": true,
+  "externalObservationTrust": "untrusted-external-data",
+  "externalObservationIgnoredForAuthority": true,
+  "realDurableOneShotActionGrant": true,
+  "realBoundedProviderExecutor": true,
+  "selectedRunbook": "integration-transient",
+  "selectedAction": "integration.retry",
+  "providerNetworkCall": false,
+  "businessMutation": false,
+  "leaseReacquired": true,
+  "actionGrantReplayDenied": true,
+  "secondExecutionDeniedAfterStateChange": true,
+  "providerObservationTamperDenied": true,
+  "crossTenantDenied": true,
+  "staleEvidenceDenied": true,
+  "directLlmExecutionDenied": true,
+  "payrollWriteDenied": true,
+  "unknownRepairFailsClosed": true,
+  "verificationProofDigest": "5c357730c99c51070a3ae28941c7d0f94416d2b72ce1756c52b7b8e7ca9190c2",
+  "attestationStatementDigest": "1eb285865ecfb88670d9047d8e12ed650c365e2b3293d002f28094fc5d16182c",
+  "actionGrantJti": "6147f424-a4c3-4356-bd78-f1b4bebdfd9c",
+  "safetyDecisionDigest": "4cbf340cb5fbd8fce115f216ddeed17c0bdfe24d27699eca50dbe20fd56b4831",
+  "executorMicros": 2589,
+  "fullProofMicros": 68884,
+  "auditEventTypes": [
+    "permit-issued",
+    "bounded-recovery-lease-acquired"
+  ],
+  "learning": {
+    "machineReflex": "provider retry/replay authority is selected only from retained same-tenant provider state plus exact-build attested verification; external provider text is audit evidence only.",
+    "oneShotAuthority": "signed action grants are durable and consumable exactly once.",
+    "stateChangeRule": "any provider-run evidence change after verification invalidates the recovery proof and blocks permit issuance.",
+    "nextProof": "run this exact chain against the hosted staging service once Railway deployment authorization is available; then connect successful lease recovery to the normal provider adapter and reconciliation without widening executor authority."
+  },
+  "claimBoundary": "Disposable CI proof using the exact sealed 0.6.76 provider job, investigation, attestation, authority and recovery modules. The executor only reacquires durable provider work; no external provider call, customer business mutation or production deployment occurs.",
+  "generatedAt": "2026-10-01T09:52:44.904Z"
+}
+(node:8138) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+=== node scripts/validate-provider-recovery-handoff-prototype.mjs ===
+{
+  "schemaVersion": 1,
+  "proof": "provider-recovery-internal-handoff-reference",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "runtimeMutation": false,
+  "productionMutation": false,
+  "referenceImplementationOnly": true,
+  "exactSealedSafetyDecisionUsed": true,
+  "allowedAction": "integration.retry",
+  "rawContinuationServerSideOnly": true,
+  "publicReceiptNoContinuation": true,
+  "publicStatusNoContinuation": true,
+  "capabilityTokenNoContinuation": true,
+  "auditEventsNoContinuation": true,
+  "correctWorkerReceivesExactContinuation": true,
+  "wrongTenantDenied": true,
+  "wrongRunDenied": true,
+  "wrongWorkerDenied": true,
+  "signatureTamperDenied": true,
+  "stateChangeDenied": true,
+  "replayDenied": true,
+  "expiryDenied": true,
+  "duplicateActionGrantDenied": true,
+  "directLlmIssuanceDenied": true,
+  "payrollActionDenied": true,
+  "crossTenantSafetyDenied": true,
+  "oneShot": true,
+  "shortLived": true,
+  "stateBound": true,
+  "evidenceBound": true,
+  "verificationBound": true,
+  "safetyDecisionBound": true,
+  "actionGrantBound": true,
+  "eventTypes": [
+    "handoff-issued",
+    "handoff-consumed"
+  ],
+  "continuationDigest": "b3ec29efe3407ae780e20c742c0a6754c65beb01651948f3dd1f67578014eeee",
+  "safetyDecisionDigest": "4cbf340cb5fbd8fce115f216ddeed17c0bdfe24d27699eca50dbe20fd56b4831",
+  "learning": {
+    "design": "Keep the continuation payload in server-side storage; pass only an opaque signed capability internally. Bind consumption to tenant, run, worker, current provider state, evidence, verification, safety decision and the consumed recovery action grant.",
+    "integrationRule": "The browser/admin recovery endpoint must continue returning only the existing sanitised recovery result. An internal provider orchestrator consumes the capability and passes nextRequest into the normal sealed adapter runner.",
+    "nextStep": "Port this contract into canonical WFM source as a derived staging candidate, add an internal provider runner, and prove recovered checkpoint continuation/reconciliation before any hosted or production claim."
+  },
+  "claimBoundary": "Security/reference proof only. This module is not imported by the sealed 0.6.76 runtime and does not repair the currently deployed handoff gap."
+}
+(node:8147) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+=== node scripts/validate-vector-only-ui.mjs ===
+VECTOR_ONLY_REPOSITORY_GUARD=PASS
+VECTOR_NEUTRAL_REVIEW_CONTRACT=PASS
+VECTOR_NEUTRAL_PLANNING_CONTRACT=PASS
+VECTOR_KPI_EVIDENCE_CONTRACT=PASS
+VECTOR_IDENTITY_SOURCE_CONTRACT=PASS
+VECTOR_LEAVE_SOURCE_CONTRACT=PASS
+VECTOR_ACTION_SOURCE_CONTRACT=PASS
+VECTOR_ACTION_LIFECYCLE_VISIBLE_CONTRACT=PASS
+VECTOR_ACTION_FRESHNESS_NEUTRAL_CONTRACT=PASS
+VECTOR_ACTION_CONFIRMATION_SOURCE_CONTRACT=PASS
+VECTOR_TIME_REVIEW_EVIDENCE_CONSUMER=PASS
+
+=== node scripts/validate-onedrive-sync-guardian.mjs ===
+PASS classifies auth, throttle and service failures
+PASS retries transient direct failures and succeeds without fallback
+PASS uses fallback after direct retries are exhausted
+PASS does not hide authentication failures behind fallback
+PASS falls back to last-known-good snapshot when Microsoft stays unavailable
+PASS refuses a stale base version before writing
+PASS passes expectedVersion to an exact write and persists a refreshed snapshot
+PASS queues a delta instead of losing it when a write has a transient failure
+PASS flushes a queued delta once connectivity returns
+PASS opens the circuit after repeated complete read failures
+10/10 OneDrive guardian checks passed
+
+=== node --test operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/prove-vector-built-asset-provenance.test.mjs policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/authoritative-policy-source-registry.test.cjs policy/runtime/regulatory-change-candidate.test.cjs ===
+TAP version 13
+# Subtest: builds first factory-autopilot shadow decision from simulated candidates
+ok 1 - builds first factory-autopilot shadow decision from simulated candidates
+  ---
+  duration_ms: 29.419471
+  type: 'test'
+  ...
+# Subtest: requires skills and source evidence
+ok 2 - requires skills and source evidence
+  ---
+  duration_ms: 0.885722
+  type: 'test'
+  ...
+# Subtest: silent demand is recognised
+ok 3 - silent demand is recognised
+  ---
+  duration_ms: 4.535677
+  type: 'test'
+  ...
+# Subtest: independent repeated demand outranks otherwise equal single-account noise
+ok 4 - independent repeated demand outranks otherwise equal single-account noise
+  ---
+  duration_ms: 1.429237
+  type: 'test'
+  ...
+# Subtest: mandatory high-risk demand remains visible even if evidence is narrow
+ok 5 - mandatory high-risk demand remains visible even if evidence is narrow
+  ---
+  duration_ms: 0.779107
+  type: 'test'
+  ...
+# Subtest: outcome KPI and falsification are required
+ok 6 - outcome KPI and falsification are required
+  ---
+  duration_ms: 1.095871
+  type: 'test'
+  ...
+# Subtest: episode is deterministic regardless of option order
+ok 7 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 30.592523
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 8 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 1.134753
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 9 - do-nothing option is mandatory
+  ---
+  duration_ms: 0.984475
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 10 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 1.048253
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 11 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 1.89722
+  type: 'test'
+  ...
+# Subtest: simulation can never become learning-eligible or verified value
+ok 12 - simulation can never become learning-eligible or verified value
+  ---
+  duration_ms: 30.834733
+  type: 'test'
+  ...
+# Subtest: operational proof requires independent baseline and result evidence
+ok 13 - operational proof requires independent baseline and result evidence
+  ---
+  duration_ms: 1.624434
+  type: 'test'
+  ...
+# Subtest: cost improvement maps lower actual cost to positive learning delta
+ok 14 - cost improvement maps lower actual cost to positive learning delta
+  ---
+  duration_ms: 1.408925
+  type: 'test'
+  ...
+# Subtest: realised financial value requires finance evidence currency and a bounded window
+ok 15 - realised financial value requires finance evidence currency and a bounded window
+  ---
+  duration_ms: 1.61891
+  type: 'test'
+  ...
+# Subtest: non-financial KPI cannot be labelled realised financial value
+ok 16 - non-financial KPI cannot be labelled realised financial value
+  ---
+  duration_ms: 2.933699
+  type: 'test'
+  ...
+# (node:8208) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: maps lifecycle evidence to silent operational demand without inventing an outcome
+ok 17 - maps lifecycle evidence to silent operational demand without inventing an outcome
+  ---
+  duration_ms: 4.542323
+  type: 'test'
+  ...
+# Subtest: manager summary is tenant isolated and employee access is denied
+ok 18 - manager summary is tenant isolated and employee access is denied
+  ---
+  duration_ms: 17.46965
+  type: 'test'
+  ...
+# Subtest: trusted worker can persist a shadow decision but cannot grant execution authority
+ok 19 - trusted worker can persist a shadow decision but cannot grant execution authority
+  ---
+  duration_ms: 28.385953
+  type: 'test'
+  ...
+# Subtest: verified official snapshot becomes current evidence
+ok 20 - verified official snapshot becomes current evidence
+  ---
+  duration_ms: 13.556763
+  type: 'test'
+  ...
+# Subtest: stale source cannot silently remain usable
+ok 21 - stale source cannot silently remain usable
+  ---
+  duration_ms: 0.759962
+  type: 'test'
+  ...
+# Subtest: unverified retrieval cannot enter authoritative evidence
+ok 22 - unverified retrieval cannot enter authoritative evidence
+  ---
+  duration_ms: 1.604399
+  type: 'test'
+  ...
+# Subtest: source metadata never grants execution authority
+ok 23 - source metadata never grants execution authority
+  ---
+  duration_ms: 0.468979
+  type: 'test'
+  ...
+# Subtest: registry resolves only verified effective packs and never grants authority
+ok 24 - registry resolves only verified effective packs and never grants authority
+  ---
+  duration_ms: 26.797239
+  type: 'test'
+  ...
+# Subtest: missing country pack fails closed with explicit limitation
+ok 25 - missing country pack fails closed with explicit limitation
+  ---
+  duration_ms: 0.770776
+  type: 'test'
+  ...
+# Subtest: verified pack requires provenance
+ok 26 - verified pack requires provenance
+  ---
+  duration_ms: 0.946253
+  type: 'test'
+  ...
+# Subtest: complete known site becomes advisory-ready with zero routine customer rule entry
+ok 27 - complete known site becomes advisory-ready with zero routine customer rule entry
+  ---
+  duration_ms: 11.460801
+  type: 'test'
+  ...
+# Subtest: unknown organisational facts create only targeted exception questions
+ok 28 - unknown organisational facts create only targeted exception questions
+  ---
+  duration_ms: 2.325541
+  type: 'test'
+  ...
+# Subtest: worker temporarily located in unsupported country blocks only that worker policy coverage
+ok 29 - worker temporarily located in unsupported country blocks only that worker policy coverage
+  ---
+  duration_ms: 1.459316
+  type: 'test'
+  ...
+# Subtest: preflight never grants execution or customer mutation authority
+ok 30 - preflight never grants execution or customer mutation authority
+  ---
+  duration_ms: 1.130868
+  type: 'test'
+  ...
+# Subtest: bitemporal resolution distinguishes legal validity from what VECTOR knew
+ok 31 - bitemporal resolution distinguishes legal validity from what VECTOR knew
+  ---
+  duration_ms: 12.78814
+  type: 'test'
+  ...
+# Subtest: mandatory ceilings compose to the strictest applicable rule across layers
+ok 32 - mandatory ceilings compose to the strictest applicable rule across layers
+  ---
+  duration_ms: 1.493667
+  type: 'test'
+  ...
+# Subtest: customer policy cannot weaken a mandatory ceiling
+ok 33 - customer policy cannot weaken a mandatory ceiling
+  ---
+  duration_ms: 1.408065
+  type: 'test'
+  ...
+# Subtest: collective agreement scope does not leak to workers outside that agreement
+ok 34 - collective agreement scope does not leak to workers outside that agreement
+  ---
+  duration_ms: 1.990808
+  type: 'test'
+  ...
+# Subtest: verified exceptions never silently weaken the base rule
+ok 35 - verified exceptions never silently weaken the base rule
+  ---
+  duration_ms: 1.256047
+  type: 'test'
+  ...
+# Subtest: unchanged authoritative snapshot creates no change
+ok 36 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 2.016288
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 37 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 6.659793
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 38 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 0.83363
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 39 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 0.838812
+  type: 'test'
+  ...
+# Subtest: admits only all three exact presentation/controller assets from the candidate source
+ok 40 - admits only all three exact presentation/controller assets from the candidate source
+  ---
+  duration_ms: 15.994792
+  type: 'test'
+  ...
+# Subtest: an approval marker cannot disguise arbitrary replacement JavaScript
+ok 41 - an approval marker cannot disguise arbitrary replacement JavaScript
+  ---
+  duration_ms: 10.884893
+  type: 'test'
+  ...
+# Subtest: a changed workflow controller cannot pass the UI provenance check
+ok 42 - a changed workflow controller cannot pass the UI provenance check
+  ---
+  duration_ms: 5.79958
+  type: 'test'
+  ...
+# Subtest: workflow styling is included in the source-bound final CSS bytes
+ok 43 - workflow styling is included in the source-bound final CSS bytes
+  ---
+  duration_ms: 5.573043
+  type: 'test'
+  ...
+# Subtest: demand intelligence source is bound into the canonical built assets
+ok 44 - demand intelligence source is bound into the canonical built assets
+  ---
+  duration_ms: 6.229485
+  type: 'test'
+  ...
+# Subtest: reporting source is bound into the canonical built assets
+ok 45 - reporting source is bound into the canonical built assets
+  ---
+  duration_ms: 5.801261
+  type: 'test'
+  ...
+1..45
+# tests 45
+# suites 0
+# pass 45
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2502.069719
+
+VECTOR_FORGE_CORE_CI=PASS

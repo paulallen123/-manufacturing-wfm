@@ -1,0 +1,4 @@
+head=cb660b07f84df09de1460bac1486d73c3b8435bf
+node=v22.22.2
+command=/root/.nvm/versions/node/v22.22.2/bin/node --test integrations/staffology/*.test.cjs
+exit=0
