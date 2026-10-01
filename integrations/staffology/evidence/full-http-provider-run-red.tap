@@ -1,0 +1,15 @@
+TAP version 13
+not ok 1 - simulated provider exposes exact run and entry readback shapes
+  ---
+  source: post-blocker local successor of 6bbeafb9e37549d0c0b5e37d596243ec768b332a
+  operation: POST /api/integrations/staffology/payroll/approve-deliver
+  status: 409
+  error: Provider run version differs from the authorised target.
+  providerPosts: 0
+  actualExternalRequests: 0
+  cause: mock returned entry-shaped JSON for the run-detail GET
+  ...
+1..1
+# tests 1
+# pass 0
+# fail 1

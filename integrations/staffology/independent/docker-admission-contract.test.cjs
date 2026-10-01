@@ -28,6 +28,14 @@ test('supported Docker admission composes and binds the strict full canonical ru
  assert.match(fullHttp,/time-source-ingest/);
  assert.match(fullHttp,/payroll-release/);
  assert.match(fullHttp,/staffology-http-result\.json/);
+ assert.match(fullHttp,/FROM outbound_staffology_deliveries WHERE delivery_id=\? AND status='acknowledged'/);
+ assert.match(fullHttp,/FROM outbound_staffology_private_evidence WHERE delivery_id=\? ORDER BY id/);
+ assert.match(fullHttp,/FROM audit_events WHERE tenant=\? AND action IN/);
+ assert.match(fullHttp,/dispatchAttempt:JSON\.parse\(deliveryRow\.dispatch_json\)/);
+ assert.match(fullHttp,/providerRequests,providerRequestCount/);
+ assert.match(fullHttp,/reviewedEmployment:\{rates:/);
+ assert.match(fullHttp,/rmSync\(temporary,\{recursive:true,force:false\}\)/);
+ assert.match(fullHttp,/sha256\(durableBytes\),proofDigest/);
  assert.match(fullHttp,/UNEXPECTED_EXTERNAL_ORIGIN/);
  assert.ok(proof.indexOf('npm ci --prefix security/runtime')<proof.indexOf('compose-vector-local-runtime.mjs'),'composition must use the preceding exact locked dependency installation');
  assert.match(dockerfile,/FROM scratch AS staffology-proof-evidence/);
