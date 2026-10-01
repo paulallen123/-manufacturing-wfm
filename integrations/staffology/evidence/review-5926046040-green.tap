@@ -1,0 +1,634 @@
+TAP version 13
+# (node:7591) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: production boundary rejects a lost owner and consumes exact authority once
+ok 1 - production boundary rejects a lost owner and consumes exact authority once
+  ---
+  duration_ms: 22.392918
+  type: 'test'
+  ...
+# Subtest: uncertain dispatch survives reopen and begin cannot resend it
+ok 2 - uncertain dispatch survives reopen and begin cannot resend it
+  ---
+  duration_ms: 15.253163
+  type: 'test'
+  ...
+# Subtest: £1,250 provider result remains rejected for approved £12.50 basic pay
+ok 3 - £1,250 provider result remains rejected for approved £12.50 basic pay
+  ---
+  duration_ms: 4.284678
+  type: 'test'
+  ...
+# Subtest: authority accepts only the exact canonical binding and permit schema
+ok 4 - authority accepts only the exact canonical binding and permit schema
+  ---
+  duration_ms: 1.712609
+  type: 'test'
+  ...
+# Subtest: R01 an actor from another tenant cannot issue approval
+ok 5 - R01 an actor from another tenant cannot issue approval
+  ---
+  duration_ms: 2.074571
+  type: 'test'
+  ...
+# Subtest: R02 a permit for another binding, delivery or payload cannot dispatch
+ok 6 - R02 a permit for another binding, delivery or payload cannot dispatch
+  ---
+  duration_ms: 9.449284
+  type: 'test'
+  ...
+# Subtest: authority storage faults are not disguised as a denied permit
+ok 7 - authority storage faults are not disguised as a denied permit
+  ---
+  duration_ms: 3.180672
+  type: 'test'
+  ...
+# Subtest: R03 a differently bound store cannot read another tenant private delivery
+ok 8 - R03 a differently bound store cannot read another tenant private delivery
+  ---
+  duration_ms: 3.350378
+  type: 'test'
+  ...
+# Subtest: R04 a request with the wrong method or employer cannot dispatch
+ok 9 - R04 a request with the wrong method or employer cannot dispatch
+  ---
+  duration_ms: 7.661579
+  type: 'test'
+  ...
+# Subtest: canonical bridge derives the narrow import from exact retained released bytes
+ok 10 - canonical bridge derives the narrow import from exact retained released bytes
+  ---
+  duration_ms: 6.866321
+  type: 'test'
+  ...
+# Subtest: changed retained bytes fail checksum reconciliation
+ok 11 - changed retained bytes fail checksum reconciliation
+  ---
+  duration_ms: 1.573325
+  type: 'test'
+  ...
+# Subtest: sent batches cannot be silently reused
+ok 12 - sent batches cannot be silently reused
+  ---
+  duration_ms: 0.505816
+  type: 'test'
+  ...
+# Subtest: multi-line and unsupported components remain held
+ok 13 - multi-line and unsupported components remain held
+  ---
+  duration_ms: 0.454019
+  type: 'test'
+  ...
+# Subtest: runtime requires current payroll permission and remains dormant
+ok 14 - runtime requires current payroll permission and remains dormant
+  ---
+  duration_ms: 0.564365
+  type: 'test'
+  ...
+# Subtest: people acquisition crosses only with complete reviewed onboarding mappings
+ok 15 - people acquisition crosses only with complete reviewed onboarding mappings
+  ---
+  duration_ms: 1.465952
+  type: 'test'
+  ...
+# Subtest: I01 independent 1250 cents expectation rejects returned 125000 cents
+ok 16 - I01 independent 1250 cents expectation rejects returned 125000 cents
+  ---
+  duration_ms: 67.875653
+  type: 'test'
+  ...
+# Subtest: I02 losing owner during awaited final authorization must not dispatch
+ok 17 - I02 losing owner during awaited final authorization must not dispatch
+  ---
+  duration_ms: 9.315219
+  type: 'test'
+  ...
+# Subtest: I03 existing additional payroll lines must block this basic-only replacement
+ok 18 - I03 existing additional payroll lines must block this basic-only replacement
+  ---
+  duration_ms: 2.765261
+  type: 'test'
+  ...
+# Subtest: I04 unexplained non-basic financial delta must remain unresolved
+ok 19 - I04 unexplained non-basic financial delta must remain unresolved
+  ---
+  duration_ms: 8.905586
+  type: 'test'
+  ...
+# Subtest: I05 oversized streaming response must stop reading at the bound
+ok 20 - I05 oversized streaming response must stop reading at the bound
+  ---
+  duration_ms: 60.794746
+  type: 'test'
+  ...
+# Subtest: I06 a text-only response is refused without invoking unbounded text()
+ok 21 - I06 a text-only response is refused without invoking unbounded text()
+  ---
+  duration_ms: 0.997232
+  type: 'test'
+  ...
+# Subtest: I07 oversized response cancels its reader and aborts the request
+ok 22 - I07 oversized response cancels its reader and aborts the request
+  ---
+  duration_ms: 57.24515
+  type: 'test'
+  ...
+# Subtest: I08 stalled body deadline cancels the pending read
+ok 23 - I08 stalled body deadline cancels the pending read
+  ---
+  duration_ms: 16.684849
+  type: 'test'
+  ...
+# Subtest: I09 UTF-8 split across chunks is decoded intact
+ok 24 - I09 UTF-8 split across chunks is decoded intact
+  ---
+  duration_ms: 4.142042
+  type: 'test'
+  ...
+# Subtest: I10 successful basic-only transition requires the guarded dispatch boundary
+ok 25 - I10 successful basic-only transition requires the guarded dispatch boundary
+  ---
+  duration_ms: 9.219183
+  type: 'test'
+  ...
+# Subtest: I11 ownership revoked at persistence dispatch guard refuses submission
+ok 26 - I11 ownership revoked at persistence dispatch guard refuses submission
+  ---
+  duration_ms: 3.58511
+  type: 'test'
+  ...
+# Subtest: I12 ignored or delayed guarded dispatch cannot become a late provider write
+ok 27 - I12 ignored or delayed guarded dispatch cannot become a late provider write
+  ---
+  duration_ms: 5.049381
+  type: 'test'
+  ...
+# Subtest: I13 malformed, duplicate or additional baseline lines refuse replacement
+ok 28 - I13 malformed, duplicate or additional baseline lines refuse replacement
+  ---
+  duration_ms: 11.727372
+  type: 'test'
+  ...
+# Subtest: I14 every unapproved container, unknown field and type change remains held
+ok 29 - I14 every unapproved container, unknown field and type change remains held
+  ---
+  duration_ms: 67.26707
+  type: 'test'
+  ...
+# Subtest: I15 changed run-level financial data remains held with complete comparison evidence
+ok 30 - I15 changed run-level financial data remains held with complete comparison evidence
+  ---
+  duration_ms: 4.777126
+  type: 'test'
+  ...
+# Subtest: I16 missing persisted baseline refuses dispatch despite recordEvidence returning true
+ok 31 - I16 missing persisted baseline refuses dispatch despite recordEvidence returning true
+  ---
+  duration_ms: 4.127233
+  type: 'test'
+  ...
+# Subtest: I17 basic-only changes are classified and bound to preserved baseline/readback hashes
+ok 32 - I17 basic-only changes are classified and bound to preserved baseline/readback hashes
+  ---
+  duration_ms: 4.74057
+  type: 'test'
+  ...
+# Subtest: I18 accepted unresolved 404 cancels an unused response body
+ok 33 - I18 accepted unresolved 404 cancels an unused response body
+  ---
+  duration_ms: 0.600732
+  type: 'test'
+  ...
+# Subtest: I19 a late client response after deadline is cancelled without reading
+ok 34 - I19 a late client response after deadline is cancelled without reading
+  ---
+  duration_ms: 18.122313
+  type: 'test'
+  ...
+# Subtest: I20 denied pre-dispatch authority cannot later reconcile already-matching pay
+ok 35 - I20 denied pre-dispatch authority cannot later reconcile already-matching pay
+  ---
+  duration_ms: 9.160678
+  type: 'test'
+  ...
+# Subtest: I21 wrong amount retains complete comparison, classified as unapproved
+ok 36 - I21 wrong amount retains complete comparison, classified as unapproved
+  ---
+  duration_ms: 5.680681
+  type: 'test'
+  ...
+# Subtest: I22 missing, malformed or inconsistent baseline line amounts refuse before POST
+ok 37 - I22 missing, malformed or inconsistent baseline line amounts refuse before POST
+  ---
+  duration_ms: 9.297289
+  type: 'test'
+  ...
+# Subtest: I23 immediate empty chunks cannot starve the deadline
+ok 38 - I23 immediate empty chunks cannot starve the deadline
+  ---
+  duration_ms: 1.502485
+  type: 'test'
+  ...
+# (node:7613) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: R01 production binding uses the adapter canonical field names
+ok 39 - R01 production binding uses the adapter canonical field names
+  ---
+  duration_ms: 2.862563
+  type: 'test'
+  ...
+# Subtest: R02 legacy alias binding cannot bypass canonical source identity
+ok 40 - R02 legacy alias binding cannot bypass canonical source identity
+  ---
+  duration_ms: 1.061194
+  type: 'test'
+  ...
+# Subtest: R03 malformed permit check fails closed instead of throwing
+ok 41 - R03 malformed permit check fails closed instead of throwing
+  ---
+  duration_ms: 5.05319
+  type: 'test'
+  ...
+# Subtest: R04 live ownership cannot be stolen by uncertain recovery
+ok 42 - R04 live ownership cannot be stolen by uncertain recovery
+  ---
+  duration_ms: 7.727294
+  type: 'test'
+  ...
+# Subtest: R05 original baseline evidence cannot be replaced
+ok 43 - R05 original baseline evidence cannot be replaced
+  ---
+  duration_ms: 1.633549
+  type: 'test'
+  ...
+# Subtest: R06 acknowledged receipt cannot be overwritten
+ok 44 - R06 acknowledged receipt cannot be overwritten
+  ---
+  duration_ms: 5.073782
+  type: 'test'
+  ...
+# Subtest: R07 acknowledged delivery cannot be downgraded to uncertain
+ok 45 - R07 acknowledged delivery cannot be downgraded to uncertain
+  ---
+  duration_ms: 1.801929
+  type: 'test'
+  ...
+# Subtest: R08 production coordinator accepts the exact adapter binding
+ok 46 - R08 production coordinator accepts the exact adapter binding
+  ---
+  duration_ms: 1.245035
+  type: 'test'
+  ...
+# Subtest: R06 rejects £1,250 released gross for approved 1.25 × £10 = £12.50
+ok 47 - R06 rejects £1,250 released gross for approved 1.25 × £10 = £12.50
+  ---
+  duration_ms: 8.127779
+  type: 'test'
+  ...
+# Subtest: R08 rejects duplicated acquired employee that omits another reviewed employee
+ok 48 - R08 rejects duplicated acquired employee that omits another reviewed employee
+  ---
+  duration_ms: 0.757067
+  type: 'test'
+  ...
+# Subtest: R08 accepts a one-to-one exact acquired and reviewed employee cohort
+ok 49 - R08 accepts a one-to-one exact acquired and reviewed employee cohort
+  ---
+  duration_ms: 1.078147
+  type: 'test'
+  ...
+# (node:7627) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: S01 two independent SQLite connections permit exactly one outbound submission
+ok 50 - S01 two independent SQLite connections permit exactly one outbound submission
+  ---
+  duration_ms: 85.865367
+  type: 'test'
+  ...
+# Subtest: S02 acknowledgement and evidence survive closing and reopening SQLite without a resend
+ok 51 - S02 acknowledgement and evidence survive closing and reopening SQLite without a resend
+  ---
+  duration_ms: 23.425425
+  type: 'test'
+  ...
+# Subtest: S03 uncertain provider outcome stays held after SQLite reopen
+ok 52 - S03 uncertain provider outcome stays held after SQLite reopen
+  ---
+  duration_ms: 10.659572
+  type: 'test'
+  ...
+# Subtest: S04 mismatched financial details persist across reopen and cannot be acknowledged
+ok 53 - S04 mismatched financial details persist across reopen and cannot be acknowledged
+  ---
+  duration_ms: 12.824275
+  type: 'test'
+  ...
+# Subtest: S05 wrong owner token cannot change SQLite evidence or receipt
+ok 54 - S05 wrong owner token cannot change SQLite evidence or receipt
+  ---
+  duration_ms: 18.628565
+  type: 'test'
+  ...
+# Subtest: S06 transaction failure cannot produce a successful receipt or a resend
+ok 55 - S06 transaction failure cannot produce a successful receipt or a resend
+  ---
+  duration_ms: 11.95568
+  type: 'test'
+  ...
+# Subtest: S07 fresh recovery after reopen uses the original persisted baseline, not a new baseline
+ok 56 - S07 fresh recovery after reopen uses the original persisted baseline, not a new baseline
+  ---
+  duration_ms: 12.438859
+  type: 'test'
+  ...
+# Subtest: S08 missing baseline after restart cannot acknowledge a matching readback
+ok 57 - S08 missing baseline after restart cannot acknowledge a matching readback
+  ---
+  duration_ms: 9.279157
+  type: 'test'
+  ...
+# Subtest: S09 comparison persistence failure cannot acknowledge or resend
+ok 58 - S09 comparison persistence failure cannot acknowledge or resend
+  ---
+  duration_ms: 10.21238
+  type: 'test'
+  ...
+# Subtest: S10 failed dispatch reservation transaction prevents the provider write
+ok 59 - S10 failed dispatch reservation transaction prevents the provider write
+  ---
+  duration_ms: 5.450515
+  type: 'test'
+  ...
+# Subtest: C01 API keys use HTTP Basic, never Bearer
+ok 60 - C01 API keys use HTTP Basic, never Bearer
+  ---
+  duration_ms: 51.439864
+  type: 'test'
+  ...
+# Subtest: C02 arbitrary HTTPS credential destinations are rejected
+ok 61 - C02 arbitrary HTTPS credential destinations are rejected
+  ---
+  duration_ms: 0.641542
+  type: 'test'
+  ...
+# Subtest: C03 origin credentials, query, fragment and non-root path are rejected
+ok 62 - C03 origin credentials, query, fragment and non-root path are rejected
+  ---
+  duration_ms: 0.432751
+  type: 'test'
+  ...
+# Subtest: C04 plain-text 401 retains authentication classification
+ok 63 - C04 plain-text 401 retains authentication classification
+  ---
+  duration_ms: 1.591526
+  type: 'test'
+  ...
+# Subtest: C05 requests carry cancellation and a deadline
+ok 64 - C05 requests carry cancellation and a deadline
+  ---
+  duration_ms: 1.063853
+  type: 'test'
+  ...
+# Subtest: C06 read timeout terminates even if the client ignores the AbortSignal
+ok 65 - C06 read timeout terminates even if the client ignores the AbortSignal
+  ---
+  duration_ms: 16.884697
+  type: 'test'
+  ...
+# Subtest: C07 raw POST refuses missing write authority before any client call
+ok 66 - C07 raw POST refuses missing write authority before any client call
+  ---
+  duration_ms: 1.17182
+  type: 'test'
+  ...
+# Subtest: C08 employee detail maps documented nested fields and canonical Person columns
+ok 67 - C08 employee detail maps documented nested fields and canonical Person columns
+  ---
+  duration_ms: 3.56636
+  type: 'test'
+  ...
+# Subtest: C09 pageNum=0 plus full pages and detail GETs acquire the whole fixture cohort
+ok 68 - C09 pageNum=0 plus full pages and detail GETs acquire the whole fixture cohort
+  ---
+  duration_ms: 22.341763
+  type: 'test'
+  ...
+# Subtest: C10 duplicate list IDs and mismatched detail identity are refused
+ok 69 - C10 duplicate list IDs and mismatched detail identity are refused
+  ---
+  duration_ms: 10.697311
+  type: 'test'
+  ...
+# Subtest: C11 missing employee dates are not invented and impossible dates fail
+ok 70 - C11 missing employee dates are not invented and impossible dates fail
+  ---
+  duration_ms: 0.671846
+  type: 'test'
+  ...
+# Subtest: C12 content changes alter sourceVersion even without provider revision
+ok 71 - C12 content changes alter sourceVersion even without provider revision
+  ---
+  duration_ms: 5.483605
+  type: 'test'
+  ...
+# Subtest: C13 stable data with later acquisition timestamps retains sourceVersion
+ok 72 - C13 stable data with later acquisition timestamps retains sourceVersion
+  ---
+  duration_ms: 2.835834
+  type: 'test'
+  ...
+# Subtest: C14 payroll wire mapping is a PayOptionsImport array with explicit basic rate/hours
+ok 73 - C14 payroll wire mapping is a PayOptionsImport array with explicit basic rate/hours
+  ---
+  duration_ms: 2.32044
+  type: 'test'
+  ...
+# Subtest: C15 unsupported multi-line mapping, invalid dates and overflowing numbers fail closed
+ok 74 - C15 unsupported multi-line mapping, invalid dates and overflowing numbers fail closed
+  ---
+  duration_ms: 0.355956
+  type: 'test'
+  ...
+# Subtest: C16 sub-cent calculations require an explicit rounding policy
+ok 75 - C16 sub-cent calculations require an explicit rounding policy
+  ---
+  duration_ms: 0.468516
+  type: 'test'
+  ...
+# Subtest: C17 all financial containers and unknown fields are retained
+ok 76 - C17 all financial containers and unknown fields are retained
+  ---
+  duration_ms: 8.828998
+  type: 'test'
+  ...
+# Subtest: C18 snapshots are immutable copies and hashes remain valid
+ok 77 - C18 snapshots are immutable copies and hashes remain valid
+  ---
+  duration_ms: 0.553066
+  type: 'test'
+  ...
+# Subtest: C19 arrays and objects cannot compare equal and difference paths are retained
+ok 78 - C19 arrays and objects cannot compare equal and difference paths are retained
+  ---
+  duration_ms: 0.213644
+  type: 'test'
+  ...
+# Subtest: C20 empty import success is followed by real-coordinate readback and financial verification
+ok 79 - C20 empty import success is followed by real-coordinate readback and financial verification
+  ---
+  duration_ms: 12.603828
+  type: 'test'
+  ...
+# Subtest: C21 wrong returned amount £1250 for expected £12.50 is never acknowledged
+ok 80 - C21 wrong returned amount £1250 for expected £12.50 is never acknowledged
+  ---
+  duration_ms: 6.900991
+  type: 'test'
+  ...
+# Subtest: C22 identity-only or missing financial evidence is never acknowledged
+ok 81 - C22 identity-only or missing financial evidence is never acknowledged
+  ---
+  duration_ms: 5.144465
+  type: 'test'
+  ...
+# Subtest: C23 wrong year, period, ordinal or version never acknowledges
+ok 82 - C23 wrong year, period, ordinal or version never acknowledges
+  ---
+  duration_ms: 40.608793
+  type: 'test'
+  ...
+# Subtest: C24 same-identity wrong employee/code and wrong rate/hours are rejected
+ok 83 - C24 same-identity wrong employee/code and wrong rate/hours are rejected
+  ---
+  duration_ms: 16.817125
+  type: 'test'
+  ...
+# Subtest: C25 uncertain POST and response-body loss both read back without resending
+ok 84 - C25 uncertain POST and response-body loss both read back without resending
+  ---
+  duration_ms: 14.851466
+  type: 'test'
+  ...
+# Subtest: C26 unknown 404 readback remains held across a new coordinator
+ok 85 - C26 unknown 404 readback remains held across a new coordinator
+  ---
+  duration_ms: 5.320274
+  type: 'test'
+  ...
+# Subtest: C27 stable business key prevents second send without deliveryId
+ok 86 - C27 stable business key prevents second send without deliveryId
+  ---
+  duration_ms: 6.874738
+  type: 'test'
+  ...
+# Subtest: C28 concurrent losing atomic claim cannot POST
+ok 87 - C28 concurrent losing atomic claim cannot POST
+  ---
+  duration_ms: 4.889423
+  type: 'test'
+  ...
+# Subtest: C29 same business key with changed intent is held, not resent
+ok 88 - C29 same business key with changed intent is held, not resent
+  ---
+  duration_ms: 8.036138
+  type: 'test'
+  ...
+# Subtest: C30 wrong tenant/build/deployment/run/configuration and missing authority refuse POST
+ok 89 - C30 wrong tenant/build/deployment/run/configuration and missing authority refuse POST
+  ---
+  duration_ms: 2.028522
+  type: 'test'
+  ...
+# Subtest: C31 missing binding or missing owner assertion refuses coordinator setup
+ok 90 - C31 missing binding or missing owner assertion refuses coordinator setup
+  ---
+  duration_ms: 0.323168
+  type: 'test'
+  ...
+# Subtest: C32 a lost ownership token refuses all outbound mutation
+ok 91 - C32 a lost ownership token refuses all outbound mutation
+  ---
+  duration_ms: 0.436785
+  type: 'test'
+  ...
+# Subtest: C33 full baseline and mismatched readback are preserved, not just their hashes
+ok 92 - C33 full baseline and mismatched readback are preserved, not just their hashes
+  ---
+  duration_ms: 6.612738
+  type: 'test'
+  ...
+# Subtest: C34 failure to persist baseline evidence prevents POST
+ok 93 - C34 failure to persist baseline evidence prevents POST
+  ---
+  duration_ms: 1.790523
+  type: 'test'
+  ...
+# Subtest: C35 failing local acknowledgement remains unresolved and cannot resend
+ok 94 - C35 failing local acknowledgement remains unresolved and cannot resend
+  ---
+  duration_ms: 5.496668
+  type: 'test'
+  ...
+# Subtest: C36 a silently ignored acknowledgement cannot produce reconciled
+ok 95 - C36 a silently ignored acknowledgement cannot produce reconciled
+  ---
+  duration_ms: 5.383894
+  type: 'test'
+  ...
+# Subtest: C37 persisted intent must be reloaded before reconciliation and cannot be caller-supplied
+ok 96 - C37 persisted intent must be reloaded before reconciliation and cannot be caller-supplied
+  ---
+  duration_ms: 4.26379
+  type: 'test'
+  ...
+# Subtest: C38 a changed current open period blocks the import
+ok 97 - C38 a changed current open period blocks the import
+  ---
+  duration_ms: 0.902687
+  type: 'test'
+  ...
+# Subtest: C39 unknown and infinite pages cannot loop indefinitely
+ok 98 - C39 unknown and infinite pages cannot loop indefinitely
+  ---
+  duration_ms: 3.755951
+  type: 'test'
+  ...
+# Subtest: C40 changed mapped employer/date identity and truncated IDs fail rather than alias
+ok 99 - C40 changed mapped employer/date identity and truncated IDs fail rather than alias
+  ---
+  duration_ms: 0.352781
+  type: 'test'
+  ...
+# Subtest: C41 documented payRunVersion entry field is validated without an invented version field
+ok 100 - C41 documented payRunVersion entry field is validated without an invented version field
+  ---
+  duration_ms: 9.875861
+  type: 'test'
+  ...
+# Subtest: C42 revoked final-boundary permit never acknowledges even when existing pay matches
+ok 101 - C42 revoked final-boundary permit never acknowledges even when existing pay matches
+  ---
+  duration_ms: 1.639795
+  type: 'test'
+  ...
+# Subtest: C43 removed rolled-back or explicitly obsolete entries refuse import
+ok 102 - C43 removed rolled-back or explicitly obsolete entries refuse import
+  ---
+  duration_ms: 3.215791
+  type: 'test'
+  ...
+# Subtest: C44 effective date outside explicitly selected pay-run period refuses import
+ok 103 - C44 effective date outside explicitly selected pay-run period refuses import
+  ---
+  duration_ms: 0.74492
+  type: 'test'
+  ...
+1..103
+# tests 103
+# suites 0
+# pass 103
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2595.109728
