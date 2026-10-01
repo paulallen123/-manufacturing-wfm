@@ -3,6 +3,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {readFileSync}=require('node:fs');
 const {resolve}=require('node:path');
+const {createRuntimeIdentity}=require('../../../security/runtime/runtime-identity.cjs');
 
 test('supported Docker admission composes and binds the strict full canonical runtime',()=>{
  const dockerfile=readFileSync(resolve(__dirname,'../../../Dockerfile'),'utf8');
@@ -48,4 +49,19 @@ test('supported Docker admission composes and binds the strict full canonical ru
  assert.equal((circle.match(/docker build --pull=false --progress=plain/g)||[]).length,2);
  assert.match(circle,/tee circleci-runtime-artifacts\/staffology-proof-build\.log/);
  assert.match(circle,/tee circleci-runtime-artifacts\/runtime-image-build\.log/);
+ assert.match(circle,/-e WFM_CANDIDATE_SHA="\$\{CIRCLE_SHA1\}"/);
+ assert.match(circle,/api\/runtime-identity >\/tmp\/runtime-identity\.json/);
+ assert.match(circle,/body\.sourceBinding!=="build-file-matched"/);
+ assert.match(circle,/x-wfm-source-sha: \$\{CIRCLE_SHA1\}/);
+ assert.match(circle,/x-wfm-source-binding: build-file-matched/);
+});
+
+test('hosted caller binds configured candidate to the independently read sealed build file',()=>{
+ const exact='1'.repeat(40),other='2'.repeat(40);
+ const matched=createRuntimeIdentity({env:{WFM_HOSTED_STAGING:'true',WFM_CANDIDATE_SHA:exact},readFileSync:path=>{assert.equal(path,'/app/.wfm-build-source-sha');return exact+'\n';}});
+ const response={statusCode:0,headers:new Map(),setHeader(name,value){this.headers.set(name.toLowerCase(),String(value));},end(value){this.body=value;}};
+ matched.applyResponseHeaders(response);assert.equal(matched.handleRequest({method:'GET',url:'/api/runtime-identity'},response),true);
+ assert.deepEqual(JSON.parse(response.body),{schemaVersion:1,candidateSha:exact,sourceBinding:'build-file-matched',fixtureOnly:true,productionApproved:false,pilotReady:false});
+ assert.equal(response.headers.get('x-wfm-source-sha'),exact);assert.equal(response.headers.get('x-wfm-source-binding'),'build-file-matched');
+ assert.throws(()=>createRuntimeIdentity({env:{WFM_HOSTED_STAGING:'true',WFM_CANDIDATE_SHA:other},readFileSync:()=>exact+'\n'}),/WFM_RUNTIME_IDENTITY_SHA_MISMATCH/);
 });
