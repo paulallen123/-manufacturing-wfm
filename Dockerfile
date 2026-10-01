@@ -53,6 +53,12 @@ COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
 RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp/runtime.tgz" | sha256sum -c - \
  && tar -xzf /tmp/runtime.tgz -C /app \
  && rm -f /tmp/runtime.tgz
+COPY integrations/staffology/staffology-adapter.cjs /workspace/integrations/staffology/staffology-adapter.cjs
+COPY integrations/staffology/canonical-runtime-bridge.cjs /workspace/integrations/staffology/canonical-runtime-bridge.cjs
+COPY integrations/staffology/canonical-production-boundaries.cjs /workspace/integrations/staffology/canonical-production-boundaries.cjs
+COPY scripts/compose-vector-local-runtime.mjs /workspace/scripts/compose-vector-local-runtime.mjs
+RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
+ && rm -rf /workspace
 COPY scripts/retire-legacy-presentation.mjs /tmp/retire-legacy-presentation.mjs
 COPY scripts/harden-attendance-integrity.mjs /tmp/harden-attendance-integrity.mjs
 RUN node /tmp/retire-legacy-presentation.mjs /app/public \
