@@ -1,0 +1,48 @@
+TAP version 13
+# (node:9789) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: operation profile is dormant by default and exact-source-bound when enabled
+ok 1 - operation profile is dormant by default and exact-source-bound when enabled
+  ---
+  duration_ms: 5.308455
+  type: 'test'
+  ...
+# Subtest: authenticated acquisition accepts only the server-held tenant, employer and exact cohort
+ok 2 - authenticated acquisition accepts only the server-held tenant, employer and exact cohort
+  ---
+  duration_ms: 73.084362
+  type: 'test'
+  ...
+# Subtest: provider list outside the exact cohort is rejected before any employee detail is fetched
+ok 3 - provider list outside the exact cohort is rejected before any employee detail is fetched
+  ---
+  duration_ms: 1.98138
+  type: 'test'
+  ...
+# Subtest: real bridge, SQLite authority and operation attach trusted binding and reconcile one simulated POST across reopen
+ok 4 - real bridge, SQLite authority and operation attach trusted binding and reconcile one simulated POST across reopen
+  ---
+  duration_ms: 45.425989
+  type: 'test'
+  ...
+# Subtest: outside-cohort or conflicting payroll and recovery scope fails before provider read and durable intent
+ok 5 - outside-cohort or conflicting payroll and recovery scope fails before provider read and durable intent
+  ---
+  duration_ms: 5.360471
+  type: 'test'
+  ...
+# Subtest: known valid scope reaches the intercepted baseline GET only after trusted binding is attached
+ok 6 - known valid scope reaches the intercepted baseline GET only after trusted binding is attached
+  ---
+  duration_ms: 7.585126
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 404.368695

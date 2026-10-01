@@ -67,7 +67,7 @@ assert.ok(
   'Dockerfile must either run directly as USER node or use the reviewed root-only volume bootstrap that immediately drops to node.'
 );
 
-const copyMatch = dockerfile.match(/^COPY\s+artifact\/([^\s]+)\s+\/tmp\/runtime\.tgz\s*$/m);
+const copyMatch = dockerfile.match(/^COPY(?:\s+--[A-Za-z0-9=-]+)*\s+artifact\/([^\s]+)\s+\/tmp\/runtime\.tgz\s*$/m);
 assert.ok(copyMatch, 'Dockerfile must copy the sealed runtime from the private repository build context.');
 const artifactPath = path.join('artifact', copyMatch[1]);
 assert.equal(artifactPath, manifest.runtime_artifact, 'Docker runtime artifact path must equal the deployment manifest artifact path.');

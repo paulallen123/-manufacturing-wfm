@@ -16,20 +16,27 @@ try{
  run(process.execPath,['--check',path.join(temporary,'server.cjs')]);
  run(process.execPath,['--check',path.join(temporary,'integrations/staffology/canonical-runtime-bridge.cjs')]);
  run(process.execPath,['--check',path.join(temporary,'integrations/staffology/canonical-production-boundaries.cjs')]);
+ run(process.execPath,['--check',path.join(temporary,'integrations/staffology/canonical-operations.cjs')]);
  const server=await readFile(path.join(temporary,'server.cjs'),'utf8');
  assert.match(server,/url\.pathname==='\/api\/integrations\/apply'/,'reviewed integration application route is missing');
  assert.match(server,/people:\(rows,batch\)=>.*ON\.stage/,'persisted onboarding application handler is missing');
- assert.match(server,/staffology:staffologyIntegration\.status\(\)/,'Staffology status is missing from the existing integration report');
+ assert.match(server,/staffology:\{\.\.\.staffologyIntegration\.status\(\),operation:staffologyOperations\.status\(\)\}/,'Staffology status is missing from the existing integration report');
+ assert.match(server,/staffology\/employees\/acquire-stage/,'Authenticated Staffology acquisition route is missing');
+ assert.match(server,/staffology\/payroll\/approve-deliver/,'Authenticated Staffology approval and delivery route is missing');
+ assert.match(server,/staffology\/payroll\/recover/,'Explicit Staffology recovery route is missing');
+ assert.match(server,/staffology\/payroll\/readback/,'Fresh independent Staffology readback route is missing');
  assert.match(server,/WHERE email=\? AND tenant=\?/,'Staffology authority is not bound to the exact authenticated account');
+ assert.match(server,/input\.command==='time-source-ingest'.*P\.openPeriodFromSource/,'Canonical actual-attendance ingestion command is missing');
+ assert.match(server,/payroll\.remind','time\.ingest'/,'Dedicated source-ingestion permission cannot be assigned by the existing account administration boundary');
  const receipt=JSON.parse(await readFile(path.join(temporary,'STAFFOLOGY_ASSEMBLY.json'),'utf8'));
  assert.equal(receipt.sealedRuntimePreserved,true);
  assert.equal(receipt.activationAvailable,false);
- for(const [receiptKey,file] of [['adapter','staffology-adapter.cjs'],['bridge','canonical-runtime-bridge.cjs'],['productionBoundaries','canonical-production-boundaries.cjs']]){
+ for(const [receiptKey,file] of [['adapter','staffology-adapter.cjs'],['bridge','canonical-runtime-bridge.cjs'],['productionBoundaries','canonical-production-boundaries.cjs'],['operations','canonical-operations.cjs']]){
   const source=await readFile(path.join(root,'integrations/staffology',file));
   const executable=await readFile(path.join(temporary,'integrations/staffology',file));
   assert.equal(sha256(executable),sha256(source),`${file} executable bytes differ from reviewed source`);
   assert.equal(receipt.assembledFiles[receiptKey],sha256(source),`${file} receipt identity differs from reviewed source`);
  }
- run(process.execPath,['--test','integrations/staffology/staffology-adapter.test.cjs','integrations/staffology/sqlite-contract.test.cjs','integrations/staffology/independent-boundaries.test.cjs','integrations/staffology/independent/succession-regressions.test.cjs','integrations/staffology/independent/current-authority-recovery-held-out.test.cjs','integrations/staffology/canonical-runtime-bridge.test.cjs','integrations/staffology/canonical-production-boundaries.test.cjs','integrations/staffology/review-5921699729-regressions.test.cjs','integrations/staffology/review-5925613376-regressions.test.cjs'],{capture:true});
+ run(process.execPath,['--test','integrations/staffology/staffology-adapter.test.cjs','integrations/staffology/sqlite-contract.test.cjs','integrations/staffology/independent-boundaries.test.cjs','integrations/staffology/independent/succession-regressions.test.cjs','integrations/staffology/independent/current-authority-recovery-held-out.test.cjs','integrations/staffology/independent/generated-provider-preload.test.cjs','integrations/staffology/canonical-runtime-bridge.test.cjs','integrations/staffology/canonical-production-boundaries.test.cjs','integrations/staffology/canonical-operations.test.cjs','integrations/staffology/review-5921699729-regressions.test.cjs','integrations/staffology/review-5925613376-regressions.test.cjs'],{capture:true});
  console.log('STAFFOLOGY_CANONICAL_ASSEMBLY=PASS');
 }finally{await rm(temporary,{recursive:true,force:true});}

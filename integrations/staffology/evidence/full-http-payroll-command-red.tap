@@ -1,0 +1,12 @@
+TAP version 13
+not ok 1 - c36 composed server exposes canonical actual-attendance ingestion command
+  ---
+  source: c36f611c7124f86579e1feda5a9418f1c284dfc2
+  observed: /api/command has no time-source-ingest dispatch to openPeriodFromSource
+  consequence: authenticated imported cohort cannot create a genuine payroll review period
+  providerRequests: 0
+  ...
+1..1
+# tests 1
+# pass 0
+# fail 1

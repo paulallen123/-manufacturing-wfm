@@ -1,0 +1,43 @@
+TAP version 13
+# Subtest: actual generated Staffology child preload compiles and retains fail-closed loopback fencing
+not ok 1 - actual generated Staffology child preload compiles and retains fail-closed loopback fencing
+  ---
+  duration_ms: 4.862879
+  type: 'test'
+  location: '/workspace/-manufacturing-wfm/integrations/staffology/independent/generated-provider-preload.test.cjs:19:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Got unwanted exception.
+    Actual message: "Invalid or unexpected token"
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual:
+  error: 'Invalid or unexpected token'
+  name: 'SyntaxError'
+  stack: |-
+    new Script (node:vm:117:7)
+    /workspace/-manufacturing-wfm/integrations/staffology/independent/generated-provider-preload.test.cjs:21:26
+    getActual (node:assert:609:5)
+    Function.doesNotThrow (node:assert:777:32)
+    TestContext.<anonymous> (/workspace/-manufacturing-wfm/integrations/staffology/independent/generated-provider-preload.test.cjs:21:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  operator: 'doesNotThrow'
+  stack: |-
+    TestContext.<anonymous> (/workspace/-manufacturing-wfm/integrations/staffology/independent/generated-provider-preload.test.cjs:21:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 254.406232

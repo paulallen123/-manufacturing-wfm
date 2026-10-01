@@ -1,6 +1,7 @@
 # Discarded Railway build stage: prove T0-T4 zero-engineer support and bounded recovery
 # against the exact candidate sources. Nothing from this stage is copied into runtime.
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS autonomy-proof
+ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /proof
 COPY . ./
 RUN node --test ux-overlay/vector-gusto.test.cjs
@@ -9,15 +10,23 @@ RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no
 # Exact Staffology review admission: exercise the reviewed bridge, persisted employee
 # readback/restart guard, tenant denial, audit immutability and runtime composition.
 RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime \
- && CANONICAL_SOURCE_DIR=/proof \
+ && mkdir -p /proof/staffology-private-artifacts \
+ && cp /proof/staffology-full-runtime/STAFFOLOGY_ASSEMBLY.json /proof/staffology-full-runtime/LOCAL_PROOF_PROVENANCE.json /proof/staffology-private-artifacts/ \
+ && printf '%s\n' "$RAILWAY_GIT_COMMIT_SHA" > /proof/staffology-private-artifacts/source-sha.txt \
+ && (set +e; CANONICAL_SOURCE_DIR=/proof \
     WFM_RUNTIME=/proof/staffology-full-runtime \
     STAFFOLOGY_RUNTIME_MODE=full \
+    WFM_BUILD_SOURCE_SHA="$RAILWAY_GIT_COMMIT_SHA" \
+    STAFFOLOGY_PRIVATE_EVIDENCE_DIR=/proof/staffology-private-artifacts \
     node --test \
       integrations/staffology/*.test.cjs \
       integrations/staffology/independent/succession-regressions.test.cjs \
       integrations/staffology/independent/current-authority-recovery-held-out.test.cjs \
       integrations/staffology/independent/docker-admission-contract.test.cjs \
+      integrations/staffology/independent/generated-provider-preload.test.cjs \
       integrations/staffology/independent/full-http-employee-journey.test.cjs \
+      > /proof/staffology-private-artifacts/staffology-full.tap 2>&1; status=$?; \
+    cat /proof/staffology-private-artifacts/staffology-full.tap; exit $status) \
  && node --test scripts/compose-vector-local-runtime.contract.test.cjs
 RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-proof-blocker-classifier.mjs \
@@ -45,6 +54,11 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && rm -f scripts/validate-deployment.mjs \
  && node scripts/run-portable-autonomy-proof.mjs --strict-runtime
 
+# Private proof export target. CircleCI extracts this discarded-stage receipt without
+# placing employee/provider evidence in the runnable image.
+FROM scratch AS staffology-proof-evidence
+COPY --from=autonomy-proof /proof/staffology-private-artifacts/ /
+
 # Customer-proof staging build: sealed 0.6.76 runtime
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
 ARG RAILWAY_GIT_COMMIT_SHA
@@ -66,8 +80,7 @@ COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
 RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp/runtime.tgz" | sha256sum -c - \
  && tar -xzf /tmp/runtime.tgz -C /app \
  && rm -f /tmp/runtime.tgz
-# Group same-destination sources to preserve exact paths while staying below Docker layer-depth limits.
-COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/canonical-runtime-bridge.cjs integrations/staffology/canonical-production-boundaries.cjs /workspace/integrations/staffology/
+COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/canonical-runtime-bridge.cjs integrations/staffology/canonical-production-boundaries.cjs integrations/staffology/canonical-operations.cjs /workspace/integrations/staffology/
 COPY scripts/compose-vector-local-runtime.mjs /workspace/scripts/compose-vector-local-runtime.mjs
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
  && rm -rf /workspace
@@ -127,9 +140,8 @@ COPY policy/runtime/country-policy-pack-registry.cjs policy/runtime/jurisdiction
 RUN mkdir -p /app/trust-runtime
 COPY trust/runtime/vector-trust-spine.cjs /app/trust-runtime/vector-trust-spine.cjs
 COPY src/frontier/cash-to-capacity-engine.mjs src/frontier/cash-to-capacity-evidence.mjs src/frontier/cash-to-capacity-decision.mjs src/frontier/cash-to-capacity-outcome.mjs src/frontier/energy-bill-evidence.mjs src/frontier/energy-data-reconciliation.mjs src/frontier/energy-flexibility.mjs src/frontier/energy-input-hardening.mjs src/frontier/energy-profile-benchmark.mjs src/frontier/energy-profile-binding.mjs /app/operations-runtime/
-RUN mkdir -p /app/operations-runtime/agency
+RUN mkdir -p /app/operations-runtime/agency /app/operations-runtime/attendance
 COPY src/frontier/agency-*.mjs /app/operations-runtime/agency/
-RUN mkdir -p /app/operations-runtime/attendance
 COPY clocking-security-v2/access-control-evidence.mjs clocking-security-v2/access-feed-supervisor.mjs clocking-security-v2/access-onboarding-autopilot.mjs clocking-security-v2/access-push-adapters.mjs clocking-security-v2/attendance-certification.mjs clocking-security-v2/attendance-coverage-assurance.mjs clocking-security-v2/attendance-coverage-planner.mjs clocking-security-v2/attendance-payroll-gate.mjs clocking-security-v2/attendance-release-control.mjs clocking-security-v2/attendance-source-supervisor.mjs clocking-security-v2/durable-attendance-journal.mjs clocking-security-v2/durable-source-supervisor.mjs clocking-security-v2/invisible-attendance-engine.mjs clocking-security-v2/signed-rollback-anchor.mjs clocking-security-v2/sqlite-attendance-runtime.mjs clocking-security-v2/sqlite-attendance-worker.mjs clocking-security-v2/telemetry-continuity-guard.mjs clocking-security-v2/trust-root-recovery-controller.mjs clocking-security-v2/trust-root-recovery.mjs clocking-security-v2/wifi-evidence-adapters.mjs clocking-security-v2/windows-wef-evidence.mjs /app/operations-runtime/attendance/
 COPY operations/runtime/workforce-lifecycle-router.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/

@@ -31,7 +31,7 @@ function composeStaffology(runtime) {
   validateSealedRuntime(runtime);
   const integrationDir = path.join(runtime, 'integrations', 'staffology');
   fs.mkdirSync(integrationDir, {recursive: true});
-  for (const file of ['staffology-adapter.cjs', 'canonical-runtime-bridge.cjs', 'canonical-production-boundaries.cjs']) {
+  for (const file of ['staffology-adapter.cjs', 'canonical-runtime-bridge.cjs', 'canonical-production-boundaries.cjs', 'canonical-operations.cjs']) {
     const source = `integrations/staffology/${file}`;
     recordInput(source);
     fs.copyFileSync(path.join(root, source), path.join(integrationDir, file));
@@ -40,13 +40,22 @@ function composeStaffology(runtime) {
   let server = fs.readFileSync(serverPath, 'utf8');
   const importAnchor = "const IG=require('./lib/integration-gateway.cjs')";
   if (server.split(importAnchor).length !== 2) throw Error('SERVER_INTEGRATION_IMPORT_ANCHOR_CHANGED');
-  server = server.replace(importAnchor, "const StaffologyIntegration=require('./integrations/staffology/canonical-runtime-bridge.cjs');\nconst StaffologyBoundaries=require('./integrations/staffology/canonical-production-boundaries.cjs');\n" + importAnchor);
+  server = server.replace(importAnchor, "const StaffologyIntegration=require('./integrations/staffology/canonical-runtime-bridge.cjs');\nconst StaffologyBoundaries=require('./integrations/staffology/canonical-production-boundaries.cjs');\nconst StaffologyOperations=require('./integrations/staffology/canonical-operations.cjs');\n" + importAnchor);
   const runtimeAnchor = 'outboundSenders=new Map(outboundConfigs.map(cfg=>[cfg.id,OI.createRestSender(cfg)]));';
   if (server.split(runtimeAnchor).length !== 2) throw Error('SERVER_INTEGRATION_CONSTRUCTION_ANCHOR_CHANGED');
-  server = server.replace(runtimeAnchor, runtimeAnchor + "\nconst resolveStaffologyPrincipal=({tenant,email})=>{const row=db.prepare('SELECT email,tenant,person_id,permissions FROM users WHERE email=? AND tenant=?').get(email,tenant);if(!row)return null;return {email:row.email,tenant:row.tenant,personId:row.person_id,permissions:JSON.parse(row.permissions)};};\nconst staffologyBoundaries=StaffologyBoundaries.createBoundaries({db,resolvePrincipal:resolveStaffologyPrincipal});\nconst staffologyIntegration=StaffologyIntegration.createRuntime({loadState:load,productionBoundaries:staffologyBoundaries,stagePeople:(actor,envelope,receipt)=>{const cfg=inboundConnectorConfigs.find(row=>row.id===receipt.connectorId&&row.tenant===actor.tenant&&String(row.provider).toLowerCase()==='staffology'&&row.objectTypes.includes('people'));E.assert(cfg,'Reviewed Staffology people connector is unavailable.',503);return integrations.stage(cfg,envelope,receipt.idempotencyKey,(objectType,record)=>prepareInboundIntegration(objectType,record,cfg));}});");
+  server = server.replace(runtimeAnchor, runtimeAnchor + "\nconst resolveStaffologyPrincipal=({tenant,email})=>{const row=db.prepare('SELECT email,tenant,person_id,permissions FROM users WHERE email=? AND tenant=?').get(email,tenant);if(!row)return null;return {email:row.email,tenant:row.tenant,personId:row.person_id,permissions:JSON.parse(row.permissions)};};\nconst staffologyBoundaries=StaffologyBoundaries.createBoundaries({db,resolvePrincipal:resolveStaffologyPrincipal});\nconst staffologyIntegration=StaffologyIntegration.createRuntime({loadState:load,productionBoundaries:staffologyBoundaries,stagePeople:(actor,envelope,receipt)=>{const cfg=inboundConnectorConfigs.find(row=>row.id===receipt.connectorId&&row.tenant===actor.tenant&&String(row.provider).toLowerCase()==='staffology'&&row.objectTypes.includes('people'));E.assert(cfg,'Reviewed Staffology people connector is unavailable.',503);return integrations.stage(cfg,envelope,receipt.idempotencyKey,(objectType,record)=>prepareInboundIntegration(objectType,record,cfg));}});\nconst staffologyOperationProfile=StaffologyOperations.loadConfiguration(process.env);\nconst staffologyOperations=StaffologyOperations.createOperations({runtime:staffologyIntegration,boundaries:staffologyBoundaries,profile:staffologyOperationProfile,audit:(actor,action,detail)=>db.prepare('INSERT INTO audit_events(tenant,actor,action,detail,created_at) VALUES(?,?,?,?,?)').run(actor.tenant,actor.personId,action,JSON.stringify(detail),new Date().toISOString())});");
   const reportAnchor = 'return json(res,200,{...report,jobs:providerJobs.report(a)';
   if (server.split(reportAnchor).length !== 2) throw Error('SERVER_INTEGRATION_REPORT_ANCHOR_CHANGED');
-  server = server.replace(reportAnchor, 'return json(res,200,{...report,staffology:staffologyIntegration.status(),jobs:providerJobs.report(a)');
+  server = server.replace(reportAnchor, 'return json(res,200,{...report,staffology:{...staffologyIntegration.status(),operation:staffologyOperations.status()},jobs:providerJobs.report(a)');
+  const routeAnchor = "if(url.pathname==='/api/integrations'&&req.method==='GET')";
+  if (server.split(routeAnchor).length !== 2) throw Error('SERVER_INTEGRATION_ROUTE_ANCHOR_CHANGED');
+  server = server.replace(routeAnchor, "if(url.pathname==='/api/integrations/staffology/employees/acquire-stage'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.acquireAndStage(a,input));}\nif(url.pathname==='/api/integrations/staffology/payroll/approve-deliver'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.approveAndDeliver(a,input));}\nif(url.pathname==='/api/integrations/staffology/payroll/recover'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.recover(a,input));}\nif(url.pathname==='/api/integrations/staffology/payroll/readback'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.readback(a,input));}\n" + routeAnchor);
+  const payrollCommandAnchor = "if(input.command.startsWith('review-')||input.command.startsWith('payroll-'))";
+  if (server.split(payrollCommandAnchor).length !== 2) throw Error('SERVER_PAYROLL_COMMAND_ANCHOR_CHANGED');
+  server = server.replace(payrollCommandAnchor, "if(input.command==='time-source-ingest')return P.openPeriodFromSource(state,a,p);" + payrollCommandAnchor);
+  const permissionAnchor = "new Set(['company.configure','payroll.view','payroll.export','payroll.reopen','payroll.remind'])";
+  if (server.split(permissionAnchor).length !== 2) throw Error('SERVER_ACCOUNT_PERMISSION_ANCHOR_CHANGED');
+  server = server.replace(permissionAnchor, "new Set(['company.configure','payroll.view','payroll.export','payroll.reopen','payroll.remind','time.ingest'])");
   fs.writeFileSync(serverPath, server);
   const receipt = {
     schemaVersion: 1,
@@ -57,6 +66,7 @@ function composeStaffology(runtime) {
       adapter: sha256(fs.readFileSync(path.join(integrationDir, 'staffology-adapter.cjs'))),
       bridge: sha256(fs.readFileSync(path.join(integrationDir, 'canonical-runtime-bridge.cjs'))),
       productionBoundaries: sha256(fs.readFileSync(path.join(integrationDir, 'canonical-production-boundaries.cjs'))),
+      operations: sha256(fs.readFileSync(path.join(integrationDir, 'canonical-operations.cjs'))),
       server: sha256(fs.readFileSync(serverPath))
     }
   };

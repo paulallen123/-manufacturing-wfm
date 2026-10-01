@@ -148,21 +148,28 @@ function mapEmployee(record,context) {
   return {externalId:employeeId,revision,operation:'upsert',canonicalPerson,
     data:{identity,person,employment:employmentData,provenance:{provider:'staffology',acquiredAt:context.acquiredAt??null,sourcePath:context.sourcePath??null,sourceRevision:record.revision??record.updatedAt??null,revisionKind:'derived-mapped-content-sha256'}}};
 }
-async function acquireEmployees({client=globalThis.fetch,config,employerId,pageSize=100,maxPages=1000,now=Date.now}) {
+async function acquireEmployees({client=globalThis.fetch,config,employerId,pageSize=100,maxPages=1000,allowedEmployeeIds=null,now=Date.now}) {
   const employer=requiredId(employerId,'Employer identity');integer(pageSize,'Page size',1,500);integer(maxPages,'Page limit',1,10000);
+  if(allowedEmployeeIds!==null&&!Array.isArray(allowedEmployeeIds))throw failure('STAFFOLOGY_EMPLOYEE_COHORT_MISMATCH','The approved employee cohort is invalid.',403);const allowed=allowedEmployeeIds===null?null:new Set(allowedEmployeeIds);if(allowed&&(allowed.size!==allowedEmployeeIds.length||[...allowed].some(value=>requiredId(value,'Allowed employee identity')!==value)))throw failure('STAFFOLOGY_EMPLOYEE_COHORT_MISMATCH','The approved employee cohort is invalid.',403);
   const seen=new Set(),records=[];let complete=false,pageNum=0;
   for(;pageNum<maxPages;pageNum++) {
     const listPath=`/employers/${encodeURIComponent(employer)}/employees?pageNum=${pageNum}&pageSize=${pageSize}`;
     const result=await request(client,config,listPath);
     if(!Array.isArray(result.body)||result.body.length>pageSize)throw failure('STAFFOLOGY_PAGINATION_INCOMPLETE','Employee page is outside the documented Item[] contract.',502);
-    for(const item of result.body) {
+    const page=result.body.map(item=>{
       const id=requiredId(item?.id,'List employee identity');
       if(seen.has(id))throw failure('STAFFOLOGY_DUPLICATE_EMPLOYEE','Duplicate employee ID in paginated acquisition.');
+      if(allowed&&!allowed.has(id))throw failure('STAFFOLOGY_EMPLOYEE_COHORT_MISMATCH','Provider list contains an employee outside the approved exact cohort.',403);
       seen.add(id);
       const detailPath=`/employers/${encodeURIComponent(employer)}/employees/${encodeURIComponent(id)}`;
       // Item URLs are not followed: construct a same-origin, same-employer path.
       if(item.url){let itemUrl;try{itemUrl=new URL(item.url,ORIGIN);}catch{throw failure('STAFFOLOGY_RESPONSE_INVALID','Invalid employee item URL.',502);}
         if(itemUrl.origin!==ORIGIN||itemUrl.pathname!==detailPath||itemUrl.search||itemUrl.hash||itemUrl.username||itemUrl.password)throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Employee item URL contradicts its identity.');}
+      return {id,detailPath};
+    });
+    // Validate the complete list page against the trusted cohort before any
+    // per-employee detail request can disclose an out-of-scope identity.
+    for(const {id,detailPath} of page) {
       const detail=await request(client,config,detailPath);
       records.push(mapEmployee(detail.body,{employerId:employer,employeeId:id,acquiredAt:new Date(now()).toISOString(),sourcePath:detailPath}));
     }
@@ -429,6 +436,12 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     const checked=await reconcile({deliveryId,token});
     return {replayed:false,deliveryId,transportAccepted,reconciliationRequired:checked.status!=='reconciled',reconciliation:checked,...(checked.receipt?{receipt:checked.receipt}:{})};
   }
-  return {deliver,reconcile};
+  async function inspect(input) {
+    assertScope(input);
+    const payload=mapPayroll(input),observation=await observe(payload),verified=validateProviderResponse(observation,payload);
+    const observedBasicPay=Number(observation.entry.totals.basicPay).toFixed(2);
+    return immutable({verified,comparison:{expectedBasicPay:payload.expectedBasicPay,observedBasicPay,matches:observedBasicPay===payload.expectedBasicPay},run:financialSnapshot(observation.run),entry:financialSnapshot(observation.entry),provenance:observation.provenance});
+  }
+  return {deliver,reconcile,inspect};
 }
-module.exports={StaffologyError,loadConfiguration,request,mapEmployee,acquireEmployees,mapPayroll,financialSnapshot,compareFinancialSnapshots,validateProviderResponse,createDeliveryCoordinator,canonical,sha256};
+module.exports={StaffologyError,loadConfiguration,request,mapEmployee,acquireEmployees,mapPayroll,financialSnapshot,compareFinancialSnapshots,validateProviderResponse,createDeliveryCoordinator,canonical,sha256,businessKey};

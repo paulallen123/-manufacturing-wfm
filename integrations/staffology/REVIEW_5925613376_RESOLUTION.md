@@ -300,3 +300,257 @@ prepared unless the supported container-build gate and every offline gate pass.
   CircleCI review route cannot be invoked without a retrievable remote branch.
 - [ ] Deployment and hosted payroll proof remain paused pending both blocked
   gates and the separate exact approval.
+
+## Published transport admission and terminal red — 2026-10-01
+
+The independently verified reviewed tree
+`03d5c8d906bd82a20626e4c6a9d1e0a450672669` was published without changing
+its bytes as transport commit `f454b8f850ed8fb28addd15613d8f612b4563549`,
+whose real remote parent is `35d8e4673f2cd8e205e92f9cb46187acb3277d79`.
+Native commit `2011246c7b5c899b5469b0edc21d8850294a12fb` remains local provenance and is
+not described as remotely published. Draft PR 289 remains the sole review PR;
+the unintended PR 291 was closed unmerged and is not an authority or evidence
+source.
+
+Existing CircleCI pipeline `61e9707a-b210-4976-a25c-1146854a8e46`, workflow
+`7f720269-3163-48a2-b11f-a5167ec0e90d`, admitted the changed protected trigger
+and exact `CIRCLE_SHA1`. Core passed in 11 seconds. Runtime job
+`4adbb748-0e4e-43bc-b643-3dcb28d54bbf` failed after 3 minutes 23 seconds in the
+supported Ubuntu 24.04 / Node 22.23.2 Docker build. The terminal builder error
+was `max depth exceeded` while preparing the layer at the agency/attendance
+COPY boundary (Dockerfile lines 207–209 in the published source). The retained
+545,056-byte coordinator log shows only that the composed Staffology command
+completed; it does not establish a final image, image ID, runtime gate, or a
+complete raw test count. Always-run upload success and the single downloaded
+terminal screenshot are qualified as diagnostics, not build success.
+
+## Bounded depth and evidence repair
+
+The runnable stage still installs, verifies and extracts the same sealed
+runtime and applies the same overlays to the same paths. Its context COPY
+instructions now use BuildKit link-independent layers, so the 256-copy
+instruction Dockerfile no longer creates a 256-deep parent chain. Packaging
+regressions accept reviewed COPY flags while continuing to assert every
+bootstrap/integration-fabric destination. No proof stage, test, non-root
+boundary, package-manager removal, source-SHA seal, production refusal, or
+immutable application permission was removed.
+
+The existing autonomy stage now writes the complete Staffology TAP stream,
+assembly receipt, local provenance receipt and exact build source SHA into a
+private discarded-stage evidence target. Existing CircleCI exports that target
+before the final cached build and retains it in its existing private artifacts;
+none of those private employee/provider bytes enter the runnable image. This
+is source preparation only: the repaired supported image and Node 22.23.2
+runtime remain **UNPASSED** until a new reviewed exact-source admission runs.
+
+## Authenticated operation wiring
+
+The prior published source exposed only a dormant integration report. The
+canonical assembly now wires an existing-session operation boundary into the
+existing integration routes, canonical SQLite database and append-only audit:
+
+- employee acquisition uses only the server-held Staffology credential,
+  employer, tenant, exact ordered cohort and request bounds, then delegates the
+  reviewed envelope to the existing integration/onboarding store;
+- payroll preparation still derives one allowance-free `WORKED_BASIC` line
+  from the exact released unsent canonical batch and enforces the exact-cent
+  £12.50 boundary before creating an intent;
+- the authenticated exact account must currently retain both `payroll.export`
+  and `company.configure`; the runtime derives and issues the one-shot permit
+  only after the complete fresh provider baseline exists, and re-resolves that
+  exact email+tenant account at consumption;
+- delivery and explicit recovery use the existing durable coordinator/store,
+  fencing and uncertain-delivery reconciliation. Recovery never calls generic
+  requeue/resend and returns only a sanitised status projection while complete
+  provider evidence remains private;
+- the existing integration report and append-only audit expose sanitised
+  status/actions. No second database, adapter, worker, service, tenant or
+  implementation run was introduced.
+
+The default remains dormant and fail-closed. Activation requires a server-held
+`WFM_STAFFOLOGY_OPERATION_JSON` exact binding and `STAFFOLOGY_API_KEY`; the
+profile candidate must equal the image's sealed source SHA. Request bodies
+cannot supply a credential, provider origin, tenant, employer, runtime binding,
+permit or client. These source paths do not authorise configuration, deployment
+or a provider call.
+
+Offline tests cover dormant/source binding, tenant/permission refusal, exact
+two-employee cohort acquisition, canonical payroll delegation, one simulated
+POST with fresh financial readback, one-shot replay, and the existing
+authority/recovery/£12.50-versus-£1,250 suites. They remain synthetic and are
+not provider acceptance or hosted proof.
+
+## Remaining gates after this preparation
+
+Before any release-and-hosted-test request, independent review must verify this
+new native commit/tree and all consequential blobs, then one legitimate
+protected-trigger descendant may be transported with real remote
+`f454b8f850ed8fb28addd15613d8f612b4563549` ancestry. The existing contained
+CircleCI route must produce a terminal green exact image digest, full raw TAP
+counts, assembly/provenance/source receipts, Node 22.23.2 runtime result and all
+unchanged FORGE/security/payroll/tenant/recovery/Autopilot results.
+
+Still unavailable and therefore not claimed: live provider employee evidence,
+an approved provider period/draft and real employee IDs, credential/runtime
+binding, provider acceptance, fresh provider readback, hosted financial
+reconciliation, deployed UI/audit evidence, authenticated tenant isolation,
+restart/recovery on one exact deployed image, and every remaining mandatory
+customer-readiness/Golden Journey/security/persistence/recovery/Autopilot gate.
+The frozen `northstar-demo` run
+`09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e` was not read or mutated.
+
+## Independent operation-scope review and repair — 2026-10-01
+
+Independent reconstruction verified native commit
+`8cef6810c5dbcd208e397e7795742fd310f33577`, parent
+`acbbf29daa57348f4bdd2ae21e27ce2abe2d40bb`, and tree
+`109d519c95ce63f9bc1c0acd0f8e670217717b65`. It remains unpublished; PR 289
+still points to transport `f454b8f850ed8fb28addd15613d8f612b4563549` / tree
+`03d5c8d906bd82a20626e4c6a9d1e0a450672669`.
+
+The review retained two calibrated failures before this repair:
+
+1. The real bridge produced the canonical payroll input without the four
+   runtime-provenance fields, so the real coordinator rejected an otherwise
+   valid operation with `STAFFOLOGY_BINDING_MISMATCH` before its first provider
+   GET. The prior delegation-only mock did not exercise this composition.
+2. When a fixture manually supplied those missing binding fields, a caller
+   could select `staffology-OUTSIDE-cohort`; the injected client observed one
+   GET and SQLite contained one durable intent before the intercepted request
+   became `STAFFOLOGY_TRANSPORT_ERROR`. This was not a provider request, but it
+   proved the absent pre-intent cohort boundary.
+
+The raw reproduction is retained at
+`evidence/operation-trusted-scope-red.tap`; the real-composition successor run
+is retained at `evidence/operation-trusted-scope-green.tap`.
+
+The operation boundary now constructs delivery input by combining the
+canonical bridge result exclusively with the server-held trusted binding.
+Caller binding fields cannot override it. The server-held operation profile
+also contains the exact permitted VECTOR employee, Staffology employee,
+payroll code, entry, released period and batch/checksum, effective date, pay-run
+coordinates, basic pay code, rounding policy, hours, rate and expected basic
+pay. The request must exactly equal that scope before the current exact account
+is resolved and before any provider read or durable intent. The Staffology
+employee must belong to the configured exact acquisition cohort. A conflicting
+tenant, employer, employee, account authority, run coordinate, £1,250 value or
+recovery delivery/digest is rejected before network or persistence.
+
+Recovery derives its delivery ID and payload digest again from the same
+server-held canonical released batch and exact operation scope. A caller cannot
+select another persisted delivery; actual uncertain-delivery fencing and
+no-blind-resend behavior remain in the existing coordinator/store.
+
+The real-composition regression now uses `Bridge.createRuntime` with a real
+released basic-only batch, `Boundaries.createBoundaries` with real SQLite and
+current exact-principal resolution, and `Operations.createOperations`. It
+proves a complete fresh baseline, exactly one simulated POST, fresh financial
+readback, £12.50 reconciliation, private baseline/readback/comparison evidence,
+acknowledged receipt persistence, replay without a second POST, and close/reopen
+readback. Negative cases prove zero GET, zero POST and zero intent for
+outside-cohort, tenant, account, period, value and recovery-scope changes. These
+are synthetic offline results, not live-provider or hosted acceptance.
+
+The complete retained pipeline 3 terminal log is 1,210,675 bytes with SHA-256
+`f1303a2fb0edf6b00fe4d7768cf2bba9603bfd1845c23abf24a759245e0d3604`.
+Its `max depth exceeded` outcome remains the only prescribed-container result;
+`COPY --link` and source-level mapping checks do not establish a final OCI
+rootfs, image digest or supported runtime pass. One cold exact-source Ubuntu
+24.04 / pinned Node 22.23.2 non-deploy admission remains mandatory after
+independent review of this successor.
+
+The canonical 21 readiness requirement IDs in
+`implementation/runtime/one-day-enterprise-engine-core.cjs` remain authoritative.
+No completion-stage list, Staffology test or source repair closes any hosted,
+customer, Golden Journey, security, tenant, persistence, recovery or Autopilot
+gate. No provider, deployment, credential, ref or frozen-run operation occurred.
+
+## Remote b6 reconciliation and cross-platform cleanup — 2026-10-01
+
+Fresh readback moved existing draft PR 289 to remote commit
+`b6e1dd26f5ca64e7ba6510eae73cc03047f6244e`, real parent
+`f454b8f850ed8fb28addd15613d8f612b4563549`, tree
+`719ed6c5bbc590c6ab0401005752228e6a1d8287`, changing only Dockerfile blob
+`e7bce4a52e637e7c9e9d9ba6b6ca19cc27b1f155`. That native commit is not in
+this restored checkout and its ancestry was not fabricated. Its verified
+same-destination COPY consolidation was reconciled into this successor while
+preserving the operations module, private evidence target, strict tests and
+source-SHA binding. The parent-to-successor mapping comparison retains every
+source/destination mapping and reduces the runnable-stage COPY instruction
+count from 210 to 52.
+
+Pipeline 6 / workflow `587a1a3d-eea2-4619-9e45-89f8673aaa2d` / runtime job 5
+is **HALTED**, not passed. Its only material output was: `No frozen-candidate
+trigger change; halting heavy proof without marking product failure.` No build,
+runtime, image, TAP or full proof step ran because b6 changed only Dockerfile
+and retained the prior protected trigger. This successor legitimately refreshes
+that existing trigger; it has not been published or admitted.
+
+The independently observed Windows cleanup red was valid: the operation test
+registered directory removal before the later reopened SQLite close hook, so
+Windows correctly refused removal with `EPERM`. The fixture now owns every
+SQLite handle and closes them in reverse creation order before removing its
+directory. The analogous Autopilot replay fixture now owns and closes later
+engines before its lifecycle guard, database and directory. Cleanup errors are
+not caught or ignored.
+
+The full-mode HTTP test now starts the real composed security bootstrap with a
+synthetic server-held exact-source operation profile and a child-process-only
+Staffology transport interceptor. It invokes the authenticated
+`employees/acquire-stage` route, applies the reviewed batch through the existing
+canonical application route, and retains the exact cohort/rate/contract/audit
+restart readback. It also invokes `payroll/approve-deliver` with a wrong run and
+proves rejection without another intercepted provider request. Adapter list
+pages are checked against the complete server-held cohort before any detail GET,
+so an outside employee ID cannot cause its detail to be fetched.
+
+A positive `approve-deliver` HTTP operation is not locally manufactured: the
+sealed fixture has no existing application route that creates a new payroll
+period/released batch for the newly onboarded synthetic cohort. Injecting that
+released state through SQL or a test-only state flag would violate the proof
+contract. The real bridge/SQLite operation test separately proves the exact
+released-batch-to-one-simulated-POST/readback/receipt/reopen path, but it is not
+mislabelled as the missing authenticated HTTP payroll workflow. Therefore the
+strict combined full HTTP operation journey and prescribed Node 22.23.2 image
+remain **UNPASSED** until the existing canonical payroll workflow can produce
+that cohort's released batch through real application commands and the
+contained cold build executes it.
+
+## Exact-source payroll HTTP closure after `c36f611` (2026-10-01)
+
+- The coordinator independently reconstructed native `c36f611c7124f86579e1feda5a9418f1c284dfc2` / tree `aa0a9c6334ec5e108554df3ef568ce6916978038`. It remains local and unpublished. The actual remote PR289 head remains `b6e1dd26f5ca64e7ba6510eae73cc03047f6244e`; any later transparent transport must use that real remote object as parent rather than inventing native ancestry.
+- A detached worktree at exact `c36f611` reproduced the remaining source red without network or provider traffic: its composed `server.cjs` had no `/api/command` dispatch from `time-source-ingest` to the sealed payroll domain's existing `openPeriodFromSource`. The retained raw source reproduction is `evidence/full-http-payroll-command-red.tap`. Consequently the imported cohort could not enter the genuine review/sign/release workflow.
+- The composer now adds only that bounded dispatch inside the existing authenticated `mutate` transaction and extends the existing account-permission administration allow-list with the domain's pre-existing dedicated `time.ingest` permission. `openPeriodFromSource` retains validation of Monday/week uniqueness, complete frozen roster, manager/org identities, source version, normalised actual-attendance records and complete teams. No period engine, database, worker, tenant or implementation run was added.
+- Staffology configuration now supports an acquisition-only exact-source profile with `payroll: null`. Acquisition stays exact-cohort/server-credential bound; payroll delivery and recovery fail closed with `STAFFOLOGY_PAYROLL_DORMANT` until a second-phase server-held profile names the genuine released batch and checksum returned by the canonical application.
+- The strict full HTTP source now requires `WFM_BUILD_SOURCE_SHA` to be the admitted 40-hex source identity. Docker passes the existing `RAILWAY_GIT_COMMIT_SHA` into this proof; the prior synthetic repeated-`a` candidate identity was removed.
+- The strict journey uses the actual routes to assign `time.ingest`, acquire/apply/onboard the exact `employee-001`/`PAY901` and `employee-002`/`PAY902` cohort, persist £10.00 GBP rates and 40-hour contracts, ingest explicitly labelled offline observed attendance, perform manager checks/signature and canonical payroll release, read the returned batch/checksum/export, restart with that exact trusted payroll scope, and assert one simulated provider POST, £12.50 reconciliation, private receipt, replay without a second POST, restart readback and audit/status projection. Wrong tenant, current permission, cohort, run and £1,250 inputs are asserted before provider traffic. This remains synthetic/offline evidence, never a live-provider claim.
+- The full strict journey source is now executable only with the locked passkey dependency closure and composed FULL runtime. That closure is absent locally, so the complete HTTP journey and prescribed Node 22.23.2 container remain **UNPASSED** here pending the one independently reviewed contained cold build. Existing recovery/fencing tests remain the authority for lost-lease and uncertain-delivery behavior; the HTTP journey does not weaken or replace them.
+- The existing 21-requirement readiness registry remains authoritative. Golden Journey, hosted security/tenant/persistence/recovery/Autopilot, image identity, provider acceptance and customer readiness all remain **UNPASSED** until evidence from one exact admitted/deployed candidate closes them.
+
+## Final focused pre-admission repairs after `6e4bc04` (2026-10-01)
+
+- The replay/audit mismatch was reproduced at the real operation boundary: one initial delivery plus one acknowledged replay made exactly one simulated provider POST but invoked the append-only `staffology-payroll-operation` audit twice. The old HTTP expectation of one audit row was wrong. `evidence/operation-replay-audit-red.tap` retains that red. Audit details now explicitly distinguish `outcome=initial,replayed=false` from `outcome=replayed,replayed=true`; the strict HTTP proof expects both truthful rows while retaining the one-POST limit.
+- The two existing CircleCI Docker builds now use `--progress=plain` and tee complete output into the existing private runtime-artifact directory. The Staffology Docker RUN always cats its complete private TAP before returning the original test exit status, so a failing test remains a failing layer while its diagnostic is present in the plain build log. No workflow, service or infrastructure was added.
+- The positive fenced-successor fixture retains its virtual lease timing (`100` then `1000`) but uses a bounded 1000 ms injected HTTP timeout instead of the contention-sensitive 100 ms transport deadline. Negative timeout tests and zero-dispatch semantics remain unchanged.
+- The synthetic provider fixture now persists its accepted £12.50 state in the isolated test directory across server processes. After VECTOR restart, the authenticated exact-scope `payroll/readback` operation performs fresh GET observations of the open run and entry using the adapter's existing validation primitives, records the readback audit, and proves £12.50 without another POST. This is durable simulated-provider state with zero external provider requests, not hosted/provider acceptance.
+- The strict HTTP proof now expects two append-only operation audit rows (initial and replay), one readback audit row, one provider POST total, and fresh provider plus VECTOR/SQLite observations after restart. The existing private baseline/readback/comparison receipt remains authoritative and immutable.
+- The prescribed Node 22.23.2 full HTTP/container build, OCI image identity and all hosted/customer/provider gates remain **UNPASSED** until the one independently reviewed contained admission executes. The existing 21-requirement readiness registry remains authoritative.
+
+- Checkpoint freshness for this final repair: native `6e4bc0448c166f6abab2519ca8cdc12da7703278` is not present in this restored object database. Existing local transport checkpoint `8ee574128f969b13c22bb63eae75db4eb3346180` has the independently verified identical tree `7e8c6e1b245618d5349add56654b350ce6290452` and published-base parent `35d8e4673f2cd8e205e92f9cb46187acb3277d79`; it is the honest local parent of this repair. This does not claim native `6e4bc04` was remotely published, and the coordinator must still use the freshly verified actual PR289 remote head as transport parent.
+
+## Canonical-period and provider-isolation correction after `c675803` (2026-10-01)
+
+- The exact sealed domain red is retained in `evidence/full-http-period-collision-red.tap`: canonical initialisation already owns `2026-09-07` from `synthetic-closed-week-fixture`, so `openPeriodFromSource` correctly rejected the old strict-test date with `This review week already exists.` before cohort lookup and with zero provider requests. The existing period and duplicate-week guard are unchanged. The strict test now uses unused valid Monday `2026-09-14` consistently under an explicitly synthetic test-process `2026-10-01` as-of clock (so the week is genuinely closed under the existing sign/release rules) for observed attendance, review, release, export, provider approval and readback, while rates/contracts remain effective `2026-09-01`.
+- Fresh post-restart evidence again asserts the exact two onboarding people and staff identities, names, source IDs, PAY901/PAY902 payroll IDs, ready lifecycle, applied integration records, both £10 GBP hourly rates from `2026-09-01`, and both full-time 40-hour contracts through authenticated application readback plus read-only SQLite evidence. No SQL mutation or manufactured release is used.
+- The child-process provider interceptor now fails closed for every origin except exact `https://api.staffology.co.uk` and loopback. The proof asserts no unexpected forwarded origin, exact bounded Staffology methods/paths/run/entry/cohort, and one simulated POST total. Its accepted synthetic state remains durable across server restarts.
+- The existing private artifact route now receives `staffology-http-result.json` containing the exact source SHA, tenant, period, returned batch ID/checksum, cohort mapping, request counts, complete fresh provider readback snapshots/provenance, VECTOR people/staff/integration/reconciliation readback and audit counts. It is synthetic private evidence, not live-provider acceptance.
+- Fresh remote readback advanced PR289 to `adf9b7246c150ca824b24893cd35b49e0cf835ff` (parent `b6e1dd26f5ca64e7ba6510eae73cc03047f6244e`, tree `a3ceee1bfde0aa01893a70a8acd12950b038364e`) by changing only the protected trigger to retain the b6 admission. This local history does not fabricate that remote commit; transparent publication must use the freshly reverified actual remote head as parent.
+- CircleCI pipeline 7 / workflow `b79bb3e8-5765-472b-88d1-ee9216a4ee42` is **FAILED**, not an image pass: core succeeded, runtime failed after 1m46s with 1182/1184 tests passing. Both failures were stale individual-COPY assumptions in `tests/vector-runtime-packaging.test.cjs`; the already-reviewed consolidated mapping assertions address those cases and pass supplemental testing. Complete raw log SHA-256 `61429f299ca5cde9b17ecade590693a776de2acaf6246c1e07e4be5c84879deb` is coordinator-retained. No unchanged rerun was invoked.
+- The prescribed Node 22.23.2 full HTTP/image admission and every applicable gate in the existing 21-requirement readiness registry remain **UNPASSED** pending one final independently reviewed contained build.
+
+## Generated child-preload syntax correction after `8f3c49b` (2026-10-01)
+
+- Independent review correctly found that source-file `node --check` did not compile the JavaScript generated by the outer mock-provider template. The actual generated child contained a literal newline inside the unexpected-origin append string and failed `new vm.Script(...)` with `SyntaxError: Invalid or unexpected token`. The complete focused red is retained in `evidence/generated-provider-preload-red.tap`.
+- `independent/generated-provider-preload.test.cjs` now extracts and evaluates the actual template bytes from `full-http-employee-journey.test.cjs`, compiles the resulting child preload, and asserts its fail-closed origin fence. It is included in canonical assembly and the contained Docker Staffology TAP, so outer-source syntax checking cannot mask this class of child-generation failure again.
+- The unexpected-origin newline now uses the required double escaping. Loopback forwarding is restricted to HTTP URLs whose parsed hostname is exactly `127.0.0.1` or `localhost`, allowing intended ephemeral ports while continuing to log and reject every other origin. Exact Staffology request bounds, durable synthetic provider state, private source/provenance evidence and all production authority boundaries are unchanged.
+- No publication or CI admission was invoked. PR289 remote parent must be freshly reverified from the current actual remote head (`adf9b7246c150ca824b24893cd35b49e0cf835ff` at the last coordinator readback) before any transparent transport. All hosted and 21 readiness-registry gates remain **UNPASSED**.

@@ -19,6 +19,7 @@ test('composer preserves the absent-directory canonical caller contract',()=>{
   assert.equal(existsSync(join(runtime,'STAFFOLOGY_ASSEMBLY.json')),true);
   const provenance=JSON.parse(readFileSync(join(runtime,'LOCAL_PROOF_PROVENANCE.json'),'utf8'));
   assert.ok(provenance.runtimeFiles.some(file=>file.path==='integrations/staffology/canonical-production-boundaries.cjs'));
+  assert.ok(provenance.runtimeFiles.some(file=>file.path==='integrations/staffology/canonical-operations.cjs'));
   const assembly=JSON.parse(readFileSync(join(runtime,'STAFFOLOGY_ASSEMBLY.json'),'utf8'));
   assert.equal(assembly.sealedRuntimePreserved,true);
   assert.equal(assembly.activationAvailable,false);

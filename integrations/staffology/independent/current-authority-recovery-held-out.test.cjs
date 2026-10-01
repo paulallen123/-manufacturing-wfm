@@ -51,7 +51,7 @@ test('fresh fenced successor can resume the original intent once and reconcile w
  const entry=amount=>({id:'entry-001',employee:{id:'employee-001'},employmentDetails:{payrollCode:'PAY001'},taxYear:'Year2026',payPeriod:'Monthly',period:9,ordinal:1,payRunVersion:0,state:'Open',payOptions:{basis:'Hourly',payCode:'BASIC',payAmount:10,payAmountMultiplier:amount===100?10:1.25,regularPayLines:[{code:'BASIC',rate:10,multiplier:amount===100?10:1.25,value:amount}]},totals:{basicPay:amount}});
  const response=body=>new Response(body===undefined?null:JSON.stringify(body),{status:200});
  const client=async(url,options)=>{if(failFirst){failFirst=false;throw Error('INJECTED_INITIAL_GET_FAILURE');}if(options.method==='POST'){posts++;return response();}const path=new URL(url).pathname;if(path==='/open')return response([run]);if(path.endsWith('/entry-001'))return response(entry(posts?12.5:100));return response(run);};
- const config={apiKey:'synthetic-offline-key-001',timeoutMs:100,baseUrl:'https://api.staffology.co.uk'};
+ const config={apiKey:'synthetic-offline-key-001',timeoutMs:1000,baseUrl:'https://api.staffology.co.uk'};
  const old=S.createDeliveryCoordinator({store:oldStore,client,config,binding:fixtures.binding,authorizeWrite:async()=>true});
  await assert.rejects(old.deliver(fixtures.input),{code:'STAFFOLOGY_TRANSPORT_ERROR'});const row=db.prepare('SELECT delivery_id,digest FROM outbound_staffology_deliveries').get();
  clock=1200;const successorStore=B.createStore(db,{authority,binding:fixtures.binding,workerId:'successor-worker',leaseMs:1000,now:()=>clock}),claim=successorStore.recover(row.delivery_id,row.digest);

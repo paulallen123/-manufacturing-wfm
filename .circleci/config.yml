@@ -46,7 +46,9 @@ jobs:
           name: Build exact FORGE runtime candidate
           command: |
             set -euo pipefail
-            docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" .
+            mkdir -p circleci-runtime-artifacts/staffology
+            docker build --progress=plain --pull=false --target staffology-proof-evidence --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" --output "type=local,dest=circleci-runtime-artifacts/staffology" . 2>&1 | tee circleci-runtime-artifacts/staffology-proof-build.log
+            docker build --progress=plain --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" . 2>&1 | tee circleci-runtime-artifacts/runtime-image-build.log
       - run:
           name: Verify runtime security boundary
           command: |

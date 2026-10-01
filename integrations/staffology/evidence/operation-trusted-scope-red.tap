@@ -1,0 +1,76 @@
+TAP version 13
+# (node:7304) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# OPERATION_BINDING_RED={"code":"STAFFOLOGY_BINDING_MISMATCH","gets":0,"intents":0}
+# OPERATION_COHORT_RED={"code":"STAFFOLOGY_TRANSPORT_ERROR","gets":1,"intents":1}
+# Subtest: published native tree real composition loses trusted binding
+not ok 1 - published native tree real composition loses trusted binding
+  ---
+  duration_ms: 17.690318
+  type: 'test'
+  location: '/tmp/tmp.vfULSfbBkl/operation-red.test.cjs:1:1914'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'STAFFOLOGY_BINDING_MISMATCH'
+    - 'EXPECTED_FIXED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'EXPECTED_FIXED'
+  actual: 'STAFFOLOGY_BINDING_MISMATCH'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/tmp/tmp.vfULSfbBkl/operation-red.test.cjs:1:2559)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: isolated binding permits outside cohort intent
+not ok 2 - isolated binding permits outside cohort intent
+  ---
+  duration_ms: 18.250501
+  type: 'test'
+  location: '/tmp/tmp.vfULSfbBkl/operation-red.test.cjs:1:2591'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+    +   code: 'STAFFOLOGY_TRANSPORT_ERROR',
+    +   gets: 1,
+    +   intents: 1
+    -   code: 'STAFFOLOGY_PAYROLL_SCOPE_MISMATCH',
+    -   gets: 0,
+    -   intents: 0
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    code: 'STAFFOLOGY_PAYROLL_SCOPE_MISMATCH'
+    gets: 0
+    intents: 0
+  actual:
+    code: 'STAFFOLOGY_TRANSPORT_ERROR'
+    gets: 1
+    intents: 1
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/tmp/tmp.vfULSfbBkl/operation-red.test.cjs:1:3246)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 280.936186
