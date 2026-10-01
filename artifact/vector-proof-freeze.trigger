@@ -11,3 +11,4 @@ railway_runtime_contract=canonical + overflow A/B/C must preserve hosted mode, W
 promotion=blocked until exact-candidate Golden Journey, evidence continuity, independent verification, and recovery proof pass
 war_room=one-hour proof convergence; no feature scope; fix only root-caused proof failures
 retest=cold exact-candidate rerun required after every fix
+review_check=2026-10-01T10:32:00Z Staffology PR289 non-deploy Node22 container admission; no merge/deploy/provider/payroll/customer mutation
