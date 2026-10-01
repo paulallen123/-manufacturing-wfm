@@ -1,0 +1,17 @@
+Retained owner Linux behavioral reproduction before the exact-arity repair.
+
+Input:
+Uid:\t1000\t1000\t1000\t1000\t0
+
+Old parser expression:
+awk '$1 == "Uid:" { print $2, $3, $4, $5 }'
+
+Observed output:
+OLD_UID_VERIFIER_RESULT=PASS values=1000 1000 1000 1000
+
+Expected:
+VECTOR_APPLICATION_UID=FAIL reason=missing-or-malformed-pid1-uid
+
+The fifth numeric value was discarded before validation. The same defect admitted a
+trailing junk field, and a malformed additional Uid record could be reduced rather
+than treated as invalid evidence.

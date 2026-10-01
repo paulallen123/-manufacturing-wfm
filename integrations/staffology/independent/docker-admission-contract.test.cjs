@@ -54,6 +54,11 @@ test('supported Docker admission composes and binds the strict full canonical ru
  assert.match(circle,/body\.sourceBinding!=="build-file-matched"/);
  assert.match(circle,/x-wfm-source-sha: \$\{CIRCLE_SHA1\}/);
  assert.match(circle,/x-wfm-source-binding: build-file-matched/);
+ assert.doesNotMatch(circle,/docker exec vector-forge-proof id -u/);
+ assert.match(circle,/docker exec vector-forge-proof cat \/proc\/1\/status \| bash scripts\/verify-runtime-process-uid\.sh/);
+ for(const check of ['health-ready','runtime-identity-build-file-matched','root-page','bootstrap-unauthenticated-401','demand-unauthenticated-401'])assert.match(circle,new RegExp(`passed ${check}`));
+ assert.match(circle,/hosted-http-diagnostics\.log/);
+ assert.match(dockerfile,/tests\/runtime-process-uid\.test\.cjs/);
 });
 
 test('hosted caller binds configured candidate to the independently read sealed build file',()=>{
