@@ -106,8 +106,7 @@ jobs:
             cp /tmp/health.json circleci-runtime-artifacts/ 2>/dev/null || true
             cp /tmp/bootstrap-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true
             cp /tmp/demand-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true
-            printf '%s
-' "$CIRCLE_SHA1" > circleci-runtime-artifacts/source-sha.txt
+            printf '%s\n' "$CIRCLE_SHA1" > circleci-runtime-artifacts/source-sha.txt
             docker inspect "vector-forge-ci:${CIRCLE_SHA1}" > circleci-runtime-artifacts/image-inspect.json 2>/dev/null || true
       - run:
           name: Clean up proof container
