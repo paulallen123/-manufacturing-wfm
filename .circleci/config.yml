@@ -130,5 +130,6 @@ workflows:
                 - /feature\/vector-.*/
                 - /release\/.*/
                 - /staging\/.*/
+                - /review\/staffology-.*/
             tags:
               ignore: /.*/
