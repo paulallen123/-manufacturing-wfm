@@ -37,7 +37,7 @@ test('supported Docker admission composes and binds the strict full canonical ru
  assert.ok(copyInstructions<100,`same-destination consolidation regressed to ${copyInstructions} COPY layers`);
  assert.match(runtime,/COPY integrations\/staffology\/staffology-adapter\.cjs integrations\/staffology\/canonical-runtime-bridge\.cjs integrations\/staffology\/canonical-production-boundaries\.cjs integrations\/staffology\/canonical-operations\.cjs \/workspace\/integrations\/staffology\//);
  const circle=readFileSync(resolve(__dirname,'../../../.circleci/config.yml'),'utf8');
- assert.equal((circle.match(/docker build --progress=plain --pull=false/g)||[]).length,2);
+ assert.equal((circle.match(/docker build --pull=false --progress=plain/g)||[]).length,2);
  assert.match(circle,/tee circleci-runtime-artifacts\/staffology-proof-build\.log/);
  assert.match(circle,/tee circleci-runtime-artifacts\/runtime-image-build\.log/);
 });
