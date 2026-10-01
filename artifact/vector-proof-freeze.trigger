@@ -15,3 +15,4 @@ review_check=2026-10-01T10:32:00Z Staffology PR289 non-deploy Node22 container a
 review_successor=2026-10-01 PR289 descendant repairs CircleCI YAML and independent Staffology negatives; exact CIRCLE_SHA1 remains mandatory
 review_successor_followup=2026-10-01 current-principal and zero-dispatch recovery repairs require a fresh exact-source non-deploy admission
 review_exact_account_admission=2026-10-01 source_tree_a6850f3b6613f9643cbdf318d817ff9398a6ef3e; existing CircleCI project only; non-deploy; exact descendant CIRCLE_SHA1 required
+review_check=2026-10-01T18:36:00Z PR289 b6e1dd26 Docker-layer-compaction exact non-deploy admission; no merge/deploy/provider/payroll/customer mutation
