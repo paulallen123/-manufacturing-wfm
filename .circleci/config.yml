@@ -46,7 +46,7 @@ jobs:
           name: Build exact FORGE runtime candidate
           command: |
             set -euo pipefail
-            docker build --pull=false -t "vector-forge-ci:${CIRCLE_SHA1}" .
+            docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" .
       - run:
           name: Verify runtime security boundary
           command: |
