@@ -1,5 +1,229 @@
 # Independent retest 5925613376 — canonical offline resolution
 
+## Replacement-owner succession and verified source state — 2026-10-01
+
+Codex is the sole implementation and release owner succeeding the preserved,
+stopped task `task_e_6abd8e51b4288327be80cf7f4e325d2e`. The user authorised this
+one controlled replacement; the failed task was not run or retried, and no
+further task, service, tenant, implementation run, product, database, worker, or
+checklist was created. There is no unattended or running task: all work in this
+succession is the foreground work in the existing
+`paulallen123/-manufacturing-wfm` checkout and existing
+`review/staffology-customer-proof-20261001` branch.
+
+The checkout supplied native Git source, so transport objects were not imported.
+Git independently resolves the starting head as
+`35d8e4673f2cd8e205e92f9cb46187acb3277d79`, parent
+`de32f6d663a530ddccffc6e8d1d0e641e68e039a`, and tree
+`620f9fbf1ffa088a00fcc4e76bc8660400abb1c2`; the recorded base
+`dedf7b307464c513f418bb7c95f37e53660b56a1` is an ancestor. Full native object
+connectivity passed. Candidate `52a345be6a3ce857cbeabcfc3cb3bc8999bc120e`
+is absent and is not represented as published or reviewed source. The supplied
+chat attachment was not exposed as a filesystem byte stream in this execution
+environment, so its stated 3,051,096-byte / SHA-256
+`cf042bfc419a8779bc5361ac304d4db63194f3d7b49f1f14ed96ca55cd323a19`
+receipt is retained as coordinator evidence, not falsely reported as a new local
+decode. Native source verification made object import unnecessary.
+
+PR 289 remains the sole recorded draft review. This checkout has no remote and
+therefore performed no publication, PR creation, merge, release, deployment,
+restart, provider request, credential/infrastructure mutation, or frozen-tenant
+mutation. PR 290 and wrapper bytes were not used.
+
+## Successor independent reds and bounded repairs
+
+The successor first retained a failing TAP reproduction in
+`evidence/succession-independent-red.tap`: an injected initial GET failure after
+claim creation left `sending` with zero POSTs, and a mapped Former employee with
+leave date entered a normal onboarding upsert. The repaired coordinator now
+durably marks the zero-dispatch outcome `uncertain` with
+`dispatchStarted:false`; it neither invents provider delivery nor resends. The
+existing expired-uncertain recovery boundary can therefore fence a successor,
+while reconciliation still refuses any row without the exact dispatch marker.
+
+Permit validity and consumption now also require the issuing canonical approver
+object to retain the same tenant and both `payroll.export` and
+`company.configure` permissions. Removing current permissions makes `check`
+false and consumption fails before the simulated dispatch callback. Existing
+tenant-qualified revocation, exact permit binding, expiry, and one-shot
+consumption remain intact.
+
+Former employees and any employee carrying an effective end date are now held
+with `STAFFOLOGY_EMPLOYEE_LIFECYCLE_REQUIRED` before the onboarding envelope is
+created. This preserves the reviewed runtime rule that deletion/deactivation
+must use the employee-change workflow and prevents normal onboarding from
+reactivating a leaver. Current employees retain the exact cohort and start-date
+mapping.
+
+CircleCI's configuration-rejected red was reproduced from blob `33701f3`: the
+single `printf` scalar was physically split across lines 109–110. The YAML is
+repaired without weakening `require_frozen_candidate`, branch filters, the
+supported Ubuntu 24.04 machine, Node 22.23.2 assertion, source-SHA build arg, or
+`--pull=false`. The protected trigger records this exact repaired descendant so
+an unchanged retrigger is unnecessary; a coordinator must still arrange
+admission of the new exact commit to the existing CircleCI project. No pipeline
+was invoked here.
+
+The successor independent suite is 3 pass / 0 fail / 0 skip on locally available
+Node 22.22.2. The current Staffology glob is 104 pass / 1 fail: its only failure
+is the full employee persistence test when run directly without an assembled
+runtime (`lib/integration-gateway.cjs` is deliberately absent from the checkout
+root). The pre-extracted-directory composer caller and exact source/assembly
+hashing pass. The canonical archive-extraction caller remains unpassed because
+the existing supported `@simplewebauthn/server` dependency closure is absent;
+no registry retry or substitute dependency was attempted. Node 22.23.2,
+supported-container build, full HTTP persistence/stop/reopen readback, image
+digest, and hosted gates remain unpassed and cannot be promoted to customer
+proof.
+
+## Replacement-owner follow-up — held-out current authority and recovery
+
+Independent review matched all ten blobs in the preceding native delta and then
+supplied two calibrated held-out failures. Their unmodified failing observations
+are retained in `evidence/succession-held-out-red.tap`. The first proved that an
+issued request actor retained in `liveApprovers` was stale after the canonical
+principal was replaced. The second used the real SQLite store and proved that a
+fenced successor could acquire an expired zero-dispatch intent but could not
+progress because reconciliation demanded a nonexistent baseline and dispatch
+marker.
+
+`liveApprovers` has been removed. An approval now persists the stable canonical
+`personId`, and every check and consumption resolves that identity through the
+existing canonical `users` authority. The composed server wires a scoped lookup
+of the existing `users` row and parses its current permissions; there is no new
+directory, permission table, or policy. Missing principals, tenant changes, and
+removed `payroll.export` or `company.configure` permissions deny authority.
+Recreating the authority object still resolves the current principal, while an
+unchanged authorised principal remains a positive control.
+
+The adapter now treats pre-dispatch recovery and post-dispatch reconciliation as
+separate states. Every failure after `begin` but before the atomic dispatch
+callback is marked as provably zero-dispatch when the worker still owns the
+lease. The real store can fence an expired `uncertain` row or an expired
+`sending` row only when `dispatch_json IS NULL`, covering a process crash before
+the catch handler. A fenced successor reloads the durable original payload,
+obtains a fresh baseline and current authority, and reserves at most one
+dispatch. Transport failure before reservation returns a retryable
+zero-dispatch result; current-authority denial remains unresolved. Actual
+dispatch attempts continue through the older uncertain-delivery reconciliation
+path and are never resent.
+
+The repaired held-out suite passes 3/3 on the locally available Node 22.22.2 and
+includes replacement-snapshot/permission removal, authority recreation,
+tenant-change denial, a real SQLite successor, old-worker fencing, a successful
+fresh resume, and a one-POST total. With a pre-extracted sealed runtime explicitly
+bound through `WFM_RUNTIME`, the Staffology set passes 111/111 and the existing
+employee integration persistence test performs close/reopen readback. The FORGE
+core suite passes 45/45. The full HTTP employee journey source now fails closed
+unless both `CANONICAL_SOURCE_DIR` and `WFM_RUNTIME` identify a runtime containing
+`local-paths.cjs`, `security-runtime/bootstrap.cjs`,
+`LOCAL_PROOF_PROVENANCE.json`, and `STAFFOLOGY_ASSEMBLY.json`; its exact synthetic
+cohort is employee-001/PAY901 and employee-002/PAY902 with GBP 10 effective
+2026-09-01 and full-time 40-hour contracts plus application and append-only audit
+readback after restart.
+
+The available pre-extracted runtime does not contain `local-paths.cjs`, and the
+supported `@simplewebauthn/server` lockfile closure is neither installed nor in
+the local npm cache. Therefore the absent-directory full composition, the strict
+full HTTP run, required Node 22.23.2, and supported Docker image remain UNPASSED.
+No package-registry loop, substitute passkey implementation, CircleCI run,
+provider request, deployment, release, merge, credential change, or frozen
+tenant/run mutation occurred. The smallest intervention remains admission of the
+new exact review commit to the existing non-deploy CircleCI project after
+independent patch and hook review.
+
+## Supported Docker admission follow-up
+
+Coordinator review established that the supported Dockerfile still ran
+`node --test integrations/staffology/*.test.cjs` directly from `/proof`. The
+exact invocation was reproduced before repair and is retained in
+`evidence/docker-admission-direct-checkout-red.tap`: 104 tests passed and the
+employee persistence suite failed because `/proof/lib/integration-gateway.cjs`
+does not exist. The glob also excluded every nested `independent/*.test.cjs`
+suite, including the two calibrated successor regressions and strict full HTTP
+journey. The structural failing reproduction is retained in
+`evidence/docker-admission-contract-red.tap`.
+
+The existing `autonomy-proof` stage now composes
+`/proof/staffology-full-runtime` only after the existing locked
+`security/runtime` dependency installation. Its Staffology admission binds
+`CANONICAL_SOURCE_DIR=/proof`, `WFM_RUNTIME=/proof/staffology-full-runtime`, and
+`STAFFOLOGY_RUNTIME_MODE=full`, then explicitly runs every root Staffology suite,
+both successor regression suites, the Docker admission contract, and the strict
+full HTTP employee journey before the existing composer contract tests. The
+remaining FORGE, payroll, tenant, recovery, security, Autopilot, containment,
+portable-autonomy, source-SHA, and final-runtime steps are unchanged.
+
+The source-level Docker admission contract passes on available Node 22.22.2 and
+proves composition occurs after the locked dependency install, all three full
+runtime bindings are present, and no nested required suite is omitted. A local
+supported image build remains UNPASSED because Docker, Podman, and Buildah are
+absent and the exact lockfile packages are neither installed nor present in the
+empty npm cache. No registry retry was attempted. The concrete handoff is a
+fresh exact-source, `--pull=false`, `RAILWAY_GIT_COMMIT_SHA=$CIRCLE_SHA1` build
+in the existing CircleCI project after coordinator patch and hook review; a
+halted, skipped, dependency-unavailable, or unrun job is not a pass.
+
+## Exact approving-account follow-up
+
+Independent review found that canonical `users` is keyed by `email`, while
+multiple accounts may legitimately share one tenant/person pair. The retained
+red in `evidence/shared-person-authority-red.tap` creates two privileged accounts
+for the same person, removes permissions only from the approving account, and
+demonstrates the former person-only resolver selecting the other privileged row:
+`check` stayed true and consumption succeeded without a provider request.
+
+Approvals now persist the exact authenticated account email in the existing
+`approved_by` field while still requiring a valid person linkage at issuance.
+Every check and consumption resolves that email together with the bound tenant,
+then verifies the returned email, tenant, person linkage, and both current
+permissions. The composed canonical resolver queries the existing email primary
+key plus tenant; it adds no directory, permission table, or fallback. Existing
+person-only approval rows fail closed after this source change.
+
+The repaired held-out suite covers two same-person accounts, revocation of only
+the actual approver, positive current-account authority, tenant change, authority
+recreation, and one-shot consumption. Its four assertions pass on available
+Node 22.22.2. Canonical assembly validation additionally inspects the composed
+server for the email-and-tenant resolver. The strict full HTTP source now asserts
+the exact two staff rows—including IDs, source IDs, payroll IDs, names, and ready
+state—and an explicit count of two, rather than relying on a vacuously true
+`every()` result. Full supported-container execution remains approval-bound and
+UNPASSED for the previously recorded local dependency/tooling limitations.
+
+## Exact-account descendant admission preparation
+
+The coordinator independently recovered all 24 changed files for commit
+`8962f72b8ead8c93a5df0ec995bb6e6d57ce9739` and reconstructed tree
+`a6850f3b6613f9643cbdf318d817ff9398a6ef3e` exactly, without relying on the stale
+ten-file Copy Patch export. Supplemental Node 24.21.0 execution covered all root
+Staffology suites, successor suites, the Docker admission contract, unchanged
+original-eight assertions plus positive control, three held-out probes, and the
+sealed persistence kernel: 125 passed, 0 failed, 0 skipped. These are source and
+sealed-kernel results only; they do not establish strict full HTTP, the prescribed
+Node 22.23.2 image, or hosted proof.
+
+The reviewed source tree still carried trigger blob
+`15de80c6f621504b73e08a6877b0442da284ba64`, unchanged from the earlier d64
+source. In the reviewed descendant sequence, `require_frozen_candidate` would
+therefore find no `HEAD^`→`HEAD` trigger change and halt both jobs. This checkout
+materialises the independently reconstructed tree as a flattened native
+checkpoint whose actual parent is `35d8e46`; that local parent comparison already
+shows the older trigger delta and is not misrepresented as the reviewed
+descendant ancestry. The identity comparison against blob `15de80c` is the
+retained reproduction of the real descendant halt condition.
+
+The trigger now explicitly requests a fresh exact-source, non-deploy admission
+for tree `a6850f3b6613f9643cbdf318d817ff9398a6ef3e` through existing CircleCI project
+`ab7bf08e-2426-4256-9381-ba3f59c6d6f9` and definition
+`fe503fe6-0af9-5c00-aaf9-9b73d7ce0971`. After this admission-only commit, the
+actual native `HEAD^`→`HEAD` comparison must show the trigger changed; the guard,
+real ancestry, Ubuntu 24.04 machine, Node 22.23.2 pin, `--pull=false`, and
+`RAILWAY_GIT_COMMIT_SHA=$CIRCLE_SHA1` remain unchanged. Publication and CI
+invocation remain pending coordinator hook and exact-byte review. A halt, skip,
+dependency failure, or unrun job is not a pass, and supported image/full HTTP
+proof remain UNPASSED.
+
 ## Preserved evidence and exact assertions
 
 The original eight-failure TAP transcript remains unchanged at
@@ -76,3 +300,317 @@ prepared unless the supported container-build gate and every offline gate pass.
   CircleCI review route cannot be invoked without a retrievable remote branch.
 - [ ] Deployment and hosted payroll proof remain paused pending both blocked
   gates and the separate exact approval.
+
+## Published transport admission and terminal red — 2026-10-01
+
+The independently verified reviewed tree
+`03d5c8d906bd82a20626e4c6a9d1e0a450672669` was published without changing
+its bytes as transport commit `f454b8f850ed8fb28addd15613d8f612b4563549`,
+whose real remote parent is `35d8e4673f2cd8e205e92f9cb46187acb3277d79`.
+Native commit `2011246c7b5c899b5469b0edc21d8850294a12fb` remains local provenance and is
+not described as remotely published. Draft PR 289 remains the sole review PR;
+the unintended PR 291 was closed unmerged and is not an authority or evidence
+source.
+
+Existing CircleCI pipeline `61e9707a-b210-4976-a25c-1146854a8e46`, workflow
+`7f720269-3163-48a2-b11f-a5167ec0e90d`, admitted the changed protected trigger
+and exact `CIRCLE_SHA1`. Core passed in 11 seconds. Runtime job
+`4adbb748-0e4e-43bc-b643-3dcb28d54bbf` failed after 3 minutes 23 seconds in the
+supported Ubuntu 24.04 / Node 22.23.2 Docker build. The terminal builder error
+was `max depth exceeded` while preparing the layer at the agency/attendance
+COPY boundary (Dockerfile lines 207–209 in the published source). The retained
+545,056-byte coordinator log shows only that the composed Staffology command
+completed; it does not establish a final image, image ID, runtime gate, or a
+complete raw test count. Always-run upload success and the single downloaded
+terminal screenshot are qualified as diagnostics, not build success.
+
+## Bounded depth and evidence repair
+
+The runnable stage still installs, verifies and extracts the same sealed
+runtime and applies the same overlays to the same paths. Its context COPY
+instructions now use BuildKit link-independent layers, so the 256-copy
+instruction Dockerfile no longer creates a 256-deep parent chain. Packaging
+regressions accept reviewed COPY flags while continuing to assert every
+bootstrap/integration-fabric destination. No proof stage, test, non-root
+boundary, package-manager removal, source-SHA seal, production refusal, or
+immutable application permission was removed.
+
+The existing autonomy stage now writes the complete Staffology TAP stream,
+assembly receipt, local provenance receipt and exact build source SHA into a
+private discarded-stage evidence target. Existing CircleCI exports that target
+before the final cached build and retains it in its existing private artifacts;
+none of those private employee/provider bytes enter the runnable image. This
+is source preparation only: the repaired supported image and Node 22.23.2
+runtime remain **UNPASSED** until a new reviewed exact-source admission runs.
+
+## Authenticated operation wiring
+
+The prior published source exposed only a dormant integration report. The
+canonical assembly now wires an existing-session operation boundary into the
+existing integration routes, canonical SQLite database and append-only audit:
+
+- employee acquisition uses only the server-held Staffology credential,
+  employer, tenant, exact ordered cohort and request bounds, then delegates the
+  reviewed envelope to the existing integration/onboarding store;
+- payroll preparation still derives one allowance-free `WORKED_BASIC` line
+  from the exact released unsent canonical batch and enforces the exact-cent
+  £12.50 boundary before creating an intent;
+- the authenticated exact account must currently retain both `payroll.export`
+  and `company.configure`; the runtime derives and issues the one-shot permit
+  only after the complete fresh provider baseline exists, and re-resolves that
+  exact email+tenant account at consumption;
+- delivery and explicit recovery use the existing durable coordinator/store,
+  fencing and uncertain-delivery reconciliation. Recovery never calls generic
+  requeue/resend and returns only a sanitised status projection while complete
+  provider evidence remains private;
+- the existing integration report and append-only audit expose sanitised
+  status/actions. No second database, adapter, worker, service, tenant or
+  implementation run was introduced.
+
+The default remains dormant and fail-closed. Activation requires a server-held
+`WFM_STAFFOLOGY_OPERATION_JSON` exact binding and `STAFFOLOGY_API_KEY`; the
+profile candidate must equal the image's sealed source SHA. Request bodies
+cannot supply a credential, provider origin, tenant, employer, runtime binding,
+permit or client. These source paths do not authorise configuration, deployment
+or a provider call.
+
+Offline tests cover dormant/source binding, tenant/permission refusal, exact
+two-employee cohort acquisition, canonical payroll delegation, one simulated
+POST with fresh financial readback, one-shot replay, and the existing
+authority/recovery/£12.50-versus-£1,250 suites. They remain synthetic and are
+not provider acceptance or hosted proof.
+
+## Remaining gates after this preparation
+
+Before any release-and-hosted-test request, independent review must verify this
+new native commit/tree and all consequential blobs, then one legitimate
+protected-trigger descendant may be transported with real remote
+`f454b8f850ed8fb28addd15613d8f612b4563549` ancestry. The existing contained
+CircleCI route must produce a terminal green exact image digest, full raw TAP
+counts, assembly/provenance/source receipts, Node 22.23.2 runtime result and all
+unchanged FORGE/security/payroll/tenant/recovery/Autopilot results.
+
+Still unavailable and therefore not claimed: live provider employee evidence,
+an approved provider period/draft and real employee IDs, credential/runtime
+binding, provider acceptance, fresh provider readback, hosted financial
+reconciliation, deployed UI/audit evidence, authenticated tenant isolation,
+restart/recovery on one exact deployed image, and every remaining mandatory
+customer-readiness/Golden Journey/security/persistence/recovery/Autopilot gate.
+The frozen `northstar-demo` run
+`09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e` was not read or mutated.
+
+## Independent operation-scope review and repair — 2026-10-01
+
+Independent reconstruction verified native commit
+`8cef6810c5dbcd208e397e7795742fd310f33577`, parent
+`acbbf29daa57348f4bdd2ae21e27ce2abe2d40bb`, and tree
+`109d519c95ce63f9bc1c0acd0f8e670217717b65`. It remains unpublished; PR 289
+still points to transport `f454b8f850ed8fb28addd15613d8f612b4563549` / tree
+`03d5c8d906bd82a20626e4c6a9d1e0a450672669`.
+
+The review retained two calibrated failures before this repair:
+
+1. The real bridge produced the canonical payroll input without the four
+   runtime-provenance fields, so the real coordinator rejected an otherwise
+   valid operation with `STAFFOLOGY_BINDING_MISMATCH` before its first provider
+   GET. The prior delegation-only mock did not exercise this composition.
+2. When a fixture manually supplied those missing binding fields, a caller
+   could select `staffology-OUTSIDE-cohort`; the injected client observed one
+   GET and SQLite contained one durable intent before the intercepted request
+   became `STAFFOLOGY_TRANSPORT_ERROR`. This was not a provider request, but it
+   proved the absent pre-intent cohort boundary.
+
+The raw reproduction is retained at
+`evidence/operation-trusted-scope-red.tap`; the real-composition successor run
+is retained at `evidence/operation-trusted-scope-green.tap`.
+
+The operation boundary now constructs delivery input by combining the
+canonical bridge result exclusively with the server-held trusted binding.
+Caller binding fields cannot override it. The server-held operation profile
+also contains the exact permitted VECTOR employee, Staffology employee,
+payroll code, entry, released period and batch/checksum, effective date, pay-run
+coordinates, basic pay code, rounding policy, hours, rate and expected basic
+pay. The request must exactly equal that scope before the current exact account
+is resolved and before any provider read or durable intent. The Staffology
+employee must belong to the configured exact acquisition cohort. A conflicting
+tenant, employer, employee, account authority, run coordinate, £1,250 value or
+recovery delivery/digest is rejected before network or persistence.
+
+Recovery derives its delivery ID and payload digest again from the same
+server-held canonical released batch and exact operation scope. A caller cannot
+select another persisted delivery; actual uncertain-delivery fencing and
+no-blind-resend behavior remain in the existing coordinator/store.
+
+The real-composition regression now uses `Bridge.createRuntime` with a real
+released basic-only batch, `Boundaries.createBoundaries` with real SQLite and
+current exact-principal resolution, and `Operations.createOperations`. It
+proves a complete fresh baseline, exactly one simulated POST, fresh financial
+readback, £12.50 reconciliation, private baseline/readback/comparison evidence,
+acknowledged receipt persistence, replay without a second POST, and close/reopen
+readback. Negative cases prove zero GET, zero POST and zero intent for
+outside-cohort, tenant, account, period, value and recovery-scope changes. These
+are synthetic offline results, not live-provider or hosted acceptance.
+
+The complete retained pipeline 3 terminal log is 1,210,675 bytes with SHA-256
+`f1303a2fb0edf6b00fe4d7768cf2bba9603bfd1845c23abf24a759245e0d3604`.
+Its `max depth exceeded` outcome remains the only prescribed-container result;
+`COPY --link` and source-level mapping checks do not establish a final OCI
+rootfs, image digest or supported runtime pass. One cold exact-source Ubuntu
+24.04 / pinned Node 22.23.2 non-deploy admission remains mandatory after
+independent review of this successor.
+
+The canonical 21 readiness requirement IDs in
+`implementation/runtime/one-day-enterprise-engine-core.cjs` remain authoritative.
+No completion-stage list, Staffology test or source repair closes any hosted,
+customer, Golden Journey, security, tenant, persistence, recovery or Autopilot
+gate. No provider, deployment, credential, ref or frozen-run operation occurred.
+
+## Remote b6 reconciliation and cross-platform cleanup — 2026-10-01
+
+Fresh readback moved existing draft PR 289 to remote commit
+`b6e1dd26f5ca64e7ba6510eae73cc03047f6244e`, real parent
+`f454b8f850ed8fb28addd15613d8f612b4563549`, tree
+`719ed6c5bbc590c6ab0401005752228e6a1d8287`, changing only Dockerfile blob
+`e7bce4a52e637e7c9e9d9ba6b6ca19cc27b1f155`. That native commit is not in
+this restored checkout and its ancestry was not fabricated. Its verified
+same-destination COPY consolidation was reconciled into this successor while
+preserving the operations module, private evidence target, strict tests and
+source-SHA binding. The parent-to-successor mapping comparison retains every
+source/destination mapping and reduces the runnable-stage COPY instruction
+count from 210 to 52.
+
+Pipeline 6 / workflow `587a1a3d-eea2-4619-9e45-89f8673aaa2d` / runtime job 5
+is **HALTED**, not passed. Its only material output was: `No frozen-candidate
+trigger change; halting heavy proof without marking product failure.` No build,
+runtime, image, TAP or full proof step ran because b6 changed only Dockerfile
+and retained the prior protected trigger. This successor legitimately refreshes
+that existing trigger; it has not been published or admitted.
+
+The independently observed Windows cleanup red was valid: the operation test
+registered directory removal before the later reopened SQLite close hook, so
+Windows correctly refused removal with `EPERM`. The fixture now owns every
+SQLite handle and closes them in reverse creation order before removing its
+directory. The analogous Autopilot replay fixture now owns and closes later
+engines before its lifecycle guard, database and directory. Cleanup errors are
+not caught or ignored.
+
+The full-mode HTTP test now starts the real composed security bootstrap with a
+synthetic server-held exact-source operation profile and a child-process-only
+Staffology transport interceptor. It invokes the authenticated
+`employees/acquire-stage` route, applies the reviewed batch through the existing
+canonical application route, and retains the exact cohort/rate/contract/audit
+restart readback. It also invokes `payroll/approve-deliver` with a wrong run and
+proves rejection without another intercepted provider request. Adapter list
+pages are checked against the complete server-held cohort before any detail GET,
+so an outside employee ID cannot cause its detail to be fetched.
+
+A positive `approve-deliver` HTTP operation is not locally manufactured: the
+sealed fixture has no existing application route that creates a new payroll
+period/released batch for the newly onboarded synthetic cohort. Injecting that
+released state through SQL or a test-only state flag would violate the proof
+contract. The real bridge/SQLite operation test separately proves the exact
+released-batch-to-one-simulated-POST/readback/receipt/reopen path, but it is not
+mislabelled as the missing authenticated HTTP payroll workflow. Therefore the
+strict combined full HTTP operation journey and prescribed Node 22.23.2 image
+remain **UNPASSED** until the existing canonical payroll workflow can produce
+that cohort's released batch through real application commands and the
+contained cold build executes it.
+
+## Exact-source payroll HTTP closure after `c36f611` (2026-10-01)
+
+- The coordinator independently reconstructed native `c36f611c7124f86579e1feda5a9418f1c284dfc2` / tree `aa0a9c6334ec5e108554df3ef568ce6916978038`. It remains local and unpublished. The actual remote PR289 head remains `b6e1dd26f5ca64e7ba6510eae73cc03047f6244e`; any later transparent transport must use that real remote object as parent rather than inventing native ancestry.
+- A detached worktree at exact `c36f611` reproduced the remaining source red without network or provider traffic: its composed `server.cjs` had no `/api/command` dispatch from `time-source-ingest` to the sealed payroll domain's existing `openPeriodFromSource`. The retained raw source reproduction is `evidence/full-http-payroll-command-red.tap`. Consequently the imported cohort could not enter the genuine review/sign/release workflow.
+- The composer now adds only that bounded dispatch inside the existing authenticated `mutate` transaction and extends the existing account-permission administration allow-list with the domain's pre-existing dedicated `time.ingest` permission. `openPeriodFromSource` retains validation of Monday/week uniqueness, complete frozen roster, manager/org identities, source version, normalised actual-attendance records and complete teams. No period engine, database, worker, tenant or implementation run was added.
+- Staffology configuration now supports an acquisition-only exact-source profile with `payroll: null`. Acquisition stays exact-cohort/server-credential bound; payroll delivery and recovery fail closed with `STAFFOLOGY_PAYROLL_DORMANT` until a second-phase server-held profile names the genuine released batch and checksum returned by the canonical application.
+- The strict full HTTP source now requires `WFM_BUILD_SOURCE_SHA` to be the admitted 40-hex source identity. Docker passes the existing `RAILWAY_GIT_COMMIT_SHA` into this proof; the prior synthetic repeated-`a` candidate identity was removed.
+- The strict journey uses the actual routes to assign `time.ingest`, acquire/apply/onboard the exact `employee-001`/`PAY901` and `employee-002`/`PAY902` cohort, persist £10.00 GBP rates and 40-hour contracts, ingest explicitly labelled offline observed attendance, perform manager checks/signature and canonical payroll release, read the returned batch/checksum/export, restart with that exact trusted payroll scope, and assert one simulated provider POST, £12.50 reconciliation, private receipt, replay without a second POST, restart readback and audit/status projection. Wrong tenant, current permission, cohort, run and £1,250 inputs are asserted before provider traffic. This remains synthetic/offline evidence, never a live-provider claim.
+- The full strict journey source is now executable only with the locked passkey dependency closure and composed FULL runtime. That closure is absent locally, so the complete HTTP journey and prescribed Node 22.23.2 container remain **UNPASSED** here pending the one independently reviewed contained cold build. Existing recovery/fencing tests remain the authority for lost-lease and uncertain-delivery behavior; the HTTP journey does not weaken or replace them.
+- The existing 21-requirement readiness registry remains authoritative. Golden Journey, hosted security/tenant/persistence/recovery/Autopilot, image identity, provider acceptance and customer readiness all remain **UNPASSED** until evidence from one exact admitted/deployed candidate closes them.
+
+## Final focused pre-admission repairs after `6e4bc04` (2026-10-01)
+
+- The replay/audit mismatch was reproduced at the real operation boundary: one initial delivery plus one acknowledged replay made exactly one simulated provider POST but invoked the append-only `staffology-payroll-operation` audit twice. The old HTTP expectation of one audit row was wrong. `evidence/operation-replay-audit-red.tap` retains that red. Audit details now explicitly distinguish `outcome=initial,replayed=false` from `outcome=replayed,replayed=true`; the strict HTTP proof expects both truthful rows while retaining the one-POST limit.
+- The two existing CircleCI Docker builds now use `--progress=plain` and tee complete output into the existing private runtime-artifact directory. The Staffology Docker RUN always cats its complete private TAP before returning the original test exit status, so a failing test remains a failing layer while its diagnostic is present in the plain build log. No workflow, service or infrastructure was added.
+- The positive fenced-successor fixture retains its virtual lease timing (`100` then `1000`) but uses a bounded 1000 ms injected HTTP timeout instead of the contention-sensitive 100 ms transport deadline. Negative timeout tests and zero-dispatch semantics remain unchanged.
+- The synthetic provider fixture now persists its accepted £12.50 state in the isolated test directory across server processes. After VECTOR restart, the authenticated exact-scope `payroll/readback` operation performs fresh GET observations of the open run and entry using the adapter's existing validation primitives, records the readback audit, and proves £12.50 without another POST. This is durable simulated-provider state with zero external provider requests, not hosted/provider acceptance.
+- The strict HTTP proof now expects two append-only operation audit rows (initial and replay), one readback audit row, one provider POST total, and fresh provider plus VECTOR/SQLite observations after restart. The existing private baseline/readback/comparison receipt remains authoritative and immutable.
+- The prescribed Node 22.23.2 full HTTP/container build, OCI image identity and all hosted/customer/provider gates remain **UNPASSED** until the one independently reviewed contained admission executes. The existing 21-requirement readiness registry remains authoritative.
+
+- Checkpoint freshness for this final repair: native `6e4bc0448c166f6abab2519ca8cdc12da7703278` is not present in this restored object database. Existing local transport checkpoint `8ee574128f969b13c22bb63eae75db4eb3346180` has the independently verified identical tree `7e8c6e1b245618d5349add56654b350ce6290452` and published-base parent `35d8e4673f2cd8e205e92f9cb46187acb3277d79`; it is the honest local parent of this repair. This does not claim native `6e4bc04` was remotely published, and the coordinator must still use the freshly verified actual PR289 remote head as transport parent.
+
+## Canonical-period and provider-isolation correction after `c675803` (2026-10-01)
+
+- The exact sealed domain red is retained in `evidence/full-http-period-collision-red.tap`: canonical initialisation already owns `2026-09-07` from `synthetic-closed-week-fixture`, so `openPeriodFromSource` correctly rejected the old strict-test date with `This review week already exists.` before cohort lookup and with zero provider requests. The existing period and duplicate-week guard are unchanged. The strict test now uses unused valid Monday `2026-09-14` consistently under an explicitly synthetic test-process `2026-10-01` as-of clock (so the week is genuinely closed under the existing sign/release rules) for observed attendance, review, release, export, provider approval and readback, while rates/contracts remain effective `2026-09-01`.
+- Fresh post-restart evidence again asserts the exact two onboarding people and staff identities, names, source IDs, PAY901/PAY902 payroll IDs, ready lifecycle, applied integration records, both £10 GBP hourly rates from `2026-09-01`, and both full-time 40-hour contracts through authenticated application readback plus read-only SQLite evidence. No SQL mutation or manufactured release is used.
+- The child-process provider interceptor now fails closed for every origin except exact `https://api.staffology.co.uk` and loopback. The proof asserts no unexpected forwarded origin, exact bounded Staffology methods/paths/run/entry/cohort, and one simulated POST total. Its accepted synthetic state remains durable across server restarts.
+- The existing private artifact route now receives `staffology-http-result.json` containing the exact source SHA, tenant, period, returned batch ID/checksum, cohort mapping, request counts, complete fresh provider readback snapshots/provenance, VECTOR people/staff/integration/reconciliation readback and audit counts. It is synthetic private evidence, not live-provider acceptance.
+- Fresh remote readback advanced PR289 to `adf9b7246c150ca824b24893cd35b49e0cf835ff` (parent `b6e1dd26f5ca64e7ba6510eae73cc03047f6244e`, tree `a3ceee1bfde0aa01893a70a8acd12950b038364e`) by changing only the protected trigger to retain the b6 admission. This local history does not fabricate that remote commit; transparent publication must use the freshly reverified actual remote head as parent.
+- CircleCI pipeline 7 / workflow `b79bb3e8-5765-472b-88d1-ee9216a4ee42` is **FAILED**, not an image pass: core succeeded, runtime failed after 1m46s with 1182/1184 tests passing. Both failures were stale individual-COPY assumptions in `tests/vector-runtime-packaging.test.cjs`; the already-reviewed consolidated mapping assertions address those cases and pass supplemental testing. Complete raw log SHA-256 `61429f299ca5cde9b17ecade590693a776de2acaf6246c1e07e4be5c84879deb` is coordinator-retained. No unchanged rerun was invoked.
+- The prescribed Node 22.23.2 full HTTP/image admission and every applicable gate in the existing 21-requirement readiness registry remain **UNPASSED** pending one final independently reviewed contained build.
+
+## Generated child-preload syntax correction after `8f3c49b` (2026-10-01)
+
+- Independent review correctly found that source-file `node --check` did not compile the JavaScript generated by the outer mock-provider template. The actual generated child contained a literal newline inside the unexpected-origin append string and failed `new vm.Script(...)` with `SyntaxError: Invalid or unexpected token`. The complete focused red is retained in `evidence/generated-provider-preload-red.tap`.
+- `independent/generated-provider-preload.test.cjs` now extracts and evaluates the actual template bytes from `full-http-employee-journey.test.cjs`, compiles the resulting child preload, and asserts its fail-closed origin fence. It is included in canonical assembly and the contained Docker Staffology TAP, so outer-source syntax checking cannot mask this class of child-generation failure again.
+- The unexpected-origin newline now uses the required double escaping. Loopback forwarding is restricted to HTTP URLs whose parsed hostname is exactly `127.0.0.1` or `localhost`, allowing intended ephemeral ports while continuing to log and reject every other origin. Exact Staffology request bounds, durable synthetic provider state, private source/provenance evidence and all production authority boundaries are unchanged.
+- No publication or CI admission was invoked. PR289 remote parent must be freshly reverified from the current actual remote head (`adf9b7246c150ca824b24893cd35b49e0cf835ff` at the last coordinator readback) before any transparent transport. All hosted and 21 readiness-registry gates remain **UNPASSED**.
+
+## Pipeline 8 core-command compatibility correction (2026-10-01)
+
+- The reviewed native `b8b016add73d237f3259b4768da58e92999422a2` was transparently published as `4d96909f0cfb2ce650771981ba068c70617d8a5a` with real parent `adf9b7246c150ca824b24893cd35b49e0cf835ff` and identical tree `ca9d132c516042c7651e256871daca30eb2ae845`. This mapping is publication provenance; native b8 was not mislabelled as the remote commit.
+- CircleCI pipeline 8 / workflow `d311e655-b068-480c-9a3e-116b5fbea053` admitted exact remote source `4d96909`, verified Node 22.23.2, then **FAILED** in core job 8 after six seconds; runtime never ran. `scripts/validate-product-factory.mjs` required the established `docker build --pull=false` prefix, but the logging repair had inserted `--progress=plain` before it. Complete coordinator-retained raw failure is 10,659 bytes, SHA-256 `fe4f9b476451e1273808c341591583d117c204b693d150f43fa5af73b284f8c7`; the locally reproduced raw red is `evidence/circleci-build-command-contract-red.log`. No build, image or full HTTP pass is claimed.
+- Both existing CircleCI commands now preserve `docker build --pull=false` and place `--progress=plain` immediately after it. Pipefail, tee'd private logs, `--pull=false`, exact `CIRCLE_SHA1` build arguments, protected trigger admission, private evidence export and no-deploy containment remain intact. The focused Docker admission contract asserts the corrected ordering twice.
+- A repository scan found no other strict source validator for the displaced ordering. The actual `node scripts/run-forge-ci.mjs` core path now completes with `VECTOR_FORGE_CORE_CI=PASS`, including `PRODUCT_FACTORY_VALIDATION=PASS` and all subsequent validators/tests; this is source/core validation, not a container or customer-readiness pass.
+- No unchanged pipeline was rerun. The protected trigger is refreshed only for this corrected exact descendant. All image, strict full HTTP, hosted/provider and 21 readiness-registry gates remain **UNPASSED** pending independent review and one contained admission.
+
+## Pipeline 9 strict-HTTP canonical blocker correction (2026-10-01)
+
+- Native `6bbeafb9e37549d0c0b5e37d596243ec768b332a` was transparently published as `b27e39197e233c7b660551d85781071168503b29` with real parent `4d96909f0cfb2ce650771981ba068c70617d8a5a` and identical tree `bee88c13b91d1b941e1ebed45b341bc1bf1fc0c0`. CircleCI pipeline 9 / workflow `0eaff073-a294-4c9c-88d7-1803e1336f64` passed core job 10 in 17 seconds and **FAILED** runtime job 11 after 29 seconds. Exact source/build argument and Node 22.23.2 were preserved; Gusto 13/13 and locked passkey 28/28 passed. Staffology was 122/123 with strict HTTP failing before release. Complete coordinator-retained plain log is 62,413 bytes, SHA-256 `88fef066192967bb5869021f5c3209be2325bbbc5ef20f64ad9bbc64ee3c872b`.
+- The two exact blocker objects are retained in `evidence/full-http-team-blockers-red.tap`: (1) time review flagged the 75-minute worked row as unscheduled because expected shift evidence was null; (2) canonical pricing held the employee because the onboarding contract lacked complete WorkRules fields and raised `Cannot read properties of undefined (reading 'slice')` while reading the missing premium window. Zero real external requests occurred.
+- The fixture now supplies factual synthetic expected shift evidence equal to the independently supplied observed 09:00–10:15 attendance, with zero breaks and 75 planned minutes. This is schedule evidence for time-review comparison; it is not converted into presumed attendance. Because no variance exists, no treatment is fabricated and time review remains active.
+- Both imported employees now receive complete reviewed full-time WorkRules contract versions through the existing authenticated `rules-contract` command before source ingestion. The original onboarding contracts effective `2026-09-01` remain intact; the complete reviewed versions effective `2026-09-14` add the established overtime, premium-window, holiday, jurisdiction and policy fields required by genuine `priceSeries`. Post-restart evidence asserts both versions, both 40-hour terms and both £10 GBP rates.
+- Continued isolated actual-domain execution found and retained a subsequent mock-shape red in `evidence/full-http-provider-run-red.tap`: the run-detail GET incorrectly returned entry-shaped JSON and failed exact run-version validation before any POST. The interceptor now returns the exact run object for the run path and the exact entry object only for the entry path.
+- An isolated execution using the actual composed server/domain modules (without claiming the unavailable passkey bootstrap gate) then completed the entire HTTP journey: real employee application, costing, time ingestion, review/sign/release, one simulated POST, fresh provider readback, persistence/reopen, audit and private receipt. The receipt was created and the journey passed 1/1; this is qualified isolated domain evidence, not the prescribed supported-container/full-security proof.
+- No publication or CI invocation was performed. All prescribed image/full-bootstrap, hosted/provider and 21 registry gates remain **UNPASSED** until independent review and one contained admission using the freshly verified actual PR289 remote head.
+
+## Strict HTTP private-evidence custody correction after `6add66a` (2026-10-01)
+
+- Independent review correctly identified that the successful isolated journey queried only private-evidence phases, exported summaries, and then deleted its SQLite database. The actual custody failure is retained in `evidence/full-http-private-evidence-custody-red.tap`: complete baseline/run/entry bodies, stored digests, delivery payload/dispatch/acknowledgement, request log, reviewed rates/contracts and scoped audit rows did not survive cleanup.
+- The existing private artifact output now receives a schema-v2 scoped proof before cleanup. It includes the exact source/binding/tenant/period/batch/checksum/cohort, durable delivery intent and receipt (excluding owner token), every private evidence body with its stored digest, fresh run/entry/provenance, bounded sanitised request log, reviewed rate/contract evidence, VECTOR persistence/reconciliation and relevant append-only audit rows. It explicitly records `synthetic: true` and `actualExternalRequests: 0`; credentials, login/session material and unrelated tenant state are excluded.
+- The journey independently validates each stored private-evidence digest, writes a SHA-256 sidecar for the complete proof, stops the server, closes SQLite, removes the temporary runtime/database with non-forcing cleanup, then reopens the private artifact and revalidates its whole-file digest, evidence digests, exact identities, acknowledgement, rates/contracts, request limit and initial/replay/readback audit counts. Thus the evidence remains readable only from the existing discarded-stage private artifact route after runtime state cleanup; it is not copied into the runnable image or public artifacts.
+- This remains synthetic isolated-domain preparation. Prescribed Node 22.23.2 full-security-bootstrap/container admission, hosted/provider proof and all applicable gates in the existing 21-requirement registry remain **UNPASSED** pending independent review and one contained admission. No publication, CI invocation or hosted/frozen mutation was performed.
+
+## Exact private-evidence scope and native-identity correction (2026-10-01)
+
+- The previously reported native identifier `f789c55a1e32aee0c30ded357504d223773cc299` was a transcription error, not a second object or ancestry change. The repository object is `f789c558223d58e61c513db75599d24a068fed9d`: `git cat-file -s` reports 249 raw commit-body bytes, and hashing those exact `git cat-file commit` bytes with `git hash-object -t commit --stdin` returns the same `f789c558...` identity. Exact Base64/raw-object evidence accompanies the owner handoff.
+- The retained custody red remains applicable. The repaired export now selects the exact acknowledged `delivered.deliveryId`, selects private evidence only for that delivery, and selects relevant audit rows only for the trusted `northstar-demo` tenant. Before export it asserts every evidence row has that delivery ID, every audit row has that tenant, and every initial/replay operation audit identifies that exact delivery. No unqualified delivery, evidence or cross-tenant audit query remains.
+- Complete raw private evidence bodies and stored digests, strict bootstrap contract, source binding, cohort, origin fence, 14-request/one-POST bounds and £12.50-versus-£1,250 denials remain unchanged. This is still synthetic preparation; prescribed contained and hosted gates remain **UNPASSED**.
+
+## Pipeline 10 hosted runtime-identity caller correction (2026-10-01)
+
+- Reviewed native `c999f173c2a29695431c09e2a5a84b715bffbfae` was transparently published as `b4512f94c54315d4969e7b98425b4bb761caf55a` with identical tree `3989ba4fec69c5bf75d6a7242d113cd985d61e26` and real parent `b27e39197e233c7b660551d85781071168503b29`. Pipeline 10 core job 12 passed; runtime job 13 **FAILED** after its build and security steps passed because the hosted `docker run` caller omitted required `WFM_CANDIDATE_SHA`. The complete failure facts and raw-log digest are retained in `evidence/circleci-runtime-identity-caller-red.log`; final image/hosted/customer readiness is not claimed.
+- The existing isolated hosted caller now passes its exact `${CIRCLE_SHA1}` as `WFM_CANDIDATE_SHA`. The runtime still independently reads `/app/.wfm-build-source-sha` and fails startup on absence, invalid form or mismatch; no identity or hosted guard was weakened. The proof now reads `/api/runtime-identity`, requires `candidateSha` to equal `CIRCLE_SHA1`, requires `sourceBinding=build-file-matched`, and independently checks both protected response headers. Identity body/headers join the existing private runtime artifacts.
+- A held-out caller contract exercises a matching configured SHA plus independently read sealed file and the mismatch failure. Node pin, non-root entrypoint, package-manager removal, production refusal, origin/secret boundaries, private Staffology evidence and all original negative gates remain unchanged.
+- Fresh read-only metadata reports that the masked `STAFFOLOGY_API_KEY` row exists on executor `fc72219b-ee7c-4b84-8d94-1a14cf7d6e78` in environment `eed9f097-610a-416e-83b9-6bc7bdb3eeef`; its value was not read and running-process binding remains **UNVERIFIED**. Release/live-manifest/image-transfer approval remains withheld. No publication, CI invocation, deployment, provider request or frozen-state mutation was performed for this repair.
+
+## Pipeline 11 application-UID proof correction (2026-10-01)
+
+- Native `3e5062d29111ae3e43f2367f7567406a0ab750a6` was transparently published as `dfeb74eb524fe936516c6b4a8b53ac9f2876e580`, with real remote parent `b4512f94c54315d4969e7b98425b4bb761caf55a` and identical tree `c6e8e5108894a7437ffc0e12b42435d54be6cf6c`. Pipeline 11 core job 14 passed; runtime job 15 **FAILED** after build and runtime-security success. The actual retained output identifies only a successful hosted health response followed by exit 1, not the precise silent assertion. Exact log identities and this qualification are retained in `evidence/circleci-pid1-uid-caller-red.log`.
+- Source inspection found a real semantic defect in the next caller assertion: `docker exec ... id -u` measures a newly created exec process using intentional image `Config.User=root`; it does not measure the running PID 1 application after the volume/bootstrap entrypoint permanently executes `gosu node`. The repair does not claim the unavailable diagnostic proved this was the terminal assertion.
+- The caller now reads `/proc/1/status` from the running container and pipes only that non-secret process metadata into a fail-closed verifier. The verifier requires exactly one well-formed four-field UID record and rejects root in real, effective, saved or filesystem UID. Tests retain positive non-root coverage and root/missing/malformed/duplicate negatives. Image root wrapper, volume ownership bootstrap, `exec gosu node`, Node pin, package-manager removal and production refusal are unchanged.
+- Every hosted HTTP boundary now emits a bounded named PASS diagnostic only after success: health, sealed source identity/body/headers, root page, unauthenticated bootstrap 401, PID 1 application UID, and unauthenticated demand 401. The non-secret diagnostic joins the existing private artifact route; shell xtrace, environment and credentials remain excluded.
+- Pipeline 11 produced a local built image digest only; it was not transferred, deployed or proven hosted. Live approval, running-process Staffology credential binding and the live provider manifest remain withheld. No publication, CI invocation, deployment, provider request or frozen-state mutation was performed for this repair.
+
+## PID 1 UID exact-record-arity correction (2026-10-01)
+
+- Independent byte review verified native `071449e15ef8b3eedb039937131c388759de68d7`, its truthful local parent, tree and all eight changed blobs. It remains unpublished. Owner Linux reproduction confirmed the review finding: the old AWK projection discarded a fifth numeric or junk field and returned `OLD_UID_VERIFIER_RESULT=PASS values=1000 1000 1000 1000`. The pre-fix reproduction is retained in `evidence/pid1-uid-extra-field-red.log`.
+- The verifier now separately counts every `Uid:` record, counts any record whose arity is not exactly the Linux label plus four UID values, and projects values only from an exact-five-field record. Admission requires exactly one record, zero wrong-arity records and four decimal values; root rejection for real/effective/saved/filesystem identities is unchanged.
+- Behavioral negatives now cover extra numeric fields, trailing junk and a valid record accompanied by a malformed additional `Uid:` record, as well as the existing missing, truncated, non-numeric, duplicate and root cases. The CircleCI caller, `/proc/1/status` source, bounded private diagnostics, root bootstrap wrapper and all production containment/security requirements are unchanged.
+- Coordinator Windows has no Bash executable, so unavailable Windows supplemental execution is neither a pass nor a product failure. Owner Linux checks are reported below; prescribed contained execution remains required. No publication, CI invocation, deployment, provider request, credential change or frozen-state mutation was performed.
+
+## PID 1 UID decimal-canonicalisation correction (2026-10-01)
+
+- Owner Linux execution against native `ff599297e6c2f6d68d61d6ecbdd3c34a5ad94a76` reproduced the final review finding exactly: input `Uid:\t08\t1000\t0\t1000` exited zero, emitted Bash's invalid-octal arithmetic diagnostic, then incorrectly emitted `VECTOR_APPLICATION_UID=PASS` despite saved UID zero. The raw reproduction is retained in `evidence/pid1-uid-leading-zero-red.log`; this claim is based on executed Bash, not source inference.
+- The verifier no longer evaluates untrusted UID text with Bash arithmetic. It first requires each value to be canonical decimal (`0` or a non-zero digit followed by at most nine digits), rejects the Linux overflow/sentinel boundary and larger values using deterministic C-locale length/lexical comparison, then detects root using string equality. An invalid earlier value therefore cannot suppress a later root check or reach PASS.
+- Behavioral negatives cover leading-zero values in every UID position, multiple leading-zero-before-root arrangements, `00`, the `4294967295` sentinel and an eleven-digit overflow, while retaining all root, arity, junk, duplicate and valid non-root cases. No runtime flag, caller, wrapper, identity, containment or private diagnostic boundary changed.
+- Coordinator Windows Bash remains unavailable and is not counted as a pass or failure. Owner Linux affected checks are reported below; prescribed contained execution remains pending. No publication, CI invocation, deployment, provider request, credential change or frozen-state mutation occurred.

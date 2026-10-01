@@ -148,21 +148,28 @@ function mapEmployee(record,context) {
   return {externalId:employeeId,revision,operation:'upsert',canonicalPerson,
     data:{identity,person,employment:employmentData,provenance:{provider:'staffology',acquiredAt:context.acquiredAt??null,sourcePath:context.sourcePath??null,sourceRevision:record.revision??record.updatedAt??null,revisionKind:'derived-mapped-content-sha256'}}};
 }
-async function acquireEmployees({client=globalThis.fetch,config,employerId,pageSize=100,maxPages=1000,now=Date.now}) {
+async function acquireEmployees({client=globalThis.fetch,config,employerId,pageSize=100,maxPages=1000,allowedEmployeeIds=null,now=Date.now}) {
   const employer=requiredId(employerId,'Employer identity');integer(pageSize,'Page size',1,500);integer(maxPages,'Page limit',1,10000);
+  if(allowedEmployeeIds!==null&&!Array.isArray(allowedEmployeeIds))throw failure('STAFFOLOGY_EMPLOYEE_COHORT_MISMATCH','The approved employee cohort is invalid.',403);const allowed=allowedEmployeeIds===null?null:new Set(allowedEmployeeIds);if(allowed&&(allowed.size!==allowedEmployeeIds.length||[...allowed].some(value=>requiredId(value,'Allowed employee identity')!==value)))throw failure('STAFFOLOGY_EMPLOYEE_COHORT_MISMATCH','The approved employee cohort is invalid.',403);
   const seen=new Set(),records=[];let complete=false,pageNum=0;
   for(;pageNum<maxPages;pageNum++) {
     const listPath=`/employers/${encodeURIComponent(employer)}/employees?pageNum=${pageNum}&pageSize=${pageSize}`;
     const result=await request(client,config,listPath);
     if(!Array.isArray(result.body)||result.body.length>pageSize)throw failure('STAFFOLOGY_PAGINATION_INCOMPLETE','Employee page is outside the documented Item[] contract.',502);
-    for(const item of result.body) {
+    const page=result.body.map(item=>{
       const id=requiredId(item?.id,'List employee identity');
       if(seen.has(id))throw failure('STAFFOLOGY_DUPLICATE_EMPLOYEE','Duplicate employee ID in paginated acquisition.');
+      if(allowed&&!allowed.has(id))throw failure('STAFFOLOGY_EMPLOYEE_COHORT_MISMATCH','Provider list contains an employee outside the approved exact cohort.',403);
       seen.add(id);
       const detailPath=`/employers/${encodeURIComponent(employer)}/employees/${encodeURIComponent(id)}`;
       // Item URLs are not followed: construct a same-origin, same-employer path.
       if(item.url){let itemUrl;try{itemUrl=new URL(item.url,ORIGIN);}catch{throw failure('STAFFOLOGY_RESPONSE_INVALID','Invalid employee item URL.',502);}
         if(itemUrl.origin!==ORIGIN||itemUrl.pathname!==detailPath||itemUrl.search||itemUrl.hash||itemUrl.username||itemUrl.password)throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Employee item URL contradicts its identity.');}
+      return {id,detailPath};
+    });
+    // Validate the complete list page against the trusted cohort before any
+    // per-employee detail request can disclose an out-of-scope identity.
+    for(const {id,detailPath} of page) {
       const detail=await request(client,config,detailPath);
       records.push(mapEmployee(detail.body,{employerId:employer,employeeId:id,acquiredAt:new Date(now()).toISOString(),sourcePath:detailPath}));
     }
@@ -338,10 +345,56 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     validateReplacementBaseline(b.entry.snapshot,row.payload);
     return immutable(b);
   }
+  async function startDispatch(row,token) {
+    const {deliveryId,digest,payload}=row;let dispatchStarted=false,transportAccepted=false;
+    try {
+      const baseline=await observe(payload);
+      const evidence=await retainEvidence(deliveryId,token,'baseline',baseline);
+      validateReplacementBaseline(baseline.entry,payload);
+      const stored=await store.get(deliveryId);
+      if(!stored||stored.digest!==digest||stored.bindingDigest!==bindingDigest||sha256(persistedBaseline(stored))!==sha256(evidence))
+        throw failure('STAFFOLOGY_BASELINE_NOT_PERSISTED','Stored baseline does not match the exact pre-write observation.');
+      const permit=immutable({binding:scope,deliveryId,digest,run:payload.run,entryId:payload.entryId,baselineSha256:evidence.entry.sha256,baselineRunSha256:evidence.run.sha256,expectedBasicPay:payload.expectedBasicPay,rounding:payload.rounding});
+      if(typeof authorizeWrite!=='function'||await authorizeWrite(permit)!==true)throw failure('STAFFOLOGY_WRITE_NOT_AUTHORIZED','Verified payroll import authority is required.',403);
+      await request(async(url,options)=>{
+        let active=true,called=false,response;
+        try {
+          const allowed=await store.assertOwned({deliveryId,token,digest,bindingDigest,permit,
+            request:immutable({method:options.method,path:new URL(url).pathname+new URL(url).search,bodySha256:bytesHash(options.body)}),
+            dispatch:()=>{
+              if(!active||called||options.signal.aborted)throw failure('STAFFOLOGY_OWNERSHIP_LOST','Guarded dispatch is no longer available.');
+              called=true;dispatchStarted=true;response=Promise.resolve(client(url,options));void response.catch(()=>{});
+            }});
+          if(allowed!==true||!called)throw failure('STAFFOLOGY_OWNERSHIP_LOST','The store did not perform an authorised owned dispatch.');
+          return await response;
+        } finally {active=false;}
+      },config,importPath(payload),{method:'POST',body:payload.importBody,authorizeWrite:async()=>{
+        if(await authorizeWrite(permit)!==true)return false;await owned(deliveryId,token,digest);return true;
+      }});
+      transportAccepted=true;
+    } catch(error) {
+      if(!dispatchStarted) {
+        // This covers every failure after the durable claim and before the
+        // atomic dispatch reservation. An expired `sending` row is likewise
+        // recoverable, covering a process crash before this handler runs.
+        try{await store.markUncertain(deliveryId,{code:error.code||'STAFFOLOGY_PRE_DISPATCH_FAILED',dispatchStarted:false},token);}catch(markError){if(markError.code!=='STAFFOLOGY_OWNERSHIP_LOST')throw markError;}
+        throw error;
+      }
+      await store.markUncertain(deliveryId,{code:error.code||'STAFFOLOGY_OUTCOME_UNCERTAIN',dispatchStarted:true},token);
+    }
+    return {transportAccepted,dispatchStarted};
+  }
   async function reconcile({deliveryId,token}) {
-    const row=await store.get(deliveryId);
+    let row=await store.get(deliveryId);
     if(!row||row.bindingDigest!==bindingDigest||row.digest!==sha256(row.payload))throw failure('STAFFOLOGY_BINDING_MISMATCH','Reconciliation must use the persisted, exact-bound intent.');
     await owned(deliveryId,token,row.digest);
+    if(!row.dispatchAttempt) {
+      try {await startDispatch(row,token);} catch(error) {
+        const code=error.code||'STAFFOLOGY_PRE_DISPATCH_FAILED';
+        return {status:code==='STAFFOLOGY_WRITE_NOT_AUTHORIZED'?'unresolved':'retryable',code,dispatchStarted:false};
+      }
+      row=await store.get(deliveryId);
+    }
     try {
       const baseline=persistedBaseline(row);
       const intendedDispatch={deliveryId,digest:row.digest,bindingDigest,
@@ -379,56 +432,16 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     const token=exactText(claim.token,'Private delivery ownership token',256);
     await owned(deliveryId,token,digest);
     // Approval is an external server-verified capability, never an input flag.
-    const baseline=await observe(payload);
-    const evidence=await retainEvidence(deliveryId,token,'baseline',baseline);
-    validateReplacementBaseline(baseline.entry,payload);
-    const stored=await store.get(deliveryId);
-    if(!stored||stored.digest!==digest||stored.bindingDigest!==bindingDigest||sha256(persistedBaseline(stored))!==sha256(evidence))
-      throw failure('STAFFOLOGY_BASELINE_NOT_PERSISTED','Stored baseline does not match the exact pre-write observation.');
-    const baselineSha256=financialSnapshot(baseline.entry).sha256;
-    const permit=immutable({binding:scope,deliveryId,digest,run:payload.run,entryId:payload.entryId,baselineSha256,baselineRunSha256:evidence.run.sha256,expectedBasicPay:payload.expectedBasicPay,rounding:payload.rounding});
-    if(typeof authorizeWrite!=='function'||await authorizeWrite(permit)!==true)throw failure('STAFFOLOGY_WRITE_NOT_AUTHORIZED','Verified payroll import authority is required.',403);
-    let transportAccepted=false,dispatchStarted=false;
-    try {
-      await request(async(url,options)=>{
-        let active=true,called=false,response;
-        try {
-          // The EXISTING store must validate current fence/lease, exact binding
-          // AND server-side authority inside its consequential-effect guard,
-          // then invoke dispatch without yielding between validation and effect.
-          // It must first persist a one-time bound dispatchAttempt in that same
-          // transaction. This proves an attempt was reserved, NOT remote success.
-          // Returning true without invoking the callback is NOT sufficient.
-          const allowed=await store.assertOwned({deliveryId,token,digest,bindingDigest,permit,
-            request:immutable({method:options.method,path:new URL(url).pathname+new URL(url).search,bodySha256:bytesHash(options.body)}),
-            dispatch:()=>{
-              if(!active||called||options.signal.aborted)throw failure('STAFFOLOGY_OWNERSHIP_LOST','Guarded dispatch is no longer available.');
-              called=true;dispatchStarted=true;
-              response=Promise.resolve(client(url,options));
-              // A store failure after dispatch must still retain an ambiguous
-              // outcome without leaking an unhandled transport rejection.
-              void response.catch(()=>{});
-            }});
-          if(allowed!==true||!called)throw failure('STAFFOLOGY_OWNERSHIP_LOST','The store did not perform an authorised owned dispatch.');
-          return await response;
-        } finally {active=false;}
-      },config,importPath(payload),{
-        method:'POST',body:payload.importBody,authorizeWrite:async()=>{
-          if(await authorizeWrite(permit)!==true)return false;
-          await owned(deliveryId,token,digest);return true;
-        }
-      });
-      transportAccepted=true;
-    } catch(error) {
-      // Revoked authority/ownership before dispatch cannot become a fabricated
-      // acknowledgement merely because the provider already has matching pay.
-      if(!dispatchStarted)throw error;
-      await store.markUncertain(deliveryId,{code:error.code||'STAFFOLOGY_OUTCOME_UNCERTAIN'},token);
-      if(error.code==='STAFFOLOGY_AUTH_REJECTED')return {replayed:false,deliveryId,transportAccepted:false,reconciliationRequired:true,reconciliation:{status:'unresolved',code:error.code}};
-    }
+    const {transportAccepted}=await startDispatch({deliveryId,digest,payload},token);
     const checked=await reconcile({deliveryId,token});
     return {replayed:false,deliveryId,transportAccepted,reconciliationRequired:checked.status!=='reconciled',reconciliation:checked,...(checked.receipt?{receipt:checked.receipt}:{})};
   }
-  return {deliver,reconcile};
+  async function inspect(input) {
+    assertScope(input);
+    const payload=mapPayroll(input),observation=await observe(payload),verified=validateProviderResponse(observation,payload);
+    const observedBasicPay=Number(observation.entry.totals.basicPay).toFixed(2);
+    return immutable({verified,comparison:{expectedBasicPay:payload.expectedBasicPay,observedBasicPay,matches:observedBasicPay===payload.expectedBasicPay},run:financialSnapshot(observation.run),entry:financialSnapshot(observation.entry),provenance:observation.provenance});
+  }
+  return {deliver,reconcile,inspect};
 }
-module.exports={StaffologyError,loadConfiguration,request,mapEmployee,acquireEmployees,mapPayroll,financialSnapshot,compareFinancialSnapshots,validateProviderResponse,createDeliveryCoordinator,canonical,sha256};
+module.exports={StaffologyError,loadConfiguration,request,mapEmployee,acquireEmployees,mapPayroll,financialSnapshot,compareFinancialSnapshots,validateProviderResponse,createDeliveryCoordinator,canonical,sha256,businessKey};

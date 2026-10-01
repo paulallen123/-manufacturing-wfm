@@ -10,13 +10,13 @@ function setup(t){
  const guard=createWorkforceLifecycleGuard({dbPath,internalToken:'isolated-regression-worker'});
  const starter={kind:'STARTER',employeeId:'E1',effectiveAt:'2026-09-01T06:00:00Z',payload:{location:'S1',department:'LINE1'}};
  assert.equal(guard.applyTrustedEvent({tenant:'A',eventKey:'occupied-key',event:starter}).decision.status,'ACCEPTED');
- t.after(()=>{guard.close();db.close();fs.rmSync(dir,{recursive:true,force:true});});return {guard,starter,db,dbPath};
+ const closeables=[guard];t.after(()=>{for(const closeable of closeables.reverse())closeable.close();db.close();fs.rmSync(dir,{recursive:true,force:true});});return {guard,starter,db,dbPath,track:value=>(closeables.push(value),value)};
 }
 test('a reused event key cannot turn a different event into verified Autopilot execution',async t=>{
- const {guard,db,dbPath}=setup(t);
+ const {guard,db,dbPath,track}=setup(t);
  const episode=createDecisionEpisode({tenant:'A',site:'S1',decisionType:'absence-recovery',triggerId:'proof',triggeredAt:'2026-09-26T09:00:00Z',contextRevision:'r1',mode:'SHADOW',sourceEvidence:['attendance:1'],objective:{labourCost:1},options:[{id:'do-nothing',feasible:true,policyAllowed:true,hardConstraintsPassed:true,prediction:{labourCost:500}},{id:'overtime',feasible:true,policyAllowed:true,hardConstraintsPassed:true,prediction:{labourCost:300}}]});
  db.prepare('INSERT INTO vector_decision_episodes VALUES(?,?,?)').run('A',episode.episodeId,JSON.stringify(episode));
- const engine=createAutopilotExecutionEngine({dbPath,lifecycleAdapter:guard});t.after(()=>engine.close());
+ const engine=track(createAutopilotExecutionEngine({dbPath,lifecycleAdapter:guard}));
  const permit=engine.issueHumanPermit({tenant:'A',episodeId:episode.episodeId,optionId:'overtime',actorRef:'manager',contextRevision:'r1',plan:{adapter:'workforce-lifecycle',reversible:true,action:{eventKey:'occupied-key',kind:'OVERTIME_OVERRIDE',employeeId:'E1',effectiveAt:'2026-09-26T12:00:00Z',payload:{minutes:60}},rollback:{eventKey:'rollback-proof',reason:'restore'}}});
  const result=await engine.executePermit({tenant:'A',permitId:permit.permitId,currentContextRevision:'r1'});
  assert.equal(result.state,'CONTAINED','an existing STARTER must not verify an OVERTIME action');
@@ -40,10 +40,10 @@ test('HTTP retry with changed content returns 409 and preserves the first persis
  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM workforce_lifecycle_events').get().n,1);
 });
 test('caller-supplied expected outcome cannot become authoritative measured savings',async t=>{
- const {guard,db,dbPath}=setup(t);
+ const {guard,db,dbPath,track}=setup(t);
  const episode=createDecisionEpisode({tenant:'A',site:'S1',decisionType:'absence-recovery',triggerId:'outcome-proof',triggeredAt:'2026-09-26T09:00:00Z',contextRevision:'r1',mode:'SHADOW',sourceEvidence:['attendance:1'],objective:{labourCost:1},options:[{id:'do-nothing',feasible:true,policyAllowed:true,hardConstraintsPassed:true,prediction:{labourCost:500}},{id:'overtime',feasible:true,policyAllowed:true,hardConstraintsPassed:true,prediction:{labourCost:300}}]});
  db.prepare('INSERT INTO vector_decision_episodes VALUES(?,?,?)').run('A',episode.episodeId,JSON.stringify(episode));
- const engine=createAutopilotExecutionEngine({dbPath,lifecycleAdapter:guard});t.after(()=>engine.close());
+ const engine=track(createAutopilotExecutionEngine({dbPath,lifecycleAdapter:guard}));
  const permit=engine.issueHumanPermit({tenant:'A',episodeId:episode.episodeId,optionId:'overtime',actorRef:'manager',contextRevision:'r1',plan:{adapter:'workforce-lifecycle',reversible:true,action:{eventKey:'actual-overtime',kind:'OVERTIME_OVERRIDE',employeeId:'E1',effectiveAt:'2026-09-26T12:00:00Z',payload:{minutes:60}},rollback:{eventKey:'outcome-rollback',reason:'restore'},expectedOutcome:{actual:{labourCost:0,planAttainmentPct:100},evidenceRefs:['caller-invented-savings']}}});
  const result=await engine.executePermit({tenant:'A',permitId:permit.permitId,currentContextRevision:'r1'});
  assert.equal(result.state,'VERIFIED');

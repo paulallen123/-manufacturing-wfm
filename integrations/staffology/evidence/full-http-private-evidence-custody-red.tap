@@ -1,0 +1,23 @@
+TAP version 13
+# Subtest: successful strict HTTP artifact retains complete private delivery evidence after runtime cleanup
+not ok 1 - successful strict HTTP artifact retains complete private delivery evidence after runtime cleanup
+  ---
+  failureType: 'testCodeFailure'
+  error: |-
+    Export selected only phase from outbound_staffology_private_evidence and removed the temporary SQLite database during cleanup.
+    staffology-http-result.json retained comparison/readback summaries but omitted the original baseline/run/entry bodies, evidence digests, delivery payload, dispatch reservation, acknowledgement receipt, bounded request log, reviewed contracts/rates, and relevant audit rows.
+  code: 'STAFFOLOGY_PRIVATE_EVIDENCE_INCOMPLETE'
+  actual:
+    databaseAfterCleanup: false
+    exportedPrivateEvidenceBodies: 0
+    exportedDeliveryPayload: false
+    exportedDispatchAttempt: false
+    exportedAcknowledgement: false
+    exportedRequestLog: false
+  expected:
+    durableCompleteScopedExportAfterCleanup: true
+  ...
+1..1
+# tests 1
+# pass 0
+# fail 1

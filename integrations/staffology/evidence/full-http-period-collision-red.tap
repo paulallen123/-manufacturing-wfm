@@ -1,0 +1,13 @@
+TAP version 13
+not ok 1 - strict HTTP selected an unused canonical payroll week
+  ---
+  source: c6758034c8c046994192212f3994a97303a6cb03
+  selectedPeriod: 2026-09-07
+  existingSource: synthetic-closed-week-fixture
+  error: This review week already exists.
+  providerRequests: 0
+  ...
+1..1
+# tests 1
+# pass 0
+# fail 1

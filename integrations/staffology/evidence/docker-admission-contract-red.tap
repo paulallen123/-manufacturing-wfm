@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: supported Docker admission composes and binds the strict full canonical runtime
+not ok 1 - supported Docker admission composes and binds the strict full canonical runtime
+  ---
+  duration_ms: 4.362582
+  type: 'test'
+  location: '/workspace/-manufacturing-wfm/integrations/staffology/independent/docker-admission-contract.test.cjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /node scripts\/compose-vector-local-runtime\.mjs \/proof\/staffology-full-runtime/. Input:
+    
+    'AS autonomy-proof\n' +
+      'WORKDIR /proof\n' +
+      'COPY . ./\n' +
+      'RUN node --test ux-overlay/vector-gusto.test.cjs\n' +
+      'RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \\\n' +
+      ' && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs\n' +
+      '# Exact Staffology review admission: exercise the reviewed bridge, persisted employee\n' +
+      '# readback/restart guard, tenant denial, audit immutability and runtime composition.\n' +
+      'RUN node --test integrations/staffology/*.test.cjs \\\n' +
+      ' && node --test scripts/compose-vector-local-runtime.contract.test.cjs\n' +
+      'RUN node scripts/validate-development-proof-readiness.mjs \\\n' +
+      ' && node scripts/validate-proof-blocker-classifier.mjs \\\n' +
+      ' && node scripts/validate-proof-stage-router.mjs \\\n' +
+      ' && node scripts/validate-completion-rehearsal.mjs \\\n' +
+      ' && node scripts/validate-t9-customer-guardian.mjs \\\n' +
+      ' && node scripts/run-completion-rehearsal.mjs --assert-orchestration \\\n' +
+      ' && node scripts/validate-deployment.mjs \\\n' +
+      ' && node scripts/validate-proof-lane-policy.mjs \\\n' +
+      ' && node --test resilience/pre-freeze-simulator.test.cjs resilience/no-idle-wait-orchestrator.test.cjs \\\n' +
+      ' && node scripts/validate-isolated-environment-provisioning-plan.mjs \\\n' +
+      ' && node scripts/validate-capability-superset.mjs \\\n' +
+      ' && node scripts/validate-research-convergence-ledger.mjs \\\n' +
+      ' && node --test resilience/research-convergence-theory-simulator.test.cjs policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/authoritative-policy-source-registry.test.cjs policy/runtime/regulatory-change-candidate.test.cjs security/runtime/runtime-identity.test.cjs \\\n' +
+      ' && node scripts/validate-product-factory.mjs \\\n' +
+      ' && node scripts/prove-adaptive-intelligence-engine.mjs \\\n' +
+      ' && node scripts/validate-self-evolution.mjs \\\n' +
+      ' && node scripts/validate-vector-only-ui.mjs \\\n' +
+      ' && node --check learning/video-worker/runner.mjs \\\n' +
+      ' && node integration-fabric/scripts/validate.mjs \\\n' +
+      ' && node scripts/run-critical-attendance-assault.mjs \\\n' +
+      " && node --test tests/critical-proof-gates.test.cjs tests/vector-payroll-release-proof.test.mjs tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-workflows.test.cjs ux-overlay/vector-scheduling-simplicity-contract.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs operations/runtime/scheduling-intelligence-service.test.cjs operations/runtime/manufacturing-demand-forecast.test.cjs operations/runtime/schedule-attendance-reconciliation.test.cjs operations/runtime/scheduling-forecast-reconciliation-service.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-ingress.security.test.cjs operations/runtime/autopilot-replay.regression.test.cjs implementation/runtime/zero-touch-customer-factory.test.cjs implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-work-fencing.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs operations/runtime/t9-customer-guardian.test.cjs reporting/runtime/vector-reporting-service.test.cjs trust/runtime/vector-trust-spine.test.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/proof-runner-auth.test.cjs security/runtime/bootstrap-proof-runner-wiring.test.cjs security/runtime/owner-access-recovery.test.cjs security/runtime/durable-state-guard.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \\\n" +
+      ' && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \\\n' +
+      ' && cat /proof-vector-integrated/summary.json \\\n' +
+      ' && rm -f scripts/validate-deployment.mjs \\\n' +
+      ' && node scripts/run-portable-autonomy-proof.mjs --strict-runtime\n' +
+      '\n'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    AS autonomy-proof
+    WORKDIR /proof
+    COPY . ./
+    RUN node --test ux-overlay/vector-gusto.test.cjs
+    RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
+     && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
+    # Exact Staffology review admission: exercise the reviewed bridge, persisted employee
+    # readback/restart guard, tenant denial, audit immutability and runtime composition.
+    RUN node --test integrations/staffology/*.test.cjs \
+     && node --test scripts/compose-vector-local-runtime.contract.test.cjs
+    RUN node scripts/validate-development-proof-readiness.mjs \
+     && node scripts/validate-proof-blocker-classifier.mjs \
+     && node scripts/validate-proof-stage-router.mjs \
+     && node scripts/validate-completion-rehearsal.mjs \
+     && node scripts/validate-t9-customer-guardian.mjs \
+     && node scripts/run-completion-rehearsal.mjs --assert-orchestration \
+     && node scripts/validate-deployment.mjs \
+     && node scripts/validate-proof-lane-policy.mjs \
+     && node --test resilience/pre-freeze-simulator.test.cjs resilience/no-idle-wait-orchestrator.test.cjs \
+     && node scripts/validate-isolated-environment-provisioning-plan.mjs \
+     && node scripts/validate-capability-superset.mjs \
+     && node scripts/validate-research-convergence-ledger.mjs \
+     && node --test resilience/research-convergence-theory-simulator.test.cjs policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/authoritative-policy-source-registry.test.cjs policy/runtime/regulatory-change-candidate.test.cjs security/runtime/runtime-identity.test.cjs \
+     && node scripts/validate-product-factory.mjs \
+     && node scripts/prove-adaptive-intelligence-engine.mjs \
+     && node scripts/validate-self-evolution.mjs \
+     && node scripts/validate-vector-only-ui.mjs \
+     && node --check learning/video-worker/runner.mjs \
+     && node integration-fabric/scripts/validate.mjs \
+     && node scripts/run-critical-attendance-assault.mjs \
+     && node --test tests/critical-proof-gates.test.cjs tests/vector-payroll-release-proof.test.mjs tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-workflows.test.cjs ux-overlay/vector-scheduling-simplicity-contract.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs operations/runtime/scheduling-intelligence-service.test.cjs operations/runtime/manufacturing-demand-forecast.test.cjs operations/runtime/schedule-attendance-reconciliation.test.cjs operations/runtime/scheduling-forecast-reconciliation-service.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-ingress.security.test.cjs operations/runtime/autopilot-replay.regression.test.cjs implementation/runtime/zero-touch-customer-factory.test.cjs implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-work-fencing.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs operations/runtime/t9-customer-guardian.test.cjs reporting/runtime/vector-reporting-service.test.cjs trust/runtime/vector-trust-spine.test.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/proof-runner-auth.test.cjs security/runtime/bootstrap-proof-runner-wiring.test.cjs security/runtime/owner-access-recovery.test.cjs security/runtime/durable-state-guard.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
+     && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
+     && cat /proof-vector-integrated/summary.json \
+     && rm -f scripts/validate-deployment.mjs \
+     && node scripts/run-portable-autonomy-proof.mjs --strict-runtime
+    
+    
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (/workspace/-manufacturing-wfm/integrations/staffology/independent/docker-admission-contract.test.cjs:10:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 204.068502

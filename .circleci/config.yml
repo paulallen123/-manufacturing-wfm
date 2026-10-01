@@ -46,7 +46,9 @@ jobs:
           name: Build exact FORGE runtime candidate
           command: |
             set -euo pipefail
-            docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" .
+            mkdir -p circleci-runtime-artifacts/staffology
+            docker build --pull=false --progress=plain --target staffology-proof-evidence --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" --output "type=local,dest=circleci-runtime-artifacts/staffology" . 2>&1 | tee circleci-runtime-artifacts/staffology-proof-build.log
+            docker build --pull=false --progress=plain --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" . 2>&1 | tee circleci-runtime-artifacts/runtime-image-build.log
       - run:
           name: Verify runtime security boundary
           command: |
@@ -77,7 +79,10 @@ jobs:
             set -euo pipefail
             IMAGE="vector-forge-ci:${CIRCLE_SHA1}"
             CI_PASSWORD="CI-$(openssl rand -hex 16)"
-            docker run -d --name vector-forge-proof -p 3000:3000               -e PORT=3000               -e NODE_ENV=staging               -e NODE_OPTIONS=--experimental-sqlite               -e WFM_HOSTED_STAGING=true               -e WFM_PUBLIC_ORIGIN=https://vector-forge-ci.invalid               -e WFM_DB=/tmp/vector-forge-proof.sqlite               -e WFM_STAGING_PASSWORD="$CI_PASSWORD"               "$IMAGE"
+            DIAGNOSTICS=/tmp/hosted-http-diagnostics.log
+            : > "$DIAGNOSTICS"
+            passed() { printf 'HOSTED_HTTP_ASSERTION=PASS check=%s\n' "$1" | tee -a "$DIAGNOSTICS"; }
+            docker run -d --name vector-forge-proof -p 3000:3000               -e PORT=3000               -e NODE_ENV=staging               -e NODE_OPTIONS=--experimental-sqlite               -e WFM_HOSTED_STAGING=true               -e WFM_CANDIDATE_SHA="${CIRCLE_SHA1}"               -e WFM_PUBLIC_ORIGIN=https://vector-forge-ci.invalid               -e WFM_DB=/tmp/vector-forge-proof.sqlite               -e WFM_STAGING_PASSWORD="$CI_PASSWORD"               "$IMAGE"
             proxy_curl() {
               curl -fsS -H 'Host: vector-forge-ci.invalid' -H 'X-Forwarded-Proto: https' "$@"
             }
@@ -90,12 +95,21 @@ jobs:
               fi
               sleep 0.25
             done
+            passed health-ready
             proxy_curl http://127.0.0.1:3000/api/health
+            proxy_curl -D /tmp/runtime-identity.headers http://127.0.0.1:3000/api/runtime-identity >/tmp/runtime-identity.json
+            node -e 'const fs=require("fs");const body=JSON.parse(fs.readFileSync("/tmp/runtime-identity.json","utf8"));if(body.candidateSha!==process.env.CIRCLE_SHA1||body.sourceBinding!=="build-file-matched")throw Error("RUNTIME_IDENTITY_NOT_BUILD_FILE_MATCHED")'
+            grep -iq "^x-wfm-source-sha: ${CIRCLE_SHA1}" /tmp/runtime-identity.headers
+            grep -iq '^x-wfm-source-binding: build-file-matched' /tmp/runtime-identity.headers
+            passed runtime-identity-build-file-matched
             proxy_curl http://127.0.0.1:3000/ >/dev/null
+            passed root-page
             status=$(curl -sS -o /tmp/bootstrap-unauth.json -w '%{http_code}'               -H 'Host: vector-forge-ci.invalid'               -H 'X-Forwarded-Proto: https'               http://127.0.0.1:3000/api/bootstrap)
             test "$status" = "401"
-            test "$(docker exec vector-forge-proof id -u)" != "0"
+            passed bootstrap-unauthenticated-401
+            docker exec vector-forge-proof cat /proc/1/status | bash scripts/verify-runtime-process-uid.sh | tee -a "$DIAGNOSTICS"
             curl -sS -o /tmp/demand-unauth.json -w '%{http_code}'               -H 'Host: vector-forge-ci.invalid'               -H 'X-Forwarded-Proto: https'               http://127.0.0.1:3000/api/operations/intelligence/summary               | grep -qx '401'
+            passed demand-unauthenticated-401
       - run:
           name: Capture exact runtime proof
           when: always
@@ -104,10 +118,11 @@ jobs:
             docker logs vector-forge-proof >circleci-runtime-artifacts/vector-forge-proof.log 2>&1 || true
             cp production-refusal.log circleci-runtime-artifacts/ 2>/dev/null || true
             cp /tmp/health.json circleci-runtime-artifacts/ 2>/dev/null || true
+            cp /tmp/runtime-identity.json /tmp/runtime-identity.headers circleci-runtime-artifacts/ 2>/dev/null || true
+            cp /tmp/hosted-http-diagnostics.log circleci-runtime-artifacts/ 2>/dev/null || true
             cp /tmp/bootstrap-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true
             cp /tmp/demand-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true
-            printf '%s
-' "$CIRCLE_SHA1" > circleci-runtime-artifacts/source-sha.txt
+            printf '%s\n' "$CIRCLE_SHA1" > circleci-runtime-artifacts/source-sha.txt
             docker inspect "vector-forge-ci:${CIRCLE_SHA1}" > circleci-runtime-artifacts/image-inspect.json 2>/dev/null || true
       - run:
           name: Clean up proof container

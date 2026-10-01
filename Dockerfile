@@ -1,6 +1,7 @@
 # Discarded Railway build stage: prove T0-T4 zero-engineer support and bounded recovery
 # against the exact candidate sources. Nothing from this stage is copied into runtime.
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS autonomy-proof
+ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /proof
 COPY . ./
 RUN node --test ux-overlay/vector-gusto.test.cjs
@@ -8,7 +9,24 @@ RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no
  && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
 # Exact Staffology review admission: exercise the reviewed bridge, persisted employee
 # readback/restart guard, tenant denial, audit immutability and runtime composition.
-RUN node --test integrations/staffology/*.test.cjs \
+RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime \
+ && mkdir -p /proof/staffology-private-artifacts \
+ && cp /proof/staffology-full-runtime/STAFFOLOGY_ASSEMBLY.json /proof/staffology-full-runtime/LOCAL_PROOF_PROVENANCE.json /proof/staffology-private-artifacts/ \
+ && printf '%s\n' "$RAILWAY_GIT_COMMIT_SHA" > /proof/staffology-private-artifacts/source-sha.txt \
+ && (set +e; CANONICAL_SOURCE_DIR=/proof \
+    WFM_RUNTIME=/proof/staffology-full-runtime \
+    STAFFOLOGY_RUNTIME_MODE=full \
+    WFM_BUILD_SOURCE_SHA="$RAILWAY_GIT_COMMIT_SHA" \
+    STAFFOLOGY_PRIVATE_EVIDENCE_DIR=/proof/staffology-private-artifacts \
+    node --test \
+      integrations/staffology/*.test.cjs \
+      integrations/staffology/independent/succession-regressions.test.cjs \
+      integrations/staffology/independent/current-authority-recovery-held-out.test.cjs \
+      integrations/staffology/independent/docker-admission-contract.test.cjs \
+      integrations/staffology/independent/generated-provider-preload.test.cjs \
+      integrations/staffology/independent/full-http-employee-journey.test.cjs \
+      > /proof/staffology-private-artifacts/staffology-full.tap 2>&1; status=$?; \
+    cat /proof/staffology-private-artifacts/staffology-full.tap; exit $status) \
  && node --test scripts/compose-vector-local-runtime.contract.test.cjs
 RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-proof-blocker-classifier.mjs \
@@ -30,11 +48,16 @@ RUN node scripts/validate-development-proof-readiness.mjs \
  && node --check learning/video-worker/runner.mjs \
  && node integration-fabric/scripts/validate.mjs \
  && node scripts/run-critical-attendance-assault.mjs \
- && node --test tests/critical-proof-gates.test.cjs tests/vector-payroll-release-proof.test.mjs tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-workflows.test.cjs ux-overlay/vector-scheduling-simplicity-contract.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs operations/runtime/scheduling-intelligence-service.test.cjs operations/runtime/manufacturing-demand-forecast.test.cjs operations/runtime/schedule-attendance-reconciliation.test.cjs operations/runtime/scheduling-forecast-reconciliation-service.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-ingress.security.test.cjs operations/runtime/autopilot-replay.regression.test.cjs implementation/runtime/zero-touch-customer-factory.test.cjs implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-work-fencing.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs operations/runtime/t9-customer-guardian.test.cjs reporting/runtime/vector-reporting-service.test.cjs trust/runtime/vector-trust-spine.test.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/proof-runner-auth.test.cjs security/runtime/bootstrap-proof-runner-wiring.test.cjs security/runtime/owner-access-recovery.test.cjs security/runtime/durable-state-guard.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
+ && node --test tests/critical-proof-gates.test.cjs tests/runtime-process-uid.test.cjs tests/vector-payroll-release-proof.test.mjs tests/vector-consolidation.test.cjs tests/vector-runtime-packaging.test.cjs tests/vector-http-verifier.test.cjs tests/vector-release-proof-binding.test.cjs tests/vector-source-guard.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-workflows.test.cjs ux-overlay/vector-scheduling-simplicity-contract.test.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs operations/runtime/scheduling-intelligence-service.test.cjs operations/runtime/manufacturing-demand-forecast.test.cjs operations/runtime/schedule-attendance-reconciliation.test.cjs operations/runtime/scheduling-forecast-reconciliation-service.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/compose-vector-presentation.regression.test.mjs scripts/prove-vector-built-asset-provenance.test.mjs test/frontier/cash-to-capacity-engine.test.mjs test/frontier/cash-to-capacity-evidence.test.mjs test/frontier/cash-to-capacity-decision.test.mjs test/frontier/cash-to-capacity-outcome.test.mjs test/frontier/energy-bill-evidence.test.mjs test/frontier/energy-coordination-sensitivity.test.mjs test/frontier/energy-data-reconciliation.test.mjs test/frontier/energy-flexibility.test.mjs test/frontier/energy-input-hardening.test.mjs test/frontier/energy-profile-benchmark.test.mjs test/frontier/energy-profile-binding.test.mjs $(find test/frontier -maxdepth 1 -name 'agency-*.test.mjs' ! -name '*postgres*' -print) $(find clocking-security-v2 -maxdepth 1 -name '*.test.mjs' ! -name '*soak*' ! -name '*live*' ! -name '*enterprise-scale*' -print) integration-fabric/runtime/*.test.mjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-ingress.security.test.cjs operations/runtime/autopilot-replay.regression.test.cjs implementation/runtime/zero-touch-customer-factory.test.cjs implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-work-fencing.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs operations/runtime/t9-customer-guardian.test.cjs reporting/runtime/vector-reporting-service.test.cjs trust/runtime/vector-trust-spine.test.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/proof-runner-auth.test.cjs security/runtime/bootstrap-proof-runner-wiring.test.cjs security/runtime/owner-access-recovery.test.cjs security/runtime/durable-state-guard.test.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.test.cjs \
  && node scripts/run-local-vector-proof.mjs /proof-vector-integrated \
  && cat /proof-vector-integrated/summary.json \
  && rm -f scripts/validate-deployment.mjs \
  && node scripts/run-portable-autonomy-proof.mjs --strict-runtime
+
+# Private proof export target. CircleCI extracts this discarded-stage receipt without
+# placing employee/provider evidence in the runnable image.
+FROM scratch AS staffology-proof-evidence
+COPY --from=autonomy-proof /proof/staffology-private-artifacts/ /
 
 # Customer-proof staging build: sealed 0.6.76 runtime
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
@@ -57,14 +80,11 @@ COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
 RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp/runtime.tgz" | sha256sum -c - \
  && tar -xzf /tmp/runtime.tgz -C /app \
  && rm -f /tmp/runtime.tgz
-COPY integrations/staffology/staffology-adapter.cjs /workspace/integrations/staffology/staffology-adapter.cjs
-COPY integrations/staffology/canonical-runtime-bridge.cjs /workspace/integrations/staffology/canonical-runtime-bridge.cjs
-COPY integrations/staffology/canonical-production-boundaries.cjs /workspace/integrations/staffology/canonical-production-boundaries.cjs
+COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/canonical-runtime-bridge.cjs integrations/staffology/canonical-production-boundaries.cjs integrations/staffology/canonical-operations.cjs /workspace/integrations/staffology/
 COPY scripts/compose-vector-local-runtime.mjs /workspace/scripts/compose-vector-local-runtime.mjs
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
  && rm -rf /workspace
-COPY scripts/retire-legacy-presentation.mjs /tmp/retire-legacy-presentation.mjs
-COPY scripts/harden-attendance-integrity.mjs /tmp/harden-attendance-integrity.mjs
+COPY scripts/retire-legacy-presentation.mjs scripts/harden-attendance-integrity.mjs /tmp/
 RUN node /tmp/retire-legacy-presentation.mjs /app/public \
  && node /tmp/harden-attendance-integrity.mjs /app/public \
  && rm -f /tmp/retire-legacy-presentation.mjs /tmp/harden-attendance-integrity.mjs
@@ -74,18 +94,10 @@ RUN node /tmp/retire-legacy-presentation.mjs /app/public \
 RUN mkdir -p /app/security-runtime
 COPY security/runtime/package.json security/runtime/package-lock.json /app/security-runtime/
 RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund
-COPY security/runtime/passkey-schema.cjs /app/security-runtime/passkey-schema.cjs
-COPY security/runtime/passkey-auth.cjs /app/security-runtime/passkey-auth.cjs
+COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs /app/security-runtime/
 COPY security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
 COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
-COPY security/runtime/identity-survival-guard.cjs /app/security-runtime/identity-survival-guard.cjs
-COPY security/runtime/proof-runner-auth.cjs /app/security-runtime/proof-runner-auth.cjs
-COPY security/runtime/hosted-listen-guard.cjs /app/security-runtime/hosted-listen-guard.cjs
-COPY security/runtime/bootstrap.cjs /app/security-runtime/bootstrap.cjs
-COPY security/runtime/owner-access-recovery.cjs /app/security-runtime/owner-access-recovery.cjs
-COPY security/runtime/durable-state-guard.cjs /app/security-runtime/durable-state-guard.cjs
-COPY security/runtime/runtime-identity.cjs /app/security-runtime/runtime-identity.cjs
-COPY security/runtime/retired-presentation.cjs /app/security-runtime/retired-presentation.cjs
+COPY security/runtime/identity-survival-guard.cjs security/runtime/proof-runner-auth.cjs security/runtime/hosted-listen-guard.cjs security/runtime/bootstrap.cjs security/runtime/owner-access-recovery.cjs security/runtime/durable-state-guard.cjs security/runtime/runtime-identity.cjs security/runtime/retired-presentation.cjs /app/security-runtime/
 RUN node -e "const fs=require('fs');const p='/app/public/index.html';let s=fs.readFileSync(p,'utf8');s=s.replace('</head>','<script src=\"/passkey-session-ui.js\" defer></script></head>');fs.writeFileSync(p,s);" \
  && node --check /app/security-runtime/passkey-auth.cjs
 
@@ -97,128 +109,40 @@ RUN node -e "const fs=require('fs');const sha=String(process.env.RAILWAY_GIT_COM
 # Autonomous integration fabric. The control plane is separately reviewable and
 # uses only Node built-ins plus the existing per-tenant SQLite runtime.
 RUN mkdir -p /app/integration-runtime
-COPY integration/runtime/autonomous-integration-hub.cjs /app/integration-runtime/autonomous-integration-hub.cjs
-COPY integration/runtime/gusto-company-connector.cjs /app/integration-runtime/gusto-company-connector.cjs
-COPY integration/runtime/gusto-oauth-landing.cjs /app/integration-runtime/gusto-oauth-landing.cjs
+COPY integration/runtime/autonomous-integration-hub.cjs integration/runtime/gusto-company-connector.cjs integration/runtime/gusto-oauth-landing.cjs /app/integration-runtime/
 RUN mkdir -p /app/integration-fabric-runtime /app/integration-fabric-catalog
-COPY integration-fabric/runtime/api-version-routing.mjs /app/integration-fabric-runtime/api-version-routing.mjs
-COPY integration-fabric/runtime/batch-reconciliation.mjs /app/integration-fabric-runtime/batch-reconciliation.mjs
-COPY integration-fabric/runtime/connection-test-plan.mjs /app/integration-fabric-runtime/connection-test-plan.mjs
-COPY integration-fabric/runtime/connector-registry.mjs /app/integration-fabric-runtime/connector-registry.mjs
-COPY integration-fabric/runtime/dataset-coverage.mjs /app/integration-fabric-runtime/dataset-coverage.mjs
-COPY integration-fabric/runtime/evidence-provenance.mjs /app/integration-fabric-runtime/evidence-provenance.mjs
-COPY integration-fabric/runtime/governed-read-projection-registry.mjs /app/integration-fabric-runtime/governed-read-projection-registry.mjs
-COPY integration-fabric/runtime/governed-read-projection.mjs /app/integration-fabric-runtime/governed-read-projection.mjs
-COPY integration-fabric/runtime/privileged-bootstrap-guard.mjs /app/integration-fabric-runtime/privileged-bootstrap-guard.mjs
-COPY integration-fabric/runtime/regional-route-authority.mjs /app/integration-fabric-runtime/regional-route-authority.mjs
-COPY integration-fabric/runtime/rpc-read-authority.mjs /app/integration-fabric-runtime/rpc-read-authority.mjs
-COPY integration-fabric/runtime/schema-negotiation.mjs /app/integration-fabric-runtime/schema-negotiation.mjs
-COPY integration-fabric/runtime/scope-partition.mjs /app/integration-fabric-runtime/scope-partition.mjs
-COPY integration-fabric/runtime/semantic-envelope.mjs /app/integration-fabric-runtime/semantic-envelope.mjs
-COPY integration-fabric/runtime/session-broker.mjs /app/integration-fabric-runtime/session-broker.mjs
-COPY integration-fabric/runtime/session-read-authority.mjs /app/integration-fabric-runtime/session-read-authority.mjs
-COPY integration-fabric/runtime/static-credential-authority.mjs /app/integration-fabric-runtime/static-credential-authority.mjs
-COPY integration-fabric/systems.json /app/integration-fabric-catalog/systems.json
-COPY integration-fabric/protocol-profiles.json /app/integration-fabric-catalog/protocol-profiles.json
-COPY integration-fabric/opportunity-profiles.json /app/integration-fabric-catalog/opportunity-profiles.json
-COPY integration-fabric/openapi.yaml /app/integration-fabric-catalog/openapi.yaml
+COPY integration-fabric/runtime/api-version-routing.mjs integration-fabric/runtime/batch-reconciliation.mjs integration-fabric/runtime/connection-test-plan.mjs integration-fabric/runtime/connector-registry.mjs integration-fabric/runtime/dataset-coverage.mjs integration-fabric/runtime/evidence-provenance.mjs integration-fabric/runtime/governed-read-projection-registry.mjs integration-fabric/runtime/governed-read-projection.mjs integration-fabric/runtime/privileged-bootstrap-guard.mjs integration-fabric/runtime/regional-route-authority.mjs integration-fabric/runtime/rpc-read-authority.mjs integration-fabric/runtime/schema-negotiation.mjs integration-fabric/runtime/scope-partition.mjs integration-fabric/runtime/semantic-envelope.mjs integration-fabric/runtime/session-broker.mjs integration-fabric/runtime/session-read-authority.mjs integration-fabric/runtime/static-credential-authority.mjs /app/integration-fabric-runtime/
+COPY integration-fabric/systems.json integration-fabric/protocol-profiles.json integration-fabric/opportunity-profiles.json integration-fabric/openapi.yaml /app/integration-fabric-catalog/
 
 # Preserve the Integration Fabric source-relative module layout as a runtime-verifiable tree.
 # Existing compatibility copies above remain in place until every consumer is migrated.
 RUN mkdir -p /app/integration-fabric/runtime /app/integration-fabric/scripts /app/integration-fabric/research-overlays
 COPY integration-fabric/runtime/ /app/integration-fabric/runtime/
 COPY integration-fabric/scripts/load-catalog.mjs /app/integration-fabric/scripts/load-catalog.mjs
-COPY integration-fabric/systems.json /app/integration-fabric/systems.json
-COPY integration-fabric/systems-research.json /app/integration-fabric/systems-research.json
+COPY integration-fabric/systems.json integration-fabric/systems-research.json /app/integration-fabric/
 COPY integration-fabric/research-overlays/ /app/integration-fabric/research-overlays/
-COPY integration-fabric/protocol-profiles.json /app/integration-fabric/protocol-profiles.json
-COPY integration-fabric/opportunity-profiles.json /app/integration-fabric/opportunity-profiles.json
-COPY integration-fabric/openapi.yaml /app/integration-fabric/openapi.yaml
+COPY integration-fabric/protocol-profiles.json integration-fabric/opportunity-profiles.json integration-fabric/openapi.yaml /app/integration-fabric/
 
 # One-day implementation and adaptive learning overlays. These remain additive,
 # tenant-scoped, fail-closed control planes using Node built-ins and the existing SQLite state.
 RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
-COPY implementation/runtime/one-day-enterprise-engine.cjs /app/implementation-runtime/one-day-enterprise-engine.cjs
-COPY implementation/runtime/one-day-enterprise-engine-core.cjs /app/implementation-runtime/one-day-enterprise-engine-core.cjs
-COPY implementation/runtime/agents-api-adapter.cjs /app/implementation-runtime/agents-api-adapter.cjs
-COPY implementation/runtime/agents-api-bootstrap-route.cjs /app/implementation-runtime/agents-api-bootstrap-route.cjs
-COPY implementation/runtime/implementation-work-controller.cjs /app/implementation-runtime/implementation-work-controller.cjs
-COPY implementation/runtime/readiness-evidence-contract.cjs /app/implementation-runtime/readiness-evidence-contract.cjs
-COPY implementation/runtime/configuration-inference-engine.cjs /app/implementation-runtime/configuration-inference-engine.cjs
-COPY implementation/runtime/implementation-digital-twin.cjs /app/implementation-runtime/implementation-digital-twin.cjs
-COPY implementation/runtime/tenant-environment-provisioner.cjs /app/implementation-runtime/tenant-environment-provisioner.cjs
-COPY learning/runtime/adaptive-learning-engine.cjs /app/learning-runtime/adaptive-learning-engine.cjs
-COPY learning/runtime/training-workflow-manifest.cjs /app/learning-runtime/training-workflow-manifest.cjs
-COPY learning/runtime/training-twin.cjs /app/learning-runtime/training-twin.cjs
-COPY learning/runtime/training-scenario-engine.cjs /app/learning-runtime/training-scenario-engine.cjs
-COPY learning/runtime/training-delivery-service.cjs /app/learning-runtime/training-delivery-service.cjs
-COPY learning/runtime/training-video-contract.cjs /app/learning-runtime/training-video-contract.cjs
-COPY learning/runtime/training-artifact-registry.cjs /app/learning-runtime/training-artifact-registry.cjs
-COPY learning/runtime/training-regeneration-planner.cjs /app/learning-runtime/training-regeneration-planner.cjs
+COPY implementation/runtime/one-day-enterprise-engine.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/agents-api-adapter.cjs implementation/runtime/agents-api-bootstrap-route.cjs implementation/runtime/implementation-work-controller.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/configuration-inference-engine.cjs implementation/runtime/implementation-digital-twin.cjs implementation/runtime/tenant-environment-provisioner.cjs /app/implementation-runtime/
+COPY learning/runtime/adaptive-learning-engine.cjs learning/runtime/training-workflow-manifest.cjs learning/runtime/training-twin.cjs learning/runtime/training-scenario-engine.cjs learning/runtime/training-delivery-service.cjs learning/runtime/training-video-contract.cjs learning/runtime/training-artifact-registry.cjs learning/runtime/training-regeneration-planner.cjs /app/learning-runtime/
 RUN mkdir -p /app/learning-runtime/evolution /app/product-factory/features
 COPY adaptive-intelligence/engine.mjs /app/learning-runtime/evolution/engine.mjs
-COPY product-factory/adaptive-intelligence-manifest.json /app/product-factory/adaptive-intelligence-manifest.json
-COPY product-factory/learning-receipt-schema.json /app/product-factory/learning-receipt-schema.json
-COPY product-factory/features/self-evolving-customer-intelligence.json /app/product-factory/features/self-evolving-customer-intelligence.json
-COPY product-factory/features/verified-value-ledger.json /app/product-factory/features/verified-value-ledger.json
+COPY product-factory/adaptive-intelligence-manifest.json product-factory/learning-receipt-schema.json /app/product-factory/
+COPY product-factory/features/self-evolving-customer-intelligence.json product-factory/features/verified-value-ledger.json /app/product-factory/features/
 COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/workforce-lifecycle-core.cjs
-COPY operations/runtime/workflow-action-evidence-contract.cjs /app/operations-runtime/workflow-action-evidence-contract.cjs
-COPY operations/runtime/workflow-action-evidence-bridge.cjs /app/operations-runtime/workflow-action-evidence-bridge.cjs
-COPY operations/runtime/decision-episode.cjs /app/operations-runtime/decision-episode.cjs
-COPY operations/runtime/manufacturing-scheduling-engine.cjs /app/operations-runtime/manufacturing-scheduling-engine.cjs
-COPY operations/runtime/scheduling-intelligence-service.cjs /app/operations-runtime/scheduling-intelligence-service.cjs
-COPY operations/runtime/manufacturing-demand-forecast.cjs /app/operations-runtime/manufacturing-demand-forecast.cjs
-COPY operations/runtime/schedule-attendance-reconciliation.cjs /app/operations-runtime/schedule-attendance-reconciliation.cjs
-COPY operations/runtime/customer-demand-intelligence.cjs /app/operations-runtime/customer-demand-intelligence.cjs
-COPY operations/runtime/absence-recovery-shadow.cjs /app/operations-runtime/absence-recovery-shadow.cjs
-COPY operations/runtime/demand-decision-service.cjs /app/operations-runtime/demand-decision-service.cjs
-COPY operations/runtime/decision-outcome-proof.cjs /app/operations-runtime/decision-outcome-proof.cjs
-COPY operations/runtime/realtime-event-service.cjs /app/operations-runtime/realtime-event-service.cjs
-COPY operations/runtime/autopilot-execution-engine.cjs /app/operations-runtime/autopilot-execution-engine.cjs
-COPY operations/runtime/t9-customer-guardian.cjs /app/operations-runtime/t9-customer-guardian.cjs
+COPY operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/decision-episode.cjs operations/runtime/manufacturing-scheduling-engine.cjs operations/runtime/scheduling-intelligence-service.cjs operations/runtime/manufacturing-demand-forecast.cjs operations/runtime/schedule-attendance-reconciliation.cjs operations/runtime/customer-demand-intelligence.cjs operations/runtime/absence-recovery-shadow.cjs operations/runtime/demand-decision-service.cjs operations/runtime/decision-outcome-proof.cjs operations/runtime/realtime-event-service.cjs operations/runtime/autopilot-execution-engine.cjs operations/runtime/t9-customer-guardian.cjs /app/operations-runtime/
 RUN mkdir -p /app/reporting-runtime /app/policy-runtime
 COPY reporting/runtime/vector-reporting-service.cjs /app/reporting-runtime/vector-reporting-service.cjs
-COPY policy/runtime/country-policy-pack-registry.cjs /app/policy-runtime/country-policy-pack-registry.cjs
-COPY policy/runtime/jurisdiction-policy-graph.cjs /app/policy-runtime/jurisdiction-policy-graph.cjs
-COPY policy/runtime/global-site-policy-preflight.cjs /app/policy-runtime/global-site-policy-preflight.cjs
-COPY policy/runtime/authoritative-policy-source-registry.cjs /app/policy-runtime/authoritative-policy-source-registry.cjs
-COPY policy/runtime/regulatory-change-candidate.cjs /app/policy-runtime/regulatory-change-candidate.cjs
+COPY policy/runtime/country-policy-pack-registry.cjs policy/runtime/jurisdiction-policy-graph.cjs policy/runtime/global-site-policy-preflight.cjs policy/runtime/authoritative-policy-source-registry.cjs policy/runtime/regulatory-change-candidate.cjs /app/policy-runtime/
 RUN mkdir -p /app/trust-runtime
 COPY trust/runtime/vector-trust-spine.cjs /app/trust-runtime/vector-trust-spine.cjs
-COPY src/frontier/cash-to-capacity-engine.mjs /app/operations-runtime/cash-to-capacity-engine.mjs
-COPY src/frontier/cash-to-capacity-evidence.mjs /app/operations-runtime/cash-to-capacity-evidence.mjs
-COPY src/frontier/cash-to-capacity-decision.mjs /app/operations-runtime/cash-to-capacity-decision.mjs
-COPY src/frontier/cash-to-capacity-outcome.mjs /app/operations-runtime/cash-to-capacity-outcome.mjs
-COPY src/frontier/energy-bill-evidence.mjs /app/operations-runtime/energy-bill-evidence.mjs
-COPY src/frontier/energy-data-reconciliation.mjs /app/operations-runtime/energy-data-reconciliation.mjs
-COPY src/frontier/energy-flexibility.mjs /app/operations-runtime/energy-flexibility.mjs
-COPY src/frontier/energy-input-hardening.mjs /app/operations-runtime/energy-input-hardening.mjs
-COPY src/frontier/energy-profile-benchmark.mjs /app/operations-runtime/energy-profile-benchmark.mjs
-COPY src/frontier/energy-profile-binding.mjs /app/operations-runtime/energy-profile-binding.mjs
-RUN mkdir -p /app/operations-runtime/agency
+COPY src/frontier/cash-to-capacity-engine.mjs src/frontier/cash-to-capacity-evidence.mjs src/frontier/cash-to-capacity-decision.mjs src/frontier/cash-to-capacity-outcome.mjs src/frontier/energy-bill-evidence.mjs src/frontier/energy-data-reconciliation.mjs src/frontier/energy-flexibility.mjs src/frontier/energy-input-hardening.mjs src/frontier/energy-profile-benchmark.mjs src/frontier/energy-profile-binding.mjs /app/operations-runtime/
+RUN mkdir -p /app/operations-runtime/agency /app/operations-runtime/attendance
 COPY src/frontier/agency-*.mjs /app/operations-runtime/agency/
-RUN mkdir -p /app/operations-runtime/attendance
-COPY clocking-security-v2/access-control-evidence.mjs /app/operations-runtime/attendance/access-control-evidence.mjs
-COPY clocking-security-v2/access-feed-supervisor.mjs /app/operations-runtime/attendance/access-feed-supervisor.mjs
-COPY clocking-security-v2/access-onboarding-autopilot.mjs /app/operations-runtime/attendance/access-onboarding-autopilot.mjs
-COPY clocking-security-v2/access-push-adapters.mjs /app/operations-runtime/attendance/access-push-adapters.mjs
-COPY clocking-security-v2/attendance-certification.mjs /app/operations-runtime/attendance/attendance-certification.mjs
-COPY clocking-security-v2/attendance-coverage-assurance.mjs /app/operations-runtime/attendance/attendance-coverage-assurance.mjs
-COPY clocking-security-v2/attendance-coverage-planner.mjs /app/operations-runtime/attendance/attendance-coverage-planner.mjs
-COPY clocking-security-v2/attendance-payroll-gate.mjs /app/operations-runtime/attendance/attendance-payroll-gate.mjs
-COPY clocking-security-v2/attendance-release-control.mjs /app/operations-runtime/attendance/attendance-release-control.mjs
-COPY clocking-security-v2/attendance-source-supervisor.mjs /app/operations-runtime/attendance/attendance-source-supervisor.mjs
-COPY clocking-security-v2/durable-attendance-journal.mjs /app/operations-runtime/attendance/durable-attendance-journal.mjs
-COPY clocking-security-v2/durable-source-supervisor.mjs /app/operations-runtime/attendance/durable-source-supervisor.mjs
-COPY clocking-security-v2/invisible-attendance-engine.mjs /app/operations-runtime/attendance/invisible-attendance-engine.mjs
-COPY clocking-security-v2/signed-rollback-anchor.mjs /app/operations-runtime/attendance/signed-rollback-anchor.mjs
-COPY clocking-security-v2/sqlite-attendance-runtime.mjs /app/operations-runtime/attendance/sqlite-attendance-runtime.mjs
-COPY clocking-security-v2/sqlite-attendance-worker.mjs /app/operations-runtime/attendance/sqlite-attendance-worker.mjs
-COPY clocking-security-v2/telemetry-continuity-guard.mjs /app/operations-runtime/attendance/telemetry-continuity-guard.mjs
-COPY clocking-security-v2/trust-root-recovery-controller.mjs /app/operations-runtime/attendance/trust-root-recovery-controller.mjs
-COPY clocking-security-v2/trust-root-recovery.mjs /app/operations-runtime/attendance/trust-root-recovery.mjs
-COPY clocking-security-v2/wifi-evidence-adapters.mjs /app/operations-runtime/attendance/wifi-evidence-adapters.mjs
-COPY clocking-security-v2/windows-wef-evidence.mjs /app/operations-runtime/attendance/windows-wef-evidence.mjs
+COPY clocking-security-v2/access-control-evidence.mjs clocking-security-v2/access-feed-supervisor.mjs clocking-security-v2/access-onboarding-autopilot.mjs clocking-security-v2/access-push-adapters.mjs clocking-security-v2/attendance-certification.mjs clocking-security-v2/attendance-coverage-assurance.mjs clocking-security-v2/attendance-coverage-planner.mjs clocking-security-v2/attendance-payroll-gate.mjs clocking-security-v2/attendance-release-control.mjs clocking-security-v2/attendance-source-supervisor.mjs clocking-security-v2/durable-attendance-journal.mjs clocking-security-v2/durable-source-supervisor.mjs clocking-security-v2/invisible-attendance-engine.mjs clocking-security-v2/signed-rollback-anchor.mjs clocking-security-v2/sqlite-attendance-runtime.mjs clocking-security-v2/sqlite-attendance-worker.mjs clocking-security-v2/telemetry-continuity-guard.mjs clocking-security-v2/trust-root-recovery-controller.mjs clocking-security-v2/trust-root-recovery.mjs clocking-security-v2/wifi-evidence-adapters.mjs clocking-security-v2/windows-wef-evidence.mjs /app/operations-runtime/attendance/
 COPY operations/runtime/workforce-lifecycle-router.cjs /app/operations-runtime/workforce-lifecycle-guard.cjs
 COPY learning/ui/ /tmp/wfm-learning-ui/
 COPY implementation/ui/ /tmp/wfm-implementation-ui/
@@ -231,93 +155,17 @@ COPY implementation/proof/cloud-scale-proof-runner.cjs /app/proof-runtime/cloud-
 # Tests execute against the exact files copied into this image; test sources are removed
 # afterwards so they do not expand the runtime attack surface.
 RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime /tmp/wfm-tests/security/runtime /tmp/wfm-tests/integration/runtime /tmp/wfm-tests/integration/worker /tmp/wfm-tests/operations/runtime /tmp/wfm-tests/reporting/runtime /tmp/wfm-tests/trust/runtime
-COPY implementation/runtime/one-day-enterprise-engine.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.cjs
-COPY implementation/runtime/one-day-enterprise-engine-core.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine-core.cjs
-COPY implementation/runtime/agents-api-adapter.cjs /tmp/wfm-tests/implementation/runtime/agents-api-adapter.cjs
-COPY implementation/runtime/agents-api-adapter.test.cjs /tmp/wfm-tests/implementation/runtime/agents-api-adapter.test.cjs
-COPY implementation/runtime/agents-api-bootstrap-route.cjs /tmp/wfm-tests/implementation/runtime/agents-api-bootstrap-route.cjs
-COPY implementation/runtime/agents-api-bootstrap-route.test.cjs /tmp/wfm-tests/implementation/runtime/agents-api-bootstrap-route.test.cjs
-COPY implementation/runtime/implementation-work-controller.cjs /tmp/wfm-tests/implementation/runtime/implementation-work-controller.cjs
-COPY implementation/runtime/implementation-work-controller.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-work-controller.test.cjs
-COPY implementation/runtime/implementation-work-fencing.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-work-fencing.test.cjs
-COPY implementation/runtime/implementation-active-controller.integration.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-active-controller.integration.test.cjs
-COPY implementation/runtime/readiness-evidence-contract.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.cjs
-COPY implementation/runtime/readiness-evidence-contract.test.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.test.cjs
-COPY implementation/runtime/readiness-evidence-wrapper.test.cjs /tmp/wfm-tests/implementation/runtime/readiness-evidence-wrapper.test.cjs
-COPY implementation/runtime/configuration-inference-engine.cjs /tmp/wfm-tests/implementation/runtime/configuration-inference-engine.cjs
-COPY implementation/runtime/implementation-digital-twin.cjs /tmp/wfm-tests/implementation/runtime/implementation-digital-twin.cjs
-COPY implementation/runtime/implementation-digital-twin.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-digital-twin.test.cjs
-COPY implementation/runtime/tenant-environment-provisioner.cjs /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.cjs
-COPY implementation/runtime/tenant-environment-provisioner.test.cjs /tmp/wfm-tests/implementation/runtime/tenant-environment-provisioner.test.cjs
-COPY implementation/runtime/one-day-enterprise-engine.test.cjs /tmp/wfm-tests/implementation/runtime/one-day-enterprise-engine.test.cjs
-COPY implementation/runtime/configuration-inference-engine.test.cjs /tmp/wfm-tests/implementation/runtime/configuration-inference-engine.test.cjs
-COPY implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs
-COPY learning/runtime/adaptive-learning-engine.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.cjs
-COPY learning/runtime/adaptive-learning-engine.test.cjs /tmp/wfm-tests/learning/runtime/adaptive-learning-engine.test.cjs
-COPY learning/runtime/training-workflow-manifest.cjs /tmp/wfm-tests/learning/runtime/training-workflow-manifest.cjs
-COPY learning/runtime/training-workflow-manifest.test.cjs /tmp/wfm-tests/learning/runtime/training-workflow-manifest.test.cjs
-COPY learning/runtime/training-twin.cjs /tmp/wfm-tests/learning/runtime/training-twin.cjs
-COPY learning/runtime/training-twin.test.cjs /tmp/wfm-tests/learning/runtime/training-twin.test.cjs
-COPY learning/runtime/training-scenario-engine.cjs /tmp/wfm-tests/learning/runtime/training-scenario-engine.cjs
-COPY learning/runtime/training-scenario-engine.test.cjs /tmp/wfm-tests/learning/runtime/training-scenario-engine.test.cjs
-COPY learning/runtime/training-delivery-service.cjs /tmp/wfm-tests/learning/runtime/training-delivery-service.cjs
-COPY learning/runtime/training-delivery-service.test.cjs /tmp/wfm-tests/learning/runtime/training-delivery-service.test.cjs
-COPY learning/runtime/training-video-contract.cjs /tmp/wfm-tests/learning/runtime/training-video-contract.cjs
-COPY learning/runtime/training-video-contract.test.cjs /tmp/wfm-tests/learning/runtime/training-video-contract.test.cjs
-COPY learning/runtime/training-artifact-registry.cjs /tmp/wfm-tests/learning/runtime/training-artifact-registry.cjs
-COPY learning/runtime/training-artifact-registry.test.cjs /tmp/wfm-tests/learning/runtime/training-artifact-registry.test.cjs
-COPY learning/runtime/training-regeneration-planner.cjs /tmp/wfm-tests/learning/runtime/training-regeneration-planner.cjs
-COPY learning/runtime/training-regeneration-planner.test.cjs /tmp/wfm-tests/learning/runtime/training-regeneration-planner.test.cjs
-COPY operations/runtime/decision-episode.cjs /tmp/wfm-tests/operations/runtime/decision-episode.cjs
-COPY operations/runtime/manufacturing-scheduling-engine.cjs /tmp/wfm-tests/operations/runtime/manufacturing-scheduling-engine.cjs
-COPY operations/runtime/manufacturing-scheduling-engine.test.cjs /tmp/wfm-tests/operations/runtime/manufacturing-scheduling-engine.test.cjs
-COPY operations/runtime/manufacturing-demand-forecast.cjs /tmp/wfm-tests/operations/runtime/manufacturing-demand-forecast.cjs
-COPY operations/runtime/manufacturing-demand-forecast.test.cjs /tmp/wfm-tests/operations/runtime/manufacturing-demand-forecast.test.cjs
-COPY operations/runtime/schedule-attendance-reconciliation.cjs /tmp/wfm-tests/operations/runtime/schedule-attendance-reconciliation.cjs
-COPY operations/runtime/schedule-attendance-reconciliation.test.cjs /tmp/wfm-tests/operations/runtime/schedule-attendance-reconciliation.test.cjs
-COPY operations/runtime/scheduling-intelligence-service.cjs /tmp/wfm-tests/operations/runtime/scheduling-intelligence-service.cjs
-COPY operations/runtime/scheduling-intelligence-service.test.cjs /tmp/wfm-tests/operations/runtime/scheduling-intelligence-service.test.cjs
-COPY operations/runtime/scheduling-forecast-reconciliation-service.test.cjs /tmp/wfm-tests/operations/runtime/scheduling-forecast-reconciliation-service.test.cjs
-COPY security/runtime/hosted-listen-guard.cjs /tmp/wfm-tests/security/runtime/hosted-listen-guard.cjs
-COPY security/runtime/hosted-listen-guard.test.cjs /tmp/wfm-tests/security/runtime/hosted-listen-guard.test.cjs
-COPY integration/runtime/autonomous-integration-hub.cjs /tmp/wfm-tests/integration/runtime/autonomous-integration-hub.cjs
-COPY integration/runtime/autonomous-integration-hub.test.cjs /tmp/wfm-tests/integration/runtime/autonomous-integration-hub.test.cjs
-COPY integration/runtime/gusto-company-connector.cjs /tmp/wfm-tests/integration/runtime/gusto-company-connector.cjs
-COPY integration/runtime/gusto-company-connector.test.cjs /tmp/wfm-tests/integration/runtime/gusto-company-connector.test.cjs
-COPY integration/runtime/gusto-oauth-landing.cjs /tmp/wfm-tests/integration/runtime/gusto-oauth-landing.cjs
-COPY integration/runtime/gusto-oauth-landing.test.cjs /tmp/wfm-tests/integration/runtime/gusto-oauth-landing.test.cjs
-COPY integration/runtime/gusto-integration-hub.test.cjs /tmp/wfm-tests/integration/runtime/gusto-integration-hub.test.cjs
-COPY integration/runtime/directory-oauth-broker.cjs /tmp/wfm-tests/integration/runtime/directory-oauth-broker.cjs
-COPY integration/runtime/directory-oauth-broker.test.cjs /tmp/wfm-tests/integration/runtime/directory-oauth-broker.test.cjs
-COPY integration/worker/directory-discovery-worker.cjs /tmp/wfm-tests/integration/worker/directory-discovery-worker.cjs
-COPY integration/worker/directory-discovery-worker.test.cjs /tmp/wfm-tests/integration/worker/directory-discovery-worker.test.cjs
+COPY implementation/runtime/one-day-enterprise-engine.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/agents-api-adapter.cjs implementation/runtime/agents-api-adapter.test.cjs implementation/runtime/agents-api-bootstrap-route.cjs implementation/runtime/agents-api-bootstrap-route.test.cjs implementation/runtime/implementation-work-controller.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-work-fencing.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/readiness-evidence-contract.test.cjs implementation/runtime/readiness-evidence-wrapper.test.cjs implementation/runtime/configuration-inference-engine.cjs implementation/runtime/implementation-digital-twin.cjs implementation/runtime/implementation-digital-twin.test.cjs implementation/runtime/tenant-environment-provisioner.cjs implementation/runtime/tenant-environment-provisioner.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs implementation/runtime/configuration-inference-engine.test.cjs implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/
+COPY learning/runtime/adaptive-learning-engine.cjs learning/runtime/adaptive-learning-engine.test.cjs learning/runtime/training-workflow-manifest.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.cjs learning/runtime/training-regeneration-planner.test.cjs /tmp/wfm-tests/learning/runtime/
+COPY operations/runtime/decision-episode.cjs operations/runtime/manufacturing-scheduling-engine.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs operations/runtime/manufacturing-demand-forecast.cjs operations/runtime/manufacturing-demand-forecast.test.cjs operations/runtime/schedule-attendance-reconciliation.cjs operations/runtime/schedule-attendance-reconciliation.test.cjs operations/runtime/scheduling-intelligence-service.cjs operations/runtime/scheduling-intelligence-service.test.cjs operations/runtime/scheduling-forecast-reconciliation-service.test.cjs /tmp/wfm-tests/operations/runtime/
+COPY security/runtime/hosted-listen-guard.cjs security/runtime/hosted-listen-guard.test.cjs /tmp/wfm-tests/security/runtime/
+COPY integration/runtime/autonomous-integration-hub.cjs integration/runtime/autonomous-integration-hub.test.cjs integration/runtime/gusto-company-connector.cjs integration/runtime/gusto-company-connector.test.cjs integration/runtime/gusto-oauth-landing.cjs integration/runtime/gusto-oauth-landing.test.cjs integration/runtime/gusto-integration-hub.test.cjs integration/runtime/directory-oauth-broker.cjs integration/runtime/directory-oauth-broker.test.cjs /tmp/wfm-tests/integration/runtime/
+COPY integration/worker/directory-discovery-worker.cjs integration/worker/directory-discovery-worker.test.cjs /tmp/wfm-tests/integration/worker/
 COPY operations/runtime/workforce-lifecycle-guard.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-core.cjs
 COPY operations/runtime/workforce-lifecycle-router.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.cjs
-COPY operations/runtime/workforce-lifecycle-guard.test.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.test.cjs
-COPY operations/runtime/workflow-action-evidence-contract.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.cjs
-COPY operations/runtime/workflow-action-evidence-contract.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-contract.test.cjs
-COPY operations/runtime/workflow-action-evidence-bridge.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.cjs
-COPY operations/runtime/workflow-action-evidence-bridge.test.cjs /tmp/wfm-tests/operations/runtime/workflow-action-evidence-bridge.test.cjs
-COPY operations/runtime/decision-episode.cjs /tmp/wfm-tests/operations/runtime/decision-episode.cjs
-COPY operations/runtime/decision-episode.test.cjs /tmp/wfm-tests/operations/runtime/decision-episode.test.cjs
-COPY operations/runtime/customer-demand-intelligence.cjs /tmp/wfm-tests/operations/runtime/customer-demand-intelligence.cjs
-COPY operations/runtime/customer-demand-intelligence.test.cjs /tmp/wfm-tests/operations/runtime/customer-demand-intelligence.test.cjs
-COPY operations/runtime/absence-recovery-shadow.cjs /tmp/wfm-tests/operations/runtime/absence-recovery-shadow.cjs
-COPY operations/runtime/absence-recovery-shadow.test.cjs /tmp/wfm-tests/operations/runtime/absence-recovery-shadow.test.cjs
-COPY operations/runtime/demand-decision-service.cjs /tmp/wfm-tests/operations/runtime/demand-decision-service.cjs
-COPY operations/runtime/demand-decision-service.test.cjs /tmp/wfm-tests/operations/runtime/demand-decision-service.test.cjs
-COPY operations/runtime/decision-outcome-proof.cjs /tmp/wfm-tests/operations/runtime/decision-outcome-proof.cjs
-COPY operations/runtime/decision-outcome-proof.test.cjs /tmp/wfm-tests/operations/runtime/decision-outcome-proof.test.cjs
-COPY operations/runtime/realtime-event-service.cjs /tmp/wfm-tests/operations/runtime/realtime-event-service.cjs
-COPY operations/runtime/realtime-event-service.test.cjs /tmp/wfm-tests/operations/runtime/realtime-event-service.test.cjs
-COPY operations/runtime/autopilot-execution-engine.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.cjs
-COPY operations/runtime/autopilot-execution-engine.test.cjs /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs
-COPY operations/runtime/t9-customer-guardian.cjs /tmp/wfm-tests/operations/runtime/t9-customer-guardian.cjs
-COPY operations/runtime/t9-customer-guardian.test.cjs /tmp/wfm-tests/operations/runtime/t9-customer-guardian.test.cjs
-COPY reporting/runtime/vector-reporting-service.cjs /tmp/wfm-tests/reporting/runtime/vector-reporting-service.cjs
-COPY reporting/runtime/vector-reporting-service.test.cjs /tmp/wfm-tests/reporting/runtime/vector-reporting-service.test.cjs
-COPY trust/runtime/vector-trust-spine.cjs /tmp/wfm-tests/trust/runtime/vector-trust-spine.cjs
-COPY trust/runtime/vector-trust-spine.test.cjs /tmp/wfm-tests/trust/runtime/vector-trust-spine.test.cjs
+COPY operations/runtime/workforce-lifecycle-guard.test.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-bridge.test.cjs operations/runtime/decision-episode.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.cjs operations/runtime/decision-outcome-proof.test.cjs operations/runtime/realtime-event-service.cjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/t9-customer-guardian.cjs operations/runtime/t9-customer-guardian.test.cjs /tmp/wfm-tests/operations/runtime/
+COPY reporting/runtime/vector-reporting-service.cjs reporting/runtime/vector-reporting-service.test.cjs /tmp/wfm-tests/reporting/runtime/
+COPY trust/runtime/vector-trust-spine.cjs trust/runtime/vector-trust-spine.test.cjs /tmp/wfm-tests/trust/runtime/
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && node --test \
@@ -378,8 +226,7 @@ RUN WFM_PROOF_ONESHOT=true \
 # Retired shell entry points are physically removed from the runtime image, not hidden.
 COPY ux-overlay/ /tmp/wfm-ux-overlay/
 COPY reporting/ui/ /tmp/wfm-reporting-ui/
-COPY scripts/compose-vector-presentation.mjs /tmp/compose-vector-presentation.mjs
-COPY scripts/prove-vector-built-asset-provenance.mjs /tmp/prove-vector-built-asset-provenance.mjs
+COPY scripts/compose-vector-presentation.mjs scripts/prove-vector-built-asset-provenance.mjs /tmp/
 RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && node --check /app/security-runtime/bootstrap.cjs \
  && node --check /app/security-runtime/proof-runner-auth.cjs \
@@ -440,9 +287,7 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
 
 # Consequential attendance admission against the exact final runtime. Reject an
 # overlapping correction before mutation, then prove valid reconciliation/export.
-COPY verification/vector-repair-20260921/attendance-overlap-regression.mjs /tmp/wfm-attendance-tests/attendance-overlap-regression.mjs
-COPY verification/vector-repair-20260921/attendance-payroll-acceptance.mjs /tmp/wfm-attendance-tests/attendance-payroll-acceptance.mjs
-COPY verification/vector-repair-20260921/attendance-guardrails.test.cjs /tmp/wfm-attendance-tests/attendance-guardrails.test.cjs
+COPY verification/vector-repair-20260921/attendance-overlap-regression.mjs verification/vector-repair-20260921/attendance-payroll-acceptance.mjs verification/vector-repair-20260921/attendance-guardrails.test.cjs /tmp/wfm-attendance-tests/
 COPY verification/vector-repair-20260921/attendance-runtime-harness.mjs verification/vector-repair-20260921/attendance-runtime-harness.test.mjs /tmp/wfm-attendance-tests/
 RUN WFM_RUNTIME=/app node --test /tmp/wfm-attendance-tests/attendance-guardrails.test.cjs /tmp/wfm-attendance-tests/attendance-runtime-harness.test.mjs \
  && WFM_RUNTIME=/app node /tmp/wfm-attendance-tests/attendance-overlap-regression.mjs \

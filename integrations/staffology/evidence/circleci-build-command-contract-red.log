@@ -1,0 +1,222 @@
+
+=== node scripts/validate-deployment.mjs ===
+{
+  "ok": true,
+  "schemaVersion": 4,
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "runtimeSizeBytes": 562434,
+  "runtimeManifestSha256": "8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce",
+  "canonicalSourceSha256": "52e6f77d39fd71bc3240f05a763e77c790f6937b2614638db4bda51d43328219",
+  "hostedSourceSha256": "0eff86d3034c6493aba130ec052bce8ee98e2205c37baae7c89ac6bd01ea84d9",
+  "nodeImage": "node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96",
+  "runtimeUser": "node",
+  "nodeSecurityFloor": "22.23.2",
+  "packageManagersPresent": false,
+  "productionApproved": false,
+  "stagingOnly": true
+}
+
+=== node scripts/validate-proof-lane-policy.mjs ===
+VECTOR_PROOF_LANE_INDEPENDENCE=PASS providers=3 exactImageLanes=3
+
+=== node scripts/validate-research-convergence-ledger.mjs ===
+VECTOR_RESEARCH_CONVERGENCE_GATE=PASS items=16 pending=13 registeredSources=15
+
+=== node --test resilience/research-convergence-theory-simulator.test.cjs ===
+TAP version 13
+# Subtest: country policy research routes into existing engines and creates no seventh loop
+ok 1 - country policy research routes into existing engines and creates no seventh loop
+  ---
+  duration_ms: 3.606409
+  type: 'test'
+  ...
+# Subtest: implementation cannot start before design and theory pass
+ok 2 - implementation cannot start before design and theory pass
+  ---
+  duration_ms: 0.715206
+  type: 'test'
+  ...
+# Subtest: a falsified theory is retained and routed to redesign rather than dropped
+ok 3 - a falsified theory is retained and routed to redesign rather than dropped
+  ---
+  duration_ms: 0.672669
+  type: 'test'
+  ...
+# Subtest: high-impact country policy implementation must remain advisory or use independent authority
+ok 4 - high-impact country policy implementation must remain advisory or use independent authority
+  ---
+  duration_ms: 0.442153
+  type: 'test'
+  ...
+# Subtest: implementation does not equal convergence until exact hosted Golden Journey and value proof pass
+ok 5 - implementation does not equal convergence until exact hosted Golden Journey and value proof pass
+  ---
+  duration_ms: 0.602275
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 220.539517
+
+=== node scripts/validate-product-factory.mjs ===
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: CircleCI must build the exact FORGE runtime candidate
+    at file:///workspace/-manufacturing-wfm/scripts/validate-product-factory.mjs:61:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'version: 2.1\n' +
+    '\n' +
+    'commands:\n' +
+    '  require_frozen_candidate:\n' +
+    '    steps:\n' +
+    '      - run:\n' +
+    '          name: Admit explicit frozen candidate only\n' +
+    '          command: |\n' +
+    '            if git rev-parse HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- artifact/vector-proof-freeze.trigger; then\n' +
+    "              echo 'No frozen-candidate trigger change; halting heavy proof without marking product failure.'\n" +
+    '              circleci-agent step halt\n' +
+    '            fi\n' +
+    '\n' +
+    'jobs:\n' +
+    '  forge_core_validation:\n' +
+    '    docker:\n' +
+    '      - image: cimg/node:22.23.2\n' +
+    '    resource_class: small\n' +
+    '    steps:\n' +
+    '      - checkout\n' +
+    '      - require_frozen_candidate\n' +
+    '      - run:\n' +
+    '          name: Verify exact Node runtime\n' +
+    '          command: test "$(node --version)" = "v22.23.2"\n' +
+    '      - run:\n' +
+    '          name: Current FORGE source validation\n' +
+    '          command: node scripts/run-forge-ci.mjs\n' +
+    '      - run:\n' +
+    '          name: Collect source proof receipts\n' +
+    '          when: always\n' +
+    '          command: |\n' +
+    '            mkdir -p circleci-artifacts\n' +
+    '            cp *-proof.json circleci-artifacts/ 2>/dev/null || true\n' +
+    '      - store_artifacts:\n' +
+    '          path: circleci-artifacts\n' +
+    '          destination: forge-source-proof\n' +
+    '\n' +
+    '  forge_runtime_validation:\n' +
+    '    machine:\n' +
+    '      image: ubuntu-2404:current\n' +
+    '    resource_class: medium\n' +
+    '    steps:\n' +
+    '      - checkout\n' +
+    '      - require_frozen_candidate\n' +
+    '      - run:\n' +
+    '          name: Build exact FORGE runtime candidate\n' +
+    '          command: |\n' +
+    '            set -euo pipefail\n' +
+    '            mkdir -p circleci-runtime-artifacts/staffology\n' +
+    '            docker build --progress=plain --pull=false --target staffology-proof-evidence --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" --output "type=local,dest=circleci-runtime-artifacts/staffology" . 2>&1 | tee circleci-runtime-artifacts/staffology-proof-build.log\n' +
+    '            docker build --progress=plain --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" . 2>&1 | tee circleci-runtime-artifacts/runtime-image-build.log\n' +
+    '      - run:\n' +
+    '          name: Verify runtime security boundary\n' +
+    '          command: |\n' +
+    '            set -euo pipefail\n' +
+    '            IMAGE="vector-forge-ci:${CIRCLE_SHA1}"\n' +
+    '            test "$(docker run --rm --entrypoint node "$IMAGE" --version)" = "v22.23.2"\n' +
+    `            test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "root"\n` +
+    `            test "$(docker inspect --format '{{json .Config.Entrypoint}}' "$IMAGE")" = '["/usr/local/bin/vector-entrypoint.sh"]'\n` +
+    `            docker run --rm --entrypoint sh "$IMAGE" -ec '\n` +
+    '              test ! -e /usr/local/lib/node_modules/npm\n' +
+    '              test ! -e /usr/local/lib/node_modules/corepack\n' +
+    '              for p in npm npx corepack yarn yarnpkg pnpm pnpx; do\n' +
+    '                if command -v "$p" >/dev/null 2>&1; then\n' +
+    '                  echo "Unexpected package manager in final runtime: $p" >&2\n' +
+    '                  exit 1\n' +
+    '                fi\n' +
+    '              done\n' +
+    "            '\n" +
+    '            if docker run --rm -e NODE_ENV=production --entrypoint node "$IMAGE" /app/server.cjs >production-refusal.log 2>&1; then\n' +
+    "              echo 'ERROR: staging candidate unexpectedly started in production mode' >&2\n" +
+    '              cat production-refusal.log >&2\n' +
+    '              exit 1\n' +
+    '            fi\n' +
+    "            grep -q 'cannot run as production' production-refusal.log\n" +
+    '      - run:\n' +
+    '          name: Prove isolated hosted HTTP boundary\n' +
+    '          command: |\n' +
+    '            set -euo pipefail\n' +
+    '            IMAGE="vector-forge-ci:${CIRCLE_SHA1}"\n' +
+    '            CI_PASSWORD="CI-$(openssl rand -hex 16)"\n' +
+    '            docker run -d --name vector-forge-proof -p 3000:3000               -e PORT=3000               -e NODE_ENV=staging               -e NODE_OPTIONS=--experimental-sqlite               -e WFM_HOSTED_STAGING=true               -e WFM_PUBLIC_ORIGIN=https://vector-forge-ci.invalid               -e WFM_DB=/tmp/vector-forge-proof.sqlite               -e WFM_STAGING_PASSWORD="$CI_PASSWORD"               "$IMAGE"\n' +
+    '            proxy_curl() {\n' +
+    `              curl -fsS -H 'Host: vector-forge-ci.invalid' -H 'X-Forwarded-Proto: https' "$@"\n` +
+    '            }\n' +
+    '            deadline=$((SECONDS+60))\n' +
+    '            until proxy_curl http://127.0.0.1:3000/api/health >/tmp/health.json; do\n' +
+    '              if (( SECONDS >= deadline )); then\n' +
+    "                echo 'Runtime did not become healthy before the readiness deadline.' >&2\n" +
+    '                docker logs vector-forge-proof >&2 || true\n' +
+    '                exit 1\n' +
+    '              fi\n' +
+    '              sleep 0.25\n' +
+    '            done\n' +
+    '            proxy_curl http://127.0.0.1:3000/api/health\n' +
+    '            proxy_curl http://127.0.0.1:3000/ >/dev/null\n' +
+    "            status=$(curl -sS -o /tmp/bootstrap-unauth.json -w '%{http_code}'               -H 'Host: vector-forge-ci.invalid'               -H 'X-Forwarded-Proto: https'               http://127.0.0.1:3000/api/bootstrap)\n" +
+    '            test "$status" = "401"\n' +
+    '            test "$(docker exec vector-forge-proof id -u)" != "0"\n' +
+    "            curl -sS -o /tmp/demand-unauth.json -w '%{http_code}'               -H 'Host: vector-forge-ci.invalid'               -H 'X-Forwarded-Proto: https'               http://127.0.0.1:3000/api/operations/intelligence/summary               | grep -qx '401'\n" +
+    '      - run:\n' +
+    '          name: Capture exact runtime proof\n' +
+    '          when: always\n' +
+    '          command: |\n' +
+    '            mkdir -p circleci-runtime-artifacts\n' +
+    '            docker logs vector-forge-proof >circleci-runtime-artifacts/vector-forge-proof.log 2>&1 || true\n' +
+    '            cp production-refusal.log circleci-runtime-artifacts/ 2>/dev/null || true\n' +
+    '            cp /tmp/health.json circleci-runtime-artifacts/ 2>/dev/null || true\n' +
+    '            cp /tmp/bootstrap-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true\n' +
+    '            cp /tmp/demand-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true\n' +
+    `            printf '%s\\n' "$CIRCLE_SHA1" > circleci-runtime-artifacts/source-sha.txt\n` +
+    '            docker inspect "vector-forge-ci:${CIRCLE_SHA1}" > circleci-runtime-artifacts/image-inspect.json 2>/dev/null || true\n' +
+    '      - run:\n' +
+    '          name: Clean up proof container\n' +
+    '          when: always\n' +
+    '          command: docker rm -f vector-forge-proof >/dev/null 2>&1 || true\n' +
+    '      - store_artifacts:\n' +
+    '          path: circleci-runtime-artifacts\n' +
+    '          destination: forge-runtime-proof\n' +
+    '\n' +
+    'workflows:\n' +
+    '  vector_forge_proof:\n' +
+    '    jobs:\n' +
+    '      - forge_core_validation\n' +
+    '      - forge_runtime_validation:\n' +
+    '          requires:\n' +
+    '            - forge_core_validation\n' +
+    '          filters:\n' +
+    '            branches:\n' +
+    '              only:\n' +
+    '                - /feature\\/vector-.*/\n' +
+    '                - /release\\/.*/\n' +
+    '                - /staging\\/.*/\n' +
+    '                - /review\\/staffology-.*/\n' +
+    '            tags:\n' +
+    '              ignore: /.*/\n',
+  expected: /docker build --pull=false/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v22.22.2

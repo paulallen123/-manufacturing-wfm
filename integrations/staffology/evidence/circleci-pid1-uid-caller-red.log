@@ -1,0 +1,24 @@
+CircleCI pipeline 11 / workflow 35ff89ca-8aa1-48af-980f-394dba85b0aa
+Exact source: dfeb74eb524fe936516c6b4a8b53ac9f2876e580
+Core job 14: SUCCESS
+Runtime job 15: FAILED after 8m38s
+Build step 103: SUCCESS after 8m30s
+Runtime security step 104: SUCCESS after 1s
+Isolated hosted HTTP step 105: FAILED after 3s
+Complete build log: 1065864 bytes
+Complete build log SHA256: c3804067515c726ed6eea82bcb3f199aad34598444210eff4251d2c83dbe3c33
+HTTP stdout: 726 bytes
+HTTP stdout SHA256: 876d5409a6624eaab312f9e3c77c7e8abcb6207a327ba6b45cacfef98be513f9
+HTTP stderr: 34 bytes
+HTTP stderr SHA256: a5215233900547ee0ecdc47984d49c1528b904aa8f885d2668a33016b069595f
+
+Observed stdout ended after transient curl connection resets and one successful health body:
+{"status":"ok","mode":"hosted-staging","fixtureOnly":true,"hosted":true,"productionApproved":false,"pilotReady":false,"release":"0.6.76-hosted-staging-rc1","traceId":"2510e77f5731a174c45ed41b50a30b72"}
+Observed stderr: Exited with code exit status 1.
+
+The exact failing shell assertion is not identified by the retained output. Source review
+shows that `docker exec vector-forge-proof id -u` starts a new exec process using the
+image Config.User (intentionally root for the volume wrapper), rather than inspecting
+the already-running PID 1 application after the entrypoint executes `gosu node`.
+This semantic mismatch is a justified repair target, not a claim that the unavailable
+runtime diagnostic proved that assertion was the terminal failure.

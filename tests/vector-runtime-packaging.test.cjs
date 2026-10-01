@@ -8,11 +8,13 @@ const { once } = require('node:events');
 const root = path.resolve(__dirname, '..');
 const bootstrap = fs.readFileSync(path.join(root, 'security/runtime/bootstrap.cjs'), 'utf8');
 const relativeRequires = Array.from(bootstrap.matchAll(/require\(['"]\.\/([^'"]+)['"]\)/g), m => m[1]);
+function copyMappings(docker) {const mappings=new Set();for(const line of docker.split('\n')){if(!line.startsWith('COPY '))continue;const words=line.trim().split(/\s+/).slice(1);while(words[0]?.startsWith('--'))words.shift();const destination=words.pop();for(const source of words){const target=destination.endsWith('/')&&!source.endsWith('/')?destination+path.posix.basename(source):destination;mappings.add(`${source} ${target}`);}}return mappings;}
 test('the final Docker stage includes every relative bootstrap dependency', () => {
   const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
   const finalStage = docker.slice(docker.lastIndexOf('\nFROM '));
+  const mappings=copyMappings(finalStage);
   for (const file of relativeRequires) {
-    assert.ok(finalStage.includes(`COPY security/runtime/${file} /app/security-runtime/${file}`), `required runtime module omitted from image: ${file}`);
+    assert.ok(mappings.has(`security/runtime/${file} /app/security-runtime/${file}`), `required runtime module omitted from image: ${file}`);
   }
 });
 test('local proof assembly includes the same required bootstrap dependencies', () => {
@@ -106,13 +108,8 @@ test('legacy local-data writes are redirected outside immutable app root', () =>
 
 test('integration fabric runtime retains its source-relative loader layout', () => {
   const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
-  assert.match(docker, /COPY integration-fabric\/runtime\/ \/app\/integration-fabric\/runtime\//);
-  assert.match(docker, /COPY integration-fabric\/scripts\/load-catalog\.mjs \/app\/integration-fabric\/scripts\/load-catalog\.mjs/);
-  assert.match(docker, /COPY integration-fabric\/systems\.json \/app\/integration-fabric\/systems\.json/);
-  assert.match(docker, /COPY integration-fabric\/systems-research\.json \/app\/integration-fabric\/systems-research\.json/);
-  assert.match(docker, /COPY integration-fabric\/research-overlays\/ \/app\/integration-fabric\/research-overlays\//);
-  assert.match(docker, /COPY integration-fabric\/protocol-profiles\.json \/app\/integration-fabric\/protocol-profiles\.json/);
-  assert.match(docker, /COPY integration-fabric\/opportunity-profiles\.json \/app\/integration-fabric\/opportunity-profiles\.json/);
+  const mappings=copyMappings(docker);
+  for(const mapping of ['integration-fabric/runtime/ /app/integration-fabric/runtime/','integration-fabric/scripts/load-catalog.mjs /app/integration-fabric/scripts/load-catalog.mjs','integration-fabric/systems.json /app/integration-fabric/systems.json','integration-fabric/systems-research.json /app/integration-fabric/systems-research.json','integration-fabric/research-overlays/ /app/integration-fabric/research-overlays/','integration-fabric/protocol-profiles.json /app/integration-fabric/protocol-profiles.json','integration-fabric/opportunity-profiles.json /app/integration-fabric/opportunity-profiles.json'])assert.ok(mappings.has(mapping),`runtime mapping omitted: ${mapping}`);
   const registry = fs.readFileSync(path.join(root, 'integration-fabric/runtime/connector-registry.mjs'), 'utf8');
   assert.match(registry, /\.\.\/scripts\/load-catalog\.mjs/);
 });
