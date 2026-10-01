@@ -1,0 +1,53 @@
+TAP version 13
+# Subtest: successor red: a pre-dispatch read failure is durably distinguished from an attempted send
+not ok 1 - successor red: a pre-dispatch read failure is durably distinguished from an attempted send
+  ---
+  duration_ms: 11.93818
+  location: '/workspace/-manufacturing-wfm/integrations/staffology/independent/succession-regressions.test.cjs:10:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'sending'
+    - 'uncertain'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'uncertain'
+  actual: 'sending'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/-manufacturing-wfm/integrations/staffology/independent/succession-regressions.test.cjs:25:9)
+    async Test.run (node:internal/test_runner/test:797:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: successor red: a former employee cannot enter the onboarding upsert workflow
+not ok 2 - successor red: a former employee cannot enter the onboarding upsert workflow
+  ---
+  duration_ms: 1.603013
+  location: '/workspace/-manufacturing-wfm/integrations/staffology/independent/succession-regressions.test.cjs:29:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    code: 'STAFFOLOGY_EMPLOYEE_LIFECYCLE_REQUIRED'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/-manufacturing-wfm/integrations/staffology/independent/succession-regressions.test.cjs:33:9)
+    Test.runInAsyncScope (node:async_hooks:206:9)
+    Test.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    Test.postRun (node:internal/test_runner/test:889:19)
+    Test.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 213.158741
