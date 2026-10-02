@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-02T08:49:16.121Z",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "laneName": "CANONICAL CORE & DIGITAL TWIN",
+  "laneId": "01",
+  "worktree": "work/lane01-twin",
+  "branch": "orchestration/vector-convergence-20261002",
+  "sourceBranchesInspected": [
+    {
+      "branch": "frontier/factory-capability-graph-v1",
+      "sha": "710da5c6a113500686435c1c98bedee6aefbcc36"
+    },
+    {
+      "branch": "architecture/product-constitution-v1",
+      "sha": "09a034ce96a3bfa01370c257b7d1ba4d14ebc0a9"
+    },
+    {
+      "branch": "evolution/factory-evidence-kernel-20260920-1146",
+      "sha": "65fc59dadba377bce5fc68a88dc536261a5e68be"
+    },
+    {
+      "branch": "evolution/factory-evidence-kernel-20260920-1146",
+      "sha": "65fc59dadba377bce5fc68a88dc536261a5e68be"
+    },
+    {
+      "branch": "evolution/factory-evidence-kernel-20260920-1146",
+      "sha": "65fc59dadba377bce5fc68a88dc536261a5e68be"
+    },
+    {
+      "branch": "feature/vector-adaptive-implementation-twin-v1",
+      "sha": "2ccf703f8642b55c1cf0d1912a2715f5a386e031"
+    },
+    {
+      "branch": "feature/vector-research-alignment-20260923",
+      "sha": "07bc5218c183049a8d7ab884b15cca6ef38375ec"
+    }
+  ],
+  "sourcePRsInspected": [
+    93,
+    195,
+    205,
+    224,
+    230
+  ],
+  "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "lastRebase": null,
+  "testsExecuted": [],
+  "currentTask": "Inspect/port compatible read-only Twin projections",
+  "admissionAllowed": false,
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+}

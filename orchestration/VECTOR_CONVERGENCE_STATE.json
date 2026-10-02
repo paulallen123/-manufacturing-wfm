@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-02T08:58:03.144Z",
+  "programmeStatus": "RUNNING",
+  "completionClaim": false,
+  "phase": "Protect current proof candidate; repair blockers; inventory and isolated future ports",
+  "frozen": {
+    "branch": "release/vector-customer-ready-candidate-20260925",
+    "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "tree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+    "preserve": true
+  },
+  "servingCandidate": {
+    "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+    "tenant": "northstar-demo",
+    "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+    "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
+    "fixtureOnly": true,
+    "productionApproved": false,
+    "observedAt": "2026-10-02T08:20:00.048Z"
+  },
+  "customerProvenBaseSha": null,
+  "liveCustomerSha": null,
+  "liveCustomerIdentity": "NOT_ESTABLISHED; Railway environment label production does not establish live customer release",
+  "convergenceBranch": null,
+  "convergenceSha": null,
+  "controlPlane": {
+    "branch": "orchestration/vector-convergence-20261002",
+    "baseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "productRuntimeMutation": false,
+    "purpose": "Durable orchestration evidence only; not a new release lineage"
+  },
+  "reviewCandidate": {
+    "branch": "review/staffology-customer-proof-20261001",
+    "sha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+    "tree": "e0d2d94bf089799ea750ebfdc0a19db65de89561",
+    "admitted": false,
+    "observedAt": "2026-10-02T08:58:03.144Z"
+  },
+  "readiness": {
+    "completed": 5,
+    "total": 21,
+    "operationalReady": false,
+    "customerProofComplete": false,
+    "productReady": false,
+    "state": "SLA_MISSED"
+  },
+  "currentCI": {
+    "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+    "statuses": [
+      {
+        "context": "ci/circleci: forge_core_validation",
+        "state": "success",
+        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/25"
+      },
+      {
+        "context": "ci/circleci: forge_runtime_validation",
+        "state": "failure",
+        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/26"
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "01",
+      "name": "CANONICAL CORE & DIGITAL TWIN",
+      "owner": "inventory_product isolated canonical Twin projection port",
+      "status": "ACTIVE",
+      "lock": "orchestration/lanes/01/VECTOR_BASELINE_LOCK.json",
+      "activeTask": "Inspect/port compatible read-only Twin projections"
+    },
+    {
+      "id": "02",
+      "name": "WORKFORCE / SCHEDULING / COUNTRY",
+      "owner": "Commander assigned canonical domain; no duplicate worker",
+      "status": "INVENTORIED_NOT_IMPLEMENTING",
+      "lock": "orchestration/lanes/02/VECTOR_BASELINE_LOCK.json",
+      "activeTask": null
+    },
+    {
+      "id": "03",
+      "name": "INTEGRATION & PAYROLL",
+      "owner": "Existing Staffology source owner; inventory_edges owns disjoint future fabric-helper port",
+      "status": "ACTIVE",
+      "lock": "orchestration/lanes/03/VECTOR_BASELINE_LOCK.json",
+      "activeTask": "Repair current Staffology proof path; disjoint future helper port"
+    },
+    {
+      "id": "04",
+      "name": "AUTOPILOT & DECISION INTELLIGENCE",
+      "owner": "Commander assigned canonical domain; no duplicate worker",
+      "status": "INVENTORIED_NOT_IMPLEMENTING",
+      "lock": "orchestration/lanes/04/VECTOR_BASELINE_LOCK.json",
+      "activeTask": null
+    },
+    {
+      "id": "05",
+      "name": "IMPLEMENTATION & AUTONOMOUS SUPPORT",
+      "owner": "Commander assigned canonical domain; no duplicate worker",
+      "status": "INVENTORIED_NOT_IMPLEMENTING",
+      "lock": "orchestration/lanes/05/VECTOR_BASELINE_LOCK.json",
+      "activeTask": null
+    },
+    {
+      "id": "06",
+      "name": "VECTA / UX / MOBILE",
+      "owner": "Commander assigned canonical domain; no duplicate worker",
+      "status": "INVENTORIED_NOT_IMPLEMENTING",
+      "lock": "orchestration/lanes/06/VECTOR_BASELINE_LOCK.json",
+      "activeTask": null
+    },
+    {
+      "id": "07",
+      "name": "MANUFACTURING & FRONTIER INTELLIGENCE",
+      "owner": "Commander assigned canonical domain; no duplicate worker",
+      "status": "INVENTORIED_NOT_IMPLEMENTING",
+      "lock": "orchestration/lanes/07/VECTOR_BASELINE_LOCK.json",
+      "activeTask": null
+    },
+    {
+      "id": "08",
+      "name": "VALUE / TRAINING / LEARNING / REPORTING",
+      "owner": "Commander assigned canonical domain; no duplicate worker",
+      "status": "INVENTORIED_NOT_IMPLEMENTING",
+      "lock": "orchestration/lanes/08/VECTOR_BASELINE_LOCK.json",
+      "activeTask": null
+    },
+    {
+      "id": "09",
+      "name": "TRUST / PROOF / RELEASE",
+      "owner": "trust_review independent reviewer; commander owns release admission",
+      "status": "ACTIVE",
+      "lock": "orchestration/lanes/09/VECTOR_BASELINE_LOCK.json",
+      "activeTask": "Held-out reproductions and independent repair review"
+    }
+  ],
+  "nextAction": "Retrieve and independently review the existing Staffology task repair output, verify native commit/tree and run held-outs before publishing a new exact source candidate.",
+  "promotionRule": "Only exact current customer proof establishes PROVEN_BASE_SHA and then convergence/vector-next. Historic branches supply capability, not ancestry.",
+  "sourceOwnerLatest": {
+    "nativeCommit": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
+    "parent": "2f8aa26ae40258d36e71f909d18cc46989f0e1fe",
+    "tree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
+    "status": "COMPLETED_OUTPUT_REPORTED; bytes not yet extracted/independently admitted",
+    "reportedNode": "22.22.2",
+    "reportedPasses": 158,
+    "reportedFullHTTP": "UNPASSED",
+    "reportedContainer": "UNPASSED"
+  }
+}

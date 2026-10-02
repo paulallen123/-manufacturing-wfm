@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "lane": "09-independent-trust-review",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pr": 292,
+  "prHead": "502b8d45e11b8f8cfe9905d7cc06bf5890ef72a2",
+  "prBase": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "publishedReviewCandidate": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+  "candidateParent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "comparisonWarning": "93513c2 is a sibling transport commit from f32ca1a, not PR #292 head or base. PR #292 is mergeable=false, mergeable_state=dirty. No review of unpublished native 1a98bb6 is claimed.",
+  "basis": "Exact-SHA source/diff/comments/thread review plus qualified local Node 22.23.2 held-out execution; only TR-01, TR-02, TR-03, TR-06, TR-07 are behaviorally reproduced.",
+  "execution": {
+    "initialStaticReviewTestsExecuted": false,
+    "supplementalTestsExecuted": true,
+    "heldOut": {
+      "tests": 10,
+      "pass": 4,
+      "fail": 6,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 1271.8218
+    },
+    "repositoryAffected": {
+      "tests": 26,
+      "pass": 26,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 9048.1241
+    },
+    "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+    "node": "v22.23.2",
+    "platform": "win32",
+    "externalProviderRequests": 0,
+    "githubWrites": 0,
+    "productCodeWrites": 0,
+    "qualifiedEvidence": "behavioral-verification.json"
+  },
+  "counts": {
+    "P1": 7,
+    "P2": 4
+  },
+  "findings": [
+    {
+      "id": "TR-01",
+      "priority": "P1",
+      "title": "Pre-dispatch recovery tries to replace immutable baseline",
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "line": 352,
+      "currentLine": 352,
+      "thread": "4161418423",
+      "reason": "After a baseline is recorded, fail authorization before dispatch reservation. After lease expiry, recover() calls reconcile()->startDispatch(), which records a fresh baseline with a different observedAt. recordEvidence rejects the changed digest (boundaries line 59), so all later recovery attempts fail STAFFOLOGY_EVIDENCE_CONFLICT even with identical financial snapshots.",
+      "repair": "Reuse the original immutable baseline while explicitly verifying fresh observations remain an equivalent safe replacement baseline; never replace it merely to refresh its timestamp.",
+      "verification": "behaviorally-reproduced-on-published-935"
+    },
+    {
+      "id": "TR-02",
+      "priority": "P1",
+      "title": "Definite provider authentication rejection can become acknowledged",
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "line": 383,
+      "currentLine": 383,
+      "thread": "4161418429",
+      "reason": "Return 401/403 for the reserved POST while baseline/readback already equal intended £12.50. request raises STAFFOLOGY_AUTH_REJECTED; startDispatch only marks uncertain and continues. reconcile accepts unchanged desired amounts and persists acknowledged. The diff explicitly removes the earlier authentication special case. Durable recovery also needs to preserve definitive rejection rather than manufacture a write acknowledgement.",
+      "repair": "Persist definitive rejection distinctly and prevent initial or successor reconciliation from acknowledging that rejected write.",
+      "verification": "behaviorally-reproduced-on-published-935"
+    },
+    {
+      "id": "TR-03",
+      "priority": "P1",
+      "title": "Environment SHA overrides independent image seal",
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "line": 16,
+      "currentLine": 20,
+      "thread": "4161418437",
+      "reason": "With actual image seal A, set WFM_BUILD_SOURCE_SHA and operation profile candidateSha to B. loadConfiguration never reads the sealed file when the environment value exists, so it activates a B-bound payroll operation on A bytes. Docker independently writes /app/.wfm-build-source-sha; this operation gate bypasses it.",
+      "repair": "Read and validate the independent image seal; reject environment/profile mismatches. Limit an environment-only proof fallback to a genuinely missing seal under an explicitly permitted proof mode.",
+      "verification": "behaviorally-reproduced-on-published-935"
+    },
+    {
+      "id": "TR-04",
+      "priority": "P1",
+      "title": "Recovery cannot replace or reuse unconsumed approval",
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "line": 66,
+      "currentLine": 66,
+      "thread": "4163408936",
+      "reason": "First authorizeWrite issues an approval; revoke current permission before request authorization/dispatch. No dispatch is reserved, but approval remains. A successor approvedCoordinator resets approvalId=null and issues the identical permit digest. UNIQUE(permit_digest) at line 25 makes insertion fail even after baseline recovery is repaired; expiration/revocation alone does not remove the uniqueness conflict.",
+      "repair": "Atomically reuse a valid exact unconsumed approval or replace/revoke it under current exact-person authority; retain one-shot and tenant/binding checks.",
+      "verification": "static-review-only"
+    },
+    {
+      "id": "TR-05",
+      "priority": "P1",
+      "title": "Supported operator recovery has no intent digest",
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "line": 33,
+      "currentLine": 37,
+      "thread": "4163408945",
+      "reason": "Cause an ambiguous POST/readback. Delivery result only includes deliveryId (adapter 437); uncertain replay only includes deliveryId/status (429). The recovery route requires a digest exact match but neither delivery result nor status returns the mapped-payload digest. UI demands manual digest input (502 UI 233/244; 935 UI 237/248), leaving an ordinary operator without the required value.",
+      "repair": "Return an opaque exact-bound recovery capability/digest with uncertain results or resolve and verify the stored digest from deliveryId server-side; make the UI retain/use it.",
+      "verification": "static-review-only"
+    },
+    {
+      "id": "TR-06",
+      "priority": "P1",
+      "title": "Persisted approval is bound to reusable email rather than person ID",
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "line": 36,
+      "currentLine": 36,
+      "thread": "4163408966",
+      "reason": "Issue a permit for person A with email E. Before consumption resolve E to replacement person B with both permissions. issue validates A.personId but stores only approved_by=email; check accepts any nonempty current personId at E. B can consume A's exact payroll approval.",
+      "repair": "Persist approved person ID with the permit and require exact current tenant/email/person match at check and consume; fail closed for legacy rows without this binding.",
+      "verification": "behaviorally-reproduced-on-published-935"
+    },
+    {
+      "id": "TR-07",
+      "priority": "P1",
+      "title": "Employee PII is persisted after account authority is revoked",
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "line": 30,
+      "currentLine": 34,
+      "thread": "4163408986",
+      "reason": "Begin acquisition with current permissions, then remove a required permission or replace principal during awaited pagination/detail requests. acquireAndStage only calls permitted before reads; after acquisition it stages with the original actor snapshot. The 935 mapping/connector preflight is also before reads. Bridge stageEmployeeAcquisition and composed stagePeople resolve connector scope but do not resolve the current user, so persistence/audit still occurs after revocation.",
+      "repair": "Re-resolve the exact current person authority immediately before the synchronous staging/persistence boundary, retaining connector/cohort/mapping checks.",
+      "verification": "behaviorally-reproduced-on-published-935"
+    },
+    {
+      "id": "TR-08",
+      "priority": "P2",
+      "title": "Bounded successful provider reads outlast the fixed lease",
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "line": 66,
+      "currentLine": 66,
+      "thread": "4163408951",
+      "reason": "Operations accept timeoutMs up to 30000 but createStore gets its default 60000 lease. observe performs three sequential GETs (adapter 321–330); 25s successful responses each expire ownership before recordEvidence. No renewal path exists. A successor receives the same lease and repeats the failure. Even the whole baseline+POST+readback sequence can exceed 60s with requests below the default timeout.",
+      "repair": "Renew ownership safely while provider work is in flight or size and bound the lease for the full guarded operation; preserve fencing and prohibit old-owner dispatch.",
+      "verification": "static-review-only"
+    },
+    {
+      "id": "TR-09",
+      "priority": "P2",
+      "title": "Recovery dispatch omits the consumed approval from audit",
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "line": 33,
+      "currentLine": 37,
+      "thread": "4163408973",
+      "reason": "Recover an expired row that failed before any baseline/approval. reconcile may perform its first POST and consume newly issued approval. approvedCoordinator.recover returns only reconcile result, dropping closure approvalId; operation recovery audit records only deliveryId/status/code. The consequential write cannot be linked to its one-shot authority.",
+      "repair": "Propagate the actual approval ID for recovery dispatch and record it in recovery audit, distinguishing read-only reconciliation from a new dispatch.",
+      "verification": "static-review-only"
+    },
+    {
+      "id": "TR-10",
+      "priority": "P2",
+      "title": "A lost staging response makes retry create a second batch",
+      "path": "ux-overlay/vector-shell.js",
+      "line": 240,
+      "currentLine": 244,
+      "thread": "4163408991",
+      "reason": "Let acquisition commit its staged batch, then lose the HTTP response. User retries unchanged reviewed mappings. Each click sends crypto.randomUUID(), so the integration store treats it as a new request and creates duplicate staged batches/audit rather than returning the committed one. This persists in the 935 labelled-mapping UI.",
+      "repair": "Retain one idempotency key for the reviewed intent across ambiguous network failures; rotate only when the reviewed intent changes or a definitive outcome permits it.",
+      "verification": "static-review-only"
+    },
+    {
+      "id": "TR-11",
+      "priority": "P2",
+      "title": "First proof export changes the second exact-source Docker context",
+      "path": ".circleci/config.yml",
+      "line": 49,
+      "currentLine": 49,
+      "thread": "4163408978",
+      "reason": "Build 1 writes exported proof/log files under circleci-runtime-artifacts in the checkout. Build 2 uses '.' and Docker autonomy stage COPY . ./ (line 6). Without excluding those artifacts, the second context differs from the checked-out candidate and invalidates the proof cache; runtime-image-build.log is itself created while context is prepared. The config is identical at 502 and 935.",
+      "repair": "Export/log outside the checkout or expressly exclude artifact/log paths from the Docker context while retaining private evidence custody.",
+      "verification": "static-review-only"
+    }
+  ],
+  "threadSummary": [
+    {
+      "id": "PRRT_kwDOUdeJMM6oLFlY",
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "line": 352,
+      "resolved": false,
+      "outdated": true
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oLFle",
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "line": 384,
+      "resolved": false,
+      "outdated": true
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oLFlk",
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "line": 16,
+      "resolved": false,
+      "outdated": true
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3Xw",
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "line": 66,
+      "resolved": false,
+      "outdated": false
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3X2",
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "line": 30,
+      "resolved": false,
+      "outdated": false
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3X7",
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "line": 66,
+      "resolved": false,
+      "outdated": false
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3YD",
+      "path": "ux-overlay/vector-shell.js",
+      "line": 237,
+      "resolved": false,
+      "outdated": false
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3YJ",
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "line": 36,
+      "resolved": false,
+      "outdated": false
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3YO",
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "line": 33,
+      "resolved": false,
+      "outdated": false
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3YR",
+      "path": ".circleci/config.yml",
+      "line": 51,
+      "resolved": false,
+      "outdated": false
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3YW",
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "line": 30,
+      "resolved": false,
+      "outdated": false
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3YZ",
+      "path": "ux-overlay/vector-shell.js",
+      "line": 240,
+      "resolved": false,
+      "outdated": false
+    },
+    {
+      "id": "PRRT_kwDOUdeJMM6oP3Yj",
+      "path": "ux-overlay/vector-shell.js",
+      "line": 240,
+      "resolved": false,
+      "outdated": false
+    }
+  ],
+  "resolvedIn935": [
+    {
+      "thread": "4163409001",
+      "title": "Held mapping editor/application dead end",
+      "status": "The 935 UI adds held reasons, a restage action, and Apply only for held===0. This is still defective at 502 but is not an open finding against published 935."
+    }
+  ],
+  "notReviewed": "Unpublished native 1a98bb654c11714589c941091d50363bf65dc0ed; actual deployment, CI execution, full supported-container or customer/provider gates."
+}

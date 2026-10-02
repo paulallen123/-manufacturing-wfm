@@ -1,0 +1,187 @@
+TAP version 13
+# (node:22916) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: CONTROL: accepted POST plus unchanged valid pay records one durable acknowledgement
+ok 1 - CONTROL: accepted POST plus unchanged valid pay records one durable acknowledgement
+  ---
+  duration_ms: 209.4417
+  type: 'test'
+  ...
+# {"id":"CONTROL-ACCEPT","status":"acknowledged","result":"reconciled","posts":1,"gets":6}
+# Subtest: TR-02: definite POST 401 must never persist acknowledged
+not ok 2 - TR-02: definite POST 401 must never persist acknowledged
+  ---
+  duration_ms: 38.457
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\held-out.behavior.test.cjs:42:31'
+  failureType: 'testCodeFailure'
+  error: 'A definitively rejected write is not provider acceptance'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'acknowledged'
+  actual: 'acknowledged'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\held-out.behavior.test.cjs:47:9)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# {"id":"TR-02-401","providerPostStatus":401,"status":"acknowledged","transportAccepted":false,"reconciliationStatus":"reconciled","uncertain":{"code":"STAFFOLOGY_AUTH_REJECTED","dispatchStarted":true},"hasReceipt":true,"posts":1,"gets":6}
+# Subtest: TR-02: definite POST 403 must never persist acknowledged
+not ok 3 - TR-02: definite POST 403 must never persist acknowledged
+  ---
+  duration_ms: 34.669
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\held-out.behavior.test.cjs:42:31'
+  failureType: 'testCodeFailure'
+  error: 'A definitively rejected write is not provider acceptance'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'acknowledged'
+  actual: 'acknowledged'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\held-out.behavior.test.cjs:47:9)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# {"id":"TR-02-403","providerPostStatus":403,"status":"acknowledged","transportAccepted":false,"reconciliationStatus":"reconciled","uncertain":{"code":"STAFFOLOGY_AUTH_REJECTED","dispatchStarted":true},"hasReceipt":true,"posts":1,"gets":6}
+# Subtest: CONTROL: original exact principal can consume approval once
+ok 4 - CONTROL: original exact principal can consume approval once
+  ---
+  duration_ms: 3.5661
+  type: 'test'
+  ...
+# {"id":"CONTROL-PERSON","approvalCount":1}
+# Subtest: TR-06: reassigned email must not let a different person consume prior approval
+not ok 5 - TR-06: reassigned email must not let a different person consume prior approval
+  ---
+  duration_ms: 4.5332
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\held-out.behavior.test.cjs:56:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Approval belongs to its original person, even when email is reused
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\held-out.behavior.test.cjs:62:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# {"id":"TR-06","issuingPerson":"original-person","currentPerson":"replacement-person","approved":true,"consumed":true,"errorCode":null}
+# Subtest: TR-07: authority revoked during provider acquisition must block employee persistence
+not ok 6 - TR-07: authority revoked during provider acquisition must block employee persistence
+  ---
+  duration_ms: 16.3856
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\held-out.behavior.test.cjs:65:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Revoked actor must not reach persistence with an earlier actor snapshot
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\held-out.behavior.test.cjs:76:9)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# {"id":"TR-07","gets":3,"currentPermissions":[],"staged":1,"sqliteRows":1,"resultStatus":"staged","errorCode":null}
+# Subtest: TR-01: expired provably-undispatched delivery must resume with immutable baseline
+not ok 7 - TR-01: expired provably-undispatched delivery must resume with immutable baseline
+  ---
+  duration_ms: 27.3264
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\held-out.behavior.test.cjs:79:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Fresh owner should resume a verified unchanged undispatched intent
+    + actual - expected
+    
+    + 'retryable'
+    - 'reconciled'
+         ^
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'reconciled'
+  actual: 'retryable'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\held-out.behavior.test.cjs:93:9)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# {"id":"TR-01","resultStatus":"retryable","errorCode":"STAFFOLOGY_EVIDENCE_CONFLICT","hasOriginalBaseline":true,"reservedDispatch":false,"posts":0,"gets":6}
+# Subtest: CONTROL: a matching independent image seal/profile can configure operation
+ok 8 - CONTROL: a matching independent image seal/profile can configure operation
+  ---
+  duration_ms: 172.6083
+  type: 'test'
+  ...
+# {"id":"CONTROL-SEAL","configured":true,"code":null,"independentSeal":"93513c250e3f0105a1fd019bf63a5a1674970b98","envProfileSha":"93513c250e3f0105a1fd019bf63a5a1674970b98","loadedSha":"93513c250e3f0105a1fd019bf63a5a1674970b98","sealedReads":0,"mountShim":"readFileSync only for exact Linux seal path; separate child process"}
+# Subtest: CONTROL: seal-only profile reads the Windows test-process mounted seal
+ok 9 - CONTROL: seal-only profile reads the Windows test-process mounted seal
+  ---
+  duration_ms: 182.7469
+  type: 'test'
+  ...
+# {"id":"CONTROL-SEAL-MOUNT","configured":true,"code":null,"independentSeal":"93513c250e3f0105a1fd019bf63a5a1674970b98","envProfileSha":"","loadedSha":"93513c250e3f0105a1fd019bf63a5a1674970b98","sealedReads":1,"mountShim":"readFileSync only for exact Linux seal path; separate child process"}
+# Subtest: TR-03: env/profile B must not override independent image seal A
+not ok 10 - TR-03: env/profile B must not override independent image seal A
+  ---
+  duration_ms: 163.8285
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\held-out.behavior.test.cjs:106:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Operation must reject a profile/env SHA that differs from independent image seal
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\held-out.behavior.test.cjs:108:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# {"id":"TR-03","configured":true,"code":null,"independentSeal":"93513c250e3f0105a1fd019bf63a5a1674970b98","envProfileSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","loadedSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","sealedReads":0,"mountShim":"readFileSync only for exact Linux seal path; separate child process"}
+1..10
+# tests 10
+# suites 0
+# pass 4
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1271.8218

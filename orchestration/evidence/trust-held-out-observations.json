@@ -1,0 +1,102 @@
+{
+  "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+  "node": "v22.23.2",
+  "providerExternalRequests": 0,
+  "observations": [
+    {
+      "id": "CONTROL-ACCEPT",
+      "status": "acknowledged",
+      "result": "reconciled",
+      "posts": 1,
+      "gets": 6
+    },
+    {
+      "id": "TR-02-401",
+      "providerPostStatus": 401,
+      "status": "acknowledged",
+      "transportAccepted": false,
+      "reconciliationStatus": "reconciled",
+      "uncertain": {
+        "code": "STAFFOLOGY_AUTH_REJECTED",
+        "dispatchStarted": true
+      },
+      "hasReceipt": true,
+      "posts": 1,
+      "gets": 6
+    },
+    {
+      "id": "TR-02-403",
+      "providerPostStatus": 403,
+      "status": "acknowledged",
+      "transportAccepted": false,
+      "reconciliationStatus": "reconciled",
+      "uncertain": {
+        "code": "STAFFOLOGY_AUTH_REJECTED",
+        "dispatchStarted": true
+      },
+      "hasReceipt": true,
+      "posts": 1,
+      "gets": 6
+    },
+    {
+      "id": "CONTROL-PERSON",
+      "approvalCount": 1
+    },
+    {
+      "id": "TR-06",
+      "issuingPerson": "original-person",
+      "currentPerson": "replacement-person",
+      "approved": true,
+      "consumed": true,
+      "errorCode": null
+    },
+    {
+      "id": "TR-07",
+      "gets": 3,
+      "currentPermissions": [],
+      "staged": 1,
+      "sqliteRows": 1,
+      "resultStatus": "staged",
+      "errorCode": null
+    },
+    {
+      "id": "TR-01",
+      "resultStatus": "retryable",
+      "errorCode": "STAFFOLOGY_EVIDENCE_CONFLICT",
+      "hasOriginalBaseline": true,
+      "reservedDispatch": false,
+      "posts": 0,
+      "gets": 6
+    },
+    {
+      "id": "CONTROL-SEAL",
+      "configured": true,
+      "code": null,
+      "independentSeal": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+      "envProfileSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+      "loadedSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+      "sealedReads": 0,
+      "mountShim": "readFileSync only for exact Linux seal path; separate child process"
+    },
+    {
+      "id": "CONTROL-SEAL-MOUNT",
+      "configured": true,
+      "code": null,
+      "independentSeal": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+      "envProfileSha": "",
+      "loadedSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+      "sealedReads": 1,
+      "mountShim": "readFileSync only for exact Linux seal path; separate child process"
+    },
+    {
+      "id": "TR-03",
+      "configured": true,
+      "code": null,
+      "independentSeal": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+      "envProfileSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "loadedSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "sealedReads": 0,
+      "mountShim": "readFileSync only for exact Linux seal path; separate child process"
+    }
+  ]
+}

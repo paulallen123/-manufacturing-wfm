@@ -1,0 +1,8 @@
+{"id":"D001","at":"2026-10-02T08:49:16.121Z","decision":"Protect frozen f32; serving app54e is fixture-only and not customer proven","basis":"Fresh Railway metadata and authenticated executor09c83 readback"}
+{"id":"D002","at":"2026-10-02T08:49:16.121Z","decision":"Keep one Staffology source owner; do not merge stale dirty PR292 sibling","basis":"Exact GitHub parent/tree and Codex task inspection"}
+{"id":"D003","at":"2026-10-02T08:49:16.121Z","decision":"No PROVEN_BASE_SHA or convergence/vector-next until all exact customer gates pass","basis":"User proof-freeze/transition rules"}
+{"id":"D004","at":"2026-10-02T08:49:16.121Z","decision":"Classify source reuse independently of proof maturity; all historical records remain FOUND","basis":"No fresh behavioral/hosted acceptance for those records"}
+{"id":"D005","at":"2026-10-02T08:49:16.121Z","decision":"Deduplicate product-051 and edge09-proof-carrying-state to one lane04 EVOLVE owner","basis":"Same PR269/source SHA/blob; must compose current authority"}
+{"id":"D006","at":"2026-10-02T08:49:16.121Z","decision":"Lane09 performs review/proof only; product ports found in trust research assigned product lanes","basis":"User non-overlapping lane rules"}
+{"id":"D007","at":"2026-10-02T08:49:16.121Z","decision":"Isolated future fabric/Twin ports can proceed while proof repairs run; never mutate frozen runtime","basis":"User immediate execution directions"}
+{"id":"D008","at":"2026-10-02T08:58:03.144Z","decision":"Respect newer externally published reviewb851 and failedPipeline19; never overwrite with stale935.695 repair remains unpublished/unreviewed","basis":"Fresh GitHub branch/commit/status and existing Codex completed source output"}

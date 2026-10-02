@@ -1,0 +1,193 @@
+{
+  "observedAt": "2026-10-02T08:20:50.695Z",
+  "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+  "tenant": "northstar-demo",
+  "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+  "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
+  "implementation": {
+    "state": "SLA_MISSED",
+    "operationalReady": false,
+    "completedRequirements": 5,
+    "totalRequirements": 21,
+    "openRequirements": [
+      {
+        "key": "tenant-environment",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "identity-access",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "time-policies",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "absence-policies",
+        "status": "WARN"
+      },
+      {
+        "key": "scheduling",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "approvals",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "clocking",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "payroll-mapping",
+        "status": "MISSING"
+      },
+      {
+        "key": "historical-replay",
+        "status": "MISSING"
+      },
+      {
+        "key": "security-controls",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "resilience",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "scenario-validation",
+        "status": "MISSING"
+      },
+      {
+        "key": "test-data-cleanup",
+        "status": "MISSING"
+      },
+      {
+        "key": "live-data-import",
+        "status": "MISSING"
+      },
+      {
+        "key": "privileged-competency",
+        "status": "MISSING"
+      },
+      {
+        "key": "frontline-readiness",
+        "status": "MISSING"
+      }
+    ],
+    "activeWorkerLeases": 0
+  },
+  "configuration": {
+    "service": {
+      "id": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+      "name": "vector-customer-ready-candidate"
+    },
+    "environment": {
+      "id": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+      "name": "production"
+    },
+    "config": {
+      "source": {
+        "repo": "paulallen123/-manufacturing-wfm",
+        "branch": "release/vector-customer-ready-candidate-20260925",
+        "checkSuites": false
+      },
+      "networking": {
+        "serviceDomains": {
+          "vector-customer-ready-candidate-production.up.railway.app": {
+            "port": 3000
+          }
+        }
+      },
+      "build": {
+        "builder": "DOCKERFILE",
+        "watchPatterns": [
+          "**",
+          "!**"
+        ],
+        "buildEnvironment": "V3",
+        "dockerfilePath": "Dockerfile"
+      },
+      "deploy": {
+        "startCommand": "/bin/sh -c 'set -eu; [ \"$WFM_DB\" = \"/data/vector.sqlite\" ]; [ -f \"$WFM_DB\" ] && [ ! -L \"$WFM_DB\" ]; for file in \"$WFM_DB\" \"$WFM_DB-wal\" \"$WFM_DB-shm\"; do if [ -e \"$file\" ]; then [ -f \"$file\" ] && [ ! -L \"$file\" ]; chown node:node \"$file\"; chmod 0600 \"$file\"; fi; done; exec /usr/local/bin/vector-entrypoint.sh node security-runtime/bootstrap.cjs'",
+        "preDeployCommand": [
+          "node -e 'const {createPublicKey}=require('\\''node:crypto'\\'');const e=process.env;const fail=c=>{throw new Error('\\''VECTOR_RUNTIME_ENV_CONTRACT_'\\''+c)};const r=['\\''WFM_DB'\\'','\\''WFM_HOSTED_STAGING'\\'','\\''WFM_PUBLIC_ORIGIN'\\'','\\''WFM_REQUIRE_DURABLE_STATE'\\'','\\''WFM_PROOF_RUNNER_AUTH'\\'','\\''WFM_PROOF_RUNNER_PUBLIC_KEY_B64'\\'','\\''WFM_PROOF_RUNNER_ALLOWED_EMAILS'\\''];const m=r.filter(k=>!e[k]);if(m.length)fail('\\''MISSING:'\\''+m.join('\\'','\\''));if(e.WFM_HOSTED_STAGING!=='\\''true'\\''||e.NODE_ENV!=='\\''staging'\\'')fail('\\''HOSTED_STAGING_REQUIRED'\\'');if(e.WFM_REQUIRE_DURABLE_STATE!=='\\''true'\\'')fail('\\''DURABLE_STATE_REQUIRED'\\'');if(e.WFM_PROOF_RUNNER_AUTH!=='\\''enabled'\\'')fail('\\''SIGNED_PROOF_AUTH_REQUIRED'\\'');if(!e.WFM_PUBLIC_ORIGIN.startsWith('\\''https://'\\''))fail('\\''PUBLIC_ORIGIN_HTTPS_REQUIRED'\\'');if(!e.WFM_DB.startsWith('\\''/data/'\\''))fail('\\''DURABLE_DB_PATH_REQUIRED'\\'');if(!e.WFM_PROOF_RUNNER_ALLOWED_EMAILS.split('\\'','\\'').some(x=>x.trim()))fail('\\''PROOF_ALLOWLIST_REQUIRED'\\'');const raw=e.WFM_PROOF_RUNNER_PUBLIC_KEY_B64.trim();let key;try{key=createPublicKey(raw.includes('\\''BEGIN PUBLIC KEY'\\'')?raw:Buffer.from(raw,'\\''base64'\\'').toString('\\''utf8'\\''))}catch{fail('\\''PROOF_PUBLIC_KEY_INVALID'\\'')}if(key.asymmetricKeyType!=='\\''ed25519'\\'')fail('\\''PROOF_KEY_ED25519_REQUIRED'\\'');console.log('\\''VECTOR_RUNTIME_ENV_CONTRACT=PASS'\\'')'"
+        ],
+        "healthcheckPath": "/api/health",
+        "healthcheckTimeout": 30,
+        "restartPolicyType": "NEVER",
+        "useLegacyStacker": false,
+        "ipv6EgressEnabled": false,
+        "runtime": "V2",
+        "multiRegionConfig": {
+          "sfo": {
+            "numReplicas": 1
+          }
+        }
+      },
+      "volumeMounts": {
+        "6b7d38e7-82a0-41e8-96a2-827f688717ad": {
+          "mountPath": "/data"
+        }
+      }
+    },
+    "variableNames": [
+      "        WFM_GUSTO_CLIENT_ID",
+      "        WFM_GUSTO_CLIENT_SECRET",
+      "NODE_ENV",
+      "NODE_OPTIONS",
+      "OPENAI_API_KEY",
+      "PORT",
+      "STAFFOLOGY_API_KEY",
+      "Staffology_api_key",
+      "WFM_AGENTS_API_ENABLED",
+      "WFM_AGENTS_BOOTSTRAP_RUN_ID",
+      "WFM_AGENTS_BOOTSTRAP_TENANT",
+      "WFM_AGENTS_DEPLOY_TRIGGER",
+      "WFM_AGENTS_MODEL",
+      "WFM_CANDIDATE_SHA",
+      "WFM_CONTRACT_WEBHOOK_SECRET",
+      "WFM_DB",
+      "WFM_DEMAND_INTERNAL_TOKEN",
+      "WFM_GUSTO_CLIENT_ID",
+      "WFM_GUSTO_CLIENT_SECRET",
+      "WFM_GUSTO_ENVIRONMENT",
+      "WFM_GUSTO_TENANT_COMPANIES_JSON",
+      "WFM_GUSTO_TOKEN_ENCRYPTION_KEY_B64",
+      "WFM_GUSTO_WEBHOOK_OVERLAY_CJS_B64",
+      "WFM_HOSTED_STAGING",
+      "WFM_IMPLEMENTATION_INTERNAL_TOKEN",
+      "WFM_IMPLEMENTATION_INVITATION_SECRET",
+      "WFM_IMPLEMENTATION_WORKER_ID",
+      "WFM_IMPLEMENTATION_WORKER_RUN_ID",
+      "WFM_IMPLEMENTATION_WORKER_TENANT",
+      "WFM_IMPLEMENTATION_WORKER_TOKEN",
+      "WFM_INTEGRATION_INTERNAL_TOKEN",
+      "WFM_LEARNING_INTERNAL_TOKEN",
+      "WFM_PROOF_RUNNER_ALLOWED_EMAILS",
+      "WFM_PROOF_RUNNER_AUDIT_STDOUT",
+      "WFM_PROOF_RUNNER_AUTH",
+      "WFM_PROOF_RUNNER_PUBLIC_KEY_B64",
+      "WFM_PROOF_RUNNER_SESSION_TTL_MS",
+      "WFM_PUBLIC_ORIGIN",
+      "WFM_REQUIRE_DURABLE_STATE",
+      "WFM_STAGING_PASSWORD"
+    ],
+    "staged": null
+  },
+  "ci": {
+    "statuses": [
+      {
+        "context": "ci/circleci: forge_core_validation",
+        "state": "success",
+        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/22"
+      },
+      {
+        "context": "ci/circleci: forge_runtime_validation",
+        "state": "failure",
+        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/23"
+      }
+    ]
+  }
+}

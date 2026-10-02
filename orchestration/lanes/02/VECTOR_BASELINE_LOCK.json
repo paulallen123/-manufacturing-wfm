@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-02T08:49:16.121Z",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "laneName": "WORKFORCE / SCHEDULING / COUNTRY",
+  "laneId": "02",
+  "worktree": "No active implementation checkout",
+  "branch": "orchestration/vector-convergence-20261002",
+  "sourceBranchesInspected": [
+    {
+      "branch": "frontier/agency-labour-exchange-v1",
+      "sha": "57f6b58764d244fd883d7f883ec28c2d47c0dd18"
+    },
+    {
+      "branch": "frontier/agency-labour-exchange-v1",
+      "sha": "57f6b58764d244fd883d7f883ec28c2d47c0dd18"
+    },
+    {
+      "branch": "frontier/agency-delivery-reconciliation-v1",
+      "sha": "1e5d8d8442b60ce2be0600509358e41411056c97"
+    },
+    {
+      "branch": "evolution/factory-evidence-kernel-20260920-1146",
+      "sha": "65fc59dadba377bce5fc68a88dc536261a5e68be"
+    },
+    {
+      "branch": "frontier/skill-chain-resilience-v1",
+      "sha": "fc3d130263303825c73616ab15da31151a479730"
+    },
+    {
+      "branch": "feature/vector-demand-decision-intelligence-20260922",
+      "sha": "4cea4b0513df4aa8c25df9be5cb3705c77b3e852"
+    },
+    {
+      "branch": "feature/vector-research-alignment-20260923",
+      "sha": "07bc5218c183049a8d7ab884b15cca6ef38375ec"
+    },
+    {
+      "branch": "feature/vector-scheduling-parity-evolution-20260923",
+      "sha": "5d129fa757d0959c81242be08f6674e5a8eccf05"
+    },
+    {
+      "branch": "feature/vector-scheduling-parity-evolution-20260923",
+      "sha": "5d129fa757d0959c81242be08f6674e5a8eccf05"
+    },
+    {
+      "branch": "feature/agency-operating-system-v3-20260925",
+      "sha": "058ed1e8a86970495b6e851c55585817175d2b24"
+    },
+    {
+      "branch": "fix/autopilot-replay-verification-20260926",
+      "sha": "dd201f938387bed22e1cde1673f46def4084b37e"
+    },
+    {
+      "branch": "hardening/policy-readiness-evidence-20260927",
+      "sha": "2f5f175e47c4dd1032c81488c467ddeca370ee28"
+    },
+    {
+      "branch": "release/vector-customer-ready-candidate-20260925",
+      "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "branch": "frontier/nminus1-skill-pooling-20260919",
+      "sha": "230f921b9d8809bcc04b0afef5b593a84319dd99"
+    }
+  ],
+  "sourcePRsInspected": [
+    82,
+    88,
+    205,
+    211,
+    226,
+    230,
+    233,
+    239,
+    245,
+    271,
+    null
+  ],
+  "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "lastRebase": null,
+  "testsExecuted": [],
+  "currentTask": null,
+  "admissionAllowed": false,
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+}

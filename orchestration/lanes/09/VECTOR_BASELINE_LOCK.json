@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-02T08:49:16.121Z",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "laneName": "TRUST / PROOF / RELEASE",
+  "laneId": "09",
+  "worktree": "work/trust_review",
+  "branch": "orchestration/vector-convergence-20261002",
+  "sourceBranchesInspected": [
+    {
+      "branch": "fix/customer-passkey-entry-20260929",
+      "sha": "6648b40c48205f86121808fabe1e59c039541ea5"
+    },
+    {
+      "branch": "fix/passkey-proof-packaging-20260929",
+      "sha": "3d136976588789a33f71c852e6b25a6ff30a695d"
+    },
+    {
+      "branch": "fix/passkey-session-expiry-20260929",
+      "sha": "b825a538a06e799aad80ac17d64fbbbd99df3e26"
+    },
+    {
+      "branch": "fix/passkey-session-asset-route-20260929",
+      "sha": "e748432afcf105cf2f4ccdc97658127766c3ac14"
+    },
+    {
+      "branch": "codex/proof-auth-boundary-fix-20260929",
+      "sha": "e97a14114a429b4d6b78550334f301748ab8440d"
+    },
+    {
+      "branch": "feature/vector-t9-trust-spine-20260923",
+      "sha": "48f4c6973a0abc737e00120a6c32f7876b9e3ddc"
+    },
+    {
+      "branch": "feature/vector-frontier-t9-converged-20260923",
+      "sha": "57132f485045105dbc1afb3b03cf26ab75f1b615"
+    },
+    {
+      "branch": "evolve/authoritative-artifact-binding-20260928",
+      "sha": "6e0ae1484603546f95ff7192e88dae871b09df4a"
+    },
+    {
+      "branch": "autonomy/security-release-authority-posture-20260919-r11",
+      "sha": "b43944277ffbe6abadbdbaddd90e225a650a2a84"
+    },
+    {
+      "branch": "feature/invisible-attendance-v1",
+      "sha": "b506e850394f56cab010c27464482dac1b9078ab"
+    },
+    {
+      "branch": "security/strict-rollback-anchor-v1",
+      "sha": "390783ed5a47fb69ec287618b3fb6a48fe46ef7a"
+    },
+    {
+      "branch": "security/rollback-authority-key-lifecycle-v1",
+      "sha": "c6fc30a5873f1ce581d9ae0650b27ca269f61cd1"
+    },
+    {
+      "branch": "security/release-requires-authority-lifecycle-v1",
+      "sha": "0e2682cfdc69b785e8a9db2bb592f39fbe1acfef"
+    },
+    {
+      "branch": "security/trust-root-recovery-quorum-v1",
+      "sha": "4f4794da630a858ed990bea2809708e014d2265a"
+    },
+    {
+      "branch": "security/trust-recovery-epoch-authority-v1",
+      "sha": "dba0b24254df3dc1e165890a606bba65832563bb"
+    }
+  ],
+  "sourcePRsInspected": [
+    283,
+    284,
+    285,
+    287,
+    279,
+    229,
+    235,
+    275,
+    143,
+    83,
+    100,
+    103,
+    109,
+    119,
+    135
+  ],
+  "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "lastRebase": null,
+  "testsExecuted": [],
+  "currentTask": "Held-out reproductions and independent repair review",
+  "admissionAllowed": false,
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+}

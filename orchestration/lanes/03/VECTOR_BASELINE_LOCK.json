@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-02T08:58:03.144Z",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "laneName": "INTEGRATION & PAYROLL",
+  "laneId": "03",
+  "worktree": "Existing Codex Staffology source workspace; work/lane03-fabric disjoint port",
+  "branch": "review/staffology-customer-proof-20261001",
+  "sourceBranchesInspected": [
+    {
+      "branch": "feature/autonomous-integration-fabric-v1",
+      "sha": "46b573faa74e5b21b2dea8d7ed9c16de94422f00"
+    },
+    {
+      "branch": "feature/autonomous-integration-fabric-v1",
+      "sha": "46b573faa74e5b21b2dea8d7ed9c16de94422f00"
+    },
+    {
+      "branch": "integration/global-fabric-v1",
+      "sha": "73aad0d8221439925e41d71d9fbb3cc14ad3f280"
+    },
+    {
+      "branch": "integration-evolution-20260918-2147",
+      "sha": "bcabab3f6f556a0d29b2f4b59e12bb2b9c2e3d5f"
+    },
+    {
+      "branch": "automation/integration-activation-gate-20260919-r11",
+      "sha": "b9698ec0816ba6286a29af3174987bc77a9602c3"
+    },
+    {
+      "branch": "integration/global-fabric-v1",
+      "sha": "73aad0d8221439925e41d71d9fbb3cc14ad3f280"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "frontier/all-findings-convergence-20260928",
+      "sha": "be593d135ba0c98b18481952b664d2777f66e8dd"
+    },
+    {
+      "branch": "proof/vector-provider-certification-fabric-20260928",
+      "sha": "1f251f117449384604aa07efde11960b1b44dfc8"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "automation/fracttal-integration-review-20260920",
+      "sha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff"
+    },
+    {
+      "branch": "review/staffology-customer-proof-20261001",
+      "sha": "93513c250e3f0105a1fd019bf63a5a1674970b98"
+    }
+  ],
+  "sourcePRsInspected": [
+    76,
+    106,
+    102,
+    142,
+    194,
+    277,
+    278,
+    292
+  ],
+  "currentHead": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+  "lastRebase": null,
+  "testsExecuted": [
+    {
+      "runtime": "v22.23.2",
+      "platform": "win32",
+      "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+      "scope": "Direct checkout,19 test files",
+      "pass": 144,
+      "fail": 2,
+      "result": "144 passed;2 files blocked by required composed-runtime environment, not reproduced CircleCI assertions",
+      "evidence": "orchestration/evidence/staffology-node22.23.2.tap"
+    }
+  ],
+  "currentTask": "Repair current Staffology proof path; disjoint future helper port",
+  "admissionAllowed": false,
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+}

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-02T08:49:16.121Z",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "laneName": "AUTOPILOT & DECISION INTELLIGENCE",
+  "laneId": "04",
+  "worktree": "No active implementation checkout",
+  "branch": "orchestration/vector-convergence-20261002",
+  "sourceBranchesInspected": [
+    {
+      "branch": "feature/vector-intelligence-layer-v1",
+      "sha": "fee4aa86d6e3c7c4f1098980d30cd66acf7a864e"
+    },
+    {
+      "branch": "feature/instant-product-factory-v1",
+      "sha": "b4f2947c1119721ff4800e92a34223a8b66c4a88"
+    },
+    {
+      "branch": "feature/instant-product-factory-v1",
+      "sha": "b4f2947c1119721ff4800e92a34223a8b66c4a88"
+    },
+    {
+      "branch": "feature/vector-demand-decision-integration-v2-20260922",
+      "sha": "f1c5e1842c8ad95cb5eb2d7daace0dccae52b3d9"
+    },
+    {
+      "branch": "feature/vector-frontier-t9-converged-20260923",
+      "sha": "57132f485045105dbc1afb3b03cf26ab75f1b615"
+    },
+    {
+      "branch": "feature/vector-frontier-t9-converged-20260923",
+      "sha": "57132f485045105dbc1afb3b03cf26ab75f1b615"
+    },
+    {
+      "branch": "feature/vector-frontier-t9-converged-20260923",
+      "sha": "57132f485045105dbc1afb3b03cf26ab75f1b615"
+    },
+    {
+      "branch": "feature/vector-extreme-incident-learning-20260925",
+      "sha": "0e0fa0f84ac17ce64e8b10063b6d31b180636ba3"
+    },
+    {
+      "branch": "feature/vector-capacity-rescue-v1-20260925",
+      "sha": "fd0d4bf6b36799f4d196501b3c6aa80243b620d4"
+    },
+    {
+      "branch": "fix/customer-factory-proof-boundaries-20260926",
+      "sha": "96c804bd9b8465cc92f8496b9898223280d5c79a"
+    },
+    {
+      "branch": "feature/vector-forge-proof-carrying-state-20260927",
+      "sha": "52cf683ae3f3c84cd8064fc599290f12d766f44e"
+    },
+    {
+      "branch": "autonomy/proof-integrity-20260927",
+      "sha": "2b1ce625e6f7cf06b4d40e00aa4105bb6f32bff0"
+    },
+    {
+      "branch": "security/zero-useful-foothold-v1",
+      "sha": "620d0981d56f26f57083ffcbf98e97a1205d208d"
+    },
+    {
+      "branch": "sec/release-tree-trust-0012",
+      "sha": "9b1a77497477bce92f86cce7554164498e0d390d"
+    }
+  ],
+  "sourcePRsInspected": [
+    162,
+    204,
+    227,
+    235,
+    238,
+    240,
+    244,
+    269,
+    270,
+    217,
+    182
+  ],
+  "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "lastRebase": null,
+  "testsExecuted": [],
+  "currentTask": null,
+  "admissionAllowed": false,
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+}

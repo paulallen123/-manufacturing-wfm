@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+  "treeSha": "bc10211d06d1016b39a7b01f58a21596646c9acb",
+  "node": "v22.23.2",
+  "platform": "win32",
+  "sourceVerification": [
+    {
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "expectedBlobSha": "f7611c09a83fe5ba4d502912ace65d77ce91b939",
+      "actualBlobSha": "f7611c09a83fe5ba4d502912ace65d77ce91b939",
+      "sha256": "080c2e496d77afc303d3bdb3c0a0e6817c78bd855247d6840fb29e1104476293",
+      "verified": true
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "expectedBlobSha": "eb641eaece4ba0ae737600222463e613cbc78197",
+      "actualBlobSha": "eb641eaece4ba0ae737600222463e613cbc78197",
+      "sha256": "da7748f86a751ba696d809ba2bfb275ff2eafd708a82c5da4f8ca094b2e18b63",
+      "verified": true
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "expectedBlobSha": "58b1139c6ab6108d4e8dbade5c5d873493226c17",
+      "actualBlobSha": "58b1139c6ab6108d4e8dbade5c5d873493226c17",
+      "sha256": "32240bb7cd43b2d85fd53566cbc07bf3ba3e3a5fc70cc96ad05e7d500f905e20",
+      "verified": true
+    },
+    {
+      "path": "integrations/staffology/canonical-runtime-bridge.cjs",
+      "expectedBlobSha": "503fd6e63c32b1e490e138da458c0437c5bf27cb",
+      "actualBlobSha": "503fd6e63c32b1e490e138da458c0437c5bf27cb",
+      "sha256": "be786702fd95136168457358980a21775617489192d99f6bb1b0811fb4016750",
+      "verified": true
+    }
+  ],
+  "heldOut": {
+    "tests": 10,
+    "pass": 4,
+    "fail": 6,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 1271.8218,
+    "exitCode": 1,
+    "elapsedMs": 2326.4012000000002,
+    "node": "v22.23.2",
+    "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+    "command": "node.exe --experimental-sqlite --test --test-reporter=tap work/trust_review/held-out.behavior.test.cjs"
+  },
+  "repositoryAffected": {
+    "tests": 26,
+    "pass": 26,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 9048.1241,
+    "exitCode": 0,
+    "elapsedMs": 10151.6263,
+    "node": "v22.23.2",
+    "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+    "command": "node.exe --experimental-sqlite --require ./work/trust_review/network-guard.cjs --test --test-reporter=tap canonical-operations.test.cjs canonical-production-boundaries.test.cjs canonical-operations-deployment-binding.test.cjs",
+    "networkGuard": "Refuses global fetch, http/https request/get, net/tls connect; synthetic injected clients remain available"
+  },
+  "reproducedFindingIds": [
+    "TR-01",
+    "TR-02",
+    "TR-03",
+    "TR-06",
+    "TR-07"
+  ],
+  "externalProviderRequests": 0,
+  "limits": [
+    "Windows local Node 22.23.2, not the prescribed Ubuntu 24.04 supported Docker image/full bootstrap journey",
+    "Injected synthetic provider clients; no external provider or hosted proof",
+    "Image seal test uses a separate-child readFileSync shim for only the Linux seal path; seal-only control proves the shim is read",
+    "Staging reproduction uses actual published Operations/Bridge/Boundaries and a held-out SQLite sink at the composed staging callback boundary; not the sealed integration store/full HTTP route",
+    "No product repairs; no execution/review of unpublished native source"
+  ],
+  "artifacts": [
+    {
+      "file": "held-out.behavior.test.cjs",
+      "sha256": "8c415c8422ca905fa4ce7d42170aa5ec9f826e758bc6aa38768a1532f65c8060"
+    },
+    {
+      "file": "image-binding-probe.cjs",
+      "sha256": "15e7ad554ae0fcd56aec9b5587c1743fe8fe0df247438223aee816cac0c0d2fd"
+    },
+    {
+      "file": "network-guard.cjs",
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    },
+    {
+      "file": "held-out.node22.tap",
+      "sha256": "6c35855c5fe7aa57b3be666967fd9560d229aa41d08c7d56a2a0988ba09e7fc6"
+    },
+    {
+      "file": "held-out.observations.json",
+      "sha256": "d3a5c9e745c11f38200baa2b7415ed68fb3b5e333524d5cfd48455393079d8ac"
+    },
+    {
+      "file": "held-out.run.json",
+      "sha256": "cd2fad8517cb07be09fb2bd9a38ae1b78d84544ecae40813e34b7188976f9fed"
+    },
+    {
+      "file": "repository-affected.node22.tap",
+      "sha256": "63bac81e20dccd7bfc159fc950fcdd7933ff87682c5c8ac98f54bef99e4bc525"
+    },
+    {
+      "file": "repository-affected.run.json",
+      "sha256": "32ee772cb8ff871bfcec505758a6fc7e8168b6f6bfcd43c3715f1600344dfe16"
+    }
+  ]
+}

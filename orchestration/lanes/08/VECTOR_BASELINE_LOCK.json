@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-02T08:49:16.121Z",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "laneName": "VALUE / TRAINING / LEARNING / REPORTING",
+  "laneId": "08",
+  "worktree": "No active implementation checkout",
+  "branch": "orchestration/vector-convergence-20261002",
+  "sourceBranchesInspected": [
+    {
+      "branch": "frontier/energy-flex-shadow-v1",
+      "sha": "1bd49cf8f7c5ae6adb54f4d46c514dd0255329db"
+    },
+    {
+      "branch": "frontier/manufacturing-event-cost-v1",
+      "sha": "a472a1601eebf57ea273076ca0754911901c515c"
+    },
+    {
+      "branch": "evolution/factory-evidence-kernel-20260920-1146",
+      "sha": "65fc59dadba377bce5fc68a88dc536261a5e68be"
+    },
+    {
+      "branch": "frontier/cash-to-capacity-vector-v1",
+      "sha": "43c2505d9fce72110f9affa3b347d90d478e2212"
+    },
+    {
+      "branch": "feature/vector-research-alignment-20260923",
+      "sha": "07bc5218c183049a8d7ab884b15cca6ef38375ec"
+    },
+    {
+      "branch": "feature/vector-training-intelligence-v2-20260923",
+      "sha": "015d236d3cfdffc2bf352c7003298047fb602bd6"
+    },
+    {
+      "branch": "feature/vector-training-intelligence-v2-20260923",
+      "sha": "015d236d3cfdffc2bf352c7003298047fb602bd6"
+    },
+    {
+      "branch": "fix/autopilot-replay-verification-20260926",
+      "sha": "f42931ffa30ec6e81d48dec0d11374c747c93936"
+    },
+    {
+      "branch": "evolution/runtime-outcome-learning-20260928",
+      "sha": "97e5807977d67f580576cd19f5ed6f88385a5640"
+    },
+    {
+      "branch": "proof/vector-outcome-learning-exact-7fb4-20260928",
+      "sha": "62801cbe45f6780d75592e6c2dcb91a5813ade0a"
+    },
+    {
+      "branch": "codex/training-proof-credit-20260929",
+      "sha": "84c31cd32e73abf0e737d681bc64a79a8299f87e"
+    },
+    {
+      "branch": "codex/role-training-reconciliation-20260929",
+      "sha": "94c58f3c0580918514f9ed76e5c7c9fc4c874e01"
+    },
+    {
+      "branch": "release/vector-customer-ready-candidate-20260925",
+      "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    }
+  ],
+  "sourcePRsInspected": [
+    69,
+    75,
+    205,
+    210,
+    230,
+    232,
+    246,
+    272,
+    273,
+    281,
+    282,
+    null
+  ],
+  "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "lastRebase": null,
+  "testsExecuted": [],
+  "currentTask": null,
+  "admissionAllowed": false,
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+}

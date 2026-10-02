@@ -1,0 +1,175 @@
+{
+  "repository": "paulallen123/-manufacturing-wfm",
+  "frozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "scope": "Historical product lanes01,02,04,05,07,08; read-only recovery inventory",
+  "coverage": {
+    "all_state_pr_pages": [
+      {
+        "page": 1,
+        "count": 100
+      },
+      {
+        "page": 2,
+        "count": 100
+      },
+      {
+        "page": 3,
+        "count": 64
+      }
+    ],
+    "total_prs": 264,
+    "total_branch_names": 437,
+    "selected_prs_with_metadata_changed_paths_and_recursive_source_trees": [
+      69,
+      75,
+      79,
+      82,
+      88,
+      93,
+      108,
+      162,
+      195,
+      204,
+      205,
+      210,
+      211,
+      212,
+      214,
+      216,
+      218,
+      224,
+      226,
+      227,
+      228,
+      230,
+      231,
+      232,
+      234,
+      239,
+      244,
+      245,
+      246,
+      267,
+      272,
+      274,
+      280,
+      281,
+      282,
+      233,
+      235,
+      238,
+      240,
+      269,
+      271,
+      273
+    ],
+    "frozen_tree_entries": 1217,
+    "frozen_tree_truncated": false,
+    "latest_staffology_code_inspected": false,
+    "local_or_hosted_tests_executed": false,
+    "remote_mutations": false
+  },
+  "exclusions": [
+    "Latest Staffology PR292 code/review excluded by owner boundary",
+    "Integration/mobile/UX/trust/proof inventory assigned to sibling; overlaps are capability dependencies only",
+    "264 PR metadata and437 branch names exhaustively enumerated; only selected source trees/paths deeply inspected",
+    "Sealed artifact binary not extracted; original compiled/runtime source completeness not proven",
+    "No full historical commit traversal, deleted branches, issues/discussions or provider/customer telemetry collected",
+    "No full behavioral comparison of different blobs; ALREADY_CANONICAL entries without identical blob are source-owner findings that still require regression verification",
+    "No current branch head immutability implied: inventory seals fetched SHAs"
+  ],
+  "selectedPRs": [
+    69,
+    75,
+    79,
+    82,
+    88,
+    93,
+    108,
+    162,
+    195,
+    204,
+    205,
+    210,
+    211,
+    212,
+    214,
+    216,
+    218,
+    224,
+    226,
+    227,
+    228,
+    230,
+    231,
+    232,
+    234,
+    239,
+    244,
+    245,
+    246,
+    267,
+    272,
+    274,
+    280,
+    281,
+    282,
+    233,
+    235,
+    238,
+    240,
+    269,
+    271,
+    273
+  ],
+  "unmappedBranchHeads": [
+    {
+      "branch": "frontier/nminus1-skill-pooling-20260919",
+      "sha": "230f921b9d8809bcc04b0afef5b593a84319dd99",
+      "paths": [
+        {
+          "path": "experiments/frontier/nminus1_skill_pooling_multisite_sim.py",
+          "sha": "65ad86531496029fff445d87a6f72f8fe692c6f4"
+        },
+        {
+          "path": "experiments/frontier/nminus1_skill_pooling_sim.py",
+          "sha": "caa89374426c6da5e3e207f8e38dc871f650c10b"
+        }
+      ]
+    },
+    {
+      "branch": "fix/outcome-learning-runtime-20260926",
+      "sha": "6133f1599c6dc6d88f17ad8cc7765e2dcc3659bc",
+      "paths": [
+        {
+          "path": "operations/runtime/outcome-learning-service.cjs",
+          "sha": "2ed632244b62c8a18fbc638d48590508ded68307"
+        },
+        {
+          "path": "operations/runtime/outcome-learning-service.test.cjs",
+          "sha": "c1444721a6d1b9d617e5dbb789b5463403bb71c8"
+        },
+        {
+          "path": "tests/outcome-learning-runtime-wiring.test.cjs",
+          "sha": "c77886a00450677b8dc2d1efb08ef18f515b0295"
+        }
+      ]
+    },
+    {
+      "branch": "feature/vector-implementation-environment-autowire-20260927",
+      "sha": "2f049be7711c5792129c64b6131b44e079dfb662",
+      "paths": [
+        {
+          "path": "Dockerfile.implementation-environment-autowire-proof",
+          "sha": "29d0a23d73e9b7728412c5ac0d2b6850f117e7c9"
+        }
+      ]
+    },
+    {
+      "branch": "hardening/policy-readiness-evidence-20260927",
+      "sha": "2f5f175e47c4dd1032c81488c467ddeca370ee28",
+      "paths": []
+    }
+  ],
+  "canonicalSourceDetails": "See VECTOR_BRANCH_INVENTORY and VECTOR_CAPABILITY_REGISTRY for exact source identities; raw715KB response retained locally."
+}

@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-02T08:49:16.121Z",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "laneName": "VECTA / UX / MOBILE",
+  "laneId": "06",
+  "worktree": "No active implementation checkout",
+  "branch": "orchestration/vector-convergence-20261002",
+  "sourceBranchesInspected": [
+    {
+      "branch": "feature/vector-operations-bot-voice-v1-20260925",
+      "sha": "00202a4801a4369a9803b3b7fed0fec44e44d208"
+    },
+    {
+      "branch": "feature/vector-mobile-app-20260925",
+      "sha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d"
+    },
+    {
+      "branch": "feature/vecta-mobile-integrations-20260925",
+      "sha": "81c879b6f8d673948e4da2131f7198dfd5935513"
+    },
+    {
+      "branch": "feature/vector-mobile-mass-clocking-design",
+      "sha": "373fe8c59142c4e02483199a52bcc5a61d477723"
+    },
+    {
+      "branch": "fix/vector-only-shell-mobile-20260919",
+      "sha": "e8e7e3b9a813b6bce9d18bdf10a885820963c8ab"
+    },
+    {
+      "branch": "fix/vector-independent-loader-20260919",
+      "sha": "9414694953a1220d714cc4044d4a51431ab8fc58"
+    },
+    {
+      "branch": "fix/vector-canonical-static-routes-20260920",
+      "sha": "acbbd487a2c5aff487dae8aeff6e6c9baa6fd653"
+    },
+    {
+      "branch": "fix/vector-desktop-overflow-20260920",
+      "sha": "7f604ee54615ad00ca649ec8e8e8bf74877755a7"
+    },
+    {
+      "branch": "ux/role-first-simplification-20260917-v2",
+      "sha": "480219aac22d22d8aa0629e3b1a40ce34f2cab97"
+    },
+    {
+      "branch": "ux/planner-focus-20260917",
+      "sha": "b5300ad8eab18e203beea1da2aa5013644c34db3"
+    },
+    {
+      "branch": "ux/planner-focus-20260918-r5",
+      "sha": "8513cd5ced5f1f1680a497d67f5466cdcc98b28a"
+    },
+    {
+      "branch": "ux/universal-action-queue-20260918-r1",
+      "sha": "75d3ab19243b2145e66fe69f2a8e23d05704e9b5"
+    },
+    {
+      "branch": "ux/cycle12-unified-operating-experience-20260918-r1",
+      "sha": "3b7ddf164725fb4a1be5fc83aa81c52bdf0d954f"
+    },
+    {
+      "branch": "ux/concept-fidelity-rebuild",
+      "sha": "4f612a66fd76b7cd42be784a3fb96d24cfa58395"
+    },
+    {
+      "branch": "fix/vector-independent-shell-20260919",
+      "sha": "466782332e47fe438c8b93ef1a9dada9c7f6e813"
+    },
+    {
+      "branch": "ux/planner-focus-20260918-r5",
+      "sha": "8513cd5ced5f1f1680a497d67f5466cdcc98b28a"
+    },
+    {
+      "branch": "ux/universal-action-queue-20260918-r1",
+      "sha": "75d3ab19243b2145e66fe69f2a8e23d05704e9b5"
+    },
+    {
+      "branch": "ux/cycle12-unified-operating-experience-20260918-r1",
+      "sha": "3b7ddf164725fb4a1be5fc83aa81c52bdf0d954f"
+    }
+  ],
+  "sourcePRsInspected": [
+    241,
+    242,
+    243,
+    null,
+    136,
+    137,
+    198,
+    200,
+    37,
+    50,
+    72,
+    80,
+    90,
+    130,
+    138
+  ],
+  "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "lastRebase": null,
+  "testsExecuted": [],
+  "currentTask": null,
+  "admissionAllowed": false,
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+}

@@ -1,0 +1,624 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-02T08:58:03.144Z",
+  "claim": "NOT_CUSTOMER_PROVEN",
+  "exactCurrentTuple": {
+    "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+    "tenant": "northstar-demo",
+    "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+    "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
+    "fixtureOnly": true,
+    "productionApproved": false,
+    "observedAt": "2026-10-02T08:20:00.048Z"
+  },
+  "executorObservation": {
+    "ok": true,
+    "status": "passwordless-proof-runner-partial",
+    "scopedChecksPassed": true,
+    "customerProofComplete": false,
+    "productReady": false,
+    "startedAt": "2026-10-02T08:19:48.978Z",
+    "updatedAt": "2026-10-02T08:20:00.048Z",
+    "executorCodeSha256": "9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438",
+    "gustoMetadata": {
+      "acquiredAt": "2026-10-02T06:58:50.375Z",
+      "scope": "Stored application metadata only; no fresh provider authorization or data acceptance",
+      "configurationHttpStatus": 200,
+      "statusHttpStatus": 200,
+      "available": true,
+      "configuration": {
+        "configured": true,
+        "environment": "sandbox",
+        "expectedCompanyUuid": "49d3bf95-5b5b-4251-89d8-1b614e47e676",
+        "missingConfiguration": []
+      },
+      "gustoConnectionCount": 0,
+      "connections": []
+    },
+    "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
+    "authMethod": "proof-runner-signed",
+    "observed": {
+      "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e"
+    },
+    "deploymentReadbackSource": "authenticated implementation status: current native binding",
+    "health": {
+      "status": 200,
+      "release": "0.6.76-hosted-staging-rc1",
+      "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "fixtureOnly": true,
+      "productionApproved": false
+    },
+    "bootstrapStatus": 200,
+    "scopeStatus": 200,
+    "implementationStatus": 200,
+    "implementation": {
+      "state": "SLA_MISSED",
+      "operationalReady": false,
+      "completedRequirements": 5,
+      "totalRequirements": 21,
+      "openRequirements": [
+        {
+          "key": "tenant-environment",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "identity-access",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "time-policies",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "absence-policies",
+          "status": "WARN"
+        },
+        {
+          "key": "scheduling",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "approvals",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "clocking",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "payroll-mapping",
+          "status": "MISSING"
+        },
+        {
+          "key": "historical-replay",
+          "status": "MISSING"
+        },
+        {
+          "key": "security-controls",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "resilience",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "scenario-validation",
+          "status": "MISSING"
+        },
+        {
+          "key": "test-data-cleanup",
+          "status": "MISSING"
+        },
+        {
+          "key": "live-data-import",
+          "status": "MISSING"
+        },
+        {
+          "key": "privileged-competency",
+          "status": "MISSING"
+        },
+        {
+          "key": "frontline-readiness",
+          "status": "MISSING"
+        }
+      ],
+      "activeWorkerLeases": 0
+    },
+    "expectedTenant": "northstar-demo",
+    "expectedRunId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+    "expectedSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedDeploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810"
+  },
+  "customerProofComplete": false,
+  "mandatoryGates": [
+    {
+      "id": "secure-entry",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "implementation",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "integrations",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "source-discovery",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "workforce-import",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "reconciliation",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "configuration",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "policy-context",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "training-readiness",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "go-live",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "workforce-scheduling-action",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "time-absence",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "approval",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "payroll-downstream-action",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "provider-readback",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "downstream-reconciliation",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "value-outcome-evidence",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "operational-problem",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "detection",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "repair",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "recovery-verification",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "restart-persistence",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "customer-quality-ui",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "native-mobile",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "rollback",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "security-tenant-authority",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    },
+    {
+      "id": "exact-source-build-runtime-binding",
+      "status": "NOT_PROVEN",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "configurationId": null,
+      "provider": null,
+      "observedAt": null,
+      "proofVersion": null,
+      "evidence": null,
+      "remaining": "Run meaningful applicable customer proof on the exact admitted candidate; earlier fixture/simulation/module evidence cannot close this gate."
+    }
+  ],
+  "currentImplementationRequirements": [
+    {
+      "key": "tenant-environment",
+      "status": "REVALIDATION_REQUIRED"
+    },
+    {
+      "key": "identity-access",
+      "status": "REVALIDATION_REQUIRED"
+    },
+    {
+      "key": "time-policies",
+      "status": "REVALIDATION_REQUIRED"
+    },
+    {
+      "key": "absence-policies",
+      "status": "WARN"
+    },
+    {
+      "key": "scheduling",
+      "status": "REVALIDATION_REQUIRED"
+    },
+    {
+      "key": "approvals",
+      "status": "REVALIDATION_REQUIRED"
+    },
+    {
+      "key": "clocking",
+      "status": "REVALIDATION_REQUIRED"
+    },
+    {
+      "key": "payroll-mapping",
+      "status": "MISSING"
+    },
+    {
+      "key": "historical-replay",
+      "status": "MISSING"
+    },
+    {
+      "key": "security-controls",
+      "status": "REVALIDATION_REQUIRED"
+    },
+    {
+      "key": "resilience",
+      "status": "REVALIDATION_REQUIRED"
+    },
+    {
+      "key": "scenario-validation",
+      "status": "MISSING"
+    },
+    {
+      "key": "test-data-cleanup",
+      "status": "MISSING"
+    },
+    {
+      "key": "live-data-import",
+      "status": "MISSING"
+    },
+    {
+      "key": "privileged-competency",
+      "status": "MISSING"
+    },
+    {
+      "key": "frontline-readiness",
+      "status": "MISSING"
+    }
+  ],
+  "ciSource": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+  "ci": {
+    "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+    "statuses": [
+      {
+        "context": "ci/circleci: forge_core_validation",
+        "state": "success",
+        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/25"
+      },
+      {
+        "context": "ci/circleci: forge_runtime_validation",
+        "state": "failure",
+        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/26"
+      }
+    ]
+  },
+  "invalidatedEvidence": [
+    {
+      "sha": "dedf7b307464c513f418bb7c95f37e53660b56a1",
+      "deploymentId": "eee54936-1565-4dec-a475-5c54b2f4b95e",
+      "reason": "Deployment REMOVED; no longer serving"
+    },
+    {
+      "path": "CUSTOMER_PROOF_STATUS.md",
+      "reason": "Historical17September fixture-only candidate record; not current customer proof"
+    }
+  ],
+  "proofLayers": [
+    "Source presence",
+    "Local focused behavior",
+    "Prescribed Linux/container proof",
+    "Exact hosted customer proof",
+    "Actual provider acceptance/readback",
+    "Measured outcome",
+    "Live deployment verification"
+  ],
+  "unpublishedRepair": {
+    "sha": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
+    "tree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
+    "admitted": false
+  }
+}

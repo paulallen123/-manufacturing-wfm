@@ -1,0 +1,170 @@
+TAP version 13
+# Subtest: hosted profile resolves absent deployment identity from the trusted runtime
+ok 1 - hosted profile resolves absent deployment identity from the trusted runtime
+  ---
+  duration_ms: 4.5189
+  type: 'test'
+  ...
+# Subtest: hosted profile accepts only an explicit exact deployment identity
+ok 2 - hosted profile accepts only an explicit exact deployment identity
+  ---
+  duration_ms: 7.4751
+  type: 'test'
+  ...
+# Subtest: hosted profile rejects absent, malformed, wrong, or stale runtime deployment evidence
+ok 3 - hosted profile rejects absent, malformed, wrong, or stale runtime deployment evidence
+  ---
+  duration_ms: 1.5743
+  type: 'test'
+  ...
+# Subtest: trusted deployment identity cannot substitute for the sealed candidate source
+ok 4 - trusted deployment identity cannot substitute for the sealed candidate source
+  ---
+  duration_ms: 0.5671
+  type: 'test'
+  ...
+# Subtest: non-hosted fixtures remain explicit and do not consume Railway identity
+ok 5 - non-hosted fixtures remain explicit and do not consume Railway identity
+  ---
+  duration_ms: 0.8319
+  type: 'test'
+  ...
+# (node:26816) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: operation profile is dormant by default and exact-source-bound when enabled
+ok 6 - operation profile is dormant by default and exact-source-bound when enabled
+  ---
+  duration_ms: 9.4067
+  type: 'test'
+  ...
+# Subtest: acquisition-only profile keeps payroll dormant until a released-batch scope is configured
+ok 7 - acquisition-only profile keeps payroll dormant until a released-batch scope is configured
+  ---
+  duration_ms: 4.5611
+  type: 'test'
+  ...
+# Subtest: operation status reveals non-secret exact scope only to the current authorised tenant account
+ok 8 - operation status reveals non-secret exact scope only to the current authorised tenant account
+  ---
+  duration_ms: 1.4428
+  type: 'test'
+  ...
+# Subtest: authenticated acquisition accepts only the server-held tenant, employer and exact cohort
+ok 9 - authenticated acquisition accepts only the server-held tenant, employer and exact cohort
+  ---
+  duration_ms: 165.0704
+  type: 'test'
+  ...
+# Subtest: provider list outside the exact cohort is rejected before any employee detail is fetched
+ok 10 - provider list outside the exact cohort is rejected before any employee detail is fetched
+  ---
+  duration_ms: 2.9971
+  type: 'test'
+  ...
+# Subtest: real bridge, SQLite authority and operation attach trusted binding and reconcile one simulated POST across reopen
+ok 11 - real bridge, SQLite authority and operation attach trusted binding and reconcile one simulated POST across reopen
+  ---
+  duration_ms: 7142.3628
+  type: 'test'
+  ...
+# Subtest: outside-cohort or conflicting payroll and recovery scope fails before provider read and durable intent
+ok 12 - outside-cohort or conflicting payroll and recovery scope fails before provider read and durable intent
+  ---
+  duration_ms: 41.0438
+  type: 'test'
+  ...
+# Subtest: known valid scope reaches the intercepted baseline GET only after trusted binding is attached
+ok 13 - known valid scope reaches the intercepted baseline GET only after trusted binding is attached
+  ---
+  duration_ms: 63.0988
+  type: 'test'
+  ...
+# Subtest: canonical mapping options reject invalid workforce choices before provider acquisition
+ok 14 - canonical mapping options reject invalid workforce choices before provider acquisition
+  ---
+  duration_ms: 1.2673
+  type: 'test'
+  ...
+# Subtest: canonical mapping options accept an exact current state selection
+ok 15 - canonical mapping options accept an exact current state selection
+  ---
+  duration_ms: 1.9858
+  type: 'test'
+  ...
+# (node:1664) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: production boundary rejects a lost owner and consumes exact authority once
+ok 16 - production boundary rejects a lost owner and consumes exact authority once
+  ---
+  duration_ms: 6500.2986
+  type: 'test'
+  ...
+# Subtest: uncertain dispatch survives reopen and begin cannot resend it
+ok 17 - uncertain dispatch survives reopen and begin cannot resend it
+  ---
+  duration_ms: 875.1282
+  type: 'test'
+  ...
+# Subtest: £1,250 provider result remains rejected for approved £12.50 basic pay
+ok 18 - £1,250 provider result remains rejected for approved £12.50 basic pay
+  ---
+  duration_ms: 10.6246
+  type: 'test'
+  ...
+# Subtest: authenticated approved coordinator issues exact authority once and retains simulated financial readback
+ok 19 - authenticated approved coordinator issues exact authority once and retains simulated financial readback
+  ---
+  duration_ms: 216.0975
+  type: 'test'
+  ...
+# Subtest: authority accepts only the exact canonical binding and permit schema
+ok 20 - authority accepts only the exact canonical binding and permit schema
+  ---
+  duration_ms: 15.4317
+  type: 'test'
+  ...
+# Subtest: R01 an actor from another tenant cannot issue approval
+ok 21 - R01 an actor from another tenant cannot issue approval
+  ---
+  duration_ms: 23.8702
+  type: 'test'
+  ...
+# Subtest: R01b an actor from another tenant cannot revoke approval
+ok 22 - R01b an actor from another tenant cannot revoke approval
+  ---
+  duration_ms: 23.3568
+  type: 'test'
+  ...
+# Subtest: R02 a permit for another binding, delivery or payload cannot dispatch
+ok 23 - R02 a permit for another binding, delivery or payload cannot dispatch
+  ---
+  duration_ms: 709.1797
+  type: 'test'
+  ...
+# Subtest: authority storage faults are not disguised as a denied permit
+ok 24 - authority storage faults are not disguised as a denied permit
+  ---
+  duration_ms: 51.2193
+  type: 'test'
+  ...
+# Subtest: R03 a differently bound store cannot read another tenant private delivery
+ok 25 - R03 a differently bound store cannot read another tenant private delivery
+  ---
+  duration_ms: 53.2385
+  type: 'test'
+  ...
+# Subtest: R04 a request with the wrong method or employer cannot dispatch
+ok 26 - R04 a request with the wrong method or employer cannot dispatch
+  ---
+  duration_ms: 130.9317
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9048.1241

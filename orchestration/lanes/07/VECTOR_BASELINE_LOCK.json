@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-02T08:49:16.121Z",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "laneName": "MANUFACTURING & FRONTIER INTELLIGENCE",
+  "laneId": "07",
+  "worktree": "No active implementation checkout",
+  "branch": "orchestration/vector-convergence-20261002",
+  "sourceBranchesInspected": [
+    {
+      "branch": "frontier/energy-flex-shadow-v1",
+      "sha": "1bd49cf8f7c5ae6adb54f4d46c514dd0255329db"
+    },
+    {
+      "branch": "frontier/manufacturing-event-cost-v1",
+      "sha": "a472a1601eebf57ea273076ca0754911901c515c"
+    },
+    {
+      "branch": "frontier/factory-capability-graph-v1",
+      "sha": "710da5c6a113500686435c1c98bedee6aefbcc36"
+    },
+    {
+      "branch": "frontier/degraded-mode-readiness-v1",
+      "sha": "edf17bfa4c089022348b024f843c89172d47b6f2"
+    },
+    {
+      "branch": "frontier/loss-prevention-workforce-v1",
+      "sha": "9a63c4ac1547ee96db5b0a2f1dd643bc885916eb"
+    },
+    {
+      "branch": "frontier/controlled-environment-flow-v1",
+      "sha": "88185a0e94f5df15e32841fc227cfededbde27d8"
+    },
+    {
+      "branch": "frontier/water-resilience-orchestration-v1",
+      "sha": "f353b28b5a5d5a89638723008fe99557aa12f497"
+    },
+    {
+      "branch": "feature/vector-research-alignment-20260923",
+      "sha": "07bc5218c183049a8d7ab884b15cca6ef38375ec"
+    }
+  ],
+  "sourcePRsInspected": [
+    69,
+    75,
+    93,
+    212,
+    214,
+    216,
+    218,
+    230
+  ],
+  "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "lastRebase": null,
+  "testsExecuted": [],
+  "currentTask": null,
+  "admissionAllowed": false,
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+}

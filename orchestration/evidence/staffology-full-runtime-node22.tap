@@ -1,0 +1,55 @@
+TAP version 13
+# (node:19272) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: strict full HTTP journey uses actual attendance, canonical release and one simulated provider write across restart
+not ok 1 - strict full HTTP journey uses actual attendance, canonical release and one simulated provider write across restart
+  ---
+  duration_ms: 14300.4973
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs:31:1'
+  failureType: 'testCodeFailure'
+  error: 'canonical server did not become healthy: '
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'fail'
+  stack: |-
+    start (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\src\integrations\staffology\independent\full-http-employee-journey.test.cjs:24:1154)
+    async TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\src\integrations\staffology\independent\full-http-employee-journey.test.cjs:35:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# (node:15036) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: reviewed Staffology employee import persists across restart without duplicate apply or cross-tenant read
+not ok 2 - reviewed Staffology employee import persists across restart without duplicate apply or cross-tenant read
+  ---
+  duration_ms: 4337.0353
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\src\\integrations\\staffology\\staffology-employee-persistence.test.cjs:30:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    undefined !== 4
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 4
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\src\integrations\staffology\staffology-employee-persistence.test.cjs:57:120)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 20329.9076

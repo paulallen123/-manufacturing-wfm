@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "originalLocalSha256": "6d970143e153d646654fb3f7efe4e73c601a31ee9878521403cc8f18c1b8fbe9",
+  "originalBytes": 2793975,
+  "coverage": {
+    "branch_names": 437,
+    "branch_pages": [
+      100,
+      100,
+      100,
+      100,
+      37,
+      0
+    ],
+    "metadata_prs": 42,
+    "catalogue_paths_compared": 81,
+    "catalogue_identical": 56,
+    "catalogue_baseline_absent": 25,
+    "fabric_helpers_compared": 41,
+    "fabric_helpers_identical": 16,
+    "fabric_helpers_baseline_absent": 25,
+    "known_path_catalogue_ids": 212,
+    "changed_known_provider_records": 26
+  },
+  "coverageGaps": [
+    "Full branch names enumerated, sampled relevant branch exact heads fetched through PR metadata; non-PR branch identity only proved for mobile mass-clock design.",
+    "Keyword all-state PR search result sets are each under100; search connector exposes no cursor. Metadata fetched confirms merged/open/closed states for42 relevant PRs.",
+    "Catalogue reconstruction uses81 validated changed paths from PR106+194; absent ancestral overlays/tree-listing means counts are partial and cannot certify complete catalogue.",
+    "Known-path levels at194:143spec/66discovery/3tenant versus source-reported149/60/3. Baseline known-path127/82/3; no actual connected product status inferred.",
+    "Source and available test files inspected; no fresh tests, workflow execution, browser, deployment, credentials or real provider calls performed.",
+    "No latest Staffology implementation/review, frozen-ref mutation or GitHub mutations performed."
+  ],
+  "canonicalSourceDetails": "See VECTOR_CAPABILITY_REGISTRY provenance and exact source refs; raw2.8MB response retained locally."
+}
