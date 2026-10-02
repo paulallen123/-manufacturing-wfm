@@ -676,24 +676,76 @@ function createOneDayEnterpriseEngine(options = {}) {
     return null;
   }
 
+  function configurationContextFor(run) {
+    const row = scopeByRun.get(run.id, run.tenant);
+    if (!row) return null;
+    const scopeJson = JSON.stringify(normaliseScope(parseJsonSafe(row.scope_json, {})));
+    const environment = tenantEnvironmentProvisioner.statusForTenant(run.tenant);
+    let applied = false;
+    try { applied = environment?.runId === run.id &&
+      JSON.stringify(normaliseScope(environment.configuration)) === scopeJson; } catch {}
+    // Reuse the existing append-only scope audit as the revision boundary.
+    // Earlier updates did not distinguish identical submissions; those legacy
+    // unbound receipts conservatively require revalidation after any update.
+    const changes = db.prepare("SELECT id,detail_json FROM implementation_events WHERE run_id=? AND tenant=? AND event IN ('CUSTOMER_SCOPE_UPDATED','TRUSTED_CONTRACT_SCOPE_UPDATED') ORDER BY id DESC").all(run.id, run.tenant);
+    const change = changes.find(item => parseJsonSafe(item.detail_json, {}).configurationChanged !== false);
+    return { tenant: run.tenant, runId: run.id, scopeJson,
+      configurationDigest: environment?.configurationDigest || null,
+      scopeChangeEventId: change?.id || 0, applied };
+  }
+
+  function configurationBindingFor(detail, run, row = null) {
+    const context = configurationContextFor(run);
+    if (!context) return null;
+    let reason = null;
+    if (!context.applied) reason = 'CURRENT_CONFIGURATION_NOT_APPLIED';
+    else if (detail.configurationDigest != null && detail.configurationDigest !== context.configurationDigest)
+      reason = 'EVIDENCE_CONFIGURATION_DIGEST_MISMATCH';
+    else if (row) {
+      const receipt = detail._configurationValidation;
+      if (receipt && (receipt.version !== 1 || receipt.tenant !== context.tenant ||
+          receipt.runId !== context.runId || receipt.scopeJson !== context.scopeJson ||
+          receipt.configurationDigest !== context.configurationDigest ||
+          receipt.scopeChangeEventId !== context.scopeChangeEventId || receipt.acceptedAt !== row.created_at))
+        reason = 'EVIDENCE_CONFIGURATION_CONTEXT_MISMATCH';
+      else if (!receipt)
+        reason = 'EVIDENCE_CONFIGURATION_CONTEXT_MISSING';
+    }
+    return { status: reason ? 'REVALIDATION_REQUIRED' : 'MATCHED', reason,
+      expected: { configurationDigest: context.configurationDigest, scopeChangeEventId: context.scopeChangeEventId },
+      observed: { configurationDigest: detail.configurationDigest || detail._configurationValidation?.configurationDigest || null,
+        scopeChangeEventId: detail._configurationValidation?.scopeChangeEventId ?? null } };
+  }
+
+  function storedEvidenceValidationError(run, kind, row, detail) {
+    if (kind === 'tenant-environment') return tenantEnvironmentEvidenceError(run, row, true, detail);
+    if (POLICY_REQUIREMENT_KINDS.has(kind) || options.strictEvidence === true || process.env.WFM_HOSTED_STAGING === 'true')
+      return validateStrictReadinessEvidence(kind, 'PASS', detail);
+    return null;
+  }
+
+  function bindAcceptedConfiguration(detail, run, acceptedAt) {
+    const context = configurationContextFor(run);
+    if (!context) return detail;
+    const { applied, ...binding } = context;
+    return { ...detail, _configurationValidation: { version: 1, ...binding, acceptedAt } };
+  }
+
   function currentStoredPass(run, kind) {
     const row = evidenceByKind.get(run.id, run.tenant, kind);
     if (!row || row.status !== 'PASS') return false;
     const detail = parseJsonSafe(row.detail_json, {});
     const binding = evidenceBindingFor(detail, run);
-    if (binding?.reason) return false;
-    if (kind === 'tenant-environment') return !tenantEnvironmentEvidenceError(run, row, true, detail);
-    if (POLICY_REQUIREMENT_KINDS.has(kind)) {
-      return !validateStrictReadinessEvidence(kind, 'PASS', detail);
-    }
-    return true;
+    if (binding?.reason || configurationBindingFor(detail, run, row)?.reason) return false;
+    return !storedEvidenceValidationError(run, kind, row, detail);
   }
 
   function ensurePolicyQuestions(run, scope = null) {
     if (!run) return [];
     const created = [];
     for (const [key, spec] of Object.entries(POLICY_DECISIONS)) {
-      if (currentStoredPass(run, spec.kind) || decisionByKey.get(run.id, run.tenant, key)) continue;
+      if (currentStoredPass(run, spec.kind)) continue;
+      const existingDecision = decisionByKey.get(run.id, run.tenant, key);
       const id = randomUUID();
       const ts = nowIso();
       const proposal = {
@@ -712,6 +764,19 @@ function createOneDayEnterpriseEngine(options = {}) {
           customerAuthorityRequired: true
         }
       };
+      if (existingDecision) {
+        const previousProposal = parseJsonSafe(existingDecision.proposal_json, {});
+        if (['ACCEPTED', 'CHANGED'].includes(existingDecision.status) ||
+            JSON.stringify(previousProposal.customerContext) !== JSON.stringify(proposal.customerContext)) {
+          db.prepare('UPDATE implementation_decisions SET status=?,proposal_json=?,updated_at=? WHERE id=? AND tenant=?')
+            .run('PENDING', JSON.stringify(proposal), ts, existingDecision.id, run.tenant);
+          record(run.id, run.tenant, 'DECISION_REVALIDATION_REQUIRED', {
+            key, requirement: spec.kind, previousStatus: existingDecision.status,
+            reason: 'CURRENT_POLICY_EVIDENCE_REQUIRED', customerContext: proposal.customerContext
+          });
+        }
+        continue;
+      }
       insertDecision.run(
         id, run.id, run.tenant, key, spec.question, JSON.stringify(proposal),
         0, 'HIGH', 'PENDING', null, ts, ts
@@ -965,6 +1030,7 @@ function createOneDayEnterpriseEngine(options = {}) {
           confidence: conflicts.length || ok ? 1 : 0,
           source: sourceDataSummary ? 'customer-scope+validated-source' : 'customer-scope',
           detail: customerScope ? {
+            configurationScope: customerScope,
             companyName: customerScope.companyName,
             employeeCount: customerScope.employeeCount,
             countryCount: customerScope.countries.length,
@@ -1058,18 +1124,17 @@ function createOneDayEnterpriseEngine(options = {}) {
       // Stored proof survives deployment for audit, but never retains authority
       // for a different candidate. Derived configuration is read from current state.
       const evidenceBinding = !derived && row?.status === 'PASS' ? evidenceBindingFor(detail, run) : null;
-      const tenantValidationError = !derived && row?.status === 'PASS' && requirement.key === 'tenant-environment'
-        ? tenantEnvironmentEvidenceError(run, row, true, detail || {})
-        : null;
-      const policyValidationError = !derived && row?.status === 'PASS' && POLICY_REQUIREMENT_KINDS.has(requirement.key)
-        ? validateStrictReadinessEvidence(requirement.key, 'PASS', detail || {})
-        : null;
-      const replayValidationError = (options.strictEvidence === true || process.env.WFM_HOSTED_STAGING === 'true') &&
-        !derived && row?.status === 'PASS' && requirement.key === 'historical-replay'
-        ? validateStrictReadinessEvidence(requirement.key, 'PASS', detail || {})
-        : null;
-      const status = evidenceBinding?.reason || tenantValidationError || policyValidationError || replayValidationError
-        ? 'REVALIDATION_REQUIRED'
+      const configurationBinding = !derived && row?.status === 'PASS'
+        ? configurationBindingFor(detail || {}, run, row) : null;
+      const validationError = !derived && row?.status === 'PASS'
+        ? storedEvidenceValidationError(run, requirement.key, row, detail || {}) : null;
+      // Bind invalidation into existing work intent so terminal jobs reopen.
+      const effectiveBinding = configurationBinding?.reason || validationError
+        ? { ...(evidenceBinding || {}), status: 'REVALIDATION_REQUIRED',
+            reason: configurationBinding?.reason || validationError,
+            configuration: configurationBinding }
+        : evidenceBinding;
+      const status = effectiveBinding?.reason ? 'REVALIDATION_REQUIRED'
         : (derived?.status || row?.status || 'MISSING');
       const confidence = derived ? derived.confidence : (row ? Number(row.confidence) : 0);
       return {
@@ -1080,8 +1145,8 @@ function createOneDayEnterpriseEngine(options = {}) {
         source: derived?.source || row?.source || null,
         observedAt: derived ? nowIso() : (row?.created_at || null),
         detail,
-        ...(evidenceBinding ? { evidenceBinding } : {}),
-        ...(tenantValidationError || policyValidationError || replayValidationError ? { evidenceValidation: { reason: tenantValidationError || policyValidationError || replayValidationError } } : {})
+        ...(effectiveBinding ? { evidenceBinding: effectiveBinding } : {}),
+        ...(validationError ? { evidenceValidation: { reason: validationError } } : {})
       };
     });
 
@@ -1365,6 +1430,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         ts
       );
       record(autoStartedRun.id, tenant, existingScope ? 'TRUSTED_CONTRACT_SCOPE_UPDATED' : 'TRUSTED_CONTRACT_SCOPE_CAPTURED', {
+        configurationChanged: Boolean(existingScope && JSON.stringify(normaliseScope(parseJsonSafe(existingScope.scope_json, {}))) !== JSON.stringify(scope)),
         employees: scope.employeeCount,
         countries: scope.countries.length,
         sites: scope.sites.length,
@@ -1725,6 +1791,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     upsertScope.run(run.id, ctx.tenant, JSON.stringify(scope), sha256(ctx.email).slice(0, 16), existing?.created_at || ts, ts);
     record(run.id, ctx.tenant, existing ? 'CUSTOMER_SCOPE_UPDATED' : 'CUSTOMER_SCOPE_SUBMITTED', {
       by: sha256(ctx.email).slice(0, 16),
+      configurationChanged: Boolean(existing && JSON.stringify(normaliseScope(parseJsonSafe(existing.scope_json, {}))) !== JSON.stringify(scope)),
       employees: scope.employeeCount,
       countries: scope.countries.length,
       sites: scope.sites.length,
@@ -1762,6 +1829,13 @@ function createOneDayEnterpriseEngine(options = {}) {
         error: 'Implementation evidence must be revalidated on the current candidate and deployment.',
         readinessEvidenceAccepted: false, kind, evidenceBinding
       });
+    }
+    const configurationBinding = status === 'PASS' ? configurationBindingFor(detail, run) : null;
+    if (status === 'PASS' && Object.prototype.hasOwnProperty.call(detail, '_configurationValidation')) {
+      return writeJson(res, 409, { error: 'Configuration validation receipts are server-issued only.', readinessEvidenceAccepted: false, kind });
+    }
+    if (configurationBinding?.reason) {
+      return writeJson(res, 409, { error: 'Evidence must be revalidated against the current configuration.', readinessEvidenceAccepted: false, kind, configurationBinding });
     }
     const evidenceRecordedAt = nowIso();
     if (status === 'PASS' && (kind === 'tenant-environment' || POLICY_REQUIREMENT_KINDS.has(kind))) {
@@ -1803,11 +1877,11 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
     }
 
-    let storedDetail = detail;
+    let storedDetail = status === 'PASS' ? bindAcceptedConfiguration(detail, run, evidenceRecordedAt) : detail;
     if (status === 'PASS' && kind === 'tenant-environment') {
-      storedDetail = { ...detail, _tenantEnvironmentValidation: {
+      storedDetail = { ...storedDetail, _tenantEnvironmentValidation: {
         version: 1, validator: 'tenant-environment-v1',
-        proofDigest: sha256(JSON.stringify(detail)),
+        proofDigest: sha256(JSON.stringify(storedDetail)),
         tenant: run.tenant, implementationRunId: run.id,
         candidateSha, deploymentId, verifierRunId: detail.verifierRunId || detail.verifierDeploymentId,
         acceptedAt: evidenceRecordedAt
@@ -2001,6 +2075,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     });
 
     if (policyEvidence) {
+      const acceptedAt = nowIso();
       insertEvidence.run(
         run.id,
         run.tenant,
@@ -2008,8 +2083,8 @@ function createOneDayEnterpriseEngine(options = {}) {
         'PASS',
         1,
         'customer-authorised-policy-confirmation',
-        JSON.stringify(policyEvidence.detail),
-        nowIso()
+        JSON.stringify(bindAcceptedConfiguration(policyEvidence.detail, run, acceptedAt)),
+        acceptedAt
       );
       record(run.id, run.tenant, 'CUSTOMER_POLICY_AUTHORITY_CONFIRMED', {
         key,
