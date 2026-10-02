@@ -1,0 +1,158 @@
+{
+  "repository": "paulallen123/-manufacturing-wfm",
+  "lock": {
+    "protectedFrozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "frozenTreeSha": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+    "treeIdentitySource": "Root VECTOR_CONVERGENCE_STATE.json frozen.tree; connector tree response sha echoes requested commit ref",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "shippingChangedBytes": 0,
+    "productEdits": false,
+    "githubWrites": false,
+    "providersExecuted": false,
+    "customerProof": false
+  },
+  "pr": {
+    "number": 75,
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "head": "a472a1601eebf57ea273076ca0754911901c515c",
+    "branch": "frontier/manufacturing-event-cost-v1",
+    "base": "254afd8085764e93ce3abeee8e868eb5b2165f85"
+  },
+  "historicalCompleteTreeReusedAtExactImmutableHead": true,
+  "sourceIdentities": [
+    {
+      "path": "src/frontier/manufacturing-event-graph.mjs",
+      "sourceRef": "a472a1601eebf57ea273076ca0754911901c515c",
+      "sha": "6cebf2a2c9dcb93cc323c1f2ef7c380e0f40a69c",
+      "mode": "100644",
+      "bytes": 5073,
+      "local": "historical/src/frontier/manufacturing-event-graph.mjs",
+      "frozenSha": null
+    },
+    {
+      "path": "src/frontier/delivery-disruption.mjs",
+      "sourceRef": "a472a1601eebf57ea273076ca0754911901c515c",
+      "sha": "7d03f0a69da25cd93013955aad92bbc7202f6a68",
+      "mode": "100644",
+      "bytes": 12868,
+      "local": "historical/src/frontier/delivery-disruption.mjs",
+      "frozenSha": null
+    },
+    {
+      "path": "test/frontier/delivery-disruption.test.mjs",
+      "sourceRef": "a472a1601eebf57ea273076ca0754911901c515c",
+      "sha": "c5ac6cf52be7dff6d4294ed2a35662789fddff3d",
+      "mode": "100644",
+      "bytes": 10698,
+      "local": "historical/test/frontier/delivery-disruption.test.mjs",
+      "frozenSha": null
+    },
+    {
+      "path": "implementation/runtime/implementation-digital-twin.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "mode": "100644",
+      "bytes": 5922,
+      "local": "frozen/implementation/runtime/implementation-digital-twin.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "mode": "100644",
+      "bytes": 8853,
+      "local": "frozen/operations/runtime/decision-episode.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "mode": "100644",
+      "bytes": 3042,
+      "local": "frozen/operations/runtime/decision-episode.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "mode": "100644",
+      "bytes": 7146,
+      "local": "frozen/operations/runtime/decision-outcome-proof.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/demand-decision-service.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "aa838770ff375e18dfdaca05bdf73d950f671fa5",
+      "mode": "100644",
+      "bytes": 12785,
+      "local": "frozen/operations/runtime/demand-decision-service.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/realtime-event-service.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "f1012b311ca06750641d221e63b3ac7f091465bd",
+      "mode": "100644",
+      "bytes": 7540,
+      "local": "frozen/operations/runtime/realtime-event-service.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/manufacturing-scheduling-engine.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "63970553844acb634391e6b2db865905eb3c4947",
+      "mode": "100644",
+      "bytes": 26491,
+      "local": "frozen/operations/runtime/manufacturing-scheduling-engine.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "trust/runtime/vector-trust-spine.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "mode": "100644",
+      "bytes": 22881,
+      "local": "frozen/trust/runtime/vector-trust-spine.cjs",
+      "verified935Copy": true
+    }
+  ],
+  "selected935Mismatches": [],
+  "frozenSearch": {
+    "paths": [
+      "material",
+      "shipment",
+      "stockout",
+      "delivery-disruption",
+      "manufacturing-event-graph",
+      "supplier-disruption"
+    ],
+    "matchingPaths": 0,
+    "limit": "Full frozen path index only; selected canonical content comparisons, not entire semantic/runtime inventory"
+  },
+  "coverage": {
+    "historicalPrincipalFiles": 3,
+    "canonicalComparedFiles": 8,
+    "originalPRChangedFiles": 4,
+    "notDeepRead": [
+      ".github/workflows/delivery-disruption-shadow.yml",
+      "current integration maintenance branch",
+      "other materials/maintenance semantic implementations beyond selected files"
+    ],
+    "exclusions": [
+      "Staffology",
+      "product033 skills-demand",
+      "published product025 cleanroom",
+      "mandatory admission fixes",
+      "Lane01 helper",
+      "current customer review",
+      "providers/deployment/hosted truth"
+    ]
+  }
+}

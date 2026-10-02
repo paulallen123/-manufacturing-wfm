@@ -1,0 +1,208 @@
+{
+  "scope": "BOUNDED_DESIGN_SOURCE_COMPARISON_AND_EXACT_LOCAL_SOURCE_TESTS_ONLY",
+  "capabilityIds": [
+    "product-036",
+    "product-037",
+    "product-056",
+    "product-057"
+  ],
+  "shippingPaths": 0,
+  "implementationCreated": false,
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "runtimeWired": false,
+  "githubMutations": 0,
+  "providerCalls": 0,
+  "product033SealUnchanged": true,
+  "utf8RawRoundtrip": true,
+  "normalizations": 0,
+  "files": [
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/DESIGN.md",
+      "bytes": 6280,
+      "sha256": "20e1dffb50848f5dcaccf1e324ebef4db9ef7f4b7bb60f00f15f7784fefa36b8",
+      "blob": "2564767924b5102ef0258527584ee15d20e6916c"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/capabilities.json",
+      "bytes": 14911,
+      "sha256": "c03d1bb855686607c277b4ad6fa648c2f69221952828a9d92e445c2ea6846ca4",
+      "blob": "ce3bbef2b20e7ad521fdb86adb46f6fa35eb25e4"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/coverage.json",
+      "bytes": 5339,
+      "sha256": "fce413b6c219a5b47500cb3d8a04d7b7152bd393cb2932d4492ab37e23bc0fb3",
+      "blob": "5251f5eca973c573e70f77adae01d6b1447f7632"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/evidence/01-exact-historical-green.run.json",
+      "bytes": 763,
+      "sha256": "8575ce9365c49755d6c2fe046b00000129c4a64813f677f5eb120fdbcccd73c3",
+      "blob": "890fc4defbb3c4f772fd63f94bce87ed10dc3cfa"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/evidence/01-exact-historical-green.tap",
+      "bytes": 2014,
+      "sha256": "0ae086348e8a3e01c79f7a0ef5d7eb04b035588ca306cdedcae7f04142edac1f",
+      "blob": "af60a02deebb107e5ba2deb6c0c0428a5a565da9"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/evidence/02-exact-frozen-green.run.json",
+      "bytes": 636,
+      "sha256": "963cc50f49fb6588e40c94317af408eee67640b2174d975544062a5812af6cf4",
+      "blob": "e50696e54b64e8dc07549c631823068dcac12d1e"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/evidence/02-exact-frozen-green.tap",
+      "bytes": 4590,
+      "sha256": "3db27f7728c8af6b917c9988e753dfc24535a46272c604efa83b85c74d9bc818",
+      "blob": "0f73ab13a308b021087455baf73cd4b146ea6239"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/evidence/03-historical-authority-controls.run.json",
+      "bytes": 561,
+      "sha256": "391fac5dedfde6b2acd223101798bad323c5b9909f36055c9d1c61560ec08e18",
+      "blob": "27867c913eaf3d55e718fee40f759fe090cfacac"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/evidence/03-historical-authority-controls.tap",
+      "bytes": 11334,
+      "sha256": "abfdebef1fb25b5a126bd40f9ab1ff6a0f5c534dd7581f3974464a0df62d668f",
+      "blob": "96c681e9d8494cfd3ad3672c9c74f4b865cb4c5e"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/findings.md",
+      "bytes": 2642,
+      "sha256": "5bc4f0b4f3965fce678356e460f4904c90c19cdab05558ea7b4e578c27c247dc",
+      "blob": "a60056e5f9e45463f51f58a8a18cf53ecde7ee20"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/frozen/learning/runtime/adaptive-learning-engine.cjs",
+      "bytes": 29121,
+      "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+      "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/frozen/learning/runtime/adaptive-learning-engine.test.cjs",
+      "bytes": 21771,
+      "sha256": "b8b2e3f2f8418e6b5b9149b112a503b3000ee134719d99054d6f3af83e7b87dd",
+      "blob": "89d2a54ab3cb945ba53f25a235b47d0e02737213"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/frozen/learning/runtime/training-artifact-registry.cjs",
+      "bytes": 2685,
+      "sha256": "ada7240b44c6f426054ec17878e42532f74efca4a3071c0c39c09f77a2d3d46c",
+      "blob": "68e2fcdae5940111d756b3537472ba5471a42053"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/frozen/learning/runtime/training-delivery-service.cjs",
+      "bytes": 9162,
+      "sha256": "1ce756258d9fa85eac69ec56583709209a611483d92726a0ebac3f6bfee3767c",
+      "blob": "2631ccca1cf90c7b3db5b8f1ea20536af654be04"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/frozen/learning/runtime/training-twin.cjs",
+      "bytes": 4716,
+      "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4",
+      "blob": "29b41957cc73ecbbba137ce573c96ca2f18b9238"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/frozen/learning/runtime/training-twin.test.cjs",
+      "bytes": 1742,
+      "sha256": "cfbcb674b3e43f4b12b92afc82348bd76d1fead478fc58973270ffadc4721e17",
+      "blob": "1d85a35b09a521159abd66949e1bcfe905dfc8b7"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/frozen/learning/runtime/training-video-contract.cjs",
+      "bytes": 7059,
+      "sha256": "b35061885cc6936a58eadb40033c744135f80143c1f0e927e45c491eedc27645",
+      "blob": "d3b97c4980e6be3ce6c014027a62f6e40bcdc77e"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/frozen/learning/runtime/training-workflow-manifest.cjs",
+      "bytes": 24222,
+      "sha256": "c083fed8e10f79e60282c25988cf8988b4cdfe1de6b9d8679ea550b2adc97da0",
+      "blob": "15ad64c398c2f359a46bf3f14c4b3d9bc83893dd"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/historical/learning/runtime/training-coach-orchestrator.cjs",
+      "bytes": 2596,
+      "sha256": "84cad9f33d04ecfb5c20b569a4262ffef60fadfe99c7c6d6d75bf15bde306c12",
+      "blob": "5d8a156e0a8e98230c11cfde764d738137dff123"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/historical/learning/runtime/training-coach-orchestrator.test.cjs",
+      "bytes": 1017,
+      "sha256": "ac1824c8b49e0a9d1004c39fdf002f16eab34dcc8eab4ecb9e92b5b246eea042",
+      "blob": "96f7ff87f47024d5774c9d85b8f42e2dc46f5019"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/historical/learning/runtime/training-learner-memory.cjs",
+      "bytes": 3294,
+      "sha256": "ff77bd068d8c2700659be31b3eab9b425cae7f58952be346801400f60feed967",
+      "blob": "74410e09cad0a268aaf95bbea1d2b8887d727b11"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/historical/learning/runtime/training-learner-memory.test.cjs",
+      "bytes": 1736,
+      "sha256": "89a73919e8d30bf1440318cb68228340698eeaf96c299cc64524d8407d64176e",
+      "blob": "f25932640faa2bd7d21c5bd7d6b8c5c884fb6ace"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/historical/learning/runtime/training-media-plan.cjs",
+      "bytes": 2532,
+      "sha256": "856e3a09ad77cfabd4d45d89330f7ff9e68bf0cb2a3521165abb37e5b6015207",
+      "blob": "85b66d6fcc2b78998a1e920da1c245ee0e48ef0e"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/historical/learning/runtime/training-media-plan.test.cjs",
+      "bytes": 820,
+      "sha256": "09929e08783a18fc9604fbe2f1c93e4b813f30c6d1adf84362a718f416626278",
+      "blob": "4932fbd42379d57f64e71e5441dec7d1659b629f"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/historical/learning/runtime/training-voice-contract.cjs",
+      "bytes": 6558,
+      "sha256": "8e198017b7d33bbf4b3099fe6a2247561df1571f2faeaeb5744a0353f177afe8",
+      "blob": "cac8d28c05228dbe96b99664b33c012eb2c5f53c"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/historical/learning/runtime/training-voice-contract.test.cjs",
+      "bytes": 1838,
+      "sha256": "16035732101bf0d39324ff624edc1cc2a31abddc211277fee8ee537b2ab3d057",
+      "blob": "db32b76c3f970b7e7db380e3f3c08cd1116f9bc6"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/historical/learning/runtime/training-workflow-manifest.cjs",
+      "bytes": 13931,
+      "sha256": "b99a567246b1e07b80a7bf2109be69ec4812ea9985e439078e3acdb08b3674a7",
+      "blob": "a34f63f3ef6461f9c537cea6e2bbeba736373bbd"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/prepare-and-run.cjs",
+      "bytes": 3799,
+      "sha256": "d29299c723ed6aed8bf64b204d96c1bce02561df08705faece68ab0369f76542",
+      "blob": "f5cbda9fd9664aed1dd80915325131ae00da01ce"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/reporting-boundaries.test.cjs",
+      "bytes": 3135,
+      "sha256": "0ba2d0e36ea47b8f97953f87338a6e2eae6e8fc09aee46a20364fd14e77d5682",
+      "blob": "1c72326a4068e92c2f6a346d41e7a82674c06ac5"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/seal.cjs",
+      "bytes": 8271,
+      "sha256": "66723ac570121d5196d7f1e6a12b0b5b88b3a4207b14b53aada303d857cccb1a",
+      "blob": "bd3fb1eef635313dc7a2e2f9a8e76e31ab53f2d2"
+    },
+    {
+      "path": "work/inventory_edges/lane08-learning-reporting/source-comparison-manifest.json",
+      "bytes": 13316,
+      "sha256": "c0f5c84282f87209b42571254395b0365a3ef59f7ee2a3568649ddf75324aa94",
+      "blob": "b57b6aeaee7f96dd77678c5d29c354fe5090e5e7"
+    }
+  ]
+}

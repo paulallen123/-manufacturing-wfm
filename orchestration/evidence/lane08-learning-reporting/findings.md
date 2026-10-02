@@ -1,0 +1,13 @@
+# Bounded learning/reporting findings
+
+Product056/057 already own progress/mastery and tenant summaries in frozen f32. Preserve that owner, role reconciliation, validated practice, independent-performance requirement and refresh semantics. No second learner store, score calculator or certification authority is justified. Source methods planForUser/summaryForTenant/profileForUser may reconcile/recompute/write; a report cannot assume they are pure reads. Their empty-denominator conventions are not observed workforce readiness proof.
+
+The useful missing product036 slice is a descriptive error/assistance/retrieval view over a current authorized owner snapshot. Exact PR232 learner-memory is unsuitable as-is: teach-back is counted independent, score alone is labelled demonstrated, duplicate/cross-tenant/future evidence is accepted, malformed numbers/getters are unsafe. Original tests pass3/3 but all seven focused proposed safeguards fail. Existing public canonical profile/summary APIs do not expose an authenticated pure raw-evidence snapshot; caller/snapshot admission is required before an implementation can proceed.
+
+Historical coach tests pass3/3, but two focused controls show supplied true and string-false real-task availability can enable masteryCanBeAwarded. Keep coaching under existing delivery recommendation authority; do not port its mastery flag or create another path now.
+
+Product037 remains a separate voice/media dependency. Original focused tests pass4/4, but changed pace with the same voice profile ID produces the same narration job ID. Full normalized configuration binding remains a gap. Existing canonical artifact/video owner keeps release receipts/states; no generated audio/provider/storage/publication/customer proof was exercised.
+
+Official Node22.23.2 with network blocked: original historical selected10/10 and unchanged frozen adaptive/Twin19/19 pass, zero skips; ten proposed controls against historical source fail10/10 and are retained as reuse rejection evidence. These probes are owner archaeology, not independent security review or repaired-feature proof. Seventeen exact source snapshots are bound to immutable PR232/f32 trees; no new branch enumeration was claimed.
+
+DESIGN.md, capabilities.json, source-comparison-manifest.json, coverage.json and raw TAP/run receipts contain exact source references, qualifications and gaps. Zero shipping paths, no implementation/publication/provider/deployment writes. Existing product036/037/056/057 records remain FOUND for this archaeology; null proof/convergence refs, runtime unwired. All product033 review-sealed artifacts remain byte-identical.

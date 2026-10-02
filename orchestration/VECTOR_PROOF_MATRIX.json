@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T12:00:19.738Z",
+  "updatedAt": "2026-10-02T13:01:11.386Z",
   "claim": "NOT_CUSTOMER_PROVEN",
   "exactCurrentTuple": {
     "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -604,11 +604,13 @@
       "skip": 0,
       "evidence": "orchestration/evidence/ci19-browser/job26-build.log"
     },
-    "currentReviewSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+    "currentReviewSha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
     "core36": "HALTED_GREEN_NO_HEAVY_VALIDATION",
     "runtime37": "HALTED_GREEN_NO_HEAVY_VALIDATION",
     "core50": "SUCCESS_STATUS_UNCHANGED_TRIGGER_NO_VALIDATION_CLAIM",
-    "runtime51": "ACTUAL_UI_FOUR_ADMISSION_ONLY_STEPS_1S_NO_BUILD_OR_TESTS"
+    "runtime51": "ACTUAL_UI_FOUR_ADMISSION_ONLY_STEPS_1S_NO_BUILD_OR_TESTS",
+    "latestObservedActualRuntimeExecutionSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+    "latestObservedActualRuntimeResult": "Admission-only halt4steps1second,noBuildTests; new6c8status not yetobserved"
   },
   "invalidatedEvidence": [
     {
@@ -1076,6 +1078,29 @@
       "publishedAt": "2026-10-02T11:44:15.736Z",
       "runtimeCallerIntegrated": false,
       "claimBoundary": "Isolated future source only; no Golden gate closure"
+    },
+    {
+      "schemaVersion": 1,
+      "at": "2026-10-02T12:29:26.224Z",
+      "branch": "feature/vector-lane08-skills-demand-20261002",
+      "commit": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "tree": "7d95bd0156e20706f4eb5b94fe2c8df1f4e11870",
+      "allBlobsVerified": 1173,
+      "frozenBlobsUnchanged": 1094,
+      "addedPaths": 79,
+      "shippingPaths": 4,
+      "shippingBytes": 25178,
+      "recursiveTreeUntruncated": true,
+      "readbackVerified": true,
+      "capabilityId": "product-033",
+      "capabilityState": "IN_PROGRESS",
+      "component": "TESTED_AND_INDEPENDENTLY_REVIEWED_LOCAL_SOURCE_ONLY",
+      "runtimeWired": false,
+      "customerProof": false,
+      "convergenceSha": null,
+      "provenBaseSha": null,
+      "runtimeCallerIntegrated": false
     }
   ],
   "freshHostedObservation": {
@@ -1171,7 +1196,7 @@
   },
   "coverageReview": "orchestration/evidence/proof-machinery-review.md",
   "currentAdmissionAudit": {
-    "status": "OPEN",
+    "status": "EXACT_SOURCE_ADMITTED_LOCAL_CLOSURE_ONLY",
     "issues": [
       "ADMISSION-01",
       "ADMISSION-02"
@@ -1179,6 +1204,79 @@
     "tests": 8,
     "pass": 3,
     "fail": 5,
-    "customerProof": false
+    "customerProof": false,
+    "successor": {
+      "status": "INDEPENDENTLY_REVIEWED_SOURCE_ADMITTED_NOT_HOSTED_PROVEN",
+      "baseSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+      "shipping": [
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+          "mode": "100644",
+          "type": "blob",
+          "preimageBlob": "198978255a62a1297e6104f66f67373864534e3e",
+          "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+          "sha256": "028e47daa39345e11a26c2e06191fdd62fcae9d8c0b691d0061c6f8178a8f963",
+          "bytes": 104615
+        },
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+          "mode": "100644",
+          "type": "blob",
+          "preimageBlob": "a94904b821126cc6155afd091d6acc4c8b1673e9",
+          "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+          "sha256": "3fcdebb94968867d8054da90b53174119afa4a58e7ef968cb4e26d954b32523a",
+          "bytes": 91460
+        }
+      ],
+      "unchangedDependencies": 239,
+      "local": {
+        "focused": 13,
+        "affected": 126,
+        "pass": 126,
+        "fail": 0,
+        "skip": 0,
+        "receipt": "orchestration/evidence/current-admission-repair/revision2-final-affected.receipt.json"
+      },
+      "priorIndependent": {
+        "cases": 15,
+        "pass": 13,
+        "fail": 2,
+        "open": "ADMISSION-01A first-scope unbound receipts; ADMISSION-01B trusted activation scope roundtrip",
+        "closedOnlyOnPriorBytes": "ADMISSION-02 reproduced4kinds"
+      },
+      "claim": "Source local repair only;27Golden distinct; no customer/provider/LinuxDocker/hosted proof"
+    },
+    "admission": {
+      "schemaVersion": 1,
+      "at": "2026-10-02T12:59:49.727Z",
+      "branch": "review/staffology-customer-proof-20261001",
+      "commit": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+      "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+      "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+      "allBlobsVerified": 1108,
+      "modifiedPaths": 2,
+      "unchangedBlobsVerified": 1106,
+      "shipping": [
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+          "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+          "mode": "100644"
+        },
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+          "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+          "mode": "100644"
+        }
+      ],
+      "ownerAffected126": true,
+      "independentHeldOut16": true,
+      "scope": "Mandatory source-only admission",
+      "frozenBranchModified": false,
+      "staffologyBytesChanged": false,
+      "triggerChanged": false,
+      "customerProof": false,
+      "runtimeAdmitted": false
+    },
+    "independent16": true
   }
 }

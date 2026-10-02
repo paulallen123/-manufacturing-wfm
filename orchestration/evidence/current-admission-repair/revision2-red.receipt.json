@@ -1,0 +1,19 @@
+{
+  "startedAt": "2026-10-02T12:50:35.866Z",
+  "endedAt": "2026-10-02T12:50:45.110Z",
+  "node": "v22.23.2",
+  "platform": "win32",
+  "cwd": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\current-admission-repair\\revision2-red-source",
+  "args": [
+    "--experimental-sqlite",
+    "--test",
+    "--test-concurrency=1",
+    "--test-name-pattern=current admission:",
+    "implementation/runtime/one-day-enterprise-engine.test.cjs"
+  ],
+  "exitCode": 1,
+  "signal": null,
+  "error": null,
+  "sha256": "105002e6d518480eaf7ad60142e774fbeead1b497fcc157d20b42654f97067bb",
+  "claim": "Local actual handler/SQLite; no customer/provider/hosted or whole Linux/Docker proof"
+}

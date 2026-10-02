@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T12:00:19.738Z",
+  "updatedAt": "2026-10-02T13:01:11.386Z",
   "programmeStatus": "RUNNING",
   "completionClaim": false,
   "phase": "Protect current proof candidate; repair blockers; inventory and isolated future ports",
@@ -33,31 +33,23 @@
   },
   "reviewCandidate": {
     "branch": "review/staffology-customer-proof-20261001",
-    "commit": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-    "tree": "66a12870dc92726712e7edb33f326f4cbb933a6a",
-    "parent": "d387d5300f2de0906d8ea459e1bac610128236d9",
+    "commit": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+    "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+    "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
     "verified": true,
     "shipping": [
       {
-        "path": "scripts/current-candidate-role-browser-proof-server.mjs",
-        "mode": "100644",
-        "blob": "3337ec236e64df9552f881fd5be40132f9794646",
-        "preimageBlob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9"
+        "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+        "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+        "mode": "100644"
       },
       {
-        "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
-        "mode": "100644",
-        "blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
-        "preimageBlob": null
-      },
-      {
-        "path": "scripts/run-forge-ci.mjs",
-        "mode": "100644",
-        "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
-        "preimageBlob": "0a0c55a7545ca173163654adb641ba76b1d41f49"
+        "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+        "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+        "mode": "100644"
       }
     ],
-    "parentUnchanged": 1105,
+    "parentUnchanged": 1106,
     "fullTreeBlobs": 1108,
     "priorProof03Preserved": true,
     "allStaffologyPreserved": true,
@@ -65,24 +57,77 @@
     "sourceAdmitted": true,
     "wholeRuntimeAdmission": false,
     "affected": {
-      "pass": 113,
-      "total": 113,
+      "pass": 126,
+      "total": 126,
       "skip": 0,
-      "scope": "Local Windows"
+      "scope": "Local Windows actual9-suites"
     },
     "independent": {
-      "pass": 33,
-      "total": 33,
-      "regression": 4,
-      "scope": "Independent loopback/CI-control checks"
+      "pass": 16,
+      "total": 16,
+      "skip": 0,
+      "scope": "Retained actual handler/SQLite held-outs"
     },
-    "reviewReportSha256": "5e1dc690f42596f73a281475dbe7140e34a2337b779abb7ed7415e0fc28eb663",
+    "reviewReportSha256": "8a7c50ed62142e2ad20d1221b5f34dd9d811a064583b8871b48e4897ed189568",
     "provenBaseSha": null,
     "convergenceBaseSha": null,
-    "publishedAt": "2026-10-02T11:41:19.678Z",
-    "sha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+    "publishedAt": "2026-10-02T12:59:49.727Z",
+    "sha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
     "admitted": false,
-    "claim": "Only mandatory proof03+proof-runner source repairs admitted; Staffology/container/hosted/customer admission held"
+    "claim": "Only mandatory2 currentconfiguration/strictstoredreceipt source repaired and admitted; Staffology/LinuxDocker/backend/hosted/customer holds remain",
+    "previousAdmission": {
+      "branch": "review/staffology-customer-proof-20261001",
+      "commit": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+      "tree": "66a12870dc92726712e7edb33f326f4cbb933a6a",
+      "parent": "d387d5300f2de0906d8ea459e1bac610128236d9",
+      "verified": true,
+      "shipping": [
+        {
+          "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+          "mode": "100644",
+          "blob": "3337ec236e64df9552f881fd5be40132f9794646",
+          "preimageBlob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9"
+        },
+        {
+          "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+          "mode": "100644",
+          "blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+          "preimageBlob": null
+        },
+        {
+          "path": "scripts/run-forge-ci.mjs",
+          "mode": "100644",
+          "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+          "preimageBlob": "0a0c55a7545ca173163654adb641ba76b1d41f49"
+        }
+      ],
+      "parentUnchanged": 1105,
+      "fullTreeBlobs": 1108,
+      "priorProof03Preserved": true,
+      "allStaffologyPreserved": true,
+      "triggerChanged": false,
+      "sourceAdmitted": true,
+      "wholeRuntimeAdmission": false,
+      "affected": {
+        "pass": 113,
+        "total": 113,
+        "skip": 0,
+        "scope": "Local Windows"
+      },
+      "independent": {
+        "pass": 33,
+        "total": 33,
+        "regression": 4,
+        "scope": "Independent loopback/CI-control checks"
+      },
+      "reviewReportSha256": "5e1dc690f42596f73a281475dbe7140e34a2337b779abb7ed7415e0fc28eb663",
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "publishedAt": "2026-10-02T11:41:19.678Z",
+      "sha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+      "admitted": false,
+      "claim": "Only mandatory proof03+proof-runner source repairs admitted; Staffology/container/hosted/customer admission held"
+    }
   },
   "readiness": {
     "completed": 5,
@@ -195,7 +240,7 @@
       "owner": "inventory_edges sole bounded controlled-environment safety port",
       "status": "ACTIVE",
       "lock": "orchestration/lanes/07/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Exact reviewed cleanroom source+coordination follow-up published; runtime admission pending"
+      "activeTask": "Materials declared-scenario projection43/43 sealed, independent review queued; jurisdiction archaeology23pass and5holds recorded"
     },
     {
       "id": "08",
@@ -203,7 +248,7 @@
       "owner": "inventory_product; design pauses for countryrepair",
       "status": "SOURCE_COMPARISON",
       "lock": "orchestration/lanes/08/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Exact reviewed Value projection published; supplied evidence unauthenticated and financial aggregate null"
+      "activeTask": "Skills-demand isolated source published0e80f0c1; non-Staffology integration caller archaeology pending sameowner capacity"
     },
     {
       "id": "09",
@@ -211,10 +256,10 @@
       "owner": "trust_review independent reviewer; commander owns release admission",
       "status": "ACTIVE_INDEPENDENT_REVIEW",
       "lock": "orchestration/lanes/09/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Current admission2P2 recorded; root mandatory repair active; independent review only"
+      "activeTask": "Independent exact current mandatory successor review; source custody and materials next; no implementation"
     }
   ],
-  "nextAction": "Verify whether the already-staged TR-09B/TR-12 follow-up has been accepted by the SAME Staffology task; do not resend while acceptance is unresolved.",
+  "nextAction": "Verify the independently reviewed DERIVED_PATCH_TREE d689 content proposal and retained recovery results, then compose only justified mandatory repairs onto the freshly verified current review6c8a9718 while preserving six proof blobs.",
   "promotionRule": "Only exact current customer proof establishes PROVEN_BASE_SHA and then convergence/vector-next. Historic branches supply capability, not ancestry.",
   "sourceOwnerLatest": {
     "nativeCommit": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
@@ -226,7 +271,7 @@
     "changedFrom935": 20,
     "verifiedAllTrackedBlobBytes": true,
     "baseSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
-    "patchSha256": "a26d115848867a9b773068dbb09aa8579c2df8faa43d470462568c451874cf82",
+    "patchSha256": "7898d7131f0d6805e28c66e4c22abde2aa916058af7e661b8c00f4edf9a90a82",
     "status": "EXACT_TREE_REVIEWED; TR-09B/TR-12 P2 OPEN; new bounded follow-up PREPARED_NOT_SUBMITTED",
     "taskURL": "https://chatgpt.com/codex/cloud/tasks/task_e_6abe6bda82608327ae169f2d17c39f94",
     "priorFollowupAcceptance": "CONFIRMED_COMPLETED; bf9 owner output recovered",
@@ -429,27 +474,60 @@
       "evidence": "orchestration/evidence/native-bf9-review.md"
     },
     "publicationAdmitted": false,
-    "currentTransportParent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+    "currentTransportParent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
     "preserveSixProofBlobs": [
       {
+        "path": "implementation/runtime/readiness-evidence-contract.cjs",
+        "blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "mode": "100644"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+        "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+        "mode": "100644"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+        "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+        "mode": "100644"
+      },
+      {
         "path": "scripts/current-candidate-role-browser-proof-server.mjs",
-        "mode": "100644",
         "blob": "3337ec236e64df9552f881fd5be40132f9794646",
-        "preimageBlob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9"
+        "mode": "100644"
       },
       {
         "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
-        "mode": "100644",
         "blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
-        "preimageBlob": null
+        "mode": "100644"
       },
       {
         "path": "scripts/run-forge-ci.mjs",
-        "mode": "100644",
         "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
-        "preimageBlob": "0a0c55a7545ca173163654adb641ba76b1d41f49"
+        "mode": "100644"
       }
-    ]
+    ],
+    "followupState": "ACCEPTED_AND_COMPLETED_VISIBLE",
+    "latestDeclaredNativeSha": "8690a0bf9b025b6574b410c27cb9a01409fa10c7",
+    "latestDeclaredNativeTree": "087687aefaa19e657dcbb40766c0eca277dcf1b0",
+    "latestDeclaredNativeParent": "81f5ccbeef8fe8c0c039c3c052a3170b2350c2b3",
+    "latestSourceAdmission": "HELD_SOURCE_BINDING_MISMATCH",
+    "patchMeasuredBytes": 621117,
+    "reconstructedTree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c",
+    "rawCommitVerified": true,
+    "latestAllSourceVerified": false,
+    "latestTestsIndependentlyExecuted": false,
+    "noResend": true,
+    "derivedContentProposal": {
+      "tree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c",
+      "classification": "DERIVED_PATCH_TREE",
+      "status": "INDEPENDENT_CONTENT_REVIEW_ACTIVE",
+      "baseContentSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+      "nativeCommitAssertion": null,
+      "fullBlobCount": 1107,
+      "noWholeTreeTransport": true,
+      "latest8690CustodyStillOpen": true
+    }
   },
   "futureSourceBranches": [
     {
@@ -705,6 +783,29 @@
       "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
       "runtimeCallerIntegrated": false
+    },
+    {
+      "schemaVersion": 1,
+      "at": "2026-10-02T12:29:26.224Z",
+      "branch": "feature/vector-lane08-skills-demand-20261002",
+      "commit": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "tree": "7d95bd0156e20706f4eb5b94fe2c8df1f4e11870",
+      "allBlobsVerified": 1173,
+      "frozenBlobsUnchanged": 1094,
+      "addedPaths": 79,
+      "shippingPaths": 4,
+      "shippingBytes": 25178,
+      "recursiveTreeUntruncated": true,
+      "readbackVerified": true,
+      "capabilityId": "product-033",
+      "capabilityState": "IN_PROGRESS",
+      "component": "TESTED_AND_INDEPENDENTLY_REVIEWED_LOCAL_SOURCE_ONLY",
+      "runtimeWired": false,
+      "customerProof": false,
+      "convergenceSha": null,
+      "provenBaseSha": null,
+      "runtimeCallerIntegrated": false
     }
   ],
   "freshHostedObservation": {
@@ -882,13 +983,15 @@
     "noDuplicateStaffologyWorker": true,
     "noAlternativeBrowserOrRuntime": true,
     "observedAt": "2026-10-02T11:30:18Z",
-    "status": "PARTIAL_DOM_ACCESS_RESTORED; composer staged; actual acceptance unconfirmed",
+    "status": "ACCEPTANCE_CONFIRMED; refreshed task DOM now unavailable; latest2blob custody unresolved",
     "stagedCharacters": 5894,
     "lastState": "Marker present only inside composer; click timed out, keyboard activation returned without visible acceptance",
-    "noResend": true
+    "noResend": true,
+    "taskTab343": "Owned by another browser session; not claimed",
+    "ourTaskTab344": "Metadata available; DOM/focus deadlines; no hidden API/runtime fallback"
   },
   "currentAdmissionAudit": {
-    "status": "TWO_MATERIAL_P2_REPAIR_ACTIVE",
+    "status": "INDEPENDENTLY_CLOSED_ON_EXACT_SOURCE_ADMITTED; NOT_HOSTED_PROVEN",
     "sourceSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
     "issues": [
       "ADMISSION-01",
@@ -903,6 +1006,85 @@
     "scope": "Actual handlers and SQLite synthetic declarations only",
     "customerProof": false,
     "evidence": "orchestration/evidence/current-admission-review.md",
-    "rootImplementationOwner": true
+    "rootImplementationOwner": true,
+    "proposal": {
+      "status": "INDEPENDENTLY_REVIEWED_SOURCE_ADMITTED_NOT_HOSTED_PROVEN",
+      "baseSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+      "shipping": [
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+          "mode": "100644",
+          "type": "blob",
+          "preimageBlob": "198978255a62a1297e6104f66f67373864534e3e",
+          "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+          "sha256": "028e47daa39345e11a26c2e06191fdd62fcae9d8c0b691d0061c6f8178a8f963",
+          "bytes": 104615
+        },
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+          "mode": "100644",
+          "type": "blob",
+          "preimageBlob": "a94904b821126cc6155afd091d6acc4c8b1673e9",
+          "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+          "sha256": "3fcdebb94968867d8054da90b53174119afa4a58e7ef968cb4e26d954b32523a",
+          "bytes": 91460
+        }
+      ],
+      "unchangedDependencies": 239,
+      "local": {
+        "focused": 13,
+        "affected": 126,
+        "pass": 126,
+        "fail": 0,
+        "skip": 0,
+        "receipt": "orchestration/evidence/current-admission-repair/revision2-final-affected.receipt.json"
+      },
+      "priorIndependent": {
+        "cases": 15,
+        "pass": 13,
+        "fail": 2,
+        "open": "ADMISSION-01A first-scope unbound receipts; ADMISSION-01B trusted activation scope roundtrip",
+        "closedOnlyOnPriorBytes": "ADMISSION-02 reproduced4kinds"
+      },
+      "claim": "Source local repair only;27Golden distinct; no customer/provider/LinuxDocker/hosted proof"
+    },
+    "admission": {
+      "schemaVersion": 1,
+      "at": "2026-10-02T12:59:49.727Z",
+      "branch": "review/staffology-customer-proof-20261001",
+      "commit": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+      "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+      "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+      "allBlobsVerified": 1108,
+      "modifiedPaths": 2,
+      "unchangedBlobsVerified": 1106,
+      "shipping": [
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+          "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+          "mode": "100644"
+        },
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+          "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+          "mode": "100644"
+        }
+      ],
+      "ownerAffected126": true,
+      "independentHeldOut16": true,
+      "scope": "Mandatory source-only admission",
+      "frozenBranchModified": false,
+      "staffologyBytesChanged": false,
+      "triggerChanged": false,
+      "customerProof": false,
+      "runtimeAdmitted": false
+    },
+    "independentClosure": {
+      "pass": 16,
+      "total": 16,
+      "skip": 0,
+      "report": "orchestration/evidence/current-admission-revision2-review.md"
+    },
+    "historicalFailuresRetained": true
   }
 }

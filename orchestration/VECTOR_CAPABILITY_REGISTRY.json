@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "paulallen123/-manufacturing-wfm",
-  "updatedAt": "2026-10-02T12:00:19.738Z",
+  "updatedAt": "2026-10-02T13:01:11.386Z",
   "baselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
   "provenBaseSha": null,
   "convergenceSha": null,
@@ -37,9 +37,9 @@
       "BLOCKED_EXTERNAL": 2
     },
     "byState": {
-      "FOUND": 132,
+      "FOUND": 129,
       "DESIGNED": 0,
-      "IN_PROGRESS": 34,
+      "IN_PROGRESS": 37,
       "BUILT": 0,
       "TESTED": 0,
       "CONVERGED": 0,
@@ -299,7 +299,81 @@
         ],
         "rationale": "Source and tests absent from frozen tree; bounded handoff only.",
         "sourceInventory": "orchestration/evidence/product-sources.json",
-        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory"
+        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory",
+        "lane07Materials": {
+          "id": "product-003",
+          "capability": "Manufacturing Event Graph and late-delivery disruption recovery",
+          "lane": "Core twin / manufacturing",
+          "source_branch": "frontier/manufacturing-event-cost-v1",
+          "head_sha": "a472a1601eebf57ea273076ca0754911901c515c",
+          "source_pr": 75,
+          "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/75",
+          "classification": "EVOLVE",
+          "state": "FOUND",
+          "canonical_owner_candidate": "Current Trust evidence/provenance + existing Twin evidence facets; no parallel mutable graph source authority",
+          "rationale": "Historic transient event graph is absent from frozen source but permits public alias mutation and has no asOf effective-evidence selection in delivery consumer. Retain model concepts; reject whole-owner replacement.",
+          "evidence_paths": [
+            "src/frontier/manufacturing-event-graph.mjs"
+          ],
+          "evidence_blobs": [
+            {
+              "path": "src/frontier/manufacturing-event-graph.mjs",
+              "source_blob_sha": "6cebf2a2c9dcb93cc323c1f2ef7c380e0f40a69c",
+              "frozen_blob_sha": null,
+              "mode": "100644",
+              "bytes": 5073,
+              "byte_identical_to_frozen": false
+            }
+          ],
+          "dependencies": [
+            "Canonical tenant/source provenance",
+            "Existing role and execution-authority boundary",
+            "Exact candidate source/build identity"
+          ],
+          "tests_available": [
+            "test/frontier/delivery-disruption.test.mjs"
+          ],
+          "tests_executed_by_inventory": [
+            {
+              "path": "test/frontier/delivery-disruption.test.mjs",
+              "tests": 11,
+              "pass": 11,
+              "fail": 0,
+              "skipped": 0,
+              "log": "evidence/01-source-tests.log",
+              "scope": "exact historical source, 2000 synthetic benchmark cases"
+            },
+            {
+              "path": "operations/runtime/decision-episode.test.cjs",
+              "tests": 5,
+              "pass": 5,
+              "fail": 0,
+              "skipped": 0,
+              "log": "evidence/01-source-tests.log",
+              "scope": "exact frozen owner contract"
+            },
+            {
+              "path": "materials-boundaries.held-out.test.mjs",
+              "tests": 5,
+              "pass": 1,
+              "fail": 4,
+              "skipped": 0,
+              "log": "evidence/02-historical-boundaries.log",
+              "scope": "new owner-authored historical proposal-source probes; independent review not yet performed"
+            }
+          ],
+          "historical_test_claims_status": "Actually executed local source evidence, not authenticated material/provider/customer proof",
+          "remaining_work": [
+            "Parent decide whether explicit declared-scenario physical extraction is appropriate before any code",
+            "Establish canonical authentic material producer and units/temporal contract",
+            "Reuse physical arithmetic only; reject public aliasing/future/cancelled evidence",
+            "Preserve DecisionEpisode ranking and separate measured outcome ownership"
+          ],
+          "rollback_plan": "Shipping bytes changed0; no product revert required. Later approved extraction must remain isolated and independently reviewed.",
+          "claim_boundary": "FOUND historical capability only. No live or hosted material feed, financial value, causal promotion, customer readiness or execution admission established.",
+          "previous_classification": "PORT",
+          "port_decision": "DESIGN_FOR_PARENT_APPROVAL; NOT_IMPLEMENTED"
+        }
       },
       "remainingWork": [
         "Select canonical owner and map source dependencies",
@@ -331,7 +405,18 @@
       ],
       "currentConvergenceSha": null,
       "liveSha": null,
-      "testsExecuted": [],
+      "testsExecuted": [
+        {
+          "scope": "Unwired declared constant-rate materials projection; authenticated producer/runtime/customer absent",
+          "source": 43,
+          "independent": 44,
+          "independentAffected": 43,
+          "reviewedBlobs": [
+            "e6c2cd64ddc27b8113061e61b7ef4e3dbf0c796a",
+            "a24b7f4580969aaef0f802891e10bc3c0c16e1f4"
+          ]
+        }
+      ],
       "knownFailures": [],
       "relevantResearch": [],
       "uiLocation": null,
@@ -355,7 +440,7 @@
         }
       ],
       "classification": "PORT",
-      "currentState": "FOUND",
+      "currentState": "IN_PROGRESS",
       "currentImplementationLocation": [],
       "targetImplementationLocation": [
         "src/frontier/delivery-disruption.mjs"
@@ -381,7 +466,134 @@
         ],
         "rationale": "Source and tests absent; direct-actuation prohibition retained.",
         "sourceInventory": "orchestration/evidence/product-sources.json",
-        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory"
+        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory",
+        "lane07Materials": {
+          "id": "product-004",
+          "capability": "Conservative stockout and disruption cost ranking",
+          "lane": "Verified value",
+          "source_branch": "frontier/manufacturing-event-cost-v1",
+          "head_sha": "a472a1601eebf57ea273076ca0754911901c515c",
+          "source_pr": 75,
+          "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/75",
+          "classification": "EVOLVE",
+          "state": "IN_PROGRESS",
+          "canonical_owner_candidate": "Current operations/DecisionEpisode option input projections; canonical ranking, Autopilot and DecisionOutcomeProof unchanged",
+          "rationale": "Historic physical cover/shortage arithmetic is a real descriptive gap; cost/recovery ranking must remain declared simulation and compose canonical ranking, not create new financial or execution authority.",
+          "evidence_paths": [
+            "src/frontier/delivery-disruption.mjs",
+            "test/frontier/delivery-disruption.test.mjs"
+          ],
+          "evidence_blobs": [
+            {
+              "path": "src/frontier/delivery-disruption.mjs",
+              "source_blob_sha": "7d03f0a69da25cd93013955aad92bbc7202f6a68",
+              "frozen_blob_sha": null,
+              "mode": "100644",
+              "bytes": 12868,
+              "byte_identical_to_frozen": false
+            },
+            {
+              "path": "test/frontier/delivery-disruption.test.mjs",
+              "source_blob_sha": "c5ac6cf52be7dff6d4294ed2a35662789fddff3d",
+              "frozen_blob_sha": null,
+              "mode": "100644",
+              "bytes": 10698,
+              "byte_identical_to_frozen": false
+            }
+          ],
+          "dependencies": [
+            "Canonical tenant/source provenance",
+            "Existing role and execution-authority boundary",
+            "Exact candidate source/build identity",
+            "Independent operational measurement and attribution"
+          ],
+          "tests_available": [
+            "test/frontier/delivery-disruption.test.mjs"
+          ],
+          "tests_executed_by_inventory": [
+            {
+              "path": "test/frontier/delivery-disruption.test.mjs",
+              "tests": 11,
+              "pass": 11,
+              "fail": 0,
+              "skipped": 0,
+              "log": "evidence/01-source-tests.log",
+              "scope": "exact historical source, 2000 synthetic benchmark cases"
+            },
+            {
+              "path": "operations/runtime/decision-episode.test.cjs",
+              "tests": 5,
+              "pass": 5,
+              "fail": 0,
+              "skipped": 0,
+              "log": "evidence/01-source-tests.log",
+              "scope": "exact frozen owner contract"
+            },
+            {
+              "path": "materials-boundaries.held-out.test.mjs",
+              "tests": 5,
+              "pass": 1,
+              "fail": 4,
+              "skipped": 0,
+              "log": "evidence/02-historical-boundaries.log",
+              "scope": "new owner-authored historical proposal-source probes; independent review not yet performed"
+            },
+            {
+              "path": "operations/runtime/material-shortage-projection.test.cjs",
+              "tests": 38,
+              "pass": 38,
+              "fail": 0,
+              "skipped": 0,
+              "log": "evidence/08-final-source-contract-green.log",
+              "scope": "ISOLATED_LOCAL_DECLARED_SCENARIO_SOURCE_CONTRACT_ONLY"
+            }
+          ],
+          "historical_test_claims_status": "Actually executed local source evidence, not authenticated material/provider/customer proof",
+          "remaining_work": [
+            "Independent review against exact final bytes",
+            "Root publish bounded reviewed source capsule with unchanged Lane01 dependency",
+            "Authentic producer and units/order-temporal semantics before any runtime wiring/customer proof"
+          ],
+          "rollback_plan": "Shipping bytes changed0; no product revert required. Later approved extraction must remain isolated and independently reviewed.",
+          "claim_boundary": "FOUND historical capability only. No live or hosted material feed, financial value, causal promotion, customer readiness or execution admission established.",
+          "previous_classification": "PORT",
+          "port_decision": "PARENT_APPROVED_BOUNDED_SOURCE_PROJECTION; INDEPENDENT_REVIEW_PENDING",
+          "componentProofState": "TESTED",
+          "componentScope": "ISOLATED_LOCAL_DECLARED_SCENARIO_SOURCE_CONTRACT_ONLY",
+          "proposalShippingFiles": [
+            {
+              "repositoryTargetPath": "operations/runtime/material-shortage-projection.cjs",
+              "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.cjs",
+              "mode": "100644",
+              "sourceBlob": null,
+              "proposedBlob": "e6c2cd64ddc27b8113061e61b7ef4e3dbf0c796a",
+              "sha256": "ed4c1e9921124c41e5226f992b586d5b8a1e75c99213a11cfd63864b6fcacf89",
+              "bytes": 5877,
+              "change": "ADD"
+            },
+            {
+              "repositoryTargetPath": "operations/runtime/material-shortage-projection.test.cjs",
+              "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs",
+              "mode": "100644",
+              "sourceBlob": null,
+              "proposedBlob": "a24b7f4580969aaef0f802891e10bc3c0c16e1f4",
+              "sha256": "e8ce78f1dbc8dbb86a3fdb4cde727a0799a78c1b5334483b0bbf2f2854fb6c08",
+              "bytes": 9233,
+              "change": "ADD"
+            }
+          ]
+        },
+        "futureDeclaredMaterialProjection": {
+          "localSourceTests": 43,
+          "independentReviewPending": false,
+          "runtimeWired": false,
+          "producerAuthenticity": false,
+          "independentHeldOut": 44,
+          "independentAffected": 43,
+          "sourceOnly": true,
+          "publicationPending": true,
+          "reviewReport": "orchestration/evidence/materials-review.md"
+        }
       },
       "remainingWork": [
         "Select canonical owner and map source dependencies",
@@ -880,7 +1092,7 @@
         "scripts/validate-autonomous-repair-canary-orchestrator.mjs",
         "scripts/validate-autonomous-repair-factory.mjs"
       ],
-      "currentImplementationSha": "d387d5300f2de0906d8ea459e1bac610128236d9",
+      "currentImplementationSha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
       "provenance": {
         "evidence": [
           {
@@ -923,6 +1135,37 @@
           ],
           "observedAt": "2026-10-02T10:44:43.831Z",
           "role": "MANDATORY_PROOF_REPAIR_ON_SOLE_REVIEW_LINEAGE; Staffology holds remain"
+        },
+        "currentAdmissionRepair": {
+          "schemaVersion": 1,
+          "at": "2026-10-02T12:59:49.727Z",
+          "branch": "review/staffology-customer-proof-20261001",
+          "commit": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+          "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+          "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+          "allBlobsVerified": 1108,
+          "modifiedPaths": 2,
+          "unchangedBlobsVerified": 1106,
+          "shipping": [
+            {
+              "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+              "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+              "mode": "100644"
+            },
+            {
+              "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+              "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+              "mode": "100644"
+            }
+          ],
+          "ownerAffected126": true,
+          "independentHeldOut16": true,
+          "scope": "Mandatory source-only admission",
+          "frozenBranchModified": false,
+          "staffologyBytesChanged": false,
+          "triggerChanged": false,
+          "customerProof": false,
+          "runtimeAdmitted": false
         }
       },
       "remainingWork": [
@@ -3568,12 +3811,20 @@
       ],
       "currentConvergenceSha": null,
       "liveSha": null,
-      "testsExecuted": [],
+      "testsExecuted": [
+        {
+          "publishedSha": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+          "owner": 79,
+          "independentHeldOut": 40,
+          "independentAffected": 68,
+          "scope": "Distinct commands with overlaps; retained fixture failure qualified; local source only"
+        }
+      ],
       "knownFailures": [],
       "relevantResearch": [],
       "uiLocation": null,
       "integrationDependencies": [],
-      "claimBoundary": "Source inventory only. Classification does not certify runtime assembly, tests, provider acceptance, customer proof or live capability.",
+      "claimBoundary": "Component TESTED and independently reviewed, isolated future source; broad capability IN_PROGRESS; source/mastery/provenance caller assertions unauthenticated; no runtime/HR/scheduling/customer authority",
       "id": "product-033",
       "name": "Skills Demand Intelligence",
       "domain": "VALUE / TRAINING / LEARNING / REPORTING",
@@ -3583,6 +3834,10 @@
         {
           "branch": "feature/vector-research-alignment-20260923",
           "sha": "07bc5218c183049a8d7ab884b15cca6ef38375ec"
+        },
+        {
+          "branch": "feature/vector-lane08-skills-demand-20261002",
+          "sha": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8"
         }
       ],
       "sourcePRs": [
@@ -3592,8 +3847,10 @@
         }
       ],
       "classification": "PORT",
-      "currentState": "FOUND",
-      "currentImplementationLocation": [],
+      "currentState": "IN_PROGRESS",
+      "currentImplementationLocation": [
+        "learning/runtime/skills-demand-intelligence.cjs"
+      ],
       "targetImplementationLocation": [
         "learning/runtime/skills-demand-intelligence.cjs"
       ],
@@ -3605,7 +3862,7 @@
       "testsAvailable": [
         "learning/runtime/skills-demand-intelligence.test.cjs"
       ],
-      "currentImplementationSha": null,
+      "currentImplementationSha": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
       "provenance": {
         "evidence": [
           {
@@ -3617,13 +3874,33 @@
         ],
         "rationale": "Source/test absent; inspect requiredCount/mastery validity semantics.",
         "sourceInventory": "orchestration/evidence/product-sources.json",
-        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory"
+        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory",
+        "reviewedFuturePort": {
+          "schemaVersion": 1,
+          "at": "2026-10-02T12:29:26.224Z",
+          "branch": "feature/vector-lane08-skills-demand-20261002",
+          "commit": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+          "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "tree": "7d95bd0156e20706f4eb5b94fe2c8df1f4e11870",
+          "allBlobsVerified": 1173,
+          "frozenBlobsUnchanged": 1094,
+          "addedPaths": 79,
+          "shippingPaths": 4,
+          "shippingBytes": 25178,
+          "recursiveTreeUntruncated": true,
+          "readbackVerified": true,
+          "capabilityId": "product-033",
+          "capabilityState": "IN_PROGRESS",
+          "component": "TESTED_AND_INDEPENDENTLY_REVIEWED_LOCAL_SOURCE_ONLY",
+          "runtimeWired": false,
+          "customerProof": false,
+          "convergenceSha": null,
+          "provenBaseSha": null
+        }
       },
       "remainingWork": [
-        "Select canonical owner and map source dependencies",
-        "Port only unique capability in an isolated development candidate",
-        "Run source/security/adversarial/holdout and exact build/runtime proof",
-        "Verify role UI, restart/durability and rollback/compensation before customer claims"
+        "Establish authorized current role-filtered intake and resource bounds; supplied source assertions are not authenticated",
+        "Port only after actual PROVEN_BASE_SHA exists; integrate current canonical TrainingTwin owner; run applicable runtime/customer gates"
       ],
       "rollbackPath": "No product or remote mutation occurred. Future port must be isolated and revertible by its exact reviewed commit; retain old source/evidence and contain unconfirmed provider outcomes."
     },
@@ -3781,7 +4058,75 @@
         ],
         "rationale": "Frozen registry has later different blob plus richer policy graph/source/preflight modules.",
         "sourceInventory": "orchestration/evidence/product-sources.json",
-        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory"
+        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory",
+        "lane02Jurisdiction": {
+          "id": "product-035",
+          "capability": "Research Country Policy registry ancestor",
+          "lane": "Country and sites",
+          "source_branch": "feature/vector-research-alignment-20260923",
+          "head_sha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+          "source_pr": 230,
+          "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/230",
+          "classification": "SUPERSEDED",
+          "state": "FOUND",
+          "canonical_owner_candidate": "Existing country/jurisdiction/source/preflight/candidate owners; preserve distinct known/effective/advisory/authority contracts",
+          "rationale": "Old formatted registry has matching exports and12 bounded outputs; canonical richer jurisdiction/source owners already present. No missing stronger port established.",
+          "evidence_paths": [
+            "policy/runtime/country-policy-pack-registry.cjs",
+            "policy/runtime/country-policy-pack-registry.test.cjs"
+          ],
+          "evidence_blobs": [
+            {
+              "path": "policy/runtime/country-policy-pack-registry.cjs",
+              "mode": "100644",
+              "source_blob_sha": "e79d76a37c58650feebef2e2538c74165e3fa707",
+              "bytes": 5611,
+              "source_ref": "07bc5218c183049a8d7ab884b15cca6ef38375ec"
+            },
+            {
+              "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+              "mode": "100644",
+              "source_blob_sha": "f5e8e78d8eeee861ea1eb02d6ec2d49ecefe29d1",
+              "bytes": 1595,
+              "source_ref": "07bc5218c183049a8d7ab884b15cca6ef38375ec"
+            }
+          ],
+          "dependencies": [
+            "Canonical tenant/source provenance",
+            "Existing role and execution-authority boundary",
+            "Exact candidate source/build identity"
+          ],
+          "tests_available": [
+            "policy/runtime/country-policy-pack-registry.test.cjs"
+          ],
+          "tests_executed_by_inventory": [
+            {
+              "log": "evidence/01-unchanged-source-tests.log",
+              "tests": 23,
+              "pass": 23,
+              "fail": 0,
+              "skipped": 0,
+              "scope": "Existing exact frozen19 and historical4 source tests, not runtime/legal evidence"
+            },
+            {
+              "log": "evidence/02-unchanged-source-held-outs.log",
+              "tests": 8,
+              "pass": 3,
+              "fail": 5,
+              "skipped": 0,
+              "scope": "Owner-authored unchanged-source boundary probes, independent review pending"
+            }
+          ],
+          "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+          "remaining_work": [
+            "Independent validation of five local source boundary holds",
+            "Parent authorize any existing-owner repair before source edits",
+            "Establish authenticated source producers, UTC/local calendar semantics and caller role/wiring before runtime admission"
+          ],
+          "rollback_plan": "No product/shipping changes0; retained source copies/evidence only",
+          "claim_boundary": "FOUND/ALREADY_CANONICAL source classification does not establish legal facts, authentic sources, runtime wiring, customer readiness, known-time history in effective-only APIs or execution authority.",
+          "port_decision": "NO_NEW_PORT; EXISTING_OWNER_REPAIR_DESIGN_ONLY_NOT_AUTHORISED"
+        }
       },
       "remainingWork": [
         "Retain provenance; select named canonical successor; do not merge ancestor wholesale"
@@ -6064,7 +6409,7 @@
         }
       ],
       "classification": "ALREADY_CANONICAL",
-      "currentState": "FOUND",
+      "currentState": "IN_PROGRESS",
       "currentImplementationLocation": [
         "policy/runtime/jurisdiction-policy-graph.cjs"
       ],
@@ -6091,7 +6436,146 @@
         ],
         "rationale": "Direct source inspection confirms verified source refs, temporal scope, no grant of execution authority.",
         "sourceInventory": "orchestration/evidence/product-sources.json",
-        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory"
+        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory",
+        "lane02Jurisdiction": {
+          "id": "product-058",
+          "capability": "Canonical jurisdiction graph, source registry and site policy preflight",
+          "lane": "Country and sites",
+          "source_branch": "release/vector-customer-ready-candidate-20260925",
+          "head_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "source_pr": null,
+          "source_pr_url": null,
+          "classification": "ALREADY_CANONICAL",
+          "state": "FOUND",
+          "canonical_owner_candidate": "Existing country/jurisdiction/source/preflight/candidate owners; preserve distinct known/effective/advisory/authority contracts",
+          "rationale": "Exact frozen ten source/test blobs are present and identical in PR271/274 carriers. Local boundary defects/omissions retained; source presence is not runtime/customer admission.",
+          "evidence_paths": [
+            "policy/runtime/authoritative-policy-source-registry.cjs",
+            "policy/runtime/authoritative-policy-source-registry.test.cjs",
+            "policy/runtime/country-policy-pack-registry.cjs",
+            "policy/runtime/country-policy-pack-registry.test.cjs",
+            "policy/runtime/global-site-policy-preflight.cjs",
+            "policy/runtime/global-site-policy-preflight.test.cjs",
+            "policy/runtime/jurisdiction-policy-graph.cjs",
+            "policy/runtime/jurisdiction-policy-graph.test.cjs",
+            "policy/runtime/regulatory-change-candidate.cjs",
+            "policy/runtime/regulatory-change-candidate.test.cjs"
+          ],
+          "evidence_blobs": [
+            {
+              "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+              "mode": "100644",
+              "source_blob_sha": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+              "bytes": 4591,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            },
+            {
+              "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+              "mode": "100644",
+              "source_blob_sha": "00e10eca8168d3493cd1e468d965e655496fb89d",
+              "bytes": 1559,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            },
+            {
+              "path": "policy/runtime/country-policy-pack-registry.cjs",
+              "mode": "100644",
+              "source_blob_sha": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+              "bytes": 5407,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            },
+            {
+              "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+              "mode": "100644",
+              "source_blob_sha": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+              "bytes": 1555,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            },
+            {
+              "path": "policy/runtime/global-site-policy-preflight.cjs",
+              "mode": "100644",
+              "source_blob_sha": "4f18cffc150935e760c914a216c97c0700e23e44",
+              "bytes": 4295,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            },
+            {
+              "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+              "mode": "100644",
+              "source_blob_sha": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+              "bytes": 2439,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            },
+            {
+              "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+              "mode": "100644",
+              "source_blob_sha": "7f58c8ac9289311a8837e899af200ec785563987",
+              "bytes": 10225,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            },
+            {
+              "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+              "mode": "100644",
+              "source_blob_sha": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+              "bytes": 4010,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            },
+            {
+              "path": "policy/runtime/regulatory-change-candidate.cjs",
+              "mode": "100644",
+              "source_blob_sha": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+              "bytes": 3281,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            },
+            {
+              "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+              "mode": "100644",
+              "source_blob_sha": "d43879fe7db0028e521d443a38af1cbd0b306354",
+              "bytes": 1881,
+              "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+            }
+          ],
+          "dependencies": [
+            "Canonical tenant/source provenance",
+            "Existing role and execution-authority boundary",
+            "Exact candidate source/build identity"
+          ],
+          "tests_available": [
+            "policy/runtime/jurisdiction-policy-graph.test.cjs"
+          ],
+          "tests_executed_by_inventory": [
+            {
+              "log": "evidence/01-unchanged-source-tests.log",
+              "tests": 23,
+              "pass": 23,
+              "fail": 0,
+              "skipped": 0,
+              "scope": "Existing exact frozen19 and historical4 source tests, not runtime/legal evidence"
+            },
+            {
+              "log": "evidence/02-unchanged-source-held-outs.log",
+              "tests": 8,
+              "pass": 3,
+              "fail": 5,
+              "skipped": 0,
+              "scope": "Owner-authored unchanged-source boundary probes, independent review pending"
+            }
+          ],
+          "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+          "remaining_work": [
+            "Independent validation of five local source boundary holds",
+            "Parent authorize any existing-owner repair before source edits",
+            "Establish authenticated source producers, UTC/local calendar semantics and caller role/wiring before runtime admission"
+          ],
+          "rollback_plan": "No product/shipping changes0; retained source copies/evidence only",
+          "claim_boundary": "FOUND/ALREADY_CANONICAL source classification does not establish legal facts, authentic sources, runtime wiring, customer readiness, known-time history in effective-only APIs or execution authority.",
+          "port_decision": "NO_NEW_PORT; EXISTING_OWNER_REPAIR_DESIGN_ONLY_NOT_AUTHORISED"
+        },
+        "boundedFutureBoundaryRepair": {
+          "status": "APPROVED_SAME_OWNER",
+          "frozenRuntimeChanged": false,
+          "knownLocalHolds": 5,
+          "scope": "Existing source/pack/graph/preflight owners only; nolegalfacts/newauthority",
+          "independentReviewPending": true
+        }
       },
       "remainingWork": [
         "Retain canonical implementation; verify runtime assembly, full affected regression and hosted customer-like replay before readiness claim"

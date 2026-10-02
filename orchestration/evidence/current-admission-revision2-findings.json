@@ -1,0 +1,15 @@
+{
+  "baseSha":"b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+  "baseTree":"66a12870dc92726712e7edb33f326f4cbb933a6a",
+  "coreBlob":"02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+  "testBlob":"fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+  "verifiedFiles":241,"unchangedDependencies":239,
+  "verdict":"BOUNDED_LOCAL_REPRODUCED_FINDINGS_CLOSED",
+  "findings":[
+    {"id":"ADMISSION-01","severity":"P2","status":"CLOSED_ON_EXACT_LOCAL_SUCCESSOR","cases":["Original manager scope stale authority","Pre-scope unbound strict receipt retroactive authority","Trusted contract activation scope A->B->A resurrection"],"auditPreserved":true},
+    {"id":"ADMISSION-02","severity":"P2","status":"CLOSED_FOR_FOUR_REPRODUCED_KINDS_ON_EXACT_LOCAL_SUCCESSOR","kinds":["source-systems","security-controls","scenario-validation","live-data-import"],"auditPreserved":true}
+  ],
+  "actualReviewerExecution":{"tests":16,"pass":16,"fail":0,"skip":0,"durationMs":14046.8464,"node":"22.23.2","networkBlocked":true,"timeoutMs":60000,"originalEightSubset":true,"priorFifteenSubset":true},
+  "ownerEvidenceNotReviewerExecution":{"revision2RegressionRed":{"tests":13,"pass":11,"fail":2},"finalAffected":{"tests":126,"pass":126,"fail":0,"skip":0}},
+  "customerProof":false,"hostedProof":false,"wholeRuntimeAdmission":false,"remoteSourceAdmissionByReviewer":false,"productSourceEditedByReviewer":false
+}

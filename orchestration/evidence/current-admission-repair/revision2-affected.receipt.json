@@ -1,0 +1,26 @@
+{
+  "startedAt": "2026-10-02T12:51:05.538Z",
+  "endedAt": "2026-10-02T12:51:29.919Z",
+  "node": "v22.23.2",
+  "platform": "win32",
+  "cwd": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\current-admission-repair\\source",
+  "args": [
+    "--experimental-sqlite",
+    "--test",
+    "--test-concurrency=1",
+    "implementation/runtime/one-day-enterprise-engine.test.cjs",
+    "implementation/runtime/readiness-evidence-contract.test.cjs",
+    "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+    "implementation/runtime/implementation-active-controller.integration.test.cjs",
+    "implementation/runtime/implementation-work-controller.test.cjs",
+    "implementation/runtime/implementation-work-fencing.test.cjs",
+    "scripts/vector-repair-regressions.test.mjs",
+    "tests/vector-payroll-release-proof.test.mjs",
+    "scripts/current-candidate-role-browser-proof-server.test.mjs"
+  ],
+  "exitCode": 1,
+  "signal": null,
+  "error": null,
+  "sha256": "8474d2c5c785c9fcbfe7d96b6bfc3b5e5866d32a0db67509e5dcb6cf5421d143",
+  "claim": "Local actual handler/SQLite; no customer/provider/hosted or whole Linux/Docker proof"
+}

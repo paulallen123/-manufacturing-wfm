@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T12:00:19.738Z",
+  "updatedAt": "2026-10-02T13:01:11.386Z",
   "criticalPath": "Staffology repair admission -> exact runtime proof -> all mandatory hosted/customer gates -> immutable proven base -> convergence waves -> live verification",
   "items": [
     {
@@ -275,9 +275,9 @@
       "id": "SOURCE-OWNER-FOLLOWUP-CONFIRMATION",
       "type": "INTERMITTENT_BROWSER_TASK_ACCESS",
       "priority": "P2",
-      "status": "NEW_REQUEST_STAGED; ACTUAL_ACCEPTANCE_UNCONFIRMED",
+      "status": "ACCEPTANCE_CONFIRMED; LATEST_SOURCE_CUSTODY_HELD",
       "title": "Earlier follow-up completed bf9; new TR09B/TR12 follow-up prepared but task composer remains unavailable",
-      "nextAction": "Verify whether the already-staged TR-09B/TR-12 follow-up has been accepted by the SAME Staffology task; do not resend while acceptance is unresolved.",
+      "nextAction": "Obtain exact latest2blob bytes/parent patch from SAME existing task and prove declared native full tree before retained recovery tests.",
       "evidence": "orchestration/evidence/staffology-access-20261002T1130.json"
     },
     {
@@ -352,21 +352,81 @@
       "id": "ADMISSION-01",
       "priority": "P2",
       "type": "MANDATORY_CURRENT_PROOF_REPAIR",
-      "status": "OPEN_REPAIR_ACTIVE",
+      "status": "INDEPENDENTLY_CLOSED_ON_SOURCE_ADMITTED_NOT_HOSTED_PROVEN",
       "sourceSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
       "title": "Changed customer scope leaves readiness and durable environment on old configuration",
-      "nextAction": "Root preserves old receipts/audits while reopening current configuration/evidence/work through existing canonical mechanisms.",
-      "evidence": "orchestration/evidence/current-admission-review.md"
+      "nextAction": "Retain source closure; run applicable exact assembled/LinuxDocker/hosted/customer gates when source custody is established.",
+      "evidence": "orchestration/evidence/current-admission-revision2-review.md",
+      "variants": [
+        "FIRST_SCOPE_UNBOUND_RECEIPTS",
+        "TRUSTED_SCOPE_ROUNDTRIP"
+      ],
+      "proposal": {
+        "status": "LOCAL126_PASS_INDEPENDENT_SUCCESSOR_REVIEW_PENDING",
+        "baseSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+        "shipping": [
+          {
+            "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+            "mode": "100644",
+            "type": "blob",
+            "preimageBlob": "198978255a62a1297e6104f66f67373864534e3e",
+            "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+            "sha256": "028e47daa39345e11a26c2e06191fdd62fcae9d8c0b691d0061c6f8178a8f963",
+            "bytes": 104615
+          },
+          {
+            "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+            "mode": "100644",
+            "type": "blob",
+            "preimageBlob": "a94904b821126cc6155afd091d6acc4c8b1673e9",
+            "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+            "sha256": "3fcdebb94968867d8054da90b53174119afa4a58e7ef968cb4e26d954b32523a",
+            "bytes": 91460
+          }
+        ],
+        "unchangedDependencies": 239,
+        "local": {
+          "focused": 13,
+          "affected": 126,
+          "pass": 126,
+          "fail": 0,
+          "skip": 0,
+          "receipt": "orchestration/evidence/current-admission-repair/revision2-final-affected.receipt.json"
+        },
+        "priorIndependent": {
+          "cases": 15,
+          "pass": 13,
+          "fail": 2,
+          "open": "ADMISSION-01A first-scope unbound receipts; ADMISSION-01B trusted activation scope roundtrip",
+          "closedOnlyOnPriorBytes": "ADMISSION-02 reproduced4kinds"
+        },
+        "claim": "Source local repair only;27Golden distinct; no customer/provider/LinuxDocker/hosted proof"
+      },
+      "closedSourceSha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+      "localAffected": 126,
+      "independentHeldOut": 16
     },
     {
       "id": "ADMISSION-02",
       "priority": "P2",
       "type": "MANDATORY_CURRENT_PROOF_REPAIR",
-      "status": "OPEN_REPAIR_ACTIVE",
+      "status": "INDEPENDENTLY_CLOSED_ON_SOURCE_ADMITTED_NOT_HOSTED_PROVEN",
       "sourceSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
       "title": "Invalid legacy compatibility receipts retain strict readiness after SQLite reopen",
-      "nextAction": "Root applies the existing per-kind strict validators to persisted PASS without deleting original receipt/audit.",
-      "evidence": "orchestration/evidence/current-admission-review.md"
+      "nextAction": "Retain source closure; run applicable exact assembled/LinuxDocker/hosted/customer gates when source custody is established.",
+      "evidence": "orchestration/evidence/current-admission-revision2-review.md",
+      "closedSourceSha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+      "localAffected": 126,
+      "independentHeldOut": 16
+    },
+    {
+      "id": "STAFFOLOGY-8690-SOURCE-CUSTODY",
+      "priority": "P2",
+      "status": "HELD",
+      "type": "EXACT_SOURCE_BINDING",
+      "nativeSha": "8690a0bf9b025b6574b410c27cb9a01409fa10c7",
+      "title": "Exported patch and latest two declared blobs do not reconstruct latest native tree",
+      "nextAction": "Use same owner export to obtain exact latest bytes; retain discrepancy and do not publish/test under false8690label"
     }
   ]
 }

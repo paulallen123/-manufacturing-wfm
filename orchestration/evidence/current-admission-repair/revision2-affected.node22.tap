@@ -1,0 +1,805 @@
+TAP version 13
+# (node:18220) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: unregistered workers cannot claim with the shared internal token or a claimed owner label
+ok 1 - unregistered workers cannot claim with the shared internal token or a claimed owner label
+  ---
+  duration_ms: 131.5946
+  type: 'test'
+  ...
+# Subtest: work result authentication is checked before looking up a run
+ok 2 - work result authentication is checked before looking up a run
+  ---
+  duration_ms: 110.7157
+  type: 'test'
+  ...
+# Subtest: registered worker routes enforce exact scope, private claim tokens and result ownership
+ok 3 - registered worker routes enforce exact scope, private claim tokens and result ownership
+  ---
+  duration_ms: 244.6822
+  type: 'test'
+  ...
+# Subtest: trusted activation captures scope and autonomously provisions one tenant environment
+ok 4 - trusted activation captures scope and autonomously provisions one tenant environment
+  ---
+  duration_ms: 197.1303
+  type: 'test'
+  ...
+# Subtest: automated tenant environment effect remains unproven until independent evidence is recorded
+ok 5 - automated tenant environment effect remains unproven until independent evidence is recorded
+  ---
+  duration_ms: 219.583
+  type: 'test'
+  ...
+# Subtest: missing policy authority creates blocking questions and only complete authorised answers satisfy policy gates
+ok 6 - missing policy authority creates blocking questions and only complete authorised answers satisfy policy gates
+  ---
+  duration_ms: 242.1987
+  type: 'test'
+  ...
+# (node:13652) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: readiness becomes an executable dependency plan instead of a passive checklist
+ok 7 - readiness becomes an executable dependency plan instead of a passive checklist
+  ---
+  duration_ms: 34.8478
+  type: 'test'
+  ...
+# Subtest: independent safe work becomes runnable immediately when dependencies are satisfied
+ok 8 - independent safe work becomes runnable immediately when dependencies are satisfied
+  ---
+  duration_ms: 24.4749
+  type: 'test'
+  ...
+# Subtest: claimed work is effect-once and stale results fail closed
+ok 9 - claimed work is effect-once and stale results fail closed
+  ---
+  duration_ms: 48.4376
+  type: 'test'
+  ...
+# Subtest: retry and blocked states survive restart without idling unrelated work
+ok 10 - retry and blocked states survive restart without idling unrelated work
+  ---
+  duration_ms: 49.8833
+  type: 'test'
+  ...
+# (node:11300) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: local configuration effect cannot run after its claim expires
+ok 11 - local configuration effect cannot run after its claim expires
+  ---
+  duration_ms: 48.6519
+  type: 'test'
+  ...
+# Subtest: local configuration and effect receipt commit or roll back together
+ok 12 - local configuration and effect receipt commit or roll back together
+  ---
+  duration_ms: 54.5065
+  type: 'test'
+  ...
+# Subtest: claim requires an explicit worker owner
+ok 13 - claim requires an explicit worker owner
+  ---
+  duration_ms: 29.592
+  type: 'test'
+  ...
+# Subtest: complete rejects an unclaimed job
+ok 14 - complete rejects an unclaimed job
+  ---
+  duration_ms: 26.9516
+  type: 'test'
+  ...
+# Subtest: complete rejects the wrong worker owner
+ok 15 - complete rejects the wrong worker owner
+  ---
+  duration_ms: 34.2421
+  type: 'test'
+  ...
+# Subtest: complete rejects a missing claim token
+ok 16 - complete rejects a missing claim token
+  ---
+  duration_ms: 29.9534
+  type: 'test'
+  ...
+# Subtest: complete rejects at the exact lease-expiry boundary
+ok 17 - complete rejects at the exact lease-expiry boundary
+  ---
+  duration_ms: 33.9886
+  type: 'test'
+  ...
+# Subtest: complete rejects the old attempt after another worker reclaims
+ok 18 - complete rejects the old attempt after another worker reclaims
+  ---
+  duration_ms: 43.7803
+  type: 'test'
+  ...
+# Subtest: block rejects an unclaimed job
+ok 19 - block rejects an unclaimed job
+  ---
+  duration_ms: 27.626
+  type: 'test'
+  ...
+# Subtest: block rejects the wrong worker owner
+ok 20 - block rejects the wrong worker owner
+  ---
+  duration_ms: 35.3341
+  type: 'test'
+  ...
+# Subtest: block rejects a missing claim token
+ok 21 - block rejects a missing claim token
+  ---
+  duration_ms: 33.1801
+  type: 'test'
+  ...
+# Subtest: block rejects at the exact lease-expiry boundary
+ok 22 - block rejects at the exact lease-expiry boundary
+  ---
+  duration_ms: 29.8819
+  type: 'test'
+  ...
+# Subtest: block rejects the old attempt after another worker reclaims
+ok 23 - block rejects the old attempt after another worker reclaims
+  ---
+  duration_ms: 42.2294
+  type: 'test'
+  ...
+# Subtest: fail rejects an unclaimed job
+ok 24 - fail rejects an unclaimed job
+  ---
+  duration_ms: 25.5333
+  type: 'test'
+  ...
+# Subtest: fail rejects the wrong worker owner
+ok 25 - fail rejects the wrong worker owner
+  ---
+  duration_ms: 33.92
+  type: 'test'
+  ...
+# Subtest: fail rejects a missing claim token
+ok 26 - fail rejects a missing claim token
+  ---
+  duration_ms: 36.2215
+  type: 'test'
+  ...
+# Subtest: fail rejects at the exact lease-expiry boundary
+ok 27 - fail rejects at the exact lease-expiry boundary
+  ---
+  duration_ms: 29.9967
+  type: 'test'
+  ...
+# Subtest: fail rejects the old attempt after another worker reclaims
+ok 28 - fail rejects the old attempt after another worker reclaims
+  ---
+  duration_ms: 40.5019
+  type: 'test'
+  ...
+# Subtest: one live claim blocks a second database connection
+ok 29 - one live claim blocks a second database connection
+  ---
+  duration_ms: 38.3595
+  type: 'test'
+  ...
+# Subtest: claim token is unique, hashed at rest and absent from status views
+ok 30 - claim token is unique, hashed at rest and absent from status views
+  ---
+  duration_ms: 29.9268
+  type: 'test'
+  ...
+# Subtest: current owner records an effect and duplicate receipt is read-only
+ok 31 - current owner records an effect and duplicate receipt is read-only
+  ---
+  duration_ms: 37.3624
+  type: 'test'
+  ...
+# Subtest: a different completion cannot overwrite an accepted effect
+ok 32 - a different completion cannot overwrite an accepted effect
+  ---
+  duration_ms: 40.0045
+  type: 'test'
+  ...
+# Subtest: a wrong owner cannot replay the accepted receipt
+ok 33 - a wrong owner cannot replay the accepted receipt
+  ---
+  duration_ms: 36.6094
+  type: 'test'
+  ...
+# Subtest: fence increases across retries and intent resets
+ok 34 - fence increases across retries and intent resets
+  ---
+  duration_ms: 54.6681
+  type: 'test'
+  ...
+# Subtest: a valid claim survives controller restart without replacement
+ok 35 - a valid claim survives controller restart without replacement
+  ---
+  duration_ms: 37.2615
+  type: 'test'
+  ...
+# Subtest: a claim from another deployment fails closed after restart
+ok 36 - a claim from another deployment fails closed after restart
+  ---
+  duration_ms: 33.1597
+  type: 'test'
+  ...
+# Subtest: result rejects wrong tenant
+ok 37 - result rejects wrong tenant
+  ---
+  duration_ms: 30.4364
+  type: 'test'
+  ...
+# Subtest: result rejects wrong runId
+ok 38 - result rejects wrong runId
+  ---
+  duration_ms: 33.5601
+  type: 'test'
+  ...
+# Subtest: receipt insertion rolls back when state update fails
+ok 39 - receipt insertion rolls back when state update fails
+  ---
+  duration_ms: 38.1839
+  type: 'test'
+  ...
+# Subtest: lease expiry cannot turn missing policy authority into runnable work
+ok 40 - lease expiry cannot turn missing policy authority into runnable work
+  ---
+  duration_ms: 35.3567
+  type: 'test'
+  ...
+# Subtest: a mismatched fence is rejected even with the correct token
+ok 41 - a mismatched fence is rejected even with the correct token
+  ---
+  duration_ms: 33.3444
+  type: 'test'
+  ...
+# Subtest: expired legacy RUNNING rows without ownership cannot complete
+ok 42 - expired legacy RUNNING rows without ownership cannot complete
+  ---
+  duration_ms: 33.7736
+  type: 'test'
+  ...
+# Subtest: complete rejects an incorrect token without changing state
+ok 43 - complete rejects an incorrect token without changing state
+  ---
+  duration_ms: 29.7083
+  type: 'test'
+  ...
+# Subtest: block rejects an incorrect token without changing state
+ok 44 - block rejects an incorrect token without changing state
+  ---
+  duration_ms: 32.3417
+  type: 'test'
+  ...
+# Subtest: fail rejects an incorrect token without changing state
+ok 45 - fail rejects an incorrect token without changing state
+  ---
+  duration_ms: 30.0376
+  type: 'test'
+  ...
+# Subtest: claim owner is mandatory and is not silently truncated
+ok 46 - claim owner is mandatory and is not silently truncated
+  ---
+  duration_ms: 31.7734
+  type: 'test'
+  ...
+# Subtest: public owner and fence do not authorize completion without the private token
+ok 47 - public owner and fence do not authorize completion without the private token
+  ---
+  duration_ms: 34.1741
+  type: 'test'
+  ...
+# Subtest: a revoked policy invalidates even an unexpired claim
+ok 48 - a revoked policy invalidates even an unexpired claim
+  ---
+  duration_ms: 34.5822
+  type: 'test'
+  ...
+# Subtest: a receipt failure preserves the original RUNNING lease
+ok 49 - a receipt failure preserves the original RUNNING lease
+  ---
+  duration_ms: 37.4139
+  type: 'test'
+  ...
+# (node:11300) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:11300) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:11300) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:11300) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:11300) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:11300) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: six concurrent connections return exactly one winning claim
+ok 50 - six concurrent connections return exactly one winning claim
+  ---
+  duration_ms: 299.6752
+  type: 'test'
+  ...
+# (node:13236) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: hosted readiness reopens persisted evidence from a different candidate deployment or invalid policy authority
+ok 51 - hosted readiness reopens persisted evidence from a different candidate deployment or invalid policy authority
+  ---
+  duration_ms: 331.21
+  type: 'test'
+  ...
+# Subtest: deployment change reopens previously satisfied work without deleting evidence
+ok 52 - deployment change reopens previously satisfied work without deleting evidence
+  ---
+  duration_ms: 307.4046
+  type: 'test'
+  ...
+# Subtest: hosted evidence admission refuses another candidate without recording a PASS
+ok 53 - hosted evidence admission refuses another candidate without recording a PASS
+  ---
+  duration_ms: 281.3226
+  type: 'test'
+  ...
+# Subtest: provider-neutral signed contract webhook starts implementation immediately and sends one invitation
+ok 54 - provider-neutral signed contract webhook starts implementation immediately and sends one invitation
+  ---
+  duration_ms: 169.0364
+  type: 'test'
+  ...
+# Subtest: trusted activation auto-starts a legacy pending invitation without reporting a missing run
+ok 55 - trusted activation auto-starts a legacy pending invitation without reporting a missing run
+  ---
+  duration_ms: 158.1633
+  type: 'test'
+  ...
+# Subtest: employee cannot inspect enterprise implementation control plane
+ok 56 - employee cannot inspect enterprise implementation control plane
+  ---
+  duration_ms: 131.8262
+  type: 'test'
+  ...
+# Subtest: eight-hour target is assessed by parallel critical path, not serial task sum
+ok 57 - eight-hour target is assessed by parallel critical path, not serial task sum
+  ---
+  duration_ms: 328.6692
+  type: 'test'
+  ...
+# Subtest: notification transport failure cannot block trusted zero-touch implementation start
+ok 58 - notification transport failure cannot block trusted zero-touch implementation start
+  ---
+  duration_ms: 183.9625
+  type: 'test'
+  ...
+# Subtest: repeated trusted activation retries a failed invitation without duplicating implementation
+ok 59 - repeated trusted activation retries a failed invitation without duplicating implementation
+  ---
+  duration_ms: 204.623
+  type: 'test'
+  ...
+# Subtest: one trusted contract event automatically recovers a transient invitation failure
+ok 60 - one trusted contract event automatically recovers a transient invitation failure
+  ---
+  duration_ms: 183.3407
+  type: 'test'
+  ...
+# Subtest: automatic retry preserves an ambiguously accepted invitation and delivery identity
+ok 61 - automatic retry preserves an ambiguously accepted invitation and delivery identity
+  ---
+  duration_ms: 226.3815
+  type: 'test'
+  ...
+# Subtest: signed contract webhook replay uses the same bounded notification recovery
+ok 62 - signed contract webhook replay uses the same bounded notification recovery
+  ---
+  duration_ms: 205.7541
+  type: 'test'
+  ...
+# Subtest: failed invitation retries stop at a durable three-attempt budget
+ok 63 - failed invitation retries stop at a durable three-attempt budget
+  ---
+  duration_ms: 231.0936
+  type: 'test'
+  ...
+# Subtest: simultaneous delayed retry and trusted replay cannot duplicate delivery or falsely exhaust recovery
+ok 64 - simultaneous delayed retry and trusted replay cannot duplicate delivery or falsely exhaust recovery
+  ---
+  duration_ms: 205.5849
+  type: 'test'
+  ...
+# Subtest: implementation status explains pending and exhausted invitation recovery without exposing secrets
+ok 65 - implementation status explains pending and exhausted invitation recovery without exposing secrets
+  ---
+  duration_ms: 213.3893
+  type: 'test'
+  ...
+# Subtest: failed invitation is retried automatically after a safe engine restart
+ok 66 - failed invitation is retried automatically after a safe engine restart
+  ---
+  duration_ms: 243.3679
+  type: 'test'
+  ...
+# Subtest: tampered delayed-retry evidence fails closed without sending
+ok 67 - tampered delayed-retry evidence fails closed without sending
+  ---
+  duration_ms: 210.1256
+  type: 'test'
+  ...
+# Subtest: missing public origin does not block trusted implementation start or create a token
+ok 68 - missing public origin does not block trusted implementation start or create a token
+  ---
+  duration_ms: 161.3198
+  type: 'test'
+  ...
+# Subtest: missing message provider configuration fails immediately without wasting retries or storing an invitation
+ok 69 - missing message provider configuration fails immediately without wasting retries or storing an invitation
+  ---
+  duration_ms: 165.5062
+  type: 'test'
+  ...
+# Subtest: provider credential rejection stops after one attempt and requests authorised repair
+ok 70 - provider credential rejection stops after one attempt and requests authorised repair
+  ---
+  duration_ms: 201.6071
+  type: 'test'
+  ...
+# Subtest: authorised provider recovery resumes the same blocked invitation exactly once
+ok 71 - authorised provider recovery resumes the same blocked invitation exactly once
+  ---
+  duration_ms: 203.2084
+  type: 'test'
+  ...
+# Subtest: provider recovery becomes exhausted on the third failed send without a fourth action
+ok 72 - provider recovery becomes exhausted on the third failed send without a fourth action
+  ---
+  duration_ms: 245.5956
+  type: 'test'
+  ...
+# Subtest: implementation entry preflight exposes missing requirements before a contract without exposing secrets
+ok 73 - implementation entry preflight exposes missing requirements before a contract without exposing secrets
+  ---
+  duration_ms: 409.8754
+  type: 'test'
+  ...
+# Subtest: contract activation is idempotent and auto-starts implementation without a customer click
+ok 74 - contract activation is idempotent and auto-starts implementation without a customer click
+  ---
+  duration_ms: 203.0986
+  type: 'test'
+  ...
+# Subtest: invitation is bound to the intended tenant and recipient
+ok 75 - invitation is bound to the intended tenant and recipient
+  ---
+  duration_ms: 193.9661
+  type: 'test'
+  ...
+# Subtest: rigorous testing, cleanup and live import cannot be falsely marked complete
+ok 76 - rigorous testing, cleanup and live import cannot be falsely marked complete
+  ---
+  duration_ms: 263.3041
+  type: 'test'
+  ...
+# Subtest: readiness is fail-closed until every required evidence item passes at confidence floor
+ok 77 - readiness is fail-closed until every required evidence item passes at confidence floor
+  ---
+  duration_ms: 699.0364
+  type: 'test'
+  ...
+# Subtest: high-risk inference exception blocks go-live until customer resolves it
+ok 78 - high-risk inference exception blocks go-live until customer resolves it
+  ---
+  duration_ms: 690.5076
+  type: 'test'
+  ...
+# Subtest: implementation runs and decisions are tenant isolated
+ok 79 - implementation runs and decisions are tenant isolated
+  ---
+  duration_ms: 299.8241
+  type: 'test'
+  ...
+# Subtest: customer configuration scope is required, persisted and tenant scoped
+ok 80 - customer configuration scope is required, persisted and tenant scoped
+  ---
+  duration_ms: 220.4701
+  type: 'test'
+  ...
+# Subtest: trusted evidence cannot bypass missing customer scope
+not ok 81 - trusted evidence cannot bypass missing customer scope
+  ---
+  duration_ms: 595.9915
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\current-admission-repair\\source\\implementation\\runtime\\one-day-enterprise-engine.test.cjs:1362:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\current-admission-repair\source\implementation\runtime\one-day-enterprise-engine.test.cjs:1381:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: implementation audit events are append only
+ok 82 - implementation audit events are append only
+  ---
+  duration_ms: 220.2751
+  type: 'test'
+  ...
+# Subtest: unknown evidence kinds and raw untrusted evidence are rejected
+ok 83 - unknown evidence kinds and raw untrusted evidence are rejected
+  ---
+  duration_ms: 224.0839
+  type: 'test'
+  ...
+# Subtest: legacy implementation_events schema migrates every required audit field in place without losing rows or triggers
+ok 84 - legacy implementation_events schema migrates every required audit field in place without losing rows or triggers
+  ---
+  duration_ms: 146.1142
+  type: 'test'
+  ...
+# Subtest: tenant-environment PASS is validator-bound, fresh, and reopened by a later terminal failure
+ok 85 - tenant-environment PASS is validator-bound, fresh, and reopened by a later terminal failure
+  ---
+  duration_ms: 271.5376
+  type: 'test'
+  ...
+# Subtest: strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+ok 86 - strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+  ---
+  duration_ms: 285.3003
+  type: 'test'
+  ...
+# Subtest: persisted malformed historical-replay receipt loses authority but remains auditable
+ok 87 - persisted malformed historical-replay receipt loses authority but remains auditable
+  ---
+  duration_ms: 246.4792
+  type: 'test'
+  ...
+# Subtest: persisted malformed time-policies receipt loses authority but remains auditable
+ok 88 - persisted malformed time-policies receipt loses authority but remains auditable
+  ---
+  duration_ms: 250.6484
+  type: 'test'
+  ...
+# Subtest: customer policy date rejects impossible days and malformed timestamps without resolving authority
+ok 89 - customer policy date rejects impossible days and malformed timestamps without resolving authority
+  ---
+  duration_ms: 335.7647
+  type: 'test'
+  ...
+# Subtest: current admission: scope update must reopen previously ready evidence and provisioned configuration instead of retaining old21/21
+ok 90 - current admission: scope update must reopen previously ready evidence and provisioned configuration instead of retaining old21/21
+  ---
+  duration_ms: 1191.9036
+  type: 'test'
+  ...
+# Subtest: current admission: strict restart must revalidate exact-current persisted source-systems previously admitted under compatibility mode
+ok 91 - current admission: strict restart must revalidate exact-current persisted source-systems previously admitted under compatibility mode
+  ---
+  duration_ms: 669.0401
+  type: 'test'
+  ...
+# Subtest: current admission: strict restart must revalidate exact-current persisted security-controls previously admitted under compatibility mode
+ok 92 - current admission: strict restart must revalidate exact-current persisted security-controls previously admitted under compatibility mode
+  ---
+  duration_ms: 618.2543
+  type: 'test'
+  ...
+# Subtest: current admission: strict restart must revalidate exact-current persisted scenario-validation previously admitted under compatibility mode
+ok 93 - current admission: strict restart must revalidate exact-current persisted scenario-validation previously admitted under compatibility mode
+  ---
+  duration_ms: 592.1416
+  type: 'test'
+  ...
+# Subtest: current admission: strict restart must revalidate exact-current persisted live-data-import previously admitted under compatibility mode
+ok 94 - current admission: strict restart must revalidate exact-current persisted live-data-import previously admitted under compatibility mode
+  ---
+  duration_ms: 761.4839
+  type: 'test'
+  ...
+# Subtest: current admission: strict immediate admission rejects fixture provider, weak security and fixture live import before persistence
+ok 95 - current admission: strict immediate admission rejects fixture provider, weak security and fixture live import before persistence
+  ---
+  duration_ms: 128.2637
+  type: 'test'
+  ...
+# Subtest: current admission: candidate/deployment/tenant/run explicit mismatches are denied without any PASS persistence
+ok 96 - current admission: candidate/deployment/tenant/run explicit mismatches are denied without any PASS persistence
+  ---
+  duration_ms: 131.8263
+  type: 'test'
+  ...
+# Subtest: current admission: manager cookie and unauthenticated caller cannot publish internal readiness evidence
+ok 97 - current admission: manager cookie and unauthenticated caller cannot publish internal readiness evidence
+  ---
+  duration_ms: 123.6719
+  type: 'test'
+  ...
+# Subtest: current admission: same-count scope changes invalidate server-bound receipts without caller digest and cannot resurrect them by changing back
+ok 98 - current admission: same-count scope changes invalidate server-bound receipts without caller digest and cannot resurrect them by changing back
+  ---
+  duration_ms: 933.6306
+  type: 'test'
+  ...
+# Subtest: current admission: identical scope resubmission preserves ready receipts and existing effect/job identity
+ok 99 - current admission: identical scope resubmission preserves ready receipts and existing effect/job identity
+  ---
+  duration_ms: 698.485
+  type: 'test'
+  ...
+# Subtest: current admission: configuration digest mismatch and caller-issued configuration seal are refused before storing evidence
+ok 100 - current admission: configuration digest mismatch and caller-issued configuration seal are refused before storing evidence
+  ---
+  duration_ms: 184.3216
+  type: 'test'
+  ...
+# Subtest: current admission: receipts accepted before first configuration cannot acquire its authority retroactively
+ok 101 - current admission: receipts accepted before first configuration cannot acquire its authority retroactively
+  ---
+  duration_ms: 593.8549
+  type: 'test'
+  ...
+# Subtest: current admission: trusted contract scope changes share the revision boundary and cannot resurrect prior scope receipts
+ok 102 - current admission: trusted contract scope changes share the revision boundary and cannot resurrect prior scope receipts
+  ---
+  duration_ms: 883.8974
+  type: 'test'
+  ...
+# Subtest: tenant environment refuses weak, fixture or human-assisted evidence
+ok 103 - tenant environment refuses weak, fixture or human-assisted evidence
+  ---
+  duration_ms: 2.664
+  type: 'test'
+  ...
+# Subtest: source systems require zero-human discovery, authorisation and a real provider receipt
+ok 104 - source systems require zero-human discovery, authorisation and a real provider receipt
+  ---
+  duration_ms: 0.2862
+  type: 'test'
+  ...
+# Subtest: historical replay labels its data class and requires independent exact payroll reconciliation
+ok 105 - historical replay labels its data class and requires independent exact payroll reconciliation
+  ---
+  duration_ms: 0.2792
+  type: 'test'
+  ...
+# Subtest: security, scenario and live import evidence are fail-closed without overstating synthetic tests
+ok 106 - security, scenario and live import evidence are fail-closed without overstating synthetic tests
+  ---
+  duration_ms: 0.2889
+  type: 'test'
+  ...
+# Subtest: non-PASS evidence remains recordable for diagnostics
+ok 107 - non-PASS evidence remains recordable for diagnostics
+  ---
+  duration_ms: 0.1676
+  type: 'test'
+  ...
+# (node:25724) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: strict wrapper preserves worker authentication before exposing contract errors
+ok 108 - strict wrapper preserves worker authentication before exposing contract errors
+  ---
+  duration_ms: 118.8297
+  type: 'test'
+  ...
+# Subtest: strict wrapper rejects weak readiness evidence before it reaches the core engine
+ok 109 - strict wrapper rejects weak readiness evidence before it reaches the core engine
+  ---
+  duration_ms: 112.2667
+  type: 'test'
+  ...
+# Subtest: strict wrapper admits structured zero-human cloud environment evidence and delegates to core
+ok 110 - strict wrapper admits structured zero-human cloud environment evidence and delegates to core
+  ---
+  duration_ms: 133.0558
+  type: 'test'
+  ...
+# Subtest: wrapper preserves complete scoped payroll evidence without promoting customer readiness
+ok 111 - wrapper preserves complete scoped payroll evidence without promoting customer readiness
+  ---
+  duration_ms: 691.6345
+  type: 'test'
+  ...
+# Subtest: absent payroll evidence stays unverified through the wrapper
+ok 112 - absent payroll evidence stays unverified through the wrapper
+  ---
+  duration_ms: 356.2803
+  type: 'test'
+  ...
+# Subtest: a persisted payroll batch mismatch remains unverified through the wrapper
+ok 113 - a persisted payroll batch mismatch remains unverified through the wrapper
+  ---
+  duration_ms: 593.6341
+  type: 'test'
+  ...
+# Subtest: duplicate team signatures cannot substitute for distinct scoped team sign offs
+ok 114 - duplicate team signatures cannot substitute for distinct scoped team sign offs
+  ---
+  duration_ms: 391.3802
+  type: 'test'
+  ...
+# Subtest: authoritative zero attendance and absence survive unrelated rendered numbers
+ok 115 - authoritative zero attendance and absence survive unrelated rendered numbers
+  ---
+  duration_ms: 2.2993
+  type: 'test'
+  ...
+# Subtest: an empty workforce is not replaced by a number from another card
+ok 116 - an empty workforce is not replaced by a number from another card
+  ---
+  duration_ms: 1.0111
+  type: 'test'
+  ...
+# Subtest: missing evidence stays unknown
+ok 117 - missing evidence stays unknown
+  ---
+  duration_ms: 0.8963
+  type: 'test'
+  ...
+# Subtest: missing, blank, boolean and malformed costs cannot become a verified zero
+ok 118 - missing, blank, boolean and malformed costs cannot become a verified zero
+  ---
+  duration_ms: 6.1462
+  type: 'test'
+  ...
+# Subtest: verified zero and pence values remain valid
+ok 119 - verified zero and pence values remain valid
+  ---
+  duration_ms: 2.4975
+  type: 'test'
+  ...
+# Subtest: unbound navigation proof cannot claim end-to-end readiness
+ok 120 - unbound navigation proof cannot claim end-to-end readiness
+  ---
+  duration_ms: 0.6316
+  type: 'test'
+  ...
+# Subtest: exact assets and successful role checks still require completed business workflows
+ok 121 - exact assets and successful role checks still require completed business workflows
+  ---
+  duration_ms: 0.2617
+  type: 'test'
+  ...
+# Subtest: opening a workflow route cannot be counted as a completed business action
+ok 122 - opening a workflow route cannot be counted as a completed business action
+  ---
+  duration_ms: 0.1684
+  type: 'test'
+  ...
+# Subtest: saved leave UI journey removes navigation-only gaps but retains audit and backend proof boundaries
+ok 123 - saved leave UI journey removes navigation-only gaps but retains audit and backend proof boundaries
+  ---
+  duration_ms: 1.4175
+  type: 'test'
+  ...
+# Subtest: saved attendance correction is reported separately without manufacturing weekly or payroll readiness
+ok 124 - saved attendance correction is reported separately without manufacturing weekly or payroll readiness
+  ---
+  duration_ms: 0.5676
+  type: 'test'
+  ...
+# Subtest: payroll proof rejects a release when any expected team lacks exact sign-off evidence
+ok 125 - payroll proof rejects a release when any expected team lacks exact sign-off evidence
+  ---
+  duration_ms: 1.5206
+  type: 'test'
+  ...
+# Subtest: payroll proof accepts exact all-team sign-offs and one checksum-bound persisted release
+ok 126 - payroll proof accepts exact all-team sign-offs and one checksum-bound persisted release
+  ---
+  duration_ms: 0.2766
+  type: 'test'
+  ...
+1..126
+# tests 126
+# suites 0
+# pass 125
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 24297.8542

@@ -1,0 +1,37 @@
+﻿[
+    {
+        "path":  "work\\trust_review\\native-8690-custody-discrepancy.json",
+        "bytes":  3818,
+        "sha256":  "c2005ea538ae0129666b8af4de260ef855efa9e31dc19b3831f534ad486c9853"
+    },
+    {
+        "path":  "work\\trust_review\\native-8690.initial-binding.json",
+        "bytes":  646,
+        "sha256":  "8d636ebb2e4120e8106fd5869fdcd5506d9467a5ab54c686f2994f8ad4cb7b0a"
+    },
+    {
+        "path":  "work\\trust_review\\native-8690.initial-patch-manifest.json",
+        "bytes":  19700,
+        "sha256":  "d6a6fd6f4f74b77c66cf82d99e3d0b95d56625afde772d1226038e297e148aae"
+    },
+    {
+        "path":  "work\\trust_review\\native-8690.initial-clipboard.patch",
+        "bytes":  621117,
+        "sha256":  "7898d7131f0d6805e28c66e4c22abde2aa916058af7e661b8c00f4edf9a90a82"
+    },
+    {
+        "path":  "work\\trust_review\\prepare-native-8690.cjs",
+        "bytes":  2066,
+        "sha256":  "819372b865560effc83ff820e85cf31deaa92f2b0b67910c13e8de118099e22f"
+    },
+    {
+        "path":  "work\\trust_review\\diagnose-native-8690.cjs",
+        "bytes":  1518,
+        "sha256":  "322a9fe16bdaafbb2197531933f588676109ece96519090a9540ab1c7d24462c"
+    },
+    {
+        "path":  "work\\trust_review\\prepare-native-8690-review.cjs",
+        "bytes":  698,
+        "sha256":  "03d9ba455b90d5e607241aedbe884741a6afa57bc2bd5aff7fb7e96d0d28f6c7"
+    }
+]

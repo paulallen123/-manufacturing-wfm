@@ -1,0 +1,224 @@
+{
+  "scope": "Lane07 single materials-delay capability archaeology",
+  "lock": {
+    "protectedFrozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "frozenTreeSha": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+    "treeIdentitySource": "Root VECTOR_CONVERGENCE_STATE.json frozen.tree; connector tree response sha echoes requested commit ref",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "shippingChangedBytes": 0,
+    "productEdits": false,
+    "githubWrites": false,
+    "providersExecuted": false,
+    "customerProof": false
+  },
+  "capabilities": [
+    {
+      "id": "product-003",
+      "capability": "Manufacturing Event Graph and late-delivery disruption recovery",
+      "lane": "Core twin / manufacturing",
+      "source_branch": "frontier/manufacturing-event-cost-v1",
+      "head_sha": "a472a1601eebf57ea273076ca0754911901c515c",
+      "source_pr": 75,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/75",
+      "classification": "EVOLVE",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Current Trust evidence/provenance + existing Twin evidence facets; no parallel mutable graph source authority",
+      "rationale": "Historic transient event graph is absent from frozen source but permits public alias mutation and has no asOf effective-evidence selection in delivery consumer. Retain model concepts; reject whole-owner replacement.",
+      "evidence_paths": [
+        "src/frontier/manufacturing-event-graph.mjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "src/frontier/manufacturing-event-graph.mjs",
+          "source_blob_sha": "6cebf2a2c9dcb93cc323c1f2ef7c380e0f40a69c",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 5073,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "test/frontier/delivery-disruption.test.mjs"
+      ],
+      "tests_executed_by_inventory": [
+        {
+          "path": "test/frontier/delivery-disruption.test.mjs",
+          "tests": 11,
+          "pass": 11,
+          "fail": 0,
+          "skipped": 0,
+          "log": "evidence/01-source-tests.log",
+          "scope": "exact historical source, 2000 synthetic benchmark cases"
+        },
+        {
+          "path": "operations/runtime/decision-episode.test.cjs",
+          "tests": 5,
+          "pass": 5,
+          "fail": 0,
+          "skipped": 0,
+          "log": "evidence/01-source-tests.log",
+          "scope": "exact frozen owner contract"
+        },
+        {
+          "path": "materials-boundaries.held-out.test.mjs",
+          "tests": 5,
+          "pass": 1,
+          "fail": 4,
+          "skipped": 0,
+          "log": "evidence/02-historical-boundaries.log",
+          "scope": "new owner-authored historical proposal-source probes; independent review not yet performed"
+        }
+      ],
+      "historical_test_claims_status": "Actually executed local source evidence, not authenticated material/provider/customer proof",
+      "remaining_work": [
+        "Parent decide whether explicit declared-scenario physical extraction is appropriate before any code",
+        "Establish canonical authentic material producer and units/temporal contract",
+        "Reuse physical arithmetic only; reject public aliasing/future/cancelled evidence",
+        "Preserve DecisionEpisode ranking and separate measured outcome ownership"
+      ],
+      "rollback_plan": "Shipping bytes changed0; no product revert required. Later approved extraction must remain isolated and independently reviewed.",
+      "claim_boundary": "FOUND historical capability only. No live or hosted material feed, financial value, causal promotion, customer readiness or execution admission established.",
+      "previous_classification": "PORT",
+      "port_decision": "DESIGN_FOR_PARENT_APPROVAL; NOT_IMPLEMENTED"
+    },
+    {
+      "id": "product-004",
+      "capability": "Conservative stockout and disruption cost ranking",
+      "lane": "Verified value",
+      "source_branch": "frontier/manufacturing-event-cost-v1",
+      "head_sha": "a472a1601eebf57ea273076ca0754911901c515c",
+      "source_pr": 75,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/75",
+      "classification": "EVOLVE",
+      "state": "IN_PROGRESS",
+      "canonical_owner_candidate": "Current operations/DecisionEpisode option input projections; canonical ranking, Autopilot and DecisionOutcomeProof unchanged",
+      "rationale": "Historic physical cover/shortage arithmetic is a real descriptive gap; cost/recovery ranking must remain declared simulation and compose canonical ranking, not create new financial or execution authority.",
+      "evidence_paths": [
+        "src/frontier/delivery-disruption.mjs",
+        "test/frontier/delivery-disruption.test.mjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "src/frontier/delivery-disruption.mjs",
+          "source_blob_sha": "7d03f0a69da25cd93013955aad92bbc7202f6a68",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 12868,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "test/frontier/delivery-disruption.test.mjs",
+          "source_blob_sha": "c5ac6cf52be7dff6d4294ed2a35662789fddff3d",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 10698,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity",
+        "Independent operational measurement and attribution"
+      ],
+      "tests_available": [
+        "test/frontier/delivery-disruption.test.mjs"
+      ],
+      "tests_executed_by_inventory": [
+        {
+          "path": "test/frontier/delivery-disruption.test.mjs",
+          "tests": 11,
+          "pass": 11,
+          "fail": 0,
+          "skipped": 0,
+          "log": "evidence/01-source-tests.log",
+          "scope": "exact historical source, 2000 synthetic benchmark cases"
+        },
+        {
+          "path": "operations/runtime/decision-episode.test.cjs",
+          "tests": 5,
+          "pass": 5,
+          "fail": 0,
+          "skipped": 0,
+          "log": "evidence/01-source-tests.log",
+          "scope": "exact frozen owner contract"
+        },
+        {
+          "path": "materials-boundaries.held-out.test.mjs",
+          "tests": 5,
+          "pass": 1,
+          "fail": 4,
+          "skipped": 0,
+          "log": "evidence/02-historical-boundaries.log",
+          "scope": "new owner-authored historical proposal-source probes; independent review not yet performed"
+        },
+        {
+          "path": "operations/runtime/material-shortage-projection.test.cjs",
+          "tests": 38,
+          "pass": 38,
+          "fail": 0,
+          "skipped": 0,
+          "log": "evidence/08-final-source-contract-green.log",
+          "scope": "ISOLATED_LOCAL_DECLARED_SCENARIO_SOURCE_CONTRACT_ONLY"
+        }
+      ],
+      "historical_test_claims_status": "Actually executed local source evidence, not authenticated material/provider/customer proof",
+      "remaining_work": [
+        "Independent review against exact final bytes",
+        "Root publish bounded reviewed source capsule with unchanged Lane01 dependency",
+        "Authentic producer and units/order-temporal semantics before any runtime wiring/customer proof"
+      ],
+      "rollback_plan": "Shipping bytes changed0; no product revert required. Later approved extraction must remain isolated and independently reviewed.",
+      "claim_boundary": "FOUND historical capability only. No live or hosted material feed, financial value, causal promotion, customer readiness or execution admission established.",
+      "previous_classification": "PORT",
+      "port_decision": "PARENT_APPROVED_BOUNDED_SOURCE_PROJECTION; INDEPENDENT_REVIEW_PENDING",
+      "componentProofState": "TESTED",
+      "componentScope": "ISOLATED_LOCAL_DECLARED_SCENARIO_SOURCE_CONTRACT_ONLY",
+      "proposalShippingFiles": [
+        {
+          "repositoryTargetPath": "operations/runtime/material-shortage-projection.cjs",
+          "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.cjs",
+          "mode": "100644",
+          "sourceBlob": null,
+          "proposedBlob": "e6c2cd64ddc27b8113061e61b7ef4e3dbf0c796a",
+          "sha256": "ed4c1e9921124c41e5226f992b586d5b8a1e75c99213a11cfd63864b6fcacf89",
+          "bytes": 5877,
+          "change": "ADD"
+        },
+        {
+          "repositoryTargetPath": "operations/runtime/material-shortage-projection.test.cjs",
+          "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs",
+          "mode": "100644",
+          "sourceBlob": null,
+          "proposedBlob": "a24b7f4580969aaef0f802891e10bc3c0c16e1f4",
+          "sha256": "e8ce78f1dbc8dbb86a3fdb4cde727a0799a78c1b5334483b0bbf2f2854fb6c08",
+          "bytes": 9233,
+          "change": "ADD"
+        }
+      ]
+    }
+  ],
+  "duplicateIdsCreated": 0,
+  "portDecision": "BOUNDED_SOURCE_PROJECTION_TESTED; INDEPENDENT_REVIEW_PENDING",
+  "sourceTests": {
+    "historical": 11,
+    "frozenOwner": 5,
+    "pass": 16,
+    "fail": 0,
+    "skipped": 0
+  },
+  "heldOuts": {
+    "tests": 5,
+    "pass": 1,
+    "fail": 4,
+    "skipped": 0,
+    "independentlyReviewed": false
+  },
+  "isolatedProposedAddedBytes": 15110
+}

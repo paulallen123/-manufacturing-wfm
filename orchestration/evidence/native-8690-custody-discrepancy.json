@@ -1,0 +1,89 @@
+{
+  "nativeCommit": "8690a0bf9b025b6574b410c27cb9a01409fa10c7",
+  "rawCommitBytes": 238,
+  "rawCommitSha256": "72f0a92d1254aa65db9f41757197ad7feffb2a03f028a8e3e53b3a333ea796d9",
+  "clipboardPatchBytes": 621117,
+  "nativeParent": "81f5ccbeef8fe8c0c039c3c052a3170b2350c2b3",
+  "expectedTree": "087687aefaa19e657dcbb40766c0eca277dcf1b0",
+  "actualTree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c",
+  "fullTreeMatches": false,
+  "files": 1107,
+  "changedFrom935": 20,
+  "verifiedAllTrackedBlobBytes": true,
+  "baseSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+  "patchSha256": "7898d7131f0d6805e28c66e4c22abde2aa916058af7e661b8c00f4edf9a90a82",
+  "uiReportedPatchBytes": 634681,
+  "savedMeasuredPatchBytes": 621117,
+  "uiByteDiscrepancyCause": "NOT_ESTABLISHED",
+  "status": "FULL_NATIVE_TREE_BINDING_FAILED_DO_NOT_CLAIM_EXACT_8690_REVIEW",
+  "expectedLatestTargets": {
+    "integrations/staffology/REVIEW_5925613376_RESOLUTION.md": "97ad9be8e2f64fb83d86ff9488c1cfb9905800e4",
+    "integrations/staffology/canonical-production-boundaries.test.cjs": "042ded5c41aed1afb46c217bb4f9b0b787510d2d"
+  },
+  "changedFromBf9": [
+    {
+      "path": "artifact/vector-proof-freeze.trigger",
+      "old": "51d25a33842903473f34ef6d8b87ba15f611b5a3",
+      "new": "949f81aecf736bbdee56e2fe448e4e0426722417",
+      "oldMode": "100644",
+      "newMode": "100644",
+      "local": "work/native-8690/source/artifact/vector-proof-freeze.trigger"
+    },
+    {
+      "path": "integrations/staffology/REVIEW_5925613376_RESOLUTION.md",
+      "old": "3ff9877559d4779d19e8a8e37e0ffd9a8c7e4bf5",
+      "new": "b527c93a00c4d81c5677cb52171e5bfc1c7c6813",
+      "oldMode": "100644",
+      "newMode": "100644",
+      "local": "work/native-8690/source/integrations/staffology/REVIEW_5925613376_RESOLUTION.md"
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "old": "fe29787b97dc1093f1753393a07d686f1832bd9c",
+      "new": "f8783d3baa9492e74303c9d312278b26ad2e61f4",
+      "oldMode": "100644",
+      "newMode": "100644",
+      "local": "work/native-8690/source/integrations/staffology/canonical-production-boundaries.cjs"
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.test.cjs",
+      "old": "48b82a29a5eb8fdc3d41ccb16402007599cfbf8e",
+      "new": "537fdaeb8787794447855c204808b67ef0ea8064",
+      "oldMode": "100644",
+      "newMode": "100644",
+      "local": "work/native-8690/source/integrations/staffology/canonical-production-boundaries.test.cjs"
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "old": "3d0a65db8e642841637016124619f309d63b48e4",
+      "new": "18d67d781e1914fcc8adde6c6251a3b2376ff26d",
+      "oldMode": "100644",
+      "newMode": "100644",
+      "local": "work/native-8690/source/integrations/staffology/staffology-adapter.cjs"
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.test.cjs",
+      "old": "09e63932cc038e54da05345d52018e76d3cc7c67",
+      "new": "d81865b4d299641aa83b4ed1cba566db66c06059",
+      "oldMode": "100644",
+      "newMode": "100644",
+      "local": "work/native-8690/source/integrations/staffology/staffology-adapter.test.cjs"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "old": "82f8a63f543188e009a94d038596a41a88ce9416",
+      "new": "389eb5c50399fda21da1bab9b3073c7ed40c6a13",
+      "oldMode": "100644",
+      "newMode": "100644",
+      "local": "work/native-8690/source/ux-overlay/vector-shell.js"
+    },
+    {
+      "path": "ux-overlay/vector-staffology-controls.test.cjs",
+      "old": "99d3141216567f5542574f4d10fa260c1d48c81d",
+      "new": "1159e5cde1698c8d1f4617183a8aa5e0be998ea0",
+      "oldMode": "100644",
+      "newMode": "100644",
+      "local": "work/native-8690/source/ux-overlay/vector-staffology-controls.test.cjs"
+    }
+  ]
+}

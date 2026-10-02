@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-02T12:59:49.727Z",
+  "branch": "review/staffology-customer-proof-20261001",
+  "commit": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+  "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+  "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+  "allBlobsVerified": 1108,
+  "modifiedPaths": 2,
+  "unchangedBlobsVerified": 1106,
+  "shipping": [
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+      "mode": "100644"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+      "mode": "100644"
+    }
+  ],
+  "ownerAffected126": true,
+  "independentHeldOut16": true,
+  "scope": "Mandatory source-only admission",
+  "frozenBranchModified": false,
+  "staffologyBytesChanged": false,
+  "triggerChanged": false,
+  "customerProof": false,
+  "runtimeAdmitted": false
+}

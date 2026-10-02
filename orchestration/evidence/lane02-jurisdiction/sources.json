@@ -1,0 +1,373 @@
+{
+  "repository": "paulallen123/-manufacturing-wfm",
+  "lock": {
+    "protectedFrozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "frozenTreeSha": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+    "treeIdentitySource": "Root verified VECTOR_CONVERGENCE_STATE frozen.tree; connector tree sha echoes request ref",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "shippingChangedBytes": 0,
+    "productEdits": false,
+    "githubWrites": false,
+    "providersExecuted": false,
+    "customerProof": false
+  },
+  "sourceIdentities": [
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "mode": "100644",
+      "bytes": 4591,
+      "local": "frozen/policy/runtime/authoritative-policy-source-registry.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "mode": "100644",
+      "bytes": 1559,
+      "local": "frozen/policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "mode": "100644",
+      "bytes": 5407,
+      "local": "frozen/policy/runtime/country-policy-pack-registry.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "mode": "100644",
+      "bytes": 1555,
+      "local": "frozen/policy/runtime/country-policy-pack-registry.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "mode": "100644",
+      "bytes": 4295,
+      "local": "frozen/policy/runtime/global-site-policy-preflight.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "mode": "100644",
+      "bytes": 2439,
+      "local": "frozen/policy/runtime/global-site-policy-preflight.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "7f58c8ac9289311a8837e899af200ec785563987",
+      "mode": "100644",
+      "bytes": 10225,
+      "local": "frozen/policy/runtime/jurisdiction-policy-graph.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "mode": "100644",
+      "bytes": 4010,
+      "local": "frozen/policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "mode": "100644",
+      "bytes": 3281,
+      "local": "frozen/policy/runtime/regulatory-change-candidate.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "mode": "100644",
+      "bytes": 1881,
+      "local": "frozen/policy/runtime/regulatory-change-candidate.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "release/global-sites-policy-architecture.json",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "2e4be4a8ff792bfd1b75438ecfa5c74970708938",
+      "mode": "100644",
+      "bytes": 3931,
+      "local": "frozen/release/global-sites-policy-architecture.json",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "sourceRef": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+      "sha": "e79d76a37c58650feebef2e2538c74165e3fa707",
+      "mode": "100644",
+      "bytes": 5611,
+      "local": "historical/pr230/policy/runtime/country-policy-pack-registry.cjs",
+      "sourcePR": 230
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "sourceRef": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+      "sha": "f5e8e78d8eeee861ea1eb02d6ec2d49ecefe29d1",
+      "mode": "100644",
+      "bytes": 1595,
+      "local": "historical/pr230/policy/runtime/country-policy-pack-registry.test.cjs",
+      "sourcePR": 230
+    },
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "mode": "100644",
+      "bytes": 22307,
+      "local": "frozen/security/runtime/bootstrap.cjs",
+      "verified935Copy": false,
+      "verifiedPriorFrozenCopy": true
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "9fb2656a23e308fbee8c01263d414a15ac8763d9",
+      "mode": "100644",
+      "bytes": 15859,
+      "local": "frozen/scripts/compose-vector-local-runtime.mjs",
+      "verified935Copy": false,
+      "verifiedPriorFrozenCopy": true
+    }
+  ],
+  "selected935Mismatches": [],
+  "prs": [
+    {
+      "n": 230,
+      "head": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+      "branch": "feature/vector-research-alignment-20260923",
+      "state": "open",
+      "merged": false
+    },
+    {
+      "n": 271,
+      "head": "2f5f175e47c4dd1032c81488c467ddeca370ee28",
+      "branch": "hardening/policy-readiness-evidence-20260927",
+      "state": "open",
+      "merged": false
+    },
+    {
+      "n": 274,
+      "head": "8dbbc18aec0c8f11d2ec4bf8d4932a579a02efc2",
+      "branch": "feature/vector-adaptive-policy-integration-access-20260928",
+      "state": "open",
+      "merged": false
+    }
+  ],
+  "canonicalCarriers": [
+    {
+      "sourcePR": 271,
+      "head": "2f5f175e47c4dd1032c81488c467ddeca370ee28",
+      "carryOnlyNotAuthorship": true,
+      "files": [
+        {
+          "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+          "mode": "100644",
+          "sourceBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+          "frozenBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+          "frozenBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/country-policy-pack-registry.cjs",
+          "mode": "100644",
+          "sourceBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+          "frozenBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+          "frozenBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/global-site-policy-preflight.cjs",
+          "mode": "100644",
+          "sourceBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+          "frozenBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+          "frozenBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+          "mode": "100644",
+          "sourceBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+          "frozenBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+          "frozenBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/regulatory-change-candidate.cjs",
+          "mode": "100644",
+          "sourceBlob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+          "frozenBlob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+          "frozenBlob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+          "identical": true
+        }
+      ]
+    },
+    {
+      "sourcePR": 274,
+      "head": "8dbbc18aec0c8f11d2ec4bf8d4932a579a02efc2",
+      "carryOnlyNotAuthorship": true,
+      "files": [
+        {
+          "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+          "mode": "100644",
+          "sourceBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+          "frozenBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+          "frozenBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/country-policy-pack-registry.cjs",
+          "mode": "100644",
+          "sourceBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+          "frozenBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+          "frozenBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/global-site-policy-preflight.cjs",
+          "mode": "100644",
+          "sourceBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+          "frozenBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+          "frozenBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+          "mode": "100644",
+          "sourceBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+          "frozenBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+          "frozenBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/regulatory-change-candidate.cjs",
+          "mode": "100644",
+          "sourceBlob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+          "frozenBlob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+          "identical": true
+        },
+        {
+          "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+          "mode": "100644",
+          "sourceBlob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+          "frozenBlob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+          "identical": true
+        }
+      ]
+    }
+  ],
+  "comparisonEvidence": "evidence/03-ancestor-comparison.json",
+  "scopedWiring": {
+    "scanned": [
+      {
+        "path": "security/runtime/bootstrap.cjs",
+        "sha": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+        "mode": "100644",
+        "bytes": 22307,
+        "references": []
+      },
+      {
+        "path": "scripts/compose-vector-local-runtime.mjs",
+        "sha": "9fb2656a23e308fbee8c01263d414a15ac8763d9",
+        "mode": "100644",
+        "bytes": 15859,
+        "references": []
+      }
+    ],
+    "limit": "Exact frozen bootstrap/composition plus selected policy source only; no whole-runtime absence proof"
+  },
+  "coverage": {
+    "exactFiles": 15,
+    "historicalAncestorFiles": 2,
+    "canonicalPolicySourceAndTests": 10,
+    "canonicalArchitectureFiles": 1,
+    "canonicalBootstrapCompositionFiles": 2,
+    "previousPR205RejectionReference": "work/lane02-country/duplicate-comparison.json",
+    "publishedDisplay": "000a28e unchanged; not reworked",
+    "notExhaustive": true,
+    "excluded": [
+      "current Staffology",
+      "mandatory readiness/admission repair source",
+      "published country display",
+      "materials proposal",
+      "actual legal content/provider retrieval",
+      "indirect callers outside selected files",
+      "all remaining branches/PRs"
+    ]
+  }
+}

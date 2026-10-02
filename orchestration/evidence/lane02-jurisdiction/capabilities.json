@@ -1,0 +1,232 @@
+{
+  "lock": {
+    "protectedFrozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "frozenTreeSha": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+    "treeIdentitySource": "Root verified VECTOR_CONVERGENCE_STATE frozen.tree; connector tree sha echoes request ref",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "shippingChangedBytes": 0,
+    "productEdits": false,
+    "githubWrites": false,
+    "providersExecuted": false,
+    "customerProof": false
+  },
+  "scope": "Bounded Lane02 jurisdiction/country/source archaeology",
+  "capabilities": [
+    {
+      "id": "product-035",
+      "capability": "Research Country Policy registry ancestor",
+      "lane": "Country and sites",
+      "source_branch": "feature/vector-research-alignment-20260923",
+      "head_sha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+      "source_pr": 230,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/230",
+      "classification": "SUPERSEDED",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing country/jurisdiction/source/preflight/candidate owners; preserve distinct known/effective/advisory/authority contracts",
+      "rationale": "Old formatted registry has matching exports and12 bounded outputs; canonical richer jurisdiction/source owners already present. No missing stronger port established.",
+      "evidence_paths": [
+        "policy/runtime/country-policy-pack-registry.cjs",
+        "policy/runtime/country-policy-pack-registry.test.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "policy/runtime/country-policy-pack-registry.cjs",
+          "mode": "100644",
+          "source_blob_sha": "e79d76a37c58650feebef2e2538c74165e3fa707",
+          "bytes": 5611,
+          "source_ref": "07bc5218c183049a8d7ab884b15cca6ef38375ec"
+        },
+        {
+          "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+          "mode": "100644",
+          "source_blob_sha": "f5e8e78d8eeee861ea1eb02d6ec2d49ecefe29d1",
+          "bytes": 1595,
+          "source_ref": "07bc5218c183049a8d7ab884b15cca6ef38375ec"
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "policy/runtime/country-policy-pack-registry.test.cjs"
+      ],
+      "tests_executed_by_inventory": [
+        {
+          "log": "evidence/01-unchanged-source-tests.log",
+          "tests": 23,
+          "pass": 23,
+          "fail": 0,
+          "skipped": 0,
+          "scope": "Existing exact frozen19 and historical4 source tests, not runtime/legal evidence"
+        },
+        {
+          "log": "evidence/02-unchanged-source-held-outs.log",
+          "tests": 8,
+          "pass": 3,
+          "fail": 5,
+          "skipped": 0,
+          "scope": "Owner-authored unchanged-source boundary probes, independent review pending"
+        }
+      ],
+      "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+      "remaining_work": [
+        "Independent validation of five local source boundary holds",
+        "Parent authorize any existing-owner repair before source edits",
+        "Establish authenticated source producers, UTC/local calendar semantics and caller role/wiring before runtime admission"
+      ],
+      "rollback_plan": "No product/shipping changes0; retained source copies/evidence only",
+      "claim_boundary": "FOUND/ALREADY_CANONICAL source classification does not establish legal facts, authentic sources, runtime wiring, customer readiness, known-time history in effective-only APIs or execution authority.",
+      "port_decision": "NO_NEW_PORT; EXISTING_OWNER_REPAIR_DESIGN_ONLY_NOT_AUTHORISED"
+    },
+    {
+      "id": "product-058",
+      "capability": "Canonical jurisdiction graph, source registry and site policy preflight",
+      "lane": "Country and sites",
+      "source_branch": "release/vector-customer-ready-candidate-20260925",
+      "head_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "source_pr": null,
+      "source_pr_url": null,
+      "classification": "ALREADY_CANONICAL",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing country/jurisdiction/source/preflight/candidate owners; preserve distinct known/effective/advisory/authority contracts",
+      "rationale": "Exact frozen ten source/test blobs are present and identical in PR271/274 carriers. Local boundary defects/omissions retained; source presence is not runtime/customer admission.",
+      "evidence_paths": [
+        "policy/runtime/authoritative-policy-source-registry.cjs",
+        "policy/runtime/authoritative-policy-source-registry.test.cjs",
+        "policy/runtime/country-policy-pack-registry.cjs",
+        "policy/runtime/country-policy-pack-registry.test.cjs",
+        "policy/runtime/global-site-policy-preflight.cjs",
+        "policy/runtime/global-site-policy-preflight.test.cjs",
+        "policy/runtime/jurisdiction-policy-graph.cjs",
+        "policy/runtime/jurisdiction-policy-graph.test.cjs",
+        "policy/runtime/regulatory-change-candidate.cjs",
+        "policy/runtime/regulatory-change-candidate.test.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+          "mode": "100644",
+          "source_blob_sha": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+          "bytes": 4591,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        },
+        {
+          "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+          "mode": "100644",
+          "source_blob_sha": "00e10eca8168d3493cd1e468d965e655496fb89d",
+          "bytes": 1559,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        },
+        {
+          "path": "policy/runtime/country-policy-pack-registry.cjs",
+          "mode": "100644",
+          "source_blob_sha": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+          "bytes": 5407,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        },
+        {
+          "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+          "mode": "100644",
+          "source_blob_sha": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+          "bytes": 1555,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        },
+        {
+          "path": "policy/runtime/global-site-policy-preflight.cjs",
+          "mode": "100644",
+          "source_blob_sha": "4f18cffc150935e760c914a216c97c0700e23e44",
+          "bytes": 4295,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        },
+        {
+          "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+          "mode": "100644",
+          "source_blob_sha": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+          "bytes": 2439,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        },
+        {
+          "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+          "mode": "100644",
+          "source_blob_sha": "7f58c8ac9289311a8837e899af200ec785563987",
+          "bytes": 10225,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        },
+        {
+          "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+          "mode": "100644",
+          "source_blob_sha": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+          "bytes": 4010,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        },
+        {
+          "path": "policy/runtime/regulatory-change-candidate.cjs",
+          "mode": "100644",
+          "source_blob_sha": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+          "bytes": 3281,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        },
+        {
+          "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+          "mode": "100644",
+          "source_blob_sha": "d43879fe7db0028e521d443a38af1cbd0b306354",
+          "bytes": 1881,
+          "source_ref": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "policy/runtime/jurisdiction-policy-graph.test.cjs"
+      ],
+      "tests_executed_by_inventory": [
+        {
+          "log": "evidence/01-unchanged-source-tests.log",
+          "tests": 23,
+          "pass": 23,
+          "fail": 0,
+          "skipped": 0,
+          "scope": "Existing exact frozen19 and historical4 source tests, not runtime/legal evidence"
+        },
+        {
+          "log": "evidence/02-unchanged-source-held-outs.log",
+          "tests": 8,
+          "pass": 3,
+          "fail": 5,
+          "skipped": 0,
+          "scope": "Owner-authored unchanged-source boundary probes, independent review pending"
+        }
+      ],
+      "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+      "remaining_work": [
+        "Independent validation of five local source boundary holds",
+        "Parent authorize any existing-owner repair before source edits",
+        "Establish authenticated source producers, UTC/local calendar semantics and caller role/wiring before runtime admission"
+      ],
+      "rollback_plan": "No product/shipping changes0; retained source copies/evidence only",
+      "claim_boundary": "FOUND/ALREADY_CANONICAL source classification does not establish legal facts, authentic sources, runtime wiring, customer readiness, known-time history in effective-only APIs or execution authority.",
+      "port_decision": "NO_NEW_PORT; EXISTING_OWNER_REPAIR_DESIGN_ONLY_NOT_AUTHORISED"
+    }
+  ],
+  "duplicateIdsCreated": 0,
+  "sourceTests": {
+    "tests": 23,
+    "pass": 23,
+    "fail": 0,
+    "skipped": 0
+  },
+  "heldOuts": {
+    "tests": 8,
+    "pass": 3,
+    "fail": 5,
+    "skipped": 0,
+    "independentlyReviewed": false
+  },
+  "portDecision": "NO_NEW_PORT_SELECTED; REPAIR_DESIGN_NOT_AUTHORISED"
+}

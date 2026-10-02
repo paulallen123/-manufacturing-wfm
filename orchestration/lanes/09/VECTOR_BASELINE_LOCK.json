@@ -92,5 +92,8 @@
   "testsExecuted": [],
   "currentTask": "Held-out reproductions and independent repair review",
   "admissionAllowed": false,
-  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review.",
+  "currentReviewHead": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+  "lastVerifiedReview": "2026-10-02T13:01:11.386Z",
+  "currentMandatoryProofSourceAdmission": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad"
 }

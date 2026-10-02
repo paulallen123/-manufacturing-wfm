@@ -1,0 +1,1346 @@
+{
+  "coreBlob": "83cf77198094390c0c9022ea69583d9b03ed271f",
+  "testBlob": "f1655c9b3f1a0223fdd329c66ad40d42cbc76992",
+  "artifacts": [
+    {
+      "path": "work/trust_review/current-admission-repair-review.md",
+      "bytes": 4636,
+      "sha256": "55885720e188e481c9b147e3c407dfabefbfe9d17eb62923105a59ee2cc121e6"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-findings.json",
+      "bytes": 2061,
+      "sha256": "6b6dc80d0e51bd1507ab95dcd9123753b5f5f667527b551a400e4c0bfbd3b8b9"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-identities.json",
+      "bytes": 66173,
+      "sha256": "54adb10f4f71352a0d59ac713d4226a6660a26aceb2a0ebf48d68632ec3345c6"
+    },
+    {
+      "path": "work/trust_review/prepare-current-admission-repair-review.cjs",
+      "bytes": 2254,
+      "sha256": "22f459ec46a925caf27a88bbcfe0e0bbbc1c1bc35220a5af990b9d1630a99802"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair.retained.test.cjs",
+      "bytes": 11130,
+      "sha256": "57cceb9c79a8dc41f6172816c0a29748263c6026f23e750d0b68eef09bc5f2f7"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair.expanded.test.cjs",
+      "bytes": 5779,
+      "sha256": "1f96fc72baa2c4d30def0f190138c74a8360ca839c14a0db50d1cb03ad03fd23"
+    },
+    {
+      "path": "work/trust_review/run-current-admission-repair-review.cjs",
+      "bytes": 941,
+      "sha256": "3d2dd280ff4d9ba6869b3b7604b5831694cdd288cf9319c5051f3c4826fcd60f"
+    },
+    {
+      "path": "work/trust_review/seal-current-admission-repair-review.cjs",
+      "bytes": 1640,
+      "sha256": "245f52655bb48b26c762cd42e54d0a9ed6563a1c6b8aae5142abf79b56d826e2"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-held-out.node22.tap",
+      "bytes": 5986,
+      "sha256": "f9256c040f3d396ea2ae983f6f0afebc906c816b1a6354a0dd19d1ca48c9a369"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-held-out.run.json",
+      "bytes": 554,
+      "sha256": "b62add0d58613ce722be6beaebe8cdb5a392a511f254daf5a472b38902a4f886"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair.observations.json",
+      "bytes": 1154486,
+      "sha256": "ebece2c8f43d838631838ba2e871f49459b867bb6b3888c54c018f951d45e5ce"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/evidence/2026-09-18-railway-source-refresh.md",
+      "bytes": 574,
+      "sha256": "23c96679dd0b9d0e3abd8cfc636e133802fe4da23322fc9c2c53c99e030ecf8c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/evidence/2026-09-19-frozen-release-guard-receipt.json",
+      "bytes": 1444,
+      "sha256": "ae1de8205040ee49ce55fc568959ee8ce57f6f6e5568e2eb4315033a77b41e9b"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/evidence/2026-09-19-readiness-evidence-fail-closed-repair.json",
+      "bytes": 3795,
+      "sha256": "98da521bcf330c5bf36de4007c8e0ba91d3fa7e5faba3bc1141abea958475c35"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/proof/cloud-scale-proof-runner.cjs",
+      "bytes": 10230,
+      "sha256": "b96ecc0a05f8f6d9eb88e7ac145953c2a8e8361de30dd33f30afd7befdce9e96"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/agents-api-adapter.cjs",
+      "bytes": 19606,
+      "sha256": "822090a0545eb98464215f5ac6ae2d9dda27ccc6b054607bbf78c51f59dfdc49"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/agents-api-adapter.test.cjs",
+      "bytes": 8686,
+      "sha256": "a790264a833563dc26671538496dc013c4c4b0274e5631d45b2aeffe0026ba4b"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/agents-api-bootstrap-route.cjs",
+      "bytes": 7937,
+      "sha256": "96c200abdf8bb8b332a0ffceb827179ec8cdd94de2338ec88fd6d6f331f82599"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/agents-api-bootstrap-route.test.cjs",
+      "bytes": 11085,
+      "sha256": "93541b6c3655d9a2d9badfb84aad5593d23cbe7aa26c4b603c5d35e2d6156e86"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/configuration-inference-engine.cjs",
+      "bytes": 11506,
+      "sha256": "ee945c9ccf97abf56fd5acb9e684485da36884b221bdf009ddb38e806433c610"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/configuration-inference-engine.test.cjs",
+      "bytes": 5691,
+      "sha256": "50082f41fd215ebed1201dd7fe0510e7f147b3308ea7ef9156e07bedfae2cff1"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/implementation-active-controller.integration.test.cjs",
+      "bytes": 15722,
+      "sha256": "6c2ba72238f7f3bd45131a10a28e3114996d163a1d565637c48eac022c22dc5a"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/implementation-digital-twin.cjs",
+      "bytes": 5922,
+      "sha256": "8cf6d51d77d01091e73b2f4621a672e3c953f170e0f154bf9966c32cc57a1f3d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/implementation-digital-twin.test.cjs",
+      "bytes": 3631,
+      "sha256": "2cca63ab29e419f90cbe02e43cf0b4d1e444eebba04d9aef0365d502f1662461"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/implementation-learning-integration.test.cjs",
+      "bytes": 12376,
+      "sha256": "7ee9ebab0362849123669fa5c5b5f31cadd42bc29159a9f00a8204b19ce0132e"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/implementation-work-controller.cjs",
+      "bytes": 18652,
+      "sha256": "4014c664863d4fa913cb39fe5b8d631bcd7f5144642c8e7dd4f7cc480fc9b714"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/implementation-work-controller.test.cjs",
+      "bytes": 8651,
+      "sha256": "4729376f1a4b8fe9159f50d8f72acff77ba0d2b0e1548d2735b61e466238b075"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/implementation-work-fencing.test.cjs",
+      "bytes": 12583,
+      "sha256": "075ea2f81e81759eabc9294cd7af97bd610c6d9ecb40bb4b1a6f847d16c233dc"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "bytes": 104454,
+      "sha256": "f665ffd5f231feb83cad14857226b6a9c72d4d20380cab1d848c352e32f130e8"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/one-day-enterprise-engine.cjs",
+      "bytes": 5692,
+      "sha256": "114fd7acafcdf9b6fd02f1937a555eaf4609cbf1f613455f966c48ecb04cab1f"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "bytes": 89223,
+      "sha256": "ce14175067e0fc7612c253c60d58ad3c78b41452dd69e502b3dd4051f8a48f9e"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/readiness-evidence-contract.cjs",
+      "bytes": 12376,
+      "sha256": "8e80f72de9a10ed165aefd83c77b1a48fd9b07fe225ca164ffc0ef2180e78432"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/readiness-evidence-contract.test.cjs",
+      "bytes": 4308,
+      "sha256": "d2094cf9091e95b1ebb9c349beaef44dead39bec065643aa112319de7e44096d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/readiness-evidence-wrapper.test.cjs",
+      "bytes": 5240,
+      "sha256": "77a4cc43260ebc27b2a6554a1b9f1486b609ab0b27927a579bf69dc787d0ca67"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/tenant-environment-provisioner.cjs",
+      "bytes": 5852,
+      "sha256": "d0a22df604b3c73399fdc85b2f647e2f635c137e2a53b4c5cbe321edecf6581f"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/tenant-environment-provisioner.test.cjs",
+      "bytes": 4592,
+      "sha256": "387c403c3dedfc81ae3b86dfef3beb7666dc1afef24b70a2c532c0a2205fc412"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs",
+      "bytes": 1569,
+      "sha256": "d7b2728b9dcca5bfd3221bea3a837296ae9264db59786d0ab0d5aa13382f8313"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/zero-touch-customer-factory.cjs",
+      "bytes": 3330,
+      "sha256": "c6c7a16214bdd7316dd8c29618034c8daa74bd864a01bf025f6b31c14df7be25"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/runtime/zero-touch-customer-factory.test.cjs",
+      "bytes": 1659,
+      "sha256": "071552124b49538bca7cceb8147f58c0083f64bb5afad371c585adf3f28b852a"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/simulation/one-day-enterprise-simulation.mjs",
+      "bytes": 4585,
+      "sha256": "ab38ba1ad0fbefa49f2ebb523112f95f68f6844cdb592f6eadec5e81fe7b71d2"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/ui/implementation-journey.css",
+      "bytes": 12451,
+      "sha256": "72c32810b42ef660c0e31cc965373ab7f60337d24f66cee09ac1401a08645dba"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/ui/implementation-journey.js",
+      "bytes": 33111,
+      "sha256": "d5472d7126199eac5e7588c3ca0c7fff297e663136ed34e018144b81cb61e541"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/implementation/VECTOR_ADAPTIVE_IMPLEMENTATION_TWIN.md",
+      "bytes": 6196,
+      "sha256": "eab3a676c1de6b627481501a6d0e2698771921e63ba36b9c34a5933c62efd281"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/autonomous-integration-hub.cjs",
+      "bytes": 61466,
+      "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/autonomous-integration-hub.test.cjs",
+      "bytes": 24573,
+      "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/directory-oauth-broker.cjs",
+      "bytes": 8292,
+      "sha256": "eec35f21c35d32106bc0fa9e61621c7146d3d40b3a26b86f7cfa0622b988c4b7"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/directory-oauth-broker.test.cjs",
+      "bytes": 6656,
+      "sha256": "4f7d0bfb96e219ff255b26ae6faa89046b1e874a984d4fe10ced7f494d07964a"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/gusto-company-connector.cjs",
+      "bytes": 26119,
+      "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/gusto-company-connector.test.cjs",
+      "bytes": 37280,
+      "sha256": "0053222da8f8045f13a2f73fa4ed05e45d357033f55d89f63d7ca4cf22a4b2b2"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/gusto-integration-hub.test.cjs",
+      "bytes": 16716,
+      "sha256": "98c7bce46f44f16422349de2d4119ae6f7a989a6860708a8b2cfeba08877d9ec"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/gusto-oauth-landing.cjs",
+      "bytes": 3395,
+      "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/gusto-oauth-landing.test.cjs",
+      "bytes": 6409,
+      "sha256": "b038ab1edd47f2bf1e1d9886095de486e01d94bc21240eedac7b2ec12937f4e6"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/runtime/GUSTO_CONNECTION.md",
+      "bytes": 6081,
+      "sha256": "e2ca526c7675efc0d62ecad309bcd9da75f3ae81da3585b7fdcd7830c04c15f8"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/worker/directory-discovery-worker.cjs",
+      "bytes": 11287,
+      "sha256": "2ccd01ea867ed7c310ed5138264d28a5e6aabbc1b710fbd5c504ba9d37f0fa84"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integration/worker/directory-discovery-worker.test.cjs",
+      "bytes": 6710,
+      "sha256": "f16eb6a9701aa5b3bc8d78bbc2ecbb10fff610096e33183e60c266e939b94763"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-operations-connector.test.cjs",
+      "bytes": 4650,
+      "sha256": "9a12689b56a25b44cddf88987605a8ce5c3082ae58d5933fc72e41b00c27975c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-operations-deployment-binding.test.cjs",
+      "bytes": 2999,
+      "sha256": "99ea9c4f06963e6f5b36200002753a2f668c3e4a57b66fa2b5ad4edc17c1c464"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
+      "bytes": 2158,
+      "sha256": "fb08b001e968ecaf7aba038d08ebd9b60787cf13cd1acf03cd3afc00bc2388e8"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-operations-status.test.cjs",
+      "bytes": 2083,
+      "sha256": "c6e6701fe3c21dd5123f11f6fe393c86e44bbb73b4dd204b363a71211d818e85"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-operations.cjs",
+      "bytes": 14405,
+      "sha256": "32240bb7cd43b2d85fd53566cbc07bf3ba3e3a5fc70cc96ad05e7d500f905e20"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-operations.test.cjs",
+      "bytes": 15157,
+      "sha256": "9131ca6cf70b5cf0b2a51437a179a1671b011f633060a4b89eaa264ac0b566ab"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-production-boundaries.cjs",
+      "bytes": 16922,
+      "sha256": "da7748f86a751ba696d809ba2bfb275ff2eafd708a82c5da4f8ca094b2e18b63"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-production-boundaries.test.cjs",
+      "bytes": 11832,
+      "sha256": "fea198d6a59511379b4fcb7c50cadc8788464f13ff0acbb47572f5d1b0b6cdac"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-runtime-bridge.cjs",
+      "bytes": 12003,
+      "sha256": "be786702fd95136168457358980a21775617489192d99f6bb1b0811fb4016750"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/canonical-runtime-bridge.test.cjs",
+      "bytes": 6620,
+      "sha256": "4de65deec0ef76406c927f6929390bfb6f34fc455a38bf7fb0c49cf121a1abfa"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/circleci-build-command-contract-red.log",
+      "bytes": 11138,
+      "sha256": "fa171fe48912cf573811a45071a6414ab9aecc357387150f36f1bb9035610b0b"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/circleci-pid1-uid-caller-red.log",
+      "bytes": 1490,
+      "sha256": "09604efff005146d4a22f0ce67aca8a9db8b9c7b4bcd62eb43b1e5bc4a65b762"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/circleci-runtime-identity-caller-red.log",
+      "bytes": 1122,
+      "sha256": "8a18053a47823a811f44bead0454709a167f91cae491127df60c8f272a907c3f"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/docker-admission-contract-green.tap",
+      "bytes": 347,
+      "sha256": "fbdf415e0d7c35d3b44e3a16e927f1a9d674d9c905c5dc29a7962be5b25f90e4"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/docker-admission-contract-red.tap",
+      "bytes": 12871,
+      "sha256": "29873593abdec2c2dc4570841c1003d351c1849a6ef559db52058ba6105cb351"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/docker-admission-direct-checkout-red.tap",
+      "bytes": 23774,
+      "sha256": "f81f01bf41f32317acee30d934017afae4491df8b96b78d09e5725c12fc8a364"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/five-person-lifecycle-red.json",
+      "bytes": 709,
+      "sha256": "a3debe6c68351668fd81a32863048f1fce37a83ba9c9af138f2ae24ae947f04c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/full-http-payroll-command-red.tap",
+      "bytes": 393,
+      "sha256": "fa53acb7fe2355c99c4ee27ade96541b2f8a36fd3877e439e5d3cbaab87b69fc"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/full-http-period-collision-red.tap",
+      "bytes": 317,
+      "sha256": "88a7c16a59b6dd99330cc9f61d7c849a991fdfa0d53c81974c389f7620c42bc6"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/full-http-private-evidence-custody-red.tap",
+      "bytes": 1055,
+      "sha256": "2e1424dcd7fcc11f0751ea874c012f4b3192fb1868a08232ea3b6e74d75fd907"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/full-http-provider-run-red.tap",
+      "bytes": 479,
+      "sha256": "592e3461f55c76ef5678cde920c75d822b0e1262456990094a90b33d3412b532"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/full-http-team-blockers-red.tap",
+      "bytes": 898,
+      "sha256": "f3a87be35a524bb6d0d65a68cb0c245080b67a698cb0a979b6bbc82d2b642a33"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/generated-provider-preload-red.tap",
+      "bytes": 1757,
+      "sha256": "571986ad4a41488a41f67926656016816c09a414b211477c75aec6ded79f7217"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/hosted-deployment-profile-binding-red.log",
+      "bytes": 925,
+      "sha256": "d77aa384ca223eac0536658f4eba62a7b64a6f9ba21e372aa4e77e3e96ca5176"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/hosted-profile-missing-ingress-red.log",
+      "bytes": 516,
+      "sha256": "5d960327940773fbec5e9ac7d154c297f3da1be36e8849693a502993bc146cbe"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/hosted-root-startup-red.log",
+      "bytes": 626,
+      "sha256": "549e07043893c4047149cbe8cbdcba40aab42e19c431dc9a4383319c7604fa35"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/hosted-settings-navigation-red.log",
+      "bytes": 668,
+      "sha256": "7b0a788e09a4b91f2e01b7fc537ad1a6cbccbb6c5301c2450f4386484689dec0"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/operation-replay-audit-red.tap",
+      "bytes": 481,
+      "sha256": "cf5aa4e570bbaa30941e6b387880812597b8bf0b22f8d509d59d62c138a669fe"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/operation-trusted-scope-green.tap",
+      "bytes": 1836,
+      "sha256": "cda569bc1d1811faaa8b16216a43959b8fc89948a256ba93171436ebde27e57e"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/operation-trusted-scope-red.tap",
+      "bytes": 2440,
+      "sha256": "d5d118a13227ec8a94845da762a5de8a71fa43748dadd156543defb0e1e29887"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/pid1-uid-extra-field-red.log",
+      "bytes": 536,
+      "sha256": "f179c574b9ce6c6b92fa2eb38432e82dfc6e846e5bd73592896ec8427398e644"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/pid1-uid-leading-zero-red.log",
+      "bytes": 689,
+      "sha256": "1d5a10e07f9889e1b364f3aaa9de530e03d1da90e3fea91766f187b0658b9f1c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/review-5921699729-red.tap",
+      "bytes": 9245,
+      "sha256": "e5255c6a2755c12751ecd52cb1b010244740bc11c6898207a8aab288bc7ddd79"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/review-5926046040-green.tap",
+      "bytes": 21966,
+      "sha256": "43d6c56698db47a6765b6a79cdc2e090f84c992bd60a560ea4a9abe15f7465d9"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/review-5926046040-red.tap",
+      "bytes": 6021,
+      "sha256": "e133797263b42bb4f88caff63f8fb54fa17fd93a852504b430d86bb79c3e7ef0"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/shared-person-authority-green.tap",
+      "bytes": 2154,
+      "sha256": "0e9c8c36fb0bd91ada5940855b48d87060edfcb4eef35eed3e8de37a70882588"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/shared-person-authority-red.tap",
+      "bytes": 1807,
+      "sha256": "9f0ffaa4f5282784332d6620e880e27c1c4c344660f9be7719bd426b89d6fa76"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/succession-held-out-green.tap",
+      "bytes": 1667,
+      "sha256": "2301560b0ff409d13e7129a022f22ff364df165e7ac738ff7dd6f7bb49e456c2"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/succession-held-out-red.tap",
+      "bytes": 2766,
+      "sha256": "aee7db9abe262939bc5605a8368430aeda7e0af9b77b6e568e592e906edeb9de"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/succession-independent-green.tap",
+      "bytes": 998,
+      "sha256": "4a9754cd5d17701a5f7fed9ad20b439540fc22bd2d29780798c6439624aa8f84"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/evidence/succession-independent-red.tap",
+      "bytes": 2066,
+      "sha256": "26b5e58073939bb4887e3049b027639e870bbb23038a8e352ae989e39fa99430"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/independent/current-authority-recovery-held-out.test.cjs",
+      "bytes": 9499,
+      "sha256": "19b6f08002a57edbe98bd2e0bdc30f0f08d1feb003d0f799d610d90fb14b9896"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/independent/docker-admission-contract.test.cjs",
+      "bytes": 5942,
+      "sha256": "caefaf29f04eb2485234b57a8c0c5dbd0e625d13c7763f2c5ba15b5a58677a1f"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/independent/full-http-employee-journey.test.cjs",
+      "bytes": 26068,
+      "sha256": "ca8d672be9db65286b1092ff5bd1ee24d2af7d5fee71ecf249092931790e3b2c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/independent/generated-provider-preload.test.cjs",
+      "bytes": 1249,
+      "sha256": "2d4dd55c5a9ea1787330928b96dfa1caefdf745bb75401149beb1373c18b9530"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/independent/succession-regressions.test.cjs",
+      "bytes": 4027,
+      "sha256": "391696943b68a4514ee9637efeb37aa3348e3889a56488a291f6a1f6da20faf1"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/independent-boundaries.test.cjs",
+      "bytes": 13874,
+      "sha256": "1b2fda2ba1fe3964d40b02bfe14fe0f9e342aec2957dbd7aa6773f48acf21432"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/NEXT_PROOF_OPERATION.md",
+      "bytes": 3765,
+      "sha256": "652d105f76cc72b151dbb998b17865f55d0a0590ca6431ae91fb561538b9d940"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/OWNERSHIP_AND_APPROVAL_REGISTER.md",
+      "bytes": 14719,
+      "sha256": "2b708c1100987b93d86c7de4d73202d2e39fa51dc7cf04a342fc6772187daa52"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/README.md",
+      "bytes": 3199,
+      "sha256": "b3a577b336e6664df27bf8f0a45b33d136fdf695cd71bff0e43b87f0d308a2cd"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/review-5921699729-regressions.test.cjs",
+      "bytes": 4684,
+      "sha256": "9bed783e98d5bc1e8535c390268ae049964f9d60a8881abdb5bef4adde4c8779"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/review-5925613376-regressions.test.cjs",
+      "bytes": 3027,
+      "sha256": "ad5409fdd5d215b7eeaf416274edd13e02612db507e84abd6e0976fabb74846d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/REVIEW_5921699729_RESOLUTION.md",
+      "bytes": 1678,
+      "sha256": "744a3255aa60e1f1b66d8b370deb70f6bbc54ed4faa98da019d507df8ad25426"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/REVIEW_5925613376_RESOLUTION.md",
+      "bytes": 76506,
+      "sha256": "5da237e6e7a7d52d71183d323fd685ae55a3473f7e54893e96285437f621b20d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/sqlite-contract.test.cjs",
+      "bytes": 8649,
+      "sha256": "45541b642a5911e9c33bfa725a44c1c298216c282d77f5adc372130cf7f8a892"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/staffology-adapter.cjs",
+      "bytes": 37316,
+      "sha256": "080c2e496d77afc303d3bdb3c0a0e6817c78bd855247d6840fb29e1104476293"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/staffology-adapter.test.cjs",
+      "bytes": 20698,
+      "sha256": "b26a6894c9c00d5a150448f11e337f0945a1f8315f3382346e3e4c32b561177b"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/staffology-employee-persistence.test.cjs",
+      "bytes": 7698,
+      "sha256": "9a8a67f9606eb3fa162ea8bcfa9f923a2208c2d0798748ffad4a4df8d115c649"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/STORE_INTEGRATION_CONTRACT.md",
+      "bytes": 6316,
+      "sha256": "c02145140853beddd6df25b11c18e50ca5a52a931959ef505195a37d4d8274d8"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/integrations/staffology/test-support/sqlite-store-fixture.cjs",
+      "bytes": 3543,
+      "sha256": "052b1e25c1aa648eb0299cf85d80b1b756f76ef559110e5a2b71c09dfcbc8d8a"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/adaptive-learning-engine.cjs",
+      "bytes": 29121,
+      "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/adaptive-learning-engine.test.cjs",
+      "bytes": 21771,
+      "sha256": "b8b2e3f2f8418e6b5b9149b112a503b3000ee134719d99054d6f3af83e7b87dd"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-artifact-registry.cjs",
+      "bytes": 2685,
+      "sha256": "ada7240b44c6f426054ec17878e42532f74efca4a3071c0c39c09f77a2d3d46c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-artifact-registry.test.cjs",
+      "bytes": 1736,
+      "sha256": "01d77e9c98f94e7c9c824397b1f0a94c9ee01fe363d905f9fdd39cfb5d93f1e4"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-delivery-service.cjs",
+      "bytes": 9162,
+      "sha256": "1ce756258d9fa85eac69ec56583709209a611483d92726a0ebac3f6bfee3767c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-delivery-service.test.cjs",
+      "bytes": 3032,
+      "sha256": "e84714f3fcc4e36ab5b111b28227a860d151c4fae64656e9cbc08b2126b25218"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-regeneration-planner.cjs",
+      "bytes": 2384,
+      "sha256": "992f4c76031223dddbce6090e22cf401f762cd67c7ceaebdf2d7c7db35b2bae2"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-regeneration-planner.test.cjs",
+      "bytes": 1152,
+      "sha256": "38bcf14aa44e15641f69d64bb5ebbb9eddcd25c4462a4180525214a4d2d80dac"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-scenario-engine.cjs",
+      "bytes": 3742,
+      "sha256": "b0ec8a7fa166bea38b397f1540f9f75207e39a60c94d303fed9bd005a91d371b"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-scenario-engine.test.cjs",
+      "bytes": 928,
+      "sha256": "6394b44d516095039e43135a009156e36ab17925a11098fd418e622b7cc7a476"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-twin.cjs",
+      "bytes": 4716,
+      "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-twin.test.cjs",
+      "bytes": 1742,
+      "sha256": "cfbcb674b3e43f4b12b92afc82348bd76d1fead478fc58973270ffadc4721e17"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-video-contract.cjs",
+      "bytes": 7059,
+      "sha256": "b35061885cc6936a58eadb40033c744135f80143c1f0e927e45c491eedc27645"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-video-contract.test.cjs",
+      "bytes": 2476,
+      "sha256": "b47edfbc6d7d2e9a3ba869fa32f0128afe5266b59cdbe18cf000e5ed30336fe1"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-workflow-manifest.cjs",
+      "bytes": 24222,
+      "sha256": "c083fed8e10f79e60282c25988cf8988b4cdfe1de6b9d8679ea550b2adc97da0"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/runtime/training-workflow-manifest.test.cjs",
+      "bytes": 2168,
+      "sha256": "84eb4ccc57a1317f061213e1191896e2d618c81524e0d32237f65109b28cd5d2"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/ui/adaptive-coach.css",
+      "bytes": 5109,
+      "sha256": "6ebb72c90c0f8a914f91f019fd8bde040582ea7ac860a5390028205a0ecadad5"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/ui/adaptive-coach.js",
+      "bytes": 12638,
+      "sha256": "4639bc9fd33db36dc52af03dc1a700b7a53857b1aa053fb10e34947f11401117"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/video-worker/package.json",
+      "bytes": 158,
+      "sha256": "f9c583eca86137a7c9228edb85f244a5584d547523c56a05c8b96c4faa281239"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/learning/video-worker/runner.mjs",
+      "bytes": 8862,
+      "sha256": "06b66e5cd850ed6e45d45c9fc7ff29a7026e87de33842b03aad8559dfb6421a5"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/absence-recovery-shadow.cjs",
+      "bytes": 2008,
+      "sha256": "3bf1e3fd89c33f107d2cca27175589f9f0c3143aa5a9503e59a05549c8957a18"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/absence-recovery-shadow.test.cjs",
+      "bytes": 1569,
+      "sha256": "e203a357a935401857fdb126ef3cb7188950c45a9c3474ca28182f16ae6245c5"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/autopilot-execution-engine.cjs",
+      "bytes": 14858,
+      "sha256": "556d0a6d31c2ccbebec12a52c5b2f1f18604d06a843ba2affbf3020376261c84"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/autopilot-execution-engine.test.cjs",
+      "bytes": 4567,
+      "sha256": "b10c36700ca8289d6fdcfb7440fbb76221b99c59464d8c5ae6ea9744b3de9761"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/autopilot-ingress.security.test.cjs",
+      "bytes": 2853,
+      "sha256": "169d1719fed32f285ff82c3a88b5d13b4127cc0daeb7d95d52668a30ca97f36b"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/autopilot-replay.regression.test.cjs",
+      "bytes": 7410,
+      "sha256": "c63a9f679fe7eb0d25f7851e642a24c537619be55a882f733773c11adb4b372d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/customer-demand-intelligence.cjs",
+      "bytes": 5845,
+      "sha256": "b61b8fbf9b3d90060330333441591fd965e402a5bd1a6142847aba28d33ba868"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/customer-demand-intelligence.test.cjs",
+      "bytes": 2181,
+      "sha256": "4977711893672dc410be8dba9330502c20b3fad3aab758ebd5ca10fb57c551fe"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/decision-episode.test.cjs",
+      "bytes": 3042,
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/decision-outcome-proof.cjs",
+      "bytes": 7146,
+      "sha256": "cea119671c780e75ee282a2eee94e19e09f5b6cd597b197b6964f4e3aa5769d4"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/decision-outcome-proof.test.cjs",
+      "bytes": 4661,
+      "sha256": "d17a3f9a27959874013197f3dfc3052d43f64c69068cce024e8481b054a25cd4"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/demand-decision-service.cjs",
+      "bytes": 12785,
+      "sha256": "e34a1294a103b9ca960cbdb69c103d0ba734e5a591aa5a5229a5c59071d9bad6"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/demand-decision-service.test.cjs",
+      "bytes": 6286,
+      "sha256": "d8e1703ee675a6d4f247d8b30d14650fa0153671549b29e040db4d3ed1613b2a"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/manufacturing-demand-forecast.cjs",
+      "bytes": 6454,
+      "sha256": "ca91a64915eac0842e0df913806822c2ffcc013577e06cf232ee804fa6068bb9"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/manufacturing-demand-forecast.test.cjs",
+      "bytes": 1653,
+      "sha256": "9526a3b5ecf0a2f0368056b29750549a5c279c7b6e075c76c5c69b006ac47ea6"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/manufacturing-scheduling-engine.cjs",
+      "bytes": 26491,
+      "sha256": "cbb15a3f5e560f44a325f487a1615e34883043cd40fc3ba574239f3b94c8ec4e"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/manufacturing-scheduling-engine.test.cjs",
+      "bytes": 4776,
+      "sha256": "3e432d1b12b96a4ec8c79cdabf62b85c77a943c92ef89a0ced9162e4cc13a2bc"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/realtime-event-service.cjs",
+      "bytes": 7540,
+      "sha256": "4e2b6188251f5c1a5487698bb3dffccc35bad5dfac01b1c168f8758edbd92b94"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/realtime-event-service.test.cjs",
+      "bytes": 2196,
+      "sha256": "f6a5a134323878f7dfd2debffe5fe248e74c4b55c388ca95a5810e751b62bfb2"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/schedule-attendance-reconciliation.cjs",
+      "bytes": 3665,
+      "sha256": "d60c40b1e1bb3ead724b6f20e10336e49f7ce9d20a74b61404fbd5d7f0126cdb"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/schedule-attendance-reconciliation.test.cjs",
+      "bytes": 1688,
+      "sha256": "00e950bc6a4ea94fe49e47bfaccba02f958c123ca0022e9142f55b81d655c677"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/scheduling-forecast-reconciliation-service.test.cjs",
+      "bytes": 4868,
+      "sha256": "61f0c3d71f04f33aaa8c76ce9c20c6908a059f3b3008a4fcc23af9bc19ed8c3e"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/scheduling-intelligence-service.cjs",
+      "bytes": 15216,
+      "sha256": "ab89e8ec9f9051285722a930b9949a0de5cba344a54001b47f9ba6d71fbca4f8"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/scheduling-intelligence-service.test.cjs",
+      "bytes": 5620,
+      "sha256": "a6079c5ff392ba84576c4a84de76f37339af4e7e3e99f8afb78faf024fcb62e8"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/t9-customer-guardian.cjs",
+      "bytes": 9861,
+      "sha256": "e06443a47c020af5729f7f810cfc52eb0e855e59fdef4694a0334e7b64bcd888"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/t9-customer-guardian.test.cjs",
+      "bytes": 3147,
+      "sha256": "6279b633fdae181a8d92afe01643a854257677c2ff857e3a58c61a47038cf9ff"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/workflow-action-evidence-bridge.cjs",
+      "bytes": 8227,
+      "sha256": "4655259f92e19d6c8a6e0932d168e2a1ee6505a0b4570a99205bb7e10633a628"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/workflow-action-evidence-bridge.test.cjs",
+      "bytes": 9803,
+      "sha256": "d93540eb62ce9c87bc4b8510ef9e6cb971182ef5e7de27f710a65ca6a3a0bbe7"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/workflow-action-evidence-contract.cjs",
+      "bytes": 8956,
+      "sha256": "2168079f3e046fc8809533b290fc219e3f8f852cab96b14a1b28b12b2dce72a6"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/workflow-action-evidence-contract.test.cjs",
+      "bytes": 9938,
+      "sha256": "d3b58bf27098ef8e4b7e49241baa49c324ec84f5d19658704a469866381046dc"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/workforce-lifecycle-guard.cjs",
+      "bytes": 16448,
+      "sha256": "ccf8e1fa34657fa2a54b31acc32a986b0ae74d8949241513f962ad531a7d2953"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/workforce-lifecycle-guard.test.cjs",
+      "bytes": 9000,
+      "sha256": "f8ae54a7c2d18c592ac9a7417346f63539de518b8e4a26d583248e8fb5c02059"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/operations/runtime/workforce-lifecycle-router.cjs",
+      "bytes": 1645,
+      "sha256": "39c0779e62917ca510bfac14e2ea766577f7cd1b49da4a2d43f5ce46e2b7401a"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/authoritative-policy-source-registry.cjs",
+      "bytes": 4591,
+      "sha256": "0a3d5b39a796d509e20b62e2d18227ab49000e6706ccf4d09342134a83aafde8"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "bytes": 1559,
+      "sha256": "c6f4d4f5348fb60cff8e8736f1dca639391cced66d490fb51d0b9cff5a58d83d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/country-policy-pack-registry.cjs",
+      "bytes": 5407,
+      "sha256": "d49d5258a991024fc1cfea3060b9cd403c1c6d71a6756a32bda0d1f10393c642"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/country-policy-pack-registry.test.cjs",
+      "bytes": 1555,
+      "sha256": "e567775ab36913c0a78f1cdf73bcda3725c5235c99c032e8695c173fcb71b59c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/global-site-policy-preflight.cjs",
+      "bytes": 4295,
+      "sha256": "ba91ae4e44cb4da19d76978c1c3c067f54646015cdb7928e777187bc7710b62f"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/global-site-policy-preflight.test.cjs",
+      "bytes": 2439,
+      "sha256": "5ba6ca5bbfbfe9c24add83ce6b46cf40a9d2e2631d703a69c624771a9aa33819"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/jurisdiction-policy-graph.cjs",
+      "bytes": 10225,
+      "sha256": "3f7f932197f54abdc5aed5d9c797d3287306c9e6ebf74a8cb57f8c7124cc7a9b"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "bytes": 4010,
+      "sha256": "77de65adce623c17f29b4d9eec8cb2b9c26fc99535eeac30871ee4af78b230cc"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/regulatory-change-candidate.cjs",
+      "bytes": 3281,
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/policy/runtime/regulatory-change-candidate.test.cjs",
+      "bytes": 1881,
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/agent-network-boundary.json",
+      "bytes": 3286,
+      "sha256": "1c97be127eef327a080242a0f7abaac99923b78d20aa71b7ab1aab9564477c4c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/autonomous-repair-canary-orchestrator.cjs",
+      "bytes": 8545,
+      "sha256": "4405bd78c6a3a299190563dc61e27b56ad87fe9bbc1c713e950321e9f45403a6"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/autonomous-repair-factory.cjs",
+      "bytes": 8239,
+      "sha256": "a09c8aa3d6ae512e317bd82e80d6dfeabd04714dea2410533abc29692dd32b8e"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/autonomous-repair-pipeline.cjs",
+      "bytes": 9255,
+      "sha256": "044235abbaf6b6013307bc09c8df837baedb16eef42791a72e705bc2cdbb5adc"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/autonomy-control-loop.cjs",
+      "bytes": 10589,
+      "sha256": "cbfcde16d44f3a04222aa93cbd33e02fb4368a4aa2a52cf99f1977a156955d91"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/canary-rollback-controller.cjs",
+      "bytes": 11614,
+      "sha256": "f77654456f7ed21436f9d93e74f994c5fa8eedcc02a1141014c81fccb157adf1"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/ci-provider-failover.cjs",
+      "bytes": 4031,
+      "sha256": "8b48096fd0a5498d3bddc67dde72ede198954dba00d59762cef1a1c627f2da83"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/disposable-staging-gate.cjs",
+      "bytes": 9512,
+      "sha256": "3fb5f601666dd7ff8d8643fda9ceeea37ccf127550d1d23e6cf59ba821d828d4"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/failure-scenarios.json",
+      "bytes": 20958,
+      "sha256": "e26999082261f36bdd365fd24fd1b1cb3a6dc876206ec1319a545fafaa75bc52"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/incidents/2026-09-17-agent-broker-egress-credential-exfiltration.json",
+      "bytes": 3658,
+      "sha256": "d9b51c0430022fe76455110ebab755aaecae03b6aac245f1d8ac4c0d28c120af"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/incidents/2026-09-17-node22-bundled-undici-6280.json",
+      "bytes": 2902,
+      "sha256": "3b984e788c47623a59e4315738516d91e9a63cded4ebd3a060ac21bc9358952c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/incidents/2026-09-17-provider-recovery-handoff-gap.json",
+      "bytes": 4761,
+      "sha256": "b5be7d40d2fe167ebded42ac6e22981b2052a60db1ae37daa2a4c1a68fa74436"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/incidents/2026-09-17-railway-workflow-secret-boundary.json",
+      "bytes": 2468,
+      "sha256": "c0c1ca15ee6a8968dd2fd7d940dfcdff3efd9af9e2b63fff89fe04784eb6b904"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/incidents/2026-09-17-rc4-hosted-identity-drift.json",
+      "bytes": 1800,
+      "sha256": "67a34cc1cfcfb4b483a52c93d00beeb90b7720a041ac94a41489517927a7b873"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/independent-repair-verifier.cjs",
+      "bytes": 7501,
+      "sha256": "4f530cf554e3c2cecf9a64416c7c1974a8647574e2acfe9bd4bf962e2f44eed4"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/isolated-environment-provisioning-plan.cjs",
+      "bytes": 14652,
+      "sha256": "0b4619a96c55e9818dfebc4c9d58aa97e5249d95fbacb339c327483ab3a9bfcb"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/isolated-repair-worker.cjs",
+      "bytes": 8065,
+      "sha256": "ef3e57ff69a6a3546386634048cc6f571fe95df347bc561b9f1dd59658a42fa6"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/no-idle-wait-orchestrator.cjs",
+      "bytes": 6153,
+      "sha256": "825920e0a3c7e3eb8d11a9cb085687ab62017165068bf0c2f14366f6ddceb25c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/no-idle-wait-orchestrator.test.cjs",
+      "bytes": 6038,
+      "sha256": "1fa690dae415c602d49fe96bfd056cc785cb3850c3cac1560fbf833acf8c5e5b"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/onedrive-sync-policy.json",
+      "bytes": 1603,
+      "sha256": "be36c5c7c76f87602df263585571322e1c96865549e14e155cb6bbd7c73ac8ab"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/pre-freeze-simulator.cjs",
+      "bytes": 7437,
+      "sha256": "ba24c9fde3d88cf00f94d1317a7ac6626e1043a638874bb4ebb25cfbf3cdd7b8"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/pre-freeze-simulator.test.cjs",
+      "bytes": 12084,
+      "sha256": "d962ab7066b0d5b5368f04b2cabfed56c7abd307771e178b3f171211a280f22d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/proofs/2026-09-17-live-railway-restart-recovery.json",
+      "bytes": 2996,
+      "sha256": "a0a58e5ffe30b2362932246432132ec41fb3244ad7cd3735f6c9973638e80d83"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/proofs/2026-09-17-provider-recovery-authority.json",
+      "bytes": 3389,
+      "sha256": "55e19556ccb74b3d556bd241f906ae35e3d1e1ebad2c8f0a1c3e54a59c2c0d25"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/proofs/2026-09-17-provider-recovery-handoff-reference.json",
+      "bytes": 2568,
+      "sha256": "122703e60c39489d518594bdc0463ff3c5bf553a0c6b7d697f5ad82fca46b0dc"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/proofs/2026-09-17-support-incident-bounded-recovery.json",
+      "bytes": 2325,
+      "sha256": "b4f7540398bc2abc5df171367f264c2619f7ddfcd95dc6030265e1650b4c453d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/proofs/2026-09-17-zero-human-worker-recovery.json",
+      "bytes": 1885,
+      "sha256": "49bdd113e15f080ecf17cf39cdd2956cd31251b85dcb8f40afec7a4520300ded"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/proofs/2026-09-18-customer-proof-controlled-redeploy.json",
+      "bytes": 3589,
+      "sha256": "4e5f7d7cefab5743bd5d3ada636d8b7ca9cf29c7395274953d608cfc22894278"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/proofs/2026-09-18-provider-recovery-canonical-handoff.json",
+      "bytes": 3670,
+      "sha256": "f5fe145227d4734c1d816b18ce8790cc0ed88a99566654a07e4aac0849c69c7c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/prototypes/provider-recovery-handoff.cjs",
+      "bytes": 10082,
+      "sha256": "949597741ca3eb557114877948bfcef29db99c87be73d0098c3d3fe89d5a5a8c"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/provider-recovery-handoff.cjs",
+      "bytes": 17361,
+      "sha256": "65e4e2d60e1d226135eff5e98dd2d469ca3b396ad0399e9eb56b2da64e815586"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/research-convergence-theory-simulator.cjs",
+      "bytes": 4564,
+      "sha256": "8545a59c6d3b15fe9da156ad249a328b1cc87324f82e70a934a74cfb64e85e13"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/research-convergence-theory-simulator.test.cjs",
+      "bytes": 4490,
+      "sha256": "aacbdede5245ce0a091b036888435f4d0c1225cff08ed4a3d70aeb384319d0e5"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/security-baseline.json",
+      "bytes": 8373,
+      "sha256": "21b834dada58b0e06cdc5727ad4301226f1ed0f3c17aa33e64ba3aa30ea67b25"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/supply-chain-denylist.json",
+      "bytes": 719,
+      "sha256": "046887b1ae1b652fa97c1a80148f24435650e7025e5d1b4faa871ed495576a61"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/support-selfhelp.cjs",
+      "bytes": 4415,
+      "sha256": "d4417ec6b0fdeb806752dbe1fee0682135c4d1898fd0cdd919a7630c0d7b9825"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/resilience/support-tier-contract.json",
+      "bytes": 7024,
+      "sha256": "648d74519e592bc1851ac8e77f86e1ae06bfe06e4a2045e377e81bab0024d37b"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/scripts/current-candidate-role-browser-proof-server.mjs",
+      "bytes": 4723,
+      "sha256": "ff57ddff67c3cfeda09b9bbf3214e4e8271db839b39e2a326148eda11d9e6d98"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "bytes": 7722,
+      "sha256": "6134bf22ffb289a9a1d74e95dc2706d6c4e56f095afb20ec1a8596503fa9f579"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/scripts/run-forge-ci.mjs",
+      "bytes": 2768,
+      "sha256": "5d20825acebf8032e19191a58c514bbfcec87842930727d8d3a658b151c673a3"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/scripts/vector-proof-result.mjs",
+      "bytes": 5059,
+      "sha256": "6feddbe9a318eae12f79e0374d0bfa13fdace67fd610a6e26abd6a0c4a09205e"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/scripts/vector-repair-regressions.test.mjs",
+      "bytes": 5994,
+      "sha256": "0bb48f3ec4dee364e394fed7b99f15359cc8cbc1154dd2227a24c4e7498406d8"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/bootstrap-passkey-assets.test.cjs",
+      "bytes": 1742,
+      "sha256": "e0504c4fcb44ef43377eb41c1a56ea2051678473ec8d625b9500541ed1705add"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/bootstrap-proof-runner-wiring.test.cjs",
+      "bytes": 964,
+      "sha256": "2baca537fc21d578d3c0e2eb8ff65d876fd7461d42679a4991b17d4619578a00"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/bootstrap.cjs",
+      "bytes": 22438,
+      "sha256": "7189805add550a7817db0cdaa4122887642375f91413cf9ea0e8f78e1a0be9bf"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/durable-state-guard.cjs",
+      "bytes": 2117,
+      "sha256": "47141b5f9b22f2c8774a2bf473f3c64940fe16bb10a7b4ac3fc85e74e9fcf330"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/durable-state-guard.test.cjs",
+      "bytes": 1394,
+      "sha256": "ea76e6f124b53403489911db80692fb5435a0b360dbeaf412bbc4285437145a6"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/hosted-application-user-guard.cjs",
+      "bytes": 454,
+      "sha256": "04bb1d31aa53177b7ccfb6361914ca211fdb4646cf4ab8021bfd02fd6c9be0d9"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/hosted-application-user-guard.test.cjs",
+      "bytes": 999,
+      "sha256": "d07f9d85a15f01d22453d5849d76fff334e71a7bad7411c81b2b74a2f1023b42"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/hosted-listen-guard.cjs",
+      "bytes": 1243,
+      "sha256": "b5c7aeafb96f84fcdf6ee28aa103223cdf9743fe9d28e3dfa29412bd966f25e5"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/hosted-listen-guard.test.cjs",
+      "bytes": 1746,
+      "sha256": "66f80769440dfd86e67403076569ba34f2f2de39afea65fdc4b8f24ff1e440fe"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/identity-survival-guard.cjs",
+      "bytes": 11241,
+      "sha256": "b57836440642b7157f72a19a11f1c9c80ea7faa68de9cf9173d2346137f9385f"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/identity-survival-guard.test.cjs",
+      "bytes": 9047,
+      "sha256": "2d3d5cf90f3a18e0c9c3e31ae8d2d7cb052a1f06c5aed9e3c025e56c17df3f51"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/owner-access-recovery.cjs",
+      "bytes": 11614,
+      "sha256": "4f0ff3f3968dea60f5511c0c9b89bbff148463fb37067337dada7c9abdb5475d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/owner-access-recovery.test.cjs",
+      "bytes": 12420,
+      "sha256": "5c6fdcaf571cba85ba3ba25c643f5dda75c7a9bbf0dede9494821eac72acaccd"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/OWNER_ACCESS_RECOVERY.md",
+      "bytes": 6314,
+      "sha256": "e08fe9254000577b95684f05210b8287c81560c5382e4e5fe676ac570b9053e2"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/package-lock.json",
+      "bytes": 12969,
+      "sha256": "8a21dada89673eb721a2200c4e64444b4d583a7df5df5d0add52d3ca2546229d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/package.json",
+      "bytes": 194,
+      "sha256": "1e3cf74f95d599c55c7bd47cd449b8099b4331d6cfc67ba978bef62e38179ae0"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/passkey-auth.cjs",
+      "bytes": 16971,
+      "sha256": "af46d7ab53587c76adee20761e8d6802eb56778e73711486edccb617098d6816"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/passkey-auth.test.cjs",
+      "bytes": 14054,
+      "sha256": "c11e4f5422f33bd09a20272123a9864e4cc4ac5ebd1d4c85e8c4c8e441839c71"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/passkey-entry.html",
+      "bytes": 1368,
+      "sha256": "bdfaa153dcbc6acce1722ebef579a5e8c96804f9c44c3cc496a82c753757b4ca"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/passkey-schema.cjs",
+      "bytes": 1741,
+      "sha256": "5a31cefe7f21f265b16b78182d319e1987ead8e393a357599f7d97a84acd301a"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/passkey-session-ui.js",
+      "bytes": 964,
+      "sha256": "b1e62c60eb0c0e913b2986f37c5fd56dce02a2d311442f4328e53021117ee247"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/passkey-session-ui.test.cjs",
+      "bytes": 1298,
+      "sha256": "f463ce8c2b41c425e74361e4adf94eb96106eca641ac816d4c1fbed411e58ac9"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/passkey-ui.css",
+      "bytes": 1920,
+      "sha256": "064f200188913a4d2f1889c26b4c08b5bed2430ef865f0d7a223e8fde00139d2"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/passkey-ui.js",
+      "bytes": 2831,
+      "sha256": "67a97220b0119a31cd25b5644819269bcb430ab9e82e915f8fc5d2098cc5e195"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/proof-runner-auth.cjs",
+      "bytes": 12863,
+      "sha256": "035e973167e2b2d3782386f5a4d852c30a84549789d662342ee30de99431ca37"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/proof-runner-auth.test.cjs",
+      "bytes": 9889,
+      "sha256": "0dc5f650ec1be9991622d9adef29a1aac05d2a25bc9f7da382b3542e204c3ade"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/retired-presentation.cjs",
+      "bytes": 710,
+      "sha256": "885bd5602e1bc83c57c470d050001141df0d288658ab7f6571932feedea658ab"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/runtime-identity.cjs",
+      "bytes": 5956,
+      "sha256": "e3a536c0660a25e2d07872714d7402b0adc00d096b51e8223ae6a45ce0fe6bdd"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/security/runtime/runtime-identity.test.cjs",
+      "bytes": 6802,
+      "sha256": "23731c200fa80fb3de1c22484800ce17e371d4c85a9e227c5f7f23bd4950589e"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/tests/vector-payroll-release-proof.test.mjs",
+      "bytes": 2850,
+      "sha256": "c72275fc97065d04da2fea2673c822973cabe412ee89447c874ee90d26d7641f"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-reviewed-source/ux-overlay/vector-shell.js",
+      "bytes": 84642,
+      "sha256": "2f33abb9c329ccc2c80583b04d859add30f5096b5094f9cd1681694756d5ca95"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-3aVtPi/state.sqlite",
+      "bytes": 212992,
+      "sha256": "0e7aced1185ff7538bd652ae1ec5637ca3d8ca06e8ab4ec037839e89090b2ce5"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-6XkCQq/state.sqlite",
+      "bytes": 204800,
+      "sha256": "58e64b97f3552b2656efe3249968ee97b39a181f87ad39b83c9d9f6cb0a7a242"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-aECg3G/state.sqlite",
+      "bytes": 208896,
+      "sha256": "f876751c5e1df6b671d0800b48d44e4da99854ed2cd619b98e57c090970dca54"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-eKWEvj/state.sqlite",
+      "bytes": 208896,
+      "sha256": "f72171c32fcf333172f3e6d70dbe0dfab174501e5e1c6b152de14715b842ef66"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-FA0axj/state.sqlite",
+      "bytes": 204800,
+      "sha256": "62dc542f732262a0b193059f352b11dbd94f82b4b478aa8f75f520f5da6df4ab"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-Hsv1O8/state.sqlite",
+      "bytes": 172032,
+      "sha256": "178fe3ac14cc5b624a588a4804939eab3d926456811af2677cca27f77cf9d394"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-IlMTXQ/state.sqlite",
+      "bytes": 184320,
+      "sha256": "6142851483e2748b2776281f83a53a54a057718773c21738695fe9e5501a6cca"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-MzAaiV/state.sqlite",
+      "bytes": 204800,
+      "sha256": "3945f65971277453c077d3b71dbeb2d94961b2b610e572fe97c2bd7b765b9094"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-pMTlN1/state.sqlite",
+      "bytes": 163840,
+      "sha256": "f519aa71e8dc09a55111780c4bb2a0998c9393c1070a16640465a9a96c7d1251"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-WiE56v/state.sqlite",
+      "bytes": 204800,
+      "sha256": "f6ebae48cc9a0ce878510b901d69e883744a3b601c9090e9ca1b85f3f3818c02"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-WNshDp/state.sqlite",
+      "bytes": 208896,
+      "sha256": "44d9f3a74d1c2f32b62ee9cccb9a6f0a691b8f7b8d659eb8039a0dc402ec918d"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-Ykykp3/state.sqlite",
+      "bytes": 163840,
+      "sha256": "1289862511d3ccd5334c3493c3f5d55806ee6f312486a554145af71a9810999f"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-yvpmzt/state.sqlite",
+      "bytes": 172032,
+      "sha256": "f30ec10bdc6b52c6d25481c9d03b2a882a7105db97437233f1b999b49619684e"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-ZfFRod/state.sqlite",
+      "bytes": 163840,
+      "sha256": "c8a9098d50363fe5da538b33451f6c629903ca6126e10441c19444cb7c384b29"
+    },
+    {
+      "path": "work/trust_review/current-admission-repair-fixtures/case-ZJeZvM/state.sqlite",
+      "bytes": 208896,
+      "sha256": "5b3d13ea62469f927fbf00e83f40025b695b0bb77e04f25a0c1854b01859cf04"
+    }
+  ]
+}

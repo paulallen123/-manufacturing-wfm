@@ -1,0 +1,152 @@
+{
+  "runtimeBlob": "e6c2cd64ddc27b8113061e61b7ef4e3dbf0c796a",
+  "testBlob": "a24b7f4580969aaef0f802891e10bc3c0c16e1f4",
+  "ownerArtifactsVerified": 54,
+  "artifacts": [
+    {
+      "path": "work/trust_review/materials-review.md",
+      "bytes": 4075,
+      "sha256": "b4cb0e5699e63c7f91cecac70e31f894ec45f9b2d085e65ab2d25bb6dc161291"
+    },
+    {
+      "path": "work/trust_review/materials-findings.json",
+      "bytes": 1212,
+      "sha256": "7c2009991c2535284f1beb4ca11b1062a7ff3d0404aa007834a5cd47cc03578c"
+    },
+    {
+      "path": "work/trust_review/materials-identities.json",
+      "bytes": 3293,
+      "sha256": "66ec84d0843e4e298129b01ec9743296da49d031bca4f26fe02fb66af77c1233"
+    },
+    {
+      "path": "work/trust_review/materials-owner-custody.json",
+      "bytes": 14223,
+      "sha256": "190134477667bd58e620ddd8625c4cbc396a1e3bc6b18d25018d1068ce20115d"
+    },
+    {
+      "path": "work/trust_review/materials.held-out.test.cjs",
+      "bytes": 7276,
+      "sha256": "4ee097af16b8404dfc30d323dfc0b8c4c416d97405f5b15672d68f606f61e942"
+    },
+    {
+      "path": "work/trust_review/run-materials-review.cjs",
+      "bytes": 2504,
+      "sha256": "db7bb194d85393ab33cdd36e7feb66b09b33de2b11e60c046f5d28fea8477a8c"
+    },
+    {
+      "path": "work/trust_review/seal-materials-review.cjs",
+      "bytes": 2456,
+      "sha256": "162a7043c523b6e13515a9ac9966f5068ade4f4be851e996f04b0963ca521a72"
+    },
+    {
+      "path": "work/trust_review/materials-held-out.node22.tap",
+      "bytes": 6038,
+      "sha256": "717508c0ae8a1fc99cc72a09b93bf2d73c09f50e377a73278a3065b12d505529"
+    },
+    {
+      "path": "work/trust_review/materials-held-out.run.json",
+      "bytes": 539,
+      "sha256": "28937c2f7fff342880153586757baff224deffa76a2536c92380c8f99bdd6d08"
+    },
+    {
+      "path": "work/trust_review/materials-affected.node22.tap",
+      "bytes": 8641,
+      "sha256": "67f729e2470cebf530054c66d6bec021f86f1e6237d92e1afcf82b47249975ec"
+    },
+    {
+      "path": "work/trust_review/materials-affected.run.json",
+      "bytes": 732,
+      "sha256": "d42b281f15bfebd5b060a245c365c920ae233bc400d69ec0f8d037e1f37bd6d6"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/frozen/implementation/runtime/implementation-digital-twin.cjs",
+      "bytes": 5922,
+      "sha256": "8cf6d51d77d01091e73b2f4621a672e3c953f170e0f154bf9966c32cc57a1f3d"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/frozen/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/frozen/operations/runtime/decision-episode.test.cjs",
+      "bytes": 3042,
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/frozen/operations/runtime/decision-outcome-proof.cjs",
+      "bytes": 7146,
+      "sha256": "cea119671c780e75ee282a2eee94e19e09f5b6cd597b197b6964f4e3aa5769d4"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/frozen/operations/runtime/demand-decision-service.cjs",
+      "bytes": 12785,
+      "sha256": "e34a1294a103b9ca960cbdb69c103d0ba734e5a591aa5a5229a5c59071d9bad6"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/frozen/operations/runtime/manufacturing-scheduling-engine.cjs",
+      "bytes": 26491,
+      "sha256": "cbb15a3f5e560f44a325f487a1615e34883043cd40fc3ba574239f3b94c8ec4e"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/frozen/operations/runtime/realtime-event-service.cjs",
+      "bytes": 7540,
+      "sha256": "4e2b6188251f5c1a5487698bb3dffccc35bad5dfac01b1c168f8758edbd92b94"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/frozen/trust/runtime/vector-trust-spine.cjs",
+      "bytes": 22881,
+      "sha256": "a3dec9a4e52b36f16caa1152d120fe50cdc72830f1a03bc630bf803e82cf9b45"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/implementation/runtime/inert-finite-json.cjs",
+      "bytes": 1981,
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/operations/runtime/decision-episode.test.cjs",
+      "bytes": 3042,
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/operations/runtime/material-shortage-projection.cjs",
+      "bytes": 5877,
+      "sha256": "ed4c1e9921124c41e5226f992b586d5b8a1e75c99213a11cfd63864b6fcacf89"
+    },
+    {
+      "path": "work/trust_review/materials-reviewed-source/operations/runtime/material-shortage-projection.test.cjs",
+      "bytes": 9233,
+      "sha256": "e8ce78f1dbc8dbb86a3fdb4cde727a0799a78c1b5334483b0bbf2f2854fb6c08"
+    },
+    {
+      "path": "work/trust_review/materials-owner-evidence/evidence/02-historical-boundaries.log",
+      "bytes": 5204,
+      "sha256": "5e48490a729a7aaf11110767e215877126a5d390026eb78e4081c6e18afa63a4"
+    },
+    {
+      "path": "work/trust_review/materials-owner-evidence/evidence/05-numeric-underflow-red.log",
+      "bytes": 10456,
+      "sha256": "3ed8396fa5f2e4050df19dfa1d2fea074ad80d25c99ce2f471fef9f72faa2bbb"
+    },
+    {
+      "path": "work/trust_review/materials-owner-evidence/evidence/07-archived-numeric-red-replay.log",
+      "bytes": 10567,
+      "sha256": "4521b489f6e0df7a80811a9dc301a6435af8dd8bdccf91fe5f079a512b3c488d"
+    },
+    {
+      "path": "work/trust_review/materials-owner-evidence/archive-pre-numeric-repair/identity.json",
+      "bytes": 353,
+      "sha256": "c09d617d22ad31b90b6b664a80f124fac5c4e3612605f7f8b5dbc26b0ed8fff4"
+    }
+  ]
+}

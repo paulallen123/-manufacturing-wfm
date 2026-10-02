@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-02T12:29:26.224Z",
+  "branch": "feature/vector-lane08-skills-demand-20261002",
+  "commit": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+  "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "tree": "7d95bd0156e20706f4eb5b94fe2c8df1f4e11870",
+  "allBlobsVerified": 1173,
+  "frozenBlobsUnchanged": 1094,
+  "addedPaths": 79,
+  "shippingPaths": 4,
+  "shippingBytes": 25178,
+  "recursiveTreeUntruncated": true,
+  "readbackVerified": true,
+  "capabilityId": "product-033",
+  "capabilityState": "IN_PROGRESS",
+  "component": "TESTED_AND_INDEPENDENTLY_REVIEWED_LOCAL_SOURCE_ONLY",
+  "runtimeWired": false,
+  "customerProof": false,
+  "convergenceSha": null,
+  "provenBaseSha": null
+}
