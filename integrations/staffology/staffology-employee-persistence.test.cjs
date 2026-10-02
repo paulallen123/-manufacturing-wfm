@@ -27,7 +27,7 @@ function schema(db){db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;
  CREATE TRIGGER no_audit_update BEFORE UPDATE ON audit_events BEGIN SELECT RAISE(ABORT,'Audit events are append only.'); END;
  CREATE TRIGGER no_audit_delete BEFORE DELETE ON audit_events BEGIN SELECT RAISE(ABORT,'Audit events are append only.'); END;`);}
 
-test('reviewed Staffology employee import persists across restart without duplicate apply or cross-tenant read',t=>{
+test('reviewed one-character Staffology payroll codes persist across restart without duplicate apply or cross-tenant read',t=>{
  const directory=mkdtempSync(path.join(os.tmpdir(),'staffology-employee-persistence-')),file=path.join(directory,'state.sqlite');
  t.after(()=>rmSync(directory,{recursive:true,force:true}));
  let db=new DatabaseSync(file);schema(db);
@@ -49,8 +49,8 @@ test('reviewed Staffology employee import persists across restart without duplic
   return integrations.stage(scoped,envelope,receipt.idempotencyKey,(_objectType,record)=>prepare(record));
  }});
  const currentIds=['retained-current-1','retained-current-2','retained-current-3','retained-current-4'],formerId='3a7e7298-b414-4b87-9cf9-ab9c75bded62',ids=[...currentIds,formerId];
- const acquisition={objectType:'people',paginationComplete:true,atomicProviderSnapshot:false,cursor:'cursor-5',sourceVersion:'staffology-five-person-revision',records:ids.map((externalId,index)=>({externalId,revision:`revision-${index+1}`,operation:'upsert',data:{identity:{employeeId:externalId,payrollCode:`PAY00${index+1}`},person:{firstName:index===4?'Ian':`Retained${index+1}`,lastName:index===4?'Jones':'Current',email:`retained-${index+1}@example.invalid`},employment:{status:index===4?'Former':'Current',effectiveFrom:'2018-01-01',...(index===4?{effectiveTo:'2019-07-21'}:{})}}}))};
- const receipt={approved:true,connectorId:cfg.id,connectorScope:cfg.scope,idempotencyKey:'staffology-people-five',mappings:ids.map((externalId,index)=>({externalId,payrollId:`PAY00${index+1}`,managerId:'m1',site:'Tamworth',job:'Machine operator',contractType:'full_time',weeklyHours:37.5,language:'en-GB'}))};
+ const acquisition={objectType:'people',paginationComplete:true,atomicProviderSnapshot:false,cursor:'cursor-5',sourceVersion:'staffology-five-person-revision',records:ids.map((externalId,index)=>({externalId,revision:`revision-${index+1}`,operation:'upsert',data:{identity:{employeeId:externalId,payrollCode:String(index+1)},person:{firstName:index===4?'Ian':`Retained${index+1}`,lastName:index===4?'Jones':'Current',email:`retained-${index+1}@example.invalid`},employment:{status:index===4?'Former':'Current',effectiveFrom:'2018-01-01',...(index===4?{effectiveTo:'2019-07-21'}:{})}}}))};
+ const receipt={approved:true,connectorId:cfg.id,connectorScope:cfg.scope,idempotencyKey:'staffology-people-five',mappings:ids.map((externalId,index)=>({externalId,payrollId:String(index+1),managerId:'m1',site:'Tamworth',job:'Machine operator',contractType:'full_time',weeklyHours:37.5,language:'en-GB'}))};
  runtime.assertEmployeeStaging(actor,receipt);
  const staged=runtime.stageEmployeeAcquisition(actor,acquisition,receipt);
  assert.equal(staged.status,'staged');assert.equal(staged.valid,4);assert.equal(staged.held,0);assert.equal(staged.lifecycleHold.held,1);assert.deepEqual(staged.lifecycleHold.employeeIds,[formerId]);
@@ -71,7 +71,7 @@ test('reviewed Staffology employee import persists across restart without duplic
 
  db=new DatabaseSync(file);
  const reopened=IG.createStore(db),persisted=JSON.parse(db.prepare('SELECT state FROM tenants WHERE id=?').get(tenant).state);
- assert.equal(persisted.onboarding.people.filter(person=>currentIds.includes(person.sourceId)).length,4);assert.equal(persisted.onboarding.people.some(person=>person.sourceId===formerId),false);
+ assert.equal(persisted.onboarding.people.filter(person=>currentIds.includes(person.sourceId)).length,4);assert.deepEqual(persisted.onboarding.people.filter(person=>currentIds.includes(person.sourceId)).map(person=>person.payrollId),['1','2','3','4']);assert.equal(persisted.onboarding.people.some(person=>person.sourceId===formerId),false);
  const detail=reopened.detail(actor,staged.id);assert.equal(detail.status,'applied');assert.equal(detail.records.every(row=>row.status==='applied'),true);const reopenedHeld=reopened.detail(actor,staged.lifecycleHold.batchId);assert.equal(reopenedHeld.records.find(row=>row.externalId===formerId).status,'held');assert.match(reopenedHeld.records.find(row=>row.externalId===formerId).reason,/2019-07-21/);
  let handlerCalls=0;const replay=reopened.apply(actor,staged.id,true,{people:()=>{handlerCalls++;}});
  assert.equal(replay.replayed,true);assert.equal(handlerCalls,0);
@@ -79,4 +79,15 @@ test('reviewed Staffology employee import persists across restart without duplic
  assert.deepEqual(db.prepare("SELECT action FROM audit_events ORDER BY id").all().map(row=>row.action),['integration-stage','integration-stage','integration-apply']);
  assert.throws(()=>db.exec('DELETE FROM audit_events'),/Audit events are append only/);
  db.close();
+});
+
+
+test('canonical onboarding keeps strict source identity and unsafe or duplicate payroll rejection',()=>{
+ const current=seed(),actor={tenant:'northstar-demo',personId:'d1',permissions:['company.configure']};
+ const row={source_id:'provider-employee-1',payroll_id:'1',name:'Demo Worker',email:'demo-worker@example.invalid',manager_id:'m1',site:'Tamworth',job:'Machine operator',start_date:'2026-09-01',contract_type:'full_time',weekly_hours:37.5};
+ assert.equal(ON.validateRows(current,actor,[row]).canStage,true);
+ for(const unsafe of ['', '../1', 'one space', 'a'.repeat(65)])assert.equal(ON.validateRows(current,actor,[{...row,payroll_id:unsafe}]).canStage,false);
+ assert.equal(ON.validateRows(current,actor,[{...row,source_id:'1'}]).canStage,false);
+ const duplicate=ON.validateRows(current,actor,[row,{...row,source_id:'provider-employee-2',email:'another-worker@example.invalid'}]);
+ assert.equal(duplicate.canStage,false);assert.equal(duplicate.rejected,1);assert.match(duplicate.errors[0].message,/Duplicate payroll ID/);
 });

@@ -12,6 +12,7 @@ const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const inputs = new Map();
 const recordInput = file => { inputs.set(file, sha256(fs.readFileSync(path.join(root, file)))); };
 const sealedExpected = {
+  'public/onboarding-engine.js': 'c06b354826747387fe14763dba5cef681ae08a1cf64d83d2fb54c1b13338476e',
   'server.cjs': '1792f544d0fea25577f683f3df957b4f74b6a086cd0479b24b1fe77f58587dd0',
   'lib/outbound-integration.cjs': '7e7b3126ac7fdd5712fc5fc7299e3c75893bc699f7ed200dbba29b914c2bf9d4',
   'lib/transactional-outbound-bridge.cjs': '52f890d30bde3e657e8e95d2f4db25d075ebdc8c8cf3be3bd4331b40c072e81f'
@@ -36,6 +37,15 @@ function composeStaffology(runtime) {
     recordInput(source);
     fs.copyFileSync(path.join(root, source), path.join(integrationDir, file));
   }
+  const onboardingPath = path.join(runtime, 'public/onboarding-engine.js');
+  let onboarding = fs.readFileSync(onboardingPath, 'utf8');
+  const normaliseAnchor = 'function normalise(s,row){';
+  const payrollAnchor = 'source=sourceId(row.source_id),payroll=sourceId(row.payroll_id),name=';
+  if (onboarding.split(normaliseAnchor).length !== 2 || onboarding.split(payrollAnchor).length !== 2) throw Error('SEALED_ONBOARDING_PAYROLL_ANCHOR_CHANGED');
+  // Provider payroll codes may contain one safe character. Source IDs retain their stricter rule.
+  const payrollValidator = "function payrollId(x){const v=String(x||'').trim();assert(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$/.test(v),'Payroll ID must be 1–64 safe characters.');return v;}\n";
+  onboarding = onboarding.replace(normaliseAnchor, payrollValidator + normaliseAnchor).replace(payrollAnchor, 'source=sourceId(row.source_id),payroll=payrollId(row.payroll_id),name=');
+  fs.writeFileSync(onboardingPath, onboarding);
   const serverPath = path.join(runtime, 'server.cjs');
   let server = fs.readFileSync(serverPath, 'utf8');
   const importAnchor = "const IG=require('./lib/integration-gateway.cjs')";
@@ -63,6 +73,7 @@ function composeStaffology(runtime) {
     activationAvailable: false,
     sourceHashes: sealedExpected,
     assembledFiles: {
+      onboarding: sha256(fs.readFileSync(onboardingPath)),
       adapter: sha256(fs.readFileSync(path.join(integrationDir, 'staffology-adapter.cjs'))),
       bridge: sha256(fs.readFileSync(path.join(integrationDir, 'canonical-runtime-bridge.cjs'))),
       productionBoundaries: sha256(fs.readFileSync(path.join(integrationDir, 'canonical-production-boundaries.cjs'))),
