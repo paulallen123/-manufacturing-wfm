@@ -1,0 +1,13 @@
+{
+  "observedAt": "2026-10-02T17:57:06.249Z",
+  "branch": "feature/vector-edge06-native-passkey-policy-a3-20261002",
+  "commit": "4fd326fce92876af9921db0700025ea0be809910",
+  "parent": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+  "tree": "ede16da20fda28d980a2dd756f4342a4e2df6fb5",
+  "sourceOverlay": "309166d21105daf6139d2d630cdda5eaabffe7c8",
+  "receiptSha256": "20497af1b3fa1a73725ce4b58674897d69c76cc274139b3916d5dcc8f7c42e5f",
+  "state": "IN_PROGRESS",
+  "componentState": "TESTED",
+  "customerProof": false,
+  "activation": false
+}

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T14:13:35.489Z",
-  "criticalPath": "Staffology repair admission -> exact runtime proof -> all mandatory hosted/customer gates -> immutable proven base -> convergence waves -> live verification",
+  "updatedAt": "2026-10-02 18:17:21 UTC",
+  "criticalPath": "Root finalizes the exact combined employee/START source review and transport, admits and publishes this reviewed coordination-only successor nonforce, then resolves the single-controller decision and concrete customer/actor/signer/private-handoff/backup/provider approval before canonical product review/release/convergence or hosted/access writes.",
   "items": [
     {
       "id": "TR-01",
@@ -172,7 +172,7 @@
       "id": "CI-17",
       "type": "REPAIRABLE_TEST_CONTRACT",
       "priority": "P1",
-      "status": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
+      "status": "HISTORICAL_EXECUTION_HOLD_SUPERSEDED_BY_EXACT_SOURCE_CI_SAFE_SUMMARY_NOT_CUSTOMER_PROOF",
       "title": "Review935 runtime job23 failed two full-runtime test assertions",
       "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
       "nextAction": "Verify unpublished cb9/1a98 fixture scope and held metadata/detail fixes in current repair source; rerun changed exact source in prescribed pipeline.",
@@ -180,7 +180,9 @@
       "historicalStatus": "OPEN",
       "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
       "ciJob": 63,
-      "customerProof": false
+      "customerProof": false,
+      "checkpoint6HistoricalStatus": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     },
     {
       "id": "IMPLEMENTATION-5-21",
@@ -220,19 +222,21 @@
       "id": "LOCAL-FULL-RUNTIME",
       "type": "ENVIRONMENT_SETUP",
       "priority": "P2",
-      "status": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
+      "status": "HISTORICAL_EXECUTION_HOLD_SUPERSEDED_BY_EXACT_SOURCE_CI_SAFE_SUMMARY_NOT_CUSTOMER_PROOF",
       "title": "Official dependency install and runtime composition completed; strict HTTP childstartup still failed locally",
       "nextAction": "Preserve first startup red; only reviewed Staffology successor plus admitted proof repairs may enter exact Linux/Docker validation.",
       "historicalStatus": "BF9_LOCAL_SYNTHETIC_HTTP_PASS_LINUX_AND_CURRENT_ADMISSION_PENDING",
       "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
       "ciJob": 63,
-      "customerProof": false
+      "customerProof": false,
+      "checkpoint6HistoricalStatus": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     },
     {
       "id": "CI-19",
       "type": "REPAIRABLE_RUNTIME_BUILD",
       "priority": "P1",
-      "status": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
+      "status": "HISTORICAL_EXECUTION_HOLD_SUPERSEDED_BY_EXACT_SOURCE_CI_SAFE_SUMMARY_NOT_CUSTOMER_PROOF",
       "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
       "title": "New Pipeline19 runtime26 failed,core25 passed",
       "evidence": "orchestration/evidence/ci19-browser/job26-build.log",
@@ -241,13 +245,15 @@
       "historicalStatus": "ROOT_CAUSE_EVIDENCED; successorLinuxrerunPENDING",
       "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
       "ciJob": 63,
-      "customerProof": false
+      "customerProof": false,
+      "checkpoint6HistoricalStatus": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     },
     {
       "id": "NATIVE695-HTTP-MAPPING",
       "type": "REPAIRABLE_PROOF_FIXTURE",
       "priority": "P1",
-      "status": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
+      "status": "HISTORICAL_EXECUTION_HOLD_SUPERSEDED_BY_EXACT_SOURCE_CI_SAFE_SUMMARY_NOT_CUSTOMER_PROOF",
       "sourceSha": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
       "title": "FullHTTP acquire-stage403: no accepted canonical contract-type/weekly-hours options before fixture acquisition",
       "nextAction": "Sole source owner configures legitimate existing fixture contract through supported authenticated command; preserve mapping guards and all original failures.",
@@ -256,13 +262,15 @@
       "historicalStatus": "REPAIRED_NATIVE_BF9_LOCAL_PLAIN_HTTP_PASS; Linuxpending",
       "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
       "ciJob": 63,
-      "customerProof": false
+      "customerProof": false,
+      "checkpoint6HistoricalStatus": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     },
     {
       "id": "SUCCESSOR-CI-TRIGGER",
       "type": "EXACT_CANDIDATE_ADMISSION",
       "priority": "P1",
-      "status": "CLOSED_EXACT_NONDEPLOY_EXECUTION_ON_D4FF; ARTIFACT_CUSTODY_SEPARATE_HOLD",
+      "status": "HISTORICAL_EXECUTION_HOLD_SUPERSEDED_BY_EXACT_SOURCE_CI_SAFE_SUMMARY_NOT_CUSTOMER_PROOF",
       "sourceSha": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
       "title": "Native695 trigger equals currentb851; successor with remote parentb851 would halt heavyCI",
       "nextAction": "Sole-owner truthful reviewed successor trigger delta; verify actual jobs run, not halted-green.",
@@ -271,7 +279,9 @@
       "actualJobs": [
         62,
         63
-      ]
+      ],
+      "checkpoint6HistoricalStatus": "CLOSED_EXACT_NONDEPLOY_EXECUTION_ON_D4FF; ARTIFACT_CUSTODY_SEPARATE_HOLD",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     },
     {
       "id": "PROOF-GATE-REPLAY-COERCION",
@@ -297,10 +307,12 @@
       "id": "SOURCE-OWNER-FOLLOWUP-CONFIRMATION",
       "type": "INTERMITTENT_BROWSER_TASK_ACCESS",
       "priority": "P2",
-      "status": "ACCEPTANCE_CONFIRMED; LATEST_SOURCE_CUSTODY_HELD",
+      "status": "SOURCE_CUSTODY_COMPLETED_HISTORICAL_NATIVE_NOT_CURRENT_AUTHORIZATION",
       "title": "Earlier follow-up completed bf9; new TR09B/TR12 follow-up prepared but task composer remains unavailable",
       "nextAction": "Obtain exact latest2blob bytes/parent patch from SAME existing task and prove declared native full tree before retained recovery tests.",
-      "evidence": "orchestration/evidence/staffology-access-20261002T1130.json"
+      "evidence": "orchestration/evidence/staffology-access-20261002T1130.json",
+      "checkpoint6HistoricalStatus": "ACCEPTANCE_CONFIRMED; LATEST_SOURCE_CUSTODY_HELD",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     },
     {
       "id": "TR-09B",
@@ -454,20 +466,24 @@
     {
       "id": "STAFFOLOGY-8690-SOURCE-CUSTODY",
       "priority": "P2",
-      "status": "HELD",
+      "status": "SOURCE_CUSTODY_COMPLETED_HISTORICAL_NATIVE_NOT_CURRENT_AUTHORIZATION",
       "type": "EXACT_SOURCE_BINDING",
       "nativeSha": "8690a0bf9b025b6574b410c27cb9a01409fa10c7",
       "title": "Exported patch and latest two declared blobs do not reconstruct latest native tree",
-      "nextAction": "Use same owner export to obtain exact latest bytes; retain discrepancy and do not publish/test under false8690label"
+      "nextAction": "Use same owner export to obtain exact latest bytes; retain discrepancy and do not publish/test under false8690label",
+      "checkpoint6HistoricalStatus": "HELD",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     },
     {
       "id": "CI42-ARTIFACT-CUSTODY",
-      "status": "OPEN_ACCESS_REQUIRED",
+      "status": "HISTORICAL_EXECUTION_HOLD_SUPERSEDED_BY_EXACT_SOURCE_CI_SAFE_SUMMARY_NOT_CUSTOMER_PROOF",
       "severity": "BLOCKER",
       "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
       "nextAction": "Retain and hash Pipeline42 jobs62/63 source/image/runtime/Staffology artifacts through the existing authorized CircleCI reader, verify them against d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd, then complete the exact hosted Golden Journey test authorization packet.",
       "evidence": "orchestration/evidence/ci42/source-download-receipt.json",
-      "customerProof": false
+      "customerProof": false,
+      "checkpoint6HistoricalStatus": "OPEN_ACCESS_REQUIRED",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     },
     {
       "id": "WORKFLOW-TENANT-01",
@@ -481,20 +497,152 @@
     },
     {
       "id": "LANE04-FROZEN-BOUNDARIES",
-      "status": "REPRODUCED10_REPAIR_APPROVED_SAME_EXISTING_OWNER",
+      "status": "CLOSED_ON_REVIEWED_ISOLATED_PUBLISHED_SOURCE_NOT_RUNTIME_PROVEN",
       "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
       "tests": 15,
       "pass": 5,
       "fail": 10,
       "execution": "ISOLATED_LOCAL_ONLY",
-      "evidence": "orchestration/evidence/lane04-owner-boundaries/evidence-index.json"
+      "evidence": "orchestration/evidence/lane04-owner-boundaries/evidence-index.json",
+      "checkpoint6HistoricalStatus": "REPRODUCED10_REPAIR_APPROVED_SAME_EXISTING_OWNER",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     },
     {
       "id": "GOLDEN-BROWSER-AUTH-CALLER",
-      "status": "OPEN_SOURCE_COMPATIBILITY_REVIEW",
+      "status": "SIGNED_AUTH_SOURCE_REVIEW_CLOSED_BUT_HOSTED_EMPLOYEE_CUSTOMER_SCOPE_OPEN",
       "severity": "BLOCKER",
       "detail": "Existing browser proof client expects password /api/login200 while hosted bootstrap refuses410; existing signed proof-session caller must be reused with authorized signer/current persisted role/tenant. No auth weakening or session seeding.",
-      "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd"
+      "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "checkpoint6HistoricalStatus": "OPEN_SOURCE_COMPATIBILITY_REVIEW",
+      "currentEvidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
+    },
+    {
+      "id": "CURRENT_RELEASE_CONTROLLER",
+      "status": "PENDING_USER_ONE_OWNER_QUESTION_FOR_CANONICAL_HOSTED_ACCESS_ONLY",
+      "remoteWritesHeld": true,
+      "evidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json",
+      "heldWriteScopes": [
+        "Canonical product review branch",
+        "Canonical product release branch",
+        "Convergence lineage",
+        "Hosted deployment/runtime actions",
+        "Access/configuration/credential actions"
+      ],
+      "authorizedWriteScopes": [
+        "Reviewed isolated future source branches",
+        "Reviewed coordination metadata branch"
+      ]
+    },
+    {
+      "id": "START-01",
+      "status": "CLOSED_ON_ISOLATED_SOURCE_BYTES_ONLY_OLD_A3_DEPLOYED_SOURCE_UNREPAIRED",
+      "currentSourceSha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+      "isolatedRepairSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+      "evidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
+    },
+    {
+      "id": "EMPLOYEE_ENROLLMENT_BRIDGE",
+      "status": "SEALED_LOCAL_COMPONENT_INDEPENDENT48_CLOSED_COMBINED_ROOT_ADMISSION_PENDING",
+      "state": "IN_PROGRESS",
+      "evidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
+    },
+    {
+      "id": "CURRENT_HOSTED_APPROVAL",
+      "status": "MISSING_ACTOR_CUSTOMER_SIGNER_PRIVATE_HANDOFF_BACKUP_PROVIDER_SCOPE",
+      "evidence": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json"
     }
-  ]
+  ],
+  "currentCoordinationTruth": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json",
+  "currentSourceAliasScope": "Observed external A3 review/release; PR294 isolated source and CI are separate; tracked product remains historical f32, no convergence",
+  "writeAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
+  },
+  "currentProofBlobCustody": {
+    "scope": "HISTORICAL_A3_BASE_ONLY_SIX_PRESERVATION_NOT_BLANKET_START_OVERLAY",
+    "historicalA3Sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "isolatedStartSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "allSixPreservedOnStart": false,
+    "preservedPaths": 4,
+    "intentionallyReviewedModifiedPaths": 2,
+    "rows": [
+      {
+        "path": "implementation/runtime/readiness-evidence-contract.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "isolatedStartBlob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+        "isolatedStartBlob": "701bf2113853794dc606eb02c6ef4b4a9ea76c10",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+        "isolatedStartBlob": "3e3d9b41bd2c0d11e6efc7a0bb8e9819c1f1c60d",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "isolatedStartBlob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "isolatedStartBlob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/run-forge-ci.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "isolatedStartBlob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      }
+    ],
+    "authority": "Source-custody description only; no caller/gate/auth/approval relaxation"
+  },
+  "currentWriteAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
+  }
 }

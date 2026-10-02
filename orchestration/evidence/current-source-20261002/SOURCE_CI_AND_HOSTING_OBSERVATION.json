@@ -1,0 +1,44 @@
+{
+  "observedAt": "2026-10-02T17:48:18.277Z",
+  "source": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+  "ci": [
+    {
+      "context": "ci/circleci: forge_core_validation",
+      "state": "success",
+      "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/82",
+      "updatedAt": "2026-10-02T17:34:55Z"
+    },
+    {
+      "context": "ci/circleci: forge_runtime_validation",
+      "state": "success",
+      "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/83",
+      "updatedAt": "2026-10-02T17:41:41Z"
+    }
+  ],
+  "releaseSha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+  "reviewSha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+  "deployments": [
+    {
+      "id": "f070e928-880d-4218-9042-6756c173ad61",
+      "status": "SUCCESS",
+      "createdAt": "2026-10-02T17:42:26.239Z",
+      "updatedAt": "2026-10-02T17:43:12.899Z",
+      "commitHash": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+      "branch": "release/vector-customer-ready-candidate-20260925",
+      "snapshotId": "6dc3a3af-3c7b-4568-a7c2-d98c0a5c8df3"
+    },
+    {
+      "id": "ef91ef57-3d00-459d-b0dd-a862b1e9a79c",
+      "status": "REMOVED",
+      "createdAt": "2026-10-02T17:17:56.008Z",
+      "updatedAt": "2026-10-02T17:43:17.193Z",
+      "commitHash": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+      "branch": "release/vector-customer-ready-candidate-20260925",
+      "snapshotId": "5fed9770-7923-4ebb-b90d-afa152992065"
+    }
+  ],
+  "rootCanonicalRefUpdates": 0,
+  "rootHostedChanges": 0,
+  "rootAccessChanges": 0,
+  "customerProof": false
+}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-02T14:13:35.489Z",
+  "observedAt": "2026-10-02 18:17:21 UTC",
   "provenBaseSha": null,
   "convergenceBaseSha": null,
   "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -58,9 +58,9 @@
   "currentTask": "Reviewed material declared-scenario component published30b9a665 future only; producer/runtime wiring pending",
   "admissionAllowed": false,
   "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review.",
-  "currentReviewHead": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-  "lastVerifiedReview": "2026-10-02T14:13:35.489Z",
-  "proofState": "SOURCE_ONLY_OR_PENDING_HOSTED; NOT_CUSTOMER_PROVEN",
+  "currentReviewHead": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+  "lastVerifiedReview": "2026-10-02T17:48:18.277Z",
+  "proofState": "ALL27_NOT_PROVEN_NO_CUSTOMER_CONVERGENCE",
   "isolatedMaterials": {
     "branch": "feature/vector-lane07-materials-projection-20261002",
     "sha": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
@@ -83,5 +83,165 @@
     "independentHeldOut": 44,
     "independentAffected": 43,
     "producerAuthenticity": false
+  },
+  "updatedAt": "2026-10-02 18:17:21 UTC",
+  "currentCoordinationTruth": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json",
+  "currentSourceAliasScope": "Observed external A3 review/release; PR294 isolated source and CI are separate; tracked product remains historical f32, no convergence",
+  "checkpoint6HistoricalAliases": {
+    "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "currentReviewHead": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd"
+  },
+  "currentHeadMeaning": "HISTORICAL_TRACKED_PRODUCT_SNAPSHOT_NOT_CURRENT_RELEASE",
+  "currentProtectedReleaseSha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+  "currentServingDeploymentId": "557513d7-166c-4d9a-aa71-402f3dc57249",
+  "currentSourceCISha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+  "futureSourcePublicationCount": 12,
+  "currentEmployeeSource": {
+    "state": "IN_PROGRESS",
+    "componentState": "TESTED",
+    "ownerComponentSealed": true,
+    "ownerFocused": 54,
+    "ownerAffected": 133,
+    "focusedContainedInAffected": true,
+    "combinedLocalSourceTests": 277,
+    "combinedPass": 277,
+    "combinedCountsOverlap": true,
+    "independentControls": 48,
+    "independentNoOpenP1P2": true,
+    "independentlyReviewedComponent": true,
+    "independentCombinedCompositionAdmission": false,
+    "rootCombinedReviewAndTransport": "PENDING",
+    "sourceTree": "a098fdbf078f8523c95648f19ce9a4c3092978fa",
+    "combinedParentSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "combinedParentTree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+    "combinedExpectedTree": "5181b7f547c8cafe7bd01c489a7e21be7f14b531",
+    "ownerManifestSha256": "51f47ba8a86dde5662fe6a4fc624f68ef70dd0eb95f04908879713a8353e3854",
+    "ownerSealSha256": "f159aceb3bf97ef7f5409baf043e7405bacc9621afb9100f3ef85de470d777e6",
+    "combinedManifestSha256": "6a08688de27ef24af8f9d0f877546eb02d4c4df253172fd91457c39fa6a1a2ec",
+    "combinedSealSha256": "68545c47a2caacb86686088d411e95cb73eea0aa40635493efd12d0bba91372f",
+    "independentReportSha256": "8b25c16e6570f343466efc2ff7a34bcd47f1e2d013bf41005657fe7c511caf65",
+    "independentFindingsSha256": "6633b38186a66c67ccaa5f26038671f3382ba1c98dbd4b0198cc0d406f23c0bf",
+    "independentSafeHandoffSha256": "e2697dcc3663eb83162111c3df3cb59fc650facbcbc090a8ad2a442b5d9037f5",
+    "independentIndexSha256": "2562306c38b0ed4ddcc5d452b3285aa8c57c1bf58023a7bb125b8d982f149f84",
+    "plannedShippingPaths": 5,
+    "bootstrapAdjacentTest": "security/runtime/bootstrap-proof-runner-wiring.test.cjs",
+    "countsSummed": false,
+    "executionScope": "LOCAL_SYNTHETIC_ES256_SQLITE_CONTROLLED_AUTH_UI_SNIPPETS_AND_LOOPBACK_HTTP_ONLY_EXTERNAL_AND_TLS_DENIED",
+    "sourceOnly": true,
+    "canonicalAdmitted": false,
+    "ci": false,
+    "hosted": false,
+    "customerProof": false
+  },
+  "currentNativeFutureComponent": {
+    "branch": "feature/vector-edge06-native-passkey-policy-a3-20261002",
+    "sha": "4fd326fce92876af9921db0700025ea0be809910",
+    "tree": "ede16da20fda28d980a2dd756f4342a4e2df6fb5",
+    "state": "IN_PROGRESS",
+    "componentState": "TESTED",
+    "ownerFocused": 95,
+    "ownerAffected": 122,
+    "independent": 26,
+    "countsNonadditive": true,
+    "defaultOff": true,
+    "firstOwner": "HTTPS_ONLY",
+    "bootstrapUnchanged": true,
+    "device": false,
+    "nativeTransport": false,
+    "runtimeCI": false,
+    "activation": false,
+    "customerProof": false,
+    "employeeComposition": "CANONICAL_OWNER_ORIGIN_DELTA_ONLY_REBASE_WITH_RENEWED_TESTS_NEVER_WHOLE_FILE_MERGE"
+  },
+  "writeAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
+  },
+  "currentProofBlobCustody": {
+    "scope": "HISTORICAL_A3_BASE_ONLY_SIX_PRESERVATION_NOT_BLANKET_START_OVERLAY",
+    "historicalA3Sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "isolatedStartSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "allSixPreservedOnStart": false,
+    "preservedPaths": 4,
+    "intentionallyReviewedModifiedPaths": 2,
+    "rows": [
+      {
+        "path": "implementation/runtime/readiness-evidence-contract.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "isolatedStartBlob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+        "isolatedStartBlob": "701bf2113853794dc606eb02c6ef4b4a9ea76c10",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+        "isolatedStartBlob": "3e3d9b41bd2c0d11e6efc7a0bb8e9819c1f1c60d",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "isolatedStartBlob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "isolatedStartBlob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/run-forge-ci.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "isolatedStartBlob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      }
+    ],
+    "authority": "Source-custody description only; no caller/gate/auth/approval relaxation"
+  },
+  "currentWriteAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
   }
 }

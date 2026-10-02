@@ -1,0 +1,499 @@
+{
+  "scope": "EXACT_SOURCE_CI54_SAFE_CUSTODY_SUMMARY_ONLY",
+  "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+  "sourceTree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+  "pipeline": 54,
+  "workflow": "6ab05e7f-e30c-4736-9c2a-712a24b97260",
+  "jobs": [
+    {
+      "job": 82,
+      "status": "SUCCESS",
+      "statusCustody": "ROOT_UI_RECEIPT"
+    },
+    {
+      "job": 83,
+      "status": "SUCCESS",
+      "statusCustody": "ROOT_UI_RECEIPT"
+    }
+  ],
+  "changedSourceBindings": [
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "mode": "100644",
+      "blob": "701bf2113853794dc606eb02c6ef4b4a9ea76c10"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "mode": "100644",
+      "blob": "3e3d9b41bd2c0d11e6efc7a0bb8e9819c1f1c60d"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof.mjs",
+      "mode": "100644",
+      "blob": "a0f029f62f05e308f0a985b58029de50f181ea34"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof.auth.test.mjs",
+      "mode": "100644",
+      "blob": "e98a8570d397f99d7d7188eefe4e4947dae25175"
+    }
+  ],
+  "selectedUnchangedBindings": [
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.cjs",
+      "mode": "100644",
+      "blob": "073f0303e161b62ba46ee7115bdf0082259830a3"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "mode": "100644",
+      "blob": "3337ec236e64df9552f881fd5be40132f9794646"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "mode": "100644",
+      "blob": "e8c79eb3e51e50b5df156486c72921703e21efac"
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "mode": "100644",
+      "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8"
+    },
+    {
+      "path": "security/runtime/proof-runner-auth.cjs",
+      "mode": "100644",
+      "blob": "0165b9a5207eeb870e2690c4da6456ec8457db7e"
+    },
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "mode": "100644",
+      "blob": "08e3261a95804e400d0a742e38ac57ffef78438a"
+    },
+    {
+      "path": "Dockerfile",
+      "mode": "100644",
+      "blob": "294403c5ab746726a250882833be323889bc608f"
+    },
+    {
+      "path": ".circleci/config.yml",
+      "mode": "100644",
+      "blob": "e44d8a5d533e0dd90c069c2af87354c8992cbc8f"
+    },
+    {
+      "path": "Dockerfile.current-candidate-role-browser-proof",
+      "mode": "100644",
+      "blob": "577b6686dda20558b4051829baa7badd9f83d941"
+    }
+  ],
+  "rawEvidenceMetadata": [
+    {
+      "step": "Verify exact Node runtime",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "utf8Roundtrip": true,
+      "groups": [],
+      "privacy": {
+        "privateKeyBlocks": 0,
+        "credentialPatterns": 0
+      },
+      "publication": "ALLOWLISTED_HASH_AND_SUMMARY_ONLY",
+      "job": 82
+    },
+    {
+      "step": "Verify isolated signed proof client source contract",
+      "bytes": 18792,
+      "sha256": "6f6f69a256520fcdc49585ef6041e442a7750da5acfe37bf799f65f630345640",
+      "utf8Roundtrip": true,
+      "groups": [
+        {
+          "tests": 83,
+          "pass": 83,
+          "fail": 0,
+          "skipped": 0
+        }
+      ],
+      "privacy": {
+        "privateKeyBlocks": 0,
+        "credentialPatterns": 0
+      },
+      "publication": "ALLOWLISTED_HASH_AND_SUMMARY_ONLY",
+      "job": 82
+    },
+    {
+      "step": "Current FORGE source validation",
+      "bytes": 41015,
+      "sha256": "197b9c1beeb4ec184e603fac740daf391415882aaa52426b96b7f46478d49d44",
+      "utf8Roundtrip": true,
+      "groups": [
+        {
+          "tests": 5,
+          "pass": 5,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 146,
+          "pass": 146,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 45,
+          "pass": 45,
+          "fail": 0,
+          "skipped": 0
+        }
+      ],
+      "privacy": {
+        "privateKeyBlocks": 0,
+        "credentialPatterns": 0
+      },
+      "publication": "ALLOWLISTED_HASH_AND_SUMMARY_ONLY",
+      "job": 82
+    },
+    {
+      "step": "Build exact FORGE runtime candidate",
+      "bytes": 644148,
+      "sha256": "3951d825c8ebb358fccfa9686cce9b67aa27c2a96440e03401ea2c7dbf5a3bb7",
+      "utf8Roundtrip": true,
+      "groups": [
+        {
+          "tests": 20,
+          "pass": 20,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 56,
+          "pass": 56,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 154,
+          "pass": 154,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 2,
+          "pass": 2,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 31,
+          "pass": 31,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 34,
+          "pass": 34,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 3,
+          "pass": 3,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 1,
+          "pass": 1,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 2,
+          "pass": 2,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 1190,
+          "pass": 1190,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 348,
+          "pass": 348,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 13,
+          "pass": 13,
+          "fail": 0,
+          "skipped": 0
+        }
+      ],
+      "privacy": {
+        "privateKeyBlocks": 0,
+        "credentialPatterns": 0
+      },
+      "publication": "ALLOWLISTED_HASH_AND_SUMMARY_ONLY",
+      "job": 83
+    },
+    {
+      "step": "Verify exact proof client image module packaging",
+      "bytes": 9422,
+      "sha256": "87422bdd9128a01076ae122521ba8a023d931a73a534654e7e2ee75d42033125",
+      "utf8Roundtrip": true,
+      "groups": [],
+      "privacy": {
+        "privateKeyBlocks": 0,
+        "credentialPatterns": 0
+      },
+      "publication": "ALLOWLISTED_HASH_AND_SUMMARY_ONLY",
+      "job": 83
+    },
+    {
+      "step": "Verify runtime security boundary",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "utf8Roundtrip": true,
+      "groups": [],
+      "privacy": {
+        "privateKeyBlocks": 0,
+        "credentialPatterns": 0
+      },
+      "publication": "ALLOWLISTED_HASH_AND_SUMMARY_ONLY",
+      "job": 83
+    },
+    {
+      "step": "Prove isolated hosted HTTP boundary",
+      "bytes": 1093,
+      "sha256": "78f78cafc5493b8a195ef129211265ae1f6a6e505a977bb571af66445e412ea5",
+      "utf8Roundtrip": true,
+      "groups": [],
+      "privacy": {
+        "privateKeyBlocks": 0,
+        "credentialPatterns": 0
+      },
+      "publication": "ALLOWLISTED_HASH_AND_SUMMARY_ONLY",
+      "job": 83
+    }
+  ],
+  "auth": {
+    "tests": 83,
+    "pass": 83,
+    "fail": 0,
+    "skip": 0
+  },
+  "forgeCoreGroups": [
+    {
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 146,
+      "pass": 146,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 45,
+      "pass": 45,
+      "fail": 0,
+      "skipped": 0
+    }
+  ],
+  "buildGroups": [
+    {
+      "tests": 20,
+      "pass": 20,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 56,
+      "pass": 56,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 154,
+      "pass": 154,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 31,
+      "pass": 31,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 34,
+      "pass": 34,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 1190,
+      "pass": 1190,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 348,
+      "pass": 348,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "skipped": 0
+    }
+  ],
+  "countsSummed": false,
+  "triggerAdmittedActualBuild": true,
+  "coreRuntimeNode": {
+    "configuredAssertion": "v22.23.2",
+    "executorRecipe": "cimg/node:22.23.2",
+    "quietStepBytes": 0,
+    "printedVersionCustody": false,
+    "quietStepStatus": "ROOT_UI_SUCCESS_AGAINST_UNCHANGED_ASSERTION"
+  },
+  "applicationImage": {
+    "tag": "vector-forge-ci:9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "imageID": "sha256:1f4fc84cd9a31ca36dc8db7cc4eb8dea81912fd7b5154a4ab0590d0fcd11fe63",
+    "recipeBasePin": "node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96",
+    "rawBuildPinMatched": true,
+    "quietSecurityStepBytes": 0,
+    "configuredVersionAssertion": "v22.23.2",
+    "printedVersionCustody": false,
+    "securityStepStatus": "ROOT_UI_SUCCESS_AGAINST_UNCHANGED_COMMAND",
+    "rawSecurityNamedAssertions": [],
+    "hostedImageEquivalence": false
+  },
+  "proofImage": {
+    "tag": "vector-role-auth-ci:9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "imageID": "sha256:c4394be84ae98f5f8e0ff1182ffafcd54b5102d6883e2f0544d3dfb52fdfcc81",
+    "recipe": "mcr.microsoft.com/playwright:v1.63.0-noble",
+    "node": "v24.20.0",
+    "moduleSmoke": {
+      "scope": "PACKAGING_MODULE_SMOKE_ONLY",
+      "checkoutSourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+      "node": "v24.20.0",
+      "modules": [
+        {
+          "path": "scripts/current-candidate-role-browser-proof.mjs",
+          "blob": "a0f029f62f05e308f0a985b58029de50f181ea34"
+        },
+        {
+          "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+          "blob": "3337ec236e64df9552f881fd5be40132f9794646"
+        },
+        {
+          "path": "scripts/vector-proof-result.mjs",
+          "blob": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0"
+        },
+        {
+          "path": "security/runtime/proof-runner-auth.cjs",
+          "blob": "0165b9a5207eeb870e2690c4da6456ec8457db7e"
+        }
+      ],
+      "sqliteAvailable": true,
+      "signedSessionExecuted": false,
+      "chromiumExecuted": false,
+      "hostedProof": false
+    },
+    "networkDisabledVersionAndModuleSmoke": true,
+    "buildAcquisitionNetworkAllowed": true,
+    "actualFullClientRunner": false
+  },
+  "http": {
+    "scope": "ISOLATED_CI_LOOPBACK_FIXTURE",
+    "namedChecks": [
+      "health-ready",
+      "runtime-identity-build-file-matched",
+      "root-page",
+      "bootstrap-unauthenticated-401",
+      "demand-unauthenticated-401"
+    ],
+    "checkCount": 5,
+    "fixtureOnly": true,
+    "productionApproved": false,
+    "pilotReady": false,
+    "UID": {
+      "real": 1000,
+      "effective": 1000,
+      "saved": 1000,
+      "filesystem": 1000
+    },
+    "startupConnectionResetsBeforeReady": 9,
+    "rawTraceIDsExcluded": true,
+    "actualSignedHTTPS": false,
+    "actualChromium": false,
+    "customerProof": false
+  },
+  "sourcePublication": {
+    "branch": "refs/heads/feature/vector-golden-start-context-20261002",
+    "commit": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "parent": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "tree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+    "initialObservationAt": "2026-10-02T17:35:20.909Z",
+    "initialCiPending": "IMMUTABLE_HISTORICAL_PREPARATION_NOT_CURRENT_STATUS",
+    "canonicalRefUpdatesByRoot": 0,
+    "hostedOrAccessActionsByRoot": 0,
+    "canonicalOwnerQuestion": "PENDING_NOT_WAIVED"
+  },
+  "custodyInputHashes": {
+    "coreReceipt": "5fe43fc1e078989bc12805edaf71b540e5c56385e7bee31a48c5fc5faf447fad",
+    "runtimeReceipt": "961a1a6315c70d1fa7b54afe925d5ceb8ae31f7bdce0e8e008c16a7ce51e1fb9",
+    "sourcePublicationReceipt": "ae8787e44a37ecb14f6305078616116652ac84b1649e776e71e3d6eebc49ab4d"
+  },
+  "collectorQualification": "Collector setup initially expected printed version output and TAP-only FORGE summaries. Actual Node step is quiet and FORGE uses the Node spec reporter. All original raw bytes retained unchanged; no CI/product failure or test rerun. Node assertion has UI success against unchanged configuration, no printed version custody.",
+  "originalArtifactByteCustody": "SEPARATE_NOT_COMPLETED",
+  "privacy": {
+    "all7RawHashAndUTF8ChecksPassed": true,
+    "keyPatternFlags": 0,
+    "allowlist": "SOURCE_IMAGE_JOB_HASH_COUNT_SCOPE_AND_QUALIFICATION_METADATA_ONLY",
+    "exclude": [
+      "Raw logs",
+      "Private download paths/receipts",
+      "Trace identifiers/whole health lines",
+      "Customer/provider/session/DB/keys",
+      "Original artifact payloads"
+    ],
+    "qualification": "Bounded pattern scan is not proof raw logs are publishable."
+  },
+  "all27GoldenGates": "NOT_PROVEN",
+  "customerProof": false,
+  "hostedSourceOrImageEquivalence": false,
+  "reviewTestsExecuted": 0,
+  "reviewerSourceEdits": 0,
+  "reviewerRemoteActions": 0
+}

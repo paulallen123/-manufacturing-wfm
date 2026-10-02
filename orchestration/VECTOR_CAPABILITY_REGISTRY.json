@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "paulallen123/-manufacturing-wfm",
-  "updatedAt": "2026-10-02T14:13:35.489Z",
+  "updatedAt": "2026-10-02 18:17:21 UTC",
   "baselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
   "provenBaseSha": null,
   "convergenceSha": null,
@@ -563,7 +563,7 @@
           "proposalShippingFiles": [
             {
               "repositoryTargetPath": "operations/runtime/material-shortage-projection.cjs",
-              "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.cjs",
+              "localPath": "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:ad5937e9f0ea6375e9474eedbd79b30d1e82d6a06eea27832592d95b6d956120; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
               "mode": "100644",
               "sourceBlob": null,
               "proposedBlob": "e6c2cd64ddc27b8113061e61b7ef4e3dbf0c796a",
@@ -573,7 +573,7 @@
             },
             {
               "repositoryTargetPath": "operations/runtime/material-shortage-projection.test.cjs",
-              "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs",
+              "localPath": "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:f974e2f5950a569c214ab5bce2369bb746eea3fd790e136c05fcfd938fdc4bbe; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
               "mode": "100644",
               "sourceBlob": null,
               "proposedBlob": "a24b7f4580969aaef0f802891e10bc3c0c16e1f4",
@@ -2260,7 +2260,7 @@
             "files": [
               {
                 "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.cjs",
-                "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.cjs",
+                "localPath": "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:42715d08748a4ab8e630d1c69fd15ff71149bec0026b067768761639b0aaeace; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                 "mode": "100644",
                 "sourceBlob": null,
                 "proposedBlob": "80c9d72a90f6c0dab549b44ca6e2ce67810e4d3d",
@@ -2270,7 +2270,7 @@
               },
               {
                 "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.test.cjs",
-                "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs",
+                "localPath": "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:3e185e7ce66071a39599d0e8becf4d1c76366e448444e8a3281cb99794e09501; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                 "mode": "100644",
                 "sourceBlob": null,
                 "proposedBlob": "d031d2e352590f9c02400cf02af150461dc1feb5",
@@ -2288,7 +2288,7 @@
             "requiredProposalDependencies": [
               {
                 "repositoryTargetPath": "implementation/runtime/inert-finite-json.cjs",
-                "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\implementation\\runtime\\inert-finite-json.cjs",
+                "localPath": "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:8f57d1cd860e478a7ed4bfc36acd2b26bf0ce3ec4f2722458f7a313093be1436; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                 "mode": "100644",
                 "sourceBlob": null,
                 "proposedBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
@@ -2389,7 +2389,7 @@
                   "node": "v22.23.2",
                   "args": [
                     "--require",
-                    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+                    "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                     "--test",
                     "historical-duplicate-control.mjs"
                   ],
@@ -2402,7 +2402,7 @@
                   "node": "v22.23.2",
                   "args": [
                     "--require",
-                    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+                    "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                     "--test",
                     "operations/runtime/decision-outcome-evidence-projection.test.cjs"
                   ],
@@ -2415,7 +2415,7 @@
                   "node": "v22.23.2",
                   "args": [
                     "--require",
-                    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+                    "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                     "--test",
                     "operations/runtime/decision-outcome-evidence-projection.test.cjs"
                   ],
@@ -2428,7 +2428,7 @@
                   "node": "v22.23.2",
                   "args": [
                     "--require",
-                    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+                    "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                     "--test",
                     "operations/runtime/decision-outcome-evidence-projection.test.cjs",
                     "operations/runtime/decision-outcome-proof.test.cjs",
@@ -2444,7 +2444,7 @@
                   "node": "v22.23.2",
                   "args": [
                     "--require",
-                    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+                    "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                     "--test",
                     "operations/runtime/decision-outcome-evidence-projection.test.cjs"
                   ],
@@ -2457,7 +2457,7 @@
                   "node": "v22.23.2",
                   "args": [
                     "--require",
-                    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+                    "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                     "--test",
                     "operations/runtime/decision-outcome-evidence-projection.test.cjs"
                   ],
@@ -2470,7 +2470,7 @@
                   "node": "v22.23.2",
                   "args": [
                     "--require",
-                    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+                    "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                     "--test",
                     "operations/runtime/decision-outcome-evidence-projection.test.cjs",
                     "operations/runtime/decision-outcome-proof.test.cjs",
@@ -2523,7 +2523,7 @@
               "priorFiles": [
                 {
                   "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.cjs",
-                  "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.cjs",
+                  "localPath": "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:42715d08748a4ab8e630d1c69fd15ff71149bec0026b067768761639b0aaeace; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                   "mode": "100644",
                   "sourceBlob": null,
                   "proposedBlob": "9b0ccf4b7a6f9a074b711d0add1713686f3e8729",
@@ -2533,7 +2533,7 @@
                 },
                 {
                   "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.test.cjs",
-                  "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs",
+                  "localPath": "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:3e185e7ce66071a39599d0e8becf4d1c76366e448444e8a3281cb99794e09501; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
                   "mode": "100644",
                   "sourceBlob": null,
                   "proposedBlob": "4aec0277204a33f5ca06609a85e684730719125a",
@@ -17370,27 +17370,27 @@
           "command": [
             "--experimental-sqlite",
             "--require",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\canonical-operations-connector.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\canonical-operations-deployment-binding.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\canonical-operations-mapping-preflight.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\canonical-operations-status.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\canonical-operations.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\canonical-production-boundaries.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\canonical-runtime-bridge.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\independent\\current-authority-recovery-held-out.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\independent\\docker-admission-contract.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\independent\\generated-provider-preload.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\independent\\succession-regressions.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\independent-boundaries.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\review-5921699729-regressions.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\review-5925613376-regressions.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\sqlite-contract.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\staffology-adapter.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\ux-overlay\\vector-staffology-controls.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\ux-overlay\\vector-settings-navigation.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:d5e251fe85e58e4af113fa494853e94c7d44a3758ce9a5ceb2b52e7cb8588325; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:41227f41120c3abda73083b9a1860892d19bcaceedad34253cb6bfe42ce2a86e; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:7ff2a4ae3c2c18bed0477147a503fb0dbd38ebc57793dbe34f63105381f4bae8; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:775c5cc3d97a98a4fa7c2d21ff06e5e6d828d02b84831db5bd31ac8d6dcf7dad; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:68f14814b3ae53574792eaf1c65f951f3ec9a8395de1254832a691294eaf0717; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:4fb5b5c317df71d494bbf31c6671d35b54454df2a97d0025ba9af08a7f4818c1; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:195b5db64ac9644f7d169c67619132780b514eda953c68b3da5a9b4538f3886a; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:0c01dcd5ed5e9c5e0f1d21af0363f0ce6bd173bec7f3453ac955689ab5a36322; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:126a37f09c8c73a6875bcd3aa4cdcf1a6f54f0237b435f8b0db9aa14e0ba3e44; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:4db47e171df877371c764c473a762677cba12c9d686627398714446122784bf1; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:946722ca5ef79899371784129575ae009dfe85ca6f775b115b8fa12e60dcabdb; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:4b318811ffbff969840f4c1a0bba665da5c4d4ff10900c23e3027de5216f32b6; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:d7de80a70b653b40cb9372db82d4da4445a99943a7d32d84800c51c3bc2c50ce; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:4e801836f6241aa49dd9786bc1ea711d0cc0fdd303a3c2acf1b9fff687840dab; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:39579ca131e32d0e46e2cabdc14a1264f6439284766cf5fd6e224d980605ed5b; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:eab9eb23370793f8f0acf3dafcf61ae88f5a3ab09b16232016765a1aa7a9053e; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:c176a548c9e2f8368a1f77cc87c7bd207c246269016b51264b00835cd722ad70; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:e05c3f72e04051d59421e3d0bd7088daedc994e8c6415c65fa63bed74b5d0d53; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/canonical-operations-connector.test.cjs",
@@ -17438,10 +17438,10 @@
           "command": [
             "--experimental-sqlite",
             "--require",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\staffology-employee-persistence.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:3b06bfd7922be2a59bc48daa9e5ee8b97872d56104bfefc367b84a5b1bd23cb2; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/staffology-employee-persistence.test.cjs"
@@ -17473,7 +17473,7 @@
             "--experimental-sqlite",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:4fbdb822064cc4623ebe038d9acb1146b38b1f5f2eaee741f4fca797f37b19e0; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/independent/full-http-employee-journey.test.cjs"
@@ -17505,27 +17505,27 @@
           "command": [
             "--experimental-sqlite",
             "--require",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-connector.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-deployment-binding.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-mapping-preflight.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-status.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-production-boundaries.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-runtime-bridge.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\current-authority-recovery-held-out.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\docker-admission-contract.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\generated-provider-preload.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\succession-regressions.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent-boundaries.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\review-5921699729-regressions.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\review-5925613376-regressions.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\sqlite-contract.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\staffology-adapter.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\ux-overlay\\vector-staffology-controls.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\ux-overlay\\vector-settings-navigation.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:975faca656f112bb9597e037f2e72ddac086b680e9f91bc6bf705e3994f84f8e; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:c568fbfa59143f251025ab7fadceae26ce30e5621115f2bde281a074a41ea31f; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:cd5f13454239b2e18fc2035eaeed4198dbdf6c84f2197ce1b2dda9de5c252ebf; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:ada5e30e689c889da0fc459c02049814a269b3cf02942faa4ebecefbd0ef3666; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:3f8b53f200753af1e4be794115ee1720f727252727296b043d7a23c978a31d88; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:0c77dc3212d3ef589616cc185435a1f4d0d3a56b2892e4862a46c92a5e5df433; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:9597f088b64b1cb5d870496d39c3a61d674d9fadc023283b11e8bcc3573d2ea7; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:1424521547c03522ccbf71b0e69155777a162ed6919f61715733b28e219dfb20; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:c4390545d18271b07ce6970cf729c32e5a92215bfd6d6394b7d68ecade20efc3; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:7ee1e454f915afcc4a317948ae29b2cdb2cf5cb7e620a61d62194773861ca16c; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:c1ee912d0345cd77b4339df4709558c6e6ecd49beaf9189dbcab29f7ad34d055; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:fb8cd33519a9a967f04889f6e66fdc2346169bdf72f84da1ca5d26f881625d9d; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:e5c8959a9a4a02e0b130912dcdd56258488b95efe700689d19f15876730d2324; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:5b460e0643374888ca0ed6b3954f6803cc18f89b4800464ea2cc6f06281afca5; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:3d013a4c5a63c54774a2b9bf6811f72ef172a3308490d965300bc510298e410f; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:0c9ed3b77b66e6bb59ac3796312a54946a0d6b12f9cfef3a8059ac8da3006505; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:2bac20bf34abc5bebc4996c54f46cc60d254e8b1d13739cdc95041a8de130925; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:e8a41cf4b319e167b9a4903beb7619a14c797dd67595a1600154f82c2b2639d4; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/canonical-operations-connector.test.cjs",
@@ -17573,10 +17573,10 @@
           "command": [
             "--experimental-sqlite",
             "--require",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\staffology-employee-persistence.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:8570ad3ba6358c318bbe0c5e63e19528853613a1441bfb5de2afe3fc54980626; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/staffology-employee-persistence.test.cjs"
@@ -17608,7 +17608,7 @@
             "--experimental-sqlite",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:f47e916848f8b6f5dc2f486be007836e523bf47c9e8a8d99031afe5249f12620; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/independent/full-http-employee-journey.test.cjs"
@@ -17640,7 +17640,7 @@
             "--experimental-sqlite",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:f47e916848f8b6f5dc2f486be007836e523bf47c9e8a8d99031afe5249f12620; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/independent/full-http-employee-journey.test.cjs"
@@ -19353,5 +19353,374 @@
         "continuationEvidence": "orchestration/evidence/continuation-capabilities.json"
       }
     }
-  ]
+  ],
+  "currentCoordinationTruth": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json",
+  "currentSourceAliasScope": "Observed external A3 review/release; PR294 isolated source and CI are separate; tracked product remains historical f32, no convergence",
+  "currentReviewReference": {
+    "sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "tree": "712acebba40dd9e0e4b8dd207122008b174275ec"
+  },
+  "isolatedSTARTSource": {
+    "branch": "feature/vector-golden-start-context-20261002",
+    "sha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "tree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+    "pullRequest": 294,
+    "pullUrl": "https://github.com/paulallen123/-manufacturing-wfm/pull/294",
+    "draft": true,
+    "START01": "CLOSED_ON_ISOLATED_SOURCE_BYTES_ONLY_OLD_A3_DEPLOYED_SOURCE_UNREPAIRED",
+    "counts": {
+      "ownerFocused": 40,
+      "ownerAffected": 162,
+      "independent": 26,
+      "ownerFocusedContainedInAffected": true,
+      "nonadditive": true
+    },
+    "configuredContext": "DECLARATION_NOT_OBSERVED_PLATFORM_AUTHORITY",
+    "ci": {
+      "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+      "sourceTree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+      "role": "ISOLATED_START_SOURCE_CI_NOT_SERVING_A3",
+      "pipeline": 54,
+      "workflowId": "6ab05e7f-e30c-4736-9c2a-712a24b97260",
+      "statuses": [
+        {
+          "context": "ci/circleci: forge_core_validation",
+          "state": "success",
+          "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/82",
+          "updatedAt": "2026-10-02T17:34:55Z"
+        },
+        {
+          "context": "ci/circleci: forge_runtime_validation",
+          "state": "success",
+          "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/83",
+          "updatedAt": "2026-10-02T17:41:41Z"
+        }
+      ],
+      "core": {
+        "job": 82,
+        "status": "SUCCESS"
+      },
+      "runtime": {
+        "job": 83,
+        "status": "SUCCESS"
+      },
+      "safeSummary": "orchestration/evidence/current-source-20261002/CI54_SAFE_PUBLICATION_SUMMARY.json",
+      "review": "orchestration/evidence/current-source-20261002/CI54_REVIEW.md",
+      "rawArtifactCustody": "SAFE_SUMMARY_REVIEWED_RAW_PAYLOADS_EXCLUDED",
+      "originalArtifactByteCustody": "SEPARATE_NOT_COMPLETED",
+      "signedHttpsSessionExecuted": false,
+      "chromiumExecuted": false,
+      "customerProof": false,
+      "hostedSourceOrImageEquivalence": false
+    }
+  },
+  "isolatedFuturePublications": [
+    {
+      "branch": "feature/vector-lane01-twin-projections-20261002",
+      "sha": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+      "commit": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+      "tree": "071403827320c6afc7301479d9c2d7250b82585b",
+      "parent": "f68dff51c655da9fb68c7064c08e384a217b5314",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane02-country-context-20261002",
+      "sha": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
+      "commit": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
+      "tree": "9b5df1b5a8945c3b46fc79c5d76832fa67e3ca2a",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane03-proof-retry-20261002",
+      "sha": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
+      "commit": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
+      "tree": "c5c74a207be7cac5c9b23d79e937cc9dd08d1b16",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane07-cleanroom-safety-20261002",
+      "sha": "62e6931137fa931816752db4b2f8f163332198dc",
+      "commit": "62e6931137fa931816752db4b2f8f163332198dc",
+      "tree": "92813acbbb429bd784835cb104e0496c85e9dee7",
+      "parent": "f3322714142c68f39007a25a4dce41729b2f5959",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane08-value-projection-20261002",
+      "sha": "0e752bc01ff134d67360768bc69b1b12951faac9",
+      "commit": "0e752bc01ff134d67360768bc69b1b12951faac9",
+      "tree": "8abb0e12930b908420eae63f94b1596e31035f37",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane08-skills-demand-20261002",
+      "sha": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+      "commit": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+      "tree": "7d95bd0156e20706f4eb5b94fe2c8df1f4e11870",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane07-materials-projection-20261002",
+      "sha": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
+      "commit": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
+      "tree": "5d9fcd182d72459b4754a1b5625a6a8f816dfe53",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane02-jurisdiction-boundary-repair-20261002",
+      "sha": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
+      "commit": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
+      "tree": "3f44cc755935987fd31dc5669875f44bbe39ac37",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane03-integration-authority-20261002",
+      "sha": "462d1b68b2adc2258750209a87d1895155c54f35",
+      "commit": "462d1b68b2adc2258750209a87d1895155c54f35",
+      "tree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane04-owner-boundary-repair-20261002",
+      "sha": "beac87d18a2c07fd8399dad87e690d252745853b",
+      "commit": "beac87d18a2c07fd8399dad87e690d252745853b",
+      "tree": "47872e9c1a4c1b4f3404b3e782d3df013cd85761",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane03-workflow-tenant-20261002",
+      "sha": "4f04d04237f12cc4fee6cd036e0597230597c3b2",
+      "commit": "4f04d04237f12cc4fee6cd036e0597230597c3b2",
+      "tree": "1871b30ebf64f09375cede67c199c88973667236",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-edge06-native-passkey-policy-a3-20261002",
+      "sha": "4fd326fce92876af9921db0700025ea0be809910",
+      "commit": "4fd326fce92876af9921db0700025ea0be809910",
+      "tree": "ede16da20fda28d980a2dd756f4342a4e2df6fb5",
+      "parent": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    }
+  ],
+  "isolatedFuturePublicationCount": 12,
+  "currentComponentUpdates": [
+    {
+      "branch": "feature/vector-edge06-native-passkey-policy-a3-20261002",
+      "sha": "4fd326fce92876af9921db0700025ea0be809910",
+      "tree": "ede16da20fda28d980a2dd756f4342a4e2df6fb5",
+      "state": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "ownerFocused": 95,
+      "ownerAffected": 122,
+      "independent": 26,
+      "countsNonadditive": true,
+      "defaultOff": true,
+      "firstOwner": "HTTPS_ONLY",
+      "bootstrapUnchanged": true,
+      "device": false,
+      "nativeTransport": false,
+      "runtimeCI": false,
+      "activation": false,
+      "customerProof": false,
+      "employeeComposition": "CANONICAL_OWNER_ORIGIN_DELTA_ONLY_REBASE_WITH_RENEWED_TESTS_NEVER_WHOLE_FILE_MERGE"
+    },
+    {
+      "state": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "ownerComponentSealed": true,
+      "ownerFocused": 54,
+      "ownerAffected": 133,
+      "focusedContainedInAffected": true,
+      "combinedLocalSourceTests": 277,
+      "combinedPass": 277,
+      "combinedCountsOverlap": true,
+      "independentControls": 48,
+      "independentNoOpenP1P2": true,
+      "independentlyReviewedComponent": true,
+      "independentCombinedCompositionAdmission": false,
+      "rootCombinedReviewAndTransport": "PENDING",
+      "sourceTree": "a098fdbf078f8523c95648f19ce9a4c3092978fa",
+      "combinedParentSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+      "combinedParentTree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+      "combinedExpectedTree": "5181b7f547c8cafe7bd01c489a7e21be7f14b531",
+      "ownerManifestSha256": "51f47ba8a86dde5662fe6a4fc624f68ef70dd0eb95f04908879713a8353e3854",
+      "ownerSealSha256": "f159aceb3bf97ef7f5409baf043e7405bacc9621afb9100f3ef85de470d777e6",
+      "combinedManifestSha256": "6a08688de27ef24af8f9d0f877546eb02d4c4df253172fd91457c39fa6a1a2ec",
+      "combinedSealSha256": "68545c47a2caacb86686088d411e95cb73eea0aa40635493efd12d0bba91372f",
+      "independentReportSha256": "8b25c16e6570f343466efc2ff7a34bcd47f1e2d013bf41005657fe7c511caf65",
+      "independentFindingsSha256": "6633b38186a66c67ccaa5f26038671f3382ba1c98dbd4b0198cc0d406f23c0bf",
+      "independentSafeHandoffSha256": "e2697dcc3663eb83162111c3df3cb59fc650facbcbc090a8ad2a442b5d9037f5",
+      "independentIndexSha256": "2562306c38b0ed4ddcc5d452b3285aa8c57c1bf58023a7bb125b8d982f149f84",
+      "plannedShippingPaths": 5,
+      "bootstrapAdjacentTest": "security/runtime/bootstrap-proof-runner-wiring.test.cjs",
+      "countsSummed": false,
+      "executionScope": "LOCAL_SYNTHETIC_ES256_SQLITE_CONTROLLED_AUTH_UI_SNIPPETS_AND_LOOPBACK_HTTP_ONLY_EXTERNAL_AND_TLS_DENIED",
+      "sourceOnly": true,
+      "canonicalAdmitted": false,
+      "ci": false,
+      "hosted": false,
+      "customerProof": false
+    }
+  ],
+  "writeAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
+  },
+  "currentProofBlobCustody": {
+    "scope": "HISTORICAL_A3_BASE_ONLY_SIX_PRESERVATION_NOT_BLANKET_START_OVERLAY",
+    "historicalA3Sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "isolatedStartSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "allSixPreservedOnStart": false,
+    "preservedPaths": 4,
+    "intentionallyReviewedModifiedPaths": 2,
+    "rows": [
+      {
+        "path": "implementation/runtime/readiness-evidence-contract.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "isolatedStartBlob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+        "isolatedStartBlob": "701bf2113853794dc606eb02c6ef4b4a9ea76c10",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+        "isolatedStartBlob": "3e3d9b41bd2c0d11e6efc7a0bb8e9819c1f1c60d",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "isolatedStartBlob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "isolatedStartBlob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/run-forge-ci.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "isolatedStartBlob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      }
+    ],
+    "authority": "Source-custody description only; no caller/gate/auth/approval relaxation"
+  },
+  "currentWriteAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
+  }
 }

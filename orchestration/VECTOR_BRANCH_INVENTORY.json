@@ -8257,138 +8257,530 @@
     "lane02Jurisdiction": "15exactfiles/23existingtests/8boundaryprobes3pass5holds; no source edits",
     "lane08LearningReporting": "17exactsource snapshots; historical10/canonical19;10historicalblockingprobes; no port"
   },
-  "updatedAt": "2026-10-02T14:13:35.489Z",
+  "updatedAt": "2026-10-02 18:17:21 UTC",
   "currentReferenceObservations": {
     "review": {
-      "branch": "review/staffology-customer-proof-20261001",
-      "sha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-      "commit": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-      "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
-      "parent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
-      "sourceAdmitted": true,
-      "admitted": false,
-      "wholeRuntimeAdmission": false,
-      "fullTreeBlobs": 1109,
-      "actualDeltaPaths": 19,
-      "sourceRepairsChanged": 17,
-      "selectedAlreadyIdentical": 1,
-      "parentUnchanged": 1090,
-      "mandatoryProofBlobsPreserved": 6,
-      "triggerChanged": true,
-      "triggerPurpose": "Exact non-deploy source/runtime CI on actual CIRCLE_SHA1",
-      "local": {
-        "source": {
-          "tests": 159,
-          "pass": 159,
-          "skip": 0,
-          "evidence": "orchestration/evidence/current-staffology-composition/source.receipt.json"
-        },
-        "persistence": {
-          "tests": 1,
-          "pass": 1,
-          "skip": 0,
-          "evidence": "orchestration/evidence/current-staffology-composition/persistence.receipt.json"
-        },
-        "fullHttp": {
-          "tests": 1,
-          "pass": 1,
-          "skip": 0,
-          "mockRequests": 14,
-          "externalRequests": 0,
-          "evidence": "orchestration/evidence/current-staffology-composition/full-http.receipt.json"
-        },
-        "supportedPackaging": {
-          "tests": 8,
-          "pass": 8,
-          "skip": 0,
-          "evidence": "orchestration/evidence/current-staffology-composition/packaging-supported.receipt.json"
-        },
-        "initialBroadPackaging": {
-          "tests": 14,
-          "pass": 8,
-          "fail": 6,
-          "qualification": "Windows POSIX PATH/bashi absence and initial blanket network guard; original reds retained, no14/14 claim"
-        }
-      },
-      "independentComposition": {
-        "verified": true,
-        "evidence": "orchestration/evidence/staffology-composition-review.md"
-      },
-      "previousAdmission": {
-        "sha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
-        "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
-        "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-        "evidence": "Historical checkpoint5 commit28f964f733dad532d7cce6838b3e833749b94422; retained current-admission repair receipts"
-      },
-      "native8690Custody": "OPEN",
-      "hostedProof": false,
-      "customerProof": false,
-      "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "claim": "Exact source admitted; local synthetic checks passed and actual Linux CI jobs executed successfully. RawCI artifact identities pending; deployed/customer gates remain unproven."
+      "sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+      "tree": "712acebba40dd9e0e4b8dd207122008b174275ec"
     },
-    "frozen": {
-      "branch": "release/vector-customer-ready-candidate-20260925",
+    "release": {
+      "sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+      "tree": "712acebba40dd9e0e4b8dd207122008b174275ec"
+    },
+    "serving": {
+      "sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+      "tree": "712acebba40dd9e0e4b8dd207122008b174275ec",
+      "deploymentId": "557513d7-166c-4d9a-aa71-402f3dc57249",
+      "status": "SUCCESS",
+      "snapshotId": "e695688a-f050-4071-ab1e-d0b035a0e507",
+      "createdAt": "2026-10-02T17:53:37.318Z",
+      "updatedAt": "2026-10-02T17:54:44.582Z",
+      "observedAt": "2026-10-02 18:17:21 UTC",
+      "fixtureOnly": null,
+      "productionApproved": null,
+      "scope": "Latest deployment metadata only; prior A3 public identity remains historical, no fresh runtime/tenant/run/source-image equivalence on this deployment",
+      "priorPublicIdentity": {
+        "sourceSha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+        "observedAt": "2026-10-02T16:49:46.912Z",
+        "fixtureOnly": true,
+        "productionApproved": false,
+        "currentDeploymentReobserved": false
+      },
+      "tenant": null,
+      "runId": null,
+      "currentHostedProofObserved": false,
+      "backupVerified": false
+    },
+    "controlPlaneParent": {
+      "sha": "417a1115a73dd5789101d4d996b5b5c80b6289e4",
+      "tree": "481eda2d974d9f3284bea0b6d8866229dbbeaa7d"
+    },
+    "trackedProductSnapshot": {
       "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
       "tree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
-      "preserve": true
+      "paths": 1094,
+      "historical": true,
+      "currentCanonicalSource": false,
+      "converged": false
     },
-    "controlPlaneParent": "28f964f733dad532d7cce6838b3e833749b94422",
-    "futureNewPublished": [
+    "isolatedSTARTSource": {
+      "branch": "feature/vector-golden-start-context-20261002",
+      "sha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+      "tree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+      "pullRequest": 294,
+      "pullUrl": "https://github.com/paulallen123/-manufacturing-wfm/pull/294",
+      "draft": true,
+      "START01": "CLOSED_ON_ISOLATED_SOURCE_BYTES_ONLY_OLD_A3_DEPLOYED_SOURCE_UNREPAIRED",
+      "counts": {
+        "ownerFocused": 40,
+        "ownerAffected": 162,
+        "independent": 26,
+        "ownerFocusedContainedInAffected": true,
+        "nonadditive": true
+      },
+      "configuredContext": "DECLARATION_NOT_OBSERVED_PLATFORM_AUTHORITY",
+      "ci": {
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+        "sourceTree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+        "role": "ISOLATED_START_SOURCE_CI_NOT_SERVING_A3",
+        "pipeline": 54,
+        "workflowId": "6ab05e7f-e30c-4736-9c2a-712a24b97260",
+        "statuses": [
+          {
+            "context": "ci/circleci: forge_core_validation",
+            "state": "success",
+            "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/82",
+            "updatedAt": "2026-10-02T17:34:55Z"
+          },
+          {
+            "context": "ci/circleci: forge_runtime_validation",
+            "state": "success",
+            "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/83",
+            "updatedAt": "2026-10-02T17:41:41Z"
+          }
+        ],
+        "core": {
+          "job": 82,
+          "status": "SUCCESS"
+        },
+        "runtime": {
+          "job": 83,
+          "status": "SUCCESS"
+        },
+        "safeSummary": "orchestration/evidence/current-source-20261002/CI54_SAFE_PUBLICATION_SUMMARY.json",
+        "review": "orchestration/evidence/current-source-20261002/CI54_REVIEW.md",
+        "rawArtifactCustody": "SAFE_SUMMARY_REVIEWED_RAW_PAYLOADS_EXCLUDED",
+        "originalArtifactByteCustody": "SEPARATE_NOT_COMPLETED",
+        "signedHttpsSessionExecuted": false,
+        "chromiumExecuted": false,
+        "customerProof": false,
+        "hostedSourceOrImageEquivalence": false
+      }
+    },
+    "currentCI": {
+      "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+      "sourceTree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+      "role": "ISOLATED_START_SOURCE_CI_NOT_SERVING_A3",
+      "pipeline": 54,
+      "workflowId": "6ab05e7f-e30c-4736-9c2a-712a24b97260",
+      "statuses": [
+        {
+          "context": "ci/circleci: forge_core_validation",
+          "state": "success",
+          "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/82",
+          "updatedAt": "2026-10-02T17:34:55Z"
+        },
+        {
+          "context": "ci/circleci: forge_runtime_validation",
+          "state": "success",
+          "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/83",
+          "updatedAt": "2026-10-02T17:41:41Z"
+        }
+      ],
+      "core": {
+        "job": 82,
+        "status": "SUCCESS"
+      },
+      "runtime": {
+        "job": 83,
+        "status": "SUCCESS"
+      },
+      "safeSummary": "orchestration/evidence/current-source-20261002/CI54_SAFE_PUBLICATION_SUMMARY.json",
+      "review": "orchestration/evidence/current-source-20261002/CI54_REVIEW.md",
+      "rawArtifactCustody": "SAFE_SUMMARY_REVIEWED_RAW_PAYLOADS_EXCLUDED",
+      "originalArtifactByteCustody": "SEPARATE_NOT_COMPLETED",
+      "signedHttpsSessionExecuted": false,
+      "chromiumExecuted": false,
+      "customerProof": false,
+      "hostedSourceOrImageEquivalence": false
+    },
+    "futurePublished": [
+      {
+        "branch": "feature/vector-lane01-twin-projections-20261002",
+        "sha": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+        "commit": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+        "tree": "071403827320c6afc7301479d9c2d7250b82585b",
+        "parent": "f68dff51c655da9fb68c7064c08e384a217b5314",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
+      {
+        "branch": "feature/vector-lane02-country-context-20261002",
+        "sha": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
+        "commit": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
+        "tree": "9b5df1b5a8945c3b46fc79c5d76832fa67e3ca2a",
+        "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
+      {
+        "branch": "feature/vector-lane03-proof-retry-20261002",
+        "sha": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
+        "commit": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
+        "tree": "c5c74a207be7cac5c9b23d79e937cc9dd08d1b16",
+        "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
+      {
+        "branch": "feature/vector-lane07-cleanroom-safety-20261002",
+        "sha": "62e6931137fa931816752db4b2f8f163332198dc",
+        "commit": "62e6931137fa931816752db4b2f8f163332198dc",
+        "tree": "92813acbbb429bd784835cb104e0496c85e9dee7",
+        "parent": "f3322714142c68f39007a25a4dce41729b2f5959",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
+      {
+        "branch": "feature/vector-lane08-value-projection-20261002",
+        "sha": "0e752bc01ff134d67360768bc69b1b12951faac9",
+        "commit": "0e752bc01ff134d67360768bc69b1b12951faac9",
+        "tree": "8abb0e12930b908420eae63f94b1596e31035f37",
+        "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
+      {
+        "branch": "feature/vector-lane08-skills-demand-20261002",
+        "sha": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+        "commit": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+        "tree": "7d95bd0156e20706f4eb5b94fe2c8df1f4e11870",
+        "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
       {
         "branch": "feature/vector-lane07-materials-projection-20261002",
         "sha": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
+        "commit": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
         "tree": "5d9fcd182d72459b4754a1b5625a6a8f816dfe53",
         "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-        "verifiedFrozenBlobs": 1094,
-        "verifiedAdditions": 99,
-        "verifiedTotalBlobs": 1193,
-        "shippingAdditions": 4,
-        "sourceChanges": 2,
-        "dependencyAdditions": 2,
-        "existingCapability": "product-004",
-        "recursiveUntruncated": true,
-        "readbackVerified": true,
-        "runtimeWired": false,
-        "customerProof": false,
-        "componentState": "TESTED",
         "broadState": "IN_PROGRESS",
-        "sourceTests": 43,
-        "independentHeldOut": 44,
-        "independentAffected": 43,
-        "producerAuthenticity": false
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
       },
       {
         "branch": "feature/vector-lane02-jurisdiction-boundary-repair-20261002",
         "sha": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
+        "commit": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
         "tree": "3f44cc755935987fd31dc5669875f44bbe39ac37",
         "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-        "verifiedTotalBlobs": 1213,
-        "originalFrozenPathsRetained": 1094,
-        "frozenBlobsUnchanged": 1086,
-        "approvedExistingOwnerModifications": 8,
-        "verifiedAdditions": 119,
-        "shippingPaths": 10,
-        "dependencyAdditions": 2,
-        "existingCapability": "product-058",
-        "recursiveUntruncated": true,
-        "readbackVerified": true,
-        "independentHeldOut": 59,
-        "independentAffected": 40,
-        "runtimeWired": false,
-        "customerProof": false,
-        "legalAuthenticity": false,
-        "componentState": "TESTED",
         "broadState": "IN_PROGRESS",
-        "sourceTests": 40,
-        "legalFactsAdded": false
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
+      {
+        "branch": "feature/vector-lane03-integration-authority-20261002",
+        "sha": "462d1b68b2adc2258750209a87d1895155c54f35",
+        "commit": "462d1b68b2adc2258750209a87d1895155c54f35",
+        "tree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
+        "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
+      {
+        "branch": "feature/vector-lane04-owner-boundary-repair-20261002",
+        "sha": "beac87d18a2c07fd8399dad87e690d252745853b",
+        "commit": "beac87d18a2c07fd8399dad87e690d252745853b",
+        "tree": "47872e9c1a4c1b4f3404b3e782d3df013cd85761",
+        "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
+      {
+        "branch": "feature/vector-lane03-workflow-tenant-20261002",
+        "sha": "4f04d04237f12cc4fee6cd036e0597230597c3b2",
+        "commit": "4f04d04237f12cc4fee6cd036e0597230597c3b2",
+        "tree": "1871b30ebf64f09375cede67c199c88973667236",
+        "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
+      },
+      {
+        "branch": "feature/vector-edge06-native-passkey-policy-a3-20261002",
+        "sha": "4fd326fce92876af9921db0700025ea0be809910",
+        "commit": "4fd326fce92876af9921db0700025ea0be809910",
+        "tree": "ede16da20fda28d980a2dd756f4342a4e2df6fb5",
+        "parent": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+        "broadState": "IN_PROGRESS",
+        "componentState": "TESTED",
+        "runtimeCallerIntegrated": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null
       }
     ],
     "wholeInventoryRefresh": false,
-    "originalSnapshotCounts": {
-      "branches": 437,
-      "prs": 264
-    },
     "deepCoverageComplete": false
+  },
+  "currentCoordinationTruth": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json",
+  "currentSourceAliasScope": "Observed external A3 review/release; PR294 isolated source and CI are separate; tracked product remains historical f32, no convergence",
+  "checkpoint6HistoricalAliases": {
+    "currentReferenceObservations": {
+      "review": {
+        "branch": "review/staffology-customer-proof-20261001",
+        "sha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+        "commit": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+        "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+        "parent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+        "sourceAdmitted": true,
+        "admitted": false,
+        "wholeRuntimeAdmission": false,
+        "fullTreeBlobs": 1109,
+        "actualDeltaPaths": 19,
+        "sourceRepairsChanged": 17,
+        "selectedAlreadyIdentical": 1,
+        "parentUnchanged": 1090,
+        "mandatoryProofBlobsPreserved": 6,
+        "triggerChanged": true,
+        "triggerPurpose": "Exact non-deploy source/runtime CI on actual CIRCLE_SHA1",
+        "local": {
+          "source": {
+            "tests": 159,
+            "pass": 159,
+            "skip": 0,
+            "evidence": "orchestration/evidence/current-staffology-composition/source.receipt.json"
+          },
+          "persistence": {
+            "tests": 1,
+            "pass": 1,
+            "skip": 0,
+            "evidence": "orchestration/evidence/current-staffology-composition/persistence.receipt.json"
+          },
+          "fullHttp": {
+            "tests": 1,
+            "pass": 1,
+            "skip": 0,
+            "mockRequests": 14,
+            "externalRequests": 0,
+            "evidence": "orchestration/evidence/current-staffology-composition/full-http.receipt.json"
+          },
+          "supportedPackaging": {
+            "tests": 8,
+            "pass": 8,
+            "skip": 0,
+            "evidence": "orchestration/evidence/current-staffology-composition/packaging-supported.receipt.json"
+          },
+          "initialBroadPackaging": {
+            "tests": 14,
+            "pass": 8,
+            "fail": 6,
+            "qualification": "Windows POSIX PATH/bashi absence and initial blanket network guard; original reds retained, no14/14 claim"
+          }
+        },
+        "independentComposition": {
+          "verified": true,
+          "evidence": "orchestration/evidence/staffology-composition-review.md"
+        },
+        "previousAdmission": {
+          "sha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+          "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+          "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+          "evidence": "Historical checkpoint5 commit28f964f733dad532d7cce6838b3e833749b94422; retained current-admission repair receipts"
+        },
+        "native8690Custody": "OPEN",
+        "hostedProof": false,
+        "customerProof": false,
+        "provenBaseSha": null,
+        "convergenceBaseSha": null,
+        "claim": "Exact source admitted; local synthetic checks passed and actual Linux CI jobs executed successfully. RawCI artifact identities pending; deployed/customer gates remain unproven."
+      },
+      "frozen": {
+        "branch": "release/vector-customer-ready-candidate-20260925",
+        "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "tree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+        "preserve": true
+      },
+      "controlPlaneParent": "28f964f733dad532d7cce6838b3e833749b94422",
+      "futureNewPublished": [
+        {
+          "branch": "feature/vector-lane07-materials-projection-20261002",
+          "sha": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
+          "tree": "5d9fcd182d72459b4754a1b5625a6a8f816dfe53",
+          "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "verifiedFrozenBlobs": 1094,
+          "verifiedAdditions": 99,
+          "verifiedTotalBlobs": 1193,
+          "shippingAdditions": 4,
+          "sourceChanges": 2,
+          "dependencyAdditions": 2,
+          "existingCapability": "product-004",
+          "recursiveUntruncated": true,
+          "readbackVerified": true,
+          "runtimeWired": false,
+          "customerProof": false,
+          "componentState": "TESTED",
+          "broadState": "IN_PROGRESS",
+          "sourceTests": 43,
+          "independentHeldOut": 44,
+          "independentAffected": 43,
+          "producerAuthenticity": false
+        },
+        {
+          "branch": "feature/vector-lane02-jurisdiction-boundary-repair-20261002",
+          "sha": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
+          "tree": "3f44cc755935987fd31dc5669875f44bbe39ac37",
+          "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "verifiedTotalBlobs": 1213,
+          "originalFrozenPathsRetained": 1094,
+          "frozenBlobsUnchanged": 1086,
+          "approvedExistingOwnerModifications": 8,
+          "verifiedAdditions": 119,
+          "shippingPaths": 10,
+          "dependencyAdditions": 2,
+          "existingCapability": "product-058",
+          "recursiveUntruncated": true,
+          "readbackVerified": true,
+          "independentHeldOut": 59,
+          "independentAffected": 40,
+          "runtimeWired": false,
+          "customerProof": false,
+          "legalAuthenticity": false,
+          "componentState": "TESTED",
+          "broadState": "IN_PROGRESS",
+          "sourceTests": 40,
+          "legalFactsAdded": false
+        }
+      ],
+      "wholeInventoryRefresh": false,
+      "originalSnapshotCounts": {
+        "branches": 437,
+        "prs": 264
+      },
+      "deepCoverageComplete": false
+    }
+  },
+  "writeAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
+  },
+  "currentProofBlobCustody": {
+    "scope": "HISTORICAL_A3_BASE_ONLY_SIX_PRESERVATION_NOT_BLANKET_START_OVERLAY",
+    "historicalA3Sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "isolatedStartSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "allSixPreservedOnStart": false,
+    "preservedPaths": 4,
+    "intentionallyReviewedModifiedPaths": 2,
+    "rows": [
+      {
+        "path": "implementation/runtime/readiness-evidence-contract.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "isolatedStartBlob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+        "isolatedStartBlob": "701bf2113853794dc606eb02c6ef4b4a9ea76c10",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+        "isolatedStartBlob": "3e3d9b41bd2c0d11e6efc7a0bb8e9819c1f1c60d",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "isolatedStartBlob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "isolatedStartBlob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/run-forge-ci.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "isolatedStartBlob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      }
+    ],
+    "authority": "Source-custody description only; no caller/gate/auth/approval relaxation"
+  },
+  "currentWriteAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
   }
 }

@@ -1,3 +1,17 @@
+Root finalizes the exact combined employee/START source review and transport, admits and publishes this reviewed coordination-only successor nonforce, then resolves the single-controller decision and concrete customer/actor/signer/private-handoff/backup/provider approval before canonical product review/release/convergence or hosted/access writes.
+
+Current A3 deployment is557513d7-166c-4d9a-aa71-402f3dc57249 SUCCESS; f070 isREMOVED/historical. WFM_STAFFOLOGY_OPERATION_JSON name nowpresent, value/scope/auth unobserved. Employee component sealed54within133 +combined277 local TESTED, independent48 source controls closed; combined/root/CI/hosted/customer admission pending.
+
+The inherited historical six-blob preservation list below applies to its old source/A3 base only. PR294/9f intentionally modifies reviewed engine core02dd->701bf and testfc663->3e3d. Its other four listed proof paths preserve exact A3 blobs. CURRENT_TRUTH lists every mode/preimage/postimage; no blanket six-preservation claim applies to START.
+
+Only canonical product review/release/convergence and hosted/access actions await the controller/scope approval. Reviewed isolated source and coordination metadata writes remain authorized with root as publisher.
+
+Earlier-cutoff instruction chronology below is historical and superseded by this first line/current truth.
+
+Current observed review/release A3; latest serving f070 is A3. PR294/9f529d source-only CI54 succeeded. Native future12th published/componentTESTED; employee five-path source IN_PROGRESS. All27NOT_PROVEN,21 separate, proven/live/convergence null.
+
+The repository product tree remains historical f32; this coordination successor is not canonical source convergence. Fresh orchestration parent/ref check, root admission and nonforce publication remain pending. Prior instructions below are checkpoint6 historical chronology, superseded for execution by this first line and CURRENT_TRUTH.
+
 Retain and hash the exact Pipeline42 jobs62/63 artifacts using the approved CircleCI reader, then verify source/image/runtime identities against d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd and complete the hosted Golden Journey authorization packet.
 
 Current review: d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd, tree 8bce98423f144ccd90916fc1b1236f3b9996245b, parent 6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad. All 1,109 remote leaves and modes verified; 19 actual changes; 1,090 other parent leaves preserved. Six mandatory proof blobs are unchanged.

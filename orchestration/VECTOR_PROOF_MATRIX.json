@@ -1,137 +1,34 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T14:13:35.489Z",
+  "updatedAt": "2026-10-02 18:17:21 UTC",
   "claim": "NOT_CUSTOMER_PROVEN",
   "exactCurrentTuple": {
-    "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-    "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
-    "tenant": "northstar-demo",
-    "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
-    "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
-    "fixtureOnly": true,
-    "productionApproved": false,
-    "observedAt": "2026-10-02T08:20:00.048Z"
+    "sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "tree": "712acebba40dd9e0e4b8dd207122008b174275ec",
+    "deploymentId": "557513d7-166c-4d9a-aa71-402f3dc57249",
+    "status": "SUCCESS",
+    "snapshotId": "e695688a-f050-4071-ab1e-d0b035a0e507",
+    "createdAt": "2026-10-02T17:53:37.318Z",
+    "updatedAt": "2026-10-02T17:54:44.582Z",
+    "observedAt": "2026-10-02 18:17:21 UTC",
+    "fixtureOnly": null,
+    "productionApproved": null,
+    "scope": "Latest deployment metadata only; prior A3 public identity remains historical, no fresh runtime/tenant/run/source-image equivalence on this deployment",
+    "priorPublicIdentity": {
+      "sourceSha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+      "observedAt": "2026-10-02T16:49:46.912Z",
+      "fixtureOnly": true,
+      "productionApproved": false,
+      "currentDeploymentReobserved": false
+    },
+    "tenant": null,
+    "runId": null,
+    "currentHostedProofObserved": false,
+    "backupVerified": false
   },
   "executorObservation": {
-    "ok": true,
-    "status": "passwordless-proof-runner-partial",
-    "scopedChecksPassed": true,
-    "customerProofComplete": false,
-    "productReady": false,
-    "startedAt": "2026-10-02T08:19:48.978Z",
-    "updatedAt": "2026-10-02T08:20:00.048Z",
-    "executorCodeSha256": "9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438",
-    "gustoMetadata": {
-      "acquiredAt": "2026-10-02T06:58:50.375Z",
-      "scope": "Stored application metadata only; no fresh provider authorization or data acceptance",
-      "configurationHttpStatus": 200,
-      "statusHttpStatus": 200,
-      "available": true,
-      "configuration": {
-        "configured": true,
-        "environment": "sandbox",
-        "expectedCompanyUuid": "49d3bf95-5b5b-4251-89d8-1b614e47e676",
-        "missingConfiguration": []
-      },
-      "gustoConnectionCount": 0,
-      "connections": []
-    },
-    "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
-    "authMethod": "proof-runner-signed",
-    "observed": {
-      "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
-      "tenant": "northstar-demo",
-      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e"
-    },
-    "deploymentReadbackSource": "authenticated implementation status: current native binding",
-    "health": {
-      "status": 200,
-      "release": "0.6.76-hosted-staging-rc1",
-      "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-      "fixtureOnly": true,
-      "productionApproved": false
-    },
-    "bootstrapStatus": 200,
-    "scopeStatus": 200,
-    "implementationStatus": 200,
-    "implementation": {
-      "state": "SLA_MISSED",
-      "operationalReady": false,
-      "completedRequirements": 5,
-      "totalRequirements": 21,
-      "openRequirements": [
-        {
-          "key": "tenant-environment",
-          "status": "REVALIDATION_REQUIRED"
-        },
-        {
-          "key": "identity-access",
-          "status": "REVALIDATION_REQUIRED"
-        },
-        {
-          "key": "time-policies",
-          "status": "REVALIDATION_REQUIRED"
-        },
-        {
-          "key": "absence-policies",
-          "status": "WARN"
-        },
-        {
-          "key": "scheduling",
-          "status": "REVALIDATION_REQUIRED"
-        },
-        {
-          "key": "approvals",
-          "status": "REVALIDATION_REQUIRED"
-        },
-        {
-          "key": "clocking",
-          "status": "REVALIDATION_REQUIRED"
-        },
-        {
-          "key": "payroll-mapping",
-          "status": "MISSING"
-        },
-        {
-          "key": "historical-replay",
-          "status": "MISSING"
-        },
-        {
-          "key": "security-controls",
-          "status": "REVALIDATION_REQUIRED"
-        },
-        {
-          "key": "resilience",
-          "status": "REVALIDATION_REQUIRED"
-        },
-        {
-          "key": "scenario-validation",
-          "status": "MISSING"
-        },
-        {
-          "key": "test-data-cleanup",
-          "status": "MISSING"
-        },
-        {
-          "key": "live-data-import",
-          "status": "MISSING"
-        },
-        {
-          "key": "privileged-competency",
-          "status": "MISSING"
-        },
-        {
-          "key": "frontline-readiness",
-          "status": "MISSING"
-        }
-      ],
-      "activeWorkerLeases": 0
-    },
-    "expectedTenant": "northstar-demo",
-    "expectedRunId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
-    "expectedSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-    "expectedDeploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810"
+    "status": "PRIOR_SYNTHETIC_EXECUTOR_OBSERVATION_HISTORICAL_NO_CURRENT_REEXECUTION",
+    "customerProofComplete": false
   },
   "customerProofComplete": false,
   "mandatoryGates": [
@@ -580,233 +477,49 @@
       "status": "MISSING"
     }
   ],
-  "ciSource": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "ciSource": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
   "ci": {
-    "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-    "currentReviewSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-    "statuses": [
-      {
-        "state": "success",
-        "context": "ci/circleci: forge_core_validation",
-        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/62",
-        "updated_at": "2026-10-02T13:32:32Z"
-      },
-      {
-        "state": "success",
-        "context": "ci/circleci: forge_runtime_validation",
-        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/63",
-        "updated_at": "2026-10-02T13:38:37Z"
-      }
-    ],
+    "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "currentReviewSha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
     "currentExecution": {
-      "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-      "pipeline": 42,
-      "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
+      "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+      "sourceTree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+      "role": "ISOLATED_START_SOURCE_CI_NOT_SERVING_A3",
+      "pipeline": 54,
+      "workflowId": "6ab05e7f-e30c-4736-9c2a-712a24b97260",
       "statuses": [
         {
-          "state": "success",
           "context": "ci/circleci: forge_core_validation",
-          "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/62",
-          "updated_at": "2026-10-02T13:32:32Z"
+          "state": "success",
+          "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/82",
+          "updatedAt": "2026-10-02T17:34:55Z"
         },
         {
-          "state": "success",
           "context": "ci/circleci: forge_runtime_validation",
-          "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/63",
-          "updated_at": "2026-10-02T13:38:37Z"
+          "state": "success",
+          "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/83",
+          "updatedAt": "2026-10-02T17:41:41Z"
         }
       ],
       "core": {
-        "recordedAt": "2026-10-02 14:10:43 UTC",
-        "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-        "pipeline": 42,
-        "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
-        "job": 62,
-        "jobId": "ddc2b142-f603-425b-8573-5dafee10fec7",
-        "status": "Success",
-        "executor": "Docker/Small",
-        "duration": "18s job details / 19s workflow list",
-        "startedAt": "2026-10-02T13:32:11Z",
-        "completedAt": "2026-10-02T13:32:31Z",
-        "steps": [
-          {
-            "name": "Spin up environment",
-            "status": "success",
-            "durationSeconds": 2
-          },
-          {
-            "name": "Preparing environment variables",
-            "status": "success",
-            "durationSeconds": 0
-          },
-          {
-            "name": "Checkout code",
-            "status": "success",
-            "durationSeconds": 1
-          },
-          {
-            "name": "Admit explicit frozen candidate only",
-            "status": "success",
-            "durationSeconds": 0
-          },
-          {
-            "name": "Verify exact Node runtime",
-            "status": "success",
-            "durationSeconds": 0
-          },
-          {
-            "name": "Current FORGE source validation",
-            "status": "success",
-            "durationSeconds": 13
-          },
-          {
-            "name": "Collect source proof receipts",
-            "status": "success",
-            "durationSeconds": 0
-          },
-          {
-            "name": "Uploading artifacts",
-            "status": "success",
-            "durationSeconds": 0
-          }
-        ],
-        "sourceValidationExecutedObserved": true,
-        "rawTestTotalsRetained": false,
-        "rawArtifactsRetained": false,
-        "customerProof": false
+        "job": 82,
+        "status": "SUCCESS"
       },
       "runtime": {
-        "recordedAt": "2026-10-02T14:06:38.686Z",
-        "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-        "sourceTree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
-        "pipeline": 42,
-        "pipelineId": "6a91fbc3-9ecb-40e1-82f4-532ff0e69684",
-        "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
-        "job": 63,
-        "jobId": "b095799b-a0a4-4406-b635-219dbd4e358e",
-        "url": "https://app.circleci.com/pipelines/github/paulallen123/-manufacturing-wfm/42/workflows/9aea79bf-b4e7-4a93-a4ea-7276383ce10c/jobs/63",
-        "status": "Success",
-        "executor": "Machine/Linux Medium",
-        "duration": "6m 1s",
-        "steps": [
-          {
-            "name": "Spin up environment",
-            "status": "success",
-            "durationSeconds": 0
-          },
-          {
-            "name": "Preparing environment variables",
-            "status": "success",
-            "durationSeconds": 0
-          },
-          {
-            "name": "Checkout code",
-            "status": "success",
-            "durationSeconds": 1
-          },
-          {
-            "name": "Admit explicit frozen candidate only",
-            "status": "success",
-            "durationSeconds": 0
-          },
-          {
-            "name": "Build exact FORGE runtime candidate",
-            "status": "success",
-            "durationSeconds": 354
-          },
-          {
-            "name": "Verify runtime security boundary",
-            "status": "success",
-            "durationSeconds": 1
-          },
-          {
-            "name": "Prove isolated hosted HTTP boundary",
-            "status": "success",
-            "durationSeconds": 3
-          },
-          {
-            "name": "Capture exact runtime proof",
-            "status": "success",
-            "durationSeconds": 0
-          },
-          {
-            "name": "Clean up proof container",
-            "status": "success",
-            "durationSeconds": 0
-          },
-          {
-            "name": "Uploading artifacts",
-            "status": "success",
-            "durationSeconds": 0
-          }
-        ],
-        "startedAt": "2026-10-02T13:32:32Z",
-        "buildStartedAt": "2026-10-02T13:32:36Z",
-        "buildCompletedAt": "2026-10-02T13:38:30Z",
-        "completedAt": "2026-10-02T13:38:36Z",
-        "heavyExecutionObserved": true,
-        "rawBuildLogRetained": false,
-        "rawArtifactsRetained": false,
-        "artifactDownloadBlocked": true,
-        "claim": "Actual CI execution and step success observed in authenticated UI; source/image/runtime/proof artifact hashes remain unretained and independently unverified. This isolated container check is not deployed customer proof.",
-        "customerProof": false,
-        "hostedCandidateChanged": false
+        "job": 83,
+        "status": "SUCCESS"
       },
-      "rawArtifactCustody": "PENDING_AUTHORIZED_READER; original404 body is failed download evidence only",
-      "imageDigest": null,
-      "containerRuntimeIdentity": null,
-      "customerProof": false
+      "safeSummary": "orchestration/evidence/current-source-20261002/CI54_SAFE_PUBLICATION_SUMMARY.json",
+      "review": "orchestration/evidence/current-source-20261002/CI54_REVIEW.md",
+      "rawArtifactCustody": "SAFE_SUMMARY_REVIEWED_RAW_PAYLOADS_EXCLUDED",
+      "originalArtifactByteCustody": "SEPARATE_NOT_COMPLETED",
+      "signedHttpsSessionExecuted": false,
+      "chromiumExecuted": false,
+      "customerProof": false,
+      "hostedSourceOrImageEquivalence": false
     },
-    "historicalExecutions": {
-      "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
-      "statuses": [
-        {
-          "context": "ci/circleci: forge_core_validation",
-          "state": "success",
-          "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/25"
-        },
-        {
-          "context": "ci/circleci: forge_runtime_validation",
-          "state": "failure",
-          "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/26"
-        }
-      ],
-      "actualRuntimeLog": {
-        "job": 26,
-        "pipeline": 19,
-        "pass": 142,
-        "total": 143,
-        "fail": 1,
-        "skipped": 0,
-        "signature": "acquire-stage403 canonical mapping options",
-        "sha256": "c5ad82ffd7c176bbeba80c4e72e0d928696b00ccb5ab23a2c388fb5bd6db8f3d",
-        "path": "orchestration/evidence/ci19-browser/job26-build.log"
-      },
-      "currentReviewExecution": "d387 core36/runtime37 green with unchanged trigger; actual runtime UI has only executor/environment/checkout/admit,2s; heavy validation NOT EXECUTED",
-      "haltedReview": {
-        "sha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-        "core": 50,
-        "runtime": 51,
-        "triggerChanged": false,
-        "heavyExecuted": false,
-        "validationClaim": false,
-        "runtimeUI": {
-          "pipeline": 35,
-          "durationSeconds": 1,
-          "steps": [
-            "Spin up environment",
-            "Preparing environment variables",
-            "Checkout code",
-            "Admit explicit frozen candidate only"
-          ],
-          "actualBuildOrTestsSteps": 0,
-          "observed": true
-        },
-        "logDownloaded": false
-      }
-    },
-    "latestObservedActualRuntimeExecutionSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-    "latestObservedActualRuntimeResult": "Actual Pipeline42 jobs62/63 source and heavy Docker/security/isolated HTTP steps succeeded; raw artifact custody remains pending"
+    "latestObservedActualRuntimeExecutionSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "latestObservedActualRuntimeResult": "SUCCESS_SOURCE_CI54_ONLY"
   },
   "invalidatedEvidence": [
     {
@@ -861,27 +574,27 @@
           "command": [
             "--experimental-sqlite",
             "--require",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-connector.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-deployment-binding.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-mapping-preflight.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-status.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-production-boundaries.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-runtime-bridge.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\current-authority-recovery-held-out.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\docker-admission-contract.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\generated-provider-preload.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\succession-regressions.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent-boundaries.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\review-5921699729-regressions.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\review-5925613376-regressions.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\sqlite-contract.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\staffology-adapter.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\ux-overlay\\vector-staffology-controls.test.cjs",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\ux-overlay\\vector-settings-navigation.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:975faca656f112bb9597e037f2e72ddac086b680e9f91bc6bf705e3994f84f8e; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:c568fbfa59143f251025ab7fadceae26ce30e5621115f2bde281a074a41ea31f; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:cd5f13454239b2e18fc2035eaeed4198dbdf6c84f2197ce1b2dda9de5c252ebf; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:ada5e30e689c889da0fc459c02049814a269b3cf02942faa4ebecefbd0ef3666; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:3f8b53f200753af1e4be794115ee1720f727252727296b043d7a23c978a31d88; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:0c77dc3212d3ef589616cc185435a1f4d0d3a56b2892e4862a46c92a5e5df433; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:9597f088b64b1cb5d870496d39c3a61d674d9fadc023283b11e8bcc3573d2ea7; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:1424521547c03522ccbf71b0e69155777a162ed6919f61715733b28e219dfb20; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:c4390545d18271b07ce6970cf729c32e5a92215bfd6d6394b7d68ecade20efc3; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:7ee1e454f915afcc4a317948ae29b2cdb2cf5cb7e620a61d62194773861ca16c; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:c1ee912d0345cd77b4339df4709558c6e6ecd49beaf9189dbcab29f7ad34d055; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:fb8cd33519a9a967f04889f6e66fdc2346169bdf72f84da1ca5d26f881625d9d; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:e5c8959a9a4a02e0b130912dcdd56258488b95efe700689d19f15876730d2324; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:5b460e0643374888ca0ed6b3954f6803cc18f89b4800464ea2cc6f06281afca5; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:3d013a4c5a63c54774a2b9bf6811f72ef172a3308490d965300bc510298e410f; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:0c9ed3b77b66e6bb59ac3796312a54946a0d6b12f9cfef3a8059ac8da3006505; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:2bac20bf34abc5bebc4996c54f46cc60d254e8b1d13739cdc95041a8de130925; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:e8a41cf4b319e167b9a4903beb7619a14c797dd67595a1600154f82c2b2639d4; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/canonical-operations-connector.test.cjs",
@@ -929,10 +642,10 @@
           "command": [
             "--experimental-sqlite",
             "--require",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:6921feb53babc5489a7b2628d9ccd481671f1165ece2886ef2ec262859311b59; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\staffology-employee-persistence.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:8570ad3ba6358c318bbe0c5e63e19528853613a1441bfb5de2afe3fc54980626; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/staffology-employee-persistence.test.cjs"
@@ -964,7 +677,7 @@
             "--experimental-sqlite",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:f47e916848f8b6f5dc2f486be007836e523bf47c9e8a8d99031afe5249f12620; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/independent/full-http-employee-journey.test.cjs"
@@ -996,7 +709,7 @@
             "--experimental-sqlite",
             "--test",
             "--test-concurrency=1",
-            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
+            "OMITTED_LEGACY_PRIVATE_LOCAL_STRING_SHA256:f47e916848f8b6f5dc2f486be007836e523bf47c9e8a8d99031afe5249f12620; EXACT_ORIGINAL_CUSTODY_CP6_PARENT:417a1115a73dd5789101d4d996b5b5c80b6289e4"
           ],
           "files": [
             "integrations/staffology/independent/full-http-employee-journey.test.cjs"
@@ -1048,336 +761,160 @@
   },
   "futureSourceBranches": [
     {
-      "receiptPath": "orchestration/evidence/twin-repair-publication.json",
       "branch": "feature/vector-lane01-twin-projections-20261002",
+      "sha": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
       "commit": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
       "tree": "071403827320c6afc7301479d9c2d7250b82585b",
       "parent": "f68dff51c655da9fb68c7064c08e384a217b5314",
-      "verified": true,
-      "frozenPreserved": 1094,
-      "manifestPaths": 51,
-      "sourceTests": 73,
-      "independentHeldOut": 31,
-      "sharedBoundary": {
-        "owner": "LANE01",
-        "classification": "CANONICAL_OWNER_LANE01",
-        "paths": [
-          {
-            "path": "implementation/runtime/inert-finite-json.cjs",
-            "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261"
-          },
-          {
-            "path": "implementation/runtime/inert-finite-json.test.cjs",
-            "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
-          }
-        ],
-        "countryCopyPurpose": "Identical canonical dependency paths ensure standalone branch executability; no competing owner"
-      },
-      "runtimeWired": false,
-      "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "publishedAt": "2026-10-02T11:22:05.627Z",
-      "sha": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
-      "parents": [
-        "f68dff51c655da9fb68c7064c08e384a217b5314"
-      ],
-      "totalTreeBlobs": 1182,
-      "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
       "runtimeCallerIntegrated": false,
       "customerProof": false,
-      "liveSha": null,
-      "scope": "Isolated future source, not canonical convergence or deployed proof"
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
     },
     {
-      "receiptPath": "orchestration/evidence/country-publication.json",
       "branch": "feature/vector-lane02-country-context-20261002",
+      "sha": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
       "commit": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
       "tree": "9b5df1b5a8945c3b46fc79c5d76832fa67e3ca2a",
       "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-      "verified": true,
-      "frozenPreserved": 1094,
-      "manifestPaths": 70,
-      "sourceTests": 41,
-      "independentHeldOut": 15,
-      "sharedBoundary": {
-        "owner": "LANE01",
-        "classification": "CANONICAL_DEPENDENCY_OWNED_LANE01",
-        "paths": [
-          {
-            "path": "implementation/runtime/inert-finite-json.cjs",
-            "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261"
-          },
-          {
-            "path": "implementation/runtime/inert-finite-json.test.cjs",
-            "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
-          }
-        ],
-        "countryCopyPurpose": "Identical canonical dependency paths ensure standalone branch executability; no competing owner"
-      },
-      "runtimeWired": false,
-      "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "publishedAt": "2026-10-02T11:22:05.655Z",
-      "sha": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
-      "parents": [
-        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
-      ],
-      "totalTreeBlobs": 1164,
-      "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
       "runtimeCallerIntegrated": false,
       "customerProof": false,
-      "liveSha": null,
-      "scope": "Isolated future source, not canonical convergence or deployed proof"
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
     },
     {
-      "receiptPath": "orchestration/evidence/retry-publication.json",
       "branch": "feature/vector-lane03-proof-retry-20261002",
+      "sha": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
       "commit": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
       "tree": "c5c74a207be7cac5c9b23d79e937cc9dd08d1b16",
       "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-      "frozenPreserved": 1094,
-      "manifestPaths": 39,
-      "verified": true,
-      "runtimeWired": false,
-      "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "sourceSuite": {
-        "tests": 87,
-        "pass": 87,
-        "fail": 0,
-        "skip": 0
-      },
-      "independentHeldOut": {
-        "tests": 23,
-        "pass": 23,
-        "fail": 0,
-        "skip": 0
-      },
-      "qualifiedCanonicalComparison": {
-        "tests": 139,
-        "pass": 138,
-        "fail": 1,
-        "skip": 0,
-        "qualification": "Unchanged frozen Gusto Windows SQLite cleanup EBUSY; reproduced baseline-only, no blanket green."
-      },
-      "publishedAt": "2026-10-02T11:19:17.441Z",
-      "sha": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
-      "parents": [
-        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
-      ],
-      "totalTreeBlobs": 1133,
-      "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
       "runtimeCallerIntegrated": false,
       "customerProof": false,
-      "liveSha": null,
-      "scope": "Isolated future source, not canonical convergence or deployed proof"
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
     },
     {
-      "receiptPath": "orchestration/evidence/cleanroom-followup-publication.json",
       "branch": "feature/vector-lane07-cleanroom-safety-20261002",
+      "sha": "62e6931137fa931816752db4b2f8f163332198dc",
       "commit": "62e6931137fa931816752db4b2f8f163332198dc",
       "tree": "92813acbbb429bd784835cb104e0496c85e9dee7",
       "parent": "f3322714142c68f39007a25a4dce41729b2f5959",
-      "verified": true,
-      "coordinationOnly": true,
-      "shippingChanges": 0,
-      "priorSourceTestsReused": 28,
-      "priorIndependentHeldOutReused": 34,
-      "frozenPreserved": 1094,
-      "parentUnchanged": 1141,
-      "deltaPaths": 7,
-      "runtimeWired": false,
-      "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "publishedAt": "2026-10-02T11:39:27.667Z",
-      "sha": "62e6931137fa931816752db4b2f8f163332198dc",
-      "parents": [
-        "f3322714142c68f39007a25a4dce41729b2f5959"
-      ],
-      "totalTreeBlobs": 1148,
-      "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
       "runtimeCallerIntegrated": false,
       "customerProof": false,
-      "liveSha": null,
-      "scope": "Isolated future source, not canonical convergence or deployed proof"
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
     },
     {
-      "receiptPath": "orchestration/evidence/value-publication.json",
       "branch": "feature/vector-lane08-value-projection-20261002",
+      "sha": "0e752bc01ff134d67360768bc69b1b12951faac9",
       "commit": "0e752bc01ff134d67360768bc69b1b12951faac9",
       "tree": "8abb0e12930b908420eae63f94b1596e31035f37",
       "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-      "verified": true,
-      "frozenPreserved": 1094,
-      "manifestPaths": 65,
-      "shippingPaths": 4,
-      "sharedOwner": "LANE01",
-      "valueShippingBlobs": [
-        "80c9d72a90f6c0dab549b44ca6e2ce67810e4d3d",
-        "d031d2e352590f9c02400cf02af150461dc1feb5"
-      ],
-      "sharedDependencyBlobs": [
-        "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
-        "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
-      ],
-      "owner": {
-        "pass": 33,
-        "total": 33
-      },
-      "independent": {
-        "pass": 32,
-        "total": 32
-      },
-      "runtimeWired": false,
-      "aggregateFinancialValue": null,
-      "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "publishedAt": "2026-10-02T11:44:15.736Z",
-      "sha": "0e752bc01ff134d67360768bc69b1b12951faac9",
-      "parents": [
-        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
-      ],
-      "totalTreeBlobs": 1159,
-      "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
       "runtimeCallerIntegrated": false,
       "customerProof": false,
-      "liveSha": null,
-      "scope": "Isolated future source, not canonical convergence or deployed proof"
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
     },
     {
-      "receiptPath": "orchestration/evidence/skills-demand-publication.json",
-      "schemaVersion": 1,
-      "at": "2026-10-02T12:29:26.224Z",
       "branch": "feature/vector-lane08-skills-demand-20261002",
-      "commit": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
-      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-      "tree": "7d95bd0156e20706f4eb5b94fe2c8df1f4e11870",
-      "allBlobsVerified": 1173,
-      "frozenBlobsUnchanged": 1094,
-      "addedPaths": 79,
-      "shippingPaths": 4,
-      "shippingBytes": 25178,
-      "recursiveTreeUntruncated": true,
-      "readbackVerified": true,
-      "capabilityId": "product-033",
-      "capabilityState": "IN_PROGRESS",
-      "component": "TESTED_AND_INDEPENDENTLY_REVIEWED_LOCAL_SOURCE_ONLY",
-      "runtimeWired": false,
-      "customerProof": false,
-      "convergenceSha": null,
-      "provenBaseSha": null,
       "sha": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
-      "parents": [
-        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
-      ],
-      "totalTreeBlobs": 1173,
-      "componentState": "TESTED",
+      "commit": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+      "tree": "7d95bd0156e20706f4eb5b94fe2c8df1f4e11870",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
       "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
       "runtimeCallerIntegrated": false,
-      "convergenceBaseSha": null,
-      "liveSha": null,
-      "scope": "Isolated future source, not canonical convergence or deployed proof"
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
     },
     {
-      "receiptPath": "orchestration/evidence/materials-publication.json",
       "branch": "feature/vector-lane07-materials-projection-20261002",
       "sha": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
+      "commit": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
       "tree": "5d9fcd182d72459b4754a1b5625a6a8f816dfe53",
       "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-      "verifiedFrozenBlobs": 1094,
-      "verifiedAdditions": 99,
-      "verifiedTotalBlobs": 1193,
-      "shippingAdditions": 4,
-      "sourceChanges": 2,
-      "dependencyAdditions": 2,
-      "existingCapability": "product-004",
-      "recursiveUntruncated": true,
-      "readbackVerified": true,
-      "runtimeWired": false,
-      "customerProof": false,
-      "commit": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
-      "parents": [
-        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
-      ],
-      "totalTreeBlobs": 1193,
-      "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
       "runtimeCallerIntegrated": false,
+      "customerProof": false,
       "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "liveSha": null,
-      "scope": "Isolated future source, not canonical convergence or deployed proof"
+      "convergenceBaseSha": null
     },
     {
-      "receiptPath": "orchestration/evidence/jurisdiction-publication.json",
       "branch": "feature/vector-lane02-jurisdiction-boundary-repair-20261002",
       "sha": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
+      "commit": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
       "tree": "3f44cc755935987fd31dc5669875f44bbe39ac37",
       "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-      "verifiedTotalBlobs": 1213,
-      "originalFrozenPathsRetained": 1094,
-      "frozenBlobsUnchanged": 1086,
-      "approvedExistingOwnerModifications": 8,
-      "verifiedAdditions": 119,
-      "shippingPaths": 10,
-      "dependencyAdditions": 2,
-      "existingCapability": "product-058",
-      "recursiveUntruncated": true,
-      "readbackVerified": true,
-      "independentHeldOut": 59,
-      "independentAffected": 40,
-      "runtimeWired": false,
-      "customerProof": false,
-      "legalAuthenticity": false,
-      "commit": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
-      "parents": [
-        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
-      ],
-      "totalTreeBlobs": 1213,
-      "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
       "runtimeCallerIntegrated": false,
+      "customerProof": false,
       "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "liveSha": null,
-      "scope": "Isolated future source, not canonical convergence or deployed proof"
+      "convergenceBaseSha": null
     },
     {
-      "receiptPath": "orchestration/evidence/future-lane-publication.json",
       "branch": "feature/vector-lane03-integration-authority-20261002",
       "sha": "462d1b68b2adc2258750209a87d1895155c54f35",
-      "tree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
-      "parents": [
-        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
-      ],
-      "baseBlobsUnchanged": 1092,
-      "allowedBaseModifications": 2,
-      "shippingPaths": 53,
-      "shippingBytes": 616346,
-      "totalAddedPaths": 105,
-      "totalTreeBlobs": 1199,
-      "tests": {
-        "suite": 546,
-        "expandedProbes": 31,
-        "acadia": 3,
-        "staticCommands": 4
-      },
-      "runtimeCallerIntegrated": false,
       "commit": "462d1b68b2adc2258750209a87d1895155c54f35",
+      "tree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
       "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
-      "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
-      "runtimeWired": false,
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
       "customerProof": false,
       "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "liveSha": null,
-      "scope": "Isolated future source, not canonical convergence or deployed proof"
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane04-owner-boundary-repair-20261002",
+      "sha": "beac87d18a2c07fd8399dad87e690d252745853b",
+      "commit": "beac87d18a2c07fd8399dad87e690d252745853b",
+      "tree": "47872e9c1a4c1b4f3404b3e782d3df013cd85761",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-lane03-workflow-tenant-20261002",
+      "sha": "4f04d04237f12cc4fee6cd036e0597230597c3b2",
+      "commit": "4f04d04237f12cc4fee6cd036e0597230597c3b2",
+      "tree": "1871b30ebf64f09375cede67c199c88973667236",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
+    },
+    {
+      "branch": "feature/vector-edge06-native-passkey-policy-a3-20261002",
+      "sha": "4fd326fce92876af9921db0700025ea0be809910",
+      "commit": "4fd326fce92876af9921db0700025ea0be809910",
+      "tree": "ede16da20fda28d980a2dd756f4342a4e2df6fb5",
+      "parent": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+      "broadState": "IN_PROGRESS",
+      "componentState": "TESTED",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null
     }
   ],
   "freshHostedObservation": {
@@ -1473,156 +1010,15 @@
   },
   "coverageReview": "orchestration/evidence/proof-machinery-review.md",
   "currentAdmissionAudit": {
-    "status": "EXACT_SOURCE_ADMITTED_LOCAL_CLOSURE_ONLY",
-    "issues": [
-      "ADMISSION-01",
-      "ADMISSION-02"
-    ],
-    "tests": 8,
-    "pass": 3,
-    "fail": 5,
-    "customerProof": false,
-    "successor": {
-      "status": "INDEPENDENTLY_REVIEWED_SOURCE_ADMITTED_NOT_HOSTED_PROVEN",
-      "baseSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-      "shipping": [
-        {
-          "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
-          "mode": "100644",
-          "type": "blob",
-          "preimageBlob": "198978255a62a1297e6104f66f67373864534e3e",
-          "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
-          "sha256": "028e47daa39345e11a26c2e06191fdd62fcae9d8c0b691d0061c6f8178a8f963",
-          "bytes": 104615
-        },
-        {
-          "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
-          "mode": "100644",
-          "type": "blob",
-          "preimageBlob": "a94904b821126cc6155afd091d6acc4c8b1673e9",
-          "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
-          "sha256": "3fcdebb94968867d8054da90b53174119afa4a58e7ef968cb4e26d954b32523a",
-          "bytes": 91460
-        }
-      ],
-      "unchangedDependencies": 239,
-      "local": {
-        "focused": 13,
-        "affected": 126,
-        "pass": 126,
-        "fail": 0,
-        "skip": 0,
-        "receipt": "orchestration/evidence/current-admission-repair/revision2-final-affected.receipt.json"
-      },
-      "priorIndependent": {
-        "cases": 15,
-        "pass": 13,
-        "fail": 2,
-        "open": "ADMISSION-01A first-scope unbound receipts; ADMISSION-01B trusted activation scope roundtrip",
-        "closedOnlyOnPriorBytes": "ADMISSION-02 reproduced4kinds"
-      },
-      "claim": "Source local repair only;27Golden distinct; no customer/provider/LinuxDocker/hosted proof"
-    },
-    "admission": {
-      "schemaVersion": 1,
-      "at": "2026-10-02T12:59:49.727Z",
-      "branch": "review/staffology-customer-proof-20261001",
-      "commit": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
-      "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
-      "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-      "allBlobsVerified": 1108,
-      "modifiedPaths": 2,
-      "unchangedBlobsVerified": 1106,
-      "shipping": [
-        {
-          "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
-          "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
-          "mode": "100644"
-        },
-        {
-          "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
-          "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
-          "mode": "100644"
-        }
-      ],
-      "ownerAffected126": true,
-      "independentHeldOut16": true,
-      "scope": "Mandatory source-only admission",
-      "frozenBranchModified": false,
-      "staffologyBytesChanged": false,
-      "triggerChanged": false,
-      "customerProof": false,
-      "runtimeAdmitted": false
-    },
-    "independent16": true
+    "START01": "CLOSED_ON_ISOLATED_SOURCE_BYTES_ONLY_OLD_A3_DEPLOYED_SOURCE_UNREPAIRED",
+    "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "customerProof": false
   },
   "currentStaffologyComposition": {
-    "branch": "review/staffology-customer-proof-20261001",
-    "sha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-    "commit": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
-    "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
-    "parent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
-    "sourceAdmitted": true,
-    "admitted": false,
-    "wholeRuntimeAdmission": false,
-    "fullTreeBlobs": 1109,
-    "actualDeltaPaths": 19,
-    "sourceRepairsChanged": 17,
-    "selectedAlreadyIdentical": 1,
-    "parentUnchanged": 1090,
-    "mandatoryProofBlobsPreserved": 6,
-    "triggerChanged": true,
-    "triggerPurpose": "Exact non-deploy source/runtime CI on actual CIRCLE_SHA1",
-    "local": {
-      "source": {
-        "tests": 159,
-        "pass": 159,
-        "skip": 0,
-        "evidence": "orchestration/evidence/current-staffology-composition/source.receipt.json"
-      },
-      "persistence": {
-        "tests": 1,
-        "pass": 1,
-        "skip": 0,
-        "evidence": "orchestration/evidence/current-staffology-composition/persistence.receipt.json"
-      },
-      "fullHttp": {
-        "tests": 1,
-        "pass": 1,
-        "skip": 0,
-        "mockRequests": 14,
-        "externalRequests": 0,
-        "evidence": "orchestration/evidence/current-staffology-composition/full-http.receipt.json"
-      },
-      "supportedPackaging": {
-        "tests": 8,
-        "pass": 8,
-        "skip": 0,
-        "evidence": "orchestration/evidence/current-staffology-composition/packaging-supported.receipt.json"
-      },
-      "initialBroadPackaging": {
-        "tests": 14,
-        "pass": 8,
-        "fail": 6,
-        "qualification": "Windows POSIX PATH/bashi absence and initial blanket network guard; original reds retained, no14/14 claim"
-      }
-    },
-    "independentComposition": {
-      "verified": true,
-      "evidence": "orchestration/evidence/staffology-composition-review.md"
-    },
-    "previousAdmission": {
-      "sha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
-      "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
-      "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-      "evidence": "Historical checkpoint5 commit28f964f733dad532d7cce6838b3e833749b94422; retained current-admission repair receipts"
-    },
-    "native8690Custody": "OPEN",
-    "hostedProof": false,
+    "sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "tree": "712acebba40dd9e0e4b8dd207122008b174275ec",
     "customerProof": false,
-    "provenBaseSha": null,
-    "convergenceBaseSha": null,
-    "claim": "Exact source admitted; local synthetic checks passed and actual Linux CI jobs executed successfully. RawCI artifact identities pending; deployed/customer gates remain unproven."
+    "observedNotAdmitted": true
   },
   "currentImplementationRequirementsScope": {
     "denominator": 21,
@@ -1632,5 +1028,702 @@
     "goldenJourneyDenominator": 27,
     "customerProof": false
   },
-  "historicalCiSource": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa"
+  "historicalCiSource": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+  "currentCoordinationTruth": "orchestration/evidence/current-source-20261002/CURRENT_TRUTH.json",
+  "currentSourceAliasScope": "Observed external A3 review/release; PR294 isolated source and CI are separate; tracked product remains historical f32, no convergence",
+  "checkpoint6HistoricalAliases": {
+    "exactCurrentTuple": {
+      "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
+      "fixtureOnly": true,
+      "productionApproved": false,
+      "observedAt": "2026-10-02T08:20:00.048Z"
+    },
+    "executorObservation": {
+      "ok": true,
+      "status": "passwordless-proof-runner-partial",
+      "scopedChecksPassed": true,
+      "customerProofComplete": false,
+      "productReady": false,
+      "startedAt": "2026-10-02T08:19:48.978Z",
+      "updatedAt": "2026-10-02T08:20:00.048Z",
+      "executorCodeSha256": "9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438",
+      "gustoMetadata": {
+        "acquiredAt": "2026-10-02T06:58:50.375Z",
+        "scope": "Stored application metadata only; no fresh provider authorization or data acceptance",
+        "configurationHttpStatus": 200,
+        "statusHttpStatus": 200,
+        "available": true,
+        "configuration": {
+          "configured": true,
+          "environment": "sandbox",
+          "expectedCompanyUuid": "49d3bf95-5b5b-4251-89d8-1b614e47e676",
+          "missingConfiguration": []
+        },
+        "gustoConnectionCount": 0,
+        "connections": []
+      },
+      "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
+      "authMethod": "proof-runner-signed",
+      "observed": {
+        "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "tenant": "northstar-demo",
+        "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e"
+      },
+      "deploymentReadbackSource": "authenticated implementation status: current native binding",
+      "health": {
+        "status": 200,
+        "release": "0.6.76-hosted-staging-rc1",
+        "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "fixtureOnly": true,
+        "productionApproved": false
+      },
+      "bootstrapStatus": 200,
+      "scopeStatus": 200,
+      "implementationStatus": 200,
+      "implementation": {
+        "state": "SLA_MISSED",
+        "operationalReady": false,
+        "completedRequirements": 5,
+        "totalRequirements": 21,
+        "openRequirements": [
+          {
+            "key": "tenant-environment",
+            "status": "REVALIDATION_REQUIRED"
+          },
+          {
+            "key": "identity-access",
+            "status": "REVALIDATION_REQUIRED"
+          },
+          {
+            "key": "time-policies",
+            "status": "REVALIDATION_REQUIRED"
+          },
+          {
+            "key": "absence-policies",
+            "status": "WARN"
+          },
+          {
+            "key": "scheduling",
+            "status": "REVALIDATION_REQUIRED"
+          },
+          {
+            "key": "approvals",
+            "status": "REVALIDATION_REQUIRED"
+          },
+          {
+            "key": "clocking",
+            "status": "REVALIDATION_REQUIRED"
+          },
+          {
+            "key": "payroll-mapping",
+            "status": "MISSING"
+          },
+          {
+            "key": "historical-replay",
+            "status": "MISSING"
+          },
+          {
+            "key": "security-controls",
+            "status": "REVALIDATION_REQUIRED"
+          },
+          {
+            "key": "resilience",
+            "status": "REVALIDATION_REQUIRED"
+          },
+          {
+            "key": "scenario-validation",
+            "status": "MISSING"
+          },
+          {
+            "key": "test-data-cleanup",
+            "status": "MISSING"
+          },
+          {
+            "key": "live-data-import",
+            "status": "MISSING"
+          },
+          {
+            "key": "privileged-competency",
+            "status": "MISSING"
+          },
+          {
+            "key": "frontline-readiness",
+            "status": "MISSING"
+          }
+        ],
+        "activeWorkerLeases": 0
+      },
+      "expectedTenant": "northstar-demo",
+      "expectedRunId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "expectedSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedDeploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810"
+    },
+    "ciSource": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+    "ci": {
+      "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "currentReviewSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "statuses": [
+        {
+          "state": "success",
+          "context": "ci/circleci: forge_core_validation",
+          "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/62",
+          "updated_at": "2026-10-02T13:32:32Z"
+        },
+        {
+          "state": "success",
+          "context": "ci/circleci: forge_runtime_validation",
+          "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/63",
+          "updated_at": "2026-10-02T13:38:37Z"
+        }
+      ],
+      "currentExecution": {
+        "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+        "pipeline": 42,
+        "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
+        "statuses": [
+          {
+            "state": "success",
+            "context": "ci/circleci: forge_core_validation",
+            "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/62",
+            "updated_at": "2026-10-02T13:32:32Z"
+          },
+          {
+            "state": "success",
+            "context": "ci/circleci: forge_runtime_validation",
+            "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/63",
+            "updated_at": "2026-10-02T13:38:37Z"
+          }
+        ],
+        "core": {
+          "recordedAt": "2026-10-02 14:10:43 UTC",
+          "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+          "pipeline": 42,
+          "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
+          "job": 62,
+          "jobId": "ddc2b142-f603-425b-8573-5dafee10fec7",
+          "status": "Success",
+          "executor": "Docker/Small",
+          "duration": "18s job details / 19s workflow list",
+          "startedAt": "2026-10-02T13:32:11Z",
+          "completedAt": "2026-10-02T13:32:31Z",
+          "steps": [
+            {
+              "name": "Spin up environment",
+              "status": "success",
+              "durationSeconds": 2
+            },
+            {
+              "name": "Preparing environment variables",
+              "status": "success",
+              "durationSeconds": 0
+            },
+            {
+              "name": "Checkout code",
+              "status": "success",
+              "durationSeconds": 1
+            },
+            {
+              "name": "Admit explicit frozen candidate only",
+              "status": "success",
+              "durationSeconds": 0
+            },
+            {
+              "name": "Verify exact Node runtime",
+              "status": "success",
+              "durationSeconds": 0
+            },
+            {
+              "name": "Current FORGE source validation",
+              "status": "success",
+              "durationSeconds": 13
+            },
+            {
+              "name": "Collect source proof receipts",
+              "status": "success",
+              "durationSeconds": 0
+            },
+            {
+              "name": "Uploading artifacts",
+              "status": "success",
+              "durationSeconds": 0
+            }
+          ],
+          "sourceValidationExecutedObserved": true,
+          "rawTestTotalsRetained": false,
+          "rawArtifactsRetained": false,
+          "customerProof": false
+        },
+        "runtime": {
+          "recordedAt": "2026-10-02T14:06:38.686Z",
+          "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+          "sourceTree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+          "pipeline": 42,
+          "pipelineId": "6a91fbc3-9ecb-40e1-82f4-532ff0e69684",
+          "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
+          "job": 63,
+          "jobId": "b095799b-a0a4-4406-b635-219dbd4e358e",
+          "url": "https://app.circleci.com/pipelines/github/paulallen123/-manufacturing-wfm/42/workflows/9aea79bf-b4e7-4a93-a4ea-7276383ce10c/jobs/63",
+          "status": "Success",
+          "executor": "Machine/Linux Medium",
+          "duration": "6m 1s",
+          "steps": [
+            {
+              "name": "Spin up environment",
+              "status": "success",
+              "durationSeconds": 0
+            },
+            {
+              "name": "Preparing environment variables",
+              "status": "success",
+              "durationSeconds": 0
+            },
+            {
+              "name": "Checkout code",
+              "status": "success",
+              "durationSeconds": 1
+            },
+            {
+              "name": "Admit explicit frozen candidate only",
+              "status": "success",
+              "durationSeconds": 0
+            },
+            {
+              "name": "Build exact FORGE runtime candidate",
+              "status": "success",
+              "durationSeconds": 354
+            },
+            {
+              "name": "Verify runtime security boundary",
+              "status": "success",
+              "durationSeconds": 1
+            },
+            {
+              "name": "Prove isolated hosted HTTP boundary",
+              "status": "success",
+              "durationSeconds": 3
+            },
+            {
+              "name": "Capture exact runtime proof",
+              "status": "success",
+              "durationSeconds": 0
+            },
+            {
+              "name": "Clean up proof container",
+              "status": "success",
+              "durationSeconds": 0
+            },
+            {
+              "name": "Uploading artifacts",
+              "status": "success",
+              "durationSeconds": 0
+            }
+          ],
+          "startedAt": "2026-10-02T13:32:32Z",
+          "buildStartedAt": "2026-10-02T13:32:36Z",
+          "buildCompletedAt": "2026-10-02T13:38:30Z",
+          "completedAt": "2026-10-02T13:38:36Z",
+          "heavyExecutionObserved": true,
+          "rawBuildLogRetained": false,
+          "rawArtifactsRetained": false,
+          "artifactDownloadBlocked": true,
+          "claim": "Actual CI execution and step success observed in authenticated UI; source/image/runtime/proof artifact hashes remain unretained and independently unverified. This isolated container check is not deployed customer proof.",
+          "customerProof": false,
+          "hostedCandidateChanged": false
+        },
+        "rawArtifactCustody": "PENDING_AUTHORIZED_READER; original404 body is failed download evidence only",
+        "imageDigest": null,
+        "containerRuntimeIdentity": null,
+        "customerProof": false
+      },
+      "historicalExecutions": {
+        "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+        "statuses": [
+          {
+            "context": "ci/circleci: forge_core_validation",
+            "state": "success",
+            "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/25"
+          },
+          {
+            "context": "ci/circleci: forge_runtime_validation",
+            "state": "failure",
+            "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/26"
+          }
+        ],
+        "actualRuntimeLog": {
+          "job": 26,
+          "pipeline": 19,
+          "pass": 142,
+          "total": 143,
+          "fail": 1,
+          "skipped": 0,
+          "signature": "acquire-stage403 canonical mapping options",
+          "sha256": "c5ad82ffd7c176bbeba80c4e72e0d928696b00ccb5ab23a2c388fb5bd6db8f3d",
+          "path": "orchestration/evidence/ci19-browser/job26-build.log"
+        },
+        "currentReviewExecution": "d387 core36/runtime37 green with unchanged trigger; actual runtime UI has only executor/environment/checkout/admit,2s; heavy validation NOT EXECUTED",
+        "haltedReview": {
+          "sha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+          "core": 50,
+          "runtime": 51,
+          "triggerChanged": false,
+          "heavyExecuted": false,
+          "validationClaim": false,
+          "runtimeUI": {
+            "pipeline": 35,
+            "durationSeconds": 1,
+            "steps": [
+              "Spin up environment",
+              "Preparing environment variables",
+              "Checkout code",
+              "Admit explicit frozen candidate only"
+            ],
+            "actualBuildOrTestsSteps": 0,
+            "observed": true
+          },
+          "logDownloaded": false
+        }
+      },
+      "latestObservedActualRuntimeExecutionSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "latestObservedActualRuntimeResult": "Actual Pipeline42 jobs62/63 source and heavy Docker/security/isolated HTTP steps succeeded; raw artifact custody remains pending"
+    },
+    "currentStaffologyComposition": {
+      "branch": "review/staffology-customer-proof-20261001",
+      "sha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "commit": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+      "parent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+      "sourceAdmitted": true,
+      "admitted": false,
+      "wholeRuntimeAdmission": false,
+      "fullTreeBlobs": 1109,
+      "actualDeltaPaths": 19,
+      "sourceRepairsChanged": 17,
+      "selectedAlreadyIdentical": 1,
+      "parentUnchanged": 1090,
+      "mandatoryProofBlobsPreserved": 6,
+      "triggerChanged": true,
+      "triggerPurpose": "Exact non-deploy source/runtime CI on actual CIRCLE_SHA1",
+      "local": {
+        "source": {
+          "tests": 159,
+          "pass": 159,
+          "skip": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/source.receipt.json"
+        },
+        "persistence": {
+          "tests": 1,
+          "pass": 1,
+          "skip": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/persistence.receipt.json"
+        },
+        "fullHttp": {
+          "tests": 1,
+          "pass": 1,
+          "skip": 0,
+          "mockRequests": 14,
+          "externalRequests": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/full-http.receipt.json"
+        },
+        "supportedPackaging": {
+          "tests": 8,
+          "pass": 8,
+          "skip": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/packaging-supported.receipt.json"
+        },
+        "initialBroadPackaging": {
+          "tests": 14,
+          "pass": 8,
+          "fail": 6,
+          "qualification": "Windows POSIX PATH/bashi absence and initial blanket network guard; original reds retained, no14/14 claim"
+        }
+      },
+      "independentComposition": {
+        "verified": true,
+        "evidence": "orchestration/evidence/staffology-composition-review.md"
+      },
+      "previousAdmission": {
+        "sha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+        "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+        "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+        "evidence": "Historical checkpoint5 commit28f964f733dad532d7cce6838b3e833749b94422; retained current-admission repair receipts"
+      },
+      "native8690Custody": "OPEN",
+      "hostedProof": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "claim": "Exact source admitted; local synthetic checks passed and actual Linux CI jobs executed successfully. RawCI artifact identities pending; deployed/customer gates remain unproven."
+    },
+    "currentAdmissionAudit": {
+      "status": "EXACT_SOURCE_ADMITTED_LOCAL_CLOSURE_ONLY",
+      "issues": [
+        "ADMISSION-01",
+        "ADMISSION-02"
+      ],
+      "tests": 8,
+      "pass": 3,
+      "fail": 5,
+      "customerProof": false,
+      "successor": {
+        "status": "INDEPENDENTLY_REVIEWED_SOURCE_ADMITTED_NOT_HOSTED_PROVEN",
+        "baseSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+        "shipping": [
+          {
+            "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+            "mode": "100644",
+            "type": "blob",
+            "preimageBlob": "198978255a62a1297e6104f66f67373864534e3e",
+            "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+            "sha256": "028e47daa39345e11a26c2e06191fdd62fcae9d8c0b691d0061c6f8178a8f963",
+            "bytes": 104615
+          },
+          {
+            "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+            "mode": "100644",
+            "type": "blob",
+            "preimageBlob": "a94904b821126cc6155afd091d6acc4c8b1673e9",
+            "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+            "sha256": "3fcdebb94968867d8054da90b53174119afa4a58e7ef968cb4e26d954b32523a",
+            "bytes": 91460
+          }
+        ],
+        "unchangedDependencies": 239,
+        "local": {
+          "focused": 13,
+          "affected": 126,
+          "pass": 126,
+          "fail": 0,
+          "skip": 0,
+          "receipt": "orchestration/evidence/current-admission-repair/revision2-final-affected.receipt.json"
+        },
+        "priorIndependent": {
+          "cases": 15,
+          "pass": 13,
+          "fail": 2,
+          "open": "ADMISSION-01A first-scope unbound receipts; ADMISSION-01B trusted activation scope roundtrip",
+          "closedOnlyOnPriorBytes": "ADMISSION-02 reproduced4kinds"
+        },
+        "claim": "Source local repair only;27Golden distinct; no customer/provider/LinuxDocker/hosted proof"
+      },
+      "admission": {
+        "schemaVersion": 1,
+        "at": "2026-10-02T12:59:49.727Z",
+        "branch": "review/staffology-customer-proof-20261001",
+        "commit": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+        "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+        "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+        "allBlobsVerified": 1108,
+        "modifiedPaths": 2,
+        "unchangedBlobsVerified": 1106,
+        "shipping": [
+          {
+            "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+            "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+            "mode": "100644"
+          },
+          {
+            "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+            "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+            "mode": "100644"
+          }
+        ],
+        "ownerAffected126": true,
+        "independentHeldOut16": true,
+        "scope": "Mandatory source-only admission",
+        "frozenBranchModified": false,
+        "staffologyBytesChanged": false,
+        "triggerChanged": false,
+        "customerProof": false,
+        "runtimeAdmitted": false
+      },
+      "independent16": true
+    }
+  },
+  "isolatedSTARTSource": {
+    "branch": "feature/vector-golden-start-context-20261002",
+    "sha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "tree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+    "pullRequest": 294,
+    "pullUrl": "https://github.com/paulallen123/-manufacturing-wfm/pull/294",
+    "draft": true,
+    "START01": "CLOSED_ON_ISOLATED_SOURCE_BYTES_ONLY_OLD_A3_DEPLOYED_SOURCE_UNREPAIRED",
+    "counts": {
+      "ownerFocused": 40,
+      "ownerAffected": 162,
+      "independent": 26,
+      "ownerFocusedContainedInAffected": true,
+      "nonadditive": true
+    },
+    "configuredContext": "DECLARATION_NOT_OBSERVED_PLATFORM_AUTHORITY",
+    "ci": {
+      "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+      "sourceTree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+      "role": "ISOLATED_START_SOURCE_CI_NOT_SERVING_A3",
+      "pipeline": 54,
+      "workflowId": "6ab05e7f-e30c-4736-9c2a-712a24b97260",
+      "statuses": [
+        {
+          "context": "ci/circleci: forge_core_validation",
+          "state": "success",
+          "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/82",
+          "updatedAt": "2026-10-02T17:34:55Z"
+        },
+        {
+          "context": "ci/circleci: forge_runtime_validation",
+          "state": "success",
+          "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/83",
+          "updatedAt": "2026-10-02T17:41:41Z"
+        }
+      ],
+      "core": {
+        "job": 82,
+        "status": "SUCCESS"
+      },
+      "runtime": {
+        "job": 83,
+        "status": "SUCCESS"
+      },
+      "safeSummary": "orchestration/evidence/current-source-20261002/CI54_SAFE_PUBLICATION_SUMMARY.json",
+      "review": "orchestration/evidence/current-source-20261002/CI54_REVIEW.md",
+      "rawArtifactCustody": "SAFE_SUMMARY_REVIEWED_RAW_PAYLOADS_EXCLUDED",
+      "originalArtifactByteCustody": "SEPARATE_NOT_COMPLETED",
+      "signedHttpsSessionExecuted": false,
+      "chromiumExecuted": false,
+      "customerProof": false,
+      "hostedSourceOrImageEquivalence": false
+    }
+  },
+  "currentEmployeeSource": {
+    "state": "IN_PROGRESS",
+    "componentState": "TESTED",
+    "ownerComponentSealed": true,
+    "ownerFocused": 54,
+    "ownerAffected": 133,
+    "focusedContainedInAffected": true,
+    "combinedLocalSourceTests": 277,
+    "combinedPass": 277,
+    "combinedCountsOverlap": true,
+    "independentControls": 48,
+    "independentNoOpenP1P2": true,
+    "independentlyReviewedComponent": true,
+    "independentCombinedCompositionAdmission": false,
+    "rootCombinedReviewAndTransport": "PENDING",
+    "sourceTree": "a098fdbf078f8523c95648f19ce9a4c3092978fa",
+    "combinedParentSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "combinedParentTree": "ddc0a4a493b7eebeebac62a34eb00ae97e358e71",
+    "combinedExpectedTree": "5181b7f547c8cafe7bd01c489a7e21be7f14b531",
+    "ownerManifestSha256": "51f47ba8a86dde5662fe6a4fc624f68ef70dd0eb95f04908879713a8353e3854",
+    "ownerSealSha256": "f159aceb3bf97ef7f5409baf043e7405bacc9621afb9100f3ef85de470d777e6",
+    "combinedManifestSha256": "6a08688de27ef24af8f9d0f877546eb02d4c4df253172fd91457c39fa6a1a2ec",
+    "combinedSealSha256": "68545c47a2caacb86686088d411e95cb73eea0aa40635493efd12d0bba91372f",
+    "independentReportSha256": "8b25c16e6570f343466efc2ff7a34bcd47f1e2d013bf41005657fe7c511caf65",
+    "independentFindingsSha256": "6633b38186a66c67ccaa5f26038671f3382ba1c98dbd4b0198cc0d406f23c0bf",
+    "independentSafeHandoffSha256": "e2697dcc3663eb83162111c3df3cb59fc650facbcbc090a8ad2a442b5d9037f5",
+    "independentIndexSha256": "2562306c38b0ed4ddcc5d452b3285aa8c57c1bf58023a7bb125b8d982f149f84",
+    "plannedShippingPaths": 5,
+    "bootstrapAdjacentTest": "security/runtime/bootstrap-proof-runner-wiring.test.cjs",
+    "countsSummed": false,
+    "executionScope": "LOCAL_SYNTHETIC_ES256_SQLITE_CONTROLLED_AUTH_UI_SNIPPETS_AND_LOOPBACK_HTTP_ONLY_EXTERNAL_AND_TLS_DENIED",
+    "sourceOnly": true,
+    "canonicalAdmitted": false,
+    "ci": false,
+    "hosted": false,
+    "customerProof": false
+  },
+  "writeAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
+  },
+  "currentProofBlobCustody": {
+    "scope": "HISTORICAL_A3_BASE_ONLY_SIX_PRESERVATION_NOT_BLANKET_START_OVERLAY",
+    "historicalA3Sha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "isolatedStartSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "allSixPreservedOnStart": false,
+    "preservedPaths": 4,
+    "intentionallyReviewedModifiedPaths": 2,
+    "rows": [
+      {
+        "path": "implementation/runtime/readiness-evidence-contract.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "isolatedStartBlob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+        "isolatedStartBlob": "701bf2113853794dc606eb02c6ef4b4a9ea76c10",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+        "mode": "100644",
+        "historicalA3Blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+        "isolatedStartBlob": "3e3d9b41bd2c0d11e6efc7a0bb8e9819c1f1c60d",
+        "disposition": "INTENTIONAL_REVIEWED_START01_MODIFY",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "isolatedStartBlob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "isolatedStartBlob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      },
+      {
+        "path": "scripts/run-forge-ci.mjs",
+        "mode": "100644",
+        "historicalA3Blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "isolatedStartBlob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "disposition": "EXACT_A3_BLOB_PRESERVED",
+        "sourceSha": "9f529d222118b7770e6fa0011ea35eea4f49fce7"
+      }
+    ],
+    "authority": "Source-custody description only; no caller/gate/auth/approval relaxation"
+  },
+  "currentWriteAuthority": {
+    "heldWriteScopes": [
+      "Canonical product review branch",
+      "Canonical product release branch",
+      "Convergence lineage",
+      "Hosted deployment/runtime actions",
+      "Access/configuration/credential actions"
+    ],
+    "authorizedWriteScopes": [
+      "Reviewed isolated future source branches",
+      "Reviewed coordination metadata branch"
+    ],
+    "userControllerQuestion": "PENDING",
+    "rootSolePublisherInThisThread": true,
+    "authorization": "Existing session authorization for isolated source/coordination remains; no canonical/hosted/access approval inferred"
+  }
 }
