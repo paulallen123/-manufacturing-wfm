@@ -4,7 +4,7 @@ FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317f
 ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /proof
 COPY . ./
-RUN node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs
+RUN node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
 # Exact Staffology review admission: exercise the reviewed bridge, persisted employee
