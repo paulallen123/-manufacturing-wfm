@@ -46,7 +46,47 @@ test('supported Docker admission composes and binds the strict full canonical ru
  assert.ok(copyInstructions<100,`same-destination consolidation regressed to ${copyInstructions} COPY layers`);
  assert.match(runtime,/COPY integrations\/staffology\/staffology-adapter\.cjs integrations\/staffology\/canonical-runtime-bridge\.cjs integrations\/staffology\/canonical-production-boundaries\.cjs integrations\/staffology\/canonical-operations\.cjs \/workspace\/integrations\/staffology\//);
  const circle=readFileSync(resolve(__dirname,'../../../.circleci/config.yml'),'utf8');
- assert.equal((circle.match(/docker build --pull=false --progress=plain/g)||[]).length,2);
+ // Admit the two application builds and the separately scoped proof-client image.
+ // Exact commands retain each target, source binding and artifact destination.
+ const builds=circle.split('\n').map(line=>line.trim()).filter(line=>/^docker build\s/.test(line));
+ assert.equal((circle.match(/\bdocker[ \t]+build\b/g)||[]).length,3,'no inline or additional Docker build may evade the exact build list');
+ assert.deepEqual(builds,[
+  'docker build --pull=false --progress=plain --target staffology-proof-evidence --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" --output "type=local,dest=/tmp/circleci-runtime-artifacts/staffology" . 2>&1 | tee /tmp/circleci-runtime-artifacts/staffology-proof-build.log',
+  'docker build --pull=false --progress=plain --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" . 2>&1 | tee /tmp/circleci-runtime-artifacts/runtime-image-build.log',
+  'docker build --pull=false --progress=plain -f Dockerfile.current-candidate-role-browser-proof -t "$AUTH_IMAGE" . 2>&1 | tee /tmp/circleci-runtime-artifacts/auth-client-image-build.log'
+ ]);
+ const packagingStart=circle.indexOf('          name: Verify exact proof client image module packaging');
+ const packagingEnd=circle.indexOf('          name: Verify runtime security boundary',packagingStart);
+ assert.ok(packagingStart>=0&&packagingEnd>packagingStart,'proof-client packaging must precede runtime security checks');
+ const packaging=circle.slice(packagingStart,packagingEnd);
+ assert.match(packaging,/^[ \t]*test "\$\(git rev-parse HEAD\)" = "\$\{CIRCLE_SHA1\}"[ \t]*$/m);
+ assert.match(packaging,/^[ \t]*AUTH_IMAGE="vector-role-auth-ci:\$\{CIRCLE_SHA1\}"[ \t]*$/m);
+ assert.match(packaging,/^[ \t]*docker image inspect "\$AUTH_IMAGE" >[ \t]*\/tmp\/circleci-runtime-artifacts\/auth-client-image-inspect\.json[ \t]*$/m);
+ const smokeRuns=packaging.split('\n').map(line=>line.trim()).filter(line=>/^docker run\s/.test(line));
+ assert.deepEqual(smokeRuns,[
+  'docker run --rm --network=none --entrypoint node "$AUTH_IMAGE" --version 2>&1 | tee /tmp/circleci-runtime-artifacts/auth-client-image-node-version.txt',
+  'docker run --rm --network=none --entrypoint node \\'
+ ]);
+ const packagingLines=packaging.split('\n').map(line=>line.trim());
+ assert.ok(packagingLines.includes('-e PROOF_SOURCE_SHA="${CIRCLE_SHA1}" '+String.fromCharCode(92)),'smoke source must bind to current checkout');
+ for(const [binding,file]of[
+  ['PROOF_CLIENT_BLOB','scripts/current-candidate-role-browser-proof.mjs'],
+  ['PROOF_WRAPPER_BLOB','scripts/current-candidate-role-browser-proof-server.mjs'],
+  ['PROOF_RESULT_BLOB','scripts/vector-proof-result.mjs'],
+  ['PROOF_AUTH_BLOB','security/runtime/proof-runner-auth.cjs']
+ ]){
+  assert.ok(packagingLines.includes(`-e ${binding}="$(git rev-parse HEAD:${file})" `+String.fromCharCode(92)),`current checkout blob required: ${binding}`);
+  assert.ok(packagingLines.some(line=>line.replace(/,$/,'')===`["${file}", "${binding}"]`),`copied module binding required: ${binding}`);
+ }
+ assert.match(packaging,/^[ \t]*"\$AUTH_IMAGE" --input-type=module -e '[ \t]*$/m);
+ assert.match(packaging,/^[ \t]*import auth from "\/proof\/security\/runtime\/proof-runner-auth\.cjs";[ \t]*$/m);
+ assert.match(packaging,/^[ \t]*assert\.equal\(blob, process\.env\[binding\], "Copied source mismatch: " \+ file\);[ \t]*$/m);
+ assert.match(packaging,/^[ \t]*assert\.equal\(auth\.PROOF_RUNNER_PATH, "\/api\/proof-runner\/session"\);[ \t]*$/m);
+ assert.match(packaging,/^[ \t]*assert\.equal\(auth\.canonicalAssertion\(/m);
+ assert.match(packaging,/^[ \t]*import \{ DatabaseSync \} from "node:sqlite";[ \t]*$/m);
+ assert.match(packaging,/^[ \t]*assert\.equal\(db\.prepare\("SELECT 1 AS available"\)\.get\(\)\.available, 1\);[ \t]*$/m);
+ assert.match(packaging,/^[ \t]*console\.log\(JSON\.stringify\(\{ scope: "PACKAGING_MODULE_SMOKE_ONLY"/m);
+ assert.match(packaging,/^[ \t]*console\.log\(JSON\.stringify\([^\n]+signedSessionExecuted: false, chromiumExecuted: false, hostedProof: false/m);
  assert.match(circle,/tee \/tmp\/circleci-runtime-artifacts\/staffology-proof-build\.log/);
  assert.match(circle,/tee \/tmp\/circleci-runtime-artifacts\/runtime-image-build\.log/);
  assert.match(circle,/-e WFM_CANDIDATE_SHA="\$\{CIRCLE_SHA1\}"/);
