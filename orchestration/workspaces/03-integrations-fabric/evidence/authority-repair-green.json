@@ -1,0 +1,29 @@
+{
+  "stage": "authority-repair-green",
+  "node": "v22.23.2",
+  "args": [
+    "--test",
+    "--test-reporter=tap",
+    "integration-fabric/runtime/managed-task-ingress-authority.test.mjs",
+    "integration-fabric/runtime/effective-dated-workforce-authority.test.mjs",
+    "integration-fabric/runtime/change-signal-reconciliation.test.mjs",
+    "integration-fabric/runtime/field-projection-authority.test.mjs",
+    "integration-fabric/runtime/manufacturing-observation-authority.test.mjs",
+    "integration-fabric/runtime/rotating-oauth-transition.test.mjs",
+    "integration-fabric/runtime/opaque-page-chain-authority.test.mjs",
+    "integration-fabric/runtime/mutable-poll-window-authority.test.mjs",
+    "integration-fabric/runtime/presence-signal-reconciliation.test.mjs",
+    "integration-fabric/runtime/shift-time-authority.test.mjs",
+    "integration-fabric/runtime/workday-worker-evidence-authority.test.mjs",
+    "integration-fabric/runtime/provider-capability-authority.test.mjs"
+  ],
+  "exitCode": 0,
+  "error": null,
+  "tests": 144,
+  "pass": 144,
+  "fail": 0,
+  "skipped": 0,
+  "requestedFiles": 12,
+  "sha256": "6df3b8a25063e20a3dc9141453b6d825adae47975b8de27003b12318b7eec0a8",
+  "bytes": 30073
+}

@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "p0": 26,
+  "profiles": 21,
+  "uncoveredP0": 0,
+  "uncoveredAll": 2,
+  "explicitInterfaceGaps": [
+    "schneider-resource-advisor",
+    "acadia-performance-platform"
+  ],
+  "ipaasTargets": 8,
+  "tenantAuthenticated": 3,
+  "opportunityProfiles": 14,
+  "systemSpecificOpportunityReviews": 8
+}

@@ -1,0 +1,14 @@
+{
+  "lane": "03",
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "sourceSha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "state": "IN_PROGRESS",
+  "componentProofState": "TESTED",
+  "proofScope": "ISOLATED_LOCAL_SOURCE_CONTRACT_ONLY",
+  "shippingManifest": "final-shipping-manifest.json",
+  "shippingPaths": 53,
+  "shippingBytes": 616346,
+  "runtimeCallerIntegrated": false
+}

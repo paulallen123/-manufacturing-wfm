@@ -1,0 +1,1774 @@
+TAP version 13
+# Subtest: admits a scoped OPC UA key frame as current-state evidence only
+ok 1 - admits a scoped OPC UA key frame as current-state evidence only
+  ---
+  duration_ms: 40.0287
+  type: 'test'
+  ...
+# Subtest: collapses semantic QoS replay without letting DUP change reconciliation identity
+ok 2 - collapses semantic QoS replay without letting DUP change reconciliation identity
+  ---
+  duration_ms: 2.9651
+  type: 'test'
+  ...
+# Subtest: rejects conflicting sequence replay and preserves arbitrary-precision sequence identity
+ok 3 - rejects conflicting sequence replay and preserves arbitrary-precision sequence identity
+  ---
+  duration_ms: 5.6234
+  type: 'test'
+  ...
+# Subtest: selects the latest key frame while allowing out-of-order arrival
+ok 4 - selects the latest key frame while allowing out-of-order arrival
+  ---
+  duration_ms: 1.9663
+  type: 'test'
+  ...
+# Subtest: requires the exact point set once in every key frame
+ok 5 - requires the exact point set once in every key frame
+  ---
+  duration_ms: 3.5014
+  type: 'test'
+  ...
+# Subtest: binds asset, topic, source metadata and every fabric fingerprint
+ok 6 - binds asset, topic, source metadata and every fabric fingerprint
+  ---
+  duration_ms: 5.818
+  type: 'test'
+  ...
+# Subtest: requires MQTT v5 QoS 1, TLS, persistent delivery settings and no queue drop policy
+ok 7 - requires MQTT v5 QoS 1, TLS, persistent delivery settings and no queue drop policy
+  ---
+  duration_ms: 2.3176
+  type: 'test'
+  ...
+# Subtest: rejects retained snapshots, non-keyframes, writes and open captures
+ok 8 - rejects retained snapshots, non-keyframes, writes and open captures
+  ---
+  duration_ms: 2.9679
+  type: 'test'
+  ...
+# Subtest: rejects source, event and recorded times outside bounded clock policy
+ok 9 - rejects source, event and recorded times outside bounded clock policy
+  ---
+  duration_ms: 4.4575
+  type: 'test'
+  ...
+# Subtest: requires zero scoped expiry, filter, processing, busy and error deltas
+ok 10 - requires zero scoped expiry, filter, processing, busy and error deltas
+  ---
+  duration_ms: 5.2884
+  type: 'test'
+  ...
+# Subtest: rejects secret-bearing, executable, sparse and unbounded evidence
+ok 11 - rejects secret-bearing, executable, sparse and unbounded evidence
+  ---
+  duration_ms: 3.8408
+  type: 'test'
+  ...
+# Subtest: rejects identity ambiguity and malformed topic or point policy
+ok 12 - rejects identity ambiguity and malformed topic or point policy
+  ---
+  duration_ms: 3.4087
+  type: 'test'
+  ...
+# Subtest: requires exact nonempty Azure resource ids without traversal suffixes
+ok 13 - requires exact nonempty Azure resource ids without traversal suffixes
+  ---
+  duration_ms: 1.1853
+  type: 'test'
+  ...
+# Subtest: rejects all-zero authority UUIDs
+ok 14 - rejects all-zero authority UUIDs
+  ---
+  duration_ms: 0.8077
+  type: 'test'
+  ...
+# Subtest: bounds exact topic and identity text by UTF-8 bytes
+ok 15 - bounds exact topic and identity text by UTF-8 bytes
+  ---
+  duration_ms: 5.2477
+  type: 'test'
+  ...
+# Subtest: binds every evidence cap into authority and reconciliation identity
+ok 16 - binds every evidence cap into authority and reconciliation identity
+  ---
+  duration_ms: 4.1261
+  type: 'test'
+  ...
+# Subtest: allows the documented repeated CloudEvents id across distinct monotone sequences
+ok 17 - allows the documented repeated CloudEvents id across distinct monotone sequences
+  ---
+  duration_ms: 1.2807
+  type: 'test'
+  ...
+# Subtest: requires one stable persistent MQTT session for the full observation horizon
+ok 18 - requires one stable persistent MQTT session for the full observation horizon
+  ---
+  duration_ms: 1.4934
+  type: 'test'
+  ...
+# Subtest: quarantines chronological OPC UA sequence reset while retaining out-of-order arrival support
+ok 19 - quarantines chronological OPC UA sequence reset while retaining out-of-order arrival support
+  ---
+  duration_ms: 1.1951
+  type: 'test'
+  ...
+# Subtest: admits one exact succeeded workflow plus complete downstream delivery as reconciliation evidence only
+ok 20 - admits one exact succeeded workflow plus complete downstream delivery as reconciliation evidence only
+  ---
+  duration_ms: 9.6058
+  type: 'test'
+  ...
+# Subtest: binds Azure tenant subscription resource workflow region route version and authority fingerprints
+ok 21 - binds Azure tenant subscription resource workflow region route version and authority fingerprints
+  ---
+  duration_ms: 5.0328
+  type: 'test'
+  ...
+# Subtest: requires a complete gapless terminal action page chain
+ok 22 - requires a complete gapless terminal action page chain
+  ---
+  duration_ms: 3.5516
+  type: 'test'
+  ...
+# Subtest: requires the exact approved action set with succeeded non-conflicting outcomes
+ok 23 - requires the exact approved action set with succeeded non-conflicting outcomes
+  ---
+  duration_ms: 4.4682
+  type: 'test'
+  ...
+# Subtest: rejects failed incomplete or temporally impossible workflow runs
+ok 24 - rejects failed incomplete or temporally impossible workflow runs
+  ---
+  duration_ms: 3.0559
+  type: 'test'
+  ...
+# Subtest: requires a later complete delivery receipt bound to the run action data and canonical scope
+ok 25 - requires a later complete delivery receipt bound to the run action data and canonical scope
+  ---
+  duration_ms: 4.4844
+  type: 'test'
+  ...
+# Subtest: supports Consumption and Standard only with their exact documented management routes
+ok 26 - supports Consumption and Standard only with their exact documented management routes
+  ---
+  duration_ms: 1.2987
+  type: 'test'
+  ...
+# Subtest: preserves documented Azure seven-digit fractional UTC timestamps without millisecond loss
+ok 27 - preserves documented Azure seven-digit fractional UTC timestamps without millisecond loss
+  ---
+  duration_ms: 0.9456
+  type: 'test'
+  ...
+# Subtest: isolates evidence fingerprints by approved principal definition connection set and execution caps
+ok 28 - isolates evidence fingerprints by approved principal definition connection set and execution caps
+  ---
+  duration_ms: 5.1575
+  type: 'test'
+  ...
+# Subtest: rejects oversized sparse secret executable and hidden evidence and returns deterministic immutable output
+ok 29 - rejects oversized sparse secret executable and hidden evidence and returns deterministic immutable output
+  ---
+  duration_ms: 6.2561
+  type: 'test'
+  ...
+# Subtest: admits only a terminal capability-proven page chain as reconciliation evidence
+ok 30 - admits only a terminal capability-proven page chain as reconciliation evidence
+  ---
+  duration_ms: 15.9664
+  type: 'test'
+  ...
+# Subtest: rejects operations without proven pagination or read-list semantics
+ok 31 - rejects operations without proven pagination or read-list semantics
+  ---
+  duration_ms: 1.3339
+  type: 'test'
+  ...
+# Subtest: requires continuation continuity terminal agreement and receipt completeness
+ok 32 - requires continuation continuity terminal agreement and receipt completeness
+  ---
+  duration_ms: 2.3724
+  type: 'test'
+  ...
+# Subtest: does not infer completeness from a successful capped page
+ok 33 - does not infer completeness from a successful capped page
+  ---
+  duration_ms: 1.7899
+  type: 'test'
+  ...
+# Subtest: binds tenant company division facility operation metadata query and schema
+ok 34 - binds tenant company division facility operation metadata query and schema
+  ---
+  duration_ms: 3.5511
+  type: 'test'
+  ...
+# Subtest: binds checkpoint observation cap and bounded execution
+ok 35 - binds checkpoint observation cap and bounded execution
+  ---
+  duration_ms: 2.4055
+  type: 'test'
+  ...
+# Subtest: quarantines failed pages and conflicting replays
+ok 36 - quarantines failed pages and conflicting replays
+  ---
+  duration_ms: 1.5515
+  type: 'test'
+  ...
+# Subtest: preserves opaque identity tuples without delimiter or normalization collisions
+ok 37 - preserves opaque identity tuples without delimiter or normalization collisions
+  ---
+  duration_ms: 0.6781
+  type: 'test'
+  ...
+# Subtest: rejects secret or executable evidence and returns deeply immutable output
+ok 38 - rejects secret or executable evidence and returns deeply immutable output
+  ---
+  duration_ms: 2.3966
+  type: 'test'
+  ...
+# Subtest: admits a complete bookmark chain only as bounded reconciliation evidence
+ok 39 - admits a complete bookmark chain only as bounded reconciliation evidence
+  ---
+  duration_ms: 9.7679
+  type: 'test'
+  ...
+# Subtest: requires MoreRowsExist and bookmark continuity to agree
+ok 40 - requires MoreRowsExist and bookmark continuity to agree
+  ---
+  duration_ms: 3.6802
+  type: 'test'
+  ...
+# Subtest: does not infer completeness from row count below or at the cap
+ok 41 - does not infer completeness from row count below or at the cap
+  ---
+  duration_ms: 1.6714
+  type: 'test'
+  ...
+# Subtest: binds tenant configuration site projection query schema and scope
+ok 42 - binds tenant configuration site projection query schema and scope
+  ---
+  duration_ms: 1.8868
+  type: 'test'
+  ...
+# Subtest: binds checkpoint and observation horizons outside the receipt
+ok 43 - binds checkpoint and observation horizons outside the receipt
+  ---
+  duration_ms: 1.0294
+  type: 'test'
+  ...
+# Subtest: rejects provider errors, cap drift and unbounded receipts
+ok 44 - rejects provider errors, cap drift and unbounded receipts
+  ---
+  duration_ms: 1.6486
+  type: 'test'
+  ...
+# Subtest: collapses exact versions and quarantines conflicting replays
+ok 45 - collapses exact versions and quarantines conflicting replays
+  ---
+  duration_ms: 1.3768
+  type: 'test'
+  ...
+# Subtest: preserves opaque source identity bytes and uses collision-free identity tuples
+ok 46 - preserves opaque source identity bytes and uses collision-free identity tuples
+  ---
+  duration_ms: 5.3172
+  type: 'test'
+  ...
+# Subtest: partitions identical source IDs by site and projection
+ok 47 - partitions identical source IDs by site and projection
+  ---
+  duration_ms: 2.1727
+  type: 'test'
+  ...
+# Subtest: rejects secrets and executable evidence and returns immutable output
+ok 48 - rejects secrets and executable evidence and returns immutable output
+  ---
+  duration_ms: 2.6022
+  type: 'test'
+  ...
+# Subtest: verified webhook creates an overlap CDC plan but never record or deletion authority
+ok 49 - verified webhook creates an overlap CDC plan but never record or deletion authority
+  ---
+  duration_ms: 37.4635
+  type: 'test'
+  ...
+# Subtest: duplicate and out-of-order webhook hints collapse deterministically
+ok 50 - duplicate and out-of-order webhook hints collapse deterministically
+  ---
+  duration_ms: 2.8694
+  type: 'test'
+  ...
+# Subtest: unverified, mis-scoped and unsupported webhook signals fail closed
+ok 51 - unverified, mis-scoped and unsupported webhook signals fail closed
+  ---
+  duration_ms: 5.6277
+  type: 'test'
+  ...
+# Subtest: checkpoint older than provider CDC horizon requires a full snapshot
+ok 52 - checkpoint older than provider CDC horizon requires a full snapshot
+  ---
+  duration_ms: 2.5628
+  type: 'test'
+  ...
+# Subtest: complete CDC result deduplicates exact entity versions without granting checkpoint authority
+ok 53 - complete CDC result deduplicates exact entity versions without granting checkpoint authority
+  ---
+  duration_ms: 1.1118
+  type: 'test'
+  ...
+# Subtest: conflicting payloads for one entity version are quarantined
+ok 54 - conflicting payloads for one entity version are quarantined
+  ---
+  duration_ms: 1.7619
+  type: 'test'
+  ...
+# Subtest: partial, misbound, stale and impossible-time CDC results are quarantined
+ok 55 - partial, misbound, stale and impossible-time CDC results are quarantined
+  ---
+  duration_ms: 5.9154
+  type: 'test'
+  ...
+# Subtest: provider object ceiling is enforced before a response can claim completeness
+ok 56 - provider object ceiling is enforced before a response can claim completeness
+  ---
+  duration_ms: 1.1457
+  type: 'test'
+  ...
+# Subtest: secret-like fields and fabricated plans cannot enter recovery evidence
+ok 57 - secret-like fields and fabricated plans cannot enter recovery evidence
+  ---
+  duration_ms: 2.2044
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 58 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 1.3693
+  type: 'test'
+  ...
+# Subtest: admits an exact-scope effective-dated delta only as a reconciliation candidate
+ok 59 - admits an exact-scope effective-dated delta only as a reconciliation candidate
+  ---
+  duration_ms: 7.986
+  type: 'test'
+  ...
+# Subtest: rejects scope, consumer, endpoint, version, entity, query and schema drift
+ok 60 - rejects scope, consumer, endpoint, version, entity, query and schema drift
+  ---
+  duration_ms: 6.3384
+  type: 'test'
+  ...
+# Subtest: preserves multiple employments and assignments for the same person
+ok 61 - preserves multiple employments and assignments for the same person
+  ---
+  duration_ms: 31.3767
+  type: 'test'
+  ...
+# Subtest: collapses Unicode-normalised exact replays but quarantines conflicting composite identities
+ok 62 - collapses Unicode-normalised exact replays but quarantines conflicting composite identities
+  ---
+  duration_ms: 2.0426
+  type: 'test'
+  ...
+# Subtest: preserves sequence-numbered corrections instead of collapsing them
+ok 63 - preserves sequence-numbered corrections instead of collapsing them
+  ---
+  duration_ms: 0.9785
+  type: 'test'
+  ...
+# Subtest: rejects impossible effective dates and reversed effective intervals
+ok 64 - rejects impossible effective dates and reversed effective intervals
+  ---
+  duration_ms: 1.3878
+  type: 'test'
+  ...
+# Subtest: requires delta modifications to fall inside the approved overlap window
+ok 65 - requires delta modifications to fall inside the approved overlap window
+  ---
+  duration_ms: 1.507
+  type: 'test'
+  ...
+# Subtest: enforces complete bounded windows and record limits
+ok 66 - enforces complete bounded windows and record limits
+  ---
+  duration_ms: 1.746
+  type: 'test'
+  ...
+# Subtest: keeps as-of snapshots distinct from deltas and still denies deletion authority
+ok 67 - keeps as-of snapshots distinct from deltas and still denies deletion authority
+  ---
+  duration_ms: 1.2232
+  type: 'test'
+  ...
+# Subtest: rejects secret-bearing and executable workforce evidence
+ok 68 - rejects secret-bearing and executable workforce evidence
+  ---
+  duration_ms: 4.2429
+  type: 'test'
+  ...
+# Subtest: requires exact HTTPS origins and returns deeply immutable evidence
+ok 69 - requires exact HTTPS origins and returns deeply immutable evidence
+  ---
+  duration_ms: 1.773
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 70 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 0.6572
+  type: 'test'
+  ...
+# Subtest: admits a fully scoped closed-window recovery snapshot as reconciliation evidence only
+ok 71 - admits a fully scoped closed-window recovery snapshot as reconciliation evidence only
+  ---
+  duration_ms: 9.9542
+  type: 'test'
+  ...
+# Subtest: rejects facility warehouse owner tenant and endpoint drift
+ok 72 - rejects facility warehouse owner tenant and endpoint drift
+  ---
+  duration_ms: 4.8019
+  type: 'test'
+  ...
+# Subtest: rejects mutation, widened, traversal, encoded and ambiguous snapshot routes
+ok 73 - rejects mutation, widened, traversal, encoded and ambiguous snapshot routes
+  ---
+  duration_ms: 2.679
+  type: 'test'
+  ...
+# Subtest: rejects open, partial, failed, non-terminal or wrong-window snapshots
+ok 74 - rejects open, partial, failed, non-terminal or wrong-window snapshots
+  ---
+  duration_ms: 2.3591
+  type: 'test'
+  ...
+# Subtest: requires every failed hint to be declared recovered and present in the snapshot
+ok 75 - requires every failed hint to be declared recovered and present in the snapshot
+  ---
+  duration_ms: 2.6864
+  type: 'test'
+  ...
+# Subtest: rejects duplicate failed or recovered event identities and conflicting event replays
+ok 76 - rejects duplicate failed or recovered event identities and conflicting event replays
+  ---
+  duration_ms: 1.3953
+  type: 'test'
+  ...
+# Subtest: collapses exact hint and record replays while preserving opaque identifiers
+ok 77 - collapses exact hint and record replays while preserving opaque identifiers
+  ---
+  duration_ms: 0.885
+  type: 'test'
+  ...
+# Subtest: binds failed event identity and occurrence time into recovery evidence
+ok 78 - binds failed event identity and occurrence time into recovery evidence
+  ---
+  duration_ms: 0.9212
+  type: 'test'
+  ...
+# Subtest: rejects future hints, impossible times, oversized receipts and sparse arrays
+ok 79 - rejects future hints, impossible times, oversized receipts and sparse arrays
+  ---
+  duration_ms: 46.8128
+  type: 'test'
+  ...
+# Subtest: rejects schema, query, resource, topic and route drift
+ok 80 - rejects schema, query, resource, topic and route drift
+  ---
+  duration_ms: 2.7162
+  type: 'test'
+  ...
+# Subtest: rejects secret, executable and hidden evidence and returns immutable decisions
+ok 81 - rejects secret, executable and hidden evidence and returns immutable decisions
+  ---
+  duration_ms: 2.3183
+  type: 'test'
+  ...
+# Subtest: admits an exact explicit execution context as reconciliation evidence only
+ok 82 - admits an exact explicit execution context as reconciliation evidence only
+  ---
+  duration_ms: 9.955
+  type: 'test'
+  ...
+# Subtest: rejects omitted default or mismatched company execution
+ok 83 - rejects omitted default or mismatched company execution
+  ---
+  duration_ms: 2.7299
+  type: 'test'
+  ...
+# Subtest: rejects identity switching and language fallback or drift
+ok 84 - rejects identity switching and language fallback or drift
+  ---
+  duration_ms: 5.6251
+  type: 'test'
+  ...
+# Subtest: rejects mutation methods route widening and authorization drift
+ok 85 - rejects mutation methods route widening and authorization drift
+  ---
+  duration_ms: 4.3141
+  type: 'test'
+  ...
+# Subtest: rejects failed incomplete stale or over-limit evidence
+ok 86 - rejects failed incomplete stale or over-limit evidence
+  ---
+  duration_ms: 10.586
+  type: 'test'
+  ...
+# Subtest: preserves opaque identity tuples and quarantines conflicting versions
+ok 87 - preserves opaque identity tuples and quarantines conflicting versions
+  ---
+  duration_ms: 2.8933
+  type: 'test'
+  ...
+# Subtest: rejects secret or executable evidence and returns deeply immutable output
+ok 88 - rejects secret or executable evidence and returns deeply immutable output
+  ---
+  duration_ms: 2.0003
+  type: 'test'
+  ...
+# Subtest: authorizes an exact POST report as read intent without granting mutation authority
+ok 89 - authorizes an exact POST report as read intent without granting mutation authority
+  ---
+  duration_ms: 8.9204
+  type: 'test'
+  ...
+# Subtest: rejects tenant, account, origin, route, method, version, resource and schema drift
+ok 90 - rejects tenant, account, origin, route, method, version, resource and schema drift
+  ---
+  duration_ms: 7.383
+  type: 'test'
+  ...
+# Subtest: rejects insecure, wildcard, credential-bearing and non-origin API endpoints
+ok 91 - rejects insecure, wildcard, credential-bearing and non-origin API endpoints
+  ---
+  duration_ms: 1.0842
+  type: 'test'
+  ...
+# Subtest: rejects field widening and sensitive fields even when the source account might permit them
+ok 92 - rejects field widening and sensitive fields even when the source account might permit them
+  ---
+  duration_ms: 1.0249
+  type: 'test'
+  ...
+# Subtest: normalises Unicode field identifiers and rejects ambiguous duplicates
+ok 93 - normalises Unicode field identifiers and rejects ambiguous duplicates
+  ---
+  duration_ms: 0.9804
+  type: 'test'
+  ...
+# Subtest: preserves Unicode-normalised custom-field values and rejects normalisation collisions
+ok 94 - preserves Unicode-normalised custom-field values and rejects normalisation collisions
+  ---
+  duration_ms: 4.1877
+  type: 'test'
+  ...
+# Subtest: quarantines missing, extra or drifted response fields instead of silently accepting schema changes
+ok 95 - quarantines missing, extra or drifted response fields instead of silently accepting schema changes
+  ---
+  duration_ms: 7.2904
+  type: 'test'
+  ...
+# Subtest: preserves restricted-field evidence and refuses absence or deletion authority
+ok 96 - preserves restricted-field evidence and refuses absence or deletion authority
+  ---
+  duration_ms: 1.4626
+  type: 'test'
+  ...
+# Subtest: rejects a restricted or missing stable employee identity
+ok 97 - rejects a restricted or missing stable employee identity
+  ---
+  duration_ms: 2.6194
+  type: 'test'
+  ...
+# Subtest: collapses exact replays but quarantines conflicting source versions
+ok 98 - collapses exact replays but quarantines conflicting source versions
+  ---
+  duration_ms: 3.0609
+  type: 'test'
+  ...
+# Subtest: keeps the immutable company employee ID as identity rather than editable employee number
+ok 99 - keeps the immutable company employee ID as identity rather than editable employee number
+  ---
+  duration_ms: 1.2624
+  type: 'test'
+  ...
+# Subtest: requires a complete bounded result and never turns row absence into authority
+ok 100 - requires a complete bounded result and never turns row absence into authority
+  ---
+  duration_ms: 2.4554
+  type: 'test'
+  ...
+# Subtest: classifies 429 throttling separately from 503 outage and never refreshes auth for either
+ok 101 - classifies 429 throttling separately from 503 outage and never refreshes auth for either
+  ---
+  duration_ms: 1.1535
+  type: 'test'
+  ...
+# Subtest: rejects secret-bearing, executable or mutable returned evidence
+ok 102 - rejects secret-bearing, executable or mutable returned evidence
+  ---
+  duration_ms: 2.1852
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 103 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 0.4802
+  type: 'test'
+  ...
+# Subtest: rejects route paths that change the approved HTTPS origin
+ok 104 - rejects route paths that change the approved HTTPS origin
+  ---
+  duration_ms: 2.4029
+  type: 'test'
+  ...
+# Subtest: admits a complete multi-entry batch while preserving independent entry histories
+ok 105 - admits a complete multi-entry batch while preserving independent entry histories
+  ---
+  duration_ms: 19.0031
+  type: 'test'
+  ...
+# Subtest: requires two to sixteen unique AWS-valid entry definitions with exact receipt scope
+ok 106 - requires two to sixteen unique AWS-valid entry definitions with exact receipt scope
+  ---
+  duration_ms: 7.8219
+  type: 'test'
+  ...
+# Subtest: requires every page to partition the exact entry set once
+ok 107 - requires every page to partition the exact entry set once
+  ---
+  duration_ms: 11.7819
+  type: 'test'
+  ...
+# Subtest: allows only success to skipped-success lifecycle and rejects regressions or error completion
+ok 108 - allows only success to skipped-success lifecycle and rejects regressions or error completion
+  ---
+  duration_ms: 7.6365
+  type: 'test'
+  ...
+# Subtest: binds one gapless terminal global token chain and bounded execution
+ok 109 - binds one gapless terminal global token chain and bounded execution
+  ---
+  duration_ms: 7.5848
+  type: 'test'
+  ...
+# Subtest: isolates replays and conflicts within each entry timestamp
+ok 110 - isolates replays and conflicts within each entry timestamp
+  ---
+  duration_ms: 5.6614
+  type: 'test'
+  ...
+# Subtest: preserves quality and typed null variants per entry without operational authority
+ok 111 - preserves quality and typed null variants per entry without operational authority
+  ---
+  duration_ms: 5.7101
+  type: 'test'
+  ...
+# Subtest: binds global authority fingerprints predecessor horizon and exact regional endpoint
+ok 112 - binds global authority fingerprints predecessor horizon and exact regional endpoint
+  ---
+  duration_ms: 3.7483
+  type: 'test'
+  ...
+# Subtest: rejects unsafe evidence and returns a deeply immutable deterministic decision
+ok 113 - rejects unsafe evidence and returns a deeply immutable deterministic decision
+  ---
+  duration_ms: 372.655
+  type: 'test'
+  ...
+# Subtest: admits a gapless terminal industrial history window as reconciliation evidence only
+ok 114 - admits a gapless terminal industrial history window as reconciliation evidence only
+  ---
+  duration_ms: 14.8762
+  type: 'test'
+  ...
+# Subtest: rejects account region endpoint site gateway asset property alias and unit drift
+ok 115 - rejects account region endpoint site gateway asset property alias and unit drift
+  ---
+  duration_ms: 5.6354
+  type: 'test'
+  ...
+# Subtest: rejects custom ports and undocumented FIPS region endpoints
+ok 116 - rejects custom ports and undocumented FIPS region endpoints
+  ---
+  duration_ms: 1.766
+  type: 'test'
+  ...
+# Subtest: allows only exact read-history operations and matching timestamp-source mode
+ok 117 - allows only exact read-history operations and matching timestamp-source mode
+  ---
+  duration_ms: 6.4489
+  type: 'test'
+  ...
+# Subtest: requires a gapless successful page chain that reaches one terminal token
+ok 118 - requires a gapless successful page chain that reaches one terminal token
+  ---
+  duration_ms: 8.4978
+  type: 'test'
+  ...
+# Subtest: rejects skipped or errored batch entries instead of treating partial success as complete
+ok 119 - rejects skipped or errored batch entries instead of treating partial success as complete
+  ---
+  duration_ms: 2.3892
+  type: 'test'
+  ...
+# Subtest: binds every BatchGet success page to the exact approved entry id
+ok 120 - binds every BatchGet success page to the exact approved entry id
+  ---
+  duration_ms: 8.2567
+  type: 'test'
+  ...
+# Subtest: preserves nanosecond timestamps and rejects samples outside the exact window
+ok 121 - preserves nanosecond timestamps and rejects samples outside the exact window
+  ---
+  duration_ms: 3.8369
+  type: 'test'
+  ...
+# Subtest: over-reads documented whole-second provider bounds then filters the canonical nanosecond window
+ok 122 - over-reads documented whole-second provider bounds then filters the canonical nanosecond window
+  ---
+  duration_ms: 9.8561
+  type: 'test'
+  ...
+# Subtest: preserves all documented quality states without turning them into decision authority
+ok 123 - preserves all documented quality states without turning them into decision authority
+  ---
+  duration_ms: 3.3388
+  type: 'test'
+  ...
+# Subtest: preserves documented null variants and their underlying SiteWise type
+ok 124 - preserves documented null variants and their underlying SiteWise type
+  ---
+  duration_ms: 4.8444
+  type: 'test'
+  ...
+# Subtest: collapses exact sample replays and quarantines conflicting values at one timestamp
+ok 125 - collapses exact sample replays and quarantines conflicting values at one timestamp
+  ---
+  duration_ms: 2.4502
+  type: 'test'
+  ...
+# Subtest: binds IAM principal query schema predecessor and observation horizon
+ok 126 - binds IAM principal query schema predecessor and observation horizon
+  ---
+  duration_ms: 3.0071
+  type: 'test'
+  ...
+# Subtest: rejects oversized sparse secret executable and hidden evidence and freezes output
+ok 127 - rejects oversized sparse secret executable and hidden evidence and freezes output
+  ---
+  duration_ms: 202.6831
+  type: 'test'
+  ...
+# Subtest: admits exact completed instance plus complete downstream delivery as reconciliation evidence only
+ok 128 - admits exact completed instance plus complete downstream delivery as reconciliation evidence only
+  ---
+  duration_ms: 8.1426
+  type: 'test'
+  ...
+# Subtest: binds Oracle origin service route integration business identity fingerprints predecessor and window
+ok 129 - binds Oracle origin service route integration business identity fingerprints predecessor and window
+  ---
+  duration_ms: 8.1372
+  type: 'test'
+  ...
+# Subtest: requires a monotone nonterminal to completed lifecycle with exact replay collapse
+ok 130 - requires a monotone nonterminal to completed lifecycle with exact replay collapse
+  ---
+  duration_ms: 6.1894
+  type: 'test'
+  ...
+# Subtest: rejects identity drift inaccurate completion ambiguous tracking and impossible provider time
+ok 131 - rejects identity drift inaccurate completion ambiguous tracking and impossible provider time
+  ---
+  duration_ms: 3.2773
+  type: 'test'
+  ...
+# Subtest: preserves exact Unicode business identifiers without normalization collisions
+ok 132 - preserves exact Unicode business identifiers without normalization collisions
+  ---
+  duration_ms: 1.6085
+  type: 'test'
+  ...
+# Subtest: binds provider creation time and authority caps into the decision fingerprint
+ok 133 - binds provider creation time and authority caps into the decision fingerprint
+  ---
+  duration_ms: 3.427
+  type: 'test'
+  ...
+# Subtest: requires complete successful scope-bound delivery after provider completion
+ok 134 - requires complete successful scope-bound delivery after provider completion
+  ---
+  duration_ms: 3.7501
+  type: 'test'
+  ...
+# Subtest: rejects oversized sparse secret executable and hidden evidence deterministically
+ok 135 - rejects oversized sparse secret executable and hidden evidence deterministically
+  ---
+  duration_ms: 2.9778
+  type: 'test'
+  ...
+# Subtest: exact custom-scoped export compiles to a stable read-ingress plan
+ok 136 - exact custom-scoped export compiles to a stable read-ingress plan
+  ---
+  duration_ms: 5.6593
+  type: 'test'
+  ...
+# Subtest: broad credentials and any non-export action fail before invocation
+ok 137 - broad credentials and any non-export action fail before invocation
+  ---
+  duration_ms: 4.1662
+  type: 'test'
+  ...
+# Subtest: scope, route, dataset, sink, revision and schema mismatches fail closed
+ok 138 - scope, route, dataset, sink, revision and schema mismatches fail closed
+  ---
+  duration_ms: 6.0135
+  type: 'test'
+  ...
+# Subtest: credential scope cannot hide wildcard or additional mutation authority
+ok 139 - credential scope cannot hide wildcard or additional mutation authority
+  ---
+  duration_ms: 2.7076
+  type: 'test'
+  ...
+# Subtest: only a complete gapless error-free receipt becomes a reconciliation candidate
+ok 140 - only a complete gapless error-free receipt becomes a reconciliation candidate
+  ---
+  duration_ms: 3.1681
+  type: 'test'
+  ...
+# Subtest: partial, failed, gapped, duplicate or internally inconsistent receipts are quarantined
+ok 141 - partial, failed, gapped, duplicate or internally inconsistent receipts are quarantined
+  ---
+  duration_ms: 8.1476
+  type: 'test'
+  ...
+# Subtest: secret-like material cannot enter policy, requests, receipts or evidence
+ok 142 - secret-like material cannot enter policy, requests, receipts or evidence
+  ---
+  duration_ms: 1.7158
+  type: 'test'
+  ...
+# Subtest: exact read-only task compiles to a stable header-authenticated ingress plan
+ok 143 - exact read-only task compiles to a stable header-authenticated ingress plan
+  ---
+  duration_ms: 9.9961
+  type: 'test'
+  ...
+# Subtest: query credentials and mutation-capable task contracts are rejected before invocation
+ok 144 - query credentials and mutation-capable task contracts are rejected before invocation
+  ---
+  duration_ms: 1.8173
+  type: 'test'
+  ...
+# Subtest: route, method, revision, schema and parameter drift fail closed
+ok 145 - route, method, revision, schema and parameter drift fail closed
+  ---
+  duration_ms: 5.3904
+  type: 'test'
+  ...
+# Subtest: completed error-free execution deduplicates exact replays without granting checkpoint authority
+ok 146 - completed error-free execution deduplicates exact replays without granting checkpoint authority
+  ---
+  duration_ms: 6.1288
+  type: 'test'
+  ...
+# Subtest: structured identity framing keeps delimiter-bearing source IDs distinct
+ok 147 - structured identity framing keeps delimiter-bearing source IDs distinct
+  ---
+  duration_ms: 0.9064
+  type: 'test'
+  ...
+# Subtest: conflicting duplicate identity is quarantined instead of choosing a payload
+ok 148 - conflicting duplicate identity is quarantined instead of choosing a payload
+  ---
+  duration_ms: 0.7897
+  type: 'test'
+  ...
+# Subtest: nonterminal, failed, misbound and impossible-time executions are quarantined
+ok 149 - nonterminal, failed, misbound and impossible-time executions are quarantined
+  ---
+  duration_ms: 4.4348
+  type: 'test'
+  ...
+# Subtest: secret-like fields and fabricated plans never enter evidence
+ok 150 - secret-like fields and fabricated plans never enter evidence
+  ---
+  duration_ms: 2.186
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 151 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 2.1049
+  type: 'test'
+  ...
+# Subtest: admits exact-scope analytical manufacturing observations without action authority
+ok 152 - admits exact-scope analytical manufacturing observations without action authority
+  ---
+  duration_ms: 38.244
+  type: 'test'
+  ...
+# Subtest: rejects tenant, connection, instance, plant, host, version, dataset and schema drift
+ok 153 - rejects tenant, connection, instance, plant, host, version, dataset and schema drift
+  ---
+  duration_ms: 7.3098
+  type: 'test'
+  ...
+# Subtest: rejects unapproved metrics, units and resources
+ok 154 - rejects unapproved metrics, units and resources
+  ---
+  duration_ms: 1.7596
+  type: 'test'
+  ...
+# Subtest: requires canonical non-negative decimal strings instead of binary floats
+ok 155 - requires canonical non-negative decimal strings instead of binary floats
+  ---
+  duration_ms: 3.5799
+  type: 'test'
+  ...
+# Subtest: rejects oversized decimal evidence before it can amplify a backfill
+ok 156 - rejects oversized decimal evidence before it can amplify a backfill
+  ---
+  duration_ms: 0.8155
+  type: 'test'
+  ...
+# Subtest: collapses exact source-version metric replays and quarantines conflicts
+ok 157 - collapses exact source-version metric replays and quarantines conflicts
+  ---
+  duration_ms: 2.7208
+  type: 'test'
+  ...
+# Subtest: enforces complete bounded windows, resource cardinality and observation limits
+ok 158 - enforces complete bounded windows, resource cardinality and observation limits
+  ---
+  duration_ms: 2.5645
+  type: 'test'
+  ...
+# Subtest: marks delayed projections stale without converting them into transactional truth
+ok 159 - marks delayed projections stale without converting them into transactional truth
+  ---
+  duration_ms: 0.8609
+  type: 'test'
+  ...
+# Subtest: distinguishes transactional reads from analytical projections but grants neither direct writes
+ok 160 - distinguishes transactional reads from analytical projections but grants neither direct writes
+  ---
+  duration_ms: 1.4528
+  type: 'test'
+  ...
+# Subtest: rejects impossible chronology and observations outside the closed source window
+ok 161 - rejects impossible chronology and observations outside the closed source window
+  ---
+  duration_ms: 3.2508
+  type: 'test'
+  ...
+# Subtest: rejects secret-bearing and executable evidence
+ok 162 - rejects secret-bearing and executable evidence
+  ---
+  duration_ms: 5.4211
+  type: 'test'
+  ...
+# Subtest: requires exact HTTPS origins and deeply immutable decisions
+ok 163 - requires exact HTTPS origins and deeply immutable decisions
+  ---
+  duration_ms: 1.6042
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 164 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 0.7546
+  type: 'test'
+  ...
+# Subtest: admits a complete cursor chain only as a watermark reconciliation candidate
+ok 165 - admits a complete cursor chain only as a watermark reconciliation candidate
+  ---
+  duration_ms: 9.8229
+  type: 'test'
+  ...
+# Subtest: requires the identical lower bound and query on every page
+ok 166 - requires the identical lower bound and query on every page
+  ---
+  duration_ms: 3.735
+  type: 'test'
+  ...
+# Subtest: rejects cursor gaps, loops, duplicate page receipts and non-terminal chains
+ok 167 - rejects cursor gaps, loops, duplicate page receipts and non-terminal chains
+  ---
+  duration_ms: 2.5707
+  type: 'test'
+  ...
+# Subtest: requires overlap replay for offset pagination and derives the overlapped next window
+ok 168 - requires overlap replay for offset pagination and derives the overlapped next window
+  ---
+  duration_ms: 34.2433
+  type: 'test'
+  ...
+# Subtest: rejects offset gaps and repeated offsets
+ok 169 - rejects offset gaps and repeated offsets
+  ---
+  duration_ms: 1.3884
+  type: 'test'
+  ...
+# Subtest: isolates organization identity and rejects scope drift
+ok 170 - isolates organization identity and rejects scope drift
+  ---
+  duration_ms: 2.3318
+  type: 'test'
+  ...
+# Subtest: collapses exact page overlap replays but quarantines divergent same-version payloads
+ok 171 - collapses exact page overlap replays but quarantines divergent same-version payloads
+  ---
+  duration_ms: 1.8891
+  type: 'test'
+  ...
+# Subtest: preserves distinct source versions for the same record
+ok 172 - preserves distinct source versions for the same record
+  ---
+  duration_ms: 2.8751
+  type: 'test'
+  ...
+# Subtest: rejects incomplete evidence, over-limit batches and out-of-window versions
+ok 173 - rejects incomplete evidence, over-limit batches and out-of-window versions
+  ---
+  duration_ms: 1.8622
+  type: 'test'
+  ...
+# Subtest: an empty complete window cannot invent a watermark or deletion authority
+ok 174 - an empty complete window cannot invent a watermark or deletion authority
+  ---
+  duration_ms: 0.9444
+  type: 'test'
+  ...
+# Subtest: clamps the next watermark to the trusted observation horizon
+ok 175 - clamps the next watermark to the trusted observation horizon
+  ---
+  duration_ms: 1.1575
+  type: 'test'
+  ...
+# Subtest: binds reconciliation identity to checkpoint and replay decisions
+ok 176 - binds reconciliation identity to checkpoint and replay decisions
+  ---
+  duration_ms: 1.0806
+  type: 'test'
+  ...
+# Subtest: binds the batch to the expected committed watermark and exact overlap window
+ok 177 - binds the batch to the expected committed watermark and exact overlap window
+  ---
+  duration_ms: 1.5818
+  type: 'test'
+  ...
+# Subtest: rejects prototype-supplied completeness evidence
+ok 178 - rejects prototype-supplied completeness evidence
+  ---
+  duration_ms: 0.7221
+  type: 'test'
+  ...
+# Subtest: requires canonical digest syntax and rejects bearer material disguised as a digest
+ok 179 - requires canonical digest syntax and rejects bearer material disguised as a digest
+  ---
+  duration_ms: 1.2385
+  type: 'test'
+  ...
+# Subtest: partitions the same organization by explicit site scope
+ok 180 - partitions the same organization by explicit site scope
+  ---
+  duration_ms: 1.5212
+  type: 'test'
+  ...
+# Subtest: rejects secrets, executable data, non-HTTPS origins and mutation-shaped resources
+ok 181 - rejects secrets, executable data, non-HTTPS origins and mutation-shaped resources
+  ---
+  duration_ms: 2.5914
+  type: 'test'
+  ...
+# Subtest: returns deeply immutable evidence
+ok 182 - returns deeply immutable evidence
+  ---
+  duration_ms: 0.9569
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 183 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 0.4876
+  type: 'test'
+  ...
+# Subtest: admits one exact-scope terminal chain only as a reconciliation candidate
+ok 184 - admits one exact-scope terminal chain only as a reconciliation candidate
+  ---
+  duration_ms: 10.7841
+  type: 'test'
+  ...
+# Subtest: rejects cross-tenant, host, version, resource and credential drift
+ok 185 - rejects cross-tenant, host, version, resource and credential drift
+  ---
+  duration_ms: 3.7611
+  type: 'test'
+  ...
+# Subtest: rejects token gaps, token loops and page-index gaps
+ok 186 - rejects token gaps, token loops and page-index gaps
+  ---
+  duration_ms: 1.9759
+  type: 'test'
+  ...
+# Subtest: compares opaque continuation tokens byte-for-byte
+ok 187 - compares opaque continuation tokens byte-for-byte
+  ---
+  duration_ms: 1.3258
+  type: 'test'
+  ...
+# Subtest: rejects partial chains and complete chains with a continuation token
+ok 188 - rejects partial chains and complete chains with a continuation token
+  ---
+  duration_ms: 1.1681
+  type: 'test'
+  ...
+# Subtest: enforces bounded pages, records and opaque token length
+ok 189 - enforces bounded pages, records and opaque token length
+  ---
+  duration_ms: 1.3319
+  type: 'test'
+  ...
+# Subtest: collapses exact record replays but quarantines conflicting versions
+ok 190 - collapses exact record replays but quarantines conflicting versions
+  ---
+  duration_ms: 1.177
+  type: 'test'
+  ...
+# Subtest: rejects duplicate page receipts and executable or secret-bearing evidence
+ok 191 - rejects duplicate page receipts and executable or secret-bearing evidence
+  ---
+  duration_ms: 1.3816
+  type: 'test'
+  ...
+# Subtest: rejects impossible or reversed observation windows
+ok 192 - rejects impossible or reversed observation windows
+  ---
+  duration_ms: 1.5682
+  type: 'test'
+  ...
+# Subtest: requires an exact HTTPS regional origin and deeply immutable output
+ok 193 - requires an exact HTTPS regional origin and deeply immutable output
+  ---
+  duration_ms: 2.9319
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 194 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 1.04
+  type: 'test'
+  ...
+# Subtest: admits stable partition windows without inventing gapless record semantics
+ok 195 - admits stable partition windows without inventing gapless record semantics
+  ---
+  duration_ms: 10.3618
+  type: 'test'
+  ...
+# Subtest: preserves offsets larger than Number.MAX_SAFE_INTEGER exactly
+ok 196 - preserves offsets larger than Number.MAX_SAFE_INTEGER exactly
+  ---
+  duration_ms: 4.8073
+  type: 'test'
+  ...
+# Subtest: collapses byte-equivalent offset replay but rejects conflicting replay
+ok 197 - collapses byte-equivalent offset replay but rejects conflicting replay
+  ---
+  duration_ms: 4.6925
+  type: 'test'
+  ...
+# Subtest: rejects out-of-order records while allowing compaction and transaction gaps
+ok 198 - rejects out-of-order records while allowing compaction and transaction gaps
+  ---
+  duration_ms: 2.8404
+  type: 'test'
+  ...
+# Subtest: requires exact partition coverage and exact broker start watermarks
+ok 199 - requires exact partition coverage and exact broker start watermarks
+  ---
+  duration_ms: 2.1297
+  type: 'test'
+  ...
+# Subtest: rejects retention loss, truncation and incomplete final position
+ok 200 - rejects retention loss, truncation and incomplete final position
+  ---
+  duration_ms: 1.8821
+  type: 'test'
+  ...
+# Subtest: permits appends after the bounded end without widening the admitted window
+ok 201 - permits appends after the bounded end without widening the admitted window
+  ---
+  duration_ms: 1.1443
+  type: 'test'
+  ...
+# Subtest: requires read_committed manual assignment and proves no offset commit occurred
+ok 202 - requires read_committed manual assignment and proves no offset commit occurred
+  ---
+  duration_ms: 2.1541
+  type: 'test'
+  ...
+# Subtest: binds cluster, topic, consumer, security and every fabric fingerprint
+ok 203 - binds cluster, topic, consumer, security and every fabric fingerprint
+  ---
+  duration_ms: 6.8322
+  type: 'test'
+  ...
+# Subtest: rejects records outside the bounded window and timestamp evidence beyond observation
+ok 204 - rejects records outside the bounded window and timestamp evidence beyond observation
+  ---
+  duration_ms: 2.2887
+  type: 'test'
+  ...
+# Subtest: rejects malformed, secret-bearing, sparse, executable and unbounded evidence
+ok 205 - rejects malformed, secret-bearing, sparse, executable and unbounded evidence
+  ---
+  duration_ms: 2.812
+  type: 'test'
+  ...
+# Subtest: applies maxRecords across the whole multi-partition receipt
+ok 206 - applies maxRecords across the whole multi-partition receipt
+  ---
+  duration_ms: 1.0096
+  type: 'test'
+  ...
+# Subtest: rejects Kafka-reserved topic names and offsets outside signed int64
+ok 207 - rejects Kafka-reserved topic names and offsets outside signed int64
+  ---
+  duration_ms: 2.1893
+  type: 'test'
+  ...
+# Subtest: rejects forged array prototypes and old replays after newer offsets
+ok 208 - rejects forged array prototypes and old replays after newer offsets
+  ---
+  duration_ms: 1.7466
+  type: 'test'
+  ...
+# Subtest: admits two stable complete payroll reads as observation evidence only
+ok 209 - admits two stable complete payroll reads as observation evidence only
+  ---
+  duration_ms: 68.0627
+  type: 'test'
+  ...
+# Subtest: binds tenant connection company endpoint routes version and partner entitlement
+ok 210 - binds tenant connection company endpoint routes version and partner entitlement
+  ---
+  duration_ms: 7.8026
+  type: 'test'
+  ...
+# Subtest: requires an authenticated TLS payroll-processed hint with exact run identity
+ok 211 - requires an authenticated TLS payroll-processed hint with exact run identity
+  ---
+  duration_ms: 12.3077
+  type: 'test'
+  ...
+# Subtest: requires two ordered passes after the webhook and before the observation horizon
+ok 212 - requires two ordered passes after the webhook and before the observation horizon
+  ---
+  duration_ms: 10.6215
+  type: 'test'
+  ...
+# Subtest: requires exact complete roster coverage in each pass
+ok 213 - requires exact complete roster coverage in each pass
+  ---
+  duration_ms: 8.3993
+  type: 'test'
+  ...
+# Subtest: rejects failed gapped over-limit or incomplete employee pagination
+ok 214 - rejects failed gapped over-limit or incomplete employee pagination
+  ---
+  duration_ms: 8.5995
+  type: 'test'
+  ...
+# Subtest: rejects cross-employee cross-run malformed and conflicting statement identity
+ok 215 - rejects cross-employee cross-run malformed and conflicting statement identity
+  ---
+  duration_ms: 6.2762
+  type: 'test'
+  ...
+# Subtest: rejects one pay statement UUID being reassigned to a different employee
+ok 216 - rejects one pay statement UUID being reassigned to a different employee
+  ---
+  duration_ms: 1.5661
+  type: 'test'
+  ...
+# Subtest: quarantines a payroll run when the second pass changes identity or payload
+ok 217 - quarantines a payroll run when the second pass changes identity or payload
+  ---
+  duration_ms: 7.6112
+  type: 'test'
+  ...
+# Subtest: preserves opaque employee identities without returning them
+ok 218 - preserves opaque employee identities without returning them
+  ---
+  duration_ms: 3.7464
+  type: 'test'
+  ...
+# Subtest: rejects zero UUIDs oversized identifiers sparse arrays secrets and executable evidence
+ok 219 - rejects zero UUIDs oversized identifiers sparse arrays secrets and executable evidence
+  ---
+  duration_ms: 5.1356
+  type: 'test'
+  ...
+# Subtest: binds caps and fingerprints and returns deterministic deeply immutable output
+ok 220 - binds caps and fingerprints and returns deterministic deeply immutable output
+  ---
+  duration_ms: 9.8835
+  type: 'test'
+  ...
+# Subtest: binds webhook timing and transport provenance into reconciliation evidence
+ok 221 - binds webhook timing and transport provenance into reconciliation evidence
+  ---
+  duration_ms: 7.3929
+  type: 'test'
+  ...
+# Subtest: reconciles authenticated callbacks against complete history as presence signals only
+ok 222 - reconciles authenticated callbacks against complete history as presence signals only
+  ---
+  duration_ms: 39.2098
+  type: 'test'
+  ...
+# Subtest: rejects organization, host, filter, callback, schema and application drift
+ok 223 - rejects organization, host, filter, callback, schema and application drift
+  ---
+  duration_ms: 6.3297
+  type: 'test'
+  ...
+# Subtest: rejects unauthenticated callback events and incomplete history
+ok 224 - rejects unauthenticated callback events and incomplete history
+  ---
+  duration_ms: 1.8391
+  type: 'test'
+  ...
+# Subtest: requires every callback hint to appear in the complete history window
+ok 225 - requires every callback hint to appear in the complete history window
+  ---
+  duration_ms: 2.5289
+  type: 'test'
+  ...
+# Subtest: counts events recovered from history when callbacks were missed
+ok 226 - counts events recovered from history when callbacks were missed
+  ---
+  duration_ms: 1.8423
+  type: 'test'
+  ...
+# Subtest: pseudonymous subject fingerprints remain isolated across WFM tenants and connections
+ok 227 - pseudonymous subject fingerprints remain isolated across WFM tenants and connections
+  ---
+  duration_ms: 2.428
+  type: 'test'
+  ...
+# Subtest: quarantines conflicting event IDs and duplicate evidence shapes
+ok 228 - quarantines conflicting event IDs and duplicate evidence shapes
+  ---
+  duration_ms: 2.6908
+  type: 'test'
+  ...
+# Subtest: rejects unapproved event types, sites and zones
+ok 229 - rejects unapproved event types, sites and zones
+  ---
+  duration_ms: 1.5211
+  type: 'test'
+  ...
+# Subtest: rejects events outside the closed window or beyond allowed clock skew
+ok 230 - rejects events outside the closed window or beyond allowed clock skew
+  ---
+  duration_ms: 2.0883
+  type: 'test'
+  ...
+# Subtest: marks suspended, expired or elapsed callback registrations for repair after history recovery
+ok 231 - marks suspended, expired or elapsed callback registrations for repair after history recovery
+  ---
+  duration_ms: 3.036
+  type: 'test'
+  ...
+# Subtest: enforces event bounds and excludes secrets or executable evidence
+ok 232 - enforces event bounds and excludes secrets or executable evidence
+  ---
+  duration_ms: 1.9468
+  type: 'test'
+  ...
+# Subtest: requires exact HTTPS origins and immutable approved-location policy
+ok 233 - requires exact HTTPS origins and immutable approved-location policy
+  ---
+  duration_ms: 1.5247
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 234 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 0.4801
+  type: 'test'
+  ...
+# Subtest: allows only an exact observed and approved read operation
+ok 235 - allows only an exact observed and approved read operation
+  ---
+  duration_ms: 6.3245
+  type: 'test'
+  ...
+# Subtest: fails closed when provider-side capability access expands without review
+ok 236 - fails closed when provider-side capability access expands without review
+  ---
+  duration_ms: 1.736
+  type: 'test'
+  ...
+# Subtest: fails closed when a required provider collection disappears
+ok 237 - fails closed when a required provider collection disappears
+  ---
+  duration_ms: 0.6292
+  type: 'test'
+  ...
+# Subtest: rejects a read that is outside the reviewed operation allowlist
+ok 238 - rejects a read that is outside the reviewed operation allowlist
+  ---
+  duration_ms: 0.4735
+  type: 'test'
+  ...
+# Subtest: rejects mutative or unsafe operations even inside an entitled collection
+ok 239 - rejects mutative or unsafe operations even inside an entitled collection
+  ---
+  duration_ms: 0.5731
+  type: 'test'
+  ...
+# Subtest: rejects wildcard or non-https hosts
+ok 240 - rejects wildcard or non-https hosts
+  ---
+  duration_ms: 0.6561
+  type: 'test'
+  ...
+# Subtest: approved expansion still does not create operation authority automatically
+ok 241 - approved expansion still does not create operation authority automatically
+  ---
+  duration_ms: 0.6227
+  type: 'test'
+  ...
+# Subtest: assert helper exposes the bounded decision on rejection
+ok 242 - assert helper exposes the bounded decision on rejection
+  ---
+  duration_ms: 1.3937
+  type: 'test'
+  ...
+# Subtest: rejects origin-changing approved and requested operation paths
+ok 243 - rejects origin-changing approved and requested operation paths
+  ---
+  duration_ms: 2.1941
+  type: 'test'
+  ...
+# Subtest: exactHost is a parsed credential-free HTTPS origin
+ok 244 - exactHost is a parsed credential-free HTTPS origin
+  ---
+  duration_ms: 1.3405
+  type: 'test'
+  ...
+# Subtest: rotation plan binds one installation, region and credential generation
+ok 245 - rotation plan binds one installation, region and credential generation
+  ---
+  duration_ms: 8.4529
+  type: 'test'
+  ...
+# Subtest: successful rotation emits secret-free compare-and-swap evidence once
+ok 246 - successful rotation emits secret-free compare-and-swap evidence once
+  ---
+  duration_ms: 2.2368
+  type: 'test'
+  ...
+# Subtest: refresh token rotation and fingerprint shape are mandatory
+ok 247 - refresh token rotation and fingerprint shape are mandatory
+  ---
+  duration_ms: 5.2789
+  type: 'test'
+  ...
+# Subtest: rotation reason is a bounded operational value rather than free-form evidence
+ok 248 - rotation reason is a bounded operational value rather than free-form evidence
+  ---
+  duration_ms: 0.6072
+  type: 'test'
+  ...
+# Subtest: stale generation, endpoint, scope and client drift fail closed
+ok 249 - stale generation, endpoint, scope and client drift fail closed
+  ---
+  duration_ms: 1.9525
+  type: 'test'
+  ...
+# Subtest: only approved Deputy regions and exact installation hosts are accepted
+ok 250 - only approved Deputy regions and exact installation hosts are accepted
+  ---
+  duration_ms: 0.8077
+  type: 'test'
+  ...
+# Subtest: failed, overlong and temporally impossible refresh receipts are rejected
+ok 251 - failed, overlong and temporally impossible refresh receipts are rejected
+  ---
+  duration_ms: 1.7724
+  type: 'test'
+  ...
+# Subtest: raw secrets, duplicate attempts and fabricated plans never enter evidence
+ok 252 - raw secrets, duplicate attempts and fabricated plans never enter evidence
+  ---
+  duration_ms: 1.0421
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 253 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 0.8058
+  type: 'test'
+  ...
+# Subtest: admits an exact-scope shift batch only as reconciliation evidence
+ok 254 - admits an exact-scope shift batch only as reconciliation evidence
+  ---
+  duration_ms: 61.8189
+  type: 'test'
+  ...
+# Subtest: rejects portal, site, department, endpoint, version, resource, query and schema drift
+ok 255 - rejects portal, site, department, endpoint, version, resource, query and schema drift
+  ---
+  duration_ms: 9.5028
+  type: 'test'
+  ...
+# Subtest: preserves local wall time, UTC instant, IANA zone and offset together
+ok 256 - preserves local wall time, UTC instant, IANA zone and offset together
+  ---
+  duration_ms: 2.7071
+  type: 'test'
+  ...
+# Subtest: accepts the repeated autumn wall hour only when its explicit offset selects the real instant
+ok 257 - accepts the repeated autumn wall hour only when its explicit offset selects the real instant
+  ---
+  duration_ms: 5.2422
+  type: 'test'
+  ...
+# Subtest: rejects nonexistent spring-forward wall time and wrong offsets
+ok 258 - rejects nonexistent spring-forward wall time and wrong offsets
+  ---
+  duration_ms: 2.9045
+  type: 'test'
+  ...
+# Subtest: uses elapsed UTC time across DST rather than subtracting local wall clocks
+ok 259 - uses elapsed UTC time across DST rather than subtracting local wall clocks
+  ---
+  duration_ms: 1.1954
+  type: 'test'
+  ...
+# Subtest: detects employee shift overlaps without dropping either source record
+ok 260 - detects employee shift overlaps without dropping either source record
+  ---
+  duration_ms: 1.5633
+  type: 'test'
+  ...
+# Subtest: keeps the same employee ID isolated across portals and connections
+ok 261 - keeps the same employee ID isolated across portals and connections
+  ---
+  duration_ms: 1.7422
+  type: 'test'
+  ...
+# Subtest: collapses exact source-version replays but quarantines conflicts
+ok 262 - collapses exact source-version replays but quarantines conflicts
+  ---
+  duration_ms: 3.4328
+  type: 'test'
+  ...
+# Subtest: requires complete bounded windows, pagination and intersecting shifts
+ok 263 - requires complete bounded windows, pagination and intersecting shifts
+  ---
+  duration_ms: 1.9334
+  type: 'test'
+  ...
+# Subtest: rejects reversed or overlong shifts and impossible observation chronology
+ok 264 - rejects reversed or overlong shifts and impossible observation chronology
+  ---
+  duration_ms: 2.1619
+  type: 'test'
+  ...
+# Subtest: rejects secrets, executable evidence and invalid origins or zones
+ok 265 - rejects secrets, executable evidence and invalid origins or zones
+  ---
+  duration_ms: 1.4425
+  type: 'test'
+  ...
+# Subtest: returns deeply immutable evidence
+ok 266 - returns deeply immutable evidence
+  ---
+  duration_ms: 1.501
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 267 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 0.4099
+  type: 'test'
+  ...
+# Subtest: admits only two identical complete stable offset passes as reconciliation evidence
+ok 268 - admits only two identical complete stable offset passes as reconciliation evidence
+  ---
+  duration_ms: 8.8412
+  type: 'test'
+  ...
+# Subtest: binds Oracle pod version resource organization order fingerprints predecessor and closed horizon
+ok 269 - binds Oracle pod version resource organization order fingerprints predecessor and closed horizon
+  ---
+  duration_ms: 8.4609
+  type: 'test'
+  ...
+# Subtest: requires exactly two gapless terminal offset chains with truthful count and hasMore
+ok 270 - requires exactly two gapless terminal offset chains with truthful count and hasMore
+  ---
+  duration_ms: 6.0913
+  type: 'test'
+  ...
+# Subtest: rejects mutable offset churn missing rows and conflicting versions between passes
+ok 271 - rejects mutable offset churn missing rows and conflicting versions between passes
+  ---
+  duration_ms: 2.8381
+  type: 'test'
+  ...
+# Subtest: enforces half-open timestamps organization identity deterministic order and replay isolation
+ok 272 - enforces half-open timestamps organization identity deterministic order and replay isolation
+  ---
+  duration_ms: 6.528
+  type: 'test'
+  ...
+# Subtest: rejects oversized sparse secret executable and hidden evidence deterministically
+ok 273 - rejects oversized sparse secret executable and hidden evidence deterministically
+  ---
+  duration_ms: 5.0434
+  type: 'test'
+  ...
+# Subtest: admits successful replay audit plus complete fallback snapshot as reconciliation evidence only
+ok 274 - admits successful replay audit plus complete fallback snapshot as reconciliation evidence only
+  ---
+  duration_ms: 29.9417
+  type: 'test'
+  ...
+# Subtest: binds tenant connection subscription region endpoint routes schemas principal and HMAC revision
+ok 275 - binds tenant connection subscription region endpoint routes schemas principal and HMAC revision
+  ---
+  duration_ms: 4.2305
+  type: 'test'
+  ...
+# Subtest: enforces provider replay and retention windows
+ok 276 - enforces provider replay and retention windows
+  ---
+  duration_ms: 0.9722
+  type: 'test'
+  ...
+# Subtest: requires an accepted failed-only replay request for the exact closed window
+ok 277 - requires an accepted failed-only replay request for the exact closed window
+  ---
+  duration_ms: 1.7187
+  type: 'test'
+  ...
+# Subtest: requires a gapless terminal cursor chain with successful replay status
+ok 278 - requires a gapless terminal cursor chain with successful replay status
+  ---
+  duration_ms: 3.0344
+  type: 'test'
+  ...
+# Subtest: enforces the configured provider page count on every audit page
+ok 279 - enforces the configured provider page count on every audit page
+  ---
+  duration_ms: 3.1257
+  type: 'test'
+  ...
+# Subtest: requires unique successful audit messages with valid attempt chronology
+ok 280 - requires unique successful audit messages with valid attempt chronology
+  ---
+  duration_ms: 1.8788
+  type: 'test'
+  ...
+# Subtest: requires exactly one HMAC-verified delivery for every successful replay message
+ok 281 - requires exactly one HMAC-verified delivery for every successful replay message
+  ---
+  duration_ms: 2.2034
+  type: 'test'
+  ...
+# Subtest: collapses byte-identical delivery retries but rejects conflicting replay
+ok 282 - collapses byte-identical delivery retries but rejects conflicting replay
+  ---
+  duration_ms: 1.9248
+  type: 'test'
+  ...
+# Subtest: requires a complete exact-window fallback snapshot matching each source latest delivery
+ok 283 - requires a complete exact-window fallback snapshot matching each source latest delivery
+  ---
+  duration_ms: 4.155
+  type: 'test'
+  ...
+# Subtest: preserves distinct Unicode identities without exposing source identifiers
+ok 284 - preserves distinct Unicode identities without exposing source identifiers
+  ---
+  duration_ms: 1.3743
+  type: 'test'
+  ...
+# Subtest: rejects sparse oversized secret executable hidden and unsafe route evidence
+ok 285 - rejects sparse oversized secret executable hidden and unsafe route evidence
+  ---
+  duration_ms: 34.2843
+  type: 'test'
+  ...
+# Subtest: binds caps event aliases and observed transport evidence into deterministic immutable output
+ok 286 - binds caps event aliases and observed transport evidence into deterministic immutable output
+  ---
+  duration_ms: 5.8495
+  type: 'test'
+  ...
+# Subtest: admits one exact Workday export plus workforce snapshot as reconciliation evidence only
+ok 287 - admits one exact Workday export plus workforce snapshot as reconciliation evidence only
+  ---
+  duration_ms: 9.3225
+  type: 'test'
+  ...
+# Subtest: preserves multiple jobs for one person without exposing source identities
+ok 288 - preserves multiple jobs for one person without exposing source identities
+  ---
+  duration_ms: 18.2414
+  type: 'test'
+  ...
+# Subtest: rejects constructor scope drift before any export can be authorised
+ok 289 - rejects constructor scope drift before any export can be authorised
+  ---
+  duration_ms: 4.2142
+  type: 'test'
+  ...
+# Subtest: requires exact source window, record count and completion chronology across both authorities
+ok 290 - requires exact source window, record count and completion chronology across both authorities
+  ---
+  duration_ms: 5.2876
+  type: 'test'
+  ...
+# Subtest: rejects replay conflicts, cross-tenant requests and secret-bearing evidence
+ok 291 - rejects replay conflicts, cross-tenant requests and secret-bearing evidence
+  ---
+  duration_ms: 2.0961
+  type: 'test'
+  ...
+# Subtest: quarantines exact duplicate rows in a completed Workday worker snapshot
+ok 292 - quarantines exact duplicate rows in a completed Workday worker snapshot
+  ---
+  duration_ms: 1.0955
+  type: 'test'
+  ...
+# Subtest: returns deterministic deeply immutable decision evidence
+ok 293 - returns deterministic deeply immutable decision evidence
+  ---
+  duration_ms: 2.9255
+  type: 'test'
+  ...
+# Subtest: rejects indexed accessors without executing untrusted policy data
+ok 294 - rejects indexed accessors without executing untrusted policy data
+  ---
+  duration_ms: 1.3652
+  type: 'test'
+  ...
+1..294
+# tests 294
+# suites 0
+# pass 294
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1197.7486

@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: Acadia stays discovery-queued until an authoritative technical integration contract exists
+ok 1 - Acadia stays discovery-queued until an authoritative technical integration contract exists
+  ---
+  duration_ms: 59.2845
+  type: 'test'
+  ...
+# Subtest: third-party generated API material cannot promote Acadia to spec-verified
+ok 2 - third-party generated API material cannot promote Acadia to spec-verified
+  ---
+  duration_ms: 0.4329
+  type: 'test'
+  ...
+# Subtest: provider-owned or authorised technical evidence can satisfy the reusable provenance gate
+ok 3 - provider-owned or authorised technical evidence can satisfy the reusable provenance gate
+  ---
+  duration_ms: 0.1882
+  type: 'test'
+  ...
+# Subtest: Acadia contributes skills, training, compliance and production-readiness WFM mappings without inventing an adapter
+ok 4 - Acadia contributes skills, training, compliance and production-readiness WFM mappings without inventing an adapter
+  ---
+  duration_ms: 33.679
+  type: 'test'
+  ...
+# Subtest: Acadia unresolved interface passes fabric conformance without gaining an adapter or evidence promotion
+ok 5 - Acadia unresolved interface passes fabric conformance without gaining an adapter or evidence promotion
+  ---
+  duration_ms: 185.618
+  type: 'test'
+  ...
+# Subtest: fabric conformance rejects a protocol-less Acadia record that loses its unresolved interface declaration
+ok 6 - fabric conformance rejects a protocol-less Acadia record that loses its unresolved interface declaration
+  ---
+  duration_ms: 1142.4605
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1615.7688

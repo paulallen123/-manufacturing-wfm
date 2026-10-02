@@ -1,0 +1,15 @@
+{
+  "total": 212,
+  "coveredByReusableProfiles": 210,
+  "researchRequired": 2,
+  "opportunityProfiled": 212,
+  "vendorSpecificValueEvidence": 94,
+  "routes": {
+    "direct-cloud-adapter": 116,
+    "site-edge-gateway": 49,
+    "batch-ingestion": 20,
+    "vendor-research-required": 8,
+    "northbound-openapi-and-events": 13,
+    "event-stream-adapter": 6
+  }
+}

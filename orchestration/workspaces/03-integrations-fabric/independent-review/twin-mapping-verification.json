@@ -1,0 +1,12 @@
+{
+  "verified": true,
+  "runtimeChanges": [
+    "canonical require path",
+    "mapping comment"
+  ],
+  "testChanges": [
+    "canonical require path",
+    "projection require path"
+  ],
+  "behavioralBytesOtherwiseUnchanged": true
+}

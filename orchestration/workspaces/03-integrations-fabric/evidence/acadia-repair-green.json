@@ -1,0 +1,12 @@
+{
+  "node": "v22.23.2",
+  "stage": "acadia-repair-green",
+  "exitCode": 0,
+  "tests": 6,
+  "pass": 6,
+  "fail": 0,
+  "skipped": 0,
+  "sha256": "e2e5d90586aff627462954ae4fb759711c0d358a82d53ef63c390c4bc1320650",
+  "bytes": 1679,
+  "expectedFailingAssertion": false
+}

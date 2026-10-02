@@ -1,0 +1,60 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "sourceSha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff",
+  "shipPaths": 51,
+  "helpers": 25,
+  "testFiles": 26,
+  "localPortBytes": 604124,
+  "allSourceBlobsByteIdentical": false,
+  "baselineSourceSnapshotBlobsUnchanged": 142,
+  "isolatedBaselineBlobsUnchanged": 140,
+  "separateMetadataRepairFiles": 2,
+  "combinedShippingPaths": 53,
+  "sourceWorkspaceFiles": 193,
+  "verifiedShippingAndBaselineIdentity": true,
+  "portManifestSha256": "e0aa7b9d143219f479e6661be2d59ab5fdf0acf30646dc7a3e53cd11dd7f4094",
+  "node": "v22.23.2",
+  "tests": {
+    "baseline": 250,
+    "selected": 294,
+    "combined": 546,
+    "fail": 0,
+    "skip": 0
+  },
+  "conformance": {
+    "passed": true,
+    "preexistingFrozenFailure": "A protocol-less system must explicitly declare the external interface unresolved: acadia-performance-platform",
+    "baselineReproduced": true
+  },
+  "status": "LOCAL_PORT_CORRECTED_TESTED_AWAITING_INDEPENDENT_REVIEW_AND_RUNTIME_ADMISSION",
+  "wholeProductProof": false,
+  "hostedProof": false,
+  "providerProof": false,
+  "published": false,
+  "deployed": false,
+  "frozenMutation": false,
+  "failures": [],
+  "independentReviewNeeds": [
+    "Verify original source-identical reference separately from the 24-path authority correction manifest; reexecute independent P2 negatives and inspect all eleven descriptor-only array changes.",
+    "Review the 51-path source/mode/bytes manifest; confirm only 25 helpers plus 26 meaningful tests and no canonical replacement.",
+    "Adversarially review helper scope/replay/completeness/secret/executable-evidence boundaries and Workday composition, including industrial batch companion tests.",
+    "Confirm schema/caller API contracts against future canonical runtime before wiring any authority; this is a pure-helper source port only.",
+    "Review the separate two-file Acadia metadata repair and executable red/negative conformance proof; confirm the guard and evidence levels are unchanged.",
+    "Execute root-owned full candidate/Docker security/runtime/restart and applicable hosted/provider gates on a future exact successor; no frozen candidate promotion from local tests."
+  ],
+  "originalSourceIdenticalPortBytes": 595207,
+  "combinedLocalShippingBytes": 616346,
+  "unaffectedSourceIdenticalAdditions": 27,
+  "separateAuthorityCorrections": {
+    "helpers": 12,
+    "testFiles": 12,
+    "paths": 24,
+    "localBytes": 250302,
+    "redTests": 144,
+    "redFailures": 14,
+    "greenTests": 144,
+    "manifestSha256": "e2132b3460d93a2f0d5f668aa5a1c180c690ac74fa08f02507ccb953e3453dbe"
+  }
+}

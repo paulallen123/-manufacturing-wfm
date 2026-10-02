@@ -1,0 +1,18 @@
+[
+    {
+        "exitCode":  0,
+        "script":  "validate"
+    },
+    {
+        "exitCode":  0,
+        "script":  "build-plan"
+    },
+    {
+        "exitCode":  0,
+        "script":  "conformance"
+    },
+    {
+        "exitCode":  0,
+        "script":  "build-connector-registry"
+    }
+]

@@ -1,0 +1,310 @@
+{
+  "node": "v22.23.2",
+  "summaries": [
+    {
+      "name": "validate",
+      "args": [
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\source\\integration-fabric\\scripts\\validate.mjs"
+      ],
+      "cwd": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\scratch",
+      "exitCode": 0,
+      "error": null,
+      "log": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\logs\\validate.log",
+      "bytes": 333,
+      "sha256": "5e8bf5a434f33b051e2e5be67a584a9e2e4e41c52348732b0ca0a2e6deaf20a8"
+    },
+    {
+      "name": "conformance",
+      "args": [
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\source\\integration-fabric\\scripts\\conformance.mjs"
+      ],
+      "cwd": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\scratch",
+      "exitCode": 0,
+      "error": null,
+      "log": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\logs\\conformance.log",
+      "bytes": 309,
+      "sha256": "8acf0ea73a3c14c645ef30decb6ab1e4c1f892e5f65b1e6650ce81f1834a8e0c"
+    },
+    {
+      "name": "build-connector-registry",
+      "args": [
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\source\\integration-fabric\\scripts\\build-connector-registry.mjs"
+      ],
+      "cwd": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\scratch",
+      "exitCode": 0,
+      "error": null,
+      "log": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\logs\\build-connector-registry.log",
+      "bytes": 110,
+      "sha256": "4368404656808a802e2f6af91af9c92dd65a83df62bc1e53dc00766de714d0cf"
+    },
+    {
+      "name": "build-plan",
+      "args": [
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\source\\integration-fabric\\scripts\\build-plan.mjs"
+      ],
+      "cwd": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\scratch",
+      "exitCode": 0,
+      "error": null,
+      "log": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\logs\\build-plan.log",
+      "bytes": 361,
+      "sha256": "09bb26135bc7a597712e13256c4032ccf1b3658086d3ed940efce6366580505d"
+    }
+  ],
+  "syntax": [
+    {
+      "path": "integration-fabric/runtime/azure-iot-operations-keyframe-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/azure-iot-operations-keyframe-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/managed-task-ingress-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/managed-task-ingress-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/managed-export-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/managed-export-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/azure-workflow-delivery-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/azure-workflow-delivery-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/capped-projection-chain-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/capped-projection-chain-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/effective-dated-workforce-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/effective-dated-workforce-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/industrial-sample-window-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/industrial-sample-window-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/integration-instance-observation-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/integration-instance-observation-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/explicit-execution-context-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/explicit-execution-context-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/event-snapshot-recovery-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/event-snapshot-recovery-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/change-signal-reconciliation.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/change-signal-reconciliation.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/field-projection-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/field-projection-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/capability-paged-read-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/capability-paged-read-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/webhook-replay-snapshot-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/webhook-replay-snapshot-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/partition-offset-window-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/partition-offset-window-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/manufacturing-observation-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/manufacturing-observation-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/rotating-oauth-transition.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/rotating-oauth-transition.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/opaque-page-chain-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/opaque-page-chain-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/mutable-poll-window-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/mutable-poll-window-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/provider-capability-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/provider-capability-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/presence-signal-reconciliation.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/presence-signal-reconciliation.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/payroll-run-coverage-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/payroll-run-coverage-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/stable-offset-window-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/stable-offset-window-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/shift-time-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/shift-time-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/workday-worker-evidence-authority.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/workday-worker-evidence-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "integration-fabric/runtime/industrial-batch-window-authority.test.mjs",
+      "exitCode": 0,
+      "output": ""
+    }
+  ]
+}

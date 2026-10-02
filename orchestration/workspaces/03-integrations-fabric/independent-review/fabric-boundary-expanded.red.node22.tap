@@ -1,0 +1,735 @@
+TAP version 13
+# Subtest: field-projection-authority: inert rejection never reads an indexed getter
+not ok 1 - field-projection-authority: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 3.5536
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: change-signal-reconciliation: inert rejection never reads an indexed getter
+not ok 2 - change-signal-reconciliation: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 25.0504
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: effective-dated-workforce-authority: inert rejection never reads an indexed getter
+not ok 3 - effective-dated-workforce-authority: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 24.6285
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: managed-task-ingress-authority: inert rejection never reads an indexed getter
+not ok 4 - managed-task-ingress-authority: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 20.4807
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: manufacturing-observation-authority: inert rejection never reads an indexed getter
+not ok 5 - manufacturing-observation-authority: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 20.0715
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: mutable-poll-window-authority: inert rejection never reads an indexed getter
+not ok 6 - mutable-poll-window-authority: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 21.0112
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: opaque-page-chain-authority: inert rejection never reads an indexed getter
+not ok 7 - opaque-page-chain-authority: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 20.5697
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: presence-signal-reconciliation: inert rejection never reads an indexed getter
+not ok 8 - presence-signal-reconciliation: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 19.3352
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: rotating-oauth-transition: inert rejection never reads an indexed getter
+not ok 9 - rotating-oauth-transition: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 19.7121
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: shift-time-authority: inert rejection never reads an indexed getter
+not ok 10 - shift-time-authority: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 17.1877
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: workday-worker-evidence-authority: inert rejection never reads an indexed getter
+not ok 11 - workday-worker-evidence-authority: inert rejection never reads an indexed getter
+  ---
+  duration_ms: 0.9783
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:22:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:22:2
+  ...
+# Subtest: field route rejects "//outside.example.invalid/read"
+not ok 12 - field route rejects "//outside.example.invalid/read"
+  ---
+  duration_ms: 2.7941
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:35:2'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:35:63)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    run (node:internal/test_runner/harness:307:12)
+    test (node:internal/test_runner/harness:316:12)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:35:2
+  ...
+# Subtest: capability route rejects "//outside.example.invalid/read"
+not ok 13 - capability route rejects "//outside.example.invalid/read"
+  ---
+  duration_ms: 0.8057
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:36:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:36:68)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: field route rejects "/\\\\outside.example.invalid/read"
+not ok 14 - field route rejects "/\\\\outside.example.invalid/read"
+  ---
+  duration_ms: 0.3881
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:35:2'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:35:63)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability route rejects "/\\\\outside.example.invalid/read"
+not ok 15 - capability route rejects "/\\\\outside.example.invalid/read"
+  ---
+  duration_ms: 0.3074
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:36:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:36:68)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: field route rejects "/\\t/outside.example.invalid/read"
+not ok 16 - field route rejects "/\\t/outside.example.invalid/read"
+  ---
+  duration_ms: 0.4125
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:35:2'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:35:63)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability route rejects "/\\t/outside.example.invalid/read"
+not ok 17 - capability route rejects "/\\t/outside.example.invalid/read"
+  ---
+  duration_ms: 0.284
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:36:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:36:68)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: field route rejects "/\\n/outside.example.invalid/read"
+not ok 18 - field route rejects "/\\n/outside.example.invalid/read"
+  ---
+  duration_ms: 0.4569
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:35:2'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:35:63)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability route rejects "/\\n/outside.example.invalid/read"
+not ok 19 - capability route rejects "/\\n/outside.example.invalid/read"
+  ---
+  duration_ms: 0.1869
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:36:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:36:68)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: field route rejects "/ /outside.example.invalid/read"
+not ok 20 - field route rejects "/ /outside.example.invalid/read"
+  ---
+  duration_ms: 0.7254
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:35:2'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:35:63)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability route rejects "/ /outside.example.invalid/read"
+not ok 21 - capability route rejects "/ /outside.example.invalid/read"
+  ---
+  duration_ms: 0.2101
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:36:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:36:68)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: field route rejects "/ab"
+not ok 22 - field route rejects "/ab"
+  ---
+  duration_ms: 0.3927
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:35:2'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:35:63)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability route rejects "/ab"
+not ok 23 - capability route rejects "/ab"
+  ---
+  duration_ms: 0.1987
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:36:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:36:68)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability exact origin rejects "https://approved.example.invalid@outside.example.invalid"
+not ok 24 - capability exact origin rejects "https://approved.example.invalid@outside.example.invalid"
+  ---
+  duration_ms: 0.2083
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:39:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:39:74)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability exact origin rejects "https://user:password@approved.example.invalid"
+not ok 25 - capability exact origin rejects "https://user:password@approved.example.invalid"
+  ---
+  duration_ms: 0.1625
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:39:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:39:74)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability exact origin rejects "https://approved.example.invalid/path"
+not ok 26 - capability exact origin rejects "https://approved.example.invalid/path"
+  ---
+  duration_ms: 0.2596
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:39:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:39:74)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability exact origin rejects "https://approved.example.invalid?x=1"
+not ok 27 - capability exact origin rejects "https://approved.example.invalid?x=1"
+  ---
+  duration_ms: 0.3478
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:39:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:39:74)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability exact origin rejects "https://approved.example.invalid\#fragment"
+not ok 28 - capability exact origin rejects "https://approved.example.invalid\#fragment"
+  ---
+  duration_ms: 0.198
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\fabric-boundary-expanded.test.mjs:39:2'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/fabric-boundary-expanded.test.mjs:39:74)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: capability exact origin rejects "http://approved.example.invalid"
+ok 29 - capability exact origin rejects "http://approved.example.invalid"
+  ---
+  duration_ms: 0.1277
+  type: 'test'
+  ...
+# Subtest: ordinary field route preserves exact origin and refuses tenant drift
+ok 30 - ordinary field route preserves exact origin and refuses tenant drift
+  ---
+  duration_ms: 0.5411
+  type: 'test'
+  ...
+# Subtest: ordinary capability route remains admitted
+ok 31 - ordinary capability route remains admitted
+  ---
+  duration_ms: 0.1428
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 3
+# fail 28
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 454.7557

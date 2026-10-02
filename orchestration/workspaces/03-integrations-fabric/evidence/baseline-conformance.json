@@ -1,0 +1,15 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baselineFiles": 142,
+  "node": "v22.23.2",
+  "args": [
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\baseline-source\\integration-fabric\\scripts\\conformance.mjs"
+  ],
+  "cwd": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\baseline-source",
+  "exitCode": 1,
+  "error": null,
+  "expectedExistingFailure": true,
+  "sha256": "dd983b95f0c7b05aed683975bf7fa1f4b4e5308e2d0e548a84b869b404bc7971",
+  "bytes": 786,
+  "portedHelpersPresent": false
+}

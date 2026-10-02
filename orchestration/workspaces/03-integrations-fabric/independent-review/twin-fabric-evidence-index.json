@@ -1,0 +1,94 @@
+{
+  "artifacts": [
+    {
+      "name": "twin-fabric-review.md",
+      "bytes": 6149,
+      "sha256": "9012d6055be16ccc6f5c3eabee25f8a2cfbbd6a24a2c9158667be52f97c989d8"
+    },
+    {
+      "name": "twin-fabric-findings.json",
+      "bytes": 29560,
+      "sha256": "2b3001e7508f077e9d6632d8c37989754135570620aa4344630cad7f5e547547"
+    },
+    {
+      "name": "twin-fabric-final-identities.json",
+      "bytes": 31877,
+      "sha256": "f03906a47366c6af9f2c6d561309bb569be9842f8dc9e0419f5cef0893e1d28d"
+    },
+    {
+      "name": "fabric-repair-shape.json",
+      "bytes": 1730,
+      "sha256": "e96b813d59d1727a170cd9cd8813f3e7cc60e7c8f15f7fbde9b8cb629d63d93e"
+    },
+    {
+      "name": "twin-fabric.held-out.node22.tap",
+      "bytes": 18946,
+      "sha256": "c1fe818c2b67e310e27cdf040cd0a9f1264220a8b03d86edee61a0674a858af0"
+    },
+    {
+      "name": "twin-fabric.red.observations.json",
+      "bytes": 1268,
+      "sha256": "096d798f6a4cf88ca22c52ccc26562c00b5ce86db0bea664790637e7e69596cc"
+    },
+    {
+      "name": "fabric-boundary-expanded.red.node22.tap",
+      "bytes": 67170,
+      "sha256": "8374fc7eca94105e148a3df1df16169afd4669a1c675f1a28db073f983bf4ff4"
+    },
+    {
+      "name": "fabric-boundary-expanded.green.node22.tap",
+      "bytes": 13026,
+      "sha256": "679c43db0757c8061069c18d8ae0dc6ef8d15e9f6fd6f584d3ef0e27387c4287"
+    },
+    {
+      "name": "twin-fabric.mapped.node22.tap",
+      "bytes": 7606,
+      "sha256": "06b3c04e4cc2ba88352c7c659ba00d794fa1b8f214411667f5f48ac1177da429"
+    },
+    {
+      "name": "acadia.initial-fixture-error.node22.tap",
+      "bytes": 5214,
+      "sha256": "a660dc2b87e7af0fd97c60c56e676fcc2d4d8423939313965761db351ae89abf"
+    },
+    {
+      "name": "acadia.corrected.node22.tap",
+      "bytes": 1832,
+      "sha256": "f3dc50ad3ff549baf82ef416d4a1daafadfcc8743bb57dd9bb8d49bb60c32a2f"
+    },
+    {
+      "name": "twin-mapped-suite.node22.tap",
+      "bytes": 9812,
+      "sha256": "da15d69d412d8d832deccada567de44d4b8b8c63012757ae5d5a9ec333ee13a1"
+    },
+    {
+      "name": "fabric-final-suite.node22.tap",
+      "bytes": 245156,
+      "sha256": "ad0ad9e679f5f4f504b7307d03eb9f13db033542690b22ea80ad819b3f205147"
+    },
+    {
+      "name": "fabric-static.run.json",
+      "bytes": 310,
+      "sha256": "bd8aebd6dd2fe5fa6f0e123ddb9a39bb6b52b655e710aacb29d3f5a5f31a6faa"
+    },
+    {
+      "name": "twin-fabric.held-out.test.mjs",
+      "bytes": 9520,
+      "sha256": "b8103388228f17697e97d6f854362d4b7ce81b8c06d97aafaa209696a38a4da8"
+    },
+    {
+      "name": "fabric-boundary-expanded.test.mjs",
+      "bytes": 4404,
+      "sha256": "1b7e3e87a2add6fcca00ea58541366bee9862b8a876351c7890dc5ec1d23c8d9"
+    },
+    {
+      "name": "acadia.held-out.test.mjs",
+      "bytes": 3895,
+      "sha256": "1aca5f108f709b0ff78d0422cc99434262e0806a6cbe7d92d76f890cdc1cacd0"
+    },
+    {
+      "name": "twin-mapping-verification.json",
+      "bytes": 230,
+      "sha256": "de6fa115d48c84aa73f77d97ae428680fba43763eb5b014e0ba1b08528ee0d56"
+    }
+  ]
+}

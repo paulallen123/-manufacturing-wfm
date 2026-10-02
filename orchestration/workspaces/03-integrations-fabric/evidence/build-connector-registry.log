@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "connectors": 212,
+  "withoutAdapters": 2,
+  "edgeRequired": 49,
+  "readOnlyDefault": 212
+}

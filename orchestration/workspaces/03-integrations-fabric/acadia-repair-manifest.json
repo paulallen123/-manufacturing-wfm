@@ -1,0 +1,60 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "separateFromSourceIdenticalPort": true,
+  "reason": "Conservative existing unresolved integration evidence uses interface-unresolved while unchanged conformance requires interface-unverified. Declaration normalised without asserting absence of vendor API, adding a protocol, inventing an adapter, changing maturity or granting authority.",
+  "metadataFieldChanges": 1,
+  "guardWeakened": false,
+  "baselineFailureRetained": "logs/baseline-conformance.log",
+  "metadataOtherFieldsByteSemanticallyUnchanged": true,
+  "testsAdded": 2,
+  "red": {
+    "node": "v22.23.2",
+    "stage": "acadia-repair-red",
+    "exitCode": 1,
+    "tests": 6,
+    "pass": 5,
+    "fail": 1,
+    "skipped": 0,
+    "sha256": "d6863a3bd2566d16791a21d615260a9989f2d623a71fe5bd5cb2c759dbec0fdf",
+    "bytes": 3853,
+    "expectedFailingAssertion": true
+  },
+  "green": {
+    "node": "v22.23.2",
+    "stage": "acadia-repair-green",
+    "exitCode": 0,
+    "tests": 6,
+    "pass": 6,
+    "fail": 0,
+    "skipped": 0,
+    "sha256": "e2e5d90586aff627462954ae4fb759711c0d358a82d53ef63c390c4bc1320650",
+    "bytes": 1679,
+    "expectedFailingAssertion": false
+  },
+  "paths": 2,
+  "localBytes": 12222,
+  "manifest": [
+    {
+      "path": "integration-fabric/research-overlays/2026-09-20-1251.json",
+      "mode": "100644",
+      "action": "modify",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceBlob": "be88c16301ee83ff8409ee85d8e3c583106c833e",
+      "localGitBlob": "267bc0fa399c934fa34cdf5b4adf09a3936bcde5",
+      "localSha256": "ce5c854983cb84d890fe5dc0780e0a7a5df069772ace72660ac727ae245ddfc8",
+      "localBytes": 7682
+    },
+    {
+      "path": "integration-fabric/runtime/acadia-discovery-evidence.test.mjs",
+      "mode": "100644",
+      "action": "modify",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceBlob": "01134260bafefd02801f5024de5c4a59dd15691c",
+      "localGitBlob": "46df256e50103e5831ea9b401271e449e6fc3fa2",
+      "localSha256": "fa6b026357bf36c2a63f4aaeb465d57152aac760c1163bba47e12bb3c6c7287d",
+      "localBytes": 4540
+    }
+  ]
+}

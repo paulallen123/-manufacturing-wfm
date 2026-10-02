@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "systems": 212,
+  "researchSources": 59,
+  "researchSystems": 74,
+  "researchOverrides": 100,
+  "categories": 68,
+  "protocolFamilies": 23,
+  "p0": 26,
+  "specVerified": 127,
+  "tenantAuthenticated": 3,
+  "opportunityProfiles": 14,
+  "centralSystemSpecificOpportunityReviews": 8,
+  "inlineVendorValueReviews": 88
+}
