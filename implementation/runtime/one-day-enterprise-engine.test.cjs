@@ -42,6 +42,8 @@ function fixture(options = {}) {
   const sentInvitations = [];
   let invitationAttempts = 0;
   const engineOptions = {
+    strictEvidence: options.strictEvidence,
+    agentsApiEnabled: false,
     dbPath,
     internalToken: 'implementation-worker-test-token',
     contractWebhookSecret: 'contract-webhook-test-token',
@@ -1573,4 +1575,66 @@ test('tenant-environment PASS is validator-bound, fresh, and reopened by a later
   } finally {
     f.close();
   }
+});
+
+test('strict replay proof rejects coercible or nonfinite totals and variance before durable admission', async () => {
+  const f = fixture({strictEvidence:true,requireCandidateBinding:true});
+  try {
+    const run=await startRun(f);
+    const detail={exactCandidateSha:f.candidateSha,exactTargetDeploymentId:f.deploymentId,dataClass:'synthetic-scale',independentCalculation:true,expectedTotal:0,calculatedTotal:0,unexplainedVariance:0};
+    for(const field of ['expectedTotal','calculatedTotal','unexplainedVariance']) {
+      for(const invalid of [null,'','0',false,[],{},Infinity,-Infinity,NaN]) {
+        const result=await call(f.engine,null,'POST','/api/implementation/autonomous/evidence',{runId:run.runId,kind:'historical-replay',status:'PASS',confidence:1,source:'isolated-regression',detail:{...detail,[field]:invalid}},f.internal);
+        assert.equal(result.status,409,field+'='+JSON.stringify(invalid));
+      }
+    }
+    const status=await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/status');
+    assert.equal(status.body.requirements.find(x=>x.key==='historical-replay').satisfied,false);
+    for(const total of [0,123.45,-10.5]) {
+      const result=await call(f.engine,null,'POST','/api/implementation/autonomous/evidence',{runId:run.runId,kind:'historical-replay',status:'PASS',confidence:1,source:'isolated-regression',detail:{...detail,expectedTotal:total,calculatedTotal:total}},f.internal);
+      assert.equal(result.status,200);
+      assert.equal(result.body.requirements.find(x=>x.key==='historical-replay').satisfied,true);
+    }
+  } finally { f.close(); }
+});
+
+for(const kind of ['historical-replay','time-policies']) test('persisted malformed '+kind+' receipt loses authority but remains auditable', async()=>{
+  const f=fixture({strictEvidence:true,requireCandidateBinding:true});
+  try {
+    const run=await startRun(f);
+    const binding={exactCandidateSha:f.candidateSha,exactTargetDeploymentId:f.deploymentId};
+    const detail=kind==='historical-replay'?{...binding,dataClass:'synthetic-scale',independentCalculation:true,expectedTotal:null,calculatedTotal:'',unexplainedVariance:null}:{...binding,fixtureOnly:false,evidenceClass:'customer-authorised',sourceAuthoritative:true,sourceRef:'isolated-legacy-policy',effectiveDated:true,effectiveDate:'2026-02-30',unresolvedRules:0,unknownPolicyFields:0,breakRulesVerified:true,overtimeRulesVerified:true,workingTimeRulesVerified:true,timeZoneVerified:true};
+    const db=new DatabaseSync(f.dbPath);
+    try { db.prepare('INSERT INTO implementation_evidence(run_id,tenant,kind,status,confidence,source,detail_json,created_at) VALUES(?,?,?,?,?,?,?,?)').run(run.runId,'alpha',kind,'PASS',1,'isolated-legacy-regression',JSON.stringify(detail),new Date().toISOString()); }
+    finally { db.close(); }
+    const status=await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/status');
+    const gate=status.body.requirements.find(x=>x.key===kind);
+    assert.equal(gate.satisfied,false);
+    assert.equal(gate.status,'REVALIDATION_REQUIRED');
+    const auditDb=new DatabaseSync(f.dbPath);
+    try { assert.equal(auditDb.prepare('SELECT status FROM implementation_evidence WHERE run_id=? AND kind=?').get(run.runId,kind).status,'PASS'); }
+    finally { auditDb.close(); }
+  } finally {f.close();}
+});
+
+test('customer policy date rejects impossible days and malformed timestamps without resolving authority', async () => {
+  const f=fixture({strictEvidence:true,requireCandidateBinding:true});
+  try {
+    const run=await startRun(f);
+    const detail={authoritativeConfirmation:true,sourceRef:'isolated-regression-policy',effectiveDate:'2026-99-99',unresolvedRules:0,unknownPolicyFields:0,breakRulesVerified:true,overtimeRulesVerified:true,workingTimeRulesVerified:true,timeZoneVerified:true};
+    for(const date of ['2026-99-99','2026-02-30','2025-02-29','2026-04-31','2026-10-01Tgarbage']) {
+      const result=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/decision',{runId:run.runId,key:'time-policy-authority',action:'ACCEPTED',detail:{...detail,effectiveDate:date}});
+      assert.equal(result.status,409,date);
+    }
+    const status=await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/status');
+    assert.equal(status.body.requirements.find(x=>x.key==='time-policies').satisfied,false);
+    const db=new DatabaseSync(f.dbPath);
+    try { assert.equal(db.prepare('SELECT status FROM implementation_decisions WHERE run_id=? AND decision_key=?').get(run.runId,'time-policy-authority').status,'PENDING'); }
+    finally { db.close(); }
+    for(const date of ['2024-02-29','2026-10-01','2026-10-01T12:30:00Z','2026-10-01T23:30:00-02:00']) {
+      const result=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/decision',{runId:run.runId,key:'time-policy-authority',action:'ACCEPTED',detail:{...detail,effectiveDate:date}});
+      assert.equal(result.status,200,date);
+      assert.equal(result.body.requirements.find(x=>x.key==='time-policies').satisfied,true);
+    }
+  } finally { f.close(); }
 });

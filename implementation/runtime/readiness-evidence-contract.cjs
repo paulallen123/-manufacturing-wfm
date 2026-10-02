@@ -9,9 +9,17 @@ function text(value) {
 }
 
 function finiteEqual(left, right) {
-  const a = Number(left);
-  const b = Number(right);
-  return Number.isFinite(a) && Number.isFinite(b) && a === b;
+  return typeof left === 'number' && typeof right === 'number' &&
+    Number.isFinite(left) && Number.isFinite(right) && left === right;
+}
+
+function validEffectiveDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}(?:$|T)/.test(value)) return false;
+  const calendarDate = value.slice(0, 10);
+  const calendarTime = Date.parse(calendarDate + 'T00:00:00Z');
+  return Number.isFinite(calendarTime) &&
+    new Date(calendarTime).toISOString().slice(0, 10) === calendarDate &&
+    Number.isFinite(Date.parse(value));
 }
 
 function zeroHuman(item, label) {
@@ -29,6 +37,7 @@ function validatePolicyEvidence(item, label) {
   if (item.sourceAuthoritative !== true) return label + ' PASS requires an authoritative policy source.';
   if (!text(item.sourceRef)) return label + ' PASS requires a traceable policy source reference.';
   if (item.effectiveDated !== true) return label + ' PASS requires effective-dated policy evidence.';
+  if (item.effectiveDate != null && !validEffectiveDate(item.effectiveDate)) return label + ' PASS contains an invalid policy effective date.';
   if (!Number.isInteger(Number(item.unresolvedRules)) || Number(item.unresolvedRules) !== 0) {
     return label + ' PASS requires zero unresolved policy rules.';
   }
@@ -151,7 +160,7 @@ function validateStrictReadinessEvidence(kind, status, detail = {}, context = {}
     if (!PAYROLL_DATA_CLASSES.has(dataClass)) return 'Historical-replay PASS must declare whether evidence is synthetic-scale, sandbox or customer-authorised.';
     if (item.independentCalculation !== true) return 'Historical-replay PASS requires an independent payroll calculation.';
     if (!finiteEqual(item.expectedTotal, item.calculatedTotal)) return 'Historical-replay PASS requires expected and independently calculated totals to match exactly.';
-    if (Number(item.unexplainedVariance) !== 0) return 'Historical-replay PASS requires zero unexplained variance.';
+    if (typeof item.unexplainedVariance !== 'number' || item.unexplainedVariance !== 0) return 'Historical-replay PASS requires zero numeric unexplained variance.';
   }
 
   if (kind === 'security-controls') {
@@ -176,4 +185,4 @@ function validateStrictReadinessEvidence(kind, status, detail = {}, context = {}
   return null;
 }
 
-module.exports = { validateStrictReadinessEvidence, validateTenantEnvironmentEvidence };
+module.exports = { validateStrictReadinessEvidence, validateTenantEnvironmentEvidence, validEffectiveDate };
